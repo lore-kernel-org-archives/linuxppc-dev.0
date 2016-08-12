@@ -1,52 +1,24 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p04-ob.smtp.rzone.de (mo6-p04-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5304::6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9fXL029TzDr1k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 19:21:37 +1000 (AEST)
-Subject: [pasemi] Internal CompactFlash (CF) card device not recognised after
- the powerpc-4.8-1 merge
-To: Julian Margetson <runaway@candw.ms>,
- luigi burdo <intermediadc@hotmail.com>,
- Darren Stevens <darren@stevens-zone.net>, Steven Jeffery
- <sajeffer@gmail.com>, "R.T.Dickinson" <rtd@a-eon.com>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>, Pat Wall <pjwall@mac.com>,
- Pat Wall <pjwall@me.com>, "contact@a-eon.com" <contact@a-eon.com>,
- "matthew@a-eon.biz" <matthew@a-eon.biz>, Kevin Saunders <kfs1971@gmail.com>,
- Lyle Hazelwood <lylehaze@gmail.com>, EntwicklerX <mail@entwickler-x.de>,
- "xray@relec.ch" <xray@relec.ch>, Steve-David Marguet <steve@esdeem.ch>,
- George Sokianos <walkero@gmail.com>, =?UTF-8?Q?Sinan_G=c3=bcrkan?=
- <sinan.amigaone@gmail.com>, Mike <michael.heltne@gmail.com>,
- Thomas Ferreira <macsociety@me.com>, Christian Zigotzky <info@xenosoft.de>,
- "pjs@pjsa.net" <pjs@pjsa.net>, Ben Cato Malkenes <ben.cato@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Olof Johansson <olof@lixom.net>,
- npiggin@gmail.com, shc_work@mail.ru, tj@kernel.org
-References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
- <8878883b-bd51-b7c9-ee5b-927e481e5d30@xenosoft.de>
- <8a3764d2-7fc1-1967-f557-146a3df16894@xenosoft.de>
- <1d98af3c-f585-967b-1413-58d34fad20af@xenosoft.de>
- <f6a4c3c1-f452-f4fc-1d36-b2bed81f32a3@xenosoft.de>
- <630b12ba-344e-7964-d6f5-001bc91e013a@xenosoft.de>
- <ab25ff79-fe91-8b7d-87ee-9625c4b0ec48@xenosoft.de>
- <b079bae9-566a-7539-b9cc-30f0edc46b11@xenosoft.de>
- <f2c917aa-594b-b96b-dc07-4bb26c082ef9@xenosoft.de>
- <3a1191c8-cf37-b040-0245-4e9aa77b59fe@xenosoft.de>
- <af9f0ac4-767a-b743-202a-7fee0aad7d70@xenosoft.de>
- <155dfbf5-8050-8a2e-44fa-1ceb53ccb8cf@xenosoft.de>
- <13b19298-3f5b-1602-8edc-76038f61e2db@xenosoft.de>
- <d88b1b80-f5a4-b50b-a886-2b0a91603149@xenosoft.de>
- <dfb5d87b-9297-be7b-1c70-d3398848ec6b@candw.ms>
- <f4e143b1-e758-b97b-d745-5c25bbcb0b28@xenosoft.de>
- <405fa68b-3ab3-4bbc-f751-7d0c2fa39ff1@candw.ms>
- <9ac75c41-aa11-9cd1-e235-3296a24eb6eb@xenosoft.de>
- <6f953e9a-2bcc-7bf6-88bc-1868d34afa4b@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <b92ef9d6-c58f-efe5-b4ea-df7acb19df9c@xenosoft.de>
-Date: Fri, 12 Aug 2016 11:20:35 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9fYH1QpFzDr21
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 19:22:27 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds  <torvalds@linux-foundation.org>
+Cc: aik@ozlabs.ru, alastair@d-silva.org, andrew.donnellan@au1.ibm.com,
+ anton@samba.org, arnd@arndb.de, benh@kernel.crashing.org,
+ christophe.leroy@c-s.fr, cyrilbur@gmail.com, dan.carpenter@oracle.com,
+ darren@stevens-zone.net, fbarrat@linux.vnet.ibm.com, felix@linux.vnet.ibm.com,
+ gpiccoli@linux.vnet.ibm.com, imunsie@au1.ibm.com, linux-kernel@vger.kernel.org,
+ linux@roeck-us.net, linuxppc-dev@lists.ozlabs.org, mahesh@linux.vnet.ibm.com,
+ npiggin@gmail.com, svaidy@linux.vnet.ibm.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.8-3 tag
+Date: Fri, 12 Aug 2016 19:22:24 +1000
+Message-ID: <87bn0ytk8f.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <6f953e9a-2bcc-7bf6-88bc-1868d34afa4b@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,296 +28,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I meant, I reverted the setup.c.
+--=-=-=
+Content-Type: text/plain
 
-- Christian
+Hi Linus,
 
-On 12 August 2016 at 11:00 AM, Christian Zigotzky wrote:
-> Hi All,
->
-> I reverted the commit 
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/diff/arch/powerpc/platforms/pasemi/setup.c?id=bad60e6f259a01cf9f29a1ef8d435ab6c60b2de9. 
-> It boots but it doesn't find any partitions.
->
-> Cheers,
->
-> Christian
->
-> On 11 August 2016 at 5:03 PM, Christian Zigotzky wrote:
->> Hi All,
->>
->> I was able to patch the RC1 with the Nemo and PHB-numbering patch. 
->> Additionally I added some printks in the file pata_of_platform.c. I 
->> wanted to know which values have the following variables:
->>
->> ctl_res = io_res;
->> io_res.start += 0x800;
->> ctl_res.start = ctl_res.start + 0x80e;
->> io_res.end = ctl_res.start-1;
->>
->> It compiled without any problems but unfortunately I didn't see any 
->> printk outputs of these variables. The output of pata_of_platform is 
->> missing too. I see this output in the dmesg of the kernel 4.7 but I 
->> don't see it in the dmesg of the kernel 4.8.
->>
->> I have the feeling, that pata_of_platform doesn't work anymore. Maybe 
->> this is the reason, why the CF card doesn't work anymore.
->>
->> Maybe this is the problem: 
->> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/diff/arch/powerpc/platforms/pasemi/setup.c?id=bad60e6f259a01cf9f29a1ef8d435ab6c60b2de9
->>
->> Do you have any hints for me?
->>
->> Cheers,
->>
->> Christian
->>
->> On 05 August 2016 at 11:42 PM, Darren Stevens wrote:
->>> Hello Nicholas
->>>
->>> On 06/08/2016, Nicholas Piggin wrote:
->>>>
->>>> Hi Christian,
->>> On 05 August 2016 at 1:41 PM, Christian Zigotzky wrote:
->>>
->>> Hi All,
->>>
->>>
->>>
->>> The internal PASEMI CompactFlash (CF) card device doesn't work anymore
->>> after the powerpc-4.8-1 merge. That means the code for the internal CF
->>> card device in the Nemo patch doesn't work after the first PowerPC
->>> merge. The CompactFlash (CF) card slot is wired to the CPU local bus.
->>> It is typically used to hold the Linux kernel. I know it isn't well to
->>> use an own patch for that but I think it is a good time to integrate
->>> the PASEMI internal CompactFlash (CF) card device to the official
->>> kernel. What do you think? I am not a programmer so I can't integrate
->>> the source code for the internal CF card device. But maybe you can
->>> take the patch and integrate it.
->>>
->>>
->>>
->>> We use the following patch for the kernel 4.7:
->>>
->>>
->>>
->>>      diff -rupN a/drivers/ata/pata_of_platform.c
->>> b/drivers/ata/pata_of_platform.c
->>>
->>>      --- a/drivers/ata/pata_of_platform.c   2016-08-05
->>> 09:58:41.410569036 +0200
->>>
->>>      +++ b/drivers/ata/pata_of_platform.c   2016-08-05
->>> 09:59:54.414288884 +0200
->>>
->>>      @@ -41,14 +41,36 @@ static int pata_of_platform_probe(struct
->>>
->>>             return -EINVAL;
->>>
->>>          }
->>>
->>>
->>>
->>>      -   ret = of_address_to_resource(dn, 1, &ctl_res);
->>>
->>>      -   if (ret) {
->>>
->>>      -      dev_err(&ofdev->dev, "can't get CTL address from "
->>>
->>>      -         "device tree\n");
->>>
->>>      -      return -EINVAL;
->>>
->>>      +   if (of_device_is_compatible(dn, "electra-ide")) {
->>>
->>>      +      /* Altstatus is really at offset 0x3f6 from the primary 
->>> window
->>>
->>>      +       * on electra-ide. Adjust ctl_res and io_res accordingly.
->>>
->>>      +       */
->>>
->>>      +      ctl_res = io_res;
->>>
->>>      +      ctl_res.start = ctl_res.start+0x3f6;
->>>
->>>      +      io_res.end = ctl_res.start-1;
->>>
->>>      +
->>>
->>>      +#ifdef CONFIG_PPC_PASEMI_SB600
->>>
->>>      +       } else if (of_device_is_compatible(dn, "electra-cf")) {
->>>
->>>      +               /* Task regs are at 0x800, with alt status @ 0x80e
->>> in the primary window
->>>
->>>      +                * on electra-cf. Adjust ctl_res and io_res
->>> accordingly.
->>>
->>>      +                */
->>>
->>>      +               ctl_res = io_res;
->>>
->>>      +               io_res.start += 0x800;
->>>
->>>      +               ctl_res.start = ctl_res.start + 0x80e;
->>>
->>>      +               io_res.end = ctl_res.start-1;
->>>
->>>      +#endif
->>>
->>>      +   } else {
->>>
->>>      +      ret = of_address_to_resource(dn, 1, &ctl_res);
->>>
->>>      +      if (ret) {
->>>
->>>      +         dev_err(&ofdev->dev, "can't get CTL address from "
->>>
->>>      +            "device tree\n");
->>>
->>>      +         return -EINVAL;
->>>
->>>      +      }
->>>
->>>          }
->>>
->>>
->>>
->>>          irq_res = platform_get_resource(ofdev, IORESOURCE_IRQ, 0);
->>>
->>>      +   if (irq_res)
->>>
->>>      +      irq_res->flags = 0;
->>>
->>>
->>>
->>>          prop = of_get_property(dn, "reg-shift", NULL);
->>>
->>>          if (prop)
->>>
->>>      @@ -65,6 +87,11 @@ static int pata_of_platform_probe(struct
->>>
->>>             dev_info(&ofdev->dev, "pio-mode unspecified, assuming
->>> PIO0\n");
->>>
->>>          }
->>>
->>>
->>>
->>>      +#ifdef CONFIG_PPC_PASEMI_SB600
->>>
->>>      +       irq_res = 0;                    // force irq off (doesn't
->>> seem to work)
->>>
->>>      +#endif
->>>
->>>      +
->>>
->>>      +
->>>
->>>          pio_mask = 1 << pio_mode;
->>>
->>>          pio_mask |= (1 << pio_mode) - 1;
->>>
->>>
->>>
->>>      @@ -74,7 +101,11 @@ static int pata_of_platform_probe(struct
->>>
->>>
->>>
->>>       static struct of_device_id pata_of_platform_match[] = {
->>>
->>>          { .compatible = "ata-generic", },
->>>
->>>      -   { },
->>>
->>>      +   { .compatible = "electra-ide", },
->>>
->>>      +#ifdef CONFIG_PPC_PASEMI_SB600
->>>
->>>      +       { .compatible = "electra-cf",},
->>>
->>>      +#endif
->>>
->>>      +   {},
->>>
->>>       };
->>>
->>>       MODULE_DEVICE_TABLE(of, pata_of_platform_match);
->>>
->>>
->>>
->>> dmesg with the kernel 4.7:
->>>
->>>
->>>
->>> zcat /var/log/dmesg.1.gz | grep -i ata7
->>>
->>>
->>>
->>>      [    2.939788] ata7: PATA max PIO0 no IRQ, using PIO polling mmio
->>> cmd 0xf0000800 ctl 0xf000080e
->>>
->>>      [    3.099186] ata7.00: CFA: SanDisk SDCFB-256, HDX 2.33, max PIO4
->>>
->>>      [    3.099191] ata7.00: 501760 sectors, multi 0: LBA
->>>
->>>      [    3.099199] ata7.00: configured for PIO
->>>
->>>
->>>
->>> The dmesg of the latest Git kernel doesn't have any output of our
->>> internal CF card device.
->>>
->>>
->>>
->>> Could you please integrate our PASEMI CF card device again?
->>>
->>>
->>>
->>> Thanks,
->>>
->>>
->>>
->>> Christian
->>>
->>>
->>>
->>>> As for your driver support, it would indeed be a good idea to
->>>> get it supported in the upstream kernel. You should post a
->>>> new mail about that. Take a look at these 3 commits:
->>>>
->>>> 61f7162117d4767875825abf2f6ed1eeebbcceed
->>>> 9cd55be4d22376893d2818ce3c0e5706a3d74121
->>>> ca99140a63b7326ee9a38f64c326317f2c63b594
->>>>
->>>> Your patch comes from code based on the second one. The last
->>>> commit removed it, and says that it is not the best way to
->>>> implement it. You could cc this list and some of the people
->>>> involved with those commits and ask ask for advice about
->>>> getting your driver supported.
->>> Actually, it's almost supported by the base PASemi code anyway, 
->>> there is a
->>> PCMCIA driver in setup.c, but our hardware has been changed enough 
->>> to make it
->>> hang the system when used. I should probably take another look and 
->>> see If I
->>> can fix that. The other option would be to move the above patch to 
->>> where we
->>> add our rtc platform device. One thing that does confuse me is the 
->>> interrupt,
->>> it's attached to GPIO 0, so should be on the mpic int 0 (or maybe 
->>> 16?)but I
->>> could never get it to work.
->>>
->>> Regards
->>> Darren
->>>
->>>
->>
->>
->>
->
->
+Please pull some powerpc fixes for 4.8:
+
+The following changes since commit 29b4817d4018df78086157ea3a55c1d9424a7cfc:
+
+  Linux 4.8-rc1 (2016-08-07 18:18:00 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.8-3
+
+for you to fetch changes up to ca49e64f0cb1368fc666a53b16b45d4505763d9c:
+
+  selftests/powerpc: Specify we expect to build with std=gnu99 (2016-08-10 23:21:37 +1000)
+
+----------------------------------------------------------------
+powerpc fixes for 4.8 #3
+
+ - powerpc/vdso: Fix build rules to rebuild vdsos correctly from Nicholas Piggin
+ - powerpc/ptrace: Fix coredump since ptrace TM changes from Cyril Bur
+ - powerpc/32: Fix csum_partial_copy_generic() from Christophe Leroy
+ - cxl: Set psl_fir_cntl to production environment value from Frederic Barrat
+ - powerpc/eeh: Switch to conventional PCI address output in EEH log from Guilherme G. Piccoli
+ - cxl: Use fixed width predefined types in data structure. from Philippe Bergheaud
+ - powerpc/vdso: Add missing include file from Guenter Roeck
+ - powerpc: Fix unused function warning 'lmb_to_memblock' from Alastair D'Silva
+ - powerpc/powernv/ioda: Fix TCE invalidate to work in real mode again from Alexey Kardashevskiy
+ - powerpc/cell: Add missing error code in spufs_mkgang() from Dan Carpenter
+ - crypto: crc32c-vpmsum - Convert to CPU feature based module autoloading from Anton Blanchard
+ - powerpc/pasemi: Fix coherent_dma_mask for dma engine from Darren Stevens
+
+Benjamin Herrenschmidt:
+ - powerpc/32: Fix crash during static key init
+ - powerpc: Update obsolete comment in setup_32.c about early_init()
+ - powerpc: Print the kernel load address at the end of prom_init()
+ - powerpc/pnv/pci: Fix incorrect PE reservation attempt on some 64-bit BARs
+ - powerpc/xics: Properly set Edge/Level type and enable resend
+
+Mahesh Salgaonkar:
+ - powerpc/book3s: Fix MCE console messages for unrecoverable MCE.
+ - powerpc/powernv: Fix MCE handler to avoid trashing CR0/CR1 registers.
+ - powerpc/powernv: Move IDLE_STATE_ENTER_SEQ macro to cpuidle.h
+ - powerpc/powernv: Load correct TOC pointer while waking up from winkle.
+
+Andrew Donnellan:
+ - cxl: Fix sparse warnings
+ - cxl: Fix NULL dereference in cxl_context_init() on PowerVM guests
+
+Michael Ellerman:
+ - selftests/powerpc: Specify we expect to build with std=gnu99
+ - powerpc/Makefile: Use cflags-y/aflags-y for setting endian options
+ - powerpc/pci: Fix endian bug in fixed PHB numbering
+
+----------------------------------------------------------------
+Alastair D'Silva (1):
+      powerpc: Fix unused function warning 'lmb_to_memblock'
+
+Alexey Kardashevskiy (1):
+      powerpc/powernv/ioda: Fix TCE invalidate to work in real mode again
+
+Andrew Donnellan (2):
+      cxl: Fix NULL dereference in cxl_context_init() on PowerVM guests
+      cxl: Fix sparse warnings
+
+Anton Blanchard (1):
+      crypto: crc32c-vpmsum - Convert to CPU feature based module autoloading
+
+Benjamin Herrenschmidt (5):
+      powerpc/xics: Properly set Edge/Level type and enable resend
+      powerpc/pnv/pci: Fix incorrect PE reservation attempt on some 64-bit BARs
+      powerpc: Print the kernel load address at the end of prom_init()
+      powerpc: Update obsolete comment in setup_32.c about early_init()
+      powerpc/32: Fix crash during static key init
+
+Christophe Leroy (1):
+      powerpc/32: Fix csum_partial_copy_generic()
+
+Cyril Bur (1):
+      powerpc/ptrace: Fix coredump since ptrace TM changes
+
+Dan Carpenter (1):
+      powerpc/cell: Add missing error code in spufs_mkgang()
+
+Darren Stevens (1):
+      powerpc/pasemi: Fix coherent_dma_mask for dma engine
+
+Frederic Barrat (1):
+      cxl: Set psl_fir_cntl to production environment value
+
+Guenter Roeck (1):
+      powerpc/vdso: Add missing include file
+
+Guilherme G. Piccoli (1):
+      powerpc/eeh: Switch to conventional PCI address output in EEH log
+
+Mahesh Salgaonkar (4):
+      powerpc/powernv: Load correct TOC pointer while waking up from winkle.
+      powerpc/powernv: Move IDLE_STATE_ENTER_SEQ macro to cpuidle.h
+      powerpc/powernv: Fix MCE handler to avoid trashing CR0/CR1 registers.
+      powerpc/book3s: Fix MCE console messages for unrecoverable MCE.
+
+Michael Ellerman (3):
+      powerpc/pci: Fix endian bug in fixed PHB numbering
+      powerpc/Makefile: Use cflags-y/aflags-y for setting endian options
+      selftests/powerpc: Specify we expect to build with std=gnu99
+
+Nicholas Piggin (1):
+      powerpc/vdso: Fix build rules to rebuild vdsos correctly
+
+Philippe Bergheaud (1):
+      cxl: Use fixed width predefined types in data structure.
+
+ arch/powerpc/Makefile                           | 22 ++++----
+ arch/powerpc/crypto/crc32c-vpmsum_glue.c        |  3 +-
+ arch/powerpc/include/asm/cpuidle.h              | 13 +++++
+ arch/powerpc/include/asm/feature-fixups.h       |  1 +
+ arch/powerpc/include/asm/switch_to.h            |  8 ---
+ arch/powerpc/include/asm/xics.h                 |  2 +
+ arch/powerpc/kernel/eeh.c                       |  4 +-
+ arch/powerpc/kernel/exceptions-64s.S            | 69 ++++++++++++++-----------
+ arch/powerpc/kernel/idle_book3s.S               | 17 ++----
+ arch/powerpc/kernel/mce.c                       |  3 +-
+ arch/powerpc/kernel/pci-common.c                |  7 ++-
+ arch/powerpc/kernel/process.c                   | 20 -------
+ arch/powerpc/kernel/prom_init.c                 |  2 +-
+ arch/powerpc/kernel/ptrace.c                    | 19 +++++++
+ arch/powerpc/kernel/setup_32.c                  |  9 ++--
+ arch/powerpc/kernel/setup_64.c                  |  1 +
+ arch/powerpc/kernel/vdso.c                      |  1 +
+ arch/powerpc/kernel/vdso32/Makefile             |  6 +--
+ arch/powerpc/kernel/vdso64/Makefile             |  6 +--
+ arch/powerpc/lib/checksum_32.S                  |  7 +--
+ arch/powerpc/lib/feature-fixups.c               |  3 ++
+ arch/powerpc/platforms/cell/spufs/inode.c       |  4 +-
+ arch/powerpc/platforms/pasemi/iommu.c           |  5 ++
+ arch/powerpc/platforms/powernv/opal-irqchip.c   |  3 +-
+ arch/powerpc/platforms/powernv/opal.c           |  1 +
+ arch/powerpc/platforms/powernv/pci-ioda.c       | 32 ++++++++----
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 26 +++++-----
+ arch/powerpc/sysdev/xics/Kconfig                |  1 +
+ arch/powerpc/sysdev/xics/ics-opal.c             |  4 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c             |  4 +-
+ arch/powerpc/sysdev/xics/xics-common.c          | 59 ++++++++++++++++++---
+ drivers/misc/cxl/context.c                      |  3 +-
+ drivers/misc/cxl/cxl.h                          |  2 +-
+ drivers/misc/cxl/native.c                       |  2 +-
+ drivers/misc/cxl/pci.c                          | 12 +++--
+ drivers/misc/cxl/vphb.c                         |  2 +-
+ include/uapi/misc/cxl.h                         |  4 +-
+ tools/testing/selftests/powerpc/Makefile        |  2 +-
+ 38 files changed, 242 insertions(+), 147 deletions(-)
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXrZVRAAoJEFHr6jzI4aWAjg8QALAcJxF7wyBt9s6IY3ztvglX
+nTMldhVJt0SPWQUOILeaASNl7QlSK8RK/z5+PZ8OV+Zx1dIAGS9QWYeiRJNITCVG
+yaVP2TXWIabqwgocbJ8KLNF0xKN5ltKqYp0wRPaXklZSK2nyvCkN4UddLY8CzCtT
+2DFzmWJil8DTiZECLe9vj5M/4JWvCDhR88MskFC37xGeav1emYQ1jqY5mCnubVJg
+1MvHhsZgdUHRimCB6y4oDYYRg8ZnuJDWcW9ed7YqVqr35AVn74FL+BkvsjD4vDpK
+rFbD1/C+cgjBeN5wGi3SaZCJ2D36X0/t3agR/Wp10EadNLaVcmSfG97zbGbj0BrK
+PvLlw7H9nbsa2yhjSEBJNt539deIJAG+UeoYHqlYMyqGXLnwZFFiUQRJTbVVETPl
+/P+AUCgC1xR1puRkQk2gWZ+T1PhvVZEdy/pOfUi/ph2brPqJ2W5WZvrbbOOhE1oI
+1qMYS4LJlobrmsMHcDxyW8gl4JsyyJaWzFw/7lSPvFiIWGXhL2j3pcBQspW71mye
+QeWf7Hf+AxbEpB/uDIoLJQOA4jVj3PDLvqVeGJXLWdFrStNps5QYSdjwtuqItV6u
+V4cj6QZ6+sNxGL6nZC4hwpg/Q842AwPNtdGNLhaYDtQxfM3ccexmuxQ6boahpAkM
+QfIKkddg8+l7BFRZq9OQ
+=1BKW
+-----END PGP SIGNATURE-----
+--=-=-=--
