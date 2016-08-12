@@ -3,33 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9YgT5DQZzDqQq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9YgT5Fs2zDr1k
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 15:42:29 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7C5Xd5p033027
+ u7C5XecR020202
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 01:42:27 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9v99c5-1
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9vhsw7-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 01:42:27 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Thu, 11 Aug 2016 23:42:27 -0600
+ Thu, 11 Aug 2016 23:42:26 -0600
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: bhelgaas@google.com
 Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  alex.williamson@redhat.com, paulus@samba.org, aik@ozlabs.ru,
  gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
  mpe@ellerman.id.au, zhong@linux.vnet.ibm.com
-Subject: [PATCH v4 1/5] PCI: Ignore enforced alignment when kernel uses
- existing firmware setup
-Date: Fri, 12 Aug 2016 13:42:22 +0800
-In-Reply-To: <1470980546-2918-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1470980546-2918-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Message-Id: <1470980546-2918-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [PATCH v4 0/5] PCI: Introduce a way to enforce all MMIO BARs not to
+ share PAGE_SIZE
+Date: Fri, 12 Aug 2016 13:42:21 +0800
+Message-Id: <1470980546-2918-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,49 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCI resources allocator will use firmware setup and not try to
-reassign resource when PCI_PROBE_ONLY or IORESOURCE_PCI_FIXED
-is set.
+This series introduces a way for PCI resource allocator to force
+MMIO BARs not to share PAGE_SIZE. This would make sense to VFIO 
+driver. Because current VFIO implementation disallows to mmap 
+sub-page(size < PAGE_SIZE) MMIO BARs which may share the same page 
+with other BARs for security reasons. Thus, we have to handle mmio 
+access to these BARs in QEMU emulation rather than in guest which 
+will cause some performance loss.
 
-The enforced alignment in pci_reassigndev_resource_alignment()
-should be ignored in this case. Otherwise, some PCI devices'
-resources would be released here and not re-allocated.
+In our solution, we try to make use of the existing code path of
+resource_alignment kernel parameter and add a macro to set default
+alignment for it. Thus we can define this macro by default on some
+archs which may easily hit the performance issue because of their
+64K page.
 
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
----
- drivers/pci/pci.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+In this series, patch 1,2,3 fixed bugs of using resource_alignment;
+patch 4 tried to add a new option for resource_alignment to use 
+IORESOURCE_STARTALIGN to specify the alignment of PCI BARs; patch 5
+adds a macro to set the default alignment of all MMIO BARs.
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index aab9d51..2d85a96 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4959,6 +4959,13 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
- 
- 	spin_lock(&resource_alignment_lock);
- 	p = resource_alignment_param;
-+	if (pci_has_flag(PCI_PROBE_ONLY)) {
-+		if (*p)
-+			pr_info_once("PCI: resource_alignment ignored with PCI_PROBE_ONLY\n");
-+		spin_unlock(&resource_alignment_lock);
-+		return 0;
-+	}
-+
- 	while (*p) {
- 		count = 0;
- 		if (sscanf(p, "%d%n", &align_order, &count) == 1 &&
-@@ -5063,6 +5070,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- 		r = &dev->resource[i];
- 		if (!(r->flags & IORESOURCE_MEM))
- 			continue;
-+		if (r->flags & IORESOURCE_PCI_FIXED) {
-+			dev_info(&dev->dev, "No alignment for fixed BAR%d: %pR\n",
-+				i, r);
-+			continue;
-+		}
-+
- 		size = resource_size(r);
- 		if (size < align) {
- 			size = align;
+Changelog v4:
+- Rebased against v4.8-rc1
+- Drop one irrelevant patch
+- Drop the patch that adding wildcard to resource_alignment to enforce
+  the alignment of all MMIO BARs to be at least PAGE_SIZE
+- Change the format of option "noresize" of resource_alignment
+- Code style improvements
+
+Changelog v3:
+- Ignore enforced alignment to fixed BARs
+- Fix issue that disabling memory decoding when reassigning the alignment
+- Only enable default alignment on PowerNV platform
+
+Changelog v2:
+- Ignore enforced alignment to VF BARs on pci_reassigndev_resource_alignment()
+
+Yongji Xie (5):
+  PCI: Ignore enforced alignment when kernel uses existing firmware setup
+  PCI: Ignore enforced alignment to VF BARs
+  PCI: Do not disable memory decoding in pci_reassigndev_resource_alignment()
+  PCI: Add a new option for resource_alignment to reassign alignment
+  PCI: Add a macro to set default alignment for all PCI devices
+
+ Documentation/kernel-parameters.txt |    9 +++--
+ arch/powerpc/include/asm/pci.h      |    4 ++
+ drivers/pci/pci.c                   |   71 ++++++++++++++++++++++++++---------
+ 3 files changed, 64 insertions(+), 20 deletions(-)
+
 -- 
 1.7.9.5
