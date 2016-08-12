@@ -1,15 +1,48 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9jNw3f0nzDr1k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 21:30:24 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org
-Subject: [RFC PATCH] powerpc/Makefile: Add option to build with gold
-Date: Fri, 12 Aug 2016 21:30:21 +1000
-Message-Id: <1471001421-9845-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9jWF1jlczDr1k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 21:35:52 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7CBXhkM084537
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 07:35:50 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24s2unf0vp-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 07:35:50 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Fri, 12 Aug 2016 08:35:48 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 3C4241DC0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 07:35:37 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7CBZjUg33751398
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 08:35:45 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7CBZjSu002727
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 08:35:45 -0300
+Subject: Re: [PATCH v4] powerpc/pseries: use pci_host_bridge.release_fn() to
+ kfree(phb)
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1470947140-16366-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <20160812055448.GA4393@gwshan>
+ <fd9c2b76-cb67-750d-db62-fd820c9a028f@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Fri, 12 Aug 2016 08:35:42 -0300
+MIME-Version: 1.0
+In-Reply-To: <fd9c2b76-cb67-750d-db62-fd820c9a028f@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <184de91d-7604-c65f-2b6d-68675a054289@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,80 +52,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a Kconfig option which can be turned on to enable use of the
-gold linker. It depends on DEBUG_KERNEL to hopefully hide it from users
-who don't really care about it, and also !COMPILE_TEST so that it will
-be turned off for allyes/modconfig builds.
+On 08/12/2016 03:03 AM, Andrew Donnellan wrote:
+> On 12/08/16 15:54, Gavin Shan wrote:
+>> It might be nicer for users to implement their own
+>> pcibios_free_controller_deferred(),
+>> meaning pSeries needs its own implementation for now. The reason is
+>> more user (pSeries)
+>> specific objects can be released together with the PHB. However, I'm
+>> still fine without
+>> the comment to be covered.
+>
+> That's probably not a bad idea, though from a cxl perspective I'm fine
+> with using the current version.
 
-In the wrapper script we currently always use ${CROSS}ld, so instead
-make that the default if ${LD} isn't already set. When we're called as
-part of a normal build ${LD} will be set, but if the wrapper is called
-separately we will fall back to ${CROSS}ld as before.
+I agree, but in that case the user _still_ can use another function.
+This patch just provides an implementation that defaults to what was
+already done, in a deferred manner.
 
-With this enabled I have successfully built a ppc64[le]_defconfig using
-a toolchain which only has ld.gold.
+If some users need something more specific, they can wire it up too :)
+the same way we did - and it's explained in the function's comments.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Kconfig.debug | 7 +++++++
- arch/powerpc/Makefile      | 4 ++++
- arch/powerpc/boot/wrapper  | 4 +++-
- 3 files changed, 14 insertions(+), 1 deletion(-)
+Thanks for the review, suggestions and reaching a better and much more
+interesting patch.
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 63292f64b25a..c63ec2bb08ae 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -19,6 +19,13 @@ config PPC_WERROR
- 	depends on !PPC_DISABLE_WERROR
- 	default y
- 
-+config PPC_USE_GOLD
-+	bool "Build with the gold linker"
-+	depends on DEBUG_KERNEL && !COMPILE_TEST
-+	default n
-+	  Build the kernel with the ld.gold linker, rather than ld.bfd.
-+	  If you don't know what this means say N.
-+
- config PRINT_STACK_DEPTH
- 	int "Stack depth to print" if DEBUG_KERNEL
- 	default 64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 1934707bf321..005c63fd8be1 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -65,6 +65,10 @@ endif
- 
- UTS_MACHINE := $(OLDARCH)
- 
-+ifdef CONFIG_PPC_USE_GOLD
-+LD := $(LD).gold
-+endif
-+
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
- override LD	+= -EL
- override CROSS32AS += -mlittle-endian
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 6681ec3625c9..00f13d18fd6f 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -140,6 +140,8 @@ while [ "$#" -gt 0 ]; do
-     shift
- done
- 
-+LD=${LD:-${CROSS}ld}
-+
- if [ -n "$dts" ]; then
-     if [ ! -r "$dts" -a -r "$object/dts/$dts" ]; then
- 	dts="$object/dts/$dts"
-@@ -417,7 +419,7 @@ if [ "$platform" != "miboot" ]; then
-     if [ -n "$link_address" ] ; then
-         text_start="-Ttext $link_address"
-     fi
--    ${CROSS}ld -m $format -T $lds $text_start $pie -o "$ofile" \
-+    ${LD} -m $format -T $lds $text_start $pie -o "$ofile" \
- 	$platformo $tmp $object/wrapper.a
-     rm $tmp
- fi
 -- 
-2.7.4
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
