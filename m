@@ -1,28 +1,22 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=0032113f0d=holger.brunck@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9pXD3lYczDr1m
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 01:22:04 +1000 (AEST)
-Date: Fri, 12 Aug 2016 09:22:01 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-Message-ID: <20160812092201.243f4e15@t450s.home>
-In-Reply-To: <20160812054601.GS16493@voom.fritz.box>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
- <20160808104315.77cf22ec@t450s.home>
- <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
- <20160809061630.50ed5536@t450s.home>
- <4d1ea52b-ecb5-5f9b-6cdc-00a73677cc2f@ozlabs.ru>
- <20160810104630.21ab4bc5@t450s.home>
- <20160812054601.GS16493@voom.fritz.box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9q5s6ZM0zDr1m
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 01:47:45 +1000 (AEST)
+Subject: Re: debug problems on ppc 83xx target due to changed struct
+ task_struct
+To: Dave Hansen <dave.hansen@linux.intel.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+References: <dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com>
+ <57ADE7E6.9030900@linux.intel.com>
+CC: "mingo@kernel.org" <mingo@kernel.org>
+From: Holger Brunck <holger.brunck@keymile.com>
+Message-ID: <4e16aad4-80d3-ffcc-d183-681b48d4751b@keymile.com>
+Date: Fri, 12 Aug 2016 17:47:37 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <57ADE7E6.9030900@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,235 +26,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 12 Aug 2016 15:46:01 +1000
-David Gibson <david@gibson.dropbear.id.au> wrote:
+Thanks for the quick answer!
 
-> On Wed, Aug 10, 2016 at 10:46:30AM -0600, Alex Williamson wrote:
-> > On Wed, 10 Aug 2016 15:37:17 +1000
-> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >   
-> > > On 09/08/16 22:16, Alex Williamson wrote:  
-> > > > On Tue, 9 Aug 2016 15:19:39 +1000
-> > > > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> > > >     
-> > > >> On 09/08/16 02:43, Alex Williamson wrote:    
-> > > >>> On Wed,  3 Aug 2016 18:40:55 +1000
-> > > >>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> > > >>>       
-> > > >>>> This exports helpers which are needed to keep a VFIO container in
-> > > >>>> memory while there are external users such as KVM.
-> > > >>>>
-> > > >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > > >>>> ---
-> > > >>>>  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
-> > > >>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
-> > > >>>>  include/linux/vfio.h                |  6 ++++++
-> > > >>>>  3 files changed, 51 insertions(+), 1 deletion(-)
-> > > >>>>
-> > > >>>> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> > > >>>> index d1d70e0..baf6a9c 100644
-> > > >>>> --- a/drivers/vfio/vfio.c
-> > > >>>> +++ b/drivers/vfio/vfio.c
-> > > >>>> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
-> > > >>>>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
-> > > >>>>  
-> > > >>>>  /**
-> > > >>>> + * External user API for containers, exported by symbols to be linked
-> > > >>>> + * dynamically.
-> > > >>>> + *
-> > > >>>> + */
-> > > >>>> +struct vfio_container *vfio_container_get_ext(struct file *filep)
-> > > >>>> +{
-> > > >>>> +	struct vfio_container *container = filep->private_data;
-> > > >>>> +
-> > > >>>> +	if (filep->f_op != &vfio_fops)
-> > > >>>> +		return ERR_PTR(-EINVAL);
-> > > >>>> +
-> > > >>>> +	vfio_container_get(container);
-> > > >>>> +
-> > > >>>> +	return container;
-> > > >>>> +}
-> > > >>>> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
-> > > >>>> +
-> > > >>>> +void vfio_container_put_ext(struct vfio_container *container)
-> > > >>>> +{
-> > > >>>> +	vfio_container_put(container);
-> > > >>>> +}
-> > > >>>> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
-> > > >>>> +
-> > > >>>> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
-> > > >>>> +{
-> > > >>>> +	return container->iommu_data;
-> > > >>>> +}
-> > > >>>> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
-> > > >>>> +
-> > > >>>> +/**
-> > > >>>>   * Sub-module support
-> > > >>>>   */
-> > > >>>>  /*
-> > > >>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> > > >>>> index 3594ad3..fceea3d 100644
-> > > >>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> > > >>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> > > >>>> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
-> > > >>>>  	.detach_group	= tce_iommu_detach_group,
-> > > >>>>  };
-> > > >>>>  
-> > > >>>> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
-> > > >>>> +		u64 offset)
-> > > >>>> +{
-> > > >>>> +	struct tce_container *container = iommu_data;
-> > > >>>> +	struct iommu_table *tbl = NULL;
-> > > >>>> +
-> > > >>>> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
-> > > >>>> +		return NULL;
-> > > >>>> +
-> > > >>>> +	iommu_table_get(tbl);
-> > > >>>> +
-> > > >>>> +	return tbl;
-> > > >>>> +}
-> > > >>>> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
-> > > >>>> +
-> > > >>>>  static int __init tce_iommu_init(void)
-> > > >>>>  {
-> > > >>>>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> > > >>>> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
-> > > >>>>  MODULE_LICENSE("GPL v2");
-> > > >>>>  MODULE_AUTHOR(DRIVER_AUTHOR);
-> > > >>>>  MODULE_DESCRIPTION(DRIVER_DESC);
-> > > >>>> -
-> > > >>>> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> > > >>>> index 0ecae0b..1c2138a 100644
-> > > >>>> --- a/include/linux/vfio.h
-> > > >>>> +++ b/include/linux/vfio.h
-> > > >>>> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
-> > > >>>>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
-> > > >>>>  extern long vfio_external_check_extension(struct vfio_group *group,
-> > > >>>>  					  unsigned long arg);
-> > > >>>> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
-> > > >>>> +extern void vfio_container_put_ext(struct vfio_container *container);
-> > > >>>> +extern void *vfio_container_get_iommu_data_ext(
-> > > >>>> +		struct vfio_container *container);
-> > > >>>> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
-> > > >>>> +		void *iommu_data, u64 offset);
-> > > >>>>  
-> > > >>>>  /*
-> > > >>>>   * Sub-module helpers      
-> > > >>>
-> > > >>>
-> > > >>> I think you need to take a closer look of the lifecycle of a container,
-> > > >>> having a reference means the container itself won't go away, but only
-> > > >>> having a group set within that container holds the actual IOMMU
-> > > >>> references.  container->iommu_data is going to be NULL once the
-> > > >>> groups are lost.  Thanks,      
-> > > >>
-> > > >>
-> > > >> Container owns the iommu tables and this is what I care about here, groups
-> > > >> attached or not - this is handled separately via IOMMU group list in a
-> > > >> specific iommu_table struct, these groups get detached from iommu_table
-> > > >> when they are removed from a container.    
-> > > > 
-> > > > The container doesn't own anything, the container is privileged by the
-> > > > groups being attached to it.  When groups are closed, they detach from
-> > > > the container and once the container group list is empty the iommu
-> > > > backend is released and iommu_data is NULL.  A container reference
-> > > > doesn't give you what you're looking for.  It implies nothing about the
-> > > > iommu backend.    
-> > > 
-> > > 
-> > > Well. Backend is a part of a container and since a backend owns tables, a
-> > > container owns them too.  
-> > 
-> > The IOMMU backend is accessed through the container, but that backend
-> > is privileged by the groups it contains.  Once those groups are gone,
-> > the IOMMU backend is released, regardless of whatever reference you
-> > have to the container itself such as you're attempting to do here.  In
-> > that sense, the container does not own those tables.  
+On 12/08/16 17:14, Dave Hansen wrote:
+> On 08/12/2016 07:50 AM, Holger Brunck wrote:
+>> When I try to debug our multithreaded userspace application with gdb I  get
+>> stuck when trying to single step code.
 > 
-> So, the thing is that what KVM fundamentally needs is a handle on the
-> container.  KVM is essentially modelling the DMA address space of a
-> single guest bus, and the container is what's attached to that.
+> Can you clarify "stuck"?  Like the instructions don't advance?  Have you
+> been able to find a root cause for this?
 > 
-> The first part of the problem is that KVM wants to basically invoke
-> vfio_dma_map() operations without bouncing via qemu.  Because
-> vfio_dma_map() works on the container level, that's the handle that
-> KVM needs to hold.
-> 
-> The second part of the problem is that in order to reduce overhead
-> further, we want to operate in real mode, which means bypassing most
-> of the usual VFIO structure and going directly(ish) from the KVM
-> hcall emulation to the IOMMU backend behind VFIO.  This complicates
-> matters a fair bit.  Because it is, explicitly, a performance hack,
-> some degree of ugliness is probably inevitable.
-> 
-> Alexey - actually implementing this in two stages might make this
-> clearer.  The first stage wouldn't allow real mode, and would call
-> through the same vfio_dma_map() path as qemu calls through now.  The
-> second stage would then put in place the necessary hacks to add real
-> mode support.
-> 
-> > > The problem I am trying to solve here is when KVM may release the
-> > > iommu_table objects.
-> > > 
-> > > "Set" ioctl() to KVM-spapr-tce-table (or KVM itself, does not really
-> > > matter) makes a link between KVM-spapr-tce-table and container and KVM can
-> > > start using tables (with referencing them).
-> > > 
-> > > First I tried adding an "unset" ioctl to KVM-spapr-tce-table, called it
-> > > from region_del() and this works if QEMU removes a window. However if QEMU
-> > > removes a vfio-pci device, region_del() is not called and KVM does not get
-> > > notified that it can release the iommu_table's because the
-> > > KVM-spapr-tce-table remains alive and does not get destroyed (as it is
-> > > still used by emulated devices or other containers).
-> > > 
-> > > So it was suggested that we could do such "unset" somehow later assuming,
-> > > for example, on every "set" I could check if some of currently attached
-> > > containers are no more used - and this is where being able to know if there
-> > > is no backend helps - KVM remembers a container pointer and can check this
-> > > via vfio_container_get_iommu_data_ext().
-> > > 
-> > > The other option would be changing vfio_container_get_ext() to take a
-> > > callback+opaque which container would call when it destroys iommu_data.
-> > > This looks more intrusive and not very intuitive how to make it right -
-> > > container would have to keep track of all registered external users and
-> > > vfio_container_put_ext() would have to pass the same callback+opaque to
-> > > unregister the exact external user.  
-> > 
-> > I'm not in favor of anything resembling the code above or extensions
-> > beyond it, the container is the wrong place to do this.
-> >   
-> > > Or I could store container file* in KVM. Then iommu_data would never be
-> > > released until KVM-spapr-tce-table is destroyed.  
-> > 
-> > See above, holding a file pointer to the container doesn't do squat.
-> > The groups that are held by the container empower the IOMMU backend,
-> > references to the container itself don't matter.  Those references will
-> > not maintain the IOMMU data.
-> >    
-> > > Recreating KVM-spapr-tce-table on every vfio-pci hotunplug (closing its fd
-> > > would "unset" container from KVM-spapr-tce-table) is not an option as there
-> > > still may be devices using this KVM-spapr-tce-table.
-> > > 
-> > > What obvious and nice solution am I missing here? Thanks.  
-> > 
-> > The interactions with the IOMMU backend that seem relevant are
-> > vfio_iommu_drivers_ops.{detach_group,release}.  The kvm-vfio pseudo
-> > device is also used to tell kvm about groups as they come and go and
-> > has a way to check extensions, and thus properties of the IOMMU
-> > backend.  All of these are available for your {ab}use.  Thanks,  
-> 
-> So, Alexey started trying to do this via the KVM-VFIO device, but it's
-> a really bad fit.  As noted above, fundamentally it's a container we
-> need to attach to the kvm-spapr-tce-table object, since what that
-> represents is a guest bus DMA address space, and by definition all the
-> groups in a container must have the same DMA address space.
 
-That's all fine and good, but the point remains that a reference to the
-container is no assurance of the iommu state.  The iommu state is
-maintained by the user and the groups attached to the container.  If
-the groups are removed, your container reference no long has any iommu
-backing and iommu_data is worthless.  The user can do this as well by
-un-setting the iommu.  I understand what you're trying to do, it's just
-wrong.  Thanks,
+the behaviour is slightly different on the kernel versions. So my setup is a
+remote debug session via gdbserver.
 
-Alex
+After connecting to the gdbserver I set a break point and start to run my
+program. When hitting the breakpoint I try to single step. With stuck I mean
+that the connection to the gdbserver is broken and I can't control my debug
+session anymore while the application is not continuing.
+
+On Kernel 4.2 I got additionally the following dump in my serial terminal:
+
+------------[ cut here ]------------
+WARNING: at
+/opt/keymile/ws_root/git_repositories/prod/keyne/plat/kernel/gpl/kernel/sched/core.c:1975
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper Not tainted 4.2.0-00003-g0478a57 #10
+task: c04213d0 ti: c0434000 task.ti: c0434000
+NIP: c003c4ac LR: c005d7f0 CTR: c005d7c8
+REGS: c0435ce0 TRAP: 0700   Not tainted  (4.2.0-00003-g0478a57)
+MSR: 00021032 <ME,IR,DR,RI>  CR: 22044228  XER: 20000000
+
+GPR00: c005dfd8 c0435d90 c04213d0 cfba7a70 c042624c 00000000 00000001 00000000
+GPR08: 00000001 00000001 00000007 ffffffff 42044228 eec349c0 00000000 00000000
+GPR16: 0fe75f34 c0434000 0000000a c005d7c8 00000001 0000000a c0430000 c042624c
+GPR24: 7ffc66b5 7ffc66b5 00000001 c0434000 0000000a c0426240 cfb81e90 c04261e0
+NIP [c003c4ac] wake_up_process+0x10/0x20
+LR [c005d7f0] hrtimer_wakeup+0x28/0x44
+Call Trace:
+[c0435d90] [c0426240] 0xc0426240 (unreliable)
+[c0435da0] [c005dfd8] __hrtimer_run_queues.constprop.7+0x114/0x214
+[c0435df0] [c005e334] hrtimer_interrupt+0xb8/0x29c
+[c0435e40] [c0009c80] __timer_interrupt+0xb8/0x1c4
+[c0435e60] [c000a03c] timer_interrupt+0x8c/0xb8
+[c0435e90] [c000ece4] ret_from_except+0x0/0x14
+--- interrupt: 901 at arch_cpu_idle+0x24/0x6c
+    LR = arch_cpu_idle+0x24/0x6c
+[c0435f50] [c0434000] 0xc0434000 (unreliable)
+[c0435f60] [c0044cc0] cpu_startup_entry+0x138/0x1cc
+[c0435fb0] [c03fdde0] start_kernel+0x32c/0x340
+[c0435ff0] [00003438] 0x3438
+
+
+This trace is missing when I try the same with latest kernel 4.7. But the
+behaviour is similar. The board is still reachable via telnet but I need to kill
+the gdbserver session manually to get control over the initial serial terminal
+again. When I move the mentioned line of code everything works fine.
+
+>> Does anyone have an idea why the change in sched.h break my debug
+>> usecase? Anyone out here who is debugging ppc83xx targets flawlessly
+>> with a recent kernel?
+> 
+> Thanks for going to the trouble of bisecting this, btw!
+> 
+> I'd _suspect_ something very specific to your platform since this
+> doesn't appear to affect even other ppc variants.
+> 
+
+yeah I also think  this. I did the same test on  an embedded ARM target and it
+works fine, so it seems to be somehow related to ppc 83xx which is a 32-bit
+target. And what we also need is multithreading and/or c++ code. I did check
+with some simple code and single stepping works fine.
+
+It might also be that your code change simply exposes an error in the gdb/g++
+environment.
+
+> I wonder if making it cross a page boundary from some other structure
+> causes this, or moving it relative to something else.  Could you try
+> moving it to a few more places, or padding it by, say PAGE_SIZE on
+> either side makes a difference?
+> 
+
+yes I can do some more tests at the beginning of the next week. Moving this
+definition within the structure is a good idea.
+
+> Is there some assembly involved in your single-stepping, or some other
+> code that assumes relative offsets between two pieces of 'task_struct'?
+> 
+
+no. At least not in the code we have written. Not sure what the related g++
+libraries are doing.
+
+Regards
+Holger
