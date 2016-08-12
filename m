@@ -1,24 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9YjJ0GymzDr5C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 15:44:04 +1000 (AEST)
-Date: Fri, 12 Aug 2016 15:25:50 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-Message-ID: <20160812052550.GR16493@voom.fritz.box>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9Yqv2zmqzDr6W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 15:49:47 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id vy10so915549pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 22:49:47 -0700 (PDT)
+Date: Fri, 12 Aug 2016 13:49:34 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Kefeng Wang <wangkefeng.wang@huawei.com>,
+ Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org
+Subject: Re: [PATCH] powerpc: populate the default bus with
+ machine_arch_initcall
+Message-ID: <20160812054934.GJ17275@pek-khao-d1>
+References: <1470913781-9204-1-git-send-email-haokexin@gmail.com>
+ <87k2fmtxbv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="YttKMwf6abDJOSyE"
-In-Reply-To: <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="8tZVdKiiYitVG083"
+In-Reply-To: <87k2fmtxbv.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,160 +31,138 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---YttKMwf6abDJOSyE
+--8tZVdKiiYitVG083
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Aug 03, 2016 at 06:40:55PM +1000, Alexey Kardashevskiy wrote:
-> This exports helpers which are needed to keep a VFIO container in
-> memory while there are external users such as KVM.
+On Fri, Aug 12, 2016 at 02:39:32PM +1000, Michael Ellerman wrote:
+> Kevin Hao <haokexin@gmail.com> writes:
 >=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-I'll address Alex W's broader concerns in a  different mail.  But
-there are some more superficial problems with this as well.
-
-> ---
->  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
->  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
->  include/linux/vfio.h                |  6 ++++++
->  3 files changed, 51 insertions(+), 1 deletion(-)
+> > With the commit 44a7185c2ae6 ("of/platform: Add common method to
+> > populate default bus"), a default function is introduced to populate
+> > the default bus and this function is invoked at the arch_initcall_sync
+> > level. This will override the arch specific population of default bus
+> > which run at a lower level than arch_initcall_sync. Since not all
+> > powerpc specific buses are added to the of_default_bus_match_table[],
+> > this causes some powerpc specific bus are not probed. Fix this by
+> > using a more preceding initcall.
+> >
+> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> > ---
+> > Of course we can adjust the powerpc arch codes to use the
+> > of_platform_default_populate_init(), but it has high risk to break
+> > other boards given the complicated powerpc specific buses. So I would
+> > like just to fix the broken boards in the current release, and cook=20
+> > a patch to change to of_platform_default_populate_init() for linux-next.
+> >
+> > Only boot test on a mpc8315erdb board.
+> >
+> >  arch/powerpc/platforms/40x/ep405.c               | 2 +-
+> >  arch/powerpc/platforms/40x/ppc40x_simple.c       | 2 +-
+> >  arch/powerpc/platforms/40x/virtex.c              | 2 +-
+> >  arch/powerpc/platforms/40x/walnut.c              | 2 +-
+> >  arch/powerpc/platforms/44x/canyonlands.c         | 2 +-
+> >  arch/powerpc/platforms/44x/ebony.c               | 2 +-
+> >  arch/powerpc/platforms/44x/iss4xx.c              | 2 +-
+> >  arch/powerpc/platforms/44x/ppc44x_simple.c       | 2 +-
+> >  arch/powerpc/platforms/44x/ppc476.c              | 2 +-
+> >  arch/powerpc/platforms/44x/sam440ep.c            | 2 +-
+> >  arch/powerpc/platforms/44x/virtex.c              | 2 +-
+> >  arch/powerpc/platforms/44x/warp.c                | 2 +-
+> >  arch/powerpc/platforms/82xx/ep8248e.c            | 2 +-
+> >  arch/powerpc/platforms/82xx/km82xx.c             | 2 +-
+> >  arch/powerpc/platforms/82xx/mpc8272_ads.c        | 2 +-
+> >  arch/powerpc/platforms/82xx/pq2fads.c            | 2 +-
+> >  arch/powerpc/platforms/83xx/mpc831x_rdb.c        | 2 +-
+> >  arch/powerpc/platforms/83xx/mpc834x_itx.c        | 2 +-
+> >  arch/powerpc/platforms/85xx/ppa8548.c            | 2 +-
+> >  arch/powerpc/platforms/8xx/adder875.c            | 2 +-
+> >  arch/powerpc/platforms/8xx/ep88xc.c              | 2 +-
+> >  arch/powerpc/platforms/8xx/mpc86xads_setup.c     | 2 +-
+> >  arch/powerpc/platforms/8xx/mpc885ads_setup.c     | 2 +-
+> >  arch/powerpc/platforms/8xx/tqm8xx_setup.c        | 2 +-
+> >  arch/powerpc/platforms/cell/setup.c              | 2 +-
+> >  arch/powerpc/platforms/embedded6xx/gamecube.c    | 2 +-
+> >  arch/powerpc/platforms/embedded6xx/linkstation.c | 2 +-
+> >  arch/powerpc/platforms/embedded6xx/mvme5100.c    | 2 +-
+> >  arch/powerpc/platforms/embedded6xx/storcenter.c  | 2 +-
+> >  arch/powerpc/platforms/embedded6xx/wii.c         | 2 +-
+> >  arch/powerpc/platforms/pasemi/setup.c            | 2 +-
 >=20
-> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> index d1d70e0..baf6a9c 100644
-> --- a/drivers/vfio/vfio.c
-> +++ b/drivers/vfio/vfio.c
-> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_gro=
-up *group, unsigned long arg)
->  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
-> =20
->  /**
-> + * External user API for containers, exported by symbols to be linked
-> + * dynamically.
-> + *
-> + */
-> +struct vfio_container *vfio_container_get_ext(struct file *filep)
-> +{
-> +	struct vfio_container *container =3D filep->private_data;
-> +
-> +	if (filep->f_op !=3D &vfio_fops)
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	vfio_container_get(container);
-> +
-> +	return container;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
-> +
-> +void vfio_container_put_ext(struct vfio_container *container)
-> +{
-> +	vfio_container_put(container);
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
-> +
-> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
-> +{
-> +	return container->iommu_data;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
-> +
-> +/**
->   * Sub-module support
->   */
->  /*
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index 3594ad3..fceea3d 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_drive=
-r_ops =3D {
->  	.detach_group	=3D tce_iommu_detach_group,
->  };
-> =20
-> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_d=
-ata,
-> +		u64 offset)
+> That's not a very minimal fix.
+>=20
+> Every one of those initcall changes could be introducing a bug, by
+> changing the order vs other init calls.
+>=20
+> Can we just go back to the old behaviour on ppc?
 
-I really dislike this name.  I was confused for a while why this
-existed on top of vfio_container_get_ext(), the names are so similar.
+Sure. How about this one?
 
+=46rom 4362b4cdd8a6198df4cc46c628473f0d44e03fa8 Mon Sep 17 00:00:00 2001
+=46rom: Kevin Hao <haokexin@gmail.com>
+Date: Fri, 12 Aug 2016 13:30:03 +0800
+Subject: [PATCH v2] of/platform: disable the
+ of_platform_default_populate_init() for all the ppc boards
 
-Making it take a void * is also really nasty since that void * has to
-be something specific.  It would be better to have this take a
-vfio_container *, verify that the container really does have an
-spapr_tce backend, then lookup the tce_container and the actual IOMMU
-tables within.
+With the commit 44a7185c2ae6 ("of/platform: Add common method to
+populate default bus"), a default function is introduced to populate
+the default bus and this function is invoked at the arch_initcall_sync
+level. But a lot of ppc boards use machine_device_initcall() to
+populate the default bus. This means that the default populate function
+has higher priority and would override the arch specific population of
+the bus. The side effect is that some arch specific bus are not probed,
+then cause various malfunction due to the miss of some devices. Since
+it is very possible to introduce bugs if we simply change the initcall
+level for all these boards(about 30+). This just disable this default
+function for all the ppc boards.
 
-That might also let you drop vfio_container_get_iommu_data_ext()
-entirely.
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+---
+ drivers/of/platform.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> +{
-> +	struct tce_container *container =3D iommu_data;
-> +	struct iommu_table *tbl =3D NULL;
-> +
-> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
-> +		return NULL;
-> +
-> +	iommu_table_get(tbl);
-> +
-> +	return tbl;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
-> +
->  static int __init tce_iommu_init(void)
->  {
->  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
->  MODULE_LICENSE("GPL v2");
->  MODULE_AUTHOR(DRIVER_AUTHOR);
->  MODULE_DESCRIPTION(DRIVER_DESC);
-> -
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 0ecae0b..1c2138a 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_g=
-roup *group);
->  extern int vfio_external_user_iommu_id(struct vfio_group *group);
->  extern long vfio_external_check_extension(struct vfio_group *group,
->  					  unsigned long arg);
-> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
-> +extern void vfio_container_put_ext(struct vfio_container *container);
-> +extern void *vfio_container_get_iommu_data_ext(
-> +		struct vfio_container *container);
-> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
-> +		void *iommu_data, u64 offset);
-> =20
->  /*
->   * Sub-module helpers
-
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 8aa197691074..f39ccd5aa701 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -497,6 +497,7 @@ int of_platform_default_populate(struct device_node *ro=
+ot,
+ }
+ EXPORT_SYMBOL_GPL(of_platform_default_populate);
+=20
++#ifndef CONFIG_PPC
+ static int __init of_platform_default_populate_init(void)
+ {
+ 	struct device_node *node;
+@@ -521,6 +522,7 @@ static int __init of_platform_default_populate_init(voi=
+d)
+ 	return 0;
+ }
+ arch_initcall_sync(of_platform_default_populate_init);
++#endif
+=20
+ static int of_platform_device_destroy(struct device *dev, void *data)
+ {
 --=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+2.8.1
 
---YttKMwf6abDJOSyE
+Thanks,
+Kevin
+
+--8tZVdKiiYitVG083
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJXrV3eAAoJEGw4ysog2bOSn5gP/R8B02IgP6bEuuJ5lkS6GYSw
-WqcIvDHA4237mhx6ECUt3sjUeHxSfKgEUxkPoPMCVxbB0wQF6vtOH6ypM04+80TW
-QuCZWBpRnvj6GmgGGBqc4xhVPAxOz+nWOQl9ZT9wWkgGHTIMjIWPRuiMuJVvVNxf
-sSLFJA/PWrMKGUTsWngfB6em4GGiqRFIz41tEC2Rt0S4fOXL6w9yPHJr7ijKxgg0
-W5e+GUopgZe+mRVvatRCgnrLkv8LR5FYaPb4mTAsx2W5yRV9WFmlDKBrKlBLOHVr
-vtjxFT0zIBEVjqq3vR8/KTaHlQh2DbdCuuV/RlfTX2dn3V81vT2lAZzGLFcxejEs
-lup5V3FixJWb5XMsIzzOKd9Se2zWo7zxERmnbrZCqrt1Yp/WHWkG0oe1pNRlbR3o
-wQG1cJCtkD/Zf/XJMW8Fo/2xVQ1pEFRVmIz2m/57XHGBUIk3Qg4dN5N0hpVBBwYC
-ohfKLwxadOPUWTt5Gp/BsaGsKzSZjkBQuXj8XWLp43UG2TygyLbMaUup2n2Uh9GV
-wpEuIODJdDImwxF15pl1Mlwpq5tfagV/XQ9f8NniGoqe0JJYxbPs9OC5qqg3cA7j
-QBsdrTpApuX7kucbbDi89tKKW8TOq72kp958GKxhUdluhsDwR+O8jfOODEHw8FF6
-JYQJuEqjlpqjeIeafKIJ
-=/xE3
+iQEcBAEBCAAGBQJXrWNuAAoJEJNY7TDerrFxxi0H/0QnPXbbSy2IXvKpZrQjqap4
+pjXA3GIVljY3mhNJ11sINdeEHCmK+GQJrA2lTt/q2HCCUL6h01JkGPnloDe3otOh
+9yhrKjqErbTn4w7CBVWlWSAsZzq1kTK9p+OYyJTSiuvEdbvSux9QlTWowvsZoR18
+yPymWaNA+xj0iGfdwidPcS5+d16Qhdne5jyHCz9E5jc092bBTt1iVPF2cHPgCaDO
+kCo7Fm1G53T4YmRKBqjXvLRogsHk8DBw6Fhh5oE6uDDqyJJbuJ9MJDV0IJgWNy0o
+CLobBUrYaegfJ+awcoGOIGq6AurXpb+RxZse0f5r/ZkPLUNzz5elubVtW+4/cTw=
+=Xvfo
 -----END PGP SIGNATURE-----
 
---YttKMwf6abDJOSyE--
+--8tZVdKiiYitVG083--
