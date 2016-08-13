@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sB6RV2hhfzDqTs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 13:19:02 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sB6RX1TgxzDqTs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 13:19:03 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7D3IuS8119799
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:18:59 -0400
+ u7D3Iqoo092877
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:01 -0400
 Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24s2upf7mm-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24rqx3maps-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:18:59 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:01 -0400
 Received: from localhost
  by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Sat, 13 Aug 2016 00:18:57 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id A491E1DC0051
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:18:45 -0400 (EDT)
+ Sat, 13 Aug 2016 00:18:59 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 4C1A6352005F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:18:36 -0400 (EDT)
 Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7D3IsnF13500916
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:18:54 -0300
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7D3IuUx4960396
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:18:56 -0300
 Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
  by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7D3Iraa013834
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:18:54 -0300
+ u7D3It9q013888
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:18:56 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linux-security-module@vger.kernel.org,
@@ -50,12 +50,12 @@ Cc: linux-security-module@vger.kernel.org,
  David Laight <David.Laight@ACULAB.COM>,
  Balbir Singh <bsingharora@gmail.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v2 1/6] kexec_file: Add buffer hand-over support for the next
- kernel
-Date: Sat, 13 Aug 2016 00:18:20 -0300
+Subject: [PATCH v2 2/6] powerpc: kexec_file: Add buffer hand-over support for
+ the next kernel
+Date: Sat, 13 Aug 2016 00:18:21 -0300
 In-Reply-To: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1471058305-30198-2-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1471058305-30198-3-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -69,132 +69,200 @@ The buffer hand-over mechanism allows the currently running kernel to pass
 data to kernel that will be kexec'd via a kexec segment. The second kernel
 can check whether the previous kernel sent data and retrieve it.
 
-This is the architecture-independent part of the feature.
+This is the architecture-specific part.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- include/linux/kexec.h | 29 ++++++++++++++++++++++
- kernel/kexec_file.c   | 68 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 97 insertions(+)
+ arch/powerpc/include/asm/kexec.h       |  12 +++-
+ arch/powerpc/kernel/kexec_elf_64.c     |   2 +-
+ arch/powerpc/kernel/machine_kexec_64.c | 114 +++++++++++++++++++++++++++++++--
+ 3 files changed, 120 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index ceccc5856aab..4559a1a01b0a 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -388,6 +388,35 @@ static inline void *boot_phys_to_virt(unsigned long entry)
- 	return phys_to_virt(boot_phys_to_phys(entry));
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 31bc64e07c8f..b20738df26f8 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -92,12 +92,20 @@ static inline bool kdump_in_progress(void)
  }
  
-+#ifdef CONFIG_KEXEC_FILE
-+bool __weak kexec_can_hand_over_buffer(void);
-+int __weak arch_kexec_add_handover_buffer(struct kimage *image,
-+					  unsigned long load_addr,
-+					  unsigned long size);
-+int kexec_add_handover_buffer(struct kexec_buf *kbuf);
-+int __weak kexec_get_handover_buffer(void **addr, unsigned long *size);
-+int __weak kexec_free_handover_buffer(void);
-+#else
-+static inline bool kexec_can_hand_over_buffer(void)
-+{
-+	return false;
-+}
+ #ifdef CONFIG_KEXEC_FILE
++#define ARCH_HAS_KIMAGE_ARCH
 +
-+static inline int kexec_add_handover_buffer(struct kexec_buf *kbuf)
-+{
-+	return -ENOTSUPP;
-+}
++struct kimage_arch {
++	phys_addr_t handover_buffer_addr;
++	unsigned long handover_buffer_size;
++};
 +
-+static inline int kexec_get_handover_buffer(void **addr, unsigned long *size)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+static inline int kexec_free_handover_buffer(void)
-+{
-+	return -ENOTSUPP;
-+}
-+#endif /* CONFIG_KEXEC_FILE */
- #else /* !CONFIG_KEXEC_CORE */
- struct pt_regs;
- struct task_struct;
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 772cb491715e..c8418d62e2fc 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -135,6 +135,74 @@ int __weak arch_kexec_verify_buffer(enum kexec_file_type type, const void *buf,
- 	return -EINVAL;
+ int setup_purgatory(struct kimage *image, const void *slave_code,
+ 		    const void *fdt, unsigned long kernel_load_addr,
+ 		    unsigned long fdt_load_addr, unsigned long stack_top,
+ 		    int debug);
+-int setup_new_fdt(void *fdt, unsigned long initrd_load_addr,
+-		  unsigned long initrd_len, const char *cmdline);
++int setup_new_fdt(const struct kimage *image, void *fdt,
++		  unsigned long initrd_load_addr, unsigned long initrd_len,
++		  const char *cmdline);
+ bool find_debug_console(const void *fdt, int chosen_node);
+ int merge_partial_dtb(void *to, const void *from);
+ #endif /* CONFIG_KEXEC_FILE */
+diff --git a/arch/powerpc/kernel/kexec_elf_64.c b/arch/powerpc/kernel/kexec_elf_64.c
+index 1b902ad66e2a..22afc7b5ee73 100644
+--- a/arch/powerpc/kernel/kexec_elf_64.c
++++ b/arch/powerpc/kernel/kexec_elf_64.c
+@@ -219,7 +219,7 @@ void *elf64_load(struct kimage *image, char *kernel_buf,
+ 		}
+ 	}
+ 
+-	ret = setup_new_fdt(fdt, initrd_load_addr, initrd_len, cmdline);
++	ret = setup_new_fdt(image, fdt, initrd_load_addr, initrd_len, cmdline);
+ 	if (ret)
+ 		goto out;
+ 
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index a484a6346146..190c652e49b7 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -490,6 +490,60 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
+ 	return image->fops->cleanup(image->image_loader_data);
  }
  
-+/**
-+ * kexec_can_hand_over_buffer - can we pass data to the kexec'd kernel?
-+ */
-+bool __weak kexec_can_hand_over_buffer(void)
++bool kexec_can_hand_over_buffer(void)
 +{
-+	return false;
++	return true;
 +}
 +
-+/**
-+ * arch_kexec_add_handover_buffer - do arch-specific steps to handover buffer
-+ *
-+ * Architectures should use this function to pass on the handover buffer
-+ * information to the next kernel.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int __weak arch_kexec_add_handover_buffer(struct kimage *image,
-+					  unsigned long load_addr,
-+					  unsigned long size)
++int arch_kexec_add_handover_buffer(struct kimage *image,
++				   unsigned long load_addr, unsigned long size)
 +{
-+	return -ENOTSUPP;
++	image->arch.handover_buffer_addr = load_addr;
++	image->arch.handover_buffer_size = size;
++
++	return 0;
 +}
 +
-+/**
-+ * kexec_add_handover_buffer - add buffer to be used by the next kernel
-+ * @kbuf:	Buffer contents and memory parameters.
-+ *
-+ * This function assumes that kexec_mutex is held.
-+ * On successful return, @kbuf->mem will have the physical address of
-+ * the buffer in the next kernel.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int kexec_add_handover_buffer(struct kexec_buf *kbuf)
++int kexec_get_handover_buffer(void **addr, unsigned long *size)
 +{
 +	int ret;
++	u64 start_addr, end_addr;
 +
-+	if (!kexec_can_hand_over_buffer())
-+		return -ENOTSUPP;
++	ret = of_property_read_u64(of_chosen,
++				   "linux,kexec-handover-buffer-start",
++				   &start_addr);
++	if (ret == -EINVAL)
++		return -ENOENT;
++	else if (ret)
++		return -EINVAL;
 +
-+	ret = kexec_add_buffer(kbuf);
++	ret = of_property_read_u64(of_chosen, "linux,kexec-handover-buffer-end",
++				   &end_addr);
++	if (ret == -EINVAL)
++		return -ENOENT;
++	else if (ret)
++		return -EINVAL;
++
++	*addr =  __va(start_addr);
++	/* -end is the first address after the buffer. */
++	*size = end_addr - start_addr;
++
++	return 0;
++}
++
++int kexec_free_handover_buffer(void)
++{
++	int ret;
++	void *addr;
++	unsigned long size;
++
++	ret = kexec_get_handover_buffer(&addr, &size);
 +	if (ret)
 +		return ret;
 +
-+	return arch_kexec_add_handover_buffer(kbuf->image, kbuf->mem,
-+					      kbuf->memsz);
++	return memblock_free((phys_addr_t) addr, size);
 +}
 +
+ /**
+  * arch_kexec_walk_mem() - call func(data) for each unreserved memory block
+  * @kbuf:	Context info for the search. Also passed to @func.
+@@ -687,9 +741,52 @@ int setup_purgatory(struct kimage *image, const void *slave_code,
+ 	return 0;
+ }
+ 
+-/*
+- * setup_new_fdt() - modify /chosen and memory reservation for the next kernel
+- * @fdt:
 +/**
-+ * kexec_get_handover_buffer - get the handover buffer from the previous kernel
-+ * @addr:	On successful return, set to point to the buffer contents.
-+ * @size:	On successful return, set to the buffer size.
++ * setup_handover_buffer() - add properties and reservation for the handover buffer
++ * @image:		kexec image being loaded.
++ * @fdt:		Flattened device tree for the next kernel.
++ * @chosen_node:	Offset to the chosen node.
 + *
 + * Return: 0 on success, negative errno on error.
 + */
-+int __weak kexec_get_handover_buffer(void **addr, unsigned long *size)
++static int setup_handover_buffer(const struct kimage *image, void *fdt,
++				 int chosen_node)
 +{
-+	return -ENOTSUPP;
++	int ret;
++
++	if (image->arch.handover_buffer_addr == 0)
++		return 0;
++
++	ret = fdt_setprop_u64(fdt, chosen_node,
++			      "linux,kexec-handover-buffer-start",
++			      image->arch.handover_buffer_addr);
++	if (ret < 0)
++		return -EINVAL;
++
++	/* -end is the first address after the buffer. */
++	ret = fdt_setprop_u64(fdt, chosen_node,
++			      "linux,kexec-handover-buffer-end",
++			      image->arch.handover_buffer_addr +
++			      image->arch.handover_buffer_size);
++	if (ret < 0)
++		return -EINVAL;
++
++	ret = fdt_add_mem_rsv(fdt, image->arch.handover_buffer_addr,
++			      image->arch.handover_buffer_size);
++	if (ret)
++		return -EINVAL;
++
++	pr_debug("kexec handover buffer at 0x%llx, size = 0x%lx\n",
++		 image->arch.handover_buffer_addr,
++		 image->arch.handover_buffer_size);
++
++	return 0;
 +}
 +
 +/**
-+ * kexec_free_handover_buffer - free memory used by the handover buffer
-+ */
-+int __weak kexec_free_handover_buffer(void)
-+{
-+	return -ENOTSUPP;
-+}
++ * setup_new_fdt() - modify /chosen and memory reservations for the next kernel
++ * @image:		kexec image being loaded.
++ * @fdt:		Flattened device tree for the next kernel.
+  * @initrd_load_addr:	Address where the next initrd will be loaded.
+  * @initrd_len:		Size of the next initrd, or 0 if there will be none.
+  * @cmdline:		Command line for the next kernel, or NULL if there will
+@@ -697,8 +794,9 @@ int setup_purgatory(struct kimage *image, const void *slave_code,
+  *
+  * Return: 0 on success, or negative errno on error.
+  */
+-int setup_new_fdt(void *fdt, unsigned long initrd_load_addr,
+-		  unsigned long initrd_len, const char *cmdline)
++int setup_new_fdt(const struct kimage *image, void *fdt,
++		  unsigned long initrd_load_addr, unsigned long initrd_len,
++		  const char *cmdline)
+ {
+ 	uint64_t oldfdt_addr;
+ 	int i, ret, chosen_node;
+@@ -847,6 +945,12 @@ int setup_new_fdt(void *fdt, unsigned long initrd_load_addr,
+ 		}
+ 	}
+ 
++	ret = setup_handover_buffer(image, fdt, chosen_node);
++	if (ret) {
++		pr_err("Error setting up the new device tree.\n");
++		return ret;
++	}
 +
- /*
-  * In file mode list of segments is prepared by kernel. Copy relevant
-  * data from user space, do error checking, prepare segment list
+ 	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
+ 	if (ret) {
+ 		pr_err("Error setting up the new device tree.\n");
 -- 
 1.9.1
