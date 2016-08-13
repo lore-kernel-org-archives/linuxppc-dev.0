@@ -1,34 +1,34 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sB6Rs5MgXzDr34
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 13:19:21 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7D3ItpP004242
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:20 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24sam4hkgb-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sB6S21tCfzDr3M
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 13:19:30 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7D3IpaG141524
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:27 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24scsjb06w-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:27 -0400
 Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Sat, 13 Aug 2016 00:19:17 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 654DD1DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:05 -0400 (EDT)
+ Sat, 13 Aug 2016 00:19:25 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id B15E5352005F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 23:19:01 -0400 (EDT)
 Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7D3JEp13117294
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:19:14 -0300
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7D3JMLn33816922
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:19:22 -0300
 Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
  by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7D3JCwr014187
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:19:14 -0300
+ u7D3JKL7014304
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2016 00:19:22 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linux-security-module@vger.kernel.org,
@@ -50,11 +50,11 @@ Cc: linux-security-module@vger.kernel.org,
  David Laight <David.Laight@ACULAB.COM>,
  Balbir Singh <bsingharora@gmail.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v2 4/6] kexec_file: Add mechanism to update kexec segments.
-Date: Sat, 13 Aug 2016 00:18:23 -0300
+Subject: [PATCH v2 5/6] kexec: Share logic to copy segment page contents.
+Date: Sat, 13 Aug 2016 00:18:24 -0300
 In-Reply-To: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1471058305-30198-5-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1471058305-30198-6-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,139 +64,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kexec_update_segment allows a given segment in kexec_image to have
-its contents updated. This is useful if the current kernel wants to
-send information to the next kernel that is up-to-date at the time of
-reboot.
+Make kimage_load_normal_segment and kexec_update_segment share code
+which they currently duplicate.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- include/linux/kexec.h |  2 ++
- kernel/kexec_core.c   | 99 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 101 insertions(+)
+ kernel/kexec_core.c | 159 +++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 95 insertions(+), 64 deletions(-)
 
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 37eea32fdff1..14dda81e3e01 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -259,6 +259,8 @@ extern int kexec_purgatory_get_set_symbol(struct kimage *image,
- 					  unsigned int size, bool get_value);
- extern void *kexec_purgatory_get_symbol_addr(struct kimage *image,
- 					     const char *name);
-+int kexec_update_segment(const char *buffer, unsigned long bufsz,
-+			 unsigned long load_addr, unsigned long memsz);
- extern void __crash_kexec(struct pt_regs *);
- extern void crash_kexec(struct pt_regs *);
- int kexec_should_crash(struct task_struct *);
 diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index 561675589511..806735201de6 100644
+index 806735201de6..68b5b245e457 100644
 --- a/kernel/kexec_core.c
 +++ b/kernel/kexec_core.c
-@@ -721,6 +721,105 @@ static struct page *kimage_alloc_page(struct kimage *image,
+@@ -721,6 +721,65 @@ static struct page *kimage_alloc_page(struct kimage *image,
  	return page;
  }
  
-+/**
-+ * kexec_update_segment - update the contents of a kimage segment
-+ * @buffer:	New contents of the segment.
-+ * @bufsz:	@buffer size.
-+ * @load_addr:	Segment's physical address in the next kernel.
-+ * @memsz:	Segment size.
-+ *
-+ * This function assumes kexec_mutex is held.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int kexec_update_segment(const char *buffer, unsigned long bufsz,
-+			 unsigned long load_addr, unsigned long memsz)
++struct kimage_update_buffer_state {
++	/* Destination memory address currently being copied to. */
++	unsigned long maddr;
++
++	/* Bytes in buffer still left to copy. */
++	size_t ubytes;
++
++	/* Bytes in memory still left to copy. */
++	size_t mbytes;
++
++	/* If true, copy from kbuf. */
++	bool from_kernel;
++
++	/* Clear pages before copying? */
++	bool clear_pages;
++
++	/* Buffer position to continue copying from. */
++	const unsigned char *kbuf;
++	const unsigned char __user *buf;
++};
++
++static int kimage_update_page(struct page *page,
++			      struct kimage_update_buffer_state *state)
 +{
-+	int i;
-+	unsigned long entry;
-+	unsigned long *ptr = NULL;
-+	void *dest = NULL;
++	char *ptr;
++	int result = 0;
++	size_t uchunk, mchunk;
 +
-+	if (kexec_image == NULL) {
-+		pr_err("Can't update segment: no kexec image loaded.\n");
-+		return -EINVAL;
-+	}
++	ptr = kmap(page);
 +
-+	/*
-+	 * kexec_add_buffer rounds up segment sizes to PAGE_SIZE, so
-+	 * we have to do it here as well.
-+	 */
-+	memsz = ALIGN(memsz, PAGE_SIZE);
++	/* Start with a clear page */
++	if (state->clear_pages)
++		clear_page(ptr);
 +
-+	for (i = 0; i < kexec_image->nr_segments; i++)
-+		/* We only support updating whole segments. */
-+		if (load_addr == kexec_image->segment[i].mem &&
-+		    memsz == kexec_image->segment[i].memsz) {
-+			if (kexec_image->segment[i].do_checksum) {
-+				pr_err("Trying to update non-modifiable segment.\n");
-+				return -EINVAL;
-+			}
++	ptr += state->maddr & ~PAGE_MASK;
++	mchunk = min_t(size_t, state->mbytes,
++		       PAGE_SIZE - (state->maddr & ~PAGE_MASK));
++	uchunk = min(state->ubytes, mchunk);
 +
-+			break;
-+		}
-+	if (i == kexec_image->nr_segments) {
-+		pr_err("Couldn't find segment to update: 0x%lx, size 0x%lx\n",
-+		       load_addr, memsz);
-+		return -EINVAL;
-+	}
++	if (state->from_kernel)
++		memcpy(ptr, state->kbuf, uchunk);
++	else
++		result = copy_from_user(ptr, state->buf, uchunk);
 +
-+	for (entry = kexec_image->head; !(entry & IND_DONE) && memsz;
-+	     entry = *ptr++) {
-+		void *addr = (void *) (entry & PAGE_MASK);
++	kunmap(page);
++	if (result)
++		return -EFAULT;
 +
-+		switch (entry & IND_FLAGS) {
-+		case IND_DESTINATION:
-+			dest = addr;
-+			break;
-+		case IND_INDIRECTION:
-+			ptr = __va(addr);
-+			break;
-+		case IND_SOURCE:
-+			/* Shouldn't happen, but verify just to be safe. */
-+			if (dest == NULL) {
-+				pr_err("Invalid kexec entries list.");
-+				return -EINVAL;
-+			}
-+
-+			if (dest == (void *) load_addr) {
-+				struct page *page;
-+				char *ptr;
-+				size_t uchunk, mchunk;
-+
-+				page = kmap_to_page(addr);
-+
-+				ptr = kmap(page);
-+				ptr += load_addr & ~PAGE_MASK;
-+				mchunk = min_t(size_t, memsz,
-+					       PAGE_SIZE - (load_addr & ~PAGE_MASK));
-+				uchunk = min(bufsz, mchunk);
-+				memcpy(ptr, buffer, uchunk);
-+
-+				kunmap(page);
-+
-+				bufsz -= uchunk;
-+				load_addr += mchunk;
-+				buffer += mchunk;
-+				memsz -= mchunk;
-+			}
-+			dest += PAGE_SIZE;
-+		}
-+
-+		/* Shouldn't happen, but verify just to be safe. */
-+		if (ptr == NULL) {
-+			pr_err("Invalid kexec entries list.");
-+			return -EINVAL;
-+		}
-+	}
++	state->ubytes -= uchunk;
++	state->maddr += mchunk;
++	if (state->from_kernel)
++		state->kbuf += mchunk;
++	else
++		state->buf += mchunk;
++	state->mbytes -= mchunk;
 +
 +	return 0;
 +}
 +
+ /**
+  * kexec_update_segment - update the contents of a kimage segment
+  * @buffer:	New contents of the segment.
+@@ -739,6 +798,7 @@ int kexec_update_segment(const char *buffer, unsigned long bufsz,
+ 	unsigned long entry;
+ 	unsigned long *ptr = NULL;
+ 	void *dest = NULL;
++	struct kimage_update_buffer_state state;
+ 
+ 	if (kexec_image == NULL) {
+ 		pr_err("Can't update segment: no kexec image loaded.\n");
+@@ -768,8 +828,15 @@ int kexec_update_segment(const char *buffer, unsigned long bufsz,
+ 		return -EINVAL;
+ 	}
+ 
+-	for (entry = kexec_image->head; !(entry & IND_DONE) && memsz;
+-	     entry = *ptr++) {
++	state.maddr = load_addr;
++	state.ubytes = bufsz;
++	state.mbytes = memsz;
++	state.kbuf = buffer;
++	state.from_kernel = true;
++	state.clear_pages = false;
++
++	for (entry = kexec_image->head; !(entry & IND_DONE) &&
++					state.mbytes; entry = *ptr++) {
+ 		void *addr = (void *) (entry & PAGE_MASK);
+ 
+ 		switch (entry & IND_FLAGS) {
+@@ -786,26 +853,13 @@ int kexec_update_segment(const char *buffer, unsigned long bufsz,
+ 				return -EINVAL;
+ 			}
+ 
+-			if (dest == (void *) load_addr) {
+-				struct page *page;
+-				char *ptr;
+-				size_t uchunk, mchunk;
+-
+-				page = kmap_to_page(addr);
+-
+-				ptr = kmap(page);
+-				ptr += load_addr & ~PAGE_MASK;
+-				mchunk = min_t(size_t, memsz,
+-					       PAGE_SIZE - (load_addr & ~PAGE_MASK));
+-				uchunk = min(bufsz, mchunk);
+-				memcpy(ptr, buffer, uchunk);
+-
+-				kunmap(page);
++			if (dest == (void *) state.maddr) {
++				int ret;
+ 
+-				bufsz -= uchunk;
+-				load_addr += mchunk;
+-				buffer += mchunk;
+-				memsz -= mchunk;
++				ret = kimage_update_page(kmap_to_page(addr),
++							 &state);
++				if (ret)
++					return ret;
+ 			}
+ 			dest += PAGE_SIZE;
+ 		}
+@@ -823,31 +877,30 @@ int kexec_update_segment(const char *buffer, unsigned long bufsz,
  static int kimage_load_normal_segment(struct kimage *image,
  					 struct kexec_segment *segment)
  {
+-	unsigned long maddr;
+-	size_t ubytes, mbytes;
+-	int result;
+-	unsigned char __user *buf = NULL;
+-	unsigned char *kbuf = NULL;
+-
+-	result = 0;
+-	if (image->file_mode)
+-		kbuf = segment->kbuf;
+-	else
+-		buf = segment->buf;
+-	ubytes = segment->bufsz;
+-	mbytes = segment->memsz;
+-	maddr = segment->mem;
++	int result = 0;
++	struct kimage_update_buffer_state state;
++
++	/* For file based kexec, source pages are in kernel memory */
++	if (image->file_mode) {
++		state.kbuf = segment->kbuf;
++		state.from_kernel = true;
++	} else {
++		state.buf = segment->buf;
++		state.from_kernel = false;
++	}
++	state.ubytes = segment->bufsz;
++	state.mbytes = segment->memsz;
++	state.maddr = segment->mem;
++	state.clear_pages = true;
+ 
+-	result = kimage_set_destination(image, maddr);
++	result = kimage_set_destination(image, state.maddr);
+ 	if (result < 0)
+ 		goto out;
+ 
+-	while (mbytes) {
++	while (state.mbytes) {
+ 		struct page *page;
+-		char *ptr;
+-		size_t uchunk, mchunk;
+ 
+-		page = kimage_alloc_page(image, GFP_HIGHUSER, maddr);
++		page = kimage_alloc_page(image, GFP_HIGHUSER, state.maddr);
+ 		if (!page) {
+ 			result  = -ENOMEM;
+ 			goto out;
+@@ -857,31 +910,9 @@ static int kimage_load_normal_segment(struct kimage *image,
+ 		if (result < 0)
+ 			goto out;
+ 
+-		ptr = kmap(page);
+-		/* Start with a clear page */
+-		clear_page(ptr);
+-		ptr += maddr & ~PAGE_MASK;
+-		mchunk = min_t(size_t, mbytes,
+-				PAGE_SIZE - (maddr & ~PAGE_MASK));
+-		uchunk = min(ubytes, mchunk);
+-
+-		/* For file based kexec, source pages are in kernel memory */
+-		if (image->file_mode)
+-			memcpy(ptr, kbuf, uchunk);
+-		else
+-			result = copy_from_user(ptr, buf, uchunk);
+-		kunmap(page);
+-		if (result) {
+-			result = -EFAULT;
++		result = kimage_update_page(page, &state);
++		if (result)
+ 			goto out;
+-		}
+-		ubytes -= uchunk;
+-		maddr  += mchunk;
+-		if (image->file_mode)
+-			kbuf += mchunk;
+-		else
+-			buf += mchunk;
+-		mbytes -= mchunk;
+ 	}
+ out:
+ 	return result;
 -- 
 1.9.1
