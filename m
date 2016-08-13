@@ -1,18 +1,28 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sBXGz4DPGzDr2T
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Aug 2016 05:43:05 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org
-CC: olof@lixom.net,
-	Christian Zigotzky <chzigotzky@xenosoft.de>
-Date: Sat, 13 Aug 2016 19:42:57 +0100 (BST)
-Message-ID: <48a33908b3a.5917bc37@auth.smtp.1and1.co.uk>
-Subject: [PATCH RFC] powerpc/pasemi: Remove hardcoded bus numbers on smbus
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sBdtC5KWgzDqdr
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Aug 2016 09:55:31 +1000 (AEST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3sBdt95XRkz9t0P
+ for <linuxppc-dev@ozlabs.org>; Sun, 14 Aug 2016 09:55:29 +1000 (AEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: <linuxppc-dev@ozlabs.org>, haokexin@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 14/21] powerpc: Call jump_label_init() in
+ apply_feature_fixups()
+References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
+ <1469629097-30859-14-git-send-email-mpe__30163.7288918302$1469630223$gmane$org@ellerman.id.au>
+Date: Sun, 14 Aug 2016 01:55:21 +0200
+In-Reply-To: <1469629097-30859-14-git-send-email-mpe__30163.7288918302$1469630223$gmane$org@ellerman.id.au>
+ (Michael Ellerman's message of "Thu, 28 Jul 2016 00:18:10 +1000")
+Message-ID: <87shu88brq.fsf@linux-m68k.org>
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6d4b6c10434fcfb1.bb"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,70 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Warning: This is a message in MIME format. Your mail reader does
-not support MIME. Some parts of this message will be readable as
-plain text. To see the rest, you will need to upgrade your mail
-reader. Following are some URLs where you can find MIME-capable
-mail programs for common platforms:
+On Jul 28 2016, Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-  AmigaOS...........: http://yam.ch/
-  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>
+> Call jump_label_init() early so that we can use static keys for CPU and
+> MMU feature checks.
 
-General information about MIME can be found at:
-http://en.wikipedia.org/wiki/MIME
+That breaks PPC32.  jump_label_init doesn't use PTRRELOC.
 
-----=_BOUNDARY.6d4b6c10434fcfb1.bb
-Content-Type: text/plain
+Andreas.
 
-The pasemi smbus controller uses PCI_FUNC(dev->devfn) to define which
-number bus to attach to, however this fails when something else is 
-probed first, for example an ATI Radeon graphics card will claim 9 or
-10 busses, including the ones the pasemi wants.
-Patch the driver to call i2c_add_adapter rather than
-i2c_add_numbered_adapter.
-
-Signed-off-by: Darren Stevens <darren@stevens-zone.net>
-
----
-
-I've tested this on my X1000, and can now see the pasemi busses when I
-run i2cdetect, and can even see devices on bus 0, but as this is probably
-the first time we've had this working, more testing will be needed.
-
-I don't know why the bus tries to use bus numbers 0-2, I couldn't see
-any reason, maybe Olof has an idea?
-
-Regards
-Darren
-
-----=_BOUNDARY.6d4b6c10434fcfb1.bb
-Content-Type: text/plain;
-	name="i2c.patch"
-Content-Disposition: attachment;
-	filename="i2c.patch";
-	size=852
-
-diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi.c
-index df1dbc9..ecce83e 100644
---- a/drivers/i2c/busses/i2c-pasemi.c
-+++ b/drivers/i2c/busses/i2c-pasemi.c
-@@ -365,7 +365,7 @@ static int pasemi_smb_probe(struct pci_dev *dev,
- 	smbus->adapter.class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
- 	smbus->adapter.algo = &smbus_algorithm;
- 	smbus->adapter.algo_data = smbus;
--	smbus->adapter.nr = PCI_FUNC(dev->devfn);
-+	smbus->adapter.nr = -1;
- 
- 	/* set up the sysfs linkage to our parent device */
- 	smbus->adapter.dev.parent = &dev->dev;
-@@ -373,7 +373,7 @@ static int pasemi_smb_probe(struct pci_dev *dev,
- 	reg_write(smbus, REG_CTL, (CTL_MTR | CTL_MRR |
- 		  (CLK_100K_DIV & CTL_CLK_M)));
- 
--	error = i2c_add_numbered_adapter(&smbus->adapter);
-+	error = i2c_add_adapter(&smbus->adapter);
- 	if (error)
- 		goto out_release_region;
- 
-
-----=_BOUNDARY.6d4b6c10434fcfb1.bb--
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
