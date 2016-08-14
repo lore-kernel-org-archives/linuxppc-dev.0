@@ -3,15 +3,15 @@ Received: from basicbox7.server-home.net (basicbox7.server-home.net
  [195.137.212.29])
  (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sC2RL0y9DzDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 01:22:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sC2TX1l7FzDqgN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 01:24:00 +1000 (AEST)
 From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.7: Reported regressions as of Sunday, 2016-08-14
+Subject: Linux 4.8: Reported regressions as of Sunday, 2016-08-14
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Message-ID: <b3824dd6-dad9-6df7-d518-78a6706d491a@leemhuis.info>
-Date: Sun, 14 Aug 2016 17:21:57 +0200
+Message-ID: <0a505ad8-88ad-810e-b01a-5869406392d7@leemhuis.info>
+Date: Sun, 14 Aug 2016 17:23:56 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,92 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi! Here is my eight regression report for Linux 4.7. It lists 13
-regressions I'm currently aware of. 6 of them are new; none were fixed.
+Hi! Here is my first regression report for Linux 4.8. It lists 11
+regressions. I was told or found about 10 more, but it turned out all 
+of them were fixed already in the past few days. Nice, but this in one 
+of the reasons why compiling this report took way more hours than the 
+past few reports :-/
 
-As usual: Please let me know about any regressions missing on the list
-or if it contains something which shouldn't be there. Since the release
-of 4.7 there were quite a few new bugs filed on bugzilla.kernel.org
-that mentioned 4.7; I briefly looked at them, but it looks like most of
-them are not regressions.
+Anyway: Are you aware of any other regressions? Then please let me 
+know. And you know the drill: if there is anything on the report that 
+shouldn't be there please let me know.
 
 Ciao, Thorsten
 
+P.S.: Gmane, I still miss you a lot :-/
+
+P.P.S.: "There are only two hard things in Computer Science: cache 
+invalidation, naming things, and off-by-one errors" is my reply to 
+those that asked to lend my time machine after reading the line "I'll
+send the first regression report for 4.9 next week" that last weeks
+report contained ;-)
+
 == Current regressions ==
 
-Desc: System hang when plug/un-plug USB 3.1 key via thunderbolt port on Dell XPS 13
-Repo: 2016-06-14 https://bugzilla.kernel.org/show_bug.cgi?id=120241
-Stat: 2016-08-12 https://bugzilla.kernel.org/show_bug.cgi?id=120241#c41
-Note: wip (slowly)
-
-Desc: regression in 8250 uart driver
-Repo: 2016-06-14 http://thread.gmane.org/gmane.linux.kernel/2243130/focus=2243653
-Stat: 2016-07-02 https://lkml.org/lkml/2016/7/2/94
-Note: need to poke andy for a status update
-
-Desc: ath9k/ ar5008 Oopses on v4.7-rc7+
-Repo: 2016-07-17 https://marc.info/?l=linux-wireless&m=146878954223067&w=2
-Stat: 2016-08-04 https://marc.info/?l=linux-wireless&m=147029189600658&w=2
-Note: https://patchwork.kernel.org/patch/9262875/; not yet in mainline
-
-Desc: Regression: commit 12549e2 clocksource/drivers/time-armada-370-xp: Convert init function to return error
-Repo: 2016-07-28 https://bugzilla.kernel.org/show_bug.cgi?id=150571
-Stat: 2016-08-06 https://lkml.org/lkml/2016/8/6/65
-Note: proper developers now in the loop
-
-Desc: ath9k cpuidle warnings ath9k_beacon_config (No adverse effects are noticed but this must be from quite a recent commit.)
-Repo: 2016-08-02 https://bugzilla.kernel.org/show_bug.cgi?id=151271
-Stat: n/a 
-Note: needs further investigation; seem I or somebody else need to help here
-
-Desc: /dev/input/by-path links for PS/2 input devices are not created
-Repo: 2016-08-02 https://bugzilla.kernel.org/show_bug.cgi?id=151331
-Stat: n/a 
-Note: needs further investigation; seem I or somebody else need to help here
-
-Desc: performance degradation on Opteron 6272 related to COD technology
-Repo: 2016-06-28 https://marc.info/?l=linux-kernel&m=146715574528055&w=2
-Stat: 2016-07-28 https://marc.info/?l=linux-kernel&m=146974252111026&w=2
+Desc: irqdomain: Don't set type when mapping an IRQ breaks nexus7 gpio buttons
+Repo: 2016-07-30 https://marc.info/?l=linux-kernel&m=146985356305280&w=2
+Stat: 2016-08-12 https://marc.info/?l=linux-kernel&m=147099735609904&w=2
 Note: wip
 
-Desc: ext4 error in dx_probe (due to the new parallel dir lookup code?)
-Repo: 2016-07-18 https://lkml.org/lkml/2016/7/18/191
-Stat: 2016-08-09 https://lkml.org/lkml/2016/8/7/105 https://lkml.org/lkml/2016/8/9/86
-Note: looks like its fixed in mainline by b47820edd
+Desc: genirq: Flags mismatch irq 8, 00000088 (mmc0) vs. 00000080 (rtc0). mmc0: Failed to request irq 8: -16
+Repo: 2016-08-01 https://bugzilla.kernel.org/show_bug.cgi?id=150881
+Stat: 2016-08-13 https://bugzilla.kernel.org/show_bug.cgi?id=150881#c26
+Note: wip
 
-Desc: Display lost on Kirkwood/OpenRD Client
-Repo: 2016-08-11 http://www.spinics.net/lists/kernel/msg2318358.html
-Stat: 2016-08-11 http://www.spinics.net/lists/kernel/msg2319139.html
-Note: proper patch in the works
+Desc: Failed to create /dev/root: -14 after commit e6978e4bf1 (ARM: save and reset the address limit when entering an exception)
+Repo: 2016-08-02 https://lkml.org/lkml/2016/8/2/2085
+Stat: 2016-08-11 https://lkml.org/lkml/2016/8/10/858
+Note: patch heading upstream
 
-Desc: [AR9285] WiFi LED stops working after suspend/hibernate cycle
-Repo: 2016-08-08 https://bugzilla.kernel.org/show_bug.cgi?id=151711
+Desc: wlcore: NULL pointer dereference in wlcore_op_get_expected_throughput
+Repo: 2016-08-04 https://marc.info/?l=linux-kernel&m=147031427806879&w=2
+Stat: n/a 
+Note: patches heading upstream
+
+Desc: Crashes in refresh_zone_stat_thresholds when some nodes have no memory
+Repo: 2016-08-04 https://marc.info/?t=147029321800001&r=1&w=2
+Stat: n/a 
+Note: nothing happened since the report
+
+Desc: Intermittent crash on reboot (acpi_ex_system_reset_event)
+Repo: 2016-08-04 https://bugzilla.kernel.org/show_bug.cgi?id=151441
+Stat: 2016-08-10 https://bugzilla.kernel.org/show_bug.cgi?id=151441#c2
+Note: wip
+
+Desc: [lkp] [mm, page_alloc] e6cbd7f2ef: pixz.throughput -5.1% regression due to mm, page_alloc: remove fair zone allocation policy
+Repo: 2016-08-08 https://marc.info/?l=linux-kernel&m=147064515210332&w=3
+Stat: n/a 
+Note: nothing happened since the report
+
+Desc: [lkp] [xfs] 68a9f5e700: aim7.jobs-per-min -13.6% regression
+Repo: 2016-08-09 http://www.spinics.net/lists/kernel/msg2317052.html
+Stat: 2016-08-14 http://www.spinics.net/lists/kernel/msg2320159.html
+Note: wip
+
+Desc: 362899b (macvtap: switch to use skb array) causes oops during teardown
+Repo: 2016-08-10 http://www.spinics.net/lists/netdev/msg389465.html
+Stat: 2016-08-10 http://www.spinics.net/lists/netdev/msg389465.html
+Note: tested fix: http://www.spinics.net/lists/netdev/msg389623.html
+
+Desc: mmc: Secure discard is broken
+Repo: 2016-08-11 http://www.spinics.net/lists/linux-mmc/msg38481.html
+Stat: 2016-08-11 http://www.spinics.net/lists/linux-mmc/msg38491.html
+Note: report contains patch
+
+Desc: imx-drm: Possible regression after update to atomic: black screen after Weston starts
+Repo: 2016-08-13 http://www.spinics.net/lists/kernel/msg2320013.html
 Stat: n/a 
 Note: 
-
-Desc: Updating from 4.6.4 to 4.7 breaks pptp pass through
-Repo: 2016-08-12 https://bugzilla.kernel.org/show_bug.cgi?id=152101
-Stat: n/a 
-Note: 
-
-Desc: e1000e Failed to restore TIMINCA clock rate delta: -22
-Repo: 2016-08-12 https://bugzilla.kernel.org/show_bug.cgi?id=152131
-Stat: n/a 
-Note: 
-
-Desc: iwlmvm warnings on 4.7.0 (7265D firmwares 16 and 21)
-Repo: 2016-08-14 https://bugzilla.kernel.org/show_bug.cgi?id=153061
-Stat: n/a 
-Note: 
-
-== Stalled, waiting for feedback from reporter ==
-
-Desc: 795ae7a0de: pixz.throughput -9.1% regression
-Repo: 2016-06-02 http://thread.gmane.org/gmane.linux.kernel/2233056/
-Stat: 2016-06-22 https://lkml.org/lkml/2016/6/22/754
-Note: stalled; hannes could not reproduce and asked reporter for further feedback weeks ago
-
-Desc: kmemcheck: Caught 64-bit read from uninitialized memory; iptables/nf_register_net_hooks
-Repo: 2016-06-19 https://bugzilla.kernel.org/show_bug.cgi?id=120651
-Stat: 2016-07-17 https://bugzilla.kernel.org/show_bug.cgi?id=120651#c8
-Note: waiting for reporter to check a proposed fix
