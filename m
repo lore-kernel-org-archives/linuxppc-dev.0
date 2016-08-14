@@ -1,17 +1,25 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sC9nc3RBJzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 06:53:23 +1000 (AEST)
-From: Guenter Roeck <linux@roeck-us.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH] powerpc: cputhreads: Add missing include file
-Date: Sun, 14 Aug 2016 13:53:17 -0700
-Message-Id: <1471207997-12119-1-git-send-email-linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCBQ00L9xzDr3N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 07:21:27 +1000 (AEST)
+Message-ID: <1471209670.12231.60.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: populate the default bus with
+ machine_arch_initcall
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rob Herring <robh@kernel.org>, Kevin Hao <haokexin@gmail.com>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>
+Date: Mon, 15 Aug 2016 07:21:10 +1000
+In-Reply-To: <CAL_Jsq+_K-uU7bFkSm-tq-Q0DPhQt4j=f84OzQSCJFEC29O-8A@mail.gmail.com>
+References: <1470913781-9204-1-git-send-email-haokexin@gmail.com>
+ <87k2fmtxbv.fsf@concordia.ellerman.id.au>
+ <20160812054934.GJ17275@pek-khao-d1>
+ <CAL_Jsq+_K-uU7bFkSm-tq-Q0DPhQt4j=f84OzQSCJFEC29O-8A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,44 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Powerpc builds may fail with the following build error.
+On Fri, 2016-08-12 at 14:30 -0500, Rob Herring wrote:
+> 
+> > With the commit 44a7185c2ae6 ("of/platform: Add common method to
+> > populate default bus"), a default function is introduced to
+> > populate
+> > the default bus and this function is invoked at the
+> > arch_initcall_sync
+> > level. But a lot of ppc boards use machine_device_initcall() to
+> > populate the default bus. This means that the default populate
+> > function
+> > has higher priority and would override the arch specific population
+> > of
+> > the bus. The side effect is that some arch specific bus are not
+> > probed,
+> > then cause various malfunction due to the miss of some devices.
+> > Since
+> > it is very possible to introduce bugs if we simply change the
+> > initcall
+> > level for all these boards(about 30+). This just disable this
+> > default
+> > function for all the ppc boards.
+> > 
+> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> > ---
+> >  drivers/of/platform.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> 
+> I've applied this one.
 
-Error log:
-In file included from ./arch/powerpc/include/asm/mmu_context.h:11:0,
-                 from ./include/linux/mmu_context.h:4,
-		 from mm/mmu_context.c:8:
-./arch/powerpc/include/asm/cputhreads.h: In function 'get_tensr':
-./arch/powerpc/include/asm/cputhreads.h:101:2: error:
-	implicit declaration of function 'cpu_has_feature'
+Not fan of the hard #ifdef at all... it will make it hard to convert
+platforms one by one. Why not an arch_want_default_of_probe() or
+something like this which we can then plumb into ppc_md. ?
 
-The problem can be triggered by configuring ppc64e_defconfig and selecting
-CONFIG_TICK_CPU_ACCOUNTING instead of CONFIG_VIRT_CPU_ACCOUNTING_NATIVE.
-
-Fixes: b92a226e5284 ("powerpc: Move cpu_has_feature() to a separate file")
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-This is the second attempt to fix this problem. The first attempt was
-with commit 546c4402c574 ("powerpc/vdso: Add missing include file"). This
-was not complete because it added the include file to an affected source
-file, not to the file where cpu_has_feature() was used.
-
-Build tested all default configurations to ensure that this patch does not
-introduce a regression.
-
- arch/powerpc/include/asm/cputhreads.h | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index 666bef4ebfae..9377bdf42eb8 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -3,6 +3,7 @@
- 
- #ifndef __ASSEMBLY__
- #include <linux/cpumask.h>
-+#include <asm/cpu_has_feature.h>
- 
- /*
-  * Mapping of threads to cores
--- 
-2.5.0
+Cheers,
+Ben.
