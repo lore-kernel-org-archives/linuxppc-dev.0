@@ -1,25 +1,36 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCCft0KTtzDr3N
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 08:17:41 +1000 (AEST)
-Date: Mon, 15 Aug 2016 00:17:20 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Wolfram Sang <wsa-dev@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, kernel@stlinux.com,
- linux-amlogic@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-rockchip@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
-Message-ID: <20160814221719.GA10501@katana>
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCDDG0q7WzDr3N
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 08:43:09 +1000 (AEST)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 4A2BF202BE
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Aug 2016 22:43:06 +0000 (UTC)
+Received: from mail-yb0-f173.google.com (mail-yb0-f173.google.com
+ [209.85.213.173])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5340A2022A
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Aug 2016 22:43:04 +0000 (UTC)
+Received: by mail-yb0-f173.google.com with SMTP id a92so860585ybi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Aug 2016 15:43:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
-In-Reply-To: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
+In-Reply-To: <1471209670.12231.60.camel@kernel.crashing.org>
+References: <1470913781-9204-1-git-send-email-haokexin@gmail.com>
+ <87k2fmtxbv.fsf@concordia.ellerman.id.au> <20160812054934.GJ17275@pek-khao-d1>
+ <CAL_Jsq+_K-uU7bFkSm-tq-Q0DPhQt4j=f84OzQSCJFEC29O-8A@mail.gmail.com>
+ <1471209670.12231.60.camel@kernel.crashing.org>
+From: Rob Herring <robh@kernel.org>
+Date: Sun, 14 Aug 2016 17:42:43 -0500
+Message-ID: <CAL_Jsq+JLvThaz3ZTy80yVW23waPjqfw_JC-EJF-QuCk21=eJQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: populate the default bus with
+ machine_arch_initcall
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kevin Hao <haokexin@gmail.com>, Kefeng Wang <wangkefeng.wang@huawei.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, Aug 14, 2016 at 4:21 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2016-08-12 at 14:30 -0500, Rob Herring wrote:
+>>
+>> > With the commit 44a7185c2ae6 ("of/platform: Add common method to
+>> > populate default bus"), a default function is introduced to
+>> > populate
+>> > the default bus and this function is invoked at the
+>> > arch_initcall_sync
+>> > level. But a lot of ppc boards use machine_device_initcall() to
+>> > populate the default bus. This means that the default populate
+>> > function
+>> > has higher priority and would override the arch specific population
+>> > of
+>> > the bus. The side effect is that some arch specific bus are not
+>> > probed,
+>> > then cause various malfunction due to the miss of some devices.
+>> > Since
+>> > it is very possible to introduce bugs if we simply change the
+>> > initcall
+>> > level for all these boards(about 30+). This just disable this
+>> > default
+>> > function for all the ppc boards.
+>> >
+>> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
+>> > ---
+>> >  drivers/of/platform.c | 2 ++
+>> >  1 file changed, 2 insertions(+)
+>>
+>> I've applied this one.
+>
+> Not fan of the hard #ifdef at all... it will make it hard to convert
+> platforms one by one. Why not an arch_want_default_of_probe() or
+> something like this which we can then plumb into ppc_md. ?
 
---VbJkn9YxBvnuCH5J
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yeah, I'm not either really. I didn't propose using IS_ENABLED here
+either as it does add a needless initcall.
 
-On Tue, Aug 09, 2016 at 01:36:16PM +0200, Wolfram Sang wrote:
-> Since v4.8-rc1, the I2C core will print detailed information when adding =
-an I2C
-> adapter fails. So, drivers can skip this now.
->=20
-> I am still undecided if I apply this as a single patch or break it out. B=
-ut for
-> reviewing, avoiding the patch bomb is probably a good thing.
->=20
-> Should go via subsystem tree, I'd think.
->=20
-> Wolfram Sang (1):
->   i2c: don't print error when adding adapter fails
->=20
+Do you have any idea which platforms are not broken and could be
+switched over now. If not, I think we should just leave as is for 4.8
+and make it per platform selectable for 4.9.
 
-Applied to for-next, thanks!
-
-
---VbJkn9YxBvnuCH5J
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXsO3vAAoJEBQN5MwUoCm2w3IP/jptxJ55zOpqqrP4YiIo9d1P
-ldYqyfLqKHVN00p64U+1H3ryKADkcH4kyXCMj8NNrFmD1Sjp4t+IpSJrfbyjhjxD
-iYkgvfZCKtLXECOE3AnrtBvlwv0wdBIP4Riztq2WgAfwXJvebU8K3dld3fx0f3k0
-KUpk5uQ24K5RbYcSPS+PqqDi7LRvu1iRfsOyqA3j8n7nQ4uKVLLYbcst5NyFpG7x
-168XGity4IdRjQM4PeEEQkXWgN9UdbS/5Ah7vG52Ug3iEfzXgMSyjrUM5NfuxGv8
-oku57fUtN2y+uH2Od5gL0S27m49mGDxNPnhPK4CPItekcz2wxwaFlnb+3eOpRT57
-sADpkE1bpl70FdaWJdSeI9F689dUCvWVsRpg7dglHI8yxzk+oQOE8KfWMXSX0CCn
-JUBsKsSBR1FUDpFAaACjGvMSf4E/2gosQC6pxF2jSo3Y/i2JH+HgzhtQcxRJ2v5f
-zG711NoBMbzZMRteYN5NHidiDrzZeo9fGoGxWLmKuayR2oifMB8O1IVAwx8HeVJh
-hPGCi0ZSGsCYYZ/SZ6QmzYZAfrKnt/EDFjyywJ/egf6yvDB1xkIkbFGkK+V1OhGp
-C61jKV4qHvvDxkOf2l7W77AWxJOswfJW3JZzkMC+1eniXU1yULAsJ09I9Jhol3AZ
-GpCRWj5TN9jg1a0kP26G
-=vwEG
------END PGP SIGNATURE-----
-
---VbJkn9YxBvnuCH5J--
+Rob
