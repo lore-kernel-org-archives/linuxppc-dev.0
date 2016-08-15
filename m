@@ -1,24 +1,53 @@
-Return-Path: <prvs=003553880f=holger.brunck@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCdMc4KfjzDr3S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 00:35:55 +1000 (AEST)
-Subject: Re: debug problems on ppc 83xx target due to changed struct
- task_struct
-To: Dave Hansen <dave.hansen@linux.intel.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-References: <dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com>
- <57ADE7E6.9030900@linux.intel.com>
- <4e16aad4-80d3-ffcc-d183-681b48d4751b@keymile.com>
- <57ADF4A0.5040807@linux.intel.com>
-CC: "mingo@kernel.org" <mingo@kernel.org>
-From: Holger Brunck <holger.brunck@keymile.com>
-Message-ID: <41e00d07-d7ce-0198-acce-ac25db8c9df3@keymile.com>
-Date: Mon, 15 Aug 2016 16:35:47 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCdgj1zXDzDr3S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 00:49:52 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7FEn0xO000573
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 10:49:49 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24tgu26x37-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 10:49:48 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Mon, 15 Aug 2016 11:49:46 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 3D0313520068
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 10:49:24 -0400 (EDT)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7FEni0A4649148
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 11:49:44 -0300
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7FEnhkp014078
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 11:49:44 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: bsingharora@gmail.com
+Cc: kexec@lists.infradead.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Eric Biederman <ebiederm@xmission.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Dave Young <dyoung@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take
+ kexec_buf as argument.
+Date: Mon, 15 Aug 2016 11:49:42 -0300
+In-Reply-To: <20160815073049.GB21080@balbir.ozlabs.ibm.com>
+References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1470956898-5991-3-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20160815073049.GB21080@balbir.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <57ADF4A0.5040807@linux.intel.com>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <1906561.y8blzB2uZ8@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,103 +57,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/08/16 18:09, Dave Hansen wrote:
-> On 08/12/2016 08:47 AM, Holger Brunck wrote:
->> On 12/08/16 17:14, Dave Hansen wrote:
->>> On 08/12/2016 07:50 AM, Holger Brunck wrote:
->>>> When I try to debug our multithreaded userspace application with gdb I  get
->>>> stuck when trying to single step code.
->>>
->>> Can you clarify "stuck"?  Like the instructions don't advance?  Have you
->>> been able to find a root cause for this?
->>
->> the behaviour is slightly different on the kernel versions. So my setup is a
->> remote debug session via gdbserver.
->>
->> After connecting to the gdbserver I set a break point and start to run my
->> program. When hitting the breakpoint I try to single step. With stuck I mean
->> that the connection to the gdbserver is broken and I can't control my debug
->> session anymore while the application is not continuing.
+Am Montag, 15 August 2016, 17:30:49 schrieb Balbir Singh:
+> On Thu, Aug 11, 2016 at 08:08:07PM -0300, Thiago Jung Bauermann wrote:
+> > Adapt all callers to the new function prototype.
 > 
-> Could you try debugging locally with gdb?  It would be nice to take all
-> the stuff involved with remote debugging out of the picture.
+> Could you please expand on this?
+
+Is the following better?
+
+Adapt all callers to set up a kexec_buf to pass to kexec_add_buffer.
+
+> Looks good otherwise
 > 
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-I tried this but unfortunately the error only occurs while remote debugging.
-Locally with gdb everything works fine. BTW we double-checked with a 85xx ppc
-target which is also 32-bit and it ends up with the same behaviour.
+Thank you for reviewing this series!
 
-I was also investigating where I have to move the line in the struct task_struct
-and it turns out to be like this (diff to 4.7 kernel):
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 253538f..4868874 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1655,7 +1655,9 @@ struct task_struct {
-        struct signal_struct *signal;
-        struct sighand_struct *sighand;
-
-+       // struct thread_struct thread;   // until here everything is fine
-        sigset_t blocked, real_blocked;
-+       struct thread_struct thread;      // from here it's broken
-        sigset_t saved_sigmask; /* restored if set_restore_sigmask() was used */
-        struct sigpending pending;
-
-@@ -1919,7 +1921,6 @@ struct task_struct {
-        struct task_struct *oom_reaper_list;
- #endif
- /* CPU-specific state of this task */
--       struct thread_struct thread;
- /*
-
-So it's in the area where some signal information are stored, which makes sense
-because this is highly used in case of gdb debugging.
-
-> Have you tried turning on a bunch of kernel debugging (SLAB/SLUB
-> debugging, pagealloc debug, lockdep, etc...)?  If something is getting
-> corrupted, those tend to catch it.
->
-
-I switched on some memory debugging features but didn't get suspicious output.
-To make the situation even more weird after enabling FTRACE in the kernel to
-trace some signal code the error disappeared.
-
-> 
-> Is the process still alive at the point that the remote debugger stops
-> responding?  What is it doing at that point?
-> 
-
-the process is still alive. The state of the process, it's threads and the
-gdbserver is like this:
-
-Bad case after a single step:
- 73    73 TS       -   0  19   0  0.3 S    sigsuspend     gdbserver
- 74    74 TS       -   0  19   0  0.0 tl+  ptrace_stop    infra_pbec83xx_
- 74    77 IDL      0   -  19   0  0.0 tl+  ptrace_stop    TR_Task
- 74    78 IDL      0   -  19   0  0.0 tl+  ptrace_stop    TR_Timeout
- 74    79 TS       -   0  19   0  0.0 tl+  poll_schedule_ timed_msg
- 74    80 IDL      0   -  19   0  0.0 tl+  ptrace_stop    stimuli
- 74    81 TS       -  -5  24   0  0.0 t<l+ ptrace_stop    timer0Dflt
- 74    82 TS       - -19  38   0  0.0 t<l+ futex_wait_que timerUpd0
- 74    83 TS       - -19  38   0  0.0 t<l+ timerfd_read   timerClk
- 74    84 TS       - -19  38   0  0.0 t<l+ ptrace_stop    b/beatWDogRefr
-
-Good case after a single step:
- 76    76 TS       -   0  19   0  4.0 S    poll_schedule_ gdbserver
- 77    77 TS       -   0  19   0  0.0 tl   ptrace_stop    infra_pbec83xx_
- 77    84 IDL      0   -  19   0  0.0 tl   ptrace_stop    TR_Task
- 77    85 IDL      0   -  19   0  0.0 tl   ptrace_stop    TR_Timeout
- 77    86 TS       -   0  19   0  0.0 tl   ptrace_stop    timed_msg
- 77    87 IDL      0   -  19   0  0.0 tl   ptrace_stop    stimuli
- 77    88 TS       -  -5  24   0  0.0 t<l  ptrace_stop    timer0Dflt
- 77    89 TS       - -19  38   0  0.0 t<l  ptrace_stop    timerUpd0
- 77    90 TS       - -19  38   0  0.0 t<l  ptrace_stop    timerClk
- 77    91 TS       - -19  38   0  0.0 t<l  ptrace_stop    b/beatWDogRefr
-
-So in the error case only some threads are at ptrace_stop, while all of them
-should be after a single step with the gdb. So it's somewhere in the signal
-handling between kernel and gdbserver.
-
-Best regards
-Holger Brunck
+-- 
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
