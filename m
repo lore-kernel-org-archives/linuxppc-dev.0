@@ -2,29 +2,25 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCYkq6lKqzDr3R
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCYkq5tL4zDr0d
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 21:52:19 +1000 (AEST)
-Date: Mon, 15 Aug 2016 21:07:08 +1000
+Date: Mon, 15 Aug 2016 20:58:15 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-Message-ID: <20160815110708.GC27484@voom.fritz.box>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH kernel 05/15] powerpc/iommu: Stop using @current in
+ mm_iommu_xxx
+Message-ID: <20160815105815.GB27484@voom.fritz.box>
 References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
- <20160808104315.77cf22ec@t450s.home>
- <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
- <20160809061630.50ed5536@t450s.home>
- <4d1ea52b-ecb5-5f9b-6cdc-00a73677cc2f@ozlabs.ru>
- <20160810104630.21ab4bc5@t450s.home>
- <20160812054601.GS16493@voom.fritz.box>
- <a80d4f1d-ab5b-6a31-07b1-4be92d0af7bc@ozlabs.ru>
+ <1470213656-1042-6-git-send-email-aik@ozlabs.ru>
+ <20160812025724.GH16493@voom.fritz.box>
+ <64b108a7-f950-c784-c078-538ffdee0cd5@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="HG+GLK89HZ1zG0kk"
-In-Reply-To: <a80d4f1d-ab5b-6a31-07b1-4be92d0af7bc@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="vGgW1X5XWziG23Ko"
+In-Reply-To: <64b108a7-f950-c784-c078-538ffdee0cd5@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,317 +31,491 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---HG+GLK89HZ1zG0kk
+--vGgW1X5XWziG23Ko
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 12, 2016 at 04:12:17PM +1000, Alexey Kardashevskiy wrote:
-> On 12/08/16 15:46, David Gibson wrote:
-> > On Wed, Aug 10, 2016 at 10:46:30AM -0600, Alex Williamson wrote:
-> >> On Wed, 10 Aug 2016 15:37:17 +1000
-> >> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+On Fri, Aug 12, 2016 at 02:56:59PM +1000, Alexey Kardashevskiy wrote:
+> On 12/08/16 12:57, David Gibson wrote:
+> > On Wed, Aug 03, 2016 at 06:40:46PM +1000, Alexey Kardashevskiy wrote:
+> >> In some situations the userspace memory context may live longer than
+> >> the userspace process itself so if we need to do proper memory context
+> >> cleanup, we better cache @mm and use it later when the process is gone
+> >> (@current or @current->mm are NULL).
 > >>
-> >>> On 09/08/16 22:16, Alex Williamson wrote:
-> >>>> On Tue, 9 Aug 2016 15:19:39 +1000
-> >>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >>>>  =20
-> >>>>> On 09/08/16 02:43, Alex Williamson wrote: =20
-> >>>>>> On Wed,  3 Aug 2016 18:40:55 +1000
-> >>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >>>>>>    =20
-> >>>>>>> This exports helpers which are needed to keep a VFIO container in
-> >>>>>>> memory while there are external users such as KVM.
-> >>>>>>>
-> >>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>>>> ---
-> >>>>>>>  drivers/vfio/vfio.c                 | 30 +++++++++++++++++++++++=
-+++++++
-> >>>>>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
-> >>>>>>>  include/linux/vfio.h                |  6 ++++++
-> >>>>>>>  3 files changed, 51 insertions(+), 1 deletion(-)
-> >>>>>>>
-> >>>>>>> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> >>>>>>> index d1d70e0..baf6a9c 100644
-> >>>>>>> --- a/drivers/vfio/vfio.c
-> >>>>>>> +++ b/drivers/vfio/vfio.c
-> >>>>>>> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct =
-vfio_group *group, unsigned long arg)
-> >>>>>>>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
-> >>>>>>> =20
-> >>>>>>>  /**
-> >>>>>>> + * External user API for containers, exported by symbols to be l=
-inked
-> >>>>>>> + * dynamically.
-> >>>>>>> + *
-> >>>>>>> + */
-> >>>>>>> +struct vfio_container *vfio_container_get_ext(struct file *filep)
-> >>>>>>> +{
-> >>>>>>> +	struct vfio_container *container =3D filep->private_data;
-> >>>>>>> +
-> >>>>>>> +	if (filep->f_op !=3D &vfio_fops)
-> >>>>>>> +		return ERR_PTR(-EINVAL);
-> >>>>>>> +
-> >>>>>>> +	vfio_container_get(container);
-> >>>>>>> +
-> >>>>>>> +	return container;
-> >>>>>>> +}
-> >>>>>>> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
-> >>>>>>> +
-> >>>>>>> +void vfio_container_put_ext(struct vfio_container *container)
-> >>>>>>> +{
-> >>>>>>> +	vfio_container_put(container);
-> >>>>>>> +}
-> >>>>>>> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
-> >>>>>>> +
-> >>>>>>> +void *vfio_container_get_iommu_data_ext(struct vfio_container *c=
-ontainer)
-> >>>>>>> +{
-> >>>>>>> +	return container->iommu_data;
-> >>>>>>> +}
-> >>>>>>> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
-> >>>>>>> +
-> >>>>>>> +/**
-> >>>>>>>   * Sub-module support
-> >>>>>>>   */
-> >>>>>>>  /*
-> >>>>>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/v=
-fio_iommu_spapr_tce.c
-> >>>>>>> index 3594ad3..fceea3d 100644
-> >>>>>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>>>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>>>>> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iom=
-mu_driver_ops =3D {
-> >>>>>>>  	.detach_group	=3D tce_iommu_detach_group,
-> >>>>>>>  };
-> >>>>>>> =20
-> >>>>>>> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void =
-*iommu_data,
-> >>>>>>> +		u64 offset)
-> >>>>>>> +{
-> >>>>>>> +	struct tce_container *container =3D iommu_data;
-> >>>>>>> +	struct iommu_table *tbl =3D NULL;
-> >>>>>>> +
-> >>>>>>> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
-> >>>>>>> +		return NULL;
-> >>>>>>> +
-> >>>>>>> +	iommu_table_get(tbl);
-> >>>>>>> +
-> >>>>>>> +	return tbl;
-> >>>>>>> +}
-> >>>>>>> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
-> >>>>>>> +
-> >>>>>>>  static int __init tce_iommu_init(void)
-> >>>>>>>  {
-> >>>>>>>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> >>>>>>> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
-> >>>>>>>  MODULE_LICENSE("GPL v2");
-> >>>>>>>  MODULE_AUTHOR(DRIVER_AUTHOR);
-> >>>>>>>  MODULE_DESCRIPTION(DRIVER_DESC);
-> >>>>>>> -
-> >>>>>>> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> >>>>>>> index 0ecae0b..1c2138a 100644
-> >>>>>>> --- a/include/linux/vfio.h
-> >>>>>>> +++ b/include/linux/vfio.h
-> >>>>>>> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struc=
-t vfio_group *group);
-> >>>>>>>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
-> >>>>>>>  extern long vfio_external_check_extension(struct vfio_group *gro=
-up,
-> >>>>>>>  					  unsigned long arg);
-> >>>>>>> +extern struct vfio_container *vfio_container_get_ext(struct file=
- *filep);
-> >>>>>>> +extern void vfio_container_put_ext(struct vfio_container *contai=
-ner);
-> >>>>>>> +extern void *vfio_container_get_iommu_data_ext(
-> >>>>>>> +		struct vfio_container *container);
-> >>>>>>> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ex=
-t(
-> >>>>>>> +		void *iommu_data, u64 offset);
-> >>>>>>> =20
-> >>>>>>>  /*
-> >>>>>>>   * Sub-module helpers   =20
-> >>>>>>
-> >>>>>>
-> >>>>>> I think you need to take a closer look of the lifecycle of a conta=
-iner,
-> >>>>>> having a reference means the container itself won't go away, but o=
-nly
-> >>>>>> having a group set within that container holds the actual IOMMU
-> >>>>>> references.  container->iommu_data is going to be NULL once the
-> >>>>>> groups are lost.  Thanks,   =20
-> >>>>>
-> >>>>>
-> >>>>> Container owns the iommu tables and this is what I care about here,=
- groups
-> >>>>> attached or not - this is handled separately via IOMMU group list i=
-n a
-> >>>>> specific iommu_table struct, these groups get detached from iommu_t=
-able
-> >>>>> when they are removed from a container. =20
-> >>>>
-> >>>> The container doesn't own anything, the container is privileged by t=
-he
-> >>>> groups being attached to it.  When groups are closed, they detach fr=
-om
-> >>>> the container and once the container group list is empty the iommu
-> >>>> backend is released and iommu_data is NULL.  A container reference
-> >>>> doesn't give you what you're looking for.  It implies nothing about =
-the
-> >>>> iommu backend. =20
-> >>>
-> >>>
-> >>> Well. Backend is a part of a container and since a backend owns table=
-s, a
-> >>> container owns them too.
+> >> This changes mm_iommu_xxx API to receive mm_struct instead of using one
+> >> from @current.
 > >>
-> >> The IOMMU backend is accessed through the container, but that backend
-> >> is privileged by the groups it contains.  Once those groups are gone,
-> >> the IOMMU backend is released, regardless of whatever reference you
-> >> have to the container itself such as you're attempting to do here.  In
-> >> that sense, the container does not own those tables.
-> >=20
-> > So, the thing is that what KVM fundamentally needs is a handle on the
-> > container.  KVM is essentially modelling the DMA address space of a
-> > single guest bus, and the container is what's attached to that.
-> >=20
-> > The first part of the problem is that KVM wants to basically invoke
-> > vfio_dma_map() operations without bouncing via qemu.  Because
-> > vfio_dma_map() works on the container level, that's the handle that
-> > KVM needs to hold.
->=20
->=20
-> Well, I do not need to hold the reference to the container all the time, I
-> just need it to get to the IOMMU backend, get+reference an iommu_table fr=
-om
-> it, referencing here helps to make sure the backend is not going away
-> before we reference iommu_table.
-
-Yes, but I don't see a compelling reason *not* to hold the container
-reference either - it seems like principle of least surprise would
-suggest retaining the reference.
-
-For example, I can imagine having a container reset call which threw
-away the back end iommu table and created a new one.  It seems like
-what you'd expect in this case is for the guest bus to remain bound to
-the same container, not to the now stale iommu table.
-
-> After that I only keep a reference to the container to know if/when I can
-> release a particular iommu_table. This is can workaround by counting how
-> many groups were attached to this particular KVM-spapt-tce-table and
-> looking at the IOMMU group list attached to an iommu_table - if the list =
-is
-> empty, decrement the iommu_table reference counter and that's it, no extra
-> references to a VFIO container.
->=20
-> Or I need an alternative way of getting iommu_table's, i.e. QEMU should
-> somehow tell KVM that this LIOBN is this VFIO container fd (easy - can be
-> done via region_add/region_del interface)
-
-Um.. yes.. that's what I was expecting, I thought that was what you
-were doing.x
-
-> or VFIO IOMMU group fd(s) (more
-> tricky as this needs to be done from more places - vfio-pci hotplug/unplu=
-g,
-> window add/remove).
-
-More tricky and also wrong.  Again, having one group but not the whole
-container bound to the guest LIOBN doesn't make any sense - by
-definition, all the devices in the container should share the same DMA
-address space.
-
-> > The second part of the problem is that in order to reduce overhead
-> > further, we want to operate in real mode, which means bypassing most
-> > of the usual VFIO structure and going directly(ish) from the KVM
-> > hcall emulation to the IOMMU backend behind VFIO.  This complicates
-> > matters a fair bit.  Because it is, explicitly, a performance hack,
-> > some degree of ugliness is probably inevitable.
-> >=20
-> > Alexey - actually implementing this in two stages might make this
-> > clearer.  The first stage wouldn't allow real mode, and would call
-> > through the same vfio_dma_map() path as qemu calls through now.  The
-> > second stage would then put in place the necessary hacks to add real
-> > mode support.
-> >=20
-> >>> The problem I am trying to solve here is when KVM may release the
-> >>> iommu_table objects.
-> >>>
-> >>> "Set" ioctl() to KVM-spapr-tce-table (or KVM itself, does not really
-> >>> matter) makes a link between KVM-spapr-tce-table and container and KV=
-M can
-> >>> start using tables (with referencing them).
-> >>>
-> >>> First I tried adding an "unset" ioctl to KVM-spapr-tce-table, called =
-it
-> >>> from region_del() and this works if QEMU removes a window. However if=
- QEMU
-> >>> removes a vfio-pci device, region_del() is not called and KVM does no=
-t get
-> >>> notified that it can release the iommu_table's because the
-> >>> KVM-spapr-tce-table remains alive and does not get destroyed (as it is
-> >>> still used by emulated devices or other containers).
-> >>>
-> >>> So it was suggested that we could do such "unset" somehow later assum=
-ing,
-> >>> for example, on every "set" I could check if some of currently attach=
-ed
-> >>> containers are no more used - and this is where being able to know if=
- there
-> >>> is no backend helps - KVM remembers a container pointer and can check=
- this
-> >>> via vfio_container_get_iommu_data_ext().
-> >>>
-> >>> The other option would be changing vfio_container_get_ext() to take a
-> >>> callback+opaque which container would call when it destroys iommu_dat=
-a.
-> >>> This looks more intrusive and not very intuitive how to make it right=
- -
-> >>> container would have to keep track of all registered external users a=
-nd
-> >>> vfio_container_put_ext() would have to pass the same callback+opaque =
-to
-> >>> unregister the exact external user.
+> >> This is needed by the following patch to do proper cleanup in time.
+> >> This depends on "powerpc/powernv/ioda: Fix endianness when reading TCE=
+s"
+> >> to do proper cleanup via tce_iommu_clear() patch.
 > >>
-> >> I'm not in favor of anything resembling the code above or extensions
-> >> beyond it, the container is the wrong place to do this.
+> >> To keep API consistent, this replaces mm_context_t with mm_struct;
+> >> we stick to mm_struct as mm_iommu_adjust_locked_vm() helper needs
+> >> access to &mm->mmap_sem.
 > >>
-> >>> Or I could store container file* in KVM. Then iommu_data would never =
-be
-> >>> released until KVM-spapr-tce-table is destroyed.
+> >> This should cause no behavioral change.
 > >>
-> >> See above, holding a file pointer to the container doesn't do squat.
-> >> The groups that are held by the container empower the IOMMU backend,
-> >> references to the container itself don't matter.  Those references will
-> >> not maintain the IOMMU data.
+> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >> ---
+> >>  arch/powerpc/include/asm/mmu_context.h | 20 +++++++------
+> >>  arch/powerpc/kernel/setup-common.c     |  2 +-
+> >>  arch/powerpc/mm/mmu_context_book3s64.c |  4 +--
+> >>  arch/powerpc/mm/mmu_context_iommu.c    | 54 ++++++++++++++-----------=
+---------
+> >>  drivers/vfio/vfio_iommu_spapr_tce.c    | 41 ++++++++++++++++----------
+> >>  5 files changed, 62 insertions(+), 59 deletions(-)
+> >>
+> >> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/inc=
+lude/asm/mmu_context.h
+> >> index 9d2cd0c..b85cc7b 100644
+> >> --- a/arch/powerpc/include/asm/mmu_context.h
+> >> +++ b/arch/powerpc/include/asm/mmu_context.h
+> >> @@ -18,16 +18,18 @@ extern void destroy_context(struct mm_struct *mm);
+> >>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> >>  struct mm_iommu_table_group_mem_t;
 > >> =20
-> >>> Recreating KVM-spapr-tce-table on every vfio-pci hotunplug (closing i=
-ts fd
-> >>> would "unset" container from KVM-spapr-tce-table) is not an option as=
- there
-> >>> still may be devices using this KVM-spapr-tce-table.
-> >>>
-> >>> What obvious and nice solution am I missing here? Thanks.
-> >>
-> >> The interactions with the IOMMU backend that seem relevant are
-> >> vfio_iommu_drivers_ops.{detach_group,release}.  The kvm-vfio pseudo
-> >> device is also used to tell kvm about groups as they come and go and
-> >> has a way to check extensions, and thus properties of the IOMMU
-> >> backend.  All of these are available for your {ab}use.  Thanks,
+> >> -extern bool mm_iommu_preregistered(void);
+> >> -extern long mm_iommu_get(unsigned long ua, unsigned long entries,
+> >> +extern bool mm_iommu_preregistered(struct mm_struct *mm);
+> >> +extern long mm_iommu_get(struct mm_struct *mm,
+> >> +		unsigned long ua, unsigned long entries,
+> >>  		struct mm_iommu_table_group_mem_t **pmem);
+> >> -extern long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem);
+> >> -extern void mm_iommu_init(mm_context_t *ctx);
+> >> -extern void mm_iommu_cleanup(mm_context_t *ctx);
+> >> -extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned lo=
+ng ua,
+> >> -		unsigned long size);
+> >> -extern struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long=
+ ua,
+> >> -		unsigned long entries);
+> >> +extern long mm_iommu_put(struct mm_struct *mm,
+> >> +		struct mm_iommu_table_group_mem_t *mem);
+> >> +extern void mm_iommu_init(struct mm_struct *mm);
+> >> +extern void mm_iommu_cleanup(struct mm_struct *mm);
+> >> +extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_s=
+truct *mm,
+> >> +		unsigned long ua, unsigned long size);
+> >> +extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_str=
+uct *mm,
+> >> +		unsigned long ua, unsigned long entries);
+> >>  extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+> >>  		unsigned long ua, unsigned long *hpa);
+> >>  extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *me=
+m);
+> >> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/=
+setup-common.c
+> >> index 714b4ba..e90b68a 100644
+> >> --- a/arch/powerpc/kernel/setup-common.c
+> >> +++ b/arch/powerpc/kernel/setup-common.c
+> >> @@ -905,7 +905,7 @@ void __init setup_arch(char **cmdline_p)
+> >>  	init_mm.context.pte_frag =3D NULL;
+> >>  #endif
+> >>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> -	mm_iommu_init(&init_mm.context);
+> >> +	mm_iommu_init(&init_mm);
+> >>  #endif
+> >>  	irqstack_early_init();
+> >>  	exc_lvl_early_init();
+> >> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/=
+mmu_context_book3s64.c
+> >> index b114f8b..ad82735 100644
+> >> --- a/arch/powerpc/mm/mmu_context_book3s64.c
+> >> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
+> >> @@ -115,7 +115,7 @@ int init_new_context(struct task_struct *tsk, stru=
+ct mm_struct *mm)
+> >>  	mm->context.pte_frag =3D NULL;
+> >>  #endif
+> >>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> -	mm_iommu_init(&mm->context);
+> >> +	mm_iommu_init(mm);
+> >>  #endif
+> >>  	return 0;
+> >>  }
+> >> @@ -160,7 +160,7 @@ static inline void destroy_pagetable_page(struct m=
+m_struct *mm)
+> >>  void destroy_context(struct mm_struct *mm)
+> >>  {
+> >>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> >> -	mm_iommu_cleanup(&mm->context);
+> >> +	mm_iommu_cleanup(mm);
+> >>  #endif
+> >> =20
+> >>  #ifdef CONFIG_PPC_ICSWX
+> >> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu=
+_context_iommu.c
+> >> index da6a216..ee6685b 100644
+> >> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> >> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> >> @@ -53,7 +53,7 @@ static long mm_iommu_adjust_locked_vm(struct mm_stru=
+ct *mm,
+> >>  	}
+> >> =20
+> >>  	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%ld %ld/%ld\n",
+> >> -			current->pid,
+> >> +			current ? current->pid : 0,
+> >>  			incr ? '+' : '-',
+> >>  			npages << PAGE_SHIFT,
+> >>  			mm->locked_vm << PAGE_SHIFT,
+> >> @@ -63,28 +63,22 @@ static long mm_iommu_adjust_locked_vm(struct mm_st=
+ruct *mm,
+> >>  	return ret;
+> >>  }
+> >> =20
+> >> -bool mm_iommu_preregistered(void)
+> >> +bool mm_iommu_preregistered(struct mm_struct *mm)
+> >>  {
+> >> -	if (!current || !current->mm)
+> >> -		return false;
+> >> -
+> >> -	return !list_empty(&current->mm->context.iommu_group_mem_list);
+> >> +	return !list_empty(&mm->context.iommu_group_mem_list);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
+> >> =20
+> >> -long mm_iommu_get(unsigned long ua, unsigned long entries,
+> >> +long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned lo=
+ng entries,
+> >>  		struct mm_iommu_table_group_mem_t **pmem)
+> >>  {
+> >>  	struct mm_iommu_table_group_mem_t *mem;
+> >>  	long i, j, ret =3D 0, locked_entries =3D 0;
+> >>  	struct page *page =3D NULL;
+> >> =20
+> >> -	if (!current || !current->mm)
+> >> -		return -ESRCH; /* process exited */
+> >> -
+> >>  	mutex_lock(&mem_list_mutex);
+> >> =20
+> >> -	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_l=
+ist,
+> >> +	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
+> >>  			next) {
+> >>  		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries)) {
+> >>  			++mem->used;
+> >> @@ -102,7 +96,7 @@ long mm_iommu_get(unsigned long ua, unsigned long e=
+ntries,
+> >> =20
+> >>  	}
+> >> =20
+> >> -	ret =3D mm_iommu_adjust_locked_vm(current->mm, entries, true);
+> >> +	ret =3D mm_iommu_adjust_locked_vm(mm, entries, true);
+> >>  	if (ret)
+> >>  		goto unlock_exit;
+> >> =20
+> >> @@ -142,11 +136,11 @@ long mm_iommu_get(unsigned long ua, unsigned lon=
+g entries,
+> >>  	mem->entries =3D entries;
+> >>  	*pmem =3D mem;
+> >> =20
+> >> -	list_add_rcu(&mem->next, &current->mm->context.iommu_group_mem_list);
+> >> +	list_add_rcu(&mem->next, &mm->context.iommu_group_mem_list);
+> >> =20
+> >>  unlock_exit:
+> >>  	if (locked_entries && ret)
+> >> -		mm_iommu_adjust_locked_vm(current->mm, locked_entries, false);
+> >> +		mm_iommu_adjust_locked_vm(mm, locked_entries, false);
+> >> =20
+> >>  	mutex_unlock(&mem_list_mutex);
+> >> =20
+> >> @@ -191,16 +185,13 @@ static void mm_iommu_free(struct rcu_head *head)
+> >>  static void mm_iommu_release(struct mm_iommu_table_group_mem_t *mem)
+> >>  {
+> >>  	list_del_rcu(&mem->next);
+> >> -	mm_iommu_adjust_locked_vm(current->mm, mem->entries, false);
 > >=20
-> > So, Alexey started trying to do this via the KVM-VFIO device, but it's
-> > a really bad fit.  As noted above, fundamentally it's a container we
-> > need to attach to the kvm-spapr-tce-table object, since what that
-> > represents is a guest bus DMA address space, and by definition all the
-> > groups in a container must have the same DMA address space.
+> > AFAICT, you've moved this call from _release() to _put().  Won't that c=
+ause a
+> > behavioural change?
 >=20
 >=20
-> Well, in a bad case a LIOBN/kvm-spapr-tce-table has multiple containers
-> attached so it is not 1:1...
+> mm_iommu_put() calls mm_iommu_adjust_locked_vm() right after
+> m_iommu_release() so no, it does not look so.
 
-I never said it was.  It's n:1, but it's *not* n:m.  You can have
-multiple containers to a LIOBN, but never multiple LIOBNs ot a
-container.
+Ah, I guess not.  It seems a bit arbitrary in the context of the rest
+of the changes, though.
+
+> >>  	call_rcu(&mem->rcu, mm_iommu_free);
+> >>  }
+> >> =20
+> >> -long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
+> >> +long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_m=
+em_t *mem)
+> >>  {
+> >>  	long ret =3D 0;
+> >> =20
+> >> -	if (!current || !current->mm)
+> >> -		return -ESRCH; /* process exited */
+> >> =20
+> >>  	mutex_lock(&mem_list_mutex);
+> >> =20
+> >> @@ -224,6 +215,8 @@ long mm_iommu_put(struct mm_iommu_table_group_mem_=
+t *mem)
+> >>  	/* @mapped became 0 so now mappings are disabled, release the region=
+ */
+> >>  	mm_iommu_release(mem);
+> >> =20
+> >> +	mm_iommu_adjust_locked_vm(mm, mem->entries, false);
+> >> +
+> >>  unlock_exit:
+> >>  	mutex_unlock(&mem_list_mutex);
+> >> =20
+> >> @@ -231,14 +224,12 @@ unlock_exit:
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(mm_iommu_put);
+> >> =20
+> >> -struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
+> >> -		unsigned long size)
+> >> +struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *=
+mm,
+> >> +		unsigned long ua, unsigned long size)
+> >>  {
+> >>  	struct mm_iommu_table_group_mem_t *mem, *ret =3D NULL;
+> >> =20
+> >> -	list_for_each_entry_rcu(mem,
+> >> -			&current->mm->context.iommu_group_mem_list,
+> >> -			next) {
+> >> +	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next=
+) {
+> >>  		if ((mem->ua <=3D ua) &&
+> >>  				(ua + size <=3D mem->ua +
+> >>  				 (mem->entries << PAGE_SHIFT))) {
+> >> @@ -251,14 +242,12 @@ struct mm_iommu_table_group_mem_t *mm_iommu_look=
+up(unsigned long ua,
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+> >> =20
+> >> -struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long ua,
+> >> -		unsigned long entries)
+> >> +struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+> >> +		unsigned long ua, unsigned long entries)
+> >>  {
+> >>  	struct mm_iommu_table_group_mem_t *mem, *ret =3D NULL;
+> >> =20
+> >> -	list_for_each_entry_rcu(mem,
+> >> -			&current->mm->context.iommu_group_mem_list,
+> >> -			next) {
+> >> +	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next=
+) {
+> >>  		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries)) {
+> >>  			ret =3D mem;
+> >>  			break;
+> >> @@ -300,16 +289,17 @@ void mm_iommu_mapped_dec(struct mm_iommu_table_g=
+roup_mem_t *mem)
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(mm_iommu_mapped_dec);
+> >> =20
+> >> -void mm_iommu_init(mm_context_t *ctx)
+> >> +void mm_iommu_init(struct mm_struct *mm)
+> >>  {
+> >> -	INIT_LIST_HEAD_RCU(&ctx->iommu_group_mem_list);
+> >> +	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
+> >>  }
+> >> =20
+> >> -void mm_iommu_cleanup(mm_context_t *ctx)
+> >> +void mm_iommu_cleanup(struct mm_struct *mm)
+> >>  {
+> >>  	struct mm_iommu_table_group_mem_t *mem, *tmp;
+> >> =20
+> >> -	list_for_each_entry_safe(mem, tmp, &ctx->iommu_group_mem_list, next)=
+ {
+> >> +	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
+> >> +			next) {
+> >>  		list_del_rcu(&mem->next);
+> >>  		mm_iommu_do_free(mem);
+> >>  	}
+> >> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_i=
+ommu_spapr_tce.c
+> >> index 80378dd..9752e77 100644
+> >> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> >> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >> @@ -98,6 +98,7 @@ struct tce_container {
+> >>  	bool enabled;
+> >>  	bool v2;
+> >>  	unsigned long locked_pages;
+> >> +	struct mm_struct *mm;
+> >>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+> >>  	struct list_head group_list;
+> >>  };
+> >> @@ -110,11 +111,11 @@ static long tce_iommu_unregister_pages(struct tc=
+e_container *container,
+> >>  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+> >>  		return -EINVAL;
+> >> =20
+> >> -	mem =3D mm_iommu_find(vaddr, size >> PAGE_SHIFT);
+> >> +	mem =3D mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
+> >>  	if (!mem)
+> >>  		return -ENOENT;
+> >> =20
+> >> -	return mm_iommu_put(mem);
+> >> +	return mm_iommu_put(container->mm, mem);
+> >>  }
+> >> =20
+> >>  static long tce_iommu_register_pages(struct tce_container *container,
+> >> @@ -128,10 +129,17 @@ static long tce_iommu_register_pages(struct tce_=
+container *container,
+> >>  			((vaddr + size) < vaddr))
+> >>  		return -EINVAL;
+> >> =20
+> >> -	r<et =3D mm_iommu_get(vaddr, entries, &mem);
+> >> +	if (!container->mm) {
+> >> +		if (!current->mm)
+> >> +			return -ESRCH; /* process exited */
+> >=20
+> > Can this ever happen?  Surely the ioctl() path shouldn't be called
+> > after the process mm has been cleaned up?  i.e. should this be a
+> > WARN_ON().
+>=20
+> Not sure with SMP (one thread doing ioctl(), another - exiting QEMU) if it
+> is not that impossible but it is quite hard to trigger this check.
+
+I'm pretty sure the mm can't be cleaned up until all threads have
+definitely stopped executing.
+
+> >> +
+> >> +		atomic_inc(&current->mm->mm_count);
+> >=20
+> > What balances this atomic_inc()?  Is it the mmdrop() added to
+> > tce_iommu_release()?
+>=20
+> Yes. Surprisingly there is no mmget(), there is mmget_not_zero() but it is
+> for mm->mm_users.
+
+Ok.
+
+> >=20
+> >> +		container->mm =3D current->mm;
+> >> +	}
+> >=20
+> > Surely you need an error (or else a BUG_ON()) if current->mm !=3D
+> > container->mm !=3D NULL.  I believe VFIO already assumes the container
+> > is owned only by a single mm, but it looks like you should verify that =
+here.
+>=20
+> I am not sure I really want to enforce it, do I? Who knows what kind of a
+> crazy person would create a container, pin pages and fork() that userspace
+> tool which may not be QEMU but something custom using DPDK or something.
+>=20
+> What harm can not having this BUG_ON() cause?
+
+Hrm.  Well, if nothing else it lets one process lock (or unlock) pages
+in an essentially unrelated process, which is pretty weird.  I don't
+see any obvious way it will cause more serious problems.  But, as a
+general rule it makes debugging easier if you check / enforce required
+assumptions at the earliest possible point.
+
+> >=20
+> >> +
+> >> +	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
+> >>  	if (ret)
+> >>  		return ret;
+> >> -
+> >>  	container->enabled =3D true;
+> >> =20
+> >>  	return 0;
+> >> @@ -354,6 +362,8 @@ static void tce_iommu_release(void *iommu_data)
+> >>  		tce_iommu_free_table(tbl);
+> >>  	}
+> >> =20
+> >> +	if (container->mm)
+> >> +		mmdrop(container->mm);
+> >>  	tce_iommu_disable(container);
+> >>  	mutex_destroy(&container->lock);
+> >> =20
+> >> @@ -369,13 +379,14 @@ static void tce_iommu_unuse_page(struct tce_cont=
+ainer *container,
+> >>  	put_page(page);
+> >>  }
+> >> =20
+> >> -static int tce_iommu_prereg_ua_to_hpa(unsigned long tce, unsigned lon=
+g size,
+> >> +static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
+> >> +		unsigned long tce, unsigned long size,
+> >>  		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
+> >>  {
+> >>  	long ret =3D 0;
+> >>  	struct mm_iommu_table_group_mem_t *mem;
+> >> =20
+> >> -	mem =3D mm_iommu_lookup(tce, size);
+> >> +	mem =3D mm_iommu_lookup(container->mm, tce, size);
+> >>  	if (!mem)
+> >>  		return -EINVAL;
+> >> =20
+> >> @@ -388,18 +399,18 @@ static int tce_iommu_prereg_ua_to_hpa(unsigned l=
+ong tce, unsigned long size,
+> >>  	return 0;
+> >>  }
+> >> =20
+> >> -static void tce_iommu_unuse_page_v2(struct iommu_table *tbl,
+> >> -		unsigned long entry)
+> >> +static void tce_iommu_unuse_page_v2(struct tce_container *container,
+> >> +		struct iommu_table *tbl, unsigned long entry)
+> >>  {
+> >>  	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> >>  	int ret;
+> >>  	unsigned long hpa =3D 0;
+> >>  	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+> >> =20
+> >> -	if (!pua || !current || !current->mm)
+> >> +	if (!pua)
+> >>  		return;
+> >> =20
+> >> -	ret =3D tce_iommu_prereg_ua_to_hpa(*pua, IOMMU_PAGE_SIZE(tbl),
+> >> +	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(=
+tbl),
+> >>  			&hpa, &mem);
+> >>  	if (ret)
+> >>  		pr_debug("%s: tce %lx at #%lx was not cached, ret=3D%d\n",
+> >> @@ -429,7 +440,7 @@ static int tce_iommu_clear(struct tce_container *c=
+ontainer,
+> >>  			continue;
+> >> =20
+> >>  		if (container->v2) {
+> >> -			tce_iommu_unuse_page_v2(tbl, entry);
+> >> +			tce_iommu_unuse_page_v2(container, tbl, entry);
+> >>  			continue;
+> >>  		}
+> >> =20
+> >> @@ -514,8 +525,8 @@ static long tce_iommu_build_v2(struct tce_containe=
+r *container,
+> >>  		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
+> >>  				entry + i);
+> >> =20
+> >> -		ret =3D tce_iommu_prereg_ua_to_hpa(tce, IOMMU_PAGE_SIZE(tbl),
+> >> -				&hpa, &mem);
+> >> +		ret =3D tce_iommu_prereg_ua_to_hpa(container,
+> >> +				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
+> >>  		if (ret)
+> >>  			break;
+> >> =20
+> >> @@ -536,7 +547,7 @@ static long tce_iommu_build_v2(struct tce_containe=
+r *container,
+> >>  		ret =3D iommu_tce_xchg(tbl, entry + i, &hpa, &dirtmp);
+> >>  		if (ret) {
+> >>  			/* dirtmp cannot be DMA_NONE here */
+> >> -			tce_iommu_unuse_page_v2(tbl, entry + i);
+> >> +			tce_iommu_unuse_page_v2(container, tbl, entry + i);
+> >>  			pr_err("iommu_tce: %s failed ioba=3D%lx, tce=3D%lx, ret=3D%ld\n",
+> >>  					__func__, entry << tbl->it_page_shift,
+> >>  					tce, ret);
+> >> @@ -544,7 +555,7 @@ static long tce_iommu_build_v2(struct tce_containe=
+r *container,
+> >>  		}
+> >> =20
+> >>  		if (dirtmp !=3D DMA_NONE)
+> >> -			tce_iommu_unuse_page_v2(tbl, entry + i);
+> >> +			tce_iommu_unuse_page_v2(container, tbl, entry + i);
+> >> =20
+> >>  		*pua =3D tce;
+> >> =20
+> >=20
+>=20
+>=20
+
+
 
 
 --=20
@@ -354,25 +524,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---HG+GLK89HZ1zG0kk
+--vGgW1X5XWziG23Ko
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJXsaJcAAoJEGw4ysog2bOSslwQAIpUD1lp8ZJzB7xLQgz8q+/g
-mu6sTSDdvxU3Dg9spBPuQoFrMfCWPGOa3N9ASBxKGYBBfMRWOfR00+DV9Bu86tdQ
-e3PaBQVSMLTIAHeMRxQRww3ZCr2uLFvPhBzWVQn+FQg/Fe2iLintfyThzPFz7sZj
-ajFtkLOzAO+0OygrpoFtX5qipJkk0buPXW1IXlRFNICSrAL6nVrsM7MU9QR0ityG
-I1curLemvs1ZGupVNhNMNhvCExRvA/U8XXDP4jF9aIk7JtAgHmBqJPQkfh9IrNHL
-W/G7eMFGQwdm9mCjElvtrwpgPXFoq2dEpd8wsieDqnvRNrgMMXEMJTNw/fr6XihO
-HbcqXAsWvfHLrNaZBcZCdgsgC7uK4kTat6Q8xF43c3BC1PNIQcaqz0ZOX2D8nDJ2
-TCcUnmmyT43Qfxu8SinbZAtPVxt+SZ0CHfh1WL4uTO3nMfUDHhNtrg2FJHcX7U+q
-6ZN3h7HHlg3O2H5vLjISVWhb79/8LQdof9Ql5hHTXagQismSFlYr0NNg5sgLi7Vr
-eZUFCSCacT+Qt0aqxXN5+6GGJQ9GWE2vidNPiPKmhASXoCztAlNAM3Pb9mLClO1R
-+Khc1Xk3GpLjPezTEG1GREeGPOvzepliEtfqspaqQZJGBRwn/qsBjGudkdUMIiei
-MYR76CWLp0fgWDk3UcbQ
-=AkhP
+iQIcBAEBAgAGBQJXsaBGAAoJEGw4ysog2bOSPnAP/iMD5M1VUzpbLDV4w2w9Jibl
+wYcEPeDQz1qu7fg0grxR1pz1okmmZb9eqrSxLIbrik86xcq2by+u0ic0sVI4FiKh
+qhNuzZ+AP24CBUY98yS4dvR1XB7LHbuc0bbXgmSqLDM25Hq1YFpOoD3KGxexJrmF
+cZvKBU1TArmTDUBUuZ4GOFNvasxeL+ozRToqcXn8XtO6NtXGtY/eLeAbFBOeMSd6
+C3PXWb0Os8OpYewtYlra8MZ62/DibNZ6kJm6SKywrDjgdzHePbOsYFEylGUdvSm2
+q8QKXZ9d9rnjl2tKEIrP6a1g/5w5vq65j+u0jgLUI99WkgvUY/qzSyWKTVhn+Vl3
+w40SlBj5L7fLzMjD4/G7HA5pwUyCcBMavMdAT3chjrqibWiS824/iGbarJDnFNfD
+fs2vJvxzpcTkFImx3PaNU69eec9hZUiQLqyJtGXcd/dckKPt/I7B9XodOLMbigPt
+RtAopr3Zva8ctj2fZ8SEyosLcdWsgUWZZODYW+OJQy3+IVcEGgUshV8gG2OMGcsa
+DhXmHucE0EvKeZR1VektmXs1pFpyJf7I3kouQoi+9Uze1wIu2PAu8ah8l0z0TbJf
+j0ws4LfLGXPDelslSLvvd+lo8seLJeuYniLOUejGAUBa+P8x8N81l2/SWBIcnWbg
+QRSpEaV7lP417LuawnXH
+=ngQl
 -----END PGP SIGNATURE-----
 
---HG+GLK89HZ1zG0kk--
+--vGgW1X5XWziG23Ko--
