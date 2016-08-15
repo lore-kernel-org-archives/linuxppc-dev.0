@@ -1,27 +1,55 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCrcr1nmHzDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 09:03:08 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id h186so4374559pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 16:03:08 -0700 (PDT)
-Message-ID: <1471302180.748.1.camel@gmail.com>
-Subject: Re: [PATCH v2 18/20] powerpc: tm: Always use fp_state and vr_state
- to store live registers
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Simon Guo <wei.guo.simon@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, mikey@neuling.org
-Date: Tue, 16 Aug 2016 09:03:00 +1000
-In-Reply-To: <20160815094201.GA32347@simonLocalRHEL7.x64>
-References: <20160811232819.11453-1-cyrilbur@gmail.com>
- <20160811232819.11453-19-cyrilbur@gmail.com>
- <20160814015602.GA21144@simonLocalRHEL7.x64>
- <1471245953.24478.0.camel@gmail.com>
- <20160815094201.GA32347@simonLocalRHEL7.x64>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCs7F1l6SzDqdG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 09:26:00 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7FNIOha111146
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 19:25:58 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24th40ye8g-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 19:25:58 -0400
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Mon, 15 Aug 2016 20:25:56 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id BC4D41DC006F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 19:25:45 -0400 (EDT)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7FNPsnf4956182
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 20:25:54 -0300
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7FNPr3G005368
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 20:25:54 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: bsingharora@gmail.com
+Cc: kexec@lists.infradead.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Eric Biederman <ebiederm@xmission.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Dave Young <dyoung@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH v5 04/13] powerpc: Factor out relocation code from
+ module_64.c to elf_util_64.c.
+Date: Mon, 15 Aug 2016 20:25:51 -0300
+In-Reply-To: <20160815074634.GC21080@balbir.ozlabs.ibm.com>
+References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1470956898-5991-5-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20160815074634.GC21080@balbir.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <4126991.2tm6WB17SD@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,132 +59,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-08-15 at 17:42 +0800, Simon Guo wrote:
-> Hi Cyril,
-> On Mon, Aug 15, 2016 at 05:25:53PM +1000, Cyril Bur wrote:
-> > 
-> > > 
-> > > There are 2 "giveall_all()" in above path:
-> > > __switch_to()
-> > >         giveup_all()  // first time
-> > >         __switch_to_tm()
-> > >                 tm_reclaim_task()
-> > >                         tm_reclaim_thread()
-> > >                                 giveup_all()  // again????
-> > > We should remove the one in __switch_to().
-> > 
-> > I don't think that will be possible, if a thread is not
-> > transactional
-> > the second giveup_all() won't get called so we'll need to preserve
-> > the
-> > one in __switch_to().
-> > I don't think removing the second is a good idea as we can enter
-> > tm_reclaim_thread() from other means than __switch_to_tm().
-> > I did think that perhaps __switch_to_tm() could call giveup_all()
-> > in
-> > the non transactional case but on reflection, doing nothing on the
-> > non
-> > transactional case is cleaner.
-> > The two calls are annoying but in the case where two calls are
-> > made,
-> > the second should realise that nothing needs to be done and exit
-> > quickly.
-> Ah, yes. I somehow ignored non-transactional case....
+Am Montag, 15 August 2016, 17:46:34 schrieb Balbir Singh:
+> On Thu, Aug 11, 2016 at 08:08:09PM -0300, Thiago Jung Bauermann wrote:
+> > +/**
+> > + * elf64_apply_relocate_add - apply 64 bit RELA relocations
+> > + * @elf_info:		Support information for the ELF binary being 
+relocated.
+> > + * @strtab:		String table for the associated symbol 
+table.
+> > + * @symindex:		Section header index for the associated 
+symbol table.
+> > + * @relsec:		Section header index for the relocations to 
+apply.
+> > + * @obj_name:		The name of the ELF binary, for information 
+messages.
+> > + */
+> > +int elf64_apply_relocate_add(const struct elf_info *elf_info,
+> > +			     const char *strtab, unsigned int symindex,
+> > +			     unsigned int relsec, const char *obj_name)
+> > +{
+> > +	unsigned int i;
+> > +	Elf64_Shdr *sechdrs = elf_info->sechdrs;
+> > +	Elf64_Rela *rela = (void *)sechdrs[relsec].sh_addr;
+> > +	Elf64_Sym *sym;
+> > +	unsigned long *location;
+> > +	unsigned long value;
+> > +
 > 
-> > 
-> > 
-> > > 
-> > > And another question, for following code in tm_reclaim_thread():
-> > >         /* Having done the reclaim, we now have the checkpointed
-> > >          * FP/VSX values in the registers.  These might be valid
-> > >          * even if we have previously called enable_kernel_fp()
-> > > or
-> > >          * flush_fp_to_thread(), so update thr->regs->msr to
-> > >          * indicate their current validity.
-> > >          */
-> > >         thr->regs->msr |= msr_diff;
-> > > 
-> > > Does it imply the task being switched out of CPU, with
-> > > TIF_RESTORE_TM
-> > > bit set,  might end with MSR_FP enabled? (I thought MSR_FP should
-> > > not 
-> > > be enabled for a switched out task, as specified in
-> > > flush_fp_to_thread())
-> > 
-> > Correct! I mistakenly thought it was solving a problem but you're
-> > right. What you say is correct but it breaks signals, I've been
-> > hesitating on how to get signals to work with the correct solution
-> > here, I wasn't happy with my ideas but looks like it's pretty much
-> > the
-> > only way to go unfortunately.
-> Currently there will be an oops on flush_fp_to_thread() with this
-> patch, when ptrace a transaction application.
+> For the relocatable kernel we expect only
 > 
-> I think originally there is no giveup_all() call before
-> tm_reclaim_thread(), 
-> so TIF_RESTORE_TM bit is not set. And finally thr->regs->msr is not
-> marked with MSR_FP enabled.
+> R_PPC64_RELATIVE
+> R_PPC64_NONE
+> R_PPC64_ADDR64
 > 
-> [  363.473851] kernel BUG at arch/powerpc/kernel/process.c:191!
-> [  363.474242] Oops: Exception in kernel mode, sig: 5 [#1]
-> [  363.474595] SMP NR_CPUS=2048 NUMA pSeries
-> [  363.474956] Modules linked in: isofs sg virtio_balloon ip_tables
-> xfs libcrc32c sr_mod cdrom sd_mod virtio_net ibmvscsi
-> scsi_transport_srp virtio_pci virtio_ring virtio
-> [  363.476021] CPU: 0 PID: 3018 Comm: ptrace-tm-gpr Not tainted
-> 4.8.0-rc1+ #5
-> [  363.476547] task: c000000072c66b80 task.stack: c00000007e64c000
-> [  363.476949] NIP: c000000000017650 LR: c00000000000dc10 CTR:
-> c000000000011538
-> [  363.477428] REGS: c00000007e64f960 TRAP: 0700   Not tainted
-> (4.8.0-rc1+)
-> [  363.477948] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR:
-> 42000088  XER: 20000000
-> [  363.478488] CFAR: c000000000017620 SOFTE: 1 
-> GPR00: c00000000000dc10 c00000007e64fbe0 c000000000f3d800
-> c000000072c65600 
-> GPR04: c0000000008706a8 0000000000000000 0000000000000108
-> 0000000000000000 
-> GPR08: 0000010008410180 0000000000000001 0000000000000001
-> c000000000870f18 
-> GPR12: 0000000000000000 c00000000fe80000 0000000000000000
-> 0000000000000000 
-> GPR16: 0000000000000000 0000000000000000 0000000000000000
-> 0000000000000000 
-> GPR20: 0000000000000000 0000000000000000 0000000000000000
-> 0000000000000000 
-> GPR24: 0000000000000000 0000000000000000 0000000000000000
-> 0000010008410180 
-> GPR28: 0000000000000000 0000000000000000 0000000000000108
-> c000000072c65600 
-> [  363.482451] NIP [c000000000017650] flush_fp_to_thread+0x50/0x70
-> [  363.482855] LR [c00000000000dc10] fpr_get+0x40/0x120
-> [  363.483194] Call Trace:
-> [  363.483362] [c00000007e64fbe0] [c00000007e64fcf0]
-> 0xc00000007e64fcf0 (unreliable)
-> [  363.483872] [c00000007e64fc00] [c00000000000dc10]
-> fpr_get+0x40/0x120
-> [  363.484304] [c00000007e64fd60] [c000000000011578]
-> arch_ptrace+0x628/0x7e0
-> [  363.485811] [c00000007e64fde0] [c0000000000c3340]
-> SyS_ptrace+0xa0/0x180
-> [  363.486276] [c00000007e64fe30] [c000000000009404]
-> system_call+0x38/0xec
-> [  363.486725] Instruction dump:
-> [  363.486927] 40820010 4e800020 60000000 60420000 7c0802a6 f8010010
-> f821ffe1 e92d0210 
-> [  363.487459] 7c694a78 7d290074 7929d182 69290001 <0b090000>
-> 4bffff25 38210020 e8010010 
-> [  363.488005] ---[ end trace 58650a99c675b48c ]---
-> [  363.490137] 
-> [  365.490279] Kernel panic - not syncing: Fatal exception
+> In the future we can use this to check/assert the usage of this
+> for the core kernel (vmlinux) when loaded.
 > 
+> Did we check elf64_apply_relocate_add with zImage and vmlinux?
 
-Yeah so that is to do with the problem you found, TM code shouldn't be
-leaving MSR_{FP,VEC,VSX} on after a switch. I sort of found myself
-cleaning up a bit of the signal code to solve this nicely.
+kexec_file_load doesn't call call elf64_apply_relocate_add on the kernel 
+image, it only uses it to relocate the purgatory. So whether it is loading a 
+zImage or a vmlinux file, the function will work in the same way since the 
+purgatory binary is the same regardless of the kernel image format.
 
-Hopefully v3 today!
+For the same reason, as it currently stands kexec_file_load can't check the 
+relocation types used in the kernel image. But it is possible to add such a 
+check/assertion in kexec_elf_64.c:build_elf_exec_info if we want.
 
-> Thanks,
-> - Simon
+I tested kexec_file_load on both relocatable and non-relocatable vmlinux and 
+it works correctly.
+
+I hadn't tested with zImage yet. I just did, and I had two problems:
+
+1. For some reason, it has an INTERP segment. This patch series doesn't 
+support loading program interpreters for ELF binaries, so 
+kexec_elf_64.c:build_elf_exec_info refuses to load them.
+
+2. If I disable the check for the INTERP segment, the zImage file loads 
+correctly, but then I get an exception during reboot when loading the kexec 
+image, right before jumping into the purgatory. I suspect this is because 
+the LOAD segment has a virtual address of 0, and the first kernel is not 
+coping well with that. But I still have to debug it further.
+
+Is there a reason for the zImage ELF header to request an interpreter and to 
+have a virtual address of 0?
+
+-- 
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
