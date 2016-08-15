@@ -1,25 +1,31 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCRqZ2XlszDr3R
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 17:26:02 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id i6so3318264pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 00:26:02 -0700 (PDT)
-Message-ID: <1471245953.24478.0.camel@gmail.com>
-Subject: Re: [PATCH v2 18/20] powerpc: tm: Always use fp_state and vr_state
- to store live registers
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Simon Guo <wei.guo.simon@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, mikey@neuling.org
-Date: Mon, 15 Aug 2016 17:25:53 +1000
-In-Reply-To: <20160814015602.GA21144@simonLocalRHEL7.x64>
-References: <20160811232819.11453-1-cyrilbur@gmail.com>
- <20160811232819.11453-19-cyrilbur@gmail.com>
- <20160814015602.GA21144@simonLocalRHEL7.x64>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCRxL0bxhzDr3R
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 17:31:01 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id vy10so3190106pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 00:31:01 -0700 (PDT)
+Date: Mon, 15 Aug 2016 17:30:49 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: kexec@lists.infradead.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Eric Biederman <ebiederm@xmission.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Dave Young <dyoung@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take
+ kexec_buf as argument.
+Message-ID: <20160815073049.GB21080@balbir.ozlabs.ibm.com>
+Reply-To: bsingharora@gmail.com
+References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1470956898-5991-3-git-send-email-bauerman@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1470956898-5991-3-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,87 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-08-14 at 09:56 +0800, Simon Guo wrote:
-> On Fri, Aug 12, 2016 at 09:28:17AM +1000, Cyril Bur wrote:
-> > 
-> > @@ -846,7 +834,9 @@ static void tm_reclaim_thread(struct
-> > thread_struct *thr,
-> >  	if (!MSR_TM_SUSPENDED(mfmsr()))
-> >  		return;
-> >  
-> > -	tm_reclaim(thr, thr->regs->msr, cause);
-> > +	giveup_all(container_of(thr, struct task_struct, thread));
-> > +
-> > +	tm_reclaim(thr, msr_diff, cause);
-> >  
-> >  	/* Having done the reclaim, we now have the checkpointed
-> >  	 * FP/VSX values in the registers.  These might be valid
-> 
-> > 
-> > @@ -1189,11 +1171,11 @@ struct task_struct *__switch_to(struct
-> > task_struct *prev,
-> >  	 */
-> >  	save_sprs(&prev->thread);
-> >  
-> > -	__switch_to_tm(prev);
-> > -
-> >  	/* Save FPU, Altivec, VSX and SPE state */
-> >  	giveup_all(prev);
-> >  
-> > +	__switch_to_tm(prev, new);
-> > +
-> >  	/*
-> >  	 * We can't take a PMU exception inside _switch() since
-> > there is a
-> >  	 * window where the kernel stack SLB and the kernel stack
-> > are out
-> 
-> 
-> There are 2 "giveall_all()" in above path:
-> __switch_to()
->         giveup_all()  // first time
->         __switch_to_tm()
->                 tm_reclaim_task()
->                         tm_reclaim_thread()
->                                 giveup_all()  // again????
-> We should remove the one in __switch_to().
+On Thu, Aug 11, 2016 at 08:08:07PM -0300, Thiago Jung Bauermann wrote:
+> Adapt all callers to the new function prototype.
+>
 
-I don't think that will be possible, if a thread is not transactional
-the second giveup_all() won't get called so we'll need to preserve the
-one in __switch_to().
-I don't think removing the second is a good idea as we can enter
-tm_reclaim_thread() from other means than __switch_to_tm().
-I did think that perhaps __switch_to_tm() could call giveup_all() in
-the non transactional case but on reflection, doing nothing on the non
-transactional case is cleaner.
-The two calls are annoying but in the case where two calls are made,
-the second should realise that nothing needs to be done and exit
-quickly.
-
-> And another question, for following code in tm_reclaim_thread():
->         /* Having done the reclaim, we now have the checkpointed
->          * FP/VSX values in the registers.  These might be valid
->          * even if we have previously called enable_kernel_fp() or
->          * flush_fp_to_thread(), so update thr->regs->msr to
->          * indicate their current validity.
->          */
->         thr->regs->msr |= msr_diff;
+Could you please expand on this?
+ 
+> In addition, change the type of kexec_buf.buffer from char * to void *.
+> There is no particular reason for it to be a char *, and the change
+> allows us to get rid of 3 existing casts to char * in the code.
 > 
-> Does it imply the task being switched out of CPU, with TIF_RESTORE_TM
-> bit set,  might end with MSR_FP enabled? (I thought MSR_FP should
-> not 
-> be enabled for a switched out task, as specified in
-> flush_fp_to_thread())
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Acked-by: Dave Young <dyoung@redhat.com>
+> ---
 
-Correct! I mistakenly thought it was solving a problem but you're
-right. What you say is correct but it breaks signals, I've been
-hesitating on how to get signals to work with the correct solution
-here, I wasn't happy with my ideas but looks like it's pretty much the
-only way to go unfortunately.
+Looks good otherwise
 
-Thanks,
-Cyril
-
-> 
-> Thanks,
-> - Simon
+Acked-by: Balbir Singh <bsingharora@gmail.com>
