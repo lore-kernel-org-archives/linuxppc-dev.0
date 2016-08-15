@@ -1,33 +1,27 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCqrJ3DzNzDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 08:28:00 +1000 (AEST)
-Date: Mon, 15 Aug 2016 15:27:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org, linux-security-module@vger.kernel.org,
- linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, x86@kernel.org, Eric Biederman
- <ebiederm@xmission.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal
- <vgoyal@redhat.com>, Baoquan He <bhe@redhat.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Stewart Smith
- <stewart@linux.vnet.ibm.com>, Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, Eric Richter
- <erichte@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo
- Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Petko Manolov
- <petkan@mip-labs.com>, David Laight <David.Laight@ACULAB.COM>, Balbir Singh
- <bsingharora@gmail.com>
-Subject: Re: [PATCH v2 4/6] kexec_file: Add mechanism to update kexec segments.
-Message-Id: <20160815152756.78ea7a61a3342547b9e694e5@linux-foundation.org>
-In-Reply-To: <1471058305-30198-5-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1471058305-30198-5-git-send-email-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCrcr1nmHzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 09:03:08 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id h186so4374559pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 16:03:08 -0700 (PDT)
+Message-ID: <1471302180.748.1.camel@gmail.com>
+Subject: Re: [PATCH v2 18/20] powerpc: tm: Always use fp_state and vr_state
+ to store live registers
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, mikey@neuling.org
+Date: Tue, 16 Aug 2016 09:03:00 +1000
+In-Reply-To: <20160815094201.GA32347@simonLocalRHEL7.x64>
+References: <20160811232819.11453-1-cyrilbur@gmail.com>
+ <20160811232819.11453-19-cyrilbur@gmail.com>
+ <20160814015602.GA21144@simonLocalRHEL7.x64>
+ <1471245953.24478.0.camel@gmail.com>
+ <20160815094201.GA32347@simonLocalRHEL7.x64>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,119 +31,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 13 Aug 2016 00:18:23 -0300 Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> wrote:
-
-> kexec_update_segment allows a given segment in kexec_image to have
-> its contents updated. This is useful if the current kernel wants to
-> send information to the next kernel that is up-to-date at the time of
-> reboot.
+On Mon, 2016-08-15 at 17:42 +0800, Simon Guo wrote:
+> Hi Cyril,
+> On Mon, Aug 15, 2016 at 05:25:53PM +1000, Cyril Bur wrote:
+> > 
+> > > 
+> > > There are 2 "giveall_all()" in above path:
+> > > __switch_to()
+> > >         giveup_all()  // first time
+> > >         __switch_to_tm()
+> > >                 tm_reclaim_task()
+> > >                         tm_reclaim_thread()
+> > >                                 giveup_all()  // again????
+> > > We should remove the one in __switch_to().
+> > 
+> > I don't think that will be possible, if a thread is not
+> > transactional
+> > the second giveup_all() won't get called so we'll need to preserve
+> > the
+> > one in __switch_to().
+> > I don't think removing the second is a good idea as we can enter
+> > tm_reclaim_thread() from other means than __switch_to_tm().
+> > I did think that perhaps __switch_to_tm() could call giveup_all()
+> > in
+> > the non transactional case but on reflection, doing nothing on the
+> > non
+> > transactional case is cleaner.
+> > The two calls are annoying but in the case where two calls are
+> > made,
+> > the second should realise that nothing needs to be done and exit
+> > quickly.
+> Ah, yes. I somehow ignored non-transactional case....
 > 
-> ...
->
-> @@ -721,6 +721,105 @@ static struct page *kimage_alloc_page(struct kimage *image,
->  	return page;
->  }
->  
-> +/**
-> + * kexec_update_segment - update the contents of a kimage segment
-> + * @buffer:	New contents of the segment.
-> + * @bufsz:	@buffer size.
-> + * @load_addr:	Segment's physical address in the next kernel.
-> + * @memsz:	Segment size.
-> + *
-> + * This function assumes kexec_mutex is held.
-> + *
-> + * Return: 0 on success, negative errno on error.
-> + */
-> +int kexec_update_segment(const char *buffer, unsigned long bufsz,
-> +			 unsigned long load_addr, unsigned long memsz)
-> +{
-> +	int i;
-> +	unsigned long entry;
-> +	unsigned long *ptr = NULL;
-> +	void *dest = NULL;
-> +
-> +	if (kexec_image == NULL) {
-> +		pr_err("Can't update segment: no kexec image loaded.\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	/*
-> +	 * kexec_add_buffer rounds up segment sizes to PAGE_SIZE, so
-> +	 * we have to do it here as well.
-> +	 */
-> +	memsz = ALIGN(memsz, PAGE_SIZE);
-> +
-> +	for (i = 0; i < kexec_image->nr_segments; i++)
-> +		/* We only support updating whole segments. */
-> +		if (load_addr == kexec_image->segment[i].mem &&
-> +		    memsz == kexec_image->segment[i].memsz) {
-> +			if (kexec_image->segment[i].do_checksum) {
-> +				pr_err("Trying to update non-modifiable segment.\n");
-> +				return -EINVAL;
-> +			}
-> +
-> +			break;
-> +		}
-> +	if (i == kexec_image->nr_segments) {
-> +		pr_err("Couldn't find segment to update: 0x%lx, size 0x%lx\n",
-> +		       load_addr, memsz);
-> +		return -EINVAL;
-> +	}
-> +
-> +	for (entry = kexec_image->head; !(entry & IND_DONE) && memsz;
-> +	     entry = *ptr++) {
-> +		void *addr = (void *) (entry & PAGE_MASK);
-> +
-> +		switch (entry & IND_FLAGS) {
-> +		case IND_DESTINATION:
-> +			dest = addr;
-> +			break;
-> +		case IND_INDIRECTION:
-> +			ptr = __va(addr);
-> +			break;
-> +		case IND_SOURCE:
-> +			/* Shouldn't happen, but verify just to be safe. */
-> +			if (dest == NULL) {
-> +				pr_err("Invalid kexec entries list.");
-> +				return -EINVAL;
-> +			}
-> +
-> +			if (dest == (void *) load_addr) {
-> +				struct page *page;
-> +				char *ptr;
-> +				size_t uchunk, mchunk;
-> +
-> +				page = kmap_to_page(addr);
-> +
-> +				ptr = kmap(page);
+> > 
+> > 
+> > > 
+> > > And another question, for following code in tm_reclaim_thread():
+> > >         /* Having done the reclaim, we now have the checkpointed
+> > >          * FP/VSX values in the registers.  These might be valid
+> > >          * even if we have previously called enable_kernel_fp()
+> > > or
+> > >          * flush_fp_to_thread(), so update thr->regs->msr to
+> > >          * indicate their current validity.
+> > >          */
+> > >         thr->regs->msr |= msr_diff;
+> > > 
+> > > Does it imply the task being switched out of CPU, with
+> > > TIF_RESTORE_TM
+> > > bit set,  might end with MSR_FP enabled? (I thought MSR_FP should
+> > > not 
+> > > be enabled for a switched out task, as specified in
+> > > flush_fp_to_thread())
+> > 
+> > Correct! I mistakenly thought it was solving a problem but you're
+> > right. What you say is correct but it breaks signals, I've been
+> > hesitating on how to get signals to work with the correct solution
+> > here, I wasn't happy with my ideas but looks like it's pretty much
+> > the
+> > only way to go unfortunately.
+> Currently there will be an oops on flush_fp_to_thread() with this
+> patch, when ptrace a transaction application.
+> 
+> I think originally there is no giveup_all() call before
+> tm_reclaim_thread(), 
+> so TIF_RESTORE_TM bit is not set. And finally thr->regs->msr is not
+> marked with MSR_FP enabled.
+> 
+> [  363.473851] kernel BUG at arch/powerpc/kernel/process.c:191!
+> [  363.474242] Oops: Exception in kernel mode, sig: 5 [#1]
+> [  363.474595] SMP NR_CPUS=2048 NUMA pSeries
+> [  363.474956] Modules linked in: isofs sg virtio_balloon ip_tables
+> xfs libcrc32c sr_mod cdrom sd_mod virtio_net ibmvscsi
+> scsi_transport_srp virtio_pci virtio_ring virtio
+> [  363.476021] CPU: 0 PID: 3018 Comm: ptrace-tm-gpr Not tainted
+> 4.8.0-rc1+ #5
+> [  363.476547] task: c000000072c66b80 task.stack: c00000007e64c000
+> [  363.476949] NIP: c000000000017650 LR: c00000000000dc10 CTR:
+> c000000000011538
+> [  363.477428] REGS: c00000007e64f960 TRAP: 0700   Not tainted
+> (4.8.0-rc1+)
+> [  363.477948] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR:
+> 42000088  XER: 20000000
+> [  363.478488] CFAR: c000000000017620 SOFTE: 1 
+> GPR00: c00000000000dc10 c00000007e64fbe0 c000000000f3d800
+> c000000072c65600 
+> GPR04: c0000000008706a8 0000000000000000 0000000000000108
+> 0000000000000000 
+> GPR08: 0000010008410180 0000000000000001 0000000000000001
+> c000000000870f18 
+> GPR12: 0000000000000000 c00000000fe80000 0000000000000000
+> 0000000000000000 
+> GPR16: 0000000000000000 0000000000000000 0000000000000000
+> 0000000000000000 
+> GPR20: 0000000000000000 0000000000000000 0000000000000000
+> 0000000000000000 
+> GPR24: 0000000000000000 0000000000000000 0000000000000000
+> 0000010008410180 
+> GPR28: 0000000000000000 0000000000000000 0000000000000108
+> c000000072c65600 
+> [  363.482451] NIP [c000000000017650] flush_fp_to_thread+0x50/0x70
+> [  363.482855] LR [c00000000000dc10] fpr_get+0x40/0x120
+> [  363.483194] Call Trace:
+> [  363.483362] [c00000007e64fbe0] [c00000007e64fcf0]
+> 0xc00000007e64fcf0 (unreliable)
+> [  363.483872] [c00000007e64fc00] [c00000000000dc10]
+> fpr_get+0x40/0x120
+> [  363.484304] [c00000007e64fd60] [c000000000011578]
+> arch_ptrace+0x628/0x7e0
+> [  363.485811] [c00000007e64fde0] [c0000000000c3340]
+> SyS_ptrace+0xa0/0x180
+> [  363.486276] [c00000007e64fe30] [c000000000009404]
+> system_call+0x38/0xec
+> [  363.486725] Instruction dump:
+> [  363.486927] 40820010 4e800020 60000000 60420000 7c0802a6 f8010010
+> f821ffe1 e92d0210 
+> [  363.487459] 7c694a78 7d290074 7929d182 69290001 <0b090000>
+> 4bffff25 38210020 e8010010 
+> [  363.488005] ---[ end trace 58650a99c675b48c ]---
+> [  363.490137] 
+> [  365.490279] Kernel panic - not syncing: Fatal exception
+> 
 
-kmap_atomic() could be used here, and it is appreciably faster.
+Yeah so that is to do with the problem you found, TM code shouldn't be
+leaving MSR_{FP,VEC,VSX} on after a switch. I sort of found myself
+cleaning up a bit of the signal code to solve this nicely.
 
+Hopefully v3 today!
 
-> +				ptr += load_addr & ~PAGE_MASK;
-> +				mchunk = min_t(size_t, memsz,
-> +					       PAGE_SIZE - (load_addr & ~PAGE_MASK));
-> +				uchunk = min(bufsz, mchunk);
-> +				memcpy(ptr, buffer, uchunk);
-> +
-> +				kunmap(page);
-> +
-> +				bufsz -= uchunk;
-> +				load_addr += mchunk;
-> +				buffer += mchunk;
-> +				memsz -= mchunk;
-> +			}
-> +			dest += PAGE_SIZE;
-> +		}
-> +
-> +		/* Shouldn't happen, but verify just to be safe. */
-> +		if (ptr == NULL) {
-> +			pr_err("Invalid kexec entries list.");
-> +			return -EINVAL;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
+> Thanks,
+> - Simon
