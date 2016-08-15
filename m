@@ -1,25 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCMFf5jwWzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 13:59:50 +1000 (AEST)
-Date: Mon, 15 Aug 2016 13:59:47 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-Message-ID: <20160815035947.GA6923@oak.ozlabs.ibm.com>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
- <20160808104315.77cf22ec@t450s.home>
- <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
- <20160809061630.50ed5536@t450s.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160809061630.50ed5536@t450s.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCR4l2hckzDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 16:52:23 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+ stewart@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au,
+ Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH] powerpc/powernv: Initialise nest mmu
+Date: Mon, 15 Aug 2016 16:51:59 +1000
+Message-Id: <1471243919-18362-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +21,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 09, 2016 at 06:16:30AM -0600, Alex Williamson wrote:
-> On Tue, 9 Aug 2016 15:19:39 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
-> > On 09/08/16 02:43, Alex Williamson wrote:
-> > > 
-> > > I think you need to take a closer look of the lifecycle of a container,
-> > > having a reference means the container itself won't go away, but only
-> > > having a group set within that container holds the actual IOMMU
-> > > references.  container->iommu_data is going to be NULL once the
-> > > groups are lost.  Thanks,  
-> > 
-> > 
-> > Container owns the iommu tables and this is what I care about here, groups
-> > attached or not - this is handled separately via IOMMU group list in a
-> > specific iommu_table struct, these groups get detached from iommu_table
-> > when they are removed from a container.
-> 
-> The container doesn't own anything, the container is privileged by the
-> groups being attached to it.  When groups are closed, they detach from
-> the container and once the container group list is empty the iommu
-> backend is released and iommu_data is NULL.  A container reference
-> doesn't give you what you're looking for.  It implies nothing about the
-> iommu backend.
+POWER9 contains an off core mmu called the nest mmu (NMMU). This is
+used by other hardware units on the chip to translate virtual
+addresses into real addresses. The unit attempting an address
+translation provides the majority of the context required for the
+translation request except for the base address of the partition table
+(ie. the PTCR) which needs to be programmed into the NMMU.
 
-Alex, I'd like to understand more what the objection is here - is it
-just about the object lifetimes, or is it a more fundamental objection
-to the style of interface?
+This patch adds a call to OPAL to set the PTCR for the nest mmu in
+opal_init().
 
-Regarding lifetimes, my understanding was that Alexey's previous
-patches added refcounting to the iommu tables, so that KVM could get a
-reference to the iommu tables through the container and then safely
-use the iommu tables directly.  There may still be a potential race in
-the interval between asking the container about its iommu tables and
-incrementing the tables' reference counts, but that should be able to
-be solved.  I don't see any unsolvable problem regarding lifetimes.
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
 
-Or is your objection about any external access to the container?
-As far as I know, when a group is not part of a container it has its
-own iommu tables, but when it is put in a container it loses its own
-iommu tables and instead uses a common pair of iommu tables (one for
-the 32-bit window, one for the 64-bit window) that belong to the
-container.  So we do in fact need the container's iommu tables not the
-individual groups' tables.
+This patch depends on a new OPAL call which has yet to be added to
+skiboot, although the patch to do so has been posted to
+http://patchwork.ozlabs.org/patch/659106/
 
-Regards,
-Paul.
+ arch/powerpc/include/asm/opal-api.h            | 3 ++-
+ arch/powerpc/include/asm/opal.h                | 1 +
+ arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
+ arch/powerpc/platforms/powernv/opal.c          | 3 +++
+ 4 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0e2e57b..a0aa285 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -167,7 +167,8 @@
+ #define OPAL_INT_EOI				124
+ #define OPAL_INT_SET_MFRR			125
+ #define OPAL_PCI_TCE_KILL			126
+-#define OPAL_LAST				126
++#define OPAL_NMMU_SET_PTCR			127
++#define OPAL_LAST				127
+
+ /* Device tree flags */
+
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index ee05bd2..433df5e 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -228,6 +228,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ 			     uint32_t pe_num, uint32_t tce_size,
+ 			     uint64_t dma_addr, uint32_t npages);
++int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
+
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 3d29d40..a955649 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -308,3 +308,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+ OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+ OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
+ OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
++OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 8b4fc68..b533245 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -762,6 +762,9 @@ static int __init opal_init(void)
+ 	/* Initialise OPAL kmsg dumper for flushing console on panic */
+ 	opal_kmsg_init();
+
++	/* Update partition table control register on all Nest MMUs */
++	opal_nmmu_set_ptcr(-1UL, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
++
+ 	return 0;
+ }
+ machine_subsys_initcall(powernv, opal_init);
+--
+2.1.4
