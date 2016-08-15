@@ -1,30 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCRlx4b75zDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 17:22:53 +1000 (AEST)
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sCRlw58r0z9t1F
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Aug 2016 17:22:52 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id i6so3314399pfe.0
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Aug 2016 00:22:51 -0700 (PDT)
-Date: Mon, 15 Aug 2016 17:22:40 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Alistair Popple <alistair@popple.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, stewart@linux.vnet.ibm.com,
- bsingharora@gmail.com, mpe@ellerman.id.au
-Subject: Re: [PATCH] powerpc/powernv: Initialise nest mmu
-Message-ID: <20160815072240.GA21080@balbir.ozlabs.ibm.com>
-Reply-To: bsingharora@gmail.com
-References: <1471243919-18362-1-git-send-email-alistair@popple.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1471243919-18362-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCRqZ2XlszDr3R
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 17:26:02 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id i6so3318264pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 00:26:02 -0700 (PDT)
+Message-ID: <1471245953.24478.0.camel@gmail.com>
+Subject: Re: [PATCH v2 18/20] powerpc: tm: Always use fp_state and vr_state
+ to store live registers
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, mikey@neuling.org
+Date: Mon, 15 Aug 2016 17:25:53 +1000
+In-Reply-To: <20160814015602.GA21144@simonLocalRHEL7.x64>
+References: <20160811232819.11453-1-cyrilbur@gmail.com>
+ <20160811232819.11453-19-cyrilbur@gmail.com>
+ <20160814015602.GA21144@simonLocalRHEL7.x64>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,90 +29,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 15, 2016 at 04:51:59PM +1000, Alistair Popple wrote:
-> POWER9 contains an off core mmu called the nest mmu (NMMU). This is
-> used by other hardware units on the chip to translate virtual
-> addresses into real addresses. The unit attempting an address
-> translation provides the majority of the context required for the
-> translation request except for the base address of the partition table
-> (ie. the PTCR) which needs to be programmed into the NMMU.
+On Sun, 2016-08-14 at 09:56 +0800, Simon Guo wrote:
+> On Fri, Aug 12, 2016 at 09:28:17AM +1000, Cyril Bur wrote:
+> > 
+> > @@ -846,7 +834,9 @@ static void tm_reclaim_thread(struct
+> > thread_struct *thr,
+> >  	if (!MSR_TM_SUSPENDED(mfmsr()))
+> >  		return;
+> >  
+> > -	tm_reclaim(thr, thr->regs->msr, cause);
+> > +	giveup_all(container_of(thr, struct task_struct, thread));
+> > +
+> > +	tm_reclaim(thr, msr_diff, cause);
+> >  
+> >  	/* Having done the reclaim, we now have the checkpointed
+> >  	 * FP/VSX values in the registers.  These might be valid
 > 
-> This patch adds a call to OPAL to set the PTCR for the nest mmu in
-> opal_init().
+> > 
+> > @@ -1189,11 +1171,11 @@ struct task_struct *__switch_to(struct
+> > task_struct *prev,
+> >  	 */
+> >  	save_sprs(&prev->thread);
+> >  
+> > -	__switch_to_tm(prev);
+> > -
+> >  	/* Save FPU, Altivec, VSX and SPE state */
+> >  	giveup_all(prev);
+> >  
+> > +	__switch_to_tm(prev, new);
+> > +
+> >  	/*
+> >  	 * We can't take a PMU exception inside _switch() since
+> > there is a
+> >  	 * window where the kernel stack SLB and the kernel stack
+> > are out
 > 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> ---
 > 
-> This patch depends on a new OPAL call which has yet to be added to
-> skiboot, although the patch to do so has been posted to
-> http://patchwork.ozlabs.org/patch/659106/
-> 
->  arch/powerpc/include/asm/opal-api.h            | 3 ++-
->  arch/powerpc/include/asm/opal.h                | 1 +
->  arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
->  arch/powerpc/platforms/powernv/opal.c          | 3 +++
->  4 files changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 0e2e57b..a0aa285 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -167,7 +167,8 @@
->  #define OPAL_INT_EOI				124
->  #define OPAL_INT_SET_MFRR			125
->  #define OPAL_PCI_TCE_KILL			126
-> -#define OPAL_LAST				126
-> +#define OPAL_NMMU_SET_PTCR			127
-> +#define OPAL_LAST				127
-> 
->  /* Device tree flags */
-> 
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index ee05bd2..433df5e 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -228,6 +228,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
->  int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
->  			     uint32_t pe_num, uint32_t tce_size,
->  			     uint64_t dma_addr, uint32_t npages);
-> +int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
-> 
->  /* Internal functions */
->  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index 3d29d40..a955649 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -308,3 +308,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
->  OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
->  OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
->  OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
-> +OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 8b4fc68..b533245 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -762,6 +762,9 @@ static int __init opal_init(void)
->  	/* Initialise OPAL kmsg dumper for flushing console on panic */
->  	opal_kmsg_init();
-> 
-> +	/* Update partition table control register on all Nest MMUs */
-> +	opal_nmmu_set_ptcr(-1UL, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-> +
+> There are 2 "giveall_all()" in above path:
+> __switch_to()
+>         giveup_all()  // first time
+>         __switch_to_tm()
+>                 tm_reclaim_task()
+>                         tm_reclaim_thread()
+>                                 giveup_all()  // again????
+> We should remove the one in __switch_to().
 
-Just wondering if
+I don't think that will be possible, if a thread is not transactional
+the second giveup_all() won't get called so we'll need to preserve the
+one in __switch_to().
+I don't think removing the second is a good idea as we can enter
+tm_reclaim_thread() from other means than __switch_to_tm().
+I did think that perhaps __switch_to_tm() could call giveup_all() in
+the non transactional case but on reflection, doing nothing on the non
+transactional case is cleaner.
+The two calls are annoying but in the case where two calls are made,
+the second should realise that nothing needs to be done and exit
+quickly.
 
-1. Instead of using -1 for all cpus, we should do
-	for_each_online_cpu() {
-		opal_numm_set_ptcr(...)
-	}
+> And another question, for following code in tm_reclaim_thread():
+>         /* Having done the reclaim, we now have the checkpointed
+>          * FP/VSX values in the registers.  These might be valid
+>          * even if we have previously called enable_kernel_fp() or
+>          * flush_fp_to_thread(), so update thr->regs->msr to
+>          * indicate their current validity.
+>          */
+>         thr->regs->msr |= msr_diff;
+> 
+> Does it imply the task being switched out of CPU, with TIF_RESTORE_TM
+> bit set,  might end with MSR_FP enabled? (I thought MSR_FP should
+> not 
+> be enabled for a switched out task, as specified in
+> flush_fp_to_thread())
 
-2. In cpu hotplug path do the same when onlining and set to NULL on
-offlining?
+Correct! I mistakenly thought it was solving a problem but you're
+right. What you say is correct but it breaks signals, I've been
+hesitating on how to get signals to work with the correct solution
+here, I wasn't happy with my ideas but looks like it's pretty much the
+only way to go unfortunately.
 
-I think we should definitely try and become hotplug aware from the OS
-view point and drive it from the OS
+Thanks,
+Cyril
 
-What do you think?
-
-Balbir Singh.
+> 
+> Thanks,
+> - Simon
