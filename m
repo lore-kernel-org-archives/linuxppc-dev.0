@@ -1,39 +1,39 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCWm25g8VzDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 20:23:14 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7FAE66v022590
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 06:23:12 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24tgpctbad-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sCWwJ6KmGzDr3R
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 20:30:24 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7FASkb7008828
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 06:30:23 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24t029a2w6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 06:23:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 06:30:22 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 15 Aug 2016 04:23:11 -0600
+ Mon, 15 Aug 2016 06:30:21 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: christophe leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] powerpc: port 64 bits pgtable_cache to 32 bits
-In-Reply-To: <df8b5a70-e705-e282-c33c-0c0b93d6b72e@c-s.fr>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 6/6] powerpc/8xx: implementation of huge pages
+In-Reply-To: <55f9f338-a098-96e0-c753-2e83045bedab@c-s.fr>
 References: <cover.1471020646.git.christophe.leroy@c-s.fr>
- <794b4abd8caaad32edf4180ac485a2eb914fba49.1471020647.git.christophe.leroy@c-s.fr>
- <878tvza0zg.fsf@skywalker.in.ibm.com>
- <df8b5a70-e705-e282-c33c-0c0b93d6b72e@c-s.fr>
-Date: Mon, 15 Aug 2016 15:53:03 +0530
+ <15e0fa7a312245e681cb9ca18ffb875c7820e5fc.1471020647.git.christophe.leroy@c-s.fr>
+ <8760r3a0md.fsf@skywalker.in.ibm.com>
+ <55f9f338-a098-96e0-c753-2e83045bedab@c-s.fr>
+Date: Mon, 15 Aug 2016 16:00:14 +0530
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <87fuq649h4.fsf@linux.vnet.ibm.com>
+Message-Id: <87d1la4955.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,99 +45,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 christophe leroy <christophe.leroy@c-s.fr> writes:
 
-> Le 14/08/2016 =C3=A0 16:17, Aneesh Kumar K.V a =C3=A9crit :
+> Le 14/08/2016 =C3=A0 16:25, Aneesh Kumar K.V a =C3=A9crit :
 >> Christophe Leroy <christophe.leroy@c-s.fr> writes:
 >>
->>> Today powerpc64 uses a set of pgtable_caches while powerpc32 uses
->>> standard pages when using 4k pages and a single pgtable_cache
->>> if using other size pages. In addition powerpc32 uses another cache
->>> when handling huge pages.
+>>> The 8xx has 512k and 8M pages. This patch implements hugepages using
+>>> those sizes.
 >>>
->>> In preparation of implementing huge pages on the 8xx, this patch
->>> replaces the specific powerpc32 handling by the 64 bits approach.
+>>> On the 8xx, the size of pages is in the PGD entry,
+>>> using PS field (bits 28-29):
+>>> 00 : Small pages (4k or 16k)
+>>> 01 : 512k pages
+>>> 10 : reserved
+>>> 11 : 8M pages
+>>>
+>>> The implementation uses a mix of what is used on BOOKS and BOOKE,
+>>> as 512k pages are in HUGEPTE tables while for 8M pages we have
+>>> several PGD entries pointing on a leaf HUGEPTE entry
+>>>
+>>> For the time being, we do not support CPU15 ERRATA if HUGETLB is
+>>> selected
 >>
->> Why is this needed ? Can you also summarize the page size used and the
->> hugepage format you are planning to use ? . What are the page sizes
->> supported by 8xx ? Also is the new code copy of existing powerpc64 4k
->> page size code ?
+>> Can you also document here the format for linux page table with different
+>> huge page size. ?
 >
-> 8xx supports two huge page sizes: 8M and 512k.
-> As PGD entries points on 4M page tables, it means we are in an=20
-> eterogenous situation:
-> 1/ when using 8M huge pages, we are in the same situation as what is=20
-> done for the BOOK3S (which supports 16M, 256M and 1G), that is several=20
-> PDG entries pointing to a single PTE entry.
-
-what is done for FSL BOOK3E ?
-
-
-> 2/ when using 512k huge pages, we are in the same situation as whan is=20
-> done for the BOOK3E: a PGD entry points to the hugepage table that=20
-> handles several huge pages (in our case 8 huge pages)
->
-
-what is done for Book3s with 4K linux page size. ?
-
-
-So the idea here is to allocate different hugepte table based on
-hugepage size requested and hence the need to switch from hugpte-cache
-to a more generic PGT_CACHE ?
-
-> The code from init_64 have been moved to a new file named init-common in=
+> Euh ... isn't it what I do when explaining the use of the PS field in=20
+> the PGD entry ? That's the thing, that's how the 8xx knows how it is a=20
+> huge page, and that's how Linux will know it is one. On the 8xx, the=20
+> Linux PGD entry (almost) match the L1 MMU entry and the Linux PTE almost=
 =20
-> order to be used by init_32 too.
-> The code from the 64 bits .h has been copied into the 32 bits .h (indeed=
-=20
-> it's been copied twice as the .h are now duplicated into nohash and=20
-> book3s versions)
-
-
-That explanation made it a lot easy to follow the patch. Can we capture
-that in commit message too. Also Do we support hugepage with both 4k and
-16K linux page size ?. I guess we do because 8xx only do a two level
-linux page table ?=20
-
->
-> [...]
->
->>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpag=
-e.c
->>> index 7372ee1..9164a77 100644
->>> --- a/arch/powerpc/mm/hugetlbpage.c
->>> +++ b/arch/powerpc/mm/hugetlbpage.c
->>> @@ -68,7 +68,7 @@ static int __hugepte_alloc(struct mm_struct *mm, huge=
-pd_t *hpdp,
->>>  #ifdef CONFIG_PPC_FSL_BOOK3E
->>>  	int i;
->>>  	int num_hugepd =3D 1 << (pshift - pdshift);
->>> -	cachep =3D hugepte_cache;
->>> +	cachep =3D PGT_CACHE(1);
->>>  #else
->>>  	cachep =3D PGT_CACHE(pdshift - pshift);
->>>  #endif
->>
->> Can you explain the usage of PGT_CACHE(1) ?
->
-> [...]
->
->>
->> I still didn't quiet follow why we are replacing
->>
->>  -	hugepte_cache =3D  kmem_cache_create("hugepte-cache", sizeof(pte_t),
->>  -					   HUGEPD_SHIFT_MASK + 1, 0, NULL);
->>  +	pgtable_cache_add(1, NULL);
->>
->
-> Euh ... Indeed I wanted something to replace hugepte_cache. But it looks=
-=20
-> like it should be something like PGT_CACHE(0) for 32 bits targets having=
-=20
-> 32 bits PTEs and PGT_CACHE(1) for 32 bits targets having 64 bits PTEs.=20
-> But PGT_CACHE(0) doesn't exist (yet).
->
-> Looking once more, that might not really be needed I think. I'll rework=20
-> it and see what I can achieve.
+> match the L2 MMU entry (some bits are copied from the PTE to the L1=20
+> entry and then removed from the value writen to the L2 MMU entry)
 >
 
-Thanks
+Sorry if that answer was obvious in the commit message. I haven't looked
+at 8xx pagetable format closely to understand the details. Now with your
+reply to the earlier email, I looked at the changes again and wonder
+whether we can document details like.
+
+8xx uses a two level page table with two different linux page size
+support (4k and 16k). 8xx also support two different hugepage sizes
+512k and 8M. Inorder to support then on linux we define two different
+page table layout.
+
+For 512K hugepage size a pgd entry have the below format
+[<hugepte address >0100] . The hugepte table allocated will contain <x>
+entries pointing to 512K huge pte.
+
+For 8M multiple pgd entries point to the same hugepte address. and pgd
+entry will have the below format
+[<hugepte address>1100]. The hugepte table allocated will only have one
+entry.
+
+I agree that this is the same details you explained in the commit
+messages. But calling out all details will help anybody reading the code
+later.
+
 -aneesh
