@@ -1,31 +1,19 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sD2DQ2zplzDr45
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 16:16:06 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id cf3so4740028pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2016 23:16:06 -0700 (PDT)
-Subject: Re: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take
- kexec_buf as argument.
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1470956898-5991-3-git-send-email-bauerman@linux.vnet.ibm.com>
- <20160815073049.GB21080@balbir.ozlabs.ibm.com> <1906561.y8blzB2uZ8@hactar>
-Cc: kexec@lists.infradead.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
- Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Eric Biederman <ebiederm@xmission.com>, Thomas Gleixner
- <tglx@linutronix.de>, Dave Young <dyoung@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <fab1a3ec-5252-3ca7-6382-15b84a19ccdb@gmail.com>
-Date: Tue, 16 Aug 2016 16:15:55 +1000
-MIME-Version: 1.0
-In-Reply-To: <1906561.y8blzB2uZ8@hactar>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sD2SK3qY5zDr46
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 16:26:25 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] soc: fsl/qe: fix Oops on CPM1 (and likely CPM2)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, Zhao Qiang <qiang.zhao@nxp.com>,
+ David S. Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org
+Message-Id: <20160816062620.41D9C1A2456@localhost.localdomain>
+Date: Tue, 16 Aug 2016 08:26:20 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,25 +23,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Commit 0e6e01ff694ee ("CPM/QE: use genalloc to manage CPM/QE muram")
+has changed the way muram is managed.
+genalloc uses kmalloc(), hence requires the SLAB to be up and running.
 
+On powerpc 8xx, cpm_reset() is called early during startup.
+cpm_reset() then calls cpm_muram_init() before SLAB is available,
+hence the following Oops.
 
-On 16/08/16 00:49, Thiago Jung Bauermann wrote:
-> Am Montag, 15 August 2016, 17:30:49 schrieb Balbir Singh:
->> On Thu, Aug 11, 2016 at 08:08:07PM -0300, Thiago Jung Bauermann wrote:
->>> Adapt all callers to the new function prototype.
->>
->> Could you please expand on this?
-> 
-> Is the following better?
-> 
-> Adapt all callers to set up a kexec_buf to pass to kexec_add_buffer.
+cpm_reset() cannot be called during initcalls because the CPM is
+needed for console.
 
-Yes and the reason for doing so? Consolidation/clarity of implementation?
+This patch removes the call to cpm_muram_init() from cpm_reset().
+cpm_muram_init() will be called from a new function called cpm_init()
+which is declared as subsys_initcall, unless cpm_muram_alloc() is
+called earlier for the serial console in which case cpm_muram_init()
+will be called from there.
 
-> 
->> Looks good otherwise
->>
->> Acked-by: Balbir Singh <bsingharora@gmail.com>
-> 
-> Thank you for reviewing this series!
-> 
+The reason for calling it from two places is that some drivers
+(e.g. i2c-cpm) need some of the initialisations done by
+cpm_muram_init() but don't call cpm_muram_alloc(). The console
+driver calls cpm_muram_alloc() but some platforms might not use
+the CPM serial ports for console.
+
+[    0.000000] Unable to handle kernel paging request for data at address 0x00000008
+[    0.000000] Faulting instruction address: 0xc01acce0
+[    0.000000] Oops: Kernel access of bad area, sig: 11 [#1]
+[    0.000000] PREEMPT CMPC885
+[    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 4.4.14-g0886ed8 #5
+[    0.000000] task: c05183e0 ti: c0536000 task.ti: c0536000
+[    0.000000] NIP: c01acce0 LR: c0011068 CTR: 00000000
+[    0.000000] REGS: c0537e50 TRAP: 0300   Not tainted (4.4.14-s3k-dev-g0886ed8-svn)
+[    0.000000] MSR: 00001032 <ME,IR,DR,RI>  CR: 28044428  XER: 00000000
+[    0.000000] DAR: 00000008 DSISR: c0000000
+GPR00: c0011068 c0537f00 c05183e0 00000000 00009000 ffffffff 00000bc0 ffffffff
+GPR08: ff003000 ff00b000 ff003bbf 00000000 22044422 100d43a8 00000000 07ff94e8
+GPR16: 00000000 07bb5d70 00000000 07ff81f4 07ff81f4 07ff81f4 00000000 00000000
+GPR24: 07ffb3a0 07fe7628 c0550000 c7ffa190 c0540000 ff003bbf 00000000 00000001
+[    0.000000] NIP [c01acce0] gen_pool_add_virt+0x14/0xdc
+[    0.000000] LR [c0011068] cpm_muram_init+0xd4/0x18c
+[    0.000000] Call Trace:
+[    0.000000] [c0537f00] [00000200] 0x200 (unreliable)
+[    0.000000] [c0537f20] [c0011068] cpm_muram_init+0xd4/0x18c
+[    0.000000] [c0537f70] [c0494684] cpm_reset+0xb4/0xc8
+[    0.000000] [c0537f90] [c0494c64] cmpc885_setup_arch+0x10/0x30
+[    0.000000] [c0537fa0] [c0493cd4] setup_arch+0x130/0x168
+[    0.000000] [c0537fb0] [c04906bc] start_kernel+0x88/0x380
+[    0.000000] [c0537ff0] [c0002224] start_here+0x38/0x98
+[    0.000000] Instruction dump:
+[    0.000000] 91430010 91430014 80010014 83e1000c 7c0803a6 38210010 4e800020 7c0802a6
+[    0.000000] 9421ffe0 bf61000c 90010024 7c7e1b78 <80630008> 7c9c2378 7cc31c30 3863001f
+[    0.000000] ---[ end trace dc8fa200cb88537f ]---
+
+fixes: 0e6e01ff694ee ("CPM/QE: use genalloc to manage CPM/QE muram")
+Cc: stable@vger.linux.org
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v2: cpu_muram_init() is not splitted anymore.
+
+ arch/powerpc/sysdev/cpm1.c       |  2 --
+ arch/powerpc/sysdev/cpm2.c       |  4 ----
+ arch/powerpc/sysdev/cpm_common.c | 15 +++++++++++++++
+ drivers/soc/fsl/qe/qe_common.c   | 14 +++++++++++---
+ 4 files changed, 26 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
+index 6c11099..56b5883 100644
+--- a/arch/powerpc/sysdev/cpm1.c
++++ b/arch/powerpc/sysdev/cpm1.c
+@@ -233,8 +233,6 @@ void __init cpm_reset(void)
+ 	else
+ 		out_be32(&siu_conf->sc_sdcr, 1);
+ 	immr_unmap(siu_conf);
+-
+-	cpm_muram_init();
+ }
+ 
+ static DEFINE_SPINLOCK(cmd_lock);
+diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+index 8dc1e24..f78ff84 100644
+--- a/arch/powerpc/sysdev/cpm2.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -66,10 +66,6 @@ void __init cpm2_reset(void)
+ 	cpm2_immr = ioremap(get_immrbase(), CPM_MAP_SIZE);
+ #endif
+ 
+-	/* Reclaim the DP memory for our use.
+-	 */
+-	cpm_muram_init();
+-
+ 	/* Tell everyone where the comm processor resides.
+ 	 */
+ 	cpmp = &cpm2_immr->im_cpm;
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 911456d..3e647d6 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -37,6 +37,21 @@
+ #include <linux/of_gpio.h>
+ #endif
+ 
++static int __init cpm_init(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,cpm1");
++	if (!np)
++		np = of_find_compatible_node(NULL, NULL, "fsl,cpm2");
++	if (!np)
++		return -ENODEV;
++	cpm_muram_init();
++	of_node_put(np);
++	return 0;
++}
++subsys_initcall(cpm_init);
++
+ #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
+ static u32 __iomem *cpm_udbg_txdesc;
+ static u8 __iomem *cpm_udbg_txbuf;
+diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
+index 41eff80..fcf252b 100644
+--- a/drivers/soc/fsl/qe/qe_common.c
++++ b/drivers/soc/fsl/qe/qe_common.c
+@@ -70,9 +70,14 @@ int cpm_muram_init(void)
+ 	}
+ 
+ 	muram_pool = gen_pool_create(0, -1);
++	if (!muram_pool) {
++		pr_err("Cannot allocate memory pool for CPM/QE muram");
++		ret = -ENOMEM;
++		goto out_muram;
++	}
+ 	muram_pbase = of_translate_address(np, zero);
+ 	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
+-		pr_err("Cannot translate zero through CPM muram node");
++		pr_err("Cannot translate zero through CPM/QE muram node");
+ 		ret = -ENODEV;
+ 		goto out_pool;
+ 	}
+@@ -83,14 +88,14 @@ int cpm_muram_init(void)
+ 		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
+ 				   GENPOOL_OFFSET, resource_size(&r), -1);
+ 		if (ret) {
+-			pr_err("QE: couldn't add muram to pool!\n");
++			pr_err("CPM/QE: couldn't add muram to pool!\n");
+ 			goto out_pool;
+ 		}
+ 	}
+ 
+ 	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
+ 	if (!muram_vbase) {
+-		pr_err("Cannot map QE muram");
++		pr_err("Cannot map CPM/QE muram");
+ 		ret = -ENOMEM;
+ 		goto out_pool;
+ 	}
+@@ -116,6 +121,9 @@ static unsigned long cpm_muram_alloc_common(unsigned long size,
+ 	struct muram_block *entry;
+ 	unsigned long start;
+ 
++	if (!muram_pool && cpm_muram_init())
++		goto out2;
++
+ 	start = gen_pool_alloc_algo(muram_pool, size, algo, data);
+ 	if (!start)
+ 		goto out2;
+-- 
+2.1.0
