@@ -1,30 +1,49 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sCzjZ2n6zzDr45
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 14:22:42 +1000 (AEST)
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sCzjY4Z6Bz9t2G
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Aug 2016 14:22:41 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id y134so4781953pfg.3
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Aug 2016 21:22:41 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/powernv: Initialise nest mmu
-To: Alistair Popple <alistair@popple.id.au>
-References: <1471243919-18362-1-git-send-email-alistair@popple.id.au>
- <20160815072240.GA21080@balbir.ozlabs.ibm.com>
- <1989530.M5axb7bib9@new-mexico>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- benh@kernel.crashing.org, stewart@linux.vnet.ibm.com, mpe@ellerman.id.au
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <a405f24b-2a80-4828-cf65-a40824130f5e@gmail.com>
-Date: Tue, 16 Aug 2016 14:22:33 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sD1BX14XpzDr45
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 15:29:23 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7G5SwId060157
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 01:29:22 -0400
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24syq39gpa-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 01:29:21 -0400
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 16 Aug 2016 10:59:18 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 497A71258026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 11:02:27 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7G5TDwW30343398
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 10:59:13 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7G5T7r1002042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 10:59:12 +0530
+Subject: Re: [PATCH] perf/core: Fix the mask in perf_output_sample_regs
+To: Peter Zijlstra <peterz@infradead.org>
+References: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160811122710.GP6879@twins.programming.kicks-ass.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Yury Norov <ynorov@caviumnetworks.com>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Tue, 16 Aug 2016 10:59:05 +0530
 MIME-Version: 1.0
-In-Reply-To: <1989530.M5axb7bib9@new-mexico>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20160811122710.GP6879@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <80480a53-c9db-d912-c560-0c31b81100ce@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,34 +55,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 16/08/16 10:37, Alistair Popple wrote:
-> Balbir,
-> 
-> <snip>
->  
->>> +	/* Update partition table control register on all Nest MMUs */
->>> +	opal_nmmu_set_ptcr(-1UL, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
->>> +
->>
->> Just wondering if
->>
->> 1. Instead of using -1 for all cpus, we should do
->> 	for_each_online_cpu() {
->> 		opal_numm_set_ptcr(...)
->> 	}
-> 
-> Good question, but I don't think it makes sense to do that. The NMMU is
-> per-chip/socket rather than per-cpu so it shouldn't be tied to
-> onlining/offlining of individual CPUs.
-> 
->> 2. In cpu hotplug path do the same when onlining and set to NULL on
->> offlining?
-> 
-> Again, the nmmu isn't tied to a specific CPU but rather a chip/socket. So in
-> theory at least it's possible that all CPUs in a chip could be offline but
-> other units on the chip could still be using the nmmu so we wouldn't want to
-> disable the nmmu at that point.
+On Thursday 11 August 2016 05:57 PM, Peter Zijlstra wrote:
+> Sorry, found it in my inbox while clearing out backlog..
+>
+> On Sun, Jul 03, 2016 at 11:31:58PM +0530, Madhavan Srinivasan wrote:
+>> When decoding the perf_regs mask in perf_output_sample_regs(),
+>> we loop through the mask using find_first_bit and find_next_bit functions.
+>> While the exisitng code works fine in most of the case,
+>> the logic is broken for 32bit kernel (Big Endian).
+>> When reading u64 mask using (u32 *)(&val)[0], find_*_bit() assumes it gets
+>> lower 32bits of u64 but instead gets upper 32bits which is wrong.
+>> Proposed fix is to swap the words of the u64 to handle this case.
+>> This is _not_ endianness swap.
+> But it looks an awful lot like it..
+Hit this issue when testing my perf_arch_regs patchset. Yep exactly
+the reason for adding that comment in the commit message.
 
-Fair enough
 
-Balbir Singh.
+>
+>> +++ b/kernel/events/core.c
+>> @@ -5205,8 +5205,10 @@ perf_output_sample_regs(struct perf_output_handle *handle,
+>>   			struct pt_regs *regs, u64 mask)
+>>   {
+>>   	int bit;
+>> +	DECLARE_BITMAP(_mask, 64);
+>>   
+>> -	for_each_set_bit(bit, (const unsigned long *) &mask,
+>> +	bitmap_from_u64(_mask, mask);
+>> +	for_each_set_bit(bit, _mask,
+>>   			 sizeof(mask) * BITS_PER_BYTE) {
+>>   		u64 val;
+>> +++ b/lib/bitmap.c
+>> +void bitmap_from_u64(unsigned long *dst, u64 mask)
+>> +{
+>> +	dst[0] = mask & ULONG_MAX;
+>> +
+>> +	if (sizeof(mask) > sizeof(unsigned long))
+>> +		dst[1] = mask >> 32;
+>> +}
+>> +EXPORT_SYMBOL(bitmap_from_u64);
+> Looks small enough for an inline.
+>
+> Alternatively you can go all the way and add bitmap_from_u64array(), but
+> that seems massive overkill.
+
+Ok will make it inline and resend.
+
+Maddy
+
+>
+> Tedious stuff.. I can't come up with anything prettier :/
+>
