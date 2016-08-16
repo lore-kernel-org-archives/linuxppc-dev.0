@@ -1,52 +1,27 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDLyH16k2zDr4d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 04:49:58 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7GImsaB096964
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 14:49:54 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24t032gmhf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 14:49:53 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 16 Aug 2016 15:49:51 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id A42551DC0072
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 14:49:39 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7GInmaX26083614
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 15:49:48 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7GInlwS003201
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 15:49:48 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: kexec@lists.infradead.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
- Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Eric Biederman <ebiederm@xmission.com>,
- Thomas Gleixner <tglx@linutronix.de>, Dave Young <dyoung@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take
- kexec_buf as argument.
-Date: Tue, 16 Aug 2016 15:49:46 -0300
-In-Reply-To: <fab1a3ec-5252-3ca7-6382-15b84a19ccdb@gmail.com>
-References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1906561.y8blzB2uZ8@hactar> <fab1a3ec-5252-3ca7-6382-15b84a19ccdb@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <2089791.XEmIvA1k4K@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDRTt5QRmzDr4c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 08:14:10 +1000 (AEST)
+Message-ID: <1471385632.19495.24.camel@kernel.crashing.org>
+Subject: Re: debug problems on ppc 83xx target due to changed struct
+ task_struct
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Hansen <dave.hansen@linux.intel.com>, Holger Brunck
+ <holger.brunck@keymile.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: "mingo@kernel.org" <mingo@kernel.org>
+Date: Wed, 17 Aug 2016 08:13:52 +1000
+In-Reply-To: <57B1EBAE.6030503@linux.intel.com>
+References: <dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com>
+ <57ADE7E6.9030900@linux.intel.com>
+ <4e16aad4-80d3-ffcc-d183-681b48d4751b@keymile.com>
+ <57ADF4A0.5040807@linux.intel.com>
+ <41e00d07-d7ce-0198-acce-ac25db8c9df3@keymile.com>
+ <57B1EBAE.6030503@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,37 +31,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Dienstag, 16 August 2016, 16:15:55 schrieb Balbir Singh:
-> On 16/08/16 00:49, Thiago Jung Bauermann wrote:
-> > Am Montag, 15 August 2016, 17:30:49 schrieb Balbir Singh:
-> >> On Thu, Aug 11, 2016 at 08:08:07PM -0300, Thiago Jung Bauermann wrote:
-> >>> Adapt all callers to the new function prototype.
-> >> 
-> >> Could you please expand on this?
-> > 
-> > Is the following better?
-> > 
-> > Adapt all callers to set up a kexec_buf to pass to kexec_add_buffer.
+On Mon, 2016-08-15 at 09:19 -0700, Dave Hansen wrote:
+> 
+> Wow, thanks for all the debugging here!
+
+Yup, thanks, that's really odd... I wonder if one of those
+structures is accessed beyond it's boundary, either the sigset
+or the thread struct, causing corruption of neighbouring fields
+in task struct...
+
+Can you try adding a little canary on both sides (make it not-so-little 
+maybe a few words) which you initialize to a known pattern and check
+every now and then ?
+
+> So, we know it has to do with signals, thread_info, and probably only
+> affects 32-bit powerpc.  Seems awfully weird.  Have you checked with
+> any
+> of the 64-bit powerpc guys to see if they have any ideas?
 > 
-> Yes and the reason for doing so? Consolidation/clarity of implementation?
+> I went grepping around for a bit.
+> 
+> Where is the task_struct stored?  Is it on-stack on ppc32 or
+> something?
 
-Indeed. What about this commit message?
+No it's allocated normally.
 
-Subject: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take  
- kexec_buf as argument.
+>  The thread_info is,
 
-This is done to simplify the kexec_add_buffer argument list.
-Adapt all callers to set up a kexec_buf to pass to kexec_add_buffer.
+Yes, thread_info is at the bottom of stack
 
-In addition, change the type of kexec_buf.buffer from char * to void *.
-There is no particular reason for it to be a char *, and the change
-allows us to get rid of 3 existing casts to char * in the code.
+>  I assume, but I see some THREAD_INFO vs. THREAD
+> (thread struct) math happening in here, which confuses me:
+>  
+>         .globl  ret_from_debug_exc
+> ret_from_debug_exc:
+>         mfspr   r9,SPRN_SPRG_THREAD
+>         lwz     r10,SAVED_KSP_LIMIT(r1)
+>         stw     r10,KSP_LIMIT(r9)
+>         lwz     r9,THREAD_INFO-THREAD(r9)
 
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Acked-by: Dave Young <dyoung@redhat.com>
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+This calculates the offset between the thread struct and the pointer
+to thread info inside task struct and loads that pointer into r9
 
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+>         CURRENT_THREAD_INFO(r10, r1)
+>         lwz     r10,TI_PREEMPT(r10)
+>         stw     r10,TI_PREEMPT(r9)
+>         RESTORE_xSRR(SRR0,SRR1);
+>         RESTORE_xSRR(CSRR0,CSRR1);
+>         RESTORE_MMU_REGS;
+>         RET_FROM_EXC_LEVEL(SPRN_DSRR0, SPRN_DSRR1, PPC_RFDI)
+
+Basically the above code transfers TI_PREEMPT from the "current"
+thread info which I believe would be on some exception/interrupt
+stack into the current task thread info.
+
+> But, I'm really at a loss to explain this.  It still seems like a
+> deeply
+> ppc-specific issue.  We can obviously work around it with an #ifdef
+> for
+> your platform, but that's awfully hackish and hides the real bug,
+> whatever it is.
+> 
+> My suspicion is that there's a bug in the 32-bit ppc assembly
+> somewhere.
+>  I don't see any references to 'blocked' or 'real_blocked' in
+> assembly
+> though.  You could add a bunch of padding instead of moving the
+> thread_struct and see if that does anything, but that's really a stab
+> in
+> the dark.
