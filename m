@@ -1,26 +1,20 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail5.wrs.com (mail5.windriver.com [192.103.53.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sD9fD6x0hzDr45
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 21:50:28 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id y34so7539796ioi.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 04:50:28 -0700 (PDT)
-From: Boqun Feng <boqun.feng@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Daniel Axtens <dja@axtens.net>,
- Kevin Hao <haokexin@gmail.com>, chenhui zhao <chenhui.zhao@freescale.com>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- Boqun Feng <boqun.feng@gmail.com>
-Subject: [PATCH] powerpc, hotplug: Avoid to touch non-existent cpumasks.
-Date: Tue, 16 Aug 2016 19:50:12 +0800
-Message-Id: <20160816115012.19494-1-boqun.feng@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDFq31JChzDr45
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 00:58:22 +1000 (AEST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: migrate exception table users off module.h and onto
+ extable.h
+Date: Tue, 16 Aug 2016 10:57:34 -0400
+Message-ID: <20160816145734.18706-1-paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,75 +24,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We observed a kernel oops when running a PPC guest with config NR_CPUS=4
-and qemu option "-smp cores=1,threads=8":
+These files were only including module.h for exception table
+related functions.  We've now separated that content out into its
+own file "extable.h" so now move over to that and avoid all the
+extra header content in module.h that we don't really need to compile
+these files.
 
-[   30.634781] Unable to handle kernel paging request for data at
-address 0xc00000014192eb17
-[   30.636173] Faulting instruction address: 0xc00000000003e5cc
-[   30.637069] Oops: Kernel access of bad area, sig: 11 [#1]
-[   30.637877] SMP NR_CPUS=4 NUMA pSeries
-[   30.638471] Modules linked in:
-[   30.638949] CPU: 3 PID: 27 Comm: migration/3 Not tainted
-4.7.0-07963-g9714b26 #1
-[   30.640059] task: c00000001e29c600 task.stack: c00000001e2a8000
-[   30.640956] NIP: c00000000003e5cc LR: c00000000003e550 CTR:
-0000000000000000
-[   30.642001] REGS: c00000001e2ab8e0 TRAP: 0300   Not tainted
-(4.7.0-07963-g9714b26)
-[   30.643139] MSR: 8000000102803033 <SF,VEC,VSX,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22004084  XER: 00000000
-[   30.644583] CFAR: c000000000009e98 DAR: c00000014192eb17 DSISR: 40000000 SOFTE: 0
-GPR00: c00000000140a6b8 c00000001e2abb60 c0000000016dd300 0000000000000003
-GPR04: 0000000000000000 0000000000000004 c0000000016e5920 0000000000000008
-GPR08: 0000000000000004 c00000014192eb17 0000000000000000 0000000000000020
-GPR12: c00000000140a6c0 c00000000ffffc00 c0000000000d3ea8 c00000001e005680
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 c00000001e6b3a00 0000000000000000 0000000000000001
-GPR24: c00000001ff85138 c00000001ff85130 000000001eb6f000 0000000000000001
-GPR28: 0000000000000000 c0000000017014e0 0000000000000000 0000000000000018
-[   30.653882] NIP [c00000000003e5cc] __cpu_disable+0xcc/0x190
-[   30.654713] LR [c00000000003e550] __cpu_disable+0x50/0x190
-[   30.655528] Call Trace:
-[   30.655893] [c00000001e2abb60] [c00000000003e550] __cpu_disable+0x50/0x190 (unreliable)
-[   30.657280] [c00000001e2abbb0] [c0000000000aca0c] take_cpu_down+0x5c/0x100
-[   30.658365] [c00000001e2abc10] [c000000000163918] multi_cpu_stop+0x1a8/0x1e0
-[   30.659617] [c00000001e2abc60] [c000000000163cc0] cpu_stopper_thread+0xf0/0x1d0
-[   30.660737] [c00000001e2abd20] [c0000000000d8d70] smpboot_thread_fn+0x290/0x2a0
-[   30.661879] [c00000001e2abd80] [c0000000000d3fa8] kthread+0x108/0x130
-[   30.662876] [c00000001e2abe30] [c000000000009968] ret_from_kernel_thread+0x5c/0x74
-[   30.664017] Instruction dump:
-[   30.664477] 7bde1f24 38a00000 787f1f24 3b600001 39890008 7d204b78 7d05e214 7d0b07b4
-[   30.665642] 796b1f24 7d26582a 7d204a14 7d29f214 <7d4048a8> 7d4a3878 7d4049ad 40c2fff4
-[   30.666854] ---[ end trace 32643b7195717741 ]---
-
-The reason of this is that in __cpu_disable(), when we try to set the
-cpu_sibling_mask or cpu_core_mask of the sibling CPUs of the disabled
-one, we don't check whether the current configuration employs those
-sibling CPUs(hw threads). And if a CPU is not employed by a
-configuration, the percpu structures cpu_{sibling,core}_mask are not
-allocated, therefore accessing those cpumasks will result in problems as
-above.
-
-This patch fixes this problem by adding an addition check on whether the
-id is no less than nr_cpu_ids in the sibling CPU iteration code.
-
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/kernel/smp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 25a39052bf6b..9c6f3fd58059 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -830,7 +830,7 @@ int __cpu_disable(void)
+[see: https://lkml.org/lkml/2016/7/24/224 for additional context if needed]
+
+
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 3ed8ec09b5c9..e785cc9e1ecd 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -29,7 +29,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/ptrace.h>
+ #include <linux/preempt.h>
+-#include <linux/module.h>
++#include <linux/extable.h>
+ #include <linux/kdebug.h>
+ #include <linux/slab.h>
+ #include <asm/code-patching.h>
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index a4db22f65021..bb1ffc559f38 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -26,7 +26,7 @@
+ #include <linux/mm.h>
+ #include <linux/interrupt.h>
+ #include <linux/highmem.h>
+-#include <linux/module.h>
++#include <linux/extable.h>
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+ #include <linux/perf_event.h>
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 2cb589264cb7..62859ebe0062 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -25,7 +25,8 @@
+ #include <linux/user.h>
+ #include <linux/interrupt.h>
+ #include <linux/init.h>
+-#include <linux/module.h>
++#include <linux/extable.h>
++#include <linux/module.h>	/* print_modules */
+ #include <linux/prctl.h>
+ #include <linux/delay.h>
+ #include <linux/kprobes.h>
+diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
+index dafba1057a47..dfd310031549 100644
+--- a/arch/powerpc/platforms/embedded6xx/holly.c
++++ b/arch/powerpc/platforms/embedded6xx/holly.c
+@@ -26,7 +26,7 @@
+ #include <linux/tty.h>
+ #include <linux/serial_core.h>
+ #include <linux/of_platform.h>
+-#include <linux/module.h>
++#include <linux/extable.h>
  
- 	/* Update sibling maps */
- 	base = cpu_first_thread_sibling(cpu);
--	for (i = 0; i < threads_per_core; i++) {
-+	for (i = 0; i < threads_per_core && base + i < nr_cpu_ids; i++) {
- 		cpumask_clear_cpu(cpu, cpu_sibling_mask(base + i));
- 		cpumask_clear_cpu(base + i, cpu_sibling_mask(cpu));
- 		cpumask_clear_cpu(cpu, cpu_core_mask(base + i));
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+index 80804f9916ee..f97bab8e37a2 100644
+--- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
++++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+@@ -23,7 +23,7 @@
+ #include <linux/pci.h>
+ #include <linux/kdev_t.h>
+ #include <linux/console.h>
+-#include <linux/module.h>
++#include <linux/extable.h>
+ #include <linux/delay.h>
+ #include <linux/irq.h>
+ #include <linux/seq_file.h>
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index ee5b9f107089..82e31a889761 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -23,7 +23,7 @@
+  */
+ 
+ #include <linux/init.h>
+-#include <linux/module.h>
++#include <linux/extable.h>
+ #include <linux/types.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/interrupt.h>
 -- 
-2.9.0
+2.8.4
