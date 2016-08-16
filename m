@@ -1,61 +1,27 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDJXC0rgQzDr45
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 03:00:42 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7GGxUic132284
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 13:00:40 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24t032cpxx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 13:00:40 -0400
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 16 Aug 2016 14:00:37 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 4C89C3520074
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 13:00:14 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7GH0ZDq4771964
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 14:00:35 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7GH0X7O027894
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 14:00:35 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kexec@lists.infradead.org, linux-security-module@vger.kernel.org,
- linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- Eric Biederman <ebiederm@xmission.com>, Dave Young <dyoung@redhat.com>,
- Vivek Goyal <vgoyal@redhat.com>, Baoquan He <bhe@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Petko Manolov <petkan@mip-labs.com>,
- David Laight <David.Laight@aculab.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v2 4/6] kexec_file: Add mechanism to update kexec segments.
-Date: Tue, 16 Aug 2016 14:00:31 -0300
-In-Reply-To: <20160815152756.78ea7a61a3342547b9e694e5@linux-foundation.org>
-References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1471058305-30198-5-git-send-email-bauerman@linux.vnet.ibm.com>
- <20160815152756.78ea7a61a3342547b9e694e5@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDK7P1FZkzDr45
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 03:27:45 +1000 (AEST)
+Subject: Re: debug problems on ppc 83xx target due to changed struct
+ task_struct
+To: Dave Hansen <dave.hansen@linux.intel.com>,
+ Holger Brunck <holger.brunck@keymile.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com>
+ <57ADE7E6.9030900@linux.intel.com>
+ <4e16aad4-80d3-ffcc-d183-681b48d4751b@keymile.com>
+ <57ADF4A0.5040807@linux.intel.com>
+ <41e00d07-d7ce-0198-acce-ac25db8c9df3@keymile.com>
+ <57B1EBAE.6030503@linux.intel.com>
+Cc: "mingo@kernel.org" <mingo@kernel.org>
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <3f1dff88-cd24-b36e-da9a-e84627929975@c-s.fr>
+Date: Tue, 16 Aug 2016 19:27:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1734678.Uaq7DTajoE@hactar>
+In-Reply-To: <57B1EBAE.6030503@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,240 +31,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Andrew,
-
-Thank you for your review!
-
-Am Montag, 15 August 2016, 15:27:56 schrieb Andrew Morton:
-> On Sat, 13 Aug 2016 00:18:23 -0300 Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> wrote:
-> > +/**
-> > + * kexec_update_segment - update the contents of a kimage segment
-> > + * @buffer:	New contents of the segment.
-> > + * @bufsz:	@buffer size.
-> > + * @load_addr:	Segment's physical address in the next kernel.
-> > + * @memsz:	Segment size.
-> > + *
-> > + * This function assumes kexec_mutex is held.
-> > + *
-> > + * Return: 0 on success, negative errno on error.
-> > + */
-> > +int kexec_update_segment(const char *buffer, unsigned long bufsz,
-> > +			 unsigned long load_addr, unsigned long memsz)
-> > +{
-> > +	int i;
-> > +	unsigned long entry;
-> > +	unsigned long *ptr = NULL;
-> > +	void *dest = NULL;
-> > +
-> > +	if (kexec_image == NULL) {
-> > +		pr_err("Can't update segment: no kexec image loaded.\n");
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	/*
-> > +	 * kexec_add_buffer rounds up segment sizes to PAGE_SIZE, so
-> > +	 * we have to do it here as well.
-> > +	 */
-> > +	memsz = ALIGN(memsz, PAGE_SIZE);
-> > +
-> > +	for (i = 0; i < kexec_image->nr_segments; i++)
-> > +		/* We only support updating whole segments. */
-> > +		if (load_addr == kexec_image->segment[i].mem &&
-> > +		    memsz == kexec_image->segment[i].memsz) {
-> > +			if (kexec_image->segment[i].do_checksum) {
-> > +				pr_err("Trying to update non-modifiable segment.\n");
-> > +				return -EINVAL;
-> > +			}
-> > +
-> > +			break;
-> > +		}
-> > +	if (i == kexec_image->nr_segments) {
-> > +		pr_err("Couldn't find segment to update: 0x%lx, size 0x%lx\n",
-> > +		       load_addr, memsz);
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	for (entry = kexec_image->head; !(entry & IND_DONE) && memsz;
-> > +	     entry = *ptr++) {
-> > +		void *addr = (void *) (entry & PAGE_MASK);
-> > +
-> > +		switch (entry & IND_FLAGS) {
-> > +		case IND_DESTINATION:
-> > +			dest = addr;
-> > +			break;
-> > +		case IND_INDIRECTION:
-> > +			ptr = __va(addr);
-> > +			break;
-> > +		case IND_SOURCE:
-> > +			/* Shouldn't happen, but verify just to be safe. */
-> > +			if (dest == NULL) {
-> > +				pr_err("Invalid kexec entries list.");
-> > +				return -EINVAL;
-> > +			}
-> > +
-> > +			if (dest == (void *) load_addr) {
-> > +				struct page *page;
-> > +				char *ptr;
-> > +				size_t uchunk, mchunk;
-> > +
-> > +				page = kmap_to_page(addr);
-> > +
-> > +				ptr = kmap(page);
-> 
-> kmap_atomic() could be used here, and it is appreciably faster.
-
-Good idea. The patch below implements your suggestion.
-
-This has a consequence for patch 5/6 in this series, because it makes
-this code be used in the path of the kexec_file_load and
-kexec_load syscalls.
-
-In the latter case, there's a call to copy_from_user and thus kmap_atomic 
-can't be used. I can change the patch to use kmap_atomic if
-state->from_kernel is true and kmap otherwise, but perhaps this is one more 
-hint that patch 5/6 is not a very good idea after all.
-
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
 
 
-Subject: [PATCH v2 4/6] kexec_file: Add mechanism to update kexec segments.
+Le 15/08/2016 à 18:19, Dave Hansen a écrit :
+> On 08/15/2016 07:35 AM, Holger Brunck wrote:
+>> I tried this but unfortunately the error only occurs while remote debugging.
+>> Locally with gdb everything works fine. BTW we double-checked with a 85xx ppc
+>> target which is also 32-bit and it ends up with the same behaviour.
+>>
+>> I was also investigating where I have to move the line in the struct task_struct
+>> and it turns out to be like this (diff to 4.7 kernel):
+>>
+>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>> index 253538f..4868874 100644
+>> --- a/include/linux/sched.h
+>> +++ b/include/linux/sched.h
+>> @@ -1655,7 +1655,9 @@ struct task_struct {
+>>         struct signal_struct *signal;
+>>         struct sighand_struct *sighand;
+>>
+>> +       // struct thread_struct thread;   // until here everything is fine
+>>         sigset_t blocked, real_blocked;
+>> +       struct thread_struct thread;      // from here it's broken
+>>         sigset_t saved_sigmask; /* restored if set_restore_sigmask() was used */
+>>         struct sigpending pending;
+>
+> Wow, thanks for all the debugging here!
+>
+> So, we know it has to do with signals, thread_info, and probably only
+> affects 32-bit powerpc.  Seems awfully weird.  Have you checked with any
+> of the 64-bit powerpc guys to see if they have any ideas?
+>
+> I went grepping around for a bit.
+>
+> Where is the task_struct stored?  Is it on-stack on ppc32 or something?
+>  The thread_info is, I assume, but I see some THREAD_INFO vs. THREAD
+> (thread struct) math happening in here, which confuses me:
+>
+>         .globl  ret_from_debug_exc
+> ret_from_debug_exc:
+>         mfspr   r9,SPRN_SPRG_THREAD
+>         lwz     r10,SAVED_KSP_LIMIT(r1)
+>         stw     r10,KSP_LIMIT(r9)
+>         lwz     r9,THREAD_INFO-THREAD(r9)
+>         CURRENT_THREAD_INFO(r10, r1)
+>         lwz     r10,TI_PREEMPT(r10)
+>         stw     r10,TI_PREEMPT(r9)
+>         RESTORE_xSRR(SRR0,SRR1);
+>         RESTORE_xSRR(CSRR0,CSRR1);
+>         RESTORE_MMU_REGS;
+>         RET_FROM_EXC_LEVEL(SPRN_DSRR0, SPRN_DSRR1, PPC_RFDI)
+>
+> But, I'm really at a loss to explain this.  It still seems like a deeply
+> ppc-specific issue.  We can obviously work around it with an #ifdef for
+> your platform, but that's awfully hackish and hides the real bug,
+> whatever it is.
+>
+> My suspicion is that there's a bug in the 32-bit ppc assembly somewhere.
+>  I don't see any references to 'blocked' or 'real_blocked' in assembly
+> though.  You could add a bunch of padding instead of moving the
+> thread_struct and see if that does anything, but that's really a stab in
+> the dark.
+>
 
-kexec_update_segment allows a given segment in kexec_image to have
-its contents updated. This is useful if the current kernel wants to
-send information to the next kernel that is up-to-date at the time of
-reboot.
+Just to let you know, I'm not sure it is the same issue, but I also get 
+my 8xx target stuck when I try to use gdbserver.
 
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+If I debug a very small app, it gets stuck quickly after the app has 
+stopped: indeed, the console seems ok but as soon as I try to execute 
+something simple, like a ps or top, it get stuck. The target still 
+responds to pings, but nothing else.
+
+If I debug a big app, it gets stuck soon after the start of debug: I set 
+a bpoint at main(), do a 'continue', get breaked at main(), do some 
+steps with 'next' then it gets stuck.
+
+I have tried moving the struct thread_struct thread but it has no impact.
+
+I have tried to run gdbserver with 'perf top' running on another 
+console, and then 'perf top' stops updating itself. The quick keys are 
+still working, but the data is not updated anymore and the stats on top 
+all goes to 0 (# irq/sec etc...)
+
+Christophe
+
 ---
- include/linux/kexec.h |  2 ++
- kernel/kexec_core.c   | 99 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 101 insertions(+)
-
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 37eea32fdff1..14dda81e3e01 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -259,6 +259,8 @@ extern int kexec_purgatory_get_set_symbol(struct kimage *image,
- 					  unsigned int size, bool get_value);
- extern void *kexec_purgatory_get_symbol_addr(struct kimage *image,
- 					     const char *name);
-+int kexec_update_segment(const char *buffer, unsigned long bufsz,
-+			 unsigned long load_addr, unsigned long memsz);
- extern void __crash_kexec(struct pt_regs *);
- extern void crash_kexec(struct pt_regs *);
- int kexec_should_crash(struct task_struct *);
-diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index 561675589511..9782b292714e 100644
---- a/kernel/kexec_core.c
-+++ b/kernel/kexec_core.c
-@@ -721,6 +721,105 @@ static struct page *kimage_alloc_page(struct kimage *image,
- 	return page;
- }
- 
-+/**
-+ * kexec_update_segment - update the contents of a kimage segment
-+ * @buffer:	New contents of the segment.
-+ * @bufsz:	@buffer size.
-+ * @load_addr:	Segment's physical address in the next kernel.
-+ * @memsz:	Segment size.
-+ *
-+ * This function assumes kexec_mutex is held.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int kexec_update_segment(const char *buffer, unsigned long bufsz,
-+			 unsigned long load_addr, unsigned long memsz)
-+{
-+	int i;
-+	unsigned long entry;
-+	unsigned long *ptr = NULL;
-+	void *dest = NULL;
-+
-+	if (kexec_image == NULL) {
-+		pr_err("Can't update segment: no kexec image loaded.\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * kexec_add_buffer rounds up segment sizes to PAGE_SIZE, so
-+	 * we have to do it here as well.
-+	 */
-+	memsz = ALIGN(memsz, PAGE_SIZE);
-+
-+	for (i = 0; i < kexec_image->nr_segments; i++)
-+		/* We only support updating whole segments. */
-+		if (load_addr == kexec_image->segment[i].mem &&
-+		    memsz == kexec_image->segment[i].memsz) {
-+			if (kexec_image->segment[i].do_checksum) {
-+				pr_err("Trying to update non-modifiable segment.\n");
-+				return -EINVAL;
-+			}
-+
-+			break;
-+		}
-+	if (i == kexec_image->nr_segments) {
-+		pr_err("Couldn't find segment to update: 0x%lx, size 0x%lx\n",
-+		       load_addr, memsz);
-+		return -EINVAL;
-+	}
-+
-+	for (entry = kexec_image->head; !(entry & IND_DONE) && memsz;
-+	     entry = *ptr++) {
-+		void *addr = (void *) (entry & PAGE_MASK);
-+
-+		switch (entry & IND_FLAGS) {
-+		case IND_DESTINATION:
-+			dest = addr;
-+			break;
-+		case IND_INDIRECTION:
-+			ptr = __va(addr);
-+			break;
-+		case IND_SOURCE:
-+			/* Shouldn't happen, but verify just to be safe. */
-+			if (dest == NULL) {
-+				pr_err("Invalid kexec entries list.");
-+				return -EINVAL;
-+			}
-+
-+			if (dest == (void *) load_addr) {
-+				struct page *page;
-+				char *ptr;
-+				size_t uchunk, mchunk;
-+
-+				page = kmap_to_page(addr);
-+
-+				ptr = kmap_atomic(page);
-+				ptr += load_addr & ~PAGE_MASK;
-+				mchunk = min_t(size_t, memsz,
-+					       PAGE_SIZE - (load_addr & ~PAGE_MASK));
-+				uchunk = min(bufsz, mchunk);
-+				memcpy(ptr, buffer, uchunk);
-+
-+				kunmap_atomic(ptr);
-+
-+				bufsz -= uchunk;
-+				load_addr += mchunk;
-+				buffer += mchunk;
-+				memsz -= mchunk;
-+			}
-+			dest += PAGE_SIZE;
-+		}
-+
-+		/* Shouldn't happen, but verify just to be safe. */
-+		if (ptr == NULL) {
-+			pr_err("Invalid kexec entries list.");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int kimage_load_normal_segment(struct kimage *image,
- 					 struct kexec_segment *segment)
- {
--- 
-1.9.1
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
