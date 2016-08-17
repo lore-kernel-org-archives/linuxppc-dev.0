@@ -2,8 +2,8 @@ Return-Path: <famz@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDgVk6swbzDr5Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 17:15:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDgVq6VxdzDr6G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 17:15:47 +1000 (AEST)
 From: Fam Zheng <famz@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-nvme@lists.infradead.org, Keith Busch <keith.busch@intel.com>,
@@ -17,9 +17,9 @@ Cc: linux-nvme@lists.infradead.org, Keith Busch <keith.busch@intel.com>,
  virtualization@lists.linux-foundation.org,
  Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
  Nitin Gupta <ngupta@vflare.org>, David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 04/15] block: Return error from blk_integrity_add
-Date: Wed, 17 Aug 2016 15:15:04 +0800
-Message-Id: <1471418115-3654-5-git-send-email-famz@redhat.com>
+Subject: [PATCH 05/15] genhd: Return error from disk_{add,alloc}_events
+Date: Wed, 17 Aug 2016 15:15:05 +0800
+Message-Id: <1471418115-3654-6-git-send-email-famz@redhat.com>
 In-Reply-To: <1471418115-3654-1-git-send-email-famz@redhat.com>
 References: <1471418115-3654-1-git-send-email-famz@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,58 +31,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kobject_init_and_add call in blk_integrity_add can fail, return the
-error code in this case, so that it can be handled in the caller.
+disk_alloc_events and disk_add_events can fail, return the error code so
+the caller can handle it.
 
 Signed-off-by: Fam Zheng <famz@redhat.com>
 ---
- block/blk-integrity.c | 12 ++++++++----
- include/linux/genhd.h |  4 ++--
- 2 files changed, 10 insertions(+), 6 deletions(-)
+ block/genhd.c | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/block/blk-integrity.c b/block/blk-integrity.c
-index d69c5c7..437e09a 100644
---- a/block/blk-integrity.c
-+++ b/block/blk-integrity.c
-@@ -450,13 +450,17 @@ void blk_integrity_revalidate(struct gendisk *disk)
- 			~BDI_CAP_STABLE_WRITES;
- }
+diff --git a/block/genhd.c b/block/genhd.c
+index 8c7510d..4316d2d 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -40,8 +40,8 @@ static struct device_type disk_type;
  
--void blk_integrity_add(struct gendisk *disk)
-+int blk_integrity_add(struct gendisk *disk)
+ static void disk_check_events(struct disk_events *ev,
+ 			      unsigned int *clearing_ptr);
+-static void disk_alloc_events(struct gendisk *disk);
+-static void disk_add_events(struct gendisk *disk);
++static int disk_alloc_events(struct gendisk *disk);
++static int disk_add_events(struct gendisk *disk);
+ static void disk_del_events(struct gendisk *disk);
+ static void disk_release_events(struct gendisk *disk);
+ 
+@@ -1823,17 +1823,17 @@ module_param_cb(events_dfl_poll_msecs, &disk_events_dfl_poll_msecs_param_ops,
+ /*
+  * disk_{alloc|add|del|release}_events - initialize and destroy disk_events.
+  */
+-static void disk_alloc_events(struct gendisk *disk)
++static int disk_alloc_events(struct gendisk *disk)
  {
--	if (kobject_init_and_add(&disk->integrity_kobj, &integrity_ktype,
--				 &disk_to_dev(disk)->kobj, "%s", "integrity"))
--		return;
-+	int rc;
-+
-+	rc = kobject_init_and_add(&disk->integrity_kobj, &integrity_ktype,
-+				  &disk_to_dev(disk)->kobj, "%s", "integrity");
-+	if (rc)
-+		return rc;
+ 	struct disk_events *ev;
  
- 	kobject_uevent(&disk->integrity_kobj, KOBJ_ADD);
+ 	if (!disk->fops->check_events)
+-		return;
++		return 0;
+ 
+ 	ev = kzalloc(sizeof(*ev), GFP_KERNEL);
+ 	if (!ev) {
+ 		pr_warn("%s: failed to initialize events\n", disk->disk_name);
+-		return;
++		return -ENOMEM;
+ 	}
+ 
+ 	INIT_LIST_HEAD(&ev->node);
+@@ -1845,17 +1845,22 @@ static void disk_alloc_events(struct gendisk *disk)
+ 	INIT_DELAYED_WORK(&ev->dwork, disk_events_workfn);
+ 
+ 	disk->ev = ev;
 +	return 0;
  }
  
- void blk_integrity_del(struct gendisk *disk)
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index b6fd666..85ce560 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -725,11 +725,11 @@ static inline void part_nr_sects_write(struct hd_struct *part, sector_t size)
+-static void disk_add_events(struct gendisk *disk)
++static int disk_add_events(struct gendisk *disk)
+ {
++	int rc;
++
+ 	if (!disk->ev)
+-		return;
++		return 0;
+ 
+-	/* FIXME: error handling */
+-	if (sysfs_create_files(&disk_to_dev(disk)->kobj, disk_events_attrs) < 0)
++	rc = sysfs_create_files(&disk_to_dev(disk)->kobj, disk_events_attrs);
++	if (rc) {
+ 		pr_warn("%s: failed to create sysfs files for events\n",
+ 			disk->disk_name);
++		return rc;
++	}
+ 
+ 	mutex_lock(&disk_events_mutex);
+ 	list_add_tail(&disk->ev->node, &disk_events);
+@@ -1866,6 +1871,7 @@ static void disk_add_events(struct gendisk *disk)
+ 	 * unblock kicks it into action.
+ 	 */
+ 	__disk_unblock_events(disk, true);
++	return 0;
  }
  
- #if defined(CONFIG_BLK_DEV_INTEGRITY)
--extern void blk_integrity_add(struct gendisk *);
-+extern int blk_integrity_add(struct gendisk *);
- extern void blk_integrity_del(struct gendisk *);
- extern void blk_integrity_revalidate(struct gendisk *);
- #else	/* CONFIG_BLK_DEV_INTEGRITY */
--static inline void blk_integrity_add(struct gendisk *disk) { }
-+static inline int blk_integrity_add(struct gendisk *disk) { return 0; }
- static inline void blk_integrity_del(struct gendisk *disk) { }
- static inline void blk_integrity_revalidate(struct gendisk *disk) { }
- #endif	/* CONFIG_BLK_DEV_INTEGRITY */
+ static void disk_del_events(struct gendisk *disk)
 -- 
 2.7.4
