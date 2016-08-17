@@ -1,61 +1,19 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDcT32Q0LzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 14:59:03 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7H4rxP7133907
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 00:59:00 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24va4w64hs-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 00:59:00 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Wed, 17 Aug 2016 01:58:58 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 8E85C1DC0051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 00:58:46 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7H4wtKo8126932
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 01:58:55 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7H4wstx028333
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 01:58:55 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: kexec@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Balbir Singh <bsingharora@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-ima-devel@lists.sourceforge.net,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
- Petko Manolov <petkan@mip-labs.com>, Thomas Gleixner <tglx@linutronix.de>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- David Laight <David.Laight@aculab.com>,
- Eric Biederman <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 0/6] kexec_file: Add buffer hand-over for the next
- kernel
-Date: Wed, 17 Aug 2016 01:58:51 -0300
-In-Reply-To: <20160817025226.GA4638@dhcp-128-65.nay.redhat.com>
-References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <20160817025226.GA4638@dhcp-128-65.nay.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <7590280.XAE4qXVcVR@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDdRj1G47zDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 15:42:57 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3sDdRh3PCtz9sRB
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2016 15:42:56 +1000 (AEST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC PATCH 01/10] powerpc: Move ARCH_DLINFO out of uapi
+Date: Wed, 17 Aug 2016 15:39:08 +1000
+Message-Id: <1471412357-3477-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,51 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Dave,
+It's an kernel private macro, it doesn't belong there
 
-Am Mittwoch, 17 August 2016, 10:52:26 schrieb Dave Young:
-> On 08/13/16 at 12:18am, Thiago Jung Bauermann wrote:
-> > This series applies on top of v5 of the "kexec_file_load implementation
-> > for PowerPC" patch series (which applies on top of v4.8-rc1):
-> > 
-> > https://lists.infradead.org/pipermail/kexec/2016-August/016843.html
-> 
-> I'm trying to review your patches, but seems I can not apply them
-> cleanly to mainline kernel or v4.8-rc1
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/elf.h      | 22 ++++++++++++++++++++++
+ arch/powerpc/include/uapi/asm/elf.h | 23 -----------------------
+ 2 files changed, 22 insertions(+), 23 deletions(-)
 
-Strange, I just did a test using the patches I received via the kexec 
-mailing list, and git am applied them cleanly on v4.8-rc1.
-
-> Apply the kexec_file_load series failed as below on v4.8-rc1:
-> 
-> Applying: kexec_file: Allow arch-specific memory walking for
-> kexec_add_buffer
-> error: patch failed: include/linux/kexec.h:149
-> error: include/linux/kexec.h: patch does not apply
-> Patch failed at 0001 kexec_file: Allow arch-specific memory walking for
-> kexec_add_buffer
-> The copy of the patch that failed is found in: .git/rebase-apply/patch
-> When you have resolved this problem, run "git am --continue".
-> If you prefer to skip this patch, run "git am --skip" instead.
-> To restore the original branch and stop patching, run "git am --abort".
-> 
-> What is the order of your patch series of the three patchset?
-> 
-> [PATCH v2 0/2] extend kexec_file_load system call
-> [PATCH v5 00/13] kexec_file_load implementation for PowerPC
-> [PATCH v2 0/6] kexec_file: Add buffer hand-over for the next kernel
-
-Yes, that is correct.
-
-> Do they depend on other patches?
-
-No, they apply directly on v4.8-rc1.
-
-I just published a branch with the patches, if you want you can use that 
-instead. The branch is called kexec-patches and is at the repo 
-git@github.com:bauermann/linux
-
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index ee46ffe..730c27e 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -136,4 +136,26 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+ 
+ #endif /* CONFIG_SPU_BASE */
+ 
++/*
++ * The requirements here are:
++ * - keep the final alignment of sp (sp & 0xf)
++ * - make sure the 32-bit value at the first 16 byte aligned position of
++ *   AUXV is greater than 16 for glibc compatibility.
++ *   AT_IGNOREPPC is used for that.
++ * - for compatibility with glibc ARCH_DLINFO must always be defined on PPC,
++ *   even if DLINFO_ARCH_ITEMS goes to zero or is undefined.
++ * update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes
++ */
++#define ARCH_DLINFO							\
++do {									\
++	/* Handle glibc compatibility. */				\
++	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
++	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
++	/* Cache size items */						\
++	NEW_AUX_ENT(AT_DCACHEBSIZE, dcache_bsize);			\
++	NEW_AUX_ENT(AT_ICACHEBSIZE, icache_bsize);			\
++	NEW_AUX_ENT(AT_UCACHEBSIZE, ucache_bsize);			\
++	VDSO_AUX_ENT(AT_SYSINFO_EHDR, current->mm->context.vdso_base);	\
++} while (0)
++
+ #endif /* _ASM_POWERPC_ELF_H */
+diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
+index 3a9e44c..b2c6fdd 100644
+--- a/arch/powerpc/include/uapi/asm/elf.h
++++ b/arch/powerpc/include/uapi/asm/elf.h
+@@ -162,29 +162,6 @@ typedef elf_vrreg_t elf_vrregset_t32[ELF_NVRREG32];
+ typedef elf_fpreg_t elf_vsrreghalf_t32[ELF_NVSRHALFREG];
+ #endif
+ 
+-
+-/*
+- * The requirements here are:
+- * - keep the final alignment of sp (sp & 0xf)
+- * - make sure the 32-bit value at the first 16 byte aligned position of
+- *   AUXV is greater than 16 for glibc compatibility.
+- *   AT_IGNOREPPC is used for that.
+- * - for compatibility with glibc ARCH_DLINFO must always be defined on PPC,
+- *   even if DLINFO_ARCH_ITEMS goes to zero or is undefined.
+- * update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes
+- */
+-#define ARCH_DLINFO							\
+-do {									\
+-	/* Handle glibc compatibility. */				\
+-	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
+-	NEW_AUX_ENT(AT_IGNOREPPC, AT_IGNOREPPC);			\
+-	/* Cache size items */						\
+-	NEW_AUX_ENT(AT_DCACHEBSIZE, dcache_bsize);			\
+-	NEW_AUX_ENT(AT_ICACHEBSIZE, icache_bsize);			\
+-	NEW_AUX_ENT(AT_UCACHEBSIZE, ucache_bsize);			\
+-	VDSO_AUX_ENT(AT_SYSINFO_EHDR, current->mm->context.vdso_base);	\
+-} while (0)
+-
+ /* PowerPC64 relocations defined by the ABIs */
+ #define R_PPC64_NONE    R_PPC_NONE
+ #define R_PPC64_ADDR32  R_PPC_ADDR32  /* 32bit absolute address.  */
 -- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+2.7.4
