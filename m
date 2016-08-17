@@ -1,35 +1,43 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDYgK0M6KzDr3R
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 12:52:44 +1000 (AEST)
-Date: Wed, 17 Aug 2016 10:52:26 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Balbir Singh <bsingharora@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-ima-devel@lists.sourceforge.net,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
- Petko Manolov <petkan@mip-labs.com>, Thomas Gleixner <tglx@linutronix.de>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- David Laight <David.Laight@ACULAB.COM>,
- Eric Biederman <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 0/6] kexec_file: Add buffer hand-over for the next
- kernel
-Message-ID: <20160817025226.GA4638@dhcp-128-65.nay.redhat.com>
-References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDZpV6nSvzDr4f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:44:02 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7H3i0Vd051604
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 23:44:00 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24v3dgnyd7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 23:44:00 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
+ Wed, 17 Aug 2016 13:43:54 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 27469357805E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:52 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7H3hq4u22347888
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:52 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7H3hpOx030233
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:51 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, wei.guo.simon@gmail.com
+Cc: mikey@neuling.org, anton@samba.org
+Subject: [PATCH v3 08/21] selftests/powerpc: Rework FPU stack placement macros
+ and move to header file
+Date: Wed, 17 Aug 2016 13:43:10 +1000
+In-Reply-To: <20160817034323.23053-1-cyrilbur@gmail.com>
+References: <20160817034323.23053-1-cyrilbur@gmail.com>
+Message-Id: <20160817034323.23053-9-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,80 +47,224 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/13/16 at 12:18am, Thiago Jung Bauermann wrote:
-> Hello,
-> 
-> This patch series implements a mechanism which allows the kernel to pass
-> on a buffer to the kernel that will be kexec'd. This buffer is passed
-> as a segment which is added to the kimage when it is being prepared
-> by kexec_file_load.
-> 
-> How the second kernel is informed of this buffer is architecture-specific.
-> On powerpc, this is done via the device tree, by checking
-> the properties /chosen/linux,kexec-handover-buffer-start and
-> /chosen/linux,kexec-handover-buffer-end, which is analogous to how the
-> kernel finds the initrd.
-> 
-> This is needed because the Integrity Measurement Architecture subsystem
-> needs to preserve its measurement list accross the kexec reboot. The
-> following patch series for the IMA subsystem uses this feature for that
-> purpose:
-> 
-> https://lists.infradead.org/pipermail/kexec/2016-August/016745.html
-> 
-> This is so that IMA can implement trusted boot support on the OpenPower
-> platform, because on such systems an intermediary Linux instance running
-> as part of the firmware is used to boot the target operating system via
-> kexec. Using this mechanism, IMA on this intermediary instance can
-> hand over to the target OS the measurements of the components that were
-> used to boot it.
-> 
-> Because there could be additional measurement events between the
-> kexec_file_load call and the actual reboot, IMA needs a way to update the
-> buffer with those additional events before rebooting. One can minimize
-> the interval between the kexec_file_load and the reboot syscalls, but as
-> small as it can be, there is always the possibility that the measurement
-> list will be out of date at the time of reboot.
-> 
-> To address this issue, this patch series also introduces
-> kexec_update_segment, which allows a reboot notifier to change the
-> contents of the image segment during the reboot process.
-> 
-> Patch 5 makes kimage_load_normal_segment and kexec_update_segment share
-> code. It's not much code that they can share though, so I'm not sure if
-> the result is actually better.
-> 
-> The last patch is not intended to be merged, it just demonstrates how
-> this feature can be used.
-> 
-> This series applies on top of v5 of the "kexec_file_load implementation
-> for PowerPC" patch series (which applies on top of v4.8-rc1):
-> 
-> https://lists.infradead.org/pipermail/kexec/2016-August/016843.html
+The FPU regs are placed at the top of the stack frame. Currently the
+position expected to be passed to the macro. The macros now should be
+passed the stack frame size and from there they can calculate where to
+put the regs, this makes the use simpler.
 
-I'm trying to review your patches, but seems I can not apply them
-cleanly to mainline kernel or v4.8-rc1
+Also move them to a header file to be used in an different area of the
+powerpc selftests
 
-Apply the kexec_file_load series failed as below on v4.8-rc1:
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+---
+ tools/testing/selftests/powerpc/fpu_asm.h      | 81 ++++++++++++++++++++++++++
+ tools/testing/selftests/powerpc/math/fpu_asm.S | 73 ++---------------------
+ 2 files changed, 86 insertions(+), 68 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/fpu_asm.h
 
-Applying: kexec_file: Allow arch-specific memory walking for
-kexec_add_buffer
-error: patch failed: include/linux/kexec.h:149
-error: include/linux/kexec.h: patch does not apply
-Patch failed at 0001 kexec_file: Allow arch-specific memory walking for
-kexec_add_buffer
-The copy of the patch that failed is found in: .git/rebase-apply/patch
-When you have resolved this problem, run "git am --continue".
-If you prefer to skip this patch, run "git am --skip" instead.
-To restore the original branch and stop patching, run "git am --abort".
-
-What is the order of your patch series of the three patchset?
-
-[PATCH v2 0/2] extend kexec_file_load system call
-[PATCH v5 00/13] kexec_file_load implementation for PowerPC
-[PATCH v2 0/6] kexec_file: Add buffer hand-over for the next kernel
-
-Do they depend on other patches?
-
-Thanks
-Dave
+diff --git a/tools/testing/selftests/powerpc/fpu_asm.h b/tools/testing/selftests/powerpc/fpu_asm.h
+new file mode 100644
+index 0000000..24061b8
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/fpu_asm.h
+@@ -0,0 +1,81 @@
++/*
++ * Copyright 2016, Cyril Bur, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _SELFTESTS_POWERPC_FPU_ASM_H
++#define _SELFTESTS_POWERPC_FPU_ASM_H
++#include "basic_asm.h"
++
++#define PUSH_FPU(stack_size) \
++	stfd	f31,(stack_size + STACK_FRAME_MIN_SIZE)(%r1); \
++	stfd	f30,(stack_size + STACK_FRAME_MIN_SIZE - 8)(%r1); \
++	stfd	f29,(stack_size + STACK_FRAME_MIN_SIZE - 16)(%r1); \
++	stfd	f28,(stack_size + STACK_FRAME_MIN_SIZE - 24)(%r1); \
++	stfd	f27,(stack_size + STACK_FRAME_MIN_SIZE - 32)(%r1); \
++	stfd	f26,(stack_size + STACK_FRAME_MIN_SIZE - 40)(%r1); \
++	stfd	f25,(stack_size + STACK_FRAME_MIN_SIZE - 48)(%r1); \
++	stfd	f24,(stack_size + STACK_FRAME_MIN_SIZE - 56)(%r1); \
++	stfd	f23,(stack_size + STACK_FRAME_MIN_SIZE - 64)(%r1); \
++	stfd	f22,(stack_size + STACK_FRAME_MIN_SIZE - 72)(%r1); \
++	stfd	f21,(stack_size + STACK_FRAME_MIN_SIZE - 80)(%r1); \
++	stfd	f20,(stack_size + STACK_FRAME_MIN_SIZE - 88)(%r1); \
++	stfd	f19,(stack_size + STACK_FRAME_MIN_SIZE - 96)(%r1); \
++	stfd	f18,(stack_size + STACK_FRAME_MIN_SIZE - 104)(%r1); \
++	stfd	f17,(stack_size + STACK_FRAME_MIN_SIZE - 112)(%r1); \
++	stfd	f16,(stack_size + STACK_FRAME_MIN_SIZE - 120)(%r1); \
++	stfd	f15,(stack_size + STACK_FRAME_MIN_SIZE - 128)(%r1); \
++	stfd	f14,(stack_size + STACK_FRAME_MIN_SIZE - 136)(%r1);
++
++#define POP_FPU(stack_size) \
++	lfd	f31,(stack_size + STACK_FRAME_MIN_SIZE)(%r1); \
++	lfd	f30,(stack_size + STACK_FRAME_MIN_SIZE - 8)(%r1); \
++	lfd	f29,(stack_size + STACK_FRAME_MIN_SIZE - 16)(%r1); \
++	lfd	f28,(stack_size + STACK_FRAME_MIN_SIZE - 24)(%r1); \
++	lfd	f27,(stack_size + STACK_FRAME_MIN_SIZE - 32)(%r1); \
++	lfd	f26,(stack_size + STACK_FRAME_MIN_SIZE - 40)(%r1); \
++	lfd	f25,(stack_size + STACK_FRAME_MIN_SIZE - 48)(%r1); \
++	lfd	f24,(stack_size + STACK_FRAME_MIN_SIZE - 56)(%r1); \
++	lfd	f23,(stack_size + STACK_FRAME_MIN_SIZE - 64)(%r1); \
++	lfd	f22,(stack_size + STACK_FRAME_MIN_SIZE - 72)(%r1); \
++	lfd	f21,(stack_size + STACK_FRAME_MIN_SIZE - 80)(%r1); \
++	lfd	f20,(stack_size + STACK_FRAME_MIN_SIZE - 88)(%r1); \
++	lfd	f19,(stack_size + STACK_FRAME_MIN_SIZE - 96)(%r1); \
++	lfd	f18,(stack_size + STACK_FRAME_MIN_SIZE - 104)(%r1); \
++	lfd	f17,(stack_size + STACK_FRAME_MIN_SIZE - 112)(%r1); \
++	lfd	f16,(stack_size + STACK_FRAME_MIN_SIZE - 120)(%r1); \
++	lfd	f15,(stack_size + STACK_FRAME_MIN_SIZE - 128)(%r1); \
++	lfd	f14,(stack_size + STACK_FRAME_MIN_SIZE - 136)(%r1);
++
++/*
++ * Careful calling this, it will 'clobber' fpu (by design)
++ * Don't call this from C
++ */
++FUNC_START(load_fpu)
++	lfd	f14,0(r3)
++	lfd	f15,8(r3)
++	lfd	f16,16(r3)
++	lfd	f17,24(r3)
++	lfd	f18,32(r3)
++	lfd	f19,40(r3)
++	lfd	f20,48(r3)
++	lfd	f21,56(r3)
++	lfd	f22,64(r3)
++	lfd	f23,72(r3)
++	lfd	f24,80(r3)
++	lfd	f25,88(r3)
++	lfd	f26,96(r3)
++	lfd	f27,104(r3)
++	lfd	f28,112(r3)
++	lfd	f29,120(r3)
++	lfd	f30,128(r3)
++	lfd	f31,136(r3)
++	blr
++FUNC_END(load_fpu)
++
++#endif /* _SELFTESTS_POWERPC_FPU_ASM_H */
++
+diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
+index f3711d8..241f067 100644
+--- a/tools/testing/selftests/powerpc/math/fpu_asm.S
++++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
+@@ -8,70 +8,7 @@
+  */
+ 
+ #include "../basic_asm.h"
+-
+-#define PUSH_FPU(pos) \
+-	stfd	f14,pos(sp); \
+-	stfd	f15,pos+8(sp); \
+-	stfd	f16,pos+16(sp); \
+-	stfd	f17,pos+24(sp); \
+-	stfd	f18,pos+32(sp); \
+-	stfd	f19,pos+40(sp); \
+-	stfd	f20,pos+48(sp); \
+-	stfd	f21,pos+56(sp); \
+-	stfd	f22,pos+64(sp); \
+-	stfd	f23,pos+72(sp); \
+-	stfd	f24,pos+80(sp); \
+-	stfd	f25,pos+88(sp); \
+-	stfd	f26,pos+96(sp); \
+-	stfd	f27,pos+104(sp); \
+-	stfd	f28,pos+112(sp); \
+-	stfd	f29,pos+120(sp); \
+-	stfd	f30,pos+128(sp); \
+-	stfd	f31,pos+136(sp);
+-
+-#define POP_FPU(pos) \
+-	lfd	f14,pos(sp); \
+-	lfd	f15,pos+8(sp); \
+-	lfd	f16,pos+16(sp); \
+-	lfd	f17,pos+24(sp); \
+-	lfd	f18,pos+32(sp); \
+-	lfd	f19,pos+40(sp); \
+-	lfd	f20,pos+48(sp); \
+-	lfd	f21,pos+56(sp); \
+-	lfd	f22,pos+64(sp); \
+-	lfd	f23,pos+72(sp); \
+-	lfd	f24,pos+80(sp); \
+-	lfd	f25,pos+88(sp); \
+-	lfd	f26,pos+96(sp); \
+-	lfd	f27,pos+104(sp); \
+-	lfd	f28,pos+112(sp); \
+-	lfd	f29,pos+120(sp); \
+-	lfd	f30,pos+128(sp); \
+-	lfd	f31,pos+136(sp);
+-
+-# Careful calling this, it will 'clobber' fpu (by design)
+-# Don't call this from C
+-FUNC_START(load_fpu)
+-	lfd	f14,0(r3)
+-	lfd	f15,8(r3)
+-	lfd	f16,16(r3)
+-	lfd	f17,24(r3)
+-	lfd	f18,32(r3)
+-	lfd	f19,40(r3)
+-	lfd	f20,48(r3)
+-	lfd	f21,56(r3)
+-	lfd	f22,64(r3)
+-	lfd	f23,72(r3)
+-	lfd	f24,80(r3)
+-	lfd	f25,88(r3)
+-	lfd	f26,96(r3)
+-	lfd	f27,104(r3)
+-	lfd	f28,112(r3)
+-	lfd	f29,120(r3)
+-	lfd	f30,128(r3)
+-	lfd	f31,136(r3)
+-	blr
+-FUNC_END(load_fpu)
++#include "../fpu_asm.h"
+ 
+ FUNC_START(check_fpu)
+ 	mr r4,r3
+@@ -138,9 +75,9 @@ FUNC_START(test_fpu)
+ 	# r4 holds pointer to the pid
+ 	# f14-f31 are non volatiles
+ 	PUSH_BASIC_STACK(256)
++	PUSH_FPU(256)
+ 	std	r3,STACK_FRAME_PARAM(0)(sp) # Address of darray
+ 	std r4,STACK_FRAME_PARAM(1)(sp) # Address of pid
+-	PUSH_FPU(STACK_FRAME_LOCAL(2,0))
+ 
+ 	bl load_fpu
+ 	nop
+@@ -155,7 +92,7 @@ FUNC_START(test_fpu)
+ 	bl check_fpu
+ 	nop
+ 
+-	POP_FPU(STACK_FRAME_LOCAL(2,0))
++	POP_FPU(256)
+ 	POP_BASIC_STACK(256)
+ 	blr
+ FUNC_END(test_fpu)
+@@ -166,10 +103,10 @@ FUNC_END(test_fpu)
+ # registers while running is not zero.
+ FUNC_START(preempt_fpu)
+ 	PUSH_BASIC_STACK(256)
++	PUSH_FPU(256)
+ 	std r3,STACK_FRAME_PARAM(0)(sp) # double *darray
+ 	std r4,STACK_FRAME_PARAM(1)(sp) # int *threads_starting
+ 	std r5,STACK_FRAME_PARAM(2)(sp) # int *running
+-	PUSH_FPU(STACK_FRAME_LOCAL(3,0))
+ 
+ 	bl load_fpu
+ 	nop
+@@ -192,7 +129,7 @@ FUNC_START(preempt_fpu)
+ 	cmpwi r5,0
+ 	bne 2b
+ 
+-3:	POP_FPU(STACK_FRAME_LOCAL(3,0))
++3:	POP_FPU(256)
+ 	POP_BASIC_STACK(256)
+ 	blr
+ FUNC_END(preempt_fpu)
+-- 
+2.9.3
