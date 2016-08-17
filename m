@@ -1,19 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDdS05YCRzDr5n
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 15:43:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDdS526DZzDr5t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 15:43:17 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sDdS00KsLz9t0m
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2016 15:43:11 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3sDdS44Skyz9sRB
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2016 15:43:16 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 10/10] powerpc/64: Hard code cache geometry on POWER8
-Date: Wed, 17 Aug 2016 15:39:17 +1000
-Message-Id: <1471412357-3477-10-git-send-email-benh@kernel.crashing.org>
+Subject: [RFC PATCH 09/10] powerpc/64: Add L2 and L3 cache shape info
+Date: Wed, 17 Aug 2016 15:39:16 +1000
+Message-Id: <1471412357-3477-9-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1471412357-3477-1-git-send-email-benh@kernel.crashing.org>
 References: <1471412357-3477-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,87 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All shipping firmware versions have it wrong in the device-tree
+Retrieved from device-tree when available
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_64.c | 52 +++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 49 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/cache.h |  2 ++
+ arch/powerpc/kernel/setup_64.c   | 27 ++++++++++++++++++++++-----
+ 2 files changed, 24 insertions(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index ceb7376..3987bd9 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -40,6 +40,8 @@ struct ppc_cache_info {
+ struct ppc64_caches {
+ 	struct ppc_cache_info l1d;
+ 	struct ppc_cache_info l1i;
++	struct ppc_cache_info l2;
++	struct ppc_cache_info l3;
+ };
+ 
+ extern struct ppc64_caches ppc64_caches;
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 78d28ca..1243062 100644
+index 80a20b9..78d28ca 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -255,7 +255,7 @@ static void cpu_ready_for_interrupts(void)
+@@ -485,22 +485,37 @@ static bool __init parse_cache_info(struct device_node *np,
  
- void __init early_setup(unsigned long dt_ptr)
- {
--	static __initdata struct paca_struct boot_paca;
-+	static struct paca_struct boot_paca __initdata ;
- 
- 	/* -------- printk is _NOT_ safe to use here ! ------- */
- 
-@@ -483,13 +483,59 @@ static bool __init parse_cache_info(struct device_node *np,
- 	return success;
- }
- 
-+static void __init populate_p8_cache_info(void)
-+{
-+	static const struct ppc_cache_info p8_l1i __initconst  = {
-+		.size = 0x8000,
-+		.line_size = 128,
-+		.block_size = 128,
-+		.log_block_size = 7,
-+		.blocks_per_page = PAGE_SIZE / 128,
-+		.sets = 32
-+	};
-+	static const struct ppc_cache_info p8_l1d __initconst  = {
-+		.size = 0x10000,
-+		.line_size = 128,
-+		.block_size = 128,
-+		.log_block_size = 7,
-+		.blocks_per_page = PAGE_SIZE / 128,
-+		.sets = 64
-+	};
-+	static const struct ppc_cache_info p8_l2 __initconst  = {
-+		.size = 0x80000,
-+		.line_size = 128,
-+		.sets = 512
-+	};
-+	static const struct ppc_cache_info p8_l3 __initconst  = {
-+		.size = 0x800000,
-+		.line_size = 128,
-+		.sets = 8192
-+	};
-+	ppc64_caches.l1i = p8_l1i;
-+	ppc64_caches.l1d = p8_l1d;
-+	ppc64_caches.l2 = p8_l2;
-+	ppc64_caches.l3 = p8_l3;
-+}
-+
  void __init initialize_cache_info(void)
  {
--	struct device_node *cpu, *l2, *l3 = NULL;
-+	struct device_node *cpu = NULL, *l2, *l3 = NULL;
-+	u32 pvr;
+-	struct device_node *np;
++	struct device_node *cpu, *l2, *l3 = NULL;
  
  	DBG(" -> initialize_cache_info()\n");
  
--	cpu = of_find_node_by_type(NULL, "cpu");
-+	/*
-+	 * All shipping POWER8 machines have a firmware bug that
-+	 * puts incorrect information in the device-tree. This will
-+	 * be (hopefully) fixed for future chips but for now hard
-+	 * code the values if we are running on one of these
-+	 */
-+	pvr = PVR_VER(mfspr(SPRN_PVR));
-+	if (pvr == PVR_POWER8 || pvr == PVR_POWER8E ||
-+	    pvr == PVR_POWER8NVL)
-+		populate_p8_cache_info();
-+	else
-+		cpu = of_find_node_by_type(NULL, "cpu");
+-	np  = of_find_node_by_type(NULL, "cpu");
++	cpu = of_find_node_by_type(NULL, "cpu");
  
  	/*
  	 * We're assuming *all* of the CPUs have the same
+ 	 * d-cache and i-cache sizes... -Peter
+ 	 */
+-	if (np) {
+-		if (!parse_cache_info(np, false, &ppc64_caches.l1d))
++	if (cpu) {
++		if (!parse_cache_info(cpu, false, &ppc64_caches.l1d))
+ 			DBG("Argh, can't find dcache properties !\n");
+ 
+-		if (!parse_cache_info(np, true, &ppc64_caches.l1i))
++		if (!parse_cache_info(cpu, true, &ppc64_caches.l1i))
+ 			DBG("Argh, can't find icache properties !\n");
++
++		/* Try to find the L2 and L3 if any. Assume they are
++		 * unified and use the D-side properties
++		 */
++		l2 = of_find_next_cache_node(cpu);
++		of_node_put(cpu);
++		if (l2) {
++			parse_cache_info(l2, false, &ppc64_caches.l2);
++			l3 = of_find_next_cache_node(l2);
++			of_node_put(l2);
++		}
++		if (l3) {
++			parse_cache_info(l3, false, &ppc64_caches.l3);
++			of_node_put(l3);
++		}
+ 	}
+ 
+ 	/* For use by binfmt_elf */
+@@ -508,6 +523,8 @@ void __init initialize_cache_info(void)
+ 	icache_bsize = ppc64_caches.l1i.block_size;
+ 	dl1cache_shape = format_cache_shape(&ppc64_caches.l1d);
+ 	il1cache_shape = format_cache_shape(&ppc64_caches.l1i);
++	l2cache_shape = format_cache_shape(&ppc64_caches.l2);
++	l3cache_shape = format_cache_shape(&ppc64_caches.l3);
+ 
+ 	DBG(" <- initialize_cache_info()\n");
+ }
 -- 
 2.7.4
