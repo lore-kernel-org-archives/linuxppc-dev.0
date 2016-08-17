@@ -1,20 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDX8q5DGGzDr4d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 11:44:43 +1000 (AEST)
-Date: Wed, 17 Aug 2016 11:44:43 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michal Marek <mmarek@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Al Viro
- <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build warnings after merge of the kbuild tree
-Message-ID: <20160817114443.67675413@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDXcD1wRkzDqdr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 12:05:00 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id y134so6470688pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 19:05:00 -0700 (PDT)
+Subject: Re: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take
+ kexec_buf as argument.
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1906561.y8blzB2uZ8@hactar> <fab1a3ec-5252-3ca7-6382-15b84a19ccdb@gmail.com>
+ <2089791.XEmIvA1k4K@hactar>
+Cc: kexec@lists.infradead.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Eric Biederman <ebiederm@xmission.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Dave Young <dyoung@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <edca3e4a-1901-eab4-6626-390c835b00c7@gmail.com>
+Date: Wed, 17 Aug 2016 12:04:49 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <2089791.XEmIvA1k4K@hactar>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
 
-After merging the kbuild tree, today's linux-next build (powerpc
-ppc64_defconfig) produced these warnings:
 
-WARNING: 25 bad relocations
-c000000000cf2570 R_PPC64_ADDR64    __crc___arch_hweight16
-c000000000cf2578 R_PPC64_ADDR64    __crc___arch_hweight32
-c000000000cf2580 R_PPC64_ADDR64    __crc___arch_hweight64
-c000000000cf2588 R_PPC64_ADDR64    __crc___arch_hweight8
-c000000000cf2678 R_PPC64_ADDR64    __crc___bswapdi2
-c000000000cf2690 R_PPC64_ADDR64    __crc___clear_user
-c000000000cf26b8 R_PPC64_ADDR64    __crc___copy_tofrom_user
-c000000000cf2728 R_PPC64_ADDR64    __crc___csum_partial
-c000000000cf3f90 R_PPC64_ADDR64    __crc_copy_page
-c000000000cf40e0 R_PPC64_ADDR64    __crc_csum_partial_copy_generic
-c000000000cf4100 R_PPC64_ADDR64    __crc_current_stack_pointer
-c000000000cf4928 R_PPC64_ADDR64    __crc_empty_zero_page
-c000000000cf4db0 R_PPC64_ADDR64    __crc_flush_dcache_range
-c000000000cf4dc0 R_PPC64_ADDR64    __crc_flush_icache_range
-c000000000cf6470 R_PPC64_ADDR64    __crc_load_fp_state
-c000000000cf6488 R_PPC64_ADDR64    __crc_load_vr_state
-c000000000cf68d0 R_PPC64_ADDR64    __crc_memchr
-c000000000cf68e0 R_PPC64_ADDR64    __crc_memcmp
-c000000000cf68e8 R_PPC64_ADDR64    __crc_memcpy
-c000000000cf6900 R_PPC64_ADDR64    __crc_memmove
-c000000000cf6988 R_PPC64_ADDR64    __crc_memset
-c000000000cf9328 R_PPC64_ADDR64    __crc_store_fp_state
-c000000000cf9330 R_PPC64_ADDR64    __crc_store_vr_state
-c000000000cf93d0 R_PPC64_ADDR64    __crc_strncmp
-c000000000cf93d8 R_PPC64_ADDR64    __crc_strncpy
+On 17/08/16 04:49, Thiago Jung Bauermann wrote:
+> Am Dienstag, 16 August 2016, 16:15:55 schrieb Balbir Singh:
+>> On 16/08/16 00:49, Thiago Jung Bauermann wrote:
+>>> Am Montag, 15 August 2016, 17:30:49 schrieb Balbir Singh:
+>>>> On Thu, Aug 11, 2016 at 08:08:07PM -0300, Thiago Jung Bauermann wrote:
+>>>>> Adapt all callers to the new function prototype.
+>>>>
+>>>> Could you please expand on this?
+>>>
+>>> Is the following better?
+>>>
+>>> Adapt all callers to set up a kexec_buf to pass to kexec_add_buffer.
+>>
+>> Yes and the reason for doing so? Consolidation/clarity of implementation?
+> 
+> Indeed. What about this commit message?
+> 
+> Subject: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take  
+>  kexec_buf as argument.
+> 
+> This is done to simplify the kexec_add_buffer argument list.
+> Adapt all callers to set up a kexec_buf to pass to kexec_add_buffer.
+> 
+> In addition, change the type of kexec_buf.buffer from char * to void *.
+> There is no particular reason for it to be a char *, and the change
+> allows us to get rid of 3 existing casts to char * in the code.
+> 
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Acked-by: Dave Young <dyoung@redhat.com>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> 
 
-Introduced by commit
 
-  9445aa1a3062 ("ppc: move exports to definitions")
+Looks good
 
-I have reverted that commit for today.
-
-[cc-ing the ppc guys for clues - also involved is commit
-
-  22823ab419d8 ("EXPORT_SYMBOL() for asm")
-]
-
--- 
-Cheers,
-Stephen Rothwell
+Balbir
