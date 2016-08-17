@@ -2,8 +2,8 @@ Return-Path: <famz@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDgWC3x3DzDr5C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 17:16:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDgWJ2Td1zDr5n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 17:16:12 +1000 (AEST)
 From: Fam Zheng <famz@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-nvme@lists.infradead.org, Keith Busch <keith.busch@intel.com>,
@@ -17,9 +17,9 @@ Cc: linux-nvme@lists.infradead.org, Keith Busch <keith.busch@intel.com>,
  virtualization@lists.linux-foundation.org,
  Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
  Nitin Gupta <ngupta@vflare.org>, David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 09/15] virtio-blk: Pass attribute group to device_add_disk
-Date: Wed, 17 Aug 2016 15:15:09 +0800
-Message-Id: <1471418115-3654-10-git-send-email-famz@redhat.com>
+Subject: [PATCH 10/15] mtd: Pass attribute group to device_add_disk
+Date: Wed, 17 Aug 2016 15:15:10 +0800
+Message-Id: <1471418115-3654-11-git-send-email-famz@redhat.com>
 In-Reply-To: <1471418115-3654-1-git-send-email-famz@redhat.com>
 References: <1471418115-3654-1-git-send-email-famz@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,88 +39,29 @@ example udev checks availability of certain attributes and initializes
 
 device_add_disk can handle adding attribute group better, so use it.
 
-Meanwhile, handle error of device_add_disk.
-
 Signed-off-by: Fam Zheng <famz@redhat.com>
 ---
- drivers/block/virtio_blk.c | 38 +++++++++++++++++++++++++++-----------
- 1 file changed, 27 insertions(+), 11 deletions(-)
+ drivers/mtd/mtd_blkdevs.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
-index 4564df5..ff60d82 100644
---- a/drivers/block/virtio_blk.c
-+++ b/drivers/block/virtio_blk.c
-@@ -522,10 +522,10 @@ virtblk_cache_type_show(struct device *dev, struct device_attribute *attr,
- 	return snprintf(buf, 40, "%s\n", virtblk_cache_types[writeback]);
- }
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 4ff9381..fc9265d 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -434,13 +434,7 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
+ 	if (new->readonly)
+ 		set_disk_ro(gd, 1);
  
--static const struct device_attribute dev_attr_cache_type_ro =
-+static struct device_attribute dev_attr_cache_type_ro =
- 	__ATTR(cache_type, S_IRUGO,
- 	       virtblk_cache_type_show, NULL);
--static const struct device_attribute dev_attr_cache_type_rw =
-+static struct device_attribute dev_attr_cache_type_rw =
- 	__ATTR(cache_type, S_IRUGO|S_IWUSR,
- 	       virtblk_cache_type_show, virtblk_cache_type_store);
- 
-@@ -550,6 +550,26 @@ static struct blk_mq_ops virtio_mq_ops = {
- static unsigned int virtblk_queue_depth;
- module_param_named(queue_depth, virtblk_queue_depth, uint, 0444);
- 
-+static struct attribute *virtblk_attrs_ro[] = {
-+	&dev_attr_serial.attr,
-+	&dev_attr_cache_type_ro.attr,
-+	NULL
-+};
-+
-+static struct attribute *virtblk_attrs_rw[] = {
-+	&dev_attr_serial.attr,
-+	&dev_attr_cache_type_rw.attr,
-+	NULL
-+};
-+
-+static struct attribute_group virtblk_attr_group_ro = {
-+	.attrs		= virtblk_attrs_ro,
-+};
-+
-+static struct attribute_group virtblk_attr_group_rw = {
-+	.attrs		= virtblk_attrs_rw,
-+};
-+
- static int virtblk_probe(struct virtio_device *vdev)
- {
- 	struct virtio_blk *vblk;
-@@ -560,6 +580,7 @@ static int virtblk_probe(struct virtio_device *vdev)
- 	u32 v, blk_size, sg_elems, opt_io_size;
- 	u16 min_io_size;
- 	u8 physical_block_exp, alignment_offset;
-+	struct attribute_group *attr_group;
- 
- 	if (!vdev->config->get) {
- 		dev_err(&vdev->dev, "%s failure: config access disabled\n",
-@@ -719,19 +740,14 @@ static int virtblk_probe(struct virtio_device *vdev)
- 
- 	virtio_device_ready(vdev);
- 
--	device_add_disk(&vdev->dev, vblk->disk, NULL);
--	err = device_create_file(disk_to_dev(vblk->disk), &dev_attr_serial);
--	if (err)
--		goto out_del_disk;
+-	device_add_disk(&new->mtd->dev, gd, NULL);
 -
- 	if (virtio_has_feature(vdev, VIRTIO_BLK_F_CONFIG_WCE))
--		err = device_create_file(disk_to_dev(vblk->disk),
--					 &dev_attr_cache_type_rw);
-+		attr_group = &virtblk_attr_group_rw;
- 	else
--		err = device_create_file(disk_to_dev(vblk->disk),
--					 &dev_attr_cache_type_ro);
-+		attr_group = &virtblk_attr_group_ro;
-+	err = device_add_disk(&vdev->dev, vblk->disk, attr_group);
- 	if (err)
- 		goto out_del_disk;
-+
+-	if (new->disk_attributes) {
+-		ret = sysfs_create_group(&disk_to_dev(gd)->kobj,
+-					new->disk_attributes);
+-		WARN_ON(ret);
+-	}
++	device_add_disk(&new->mtd->dev, gd, new->disk_attributes);
  	return 0;
- 
- out_del_disk:
+ error4:
+ 	blk_cleanup_queue(new->rq);
 -- 
 2.7.4
