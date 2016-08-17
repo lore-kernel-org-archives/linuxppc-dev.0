@@ -1,48 +1,27 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <prvs=0037b07ebe=holger.brunck@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDsNT2NQ8zDqS5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 00:40:57 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7HEZ5Y3135014
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 10:40:55 -0400
-Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24v75yw33n-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 10:40:55 -0400
-Received: from localhost
- by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 17 Aug 2016 15:40:52 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B3F381B08023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 15:42:23 +0100 (BST)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7HEeleI23724264
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 14:40:47 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7HEej3g018173
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 08:40:46 -0600
-Subject: Re: [PATCH] ppc64: allow ptrace to set TM bits
-To: Simon Guo <wei.guo.simon@gmail.com>
-References: <1469785882-9892-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <20160802054351.GA16975@simonLocalRHEL7.x64>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Wed, 17 Aug 2016 16:40:45 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDspN27StzDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 00:59:55 +1000 (AEST)
+Subject: Re: debug problems on ppc 83xx target due to changed struct
+ task_struct
+To: Dave Hansen <dave.hansen@linux.intel.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+References: <dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com>
+ <57ADE7E6.9030900@linux.intel.com>
+ <4e16aad4-80d3-ffcc-d183-681b48d4751b@keymile.com>
+ <57ADF4A0.5040807@linux.intel.com>
+ <41e00d07-d7ce-0198-acce-ac25db8c9df3@keymile.com>
+ <57B1EBAE.6030503@linux.intel.com>
+CC: "mingo@kernel.org" <mingo@kernel.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+From: Holger Brunck <holger.brunck@keymile.com>
+Message-ID: <e5cbd015-eeb5-31b5-0829-14cc8500dc6d@keymile.com>
+Date: Wed, 17 Aug 2016 16:59:45 +0200
 MIME-Version: 1.0
-In-Reply-To: <20160802054351.GA16975@simonLocalRHEL7.x64>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <4c63e67b-3d9d-67ee-24a9-9e35631c68ff@linux.vnet.ibm.com>
+In-Reply-To: <57B1EBAE.6030503@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,39 +31,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/08/2016 07:43, Simon Guo wrote:
-> Hi Laurent,
-> On Fri, Jul 29, 2016 at 11:51:22AM +0200, Laurent Dufour wrote:
->>  static int set_user_msr(struct task_struct *task, unsigned long msr)
->>  {
->> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->> +	if (!(task->thread.regs->msr & MSR_TM)) {
->> +		/* If TM is not available, discard TM bits changes */
->> +		msr &= ~(MSR_TM | MSR_TS_MASK);
->> +	}
->> +#endif
+On 15/08/16 18:19, Dave Hansen wrote:
+> On 08/15/2016 07:35 AM, Holger Brunck wrote:
+>> I tried this but unfortunately the error only occurs while remote debugging.
+>> Locally with gdb everything works fine. BTW we double-checked with a 85xx ppc
+>> target which is also 32-bit and it ends up with the same behaviour.
+>>
+>> I was also investigating where I have to move the line in the struct task_struct
+>> and it turns out to be like this (diff to 4.7 kernel):
+>>
+>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>> index 253538f..4868874 100644
+>> --- a/include/linux/sched.h
+>> +++ b/include/linux/sched.h
+>> @@ -1655,7 +1655,9 @@ struct task_struct {
+>>         struct signal_struct *signal;
+>>         struct sighand_struct *sighand;
+>>
+>> +       // struct thread_struct thread;   // until here everything is fine
+>>         sigset_t blocked, real_blocked;
+>> +       struct thread_struct thread;      // from here it's broken
+>>         sigset_t saved_sigmask; /* restored if set_restore_sigmask() was used */
+>>         struct sigpending pending;
 > 
-> I am not sure whether following is an issue:
-> Per PowerISA, any exception/interrupt will disable MSR[TM] bit 
-> automatically and mark MSR_TS to be suspended when it is 
-> transactional. It is possible that MSR[TM] = 0 and MSR[MSR_TS] != 0
-> (suspended). 
+> Wow, thanks for all the debugging here!
 > 
-> Will set_user_msr() be able to escape from the above?
->  For example, one user space application encountered 
-> page fault during transaction, its task->thread.regs->msr & MSR_TM == 0
-> and MSR[MSR_TS] == suspended.  Then it is being traced and 
-> set_user_msr() is invoked on it. I think it will be incorrect to 
-> clear its  MSR_TS_MASK bits.....
+> So, we know it has to do with signals, thread_info, and probably only
+> affects 32-bit powerpc.  Seems awfully weird.  Have you checked with any
+> of the 64-bit powerpc guys to see if they have any ideas?
+> 
+> I went grepping around for a bit.
+> 
+> Where is the task_struct stored?  Is it on-stack on ppc32 or something?
+>  The thread_info is, I assume, but I see some THREAD_INFO vs. THREAD
+> (thread struct) math happening in here, which confuses me:
+> 
+>         .globl  ret_from_debug_exc
+> ret_from_debug_exc:
+>         mfspr   r9,SPRN_SPRG_THREAD
+>         lwz     r10,SAVED_KSP_LIMIT(r1)
+>         stw     r10,KSP_LIMIT(r9)
+>         lwz     r9,THREAD_INFO-THREAD(r9)
+>         CURRENT_THREAD_INFO(r10, r1)
+>         lwz     r10,TI_PREEMPT(r10)
+>         stw     r10,TI_PREEMPT(r9)
+>         RESTORE_xSRR(SRR0,SRR1);
+>         RESTORE_xSRR(CSRR0,CSRR1);
+>         RESTORE_MMU_REGS;
+>         RET_FROM_EXC_LEVEL(SPRN_DSRR0, SPRN_DSRR1, PPC_RFDI)
+> 
 
-You raised a good point, but I'm not sure this case is valid.
-The interrupt case you described is happening in the kernel, not in user
-space, and set_user_msr() is dealing with the user space register's
-state, not the kernel's one.
-So it can't apply and I can't see how in user space MSR[TM]=0 and
-MSR[TS]=1 could happen.
+yeah but here you are in arch/powerpc/kernel/head_booke.h and IIUIC my
+architecture uses arch/powerpc/kernel/head_32.S
 
-Am I missing something here ?
+Some small updates from my side. I was able to simplify the setup. I don't need
+my (quite complex) application. I now have a small C - program which starts
+three threads simply running a while loop and doing printouts every now and
+then. And I still can reproduce the error. So we simply need threads a gdbserver
+session, ppc32 and a single step while the threads are already running.
 
-Thanks,
-Laurent.
+I added some debug prints within the kernel common signal code and the specific
+powerpc code and enabled the debug trace from the gdbserver. What I see is that
+gdbserver sends for each thread a SIGSTOP to the kernel and waits for a
+response. The kernel does receive all the signals but only respond to some of
+them in the error case. Which then matches with my "ps" output as I see that
+some threads are not in the state pthread_stop and then the gdbserver gets
+suspended. I think the interesting part is in arch/powerpc/kernel/signal_32.c
+with it's function handle_signal32. For the threads successfully stopped this
+function is called once. If the kernel receives two SIGSTOP before calling the
+function we end up in the error case. Now my question does anyone know if this
+function should handle several pending signals at once if present or will it be
+called once per signal?
+
+> But, I'm really at a loss to explain this.  It still seems like a deeply
+> ppc-specific issue.  We can obviously work around it with an #ifdef for
+> your platform, but that's awfully hackish and hides the real bug,
+> whatever it is.
+> 
+
+what I could do is to reuse the define CONFIG_ARCH_WANTS_DYNAMIC_TASK_STRUCT and
+if it's not set I use the thread_struct at it's old position. I know it would
+only mask the error and I guess it's not acceptable for mainline but as my time
+is limited I could live with such an OOT patch for my board.
+
+Best regards
+Holger
