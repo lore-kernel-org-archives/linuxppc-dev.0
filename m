@@ -3,41 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sDZpZ4RDPzDr4l
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sDZpZ6P0mzDr51
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:44:06 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7H3i2MZ147185
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 23:44:03 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24v4cjjwyr-1
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7H3i2aS107743
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 23:44:04 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24tgpfj1gk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 23:44:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2016 23:44:04 -0400
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Wed, 17 Aug 2016 13:43:54 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0FEDB357806C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:53 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7H3hr7829622340
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:53 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7H3hq71023533
+ Wed, 17 Aug 2016 13:43:56 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6DCEE2BB0063
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:52 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7H3hqn029163610
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:52 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7H3hqPj032652
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 13:43:52 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org, wei.guo.simon@gmail.com
 Cc: mikey@neuling.org, anton@samba.org
-Subject: [PATCH v3 15/21] selftests/powerpc: Add checks for transactional GPRs
- in signal contexts
-Date: Wed, 17 Aug 2016 13:43:17 +1000
+Subject: [PATCH v3 12/21] selftests/powerpc: Allow tests to extend their kill
+ timeout
+Date: Wed, 17 Aug 2016 13:43:14 +1000
 In-Reply-To: <20160817034323.23053-1-cyrilbur@gmail.com>
 References: <20160817034323.23053-1-cyrilbur@gmail.com>
-Message-Id: <20160817034323.23053-16-cyrilbur@gmail.com>
+Message-Id: <20160817034323.23053-13-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,258 +47,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a thread receives a signal while transactional the kernel creates a
-second context to show the transactional state of the process. This
-test loads some known values and waits for a signal and confirms that
-the expected values are in the signal context.
-
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/tm/Makefile        |   7 +-
- .../powerpc/tm/tm-signal-context-chk-gpr.c         |  90 ++++++++++++++++
- tools/testing/selftests/powerpc/tm/tm-signal.S     | 114 +++++++++++++++++++++
- 3 files changed, 210 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal.S
+ tools/testing/selftests/powerpc/harness.c | 9 +++++++--
+ tools/testing/selftests/powerpc/utils.h   | 2 +-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 9d301d7..2b6fe8f 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,5 +1,7 @@
-+SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr
-+
- TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
--	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
-+	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
+diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
+index 52f9be7..248a820 100644
+--- a/tools/testing/selftests/powerpc/harness.c
++++ b/tools/testing/selftests/powerpc/harness.c
+@@ -19,9 +19,9 @@
+ #include "subunit.h"
+ #include "utils.h"
  
- all: $(TEST_PROGS)
+-#define TIMEOUT		120
+ #define KILL_TIMEOUT	5
  
-@@ -11,6 +13,9 @@ tm-syscall: tm-syscall-asm.S
- tm-syscall: CFLAGS += -I../../../../../usr/include
- tm-tmspr: CFLAGS += -pthread
++static uint64_t timeout = 120;
  
-+$(SIGNAL_CONTEXT_CHK_TESTS): tm-signal.S
-+$(SIGNAL_CONTEXT_CHK_TESTS): CFLAGS += -mhtm -m64
-+
- include ../../lib.mk
+ int run_test(int (test_function)(void), char *name)
+ {
+@@ -44,7 +44,7 @@ int run_test(int (test_function)(void), char *name)
+ 	setpgid(pid, pid);
  
- clean:
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
-new file mode 100644
-index 0000000..df91330
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
-@@ -0,0 +1,90 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be
-+ * delivered while the thread was in a transaction.
-+ * Expected behaviour is that the checkpointed state is in the user
-+ * context passed to the signal handler. The speculated state can be
-+ * accessed with the uc_link pointer.
-+ *
-+ * The rationale for this is that if TM unaware code (which linked
-+ * against TM libs) installs a signal handler it will not know of the
-+ * speculative nature of the 'live' registers and may infer the wrong
-+ * thing.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include <altivec.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define MAX_ATTEMPT 500000
-+
-+#define NV_GPR_REGS 18
-+
-+long tm_signal_self_context_load(pid_t pid, long *gprs, double *fps, vector int *vms, vector int *vss);
-+
-+static sig_atomic_t fail;
-+
-+static long gps[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-+					 -1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18};
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
+ 	/* Wake us up in timeout seconds */
+-	alarm(TIMEOUT);
++	alarm(timeout);
+ 	terminated = false;
+ 
+ wait:
+@@ -94,6 +94,11 @@ static struct sigaction alarm_action = {
+ 	.sa_handler = alarm_handler,
+ };
+ 
++void test_harness_set_timeout(uint64_t time)
 +{
-+	int i;
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	for (i = 0; i < NV_GPR_REGS && !fail; i++) {
-+		fail = (ucp->uc_mcontext.gp_regs[i + 14] != gps[i]);
-+		fail |= (tm_ucp->uc_mcontext.gp_regs[i + 14] != gps[i + NV_GPR_REGS]);
-+		if (fail)
-+			printf("Failed on %d GPR %lu or %lu\n", i,
-+					ucp->uc_mcontext.gp_regs[i + 14], tm_ucp->uc_mcontext.gp_regs[i + 14]);
-+	}
++	timeout = time;
 +}
 +
-+static int tm_signal_context_chk_gpr()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (i < MAX_ATTEMPT && !fail) {
-+		rc = tm_signal_self_context_load(pid, gps, NULL, NULL, NULL);
-+		FAIL_IF(rc != pid);
-+		i++;
-+	}
-+
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk_gpr, "tm_signal_context_chk_gpr");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal.S b/tools/testing/selftests/powerpc/tm/tm-signal.S
-new file mode 100644
-index 0000000..4e13e8b
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal.S
-@@ -0,0 +1,114 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include "../basic_asm.h"
-+#include "../gpr_asm.h"
-+#include "../fpu_asm.h"
-+#include "../vmx_asm.h"
-+#include "../vsx_asm.h"
-+
-+/*
-+ * Large caveat here being that the caller cannot expect the
-+ * signal to always be sent! The hardware can (AND WILL!) abort
-+ * the transaction between the tbegin and the tsuspend (however
-+ * unlikely it seems or infrequently it actually happens).
-+ * You have been warned.
-+ */
-+/* long tm_signal_self(pid_t pid, long *gprs, double *fps, vector *vms, vector *vss); */
-+FUNC_START(tm_signal_self_context_load)
-+	PUSH_BASIC_STACK(512)
-+	/*
-+	 * Don't strictly need to save and restore as it depends on if
-+	 * we're going to use them, however this reduces messy logic
-+	 */
-+	PUSH_VMX(STACK_FRAME_LOCAL(5,0),r8)
-+	PUSH_FPU(512)
-+	PUSH_NVREGS_BELOW_FPU(512)
-+	std r3, STACK_FRAME_PARAM(0)(sp) /* pid */
-+	std r4, STACK_FRAME_PARAM(1)(sp) /* gps */
-+	std r5, STACK_FRAME_PARAM(2)(sp) /* fps */
-+	std r6, STACK_FRAME_PARAM(3)(sp) /* vms */
-+	std r7, STACK_FRAME_PARAM(4)(sp) /* vss */
-+
-+	ld r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi r3, 0
-+	beq skip_gpr_lc
-+	bl load_gpr
-+skip_gpr_lc:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lc
-+	bl load_fpu
-+skip_fpu_lc:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lc
-+	bl load_vmx
-+skip_vmx_lc:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lc
-+	bl load_vsx
-+skip_vsx_lc:
-+	/*
-+	 * Set r3 (return value) before tbegin. Use the pid as a known
-+	 * 'all good' return value, zero is used to indicate a non-doomed
-+	 * transaction.
-+	 */
-+	ld	r3, STACK_FRAME_PARAM(0)(sp)
-+	tbegin.
-+	beq	1f
-+	tsuspend. /* Can't enter a syscall transactionally */
-+	ld	r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi	r3, 0
-+	beq skip_gpr_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	bl load_gpr
-+skip_gpr_lt:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	bl load_fpu
-+skip_fpu_lt:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vmx
-+skip_vmx_lt:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vsx
-+skip_vsx_lt:
-+	li	r0, 37 /* sys_kill */
-+	ld r3, STACK_FRAME_PARAM(0)(sp) /* pid */
-+	li r4, 10 /* SIGUSR1 */
-+	sc /* Taking the signal will doom the transaction */
-+	tabort. 0
-+	tresume. /* Be super sure we abort */
-+	/*
-+	 * This will cause us to resume doomed transaction and cause
-+	 * hardware to cleanup, we'll end up at 1: anything between
-+	 * tresume. and 1: shouldn't ever run.
-+	 */
-+	li r3, 0
-+	1:
-+	POP_VMX(STACK_FRAME_LOCAL(5,0),r4)
-+	POP_FPU(512)
-+	POP_NVREGS_BELOW_FPU(512)
-+	POP_BASIC_STACK(512)
-+	blr
-+FUNC_END(tm_signal_self_context_load)
+ int test_harness(int (test_function)(void), char *name)
+ {
+ 	int rc;
+diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+index ecd11b5..53405e8 100644
+--- a/tools/testing/selftests/powerpc/utils.h
++++ b/tools/testing/selftests/powerpc/utils.h
+@@ -22,7 +22,7 @@ typedef uint32_t u32;
+ typedef uint16_t u16;
+ typedef uint8_t u8;
+ 
+-
++void test_harness_set_timeout(uint64_t time);
+ int test_harness(int (test_function)(void), char *name);
+ extern void *get_auxv_entry(int type);
+ int pick_online_cpu(void);
 -- 
 2.9.3
