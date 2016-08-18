@@ -1,21 +1,18 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFTjV4chxzDr5Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 00:57:50 +1000 (AEST)
-Date: Thu, 18 Aug 2016 09:57:40 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- ego@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PowerPC] today's main line failed to build on PowerPC
-Message-ID: <20160818145740.GA24467@gate.crashing.org>
-References: <fcd669dc-7ad2-aeff-fb66-14c06c4f9a7d@linux.vnet.ibm.com>
- <840a5ac9-8de2-4765-9344-21abe8c0e67a@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <840a5ac9-8de2-4765-9344-21abe8c0e67a@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFW0l4MXxzDr5X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 01:56:07 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/8xx: use SPRN_EIE and SPRN_EID to enable/disable
+ interrupts
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20160818155602.DAD601A2459@localhost.localdomain>
+Date: Thu, 18 Aug 2016 17:56:02 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 18, 2016 at 12:48:17PM +0530, Abdul Haleem wrote:
-> >09:34:24 00:05:01 ERROR| [stderr] arch/powerpc/mm/hash_low_32.S: 
-> >Assembler messages:
-> >09:34:24 00:05:01 ERROR| [stderr] arch/powerpc/mm/hash_low_32.S:353: 
-> >Error: missing operand
-> >09:34:24 00:05:01 ERROR| [stderr] arch/powerpc/mm/hash_low_32.S:612: 
-> >Error: missing operand
-> >09:34:24 00:05:01 ERROR| [stderr] arch/powerpc/mm/hash_low_32.S:670: 
-> >Error: missing operand
+The 8xx has two special registers called EID (External Interrupt
+Disable) and EIE (External Interrupt Enable) for clearing/setting
+EE in MSR. It avoids the three instructions set mfmsr/ori/mtmsr or
+mfmsr/rlwinm/mtmsr.
 
-You're building 32-bit no-smp...
+We just have to write something in the register to change MSR EE
+bit. So we write r0 into the register, regardless of r0 value.
 
-> CONFIG_SMP=y
-> CONFIG_WORD_SIZE=64
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/hw_irq.h  | 6 ++++++
+ arch/powerpc/include/asm/reg.h     | 2 ++
+ arch/powerpc/include/asm/reg_8xx.h | 5 +++++
+ 3 files changed, 13 insertions(+)
 
-... but your config says otherwise.  Some (re-)configuration mishap?
-
-
-Segher
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index c7d82ff..7ffb392 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -155,6 +155,8 @@ static inline unsigned long arch_local_irq_save(void)
+ 	unsigned long flags = arch_local_save_flags();
+ #ifdef CONFIG_BOOKE
+ 	asm volatile("wrteei 0" : : : "memory");
++#elif defined(CONFIG_PPC_8xx)
++	wrtspr(SPRN_EID);
+ #else
+ 	SET_MSR_EE(flags & ~MSR_EE);
+ #endif
+@@ -165,6 +167,8 @@ static inline void arch_local_irq_disable(void)
+ {
+ #ifdef CONFIG_BOOKE
+ 	asm volatile("wrteei 0" : : : "memory");
++#elif defined(CONFIG_PPC_8xx)
++	wrtspr(SPRN_EID);
+ #else
+ 	arch_local_irq_save();
+ #endif
+@@ -174,6 +178,8 @@ static inline void arch_local_irq_enable(void)
+ {
+ #ifdef CONFIG_BOOKE
+ 	asm volatile("wrteei 1" : : : "memory");
++#elif defined(CONFIG_PPC_8xx)
++	wrtspr(SPRN_EIE);
+ #else
+ 	unsigned long msr = mfmsr();
+ 	SET_MSR_EE(msr | MSR_EE);
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index f69f40f..4bbd9be 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1246,6 +1246,8 @@ static inline void mtmsr_isync(unsigned long val)
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
+ #endif
++#define wrtspr(rn)	asm volatile("mtspr " __stringify(rn) ",0" : \
++				     : : "memory")
+ 
+ extern void msr_check_and_set(unsigned long bits);
+ extern bool strict_msr_control;
+diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
+index 6dae71f..d4bca3de 100644
+--- a/arch/powerpc/include/asm/reg_8xx.h
++++ b/arch/powerpc/include/asm/reg_8xx.h
+@@ -6,6 +6,11 @@
+ 
+ #include <asm/mmu.h>
+ 
++/* Special MSR manipulation registers */
++#define SPRN_EIE	80	/* External interrupt enable (EE=1, RI=1) */
++#define SPRN_EID	81	/* External interrupt disable (EE=0, RI=1) */
++#define SPRN_NRI	81	/* Non Recoverable interrupt (EE=0, RI=0) */
++
+ /* Cache control on the MPC8xx is provided through some additional
+  * special purpose registers.
+  */
+-- 
+2.1.0
