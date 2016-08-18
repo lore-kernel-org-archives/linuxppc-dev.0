@@ -1,18 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFW0l4MXxzDr5X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 01:56:07 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: use SPRN_EIE and SPRN_EID to enable/disable
- interrupts
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20160818155602.DAD601A2459@localhost.localdomain>
-Date: Thu, 18 Aug 2016 17:56:02 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFWx33rVGzDr5X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 02:37:59 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7IGXtTi136543
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 12:37:56 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24wcegxd6v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 12:37:56 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Thu, 18 Aug 2016 10:37:55 -0600
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, jallen@linux.vnet.ibm.com
+Subject: [PATCH] ibmvnic: Handle backing device failover and reinitialization
+Date: Thu, 18 Aug 2016 11:37:51 -0500
+Message-Id: <1471538271-10131-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,80 +33,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 8xx has two special registers called EID (External Interrupt
-Disable) and EIE (External Interrupt Enable) for clearing/setting
-EE in MSR. It avoids the three instructions set mfmsr/ori/mtmsr or
-mfmsr/rlwinm/mtmsr.
+An upcoming feature of IBM VNIC protocol is the ability to configure
+redundant backing devices for a VNIC client. In case of a failure
+on the current backing device, the driver will receive a signal
+from the hypervisor indicating that a failover will occur. The driver
+will then wait for a message from the backing device before 
+establishing a new connection.
 
-We just have to write something in the register to change MSR EE
-bit. So we write r0 into the register, regardless of r0 value.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/hw_irq.h  | 6 ++++++
- arch/powerpc/include/asm/reg.h     | 2 ++
- arch/powerpc/include/asm/reg_8xx.h | 5 +++++
- 3 files changed, 13 insertions(+)
+ drivers/net/ethernet/ibm/ibmvnic.c | 34 ++++++++++++++++++++++++++++++++--
+ drivers/net/ethernet/ibm/ibmvnic.h |  2 ++
+ 2 files changed, 34 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index c7d82ff..7ffb392 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -155,6 +155,8 @@ static inline unsigned long arch_local_irq_save(void)
- 	unsigned long flags = arch_local_save_flags();
- #ifdef CONFIG_BOOKE
- 	asm volatile("wrteei 0" : : : "memory");
-+#elif defined(CONFIG_PPC_8xx)
-+	wrtspr(SPRN_EID);
- #else
- 	SET_MSR_EE(flags & ~MSR_EE);
- #endif
-@@ -165,6 +167,8 @@ static inline void arch_local_irq_disable(void)
- {
- #ifdef CONFIG_BOOKE
- 	asm volatile("wrteei 0" : : : "memory");
-+#elif defined(CONFIG_PPC_8xx)
-+	wrtspr(SPRN_EID);
- #else
- 	arch_local_irq_save();
- #endif
-@@ -174,6 +178,8 @@ static inline void arch_local_irq_enable(void)
- {
- #ifdef CONFIG_BOOKE
- 	asm volatile("wrteei 1" : : : "memory");
-+#elif defined(CONFIG_PPC_8xx)
-+	wrtspr(SPRN_EIE);
- #else
- 	unsigned long msr = mfmsr();
- 	SET_MSR_EE(msr | MSR_EE);
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index f69f40f..4bbd9be 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1246,6 +1246,8 @@ static inline void mtmsr_isync(unsigned long val)
- 				     : "r" ((unsigned long)(v)) \
- 				     : "memory")
- #endif
-+#define wrtspr(rn)	asm volatile("mtspr " __stringify(rn) ",0" : \
-+				     : : "memory")
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 88f3c85..b942108 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -203,7 +203,8 @@ static void free_long_term_buff(struct ibmvnic_adapter *adapter,
+ 	struct device *dev = &adapter->vdev->dev;
  
- extern void msr_check_and_set(unsigned long bits);
- extern bool strict_msr_control;
-diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
-index 6dae71f..d4bca3de 100644
---- a/arch/powerpc/include/asm/reg_8xx.h
-+++ b/arch/powerpc/include/asm/reg_8xx.h
-@@ -6,6 +6,11 @@
+ 	dma_free_coherent(dev, ltb->size, ltb->buff, ltb->addr);
+-	send_request_unmap(adapter, ltb->map_id);
++	if (!adapter->failover)
++		send_request_unmap(adapter, ltb->map_id);
+ }
  
- #include <asm/mmu.h>
+ static int alloc_rx_pool(struct ibmvnic_adapter *adapter,
+@@ -522,7 +523,8 @@ static int ibmvnic_close(struct net_device *netdev)
+ 	for (i = 0; i < adapter->req_rx_queues; i++)
+ 		napi_disable(&adapter->napi[i]);
  
-+/* Special MSR manipulation registers */
-+#define SPRN_EIE	80	/* External interrupt enable (EE=1, RI=1) */
-+#define SPRN_EID	81	/* External interrupt disable (EE=0, RI=1) */
-+#define SPRN_NRI	81	/* Non Recoverable interrupt (EE=0, RI=0) */
+-	netif_tx_stop_all_queues(netdev);
++	if (!adapter->failover)
++		netif_tx_stop_all_queues(netdev);
+ 
+ 	if (adapter->bounce_buffer) {
+ 		if (!dma_mapping_error(dev, adapter->bounce_buffer_dma)) {
+@@ -3280,6 +3282,10 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
+ 			rc = ibmvnic_send_crq_init(adapter);
+ 			if (rc)
+ 				dev_err(dev, "Error sending init rc=%ld\n", rc);
++		} else if (gen_crq->cmd == IBMVNIC_DEVICE_FAILOVER) {
++			dev_info(dev, "Backing device failover detected\n");
++			netif_carrier_off(netdev);
++			adapter->failover = true;
+ 		} else {
+ 			/* The adapter lost the connection */
+ 			dev_err(dev, "Virtual Adapter failed (rc=%d)\n",
+@@ -3615,8 +3621,18 @@ static void handle_crq_init_rsp(struct work_struct *work)
+ 	struct device *dev = &adapter->vdev->dev;
+ 	struct net_device *netdev = adapter->netdev;
+ 	unsigned long timeout = msecs_to_jiffies(30000);
++	bool restart = false;
+ 	int rc;
+ 
++	if (adapter->failover) {
++		release_sub_crqs(adapter);
++		if (netif_running(netdev)) {
++			netif_tx_disable(netdev);
++			ibmvnic_close(netdev);
++			restart = true;
++		}
++	}
 +
- /* Cache control on the MPC8xx is provided through some additional
-  * special purpose registers.
-  */
+ 	send_version_xchg(adapter);
+ 	reinit_completion(&adapter->init_done);
+ 	if (!wait_for_completion_timeout(&adapter->init_done, timeout)) {
+@@ -3645,6 +3661,17 @@ static void handle_crq_init_rsp(struct work_struct *work)
+ 
+ 	netdev->real_num_tx_queues = adapter->req_tx_queues;
+ 
++	if (adapter->failover) {
++		adapter->failover = false;
++		if (restart) {
++			rc = ibmvnic_open(netdev);
++			if (rc)
++				goto restart_failed;
++		}
++		netif_carrier_on(netdev);
++		return;
++	}
++
+ 	rc = register_netdev(netdev);
+ 	if (rc) {
+ 		dev_err(dev,
+@@ -3655,6 +3682,8 @@ static void handle_crq_init_rsp(struct work_struct *work)
+ 
+ 	return;
+ 
++restart_failed:
++	dev_err(dev, "Failed to restart ibmvnic, rc=%d\n", rc);
+ register_failed:
+ 	release_sub_crqs(adapter);
+ task_failed:
+@@ -3692,6 +3721,7 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 	dev_set_drvdata(&dev->dev, netdev);
+ 	adapter->vdev = dev;
+ 	adapter->netdev = netdev;
++	adapter->failover = false;
+ 
+ 	ether_addr_copy(adapter->mac_addr, mac_addr_p);
+ 	ether_addr_copy(netdev->dev_addr, adapter->mac_addr);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index e82898f..bfc84c7 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -830,6 +830,7 @@ enum ibmvfc_crq_format {
+ 	IBMVNIC_CRQ_INIT                 = 0x01,
+ 	IBMVNIC_CRQ_INIT_COMPLETE        = 0x02,
+ 	IBMVNIC_PARTITION_MIGRATED       = 0x06,
++	IBMVNIC_DEVICE_FAILOVER          = 0x08,
+ };
+ 
+ struct ibmvnic_crq_queue {
+@@ -1047,4 +1048,5 @@ struct ibmvnic_adapter {
+ 	u8 map_id;
+ 
+ 	struct work_struct vnic_crq_init;
++	bool failover;
+ };
 -- 
-2.1.0
+1.8.3.1
