@@ -1,58 +1,49 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
+Return-Path: <benh@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFdz22cJzzDr5M
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 07:10:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFfMp15qJzDr5c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 07:28:05 +1000 (AEST)
 Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7IL8pQ5098190
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 17:10:03 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24wg7fjhdd-1
+ u7ILNbxI126944
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 17:28:03 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24wg7fk0hx-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 17:10:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 17:28:03 -0400
 Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 18 Aug 2016 18:10:01 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 3C6761DC0070
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 17:09:49 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7IL9wis26345904
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 18:09:58 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7IL9vxr010141
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 18:09:58 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: kexec@lists.infradead.org, Balbir Singh <bsingharora@gmail.com>,
- "H. Peter Anvin" <hpa@zytor.com>, linux-ima-devel@lists.sourceforge.net,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- Eric Biederman <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 3/6] kexec_file: Allow skipping checksum calculation
- for some segments.
-Date: Thu, 18 Aug 2016 18:09:51 -0300
-In-Reply-To: <20160818090330.GC845@dhcp-128-65.nay.redhat.com>
-References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1471058305-30198-4-git-send-email-bauerman@linux.vnet.ibm.com>
- <20160818090330.GC845@dhcp-128-65.nay.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <105132489.pljZvDuEBr@hactar>
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Fri, 19 Aug 2016 07:27:59 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B29E93578053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 07:27:57 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7ILRvsM31981608
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 07:27:57 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7ILRvYX031931
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 07:27:57 +1000
+Subject: Re: [PATCH v2] powerpc: move hmi.c to arch/powerpc/kvm/
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Paolo Bonzini <pbonzini@redhat.com>, linux-kernel@vger.kernel.org,
+ kvm@vger.kernel.org
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, Daniel
+ Axtens <dja@axtens.net>
+Date: Fri, 19 Aug 2016 07:27:53 +1000
+In-Reply-To: <56286cab-c96a-55d2-1a50-38aa178edf26@redhat.com>
+References: <1470920863-15375-1-git-send-email-pbonzini@redhat.com>
+ <56286cab-c96a-55d2-1a50-38aa178edf26@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1471555673.19495.44.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,214 +53,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Dave,
-
-Thanks for your review!
-
-[ Trimming down Cc: list a little to try to clear the "too many recipients"   
-  mailing list restriction. ]
-
-Am Donnerstag, 18 August 2016, 17:03:30 schrieb Dave Young:
-> On 08/13/16 at 12:18am, Thiago Jung Bauermann wrote:
-> > Adds checksum argument to kexec_add_buffer specifying whether the given
-> > segment should be part of the checksum calculation.
+On Thu, 2016-08-18 at 10:53 +0200, Paolo Bonzini wrote:
 > 
-> Since it is used with add buffer, could it be added to kbuf as a new
-> field?
+> On 11/08/2016 15:07, Paolo Bonzini wrote:
+> > 
+> > hmi.c functions are unused unless sibling_subcore_state is nonzero,
+> > and
+> > that in turn happens only if KVM is in use.  So move the code to
+> > arch/powerpc/kvm/, putting it under CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> > rather than CONFIG_PPC_BOOK3S_64.  The sibling_subcore_state is
+> > also
+> > included in struct paca_struct only if KVM is supported by the
+> > kernel.
+> 
 
-I was on the fence about adding it as a new argument to kexec_add_buffer or 
-as a new field to struct kexec_buf. Both alternatives make sense to me. I 
-implemented your suggestion in the patch below, what do you think?
+Mahesh, can you review this ?
 
-> Like kbuf.no_checksum, default value is 0 that means checksum is needed
-> if it is 1 then no need a checksum.
-
-It's an interesting idea and I implemented it that way, though in practice 
-all current users of struct kexec_buf put it on the stack so the field needs 
-to be initialized explicitly.
-
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
-
-
-Subject: [PATCH v2 3/6] kexec_file: Allow skipping checksum calculation for
- some segments.
-
-Add skip_checksum member to struct kexec_buf to specify whether the
-corresponding segment should be part of the checksum calculation.
-
-The next patch will add a way to update segments after a kimage is loaded.
-Segments that will be updated in this way should not be checksummed,
-otherwise they will cause the purgatory checksum verification to fail
-when the machine is rebooted.
-
-As a bonus, we don't need to special-case the purgatory segment anymore
-to avoid checksumming it.
-
-Adjust places using struct kexec_buf to set skip_checksum.
-
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/kexec_elf_64.c |  5 +++--
- arch/x86/kernel/crash.c            |  3 ++-
- arch/x86/kernel/kexec-bzimage64.c  |  2 +-
- include/linux/kexec.h              | 23 ++++++++++++++---------
- kernel/kexec_file.c                | 15 +++++++--------
- 5 files changed, 27 insertions(+), 21 deletions(-)
-
-diff --git a/arch/powerpc/kernel/kexec_elf_64.c b/arch/powerpc/kernel/kexec_elf_64.c
-index 22afc7b5ee73..d009f5363968 100644
---- a/arch/powerpc/kernel/kexec_elf_64.c
-+++ b/arch/powerpc/kernel/kexec_elf_64.c
-@@ -107,7 +107,7 @@ static int elf_exec_load(struct kimage *image, struct elfhdr *ehdr,
- 	int ret;
- 	size_t i;
- 	struct kexec_buf kbuf = { .image = image, .buf_max = ppc64_rma_size,
--				  .top_down = false };
-+				  .top_down = false, .skip_checksum = false };
- 
- 	/* Read in the PT_LOAD segments. */
- 	for (i = 0; i < ehdr->e_phnum; i++) {
-@@ -162,7 +162,8 @@ void *elf64_load(struct kimage *image, char *kernel_buf,
- 	struct elf_info elf_info;
- 	struct fdt_reserve_entry *rsvmap;
- 	struct kexec_buf kbuf = { .image = image, .buf_min = 0,
--				  .buf_max = ppc64_rma_size };
-+				  .buf_max = ppc64_rma_size,
-+				  .skip_checksum = false };
- 
- 	ret = build_elf_exec_info(kernel_buf, kernel_len, &ehdr, &elf_info);
- 	if (ret)
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 38a1cdf6aa05..7b8f62c86651 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -617,7 +617,8 @@ int crash_load_segments(struct kimage *image)
- {
- 	int ret;
- 	struct kexec_buf kbuf = { .image = image, .buf_min = 0,
--				  .buf_max = ULONG_MAX, .top_down = false };
-+				  .buf_max = ULONG_MAX, .top_down = false,
-+				  .skip_checksum = false };
- 
- 	/*
- 	 * Determine and load a segment for backup area. First 640K RAM
-diff --git a/arch/x86/kernel/kexec-bzimage64.c b/arch/x86/kernel/kexec-bzimage64.c
-index 4b3a75329fb6..449f433cd225 100644
---- a/arch/x86/kernel/kexec-bzimage64.c
-+++ b/arch/x86/kernel/kexec-bzimage64.c
-@@ -341,7 +341,7 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
- 	unsigned int setup_hdr_offset = offsetof(struct boot_params, hdr);
- 	unsigned int efi_map_offset, efi_map_sz, efi_setup_data_offset;
- 	struct kexec_buf kbuf = { .image = image, .buf_max = ULONG_MAX,
--				  .top_down = true };
-+				  .top_down = true, .skip_checksum = false };
- 
- 	header = (struct setup_header *)(kernel + setup_hdr_offset);
- 	setup_sects = header->setup_sects;
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 4559a1a01b0a..e5b3d99cbe50 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -100,6 +100,9 @@ struct kexec_segment {
- 	size_t bufsz;
- 	unsigned long mem;
- 	size_t memsz;
-+
-+	/* Whether this segment is ignored in the checksum calculation. */
-+	bool skip_checksum;
- };
- 
- #ifdef CONFIG_COMPAT
-@@ -151,15 +154,16 @@ struct kexec_file_ops {
- 
- /**
-  * struct kexec_buf - parameters for finding a place for a buffer in memory
-- * @image:	kexec image in which memory to search.
-- * @buffer:	Contents which will be copied to the allocated memory.
-- * @bufsz:	Size of @buffer.
-- * @mem:	On return will have address of the buffer in memory.
-- * @memsz:	Size for the buffer in memory.
-- * @buf_align:	Minimum alignment needed.
-- * @buf_min:	The buffer can't be placed below this address.
-- * @buf_max:	The buffer can't be placed above this address.
-- * @top_down:	Allocate from top of memory.
-+ * @image:		kexec image in which memory to search.
-+ * @buffer:		Contents which will be copied to the allocated memory.
-+ * @bufsz:		Size of @buffer.
-+ * @mem:		On return will have address of the buffer in memory.
-+ * @memsz:		Size for the buffer in memory.
-+ * @buf_align:		Minimum alignment needed.
-+ * @buf_min:		The buffer can't be placed below this address.
-+ * @buf_max:		The buffer can't be placed above this address.
-+ * @top_down:		Allocate from top of memory.
-+ * @skip_checksum:	Don't verify checksum for this buffer in purgatory.
-  */
- struct kexec_buf {
- 	struct kimage *image;
-@@ -171,6 +175,7 @@ struct kexec_buf {
- 	unsigned long buf_min;
- 	unsigned long buf_max;
- 	bool top_down;
-+	bool skip_checksum;
- };
- 
- int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index c8418d62e2fc..f6e9958bf578 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -658,6 +658,7 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
- 	ksegment->bufsz = kbuf->bufsz;
- 	ksegment->mem = kbuf->mem;
- 	ksegment->memsz = kbuf->memsz;
-+	ksegment->skip_checksum = kbuf->skip_checksum;
- 	kbuf->image->nr_segments++;
- 	return 0;
- }
-@@ -672,7 +673,6 @@ static int kexec_calculate_store_digests(struct kimage *image)
- 	char *digest;
- 	void *zero_buf;
- 	struct kexec_sha_region *sha_regions;
--	struct purgatory_info *pi = &image->purgatory_info;
- 
- 	zero_buf = __va(page_to_pfn(ZERO_PAGE(0)) << PAGE_SHIFT);
- 	zero_buf_sz = PAGE_SIZE;
-@@ -712,11 +712,7 @@ static int kexec_calculate_store_digests(struct kimage *image)
- 		struct kexec_segment *ksegment;
- 
- 		ksegment = &image->segment[i];
--		/*
--		 * Skip purgatory as it will be modified once we put digest
--		 * info in purgatory.
--		 */
--		if (ksegment->kbuf == pi->purgatory_buf)
-+		if (ksegment->skip_checksum)
- 			continue;
- 
- 		ret = crypto_shash_update(desc, ksegment->kbuf,
-@@ -788,7 +784,7 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 	Elf_Shdr *sechdrs = NULL;
- 	struct kexec_buf kbuf = { .image = image, .bufsz = 0, .buf_align = 1,
- 				  .buf_min = min, .buf_max = max,
--				  .top_down = top_down };
-+				  .top_down = top_down, .skip_checksum = true };
- 
- 	/*
- 	 * sechdrs_c points to section headers in purgatory and are read
-@@ -893,7 +889,10 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 	if (kbuf.buf_align < bss_align)
- 		kbuf.buf_align = bss_align;
- 
--	/* Add buffer to segment list */
-+	/*
-+	 * Add buffer to segment list. Don't checksum the segment as
-+	 * it will be modified once we put digest info in purgatory.
-+	 */
- 	ret = kexec_add_buffer(&kbuf);
- 	if (ret)
- 		goto out;
--- 
-1.9.1
+> > Cc: Daniel Axtens <dja@axtens.net>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: kvm-ppc@vger.kernel.org
+> > Cc: kvm@vger.kernel.org
+> > Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+> > ---
+> > 	v1->v2: use CONFIG_KVM_BOOK3S_HV_POSSIBLE, not
+> > 		CONFIG_KVM_BOOK3S_64_HANDLER.  The former implies
+> > 		the latter, but the reverse is not true.
+> > 
+> >  arch/powerpc/include/asm/hmi.h                     |  2 +-
+> >  arch/powerpc/include/asm/paca.h                    | 12 +++++++---
+> > --
+> >  arch/powerpc/kernel/Makefile                       |  2 +-
+> >  arch/powerpc/kvm/Makefile                          |  1 +
+> >  arch/powerpc/{kernel/hmi.c => kvm/book3s_hv_hmi.c} |  0
+> >  5 files changed, 10 insertions(+), 7 deletions(-)
+> >  rename arch/powerpc/{kernel/hmi.c => kvm/book3s_hv_hmi.c} (100%)
+> > 
+> > diff --git a/arch/powerpc/include/asm/hmi.h
+> > b/arch/powerpc/include/asm/hmi.h
+> > index 88b4901ac4ee..85b7a1a21e22 100644
+> > --- a/arch/powerpc/include/asm/hmi.h
+> > +++ b/arch/powerpc/include/asm/hmi.h
+> > @@ -21,7 +21,7 @@
+> >  #ifndef __ASM_PPC64_HMI_H__
+> >  #define __ASM_PPC64_HMI_H__
+> >  
+> > -#ifdef CONFIG_PPC_BOOK3S_64
+> > +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> >  
+> >  #define	CORE_TB_RESYNC_REQ_BIT		63
+> >  #define MAX_SUBCORE_PER_CORE		4
+> > diff --git a/arch/powerpc/include/asm/paca.h
+> > b/arch/powerpc/include/asm/paca.h
+> > index 148303e7771f..6a6792bb39fb 100644
+> > --- a/arch/powerpc/include/asm/paca.h
+> > +++ b/arch/powerpc/include/asm/paca.h
+> > @@ -183,11 +183,6 @@ struct paca_struct {
+> >  	 */
+> >  	u16 in_mce;
+> >  	u8 hmi_event_available;		 /* HMI event is
+> > available */
+> > -	/*
+> > -	 * Bitmap for sibling subcore status. See
+> > kvm/book3s_hv_ras.c for
+> > -	 * more details
+> > -	 */
+> > -	struct sibling_subcore_state *sibling_subcore_state;
+> >  #endif
+> >  
+> >  	/* Stuff for accurate time accounting */
+> > @@ -202,6 +197,13 @@ struct paca_struct {
+> >  	struct kvmppc_book3s_shadow_vcpu shadow_vcpu;
+> >  #endif
+> >  	struct kvmppc_host_state kvm_hstate;
+> > +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> > +	/*
+> > +	 * Bitmap for sibling subcore status. See
+> > kvm/book3s_hv_ras.c for
+> > +	 * more details
+> > +	 */
+> > +	struct sibling_subcore_state *sibling_subcore_state;
+> > +#endif
+> >  #endif
+> >  };
+> >  
+> > diff --git a/arch/powerpc/kernel/Makefile
+> > b/arch/powerpc/kernel/Makefile
+> > index b2027a5cf508..fe4c075bcf50 100644
+> > --- a/arch/powerpc/kernel/Makefile
+> > +++ b/arch/powerpc/kernel/Makefile
+> > @@ -41,7 +41,7 @@ obj-$(CONFIG_VDSO32)		+= vdso32/
+> >  obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
+> >  obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o
+> > cpu_setup_pa6t.o
+> >  obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
+> > -obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o hmi.o
+> > +obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+> >  obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o
+> > idle_book3e.o
+> >  obj-$(CONFIG_PPC64)		+= vdso64/
+> >  obj-$(CONFIG_ALTIVEC)		+= vecemu.o
+> > diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+> > index 1f9e5529e692..855d4b95d752 100644
+> > --- a/arch/powerpc/kvm/Makefile
+> > +++ b/arch/powerpc/kvm/Makefile
+> > @@ -78,6 +78,7 @@ kvm-book3s_64-builtin-xics-objs-
+> > $(CONFIG_KVM_XICS) := \
+> >  
+> >  ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> >  kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
+> > +	book3s_hv_hmi.o \
+> >  	book3s_hv_rmhandlers.o \
+> >  	book3s_hv_rm_mmu.o \
+> >  	book3s_hv_ras.o \
+> > diff --git a/arch/powerpc/kernel/hmi.c
+> > b/arch/powerpc/kvm/book3s_hv_hmi.c
+> > similarity index 100%
+> > rename from arch/powerpc/kernel/hmi.c
+> > rename to arch/powerpc/kvm/book3s_hv_hmi.c
+> > 
+> 
+> Ping?
+> 
+> Paolo
