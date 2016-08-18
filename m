@@ -1,25 +1,34 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <sergey.senozhatsky.work@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sF7LL30LRzDr5G
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 11:10:02 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id y134so461864pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 18:10:02 -0700 (PDT)
-Date: Thu, 18 Aug 2016 11:09:48 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: build warnings after merge of the kbuild tree
-Message-ID: <20160818110948.52f1322d@roar.ozlabs.ibm.com>
-In-Reply-To: <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
-References: <20160817114443.67675413@canb.auug.org.au>
- <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sF8Qm3yMbzDr4c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 11:58:56 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id hh10so558623pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2016 18:58:56 -0700 (PDT)
+Date: Thu, 18 Aug 2016 10:59:01 +0900
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+To: Fam Zheng <famz@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+ Keith Busch <keith.busch@intel.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ "Michael S. Tsirkin" <mst@redhat.com>, linux-block@vger.kernel.org,
+ Brian Norris <computersforpeace@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, linux-mtd@lists.infradead.org,
+ "Ed L. Cashin" <ed.cashin@acm.org>, Jens Axboe <axboe@kernel.dk>,
+ Minchan Kim <minchan@kernel.org>,
+ virtualization@lists.linux-foundation.org,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Nitin Gupta <ngupta@vflare.org>, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 11/15] zram: Pass attribute group to device_add_disk
+Message-ID: <20160818015901.GA499@swordfish>
+References: <1471418115-3654-1-git-send-email-famz@redhat.com>
+ <1471418115-3654-12-git-send-email-famz@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1471418115-3654-12-git-send-email-famz@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 17 Aug 2016 14:59:59 +0200
-Michal Marek <mmarek@suse.cz> wrote:
+Hello,
 
-> On 2016-08-17 03:44, Stephen Rothwell wrote:
-> > Hi Michal,
-> > 
-> > After merging the kbuild tree, today's linux-next build (powerpc
-> > ppc64_defconfig) produced these warnings:
-> > 
-> > WARNING: 25 bad relocations
-> > c000000000cf2570 R_PPC64_ADDR64    __crc___arch_hweight16  
-> [...]
-> > Introduced by commit
-> > 
-> >   9445aa1a3062 ("ppc: move exports to definitions")
-> > 
-> > I have reverted that commit for today.
-> > 
-> > [cc-ing the ppc guys for clues - also involved is commit
-> > 
-> >   22823ab419d8 ("EXPORT_SYMBOL() for asm")
-> > ]  
-> 
-> FWIW, I see these warnings as well. Any help from ppc developers is
-> appreciated - should the R_PPC64_ADDR64 be whitelisted for exported asm
-> symbols (their CRCs actually)?
+On (08/17/16 15:15), Fam Zheng wrote:
+[..]
+> diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
+> index 20920a2..2331788 100644
+> --- a/drivers/block/zram/zram_drv.c
+> +++ b/drivers/block/zram/zram_drv.c
+> @@ -1298,13 +1298,10 @@ static int zram_add(void)
+>  		zram->disk->queue->limits.discard_zeroes_data = 0;
+>  	queue_flag_set_unlocked(QUEUE_FLAG_DISCARD, zram->disk->queue);
+>  
+> -	device_add_disk(NULL, zram->disk, NULL);
+> +	ret = device_add_disk(NULL, zram->disk, &zram_disk_attr_group);
+>  
+> -	ret = sysfs_create_group(&disk_to_dev(zram->disk)->kobj,
+> -				&zram_disk_attr_group);
+>  	if (ret < 0) {
+> -		pr_err("Error creating sysfs group for device %d\n",
+> -				device_id);
+> +		pr_err("Error creating disk %d\n", device_id);
+>  		goto out_free_disk;
+>  	}
+>  	strlcpy(zram->compressor, default_compressor, sizeof(zram->compressor));
 
-The dangling relocation is a side effect of linker unable to resolve the
-reference to the undefined weak symbols. So the real question is, why has
-genksyms not overridden these symbols with their CRC values?
+I like the previous "Error creating sysfs group for device" string better,
+than "Error creating disk", because the latter one is much less informative.
 
-This may not even be powerpc specific, but  I'll poke at it a bit more
-when I get a chance.
+do you want to do something like below?
 
-Thanks,
-Nick
+int device_add_disk(struct device *parent, struct gendisk *disk,
+...
+       if (attr_group) {
+               retval = sysfs_create_group(&disk_to_dev(disk)->kobj,
+                                           attr_group);
+
++		pr_err("Error creating sysfs group for device ...\n", ...);
+
+               if (retval)
+                       goto fail;
+       }
+
+	-ss
