@@ -1,46 +1,43 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
+Return-Path: <manoj@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFRWb0vx8zDr5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 23:19:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFTHg134WzDr5Q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 00:38:54 +1000 (AEST)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7IDEd9h133226
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 09:19:03 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24vkhu4g5c-1
+ u7IEaAki066732
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 10:38:52 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24vkhu8jj2-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 09:19:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 10:38:51 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 18 Aug 2016 09:19:02 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id EDDC5C90042
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 09:18:48 -0400 (EDT)
-Received: from b01ledav03.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7IDJ2xT9830744
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 13:19:02 GMT
-Received: from b01ledav03.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5EA95B2054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 09:19:00 -0400 (EDT)
-Received: from oc1376853207.ibm.com (unknown [9.65.69.35])
- by b01ledav03.gho.pok.ibm.com (Postfix) with ESMTP id 3515BB2011
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 09:19:00 -0400 (EDT)
-To: linuxppc-dev@lists.ozlabs.org
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V4 4/8] pseries/hotplug init: Convert new DRC memory property
- for hotplug runtime
-Date: Thu, 18 Aug 2016 08:18:59 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
+ Thu, 18 Aug 2016 08:38:50 -0600
+Reply-To: manoj@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/6] cxlflash: Cache owning adapter within context
+References: <1470785888-9112-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1470785970-9192-1-git-send-email-mrochs@linux.vnet.ibm.com>
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>,
+ Al Viro <viro@zeniv.linux.org.uk>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Date: Thu, 18 Aug 2016 09:38:46 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <7fc6d109-4c1a-930a-c07c-3cabcdbb1555@linux.vnet.ibm.com>
+In-Reply-To: <1470785970-9192-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <fbe021d3-3d7b-022b-c532-c14cdf993a3d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,154 +47,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hotplug_init: Simplify the code needed for runtime memory hotplug and
-maintenance with a conversion routine that transforms the compressed
-property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
-a single set of routines should be required at runtime to parse, edit,
-and manipulate the memory representation in the device tree.  Similarly,
-any userspace applications that need this information will only need
-to recognize the older format to be able to continue to operate.
+Acked-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 
-[V4: Remove unneeded code braces.]
-[V4: Simplify allocation of a couple of loop index variables.]
-
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 2ce1385..0c46fbc 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -24,6 +24,8 @@
- #include <asm/sparsemem.h>
- #include "pseries.h"
- 
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+
- static bool rtas_hp_event;
- 
- unsigned long pseries_memory_block_size(void)
-@@ -887,11 +889,102 @@ static int pseries_memory_notifier(struct notifier_block *nb,
- static struct notifier_block pseries_mem_nb = {
- 	.notifier_call = pseries_memory_notifier,
- };
-+#endif /* CONFIG_MEMORY_HOTPLUG */
-+
-+static int pseries_rewrite_dynamic_memory_v2(void)
-+{
-+	unsigned long memblock_size;
-+	struct device_node *dn;
-+	struct property *prop, *prop_v2;
-+	__be32 *p;
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmb_desc_sets, num_lmbs;
-+	int i, j, k;
-+
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		return -EINVAL;
-+
-+	prop_v2 = of_find_property(dn, "ibm,dynamic-memory-v2", NULL);
-+	if (!prop_v2)
-+		return -EINVAL;
-+
-+	memblock_size = pseries_memory_block_size();
-+	if (!memblock_size)
-+		return -EINVAL;
-+
-+	/* The first int of the property is the number of lmb sets
-+	 * described by the property.
-+	 */
-+	p = (__be32 *)prop_v2->value;
-+	num_lmb_desc_sets = be32_to_cpu(*p++);
-+
-+	/* Count the number of LMBs for generating the alternate format
-+	 */
-+	for (i = 0, num_lmbs = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
-+
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+		num_lmbs += drmem.num_seq_lmbs;
-+	}
-+
-+	/* Create an empty copy of the new 'ibm,dynamic-memory' property
-+	 */
-+	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-+	if (!prop)
-+		return -ENOMEM;
-+	prop->name = kstrdup("ibm,dynamic-memory", GFP_KERNEL);
-+	prop->length = dyn_mem_v2_len(num_lmbs);
-+	prop->value = kzalloc(prop->length, GFP_KERNEL);
-+
-+	/* Copy/expand the ibm,dynamic-memory-v2 format to produce the
-+	 * ibm,dynamic-memory format.
-+	 */
-+	p = (__be32 *)prop->value;
-+	*p = cpu_to_be32(num_lmbs);
-+	p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+
-+	p = (__be32 *)prop_v2->value;
-+	p++;
-+
-+	for (i = 0, k = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
-+
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+
-+		for (j = 0; j < drmem.num_seq_lmbs; j++) {
-+			lmbs[k+j].base_addr = be64_to_cpu(drmem.base_addr);
-+			lmbs[k+j].drc_index = be32_to_cpu(drmem.drc_index);
-+			lmbs[k+j].reserved  = 0;
-+			lmbs[k+j].aa_index  = be32_to_cpu(drmem.aa_index);
-+			lmbs[k+i].flags     = be32_to_cpu(drmem.flags);
-+
-+			drmem.base_addr += memblock_size;
-+			drmem.drc_index++;
-+		}
-+
-+		k += drmem.num_seq_lmbs;
-+	}
-+
-+	of_remove_property(dn, prop_v2);
-+
-+	of_add_property(dn, prop);
-+
-+	/* And disable feature flag since the property has gone away */
-+	powerpc_firmware_features &= ~FW_FEATURE_DYN_MEM_V2;
-+
-+	return 0;
-+}
- 
- static int __init pseries_memory_hotplug_init(void)
- {
-+	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
-+		pseries_rewrite_dynamic_memory_v2();
-+#ifdef CONFIG_MEMORY_HOTPLUG
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		of_reconfig_notifier_register(&pseries_mem_nb);
-+#endif /* CONFIG_MEMORY_HOTPLUG */
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index fedc2ccf0..e74cf6c 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -5,14 +5,14 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   of_helpers.o \
- 			   setup.o iommu.o event_sources.o ras.o \
- 			   firmware.o power.o dlpar.o mobility.o rng.o \
--			   pci.o pci_dlpar.o eeh_pseries.o msi.o
-+			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
-+			   hotplug-memory.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
- obj-$(CONFIG_KEXEC)	+= kexec.o
- obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
- 
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
--obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
- 
- obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
- obj-$(CONFIG_HVCS)		+= hvcserver.o
+On 8/9/2016 6:39 PM, Matthew R. Ochs wrote:
+> The context removal routine requires access to the owning adapter
+> structure to reset the context within the AFU as part of the tear
+> down sequence. In order to support kref adoption, the owning adapter
+> must be accessible from the release handler. As the kref framework
+> only provides the kref reference as the sole parameter, another means
+> is needed to derive the owning adapter.
+>
+> As a remedy, the owning adapter reference is saved off within the
+> context during initialization.
+>
+> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+> ---
+>  drivers/scsi/cxlflash/superpipe.c | 1 +
+>  drivers/scsi/cxlflash/superpipe.h | 1 +
+>  2 files changed, 2 insertions(+)
+>
+> diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
+> index ab5c893..640c3a2 100644
+> --- a/drivers/scsi/cxlflash/superpipe.c
+> +++ b/drivers/scsi/cxlflash/superpipe.c
+> @@ -804,6 +804,7 @@ static void init_context(struct ctx_info *ctxi, struct cxlflash_cfg *cfg,
+>  	ctxi->lfd = adap_fd;
+>  	ctxi->pid = current->tgid; /* tgid = pid */
+>  	ctxi->ctx = ctx;
+> +	ctxi->cfg = cfg;
+>  	ctxi->file = file;
+>  	ctxi->initialized = true;
+>  	mutex_init(&ctxi->mutex);
+> diff --git a/drivers/scsi/cxlflash/superpipe.h b/drivers/scsi/cxlflash/superpipe.h
+> index 5f9a091..61404f2 100644
+> --- a/drivers/scsi/cxlflash/superpipe.h
+> +++ b/drivers/scsi/cxlflash/superpipe.h
+> @@ -107,6 +107,7 @@ struct ctx_info {
+>  	bool err_recovery_active;
+>  	struct mutex mutex; /* Context protection */
+>  	struct cxl_context *ctx;
+> +	struct cxlflash_cfg *cfg;
+>  	struct list_head luns;	/* LUNs attached to this context */
+>  	const struct vm_operations_struct *cxl_mmap_vmops;
+>  	struct file *file;
+>
