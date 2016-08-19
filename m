@@ -1,33 +1,41 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFxZK0bmlzDr68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 18:53:12 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFzxp5qTHzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 20:40:14 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7J8nBJD007867
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 04:53:10 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24vrm5tgya-1
+ u7JAd9Xs053115
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 06:40:12 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24wg7ga5jc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 04:53:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 06:40:11 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 19 Aug 2016 04:53:04 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 5/5] powerpc/64/kexec: Remove BookE special
- default_machine_kexec_prepare()
-Date: Fri, 19 Aug 2016 14:22:39 +0530
-In-Reply-To: <1471596759-3396-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1471596759-3396-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1471596759-3396-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Fri, 19 Aug 2016 04:40:10 -0600
+Subject: Re: [PATCH v5 2/7] perf annotate: Add cross arch annotate support
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+References: <1471584546-11080-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1471584546-11080-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20160819075034.GG1041@n2100.armlinux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ acme@kernel.org, peterz@infradead.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, treeze.taeung@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, markus@trippelsdorf.de,
+ chris.ryder@arm.com, pawel.moll@arm.com, mhiramat@kernel.org,
+ jolsa@kernel.org, mpe@ellerman.id.au, hemant@linux.vnet.ibm.com,
+ namhyung@kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Fri, 19 Aug 2016 16:09:51 +0530
+MIME-Version: 1.0
+In-Reply-To: <20160819075034.GG1041@n2100.armlinux.org.uk>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <57B6E1F7.30005@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,51 +45,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Thanks Russell for reviewing.
 
-The only difference is now the TCE table check which doesn't need
-to be ifdef'ed out, it will basically do nothing on BookE (it is
-only useful for ancient IBM machines).
+On Friday 19 August 2016 01:20 PM, Russell King - ARM Linux wrote:
+> On Fri, Aug 19, 2016 at 10:59:01AM +0530, Ravi Bangoria wrote:
+>> -static struct ins instructions[] = {
+>> +static struct ins instructions_x86[] = {
+>>  	{ .name = "add",   .ops  = &mov_ops, },
+>>  	{ .name = "addl",  .ops  = &mov_ops, },
+>>  	{ .name = "addq",  .ops  = &mov_ops, },
+>>  	{ .name = "addw",  .ops  = &mov_ops, },
+>>  	{ .name = "and",   .ops  = &mov_ops, },
+>> -#ifdef __arm__
+>> -	{ .name = "b",     .ops  = &jump_ops, }, // might also be a call
+>> -	{ .name = "bcc",   .ops  = &jump_ops, },
+>> -	{ .name = "bcs",   .ops  = &jump_ops, },
+>> -	{ .name = "beq",   .ops  = &jump_ops, },
+>> -	{ .name = "bge",   .ops  = &jump_ops, },
+>> -	{ .name = "bgt",   .ops  = &jump_ops, },
+>> -	{ .name = "bhi",   .ops  = &jump_ops, },
+>> -	{ .name = "bl",    .ops  = &call_ops, },
+>> -	{ .name = "bls",   .ops  = &jump_ops, },
+>> -	{ .name = "blt",   .ops  = &jump_ops, },
+>> -	{ .name = "blx",   .ops  = &call_ops, },
+>> -	{ .name = "bne",   .ops  = &jump_ops, },
+>> -#endif
+> Notice that ARM includes a lot of other instructions from this table,
+> not just those above.
+>
+>>  	{ .name = "bts",   .ops  = &mov_ops, },
+>>  	{ .name = "call",  .ops  = &call_ops, },
+>>  	{ .name = "callq", .ops  = &call_ops, },
+>> @@ -456,6 +444,21 @@ static struct ins instructions[] = {
+>>  	{ .name = "retq",  .ops  = &ret_ops, },
+>>  };
+>>  
+>> +static struct ins instructions_arm[] = {
+>> +	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
+>> +	{ .name = "bcc",   .ops  = &jump_ops, },
+>> +	{ .name = "bcs",   .ops  = &jump_ops, },
+>> +	{ .name = "beq",   .ops  = &jump_ops, },
+>> +	{ .name = "bge",   .ops  = &jump_ops, },
+>> +	{ .name = "bgt",   .ops  = &jump_ops, },
+>> +	{ .name = "bhi",   .ops  = &jump_ops, },
+>> +	{ .name = "bl",    .ops  = &call_ops, },
+>> +	{ .name = "bls",   .ops  = &jump_ops, },
+>> +	{ .name = "blt",   .ops  = &jump_ops, },
+>> +	{ .name = "blx",   .ops  = &call_ops, },
+>> +	{ .name = "bne",   .ops  = &jump_ops, },
+>> +};
+>> +
+> ...
+>> +	if (!strcmp(norm_arch, NORM_X86)) {
+>> +		instructions = instructions_x86;
+>> +		nmemb = ARRAY_SIZE(instructions_x86);
+>> +	} else if (!strcmp(norm_arch, NORM_ARM)) {
+>> +		instructions = instructions_arm;
+>> +		nmemb = ARRAY_SIZE(instructions_arm);
+> But these changes result in _only_ the ones that were in the #if __arm__
+> being matched.  This is wrong.
+>
+> If we want to go that way, we need to add _all_ arm instructions to
+> instructions_arm, not just those within the #if.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/machine_kexec_64.c | 16 ----------------
- 1 file changed, 16 deletions(-)
+Yes, I've mentioned same in cover letter as well.
 
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 98058d13d115..ae4dafa2a9bd 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -32,21 +32,6 @@
- #include <asm/asm-prototypes.h>
- #include <asm/firmware.h>
- 
--#ifdef CONFIG_PPC_BOOK3E
--int default_machine_kexec_prepare(struct kimage *image)
--{
--	int i;
--	/*
--	 * Since we use the kernel fault handlers and paging code to
--	 * handle the virtual mode, we must make sure no destination
--	 * overlaps kernel static data or bss.
--	 */
--	for (i = 0; i < image->nr_segments; i++)
--		if (image->segment[i].mem < __pa(_end))
--			return -ETXTBSY;
--	return 0;
--}
--#else
- int default_machine_kexec_prepare(struct kimage *image)
- {
- 	int i;
-@@ -86,7 +71,6 @@ int default_machine_kexec_prepare(struct kimage *image)
- 
- 	return 0;
- }
--#endif /* !CONFIG_PPC_BOOK3E */
- 
- static void copy_segments(unsigned long ind)
- {
--- 
-2.7.4
+Can I add all x86 instructions for arm as well? If not, can you please provide
+a list of arm instructions that needs to be added here.
+
+-Ravi
