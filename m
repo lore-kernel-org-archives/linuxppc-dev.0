@@ -1,49 +1,30 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sG34L6VcJzDr9y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 23:01:06 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7JCxIVs065566
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 09:01:05 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24wfj5jfc1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 09:01:05 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Fri, 19 Aug 2016 23:01:02 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id BF32B3578052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 23:00:59 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7JD0x2N22347886
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 23:00:59 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7JD0vDB023963
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 23:00:59 +1000
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- acme@kernel.org
-Cc: peterz@infradead.org, mingo@redhat.com, alexander.shishkin@linux.intel.com,
- treeze.taeung@gmail.com, naveen.n.rao@linux.vnet.ibm.com,
- markus@trippelsdorf.de, chris.ryder@arm.com, pawel.moll@arm.com,
- mhiramat@kernel.org, rmk+kernel@arm.linux.org.uk, jolsa@kernel.org,
- mpe@ellerman.id.au, hemant@linux.vnet.ibm.com, namhyung@kernel.org,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: [PATCH v6 7/7] perf annotate: Fix jump target outside of function
- address range
-Date: Fri, 19 Aug 2016 18:29:38 +0530
-In-Reply-To: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-References: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Message-Id: <1471611578-11255-8-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sG42H03TkzDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 23:44:22 +1000 (AEST)
+Subject: Re: debug problems on ppc 83xx target due to changed struct
+ task_struct
+To: Holger Brunck <holger.brunck@keymile.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com>
+ <57ADE7E6.9030900@linux.intel.com>
+ <4e16aad4-80d3-ffcc-d183-681b48d4751b@keymile.com>
+ <57ADF4A0.5040807@linux.intel.com>
+ <41e00d07-d7ce-0198-acce-ac25db8c9df3@keymile.com>
+ <57B1EBAE.6030503@linux.intel.com>
+ <3f1dff88-cd24-b36e-da9a-e84627929975@c-s.fr>
+ <3e83483a-ea1f-978d-5772-d2135a58cbb7@keymile.com>
+ <8dfe92cf-fff2-44a9-26a7-25ae37bfc254@c-s.fr>
+ <1624e6b7-f797-da23-7c34-e0f903526c9c@keymile.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <64742682-140b-6daa-6d38-6107f2d7ecf3@c-s.fr>
+Date: Fri, 19 Aug 2016 15:44:18 +0200
+MIME-Version: 1.0
+In-Reply-To: <1624e6b7-f797-da23-7c34-e0f903526c9c@keymile.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,152 +34,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If jump target is outside of function range, perf is not handling it
-correctly. Especially when target address is lesser than function start
-address, target offset will be negative. But, target address declared
-to be unsigned, converts negative number into 2's complement. See below
-example. Here target of 'jumpq' instruction at 34cf8 is 34ac0 which is
-lesser than function start address(34cf0).
 
-        34ac0 - 34cf0 = -0x230 = 0xfffffffffffffdd0
 
-Objdump output:
+Le 19/08/2016 à 13:14, Holger Brunck a écrit :
+> On 19/08/16 13:03, Christophe Leroy wrote:
+>>
+>>
+>> Le 17/08/2016 à 17:27, Holger Brunck a écrit :
+>>> On 16/08/16 19:27, christophe leroy wrote:
+>>>>
+>>>>
+>>>> Le 15/08/2016 à 18:19, Dave Hansen a écrit :
+>>>>> On 08/15/2016 07:35 AM, Holger Brunck wrote:
+>>>>>> I tried this but unfortunately the error only occurs while remote debugging.
+>>>>>> Locally with gdb everything works fine. BTW we double-checked with a 85xx ppc
+>>>>>> target which is also 32-bit and it ends up with the same behaviour.
+>>>>>>
+>>>>>> I was also investigating where I have to move the line in the struct task_struct
+>>>>>> and it turns out to be like this (diff to 4.7 kernel):
+>>>>>>
+>>>>>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>>>>>> index 253538f..4868874 100644
+>>>>>> --- a/include/linux/sched.h
+>>>>>> +++ b/include/linux/sched.h
+>>>>>> @@ -1655,7 +1655,9 @@ struct task_struct {
+>>>>>>         struct signal_struct *signal;
+>>>>>>         struct sighand_struct *sighand;
+>>>>>>
+>>>>>> +       // struct thread_struct thread;   // until here everything is fine
+>>>>>>         sigset_t blocked, real_blocked;
+>>>>>> +       struct thread_struct thread;      // from here it's broken
+>>>>>>         sigset_t saved_sigmask; /* restored if set_restore_sigmask() was used */
+>>>>>>         struct sigpending pending;
+>>>>>
+>>>>> Wow, thanks for all the debugging here!
+>>>>>
+>>>>> So, we know it has to do with signals, thread_info, and probably only
+>>>>> affects 32-bit powerpc.  Seems awfully weird.  Have you checked with any
+>>>>> of the 64-bit powerpc guys to see if they have any ideas?
+>>>>>
+>>>>> I went grepping around for a bit.
+>>>>>
+>>>>> Where is the task_struct stored?  Is it on-stack on ppc32 or something?
+>>>>>  The thread_info is, I assume, but I see some THREAD_INFO vs. THREAD
+>>>>> (thread struct) math happening in here, which confuses me:
+>>>>>
+>>>>>         .globl  ret_from_debug_exc
+>>>>> ret_from_debug_exc:
+>>>>>         mfspr   r9,SPRN_SPRG_THREAD
+>>>>>         lwz     r10,SAVED_KSP_LIMIT(r1)
+>>>>>         stw     r10,KSP_LIMIT(r9)
+>>>>>         lwz     r9,THREAD_INFO-THREAD(r9)
+>>>>>         CURRENT_THREAD_INFO(r10, r1)
+>>>>>         lwz     r10,TI_PREEMPT(r10)
+>>>>>         stw     r10,TI_PREEMPT(r9)
+>>>>>         RESTORE_xSRR(SRR0,SRR1);
+>>>>>         RESTORE_xSRR(CSRR0,CSRR1);
+>>>>>         RESTORE_MMU_REGS;
+>>>>>         RET_FROM_EXC_LEVEL(SPRN_DSRR0, SPRN_DSRR1, PPC_RFDI)
+>>>>>
+>>>>> But, I'm really at a loss to explain this.  It still seems like a deeply
+>>>>> ppc-specific issue.  We can obviously work around it with an #ifdef for
+>>>>> your platform, but that's awfully hackish and hides the real bug,
+>>>>> whatever it is.
+>>>>>
+>>>>> My suspicion is that there's a bug in the 32-bit ppc assembly somewhere.
+>>>>>  I don't see any references to 'blocked' or 'real_blocked' in assembly
+>>>>> though.  You could add a bunch of padding instead of moving the
+>>>>> thread_struct and see if that does anything, but that's really a stab in
+>>>>> the dark.
+>>>>>
+>>>>
+>>>> Just to let you know, I'm not sure it is the same issue, but I also get
+>>>> my 8xx target stuck when I try to use gdbserver.
+>>>>
+>>>> If I debug a very small app, it gets stuck quickly after the app has
+>>>> stopped: indeed, the console seems ok but as soon as I try to execute
+>>>> something simple, like a ps or top, it get stuck. The target still
+>>>> responds to pings, but nothing else.
+>>>>
+>>>> If I debug a big app, it gets stuck soon after the start of debug: I set
+>>>> a bpoint at main(), do a 'continue', get breaked at main(), do some
+>>>> steps with 'next' then it gets stuck.
+>>>>
+>>>> I have tried moving the struct thread_struct thread but it has no impact.
+>>>>
+>>>
+>>> that sounds a bit different to what I see. Is your program also mutli-threaded?
+>>>
+>>> Maybe you could try with the program I use to reproduce the error:
+>>>
+>>> --- snip -----
+>>> #include <pthread.h>
+>>> #include <stdio.h>
+>>> #include <unistd.h>
+>>>
+>>> void * th_1_func()
+>>> {
+>>>    while (1) {
+>>>      sleep(2);
+>>>      printf("Hello from thread function 1)\n");
+>>>    }
+>>> }
+>>>
+>>> int main() {
+>>>   int err;
+>>>   pthread_t th_1, th_2, th_3;
+>>>
+>>>   err = pthread_create(&th_1, NULL, th_1_func, NULL);
+>>>   if (err != 0)
+>>>     printf("pthread_create\n");
+>>>   err = pthread_create(&th_2, NULL, th_1_func, NULL);
+>>>   if (err != 0)
+>>>     printf("pthread_create\n");
+>>>   err = pthread_create(&th_3, NULL, th_1_func, NULL);
+>>>   if (err != 0)
+>>>     printf("pthread_create\n");
+>>>   while(1) {}
+>>>   return 0;
+>>> }
+>>> --- snap ---
+>>>
+>>> Then copy it to your target and start it with the gdbserver. If you let it run
+>>> from your host with gdb and try to stop it e.g in the sleep call and then try to
+>>> single step it you might see the error. But as I said in this thread the
+>>> behaviour might be different depending on your kernel configuration as I
+>>> encountered different behaviour when enabling FTRACE or SCHED_STAT.
+>>>
+>>> Best regards
+>>> Holger
+>>>
+>>
+>> Hi
+>>
+>> I just tried it on an 885 and on an 8323, it work properly on both targets.
+>>
+>> You can see below the Debug Option that are active on my 8323 target.
+>>
+>
+>
+> thanks for trying it.
+>
+> Could you completely disable FTRACE? As it also works on my side when I have
+> FTRACE enabled.
+>
+> Best regards
+> Holger
+>
 
-  0000000000034cf0 <__sigaction>:
-  __GI___sigaction():
-    34cf0: lea    -0x20(%rdi),%eax
-    34cf3: cmp    -bashx1,%eax
-    34cf6: jbe    34d00 <__sigaction+0x10>
-    34cf8: jmpq   34ac0 <__GI___libc_sigaction>
-    34cfd: nopl   (%rax)
-    34d00: mov    0x386161(%rip),%rax        # 3bae68 <_DYNAMIC+0x2e8>
-    34d07: movl   -bashx16,%fs:(%rax)
-    34d0e: mov    -bashxffffffff,%eax
-    34d13: retq
+I have now disabled completly FTRACE, the behaviour is still OK.
 
-perf annotate before applying patch:
-
-  __GI___sigaction  /usr/lib64/libc-2.22.so
-           lea    -0x20(%rdi),%eax
-           cmp    -bashx1,%eax
-        V  jbe    10
-        V  jmpq   fffffffffffffdd0
-           nop
-    10:    mov    _DYNAMIC+0x2e8,%rax
-           movl   -bashx16,%fs:(%rax)
-           mov    -bashxffffffff,%eax
-           retq
-
-perf annotate after applying patch:
-
-  __GI___sigaction  /usr/lib64/libc-2.22.so
-           lea    -0x20(%rdi),%eax
-           cmp    -bashx1,%eax
-        V  jbe    10
-        ^  jmpq   34ac0 <__GI___libc_sigaction>
-           nop
-    10:    mov    _DYNAMIC+0x2e8,%rax
-           movl   -bashx16,%fs:(%rax)
-           mov    -bashxffffffff,%eax
-           retq
-
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
----
-Changes in v6:
-  - No changes
-
- tools/perf/ui/browsers/annotate.c |  5 +++--
- tools/perf/util/annotate.c        | 14 +++++++++-----
- tools/perf/util/annotate.h        |  5 +++--
- 3 files changed, 15 insertions(+), 9 deletions(-)
-
-diff --git a/tools/perf/ui/browsers/annotate.c b/tools/perf/ui/browsers/annotate.c
-index 21c5e10..c13df5b 100644
---- a/tools/perf/ui/browsers/annotate.c
-+++ b/tools/perf/ui/browsers/annotate.c
-@@ -215,7 +215,7 @@ static void annotate_browser__write(struct ui_browser *browser, void *entry, int
- 			ui_browser__set_color(browser, color);
- 		if (dl->ins && dl->ins->ops->scnprintf) {
- 			if (ins__is_jump(dl->ins)) {
--				bool fwd = dl->ops.target.offset > (u64)dl->offset;
-+				bool fwd = dl->ops.target.offset > dl->offset;
- 
- 				ui_browser__write_graph(browser, fwd ? SLSMG_DARROW_CHAR :
- 								    SLSMG_UARROW_CHAR);
-@@ -245,7 +245,8 @@ static bool disasm_line__is_valid_jump(struct disasm_line *dl, struct symbol *sy
- {
- 	if (!dl || !dl->ins || !ins__is_jump(dl->ins)
- 	    || !disasm_line__has_offset(dl)
--	    || dl->ops.target.offset >= symbol__size(sym))
-+	    || dl->ops.target.offset < 0
-+	    || dl->ops.target.offset >= (s64)symbol__size(sym))
- 		return false;
- 
- 	return true;
-diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
-index 73c4f48..9409d54 100644
---- a/tools/perf/util/annotate.c
-+++ b/tools/perf/util/annotate.c
-@@ -124,10 +124,12 @@ static int jump__parse(struct ins_operands *ops,
- 	else
- 		ops->target.addr = strtoull(ops->raw, NULL, 16);
- 
--	if (s++ != NULL)
-+	if (s++ != NULL) {
- 		ops->target.offset = strtoull(s, NULL, 16);
--	else
--		ops->target.offset = UINT64_MAX;
-+		ops->target.offset_avail = true;
-+	} else {
-+		ops->target.offset_avail = false;
-+	}
- 
- 	return 0;
- }
-@@ -135,7 +137,7 @@ static int jump__parse(struct ins_operands *ops,
- static int jump__scnprintf(struct ins *ins, char *bf, size_t size,
- 			   struct ins_operands *ops)
- {
--	if (!ops->target.addr)
-+	if (!ops->target.addr || ops->target.offset < 0)
- 		return ins__raw_scnprintf(ins, bf, size, ops);
- 
- 	return scnprintf(bf, size, "%-6.6s %" PRIx64, ins->name, ops->target.offset);
-@@ -1304,9 +1306,11 @@ static int symbol__parse_objdump_line(struct symbol *sym, struct map *map,
- 	if (dl == NULL)
- 		return -1;
- 
--	if (dl->ops.target.offset == UINT64_MAX)
-+	if (!disasm_line__has_offset(dl)) {
- 		dl->ops.target.offset = dl->ops.target.addr -
- 					map__rip_2objdump(map, sym->start);
-+		dl->ops.target.offset_avail = true;
-+	}
- 
- 	/* kcore has no symbols, so add the call target name */
- 	if (dl->ins && ins__is_call(dl->ins) && !dl->ops.target.name) {
-diff --git a/tools/perf/util/annotate.h b/tools/perf/util/annotate.h
-index 5cfad4e..5787ed8 100644
---- a/tools/perf/util/annotate.h
-+++ b/tools/perf/util/annotate.h
-@@ -19,7 +19,8 @@ struct ins_operands {
- 		char	*raw;
- 		char	*name;
- 		u64	addr;
--		u64	offset;
-+		s64	offset;
-+		bool    offset_avail;
- 	} target;
- 	union {
- 		struct {
-@@ -67,7 +68,7 @@ struct disasm_line {
- 
- static inline bool disasm_line__has_offset(const struct disasm_line *dl)
- {
--	return dl->ops.target.offset != UINT64_MAX;
-+	return dl->ops.target.offset_avail;
- }
- 
- void disasm_line__free(struct disasm_line *dl);
--- 
-2.5.5
+Christophe
