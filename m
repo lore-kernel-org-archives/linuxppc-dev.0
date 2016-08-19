@@ -1,25 +1,30 @@
-Return-Path: <mmarek@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFxCh5t52zDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 18:37:04 +1000 (AEST)
-Subject: Re: linux-next: build warnings after merge of the kbuild tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Nicholas Piggin <npiggin@gmail.com>
-References: <20160817114443.67675413@canb.auug.org.au>
- <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
- <20160818110948.52f1322d@roar.ozlabs.ibm.com>
- <20160819133854.17a7b1ca@canb.auug.org.au>
- <20160819150914.36106b5b@canb.auug.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Al Viro <viro@zeniv.linux.org.uk>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-From: Michal Marek <mmarek@suse.cz>
-Message-ID: <5babe9ef-0e3d-6975-9ba4-9a29a700b24d@suse.cz>
-Date: Fri, 19 Aug 2016 10:37:00 +0200
-MIME-Version: 1.0
-In-Reply-To: <20160819150914.36106b5b@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFxYx0GBFzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 18:52:52 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7J8n8pG015156
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 04:52:50 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24wt629bjk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 04:52:50 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 19 Aug 2016 02:52:49 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 0/5] kexec changes for Power ISA 3.0
+Date: Fri, 19 Aug 2016 14:22:34 +0530
+Message-Id: <1471596759-3396-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016-08-19 07:09, Stephen Rothwell wrote:
-> Hi Nick,
-> 
-> On Fri, 19 Aug 2016 13:38:54 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>
->> On Thu, 18 Aug 2016 11:09:48 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
->>>
->>> On Wed, 17 Aug 2016 14:59:59 +0200
->>> Michal Marek <mmarek@suse.cz> wrote:
->>>   
->>>> On 2016-08-17 03:44, Stephen Rothwell wrote:    
->>>>>
->>>>> After merging the kbuild tree, today's linux-next build (powerpc
->>>>> ppc64_defconfig) produced these warnings:
->>>>>
->>>>> WARNING: 25 bad relocations
->>>>> c000000000cf2570 R_PPC64_ADDR64    __crc___arch_hweight16      
->>>> [...]    
->>>>> Introduced by commit
->>>>>
->>>>>   9445aa1a3062 ("ppc: move exports to definitions")
->>>>>
->>>>> I have reverted that commit for today.
->>>>>
->>>>> [cc-ing the ppc guys for clues - also involved is commit
->>>>>
->>>>>   22823ab419d8 ("EXPORT_SYMBOL() for asm")
->>>>> ]      
->>>>
->>>> FWIW, I see these warnings as well. Any help from ppc developers is
->>>> appreciated - should the R_PPC64_ADDR64 be whitelisted for exported asm
->>>> symbols (their CRCs actually)?    
->>>
->>> The dangling relocation is a side effect of linker unable to resolve the
->>> reference to the undefined weak symbols. So the real question is, why has
->>> genksyms not overridden these symbols with their CRC values?
->>>
->>> This may not even be powerpc specific, but  I'll poke at it a bit more
->>> when I get a chance.  
->>
->> Not sure if this is relevant, but with the commit reverted, the
->> __crc___... symbols are absolute.
->>
->> 00000000f55b3b3d A __crc___arch_hweight16
-> 
-> Ignore that :-)
-> 
-> I just had a look at a x86_64 allmodconfig result and it looks like the
-> weak symbols are not resolved their either ...
-> 
-> I may be missing something, but genksyms generates the crc's off the
-> preprocessed C source code and we don't have any for the asm files ...
+Add kexec support with radix page table config.
 
-Of course you are right. Which means that we are losing type information
-for these exports for CONFIG_MODVERSIONS purposes. I guess it's
-acceptable, since the asm functions are pretty basic and their
-signatures do not change.
+Changes from v1:
+* Rebase to latest kernel
+* add tlbflush on MMU cleanup
 
-Michal
+Aneesh Kumar K.V (1):
+  powerpc/mm: Add radix flush all with IS=3
+
+Benjamin Herrenschmidt (4):
+  powerpc/64/kexec: NULL check "clear_all" in kexec_sequence
+  powerpc/64/kexec: Fix MMU cleanup on radix
+  powerpc/64/kexec: Copy image with MMU off when possible
+  powerpc/64/kexec: Remove BookE special default_machine_kexec_prepare()
+
+ .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  1 +
+ arch/powerpc/include/asm/mmu-book3e.h              |  3 +
+ arch/powerpc/include/asm/mmu.h                     |  4 ++
+ arch/powerpc/kernel/machine_kexec_64.c             | 74 +++++++---------------
+ arch/powerpc/kernel/misc_64.S                      | 25 ++++++--
+ arch/powerpc/mm/pgtable-book3s64.c                 |  9 +++
+ arch/powerpc/mm/pgtable-radix.c                    | 12 ++++
+ arch/powerpc/mm/tlb-radix.c                        | 15 +++++
+ 8 files changed, 84 insertions(+), 59 deletions(-)
+
+-- 
+2.7.4
