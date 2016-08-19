@@ -1,24 +1,24 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFq9W6ZqZzDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 14:04:47 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id ez1so2768626pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 21:04:47 -0700 (PDT)
-Date: Fri, 19 Aug 2016 12:04:43 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, anton@samba.org
-Subject: Re: [PATCH v3 19/21] powerpc: tm: Always use fp_state and vr_state
- to store live registers
-Message-ID: <20160819040442.GA3387@simonLocalRHEL7.x64>
-References: <20160817034323.23053-1-cyrilbur@gmail.com>
- <20160817034323.23053-20-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFrbt5xSczDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 15:09:14 +1000 (AEST)
+Date: Fri, 19 Aug 2016 15:09:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michal Marek <mmarek@suse.cz>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: build warnings after merge of the kbuild tree
+Message-ID: <20160819150914.36106b5b@canb.auug.org.au>
+In-Reply-To: <20160819133854.17a7b1ca@canb.auug.org.au>
+References: <20160817114443.67675413@canb.auug.org.au>
+ <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
+ <20160818110948.52f1322d@roar.ozlabs.ibm.com>
+ <20160819133854.17a7b1ca@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160817034323.23053-20-cyrilbur@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 17, 2016 at 01:43:21PM +1000, Cyril Bur wrote:
-> There is currently an inconsistency as to how the entire CPU register
-> state is saved and restored when a thread uses transactional memory
-> (TM).
-> 
-> Using transactional memory results in the CPU having duplicated
-> (almost all) of its register state. This duplication results in a set
-> of registers which can be considered 'live', those being currently
-> modified by the instructions being executed and another set that is
-> frozen at a point in time.
-> 
-> On context switch, both sets of state have to be saved and (later)
-> restored. These two states are often called a variety of different
-> things. Common terms for the state which only exists after has entered
-> a transaction (performed a TBEGIN instruction) in hardware is the
-> 'transactional' or 'speculative'.
-> 
-> Between a TBEGIN and a TEND or TABORT (or an event that causes the
-> hardware to abort), regardless of the use of TSUSPEND the
-> transactional state can be referred to as the live state.
-> 
-> The second state is often to referred to as the 'checkpointed' state
-> and is a duplication of the live state when the TBEGIN instruction is
-> executed. This state is kept in the hardware and will be rolled back
-> to on transaction failure.
-> 
-> Currently all the registers stored in pt_regs are ALWAYS the live
-> registers, that is, when a thread has transactional registers their
-> values are stored in pt_regs and the checkpointed state is in
-> ckpt_regs. A strange opposite is true for fp_state. When a thread is
-> non transactional fp_state holds the live registers. When a thread
-> has initiated a transaction fp_state holds the checkpointed state and
-> transact_fp becomes the structure which holds the live state (at this
-> point it is a transactional state). The same is true for vr_state
-> 
-> This method creates confusion as to where the live state is, in some
-> circumstances it requires extra work to determine where to put the
-> live state and prevents the use of common functions designed (probably
-> before TM) to save the live state.
-> 
-> With this patch pt_regs, fp_state and vr_state all represent the
-> same thing and the other structures [pending rename] are for
-> checkpointed state.
-> 
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-Acked-by: Simon Guo <wei.guo.simon@gmail.com>
+Hi Nick,
 
-Thanks,
-- Simon
+On Fri, 19 Aug 2016 13:38:54 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> On Thu, 18 Aug 2016 11:09:48 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
+> >
+> > On Wed, 17 Aug 2016 14:59:59 +0200
+> > Michal Marek <mmarek@suse.cz> wrote:
+> >   
+> > > On 2016-08-17 03:44, Stephen Rothwell wrote:    
+> > > > 
+> > > > After merging the kbuild tree, today's linux-next build (powerpc
+> > > > ppc64_defconfig) produced these warnings:
+> > > > 
+> > > > WARNING: 25 bad relocations
+> > > > c000000000cf2570 R_PPC64_ADDR64    __crc___arch_hweight16      
+> > > [...]    
+> > > > Introduced by commit
+> > > > 
+> > > >   9445aa1a3062 ("ppc: move exports to definitions")
+> > > > 
+> > > > I have reverted that commit for today.
+> > > > 
+> > > > [cc-ing the ppc guys for clues - also involved is commit
+> > > > 
+> > > >   22823ab419d8 ("EXPORT_SYMBOL() for asm")
+> > > > ]      
+> > > 
+> > > FWIW, I see these warnings as well. Any help from ppc developers is
+> > > appreciated - should the R_PPC64_ADDR64 be whitelisted for exported asm
+> > > symbols (their CRCs actually)?    
+> > 
+> > The dangling relocation is a side effect of linker unable to resolve the
+> > reference to the undefined weak symbols. So the real question is, why has
+> > genksyms not overridden these symbols with their CRC values?
+> > 
+> > This may not even be powerpc specific, but  I'll poke at it a bit more
+> > when I get a chance.  
+> 
+> Not sure if this is relevant, but with the commit reverted, the
+> __crc___... symbols are absolute.
+> 
+> 00000000f55b3b3d A __crc___arch_hweight16
+
+Ignore that :-)
+
+I just had a look at a x86_64 allmodconfig result and it looks like the
+weak symbols are not resolved their either ...
+
+I may be missing something, but genksyms generates the crc's off the
+preprocessed C source code and we don't have any for the asm files ...
+-- 
+Cheers,
+Stephen Rothwell
