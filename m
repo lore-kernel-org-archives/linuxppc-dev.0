@@ -1,41 +1,29 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFzxp5qTHzDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 20:40:14 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7JAd9Xs053115
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 06:40:12 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24wg7ga5jc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 06:40:11 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Fri, 19 Aug 2016 04:40:10 -0600
-Subject: Re: [PATCH v5 2/7] perf annotate: Add cross arch annotate support
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-References: <1471584546-11080-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1471584546-11080-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <20160819075034.GG1041@n2100.armlinux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- acme@kernel.org, peterz@infradead.org, mingo@redhat.com,
- alexander.shishkin@linux.intel.com, treeze.taeung@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, markus@trippelsdorf.de,
- chris.ryder@arm.com, pawel.moll@arm.com, mhiramat@kernel.org,
- jolsa@kernel.org, mpe@ellerman.id.au, hemant@linux.vnet.ibm.com,
- namhyung@kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Fri, 19 Aug 2016 16:09:51 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sG03S0pY7zDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 20:45:08 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id h186so1306864pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 03:45:08 -0700 (PDT)
+Date: Fri, 19 Aug 2016 20:44:55 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michal Marek <mmarek@suse.cz>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: build warnings after merge of the kbuild tree
+Message-ID: <20160819204455.6351ffb8@roar.ozlabs.ibm.com>
+In-Reply-To: <5babe9ef-0e3d-6975-9ba4-9a29a700b24d@suse.cz>
+References: <20160817114443.67675413@canb.auug.org.au>
+ <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
+ <20160818110948.52f1322d@roar.ozlabs.ibm.com>
+ <20160819133854.17a7b1ca@canb.auug.org.au>
+ <20160819150914.36106b5b@canb.auug.org.au>
+ <5babe9ef-0e3d-6975-9ba4-9a29a700b24d@suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20160819075034.GG1041@n2100.armlinux.org.uk>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <57B6E1F7.30005@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,72 +33,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Russell for reviewing.
+On Fri, 19 Aug 2016 10:37:00 +0200
+Michal Marek <mmarek@suse.cz> wrote:
 
-On Friday 19 August 2016 01:20 PM, Russell King - ARM Linux wrote:
-> On Fri, Aug 19, 2016 at 10:59:01AM +0530, Ravi Bangoria wrote:
->> -static struct ins instructions[] = {
->> +static struct ins instructions_x86[] = {
->>  	{ .name = "add",   .ops  = &mov_ops, },
->>  	{ .name = "addl",  .ops  = &mov_ops, },
->>  	{ .name = "addq",  .ops  = &mov_ops, },
->>  	{ .name = "addw",  .ops  = &mov_ops, },
->>  	{ .name = "and",   .ops  = &mov_ops, },
->> -#ifdef __arm__
->> -	{ .name = "b",     .ops  = &jump_ops, }, // might also be a call
->> -	{ .name = "bcc",   .ops  = &jump_ops, },
->> -	{ .name = "bcs",   .ops  = &jump_ops, },
->> -	{ .name = "beq",   .ops  = &jump_ops, },
->> -	{ .name = "bge",   .ops  = &jump_ops, },
->> -	{ .name = "bgt",   .ops  = &jump_ops, },
->> -	{ .name = "bhi",   .ops  = &jump_ops, },
->> -	{ .name = "bl",    .ops  = &call_ops, },
->> -	{ .name = "bls",   .ops  = &jump_ops, },
->> -	{ .name = "blt",   .ops  = &jump_ops, },
->> -	{ .name = "blx",   .ops  = &call_ops, },
->> -	{ .name = "bne",   .ops  = &jump_ops, },
->> -#endif
-> Notice that ARM includes a lot of other instructions from this table,
-> not just those above.
->
->>  	{ .name = "bts",   .ops  = &mov_ops, },
->>  	{ .name = "call",  .ops  = &call_ops, },
->>  	{ .name = "callq", .ops  = &call_ops, },
->> @@ -456,6 +444,21 @@ static struct ins instructions[] = {
->>  	{ .name = "retq",  .ops  = &ret_ops, },
->>  };
->>  
->> +static struct ins instructions_arm[] = {
->> +	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
->> +	{ .name = "bcc",   .ops  = &jump_ops, },
->> +	{ .name = "bcs",   .ops  = &jump_ops, },
->> +	{ .name = "beq",   .ops  = &jump_ops, },
->> +	{ .name = "bge",   .ops  = &jump_ops, },
->> +	{ .name = "bgt",   .ops  = &jump_ops, },
->> +	{ .name = "bhi",   .ops  = &jump_ops, },
->> +	{ .name = "bl",    .ops  = &call_ops, },
->> +	{ .name = "bls",   .ops  = &jump_ops, },
->> +	{ .name = "blt",   .ops  = &jump_ops, },
->> +	{ .name = "blx",   .ops  = &call_ops, },
->> +	{ .name = "bne",   .ops  = &jump_ops, },
->> +};
->> +
-> ...
->> +	if (!strcmp(norm_arch, NORM_X86)) {
->> +		instructions = instructions_x86;
->> +		nmemb = ARRAY_SIZE(instructions_x86);
->> +	} else if (!strcmp(norm_arch, NORM_ARM)) {
->> +		instructions = instructions_arm;
->> +		nmemb = ARRAY_SIZE(instructions_arm);
-> But these changes result in _only_ the ones that were in the #if __arm__
-> being matched.  This is wrong.
->
-> If we want to go that way, we need to add _all_ arm instructions to
-> instructions_arm, not just those within the #if.
+> On 2016-08-19 07:09, Stephen Rothwell wrote:
+> > Hi Nick,
+> > 
+> > On Fri, 19 Aug 2016 13:38:54 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:  
+> >>
+> >> On Thu, 18 Aug 2016 11:09:48 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:  
+> >>>
+> >>> On Wed, 17 Aug 2016 14:59:59 +0200
+> >>> Michal Marek <mmarek@suse.cz> wrote:
+> >>>     
+> >>>> On 2016-08-17 03:44, Stephen Rothwell wrote:      
+> >>>>>
+> >>>>> After merging the kbuild tree, today's linux-next build (powerpc
+> >>>>> ppc64_defconfig) produced these warnings:
+> >>>>>
+> >>>>> WARNING: 25 bad relocations
+> >>>>> c000000000cf2570 R_PPC64_ADDR64    __crc___arch_hweight16        
+> >>>> [...]      
+> >>>>> Introduced by commit
+> >>>>>
+> >>>>>   9445aa1a3062 ("ppc: move exports to definitions")
+> >>>>>
+> >>>>> I have reverted that commit for today.
+> >>>>>
+> >>>>> [cc-ing the ppc guys for clues - also involved is commit
+> >>>>>
+> >>>>>   22823ab419d8 ("EXPORT_SYMBOL() for asm")
+> >>>>> ]        
+> >>>>
+> >>>> FWIW, I see these warnings as well. Any help from ppc developers is
+> >>>> appreciated - should the R_PPC64_ADDR64 be whitelisted for exported asm
+> >>>> symbols (their CRCs actually)?      
+> >>>
+> >>> The dangling relocation is a side effect of linker unable to resolve the
+> >>> reference to the undefined weak symbols. So the real question is, why has
+> >>> genksyms not overridden these symbols with their CRC values?
+> >>>
+> >>> This may not even be powerpc specific, but  I'll poke at it a bit more
+> >>> when I get a chance.    
+> >>
+> >> Not sure if this is relevant, but with the commit reverted, the
+> >> __crc___... symbols are absolute.
+> >>
+> >> 00000000f55b3b3d A __crc___arch_hweight16  
+> > 
+> > Ignore that :-)
+> > 
+> > I just had a look at a x86_64 allmodconfig result and it looks like the
+> > weak symbols are not resolved their either ...
+> > 
+> > I may be missing something, but genksyms generates the crc's off the
+> > preprocessed C source code and we don't have any for the asm files ...  
+> 
+> Of course you are right. Which means that we are losing type information
+> for these exports for CONFIG_MODVERSIONS purposes. I guess it's
+> acceptable, since the asm functions are pretty basic and their
+> signatures do not change.
 
-Yes, I've mentioned same in cover letter as well.
+I don't completely agree. It would be nice to have the functionality
+still there.
 
-Can I add all x86 instructions for arm as well? If not, can you please provide
-a list of arm instructions that needs to be added here.
+What happens if you just run cmd_modversions on the as rule? It relies on
+!defined(__ASSEMBLY__), but we're feeding the result to genksyms, not as.
+It would require the header be included in the .S file and be protected for
+asm builds.
 
--Ravi
+Stephen wasn't a fan of suck a hack and I can't say I blame him. Another
+possibility I suppose is an EXPORT_SYMBOL_ASM() variant that takes string
+containing C function declaration and just inserts it as an assembler
+comment somewhere that genksysms can find.
+
+
+Thanks,
+Nick
