@@ -2,16 +2,15 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFsBw3x29zDr8p
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFsBw4SxQzDrBG
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 15:36:08 +1000 (AEST)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 05/13] powerpc/powernv: Provide facilities for EOI,
- usable from real mode
-Date: Fri, 19 Aug 2016 15:35:49 +1000
-Message-Id: <1471584957-21484-6-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 06/13] KVM: PPC: Book3S HV: Enable IRQ bypass
+Date: Fri, 19 Aug 2016 15:35:50 +1000
+Message-Id: <1471584957-21484-7-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1471584957-21484-1-git-send-email-paulus@ozlabs.org>
 References: <1471584957-21484-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,94 +24,234 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 
-This adds a new function pnv_opal_pci_msi_eoi() which does the part of
-end-of-interrupt (EOI) handling of an MSI which involves doing an
-OPAL call.  This function can be called in real mode.  This doesn't
-just export pnv_ioda2_msi_eoi() because that does a call to
-icp_native_eoi(), which does not work in real mode.
+Add the irq_bypass_add_producer and irq_bypass_del_producer
+functions. These functions get called whenever a GSI is being
+defined for a guest. They create/remove the mapping between
+host real IRQ numbers and the guest GSI.
 
-This also adds a function, is_pnv_opal_msi(), which KVM can call to
-check whether an interrupt is one for which we should be calling
-pnv_opal_pci_msi_eoi() when we need to do an EOI.
+Add the following helper functions to manage the
+passthrough IRQ map.
 
-[paulus@ozlabs.org - split out the addition of pnv_opal_pci_msi_eoi()
- from Suresh's patch "KVM: PPC: Book3S HV: Handle passthrough
- interrupts in guest"; added is_pnv_opal_msi(); wrote description.]
+kvmppc_set_passthru_irq()
+  Creates a mapping in the passthrough IRQ map that maps a host
+  IRQ to a guest GSI. It allocates the structure (one per guest VM)
+  the first time it is called.
+
+kvmppc_clr_passthru_irq()
+  Removes the passthrough IRQ map entry given a guest GSI.
+  The passthrough IRQ map structure is not freed even when the
+  number of mapped entries goes to zero. It is only freed when
+  the VM is destroyed.
+
+[paulus@ozlabs.org - modified to use is_pnv_opal_msi() rather than
+ requiring all passed-through interrupts to use the same irq_chip;
+ changed deletion so it zeroes out the r_hwirq field rather than
+ copying the last entry down and decrementing the number of entries.]
 
 Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/pnv-pci.h        |  3 +++
- arch/powerpc/platforms/powernv/pci-ioda.c | 24 ++++++++++++++++++++----
- 2 files changed, 23 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c | 160 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 159 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index 0cbd813..1b46b52 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -12,6 +12,7 @@
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 413b5c2f..aa11647 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -53,10 +53,13 @@
+ #include <asm/smp.h>
+ #include <asm/dbell.h>
+ #include <asm/hmi.h>
++#include <asm/pnv-pci.h>
+ #include <linux/gfp.h>
+ #include <linux/vmalloc.h>
+ #include <linux/highmem.h>
+ #include <linux/hugetlb.h>
++#include <linux/kvm_irqfd.h>
++#include <linux/irqbypass.h>
+ #include <linux/module.h>
  
- #include <linux/pci.h>
- #include <linux/pci_hotplug.h>
-+#include <linux/irq.h>
- #include <misc/cxl-base.h>
- #include <asm/opal-api.h>
+ #include "book3s.h"
+@@ -3247,6 +3250,8 @@ static void kvmppc_core_destroy_vm_hv(struct kvm *kvm)
+ 	kvmppc_free_vcores(kvm);
  
-@@ -33,6 +34,8 @@ int pnv_cxl_alloc_hwirqs(struct pci_dev *dev, int num);
- void pnv_cxl_release_hwirqs(struct pci_dev *dev, int hwirq, int num);
- int pnv_cxl_get_irq_count(struct pci_dev *dev);
- struct device_node *pnv_pci_get_phb_node(struct pci_dev *dev);
-+int64_t pnv_opal_pci_msi_eoi(struct irq_chip *chip, unsigned int hw_irq);
-+bool is_pnv_opal_msi(struct irq_chip *chip);
- 
- #ifdef CONFIG_CXL_BASE
- int pnv_cxl_alloc_hwirq_ranges(struct cxl_irq_ranges *irqs,
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index fd9444f..9ce48ae 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2710,15 +2710,21 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	kvmppc_free_hpt(kvm);
++
++	kvmppc_free_pimap(kvm);
  }
  
- #ifdef CONFIG_PCI_MSI
--static void pnv_ioda2_msi_eoi(struct irq_data *d)
-+int64_t pnv_opal_pci_msi_eoi(struct irq_chip *chip, unsigned int hw_irq)
+ /* We don't need to emulate any privileged instructions or dcbz */
+@@ -3289,10 +3294,159 @@ void kvmppc_free_pimap(struct kvm *kvm)
+ 	kfree(kvm->arch.pimap);
+ }
+ 
+-struct kvmppc_passthru_irqmap *kvmppc_alloc_pimap(void)
++static struct kvmppc_passthru_irqmap *kvmppc_alloc_pimap(void)
  {
--	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
--	struct irq_chip *chip = irq_data_get_irq_chip(d);
- 	struct pnv_phb *phb = container_of(chip, struct pnv_phb,
- 					   ioda.irq_chip);
-+
-+	return opal_pci_msi_eoi(phb->opal_id, hw_irq);
-+}
-+
-+static void pnv_ioda2_msi_eoi(struct irq_data *d)
-+{
- 	int64_t rc;
-+	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
-+	struct irq_chip *chip = irq_data_get_irq_chip(d);
- 
--	rc = opal_pci_msi_eoi(phb->opal_id, hw_irq);
-+	rc = pnv_opal_pci_msi_eoi(chip, hw_irq);
- 	WARN_ON_ONCE(rc);
- 
- 	icp_native_eoi(d);
-@@ -2748,6 +2754,16 @@ void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq)
- 	irq_set_chip(virq, &phb->ioda.irq_chip);
+ 	return kzalloc(sizeof(struct kvmppc_passthru_irqmap), GFP_KERNEL);
  }
- 
-+/*
-+ * Returns true iff chip is something that we could call
-+ * pnv_opal_pci_msi_eoi for.
-+ */
-+bool is_pnv_opal_msi(struct irq_chip *chip)
-+{
-+	return chip->irq_eoi == pnv_ioda2_msi_eoi;
-+}
-+EXPORT_SYMBOL_GPL(is_pnv_opal_msi);
 +
- static int pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
- 				  unsigned int hwirq, unsigned int virq,
- 				  unsigned int is_64, struct msi_msg *msg)
++static int kvmppc_set_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
++{
++	struct irq_desc *desc;
++	struct kvmppc_irq_map *irq_map;
++	struct kvmppc_passthru_irqmap *pimap;
++	struct irq_chip *chip;
++	int i;
++
++	desc = irq_to_desc(host_irq);
++	if (!desc)
++		return -EIO;
++
++	mutex_lock(&kvm->lock);
++
++	pimap = kvm->arch.pimap;
++	if (pimap == NULL) {
++		/* First call, allocate structure to hold IRQ map */
++		pimap = kvmppc_alloc_pimap();
++		if (pimap == NULL) {
++			mutex_unlock(&kvm->lock);
++			return -ENOMEM;
++		}
++		kvm->arch.pimap = pimap;
++	}
++
++	/*
++	 * For now, we only support interrupts for which the EOI operation
++	 * is an OPAL call followed by a write to XIRR, since that's
++	 * what our real-mode EOI code does.
++	 */
++	chip = irq_data_get_irq_chip(&desc->irq_data);
++	if (!chip || !is_pnv_opal_msi(chip)) {
++		pr_warn("kvmppc_set_passthru_irq_hv: Could not assign IRQ map for (%d,%d)\n",
++			host_irq, guest_gsi);
++		mutex_unlock(&kvm->lock);
++		return -ENOENT;
++	}
++
++	/*
++	 * See if we already have an entry for this guest IRQ number.
++	 * If it's mapped to a hardware IRQ number, that's an error,
++	 * otherwise re-use this entry.
++	 */
++	for (i = 0; i < pimap->n_mapped; i++) {
++		if (guest_gsi == pimap->mapped[i].v_hwirq) {
++			if (pimap->mapped[i].r_hwirq) {
++				mutex_unlock(&kvm->lock);
++				return -EINVAL;
++			}
++			break;
++		}
++	}
++
++	if (i == KVMPPC_PIRQ_MAPPED) {
++		mutex_unlock(&kvm->lock);
++		return -EAGAIN;		/* table is full */
++	}
++
++	irq_map = &pimap->mapped[i];
++
++	irq_map->v_hwirq = guest_gsi;
++	irq_map->r_hwirq = desc->irq_data.hwirq;
++	irq_map->desc = desc;
++
++	if (i == pimap->n_mapped)
++		pimap->n_mapped++;
++
++	mutex_unlock(&kvm->lock);
++
++	return 0;
++}
++
++static int kvmppc_clr_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
++{
++	struct irq_desc *desc;
++	struct kvmppc_passthru_irqmap *pimap;
++	int i;
++
++	desc = irq_to_desc(host_irq);
++	if (!desc)
++		return -EIO;
++
++	mutex_lock(&kvm->lock);
++
++	if (kvm->arch.pimap == NULL) {
++		mutex_unlock(&kvm->lock);
++		return 0;
++	}
++	pimap = kvm->arch.pimap;
++
++	for (i = 0; i < pimap->n_mapped; i++) {
++		if (guest_gsi == pimap->mapped[i].v_hwirq)
++			break;
++	}
++
++	if (i == pimap->n_mapped) {
++		mutex_unlock(&kvm->lock);
++		return -ENODEV;
++	}
++
++	/* invalidate the entry */
++	pimap->mapped[i].r_hwirq = 0;
++
++	/*
++	 * We don't free this structure even when the count goes to
++	 * zero. The structure is freed when we destroy the VM.
++	 */
++
++	mutex_unlock(&kvm->lock);
++	return 0;
++}
++
++static int kvmppc_irq_bypass_add_producer_hv(struct irq_bypass_consumer *cons,
++					     struct irq_bypass_producer *prod)
++{
++	int ret = 0;
++	struct kvm_kernel_irqfd *irqfd =
++		container_of(cons, struct kvm_kernel_irqfd, consumer);
++
++	irqfd->producer = prod;
++
++	ret = kvmppc_set_passthru_irq(irqfd->kvm, prod->irq, irqfd->gsi);
++	if (ret)
++		pr_info("kvmppc_set_passthru_irq (irq %d, gsi %d) fails: %d\n",
++			prod->irq, irqfd->gsi, ret);
++
++	return ret;
++}
++
++static void kvmppc_irq_bypass_del_producer_hv(struct irq_bypass_consumer *cons,
++					      struct irq_bypass_producer *prod)
++{
++	int ret;
++	struct kvm_kernel_irqfd *irqfd =
++		container_of(cons, struct kvm_kernel_irqfd, consumer);
++
++	irqfd->producer = NULL;
++
++	/*
++	 * When producer of consumer is unregistered, we change back to
++	 * default external interrupt handling mode - KVM real mode
++	 * will switch back to host.
++	 */
++	ret = kvmppc_clr_passthru_irq(irqfd->kvm, prod->irq, irqfd->gsi);
++	if (ret)
++		pr_warn("kvmppc_clr_passthru_irq (irq %d, gsi %d) fails: %d\n",
++			prod->irq, irqfd->gsi, ret);
++}
+ #endif
+ 
+ static long kvm_arch_vm_ioctl_hv(struct file *filp,
+@@ -3413,6 +3567,10 @@ static struct kvmppc_ops kvm_ops_hv = {
+ 	.fast_vcpu_kick = kvmppc_fast_vcpu_kick_hv,
+ 	.arch_vm_ioctl  = kvm_arch_vm_ioctl_hv,
+ 	.hcall_implemented = kvmppc_hcall_impl_hv,
++#ifdef CONFIG_KVM_XICS
++	.irq_bypass_add_producer = kvmppc_irq_bypass_add_producer_hv,
++	.irq_bypass_del_producer = kvmppc_irq_bypass_del_producer_hv,
++#endif
+ };
+ 
+ static int kvm_init_subcore_bitmap(void)
 -- 
 2.8.1
