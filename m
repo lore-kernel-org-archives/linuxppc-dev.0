@@ -2,15 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFsBx5YZTzDrBG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFsBx6Hd3zDr8p
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 15:36:09 +1000 (AEST)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 10/13] KVM: PPC: Book3S HV: Tunable to disable KVM IRQ bypass
-Date: Fri, 19 Aug 2016 15:35:54 +1000
-Message-Id: <1471584957-21484-11-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 11/13] KVM: PPC: Book3S HV: Update irq stats for IRQs handled
+ in real mode
+Date: Fri, 19 Aug 2016 15:35:55 +1000
+Message-Id: <1471584957-21484-12-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1471584957-21484-1-git-send-email-paulus@ozlabs.org>
 References: <1471584957-21484-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,94 +25,104 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Suresh Warrier <warrier@linux.vnet.ibm.com>
 
-Add a  module parameter kvm_irq_bypass for kvm_hv.ko to
-disable IRQ bypass for passthrough interrupts. The default
-value of this tunable is 1 - that is enable the feature.
+When a passthrough IRQ is handled completely within KVM real
+mode code, it has to also update the IRQ stats since this
+does not go through the generic IRQ handling code.
 
-Since the tunable is used by built-in kernel code, we use
-the module_param_cb macro to achieve this.
+However, the per CPU kstat_irqs field is an allocated (not static)
+field and so cannot be directly accessed in real mode safely.
+
+The function this_cpu_inc_rm() is introduced to safely increment
+per CPU fields (currently coded for unsigned integers only) that
+are allocated and could thus be vmalloced also.
 
 Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_book3s.h |  1 +
- arch/powerpc/include/asm/kvm_ppc.h    |  2 +-
- arch/powerpc/kvm/book3s_hv.c          | 10 ++++++++++
- arch/powerpc/kvm/book3s_hv_rm_xics.c  |  2 ++
- 4 files changed, 14 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_hv_rm_xics.c | 50 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 8f39796..8e5fac6 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -191,6 +191,7 @@ extern void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
- 				 struct kvm_vcpu *vcpu);
- extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
- 				   struct kvmppc_book3s_shadow_vcpu *svcpu);
-+extern int kvm_irq_bypass;
- 
- static inline struct kvmppc_vcpu_book3s *to_book3s(struct kvm_vcpu *vcpu)
- {
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index e0ada31..97b9bad 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -461,7 +461,7 @@ static inline int kvmppc_xics_enabled(struct kvm_vcpu *vcpu)
- static inline struct kvmppc_passthru_irqmap *kvmppc_get_passthru_irqmap(
- 				struct kvm *kvm)
- {
--	if (kvm)
-+	if (kvm && kvm_irq_bypass)
- 		return kvm->arch.pimap;
- 	return NULL;
- }
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index cfddafa..2e71518 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -94,6 +94,10 @@ static struct kernel_param_ops module_param_ops = {
- 	.get = param_get_int,
- };
- 
-+module_param_cb(kvm_irq_bypass, &module_param_ops, &kvm_irq_bypass,
-+							S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(kvm_irq_bypass, "Bypass passthrough interrupt optimization");
-+
- module_param_cb(h_ipi_redirect, &module_param_ops, &h_ipi_redirect,
- 							S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(h_ipi_redirect, "Redirect H_IPI wakeup to a free host core");
-@@ -3313,6 +3317,9 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
- 	struct irq_chip *chip;
- 	int i;
- 
-+	if (!kvm_irq_bypass)
-+		return 1;
-+
- 	desc = irq_to_desc(host_irq);
- 	if (!desc)
- 		return -EIO;
-@@ -3389,6 +3396,9 @@ static int kvmppc_clr_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
- 	struct kvmppc_passthru_irqmap *pimap;
- 	int i;
- 
-+	if (!kvm_irq_bypass)
-+		return 0;
-+
- 	desc = irq_to_desc(host_irq);
- 	if (!desc)
- 		return -EIO;
 diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-index 3b8d7ac..00b9dfde 100644
+index 00b9dfde..554cdfa 100644
 --- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
 +++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-@@ -27,6 +27,8 @@
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/kvm_host.h>
+ #include <linux/err.h>
++#include <linux/kernel_stat.h>
  
- int h_ipi_redirect = 1;
- EXPORT_SYMBOL(h_ipi_redirect);
-+int kvm_irq_bypass = 1;
-+EXPORT_SYMBOL(kvm_irq_bypass);
+ #include <asm/kvm_book3s.h>
+ #include <asm/kvm_ppc.h>
+@@ -18,6 +19,7 @@
+ #include <asm/debug.h>
+ #include <asm/synch.h>
+ #include <asm/cputhreads.h>
++#include <asm/pgtable.h>
+ #include <asm/ppc-opcode.h>
+ #include <asm/pnv-pci.h>
  
- static void icp_rm_deliver_irq(struct kvmppc_xics *xics, struct kvmppc_icp *icp,
- 			    u32 new_irq);
+@@ -734,6 +736,53 @@ static void icp_eoi(struct irq_chip *c, u32 hwirq, u32 xirr)
+ 	_stwcix(xics_phys + XICS_XIRR, xirr);
+ }
+ 
++/*
++ * Increment a per-CPU 32-bit unsigned integer variable.
++ * Safe to call in real-mode. Handles vmalloc'ed addresses
++ *
++ * ToDo: Make this work for any integral type
++ */
++
++static inline void this_cpu_inc_rm(unsigned int __percpu *addr)
++{
++	unsigned long l;
++	unsigned int *raddr;
++	int cpu = smp_processor_id();
++
++	raddr = per_cpu_ptr(addr, cpu);
++	l = (unsigned long)raddr;
++
++	if (REGION_ID(l) == VMALLOC_REGION_ID) {
++		l = vmalloc_to_phys(raddr);
++		raddr = (unsigned int *)l;
++	}
++	++*raddr;
++}
++
++/*
++ * We don't try to update the flags in the irq_desc 'istate' field in
++ * here as would happen in the normal IRQ handling path for several reasons:
++ *  - state flags represent internal IRQ state and are not expected to be
++ *    updated outside the IRQ subsystem
++ *  - more importantly, these are useful for edge triggered interrupts,
++ *    IRQ probing, etc., but we are only handling MSI/MSIx interrupts here
++ *    and these states shouldn't apply to us.
++ *
++ * However, we do update irq_stats - we somewhat duplicate the code in
++ * kstat_incr_irqs_this_cpu() for this since this function is defined
++ * in irq/internal.h which we don't want to include here.
++ * The only difference is that desc->kstat_irqs is an allocated per CPU
++ * variable and could have been vmalloc'ed, so we can't directly
++ * call __this_cpu_inc() on it. The kstat structure is a static
++ * per CPU variable and it should be accessible by real-mode KVM.
++ *
++ */
++static void kvmppc_rm_handle_irq_desc(struct irq_desc *desc)
++{
++	this_cpu_inc_rm(desc->kstat_irqs);
++	__this_cpu_inc(kstat.irqs_sum);
++}
++
+ long kvmppc_deliver_irq_passthru(struct kvm_vcpu *vcpu,
+ 				 u32 xirr,
+ 				 struct kvmppc_irq_map *irq_map,
+@@ -747,6 +796,7 @@ long kvmppc_deliver_irq_passthru(struct kvm_vcpu *vcpu,
+ 	xics = vcpu->kvm->arch.xics;
+ 	icp = vcpu->arch.icp;
+ 
++	kvmppc_rm_handle_irq_desc(irq_map->desc);
+ 	icp_rm_deliver_irq(xics, icp, irq);
+ 
+ 	/* EOI the interrupt */
 -- 
 2.8.1
