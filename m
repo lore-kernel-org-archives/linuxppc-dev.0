@@ -1,43 +1,24 @@
-Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFpwW1gl5zDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 13:53:30 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7J3mjNI114084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 23:53:28 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24vrm5hwyx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 23:53:28 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Thu, 18 Aug 2016 21:53:27 -0600
-Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: [PATCH 4/6] cxlflash: Transition to application close model
-References: <1470785888-9112-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1470785992-9274-1-git-send-email-mrochs@linux.vnet.ibm.com>
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Uma Krishnan <ukrishn@linux.vnet.ibm.com>,
- Al Viro <viro@zeniv.linux.org.uk>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Date: Thu, 18 Aug 2016 22:53:24 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFq9W6ZqZzDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 14:04:47 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id ez1so2768626pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2016 21:04:47 -0700 (PDT)
+Date: Fri, 19 Aug 2016 12:04:43 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, anton@samba.org
+Subject: Re: [PATCH v3 19/21] powerpc: tm: Always use fp_state and vr_state
+ to store live registers
+Message-ID: <20160819040442.GA3387@simonLocalRHEL7.x64>
+References: <20160817034323.23053-1-cyrilbur@gmail.com>
+ <20160817034323.23053-20-cyrilbur@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1470785992-9274-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <4f79ec84-ba9d-9c7f-6629-03d58593282c@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160817034323.23053-20-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,23 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Aug 17, 2016 at 01:43:21PM +1000, Cyril Bur wrote:
+> There is currently an inconsistency as to how the entire CPU register
+> state is saved and restored when a thread uses transactional memory
+> (TM).
+> 
+> Using transactional memory results in the CPU having duplicated
+> (almost all) of its register state. This duplication results in a set
+> of registers which can be considered 'live', those being currently
+> modified by the instructions being executed and another set that is
+> frozen at a point in time.
+> 
+> On context switch, both sets of state have to be saved and (later)
+> restored. These two states are often called a variety of different
+> things. Common terms for the state which only exists after has entered
+> a transaction (performed a TBEGIN instruction) in hardware is the
+> 'transactional' or 'speculative'.
+> 
+> Between a TBEGIN and a TEND or TABORT (or an event that causes the
+> hardware to abort), regardless of the use of TSUSPEND the
+> transactional state can be referred to as the live state.
+> 
+> The second state is often to referred to as the 'checkpointed' state
+> and is a duplication of the live state when the TBEGIN instruction is
+> executed. This state is kept in the hardware and will be rolled back
+> to on transaction failure.
+> 
+> Currently all the registers stored in pt_regs are ALWAYS the live
+> registers, that is, when a thread has transactional registers their
+> values are stored in pt_regs and the checkpointed state is in
+> ckpt_regs. A strange opposite is true for fp_state. When a thread is
+> non transactional fp_state holds the live registers. When a thread
+> has initiated a transaction fp_state holds the checkpointed state and
+> transact_fp becomes the structure which holds the live state (at this
+> point it is a transactional state). The same is true for vr_state
+> 
+> This method creates confusion as to where the live state is, in some
+> circumstances it requires extra work to determine where to put the
+> live state and prevents the use of common functions designed (probably
+> before TM) to save the live state.
+> 
+> With this patch pt_regs, fp_state and vr_state all represent the
+> same thing and the other structures [pending rename] are for
+> checkpointed state.
+> 
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+Acked-by: Simon Guo <wei.guo.simon@gmail.com>
 
-Acked-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-
-
-On 8/9/2016 6:39 PM, Matthew R. Ochs wrote:
-> Caching the adapter file descriptor and performing a close on behalf
-> of an application is a poor design. This is due to the fact that once
-> a file descriptor in installed, it is free to be altered without the
-> knowledge of the cxlflash driver. This can lead to inconsistencies
-> between the application and kernel. Furthermore, the nature of the
-> former design is more exploitable and thus should be abandoned.
->
-> To support applications performing a close on the adapter file that
-> is associated with a context, a new flag is introduced to the user
-> API to indicate to applications that they are responsible for the
-> close following the cleanup (detach) of a context. The documentation
-> is also updated to reflect this change in behavior.
->
-> Inspired-by: Al Viro <viro@zeniv.linux.org.uk>
-> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Thanks,
+- Simon
