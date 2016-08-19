@@ -1,29 +1,43 @@
-Return-Path: <prvs=0039da0bc8=holger.brunck@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sG0j93PYWzDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 21:14:20 +1000 (AEST)
-Subject: Re: debug problems on ppc 83xx target due to changed struct
- task_struct
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Dave Hansen
- <dave.hansen@linux.intel.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-References: <dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com>
- <57ADE7E6.9030900@linux.intel.com>
- <4e16aad4-80d3-ffcc-d183-681b48d4751b@keymile.com>
- <57ADF4A0.5040807@linux.intel.com>
- <41e00d07-d7ce-0198-acce-ac25db8c9df3@keymile.com>
- <57B1EBAE.6030503@linux.intel.com>
- <3f1dff88-cd24-b36e-da9a-e84627929975@c-s.fr>
- <3e83483a-ea1f-978d-5772-d2135a58cbb7@keymile.com>
- <8dfe92cf-fff2-44a9-26a7-25ae37bfc254@c-s.fr>
-From: Holger Brunck <holger.brunck@keymile.com>
-Message-ID: <1624e6b7-f797-da23-7c34-e0f903526c9c@keymile.com>
-Date: Fri, 19 Aug 2016 13:14:07 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sG17p63wjzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 21:33:58 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7JBTl0C065076
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 07:33:56 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24wbx0ba1m-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 07:33:55 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Fri, 19 Aug 2016 05:33:55 -0600
+Subject: Re: [PATCH v5 2/7] perf annotate: Add cross arch annotate support
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+References: <1471584546-11080-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1471584546-11080-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20160819075034.GG1041@n2100.armlinux.org.uk>
+ <57B6E1F7.30005@linux.vnet.ibm.com>
+ <20160819104821.GL1041@n2100.armlinux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ acme@kernel.org, peterz@infradead.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, treeze.taeung@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, markus@trippelsdorf.de,
+ chris.ryder@arm.com, pawel.moll@arm.com, mhiramat@kernel.org,
+ jolsa@kernel.org, mpe@ellerman.id.au, hemant@linux.vnet.ibm.com,
+ namhyung@kernel.org, Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Fri, 19 Aug 2016 17:03:38 +0530
 MIME-Version: 1.0
-In-Reply-To: <8dfe92cf-fff2-44a9-26a7-25ae37bfc254@c-s.fr>
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20160819104821.GL1041@n2100.armlinux.org.uk>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <57B6EE92.6050200@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,146 +47,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/08/16 13:03, Christophe Leroy wrote:
-> 
-> 
-> Le 17/08/2016 à 17:27, Holger Brunck a écrit :
->> On 16/08/16 19:27, christophe leroy wrote:
->>>
->>>
->>> Le 15/08/2016 à 18:19, Dave Hansen a écrit :
->>>> On 08/15/2016 07:35 AM, Holger Brunck wrote:
->>>>> I tried this but unfortunately the error only occurs while remote debugging.
->>>>> Locally with gdb everything works fine. BTW we double-checked with a 85xx ppc
->>>>> target which is also 32-bit and it ends up with the same behaviour.
->>>>>
->>>>> I was also investigating where I have to move the line in the struct task_struct
->>>>> and it turns out to be like this (diff to 4.7 kernel):
->>>>>
->>>>> diff --git a/include/linux/sched.h b/include/linux/sched.h
->>>>> index 253538f..4868874 100644
->>>>> --- a/include/linux/sched.h
->>>>> +++ b/include/linux/sched.h
->>>>> @@ -1655,7 +1655,9 @@ struct task_struct {
->>>>>         struct signal_struct *signal;
->>>>>         struct sighand_struct *sighand;
->>>>>
->>>>> +       // struct thread_struct thread;   // until here everything is fine
->>>>>         sigset_t blocked, real_blocked;
->>>>> +       struct thread_struct thread;      // from here it's broken
->>>>>         sigset_t saved_sigmask; /* restored if set_restore_sigmask() was used */
->>>>>         struct sigpending pending;
->>>>
->>>> Wow, thanks for all the debugging here!
->>>>
->>>> So, we know it has to do with signals, thread_info, and probably only
->>>> affects 32-bit powerpc.  Seems awfully weird.  Have you checked with any
->>>> of the 64-bit powerpc guys to see if they have any ideas?
->>>>
->>>> I went grepping around for a bit.
->>>>
->>>> Where is the task_struct stored?  Is it on-stack on ppc32 or something?
->>>>  The thread_info is, I assume, but I see some THREAD_INFO vs. THREAD
->>>> (thread struct) math happening in here, which confuses me:
->>>>
->>>>         .globl  ret_from_debug_exc
->>>> ret_from_debug_exc:
->>>>         mfspr   r9,SPRN_SPRG_THREAD
->>>>         lwz     r10,SAVED_KSP_LIMIT(r1)
->>>>         stw     r10,KSP_LIMIT(r9)
->>>>         lwz     r9,THREAD_INFO-THREAD(r9)
->>>>         CURRENT_THREAD_INFO(r10, r1)
->>>>         lwz     r10,TI_PREEMPT(r10)
->>>>         stw     r10,TI_PREEMPT(r9)
->>>>         RESTORE_xSRR(SRR0,SRR1);
->>>>         RESTORE_xSRR(CSRR0,CSRR1);
->>>>         RESTORE_MMU_REGS;
->>>>         RET_FROM_EXC_LEVEL(SPRN_DSRR0, SPRN_DSRR1, PPC_RFDI)
->>>>
->>>> But, I'm really at a loss to explain this.  It still seems like a deeply
->>>> ppc-specific issue.  We can obviously work around it with an #ifdef for
->>>> your platform, but that's awfully hackish and hides the real bug,
->>>> whatever it is.
->>>>
->>>> My suspicion is that there's a bug in the 32-bit ppc assembly somewhere.
->>>>  I don't see any references to 'blocked' or 'real_blocked' in assembly
->>>> though.  You could add a bunch of padding instead of moving the
->>>> thread_struct and see if that does anything, but that's really a stab in
->>>> the dark.
->>>>
->>>
->>> Just to let you know, I'm not sure it is the same issue, but I also get
->>> my 8xx target stuck when I try to use gdbserver.
->>>
->>> If I debug a very small app, it gets stuck quickly after the app has
->>> stopped: indeed, the console seems ok but as soon as I try to execute
->>> something simple, like a ps or top, it get stuck. The target still
->>> responds to pings, but nothing else.
->>>
->>> If I debug a big app, it gets stuck soon after the start of debug: I set
->>> a bpoint at main(), do a 'continue', get breaked at main(), do some
->>> steps with 'next' then it gets stuck.
->>>
->>> I have tried moving the struct thread_struct thread but it has no impact.
->>>
->>
->> that sounds a bit different to what I see. Is your program also mutli-threaded?
->>
->> Maybe you could try with the program I use to reproduce the error:
->>
->> --- snip -----
->> #include <pthread.h>
->> #include <stdio.h>
->> #include <unistd.h>
->>
->> void * th_1_func()
->> {
->>    while (1) {
->>      sleep(2);
->>      printf("Hello from thread function 1)\n");
->>    }
->> }
->>
->> int main() {
->>   int err;
->>   pthread_t th_1, th_2, th_3;
->>
->>   err = pthread_create(&th_1, NULL, th_1_func, NULL);
->>   if (err != 0)
->>     printf("pthread_create\n");
->>   err = pthread_create(&th_2, NULL, th_1_func, NULL);
->>   if (err != 0)
->>     printf("pthread_create\n");
->>   err = pthread_create(&th_3, NULL, th_1_func, NULL);
->>   if (err != 0)
->>     printf("pthread_create\n");
->>   while(1) {}
->>   return 0;
->> }
->> --- snap ---
->>
->> Then copy it to your target and start it with the gdbserver. If you let it run
->> from your host with gdb and try to stop it e.g in the sleep call and then try to
->> single step it you might see the error. But as I said in this thread the
->> behaviour might be different depending on your kernel configuration as I
->> encountered different behaviour when enabling FTRACE or SCHED_STAT.
->>
->> Best regards
->> Holger
->>
-> 
-> Hi
-> 
-> I just tried it on an 885 and on an 8323, it work properly on both targets.
-> 
-> You can see below the Debug Option that are active on my 8323 target.
-> 
 
 
-thanks for trying it.
+On Friday 19 August 2016 04:18 PM, Russell King - ARM Linux wrote:
+> On Fri, Aug 19, 2016 at 04:09:51PM +0530, Ravi Bangoria wrote:
+>> Thanks Russell for reviewing.
+>>
+>> On Friday 19 August 2016 01:20 PM, Russell King - ARM Linux wrote:
+>>> On Fri, Aug 19, 2016 at 10:59:01AM +0530, Ravi Bangoria wrote:
+>>>> -static struct ins instructions[] = {
+>>>> +static struct ins instructions_x86[] = {
+>>>>  	{ .name = "add",   .ops  = &mov_ops, },
+>>>>  	{ .name = "addl",  .ops  = &mov_ops, },
+>>>>  	{ .name = "addq",  .ops  = &mov_ops, },
+>>>>  	{ .name = "addw",  .ops  = &mov_ops, },
+>>>>  	{ .name = "and",   .ops  = &mov_ops, },
+>>>> -#ifdef __arm__
+>>>> -	{ .name = "b",     .ops  = &jump_ops, }, // might also be a call
+>>>> -	{ .name = "bcc",   .ops  = &jump_ops, },
+>>>> -	{ .name = "bcs",   .ops  = &jump_ops, },
+>>>> -	{ .name = "beq",   .ops  = &jump_ops, },
+>>>> -	{ .name = "bge",   .ops  = &jump_ops, },
+>>>> -	{ .name = "bgt",   .ops  = &jump_ops, },
+>>>> -	{ .name = "bhi",   .ops  = &jump_ops, },
+>>>> -	{ .name = "bl",    .ops  = &call_ops, },
+>>>> -	{ .name = "bls",   .ops  = &jump_ops, },
+>>>> -	{ .name = "blt",   .ops  = &jump_ops, },
+>>>> -	{ .name = "blx",   .ops  = &call_ops, },
+>>>> -	{ .name = "bne",   .ops  = &jump_ops, },
+>>>> -#endif
+>>> Notice that ARM includes a lot of other instructions from this table,
+>>> not just those above.
+>>>
+>>>>  	{ .name = "bts",   .ops  = &mov_ops, },
+>>>>  	{ .name = "call",  .ops  = &call_ops, },
+>>>>  	{ .name = "callq", .ops  = &call_ops, },
+>>>> @@ -456,6 +444,21 @@ static struct ins instructions[] = {
+>>>>  	{ .name = "retq",  .ops  = &ret_ops, },
+>>>>  };
+>>>>  
+>>>> +static struct ins instructions_arm[] = {
+>>>> +	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
+>>>> +	{ .name = "bcc",   .ops  = &jump_ops, },
+>>>> +	{ .name = "bcs",   .ops  = &jump_ops, },
+>>>> +	{ .name = "beq",   .ops  = &jump_ops, },
+>>>> +	{ .name = "bge",   .ops  = &jump_ops, },
+>>>> +	{ .name = "bgt",   .ops  = &jump_ops, },
+>>>> +	{ .name = "bhi",   .ops  = &jump_ops, },
+>>>> +	{ .name = "bl",    .ops  = &call_ops, },
+>>>> +	{ .name = "bls",   .ops  = &jump_ops, },
+>>>> +	{ .name = "blt",   .ops  = &jump_ops, },
+>>>> +	{ .name = "blx",   .ops  = &call_ops, },
+>>>> +	{ .name = "bne",   .ops  = &jump_ops, },
+>>>> +};
+>>>> +
+>>> ...
+>>>> +	if (!strcmp(norm_arch, NORM_X86)) {
+>>>> +		instructions = instructions_x86;
+>>>> +		nmemb = ARRAY_SIZE(instructions_x86);
+>>>> +	} else if (!strcmp(norm_arch, NORM_ARM)) {
+>>>> +		instructions = instructions_arm;
+>>>> +		nmemb = ARRAY_SIZE(instructions_arm);
+>>> But these changes result in _only_ the ones that were in the #if __arm__
+>>> being matched.  This is wrong.
+>>>
+>>> If we want to go that way, we need to add _all_ arm instructions to
+>>> instructions_arm, not just those within the #if.
+>> Yes, I've mentioned same in cover letter as well.
+>>
+>> Can I add all x86 instructions for arm as well? If not, can you please
+>> provide a list of arm instructions that needs to be added here.
+> If it were me doing a change like this, I'd be trying to preserve the
+> current behaviour to avoid causing regressions, which would mean
+> ensuring that all the instructions that were visible before the change
+> remain visible after the change, even those which are obviously x86
+> specific but were still in the table anyway.  It then becomes a cleanup
+> matter later to remove those which aren't relevent, rather than having
+> to chase around wondering why the tool broke.
+>
+> I'm afraid I don't have time to look at this (I'm chasing regressions
+> and bugs in the kernel) so I'd suggest you try to avoid causing
+> regressions in this tool...
+>
 
-Could you completely disable FTRACE? As it also works on my side when I have
-FTRACE enabled.
+Yes Russell, Fair point. Will send a next series.
 
-Best regards
-Holger
+-Ravi
