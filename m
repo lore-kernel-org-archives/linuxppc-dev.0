@@ -1,18 +1,37 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sFsBy2yXbzDrBG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 15:36:10 +1000 (AEST)
-From: Paul Mackerras <paulus@ozlabs.org>
-To: kvm@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Cc: kvm-ppc@vger.kernel.org
-Subject: [PATCH 13/13] KVM: PPC: Book3S HV: Counters for passthrough IRQ stats
-Date: Fri, 19 Aug 2016 15:35:57 +1000
-Message-Id: <1471584957-21484-14-git-send-email-paulus@ozlabs.org>
-In-Reply-To: <1471584957-21484-1-git-send-email-paulus@ozlabs.org>
-References: <1471584957-21484-1-git-send-email-paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sFsKN4rBTzDrHb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 15:41:44 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7J5d6jE035917
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 01:41:42 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24vrm5mttu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2016 01:41:42 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Thu, 18 Aug 2016 23:41:41 -0600
+Subject: Re: [PATCH v4 0/3] perf annotate: Enable cross arch annotate
+To: acme@kernel.org
+References: <1467952813-5797-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <57860D9E.7000906@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, anton@ozlabs.org, ananth@in.ibm.com,
+ dja@axtens.net, naveen.n.rao@linux.vnet.ibm.com,
+ David.Laight@ACULAB.COM, rmk+kernel@arm.linux.org.uk
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Fri, 19 Aug 2016 11:11:31 +0530
+MIME-Version: 1.0
+In-Reply-To: <57860D9E.7000906@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <57B69C0B.6030703@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,84 +41,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Suresh Warrier <warrier@linux.vnet.ibm.com>
+I've sent v5 series for this. Please review it.
 
-Add VCPU stat counters to track affinity for passthrough
-interrupts.
+Thanks,
+Ravi
 
-pthru_all: Counts all passthrough interrupts whose IRQ mappings are
-           in the kvmppc_passthru_irq_map structure.
-pthru_host: Counts all cached passthrough interrupts that were injected
-	    from the host through kvm_set_irq (i.e. not handled in
-	    real mode).
-pthru_bad_aff: Counts how many cached passthrough interrupts have
-               bad affinity (receiving CPU is not running VCPU that is
-	       the target of the virtual interrupt in the guest).
-
-Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/include/asm/kvm_host.h  |  3 +++
- arch/powerpc/kvm/book3s.c            |  3 +++
- arch/powerpc/kvm/book3s_hv_rm_xics.c | 18 +++++++++++++-----
- 3 files changed, 19 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 3eb5092..f371a23 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -131,6 +131,9 @@ struct kvm_vcpu_stat {
- 	u32 ld_slow;
- 	u32 st_slow;
- #endif
-+	u32 pthru_all;
-+	u32 pthru_host;
-+	u32 pthru_bad_aff;
- };
- 
- enum kvm_exit_types {
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 47018fc..6d0c45b 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -64,6 +64,9 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "ld_slow",     VCPU_STAT(ld_slow) },
- 	{ "st",          VCPU_STAT(st) },
- 	{ "st_slow",     VCPU_STAT(st_slow) },
-+	{ "pthru_all",       VCPU_STAT(pthru_all) },
-+	{ "pthru_host",      VCPU_STAT(pthru_host) },
-+	{ "pthru_bad_aff",   VCPU_STAT(pthru_bad_aff) },
- 	{ NULL }
- };
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-index 5f7527e..82ff5de 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-@@ -716,11 +716,19 @@ int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr)
- 		icp->rm_eoied_irq = irq;
- 	}
- 
--	if (state->host_irq && state->intr_cpu != -1) {
--		int pcpu = cpu_first_thread_sibling(raw_smp_processor_id());
--		if (state->intr_cpu != pcpu)
--			xics_opal_rm_set_server(state->host_irq, pcpu);
--		state->intr_cpu = -1;
-+	if (state->host_irq) {
-+		++vcpu->stat.pthru_all;
-+		if (state->intr_cpu != -1) {
-+			int pcpu = raw_smp_processor_id();
-+
-+			pcpu = cpu_first_thread_sibling(pcpu);
-+			++vcpu->stat.pthru_host;
-+			if (state->intr_cpu != pcpu) {
-+				++vcpu->stat.pthru_bad_aff;
-+				xics_opal_rm_set_server(state->host_irq, pcpu);
-+			}
-+			state->intr_cpu = -1;
-+		}
- 	}
-  bail:
- 	return check_too_hard(xics, icp);
--- 
-2.8.1
+On Wednesday 13 July 2016 03:15 PM, Ravi Bangoria wrote:
+> Arnaldo, Michael,
+>
+> I've tested this patchset on ppc64 BE and LE both. Please review this.
+>
+> -Ravi
+>
+> On Friday 08 July 2016 10:10 AM, Ravi Bangoria wrote:
+>> Perf can currently only support code navigation (branches and calls) in
+>> annotate when run on the same architecture where perf.data was recorded.
+>> But cross arch annotate is not supported.
+>>
+>> This patchset enables cross arch annotate. Currently I've used x86
+>> and arm instructions which are already available and adding support
+>> for powerpc as well. Adding support for other arch will be easy.
+>>
+>> I've created this patch on top of acme/perf/core. And tested it with
+>> x86 and powerpc only.
+>>
+>> Note for arm:
+>> Few instructions were defined under #if __arm__ which I've used as a
+>> table for arm. But I'm not sure whether instruction defined outside of
+>> that also contains arm instructions. Apart from that, 'call__parse()'
+>> and 'move__parse()' contains #ifdef __arm__ directive. I've changed it
+>> to  if (!strcmp(norm_arch, arm)). I don't have a arm machine to test
+>> these changes.
+>>
+>> Example:
+>>
+>>    Record on powerpc:
+>>    $ ./perf record -a
+>>
+>>    Report -> Annotate on x86:
+>>    $ ./perf report -i perf.data.powerpc --vmlinux vmlinux.powerpc
+>>
+>> Changes in v4:
+>>    - powerpc: Added support for branch instructions that includes 'ctr'
+>>    - __maybe_unused was misplaced at few location. Corrected it.
+>>    - Moved position of v3 last patch that define macro for each arch name
+>>
+>> v3 link: https://lkml.org/lkml/2016/6/30/99
+>>
+>> Naveen N. Rao (1):
+>>    perf annotate: add powerpc support
+>>
+>> Ravi Bangoria (2):
+>>    perf: Define macro for normalized arch names
+>>    perf annotate: Enable cross arch annotate
+>>
+>>   tools/perf/arch/common.c           |  36 ++---
+>>   tools/perf/arch/common.h           |  11 ++
+>>   tools/perf/builtin-top.c           |   2 +-
+>>   tools/perf/ui/browsers/annotate.c  |   3 +-
+>>   tools/perf/ui/gtk/annotate.c       |   2 +-
+>>   tools/perf/util/annotate.c         | 273 ++++++++++++++++++++++++++++++-------
+>>   tools/perf/util/annotate.h         |   6 +-
+>>   tools/perf/util/unwind-libunwind.c |   4 +-
+>>   8 files changed, 265 insertions(+), 72 deletions(-)
+>>
+>> -- 
+>> 2.5.5
+>>
+>
