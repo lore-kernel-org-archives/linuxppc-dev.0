@@ -1,24 +1,26 @@
-Return-Path: <kim.phillips@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3sJ8GF0M1LzDr5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:01:56 +1000 (AEST)
-Date: Mon, 22 Aug 2016 18:01:51 -0500
-From: Kim Phillips <kim.phillips@arm.com>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <acme@kernel.org>, <peterz@infradead.org>, <mingo@redhat.com>,
- <alexander.shishkin@linux.intel.com>, <treeze.taeung@gmail.com>,
- <naveen.n.rao@linux.vnet.ibm.com>, <markus@trippelsdorf.de>,
- <chris.ryder@arm.com>, <pawel.moll@arm.com>, <mhiramat@kernel.org>,
- <rmk+kernel@arm.linux.org.uk>, <jolsa@kernel.org>, <mpe@ellerman.id.au>,
- <hemant@linux.vnet.ibm.com>, <namhyung@kernel.org>
-Subject: Re: [PATCH v6 2/7] perf annotate: Add cross arch annotate support
-Message-Id: <20160822180151.241ad87ad1befd72bd46c2ec@arm.com>
-In-Reply-To: <1471611578-11255-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-References: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1471611578-11255-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJ8s42ftFzDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:28:40 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id hh10so8827830pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 16:28:40 -0700 (PDT)
+Message-ID: <1471908513.758.12.camel@gmail.com>
+Subject: Re: [PATCH] powerpc: signals: Discard transaction state from signal
+ frames
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ mpe@ellerman.id.au,  mikey@neuling.org, Laurent Dufour
+ <ldufour@linux.vnet.ibm.com>
+Date: Tue, 23 Aug 2016 09:28:33 +1000
+In-Reply-To: <20160820100307.GA6731@simonLocalRHEL7.x64>
+References: <20160822073206.1342-1-cyrilbur@gmail.com>
+ <20160820100307.GA6731@simonLocalRHEL7.x64>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,148 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 19 Aug 2016 18:29:33 +0530
-Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> wrote:
+On Sat, 2016-08-20 at 18:03 +0800, Simon Guo wrote:
+> Hi Cyril,
+> On Mon, Aug 22, 2016 at 05:32:06PM +1000, Cyril Bur wrote:
+> > 
+> > diff --git a/arch/powerpc/kernel/signal_32.c
+> > b/arch/powerpc/kernel/signal_32.c
+> > index b6aa378..31e4e15 100644
+> > --- a/arch/powerpc/kernel/signal_32.c
+> > +++ b/arch/powerpc/kernel/signal_32.c
+> > @@ -1226,7 +1226,19 @@ long sys_rt_sigreturn(int r3, int r4, int
+> > r5, int r6, int r7, int r8,
+> >  		(regs->gpr[1] + __SIGNAL_FRAMESIZE + 16);
+> >  	if (!access_ok(VERIFY_READ, rt_sf, sizeof(*rt_sf)))
+> >  		goto bad;
+> > +
+> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > +	/*
+> > +	 * If there is a transactional/suspended state then throw
+> > it away.
+> > +	 * The purpose of a sigreturn is to destroy all traces of
+> > the
+> > +	 * signal frame, this includes any transactional state
+> > created
+> > +	 * within in.
+> > +	 * The cause is not important as there will never be a
+> > +	 * recheckpoint so it's not user visible.
+> > +	 */
+> > +	if (MSR_TM_ACTIVE(mfmsr()))
+> > +		tm_reclaim_current(0);
+> > +
+> Maybe a little picky here:
+> Per my understanding, the TRANSACTIONAL state will be failed in
+> system
+> call common entry. The only expected state to prevent here is
+> SUSPEND 
+> state.
 
-> Changes in v6:
->   - Instead of adding only those instructions defined in #ifdef __arm__,
->     add all instructions from default table to arm table.
-..
-> +static struct ins instructions_arm[] = {
->  	{ .name = "add",   .ops  = &mov_ops, },
->  	{ .name = "addl",  .ops  = &mov_ops, },
->  	{ .name = "addq",  .ops  = &mov_ops, },
->  	{ .name = "addw",  .ops  = &mov_ops, },
->  	{ .name = "and",   .ops  = &mov_ops, },
-> -#ifdef __arm__
-> -	{ .name = "b",     .ops  = &jump_ops, }, // might also be a call
-> +	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
->  	{ .name = "bcc",   .ops  = &jump_ops, },
->  	{ .name = "bcs",   .ops  = &jump_ops, },
->  	{ .name = "beq",   .ops  = &jump_ops, },
-> @@ -382,7 +462,6 @@ static struct ins instructions[] = {
->  	{ .name = "blt",   .ops  = &jump_ops, },
->  	{ .name = "blx",   .ops  = &call_ops, },
->  	{ .name = "bne",   .ops  = &jump_ops, },
-> -#endif
->  	{ .name = "bts",   .ops  = &mov_ops, },
->  	{ .name = "call",  .ops  = &call_ops, },
->  	{ .name = "callq", .ops  = &call_ops, },
-> @@ -471,24 +550,48 @@ static int ins__cmp(const void *a, const void *b)
->  	return strcmp(ia->name, ib->name);
->  }
+That is the case yes.
 
-Thanks, I've gone through the list and removed all not-ARM
-instructions, and added some missing ARM branch instructions:
+> Should we use MSR_TM_SUSPENDED(mfmsr()) here and BUG_ON
+> MSR_TM_TRANSACTIONAL(mfmsr())?  -- If it is transactional state,
+> something
+>  is wrong with kernel. 
+> 
 
-diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
-index b2c6cf3..9d686504 100644
---- a/tools/perf/util/annotate.c
-+++ b/tools/perf/util/annotate.c
-@@ -451,9 +451,6 @@ static struct ins instructions_x86[] = {
- 
- static struct ins instructions_arm[] = {
- 	{ .name = "add",   .ops  = &mov_ops, },
--	{ .name = "addl",  .ops  = &mov_ops, },
--	{ .name = "addq",  .ops  = &mov_ops, },
--	{ .name = "addw",  .ops  = &mov_ops, },
- 	{ .name = "and",   .ops  = &mov_ops, },
- 	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
- 	{ .name = "bcc",   .ops  = &jump_ops, },
-@@ -463,81 +460,20 @@ static struct ins instructions_arm[] = {
- 	{ .name = "bgt",   .ops  = &jump_ops, },
- 	{ .name = "bhi",   .ops  = &jump_ops, },
- 	{ .name = "bl",    .ops  = &call_ops, },
-+	{ .name = "ble",   .ops  = &jump_ops, },
-+	{ .name = "bleq",  .ops  = &call_ops, },
-+	{ .name = "blne",  .ops  = &call_ops, },
- 	{ .name = "bls",   .ops  = &jump_ops, },
- 	{ .name = "blt",   .ops  = &jump_ops, },
- 	{ .name = "blx",   .ops  = &call_ops, },
-+	{ .name = "blxne", .ops  = &call_ops, },
-+	{ .name = "bmi",   .ops  = &jump_ops, },
- 	{ .name = "bne",   .ops  = &jump_ops, },
--	{ .name = "bts",   .ops  = &mov_ops, },
--	{ .name = "call",  .ops  = &call_ops, },
--	{ .name = "callq", .ops  = &call_ops, },
-+	{ .name = "bpl",   .ops  = &jump_ops, },
- 	{ .name = "cmp",   .ops  = &mov_ops, },
--	{ .name = "cmpb",  .ops  = &mov_ops, },
--	{ .name = "cmpl",  .ops  = &mov_ops, },
--	{ .name = "cmpq",  .ops  = &mov_ops, },
--	{ .name = "cmpw",  .ops  = &mov_ops, },
--	{ .name = "cmpxch", .ops  = &mov_ops, },
--	{ .name = "dec",   .ops  = &dec_ops, },
--	{ .name = "decl",  .ops  = &dec_ops, },
--	{ .name = "imul",  .ops  = &mov_ops, },
--	{ .name = "inc",   .ops  = &dec_ops, },
--	{ .name = "incl",  .ops  = &dec_ops, },
--	{ .name = "ja",	   .ops  = &jump_ops, },
--	{ .name = "jae",   .ops  = &jump_ops, },
--	{ .name = "jb",	   .ops  = &jump_ops, },
--	{ .name = "jbe",   .ops  = &jump_ops, },
--	{ .name = "jc",	   .ops  = &jump_ops, },
--	{ .name = "jcxz",  .ops  = &jump_ops, },
--	{ .name = "je",	   .ops  = &jump_ops, },
--	{ .name = "jecxz", .ops  = &jump_ops, },
--	{ .name = "jg",	   .ops  = &jump_ops, },
--	{ .name = "jge",   .ops  = &jump_ops, },
--	{ .name = "jl",    .ops  = &jump_ops, },
--	{ .name = "jle",   .ops  = &jump_ops, },
--	{ .name = "jmp",   .ops  = &jump_ops, },
--	{ .name = "jmpq",  .ops  = &jump_ops, },
--	{ .name = "jna",   .ops  = &jump_ops, },
--	{ .name = "jnae",  .ops  = &jump_ops, },
--	{ .name = "jnb",   .ops  = &jump_ops, },
--	{ .name = "jnbe",  .ops  = &jump_ops, },
--	{ .name = "jnc",   .ops  = &jump_ops, },
--	{ .name = "jne",   .ops  = &jump_ops, },
--	{ .name = "jng",   .ops  = &jump_ops, },
--	{ .name = "jnge",  .ops  = &jump_ops, },
--	{ .name = "jnl",   .ops  = &jump_ops, },
--	{ .name = "jnle",  .ops  = &jump_ops, },
--	{ .name = "jno",   .ops  = &jump_ops, },
--	{ .name = "jnp",   .ops  = &jump_ops, },
--	{ .name = "jns",   .ops  = &jump_ops, },
--	{ .name = "jnz",   .ops  = &jump_ops, },
--	{ .name = "jo",	   .ops  = &jump_ops, },
--	{ .name = "jp",	   .ops  = &jump_ops, },
--	{ .name = "jpe",   .ops  = &jump_ops, },
--	{ .name = "jpo",   .ops  = &jump_ops, },
--	{ .name = "jrcxz", .ops  = &jump_ops, },
--	{ .name = "js",	   .ops  = &jump_ops, },
--	{ .name = "jz",	   .ops  = &jump_ops, },
--	{ .name = "lea",   .ops  = &mov_ops, },
--	{ .name = "lock",  .ops  = &lock_ops, },
- 	{ .name = "mov",   .ops  = &mov_ops, },
--	{ .name = "movb",  .ops  = &mov_ops, },
--	{ .name = "movdqa",.ops  = &mov_ops, },
--	{ .name = "movl",  .ops  = &mov_ops, },
--	{ .name = "movq",  .ops  = &mov_ops, },
--	{ .name = "movslq", .ops  = &mov_ops, },
--	{ .name = "movzbl", .ops  = &mov_ops, },
--	{ .name = "movzwl", .ops  = &mov_ops, },
- 	{ .name = "nop",   .ops  = &nop_ops, },
--	{ .name = "nopl",  .ops  = &nop_ops, },
--	{ .name = "nopw",  .ops  = &nop_ops, },
- 	{ .name = "or",    .ops  = &mov_ops, },
--	{ .name = "orl",   .ops  = &mov_ops, },
--	{ .name = "test",  .ops  = &mov_ops, },
--	{ .name = "testb", .ops  = &mov_ops, },
--	{ .name = "testl", .ops  = &mov_ops, },
--	{ .name = "xadd",  .ops  = &mov_ops, },
--	{ .name = "xbeginl", .ops  = &jump_ops, },
--	{ .name = "xbeginq", .ops  = &jump_ops, },
--	{ .name = "retq",  .ops  = &ret_ops, },
- };
- 
- struct instructions_powerpc {
+I'm happy to change it to MSR_TM_SUSPENDED.
 
-Ideally ARM would - like this powerpc implementation - add a
-ins__find_arm() to handle its condition codes, but, for now, is
-it possible to merge this change into this series?  I can post a
-follow-up patch if not.
+We should decide what the result of getting here with TRANSACTIONAL is.
+I see two posibilities:
+1. the reclaim will solve the problem and we can continue, there is
+obviously a bug somewhere else but we think it doesn't affect us here
+and we *hope* it will be contained elsewhere.
+2. We think seeing TRANSACTIONAL here means we have a problem that is
+going to lead to corruption of state such that bad data will propage,
+in which case I think a BUG_ON() is a good idea.
 
-Thanks,
+I'm more in favour of 1, there doesn't seem to be any other way to get
+here but through syscall entry, this kind of bug should probably be
+caught more generally. In that case I would say that checking ACTIVE is
+good since we know that we WILL blow up if ACTIVE and we don't do a
+reclaim.
 
-Kim
+Maybe now that I'm thinking about it, change it to SUSPENDED but no
+BUG_ON(), as I just said, we'll do a Bad Thing anyway, which will
+reveal the problem.
+
+I have to send another version anyway as it doesn't seem to be working
+for 32bit.
+
+> Others looks good to me.
+> 
+> Thanks,
+> - Simon
