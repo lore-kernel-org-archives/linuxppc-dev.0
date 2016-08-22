@@ -1,41 +1,22 @@
-Return-Path: <mukesh02@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sHkwM64BwzDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 17:00:02 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7M6wNCr022256
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 03:00:00 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24xy4wbujs-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 03:00:00 -0400
-Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
- Mon, 22 Aug 2016 12:29:57 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8E01E1258083
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:33:09 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7M6vnbi24707432
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:27:49 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7M6uger000317
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:29:51 +0530
-From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-To: hegdevasant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Cc: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>, stable@vger.kernel.org
-Subject: [PATCH] powerpc/powernv : Drop reference added by kset_find_obj()
-Date: Mon, 22 Aug 2016 12:17:44 +0530
-Message-Id: <1471848464-5735-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sHl5R6LVxzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 17:07:55 +1000 (AEST)
+Message-ID: <1471849675.14506.70.camel@neuling.org>
+Subject: Re: [PATCH] powerpc: signals: Discard transaction state from signal
+ frames
+From: Michael Neuling <mikey@neuling.org>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org
+Cc: mpe@ellerman.id.au, Laurent Dufour <ldufour@linux.vnet.ibm.com>, Simon
+ Guo <wei.guo.simon@gmail.com>
+Date: Mon, 22 Aug 2016 17:07:55 +1000
+In-Reply-To: <20160822051501.24534-1-cyrilbur@gmail.com>
+References: <20160822051501.24534-1-cyrilbur@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,76 +26,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In a situation, where Linux kernel gets notified about duplicate error log
-from OPAL, it is been observed that kernel fails to remove sysfs entries
-(/sys/firmware/opal/elog/0xXXXXXXXX) of such error logs. This is because,
-we currently search the error log/dump kobject in the kset list via
-'kset_find_obj()' routine. Which eventually increment the reference count
-by one, once it founds the kobject. 
+On Mon, 2016-08-22 at 15:15 +1000, Cyril Bur wrote:
+> Userspace can begin and suspend a transaction within the signal
+> handler which means they might enter sys_rt_sigreturn() with the
+> processor in suspended state.
+>=20
+> sys_rt_sigreturn() wants to restore process context (which may have
+> been in a transaction before signal delivery). To do this it must
+> restore TM SPRS. To achieve this, any transaction initiated within the
+> signal frame must be discarded in order to be able to restore TM SPRs
+> as TM SPRs can only be manipulated non-transactionally..
+> >=20
+> > From the PowerPC ISA:
+> =C2=A0 TM Bad Thing Exception [Category: Transactional Memory]
+> =C2=A0=C2=A0=C2=A0An attempt is made to execute a mtspr targeting a TM re=
+gister in
+> =C2=A0=C2=A0=C2=A0other than Non-transactional state.
+>=20
+> Not doing so results in a TM Bad Thing:
+> [12045.221359] Kernel BUG at c000000000050a40 [verbose debug info unavail=
+able]
+> [12045.221470] Unexpected TM Bad Thing exception at c000000000050a40 (msr=
+ 0x201033)
+> [12045.221540] Oops: Unrecoverable exception, sig: 6 [#1]
+> [12045.221586] SMP NR_CPUS=3D2048 NUMA PowerNV
+> [12045.221634] Modules linked in: xt_CHECKSUM iptable_mangle ipt_MASQUERA=
+DE
+> =C2=A0nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_=
+ipv4 nf_defrag_ipv4
+> =C2=A0xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 xt_tcpudp bridg=
+e stp llc ebtable_filter
+> =C2=A0ebtables ip6table_filter ip6_tables iptable_filter ip_tables x_tabl=
+es kvm_hv kvm
+> =C2=A0uio_pdrv_genirq ipmi_powernv uio powernv_rng ipmi_msghandler autofs=
+4 ses enclosure
+> =C2=A0scsi_transport_sas bnx2x ipr mdio libcrc32c
+> [12045.222167] CPU: 68 PID: 6178 Comm: sigreturnpanic Not tainted 4.7.0 #=
+34
+> [12045.222224] task: c0000000fce38600 ti: c0000000fceb4000 task.ti: c0000=
+000fceb4000
+> [12045.222293] NIP: c000000000050a40 LR: c0000000000163bc CTR: 0000000000=
+000000
+> [12045.222361] REGS: c0000000fceb7ac0 TRAP: 0700=C2=A0=C2=A0=C2=A0Not tai=
+nted (4.7.0)
+> [12045.222418] MSR: 9000000300201033  CR: 28444280=C2=A0=C2=A0XER: 200000=
+00
+> [12045.222625] CFAR: c0000000000163b8 SOFTE: 0 PACATMSCRATCH: 90000001428=
+0f033
+> GPR00: 01100000b8000001 c0000000fceb7d40 c00000000139c100 c0000000fce390d=
+0
+> GPR04: 900000034280f033 0000000000000000 0000000000000000 000000000000000=
+0
+> GPR08: 0000000000000000 b000000000001033 0000000000000001 000000000000000=
+0
+> GPR12: 0000000000000000 c000000002926400 0000000000000000 000000000000000=
+0
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 000000000000000=
+0
+> GPR20: 0000000000000000 0000000000000000 0000000000000000 000000000000000=
+0
+> GPR24: 0000000000000000 00003ffff98cadd0 00003ffff98cb470 000000000000000=
+0
+> GPR28: 900000034280f033 c0000000fceb7ea0 0000000000000001 c0000000fce390d=
+0
+> [12045.223535] NIP [c000000000050a40] tm_restore_sprs+0xc/0x1c
+> [12045.223584] LR [c0000000000163bc] tm_recheckpoint+0x5c/0xa0
+> [12045.223630] Call Trace:
+> [12045.223655] [c0000000fceb7d80] [c000000000026e74] sys_rt_sigreturn+0x4=
+94/0x6c0
+> [12045.223738] [c0000000fceb7e30] [c0000000000092e0] system_call+0x38/0x1=
+08
+> [12045.223806] Instruction dump:
+> [12045.223841] 7c800164 4e800020 7c0022a6 f80304a8 7c0222a6 f80304b0 7c01=
+22a6 f80304b8
+> [12045.223955] 4e800020 e80304a8 7c0023a6 e80304b0 <7c0223a6> e80304b8 7c=
+0123a6 4e800020
+> [12045.224074] ---[ end trace cb8002ee240bae76 ]---
+>=20
+> It isn't clear exactly if there is really a use case for userspace
+> returning with a suspended transaction, however, doing so doesn't
+> (on its own) constitute a bad frame. As such, this patch simply
+> discards the transaction state and continues.
 
-So, unless we decrement the reference count by one after it found the kobject,
-we would not be able to release the kobject properly later.
+To clarify which tm context you're talking about can we change this to.
 
-This patch adds the 'kobject_put()' which was missing earlier.
+    ... discards the transactional state of the context calling the sig
+    return and continues.
 
-Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org
----
- arch/powerpc/platforms/powernv/opal-dump.c | 7 ++++++-
- arch/powerpc/platforms/powernv/opal-elog.c | 7 ++++++-
- 2 files changed, 12 insertions(+), 2 deletions(-)
+Also, anyone wanna write a selftest and update
+Documentation/powerpc/transactional_memory.txt?
 
-diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
-index 2ee9643..4c82782 100644
---- a/arch/powerpc/platforms/powernv/opal-dump.c
-+++ b/arch/powerpc/platforms/powernv/opal-dump.c
-@@ -370,6 +370,7 @@ static irqreturn_t process_dump(int irq, void *data)
- 	uint32_t dump_id, dump_size, dump_type;
- 	struct dump_obj *dump;
- 	char name[22];
-+	struct kobject *kobj;
- 
- 	rc = dump_read_info(&dump_id, &dump_size, &dump_type);
- 	if (rc != OPAL_SUCCESS)
-@@ -381,8 +382,12 @@ static irqreturn_t process_dump(int irq, void *data)
- 	 * that gracefully and not create two conflicting
- 	 * entries.
- 	 */
--	if (kset_find_obj(dump_kset, name))
-+	kobj = kset_find_obj(dump_kset, name);
-+	if (kobj) {
-+		/* Drop reference added by kset_find_obj() */
-+		kobject_put(kobj);
- 		return 0;
-+	}
- 
- 	dump = create_dump_obj(dump_id, dump_size, dump_type);
- 	if (!dump)
-diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
-index 37f959b..f2344cb 100644
---- a/arch/powerpc/platforms/powernv/opal-elog.c
-+++ b/arch/powerpc/platforms/powernv/opal-elog.c
-@@ -247,6 +247,7 @@ static irqreturn_t elog_event(int irq, void *data)
- 	uint64_t elog_type;
- 	int rc;
- 	char name[2+16+1];
-+	struct kobject *kobj;
- 
- 	rc = opal_get_elog_size(&id, &size, &type);
- 	if (rc != OPAL_SUCCESS) {
-@@ -269,8 +270,12 @@ static irqreturn_t elog_event(int irq, void *data)
- 	 * that gracefully and not create two conflicting
- 	 * entries.
- 	 */
--	if (kset_find_obj(elog_kset, name))
-+	kobj = kset_find_obj(elog_kset, name);
-+	if (kobj) {
-+		/* Drop reference added by kset_find_obj() */
-+		kobject_put(kobj);
- 		return IRQ_HANDLED;
-+	}
- 
- 	create_elog_obj(log_id, elog_size, elog_type);
- 
--- 
-2.7.4
+Couple of comments below.
+
+
+>=20
+> Reported-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> ---
+> =C2=A0arch/powerpc/kernel/signal_32.c | 13 +++++++++++++
+> =C2=A0arch/powerpc/kernel/signal_64.c | 12 ++++++++++++
+> =C2=A02 files changed, 25 insertions(+)
+>=20
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal=
+_32.c
+> index b6aa378..f892b93 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -1219,6 +1219,19 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int =
+r6, int r7, int r8,
+> =C2=A0	unsigned long tmp;
+> =C2=A0	int tm_restore =3D 0;
+> =C2=A0#endif
+> +
+> +	/*
+> +	=C2=A0* We always send the user to their signal handler non
+> +	=C2=A0* transactionally.=20
+
+This first sentence is not relevant IMHO. Same for 64bit.
+
+> If there is a transactional/suspended state
+> +	=C2=A0* then throw it away. The purpose of a sigreturn is to destroy
+> +	=C2=A0* all traces of the signal frame, this includes any transactional
+> +	=C2=A0* state created within in.
+> +	=C2=A0* The cause is not important as there will never be a
+> +	=C2=A0* recheckpoint so it's not user visible.
+> +	=C2=A0*/
+> +	if (MSR_TM_ACTIVE(mfmsr()))
+> +		tm_reclaim_current(0);
+
+I think this needs to be inside #ifdef CONFIG_PPC_TRANSACTIONAL_MEM. =C2=A0=
+Just
+move it down a bit. =C2=A0Same for 64bit.
+
+> +
+> =C2=A0	/* Always make any pending restarted system calls return -EINTR */
+> =C2=A0	current->restart_block.fn =3D do_no_restart_syscall;
+> =C2=A0
+> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal=
+_64.c
+> index 7e49984..5cbfe03d 100644
+> --- a/arch/powerpc/kernel/signal_64.c
+> +++ b/arch/powerpc/kernel/signal_64.c
+> @@ -667,6 +667,18 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long=
+ r4, unsigned long r5,
+> =C2=A0	unsigned long msr;
+> =C2=A0#endif
+> =C2=A0
+> +	/*
+> +	=C2=A0* We always send the user to their signal handler non
+> +	=C2=A0* transactionally. If there is a transactional/suspended state
+> +	=C2=A0* then throw it away. The purpose of a sigreturn is to destroy
+> +	=C2=A0* all traces of the signal frame, this includes any transactional
+> +	=C2=A0* state created within in.
+> +	=C2=A0* The cause is not important as there will never be a
+> +	=C2=A0* recheckpoint so it's not user visible.
+> +	=C2=A0*/
+> +	if (MSR_TM_ACTIVE(mfmsr()))
+> +		tm_reclaim_current(0);
+> +
+> =C2=A0	/* Always make any pending restarted system calls return -EINTR */
+> =C2=A0	current->restart_block.fn =3D do_no_restart_syscall;
+> =C2=A0
