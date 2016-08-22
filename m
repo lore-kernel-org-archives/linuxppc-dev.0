@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sHYWJ10VPzDr5Q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 09:56:11 +1000 (AEST)
-Message-ID: <1471823733.19495.88.camel@kernel.crashing.org>
-Subject: Re: [PATCH V2 2/5] powerpc/mm: Add radix flush all with IS=3
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 22 Aug 2016 09:55:33 +1000
-In-Reply-To: <1471596759-3396-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1471596759-3396-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1471596759-3396-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sHZyL5yMJzDr5Q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 11:01:14 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id h186so5257028pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2016 18:01:14 -0700 (PDT)
+Message-ID: <1471827666.758.3.camel@gmail.com>
+Subject: Re: [PATCH] ppc64: allow ptrace to set TM bits
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Simon Guo <wei.guo.simon@gmail.com>, Laurent Dufour
+ <ldufour@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>
+Date: Mon, 22 Aug 2016 11:01:06 +1000
+In-Reply-To: <20160802054351.GA16975@simonLocalRHEL7.x64>
+References: <1469785882-9892-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20160802054351.GA16975@simonLocalRHEL7.x64>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,54 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-08-19 at 14:22 +0530, Aneesh Kumar K.V wrote:
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/tlbflush-radix.h |  1 +
->  arch/powerpc/mm/tlb-radix.c                         | 15
-> +++++++++++++++
->  2 files changed, 16 insertions(+)
+On Tue, 2016-08-02 at 13:43 +0800, Simon Guo wrote:
+> Hi Laurent,
+> On Fri, Jul 29, 2016 at 11:51:22AM +0200, Laurent Dufour wrote:
+> > 
+> >  static int set_user_msr(struct task_struct *task, unsigned long
+> > msr)
+> >  {
+> > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > +	if (!(task->thread.regs->msr & MSR_TM)) {
+> > +		/* If TM is not available, discard TM bits changes
+> > */
+> > +		msr &= ~(MSR_TM | MSR_TS_MASK);
+> > +	}
+> > +#endif
+> 
+> I am not sure whether following is an issue:
+> Per PowerISA, any exception/interrupt will disable MSR[TM] bit 
+> automatically and mark MSR_TS to be suspended when it is 
+> transactional. It is possible that MSR[TM] = 0 and MSR[MSR_TS] != 0
+> (suspended). 
+> 
+> Will set_user_msr() be able to escape from the above?
+>  For example, one user space application encountered 
+> page fault during transaction, its task->thread.regs->msr & MSR_TM ==
+> 0
+> and MSR[MSR_TS] == suspended.  Then it is being traced and 
+> set_user_msr() is invoked on it. I think it will be incorrect to 
+> clear its  MSR_TS_MASK bits.....
+> 
+> (suspended).ible that MSRTM] = 0 and MSR[MSR_TS] != 0> (suspended).
 
-Don't we need two ? One for partition scoped and one for process scoped
-?
+> Please correct me if I am wrong.
 
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> index 65037762b120..a9e19cb2f7c5 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> @@ -41,4 +41,5 @@ extern void radix__flush_tlb_page_psize(struct
-> mm_struct *mm, unsigned long vmad
->  extern void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned
-> long gpa,
->  				     unsigned long page_size);
->  extern void radix__flush_tlb_lpid(unsigned long lpid);
-> +extern void radix__flush_tlb_all(void);
->  #endif
-> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-
-> radix.c
-> index 48df05ef5231..517feb47ebe4 100644
-> --- a/arch/powerpc/mm/tlb-radix.c
-> +++ b/arch/powerpc/mm/tlb-radix.c
-> @@ -400,3 +400,18 @@ void radix__flush_pmd_tlb_range(struct
-> vm_area_struct *vma,
->  	radix__flush_tlb_range_psize(vma->vm_mm, start, end,
-> MMU_PAGE_2M);
->  }
->  EXPORT_SYMBOL(radix__flush_pmd_tlb_range);
-> +
-> +void radix__flush_tlb_all(void)
-> +{
-> +	unsigned long rb,prs,r;
-> +	unsigned long ric = RIC_FLUSH_ALL;
-> +
-> +	rb = 0x3 << PPC_BITLSHIFT(53); /* IS = 3 */
-> +	prs = 0; /* partition scoped */
-> +	r = 1;   /* raidx format */
-> +
-> +	asm volatile("ptesync": : :"memory");
-> +	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-> +		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(0)
-> : "memory");
-> +	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-> +}
+I'm not very familiar with ptracing and exactly what can happen but I
+agree with Simon. Trying to change an MSR with that possible condition
+stated ("It is possible that MSR[TM] = 0 and MSR[MSR_TS] !=
+0> (suspended)") to MSR_TS and MSR_TS_MASK bits all 0 will cause a Bad
+Thing.
+
+Cyril
+
+> 
+> Thanks,
+> - Simon
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
