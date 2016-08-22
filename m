@@ -1,62 +1,23 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJ7MM4kTNzDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 08:21:19 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7MMJJV1121129
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 18:21:17 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24ybqv3ax8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 18:21:16 -0400
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 22 Aug 2016 19:21:14 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id CC45E1DC0071
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 18:21:02 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7MMLCSF4845760
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:21:12 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7MMLA8I028227
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:21:11 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: kexec@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Balbir Singh <bsingharora@gmail.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-ima-devel@lists.sourceforge.net,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
- Petko Manolov <petkan@mip-labs.com>, Thomas Gleixner <tglx@linutronix.de>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- David Laight <David.Laight@aculab.com>,
- Eric Biederman <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/6] powerpc: kexec_file: Add buffer hand-over support
- for the next kernel
-Date: Mon, 22 Aug 2016 19:21:09 -0300
-In-Reply-To: <20160822072200.GA32673@dhcp-128-65.nay.redhat.com>
-References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <5233171.lLzbU6ABRT@hactar>
- <20160822072200.GA32673@dhcp-128-65.nay.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1796099.kfo9Nk8t61@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJ8YD55znzDrK1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:14:56 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id h186so7077641pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 16:14:56 -0700 (PDT)
+Message-ID: <1471907688.758.1.camel@gmail.com>
+Subject: Re: [PATCH] selftest/powerpc: Add test for sigreturn in transaction
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Cc: wei.guo.simon@gmail.com
+Date: Tue, 23 Aug 2016 09:14:48 +1000
+In-Reply-To: <1471884782-20403-1-git-send-email-ldufour@linux.vnet.ibm.com>
+References: <1471884782-20403-1-git-send-email-ldufour@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -66,93 +27,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Montag, 22 August 2016, 15:22:00 schrieb Dave Young:
-> On 08/22/16 at 12:38am, Thiago Jung Bauermann wrote:
-> > Am Montag, 22 August 2016, 11:21:35 schrieb Dave Young:
-> > > On 08/13/16 at 12:18am, Thiago Jung Bauermann wrote:
-> > > > diff --git a/arch/powerpc/kernel/machine_kexec_64.c
-> > > > b/arch/powerpc/kernel/machine_kexec_64.c index
-> > > > a484a6346146..190c652e49b7 100644
-> > > > --- a/arch/powerpc/kernel/machine_kexec_64.c
-> > > > +++ b/arch/powerpc/kernel/machine_kexec_64.c
-> > > > @@ -490,6 +490,60 @@ int arch_kimage_file_post_load_cleanup(struct
-> > > > kimage *image)>
-> > > > 
-> > > >  	return image->fops->cleanup(image->image_loader_data);
-> > > >  
-> > > >  }
-> > > > 
-> > > > +bool kexec_can_hand_over_buffer(void)
-> > > > +{
-> > > > +	return true;
-> > > > +}
-> > > > +
-> > > > +int arch_kexec_add_handover_buffer(struct kimage *image,
-> > > > +				   unsigned long load_addr, unsigned 
-long
-> > 
-> > size)
-> > 
-> > > > +{
-> > > > +	image->arch.handover_buffer_addr = load_addr;
-> > > > +	image->arch.handover_buffer_size = size;
-> > > > +
-> > > > +	return 0;
-> > > > +}
-> > > > +
-> > > > +int kexec_get_handover_buffer(void **addr, unsigned long *size)
-> > > > +{
-> > > > +	int ret;
-> > > > +	u64 start_addr, end_addr;
-> > > > +
-> > > > +	ret = of_property_read_u64(of_chosen,
-> > > > +				   "linux,kexec-handover-buffer-
-start",
-> > > > +				   &start_addr);
-> > > > +	if (ret == -EINVAL)
-> > > > +		return -ENOENT;
-> > > > +	else if (ret)
-> > > > +		return -EINVAL;
-> > > > +
-> > > > +	ret = of_property_read_u64(of_chosen,
-> > > > "linux,kexec-handover-buffer-end", +
-> > 
-> > &end_addr);
-> > 
-> > > > +	if (ret == -EINVAL)
-> > > > +		return -ENOENT;
-> > > > +	else if (ret)
-> > > > +		return -EINVAL;
-> > > > +
-> > > > +	*addr =  __va(start_addr);
-> > > > +	/* -end is the first address after the buffer. */
-> > > > +	*size = end_addr - start_addr;
-> > > > +
-> > > > +	return 0;
-> > > > +}
-> > > 
-> > > This depends on dtb, so if IMA want to extend it to arches like x86 in
-> > > the future you will have to think about other way to pass it.
-> > > 
-> > > How about think about a general way now?
-> > 
-> > The only general way I can think of is by adding a kernel command line
-> > parameter which the first kernel would pass to the second kernel, but
-> > IMHO that is ugly, because such parameter wouldn't be useful to a user,
-> > and it would also be something that, from the perspective of the user,
-> > would magically appear in the kernel command line of the second
-> > kernel...
-> Sorry I just brought up the question, actually I have no idea either.
-> Maybe we have to do this with arch specific ways..
+On Mon, 2016-08-22 at 18:53 +0200, Laurent Dufour wrote:
+> Ensure that kernel is throwing away the suspended transaction when
+> sigreturn() is called otherwise it if fails to restore the signal
+> frame's TM SPRS.
+> 
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 
-Actually, I don't think it's possible to avoid arch-specific code because 
-the first kernel has to put the buffer memory region in a reserved memory 
-map, and that is arch-specific.
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
 
-On powerpc, this is done by adding it to the device tree memory reservation 
-map. On x86, I believe this would be done added to the e820 map.
-
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> ---
+>  tools/testing/selftests/powerpc/tm/Makefile       |  2 +-
+>  tools/testing/selftests/powerpc/tm/tm-sigreturn.c | 89
+> +++++++++++++++++++++++
+>  2 files changed, 90 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/tm/tm-sigreturn.c
+> 
+> diff --git a/tools/testing/selftests/powerpc/tm/Makefile
+> b/tools/testing/selftests/powerpc/tm/Makefile
+> index 9d301d785d9e..5e0396d79c8a 100644
+> --- a/tools/testing/selftests/powerpc/tm/Makefile
+> +++ b/tools/testing/selftests/powerpc/tm/Makefile
+> @@ -1,5 +1,5 @@
+>  TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-
+> signal-stack \
+> -	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
+> +	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed tm-
+> sigreturn
+>  
+>  all: $(TEST_PROGS)
+>  
+> diff --git a/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
+> b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
+> new file mode 100644
+> index 000000000000..43fa83de23a5
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
+> @@ -0,0 +1,89 @@
+> +/*
+> + * Copyright 2015, Laurent Dufour, IBM Corp.
+> + * Licensed under GPLv2.
+> + *
+> + * Test the kernel's signal returning code to check reclaim is done
+> if
+> + * the sigreturn() is called while in a transaction (suspended since
+> active
+> + * is already dropped trough the system call path).
+> + *
+> + * The kernel must discard the transaction when entering sigreturn,
+> + * since restoring the potential TM SPRS from the signal frame is
+> requiring to
+> + * not be in a transaction.
+> + */
+> +
+> +#include <unistd.h>
+> +#include <sys/types.h>
+> +#include <sys/wait.h>
+> +#include <stdlib.h>
+> +#include <stdio.h>
+> +#include <signal.h>
+> +#include <string.h>
+> +
+> +#include "utils.h"
+> +#include "tm.h"
+> +
+> +
+> +void handler(int sig)
+> +{
+> +	uint64_t ret;
+> +
+> +	asm __volatile__(
+> +		"li             3,1             ;"
+> +		"tbegin.                        ;"
+> +		"beq            1f              ;"
+> +		"li             3,0             ;"
+> +		"tsuspend.                      ;"
+> +		"1:                             ;"
+> +		"std%X[ret]     3, %[ret]       ;"
+> +		: [ret]"=m"(ret)
+> +		:
+> +		: "memory", "3", "cr0");
+> +
+> +	if (ret)
+> +		exit(1);
+> +
+> +	/*
+> +	 * We return from the signal handle while in a suspended
+> transaction
+> +	 */
+> +}
+> +
+> +
+> +int tm_sigreturn(void)
+> +{
+> +	struct sigaction sa;
+> +	uint64_t ret = 0;
+> +
+> +	memset(&sa, 0, sizeof(sa));
+> +	sa.sa_handler = handler;
+> +	sigemptyset(&sa.sa_mask);
+> +
+> +	if (sigaction(SIGSEGV, &sa, NULL))
+> +		exit(1);
+> +
+> +	asm __volatile__(
+> +		"tbegin.                        ;"
+> +		"beq            1f              ;"
+> +		"li             3,0             ;"
+> +		"std            3,0(3)          ;" /* trigger SEGV
+> */
+> +		"li             3,1             ;"
+> +		"std%X[ret]     3,%[ret]        ;"
+> +		"tend.                          ;"
+> +		"b              2f              ;"
+> +		"1:                             ;"
+> +		"li             3,2             ;"
+> +		"std%X[ret]     3,%[ret]        ;"
+> +		"2:                             ;"
+> +		: [ret]"=m"(ret)
+> +		:
+> +		: "memory", "3", "cr0");
+> +
+> +	if (ret != 2)
+> +		exit(1);
+> +
+> +	exit(0);
+> +}
+> +
+> +int main(void)
+> +{
+> +	return test_harness(tm_sigreturn, "tm_sigreturn");
+> +}
