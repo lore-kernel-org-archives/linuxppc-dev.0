@@ -1,23 +1,24 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJ8YD55znzDrK1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:14:56 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id h186so7077641pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 16:14:56 -0700 (PDT)
-Message-ID: <1471907688.758.1.camel@gmail.com>
-Subject: Re: [PATCH] selftest/powerpc: Add test for sigreturn in transaction
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: wei.guo.simon@gmail.com
-Date: Tue, 23 Aug 2016 09:14:48 +1000
-In-Reply-To: <1471884782-20403-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1471884782-20403-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <kim.phillips@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sJ8GF0M1LzDr5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:01:56 +1000 (AEST)
+Date: Mon, 22 Aug 2016 18:01:51 -0500
+From: Kim Phillips <kim.phillips@arm.com>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <acme@kernel.org>, <peterz@infradead.org>, <mingo@redhat.com>,
+ <alexander.shishkin@linux.intel.com>, <treeze.taeung@gmail.com>,
+ <naveen.n.rao@linux.vnet.ibm.com>, <markus@trippelsdorf.de>,
+ <chris.ryder@arm.com>, <pawel.moll@arm.com>, <mhiramat@kernel.org>,
+ <rmk+kernel@arm.linux.org.uk>, <jolsa@kernel.org>, <mpe@ellerman.id.au>,
+ <hemant@linux.vnet.ibm.com>, <namhyung@kernel.org>
+Subject: Re: [PATCH v6 2/7] perf annotate: Add cross arch annotate support
+Message-Id: <20160822180151.241ad87ad1befd72bd46c2ec@arm.com>
+In-Reply-To: <1471611578-11255-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+References: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1471611578-11255-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,134 +28,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-08-22 at 18:53 +0200, Laurent Dufour wrote:
-> Ensure that kernel is throwing away the suspended transaction when
-> sigreturn() is called otherwise it if fails to restore the signal
-> frame's TM SPRS.
-> 
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+On Fri, 19 Aug 2016 18:29:33 +0530
+Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> wrote:
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+> Changes in v6:
+>   - Instead of adding only those instructions defined in #ifdef __arm__,
+>     add all instructions from default table to arm table.
+..
+> +static struct ins instructions_arm[] = {
+>  	{ .name = "add",   .ops  = &mov_ops, },
+>  	{ .name = "addl",  .ops  = &mov_ops, },
+>  	{ .name = "addq",  .ops  = &mov_ops, },
+>  	{ .name = "addw",  .ops  = &mov_ops, },
+>  	{ .name = "and",   .ops  = &mov_ops, },
+> -#ifdef __arm__
+> -	{ .name = "b",     .ops  = &jump_ops, }, // might also be a call
+> +	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
+>  	{ .name = "bcc",   .ops  = &jump_ops, },
+>  	{ .name = "bcs",   .ops  = &jump_ops, },
+>  	{ .name = "beq",   .ops  = &jump_ops, },
+> @@ -382,7 +462,6 @@ static struct ins instructions[] = {
+>  	{ .name = "blt",   .ops  = &jump_ops, },
+>  	{ .name = "blx",   .ops  = &call_ops, },
+>  	{ .name = "bne",   .ops  = &jump_ops, },
+> -#endif
+>  	{ .name = "bts",   .ops  = &mov_ops, },
+>  	{ .name = "call",  .ops  = &call_ops, },
+>  	{ .name = "callq", .ops  = &call_ops, },
+> @@ -471,24 +550,48 @@ static int ins__cmp(const void *a, const void *b)
+>  	return strcmp(ia->name, ib->name);
+>  }
 
-> ---
->  tools/testing/selftests/powerpc/tm/Makefile       |  2 +-
->  tools/testing/selftests/powerpc/tm/tm-sigreturn.c | 89
-> +++++++++++++++++++++++
->  2 files changed, 90 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/tm/tm-sigreturn.c
-> 
-> diff --git a/tools/testing/selftests/powerpc/tm/Makefile
-> b/tools/testing/selftests/powerpc/tm/Makefile
-> index 9d301d785d9e..5e0396d79c8a 100644
-> --- a/tools/testing/selftests/powerpc/tm/Makefile
-> +++ b/tools/testing/selftests/powerpc/tm/Makefile
-> @@ -1,5 +1,5 @@
->  TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-
-> signal-stack \
-> -	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
-> +	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed tm-
-> sigreturn
->  
->  all: $(TEST_PROGS)
->  
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
-> b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
-> new file mode 100644
-> index 000000000000..43fa83de23a5
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
-> @@ -0,0 +1,89 @@
-> +/*
-> + * Copyright 2015, Laurent Dufour, IBM Corp.
-> + * Licensed under GPLv2.
-> + *
-> + * Test the kernel's signal returning code to check reclaim is done
-> if
-> + * the sigreturn() is called while in a transaction (suspended since
-> active
-> + * is already dropped trough the system call path).
-> + *
-> + * The kernel must discard the transaction when entering sigreturn,
-> + * since restoring the potential TM SPRS from the signal frame is
-> requiring to
-> + * not be in a transaction.
-> + */
-> +
-> +#include <unistd.h>
-> +#include <sys/types.h>
-> +#include <sys/wait.h>
-> +#include <stdlib.h>
-> +#include <stdio.h>
-> +#include <signal.h>
-> +#include <string.h>
-> +
-> +#include "utils.h"
-> +#include "tm.h"
-> +
-> +
-> +void handler(int sig)
-> +{
-> +	uint64_t ret;
-> +
-> +	asm __volatile__(
-> +		"li             3,1             ;"
-> +		"tbegin.                        ;"
-> +		"beq            1f              ;"
-> +		"li             3,0             ;"
-> +		"tsuspend.                      ;"
-> +		"1:                             ;"
-> +		"std%X[ret]     3, %[ret]       ;"
-> +		: [ret]"=m"(ret)
-> +		:
-> +		: "memory", "3", "cr0");
-> +
-> +	if (ret)
-> +		exit(1);
-> +
-> +	/*
-> +	 * We return from the signal handle while in a suspended
-> transaction
-> +	 */
-> +}
-> +
-> +
-> +int tm_sigreturn(void)
-> +{
-> +	struct sigaction sa;
-> +	uint64_t ret = 0;
-> +
-> +	memset(&sa, 0, sizeof(sa));
-> +	sa.sa_handler = handler;
-> +	sigemptyset(&sa.sa_mask);
-> +
-> +	if (sigaction(SIGSEGV, &sa, NULL))
-> +		exit(1);
-> +
-> +	asm __volatile__(
-> +		"tbegin.                        ;"
-> +		"beq            1f              ;"
-> +		"li             3,0             ;"
-> +		"std            3,0(3)          ;" /* trigger SEGV
-> */
-> +		"li             3,1             ;"
-> +		"std%X[ret]     3,%[ret]        ;"
-> +		"tend.                          ;"
-> +		"b              2f              ;"
-> +		"1:                             ;"
-> +		"li             3,2             ;"
-> +		"std%X[ret]     3,%[ret]        ;"
-> +		"2:                             ;"
-> +		: [ret]"=m"(ret)
-> +		:
-> +		: "memory", "3", "cr0");
-> +
-> +	if (ret != 2)
-> +		exit(1);
-> +
-> +	exit(0);
-> +}
-> +
-> +int main(void)
-> +{
-> +	return test_harness(tm_sigreturn, "tm_sigreturn");
-> +}
+Thanks, I've gone through the list and removed all not-ARM
+instructions, and added some missing ARM branch instructions:
+
+diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
+index b2c6cf3..9d686504 100644
+--- a/tools/perf/util/annotate.c
++++ b/tools/perf/util/annotate.c
+@@ -451,9 +451,6 @@ static struct ins instructions_x86[] = {
+ 
+ static struct ins instructions_arm[] = {
+ 	{ .name = "add",   .ops  = &mov_ops, },
+-	{ .name = "addl",  .ops  = &mov_ops, },
+-	{ .name = "addq",  .ops  = &mov_ops, },
+-	{ .name = "addw",  .ops  = &mov_ops, },
+ 	{ .name = "and",   .ops  = &mov_ops, },
+ 	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
+ 	{ .name = "bcc",   .ops  = &jump_ops, },
+@@ -463,81 +460,20 @@ static struct ins instructions_arm[] = {
+ 	{ .name = "bgt",   .ops  = &jump_ops, },
+ 	{ .name = "bhi",   .ops  = &jump_ops, },
+ 	{ .name = "bl",    .ops  = &call_ops, },
++	{ .name = "ble",   .ops  = &jump_ops, },
++	{ .name = "bleq",  .ops  = &call_ops, },
++	{ .name = "blne",  .ops  = &call_ops, },
+ 	{ .name = "bls",   .ops  = &jump_ops, },
+ 	{ .name = "blt",   .ops  = &jump_ops, },
+ 	{ .name = "blx",   .ops  = &call_ops, },
++	{ .name = "blxne", .ops  = &call_ops, },
++	{ .name = "bmi",   .ops  = &jump_ops, },
+ 	{ .name = "bne",   .ops  = &jump_ops, },
+-	{ .name = "bts",   .ops  = &mov_ops, },
+-	{ .name = "call",  .ops  = &call_ops, },
+-	{ .name = "callq", .ops  = &call_ops, },
++	{ .name = "bpl",   .ops  = &jump_ops, },
+ 	{ .name = "cmp",   .ops  = &mov_ops, },
+-	{ .name = "cmpb",  .ops  = &mov_ops, },
+-	{ .name = "cmpl",  .ops  = &mov_ops, },
+-	{ .name = "cmpq",  .ops  = &mov_ops, },
+-	{ .name = "cmpw",  .ops  = &mov_ops, },
+-	{ .name = "cmpxch", .ops  = &mov_ops, },
+-	{ .name = "dec",   .ops  = &dec_ops, },
+-	{ .name = "decl",  .ops  = &dec_ops, },
+-	{ .name = "imul",  .ops  = &mov_ops, },
+-	{ .name = "inc",   .ops  = &dec_ops, },
+-	{ .name = "incl",  .ops  = &dec_ops, },
+-	{ .name = "ja",	   .ops  = &jump_ops, },
+-	{ .name = "jae",   .ops  = &jump_ops, },
+-	{ .name = "jb",	   .ops  = &jump_ops, },
+-	{ .name = "jbe",   .ops  = &jump_ops, },
+-	{ .name = "jc",	   .ops  = &jump_ops, },
+-	{ .name = "jcxz",  .ops  = &jump_ops, },
+-	{ .name = "je",	   .ops  = &jump_ops, },
+-	{ .name = "jecxz", .ops  = &jump_ops, },
+-	{ .name = "jg",	   .ops  = &jump_ops, },
+-	{ .name = "jge",   .ops  = &jump_ops, },
+-	{ .name = "jl",    .ops  = &jump_ops, },
+-	{ .name = "jle",   .ops  = &jump_ops, },
+-	{ .name = "jmp",   .ops  = &jump_ops, },
+-	{ .name = "jmpq",  .ops  = &jump_ops, },
+-	{ .name = "jna",   .ops  = &jump_ops, },
+-	{ .name = "jnae",  .ops  = &jump_ops, },
+-	{ .name = "jnb",   .ops  = &jump_ops, },
+-	{ .name = "jnbe",  .ops  = &jump_ops, },
+-	{ .name = "jnc",   .ops  = &jump_ops, },
+-	{ .name = "jne",   .ops  = &jump_ops, },
+-	{ .name = "jng",   .ops  = &jump_ops, },
+-	{ .name = "jnge",  .ops  = &jump_ops, },
+-	{ .name = "jnl",   .ops  = &jump_ops, },
+-	{ .name = "jnle",  .ops  = &jump_ops, },
+-	{ .name = "jno",   .ops  = &jump_ops, },
+-	{ .name = "jnp",   .ops  = &jump_ops, },
+-	{ .name = "jns",   .ops  = &jump_ops, },
+-	{ .name = "jnz",   .ops  = &jump_ops, },
+-	{ .name = "jo",	   .ops  = &jump_ops, },
+-	{ .name = "jp",	   .ops  = &jump_ops, },
+-	{ .name = "jpe",   .ops  = &jump_ops, },
+-	{ .name = "jpo",   .ops  = &jump_ops, },
+-	{ .name = "jrcxz", .ops  = &jump_ops, },
+-	{ .name = "js",	   .ops  = &jump_ops, },
+-	{ .name = "jz",	   .ops  = &jump_ops, },
+-	{ .name = "lea",   .ops  = &mov_ops, },
+-	{ .name = "lock",  .ops  = &lock_ops, },
+ 	{ .name = "mov",   .ops  = &mov_ops, },
+-	{ .name = "movb",  .ops  = &mov_ops, },
+-	{ .name = "movdqa",.ops  = &mov_ops, },
+-	{ .name = "movl",  .ops  = &mov_ops, },
+-	{ .name = "movq",  .ops  = &mov_ops, },
+-	{ .name = "movslq", .ops  = &mov_ops, },
+-	{ .name = "movzbl", .ops  = &mov_ops, },
+-	{ .name = "movzwl", .ops  = &mov_ops, },
+ 	{ .name = "nop",   .ops  = &nop_ops, },
+-	{ .name = "nopl",  .ops  = &nop_ops, },
+-	{ .name = "nopw",  .ops  = &nop_ops, },
+ 	{ .name = "or",    .ops  = &mov_ops, },
+-	{ .name = "orl",   .ops  = &mov_ops, },
+-	{ .name = "test",  .ops  = &mov_ops, },
+-	{ .name = "testb", .ops  = &mov_ops, },
+-	{ .name = "testl", .ops  = &mov_ops, },
+-	{ .name = "xadd",  .ops  = &mov_ops, },
+-	{ .name = "xbeginl", .ops  = &jump_ops, },
+-	{ .name = "xbeginq", .ops  = &jump_ops, },
+-	{ .name = "retq",  .ops  = &ret_ops, },
+ };
+ 
+ struct instructions_powerpc {
+
+Ideally ARM would - like this powerpc implementation - add a
+ins__find_arm() to handle its condition codes, but, for now, is
+it possible to merge this change into this series?  I can post a
+follow-up patch if not.
+
+Thanks,
+
+Kim
