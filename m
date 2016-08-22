@@ -1,26 +1,48 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sHnVS6CvWzDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 18:56:16 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id vy10so7694659pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 01:56:16 -0700 (PDT)
-Date: Mon, 22 Aug 2016 18:56:06 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 1/5] powerpc/64/kexec: NULL check "clear_all" in
- kexec_sequence
-Message-ID: <20160822085606.GC24002@350D>
-Reply-To: bsingharora@gmail.com
-References: <1471596759-3396-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1471596759-3396-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sHns80lFdzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:12:27 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7M94Aoa057678
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 05:12:24 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24y4q68mfh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 05:12:24 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 22 Aug 2016 10:12:23 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7DF081B08061
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 10:13:58 +0100 (BST)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7M9CJBQ65601780
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 09:12:19 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7M9CJRE009092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 03:12:19 -0600
+Subject: Re: TM Bad Thing exception easily raised from userspace
+To: Segher Boessenkool <segher@kernel.crashing.org>
+References: <fb29f778-75c5-088c-fe40-e03d95b901e0@linux.vnet.ibm.com>
+ <20160819202331.GA18558@gate.crashing.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Simon Guo <wei.guo.simon@gmail.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 22 Aug 2016 11:12:17 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1471596759-3396-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <20160819202331.GA18558@gate.crashing.org>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <01a2fdc9-4cf7-a1d9-72bf-c22f7bb7865d@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +52,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 19, 2016 at 02:22:35PM +0530, Aneesh Kumar K.V wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On 19/08/2016 22:23, Segher Boessenkool wrote:
+> Completely off-topic, but...
 > 
-> With Radix, it can be NULL even on !BOOKE these days so replace
-> the ifdef with a NULL check which is cleaner anyway.
+> On Fri, Aug 19, 2016 at 07:21:44PM +0200, Laurent Dufour wrote:
+>>     asm __volatile__(
+>> 	"li		3,1		;"
+>> 	"tbegin.			;"
+>> 	"beq		1f		;"
+>> 	"li		3,0		;"
+>> 	"tsuspend.			;"
+>> 	"1:				;"
+>> 	"std		3, %[ret]	;"
+>> 	: [ret]"=m"(ret)
+>> 	:
+>> 	: "memory", "3");
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/misc_64.S | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+> This asm clobbers CR0, so you should add a "cc" or "cr0" clobber here.
+> When you use "m" you need "%X" as well, i.e.
+> 	std%X[ret] 3,%[ret]
 > 
-> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-> index cb195157b318..7902f4b12d3f 100644
-> --- a/arch/powerpc/kernel/misc_64.S
-> +++ b/arch/powerpc/kernel/misc_64.S
-> @@ -659,7 +659,9 @@ _GLOBAL(kexec_sequence)
->  	li	r6,1
->  	stw	r6,kexec_flag-1b(5)
->  
-> -#ifndef CONFIG_PPC_BOOK3E
-> +	cmpdi	r27,0
-> +	beq	1f
-> +
+> (Nowadays you only need "%U" if you use "m<>", but you still need "%X".
+> Come to think of it, the kernel supports really old GCC, right?  So you
+> need "std%U[ret]%X[ret] 3,%[ret]").
 
-Having a comment inline would help as well. I presume we are not going
-to tear down the page tables for radix
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
- 
-Balbir Singh
+Thanks Segher for these advices, I'll keep them in mind.
