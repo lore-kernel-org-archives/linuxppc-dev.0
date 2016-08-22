@@ -2,19 +2,17 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sHcRc5cJdzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:08:12 +1000 (AEST)
-Message-ID: <1471831692.14506.35.camel@neuling.org>
-Subject: Re: TM Bad Thing exception easily raised from userspace
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sHcTP3rXjzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:09:45 +1000 (AEST)
+Message-ID: <1471831785.14506.36.camel@neuling.org>
+Subject: Re: [PATCH] powerpc/tm: do not use r13 for tabort_syscall
 From: Michael Neuling <mikey@neuling.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Cyril Bur <cyril.bur@au1.ibm.com>, benh <benh@kernel.crashing.org>
-Cc: Simon Guo <wei.guo.simon@gmail.com>
-Date: Mon, 22 Aug 2016 12:08:12 +1000
-In-Reply-To: <fb29f778-75c5-088c-fe40-e03d95b901e0@linux.vnet.ibm.com>
-References: <fb29f778-75c5-088c-fe40-e03d95b901e0@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sam Bobroff <sam.bobroff@au1.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Date: Mon, 22 Aug 2016 12:09:45 +1000
+In-Reply-To: <1469172468-12892-1-git-send-email-npiggin@gmail.com>
+References: <1469172468-12892-1-git-send-email-npiggin@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,104 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-08-19 at 19:21 +0200, Laurent Dufour wrote:
-> Hi,
+On Fri, 2016-07-22 at 17:27 +1000, Nicholas Piggin wrote:
+> tabort_syscall runs with RI=3D1, so a nested recoverable machine
+> check will load the paca into r13 and overwrite what we loaded
+> it with, because exceptions returning to privileged mode do not
+> restore r13.
 >=20
-> While working on the TM support for CRIU, I faced a TM Bad Thing exceptio=
-n.
+> This has survived testing with sc instruction inside transaction
+> (bare sc, not glibc syscall because glibc can tabort before sc).
+> Verified the transaction is failing failing with with
+> TM_CAUSE_SYSCALL.
 >=20
-> Digging further, I found that it is *easy* to raised it from the user
-> space. I attached below a simple program which raise it all the time,
-> like this :
->=20
-> [12045.221359] Kernel BUG at c000000000050a40 [verbose debug info
-> unavailable]
-> [12045.221470] Unexpected TM Bad Thing exception at c000000000050a40
-> (msr 0x201033)
-> [12045.221540] Oops: Unrecoverable exception, sig: 6 [#1]
-> [12045.221586] SMP NR_CPUS=3D2048 NUMA PowerNV
-> [12045.221634] Modules linked in: xt_CHECKSUM iptable_mangle
-> ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat
-> nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT
-> nf_reject_ipv4 xt_tcpudp bridge stp llc ebtable_filter ebtables
-> ip6table_filter ip6_tables iptable_filter ip_tables x_tables kvm_hv kvm
-> uio_pdrv_genirq ipmi_powernv uio powernv_rng ipmi_msghandler autofs4 ses
-> enclosure scsi_transport_sas bnx2x ipr mdio libcrc32c
-> [12045.222167] CPU: 68 PID: 6178 Comm: sigreturnpanic Not tainted 4.7.0 #=
-34
-> [12045.222224] task: c0000000fce38600 ti: c0000000fceb4000 task.ti:
-> c0000000fceb4000
-> [12045.222293] NIP: c000000000050a40 LR: c0000000000163bc CTR:
-> 0000000000000000
-> [12045.222361] REGS: c0000000fceb7ac0 TRAP: 0700=C2=A0=C2=A0=C2=A0Not tai=
-nted=C2=A0=C2=A0(4.7.0)
-> [12045.222418] MSR: 9000000300201033 =C2=A0=C2=A0CR:
-> 28444280=C2=A0=C2=A0XER: 20000000
-> [12045.222625] CFAR: c0000000000163b8 SOFTE: 0
-> PACATMSCRATCH: 900000014280f033
-> GPR00: 01100000b8000001 c0000000fceb7d40 c00000000139c100 c0000000fce390d=
-0
-> GPR04: 900000034280f033 0000000000000000 0000000000000000 000000000000000=
-0
-> GPR08: 0000000000000000 b000000000001033 0000000000000001 000000000000000=
-0
-> GPR12: 0000000000000000 c000000002926400 0000000000000000 000000000000000=
-0
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 000000000000000=
-0
-> GPR20: 0000000000000000 0000000000000000 0000000000000000 000000000000000=
-0
-> GPR24: 0000000000000000 00003ffff98cadd0 00003ffff98cb470 000000000000000=
-0
-> GPR28: 900000034280f033 c0000000fceb7ea0 0000000000000001 c0000000fce390d=
-0
-> [12045.223535] NIP [c000000000050a40] tm_restore_sprs+0xc/0x1c
-> [12045.223584] LR [c0000000000163bc] tm_recheckpoint+0x5c/0xa0
-> [12045.223630] Call Trace:
-> [12045.223655] [c0000000fceb7d80] [c000000000026e74]
-> sys_rt_sigreturn+0x494/0x6c0
-> [12045.223738] [c0000000fceb7e30] [c0000000000092e0] system_call+0x38/0x1=
-08
-> [12045.223806] Instruction dump:
-> [12045.223841] 7c800164 4e800020 7c0022a6 f80304a8 7c0222a6 f80304b0
-> 7c0122a6 f80304b8
-> [12045.223955] 4e800020 e80304a8 7c0023a6 e80304b0 <7c0223a6> e80304b8
-> 7c0123a6 4e800020
-> [12045.224074] ---[ end trace cb8002ee240bae76 ]-
-> --
+> Signed-off-by: Nick Piggin <npiggin@gmail.com>
+> Cc: Michael Neuling <mikey@neuling.org>
 
-Nice find and bug report!
+FWIW
 
-It looks like we are doing a signal return in suspend mode to a
-transaction. This is causing the kernel signal code to write the TEXASR
-register while transactional, which will cause the TM bad thing.
+Acked-by: Michael Neuling <mikey@neuling.org>
 
-We need to fix the signal code (64 and 32 bit) so that it checks the the
-transactional state when the sig return was called and clear out that state
-so we are non transactional again. =C2=A0We don't need to save the state wh=
-en
-the sig return was called.
-
-Talking to benh and cyril offline, we are going to continue with this
-signal return, provided the signal frame is valid. So a sig return will
-work irrespective of the suspend state (active state will not work as the
-syscall won't be executed). We won't cause a bad frame just because the sig
-return was called while suspended.
-
-Mikey
-
+> Cc: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
 >=20
-> The exception is raised when the kernel is restoring the TM SPRS from
-> the signal stack. But this operation is not allowed while in a transactio=
-n.
+> ---
 >=20
-> The sampler test is ending the signal handler with a pending transaction
-> while the signal got caught during a transaction itself.
+> =C2=A0arch/powerpc/kernel/entry_64.S | 20 ++++++++++----------
+> =C2=A01 file changed, 10 insertions(+), 10 deletions(-)
 >=20
-> I can't see any straight way to get rid of that, except by clearing the
-> transactional state in the path of sigreturn....
->=20
-> Please advise.
->=20
-> Cheers,
-> Laurent.
+> diff --git a/arch/powerpc/kernel/entry_64.S
+> b/arch/powerpc/kernel/entry_64.S
+> index 73e461a..387dee3 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -368,13 +368,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+> =C2=A0tabort_syscall:
+> =C2=A0	/* Firstly we need to enable TM in the kernel */
+> =C2=A0	mfmsr	r10
+> -	li	r13, 1
+> -	rldimi	r10, r13, MSR_TM_LG, 63-MSR_TM_LG
+> -	mtmsrd	r10, 0
+> +	li	r9,1
+> +	rldimi	r10,r9,MSR_TM_LG,63-MSR_TM_LG
+> +	mtmsrd	r10,0
+> =C2=A0
+> =C2=A0	/* tabort, this dooms the transaction, nothing else */
+> -	li	r13, (TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
+> -	TABORT(R13)
+> +	li	r9,(TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
+> +	TABORT(R9)
+> =C2=A0
+> =C2=A0	/*
+> =C2=A0	=C2=A0* Return directly to userspace. We have corrupted user regis=
+ter
+> state,
+> @@ -382,11 +382,11 @@ tabort_syscall:
+> =C2=A0	=C2=A0* resume after the tbegin of the aborted transaction with th=
+e
+> =C2=A0	=C2=A0* checkpointed register state.
+> =C2=A0	=C2=A0*/
+> -	li	r13, MSR_RI
+> -	andc	r10, r10, r13
+> -	mtmsrd	r10, 1
+> -	mtspr	SPRN_SRR0, r11
+> -	mtspr	SPRN_SRR1, r12
+> +	li	r9,MSR_RI
+> +	andc	r10,r10,r9
+> +	mtmsrd	r10,1
+> +	mtspr	SPRN_SRR0,r11
+> +	mtspr	SPRN_SRR1,r12
+> =C2=A0
+> =C2=A0	rfid
+> =C2=A0	b	.	/* prevent speculative execution */
