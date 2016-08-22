@@ -1,36 +1,41 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <mukesh02@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sHjrD4pxmzDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 16:11:24 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sHkwM64BwzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 17:00:02 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7M68QFj006955
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 02:11:22 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24y31bw61d-1
+ u7M6wNCr022256
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 03:00:00 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24xy4wbujs-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 02:11:22 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 03:00:00 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 22 Aug 2016 00:11:20 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 2/5] powerpc/mm: Add radix flush all with IS=3
-In-Reply-To: <1471823733.19495.88.camel@kernel.crashing.org>
-References: <1471596759-3396-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1471596759-3396-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1471823733.19495.88.camel@kernel.crashing.org>
-Date: Mon, 22 Aug 2016 11:41:13 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <87shtxib9a.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
+ Mon, 22 Aug 2016 12:29:57 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8E01E1258083
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:33:09 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7M6vnbi24707432
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:27:49 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7M6uger000317
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 12:29:51 +0530
+From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+To: hegdevasant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>, stable@vger.kernel.org
+Subject: [PATCH] powerpc/powernv : Drop reference added by kset_find_obj()
+Date: Mon, 22 Aug 2016 12:17:44 +0530
+Message-Id: <1471848464-5735-1-git-send-email-mukesh02@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,71 +45,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+In a situation, where Linux kernel gets notified about duplicate error log
+from OPAL, it is been observed that kernel fails to remove sysfs entries
+(/sys/firmware/opal/elog/0xXXXXXXXX) of such error logs. This is because,
+we currently search the error log/dump kobject in the kset list via
+'kset_find_obj()' routine. Which eventually increment the reference count
+by one, once it founds the kobject. 
 
-> On Fri, 2016-08-19 at 14:22 +0530, Aneesh Kumar K.V wrote:
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->> =C2=A0arch/powerpc/include/asm/book3s/64/tlbflush-radix.h |=C2=A0=C2=A01=
- +
->> =C2=A0arch/powerpc/mm/tlb-radix.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 15
->> +++++++++++++++
->> =C2=A02 files changed, 16 insertions(+)
->
-> Don't we need two ? One for partition scoped and one for process scoped
-> ?
+So, unless we decrement the reference count by one after it found the kobject,
+we would not be able to release the kobject properly later.
 
+This patch adds the 'kobject_put()' which was missing earlier.
 
-With invalid selector value 3 (IS =3D 3), we will invalidate all entries
-when executed with MSR[HV] =3D 1. I guess that should take out all the
-translation cache, including implementation dependent one ?
+Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/platforms/powernv/opal-dump.c | 7 ++++++-
+ arch/powerpc/platforms/powernv/opal-elog.c | 7 ++++++-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-Also note thar PRS =3D 0. ie, we are partition scoped. ie, we are doing
-invalidate with
-
-PRS =3D0, IS =3D 3 HV =3D 1 RIC =3D 2
-
->
->> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
->> b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
->> index 65037762b120..a9e19cb2f7c5 100644
->> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
->> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
->> @@ -41,4 +41,5 @@ extern void radix__flush_tlb_page_psize(struct
->> mm_struct *mm, unsigned long vmad
->> =C2=A0extern void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned
->> long gpa,
->> =C2=A0				=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned long page_size);
->> =C2=A0extern void radix__flush_tlb_lpid(unsigned long lpid);
->> +extern void radix__flush_tlb_all(void);
->> =C2=A0#endif
->> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-
->> radix.c
->> index 48df05ef5231..517feb47ebe4 100644
->> --- a/arch/powerpc/mm/tlb-radix.c
->> +++ b/arch/powerpc/mm/tlb-radix.c
->> @@ -400,3 +400,18 @@ void radix__flush_pmd_tlb_range(struct
->> vm_area_struct *vma,
->> =C2=A0	radix__flush_tlb_range_psize(vma->vm_mm, start, end,
->> MMU_PAGE_2M);
->> =C2=A0}
->> =C2=A0EXPORT_SYMBOL(radix__flush_pmd_tlb_range);
->> +
->> +void radix__flush_tlb_all(void)
->> +{
->> +	unsigned long rb,prs,r;
->> +	unsigned long ric =3D RIC_FLUSH_ALL;
->> +
->> +	rb =3D 0x3 << PPC_BITLSHIFT(53); /* IS =3D 3 */
->> +	prs =3D 0; /* partition scoped */
->> +	r =3D 1;=C2=A0=C2=A0=C2=A0/* raidx format */
->> +
->> +	asm volatile("ptesync": : :"memory");
->> +	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
->> +		=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0: : "r"(rb), "i"(r), "i"(prs), "i"(ric)=
-, "r"(0)
->> : "memory");
->> +	asm volatile("eieio; tlbsync; ptesync": : :"memory");
->> +}
+diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+index 2ee9643..4c82782 100644
+--- a/arch/powerpc/platforms/powernv/opal-dump.c
++++ b/arch/powerpc/platforms/powernv/opal-dump.c
+@@ -370,6 +370,7 @@ static irqreturn_t process_dump(int irq, void *data)
+ 	uint32_t dump_id, dump_size, dump_type;
+ 	struct dump_obj *dump;
+ 	char name[22];
++	struct kobject *kobj;
+ 
+ 	rc = dump_read_info(&dump_id, &dump_size, &dump_type);
+ 	if (rc != OPAL_SUCCESS)
+@@ -381,8 +382,12 @@ static irqreturn_t process_dump(int irq, void *data)
+ 	 * that gracefully and not create two conflicting
+ 	 * entries.
+ 	 */
+-	if (kset_find_obj(dump_kset, name))
++	kobj = kset_find_obj(dump_kset, name);
++	if (kobj) {
++		/* Drop reference added by kset_find_obj() */
++		kobject_put(kobj);
+ 		return 0;
++	}
+ 
+ 	dump = create_dump_obj(dump_id, dump_size, dump_type);
+ 	if (!dump)
+diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+index 37f959b..f2344cb 100644
+--- a/arch/powerpc/platforms/powernv/opal-elog.c
++++ b/arch/powerpc/platforms/powernv/opal-elog.c
+@@ -247,6 +247,7 @@ static irqreturn_t elog_event(int irq, void *data)
+ 	uint64_t elog_type;
+ 	int rc;
+ 	char name[2+16+1];
++	struct kobject *kobj;
+ 
+ 	rc = opal_get_elog_size(&id, &size, &type);
+ 	if (rc != OPAL_SUCCESS) {
+@@ -269,8 +270,12 @@ static irqreturn_t elog_event(int irq, void *data)
+ 	 * that gracefully and not create two conflicting
+ 	 * entries.
+ 	 */
+-	if (kset_find_obj(elog_kset, name))
++	kobj = kset_find_obj(elog_kset, name);
++	if (kobj) {
++		/* Drop reference added by kset_find_obj() */
++		kobject_put(kobj);
+ 		return IRQ_HANDLED;
++	}
+ 
+ 	create_elog_obj(log_id, elog_size, elog_type);
+ 
+-- 
+2.7.4
