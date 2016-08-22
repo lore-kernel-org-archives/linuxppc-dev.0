@@ -1,30 +1,45 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sHqzY5cFfzDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 20:48:09 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id ez1so7858872pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 03:48:09 -0700 (PDT)
-Date: Mon, 22 Aug 2016 20:47:58 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org, Al
- Viro <viro@zeniv.linux.org.uk>
-Subject: Re: linux-next: build warnings after merge of the kbuild tree
-Message-ID: <20160822204758.5b2cff63@roar.ozlabs.ibm.com>
-In-Reply-To: <20160819204455.6351ffb8@roar.ozlabs.ibm.com>
-References: <20160817114443.67675413@canb.auug.org.au>
- <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
- <20160818110948.52f1322d@roar.ozlabs.ibm.com>
- <20160819133854.17a7b1ca@canb.auug.org.au>
- <20160819150914.36106b5b@canb.auug.org.au>
- <5babe9ef-0e3d-6975-9ba4-9a29a700b24d@suse.cz>
- <20160819204455.6351ffb8@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sHrJX0jwyzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 21:02:51 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7MB0BEf100928
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 07:02:49 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24yauqmwg0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 07:02:49 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Mon, 22 Aug 2016 21:02:47 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6FFEF3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 21:02:43 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7MB2hG332309388
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 21:02:43 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7MB2he2008243
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 21:02:43 +1000
+Subject: Re: [PATCH] powerpc/powernv : Drop reference added by kset_find_obj()
+To: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>, mahesh@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+References: <1471848464-5735-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+Cc: stable@vger.kernel.org
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Mon, 22 Aug 2016 16:32:40 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1471848464-5735-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <57BADBD0.3030405@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,54 +49,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 19 Aug 2016 20:44:55 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> On Fri, 19 Aug 2016 10:37:00 +0200
-> Michal Marek <mmarek@suse.cz> wrote:
-> 
-> > On 2016-08-19 07:09, Stephen Rothwell wrote:  
-
-[snip]
-
-> > > 
-> > > I may be missing something, but genksyms generates the crc's off the
-> > > preprocessed C source code and we don't have any for the asm files ...    
-> > 
-> > Of course you are right. Which means that we are losing type information
-> > for these exports for CONFIG_MODVERSIONS purposes. I guess it's
-> > acceptable, since the asm functions are pretty basic and their
-> > signatures do not change.  
-> 
-> I don't completely agree. It would be nice to have the functionality
-> still there.
-> 
-> What happens if you just run cmd_modversions on the as rule? It relies on
-> !defined(__ASSEMBLY__), but we're feeding the result to genksyms, not as.
-> It would require the header be included in the .S file and be protected for
-> asm builds.
+On 08/22/2016 12:17 PM, Mukesh Ojha wrote:
+> In a situation, where Linux kernel gets notified about duplicate error log
+> from OPAL, it is been observed that kernel fails to remove sysfs entries
+> (/sys/firmware/opal/elog/0xXXXXXXXX) of such error logs. This is because,
+> we currently search the error log/dump kobject in the kset list via
+> 'kset_find_obj()' routine. Which eventually increment the reference count
+> by one, once it founds the kobject.
+>
+> So, unless we decrement the reference count by one after it found the kobject,
+> we would not be able to release the kobject properly later.
+>
+> This patch adds the 'kobject_put()' which was missing earlier.
+>
+> Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
 
 
-This seems like it *could* be made to work, but there's a few problems.
+I've reviewed and tested this patch. Looks good to me.
 
-- .h files are not made for C consumption. Matter of manually adding the
-ifdef guards, which isn't terrible.
+Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 
-- .S files do not all include their .h where the C declaration is. Also
-will cause some churn but doable and maybe not completely unreasonable.
+-Vasant
 
-- genksyms parser barfs when it hits the assembly of the .S file. Best
-way to fix that seems just send the #include and EXPORT_SYMBOL lines
-from the .S to the preprocessor. That's a bit of a rabbit hole too, with
-some .S files being included, etc.
 
-I'm not sure what to do here. If nobody cares and we lose CRCs for .S
-exports, then okay we can whitelist those relocs easily. If we don't want
-to lose the functionality, the above might work but it's a bit intrusive
-an is going to require another cycle of prep patches to go through arch
-code first.
-
-Or suggestions for alternative approach?
-
-Thanks,
-Nick
+> Cc: stable@vger.kernel.org
+> ---
+>   arch/powerpc/platforms/powernv/opal-dump.c | 7 ++++++-
+>   arch/powerpc/platforms/powernv/opal-elog.c | 7 ++++++-
+>   2 files changed, 12 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+> index 2ee9643..4c82782 100644
+> --- a/arch/powerpc/platforms/powernv/opal-dump.c
+> +++ b/arch/powerpc/platforms/powernv/opal-dump.c
+> @@ -370,6 +370,7 @@ static irqreturn_t process_dump(int irq, void *data)
+>   	uint32_t dump_id, dump_size, dump_type;
+>   	struct dump_obj *dump;
+>   	char name[22];
+> +	struct kobject *kobj;
+>
+>   	rc = dump_read_info(&dump_id, &dump_size, &dump_type);
+>   	if (rc != OPAL_SUCCESS)
+> @@ -381,8 +382,12 @@ static irqreturn_t process_dump(int irq, void *data)
+>   	 * that gracefully and not create two conflicting
+>   	 * entries.
+>   	 */
+> -	if (kset_find_obj(dump_kset, name))
+> +	kobj = kset_find_obj(dump_kset, name);
+> +	if (kobj) {
+> +		/* Drop reference added by kset_find_obj() */
+> +		kobject_put(kobj);
+>   		return 0;
+> +	}
+>
+>   	dump = create_dump_obj(dump_id, dump_size, dump_type);
+>   	if (!dump)
+> diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+> index 37f959b..f2344cb 100644
+> --- a/arch/powerpc/platforms/powernv/opal-elog.c
+> +++ b/arch/powerpc/platforms/powernv/opal-elog.c
+> @@ -247,6 +247,7 @@ static irqreturn_t elog_event(int irq, void *data)
+>   	uint64_t elog_type;
+>   	int rc;
+>   	char name[2+16+1];
+> +	struct kobject *kobj;
+>
+>   	rc = opal_get_elog_size(&id, &size, &type);
+>   	if (rc != OPAL_SUCCESS) {
+> @@ -269,8 +270,12 @@ static irqreturn_t elog_event(int irq, void *data)
+>   	 * that gracefully and not create two conflicting
+>   	 * entries.
+>   	 */
+> -	if (kset_find_obj(elog_kset, name))
+> +	kobj = kset_find_obj(elog_kset, name);
+> +	if (kobj) {
+> +		/* Drop reference added by kset_find_obj() */
+> +		kobject_put(kobj);
+>   		return IRQ_HANDLED;
+> +	}
+>
+>   	create_elog_obj(log_id, elog_size, elog_type);
+>
