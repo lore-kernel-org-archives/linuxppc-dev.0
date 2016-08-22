@@ -1,58 +1,24 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sHfc54lS9zDqCZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 13:45:41 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7M3i8wC010216
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2016 23:45:39 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24yauq68cn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2016 23:45:39 -0400
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 22 Aug 2016 00:45:37 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id B64CC352005F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2016 23:45:12 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7M3jXBf17498564
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 00:45:33 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7M3jWk9001732
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 00:45:33 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>, x86@kernel.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-security-module@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- "H. Peter Anvin" <hpa@zytor.com>, linux-ima-devel@lists.sourceforge.net,
- Thomas Gleixner <tglx@linutronix.de>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
- Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v2 3/6] kexec_file: Allow skipping checksum calculation
- for some segments.
-Date: Mon, 22 Aug 2016 00:45:31 -0300
-In-Reply-To: <20160822033643.GA30937@dhcp-128-65.nay.redhat.com>
-References: <1471058305-30198-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <3959832.c4ESAKX1ch@hactar>
- <20160822033643.GA30937@dhcp-128-65.nay.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <2442665.06xGC9PLW9@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sHgLH37sxzDqCZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 14:18:47 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id g202so5543808pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2016 21:18:47 -0700 (PDT)
+Message-ID: <1471839520.18408.0.camel@gmail.com>
+Subject: Re: TM Bad Thing exception easily raised from userspace
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Simon Guo <wei.guo.simon@gmail.com>
+Date: Mon, 22 Aug 2016 14:18:40 +1000
+In-Reply-To: <fb29f778-75c5-088c-fe40-e03d95b901e0@linux.vnet.ibm.com>
+References: <fb29f778-75c5-088c-fe40-e03d95b901e0@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,65 +28,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Montag, 22 August 2016, 11:36:43 schrieb Dave Young:
-> On 08/22/16 at 12:25am, Thiago Jung Bauermann wrote:
-> > Am Montag, 22 August 2016, 11:17:45 schrieb Dave Young:
-> > > On 08/18/16 at 06:09pm, Thiago Jung Bauermann wrote:
-> > > > Hello Dave,
-> > > > 
-> > > > Thanks for your review!
-> > > > 
-> > > > [ Trimming down Cc: list a little to try to clear the "too many
-> > > > recipients">
-> > > > 
-> > > >   mailing list restriction. ]
-> > > 
-> > > I also got "too many recipients".. Thanks for the trimming.
-> > 
-> > Didn't work though. What is the maximum number of recipients?
+On Fri, 2016-08-19 at 19:21 +0200, Laurent Dufour wrote:
+> Hi,
 > 
-> I have no idea as well..
+> While working on the TM support for CRIU, I faced a TM Bad Thing
+> exception.
 > 
-> > > > Am Donnerstag, 18 August 2016, 17:03:30 schrieb Dave Young:
-> > > > > On 08/13/16 at 12:18am, Thiago Jung Bauermann wrote:
-> > > > > > Adds checksum argument to kexec_add_buffer specifying whether
-> > > > > > the
-> > > > > > given
-> > > > > > segment should be part of the checksum calculation.
-> > > > > 
-> > > > > Since it is used with add buffer, could it be added to kbuf as a
-> > > > > new
-> > > > > field?
-> > > > 
-> > > > I was on the fence about adding it as a new argument to
-> > > > kexec_add_buffer
-> > > > or as a new field to struct kexec_buf. Both alternatives make sense
-> > > > to
-> > > > me. I implemented your suggestion in the patch below, what do you
-> > > > think?>
-> > > > 
-> > > > > Like kbuf.no_checksum, default value is 0 that means checksum is
-> > > > > needed
-> > > > > if it is 1 then no need a checksum.
-> > > > 
-> > > > It's an interesting idea and I implemented it that way, though in
-> > > > practice all current users of struct kexec_buf put it on the stack
-> > > > so
-> > > > the field needs to be initialized explicitly.
-> > > 
-> > > No need to set it as false because it will be initialized to 0 by
-> > > default?
-> > 
-> > As far as I know, variables on the stack are not initialized. Only
-> > global
-> > and static variables are.
+> Digging further, I found that it is *easy* to raised it from the user
+> space. I attached below a simple program which raise it all the time,
+> like this :
 > 
-> But designated initializers will do it.
+> [12045.221359] Kernel BUG at c000000000050a40 [verbose debug info
+> unavailable]
+> [12045.221470] Unexpected TM Bad Thing exception at c000000000050a40
+> (msr 0x201033)
+> [12045.221540] Oops: Unrecoverable exception, sig: 6 [#1]
+> [12045.221586] SMP NR_CPUS=2048 NUMA PowerNV
+> [12045.221634] Modules linked in: xt_CHECKSUM iptable_mangle
+> ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat
+> nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack ipt_REJECT
+> nf_reject_ipv4 xt_tcpudp bridge stp llc ebtable_filter ebtables
+> ip6table_filter ip6_tables iptable_filter ip_tables x_tables kvm_hv
+> kvm
+> uio_pdrv_genirq ipmi_powernv uio powernv_rng ipmi_msghandler autofs4
+> ses
+> enclosure scsi_transport_sas bnx2x ipr mdio libcrc32c
+> [12045.222167] CPU: 68 PID: 6178 Comm: sigreturnpanic Not tainted
+> 4.7.0 #34
+> [12045.222224] task: c0000000fce38600 ti: c0000000fceb4000 task.ti:
+> c0000000fceb4000
+> [12045.222293] NIP: c000000000050a40 LR: c0000000000163bc CTR:
+> 0000000000000000
+> [12045.222361] REGS: c0000000fceb7ac0 TRAP: 0700   Not
+> tainted  (4.7.0)
+> [12045.222418] MSR: 9000000300201033
+> <SF,HV,ME,IR,DR,RI,LE,TM[SE]>  CR:
+> 28444280  XER: 20000000
+> [12045.222625] CFAR: c0000000000163b8 SOFTE: 0
+> PACATMSCRATCH: 900000014280f033
+> GPR00: 01100000b8000001 c0000000fceb7d40 c00000000139c100
+> c0000000fce390d0
+> GPR04: 900000034280f033 0000000000000000 0000000000000000
+> 0000000000000000
+> GPR08: 0000000000000000 b000000000001033 0000000000000001
+> 0000000000000000
+> GPR12: 0000000000000000 c000000002926400 0000000000000000
+> 0000000000000000
+> GPR16: 0000000000000000 0000000000000000 0000000000000000
+> 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 0000000000000000
+> 0000000000000000
+> GPR24: 0000000000000000 00003ffff98cadd0 00003ffff98cb470
+> 0000000000000000
+> GPR28: 900000034280f033 c0000000fceb7ea0 0000000000000001
+> c0000000fce390d0
+> [12045.223535] NIP [c000000000050a40] tm_restore_sprs+0xc/0x1c
+> [12045.223584] LR [c0000000000163bc] tm_recheckpoint+0x5c/0xa0
+> [12045.223630] Call Trace:
+> [12045.223655] [c0000000fceb7d80] [c000000000026e74]
+> sys_rt_sigreturn+0x494/0x6c0
+> [12045.223738] [c0000000fceb7e30] [c0000000000092e0]
+> system_call+0x38/0x108
+> [12045.223806] Instruction dump:
+> [12045.223841] 7c800164 4e800020 7c0022a6 f80304a8 7c0222a6 f80304b0
+> 7c0122a6 f80304b8
+> [12045.223955] 4e800020 e80304a8 7c0023a6 e80304b0 <7c0223a6>
+> e80304b8
+> 7c0123a6 4e800020
+> [12045.224074] ---[ end trace cb8002ee240bae76 ]---
+> 
+> The exception is raised when the kernel is restoring the TM SPRS from
+> the signal stack. But this operation is not allowed while in a
+> transaction.
+> 
+> The sampler test is ending the signal handler with a pending
+> transaction
+> while the signal got caught during a transaction itself.
+> 
+> I can't see any straight way to get rid of that, except by clearing
+> the
+> transactional state in the path of sigreturn....
+> 
 
-Ah, you are right! I'll provide an updated patch then. Thanks for your 
-suggestion.
+This is correct - I have a patch.
 
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> Please advise.
+> 
+
+I'm happy to do it if you don't have time (I pretty much already have
+for my testing), do you want to send your test case in as a
+selftest/powerpc? It is good to have these to guard against regressions
+as these kinds of pathes aren't often exercised.
+
+> Cheers,
+> Laurent.
