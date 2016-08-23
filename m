@@ -1,21 +1,54 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJDdC1xyNzDrcG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 12:18:39 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id cf3so8972779pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:18:39 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH] powerpc/ptrace: Fix cppcheck issue in
- gpr32_set_common/gpr32_get_common.
-Date: Sat, 20 Aug 2016 20:24:23 +0800
-Message-Id: <1471695863-8660-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJFZZ4FRvzDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 13:01:26 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7N2wR7a073691
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 23:01:24 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24y8310xak-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 23:01:24 -0400
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Tue, 23 Aug 2016 00:01:21 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 3D9E7352006C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 23:00:58 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7N31Jx933751442
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 00:01:19 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7N31I4D008287
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 00:01:19 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: kexec@lists.infradead.org, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Eric Biederman <ebiederm@xmission.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Dave Young <dyoung@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH v5 04/13] powerpc: Factor out relocation code from
+ module_64.c to elf_util_64.c.
+Date: Tue, 23 Aug 2016 00:01:15 -0300
+In-Reply-To: <3ca4a2de-0d44-dbc6-b57b-c149d10b048f@gmail.com>
+References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <4126991.2tm6WB17SD@hactar> <3ca4a2de-0d44-dbc6-b57b-c149d10b048f@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <4586138.sszncvQpYx@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,124 +58,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+Am Dienstag, 16 August 2016, 16:52:54 schrieb Balbir Singh:
+> On 16/08/16 09:25, Thiago Jung Bauermann wrote:
+> > Am Montag, 15 August 2016, 17:46:34 schrieb Balbir Singh:
+> >> On Thu, Aug 11, 2016 at 08:08:09PM -0300, Thiago Jung Bauermann wrote:
+> >>> +/**
+> >>> + * elf64_apply_relocate_add - apply 64 bit RELA relocations
+> >>> + * @elf_info:		Support information for the ELF binary being
+> > 
+> > relocated.
+> > 
+> >>> + * @strtab:		String table for the associated symbol
+> > 
+> > table.
+> > 
+> >>> + * @symindex:		Section header index for the associated
+> > 
+> > symbol table.
+> > 
+> >>> + * @relsec:		Section header index for the relocations to
+> > 
+> > apply.
+> > 
+> >>> + * @obj_name:		The name of the ELF binary, for information
+> > 
+> > messages.
+> > 
+> >>> + */
+> >>> +int elf64_apply_relocate_add(const struct elf_info *elf_info,
+> >>> +			     const char *strtab, unsigned int symindex,
+> >>> +			     unsigned int relsec, const char *obj_name)
+> >>> +{
+> >>> +	unsigned int i;
+> >>> +	Elf64_Shdr *sechdrs = elf_info->sechdrs;
+> >>> +	Elf64_Rela *rela = (void *)sechdrs[relsec].sh_addr;
+> >>> +	Elf64_Sym *sym;
+> >>> +	unsigned long *location;
+> >>> +	unsigned long value;
+> >>> +
+> >> 
+> >> For the relocatable kernel we expect only
+> >> 
+> >> R_PPC64_RELATIVE
+> >> R_PPC64_NONE
+> >> R_PPC64_ADDR64
+> >> 
+> >> In the future we can use this to check/assert the usage of this
+> >> for the core kernel (vmlinux) when loaded.
+> >> 
+> >> Did we check elf64_apply_relocate_add with zImage and vmlinux?
+> > 
+> > kexec_file_load doesn't call call elf64_apply_relocate_add on the kernel
+> > image, it only uses it to relocate the purgatory. So whether it is
+> > loading a zImage or a vmlinux file, the function will work in the same
+> > way since the purgatory binary is the same regardless of the kernel
+> > image format.
+> Thanks for clarifying.
+> 
+> > For the same reason, as it currently stands kexec_file_load can't check
+> > the relocation types used in the kernel image. But it is possible to
+> > add such a check/assertion in kexec_elf_64.c:build_elf_exec_info if we
+> > want.
+> > 
+> > I tested kexec_file_load on both relocatable and non-relocatable vmlinux
+> > and it works correctly.
+> > 
+> > I hadn't tested with zImage yet. I just did, and I had two problems:
+> > 
+> > 1. For some reason, it has an INTERP segment. This patch series doesn't
+> > support loading program interpreters for ELF binaries, so
+> > kexec_elf_64.c:build_elf_exec_info refuses to load them.
+> > 
+> > 2. If I disable the check for the INTERP segment, the zImage file loads
+> > correctly, but then I get an exception during reboot when loading the
+> > kexec image, right before jumping into the purgatory. I suspect this is
+> > because the LOAD segment has a virtual address of 0, and the first
+> > kernel is not coping well with that. But I still have to debug it
+> > further.
+> > 
+> > Is there a reason for the zImage ELF header to request an interpreter
+> > and to have a virtual address of 0?
+> 
+> Not that I am aware of.
 
-The ckpt_regs usage in gpr32_set_common/gpr32_get_common()
-will lead to cppcheck error.
+zImage on ppc64 BE is an ELF32 file. This patch set only supports loading 
+ELF files of the same class as the kernel, so a 64 bit kernel can't load an 
+ELF32 file. It would be possible to add such support, but it would be a new 
+feature.
 
-[arch/powerpc/kernel/ptrace.c:2062]: (error) Uninitialized variable: ckpt_regs
-[arch/powerpc/kernel/ptrace.c:2130]: (error) Uninitialized variable: ckpt_regs
+The distros I was able to check on ppc64 LE and BE all use vmlinux.
+kexec-tools with kexec_load also doesn't support zImage. Do you think it is 
+important to support zImage?
 
-A straightforward fix to clean it.
-
-Reported-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- arch/powerpc/kernel/ptrace.c | 33 ++++++++++++++++++++++++---------
- 1 file changed, 24 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 4f3c575..ae02377 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -2046,21 +2046,23 @@ static const struct user_regset_view user_ppc_native_view = {
- static int gpr32_get_common(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     unsigned int pos, unsigned int count,
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 			    void *kbuf, void __user *ubuf, bool tm_active)
-+#else
-+			    void *kbuf, void __user *ubuf)
-+#endif
- {
- 	const unsigned long *regs = &target->thread.regs->gpr[0];
--	const unsigned long *ckpt_regs;
- 	compat_ulong_t *k = kbuf;
- 	compat_ulong_t __user *u = ubuf;
- 	compat_ulong_t reg;
- 	int i;
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
--#endif
- 	if (tm_active) {
--		regs = ckpt_regs;
-+		regs = &target->thread.ckpt_regs.gpr[0];
- 	} else {
-+#endif
- 		if (target->thread.regs == NULL)
- 			return -EIO;
- 
-@@ -2072,7 +2074,9 @@ static int gpr32_get_common(struct task_struct *target,
- 			for (i = 14; i < 32; i++)
- 				target->thread.regs->gpr[i] = NV_REG_POISON;
- 		}
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	}
-+#endif
- 
- 	pos /= sizeof(reg);
- 	count /= sizeof(reg);
-@@ -2114,28 +2118,31 @@ static int gpr32_get_common(struct task_struct *target,
- static int gpr32_set_common(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     unsigned int pos, unsigned int count,
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 		     const void *kbuf, const void __user *ubuf, bool tm_active)
-+#else
-+		     const void *kbuf, const void __user *ubuf)
-+#endif
- {
- 	unsigned long *regs = &target->thread.regs->gpr[0];
--	unsigned long *ckpt_regs;
- 	const compat_ulong_t *k = kbuf;
- 	const compat_ulong_t __user *u = ubuf;
- 	compat_ulong_t reg;
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
--#endif
--
- 	if (tm_active) {
--		regs = ckpt_regs;
-+		regs = &target->thread.ckpt_regs.gpr[0];
- 	} else {
-+#endif
- 		regs = &target->thread.regs->gpr[0];
- 
- 		if (target->thread.regs == NULL)
- 			return -EIO;
- 
- 		CHECK_FULL_REGS(target->thread.regs);
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	}
-+#endif
- 
- 	pos /= sizeof(reg);
- 	count /= sizeof(reg);
-@@ -2218,7 +2225,11 @@ static int gpr32_get(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     void *kbuf, void __user *ubuf)
- {
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 0);
-+#else
-+	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf);
-+#endif
- }
- 
- static int gpr32_set(struct task_struct *target,
-@@ -2226,7 +2237,11 @@ static int gpr32_set(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     const void *kbuf, const void __user *ubuf)
- {
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 0);
-+#else
-+	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf);
-+#endif
- }
- 
- /*
 -- 
-1.8.3.1
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
