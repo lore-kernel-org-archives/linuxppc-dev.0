@@ -1,37 +1,32 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJPzh0Y4jzDrK7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 19:20:09 +1000 (AEST)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 8F1A8440DAD_7BC1544B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:20:04 +0000 (GMT)
-Received: from mail-qk0-f169.google.com (mail-qk0-f169.google.com
- [209.85.220.169])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- F2D1943E090_7BC1542F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:20:02 +0000 (GMT)
-Received: by mail-qk0-f169.google.com with SMTP id t7so101019040qkh.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 02:20:02 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <ed8c66dd-c567-35df-4a51-6bb3434fdc2b@c-s.fr>
-References: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
- <1468965129.25630.15.camel@buserror.net>
- <601d732a-a137-3ba9-550d-19c7eb10337a@c-s.fr>
- <ed8c66dd-c567-35df-4a51-6bb3434fdc2b@c-s.fr>
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Date: Tue, 23 Aug 2016 11:20:00 +0200
-Message-ID: <CAPk1OjGR0gTAXvSUw=QUqkOrOZbmXCnd71Fu0mm5Pfrg46uc5w@mail.gmail.com>
-Subject: Re: Suspected regression?
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJS8Z2cKXzDrK7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 20:58:05 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7NAs9QA130287
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 06:58:02 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24y8tn9evh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 06:58:01 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 23 Aug 2016 04:58:01 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V3] powerpc/mm: Add radix flush all with IS=3
+Date: Tue, 23 Aug 2016 16:27:48 +0530
+In-Reply-To: <1471596759-3396-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1471596759-3396-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1471949868-542-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,102 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christophe,
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  1 +
+ arch/powerpc/mm/tlb-radix.c                        | 24 ++++++++++++++++++++++
+ 2 files changed, 25 insertions(+)
 
-Sorry for delay in reply I was on vacation.
-
-On 6 August 2016 at 11:29, christophe leroy <christophe.leroy@c-s.fr> wrote=
-:
-> Alessio,
->
->
-> Le 05/08/2016 =C3=A0 09:51, Christophe Leroy a =C3=A9crit :
->>
->>
->>
->> Le 19/07/2016 =C3=A0 23:52, Scott Wood a =C3=A9crit :
->>>
->>> On Tue, 2016-07-19 at 12:00 +0200, Alessio Igor Bogani wrote:
->>>>
->>>> Hi all,
->>>>
->>>> I have got two boards MVME5100 (MPC7410 cpu) and MVME7100 (MPC8641D
->>>> cpu) for which I use the same cross-compiler (ppc7400).
->>>>
->>>> I tested these against kernel HEAD to found that these don't boot
->>>> anymore (PID 1 crash).
->>>>
->>>> Bisecting results in first offending commit:
->>>> 7aef4136566b0539a1a98391181e188905e33401
->>>>
->>>> Removing it from HEAD make boards boot properly again.
->>>>
->>>> A third system based on P2010 isn't affected at all.
->>>>
->>>> Is it a regression or I have made something wrong?
->>>
->>>
->>> I booted both my next branch, and Linus's master on MPC8641HPCN and
->>> didn't see
->>> this -- though possibly your RFS is doing something different.  Maybe
->>> that's
->>> the difference with P2010 as well.
->>>
->>> Is there any way you can debug the cause of the crash?  Or send me a
->>> minimal
->>> RFS that demonstrates the problem (ideally with debug symbols on the
->>> userspace
->>> binaries)?
->>>
->>
->> I got from Alessio the below information:
->>
->> systemd[1]: Caught <BUS>, core dump failed (child 137, code=3Dkilled,
->> status=3D7/BUS).
->> systemd[1]: Freezing execution.
->>
->>
->> What can generate SIGBUS ?
->> And shouldn't we also get some KERN_ERR trace, something like "unhandled
->> signal 7 at ....." ?
->>
->
-> As far as I can see, SIGBUS is mainly generated from alignment exception.
-> According to 7410 Reference Manual, alignment exception can happen in the
-> following cases:
-> * An operand of a dcbz instruction is on a page that is write-through or
-> cache-inhibited for a virtual mode access.
-> * An attempt to execute a dcbz instruction occurs when the cache is disab=
-led
-> or locked.
->
-> Could try with below patch to check if the dcbz insn is causing the SIGBU=
-S ?
-
-Unfortunately that patch doesn't solve the problem.
-
-Is there a chance that cache behavior could settled by board firmware
-(PPCBug on the MPC7410 board and MotLoad on the MPC8641D one)?
-In that case what do you suggest me to looking for?
-
-> Christophe
->
-> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_3=
-2.S
-> index 68f6862..3ad782a 100644
-> --- a/arch/powerpc/lib/checksum_32.S
-> +++ b/arch/powerpc/lib/checksum_32.S
-> @@ -192,7 +192,7 @@ _GLOBAL(csum_partial_copy_generic)
->         mtctr   r8
->
->  53:    dcbt    r3,r4
-> -54:    dcbz    r11,r6
-> +54:    nop
->  /* the main body of the cacheline loop */
->         CSUM_COPY_16_BYTES_WITHEX(0)
->  #if L1_CACHE_BYTES >=3D 32
-
-Thanks for your help!
-
-Ciao,
-Alessio
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+index 65037762b120..a9e19cb2f7c5 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+@@ -41,4 +41,5 @@ extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmad
+ extern void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
+ 				     unsigned long page_size);
+ extern void radix__flush_tlb_lpid(unsigned long lpid);
++extern void radix__flush_tlb_all(void);
+ #endif
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 48df05ef5231..0e49ec541ab5 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -400,3 +400,27 @@ void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
+ 	radix__flush_tlb_range_psize(vma->vm_mm, start, end, MMU_PAGE_2M);
+ }
+ EXPORT_SYMBOL(radix__flush_pmd_tlb_range);
++
++void radix__flush_tlb_all(void)
++{
++	unsigned long rb,prs,r,rs;
++	unsigned long ric = RIC_FLUSH_ALL;
++
++	rb = 0x3 << PPC_BITLSHIFT(53); /* IS = 3 */
++	prs = 0; /* partition scoped */
++	r = 1;   /* raidx format */
++	rs = 1 & ((1UL << 32) - 1); /* any LPID value to flush guest mappings */
++
++	asm volatile("ptesync": : :"memory");
++	/*
++	 * now flush guest entries by passing PRS = 1 and LPID != 0
++	 */
++	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
++		     : : "r"(rb), "i"(r), "i"(1), "i"(ric), "r"(rs) : "memory");
++	/*
++	 * now flush host entires by passing PRS = 0 and LPID == 0
++	 */
++	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
++		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(0) : "memory");
++	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++}
+-- 
+2.7.4
