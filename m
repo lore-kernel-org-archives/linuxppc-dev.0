@@ -1,25 +1,37 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJNKP1cYszDrK6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 18:05:29 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id h186so7808183pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 01:05:29 -0700 (PDT)
-Date: Tue, 23 Aug 2016 16:05:24 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
- mpe@ellerman.id.au, mikey@neuling.org,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] powerpc: signals: Discard transaction state from
- signal frames
-Message-ID: <20160823080523.GB8253@simonLocalRHEL7.x64>
-References: <20160823004617.10763-1-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJPzh0Y4jzDrK7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 19:20:09 +1000 (AEST)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 8F1A8440DAD_7BC1544B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:20:04 +0000 (GMT)
+Received: from mail-qk0-f169.google.com (mail-qk0-f169.google.com
+ [209.85.220.169])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ F2D1943E090_7BC1542F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 09:20:02 +0000 (GMT)
+Received: by mail-qk0-f169.google.com with SMTP id t7so101019040qkh.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 02:20:02 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160823004617.10763-1-cyrilbur@gmail.com>
+In-Reply-To: <ed8c66dd-c567-35df-4a51-6bb3434fdc2b@c-s.fr>
+References: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
+ <1468965129.25630.15.camel@buserror.net>
+ <601d732a-a137-3ba9-550d-19c7eb10337a@c-s.fr>
+ <ed8c66dd-c567-35df-4a51-6bb3434fdc2b@c-s.fr>
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Date: Tue, 23 Aug 2016 11:20:00 +0200
+Message-ID: <CAPk1OjGR0gTAXvSUw=QUqkOrOZbmXCnd71Fu0mm5Pfrg46uc5w@mail.gmail.com>
+Subject: Re: Suspected regression?
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,150 +41,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 23, 2016 at 10:46:17AM +1000, Cyril Bur wrote:
-> Userspace can begin and suspend a transaction within the signal
-> handler which means they might enter sys_rt_sigreturn() with the
-> processor in suspended state.
-> 
-> sys_rt_sigreturn() wants to restore process context (which may have
-> been in a transaction before signal delivery). To do this it must
-> restore TM SPRS. To achieve this, any transaction initiated within the
-> signal frame must be discarded in order to be able to restore TM SPRs
-> as TM SPRs can only be manipulated non-transactionally..
-> From the PowerPC ISA:
->   TM Bad Thing Exception [Category: Transactional Memory]
->    An attempt is made to execute a mtspr targeting a TM register in
->    other than Non-transactional state.
-> 
-> Not doing so results in a TM Bad Thing:
-> [12045.221359] Kernel BUG at c000000000050a40 [verbose debug info unavailable]
-> [12045.221470] Unexpected TM Bad Thing exception at c000000000050a40 (msr 0x201033)
-> [12045.221540] Oops: Unrecoverable exception, sig: 6 [#1]
-> [12045.221586] SMP NR_CPUS=2048 NUMA PowerNV
-> [12045.221634] Modules linked in: xt_CHECKSUM iptable_mangle ipt_MASQUERADE
->  nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat nf_conntrack_ipv4 nf_defrag_ipv4
->  xt_conntrack nf_conntrack ipt_REJECT nf_reject_ipv4 xt_tcpudp bridge stp llc ebtable_filter
->  ebtables ip6table_filter ip6_tables iptable_filter ip_tables x_tables kvm_hv kvm
->  uio_pdrv_genirq ipmi_powernv uio powernv_rng ipmi_msghandler autofs4 ses enclosure
->  scsi_transport_sas bnx2x ipr mdio libcrc32c
-> [12045.222167] CPU: 68 PID: 6178 Comm: sigreturnpanic Not tainted 4.7.0 #34
-> [12045.222224] task: c0000000fce38600 ti: c0000000fceb4000 task.ti: c0000000fceb4000
-> [12045.222293] NIP: c000000000050a40 LR: c0000000000163bc CTR: 0000000000000000
-> [12045.222361] REGS: c0000000fceb7ac0 TRAP: 0700   Not tainted (4.7.0)
-> [12045.222418] MSR: 9000000300201033 <SF,HV,ME,IR,DR,RI,LE,TM[SE]> CR: 28444280  XER: 20000000
-> [12045.222625] CFAR: c0000000000163b8 SOFTE: 0 PACATMSCRATCH: 900000014280f033
-> GPR00: 01100000b8000001 c0000000fceb7d40 c00000000139c100 c0000000fce390d0
-> GPR04: 900000034280f033 0000000000000000 0000000000000000 0000000000000000
-> GPR08: 0000000000000000 b000000000001033 0000000000000001 0000000000000000
-> GPR12: 0000000000000000 c000000002926400 0000000000000000 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR24: 0000000000000000 00003ffff98cadd0 00003ffff98cb470 0000000000000000
-> GPR28: 900000034280f033 c0000000fceb7ea0 0000000000000001 c0000000fce390d0
-> [12045.223535] NIP [c000000000050a40] tm_restore_sprs+0xc/0x1c
-> [12045.223584] LR [c0000000000163bc] tm_recheckpoint+0x5c/0xa0
-> [12045.223630] Call Trace:
-> [12045.223655] [c0000000fceb7d80] [c000000000026e74] sys_rt_sigreturn+0x494/0x6c0
-> [12045.223738] [c0000000fceb7e30] [c0000000000092e0] system_call+0x38/0x108
-> [12045.223806] Instruction dump:
-> [12045.223841] 7c800164 4e800020 7c0022a6 f80304a8 7c0222a6 f80304b0 7c0122a6 f80304b8
-> [12045.223955] 4e800020 e80304a8 7c0023a6 e80304b0 <7c0223a6> e80304b8 7c0123a6 4e800020
-> [12045.224074] ---[ end trace cb8002ee240bae76 ]---
-> 
-> It isn't clear exactly if there is really a use case for userspace
-> returning with a suspended transaction, however, doing so doesn't (on
-> its own) constitute a bad frame. As such, this patch simply discards
-> the transactional state of the context calling the sigreturn and
-> continues.
-> 
-> Reported-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-> Tested-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> 
-> ---
-> 
-> V2: Move the code down into the #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->     (32 and 64 bit)
->     Add a small amount of text to Documentation
->     Adjust the commit message for clarity
-> 
-> V3: Use MSR_TM_SUSPENDED() instead of MSR_TM_ACTIVE() as TM can *never* be
->     active in the kernel, let it do a Bad Thing if it is.
->  
->  Documentation/powerpc/transactional_memory.txt |  2 ++
->  arch/powerpc/kernel/signal_32.c                | 14 ++++++++++++++
->  arch/powerpc/kernel/signal_64.c                | 14 ++++++++++++++
->  3 files changed, 30 insertions(+)
-> 
-> diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentation/powerpc/transactional_memory.txt
-> index ba0a2a4..e32fdbb 100644
-> --- a/Documentation/powerpc/transactional_memory.txt
-> +++ b/Documentation/powerpc/transactional_memory.txt
-> @@ -167,6 +167,8 @@ signal will be rolled back anyway.
->  For signals taken in non-TM or suspended mode, we use the
->  normal/non-checkpointed stack pointer.
->  
-> +Any transaction initiated inside a sighandler and suspended on return
-> +from the sighandler to the kernel will get reclaimed and discarded.
->  
->  Failure cause codes used by kernel
->  ==================================
-> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-> index b6aa378..a7daf74 100644
-> --- a/arch/powerpc/kernel/signal_32.c
-> +++ b/arch/powerpc/kernel/signal_32.c
-> @@ -1226,7 +1226,21 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
->  		(regs->gpr[1] + __SIGNAL_FRAMESIZE + 16);
->  	if (!access_ok(VERIFY_READ, rt_sf, sizeof(*rt_sf)))
->  		goto bad;
-> +
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +	/*
-> +	 * If there is a transactional state then throw it away.
-> +	 * The purpose of a sigreturn is to destroy all traces of the
-> +	 * signal frame, this includes any transactional state created
-> +	 * within in. We only check for suspended as we can never be
-> +	 * active in the kernel, we are active, there is nothing better to
-> +	 * do than go ahead and Bad Thing later.
-> +	 * The cause is not important as there will never be a
-> +	 * recheckpoint so it's not user visible.
-> +	 */
-> +	if (MSR_TM_SUSPENDED(mfmsr()))
-> +		tm_reclaim_current(0);
-> +
->  	if (__get_user(tmp, &rt_sf->uc.uc_link))
->  		goto bad;
->  	uc_transact = (struct ucontext __user *)(uintptr_t)tmp;
-> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-> index 7e49984..70409bb 100644
-> --- a/arch/powerpc/kernel/signal_64.c
-> +++ b/arch/powerpc/kernel/signal_64.c
-> @@ -676,7 +676,21 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
->  	if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
->  		goto badframe;
->  	set_current_blocked(&set);
-> +
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +	/*
-> +	 * If there is a transactional state then throw it away.
-> +	 * The purpose of a sigreturn is to destroy all traces of the
-> +	 * signal frame, this includes any transactional state created
-> +	 * within in. We only check for suspended as we can never be
-> +	 * active in the kernel, we are active, there is nothing better to
-> +	 * do than go ahead and Bad Thing later.
-> +	 * The cause is not important as there will never be a
-> +	 * recheckpoint so it's not user visible.
-> +	 */
-> +	if (MSR_TM_SUSPENDED(mfmsr()))
-> +		tm_reclaim_current(0);
-> +
->  	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
->  		goto badframe;
->  	if (MSR_TM_ACTIVE(msr)) {
-> -- 
-> 2.9.3
-> 
-Acked-by: Simon Guo <wei.guo.simon@gmail.com>
+Hi Christophe,
 
-Thanks,
-- Simon
+Sorry for delay in reply I was on vacation.
+
+On 6 August 2016 at 11:29, christophe leroy <christophe.leroy@c-s.fr> wrote=
+:
+> Alessio,
+>
+>
+> Le 05/08/2016 =C3=A0 09:51, Christophe Leroy a =C3=A9crit :
+>>
+>>
+>>
+>> Le 19/07/2016 =C3=A0 23:52, Scott Wood a =C3=A9crit :
+>>>
+>>> On Tue, 2016-07-19 at 12:00 +0200, Alessio Igor Bogani wrote:
+>>>>
+>>>> Hi all,
+>>>>
+>>>> I have got two boards MVME5100 (MPC7410 cpu) and MVME7100 (MPC8641D
+>>>> cpu) for which I use the same cross-compiler (ppc7400).
+>>>>
+>>>> I tested these against kernel HEAD to found that these don't boot
+>>>> anymore (PID 1 crash).
+>>>>
+>>>> Bisecting results in first offending commit:
+>>>> 7aef4136566b0539a1a98391181e188905e33401
+>>>>
+>>>> Removing it from HEAD make boards boot properly again.
+>>>>
+>>>> A third system based on P2010 isn't affected at all.
+>>>>
+>>>> Is it a regression or I have made something wrong?
+>>>
+>>>
+>>> I booted both my next branch, and Linus's master on MPC8641HPCN and
+>>> didn't see
+>>> this -- though possibly your RFS is doing something different.  Maybe
+>>> that's
+>>> the difference with P2010 as well.
+>>>
+>>> Is there any way you can debug the cause of the crash?  Or send me a
+>>> minimal
+>>> RFS that demonstrates the problem (ideally with debug symbols on the
+>>> userspace
+>>> binaries)?
+>>>
+>>
+>> I got from Alessio the below information:
+>>
+>> systemd[1]: Caught <BUS>, core dump failed (child 137, code=3Dkilled,
+>> status=3D7/BUS).
+>> systemd[1]: Freezing execution.
+>>
+>>
+>> What can generate SIGBUS ?
+>> And shouldn't we also get some KERN_ERR trace, something like "unhandled
+>> signal 7 at ....." ?
+>>
+>
+> As far as I can see, SIGBUS is mainly generated from alignment exception.
+> According to 7410 Reference Manual, alignment exception can happen in the
+> following cases:
+> * An operand of a dcbz instruction is on a page that is write-through or
+> cache-inhibited for a virtual mode access.
+> * An attempt to execute a dcbz instruction occurs when the cache is disab=
+led
+> or locked.
+>
+> Could try with below patch to check if the dcbz insn is causing the SIGBU=
+S ?
+
+Unfortunately that patch doesn't solve the problem.
+
+Is there a chance that cache behavior could settled by board firmware
+(PPCBug on the MPC7410 board and MotLoad on the MPC8641D one)?
+In that case what do you suggest me to looking for?
+
+> Christophe
+>
+> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_3=
+2.S
+> index 68f6862..3ad782a 100644
+> --- a/arch/powerpc/lib/checksum_32.S
+> +++ b/arch/powerpc/lib/checksum_32.S
+> @@ -192,7 +192,7 @@ _GLOBAL(csum_partial_copy_generic)
+>         mtctr   r8
+>
+>  53:    dcbt    r3,r4
+> -54:    dcbz    r11,r6
+> +54:    nop
+>  /* the main body of the cacheline loop */
+>         CSUM_COPY_16_BYTES_WITHEX(0)
+>  #if L1_CACHE_BYTES >=3D 32
+
+Thanks for your help!
+
+Ciao,
+Alessio
