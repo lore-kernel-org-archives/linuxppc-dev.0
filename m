@@ -1,22 +1,22 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
- [IPv6:2607:f8b0:4002:c05::243])
+Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
+ [IPv6:2607:f8b0:4002:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJDNF4SKlzDrcT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 12:07:25 +1000 (AEST)
-Received: by mail-yw0-x243.google.com with SMTP id r9so4420971ywg.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:07:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJDNK5cMYzDrK7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 12:07:29 +1000 (AEST)
+Received: by mail-yw0-x242.google.com with SMTP id u134so4425646ywg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:07:29 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	devicetree@vger.kernel.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh+dt@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 3/5] of/platform: introduce a generic way to declare a
- platform bus
-Date: Tue, 23 Aug 2016 10:06:57 +0800
-Message-Id: <1471918019-19472-4-git-send-email-haokexin@gmail.com>
+ Scott Wood <oss@buserror.net>
+Subject: [PATCH 4/5] powerpc/83xx: factor out the common codes of setup arch
+ functions
+Date: Tue, 23 Aug 2016 10:06:58 +0800
+Message-Id: <1471918019-19472-5-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1471918019-19472-1-git-send-email-haokexin@gmail.com>
 References: <1471918019-19472-1-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,134 +28,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The specific buses which need to be probed at boot time are different
-between platforms. Instead of put all the buses into the default
-of_default_bus_match_table[] match tables, this patch introduces a
-general way to declare a platform bus.
+Factor out the common codes of setup arch functions to a separate
+function. It does make no sense to print a board specific info
+in setup arch functions, so use a more general one.
+
+For ASP8347E board, there is no pci device node. So it is safe to
+invoke mpc83xx_setup_pci() in its setup arch function even there is
+no such invocation in its original setup arch function.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/of/platform.c             | 12 +++++++++++-
- include/asm-generic/vmlinux.lds.h |  2 ++
- include/linux/of.h                | 22 ++++++++++++++++++++++
- include/linux/of_platform.h       |  5 +++++
- 4 files changed, 40 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/83xx/asp834x.c     | 4 +---
+ arch/powerpc/platforms/83xx/km83xx.c      | 5 +----
+ arch/powerpc/platforms/83xx/misc.c        | 8 ++++++++
+ arch/powerpc/platforms/83xx/mpc830x_rdb.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc832x_mds.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc834x_itx.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc834x_mds.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc836x_mds.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc837x_mds.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c | 5 +----
+ arch/powerpc/platforms/83xx/mpc83xx.h     | 1 +
+ arch/powerpc/platforms/83xx/sbc834x.c     | 5 +----
+ 15 files changed, 22 insertions(+), 51 deletions(-)
 
-diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index 6aaa1438c9cd..a7bfe8504caa 100644
---- a/drivers/of/platform.c
-+++ b/drivers/of/platform.c
-@@ -488,11 +488,21 @@ int of_platform_populate(struct device_node *root,
- }
- EXPORT_SYMBOL_GPL(of_platform_populate);
- 
-+static const struct of_device_id __bus_of_table_sentinel
-+	__used __section(__bus_of_table_end);
-+
- int of_platform_default_populate(struct device_node *root,
- 				 const struct of_dev_auxdata *lookup,
- 				 struct device *parent)
+diff --git a/arch/powerpc/platforms/83xx/asp834x.c b/arch/powerpc/platforms/83xx/asp834x.c
+index 17e54339f8d9..575afd6eb36a 100644
+--- a/arch/powerpc/platforms/83xx/asp834x.c
++++ b/arch/powerpc/platforms/83xx/asp834x.c
+@@ -30,9 +30,7 @@
+  */
+ static void __init asp834x_setup_arch(void)
  {
--	return of_platform_populate(root, of_default_bus_match_table, lookup,
-+	const struct of_device_id *matches;
-+
-+	if (__bus_of_table != &__bus_of_table_sentinel)
-+		matches = __bus_of_table;
-+	else
-+		matches = of_default_bus_match_table;
-+
-+	return of_platform_populate(root, matches, lookup,
- 				    parent);
+-	if (ppc_md.progress)
+-		ppc_md.progress("asp834x_setup_arch()", 0);
+-
++	mpc83xx_setup_arch();
+ 	mpc834x_usb_cfg();
  }
- EXPORT_SYMBOL_GPL(of_platform_default_populate);
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 24563970ff7b..43aa725e86fa 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -179,6 +179,7 @@
- #define RESERVEDMEM_OF_TABLES()	OF_TABLE(CONFIG_OF_RESERVED_MEM, reservedmem)
- #define CPU_METHOD_OF_TABLES()	OF_TABLE(CONFIG_SMP, cpu_method)
- #define CPUIDLE_METHOD_OF_TABLES() OF_TABLE(CONFIG_CPU_IDLE, cpuidle_method)
-+#define BUS_OF_TABLES()		OF_TABLE(CONFIG_OF, bus)
  
- #ifdef CONFIG_ACPI
- #define ACPI_PROBE_TABLE(name)						\
-@@ -542,6 +543,7 @@
- 	IOMMU_OF_TABLES()						\
- 	CPU_METHOD_OF_TABLES()						\
- 	CPUIDLE_METHOD_OF_TABLES()					\
-+	BUS_OF_TABLES()							\
- 	KERNEL_DTB()							\
- 	IRQCHIP_OF_MATCH_TABLE()					\
- 	ACPI_PROBE_TABLE(irqchip)					\
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 3d9ff8e9d803..3a53c898cde9 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -1002,12 +1002,28 @@ static inline int of_get_available_child_count(const struct device_node *np)
- 		__used __section(__##table##_of_table)			\
- 		 = { .compatible = compat,				\
- 		     .data = (fn == (fn_type)NULL) ? fn : fn  }
-+
-+#define __OF_DECLARE_ALL(table, entry, _name, _type, _compat, _data)	\
-+	static const struct of_device_id __of_table_##entry		\
-+		__used __section(__##table##_of_table)			\
-+		= { .name = _name,					\
-+		    .type = _type,					\
-+		    .compatible = _compat,				\
-+		    .data = _data }
- #else
- #define _OF_DECLARE(table, name, compat, fn, fn_type)			\
- 	static const struct of_device_id __of_table_##name		\
- 		__attribute__((unused))					\
- 		 = { .compatible = compat,				\
- 		     .data = (fn == (fn_type)NULL) ? fn : fn }
-+
-+#define __OF_DECLARE_ALL(table, entry, _name, _type, _compat, _data)	\
-+	static const struct of_device_id __of_table_##_name		\
-+		__attribute__((unused))					\
-+		= { .name = _name,					\
-+		    .type = _type,					\
-+		    .compatible = _compat,				\
-+		    .data = _data }
+diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
+index e7fbd6366abb..d8642a4afc74 100644
+--- a/arch/powerpc/platforms/83xx/km83xx.c
++++ b/arch/powerpc/platforms/83xx/km83xx.c
+@@ -130,10 +130,7 @@ static void __init mpc83xx_km_setup_arch(void)
+ 	struct device_node *np;
  #endif
  
- typedef int (*of_init_fn_2)(struct device_node *, struct device_node *);
-@@ -1020,6 +1036,12 @@ typedef void (*of_init_fn_1)(struct device_node *);
- 		_OF_DECLARE(table, name, compat, fn, of_init_fn_1_ret)
- #define OF_DECLARE_2(table, name, compat, fn) \
- 		_OF_DECLARE(table, name, compat, fn, of_init_fn_2)
-+#define OF_DECLARE_COMPAT(table, name, compat) \
-+		__OF_DECLARE_ALL(table, name, "", "", compat, NULL)
-+#define OF_DECLARE_TYPE(table, name, type) \
-+		__OF_DECLARE_ALL(table, name, "", type, "", NULL)
-+#define OF_DECLARE_NAME(table, name, node_name) \
-+		__OF_DECLARE_ALL(table, name, node_name, "", "", NULL)
+-	if (ppc_md.progress)
+-		ppc_md.progress("kmpbec83xx_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
  
- /**
-  * struct of_changeset_entry	- Holds a changeset entry
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index 02cf1fdaa3d0..35c5b66f61f0 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -17,6 +17,10 @@
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
- 
-+#define BUS_OF_DECLARE_COMPAT(name, compat) OF_DECLARE_COMPAT(bus, name, compat)
-+#define BUS_OF_DECLARE_TYPE(name, type) OF_DECLARE_TYPE(bus, name, type)
-+#define BUS_OF_DECLARE_NAME(name, node_name) OF_DECLARE_NAME(bus, name, node_name)
+ #ifdef CONFIG_QUICC_ENGINE
+ 	np = of_find_node_by_name(NULL, "par_io");
+diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+index 8899aa9d11f5..d75c9816a5c9 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -142,3 +142,11 @@ void __init mpc83xx_setup_pci(void)
+ 		mpc83xx_add_bridge(np);
+ }
+ #endif
 +
- /**
-  * struct of_dev_auxdata - lookup table entry for device names & platform_data
-  * @compatible: compatible value of node to match against node
-@@ -52,6 +56,7 @@ struct of_dev_auxdata {
- 	  .platform_data = _pdata }
++void __init mpc83xx_setup_arch(void)
++{
++	if (ppc_md.progress)
++		ppc_md.progress("mpc83xx_setup_arch()", 0);
++
++	mpc83xx_setup_pci();
++}
+diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+index 040d5d085467..272c41c387b9 100644
+--- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+@@ -27,10 +27,7 @@
+  */
+ static void __init mpc830x_rdb_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc830x_rdb_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ 	mpc831x_usb_cfg();
+ }
  
- extern const struct of_device_id of_default_bus_match_table[];
-+extern const struct of_device_id __bus_of_table[];
+diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+index 40e0d8307b59..fd80fd570e67 100644
+--- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+@@ -28,10 +28,7 @@
+  */
+ static void __init mpc831x_rdb_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc831x_rdb_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ 	mpc831x_usb_cfg();
+ }
  
- /* Platform drivers register/unregister */
- extern struct platform_device *of_device_alloc(struct device_node *np,
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+index cdfa47c4d394..bb7b25acf26f 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -58,8 +58,7 @@ static void __init mpc832x_sys_setup_arch(void)
+ 	struct device_node *np;
+ 	u8 __iomem *bcsr_regs = NULL;
+ 
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc832x_sys_setup_arch()", 0);
++	mpc83xx_setup_arch();
+ 
+ 	/* Map BCSR area */
+ 	np = of_find_node_by_name(NULL, "bcsr");
+@@ -71,8 +70,6 @@ static void __init mpc832x_sys_setup_arch(void)
+ 		of_node_put(np);
+ 	}
+ 
+-	mpc83xx_setup_pci();
+-
+ #ifdef CONFIG_QUICC_ENGINE
+ 	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
+ 		par_io_init(np);
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index 2ef03e7d248c..09d1bbf25b5d 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -197,10 +197,7 @@ static void __init mpc832x_rdb_setup_arch(void)
+ 	struct device_node *np;
+ #endif
+ 
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc832x_rdb_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+ 	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+index 8fd0c1e8b182..73a5267df497 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -57,10 +57,7 @@ machine_device_initcall(mpc834x_itx, mpc834x_itx_declare_of_platform_devices);
+  */
+ static void __init mpc834x_itx_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc834x_itx_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ 
+ 	mpc834x_usb_cfg();
+ }
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+index eeaee6123bb3..009cfc18a4ee 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+@@ -76,10 +76,7 @@ static int mpc834xemds_usb_cfg(void)
+  */
+ static void __init mpc834x_mds_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc834x_mds_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ 
+ 	mpc834xemds_usb_cfg();
+ }
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index dacf4c2df069..4fc3051c2b2e 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -66,8 +66,7 @@ static void __init mpc836x_mds_setup_arch(void)
+ 	struct device_node *np;
+ 	u8 __iomem *bcsr_regs = NULL;
+ 
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc836x_mds_setup_arch()", 0);
++	mpc83xx_setup_arch();
+ 
+ 	/* Map BCSR area */
+ 	np = of_find_node_by_name(NULL, "bcsr");
+@@ -79,8 +78,6 @@ static void __init mpc836x_mds_setup_arch(void)
+ 		of_node_put(np);
+ 	}
+ 
+-	mpc83xx_setup_pci();
+-
+ #ifdef CONFIG_QUICC_ENGINE
+ 	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
+ 		par_io_init(np);
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+index cf67ac93ddcb..93f024fd9b45 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+@@ -31,10 +31,7 @@ machine_device_initcall(mpc836x_rdk, mpc83xx_declare_of_platform_devices);
+ 
+ static void __init mpc836x_rdk_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ }
+ 
+ /*
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
+index 652b97d699c9..3b34cc1f626c 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
+@@ -79,10 +79,7 @@ out:
+  */
+ static void __init mpc837x_mds_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc837x_mds_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ 	mpc837xmds_usb_cfg();
+ }
+ 
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+index 667731d81676..0c55fa6af2d5 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+@@ -50,10 +50,7 @@ static void mpc837x_rdb_sd_cfg(void)
+  */
+ static void __init mpc837x_rdb_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc837x_rdb_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ 	mpc837x_usb_cfg();
+ 	mpc837x_rdb_sd_cfg();
+ }
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index ad484199eff7..636eb9d0401a 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -86,5 +86,6 @@ extern void mpc83xx_setup_pci(void);
+ #endif
+ 
+ extern int mpc83xx_declare_of_platform_devices(void);
++extern void mpc83xx_setup_arch(void);
+ 
+ #endif				/* __MPC83XX_H__ */
+diff --git a/arch/powerpc/platforms/83xx/sbc834x.c b/arch/powerpc/platforms/83xx/sbc834x.c
+index b867e88dfb0d..cb4bdabfdf1c 100644
+--- a/arch/powerpc/platforms/83xx/sbc834x.c
++++ b/arch/powerpc/platforms/83xx/sbc834x.c
+@@ -47,10 +47,7 @@
+  */
+ static void __init sbc834x_setup_arch(void)
+ {
+-	if (ppc_md.progress)
+-		ppc_md.progress("sbc834x_setup_arch()", 0);
+-
+-	mpc83xx_setup_pci();
++	mpc83xx_setup_arch();
+ }
+ 
+ machine_device_initcall(sbc834x, mpc83xx_declare_of_platform_devices);
 -- 
 2.5.5
