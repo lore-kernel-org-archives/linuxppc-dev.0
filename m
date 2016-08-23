@@ -1,20 +1,22 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yb0-x241.google.com (mail-yb0-x241.google.com
- [IPv6:2607:f8b0:4002:c09::241])
+Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
+ [IPv6:2607:f8b0:4002:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJDN96tC3zDrcC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 12:07:21 +1000 (AEST)
-Received: by mail-yb0-x241.google.com with SMTP id b96so1091977ybi.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:07:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJDNF4SKlzDrcT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 12:07:25 +1000 (AEST)
+Received: by mail-yw0-x243.google.com with SMTP id r9so4420971ywg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2016 19:07:25 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	devicetree@vger.kernel.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh+dt@kernel.org>
-Subject: [PATCH 2/5] powerpc: introduce arch_enable_default_of_probe()
-Date: Tue, 23 Aug 2016 10:06:56 +0800
-Message-Id: <1471918019-19472-3-git-send-email-haokexin@gmail.com>
+ Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh+dt@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 3/5] of/platform: introduce a generic way to declare a
+ platform bus
+Date: Tue, 23 Aug 2016 10:06:57 +0800
+Message-Id: <1471918019-19472-4-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1471918019-19472-1-git-send-email-haokexin@gmail.com>
 References: <1471918019-19472-1-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,46 +28,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can use this function to enable the default of probe for one
-board.
+The specific buses which need to be probed at boot time are different
+between platforms. Instead of put all the buses into the default
+of_default_bus_match_table[] match tables, this patch introduces a
+general way to declare a platform bus.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/include/asm/setup.h  | 1 +
- arch/powerpc/kernel/of_platform.c | 9 ++++++++-
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ drivers/of/platform.c             | 12 +++++++++++-
+ include/asm-generic/vmlinux.lds.h |  2 ++
+ include/linux/of.h                | 22 ++++++++++++++++++++++
+ include/linux/of_platform.h       |  5 +++++
+ 4 files changed, 40 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 654d64c9f3ac..213719882fe4 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -24,6 +24,7 @@ extern void reloc_got2(unsigned long);
- void check_for_initrd(void);
- void initmem_init(void);
- void setup_panic(void);
-+extern void arch_enable_default_of_probe(void);
- #define ARCH_PANIC_TIMEOUT 180
- 
- #ifdef CONFIG_PPC_PSERIES
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index ace7fe132b6f..77402a14e928 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -123,7 +123,14 @@ device_initcall(of_pci_phb_init);
- 
- #endif /* CONFIG_PPC_OF_PLATFORM_PCI */
- 
-+static bool default_of_probe_enabled;
-+
- bool __init arch_want_default_of_probe(void)
- {
--	return false;
-+	return default_of_probe_enabled;
-+}
-+
-+void __init arch_enable_default_of_probe(void)
-+{
-+	default_of_probe_enabled = true;
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 6aaa1438c9cd..a7bfe8504caa 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -488,11 +488,21 @@ int of_platform_populate(struct device_node *root,
  }
+ EXPORT_SYMBOL_GPL(of_platform_populate);
+ 
++static const struct of_device_id __bus_of_table_sentinel
++	__used __section(__bus_of_table_end);
++
+ int of_platform_default_populate(struct device_node *root,
+ 				 const struct of_dev_auxdata *lookup,
+ 				 struct device *parent)
+ {
+-	return of_platform_populate(root, of_default_bus_match_table, lookup,
++	const struct of_device_id *matches;
++
++	if (__bus_of_table != &__bus_of_table_sentinel)
++		matches = __bus_of_table;
++	else
++		matches = of_default_bus_match_table;
++
++	return of_platform_populate(root, matches, lookup,
+ 				    parent);
+ }
+ EXPORT_SYMBOL_GPL(of_platform_default_populate);
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 24563970ff7b..43aa725e86fa 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -179,6 +179,7 @@
+ #define RESERVEDMEM_OF_TABLES()	OF_TABLE(CONFIG_OF_RESERVED_MEM, reservedmem)
+ #define CPU_METHOD_OF_TABLES()	OF_TABLE(CONFIG_SMP, cpu_method)
+ #define CPUIDLE_METHOD_OF_TABLES() OF_TABLE(CONFIG_CPU_IDLE, cpuidle_method)
++#define BUS_OF_TABLES()		OF_TABLE(CONFIG_OF, bus)
+ 
+ #ifdef CONFIG_ACPI
+ #define ACPI_PROBE_TABLE(name)						\
+@@ -542,6 +543,7 @@
+ 	IOMMU_OF_TABLES()						\
+ 	CPU_METHOD_OF_TABLES()						\
+ 	CPUIDLE_METHOD_OF_TABLES()					\
++	BUS_OF_TABLES()							\
+ 	KERNEL_DTB()							\
+ 	IRQCHIP_OF_MATCH_TABLE()					\
+ 	ACPI_PROBE_TABLE(irqchip)					\
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 3d9ff8e9d803..3a53c898cde9 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -1002,12 +1002,28 @@ static inline int of_get_available_child_count(const struct device_node *np)
+ 		__used __section(__##table##_of_table)			\
+ 		 = { .compatible = compat,				\
+ 		     .data = (fn == (fn_type)NULL) ? fn : fn  }
++
++#define __OF_DECLARE_ALL(table, entry, _name, _type, _compat, _data)	\
++	static const struct of_device_id __of_table_##entry		\
++		__used __section(__##table##_of_table)			\
++		= { .name = _name,					\
++		    .type = _type,					\
++		    .compatible = _compat,				\
++		    .data = _data }
+ #else
+ #define _OF_DECLARE(table, name, compat, fn, fn_type)			\
+ 	static const struct of_device_id __of_table_##name		\
+ 		__attribute__((unused))					\
+ 		 = { .compatible = compat,				\
+ 		     .data = (fn == (fn_type)NULL) ? fn : fn }
++
++#define __OF_DECLARE_ALL(table, entry, _name, _type, _compat, _data)	\
++	static const struct of_device_id __of_table_##_name		\
++		__attribute__((unused))					\
++		= { .name = _name,					\
++		    .type = _type,					\
++		    .compatible = _compat,				\
++		    .data = _data }
+ #endif
+ 
+ typedef int (*of_init_fn_2)(struct device_node *, struct device_node *);
+@@ -1020,6 +1036,12 @@ typedef void (*of_init_fn_1)(struct device_node *);
+ 		_OF_DECLARE(table, name, compat, fn, of_init_fn_1_ret)
+ #define OF_DECLARE_2(table, name, compat, fn) \
+ 		_OF_DECLARE(table, name, compat, fn, of_init_fn_2)
++#define OF_DECLARE_COMPAT(table, name, compat) \
++		__OF_DECLARE_ALL(table, name, "", "", compat, NULL)
++#define OF_DECLARE_TYPE(table, name, type) \
++		__OF_DECLARE_ALL(table, name, "", type, "", NULL)
++#define OF_DECLARE_NAME(table, name, node_name) \
++		__OF_DECLARE_ALL(table, name, node_name, "", "", NULL)
+ 
+ /**
+  * struct of_changeset_entry	- Holds a changeset entry
+diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
+index 02cf1fdaa3d0..35c5b66f61f0 100644
+--- a/include/linux/of_platform.h
++++ b/include/linux/of_platform.h
+@@ -17,6 +17,10 @@
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ 
++#define BUS_OF_DECLARE_COMPAT(name, compat) OF_DECLARE_COMPAT(bus, name, compat)
++#define BUS_OF_DECLARE_TYPE(name, type) OF_DECLARE_TYPE(bus, name, type)
++#define BUS_OF_DECLARE_NAME(name, node_name) OF_DECLARE_NAME(bus, name, node_name)
++
+ /**
+  * struct of_dev_auxdata - lookup table entry for device names & platform_data
+  * @compatible: compatible value of node to match against node
+@@ -52,6 +56,7 @@ struct of_dev_auxdata {
+ 	  .platform_data = _pdata }
+ 
+ extern const struct of_device_id of_default_bus_match_table[];
++extern const struct of_device_id __bus_of_table[];
+ 
+ /* Platform drivers register/unregister */
+ extern struct platform_device *of_device_alloc(struct device_node *np,
 -- 
 2.5.5
