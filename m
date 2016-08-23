@@ -1,48 +1,25 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJLlq61bZzDrK6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 16:54:47 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7N6rfTI077690
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 02:54:44 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24ybqvjgcv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 02:54:44 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 23 Aug 2016 07:54:42 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9113717D805A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 07:56:24 +0100 (BST)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7N6sdii23462056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 06:54:39 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7N6scmO004177
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 00:54:38 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJNKP1cYszDrK6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 18:05:29 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id h186so7808183pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 01:05:29 -0700 (PDT)
+Date: Tue, 23 Aug 2016 16:05:24 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, mikey@neuling.org,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
 Subject: Re: [PATCH v3] powerpc: signals: Discard transaction state from
  signal frames
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org
+Message-ID: <20160823080523.GB8253@simonLocalRHEL7.x64>
 References: <20160823004617.10763-1-cyrilbur@gmail.com>
-Cc: mikey@neuling.org, Simon Guo <wei.guo.simon@gmail.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Tue, 23 Aug 2016 08:54:37 +0200
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20160823004617.10763-1-cyrilbur@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <b3065287-8b49-e128-30a1-188b53ba5cfa@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,7 +29,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23/08/2016 02:46, Cyril Bur wrote:
+On Tue, Aug 23, 2016 at 10:46:17AM +1000, Cyril Bur wrote:
 > Userspace can begin and suspend a transaction within the signal
 > handler which means they might enter sys_rt_sigreturn() with the
 > processor in suspended state.
@@ -111,5 +88,91 @@ On 23/08/2016 02:46, Cyril Bur wrote:
 > Reported-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 > Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 > Tested-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> 
+> ---
+> 
+> V2: Move the code down into the #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>     (32 and 64 bit)
+>     Add a small amount of text to Documentation
+>     Adjust the commit message for clarity
+> 
+> V3: Use MSR_TM_SUSPENDED() instead of MSR_TM_ACTIVE() as TM can *never* be
+>     active in the kernel, let it do a Bad Thing if it is.
+>  
+>  Documentation/powerpc/transactional_memory.txt |  2 ++
+>  arch/powerpc/kernel/signal_32.c                | 14 ++++++++++++++
+>  arch/powerpc/kernel/signal_64.c                | 14 ++++++++++++++
+>  3 files changed, 30 insertions(+)
+> 
+> diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentation/powerpc/transactional_memory.txt
+> index ba0a2a4..e32fdbb 100644
+> --- a/Documentation/powerpc/transactional_memory.txt
+> +++ b/Documentation/powerpc/transactional_memory.txt
+> @@ -167,6 +167,8 @@ signal will be rolled back anyway.
+>  For signals taken in non-TM or suspended mode, we use the
+>  normal/non-checkpointed stack pointer.
+>  
+> +Any transaction initiated inside a sighandler and suspended on return
+> +from the sighandler to the kernel will get reclaimed and discarded.
+>  
+>  Failure cause codes used by kernel
+>  ==================================
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> index b6aa378..a7daf74 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -1226,7 +1226,21 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
+>  		(regs->gpr[1] + __SIGNAL_FRAMESIZE + 16);
+>  	if (!access_ok(VERIFY_READ, rt_sf, sizeof(*rt_sf)))
+>  		goto bad;
+> +
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	/*
+> +	 * If there is a transactional state then throw it away.
+> +	 * The purpose of a sigreturn is to destroy all traces of the
+> +	 * signal frame, this includes any transactional state created
+> +	 * within in. We only check for suspended as we can never be
+> +	 * active in the kernel, we are active, there is nothing better to
+> +	 * do than go ahead and Bad Thing later.
+> +	 * The cause is not important as there will never be a
+> +	 * recheckpoint so it's not user visible.
+> +	 */
+> +	if (MSR_TM_SUSPENDED(mfmsr()))
+> +		tm_reclaim_current(0);
+> +
+>  	if (__get_user(tmp, &rt_sf->uc.uc_link))
+>  		goto bad;
+>  	uc_transact = (struct ucontext __user *)(uintptr_t)tmp;
+> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+> index 7e49984..70409bb 100644
+> --- a/arch/powerpc/kernel/signal_64.c
+> +++ b/arch/powerpc/kernel/signal_64.c
+> @@ -676,7 +676,21 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
+>  	if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
+>  		goto badframe;
+>  	set_current_blocked(&set);
+> +
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	/*
+> +	 * If there is a transactional state then throw it away.
+> +	 * The purpose of a sigreturn is to destroy all traces of the
+> +	 * signal frame, this includes any transactional state created
+> +	 * within in. We only check for suspended as we can never be
+> +	 * active in the kernel, we are active, there is nothing better to
+> +	 * do than go ahead and Bad Thing later.
+> +	 * The cause is not important as there will never be a
+> +	 * recheckpoint so it's not user visible.
+> +	 */
+> +	if (MSR_TM_SUSPENDED(mfmsr()))
+> +		tm_reclaim_current(0);
+> +
+>  	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
+>  		goto badframe;
+>  	if (MSR_TM_ACTIVE(msr)) {
+> -- 
+> 2.9.3
+> 
+Acked-by: Simon Guo <wei.guo.simon@gmail.com>
 
-Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Thanks,
+- Simon
