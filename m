@@ -2,23 +2,16 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJSz72xWtzDrK7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 21:34:59 +1000 (AEST)
-Subject: Re: Suspected regression?
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-References: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
- <1468965129.25630.15.camel@buserror.net>
- <601d732a-a137-3ba9-550d-19c7eb10337a@c-s.fr>
- <ed8c66dd-c567-35df-4a51-6bb3434fdc2b@c-s.fr>
- <CAPk1OjGR0gTAXvSUw=QUqkOrOZbmXCnd71Fu0mm5Pfrg46uc5w@mail.gmail.com>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJTtV53KLzDrK6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 22:16:02 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <b843cd6d-b9df-a5b2-4015-042c7894313f@c-s.fr>
-Date: Tue, 23 Aug 2016 13:34:54 +0200
-MIME-Version: 1.0
-In-Reply-To: <CAPk1OjGR0gTAXvSUw=QUqkOrOZbmXCnd71Fu0mm5Pfrg46uc5w@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Subject: [PATCH] powerpc/8xx: add dedicated machine check handler
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20160823121556.243EA1A2459@localhost.localdomain>
+Date: Tue, 23 Aug 2016 14:15:56 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,115 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/cputable.h |  1 +
+ arch/powerpc/kernel/cputable.c      |  1 +
+ arch/powerpc/kernel/traps.c         | 13 +++++++++++++
+ 3 files changed, 15 insertions(+)
 
-
-Le 23/08/2016 à 11:20, Alessio Igor Bogani a écrit :
-> Hi Christophe,
->
-> Sorry for delay in reply I was on vacation.
->
-> On 6 August 2016 at 11:29, christophe leroy <christophe.leroy@c-s.fr> wrote:
->> Alessio,
->>
->>
->> Le 05/08/2016 à 09:51, Christophe Leroy a écrit :
->>>
->>>
->>>
->>> Le 19/07/2016 à 23:52, Scott Wood a écrit :
->>>>
->>>> On Tue, 2016-07-19 at 12:00 +0200, Alessio Igor Bogani wrote:
->>>>>
->>>>> Hi all,
->>>>>
->>>>> I have got two boards MVME5100 (MPC7410 cpu) and MVME7100 (MPC8641D
->>>>> cpu) for which I use the same cross-compiler (ppc7400).
->>>>>
->>>>> I tested these against kernel HEAD to found that these don't boot
->>>>> anymore (PID 1 crash).
->>>>>
->>>>> Bisecting results in first offending commit:
->>>>> 7aef4136566b0539a1a98391181e188905e33401
->>>>>
->>>>> Removing it from HEAD make boards boot properly again.
->>>>>
->>>>> A third system based on P2010 isn't affected at all.
->>>>>
->>>>> Is it a regression or I have made something wrong?
->>>>
->>>>
->>>> I booted both my next branch, and Linus's master on MPC8641HPCN and
->>>> didn't see
->>>> this -- though possibly your RFS is doing something different.  Maybe
->>>> that's
->>>> the difference with P2010 as well.
->>>>
->>>> Is there any way you can debug the cause of the crash?  Or send me a
->>>> minimal
->>>> RFS that demonstrates the problem (ideally with debug symbols on the
->>>> userspace
->>>> binaries)?
->>>>
->>>
->>> I got from Alessio the below information:
->>>
->>> systemd[1]: Caught <BUS>, core dump failed (child 137, code=killed,
->>> status=7/BUS).
->>> systemd[1]: Freezing execution.
->>>
->>>
->>> What can generate SIGBUS ?
->>> And shouldn't we also get some KERN_ERR trace, something like "unhandled
->>> signal 7 at ....." ?
->>>
->>
->> As far as I can see, SIGBUS is mainly generated from alignment exception.
->> According to 7410 Reference Manual, alignment exception can happen in the
->> following cases:
->> * An operand of a dcbz instruction is on a page that is write-through or
->> cache-inhibited for a virtual mode access.
->> * An attempt to execute a dcbz instruction occurs when the cache is disabled
->> or locked.
->>
->> Could try with below patch to check if the dcbz insn is causing the SIGBUS ?
->
-> Unfortunately that patch doesn't solve the problem.
->
-> Is there a chance that cache behavior could settled by board firmware
-> (PPCBug on the MPC7410 board and MotLoad on the MPC8641D one)?
-> In that case what do you suggest me to looking for?
-
-If the removal of dcbz doesn't solve the issue, I don't think it is a 
-cache related issue.
-As far as I understood, your init gets a SIGBUS signal, right ? Then we 
-must identify the reason for that sigbus.
-Once it has happened, do you have access to 'dmesg' at all ?
-If not, you should make sure the default log level on your console is 
-high enough to capture all messages, then I recommend you to send us 
-your complete console log from startup until init crash so that we can 
-get a complete picture.
-
-Christophe
-
->
->> Christophe
->>
->> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
->> index 68f6862..3ad782a 100644
->> --- a/arch/powerpc/lib/checksum_32.S
->> +++ b/arch/powerpc/lib/checksum_32.S
->> @@ -192,7 +192,7 @@ _GLOBAL(csum_partial_copy_generic)
->>         mtctr   r8
->>
->>  53:    dcbt    r3,r4
->> -54:    dcbz    r11,r6
->> +54:    nop
->>  /* the main body of the cacheline loop */
->>         CSUM_COPY_16_BYTES_WITHEX(0)
->>  #if L1_CACHE_BYTES >= 32
->
-> Thanks for your help!
->
-> Ciao,
-> Alessio
->
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 82026b4..863b356 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -43,6 +43,7 @@ extern int machine_check_e500mc(struct pt_regs *regs);
+ extern int machine_check_e500(struct pt_regs *regs);
+ extern int machine_check_e200(struct pt_regs *regs);
+ extern int machine_check_47x(struct pt_regs *regs);
++extern int machine_check_8xx(struct pt_regs *regs);
+ 
+ extern void cpu_down_flush_e500v2(void);
+ extern void cpu_down_flush_e500mc(void);
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 74248ab..f7bee9e 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1229,6 +1229,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.mmu_features		= MMU_FTR_TYPE_8xx,
+ 		.icache_bsize		= 16,
+ 		.dcache_bsize		= 16,
++		.machine_check		= machine_check_8xx,
+ 		.platform		= "ppc823",
+ 	},
+ #endif /* CONFIG_8xx */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 2cb5892..37db564 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -664,6 +664,19 @@ int machine_check_e200(struct pt_regs *regs)
+ 
+ 	return 0;
+ }
++#elif defined(CONFIG_PPC_8xx)
++int machine_check_8xx(struct pt_regs *regs)
++{
++	unsigned long reason = get_mc_reason(regs);
++
++	printk("Machine check in kernel mode.\n");
++	printk("Caused by (from SRR1=%lx): ", reason);
++	if (reason & 0x40000000)
++		printk("Fetch error at address %lx\n", regs->nip);
++	else
++		printk("Data access error at address %lx\n", regs->dar);
++	return 0;
++}
+ #else
+ int machine_check_generic(struct pt_regs *regs)
+ {
+-- 
+2.1.0
