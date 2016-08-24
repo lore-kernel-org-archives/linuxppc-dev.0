@@ -1,25 +1,31 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJrfC2NvwzDrcL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 12:21:38 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id g202so229210pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 19:21:38 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: Simon Guo <wei.guo.simon@gmail.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/ptrace: Fix cppcheck issue in
- gpr32_set_common/gpr32_get_common.
-In-Reply-To: <1471695863-8660-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1471695863-8660-1-git-send-email-wei.guo.simon@gmail.com>
-Date: Wed, 24 Aug 2016 12:21:23 +1000
-Message-ID: <878tvmrjoc.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJrkf3gTQzDrcL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 12:25:30 +1000 (AEST)
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/6] cxlflash: Transition to application close model
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1470785888-9112-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1470785992-9274-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Date: Tue, 23 Aug 2016 22:25:17 -0400
+In-Reply-To: <1470785992-9274-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ (Matthew R. Ochs's message of "Tue, 9 Aug 2016 18:39:52 -0500")
+Message-ID: <yq1d1kyewdu.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,91 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>>>>> "Matthew" == Matthew R Ochs <mrochs@linux.vnet.ibm.com> writes:
 
-Hi Simon,
+Matthew> Caching the adapter file descriptor and performing a close on
+Matthew> behalf of an application is a poor design. This is due to the
+Matthew> fact that once a file descriptor in installed, it is free to be
+Matthew> altered without the knowledge of the cxlflash driver. This can
+Matthew> lead to inconsistencies between the application and
+Matthew> kernel. Furthermore, the nature of the former design is more
+Matthew> exploitable and thus should be abandoned.
 
-> The ckpt_regs usage in gpr32_set_common/gpr32_get_common()
-> will lead to cppcheck error.
->
-> [arch/powerpc/kernel/ptrace.c:2062]: (error) Uninitialized variable: ckpt=
-_regs
-> [arch/powerpc/kernel/ptrace.c:2130]: (error) Uninitialized variable: ckpt=
-_regs
->
-> A straightforward fix to clean it.
+Matthew> To support applications performing a close on the adapter file
+Matthew> that is associated with a context, a new flag is introduced to
+Matthew> the user API to indicate to applications that they are
+Matthew> responsible for the close following the cleanup (detach) of a
+Matthew> context. The documentation is also updated to reflect this
+Matthew> change in behavior.
 
-I'm always happy to see cppcheck warnings fixed :)
+Applied patches 4 through 6 to 4.9/scsi-queue.
 
->  static int gpr32_get_common(struct task_struct *target,
->  		     const struct user_regset *regset,
->  		     unsigned int pos, unsigned int count,
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->  			    void *kbuf, void __user *ubuf, bool tm_active)
-> +#else
-> +			    void *kbuf, void __user *ubuf)
-> +#endif
-
-I wonder if it might be possible to avoid some of the ifdefs and general
-churn by making the tm_active argument __maybe_unused rather than
-ifdefing around it?
-
-In particular, it would mean the two hunks in the function definitions
-and these these two hunks at the call site would be unnecessary:
-> @@ -2218,7 +2225,11 @@ static int gpr32_get(struct task_struct *target,
->  		     unsigned int pos, unsigned int count,
->  		     void *kbuf, void __user *ubuf)
->  {
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->  	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 0);
-> +#else
-> +	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf);
-> +#endif
->  }
->=20=20
->  static int gpr32_set(struct task_struct *target,
-> @@ -2226,7 +2237,11 @@ static int gpr32_set(struct task_struct *target,
->  		     unsigned int pos, unsigned int count,
->  		     const void *kbuf, const void __user *ubuf)
->  {
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->  	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 0);
-> +#else
-> +	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf);
-> +#endif
->  }
-
-Apart from that, thanks for fixing this up!
-
-Regards,
-Daniel
-
->=20=20
->  /*
-> --=20
-> 1.8.3.1
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJXvQSjAAoJEPC3R3P2I92Fyt8P/jJkFndc4TCTX/nsyWpmXn6Q
-sECcTtT5BMkRmLvkS85NLu1CbW8FmTEgkj6u/+82jsVou7cAVo+4yYoc8SPwO8kM
-F2OkFTWkq5Ku4ekTgGw/j85aCYfRlS7vRvB3s/QQH1anxfqHwt3HwHVThYkXd0FQ
-pPhNmEKTmZ8zC/xxpfCAtlbB2vTrhXAC0/ixHgHmEzCeQeTXiLzlHKU+QdQ+veUt
-r7r2Yd8YjbH/3IAsD0c62OKkSErqEMBpK+f5kh/L1XDSInY6A4icgyTJEF0VsBZS
-Sv5m6w9cUHV8i+bmzU/43z1K7wMc5CZdjcT499gZTYoGjBq+w8oG1u1Un6lXia2G
-tNDypZx+zH7t/4NUko1aK/GoUPSTF9THnk5EozY2kYl9iRjDV7atsCkU4b+hEpNB
-0RvojGJxV48X3Mx7DKl8xeS3p6xnyasI8cnkA7etgZ4MtixN96c9+QDysN8FSyUv
-NH8hjTtQCQvSIMlSkxYab9/qCSO0Cu425P7kQNGGImUNQS3mFjhaMJ/o53xr9fXw
-BUGnFJBdhDNzzgxkkd2tyitmTzGtSxg2F2gdVEE/V03PHibm/g48YKuknUs1m1n0
-jvNR2/s6bRlqKXXISdLC7v+Se5ucR7aTonttW7wK9XnXWJQlIocbqyTM2iS5rzUp
-j+LAJT2abRKb3EPHhECj
-=J5zu
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+Martin K. Petersen	Oracle Linux Engineering
