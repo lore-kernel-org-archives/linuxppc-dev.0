@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sK3dV2866zDrcS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 20:36:46 +1000 (AEST)
-Message-Id: <552651c13fd992acb2d044a356a88e1c78974bef.1472033140.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sK3dX1TJ0zDrcn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 20:36:48 +1000 (AEST)
+Message-Id: <0609ecd8fa7ecaa99a386e17f47027349cc3fdda.1472033140.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1472033140.git.christophe.leroy@c-s.fr>
 References: <cover.1472033140.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/3] net: fs_enet: don't unmap DMA when packet len is below
- copybreak
+Subject: [PATCH 3/3] net: fs_enet: make rx_copybreak value configurable
 To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
  Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org
-Date: Wed, 24 Aug 2016 12:36:42 +0200 (CEST)
+Date: Wed, 24 Aug 2016 12:36:44 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,98 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the length of the packet is below the defined copybreak limit,
-the received packet is copied into a newly allocated skb in order
-to reuse the skb. This is only interesting if it allow us to avoid
-a new DMA mapping. We shall therefore not DMA unmap and remap the
-skb->data. Instead, we invalidate the cache
-with dma_sync_single_for_cpu() once the received data has been
-copied into the new skb.
+Measurement shows that on a MPC8xx running at 132MHz, the optimal
+limit is 112:
+* 114 bytes packets are processed in 147 TB ticks with higher copybreak
+* 114 bytes packets are processed in 148 TB ticks with lower copybreak
+* 128 bytes packets are processed in 154 TB ticks with higher copybreak
+* 128 bytes packets are processed in 148 TB ticks with lower copybreak
+* 238 bytes packets are processed in 172 TB ticks with higher copybreak
+* 238 bytes packets are processed in 148 TB ticks with lower copybreak
 
-The following measures have been obtained on a mpc885 running at 132Mhz.
-Measurement is done using the timebase with packets sent to the target
-with 'ping -s 1' (packet len is 60):
-* Without this patch: 182 TB ticks
-* With this patch: 143 TB ticks
-
-As a comparison, if we set the copybreak limit to 0, then we get
-148 TB ticks. It means that without this patch, duration is even
-worse when copying received data to a new skb instead of
-allocating a new skb for next packet to be received
+However it might be different on other processors
+and/or frequencies. So it is useful to make it configurable.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 36 ++++++++++++----------
- 1 file changed, 20 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 8 +++++---
+ include/linux/fs_enet_pd.h                            | 1 -
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 7cd3ef9..addcae6 100644
+index addcae6..b59bbf8 100644
 --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
 +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -221,21 +221,10 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- 			if (sc & BD_ENET_RX_OV)
- 				fep->stats.rx_crc_errors++;
+@@ -60,6 +60,10 @@ module_param(fs_enet_debug, int, 0);
+ MODULE_PARM_DESC(fs_enet_debug,
+ 		 "Freescale bitmapped debugging message enable value");
  
--			skb = fep->rx_skbuff[curidx];
--
--			dma_unmap_single(fep->dev, CBDR_BUFADDR(bdp),
--				L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
--				DMA_FROM_DEVICE);
--
--			skbn = skb;
--
-+			skbn = fep->rx_skbuff[curidx];
- 		} else {
- 			skb = fep->rx_skbuff[curidx];
- 
--			dma_unmap_single(fep->dev, CBDR_BUFADDR(bdp),
--				L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
--				DMA_FROM_DEVICE);
--
- 			/*
- 			 * Process the incoming frame.
- 			 */
-@@ -251,12 +240,30 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- 					skb_copy_from_linear_data(skb,
- 						      skbn->data, pkt_len);
- 					swap(skb, skbn);
-+					dma_sync_single_for_cpu(fep->dev,
-+						CBDR_BUFADDR(bdp),
-+						L1_CACHE_ALIGN(pkt_len),
-+						DMA_FROM_DEVICE);
- 				}
- 			} else {
- 				skbn = netdev_alloc_skb(dev, ENET_RX_FRSIZE);
- 
--				if (skbn)
-+				if (skbn) {
-+					dma_addr_t dma;
++static int rx_copybreak = 240;
++module_param(rx_copybreak, int, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(rx_copybreak, "Receive copy threshold");
 +
- 					skb_align(skbn, ENET_RX_ALIGN);
-+
-+					dma_unmap_single(fep->dev,
-+						CBDR_BUFADDR(bdp),
-+						L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
-+						DMA_FROM_DEVICE);
-+
-+					dma = dma_map_single(fep->dev,
-+						skbn->data,
-+						L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
-+						DMA_FROM_DEVICE);
-+					CBDW_BUFADDR(bdp, dma);
-+				}
- 			}
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ static void fs_enet_netpoll(struct net_device *dev);
+ #endif
+@@ -84,7 +88,6 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
+ {
+ 	struct fs_enet_private *fep = container_of(napi, struct fs_enet_private, napi);
+ 	struct net_device *dev = fep->ndev;
+-	const struct fs_platform_info *fpi = fep->fpi;
+ 	cbd_t __iomem *bdp;
+ 	struct sk_buff *skb, *skbn;
+ 	int received = 0;
+@@ -232,7 +235,7 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
+ 			pkt_len = CBDR_DATLEN(bdp) - 4;	/* remove CRC */
+ 			fep->stats.rx_bytes += pkt_len + 4;
  
- 			if (skbn != NULL) {
-@@ -271,9 +278,6 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- 		}
+-			if (pkt_len <= fpi->rx_copybreak) {
++			if (pkt_len <= rx_copybreak) {
+ 				/* +2 to make IP header L1 cache aligned */
+ 				skbn = netdev_alloc_skb(dev, pkt_len + 2);
+ 				if (skbn != NULL) {
+@@ -905,7 +908,6 @@ static int fs_enet_probe(struct platform_device *ofdev)
  
- 		fep->rx_skbuff[curidx] = skbn;
--		CBDW_BUFADDR(bdp, dma_map_single(fep->dev, skbn->data,
--			     L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
--			     DMA_FROM_DEVICE));
- 		CBDW_DATLEN(bdp, 0);
- 		CBDW_SC(bdp, (sc & ~BD_ENET_RX_STATS) | BD_ENET_RX_EMPTY);
+ 	fpi->rx_ring = 32;
+ 	fpi->tx_ring = 64;
+-	fpi->rx_copybreak = 240;
+ 	fpi->napi_weight = 17;
+ 	fpi->phy_node = of_parse_phandle(ofdev->dev.of_node, "phy-handle", 0);
+ 	if (!fpi->phy_node && of_phy_is_fixed_link(ofdev->dev.of_node)) {
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index 77d783f..376600e 100644
+--- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -138,7 +138,6 @@ struct fs_platform_info {
  
+ 	int rx_ring, tx_ring;	/* number of buffers on rx     */
+ 	__u8 macaddr[ETH_ALEN];	/* mac address                 */
+-	int rx_copybreak;	/* limit we copy small frames  */
+ 	int napi_weight;	/* NAPI weight                 */
+ 
+ 	int use_rmii;		/* use RMII mode 	       */
 -- 
 2.1.0
