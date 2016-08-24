@@ -1,19 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sK3dX1TJ0zDrcn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 20:36:48 +1000 (AEST)
-Message-Id: <0609ecd8fa7ecaa99a386e17f47027349cc3fdda.1472033140.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1472033140.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sK6yx2wtWzDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 23:07:05 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id i6so1232712pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 06:07:05 -0700 (PDT)
+Message-ID: <1472044021.14381.71.camel@edumazet-glaptop3.roam.corp.google.com>
+Subject: Re: [PATCH 1/3] net: fs_enet: merge NAPI RX and NAPI TX
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>, Vitaly Bordug
+ <vbordug@ru.mvista.com>, davem@davemloft.net, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Date: Wed, 24 Aug 2016 06:07:01 -0700
+In-Reply-To: <c607324b1322bb5729081808b2f54f5f9da52444.1472033140.git.christophe.leroy@c-s.fr>
 References: <cover.1472033140.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 3/3] net: fs_enet: make rx_copybreak value configurable
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-Date: Wed, 24 Aug 2016 12:36:44 +0200 (CEST)
+ <c607324b1322bb5729081808b2f54f5f9da52444.1472033140.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,75 +29,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Measurement shows that on a MPC8xx running at 132MHz, the optimal
-limit is 112:
-* 114 bytes packets are processed in 147 TB ticks with higher copybreak
-* 114 bytes packets are processed in 148 TB ticks with lower copybreak
-* 128 bytes packets are processed in 154 TB ticks with higher copybreak
-* 128 bytes packets are processed in 148 TB ticks with lower copybreak
-* 238 bytes packets are processed in 172 TB ticks with higher copybreak
-* 238 bytes packets are processed in 148 TB ticks with lower copybreak
+On Wed, 2016-08-24 at 12:36 +0200, Christophe Leroy wrote:
+> Initially, a NAPI TX routine has been implemented separately from
+> NAPI RX, as done on the freescale/gianfar driver.
+> 
+> By merging NAPI RX and NAPI TX, we reduce the amount of TX completion
+> interrupts.
+> 
+> Handling of the budget in association with TX interrupts is based on
+> indications provided at https://wiki.linuxfoundation.org/networking/napi
+> 
+> At the same time, we fix an issue in the handling of fep->tx_free:
+> 
+> It is only when fep->tx_free goes up to MAX_SKB_FRAGS that
+> we need to wake up the queue. There is no need to call
+> netif_wake_queue() at every packet successfully transmitted.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 259 +++++++++------------
+>  drivers/net/ethernet/freescale/fs_enet/fs_enet.h   |  16 +-
+>  drivers/net/ethernet/freescale/fs_enet/mac-fcc.c   |  57 ++---
+>  drivers/net/ethernet/freescale/fs_enet/mac-fec.c   |  57 ++---
+>  drivers/net/ethernet/freescale/fs_enet/mac-scc.c   |  57 ++---
+>  5 files changed, 153 insertions(+), 293 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> index 61fd486..7cd3ef9 100644
+> --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> @@ -79,8 +79,8 @@ static void skb_align(struct sk_buff *skb, int align)
+>  		skb_reserve(skb, align - off);
+>  }
+>  
+> -/* NAPI receive function */
+> -static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
+> +/* NAPI function */
+> +static int fs_enet_napi(struct napi_struct *napi, int budget)
+>  {
+>  	struct fs_enet_private *fep = container_of(napi, struct fs_enet_private, napi);
+>  	struct net_device *dev = fep->ndev;
+> @@ -90,9 +90,100 @@ static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
+>  	int received = 0;
+>  	u16 pkt_len, sc;
+>  	int curidx;
+> +	int dirtyidx, do_wake, do_restart;
+>  
+> -	if (budget <= 0)
+> -		return received;
+> +	spin_lock(&fep->tx_lock);
+> +	bdp = fep->dirty_tx;
+> +
+> +	/* clear status bits for napi*/
+> +	(*fep->ops->napi_clear_event)(dev);
+> +
+> +	do_wake = do_restart = 0;
+> +	while (((sc = CBDR_SC(bdp)) & BD_ENET_TX_READY) == 0) {
 
-However it might be different on other processors
-and/or frequencies. So it is useful to make it configurable.
+I am afraid you could live lock here on SMP.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 8 +++++---
- include/linux/fs_enet_pd.h                            | 1 -
- 2 files changed, 5 insertions(+), 4 deletions(-)
+You should make sure you do not loop forever, not assuming cpu is faster
+than NIC.
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index addcae6..b59bbf8 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -60,6 +60,10 @@ module_param(fs_enet_debug, int, 0);
- MODULE_PARM_DESC(fs_enet_debug,
- 		 "Freescale bitmapped debugging message enable value");
- 
-+static int rx_copybreak = 240;
-+module_param(rx_copybreak, int, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(rx_copybreak, "Receive copy threshold");
-+
- #ifdef CONFIG_NET_POLL_CONTROLLER
- static void fs_enet_netpoll(struct net_device *dev);
- #endif
-@@ -84,7 +88,6 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- {
- 	struct fs_enet_private *fep = container_of(napi, struct fs_enet_private, napi);
- 	struct net_device *dev = fep->ndev;
--	const struct fs_platform_info *fpi = fep->fpi;
- 	cbd_t __iomem *bdp;
- 	struct sk_buff *skb, *skbn;
- 	int received = 0;
-@@ -232,7 +235,7 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- 			pkt_len = CBDR_DATLEN(bdp) - 4;	/* remove CRC */
- 			fep->stats.rx_bytes += pkt_len + 4;
- 
--			if (pkt_len <= fpi->rx_copybreak) {
-+			if (pkt_len <= rx_copybreak) {
- 				/* +2 to make IP header L1 cache aligned */
- 				skbn = netdev_alloc_skb(dev, pkt_len + 2);
- 				if (skbn != NULL) {
-@@ -905,7 +908,6 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 
- 	fpi->rx_ring = 32;
- 	fpi->tx_ring = 64;
--	fpi->rx_copybreak = 240;
- 	fpi->napi_weight = 17;
- 	fpi->phy_node = of_parse_phandle(ofdev->dev.of_node, "phy-handle", 0);
- 	if (!fpi->phy_node && of_phy_is_fixed_link(ofdev->dev.of_node)) {
-diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
-index 77d783f..376600e 100644
---- a/include/linux/fs_enet_pd.h
-+++ b/include/linux/fs_enet_pd.h
-@@ -138,7 +138,6 @@ struct fs_platform_info {
- 
- 	int rx_ring, tx_ring;	/* number of buffers on rx     */
- 	__u8 macaddr[ETH_ALEN];	/* mac address                 */
--	int rx_copybreak;	/* limit we copy small frames  */
- 	int napi_weight;	/* NAPI weight                 */
- 
- 	int use_rmii;		/* use RMII mode 	       */
--- 
-2.1.0
+
+
+> +		dirtyidx = bdp - fep->tx_bd_base;
+> +
+> +		if (fep->tx_free == fep->tx_ring)
+> +			break;
+> +
+> +		skb = fep->tx_skbuff[dirtyidx];
+> +
+> +		/*
+> +		 * Check for errors.
+> +		 */
+> +		if (sc & (BD_ENET_TX_HB | BD_ENET_TX_LC |
+> +			  BD_ENET_TX_RL | BD_ENET_TX_UN | BD_ENET_TX_CSL)) {
+> +
+> +			if (sc & BD_ENET_TX_HB)	/* No heartbeat */
+> +				fep->stats.tx_heartbeat_errors++;
+> +			if (sc & BD_ENET_TX_LC)	/* Late collision */
+> +				fep->stats.tx_window_errors++;
+> +			if (sc & BD_ENET_TX_RL)	/* Retrans limit */
+> +				fep->stats.tx_aborted_errors++;
+> +			if (sc & BD_ENET_TX_UN)	/* Underrun */
+> +				fep->stats.tx_fifo_errors++;
+> +			if (sc & BD_ENET_TX_CSL)	/* Carrier lost */
+> +				fep->stats.tx_carrier_errors++;
+> +
+> +			if (sc & (BD_ENET_TX_LC | BD_ENET_TX_RL | BD_ENET_TX_UN)) {
+> +				fep->stats.tx_errors++;
+> +				do_restart = 1;
+> +			}
+> +		} else
+> +			fep->stats.tx_packets++;
+> +
+> +		if (sc & BD_ENET_TX_READY) {
+> +			dev_warn(fep->dev,
+> +				 "HEY! Enet xmit interrupt and TX_READY.\n");
+> +		}
+> +
+> +		/*
+> +		 * Deferred means some collisions occurred during transmit,
+> +		 * but we eventually sent the packet OK.
+> +		 */
+> +		if (sc & BD_ENET_TX_DEF)
+> +			fep->stats.collisions++;
+> +
+> +		/* unmap */
+> +		if (fep->mapped_as_page[dirtyidx])
+> +			dma_unmap_page(fep->dev, CBDR_BUFADDR(bdp),
+> +				       CBDR_DATLEN(bdp), DMA_TO_DEVICE);
+> +		else
+> +			dma_unmap_single(fep->dev, CBDR_BUFADDR(bdp),
+> +					 CBDR_DATLEN(bdp), DMA_TO_DEVICE);
+> +
+> +		/*
+> +		 * Free the sk buffer associated with this last transmit.
+> +		 */
+> +		if (skb) {
+> +			dev_kfree_skb(skb);
+> +			fep->tx_skbuff[dirtyidx] = NULL;
+> +		}
+> +
+> +		/*
+> +		 * Update pointer to next buffer descriptor to be transmitted.
+> +		 */
+> +		if ((sc & BD_ENET_TX_WRAP) == 0)
+> +			bdp++;
+> +		else
+> +			bdp = fep->tx_bd_base;
+> +
+> +		/*
+> +		 * Since we have freed up a buffer, the ring is no longer
+> +		 * full.
+> +		 */
+> +		if (++fep->tx_free == MAX_SKB_FRAGS)
+> +			do_wake = 1;
+> +	}
+> +
+> +	fep->dirty_tx = bdp;
+> +
+> +	if (do_restart)
+> +		(*fep->ops->tx_restart)(dev);
+> +
+> +	spin_unlock(&fep->tx_lock);
+> +
+> +	if (do_wake)
+> +		netif_wake_queue(dev);
+>  
