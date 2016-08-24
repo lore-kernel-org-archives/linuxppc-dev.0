@@ -1,32 +1,25 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
- [IPv6:2a00:1450:400c:c09::233])
+Return-Path: <f.fainelli@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sK9cx0mS5zDrJy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 01:06:40 +1000 (AEST)
-Received: by mail-wm0-x233.google.com with SMTP id o80so32541173wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 08:06:40 -0700 (PDT)
-Subject: Re: [RFC/PATCH 1/2] cpuidle: Allow idle-states to be disabled at start
-To: Balbir Singh <bsingharora@gmail.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <michael.neuling@au1.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-References: <cover.1471557381.git.ego@linux.vnet.ibm.com>
- <48afad7788300482c047fc35e70ca8e4bf31a5ac.1471557381.git.ego@linux.vnet.ibm.com>
- <57BDB2D8.4080507@linaro.org>
- <fe9a9667-cbbb-8fa2-5db0-2edd3220ca7b@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKDSD2KnNzDrJy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 03:14:20 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id i6so1562328pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 10:14:20 -0700 (PDT)
+Subject: Re: [PATCH 3/3] net: fs_enet: make rx_copybreak value configurable
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
+References: <cover.1472033140.git.christophe.leroy@c-s.fr>
+ <0609ecd8fa7ecaa99a386e17f47027349cc3fdda.1472033140.git.christophe.leroy@c-s.fr>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>, linux-pm@vger.kernel.org
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <57BDB7F7.3090502@linaro.org>
-Date: Wed, 24 Aug 2016 17:06:31 +0200
+ netdev@vger.kernel.org
+From: Florian Fainelli <f.fainelli@gmail.com>
+Message-ID: <d0c26b9f-2a35-5e98-5d1d-06c649e02827@gmail.com>
+Date: Wed, 24 Aug 2016 10:14:16 -0700
 MIME-Version: 1.0
-In-Reply-To: <fe9a9667-cbbb-8fa2-5db0-2edd3220ca7b@gmail.com>
+In-Reply-To: <0609ecd8fa7ecaa99a386e17f47027349cc3fdda.1472033140.git.christophe.leroy@c-s.fr>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,36 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/24/2016 04:48 PM, Balbir Singh wrote:
+On 08/24/2016 03:36 AM, Christophe Leroy wrote:
+> Measurement shows that on a MPC8xx running at 132MHz, the optimal
+> limit is 112:
+> * 114 bytes packets are processed in 147 TB ticks with higher copybreak
+> * 114 bytes packets are processed in 148 TB ticks with lower copybreak
+> * 128 bytes packets are processed in 154 TB ticks with higher copybreak
+> * 128 bytes packets are processed in 148 TB ticks with lower copybreak
+> * 238 bytes packets are processed in 172 TB ticks with higher copybreak
+> * 238 bytes packets are processed in 148 TB ticks with lower copybreak
 > 
+> However it might be different on other processors
+> and/or frequencies. So it is useful to make it configurable.
 > 
-> On 25/08/16 00:44, Daniel Lezcano wrote:
->> On 08/19/2016 12:26 AM, Gautham R. Shenoy wrote:
->>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>>
->>> Currently all the idle states registered by a cpu-idle driver are
->>> enabled by default. This patch adds a mechanism which allows the
->>> driver to hint if an idle-state should start in a disabled state. The
->>> cpu-idle core will use this hint to appropriately initialize the
->>> usage->disable knob of the CPU device idle state.
->>
->> Why do you need to do that ?
->>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 8 +++++---
+>  include/linux/fs_enet_pd.h                            | 1 -
+>  2 files changed, 5 insertions(+), 4 deletions(-)
 > 
-> I think patch 2/2 explains the reason as it uses this infrastructure
+> diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> index addcae6..b59bbf8 100644
+> --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> @@ -60,6 +60,10 @@ module_param(fs_enet_debug, int, 0);
+>  MODULE_PARM_DESC(fs_enet_debug,
+>  		 "Freescale bitmapped debugging message enable value");
+>  
+> +static int rx_copybreak = 240;
+> +module_param(rx_copybreak, int, S_IRUGO | S_IWUSR);
+> +MODULE_PARM_DESC(rx_copybreak, "Receive copy threshold");
 
-Ok, let me elaborate the question, I was not clear.
-
-Why the userspace can't setup the system environment at boot time by
-disabling the state instead of adding extra code to disable it at boot
-time in the kernel and then re-enable it from userspace ?
-
-  -- Daniel
-
-
+There is an ethtool tunable knob for copybreak now, which you should
+prefer over a module parameter, see
+drivers/net/ethernet/cisco/enic/enic_ethtool.c
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Florian
