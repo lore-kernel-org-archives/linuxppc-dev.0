@@ -1,38 +1,35 @@
-Return-Path: <mdroth@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mcgrof@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sJmFX5S7QzDr7p
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 09:03:28 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7NMwXb1145675
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 19:03:26 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 250q1m2q0d-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 19:03:26 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mdroth@linux.vnet.ibm.com>;
- Tue, 23 Aug 2016 17:03:25 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 8603819D803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2016 17:02:55 -0600 (MDT)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-From: Michael Roth <mdroth@linux.vnet.ibm.com>
-To: Sahil Mehta <smehta@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <437ead25-8938-a0e8-c7cf-8ead45e5ef3b@linux.vnet.ibm.com>
- <9576c930-a87e-1d0c-e56b-7745d0b32137@linux.vnet.ibm.com>
-In-Reply-To: <9576c930-a87e-1d0c-e56b-7745d0b32137@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 2/2] powerpc/pseries: Implement indexed-count hotplug
- memory remove
-Date: Tue, 23 Aug 2016 18:03:14 -0500
-Message-Id: <20160823230314.5405.81619@loki>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sJpW53WfXzDrcG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 10:45:20 +1000 (AEST)
+From: mcgrof@kernel.org
+To: ming.lei@canonical.com, akpm@linux-foundation.org,
+ gregkh@linuxfoundation.org
+Cc: daniel.wagner@bmw-carit.de, mmarek@suse.com, linux-kernel@vger.kernel.org,
+ markivx@codeaurora.org, stephen.boyd@linaro.org, zohar@linux.vnet.ibm.com,
+ broonie@kernel.org, tiwai@suse.de, johannes@sipsolutions.net,
+ chunkeey@googlemail.com, hauke@hauke-m.de, jwboyer@fedoraproject.org,
+ dmitry.torokhov@gmail.com, dwmw2@infradead.org, jslaby@suse.com,
+ torvalds@linux-foundation.org, luto@amacapital.net, fengguang.wu@intel.com,
+ rpurdie@rpsys.net, j.anaszewski@samsung.com, Abhay_Salunke@dell.com,
+ Julia.Lawall@lip6.fr, Gilles.Muller@lip6.fr, nicolas.palix@imag.fr,
+ teg@jklm.no, dhowells@redhat.com, bjorn.andersson@linaro.org,
+ arend.vanspriel@broadcom.com, kvalo@codeaurora.org,
+ "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ Alessandro Rubini <rubini@gnudd.com>, Kevin Cernekee <cernekee@gmail.com>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>, Kees Cook <keescook@chromium.org>,
+ Jonathan Corbet <corbet@lwn.net>, Thierry Martinez <martinez@nsup.org>,
+ cocci@systeme.lip6.fr, linux-serial@vger.kernel.org,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 2/5] firmware: annotate thou shalt not request fw on init
+ or probe
+Date: Tue, 23 Aug 2016 17:45:04 -0700
+Message-Id: <1471999507-913-3-git-send-email-mcgrof@kernel.org>
+In-Reply-To: <1471999507-913-1-git-send-email-mcgrof@kernel.org>
+References: <1466117661-22075-1-git-send-email-mcgrof@kernel.org>
+ <1471999507-913-1-git-send-email-mcgrof@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,153 +39,275 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Sahil Mehta (2016-08-01 12:23:16)
-> Indexed-count remove for memory hotplug guarantees that a contiguous block
-> of <count> lmbs beginning at a specified <index> will be unassigned (NOT
-> that <count> lmbs will be removed). Because of Qemu's per-DIMM memory
-> management, the removal of a contiguous block of memory currently
-> requires a series of individual calls. Indexed-count remove reduces
-> this series into a single call.
-> =
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
 
-> Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
-> ---
-> v2:     -use u32s drc_index and count instead of u32 ic[]
->          in dlpar_memory
-> v3:     -add logic to handle invalid drc_index input
-> v4:     -none
-> =
+Thou shalt not make firmware calls early on init or probe.
 
->  arch/powerpc/platforms/pseries/hotplug-memory.c |   90 +++++++++++++++++=
-++++++
->  1 file changed, 90 insertions(+)
-> =
+systemd already ripped support out for the usermode helper
+a while ago, there are still users that require the usermode helper,
+however systemd's use of the usermode helper exacerbated a long
+lasting issue of the fact that we have many drivers that load
+firmware on init or probe. Independent of the usermode helper
+loading firmware on init or probe is a bad idea for a few reasons.
 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/power=
-pc/platforms/pseries/hotplug-memory.c
-> index 2d4ceb3..dd5eb38 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -503,6 +503,92 @@ static int dlpar_memory_remove_by_index(u32 drc_inde=
-x, struct property *prop)
->         return rc;
->  }
-> =
+When the firmware is read directly from the filesystem by the kernel,
+if the driver is built-in to the kernel the firmware may not yet be
+available, for such uses one could use initramfs and stuff the firmware
+inside, or one also use CONFIG_EXTRA_FIRMWARE; however not all distributions
+use this, as such generally one cannot count on this. There is another
+corner cases to consider, since we are accessing the firmware directly folks
+cannot expect new found firmware on a filesystem after we switch off from
+an initramfs with pivot_root().
 
-> +static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index,
-> +                                    struct property *prop)
-> +{
-> +       struct of_drconf_cell *lmbs;
-> +       u32 num_lmbs, *p;
-> +       int i, rc, start_lmb_found;
-> +       int lmbs_available =3D 0, start_index =3D 0, end_index;
-> +
-> +       pr_info("Attempting to hot-remove %u LMB(s) at %x\n",
-> +               lmbs_to_remove, drc_index);
-> +
-> +       if (lmbs_to_remove =3D=3D 0)
-> +               return -EINVAL;
-> +
-> +       p =3D prop->value;
-> +       num_lmbs =3D *p++;
-> +       lmbs =3D (struct of_drconf_cell *)p;
-> +       start_lmb_found =3D 0;
-> +
-> +       /* Navigate to drc_index */
-> +       while (start_index < num_lmbs) {
-> +               if (lmbs[start_index].drc_index =3D=3D drc_index) {
-> +                       start_lmb_found =3D 1;
-> +                       break;
-> +               }
-> +
-> +               start_index++;
-> +       }
-> +
-> +       if (!start_lmb_found)
-> +               return -EINVAL;
-> +
-> +       end_index =3D start_index + lmbs_to_remove;
-> +
-> +       /* Validate that there are enough LMBs to satisfy the request */
-> +       for (i =3D start_index; i < end_index; i++) {
-> +               if (lmbs[i].flags & DRCONF_MEM_RESERVED)
-> +                       break;
-> +
-> +               lmbs_available++;
-> +       }
-> +
-> +       if (lmbs_available < lmbs_to_remove)
-> +               return -EINVAL;
-> +
-> +       for (i =3D 0; i < end_index; i++) {
+Supporting such situations is possible today but fixing it for good is
+really complex due to the large amount of variablity in the boot up
+process.
 
-Shouldn't this be i =3D start_index? Otherwise it seems we'd attempt to
-satisfy the request using LMBs outside of the requested range.
+Instead just document the expectations properly and add a grammar rule to
+enable folks to check / validate / police if drivers are using the request
+firmware API early on init or probe.
 
-> +               if (!(lmbs[i].flags & DRCONF_MEM_ASSIGNED))
-> +                       continue;
-> +
-> +               rc =3D dlpar_remove_lmb(&lmbs[i]);
-> +               if (rc)
-> +                       break;
-> +
-> +               lmbs[i].reserved =3D 1;
-> +       }
-> +
-> +       if (rc) {
-> +               pr_err("Memory indexed-count-remove failed, adding any re=
-moved LMBs\n");
-> +
-> +               for (i =3D start_index; i < end_index; i++) {
-> +                       if (!lmbs[i].reserved)
-> +                               continue;
-> +
-> +                       rc =3D dlpar_add_lmb(&lmbs[i]);
-> +                       if (rc)
-> +                               pr_err("Failed to add LMB, drc index %x\n=
-",
-> +                                      be32_to_cpu(lmbs[i].drc_index));
-> +
-> +                       lmbs[i].reserved =3D 0;
-> +               }
-> +               rc =3D -EINVAL;
-> +       } else {
-> +               for (i =3D start_index; i < end_index; i++) {
-> +                       if (!lmbs[i].reserved)
-> +                               continue;
-> +
-> +                       pr_info("Memory at %llx (drc index %x) was hot-re=
-moved\n",
-> +                               lmbs[i].base_addr, lmbs[i].drc_index);
-> +
-> +                       lmbs[i].reserved =3D 0;
-> +               }
-> +       }
-> +
-> +       return rc;
-> +}
-> +
->  #else
->  static inline int pseries_remove_memblock(unsigned long base,
->                                           unsigned int memblock_size)
-> @@ -829,6 +915,10 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->                 } else if (hp_elog->id_type =3D=3D PSERIES_HP_ELOG_ID_DRC=
-_INDEX) {
->                         drc_index =3D hp_elog->_drc_u.drc_index;
->                         rc =3D dlpar_memory_remove_by_index(drc_index, pr=
-op);
-> +               } else if (hp_elog->id_type =3D=3D PSERIES_HP_ELOG_ID_DRC=
-_IC) {
-> +                       count =3D hp_elog->_drc_u.indexed_count[0];
-> +                       drc_index =3D hp_elog->_drc_u.indexed_count[1];
-> +                       rc =3D dlpar_memory_remove_by_ic(count, drc_index=
-, prop);
->                 } else {
->                         rc =3D -EINVAL;
->                 }
-> =
+The SmPL rule used to check for the probe routine is loose and is
+currently defined through a regexp, that can easily be extended to any
+other known bus probe routine names. It also uses the new Python
+iteration support which allows us to backtrack from a request_firmware*()
+call back to a possible probe or init, iteratively. Without iteration
+we would only be able to get reports for callers who directly use the
+request_firmware*() API on the initial probe or init routine.
 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+There are 4 offenders at this time:
+
+mcgrof@ergon ~/linux-next (git::20160609)$ export COCCI=scripts/coccinelle/api/request_firmware.cocci
+mcgrof@ergon ~/linux-next (git::20160609)$ make coccicheck MODE=report
+
+drivers/fmc/fmc-fakedev.c: ERROR: driver call request firmware call on its init routine on line 321.
+drivers/fmc/fmc-write-eeprom.c: ERROR: driver call request firmware call on its probe routine on line 136.
+drivers/tty/serial/rp2.c: ERROR: driver call request firmware call on its probe routine on line 796.
+drivers/tty/serial/ucc_uart.c: ERROR: driver call request firmware call on its probe routine on line 1246.
+
+I checked and verified all these are valid reports. This list also matches
+the same list as in 20150805, so we have fortunately not gotten worse.
+Let's keep it that way and also fix these drivers.
+
+v2: changes from v1 [0]:
+
+o This now supports iteration, this extends our coverage on the report
+
+o Update documentation and commit log to accept the fate of not being
+  able to remove the usermode helper.
+
+[0] https://lkml.kernel.org/r/1440811107-861-1-git-send-email-mcgrof@do-not-panic.com
+
+Cc: Alessandro Rubini <rubini@gnudd.com>
+Cc: Kevin Cernekee <cernekee@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Ming Lei <ming.lei@canonical.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Gilles Muller <Gilles.Muller@lip6.fr>
+Cc: Nicolas Palix <nicolas.palix@imag.fr>
+Cc: Thierry Martinez <martinez@nsup.org>
+Cc: Michal Marek <mmarek@suse.com>
+Cc: cocci@systeme.lip6.fr
+Cc: Alessandro Rubini <rubini@gnudd.com>
+Cc: Kevin Cernekee <cernekee@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: linux-serial@vger.kernel.org
+Cc: linux-doc@vger.kernel.org
+Cc: linux-serial@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
+---
+ Documentation/firmware_class/README                |  20 ++++
+ drivers/base/Kconfig                               |   2 +-
+ .../request_firmware-avoid-init-probe-init.cocci   | 130 +++++++++++++++++++++
+ 3 files changed, 151 insertions(+), 1 deletion(-)
+ create mode 100644 scripts/coccinelle/api/request_firmware-avoid-init-probe-init.cocci
+
+diff --git a/Documentation/firmware_class/README b/Documentation/firmware_class/README
+index cafdca8b3b15..056d1cb9d365 100644
+--- a/Documentation/firmware_class/README
++++ b/Documentation/firmware_class/README
+@@ -93,6 +93,26 @@
+    user contexts to request firmware asynchronously, but can't be called
+    in atomic contexts.
+ 
++Requirements:
++=============
++
++You should avoid at all costs requesting firmware on both init and probe paths
++of your device driver. Reason for this is the complexity needed to ensure a
++firmware will be available for a driver early in boot through different
++build configurations. Consider built-in drivers needing firmware early, or
++consider a driver assuming it will only get firmware after pivot_root().
++
++Drivers that really need firmware early should use stuff the firmware in
++initramfs or consider using CONFIG_EXTRA_FIRMWARE. Using initramfs is much
++more portable to more distributions as not all distributions wish to enable
++CONFIG_EXTRA_FIRMWARE. Should a driver require the firmware being built-in
++it should depend on CONFIG_EXTRA_FIRMWARE. There is no current annotation for
++requiring a firmware on initramfs.
++
++If you're a maintainer you can help police this with:
++
++$ export COCCI=scripts/coccinelle/api/request_firmware-avoid-init-probe-init.cocci
++$ make coccicheck MODE=report
+ 
+  about in-kernel persistence:
+  ---------------------------
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index 98504ec99c7d..12b4f5551501 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -152,7 +152,7 @@ config FW_LOADER_USER_HELPER
+ 	bool
+ 
+ config FW_LOADER_USER_HELPER_FALLBACK
+-	bool "Fallback user-helper invocation for firmware loading"
++	bool "Fallback user-helper invocation for firmware loading (avoid)"
+ 	depends on FW_LOADER
+ 	select FW_LOADER_USER_HELPER
+ 	help
+diff --git a/scripts/coccinelle/api/request_firmware-avoid-init-probe-init.cocci b/scripts/coccinelle/api/request_firmware-avoid-init-probe-init.cocci
+new file mode 100644
+index 000000000000..cf180c59e042
+--- /dev/null
++++ b/scripts/coccinelle/api/request_firmware-avoid-init-probe-init.cocci
+@@ -0,0 +1,130 @@
++///
++/// Thou shalt not request firmware on init or probe
++///
++// Confidence: High
++// Copyright: (C) 2016 Luis R. Rodriguez <mcgrof@kernel.org>
++// Copyright: (C) 2015 Julia Lawall, Inria/LIP6.
++//
++// GPLv2.
++// URL: http://coccinelle.lip6.fr/
++// Options: --no-includes --include-headers --no-show-diff
++// Requires: 1.0.5
++//
++// Coccinelle 1.0.5 is required given that this uses the shiny new
++// python iteration feature.
++
++virtual report
++virtual after_start
++
++// -------------------------------------------------------------------------
++
++@initialize:python@
++@@
++
++seen = set()
++
++def add_if_not_present(f, file, starter_var):
++    if (f, file, starter_var) not in seen:
++        seen.add((f, file, starter_var))
++        it = Iteration()
++        if file != None:
++            it.set_files([file])
++    it.add_virtual_rule(after_start)
++    it.add_virtual_rule(report)
++    it.add_virtual_identifier(fn, f)
++    it.add_virtual_identifier(starter, starter_var)
++    it.register()
++
++reported = set()
++
++def print_err(str, file, line):
++    if (file, line) not in reported:
++        reported.add((file, line))
++	print "%s: ERROR: driver call request firmware call on its %s routine on line %d." % (file, str, line)
++
++@ defines_module_init@
++declarer name module_init;
++identifier init;
++@@
++
++module_init(init);
++
++@ has_probe depends on defines_module_init@
++identifier drv_calls, drv_probe;
++type bus_driver;
++identifier probe_op =~ "(probe)";
++@@
++
++bus_driver drv_calls = {
++	.probe_op = drv_probe,
++};
++
++@hascall depends on !after_start && defines_module_init@
++position p;
++@@
++
++(
++request_firmware@p(...)
++|
++request_firmware_nowait@p(...)
++|
++request_firmware_direct@p(...)
++)
++
++@script:python@
++init << defines_module_init.init;
++p << hascall.p;
++@@
++
++if p[0].current_element == init:
++    print_err("init", p[0].file, int(p[0].line))
++    cocci.include_match(False)
++
++@script:python@
++drv_probe << has_probe.drv_probe;
++p << hascall.p;
++@@
++
++if p[0].current_element == drv_probe:
++    print_err("probe", p[0].file, int(p[0].line))
++    cocci.include_match(False)
++
++@script:python@
++p << hascall.p;
++@@
++
++add_if_not_present(p[0].current_element, p[0].file, p[0].line)
++
++@hasrecall depends on after_start@
++position p;
++identifier virtual.fn;
++@@
++
++fn@p(...)
++
++@script:python@
++init << defines_module_init.init;
++p << hasrecall.p;
++starter << virtual.starter;
++@@
++
++if p[0].current_element == init:
++    print_err("init", p[0].file, int(starter))
++    cocci.include_match(False)
++
++@script:python@
++drv_probe << has_probe.drv_probe;
++p << hasrecall.p;
++starter << virtual.starter;
++@@
++
++if p[0].current_element == drv_probe:
++    print_err("probe", p[0].file, int(starter))
++    cocci.include_match(False)
++
++@script:python@
++p << hasrecall.p;
++starter << virtual.starter;
++@@
++
++add_if_not_present(p[0].current_element, p[0].file, starter)
+-- 
+2.9.2
