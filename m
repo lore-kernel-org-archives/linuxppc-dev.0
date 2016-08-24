@@ -1,23 +1,43 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <lurodriguez@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sKJzm3XcCzDrcb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 06:38:28 +1000 (AEST)
-To: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- Julia Lawall <julia.lawall@lip6.fr>, Paolo Bonzini <pbonzini@redhat.com>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] powerpc/powernv/pci: Use kmalloc_array() in two functions
-Message-ID: <817567b2-cdf6-7f7b-6041-9a026ea10a0f@users.sourceforge.net>
-Date: Wed, 24 Aug 2016 22:36:54 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKK0X2XxmzDrdQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 06:39:08 +1000 (AEST)
+Date: Wed, 24 Aug 2016 22:39:01 +0200
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+To: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, ming.lei@canonical.com,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Marek <mmarek@suse.com>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ markivx@codeaurora.org, stephen.boyd@linaro.org,
+ zohar@linux.vnet.ibm.com, Mark Brown <broonie@kernel.org>,
+ Takashi Iwai <tiwai@suse.de>,
+ Johannes Berg <johannes@sipsolutions.net>, chunkeey@googlemail.com,
+ hauke@hauke-m.de, Josh Boyer <jwboyer@fedoraproject.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ David Woodhouse <dwmw2@infradead.org>, jslaby@suse.com,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Andy Lutomirski <luto@amacapital.net>,
+ Wu Fengguang <fengguang.wu@intel.com>, rpurdie@rpsys.net,
+ j.anaszewski@samsung.com, Abhay_Salunke@dell.com,
+ Julia Lawall <Julia.Lawall@lip6.fr>, Gilles.Muller@lip6.fr,
+ nicolas.palix@imag.fr, teg@jklm.no, David Howells <dhowells@redhat.com>,
+ Alessandro Rubini <rubini@gnudd.com>, Kevin Cernekee <cernekee@gmail.com>,
+ Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
+ Thierry Martinez <martinez@nsup.org>, cocci@systeme.lip6.fr,
+ linux-serial@vger.kernel.org, linux-doc@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 2/5] firmware: annotate thou shalt not request fw on
+ init or probe
+Message-ID: <20160824203901.GT3296@wotan.suse.de>
+References: <1466117661-22075-1-git-send-email-mcgrof@kernel.org>
+ <1466117661-22075-3-git-send-email-mcgrof@kernel.org>
+ <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +47,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 24 Aug 2016 22:26:37 +0200
+On Wed, Aug 24, 2016 at 08:55:55AM +0200, Daniel Vetter wrote:
+> On Fri, Jun 17, 2016 at 12:54 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> > Thou shalt not make firmware calls early on init or probe.
 
-A multiplication for the size determination of a memory allocation
-indicated that an array data structure should be processed.
-Thus reuse the corresponding function "kmalloc_array".
+<-- snip -->
 
-This issue was detected by using the Coccinelle software.
+> > There are 4 offenders at this time:
+> >
+> > mcgrof@ergon ~/linux-next (git::20160609)$ export COCCI=scripts/coccinelle/api/request_firmware.cocci
+> > mcgrof@ergon ~/linux-next (git::20160609)$ make coccicheck MODE=report
+> >
+> > drivers/fmc/fmc-fakedev.c: ERROR: driver call request firmware call on its init routine on line 321.
+> > drivers/fmc/fmc-write-eeprom.c: ERROR: driver call request firmware call on its probe routine on line 136.
+> > drivers/tty/serial/rp2.c: ERROR: driver call request firmware call on its probe routine on line 796.
+> > drivers/tty/serial/ucc_uart.c: ERROR: driver call request firmware call on its probe routine on line 1246.
+> 
+> Plus all gpu drivers which need firmware. And yes we must load them at
+> probe
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Do you have an upstream driver in mind that does this ? Is it on device
+drier module probe or a DRM subsystem specific probe call of some sort ?
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index fd9444f..2366552 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1305,7 +1305,9 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
- 	else
- 		m64_bars = 1;
- 
--	pdn->m64_map = kmalloc(sizeof(*pdn->m64_map) * m64_bars, GFP_KERNEL);
-+	pdn->m64_map = kmalloc_array(m64_bars,
-+				     sizeof(*pdn->m64_map),
-+				     GFP_KERNEL);
- 	if (!pdn->m64_map)
- 		return -ENOMEM;
- 	/* Initialize the m64_map to IODA_INVALID_M64 */
-@@ -1572,8 +1574,9 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
- 
- 		/* Allocating pe_num_map */
- 		if (pdn->m64_single_mode)
--			pdn->pe_num_map = kmalloc(sizeof(*pdn->pe_num_map) * num_vfs,
--					GFP_KERNEL);
-+			pdn->pe_num_map = kmalloc_array(num_vfs,
-+							sizeof(*pdn->pe_num_map),
-+							GFP_KERNEL);
- 		else
- 			pdn->pe_num_map = kmalloc(sizeof(*pdn->pe_num_map), GFP_KERNEL);
- 
--- 
-2.9.3
+> because people are generally pissed when they boot their machine
+> and the screen goes black. On top of that a lot of people want their
+> gpu drivers to be built-in, but can't ship the firmware blobs in the
+> kernel image because gpl. Yep, there's a bit a contradiction there ...
+
+Can they use initramfs for this ?
+
+Also just curious -- as with other subsystems, is it possible to load
+a generic driver first, say vesa, and then a more enhanced one later ?
+I am not saying this is ideal or am I suggesting this, I'd just like
+to know the feasibility of this.
+
+> I think what would work is loading the different subsystems of the
+> driver in parallel (we already do that largely)
+
+Init level stuff is actually pretty synchronous, and in fact both
+init and probe are called serially. There are a few subsystems which
+have been doing things a bit differently, but these are exceptions.
+
+When you say we already do this largely, can you describe a bit more
+precisely what you mean ?
+
+>, and then if one
+> firmware blob isn't there yet simply stall that async worker until it
+> shows up.
+
+Is this an existing framework or do you mean if we add something
+generic to do this async loading of subsystems ?
+
+> But the answers I've gotten thus far from request_firmware()
+> folks (well at least Greg) is don't do that ...
+
+Well in this patch set I'm adding myself as a MAINTAINER and I've
+been extending the firmware API recently to help with a few new
+features I want, I've been wanting to hear more feedback from
+other's needs and I had actually not gotten much -- except
+only recently with the usermode helper and reasons why some
+folks thought they could not use direct firmware loading from
+the fs. I'm keen to hear or more use cases and needs specially if
+they have to do with improving boot time and asynchronous boot.
+
+> Is that problem still somewhere on the radar? 
+
+Not mine.
+
+> Atm there's various
+> wait_for_rootfs hacks out there floating in vendor/product trees.
+
+This one I've heard about recently, and I suggested two possible
+solutions, with a preference to a simply notification of when
+rootfs is available from userspace.
+
+> "Avoid at all costs" sounds like upstream prefers to not care about
+> android/cros in those case (yes I know most arm socs don't need
+> firmware, which would make it a problem fo just be a subset of all
+> devices).
+
+In my days of dealing with Android I learned most folks did not frankly
+care too much about upstream-first model. That means things were reactive.
+That's a business mind set and that's fine. However for upstream we want
+what is best and to discuss. I haven't seen proposals so, so long as
+we just hear of "hacks" that some folks do in vendor/product trees,
+what can we do ?
+
+In so far as async probe is concerned -- that is now upstream.
+
+http://www.do-not-panic.com/2015/12/linux-asynchronous-probe.html
+
+In so far as modules are concerned -- this should work without issue now, and
+if there is an issue its very likely a bug in the subsystem.  As I noted in the
+post, built-in support requires more love. A simple option for you to test this
+is to test the two debug patches at the end there and boot. Alternatively inits
+can just peg the async request for all modules. Should be an easy change, just
+hadn't had a change to do it yet. Maybe its time.
+
+I'm also trying to make more async functionality possible early in boot with
+dependencies annotated somehow, and have a bit of work to help with this (refer
+to recent linker tables patches) already which may even be possible to used to
+facelift our old kernel init levels -- but as I've studied this I've also
+observed others working on very similar problems, nothing is quite taking a
+large picture of this and trying to generalize this. Its why I proposed it as a
+topic for KS.
+
+So .. I agree, let's avoid the hacks. Patches welcomed.
+
+  Luis
