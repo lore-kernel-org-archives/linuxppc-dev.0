@@ -1,43 +1,24 @@
-Return-Path: <lurodriguez@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00050.outbound.protection.outlook.com [40.107.0.50])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sKK0X2XxmzDrdQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 06:39:08 +1000 (AEST)
-Date: Wed, 24 Aug 2016 22:39:01 +0200
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, ming.lei@canonical.com,
- Andrew Morton <akpm@linux-foundation.org>, Michal Marek <mmarek@suse.com>,
- Greg KH <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- markivx@codeaurora.org, stephen.boyd@linaro.org,
- zohar@linux.vnet.ibm.com, Mark Brown <broonie@kernel.org>,
- Takashi Iwai <tiwai@suse.de>,
- Johannes Berg <johannes@sipsolutions.net>, chunkeey@googlemail.com,
- hauke@hauke-m.de, Josh Boyer <jwboyer@fedoraproject.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- David Woodhouse <dwmw2@infradead.org>, jslaby@suse.com,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Andy Lutomirski <luto@amacapital.net>,
- Wu Fengguang <fengguang.wu@intel.com>, rpurdie@rpsys.net,
- j.anaszewski@samsung.com, Abhay_Salunke@dell.com,
- Julia Lawall <Julia.Lawall@lip6.fr>, Gilles.Muller@lip6.fr,
- nicolas.palix@imag.fr, teg@jklm.no, David Howells <dhowells@redhat.com>,
- Alessandro Rubini <rubini@gnudd.com>, Kevin Cernekee <cernekee@gmail.com>,
- Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
- Thierry Martinez <martinez@nsup.org>, cocci@systeme.lip6.fr,
- linux-serial@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 2/5] firmware: annotate thou shalt not request fw on
- init or probe
-Message-ID: <20160824203901.GT3296@wotan.suse.de>
-References: <1466117661-22075-1-git-send-email-mcgrof@kernel.org>
- <1466117661-22075-3-git-send-email-mcgrof@kernel.org>
- <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKLLF4sRzzDrcd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 07:39:33 +1000 (AEST)
+From: Scott Wood <scott.wood@nxp.com>
+To: Tillmann Heidsieck <theidsieck@leenox.de>, Scott Wood
+ <scottwood@freescale.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] powerpc: fsl_pci: fix inbound ATMU entries for
+ systems with >4G RAM
+Date: Wed, 24 Aug 2016 21:39:27 +0000
+Message-ID: <DB5PR0401MB19280DCC626ED0E83EDD0D3791EA0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <20160824194614.4014-1-theidsieck@leenox.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,111 +28,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 24, 2016 at 08:55:55AM +0200, Daniel Vetter wrote:
-> On Fri, Jun 17, 2016 at 12:54 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
-> > Thou shalt not make firmware calls early on init or probe.
-
-<-- snip -->
-
-> > There are 4 offenders at this time:
-> >
-> > mcgrof@ergon ~/linux-next (git::20160609)$ export COCCI=scripts/coccinelle/api/request_firmware.cocci
-> > mcgrof@ergon ~/linux-next (git::20160609)$ make coccicheck MODE=report
-> >
-> > drivers/fmc/fmc-fakedev.c: ERROR: driver call request firmware call on its init routine on line 321.
-> > drivers/fmc/fmc-write-eeprom.c: ERROR: driver call request firmware call on its probe routine on line 136.
-> > drivers/tty/serial/rp2.c: ERROR: driver call request firmware call on its probe routine on line 796.
-> > drivers/tty/serial/ucc_uart.c: ERROR: driver call request firmware call on its probe routine on line 1246.
-> 
-> Plus all gpu drivers which need firmware. And yes we must load them at
-> probe
-
-Do you have an upstream driver in mind that does this ? Is it on device
-drier module probe or a DRM subsystem specific probe call of some sort ?
-
-> because people are generally pissed when they boot their machine
-> and the screen goes black. On top of that a lot of people want their
-> gpu drivers to be built-in, but can't ship the firmware blobs in the
-> kernel image because gpl. Yep, there's a bit a contradiction there ...
-
-Can they use initramfs for this ?
-
-Also just curious -- as with other subsystems, is it possible to load
-a generic driver first, say vesa, and then a more enhanced one later ?
-I am not saying this is ideal or am I suggesting this, I'd just like
-to know the feasibility of this.
-
-> I think what would work is loading the different subsystems of the
-> driver in parallel (we already do that largely)
-
-Init level stuff is actually pretty synchronous, and in fact both
-init and probe are called serially. There are a few subsystems which
-have been doing things a bit differently, but these are exceptions.
-
-When you say we already do this largely, can you describe a bit more
-precisely what you mean ?
-
->, and then if one
-> firmware blob isn't there yet simply stall that async worker until it
-> shows up.
-
-Is this an existing framework or do you mean if we add something
-generic to do this async loading of subsystems ?
-
-> But the answers I've gotten thus far from request_firmware()
-> folks (well at least Greg) is don't do that ...
-
-Well in this patch set I'm adding myself as a MAINTAINER and I've
-been extending the firmware API recently to help with a few new
-features I want, I've been wanting to hear more feedback from
-other's needs and I had actually not gotten much -- except
-only recently with the usermode helper and reasons why some
-folks thought they could not use direct firmware loading from
-the fs. I'm keen to hear or more use cases and needs specially if
-they have to do with improving boot time and asynchronous boot.
-
-> Is that problem still somewhere on the radar? 
-
-Not mine.
-
-> Atm there's various
-> wait_for_rootfs hacks out there floating in vendor/product trees.
-
-This one I've heard about recently, and I suggested two possible
-solutions, with a preference to a simply notification of when
-rootfs is available from userspace.
-
-> "Avoid at all costs" sounds like upstream prefers to not care about
-> android/cros in those case (yes I know most arm socs don't need
-> firmware, which would make it a problem fo just be a subset of all
-> devices).
-
-In my days of dealing with Android I learned most folks did not frankly
-care too much about upstream-first model. That means things were reactive.
-That's a business mind set and that's fine. However for upstream we want
-what is best and to discuss. I haven't seen proposals so, so long as
-we just hear of "hacks" that some folks do in vendor/product trees,
-what can we do ?
-
-In so far as async probe is concerned -- that is now upstream.
-
-http://www.do-not-panic.com/2015/12/linux-asynchronous-probe.html
-
-In so far as modules are concerned -- this should work without issue now, and
-if there is an issue its very likely a bug in the subsystem.  As I noted in the
-post, built-in support requires more love. A simple option for you to test this
-is to test the two debug patches at the end there and boot. Alternatively inits
-can just peg the async request for all modules. Should be an easy change, just
-hadn't had a change to do it yet. Maybe its time.
-
-I'm also trying to make more async functionality possible early in boot with
-dependencies annotated somehow, and have a bit of work to help with this (refer
-to recent linker tables patches) already which may even be possible to used to
-facelift our old kernel init levels -- but as I've studied this I've also
-observed others working on very similar problems, nothing is quite taking a
-large picture of this and trying to generalize this. Its why I proposed it as a
-topic for KS.
-
-So .. I agree, let's avoid the hacks. Patches welcomed.
-
-  Luis
+On 08/24/2016 02:48 PM, Tillmann Heidsieck wrote:=0A=
+> For systems with >4G of RAM, the current implementation adds a second=0A=
+> inbound PCIe window starting at 128G this leaves all memory from 4G to=0A=
+> 128G inaccessible to inbound PCIe transactions.=0A=
+=0A=
+The second inbound window is at 256G, and it maps all of RAM.  Note that=0A=
+for accesses in this window, the PCI address is different from the host=0A=
+address.=0A=
+=0A=
+> The according errors can be observed by using the EDAC driver for MPC85XX=
+.=0A=
+> =0A=
+> This patch changes this behaviour by adding the second window starting=0A=
+> at 4G. The current implementation still leaves memory beyond 68G=0A=
+> unmapped as this would require yet another ATMU entry.=0A=
+=0A=
+Windows must be size-aligned, as per the description of PEXIWBARn[WBA].=0A=
+ This window is illegal.=0A=
+=0A=
+By trying to identity-map everything you also break the assumption that=0A=
+we don't need swiotlb to avoid the PEXCSRBAR region on PCI devices=0A=
+capable of generating 64-bit addresses.=0A=
+=0A=
+> Tested on a T4240 with 12G of RAM and an AMD E6760 PCIe card working with=
+=0A=
+> the in-tree radeon driver.=0A=
+=0A=
+I have no problem using an e1000e card on a t4240 with 24 GiB RAM.=0A=
+=0A=
+Looking at the radeon driver I see that there's a possibility of a dma=0A=
+mask that is exactly 40 bits.  I think there's an off-by-one error in=0A=
+fsl_pci_dma_set_mask().  If you change "dma_mask >=3D=0A=
+DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)" to "dma_mask >=0A=
+DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)", does that make radeon work without=0A=
+this patch?=0A=
+=0A=
+=0A=
+> Signed-off-by: Tillmann Heidsieck <theidsieck@leenox.de>=0A=
+> ---=0A=
+>  arch/powerpc/sysdev/fsl_pci.c | 40 ++++++++++++++++++++-----------------=
+---=0A=
+>  1 file changed, 20 insertions(+), 20 deletions(-)=0A=
+> =0A=
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.=
+c=0A=
+> index 0ef9df49f0f2..260983037904 100644=0A=
+> --- a/arch/powerpc/sysdev/fsl_pci.c=0A=
+> +++ b/arch/powerpc/sysdev/fsl_pci.c=0A=
+> @@ -349,17 +349,13 @@ static void setup_pci_atmu(struct pci_controller *h=
+ose)=0A=
+>  	}=0A=
+>  =0A=
+>  	sz =3D min(mem, paddr_lo);=0A=
+> -	mem_log =3D ilog2(sz);=0A=
+> +	mem_log =3D order_base_2(sz);=0A=
+>  =0A=
+>  	/* PCIe can overmap inbound & outbound since RX & TX are separated */=
+=0A=
+>  	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {=0A=
+> -		/* Size window to exact size if power-of-two or one size up */=0A=
+> -		if ((1ull << mem_log) !=3D mem) {=0A=
+> -			mem_log++;=0A=
+> -			if ((1ull << mem_log) > mem)=0A=
+> -				pr_info("%s: Setting PCI inbound window "=0A=
+> -					"greater than memory size\n", name);=0A=
+> -		}=0A=
+> +		if ((1ull << mem_log) > mem)=0A=
+> +			pr_info("%s: Setting PCI inbound window greater than memory size\n",=
+=0A=
+> +				name);=0A=
+>  =0A=
+>  		piwar |=3D ((mem_log - 1) & PIWAR_SZ_MASK);=0A=
+>  =0A=
+=0A=
+This change is unrelated.=0A=
+=0A=
+BTW, for some reason your patch is not showing up in Patchwork.=0A=
+=0A=
+-Scott=0A=
+=0A=
