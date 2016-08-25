@@ -1,44 +1,30 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sKZGz3rk1zDsPT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 16:37:31 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7P6Y1jB060042
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 02:37:29 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 251ff4xau5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 02:37:28 -0400
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 25 Aug 2016 12:07:25 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6A6B4E005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 12:12:02 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7P6b9tj37617866
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 12:07:09 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7P6av7X011164
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 12:07:22 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, mpe@ellerman.id.au
-Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
- linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v3 05/12] powerpc: reverse the soft_enable logic
-Date: Thu, 25 Aug 2016 11:59:56 +0530
-In-Reply-To: <1472106603-23336-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1472106603-23336-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1472106603-23336-6-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKZqH383LzDrcm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 17:02:03 +1000 (AEST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3sKZqF6cpyz9sRZ
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2016 17:02:01 +1000 (AEST)
+Date: Thu, 25 Aug 2016 15:01:52 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, ebiederm@xmission.com,
+ vgoyal@redhat.com, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ kexec@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v3 2/2] powerpc/fadump: parse fadump reserve memory size
+ based on memory range
+Message-ID: <20160825070152.GA15879@dhcp-128-65.nay.redhat.com>
+References: <147082324660.4631.6557186560310369015.stgit@hbathini.in.ibm.com>
+ <147082352471.4631.16292252236310652183.stgit@hbathini.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <147082352471.4631.16292252236310652183.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,84 +34,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"paca->soft_enabled" is used as a flag to mask some of interrupts.
-Currently supported flags values and their details:
+On 08/10/16 at 03:35pm, Hari Bathini wrote:
+> When fadump is enabled, by default 5% of system RAM is reserved for
+> fadump kernel. While that works for most cases, it is not good enough
+> for every case.
+> 
+> Currently, to override the default value, fadump supports specifying
+> memory to reserve with fadump_reserve_mem=size, where only a fixed size
+> can be specified. This patch adds support to specify memory size to
+> reserve for different memory ranges as below:
+> 
+> 	fadump_reserve_mem=<range1>:<size1>[,<range2>:<size2>,...]
 
-soft_enabled    MSR[EE]
+Hi, Hari
 
-0               0       Disabled (PMI and HMI not masked)
-1               1       Enabled
+I do not understand why you need introduce the new cmdline param, what's
+the difference between the "fadump reserved" memory and the memory
+reserved by "crashkernel="? Can fadump just use crashkernel= to reserve
+memory?
 
-"paca->soft_enabled" is initialized to 1 to make the interripts as
-enabled. arch_local_irq_disable() will toggle the value when interrupts
-needs to disbled. At this point, the interrupts are not actually disabled,
-instead, interrupt vector has code to check for the flag and mask it when it occurs.
-By "mask it", it update interrupt paca->irq_happened and return.
-arch_local_irq_restore() is called to re-enable interrupts, which checks and
-replays interrupts if any occured.
+Thanks
+Dave
 
-Now, as mentioned, current logic doesnot mask "performance monitoring interrupts"
-and PMIs are implemented as NMI. But this patchset depends on local_irq_*
-for a successful local_* update. Meaning, mask all possible interrupts during
-local_* update and replay them after the update.
-
-So the idea here is to reserve the "paca->soft_enabled" logic. New values and
-details:
-
-soft_enabled    MSR[EE]
-
-1               0       Disabled  (PMI and HMI not masked)
-0               1       Enabled
-
-Reason for the this change is to create foundation for a third flag value "2"
-for "soft_enabled" to add support to mask PMIs.
-
-Foundation patch to support checking of new flag value for "paca->soft_enabled".
-Modify the condition checking for the "soft_enabled".
-
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hw_irq.h | 4 ++--
- arch/powerpc/kernel/entry_64.S    | 5 ++---
- 2 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index a7564b8a4831..c19169ac1fbb 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -30,8 +30,8 @@
- /*
-  * flags for paca->soft_enabled
-  */
--#define IRQ_DISABLE_MASK_NONE		1
--#define IRQ_DISABLE_MASK_LINUX		0
-+#define IRQ_DISABLE_MASK_NONE		0
-+#define IRQ_DISABLE_MASK_LINUX		1
- 
- #endif /* CONFIG_PPC64 */
- 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 3078de64824b..b50d79e5bfbc 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -131,8 +131,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 	 */
- #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_BUG)
- 	lbz	r10,PACASOFTIRQEN(r13)
--	xori	r10,r10,IRQ_DISABLE_MASK_NONE
--1:	tdnei	r10,0
-+1:	tdnei	r10,IRQ_DISABLE_MASK_NONE
- 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
- #endif
- 
-@@ -1012,7 +1011,7 @@ _GLOBAL(enter_rtas)
- 	 * check it with the asm equivalent of WARN_ON
- 	 */
- 	lbz	r0,PACASOFTIRQEN(r13)
--1:	tdnei	r0,IRQ_DISABLE_MASK_LINUX
-+1:	tdeqi	r0,IRQ_DISABLE_MASK_NONE
- 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
- #endif
- 	
--- 
-2.7.4
+> 
+> Supporting range based input for "fadump_reserve_mem" parameter helps
+> using the same commandline parameter for different system memory sizes.
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+> 
+> Changes from v2:
+> 1. Updated changelog
+> 
+> 
+>  arch/powerpc/kernel/fadump.c |   63 ++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 54 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index b3a6633..7c01b5b 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -193,6 +193,55 @@ static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
+>  	return addr;
+>  }
+>  
+> +/*
+> + * This function parses command line for fadump_reserve_mem=
+> + *
+> + * Supports the below two syntaxes:
+> + *    1. fadump_reserve_mem=size
+> + *    2. fadump_reserve_mem=ramsize-range:size[,...]
+> + *
+> + * Sets fw_dump.reserve_bootvar with the memory size
+> + * provided, 0 otherwise
+> + *
+> + * The function returns -EINVAL on failure, 0 otherwise.
+> + */
+> +static int __init parse_fadump_reserve_mem(void)
+> +{
+> +	char *name = "fadump_reserve_mem=";
+> +	char *fadump_cmdline = NULL, *cur;
+> +
+> +	fw_dump.reserve_bootvar = 0;
+> +
+> +	/* find fadump_reserve_mem and use the last one if there are many */
+> +	cur = strstr(boot_command_line, name);
+> +	while (cur) {
+> +		fadump_cmdline = cur;
+> +		cur = strstr(cur+1, name);
+> +	}
+> +
+> +	/* when no fadump_reserve_mem= cmdline option is provided */
+> +	if (!fadump_cmdline)
+> +		return 0;
+> +
+> +	fadump_cmdline += strlen(name);
+> +
+> +	/* for fadump_reserve_mem=size cmdline syntax */
+> +	if (!is_colon_in_param(fadump_cmdline)) {
+> +		fw_dump.reserve_bootvar = memparse(fadump_cmdline, NULL);
+> +		return 0;
+> +	}
+> +
+> +	/* for fadump_reserve_mem=ramsize-range:size[,...] cmdline syntax */
+> +	cur = fadump_cmdline;
+> +	fw_dump.reserve_bootvar = parse_mem_range_size("fadump_reserve_mem",
+> +					&cur, memblock_phys_mem_size());
+> +	if (cur == fadump_cmdline) {
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  /**
+>   * fadump_calculate_reserve_size(): reserve variable boot area 5% of System RAM
+>   *
+> @@ -212,12 +261,17 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+>  {
+>  	unsigned long size;
+>  
+> +	/* sets fw_dump.reserve_bootvar */
+> +	parse_fadump_reserve_mem();
+> +
+>  	/*
+>  	 * Check if the size is specified through fadump_reserve_mem= cmdline
+>  	 * option. If yes, then use that.
+>  	 */
+>  	if (fw_dump.reserve_bootvar)
+>  		return fw_dump.reserve_bootvar;
+> +	else
+> +		printk(KERN_INFO "fadump: calculating default boot size\n");
+>  
+>  	/* divide by 20 to get 5% of value */
+>  	size = memblock_end_of_DRAM() / 20;
+> @@ -348,15 +402,6 @@ static int __init early_fadump_param(char *p)
+>  }
+>  early_param("fadump", early_fadump_param);
+>  
+> -/* Look for fadump_reserve_mem= cmdline option */
+> -static int __init early_fadump_reserve_mem(char *p)
+> -{
+> -	if (p)
+> -		fw_dump.reserve_bootvar = memparse(p, &p);
+> -	return 0;
+> -}
+> -early_param("fadump_reserve_mem", early_fadump_reserve_mem);
+> -
+>  static void register_fw_dump(struct fadump_mem_struct *fdm)
+>  {
+>  	int rc;
+> 
