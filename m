@@ -1,19 +1,27 @@
-Return-Path: <theidsieck@leenox.de>
-Received: from mail.leenox.de (giles.leenox.de [5.9.156.120])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sKJ4r3C9KzDrcX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 05:57:48 +1000 (AEST)
-From: Tillmann Heidsieck <theidsieck@leenox.de>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Tillmann Heidsieck <theidsieck@leenox.de>
-Subject: [RFC PATCH] powerpc: fsl_pci: fix inbound ATMU entries for systems
- with >4G RAM
-Date: Wed, 24 Aug 2016 21:46:14 +0200
-Message-Id: <20160824194614.4014-1-theidsieck@leenox.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKQxn42nVzDrcZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 11:07:09 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id vy10so2107315pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2016 18:07:09 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/ptrace: Fix cppcheck issue in
+ gpr32_set_common/gpr32_get_common.
+In-Reply-To: <20160824073826.GA16442@simonLocalRHEL7.x64>
+References: <1471695863-8660-1-git-send-email-wei.guo.simon@gmail.com>
+ <878tvmrjoc.fsf@possimpible.ozlabs.ibm.com>
+ <20160824073826.GA16442@simonLocalRHEL7.x64>
+Date: Thu, 25 Aug 2016 11:06:45 +1000
+Message-ID: <871t1dr716.fsf@possimpible.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,88 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For systems with >4G of RAM, the current implementation adds a second
-inbound PCIe window starting at 128G this leaves all memory from 4G to
-128G inaccessible to inbound PCIe transactions. The according errors
-can be observed by using the EDAC driver for MPC85XX.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This patch changes this behaviour by adding the second window starting
-at 4G. The current implementation still leaves memory beyond 68G
-unmapped as this would require yet another ATMU entry.
+Simon Guo <wei.guo.simon@gmail.com> writes:
 
-Tested on a T4240 with 12G of RAM and an AMD E6760 PCIe card working with
-the in-tree radeon driver.
+> I think keeping tm_active argument for "ifndef CONFIG_PPC_TRANSACTIONAL_M=
+EM"=20
+> case (with __maybe_unused prefix) will be somehow strange -- Whatever
+> value is provided in the caller function for tm_active, programmer might =
+be=20
+> puzzled and cost sometime to think about it.  I don't like to use=20
+> "__maybe_unused" to bypass this warning.
 
-Signed-off-by: Tillmann Heidsieck <theidsieck@leenox.de>
----
- arch/powerpc/sysdev/fsl_pci.c | 40 ++++++++++++++++++++--------------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+Fair enough. I don't have strong feelings either way - we'll see if the
+maintainers have any thoughts.
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 0ef9df49f0f2..260983037904 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -349,17 +349,13 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	}
- 
- 	sz = min(mem, paddr_lo);
--	mem_log = ilog2(sz);
-+	mem_log = order_base_2(sz);
- 
- 	/* PCIe can overmap inbound & outbound since RX & TX are separated */
- 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
--		/* Size window to exact size if power-of-two or one size up */
--		if ((1ull << mem_log) != mem) {
--			mem_log++;
--			if ((1ull << mem_log) > mem)
--				pr_info("%s: Setting PCI inbound window "
--					"greater than memory size\n", name);
--		}
-+		if ((1ull << mem_log) > mem)
-+			pr_info("%s: Setting PCI inbound window greater than memory size\n",
-+				name);
- 
- 		piwar |= ((mem_log - 1) & PIWAR_SZ_MASK);
- 
-@@ -379,23 +375,27 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 		 * let devices that are 64-bit address capable to work w/o
- 		 * SWIOTLB and access the full range of memory
- 		 */
--		if (sz != mem) {
--			mem_log = ilog2(mem);
--
--			/* Size window up if we dont fit in exact power-of-2 */
--			if ((1ull << mem_log) != mem)
--				mem_log++;
--
-+		if (mem > 0x100000000ULL) {
-+			/* ok we mapped 4G in WIN1, now lets see how much memory
-+			 * is left un-mapped and calculate the log, also
-+			 * make sure we dont have a window lager then 64G
-+			 */
-+			mem_log = order_base_2(min(mem - sz, 1ULL << 36));
- 			piwar = (piwar & ~PIWAR_SZ_MASK) | (mem_log - 1);
- 
- 			if (setup_inbound) {
--				/* Setup inbound memory window */
--				out_be32(&pci->piw[win_idx].pitar,  0x00000000);
-+				/* Setup inbound memory window
-+				 * The windows starts at 4G and spans all the
-+				 * remaining memory aka (mem - 4G)
-+				 */
-+				out_be32(&pci->piw[win_idx].pitar,
-+					 0x00000000);
- 				out_be32(&pci->piw[win_idx].piwbear,
--						pci64_dma_offset >> 44);
-+					 0x00000000);
- 				out_be32(&pci->piw[win_idx].piwbar,
--						pci64_dma_offset >> 12);
--				out_be32(&pci->piw[win_idx].piwar,  piwar);
-+					 0x100000000ULL >> 12);
-+				out_be32(&pci->piw[win_idx].piwar,
-+					 piwar);
- 			}
- 
- 			/*
--- 
-2.9.3
+Regards,
+Daniel
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJXvkSlAAoJEPC3R3P2I92FVskQAJnt1bzV9mCuRBrmm/8HgSdH
+pjIIZ85zjdO968nkITFlRy4Dv5KbigDoL4pu+sOk/7DflQBkfdoIqic7IMny+CCB
+WqxDjOmaLt+STxy1e1gJ2CODHB2G1KAOgAibo1jTy+GUkRIFVxKXw0oNI3Lk4GgM
+OfqXziSRxhuxdsHE91N8HRHcRpqhu0SaUs8O5Y1QpUZd7PyBZ7u+ue2ILzeDi8DI
+s5drQygrfrJS6ITgbYbWYKAHFe8d6JfbInp+iGpRlui99/QTSBSVYm1bNvya9g07
+U55IJC/KQg/zbumT8TPU8ARsfhtAxm+ZuIupWek2V3HD9HE1gx+YW412Rne2KRMT
+K5YPK7PrMHpRWwXF35ygu5Y8hIsZV2nXO4AYTicxBBWNcKkd0I7F3qLWVkJPniri
+/+/4SuvK7ry6qVqtJQUb+Wl+amoboxjyyMrfYif7Y6uh95P2zkysOu+1zXGNAM4P
++tkR9FpFH8verTNUxrHTuhM1b5kQ+bIswpvrdcfflLaEboMc9fPK8z1ODIRKLj7r
+fmIfU1ISwSjok/niqD1NXbNSBktDbvwRWyCeNm5W5UMIK9Ci9gdxMAray9fRfOd2
+qJno49quJpC7ng/ANIH2A7gb7jWSVEVAEp19tR/1zro3r0RAHutMkIoBiznn80LS
+qwDnn84eLaXaa2Fqoibo
+=Kq8w
+-----END PGP SIGNATURE-----
+--=-=-=--
