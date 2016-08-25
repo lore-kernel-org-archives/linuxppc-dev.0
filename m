@@ -1,22 +1,53 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sKsVx3yg8zDr7p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 04:03:53 +1000 (AEST)
-Date: Thu, 25 Aug 2016 13:57:29 -0400
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: aik@ozlabs.ru, benh@kernel.crashing.org, bharata@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, michael@ellerman.id.au
-Subject: Re: [RFCv3 00/17] PAPR HPT resizing, guest & host side
-Message-ID: <20160825175729.GC2225@littlecatz>
-References: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
- <20160825123834.GB4815@fergus.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8P1HSweYDcXXzwPJ"
-In-Reply-To: <20160825123834.GB4815@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKsr91P34zDrHp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 04:18:49 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7PIFsiI070556
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 14:18:47 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 251tmxheux-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 14:18:47 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 25 Aug 2016 15:18:44 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 6D53F1DC0072
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 14:18:33 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7PIIgBG4075538
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 15:18:42 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7PIIgNP017577
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 15:18:42 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: kexec@lists.infradead.org
+Cc: linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
+ Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+ Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Eric Richter <erichte@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: [PATCH v3 1/5] kexec_file: Add buffer hand-over support for the next
+ kernel
+Date: Thu, 25 Aug 2016 15:18:27 -0300
+In-Reply-To: <1472149111-30598-1-git-send-email-bauerman@linux.vnet.ibm.com>
+References: <1472149111-30598-1-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1472149111-30598-2-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +57,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The buffer hand-over mechanism allows the currently running kernel to pass
+data to kernel that will be kexec'd via a kexec segment. The second kernel
+can check whether the previous kernel sent data and retrieve it.
 
---8P1HSweYDcXXzwPJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is the architecture-independent part of the feature.
 
-On Thu, Aug 25, 2016 at 10:38:34PM +1000, Paul Mackerras wrote:
-> On Mon, Mar 21, 2016 at 02:53:07PM +1100, David Gibson wrote:
-> > This is an implementation of the kernel parts of the PAPR hashed page
-> > table (HPT) resizing extension.
-> >=20
-> > It contains a complete guest-side implementation - or as complete as
-> > it can be until we have a final PAPR change.
-> >=20
-> > It also contains a draft host side implementation for KVM HV (the KVM
-> > PR and TCG host-side implementations live in qemu).  This works, but
-> > is very slow in the critical section (where the guest must be
-> > stopped).  It is significantly slower than the TCG/PR implementation;
-> > unusably slow for large hash tables (~2.8s for a 1G HPT).
-> >=20
-> > I'm still looking into what's the cause of the slowness, and I'm not
-> > sure yet if the current approach can be tweaked to be fast enough, or
-> > if it will require a new approach.
->=20
-> I have finally managed to have a close look at this series.  The
-> approach and implementation seem basically sane,
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+---
+ include/linux/kexec.h | 31 +++++++++++++++++++++++
+ kernel/kexec_file.c   | 68 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+)
 
-Ok, good to know.
-
-> though I think the
-> rehash function could be optimized a bit.  I also have an optimized
-> implementation of hpte_page_size() and hpte_base_page_size() which
-> should be a lot quicker than the 2d linear (areal?) search which we do
-> at present.
-
-Ok, sounds like with those optimizations this approach might be good
-enough.  I aim to send a revised version of these some time after the
-RHEL 7.3 crunch.
-
-In the meantime, any word on the PAPR proposal?
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---8P1HSweYDcXXzwPJ
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXvzGJAAoJEGw4ysog2bOSYtcP/1KOIRFE0oH4hpXMaMSThsCh
-+eiZeHN5AiTPL1+bI/RcBgDBzddqnhccuHeaIsCRoYlO8SWZP+eaEJosujLT4FFj
-xpQAjmkATF1T8gzUuUbq8EuxEZHJGDRGwmWr7zZVit08RkHCvjILH5B/fop6wqPu
-aS+3j0CON8if2aqCYod+pVUwnDb92sIOcH6d1iUNFza7sZpu3UMpbhUCxTKiIVll
-Yr0IZXxU5T4U3GYpT1+bZqepAG0Dr8iI0IRciwlF9W7SJNYPDq1G2CpFGmWBKZOo
-pCZEjZ6etLYOtt3a+J8NWCnPwxN9RSnQVZoJCUrynfhLtQ7OWYI3EkO+A/ypRzsl
-2h6/DfR034ka9a4w+jqQnwK3TjVYcH+/0x/h0THy3BKR/gVEz7WczuVCy6ENVcx7
-xJbkzkyTS0AP6v2gharRBvh/ZO/Ld+jpYB3HxBaCx4SS7xCfpR1YJ/v80/Wn50fW
-VjmBo3LtYKLGEbfBrWMMedWIdPIPcDt69yRzwfM3udu6ulSZ39QtjfsrHv/kO6Xx
-/QUrLn/s9pM7l7gP3nuUYq2282GrqiuCeDhyohBD+DUkwGoLId2tjcL575GXQ9G9
-NLmGjjNra/Kdx8DbhEaL5z/I6ojiRAV6aQYK/d4zAqj+gvHIN8QvYocc3fbexJ7H
-t8Iw0DTiZYw8lfIeAlQ4
-=PR6y
------END PGP SIGNATURE-----
-
---8P1HSweYDcXXzwPJ--
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index d419d0e51fe5..16561e96a6d7 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -383,6 +383,37 @@ static inline void *boot_phys_to_virt(unsigned long entry)
+ 	return phys_to_virt(boot_phys_to_phys(entry));
+ }
+ 
++#ifdef CONFIG_KEXEC_FILE
++bool __weak kexec_can_hand_over_buffer(void);
++int __weak arch_kexec_add_handover_buffer(struct kimage *image,
++					  unsigned long load_addr,
++					  unsigned long size);
++int kexec_add_handover_buffer(struct kexec_buf *kbuf);
++int __weak kexec_get_handover_buffer(void **addr, unsigned long *size);
++int __weak kexec_free_handover_buffer(void);
++#else
++struct kexec_buf;
++
++static inline bool kexec_can_hand_over_buffer(void)
++{
++	return false;
++}
++
++static inline int kexec_add_handover_buffer(struct kexec_buf *kbuf)
++{
++	return -ENOTSUPP;
++}
++
++static inline int kexec_get_handover_buffer(void **addr, unsigned long *size)
++{
++	return -ENOTSUPP;
++}
++
++static inline int kexec_free_handover_buffer(void)
++{
++	return -ENOTSUPP;
++}
++#endif /* CONFIG_KEXEC_FILE */
+ #else /* !CONFIG_KEXEC_CORE */
+ struct pt_regs;
+ struct task_struct;
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index 3125d1689712..1e10689f7662 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -113,6 +113,74 @@ void kimage_file_post_load_cleanup(struct kimage *image)
+ 	image->image_loader_data = NULL;
+ }
+ 
++/**
++ * kexec_can_hand_over_buffer - can we pass data to the kexec'd kernel?
++ */
++bool __weak kexec_can_hand_over_buffer(void)
++{
++	return false;
++}
++
++/**
++ * arch_kexec_add_handover_buffer - do arch-specific steps to handover buffer
++ *
++ * Architectures should use this function to pass on the handover buffer
++ * information to the next kernel.
++ *
++ * Return: 0 on success, negative errno on error.
++ */
++int __weak arch_kexec_add_handover_buffer(struct kimage *image,
++					  unsigned long load_addr,
++					  unsigned long size)
++{
++	return -ENOTSUPP;
++}
++
++/**
++ * kexec_add_handover_buffer - add buffer to be used by the next kernel
++ * @kbuf:	Buffer contents and memory parameters.
++ *
++ * This function assumes that kexec_mutex is held.
++ * On successful return, @kbuf->mem will have the physical address of
++ * the buffer in the next kernel.
++ *
++ * Return: 0 on success, negative errno on error.
++ */
++int kexec_add_handover_buffer(struct kexec_buf *kbuf)
++{
++	int ret;
++
++	if (!kexec_can_hand_over_buffer())
++		return -ENOTSUPP;
++
++	ret = kexec_add_buffer(kbuf);
++	if (ret)
++		return ret;
++
++	return arch_kexec_add_handover_buffer(kbuf->image, kbuf->mem,
++					      kbuf->memsz);
++}
++
++/**
++ * kexec_get_handover_buffer - get the handover buffer from the previous kernel
++ * @addr:	On successful return, set to point to the buffer contents.
++ * @size:	On successful return, set to the buffer size.
++ *
++ * Return: 0 on success, negative errno on error.
++ */
++int __weak kexec_get_handover_buffer(void **addr, unsigned long *size)
++{
++	return -ENOTSUPP;
++}
++
++/**
++ * kexec_free_handover_buffer - free memory used by the handover buffer
++ */
++int __weak kexec_free_handover_buffer(void)
++{
++	return -ENOTSUPP;
++}
++
+ /*
+  * In file mode list of segments is prepared by kernel. Copy relevant
+  * data from user space, do error checking, prepare segment list
+-- 
+1.9.1
