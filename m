@@ -1,27 +1,24 @@
-Return-Path: <peter.chen@nxp.com>
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40066.outbound.protection.outlook.com [40.107.4.66])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sKdVy6K80zDrK4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 19:03:05 +1000 (AEST)
-From: Peter Chen <peter.chen@nxp.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-CC: "minghuan.Lian@freescale.com" <minghuan.Lian@freescale.com>,
- "mingkai.hu@freescale.com" <mingkai.hu@freescale.com>,
- "tie-fei.zang@freescale.com" <tie-fei.zang@freescale.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 1/1] pci: host: pci-layerscape: add missing of_node_put
- after calling of_parse_phandle
-Date: Thu, 25 Aug 2016 09:02:58 +0000
-Message-ID: <HE1PR04MB145054CA0F57417EBD9CC0D88BED0@HE1PR04MB1450.eurprd04.prod.outlook.com>
-References: <1470965681-30496-1-git-send-email-peter.chen@nxp.com>
- <20160823211916.GB5838@localhost>
-In-Reply-To: <20160823211916.GB5838@localhost>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKgzS6S5fzDrK4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 20:54:28 +1000 (AEST)
+Message-ID: <1472122446.2246.93.camel@kernel.crashing.org>
+Subject: Re: PowerPC agpmode issues
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mike <michael.heltne@gmail.com>, "Herminio Hernandez Jr."
+ <herminio.hernandezjr@gmail.com>
+Cc: Pranith Kumar <bobby.prani@gmail.com>, "open list:LINUX FOR POWERPC..."
+ <linuxppc-dev@lists.ozlabs.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 25 Aug 2016 20:54:06 +1000
+In-Reply-To: <CANtoAtN1K3OAoXsgeMOWui_jEZO3X1fJAmRX-LeO_Du8h3T9kg@mail.gmail.com>
+References: <CANtoAtPSgkxEvAdOs-gZGOECYN8OFTvwRrsg+US41ji1fGEDLA@mail.gmail.com>
+ <969BB53B-CB30-49DC-B6C5-4D2381ECE6EE@gmail.com>
+ <CANtoAtN1K3OAoXsgeMOWui_jEZO3X1fJAmRX-LeO_Du8h3T9kg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,78 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
->
->On Fri, Aug 12, 2016 at 09:34:41AM +0800, Peter Chen wrote:
->> of_node_put needs to be called when the device node which is got from
->> of_parse_phandle has finished using.
->>
->> Cc: Minghuan Lian <minghuan.Lian@freescale.com>
->> Cc: Mingkai Hu <mingkai.hu@freescale.com>
->> Cc: Roy Zang <tie-fei.zang@freescale.com>
->> Signed-off-by: Peter Chen <peter.chen@nxp.com>
->> ---
->>  drivers/pci/host/pci-layerscape.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/pci/host/pci-layerscape.c
->> b/drivers/pci/host/pci-layerscape.c
->> index 114ba81..573b996 100644
->> --- a/drivers/pci/host/pci-layerscape.c
->> +++ b/drivers/pci/host/pci-layerscape.c
->> @@ -173,6 +173,8 @@ static int ls_pcie_msi_host_init(struct pcie_port *p=
-p,
->>  		return -EINVAL;
->>  	}
->>
->> +	of_node_put(msi_node);
->> +
->
->Can you please look for and fix similar errors in other drivers in drivers=
-/pci/host/*?
->
->For example:
->
->  advk_pcie_probe() and iproc_pcie_msi_enable() call
->  of_parse_phandle() but don't call of_node_put() in failure paths.
->
->  dra7xx_pcie_init_irq_domain(), nwl_pcie_init_irq_domain(), and
->  xilinx_pcie_init_irq_domain() call of_get_next_child() but don't
->  call of_node_put() in failure paths.
->
->  ks_pcie_get_irq_controller_info() calls of_find_node_by_name().
->
+On Thu, 2016-08-25 at 05:09 +0200, Mike wrote:
+> Any improvement on your ends? Seems -1 is now the quirk. But does
+> your trackpads work? Did an update after getting a new and the latest
+> released powerbook up. Also found an interesting interface which can
+> replace our ide drives, intended for ipod classics, but it can fit in
+> the bay and has msata interface.
 
-Would you agree that I fix the issues for drivers that call of_parse_phandl=
-e or of_get_next_child
-or of_find_node_by_name? I can grep the symbols, and check if of_node_put i=
-s called properly.
-I will group all fixed within one patch set.
+There are bigger issues with Apple AGP implementation, but yes that's
+one of them. Another one is that because it's not cache coherent, AGP
+pages shouldn't also be mapped cachable in Linux via the linear
+mapping, as the prefetcher could cause cache aliases of them which
+would be very bad. Sadly, Linux uses BATs on ppc32 to map the linear
+mapping and so we can't unmap selected pages.
 
->I think there may be others, e.g., the pci_host_bridge_msi_domain() path c=
-alls
->of_parse_phandle(), but I'm not sure of_node_put() is called on failure pa=
-ths.
->
+So sadly, while slow, I'm afraid PCI mode is the way to go for those
+old things.
 
-I find pci_host_bridge_msi_domain does not call of_parse_phandle directly, =
-only of_msi_get_domain calls of_parse_phandle, and
-of_node_put is called properly.
+To revive those old Mac laptops, one of the more interesting to do
+would be to port all my old power management code from radeonfb to
+radeon KMS so sleep can work again ;-)
 
-Peter
-
-
->When we find bugs like this, it's nice to fix one occurrence, but it's rea=
-lly great if we
->can squash similar bugs nearby so the bug isn't copied into new drivers.
->
->>  	return 0;
->>  }
->>
->> --
->> 1.9.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci"
->> in the body of a message to majordomo@vger.kernel.org More majordomo
->> info at  http://vger.kernel.org/majordomo-info.html
+> On 5 Feb 2016 15:32, "Herminio Hernandez Jr."
+> <herminio.hernandezjr@gmail.com> wrote:
+> > I have been experiencing the same thing with my iBook and
+> > PowerBook. 
+> > 
+> > Sent from my iPhone
+> > 
+> > On Feb 4, 2016, at 8:47 PM, Mike <michael.heltne@gmail.com> wrote:
+> > 
+> > > Hi. 
+> > > Managed to get the Radeon R300 running on mesa 11.1.1 with an old
+> > > 2013 patch from Michel Dànzer, next problem is of course enabling
+> > > agpmode, running with pci-mode with radeon.agpmode=-1 works, but
+> > > is of course slow, and seems to load the cpu a lot.
+> > > 
+> > > Upon initial investigation i could not initially believe agp
+> > > could be this this broken for this long, until i found this.
+> > >  "committed with Ben Skeggs on Feb 26, 2013"
+> > > https://github.com/DespairFactor/bullhead/commit/650e1203c11354ba
+> > > 84d69ba445abc0efcfe3890a
+> > > http://lxr.free-electrons.com/source/drivers/gpu/drm/nouveau/nouv
+> > > eau_agp.c?v=4.2
+> > > #ifdef __powerpc__
+> > > 		/* Disable AGP by default on all PowerPC machines for
+> > > 		 * now -- At least some UniNorth-2 AGP bridges are
+> > > 		 * known to be broken: DMA from the host to the card
+> > > 		 * works just fine, but writeback from the card to the
+> > > 		 * host goes straight to memory untranslated bypassing
+> > > 		 * the GATT somehow, making them quite painful to deal
+> > > 		 * with...
+> > > 		 */
+> > > 		if (nouveau_agpmode == -1)
+> > > 			return false;
+> > > #endif
+> > >  
+> > >  and now later this: 
+> > > https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/nou
+> > > veau/nvkm/subdev/pci/agp.c
+> > > #ifdef __powerpc__
+> > > 	/* Disable AGP by default on all PowerPC machines for now -- At
+> > > 	 * least some UniNorth-2 AGP bridges are known to be broken:
+> > > 	 * DMA from the host to the card works just fine, but writeback
+> > > 	 * from the card to the host goes straight to memory
+> > > 	 * untranslated bypassing that GATT somehow, making them quite
+> > > 	 * painful to deal with...
+> > > 	 */
+> > > 	mode = 0;
+> > > #endif
+> > > 
+> > > All seems to point to serious issues had around the time of
+> > > change to ums to kms and a serious regression hitting the linux
+> > > kernel? No?
+> > > 
+> > > Cheers
+> > > -Mike
+> > > _______________________________________________
+> > > Linuxppc-dev mailing list
+> > > Linuxppc-dev@lists.ozlabs.org
+> > > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > 
