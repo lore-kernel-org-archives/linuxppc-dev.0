@@ -1,27 +1,22 @@
-Return-Path: <wharms@bfs.de>
-Received: from mx01-fr.bfs.de (mx01-fr.bfs.de [193.174.231.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sKsFG6hbrzDrHp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 03:52:01 +1000 (AEST)
-Message-ID: <57BF3038.3000801@bfs.de>
-Date: Thu, 25 Aug 2016 19:51:52 +0200
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sKsVx3yg8zDr7p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 04:03:53 +1000 (AEST)
+Date: Thu, 25 Aug 2016 13:57:29 -0400
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: aik@ozlabs.ru, benh@kernel.crashing.org, bharata@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, michael@ellerman.id.au
+Subject: Re: [RFCv3 00/17] PAPR HPT resizing, guest & host side
+Message-ID: <20160825175729.GC2225@littlecatz>
+References: <1458532404-21258-1-git-send-email-david@gibson.dropbear.id.au>
+ <20160825123834.GB4815@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-CC: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>, Wei Yang <weiyang@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
- kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>,
- Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH] powerpc/powernv/pci: Use kmalloc_array() in two functions
-References: <817567b2-cdf6-7f7b-6041-9a026ea10a0f@users.sourceforge.net>
-In-Reply-To: <817567b2-cdf6-7f7b-6041-9a026ea10a0f@users.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="8P1HSweYDcXXzwPJ"
+In-Reply-To: <20160825123834.GB4815@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,60 +27,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--8P1HSweYDcXXzwPJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Am 24.08.2016 22:36, schrieb SF Markus Elfring:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Wed, 24 Aug 2016 22:26:37 +0200
-> 
-> A multiplication for the size determination of a memory allocation
-> indicated that an array data structure should be processed.
-> Thus reuse the corresponding function "kmalloc_array".
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index fd9444f..2366552 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1305,7 +1305,9 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->  	else
->  		m64_bars = 1;
->  
-> -	pdn->m64_map = kmalloc(sizeof(*pdn->m64_map) * m64_bars, GFP_KERNEL);
-> +	pdn->m64_map = kmalloc_array(m64_bars,
-> +				     sizeof(*pdn->m64_map),
-> +				     GFP_KERNEL);
->  	if (!pdn->m64_map)
->  		return -ENOMEM;
->  	/* Initialize the m64_map to IODA_INVALID_M64 */
-> @@ -1572,8 +1574,9 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->  
->  		/* Allocating pe_num_map */
->  		if (pdn->m64_single_mode)
-> -			pdn->pe_num_map = kmalloc(sizeof(*pdn->pe_num_map) * num_vfs,
-> -					GFP_KERNEL);
-> +			pdn->pe_num_map = kmalloc_array(num_vfs,
-> +							sizeof(*pdn->pe_num_map),
-> +							GFP_KERNEL);
->  		else
->  			pdn->pe_num_map = kmalloc(sizeof(*pdn->pe_num_map), GFP_KERNEL);
->  
+On Thu, Aug 25, 2016 at 10:38:34PM +1000, Paul Mackerras wrote:
+> On Mon, Mar 21, 2016 at 02:53:07PM +1100, David Gibson wrote:
+> > This is an implementation of the kernel parts of the PAPR hashed page
+> > table (HPT) resizing extension.
+> >=20
+> > It contains a complete guest-side implementation - or as complete as
+> > it can be until we have a final PAPR change.
+> >=20
+> > It also contains a draft host side implementation for KVM HV (the KVM
+> > PR and TCG host-side implementations live in qemu).  This works, but
+> > is very slow in the critical section (where the guest must be
+> > stopped).  It is significantly slower than the TCG/PR implementation;
+> > unusably slow for large hash tables (~2.8s for a 1G HPT).
+> >=20
+> > I'm still looking into what's the cause of the slowness, and I'm not
+> > sure yet if the current approach can be tweaked to be fast enough, or
+> > if it will require a new approach.
+>=20
+> I have finally managed to have a close look at this series.  The
+> approach and implementation seem basically sane,
 
+Ok, good to know.
 
-what is the value of num_vfs in the !pdn->m64_single_mode case ?
-otherwise someone could make it like:
+> though I think the
+> rehash function could be optimized a bit.  I also have an optimized
+> implementation of hpte_page_size() and hpte_base_page_size() which
+> should be a lot quicker than the 2d linear (areal?) search which we do
+> at present.
 
-if (!pdn->m64_single_mode)
-   num_vfs=1;
+Ok, sounds like with those optimizations this approach might be good
+enough.  I aim to send a revised version of these some time after the
+RHEL 7.3 crunch.
 
-pdn->pe_num_map = kmalloc_array(num_vfs, ....
+In the meantime, any word on the PAPR proposal?
 
-so it looks a bit oversophisticated.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-re,
- wh
+--8P1HSweYDcXXzwPJ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXvzGJAAoJEGw4ysog2bOSYtcP/1KOIRFE0oH4hpXMaMSThsCh
++eiZeHN5AiTPL1+bI/RcBgDBzddqnhccuHeaIsCRoYlO8SWZP+eaEJosujLT4FFj
+xpQAjmkATF1T8gzUuUbq8EuxEZHJGDRGwmWr7zZVit08RkHCvjILH5B/fop6wqPu
+aS+3j0CON8if2aqCYod+pVUwnDb92sIOcH6d1iUNFza7sZpu3UMpbhUCxTKiIVll
+Yr0IZXxU5T4U3GYpT1+bZqepAG0Dr8iI0IRciwlF9W7SJNYPDq1G2CpFGmWBKZOo
+pCZEjZ6etLYOtt3a+J8NWCnPwxN9RSnQVZoJCUrynfhLtQ7OWYI3EkO+A/ypRzsl
+2h6/DfR034ka9a4w+jqQnwK3TjVYcH+/0x/h0THy3BKR/gVEz7WczuVCy6ENVcx7
+xJbkzkyTS0AP6v2gharRBvh/ZO/Ld+jpYB3HxBaCx4SS7xCfpR1YJ/v80/Wn50fW
+VjmBo3LtYKLGEbfBrWMMedWIdPIPcDt69yRzwfM3udu6ulSZ39QtjfsrHv/kO6Xx
+/QUrLn/s9pM7l7gP3nuUYq2282GrqiuCeDhyohBD+DUkwGoLId2tjcL575GXQ9G9
+NLmGjjNra/Kdx8DbhEaL5z/I6ojiRAV6aQYK/d4zAqj+gvHIN8QvYocc3fbexJ7H
+t8Iw0DTiZYw8lfIeAlQ4
+=PR6y
+-----END PGP SIGNATURE-----
+
+--8P1HSweYDcXXzwPJ--
