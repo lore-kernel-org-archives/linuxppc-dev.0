@@ -1,30 +1,31 @@
-Return-Path: <rui.teng@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sL6Wg5XGrzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 13:50:21 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7Q3hvC0104394
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 23:50:19 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2525tw0utd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 23:50:19 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rui.teng@linux.vnet.ibm.com>;
- Thu, 25 Aug 2016 23:50:18 -0400
-From: Rui Teng <rui.teng@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Rui Teng <rui.teng@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc: Clean up tm_abort duplication in hash_utils_64.c
-Date: Fri, 26 Aug 2016 11:50:10 +0800
-Message-Id: <1472183410-18522-1-git-send-email-rui.teng@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sL6hl5g7FzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 13:58:15 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id ez1so4053154pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 20:58:15 -0700 (PDT)
+Date: Fri, 26 Aug 2016 13:58:03 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michal Marek <mmarek@suse.cz>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org, Al
+ Viro <viro@zeniv.linux.org.uk>, <linux-kbuild@vger.kernel.org>
+Subject: Re: linux-next: build warnings after merge of the kbuild tree
+Message-ID: <20160826135803.0c5ffb42@roar.ozlabs.ibm.com>
+In-Reply-To: <20160822204758.5b2cff63@roar.ozlabs.ibm.com>
+References: <20160817114443.67675413@canb.auug.org.au>
+ <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
+ <20160818110948.52f1322d@roar.ozlabs.ibm.com>
+ <20160819133854.17a7b1ca@canb.auug.org.au>
+ <20160819150914.36106b5b@canb.auug.org.au>
+ <5babe9ef-0e3d-6975-9ba4-9a29a700b24d@suse.cz>
+ <20160819204455.6351ffb8@roar.ozlabs.ibm.com>
+ <20160822204758.5b2cff63@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,83 +35,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The same logic appears twice and should probably be pulled out into a function.
+On Mon, 22 Aug 2016 20:47:58 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Rui Teng <rui.teng@linux.vnet.ibm.com>
----
- arch/powerpc/mm/hash_utils_64.c | 45 +++++++++++++++++------------------------
- 1 file changed, 19 insertions(+), 26 deletions(-)
+> On Fri, 19 Aug 2016 20:44:55 +1000
+> Nicholas Piggin <npiggin@gmail.com> wrote:
+> 
+> > On Fri, 19 Aug 2016 10:37:00 +0200
+> > Michal Marek <mmarek@suse.cz> wrote:
+> >   
+> > > On 2016-08-19 07:09, Stephen Rothwell wrote:    
+> 
+> [snip]
+> 
+> > > > 
+> > > > I may be missing something, but genksyms generates the crc's off the
+> > > > preprocessed C source code and we don't have any for the asm files ...      
+> > > 
+> > > Of course you are right. Which means that we are losing type information
+> > > for these exports for CONFIG_MODVERSIONS purposes. I guess it's
+> > > acceptable, since the asm functions are pretty basic and their
+> > > signatures do not change.    
+> > 
+> > I don't completely agree. It would be nice to have the functionality
+> > still there.
+> > 
+> > What happens if you just run cmd_modversions on the as rule? It relies on
+> > !defined(__ASSEMBLY__), but we're feeding the result to genksyms, not as.
+> > It would require the header be included in the .S file and be protected for
+> > asm builds.  
+> 
+> 
+> This seems like it *could* be made to work, but there's a few problems.
+> 
+> - .h files are not made for C consumption. Matter of manually adding the
+> ifdef guards, which isn't terrible.
+> 
+> - .S files do not all include their .h where the C declaration is. Also
+> will cause some churn but doable and maybe not completely unreasonable.
+> 
+> - genksyms parser barfs when it hits the assembly of the .S file. Best
+> way to fix that seems just send the #include and EXPORT_SYMBOL lines
+> from the .S to the preprocessor. That's a bit of a rabbit hole too, with
+> some .S files being included, etc.
+> 
+> I'm not sure what to do here. If nobody cares and we lose CRCs for .S
+> exports, then okay we can whitelist those relocs easily. If we don't want
+> to lose the functionality, the above might work but it's a bit intrusive
+> an is going to require another cycle of prep patches to go through arch
+> code first.
+> 
+> Or suggestions for alternative approach?
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0821556..69ef702 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1460,6 +1460,23 @@ out_exit:
- 	local_irq_restore(flags);
- }
+Here is a quick patch that I think should catch missing CRCs in
+architecture independent way. If we merge something like this, we
+can whitelist the symbols in arch/powerpc so people get steered to
+the right place.
+
+Powerpc seems to be the only one really catching this, and it's
+only as a side effect of a test run for CONFIG_RELOCATABLE kernels,
+which means version failures probably slipped through other archs.
+
+I'll clean it up, do some more testing, and submit it unless
+anybody dislikes it or has a better way to do it.
+
+Thanks,
+Nick
+
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 4b8ffd3..1efc454 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -609,6 +609,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
+ {
+ 	unsigned int crc;
+ 	enum export export;
++	int is_crc = 0;
  
-+/*
-+ * Transactions are not aborted by tlbiel, only tlbie.
-+ * Without, syncing a page back to a block device w/ PIO could pick up
-+ * transactional data (bad!) so we force an abort here.  Before the
-+ * sync the page will be made read-only, which will flush_hash_page.
-+ * BIG ISSUE here: if the kernel uses a page from userspace without
-+ * unmapping it first, it may see the speculated version.
-+ */
-+void local_tm_abort(int local)
-+{
-+	if (local && cpu_has_feature(CPU_FTR_TM) && current->thread.regs &&
-+		MSR_TM_ACTIVE(current->thread.regs->msr)) {
-+		tm_enable();
-+		tm_abort(TM_CAUSE_TLBI);
-+	}
-+}
-+
- /* WARNING: This is called from hash_low_64.S, if you change this prototype,
-  *          do not forget to update the assembly call site !
-  */
-@@ -1487,19 +1504,7 @@ void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
- 	} pte_iterate_hashed_end();
+ 	if ((!is_vmlinux(mod->name) || mod->is_dot_o) &&
+ 	    strncmp(symname, "__ksymtab", 9) == 0)
+@@ -618,6 +619,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
  
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	/* Transactions are not aborted by tlbiel, only tlbie.
--	 * Without, syncing a page back to a block device w/ PIO could pick up
--	 * transactional data (bad!) so we force an abort here.  Before the
--	 * sync the page will be made read-only, which will flush_hash_page.
--	 * BIG ISSUE here: if the kernel uses a page from userspace without
--	 * unmapping it first, it may see the speculated version.
--	 */
--	if (local && cpu_has_feature(CPU_FTR_TM) &&
--	    current->thread.regs &&
--	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
--		tm_enable();
--		tm_abort(TM_CAUSE_TLBI);
--	}
-+	local_tm_abort(local);
+ 	/* CRC'd symbol */
+ 	if (strncmp(symname, CRC_PFX, strlen(CRC_PFX)) == 0) {
++		is_crc = 1;
+ 		crc = (unsigned int) sym->st_value;
+ 		sym_update_crc(symname + strlen(CRC_PFX), mod, crc,
+ 				export);
+@@ -663,6 +665,10 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
+ 		else
+ 			symname++;
  #endif
- }
- 
-@@ -1558,19 +1563,7 @@ void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
- 	}
- tm_abort:
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	/* Transactions are not aborted by tlbiel, only tlbie.
--	 * Without, syncing a page back to a block device w/ PIO could pick up
--	 * transactional data (bad!) so we force an abort here.  Before the
--	 * sync the page will be made read-only, which will flush_hash_page.
--	 * BIG ISSUE here: if the kernel uses a page from userspace without
--	 * unmapping it first, it may see the speculated version.
--	 */
--	if (local && cpu_has_feature(CPU_FTR_TM) &&
--	    current->thread.regs &&
--	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
--		tm_enable();
--		tm_abort(TM_CAUSE_TLBI);
--	}
-+	local_tm_abort(local);
- #endif
- 	return;
- }
--- 
-2.7.4
++		if (is_crc && !mod->is_dot_o) {
++			const char *e = is_vmlinux(mod->name) ?"":".ko";
++			warn("EXPORT symbol \"%s\" [%s%s] version generation failed, symbol will not be versioned.\n", symname + strlen(CRC_PFX), mod->name, e);
++		}
+ 		mod->unres = alloc_symbol(symname,
+ 					  ELF_ST_BIND(sym->st_info) == STB_WEAK,
+ 					  mod->unres);
