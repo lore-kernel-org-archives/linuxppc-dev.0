@@ -1,31 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <theidsieck@leenox.de>
+Received: from mail.leenox.de (giles.leenox.de [5.9.156.120])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sL6hl5g7FzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 13:58:15 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id ez1so4053154pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 20:58:15 -0700 (PDT)
-Date: Fri, 26 Aug 2016 13:58:03 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org, Al
- Viro <viro@zeniv.linux.org.uk>, <linux-kbuild@vger.kernel.org>
-Subject: Re: linux-next: build warnings after merge of the kbuild tree
-Message-ID: <20160826135803.0c5ffb42@roar.ozlabs.ibm.com>
-In-Reply-To: <20160822204758.5b2cff63@roar.ozlabs.ibm.com>
-References: <20160817114443.67675413@canb.auug.org.au>
- <e6fbe17c-1981-1579-433d-88462d2efb58@suse.cz>
- <20160818110948.52f1322d@roar.ozlabs.ibm.com>
- <20160819133854.17a7b1ca@canb.auug.org.au>
- <20160819150914.36106b5b@canb.auug.org.au>
- <5babe9ef-0e3d-6975-9ba4-9a29a700b24d@suse.cz>
- <20160819204455.6351ffb8@roar.ozlabs.ibm.com>
- <20160822204758.5b2cff63@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sL8fk6jZ2zDrK1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 15:26:38 +1000 (AEST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Fri, 26 Aug 2016 07:26:31 +0200
+From: Tillmann Heidsieck <theidsieck@leenox.de>
+To: Scott Wood <scott.wood@nxp.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] powerpc: fsl_pci: fix inbound ATMU entries for
+ systems with >4G RAM
+In-Reply-To: <DB5PR0401MB19280DCC626ED0E83EDD0D3791EA0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <20160824194614.4014-1-theidsieck@leenox.de>
+ <DB5PR0401MB19280DCC626ED0E83EDD0D3791EA0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+Message-ID: <faa14fe5cf19881838df0ab1a402517f@mail.leenox.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,102 +28,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 22 Aug 2016 20:47:58 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+Hello Scott,
 
-> On Fri, 19 Aug 2016 20:44:55 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
-> 
-> > On Fri, 19 Aug 2016 10:37:00 +0200
-> > Michal Marek <mmarek@suse.cz> wrote:
-> >   
-> > > On 2016-08-19 07:09, Stephen Rothwell wrote:    
-> 
-> [snip]
-> 
-> > > > 
-> > > > I may be missing something, but genksyms generates the crc's off the
-> > > > preprocessed C source code and we don't have any for the asm files ...      
-> > > 
-> > > Of course you are right. Which means that we are losing type information
-> > > for these exports for CONFIG_MODVERSIONS purposes. I guess it's
-> > > acceptable, since the asm functions are pretty basic and their
-> > > signatures do not change.    
-> > 
-> > I don't completely agree. It would be nice to have the functionality
-> > still there.
-> > 
-> > What happens if you just run cmd_modversions on the as rule? It relies on
-> > !defined(__ASSEMBLY__), but we're feeding the result to genksyms, not as.
-> > It would require the header be included in the .S file and be protected for
-> > asm builds.  
-> 
-> 
-> This seems like it *could* be made to work, but there's a few problems.
-> 
-> - .h files are not made for C consumption. Matter of manually adding the
-> ifdef guards, which isn't terrible.
-> 
-> - .S files do not all include their .h where the C declaration is. Also
-> will cause some churn but doable and maybe not completely unreasonable.
-> 
-> - genksyms parser barfs when it hits the assembly of the .S file. Best
-> way to fix that seems just send the #include and EXPORT_SYMBOL lines
-> from the .S to the preprocessor. That's a bit of a rabbit hole too, with
-> some .S files being included, etc.
-> 
-> I'm not sure what to do here. If nobody cares and we lose CRCs for .S
-> exports, then okay we can whitelist those relocs easily. If we don't want
-> to lose the functionality, the above might work but it's a bit intrusive
-> an is going to require another cycle of prep patches to go through arch
-> code first.
-> 
-> Or suggestions for alternative approach?
+thanks for the fast reply!
 
-Here is a quick patch that I think should catch missing CRCs in
-architecture independent way. If we merge something like this, we
-can whitelist the symbols in arch/powerpc so people get steered to
-the right place.
+On 2016-08-24 23:39, Scott Wood wrote:
+[..]
+> 
+> The second inbound window is at 256G, and it maps all of RAM.  Note 
+> that
+> for accesses in this window, the PCI address is different from the host
+> address.
 
-Powerpc seems to be the only one really catching this, and it's
-only as a side effect of a test run for CONFIG_RELOCATABLE kernels,
-which means version failures probably slipped through other archs.
+I probably really misunderstand the manual here ...
 
-I'll clean it up, do some more testing, and submit it unless
-anybody dislikes it or has a better way to do it.
+1 << 40 = 0x100_00000000 right? So if I put
 
-Thanks,
-Nick
+(1 << 40) >> 44 = 0 in PEXIWBEAR and
+(1 << 40) >> 12 = 0x10000000 in PEXIWBAR
 
+the window base (extended) address would be (1 << 40) right? And at the
+risk of showing my complete lack of skill doing basic arithmetic ...
+isn't (1 << 40) = 128GB? So what am I missing here?
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 4b8ffd3..1efc454 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -609,6 +609,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
- {
- 	unsigned int crc;
- 	enum export export;
-+	int is_crc = 0;
- 
- 	if ((!is_vmlinux(mod->name) || mod->is_dot_o) &&
- 	    strncmp(symname, "__ksymtab", 9) == 0)
-@@ -618,6 +619,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
- 
- 	/* CRC'd symbol */
- 	if (strncmp(symname, CRC_PFX, strlen(CRC_PFX)) == 0) {
-+		is_crc = 1;
- 		crc = (unsigned int) sym->st_value;
- 		sym_update_crc(symname + strlen(CRC_PFX), mod, crc,
- 				export);
-@@ -663,6 +665,10 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
- 		else
- 			symname++;
- #endif
-+		if (is_crc && !mod->is_dot_o) {
-+			const char *e = is_vmlinux(mod->name) ?"":".ko";
-+			warn("EXPORT symbol \"%s\" [%s%s] version generation failed, symbol will not be versioned.\n", symname + strlen(CRC_PFX), mod->name, e);
-+		}
- 		mod->unres = alloc_symbol(symname,
- 					  ELF_ST_BIND(sym->st_info) == STB_WEAK,
- 					  mod->unres);
+I also read that the maximum allowed window size for PCIe inbound 
+windows
+is 64G this would result in the need for more ATMU entries in case of 
+ >68G
+system memory (the question is whether this needs to be fixed because
+maybe nobody wants to build such a computer).
+
+> 
+>> The according errors can be observed by using the EDAC driver for 
+>> MPC85XX.
+>> 
+>> This patch changes this behaviour by adding the second window starting
+>> at 4G. The current implementation still leaves memory beyond 68G
+>> unmapped as this would require yet another ATMU entry.
+> 
+> Windows must be size-aligned, as per the description of PEXIWBARn[WBA].
+>  This window is illegal.
+
+OK, I did mess up that one. I fiddled around with the starting address 
+and it
+seems that the chip might align the window silently, making the window 
+start
+at 0x0.  This solves the puzzle why this window works for me. However, 
+this
+means that my solution is still wrong because of the illegal window size 
+as
+well as that it (potentially) does not map the whole memory.
+
+> 
+> By trying to identity-map everything you also break the assumption that
+> we don't need swiotlb to avoid the PEXCSRBAR region on PCI devices
+> capable of generating 64-bit addresses.
+
+Can you point me to where I might read up on this? I know far to little
+about all of this, that's for sure.
+
+> 
+>> Tested on a T4240 with 12G of RAM and an AMD E6760 PCIe card working 
+>> with
+>> the in-tree radeon driver.
+> 
+> I have no problem using an e1000e card on a t4240 with 24 GiB RAM.
+> 
+> Looking at the radeon driver I see that there's a possibility of a dma
+> mask that is exactly 40 bits.  I think there's an off-by-one error in
+> fsl_pci_dma_set_mask().  If you change "dma_mask >=
+> DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)" to "dma_mask >
+> DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)", does that make radeon work without
+> this patch?
+
+This works in the sense that the radeon driver uses only 32bit dma 
+addresses
+after applying it.
+I don't think that is what was intended since the card clearly works 
+which
+higher addresses.
+
+To elaborate on the problem I am trying to fix. After applying my 
+accepted EDAC
+patch. I get errors like this (in this case for the snd device which is 
+part of
+the radeon card)
+
+[    8.429635] PCIe ERR_DR register: 0x00100000
+[    8.433893] PCIe ERR_CAP_STAT register: 0x00000005
+[    8.438671] PCIe ERR_CAP_R0 register: 0x04000020
+[    8.443276] PCIe ERR_CAP_R1 register: 0xff000103
+[    8.447882] PCIe ERR_CAP_R2 register: 0x02000000
+[    8.452486] PCIe ERR_CAP_R3 register: 0x0080a4ec
+
+which I read as
+"There is some incoming PCIe transaction to address 0x2_ec4a8000 and 
+there is
+no mapping for it".
+
+According to the radeon driver it did put one of the rings to this 
+address
+(viewed from the CPU).
+
+> 
+> 
+>> Signed-off-by: Tillmann Heidsieck <theidsieck@leenox.de>
+>> ---
+>>  arch/powerpc/sysdev/fsl_pci.c | 40 
+>> ++++++++++++++++++++--------------------
+>>  1 file changed, 20 insertions(+), 20 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/sysdev/fsl_pci.c 
+>> b/arch/powerpc/sysdev/fsl_pci.c
+>> index 0ef9df49f0f2..260983037904 100644
+>> --- a/arch/powerpc/sysdev/fsl_pci.c
+>> +++ b/arch/powerpc/sysdev/fsl_pci.c
+>> @@ -349,17 +349,13 @@ static void setup_pci_atmu(struct pci_controller 
+>> *hose)
+>>  	}
+>> 
+>>  	sz = min(mem, paddr_lo);
+>> -	mem_log = ilog2(sz);
+>> +	mem_log = order_base_2(sz);
+>> 
+>>  	/* PCIe can overmap inbound & outbound since RX & TX are separated 
+>> */
+>>  	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
+>> -		/* Size window to exact size if power-of-two or one size up */
+>> -		if ((1ull << mem_log) != mem) {
+>> -			mem_log++;
+>> -			if ((1ull << mem_log) > mem)
+>> -				pr_info("%s: Setting PCI inbound window "
+>> -					"greater than memory size\n", name);
+>> -		}
+>> +		if ((1ull << mem_log) > mem)
+>> +			pr_info("%s: Setting PCI inbound window greater than memory 
+>> size\n",
+>> +				name);
+>> 
+>>  		piwar |= ((mem_log - 1) & PIWAR_SZ_MASK);
+>> 
+> 
+> This change is unrelated.
+
+yeah sorry for sneaking that one in here, are you interested in this 
+change?
+It cleans up the code a little bit by using existing functions. I think 
+it
+makes the intend more clear but that's up for interpretation ;-)
+
+> 
+> BTW, for some reason your patch is not showing up in Patchwork.
+
+Are there some known pitfalls when sending patches to Patchwork?
+
+> 
+> -Scott
+
+Thanks for your help
+- Tillmann
