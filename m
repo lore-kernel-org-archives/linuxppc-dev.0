@@ -1,25 +1,38 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00058.outbound.protection.outlook.com [40.107.0.58])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <namhyung@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sL9Ht1cYszDrK1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 15:55:22 +1000 (AEST)
-From: Scott Wood <scott.wood@nxp.com>
-To: Tillmann Heidsieck <theidsieck@leenox.de>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] powerpc: fsl_pci: fix inbound ATMU entries for
- systems with >4G RAM
-Date: Fri, 26 Aug 2016 05:55:14 +0000
-Message-ID: <DB5PR0401MB19287448C33B14B1DB47E81F91EC0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <20160824194614.4014-1-theidsieck@leenox.de>
- <DB5PR0401MB19280DCC626ED0E83EDD0D3791EA0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <faa14fe5cf19881838df0ab1a402517f@mail.leenox.de>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sL9tb5CsQzDrK1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 16:21:59 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id vy10so4218272pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 23:21:59 -0700 (PDT)
+Sender: Namhyung Kim <namhyung@gmail.com>
+Date: Fri, 26 Aug 2016 15:21:47 +0900
+From: Namhyung Kim <namhyung@kernel.org>
+To: Kim Phillips <kim.phillips@arm.com>
+Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Taeung Song <treeze.taeung@gmail.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ markus@trippelsdorf.de, chris.ryder@arm.com,
+ Pawel Moll <pawel.moll@arm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, rmk+kernel@arm.linux.org.uk,
+ Jiri Olsa <jolsa@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Hemant Kumar <hemant@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 2/7] perf annotate: Add cross arch annotate support
+Message-ID: <20160826062147.GC8218@danjae.aot.lge.com>
+References: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1471611578-11255-3-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20160822180151.241ad87ad1befd72bd46c2ec@arm.com>
+ <CAM9d7cgXL7vnFS32=2wGDkMry7cbeAe2N0NnmhJscvNA1vb4Vg@mail.gmail.com>
+ <20160823153617.c0bb45eeefe993c554cb792a@arm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160823153617.c0bb45eeefe993c554cb792a@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,118 +42,305 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/26/2016 12:26 AM, Tillmann Heidsieck wrote:=0A=
-> Hello Scott,=0A=
-> =0A=
-> thanks for the fast reply!=0A=
-> =0A=
-> On 2016-08-24 23:39, Scott Wood wrote:=0A=
-> [..]=0A=
->>=0A=
->> The second inbound window is at 256G, and it maps all of RAM.  Note =0A=
->> that=0A=
->> for accesses in this window, the PCI address is different from the host=
-=0A=
->> address.=0A=
-> =0A=
-> I probably really misunderstand the manual here ...=0A=
-> =0A=
-> 1 << 40 =3D 0x100_00000000 right? So if I put=0A=
-> =0A=
-> (1 << 40) >> 44 =3D 0 in PEXIWBEAR and=0A=
-> (1 << 40) >> 12 =3D 0x10000000 in PEXIWBAR=0A=
-> =0A=
-> the window base (extended) address would be (1 << 40) right? And at the=
-=0A=
-> risk of showing my complete lack of skill doing basic arithmetic ...=0A=
-> isn't (1 << 40) =3D 128GB? So what am I missing here?=0A=
-=0A=
-Sorry, I meant 1 TiB, not 256 GiB.  1 << 40 =3D 1 TiB.=0A=
-=0A=
-> I also read that the maximum allowed window size for PCIe inbound =0A=
-> windows=0A=
-> is 64G this would result in the need for more ATMU entries in case of =0A=
->  >68G=0A=
-> system memory (the question is whether this needs to be fixed because=0A=
-> maybe nobody wants to build such a computer).=0A=
-=0A=
-Hmm, it does say that.  This code was written when the physical address=0A=
-size was 36 bits rather than 40.  I wonder if there's a real 64 GiB=0A=
-limitation or if the manual just wasn't updated when the physical=0A=
-address size grew... though in any case we should follow what the manual=0A=
-says unless it's confirmed otherwise.=0A=
-=0A=
->> By trying to identity-map everything you also break the assumption that=
-=0A=
->> we don't need swiotlb to avoid the PEXCSRBAR region on PCI devices=0A=
->> capable of generating 64-bit addresses.=0A=
-> =0A=
-> Can you point me to where I might read up on this? I know far to little=
-=0A=
-> about all of this, that's for sure.=0A=
-=0A=
-PEXCSRBAR (called PCICSRBAR in the Linux driver) is an inbound window=0A=
-intended for MSIs, configured via a config space BAR rather than the=0A=
-MMIO ATMU registers.  It only accepts 32-bit PCI addresses and can't be=0A=
-disabled or pointed at anything but CCSR.  Any RAM that aliases the=0A=
-PEXCSRBAR PCI address can't be DMAed to without either using swiotlb or=0A=
-a non-identity mapping.=0A=
-=0A=
->>> Tested on a T4240 with 12G of RAM and an AMD E6760 PCIe card working =
-=0A=
->>> with=0A=
->>> the in-tree radeon driver.=0A=
->>=0A=
->> I have no problem using an e1000e card on a t4240 with 24 GiB RAM.=0A=
->>=0A=
->> Looking at the radeon driver I see that there's a possibility of a dma=
-=0A=
->> mask that is exactly 40 bits.  I think there's an off-by-one error in=0A=
->> fsl_pci_dma_set_mask().  If you change "dma_mask >=3D=0A=
->> DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)" to "dma_mask >=0A=
->> DMA_BIT_MASK(MAX_PHYS_ADDR_BITS)", does that make radeon work without=0A=
->> this patch?=0A=
-> =0A=
-> This works in the sense that the radeon driver uses only 32bit dma =0A=
-> addresses=0A=
-> after applying it.=0A=
-> I don't think that is what was intended since the card clearly works =0A=
-> which=0A=
-> higher addresses.=0A=
-=0A=
-Right, step one is to fix the bug.  Step two is to make things faster. :-)=
-=0A=
-=0A=
-For the second step I suggest setting the high window's address/size=0A=
-based on the amount of RAM present (rounded up to a power of 2) rather=0A=
-than trying to map the entire 40-bit address space.  Thus if you have 12=0A=
-GiB RAM, you'd get a 16 GiB window at PCI address 16 GiB, and any PCI=0A=
-device with a DMA mask of at least 35 bits could use direct DMA to the=0A=
-high window.  I'll put a patch together.=0A=
-=0A=
->>=0A=
->> This change is unrelated.=0A=
-> =0A=
-> yeah sorry for sneaking that one in here, are you interested in this =0A=
-> change?=0A=
-> It cleans up the code a little bit by using existing functions. I think =
-=0A=
-> it=0A=
-> makes the intend more clear but that's up for interpretation ;-)=0A=
-=0A=
-Sure.  If you resend it, please CC me at oss@buserror.net rather than=0A=
-the NXP address.=0A=
-=0A=
-BTW, we can probably just drop that "Setting PCI inbound window greater=0A=
-than memory size" message.  We routinely silently map beyond the end of=0A=
-RAM with the high mapping...=0A=
-=0A=
->> BTW, for some reason your patch is not showing up in Patchwork.=0A=
-> =0A=
-> Are there some known pitfalls when sending patches to Patchwork?=0A=
-=0A=
-It's not the first time I've seen certain people's patches not show up=0A=
-there, but I don't know what the root cause is.=0A=
-=0A=
--Scott=0A=
-=0A=
+Hi,
+
+On Tue, Aug 23, 2016 at 03:36:17PM -0500, Kim Phillips wrote:
+> On Tue, 23 Aug 2016 11:17:16 +0900
+> Namhyung Kim <namhyung@kernel.org> wrote:
+> 
+> > On Tue, Aug 23, 2016 at 8:01 AM, Kim Phillips <kim.phillips@arm.com> wrote:
+> > > On Fri, 19 Aug 2016 18:29:33 +0530
+> > > Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> wrote:
+> > >
+> > >> Changes in v6:
+> > >>   - Instead of adding only those instructions defined in #ifdef __arm__,
+> > >>     add all instructions from default table to arm table.
+> > > Thanks, I've gone through the list and removed all not-ARM
+> > > instructions, and added some missing ARM branch instructions:
+> > 
+> > Can we use regex patterns instead?
+> 
+> Yes, that helps prevent mistakes updating instruction lists - how does
+> this look?:
+
+Much better!
+
+Thanks,
+Namhyung
+
+
+> 
+> diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
+> index b2c6cf3..52316f3 100644
+> --- a/tools/perf/util/annotate.c
+> +++ b/tools/perf/util/annotate.c
+> @@ -26,6 +26,7 @@
+>  const char 	*disassembler_style;
+>  const char	*objdump_path;
+>  static regex_t	 file_lineno;
+> +static regex_t	 arm_call_insn, arm_jump_insn;
+>  
+>  static struct ins *ins__find(const char *name, const char *norm_arch);
+>  static int disasm_line__parse(char *line, char **namep, char **rawp);
+> @@ -449,98 +450,7 @@ static struct ins instructions_x86[] = {
+>  	{ .name = "retq",  .ops  = &ret_ops, },
+>  };
+>  
+> -static struct ins instructions_arm[] = {
+> -	{ .name = "add",   .ops  = &mov_ops, },
+> -	{ .name = "addl",  .ops  = &mov_ops, },
+> -	{ .name = "addq",  .ops  = &mov_ops, },
+> -	{ .name = "addw",  .ops  = &mov_ops, },
+> -	{ .name = "and",   .ops  = &mov_ops, },
+> -	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
+> -	{ .name = "bcc",   .ops  = &jump_ops, },
+> -	{ .name = "bcs",   .ops  = &jump_ops, },
+> -	{ .name = "beq",   .ops  = &jump_ops, },
+> -	{ .name = "bge",   .ops  = &jump_ops, },
+> -	{ .name = "bgt",   .ops  = &jump_ops, },
+> -	{ .name = "bhi",   .ops  = &jump_ops, },
+> -	{ .name = "bl",    .ops  = &call_ops, },
+> -	{ .name = "bls",   .ops  = &jump_ops, },
+> -	{ .name = "blt",   .ops  = &jump_ops, },
+> -	{ .name = "blx",   .ops  = &call_ops, },
+> -	{ .name = "bne",   .ops  = &jump_ops, },
+> -	{ .name = "bts",   .ops  = &mov_ops, },
+> -	{ .name = "call",  .ops  = &call_ops, },
+> -	{ .name = "callq", .ops  = &call_ops, },
+> -	{ .name = "cmp",   .ops  = &mov_ops, },
+> -	{ .name = "cmpb",  .ops  = &mov_ops, },
+> -	{ .name = "cmpl",  .ops  = &mov_ops, },
+> -	{ .name = "cmpq",  .ops  = &mov_ops, },
+> -	{ .name = "cmpw",  .ops  = &mov_ops, },
+> -	{ .name = "cmpxch", .ops  = &mov_ops, },
+> -	{ .name = "dec",   .ops  = &dec_ops, },
+> -	{ .name = "decl",  .ops  = &dec_ops, },
+> -	{ .name = "imul",  .ops  = &mov_ops, },
+> -	{ .name = "inc",   .ops  = &dec_ops, },
+> -	{ .name = "incl",  .ops  = &dec_ops, },
+> -	{ .name = "ja",	   .ops  = &jump_ops, },
+> -	{ .name = "jae",   .ops  = &jump_ops, },
+> -	{ .name = "jb",	   .ops  = &jump_ops, },
+> -	{ .name = "jbe",   .ops  = &jump_ops, },
+> -	{ .name = "jc",	   .ops  = &jump_ops, },
+> -	{ .name = "jcxz",  .ops  = &jump_ops, },
+> -	{ .name = "je",	   .ops  = &jump_ops, },
+> -	{ .name = "jecxz", .ops  = &jump_ops, },
+> -	{ .name = "jg",	   .ops  = &jump_ops, },
+> -	{ .name = "jge",   .ops  = &jump_ops, },
+> -	{ .name = "jl",    .ops  = &jump_ops, },
+> -	{ .name = "jle",   .ops  = &jump_ops, },
+> -	{ .name = "jmp",   .ops  = &jump_ops, },
+> -	{ .name = "jmpq",  .ops  = &jump_ops, },
+> -	{ .name = "jna",   .ops  = &jump_ops, },
+> -	{ .name = "jnae",  .ops  = &jump_ops, },
+> -	{ .name = "jnb",   .ops  = &jump_ops, },
+> -	{ .name = "jnbe",  .ops  = &jump_ops, },
+> -	{ .name = "jnc",   .ops  = &jump_ops, },
+> -	{ .name = "jne",   .ops  = &jump_ops, },
+> -	{ .name = "jng",   .ops  = &jump_ops, },
+> -	{ .name = "jnge",  .ops  = &jump_ops, },
+> -	{ .name = "jnl",   .ops  = &jump_ops, },
+> -	{ .name = "jnle",  .ops  = &jump_ops, },
+> -	{ .name = "jno",   .ops  = &jump_ops, },
+> -	{ .name = "jnp",   .ops  = &jump_ops, },
+> -	{ .name = "jns",   .ops  = &jump_ops, },
+> -	{ .name = "jnz",   .ops  = &jump_ops, },
+> -	{ .name = "jo",	   .ops  = &jump_ops, },
+> -	{ .name = "jp",	   .ops  = &jump_ops, },
+> -	{ .name = "jpe",   .ops  = &jump_ops, },
+> -	{ .name = "jpo",   .ops  = &jump_ops, },
+> -	{ .name = "jrcxz", .ops  = &jump_ops, },
+> -	{ .name = "js",	   .ops  = &jump_ops, },
+> -	{ .name = "jz",	   .ops  = &jump_ops, },
+> -	{ .name = "lea",   .ops  = &mov_ops, },
+> -	{ .name = "lock",  .ops  = &lock_ops, },
+> -	{ .name = "mov",   .ops  = &mov_ops, },
+> -	{ .name = "movb",  .ops  = &mov_ops, },
+> -	{ .name = "movdqa",.ops  = &mov_ops, },
+> -	{ .name = "movl",  .ops  = &mov_ops, },
+> -	{ .name = "movq",  .ops  = &mov_ops, },
+> -	{ .name = "movslq", .ops  = &mov_ops, },
+> -	{ .name = "movzbl", .ops  = &mov_ops, },
+> -	{ .name = "movzwl", .ops  = &mov_ops, },
+> -	{ .name = "nop",   .ops  = &nop_ops, },
+> -	{ .name = "nopl",  .ops  = &nop_ops, },
+> -	{ .name = "nopw",  .ops  = &nop_ops, },
+> -	{ .name = "or",    .ops  = &mov_ops, },
+> -	{ .name = "orl",   .ops  = &mov_ops, },
+> -	{ .name = "test",  .ops  = &mov_ops, },
+> -	{ .name = "testb", .ops  = &mov_ops, },
+> -	{ .name = "testl", .ops  = &mov_ops, },
+> -	{ .name = "xadd",  .ops  = &mov_ops, },
+> -	{ .name = "xbeginl", .ops  = &jump_ops, },
+> -	{ .name = "xbeginq", .ops  = &jump_ops, },
+> -	{ .name = "retq",  .ops  = &ret_ops, },
+> -};
+> -
+> -struct instructions_powerpc {
+> +struct instructions_arch {
+>  	struct ins *ins;
+>  	struct list_head list;
+>  };
+> @@ -560,41 +470,41 @@ static int ins__cmp(const void *a, const void *b)
+>  	return strcmp(ia->name, ib->name);
+>  }
+>  
+> -static struct ins *list_add__ins_powerpc(struct instructions_powerpc *head,
+> +static struct ins *list_add__ins_arch(struct instructions_arch *head,
+>  					 const char *name, struct ins_ops *ops)
+>  {
+> -	struct instructions_powerpc *ins_powerpc;
+> +	struct instructions_arch *ins_arch;
+>  	struct ins *ins;
+>  
+>  	ins = zalloc(sizeof(struct ins));
+>  	if (!ins)
+>  		return NULL;
+>  
+> -	ins_powerpc = zalloc(sizeof(struct instructions_powerpc));
+> -	if (!ins_powerpc)
+> +	ins_arch = zalloc(sizeof(struct instructions_arch));
+> +	if (!ins_arch)
+>  		goto out_free_ins;
+>  
+>  	ins->name = strdup(name);
+>  	if (!ins->name)
+> -		goto out_free_ins_power;
+> +		goto out_free_ins_arch;
+>  
+>  	ins->ops = ops;
+> -	ins_powerpc->ins = ins;
+> -	list_add_tail(&(ins_powerpc->list), &(head->list));
+> +	ins_arch->ins = ins;
+> +	list_add_tail(&(ins_arch->list), &(head->list));
+>  
+>  	return ins;
+>  
+> -out_free_ins_power:
+> -	zfree(&ins_powerpc);
+> +out_free_ins_arch:
+> +	zfree(&ins_arch);
+>  out_free_ins:
+>  	zfree(&ins);
+>  	return NULL;
+>  }
+>  
+> -static struct ins *list_search__ins_powerpc(struct instructions_powerpc *head,
+> +static struct ins *list_search__ins_arch(struct instructions_arch *head,
+>  					    const char *name)
+>  {
+> -	struct instructions_powerpc *pos;
+> +	struct instructions_arch *pos;
+>  
+>  	list_for_each_entry(pos, &head->list, list) {
+>  		if (!strcmp(pos->ins->name, name))
+> @@ -608,7 +518,7 @@ static struct ins *ins__find_powerpc(const char *name)
+>  	int i;
+>  	struct ins *ins;
+>  	struct ins_ops *ops;
+> -	static struct instructions_powerpc head;
+> +	static struct instructions_arch head;
+>  	static bool list_initialized;
+>  
+>  	/*
+> @@ -629,7 +539,7 @@ static struct ins *ins__find_powerpc(const char *name)
+>  	/*
+>  	 * Return if we already have object of 'struct ins' for this instruction
+>  	 */
+> -	ins = list_search__ins_powerpc(&head, name);
+> +	ins = list_search__ins_arch(&head, name);
+>  	if (ins)
+>  		return ins;
+>  
+> @@ -666,7 +576,44 @@ static struct ins *ins__find_powerpc(const char *name)
+>  	 * Add instruction to list so next time no need to
+>  	 * allocate memory for it.
+>  	 */
+> -	return list_add__ins_powerpc(&head, name, ops);
+> +	return list_add__ins_arch(&head, name, ops);
+> +}
+> +
+> +static struct ins *ins__find_arm(const char *name)
+> +{
+> +	struct ins *ins;
+> +	struct ins_ops *ops = &mov_ops;
+> +	static struct instructions_arch head;
+> +	static bool list_initialized;
+> +	regmatch_t match[2];
+> +	int ret;
+> +
+> +	if (!list_initialized) {
+> +		INIT_LIST_HEAD(&head.list);
+> +		list_initialized = true;
+> +	}
+> +
+> +	/*
+> +	 * Return if we already have object of 'struct ins' for this instruction
+> +	 */
+> +	ins = list_search__ins_arch(&head, name);
+> +	if (ins)
+> +		return ins;
+> +
+> +	ret = regexec(&arm_call_insn, name, 2, match, 0);
+> +	if (!ret) {
+> +		ops = &call_ops;
+> +	} else {
+> +		ret = regexec(&arm_jump_insn, name, 2, match, 0);
+> +		if (!ret)
+> +			ops = &jump_ops;
+> +	}
+> +
+> +	/*
+> +	 * Add instruction to list so next time no need to
+> +	 * allocate memory for it.
+> +	 */
+> +	return list_add__ins_arch(&head, name, ops);
+>  }
+>  
+>  static void ins__sort(struct ins *instructions, int nmemb)
+> @@ -686,15 +633,26 @@ static const char *annotate__norm_arch(char *arch)
+>  	return normalize_arch(arch);
+>  }
+>  
+> +#define ARM_CONDS "(cc|cs|eq|ge|gt|hi|le|ls|lt|mi|ne|pl|vc|vs)"
+> +
+>  static struct ins *ins__find(const char *name, const char *norm_arch)
+>  {
+>  	static bool sorted;
+>  	struct ins *instructions;
+> -	int nmemb;
+> +	int nmemb, ret;
+>  
+>  	if (!sorted) {
+>  		ins__sort(instructions_x86, ARRAY_SIZE(instructions_x86));
+> -		ins__sort(instructions_arm, ARRAY_SIZE(instructions_arm));
+> +		if (!strcmp(norm_arch, NORM_ARM)) {
+> +			ret = regcomp(&arm_call_insn,
+> +				      "^blx?" ARM_CONDS "?$", REG_EXTENDED);
+> +			ret |= regcomp(&arm_jump_insn,
+> +				       "^bx?" ARM_CONDS "?$", REG_EXTENDED);
+> +			if (ret) {
+> +				pr_err("regcomp failed\n");
+> +				return NULL;
+> +			}
+> +		}
+>  		sorted = true;
+>  	}
+>  
+> @@ -702,8 +660,7 @@ static struct ins *ins__find(const char *name, const char *norm_arch)
+>  		instructions = instructions_x86;
+>  		nmemb = ARRAY_SIZE(instructions_x86);
+>  	} else if (!strcmp(norm_arch, NORM_ARM)) {
+> -		instructions = instructions_arm;
+> -		nmemb = ARRAY_SIZE(instructions_arm);
+> +		return ins__find_arm(name);
+>  	} else if (!strcmp(norm_arch, NORM_POWERPC)) {
+>  		return ins__find_powerpc(name);
+>  	} else {
+> 
+> Note that, for ARM, in order to match return instructions, 'lr' must be
+> found to be the operand of the branch instruction, which is not
+> contained in the 'name' variable passed to ins__find().
+> 
+> Kim
