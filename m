@@ -1,22 +1,21 @@
-Return-Path: <LW@KARO-electronics.de>
-Received: from mail.karo-electronics.de (mail.karo-electronics.de
- [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <theidsieck@leenox.de>
+Received: from mail.leenox.de (giles.leenox.de [5.9.156.120])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sLBQ01NGqzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 16:45:43 +1000 (AEST)
-Date: Fri, 26 Aug 2016 08:27:20 +0200
-From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
-To: Wolfram Sang <wsa-dev@sang-engineering.com>
-Cc: linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
- legousb-devel@lists.sourceforge.net,
- accessrunner-general@lists.sourceforge.net, linux-tegra@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 00/44] usb: don't print on ENOMEM
-Message-ID: <20160826082720.39f1e394@ipc1.ka-ro>
-In-Reply-To: <20160825173947.26624-1-wsa-dev@sang-engineering.com>
-References: <20160825173947.26624-1-wsa-dev@sang-engineering.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sLBrM20nQzDqB7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 17:05:07 +1000 (AEST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Fri, 26 Aug 2016 09:05:02 +0200
+From: Tillmann Heidsieck <theidsieck@leenox.de>
+To: Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/fsl_pci: Size upper inbound window based on RAM
+ size
+In-Reply-To: <1472193505-13136-1-git-send-email-oss@buserror.net>
+References: <1472193505-13136-1-git-send-email-oss@buserror.net>
+Message-ID: <644493115e473879edacfbbb1df80ec2@mail.leenox.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Scott,
 
-On Thu, 25 Aug 2016 19:38:52 +0200 Wolfram Sang wrote:
-> Here is my next series to save memory by removing unneeded strings. It re=
-moves
-> in the usb subsystem all unspecific error messages after calling malloc-b=
-ased
-> functions, i.e. (devm_)k[zcm]alloc. kmalloc prints enough information in =
-that
-> case. If the message was specific (e.g. "can't save CLEAR_TT_BUFFER state=
-"), I
-> left it. This series saves ~4.5KB of "out of memory" permutations in .tex=
-t and
-> .rodata. For modified lines, (x =3D=3D NULL) was replaced with (!NULL) as=
- well.
-s/!NULL/!x/
+thanks for the patch! This one works for my setup:
+T4240, 12GB Ram and Radeon E6760.
 
+On 2016-08-26 08:38, Scott Wood wrote:
+> This allows PCI devices that can only address (e.g.) 36 or 40 bit DMA 
+> to
+> use direct DMA, at the cost of not being able to DMA to non-RAM 
+> addresses
+> (this doesn't affect MSIs as there is a separate dedicated window for
+> that) which we wouldn't have been able to do anyway if the RAM size 
+> didn't
+> trigger the creation of the second inbound window.
+> 
+> It also fixes an off-by-one error that set dma_direct_ops on PCI 
+> devices
+> whose dma mask could address all the space below the DMA offset
+> (previously 40 bits), but not the window that starts at the DMA offset.
+> 
+> Signed-off-by: Scott Wood <oss@buserror.net>
+> Cc: Tillmann Heidsieck <theidsieck@leenox.de>
+> ---
 
-Lothar Wa=C3=9Fmann
+Tested-by: Tillmann Heidsieck <theidsieck@leenox.de>
