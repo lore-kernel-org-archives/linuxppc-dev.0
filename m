@@ -1,26 +1,22 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from EUR01-VE1-obe.outbound.protection.outlook.com
- (mail-ve1eur01on0061.outbound.protection.outlook.com [104.47.1.61])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <LW@KARO-electronics.de>
+Received: from mail.karo-electronics.de (mail.karo-electronics.de
+ [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sLBKX164VzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 16:41:51 +1000 (AEST)
-From: Scott Wood <scott.wood@nxp.com>
-To: Tillmann Heidsieck <theidsieck@leenox.de>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] powerpc: fsl_pci: fix inbound ATMU entries for
- systems with >4G RAM
-Date: Fri, 26 Aug 2016 06:41:44 +0000
-Message-ID: <DB5PR0401MB1928CAFDC18E2D3C2612F21B91EC0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <20160824194614.4014-1-theidsieck@leenox.de>
- <DB5PR0401MB19280DCC626ED0E83EDD0D3791EA0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <faa14fe5cf19881838df0ab1a402517f@mail.leenox.de>
- <DB5PR0401MB19287448C33B14B1DB47E81F91EC0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sLBQ01NGqzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 16:45:43 +1000 (AEST)
+Date: Fri, 26 Aug 2016 08:27:20 +0200
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+To: Wolfram Sang <wsa-dev@sang-engineering.com>
+Cc: linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
+ legousb-devel@lists.sourceforge.net,
+ accessrunner-general@lists.sourceforge.net, linux-tegra@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 00/44] usb: don't print on ENOMEM
+Message-ID: <20160826082720.39f1e394@ipc1.ka-ro>
+In-Reply-To: <20160825173947.26624-1-wsa-dev@sang-engineering.com>
+References: <20160825173947.26624-1-wsa-dev@sang-engineering.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/26/2016 12:55 AM, Scott Wood wrote:=0A=
-> On 08/26/2016 12:26 AM, Tillmann Heidsieck wrote:=0A=
->> On 2016-08-24 23:39, Scott Wood wrote:=0A=
->>> BTW, for some reason your patch is not showing up in Patchwork.=0A=
->>=0A=
->> Are there some known pitfalls when sending patches to Patchwork?=0A=
-> =0A=
-> It's not the first time I've seen certain people's patches not show up=0A=
-> there, but I don't know what the root cause is.=0A=
-=0A=
-I do see the patch on Patchwork now; I guess it was just slow.=0A=
-=0A=
--Scott=0A=
-=0A=
+Hi,
+
+On Thu, 25 Aug 2016 19:38:52 +0200 Wolfram Sang wrote:
+> Here is my next series to save memory by removing unneeded strings. It re=
+moves
+> in the usb subsystem all unspecific error messages after calling malloc-b=
+ased
+> functions, i.e. (devm_)k[zcm]alloc. kmalloc prints enough information in =
+that
+> case. If the message was specific (e.g. "can't save CLEAR_TT_BUFFER state=
+"), I
+> left it. This series saves ~4.5KB of "out of memory" permutations in .tex=
+t and
+> .rodata. For modified lines, (x =3D=3D NULL) was replaced with (!NULL) as=
+ well.
+s/!NULL/!x/
+
+
+Lothar Wa=C3=9Fmann
