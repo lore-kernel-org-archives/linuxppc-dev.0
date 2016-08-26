@@ -1,47 +1,25 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sL3R80rF0zDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 11:31:15 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7Q1TP4l113787
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 21:31:13 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2525tvw4q7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2016 21:31:13 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Fri, 26 Aug 2016 11:31:10 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2C5012CE805C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 11:31:07 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7Q1V7gD12058762
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 11:31:07 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7Q1V6p0017879
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 11:31:06 +1000
-Subject: Re: [RFC PATCH v3 00/12] powerpc: "paca->soft_enabled" based local
- atomic operation implementation
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <1472106603-23336-1-git-send-email-maddy@linux.vnet.ibm.com>
- <20160825171543.7b23ec01@roar.ozlabs.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Fri, 26 Aug 2016 07:01:00 +0530
-MIME-Version: 1.0
-In-Reply-To: <20160825171543.7b23ec01@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <9339e74d-012e-6bd9-6a0a-f1e82ff5618d@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sL4nt3yWnzDrcM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2016 12:32:33 +1000 (AEST)
+Message-ID: <1472178736.25630.288.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Alessio Igor Bogani
+ <alessio.bogani@elettra.eu>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 25 Aug 2016 21:32:16 -0500
+In-Reply-To: <b843cd6d-b9df-a5b2-4015-042c7894313f@c-s.fr>
+References: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
+ <1468965129.25630.15.camel@buserror.net>
+ <601d732a-a137-3ba9-550d-19c7eb10337a@c-s.fr>
+ <ed8c66dd-c567-35df-4a51-6bb3434fdc2b@c-s.fr>
+ <CAPk1OjGR0gTAXvSUw=QUqkOrOZbmXCnd71Fu0mm5Pfrg46uc5w@mail.gmail.com>
+ <b843cd6d-b9df-a5b2-4015-042c7894313f@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: Suspected regression?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,33 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2016-08-23 at 13:34 +0200, Christophe Leroy wrote:
+> 
+> Le 23/08/2016 à 11:20, Alessio Igor Bogani a écrit :
+> > 
+> > Hi Christophe,
+> > 
+> > Sorry for delay in reply I was on vacation.
+> > 
+> > On 6 August 2016 at 11:29, christophe leroy <christophe.leroy@c-s.fr>
+> > wrote:
+> > > 
+> > > Alessio,
+> > > 
+> > > 
+> > > Le 05/08/2016 à 09:51, Christophe Leroy a écrit :
+> > > > 
+> > > > 
+> > > > 
+> > > > 
+> > > > Le 19/07/2016 à 23:52, Scott Wood a écrit :
+> > > > > 
+> > > > > 
+> > > > > On Tue, 2016-07-19 at 12:00 +0200, Alessio Igor Bogani wrote:
+> > > > > > 
+> > > > > > 
+> > > > > > Hi all,
+> > > > > > 
+> > > > > > I have got two boards MVME5100 (MPC7410 cpu) and MVME7100
+> > > > > > (MPC8641D
+> > > > > > cpu) for which I use the same cross-compiler (ppc7400).
+> > > > > > 
+> > > > > > I tested these against kernel HEAD to found that these don't boot
+> > > > > > anymore (PID 1 crash).
+> > > > > > 
+> > > > > > Bisecting results in first offending commit:
+> > > > > > 7aef4136566b0539a1a98391181e188905e33401
+> > > > > > 
+> > > > > > Removing it from HEAD make boards boot properly again.
+> > > > > > 
+> > > > > > A third system based on P2010 isn't affected at all.
+> > > > > > 
+> > > > > > Is it a regression or I have made something wrong?
+> > > > > 
+> > > > > I booted both my next branch, and Linus's master on MPC8641HPCN and
+> > > > > didn't see
+> > > > > this -- though possibly your RFS is doing something
+> > > > > different.  Maybe
+> > > > > that's
+> > > > > the difference with P2010 as well.
+> > > > > 
+> > > > > Is there any way you can debug the cause of the crash?  Or send me a
+> > > > > minimal
+> > > > > RFS that demonstrates the problem (ideally with debug symbols on the
+> > > > > userspace
+> > > > > binaries)?
+> > > > > 
+> > > > I got from Alessio the below information:
+> > > > 
+> > > > systemd[1]: Caught <BUS>, core dump failed (child 137, code=killed,
+> > > > status=7/BUS).
+> > > > systemd[1]: Freezing execution.
+> > > > 
+> > > > 
+> > > > What can generate SIGBUS ?
+> > > > And shouldn't we also get some KERN_ERR trace, something like
+> > > > "unhandled
+> > > > signal 7 at ....." ?
+> > > > 
+> > > As far as I can see, SIGBUS is mainly generated from alignment
+> > > exception.
+> > > According to 7410 Reference Manual, alignment exception can happen in
+> > > the
+> > > following cases:
+> > > * An operand of a dcbz instruction is on a page that is write-through or
+> > > cache-inhibited for a virtual mode access.
+> > > * An attempt to execute a dcbz instruction occurs when the cache is
+> > > disabled
+> > > or locked.
+> > > 
+> > > Could try with below patch to check if the dcbz insn is causing the
+> > > SIGBUS ?
+> > Unfortunately that patch doesn't solve the problem.
+> > 
+> > Is there a chance that cache behavior could settled by board firmware
+> > (PPCBug on the MPC7410 board and MotLoad on the MPC8641D one)?
+> > In that case what do you suggest me to looking for?
+> If the removal of dcbz doesn't solve the issue, I don't think it is a 
+> cache related issue.
+> As far as I understood, your init gets a SIGBUS signal, right ? Then we 
+> must identify the reason for that sigbus.
 
+My guess would be errors demand-loading a page via NFS.
 
-On Thursday 25 August 2016 12:45 PM, Nicholas Piggin wrote:
-> On Thu, 25 Aug 2016 11:59:51 +0530
-> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
->
->> Local atomic operations are fast and highly reentrant per CPU counters.
->> Used for percpu variable updates. Local atomic operations only guarantee
->> variable modification atomicity wrt the CPU which owns the data and
->> these needs to be executed in a preemption safe way.
-> This is looking really nice. I like how you're able to specify
-> the mask nicely in the handler, and test the mask without adding
-> any instructions to fastpaths.
+One approach might be to hack up the code so that both versions of
+csum_partial_copy_generic() are present, and call both each time.  If the
+results differ or the copied bytes are wrong, then spit out a dump of the
+details.
 
-Thanks.
-
->
-> So far, I only have a few trivial nitpicks as you can see. I'll
-> apply the series and give it a more careful look tomorrow.
-Yes. Please.
-
-Also, just noticed that i broke the Booke build, will fix that and 
-respin it right away.
-Thanks for the review
-
-Maddy
-
-> Thanks,
-> Nick
->
+-Scott
