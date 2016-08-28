@@ -1,11 +1,11 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Received: from mout.web.de (mout.web.de [212.227.15.14])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sMhPB0LkFzDrgY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 03:20:13 +1000 (AEST)
-Subject: [PATCH 6/6] KVM: PPC: e500: Rename jump labels in
- kvmppc_e500_tlb_init()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sMhRK0F9TzDrfv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 03:22:04 +1000 (AEST)
+Subject: [PATCH 3/6] KVM: PPC: e500: Delete an unnecessary initialisation in
+ kvm_vcpu_ioctl_config_tlb()
 To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -17,8 +17,8 @@ References: <566ABCD9.1060404@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
  Julia Lawall <julia.lawall@lip6.fr>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <165cb42e-f9fe-83ad-7c4c-299a805dbe6e@users.sourceforge.net>
-Date: Sun, 28 Aug 2016 19:19:22 +0200
+Message-ID: <a457526f-d337-f789-9bd0-243760214077@users.sourceforge.net>
+Date: Sun, 28 Aug 2016 19:15:14 +0200
 MIME-Version: 1.0
 In-Reply-To: <c3fd4483-38d2-af0f-0e19-a7e57e120c5b@users.sourceforge.net>
 Content-Type: text/plain; charset=windows-1252
@@ -32,49 +32,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 28 Aug 2016 18:45:26 +0200
+Date: Sun, 28 Aug 2016 17:37:10 +0200
 
-Adjust jump labels according to the current Linux coding style convention.
+The local variable "g2h_bitmap" will be set to an appropriate value
+a bit later. Thus omit the explicit initialisation at the beginning.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/kvm/e500_mmu.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/kvm/e500_mmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
-index 0a2eeb1..da8f22b 100644
+index b65a894..e9c19e9 100644
 --- a/arch/powerpc/kvm/e500_mmu.c
 +++ b/arch/powerpc/kvm/e500_mmu.c
-@@ -933,26 +933,25 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
- 					  sizeof(struct tlbe_ref),
- 					  GFP_KERNEL);
- 	if (!vcpu_e500->gtlb_priv[0])
--		goto err;
-+		goto free_vcpu;
- 
- 	vcpu_e500->gtlb_priv[1] = kcalloc(vcpu_e500->gtlb_params[1].entries,
- 					  sizeof(struct tlbe_ref),
- 					  GFP_KERNEL);
- 	if (!vcpu_e500->gtlb_priv[1])
--		goto err;
-+		goto free_vcpu;
- 
- 	vcpu_e500->g2h_tlb1_map = kcalloc(vcpu_e500->gtlb_params[1].entries,
- 					  sizeof(*vcpu_e500->g2h_tlb1_map),
- 					  GFP_KERNEL);
- 	if (!vcpu_e500->g2h_tlb1_map)
--		goto err;
-+		goto free_vcpu;
- 
- 	vcpu_mmu_init(vcpu, vcpu_e500->gtlb_params);
- 
- 	kvmppc_recalc_tlb1map_range(vcpu_e500);
- 	return 0;
--
--err:
-+ free_vcpu:
- 	free_gtlb(vcpu_e500);
- 	return -1;
- }
+@@ -743,7 +743,7 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 	char *virt;
+ 	struct page **pages;
+ 	struct tlbe_priv *privs[2] = {};
+-	u64 *g2h_bitmap = NULL;
++	u64 *g2h_bitmap;
+ 	size_t array_len;
+ 	u32 sets;
+ 	int num_pages, ret, i;
 -- 
 2.9.3
