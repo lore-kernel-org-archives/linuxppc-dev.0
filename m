@@ -1,52 +1,50 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sMnKY5lS3zDrh0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 07:02:25 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sMnKg2WYLzDrgq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 07:02:31 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7SKxiuO127064
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 17:02:24 -0400
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25356etwbf-1
+ u7SKwuPm078005
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 17:02:29 -0400
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 253rc1pqbf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 17:02:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 17:02:29 -0400
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 29 Aug 2016 02:32:20 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 527CCE0060
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 02:31:19 +0530 (IST)
+ Mon, 29 Aug 2016 02:32:26 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id F3BAEE0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 02:31:24 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7SL2Ixc16122080
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 02:32:18 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7SL2OuN14483542
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 02:32:24 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7SL2FLg006654
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 02:32:18 +0530
+ u7SL2LXb006791
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 02:32:24 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Jiri Olsa <jolsa@kernel.org>,
+ Yury Norov <ynorov@caviumnetworks.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
- Stephane Eranian <eranian@gmail.com>,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [PATCH 10/13] tool/perf: Add support for perf_arch_regs
-Date: Mon, 29 Aug 2016 02:30:55 +0530
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
+ Kan Liang <kan.liang@intel.com>, Wang Nan <wangnan0@huawei.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 11/13] tools/perf: Fix the mask in regs_dump__printf and
+ print_sample_iregs
+Date: Mon, 29 Aug 2016 02:30:56 +0530
 In-Reply-To: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1472418058-28659-11-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1472418058-28659-12-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,103 +54,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the structure regs_dump with the arch_regs_mask
-variable. Update perf_evsel__parse_sample() and
-perf_event__sample_event_size() to include arch_regs_mask variable.
+When decoding the perf_regs mask in regs_dump__printf(),
+we loop through the mask using find_first_bit and find_next_bit functions.
+"mask" is of type "u64", but sent as a "unsigned long *" to
+lib functions along with sizeof().
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@kernel.org>
+While the exisitng code works fine in most of the case,
+the logic is broken when using a 32bit perf on a 64bit kernel (Big Endian).
+When reading u64 using (u32 *)(&val)[0], perf (lib/find_*_bit()) assumes it gets
+lower 32bits of u64 which is wrong. Proposed fix is to swap the words
+of the u64 to handle this case. This is _not_ endianess swap.
+
+Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+Reviewed-by: Yury Norov <ynorov@caviumnetworks.com>
+Acked-by: Jiri Olsa <jolsa@kernel.org>
+Cc: Yury Norov <ynorov@caviumnetworks.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Stephane Eranian <eranian@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Kan Liang <kan.liang@intel.com>
+Cc: Wang Nan <wangnan0@huawei.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- tools/perf/util/event.h |  1 +
- tools/perf/util/evsel.c | 11 +++++++++++
- 2 files changed, 12 insertions(+)
+Fix already posted, but yet to be pulled in. This is needed
+for the subsequent patches.
 
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index 8d363d5e65a2..aee0ff536e29 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -94,6 +94,7 @@ struct sample_event {
- struct regs_dump {
- 	u64 abi;
- 	u64 mask;
-+	u64 arch_regs_mask;
- 	u64 *regs;
+https://patchwork.kernel.org/patch/9285421/
+
+ tools/include/linux/bitmap.h |  2 ++
+ tools/lib/bitmap.c           | 18 ++++++++++++++++++
+ tools/perf/builtin-script.c  |  4 +++-
+ tools/perf/util/session.c    |  4 +++-
+ 4 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/tools/include/linux/bitmap.h b/tools/include/linux/bitmap.h
+index 43c1c5021e4b..998ac95a8ddd 100644
+--- a/tools/include/linux/bitmap.h
++++ b/tools/include/linux/bitmap.h
+@@ -4,10 +4,12 @@
+ #include <string.h>
+ #include <linux/bitops.h>
+ #include <stdlib.h>
++#include <limits.h>
  
- 	/* Cached values/mask filled by first register access. */
-diff --git a/tools/perf/util/evsel.c b/tools/perf/util/evsel.c
-index 21fd573106ed..aac8820b3bd5 100644
---- a/tools/perf/util/evsel.c
-+++ b/tools/perf/util/evsel.c
-@@ -1902,6 +1902,8 @@ int perf_evsel__parse_sample(struct perf_evsel *evsel, union perf_event *event,
- 		OVERFLOW_CHECK_u64(array);
- 		data->user_regs.abi = *array;
- 		array++;
-+		data->user_regs.arch_regs_mask = *array;
-+		array++;
+ #define DECLARE_BITMAP(name,bits) \
+ 	unsigned long name[BITS_TO_LONGS(bits)]
  
- 		if (data->user_regs.abi) {
- 			u64 mask = evsel->attr.sample_regs_user;
-@@ -1961,11 +1963,14 @@ int perf_evsel__parse_sample(struct perf_evsel *evsel, union perf_event *event,
- 		OVERFLOW_CHECK_u64(array);
- 		data->intr_regs.abi = *array;
- 		array++;
-+		data->intr_regs.arch_regs_mask = *array;
-+		array++;
++void bitmap_from_u64(unsigned long *dst, u64 mask);
+ int __bitmap_weight(const unsigned long *bitmap, int bits);
+ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
+ 		 const unsigned long *bitmap2, int bits);
+diff --git a/tools/lib/bitmap.c b/tools/lib/bitmap.c
+index 38748b0e342f..21e17730c35f 100644
+--- a/tools/lib/bitmap.c
++++ b/tools/lib/bitmap.c
+@@ -73,3 +73,21 @@ int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
+ 			   BITMAP_LAST_WORD_MASK(bits));
+ 	return result != 0;
+ }
++
++/*
++ * bitmap_from_u64 - Check and swap words within u64.
++ *  @mask: source bitmap
++ *  @dst:  destination bitmap
++ *
++ * In 32 bit big endian userspace on a 64bit kernel, 'unsigned long' is 32 bits.
++ * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
++ * we will get wrong value for the mask. That is "(u32 *)(&val)[0]"
++ * gets upper 32 bits of u64, but perf may expect lower 32bits of u64.
++ */
++void bitmap_from_u64(unsigned long *dst, u64 mask)
++{
++	dst[0] = mask & ULONG_MAX;
++
++	if (sizeof(mask) > sizeof(unsigned long))
++		dst[1] = mask >> 32;
++}
+diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
+index 6b3c8b0d3276..db270b4f892a 100644
+--- a/tools/perf/builtin-script.c
++++ b/tools/perf/builtin-script.c
+@@ -421,11 +421,13 @@ static void print_sample_iregs(struct perf_sample *sample,
+ 	struct regs_dump *regs = &sample->intr_regs;
+ 	uint64_t mask = attr->sample_regs_intr;
+ 	unsigned i = 0, r;
++	DECLARE_BITMAP(_mask, 64);
  
- 		if (data->intr_regs.abi != PERF_SAMPLE_REGS_ABI_NONE) {
- 			u64 mask = evsel->attr.sample_regs_intr;
+ 	if (!regs)
+ 		return;
  
- 			sz = hweight_long(mask) * sizeof(u64);
-+			sz += hweight_long(data->intr_regs.arch_regs_mask) * sizeof(u64);
- 			OVERFLOW_CHECK(array, sz, max_size);
- 			data->intr_regs.mask = mask;
- 			data->intr_regs.regs = (u64 *)array;
-@@ -2044,6 +2049,7 @@ size_t perf_event__sample_event_size(const struct perf_sample *sample, u64 type,
- 		if (sample->user_regs.abi) {
- 			result += sizeof(u64);
- 			sz = hweight_long(sample->user_regs.mask) * sizeof(u64);
-+			sz += hweight_long(sample->user_regs.arch_regs_mask) * sizeof(u64);
- 			result += sz;
- 		} else {
- 			result += sizeof(u64);
-@@ -2072,6 +2078,7 @@ size_t perf_event__sample_event_size(const struct perf_sample *sample, u64 type,
- 		if (sample->intr_regs.abi) {
- 			result += sizeof(u64);
- 			sz = hweight_long(sample->intr_regs.mask) * sizeof(u64);
-+			sz += hweight_long(sample->intr_regs.arch_regs_mask) * sizeof(u64);
- 			result += sz;
- 		} else {
- 			result += sizeof(u64);
-@@ -2223,7 +2230,9 @@ int perf_event__synthesize_sample(union perf_event *event, u64 type,
- 	if (type & PERF_SAMPLE_REGS_USER) {
- 		if (sample->user_regs.abi) {
- 			*array++ = sample->user_regs.abi;
-+			*array++ = sample->user_regs.arch_regs_mask;
- 			sz = hweight_long(sample->user_regs.mask) * sizeof(u64);
-+			sz += hweight_long(sample->user_regs.arch_regs_mask) * sizeof(u64);
- 			memcpy(array, sample->user_regs.regs, sz);
- 			array = (void *)array + sz;
- 		} else {
-@@ -2259,7 +2268,9 @@ int perf_event__synthesize_sample(union perf_event *event, u64 type,
- 	if (type & PERF_SAMPLE_REGS_INTR) {
- 		if (sample->intr_regs.abi) {
- 			*array++ = sample->intr_regs.abi;
-+			*array++ = sample->intr_regs.arch_regs_mask;
- 			sz = hweight_long(sample->intr_regs.mask) * sizeof(u64);
-+			sz += hweight_long(sample->intr_regs.arch_regs_mask) * sizeof(u64);
- 			memcpy(array, sample->intr_regs.regs, sz);
- 			array = (void *)array + sz;
- 		} else {
+-	for_each_set_bit(r, (unsigned long *) &mask, sizeof(mask) * 8) {
++	bitmap_from_u64(_mask, mask);
++	for_each_set_bit(r, _mask, sizeof(mask) * 8) {
+ 		u64 val = regs->regs[i++];
+ 		printf("%5s:0x%"PRIx64" ", perf_reg_name(r), val);
+ 	}
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 5d61242a6e64..440a9fb2a6fb 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -944,8 +944,10 @@ static void branch_stack__printf(struct perf_sample *sample)
+ static void regs_dump__printf(u64 mask, u64 *regs)
+ {
+ 	unsigned rid, i = 0;
++	DECLARE_BITMAP(_mask, 64);
+ 
+-	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
++	bitmap_from_u64(_mask, mask);
++	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
+ 		u64 val = regs[i++];
+ 
+ 		printf(".... %-5s 0x%" PRIx64 "\n",
 -- 
 2.7.4
