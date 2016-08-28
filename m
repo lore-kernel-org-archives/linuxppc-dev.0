@@ -2,16 +2,17 @@ Return-Path: <colin.king@canonical.com>
 Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sMWZQ3d8yzDrfR
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 20:42:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sMWz658rPzDrfR
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 21:00:34 +1000 (AEST)
 From: Colin King <colin.king@canonical.com>
-To: Zhao Qiang <qiang.zhao@nxp.com>, netdev@vger.kernel.org,
+To: Geoff Levand <geoff@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] wan/fsl_ucc_hdlc: fix spelling mistake "prameter" ->
- "parameter"
-Date: Sun, 28 Aug 2016 11:40:41 +0100
-Message-Id: <20160828104041.9272-1-colin.king@canonical.com>
+Subject: [PATCH] powerpc/ps3: fix spelling mistake in function name
+Date: Sun, 28 Aug 2016 11:59:00 +0100
+Message-Id: <20160828105900.10041-1-colin.king@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +24,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Colin Ian King <colin.king@canonical.com>
 
-Trivial fix to spelling mistake in dev_err message.
+Trivial fix to spelling mistake in dev_warn message and remove
+extraneous trailing whitespace at end of the message.
 
 Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/net/wan/fsl_ucc_hdlc.c | 2 +-
+ arch/powerpc/platforms/ps3/device-init.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 6f04445..5fbf83d 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -162,7 +162,7 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
- 				ALIGNMENT_OF_UCC_HDLC_PRAM);
+diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
+index 57caaf1..d3eabd1 100644
+--- a/arch/powerpc/platforms/ps3/device-init.c
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -62,7 +62,7 @@ static int __init ps3_register_lpm_devices(void)
+ 		&dev->lpm.rights);
  
- 	if (priv->ucc_pram_offset < 0) {
--		dev_err(priv->dev, "Can not allocate MURAM for hdlc prameter.\n");
-+		dev_err(priv->dev, "Can not allocate MURAM for hdlc parameter.\n");
- 		ret = -ENOMEM;
- 		goto free_tx_bd;
+ 	if (result) {
+-		pr_debug("%s:%d: ps3_repository_read_lpm_privleges failed \n",
++		pr_debug("%s:%d: ps3_repository_read_lpm_privileges failed\n",
+ 			__func__, __LINE__);
+ 		goto fail_read_repo;
  	}
 -- 
 2.9.3
