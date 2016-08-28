@@ -2,10 +2,10 @@ Return-Path: <elfring@users.sourceforge.net>
 Received: from mout.web.de (mout.web.de [212.227.17.12])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sMhK52K7PzDrff
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 03:16:40 +1000 (AEST)
-Subject: [PATCH 4/6] KVM: PPC: e500: Replace kzalloc() calls by kcalloc() in
- two functions
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sMhMG1lgJzDrfk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 03:18:33 +1000 (AEST)
+Subject: [PATCH 5/6] KVM: PPC: e500: Use kmalloc_array() in
+ kvmppc_e500_tlb_init()
 To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -17,8 +17,8 @@ References: <566ABCD9.1060404@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
  Julia Lawall <julia.lawall@lip6.fr>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <f142a12c-c70f-7046-e20c-fbb83ba6bdae@users.sourceforge.net>
-Date: Sun, 28 Aug 2016 19:16:17 +0200
+Message-ID: <fd0f443b-eba8-bd99-83dd-476104f2dac0@users.sourceforge.net>
+Date: Sun, 28 Aug 2016 19:18:07 +0200
 MIME-Version: 1.0
 In-Reply-To: <c3fd4483-38d2-af0f-0e19-a7e57e120c5b@users.sourceforge.net>
 Content-Type: text/plain; charset=windows-1252
@@ -32,83 +32,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 28 Aug 2016 18:30:38 +0200
+Date: Sun, 28 Aug 2016 18:40:08 +0200
 
 * A multiplication for the size determination of a memory allocation
   indicated that an array data structure should be processed.
-  Thus use the corresponding function "kcalloc".
+  Thus use the corresponding function "kmalloc_array".
 
-  Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
-
-  This issue was detected also by using the Coccinelle software.
-
-* Replace the specification of data structures by pointer dereferences
+* Replace the specification of a data structure by a pointer dereference
   to make the corresponding size determination a bit safer according to
   the Linux coding style convention.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/kvm/e500_mmu.c | 23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+ arch/powerpc/kvm/e500_mmu.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
-index e9c19e9..2be2afc4 100644
+index 2be2afc4..0a2eeb1 100644
 --- a/arch/powerpc/kvm/e500_mmu.c
 +++ b/arch/powerpc/kvm/e500_mmu.c
-@@ -799,22 +799,21 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- 		goto put_pages;
- 	}
+@@ -905,8 +905,6 @@ static int vcpu_mmu_init(struct kvm_vcpu *vcpu,
+ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
+ {
+ 	struct kvm_vcpu *vcpu = &vcpu_e500->vcpu;
+-	int entry_size = sizeof(struct kvm_book3e_206_tlb_entry);
+-	int entries = KVM_E500_TLB0_SIZE + KVM_E500_TLB1_SIZE;
  
--	privs[0] = kzalloc(sizeof(struct tlbe_priv) * params.tlb_sizes[0],
--			   GFP_KERNEL);
-+	privs[0] = kcalloc(params.tlb_sizes[0], sizeof(*privs[0]), GFP_KERNEL);
- 	if (!privs[0]) {
- 		ret = -ENOMEM;
- 		goto put_pages;
- 	}
- 
--	privs[1] = kzalloc(sizeof(struct tlbe_priv) * params.tlb_sizes[1],
--			   GFP_KERNEL);
-+	privs[1] = kcalloc(params.tlb_sizes[1], sizeof(*privs[1]), GFP_KERNEL);
- 	if (!privs[1]) {
- 		ret = -ENOMEM;
- 		goto free_privs_first;
- 	}
- 
--	g2h_bitmap = kzalloc(sizeof(u64) * params.tlb_sizes[1],
--	                     GFP_KERNEL);
-+	g2h_bitmap = kcalloc(params.tlb_sizes[1],
-+			     sizeof(*g2h_bitmap),
-+			     GFP_KERNEL);
- 	if (!g2h_bitmap) {
- 		ret = -ENOMEM;
- 		goto free_privs_second;
-@@ -929,20 +928,20 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
- 	vcpu_e500->gtlb_offset[0] = 0;
- 	vcpu_e500->gtlb_offset[1] = KVM_E500_TLB0_SIZE;
- 
--	vcpu_e500->gtlb_priv[0] = kzalloc(sizeof(struct tlbe_ref) *
--					  vcpu_e500->gtlb_params[0].entries,
-+	vcpu_e500->gtlb_priv[0] = kcalloc(vcpu_e500->gtlb_params[0].entries,
-+					  sizeof(struct tlbe_ref),
- 					  GFP_KERNEL);
- 	if (!vcpu_e500->gtlb_priv[0])
+ 	if (e500_mmu_host_init(vcpu_e500))
  		goto err;
+@@ -921,7 +919,10 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
+ 	vcpu_e500->gtlb_params[1].ways = KVM_E500_TLB1_SIZE;
+ 	vcpu_e500->gtlb_params[1].sets = 1;
  
--	vcpu_e500->gtlb_priv[1] = kzalloc(sizeof(struct tlbe_ref) *
--					  vcpu_e500->gtlb_params[1].entries,
-+	vcpu_e500->gtlb_priv[1] = kcalloc(vcpu_e500->gtlb_params[1].entries,
-+					  sizeof(struct tlbe_ref),
- 					  GFP_KERNEL);
- 	if (!vcpu_e500->gtlb_priv[1])
- 		goto err;
+-	vcpu_e500->gtlb_arch = kmalloc(entries * entry_size, GFP_KERNEL);
++	vcpu_e500->gtlb_arch = kmalloc_array(KVM_E500_TLB0_SIZE +
++					     KVM_E500_TLB1_SIZE,
++					     sizeof(*vcpu_e500->gtlb_arch),
++					     GFP_KERNEL);
+ 	if (!vcpu_e500->gtlb_arch)
+ 		return -ENOMEM;
  
--	vcpu_e500->g2h_tlb1_map = kzalloc(sizeof(u64) *
--					  vcpu_e500->gtlb_params[1].entries,
-+	vcpu_e500->g2h_tlb1_map = kcalloc(vcpu_e500->gtlb_params[1].entries,
-+					  sizeof(*vcpu_e500->g2h_tlb1_map),
- 					  GFP_KERNEL);
- 	if (!vcpu_e500->g2h_tlb1_map)
- 		goto err;
 -- 
 2.9.3
