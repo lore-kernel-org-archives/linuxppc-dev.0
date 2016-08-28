@@ -1,44 +1,45 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sMk7f4xZNzDrh5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 04:38:38 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7SIXg9r106107
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 14:38:36 -0400
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2536xrcxxv-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sMk7t57BCzDrgS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 04:38:50 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7SIckuJ140794
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 14:38:48 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 253ref3hdd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 14:38:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Aug 2016 14:38:47 -0400
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 29 Aug 2016 00:08:33 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8D4E3E0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 00:07:30 +0530 (IST)
+ Mon, 29 Aug 2016 00:08:44 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 66559125805C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 00:08:42 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7SIcTgK6291540
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 00:08:29 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7SIcfMw18022492
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 00:08:41 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7SIcSJG026917
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 00:08:29 +0530
+ u7SIcGTT026612
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 00:08:18 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, mpe@ellerman.id.au
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 12/12] powerpc: rewrite local_t using soft_irq
-Date: Mon, 29 Aug 2016 00:07:28 +0530
+Subject: [RFC PATCH v4 09/12] powerpc: Add "bitmask" paramater to MASKABLE_*
+ macros
+Date: Mon, 29 Aug 2016 00:07:25 +0530
 In-Reply-To: <1472409448-18172-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1472409448-18172-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1472409448-18172-13-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1472409448-18172-10-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,267 +49,233 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Local atomic operations are fast and highly reentrant per CPU counters.
-Used for percpu variable updates. Local atomic operations only guarantee
-variable modification atomicity wrt the CPU which owns the data and
-these needs to be executed in a preemption safe way.
-
-Here is the design of this patch. Since local_* operations
-are only need to be atomic to interrupts (IIUC), we have two options.
-Either replay the "op" if interrupted or replay the interrupt after
-the "op". Initial patchset posted was based on implementing local_* operation
-based on CR5 which replay's the "op". Patchset had issues in case of
-rewinding the address pointor from an array. This make the slow patch
-really slow. Since CR5 based implementation proposed using __ex_table to find
-the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
-
-But this patch uses, arch_local_irq_*() to soft_disable
-interrupts (including PMIs). After finishing the "op", arch_local_irq_restore()
-called and correspondingly interrupts are replayed if any occured.
-
-patch re-write the current local_* functions to use arch_local_irq_disbale.
-Base flow for each function is
-
-{
-	soft_irq_set_mask(2)
-	load
-	..
-	store
-	arch_local_irq_restore()
-}
-
-Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
-instruction pair is used for local_* operations, which are heavy
-on cycle count and they dont support a local variant. So to
-see whether the new implementation helps, used a modified
-version of Rusty's benchmark code on local_t.
-
-https://lkml.org/lkml/2008/12/16/450
-
-Modifications to Rusty's benchmark code:
-- Executed only local_t test
-
-Here are the values with the patch.
-
-Time in ns per iteration
-
-Local_t             Without Patch           With Patch
-
-_inc                        28              8
-_add                        28              8
-_read                       3               3
-_add_return         28              7
-
-Currently only asm/local.h has been rewrite, and also
-the entire change is tested only in PPC64 (pseries guest)
-and PPC64 host (LE)
-
-TODO:
-	- local_cmpxchg and local_xchg needs modification.
+Make it explicit the interrupt masking supported
+by a gievn interrupt handler. Patch correspondingly
+extends the MASKABLE_* macros with an addition's parameter.
+"bitmask" parameter is passed to SOFTEN_TEST macro to decide
+on masking the interrupt.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/local.h | 93 ++++++++++++++++++++++++++++------------
- 1 file changed, 65 insertions(+), 28 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 62 ++++++++++++++++----------------
+ arch/powerpc/kernel/exceptions-64s.S     | 36 ++++++++++++-------
+ 2 files changed, 54 insertions(+), 44 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-index b8da91363864..e3f5fa77476c 100644
---- a/arch/powerpc/include/asm/local.h
-+++ b/arch/powerpc/include/asm/local.h
-@@ -4,6 +4,8 @@
- #include <linux/percpu.h>
- #include <linux/atomic.h>
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 1eea4ab75607..41be0c2d7658 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -179,9 +179,9 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+  * checking of the interrupt maskable level in the SOFTEN_TEST.
+  * Intended to be used in MASKABLE_EXCPETION_* macros.
+  */
+-#define __EXCEPTION_PROLOG_1(area, extra, vec)				\
++#define __EXCEPTION_PROLOG_1(area, extra, vec, bitmask)			\
+ 	__EXCEPTION_PROLOG_1_PRE(area);					\
+-	extra(vec);							\
++	extra(vec, bitmask);						\
+ 	__EXCEPTION_PROLOG_1_POST(area);
  
-+#include <asm/hw_irq.h>
-+
- typedef struct
- {
- 	atomic_long_t a;
-@@ -14,24 +16,50 @@ typedef struct
- #define local_read(l)	atomic_long_read(&(l)->a)
- #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
+ /*
+@@ -428,79 +428,79 @@ label##_relon_hv:						\
+ #define SOFTEN_VALUE_0xea0	PACA_IRQ_EE
+ #define SOFTEN_VALUE_0xea2	PACA_IRQ_EE
  
--#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
--#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
--#define local_inc(l)	atomic_long_inc(&(l)->a)
--#define local_dec(l)	atomic_long_dec(&(l)->a)
-+static __inline__ void local_add(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	add     %0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	arch_local_irq_restore(flags);
-+}
-+
-+static __inline__ void local_sub(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	subf    %0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	arch_local_irq_restore(flags);
-+}
+-#define __SOFTEN_TEST(h, vec)						\
++#define __SOFTEN_TEST(h, vec, bitmask)					\
+ 	lbz	r10,PACASOFTIRQEN(r13);					\
+-	andi.	r10,r10,IRQ_DISABLE_MASK_LINUX;				\
++	andi.	r10,r10,bitmask;					\
+ 	li	r10,SOFTEN_VALUE_##vec;					\
+ 	bne	masked_##h##interrupt
+-#define _SOFTEN_TEST(h, vec)	__SOFTEN_TEST(h, vec)
++#define _SOFTEN_TEST(h, vec, bitmask)	__SOFTEN_TEST(h, vec, bitmask)
  
- static __inline__ long local_add_return(long a, local_t *l)
- {
- 	long t;
-+	unsigned long flags;
+-#define SOFTEN_TEST_PR(vec)						\
++#define SOFTEN_TEST_PR(vec, bitmask)					\
+ 	KVMTEST(vec);							\
+-	_SOFTEN_TEST(EXC_STD, vec)
++	_SOFTEN_TEST(EXC_STD, vec, bitmask)
  
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%2,0) "			# local_add_return\n\
-+	PPC_LL" %0,0(%2)\n\
- 	add	%0,%1,%0\n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%2 \n\
--	bne-	1b"
-+	PPC_STL	"%0,0(%2)\n"
- 	: "=&r" (t)
- 	: "r" (a), "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
+-#define SOFTEN_TEST_HV(vec)						\
++#define SOFTEN_TEST_HV(vec, bitmask)					\
+ 	KVMTEST(vec);							\
+-	_SOFTEN_TEST(EXC_HV, vec)
++	_SOFTEN_TEST(EXC_HV, vec, bitmask)
  
- 	return t;
- }
-@@ -41,16 +69,18 @@ static __inline__ long local_add_return(long a, local_t *l)
- static __inline__ long local_sub_return(long a, local_t *l)
- {
- 	long t;
-+	unsigned long flags;
-+
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
+-#define SOFTEN_NOTEST_PR(vec)		_SOFTEN_TEST(EXC_STD, vec)
+-#define SOFTEN_NOTEST_HV(vec)		_SOFTEN_TEST(EXC_HV, vec)
++#define SOFTEN_NOTEST_PR(vec, bitmask)		_SOFTEN_TEST(EXC_STD, vec, bitmask)
++#define SOFTEN_NOTEST_HV(vec, bitmask)		_SOFTEN_TEST(EXC_HV, vec, bitmask)
  
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%2,0) "			# local_sub_return\n\
-+"1:"	PPC_LL" %0,0(%2)\n\
- 	subf	%0,%1,%0\n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%2 \n\
--	bne-	1b"
-+	PPC_STL	"%0,0(%2)\n"
- 	: "=&r" (t)
- 	: "r" (a), "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
+-#define __MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra)		\
++#define __MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra, bitmask)	\
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN);					\
+-	__EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec);			\
++	__EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec, bitmask);		\
+ 	EXCEPTION_PROLOG_PSERIES_1(label##_common, h);
  
- 	return t;
- }
-@@ -58,16 +88,17 @@ static __inline__ long local_sub_return(long a, local_t *l)
- static __inline__ long local_inc_return(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
+-#define _MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra)		\
+-	__MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra)
++#define _MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra, bitmask)	\
++	__MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra, bitmask)
  
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_inc_return\n\
-+"1:"	PPC_LL" %0,0(%1)\n\
- 	addic	%0,%0,1\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1 \n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "xer", "memory");
-+	arch_local_irq_restore(flags);
+-#define MASKABLE_EXCEPTION_PSERIES(loc, vec, label)			\
++#define MASKABLE_EXCEPTION_PSERIES(loc, vec, label, bitmask)		\
+ 	. = loc;							\
+ 	.globl label##_pSeries;						\
+ label##_pSeries:							\
+ 	_MASKABLE_EXCEPTION_PSERIES(vec, label,				\
+-				    EXC_STD, SOFTEN_TEST_PR)
++				    EXC_STD, SOFTEN_TEST_PR, bitmask)
  
- 	return t;
- }
-@@ -85,20 +116,24 @@ static __inline__ long local_inc_return(local_t *l)
- static __inline__ long local_dec_return(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
+-#define MASKABLE_EXCEPTION_HV(loc, vec, label)				\
++#define MASKABLE_EXCEPTION_HV(loc, vec, label, bitmask)			\
+ 	. = loc;							\
+ 	.globl label##_hv;						\
+ label##_hv:								\
+ 	_MASKABLE_EXCEPTION_PSERIES(vec, label,				\
+-				    EXC_HV, SOFTEN_TEST_HV)
++				    EXC_HV, SOFTEN_TEST_HV, bitmask)
  
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_dec_return\n\
-+	PPC_LL" %0,0(%1)\n\
- 	addic	%0,%0,-1\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1\n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "xer", "memory");
-+	arch_local_irq_restore(flags);
+-#define MASKABLE_EXCEPTION_HV_OOL(vec, label)				\
++#define MASKABLE_EXCEPTION_HV_OOL(vec, label, bitmask)			\
+ 	.globl label##_hv;						\
+ label##_hv:								\
+-	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
++	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec, bitmask);	\
+ 	EXCEPTION_PROLOG_PSERIES_1(label##_common, EXC_HV);
  
- 	return t;
- }
+-#define __MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra)	\
++#define __MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra, bitmask)\
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN);					\
+-	__EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec);		\
++	__EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec, bitmask);		\
+ 	EXCEPTION_RELON_PROLOG_PSERIES_1(label##_common, h);
+-#define _MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra)	\
+-	__MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra)
++#define _MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra, bitmask)\
++	__MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra, bitmask)
  
-+#define local_inc(l)	local_inc_return(l)
-+#define local_dec(l)	local_dec_return(l)
-+
- #define local_cmpxchg(l, o, n) \
- 	(cmpxchg_local(&((l)->a.counter), (o), (n)))
- #define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
-@@ -115,20 +150,21 @@ static __inline__ long local_dec_return(local_t *l)
- static __inline__ int local_add_unless(local_t *l, long a, long u)
- {
- 	long t;
-+	unsigned long flags;
+-#define MASKABLE_RELON_EXCEPTION_PSERIES(loc, vec, label)		\
++#define MASKABLE_RELON_EXCEPTION_PSERIES(loc, vec, label, bitmask)	\
+ 	. = loc;							\
+ 	.globl label##_relon_pSeries;					\
+ label##_relon_pSeries:							\
+ 	_MASKABLE_RELON_EXCEPTION_PSERIES(vec, label,			\
+-					  EXC_STD, SOFTEN_NOTEST_PR)
++					  EXC_STD, SOFTEN_NOTEST_PR, bitmask)
  
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
- 	__asm__ __volatile__ (
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_add_unless\n\
-+	PPC_LL" %0,0(%1)\n\
- 	cmpw	0,%0,%3 \n\
- 	beq-	2f \n\
- 	add	%0,%2,%0 \n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%1 \n\
--	bne-	1b \n"
-+	PPC_STL" %0,0(%1) \n"
- "	subf	%0,%2,%0 \n\
- 2:"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter)), "r" (a), "r" (u)
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
+-#define MASKABLE_RELON_EXCEPTION_HV(loc, vec, label)			\
++#define MASKABLE_RELON_EXCEPTION_HV(loc, vec, label, bitmask)		\
+ 	. = loc;							\
+ 	.globl label##_relon_hv;					\
+ label##_relon_hv:							\
+ 	_MASKABLE_RELON_EXCEPTION_PSERIES(vec, label,			\
+-					  EXC_HV, SOFTEN_NOTEST_HV)
++					  EXC_HV, SOFTEN_NOTEST_HV, bitmask)
  
- 	return t != u;
- }
-@@ -145,19 +181,20 @@ static __inline__ int local_add_unless(local_t *l, long a, long u)
- static __inline__ long local_dec_if_positive(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
+-#define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label)			\
++#define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label, bitmask)		\
+ 	.globl label##_relon_hv;					\
+ label##_relon_hv:							\
+-	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_HV, vec);		\
++	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_HV, vec, bitmask);\
+ 	EXCEPTION_PROLOG_PSERIES_1(label##_common, EXC_HV);
  
-+	flags = soft_irq_set_mask(IRQ_DISABLE_MASK_PMU | IRQ_DISABLE_MASK_LINUX);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_dec_if_positive\n\
-+	PPC_LL" %0,0(%1)\n\
- 	cmpwi	%0,1\n\
- 	addi	%0,%0,-1\n\
- 	blt-	2f\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1\n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	"\n\
- 2:"	: "=&b" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
+ /*
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index df6d45eb4115..6c56554cfcc3 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -221,11 +221,13 @@ hardware_interrupt_pSeries:
+ hardware_interrupt_hv:
+ 	BEGIN_FTR_SECTION
+ 		_MASKABLE_EXCEPTION_PSERIES(0x502, hardware_interrupt,
+-					    EXC_HV, SOFTEN_TEST_HV)
++					    EXC_HV, SOFTEN_TEST_HV,
++						IRQ_DISABLE_MASK_LINUX)
+ 		KVM_HANDLER(PACA_EXGEN, EXC_HV, 0x502)
+ 	FTR_SECTION_ELSE
+ 		_MASKABLE_EXCEPTION_PSERIES(0x500, hardware_interrupt,
+-					    EXC_STD, SOFTEN_TEST_PR)
++					    EXC_STD, SOFTEN_TEST_PR,
++						IRQ_DISABLE_MASK_LINUX)
+ 		KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x500)
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
  
- 	return t;
- }
+@@ -241,11 +243,13 @@ hardware_interrupt_hv:
+ 	. = 0x900
+ 	.globl decrementer_pSeries
+ decrementer_pSeries:
+-	_MASKABLE_EXCEPTION_PSERIES(0x900, decrementer, EXC_STD, SOFTEN_TEST_PR)
++	_MASKABLE_EXCEPTION_PSERIES(0x900, decrementer, EXC_STD, SOFTEN_TEST_PR,
++							IRQ_DISABLE_MASK_LINUX)
+ 
+ 	STD_EXCEPTION_HV(0x980, 0x982, hdecrementer)
+ 
+-	MASKABLE_EXCEPTION_PSERIES(0xa00, 0xa00, doorbell_super)
++	MASKABLE_EXCEPTION_PSERIES(0xa00, 0xa00, doorbell_super,
++							IRQ_DISABLE_MASK_LINUX)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_STD, 0xa00)
+ 
+ 	STD_EXCEPTION_PSERIES(0xb00, trap_0b)
+@@ -566,13 +570,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe22)
+ 	STD_EXCEPTION_HV_OOL(0xe42, emulation_assist)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe42)
+-	MASKABLE_EXCEPTION_HV_OOL(0xe62, hmi_exception)
++	MASKABLE_EXCEPTION_HV_OOL(0xe62, hmi_exception,IRQ_DISABLE_MASK_LINUX)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe62)
+ 
+-	MASKABLE_EXCEPTION_HV_OOL(0xe82, h_doorbell)
++	MASKABLE_EXCEPTION_HV_OOL(0xe82, h_doorbell,IRQ_DISABLE_MASK_LINUX)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe82)
+ 
+-	MASKABLE_EXCEPTION_HV_OOL(0xea2, h_virt_irq)
++	MASKABLE_EXCEPTION_HV_OOL(0xea2, h_virt_irq,IRQ_DISABLE_MASK_LINUX)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xea2)
+ 
+ 	/* moved from 0xf00 */
+@@ -808,16 +812,20 @@ instruction_access_slb_relon_pSeries:
+ hardware_interrupt_relon_pSeries:
+ hardware_interrupt_relon_hv:
+ 	BEGIN_FTR_SECTION
+-		_MASKABLE_RELON_EXCEPTION_PSERIES(0x502, hardware_interrupt, EXC_HV, SOFTEN_TEST_HV)
++		_MASKABLE_RELON_EXCEPTION_PSERIES(0x502, hardware_interrupt,
++			EXC_HV, SOFTEN_TEST_HV, IRQ_DISABLE_MASK_LINUX)
+ 	FTR_SECTION_ELSE
+-		_MASKABLE_RELON_EXCEPTION_PSERIES(0x500, hardware_interrupt, EXC_STD, SOFTEN_TEST_PR)
++		_MASKABLE_RELON_EXCEPTION_PSERIES(0x500, hardware_interrupt,
++			EXC_STD, SOFTEN_TEST_PR, IRQ_DISABLE_MASK_LINUX)
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+ 	STD_RELON_EXCEPTION_PSERIES(0x4600, 0x600, alignment)
+ 	STD_RELON_EXCEPTION_PSERIES(0x4700, 0x700, program_check)
+ 	STD_RELON_EXCEPTION_PSERIES(0x4800, 0x800, fp_unavailable)
+-	MASKABLE_RELON_EXCEPTION_PSERIES(0x4900, 0x900, decrementer)
++	MASKABLE_RELON_EXCEPTION_PSERIES(0x4900, 0x900, decrementer,
++							IRQ_DISABLE_MASK_LINUX)
+ 	STD_RELON_EXCEPTION_HV(0x4980, 0x982, hdecrementer)
+-	MASKABLE_RELON_EXCEPTION_PSERIES(0x4a00, 0xa00, doorbell_super)
++	MASKABLE_RELON_EXCEPTION_PSERIES(0x4a00, 0xa00, doorbell_super,
++							IRQ_DISABLE_MASK_LINUX)
+ 	STD_RELON_EXCEPTION_PSERIES(0x4b00, 0xb00, trap_0b)
+ 
+ 	. = 0x4c00
+@@ -1113,8 +1121,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 
+ 	/* Equivalents to the above handlers for relocation-on interrupt vectors */
+ 	STD_RELON_EXCEPTION_HV_OOL(0xe40, emulation_assist)
+-	MASKABLE_RELON_EXCEPTION_HV_OOL(0xe80, h_doorbell)
+-	MASKABLE_RELON_EXCEPTION_HV_OOL(0xea0, h_virt_irq)
++	MASKABLE_RELON_EXCEPTION_HV_OOL(0xe80, h_doorbell,
++							IRQ_DISABLE_MASK_LINUX)
++	MASKABLE_RELON_EXCEPTION_HV_OOL(0xea0, h_virt_irq,
++							IRQ_DISABLE_MASK_LINUX)
+ 
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf00, performance_monitor)
+ 	STD_RELON_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
 -- 
 2.7.4
