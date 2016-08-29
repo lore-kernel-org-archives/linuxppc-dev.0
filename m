@@ -1,24 +1,25 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNS4m10ZPzDrpd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 09:08:40 +1000 (AEST)
-Date: Mon, 29 Aug 2016 16:08:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>, Vlastimil
- Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Mahesh Salgaonkar
- <mahesh@linux.vnet.ibm.com>, Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v3 0/3] Account reserved memory when allocating system hash
-Message-Id: <20160829160837.497c6e8ead41f4558c0850e3@linux-foundation.org>
-In-Reply-To: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
-References: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <xdrudis@tinet.cat>
+Received: from mx2.tinet.org (mx2.tinet.org [195.77.216.147])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sNN7N66LTzDrh3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 06:10:38 +1000 (AEST)
+Received: from smtp01.tinet.org (smtp01.tinet.org [195.77.216.131]) by
+ mx2.tinet.org with ESMTP id JFFpDyJC4qpORrhQ for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 22:10:31 +0200 (CEST)
+Date: Mon, 29 Aug 2016 21:54:28 +0200
+From: Xavi Drudis Ferran <xdrudis@tinet.cat>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xavi Drudis Ferran <xdrudis@tinet.cat>, fabio.estevam@nxp.com,
+ Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@freescale.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: Setting some clocks back to DUMMY fixes spdif output on imx6q
+ wandboard rev B1
+Message-ID: <20160829195428.GD1967@begut>
+References: <20160828160055.GA2122@begut>
+ <20160829192820.GA14207@Asurada-Nvidia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160829192820.GA14207@Asurada-Nvidia>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 29 Aug 2016 18:36:47 +0530 Srikar Dronamraju <srikar@linux.vnet.ibm.com> wrote:
+El Mon, Aug 29, 2016 at 12:28:21PM -0700, Nicolin Chen deia:
+> 
+> Yes, it seems that it also tried to correct the clock sources
+> as those were not available when adding the S/PDIF support at
+> the first place.
+>
 
-> Fadump kernel reserves large chunks of memory even before the pages are
-> initialised. This could mean memory that corresponds to several nodes might
-> fall in memblock reserved regions.
+I wonder if maybe they need to be defined, assigned or somehow listed
+elsewhere and they are not for wandboard quad (but are for other boards)?
+ 
+> > The issue is fixed for me with this patch but I'm not sure what's the
+> > best way to help fix any issue someone else may have or what other
+> > info or test you might need. Any guidance welcome. 
 > 
-> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
-> only certain size memory per node. The certain size takes into account
-> the dentry and inode cache sizes. However such a kernel when booting a
-> secondary kernel will not be able to allocate the required amount of
-> memory to suffice for the dentry and inode caches. This results in
-> crashes like the below on large systems such as 32 TB systems.
+> > --- linux-4.7-no-spdif-out/arch/arm/boot/dts/imx6qdl.dtsi	2016-07-25 00:19:43.000000000 +0200
+> > +++ linux-4.7/arch/arm/boot/dts/imx6qdl.dtsi	2016-08-28 17:59:14.276774409 +0200
+> > @@ -240,9 +240,9 @@
+> >  					       <&sdma 15 18 0>;
+> >  					dma-names = "rx", "tx";
+> >  					clocks = <&clks IMX6QDL_CLK_SPDIF_GCLK>, <&clks IMX6QDL_CLK_OSC>,
+> > -						 <&clks IMX6QDL_CLK_SPDIF>, <&clks IMX6QDL_CLK_ASRC>,
+> > -						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_ESAI_EXTAL>,
+> > -						 <&clks IMX6QDL_CLK_IPG>, <&clks IMX6QDL_CLK_MLB>,
+> > +						 <&clks IMX6QDL_CLK_SPDIF>, <&clks IMX6QDL_CLK_DUMMY>,
+> > +						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_DUMMY>,
+> > +						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_DUMMY>,
+> >  						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_SPBA>;
+> >  					clock-names = "core",  "rxtx0",
+> >  						      "rxtx1", "rxtx2",
 > 
-> Dentry cache hash table entries: 536870912 (order: 16, 4294967296 bytes)
-> vmalloc: allocation failure, allocated 4097114112 of 17179934720 bytes
-> swapper/0: page allocation failure: order:0, mode:0x2080020(GFP_ATOMIC)
-> CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.6-master+ #3
-> Call Trace:
-> [c00000000108fb10] [c0000000007fac88] dump_stack+0xb0/0xf0 (unreliable)
-> [c00000000108fb50] [c000000000235264] warn_alloc_failed+0x114/0x160
-> [c00000000108fbf0] [c000000000281484] __vmalloc_node_range+0x304/0x340
-> [c00000000108fca0] [c00000000028152c] __vmalloc+0x6c/0x90
-> [c00000000108fd40] [c000000000aecfb0]
-> alloc_large_system_hash+0x1b8/0x2c0
-> [c00000000108fe00] [c000000000af7240] inode_init+0x94/0xe4
-> [c00000000108fe80] [c000000000af6fec] vfs_caches_init+0x8c/0x13c
-> [c00000000108ff00] [c000000000ac4014] start_kernel+0x50c/0x578
-> [c00000000108ff90] [c000000000008c6c] start_here_common+0x20/0xa8
-> 
-> This patchset solves this problem by accounting the size of reserved memory
-> when calculating the size of large system hashes.
 
-What's the priority on this, btw?  Not needed in earlier kernels?
+> This looks like that you merely revert the SPDIF_GCLK. 
+
+I revert only some clocks, yes. I left SPDIF_GCLK and CLK_SBPA intact.
+So it is a partial revert of the commit.
+
+> Would you
+> please do a little debug using "#define DEBUG 1" and check printk
+> from fsl_spdif_probe_txclk() to see the difference between before
+> and after Shengjiu's commit?
+
+Yes, but I'm compiling the kernel in the wandboard, so it'll take me some time. 
+
+Thank you. 
