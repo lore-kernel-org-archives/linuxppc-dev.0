@@ -1,10 +1,11 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.14])
+Received: from mout.web.de (mout.web.de [212.227.15.3])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sN85r4MNkzDqB7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:08:32 +1000 (AEST)
-Subject: [PATCH 1/5] powerpc-mpic: Use kmalloc_array() in mpic_init()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sN87G3kFxzDrgY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:09:46 +1000 (AEST)
+Subject: [PATCH 2/5] powerpc-MSI: Use kmalloc_array() in
+ ppc4xx_setup_msi_irqs()
 To: linuxppc-dev@lists.ozlabs.org, Adam Buchbinder
  <adam.buchbinder@gmail.com>, Andrew Donnellan
  <andrew.donnellan@au1.ibm.com>,
@@ -17,8 +18,8 @@ References: <566ABCD9.1060404@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
  Julia Lawall <julia.lawall@lip6.fr>, Paolo Bonzini <pbonzini@redhat.com>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <8fe4b2fb-c27d-4932-bbcc-23899afa932d@users.sourceforge.net>
-Date: Mon, 29 Aug 2016 13:07:37 +0200
+Message-ID: <01cf542d-c65e-ff66-6fb0-5ce75af184de@users.sourceforge.net>
+Date: Mon, 29 Aug 2016 13:09:08 +0200
 MIME-Version: 1.0
 In-Reply-To: <fe8faf9e-01bb-4f3e-8258-ecb37ba15c9f@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -32,34 +33,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 29 Aug 2016 11:00:11 +0200
+Date: Mon, 29 Aug 2016 11:11:24 +0200
 
-A multiplication for the size determination of a memory allocation
-indicated that an array data structure should be processed.
-Thus use the corresponding function "kmalloc_array".
+* A multiplication for the size determination of a memory allocation
+  indicated that an array data structure should be processed.
+  Thus use the corresponding function "kmalloc_array".
 
-This issue was detected by using the Coccinelle software.
+  This issue was detected by using the Coccinelle software.
+
+* Replace the specification of a data type by a pointer dereference
+  to make the corresponding size determination a bit safer according to
+  the Linux coding style convention.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/sysdev/mpic.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/sysdev/ppc4xx_msi.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 7de45b2..5e79c0d24 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1641,8 +1641,9 @@ void __init mpic_init(struct mpic *mpic)
+diff --git a/arch/powerpc/sysdev/ppc4xx_msi.c b/arch/powerpc/sysdev/ppc4xx_msi.c
+index 8fb8061..0bd5e4b 100644
+--- a/arch/powerpc/sysdev/ppc4xx_msi.c
++++ b/arch/powerpc/sysdev/ppc4xx_msi.c
+@@ -89,7 +89,9 @@ static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 	if (type == PCI_CAP_ID_MSIX)
+ 		pr_debug("ppc4xx msi: MSI-X untested, trying anyway.\n");
  
- #ifdef CONFIG_PM
- 	/* allocate memory to save mpic state */
--	mpic->save_data = kmalloc(mpic->num_sources * sizeof(*mpic->save_data),
--				  GFP_KERNEL);
-+	mpic->save_data = kmalloc_array(mpic->num_sources,
-+					sizeof(*mpic->save_data),
-+					GFP_KERNEL);
- 	BUG_ON(mpic->save_data == NULL);
- #endif
+-	msi_data->msi_virqs = kmalloc((msi_irqs) * sizeof(int), GFP_KERNEL);
++	msi_data->msi_virqs = kmalloc_array(msi_irqs,
++					    sizeof(*msi_data->msi_virqs),
++					    GFP_KERNEL);
+ 	if (!msi_data->msi_virqs)
+ 		return -ENOMEM;
  
 -- 
 2.9.3
