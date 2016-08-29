@@ -2,12 +2,12 @@ Return-Path: <elfring@users.sourceforge.net>
 Received: from mout.web.de (mout.web.de [217.72.192.78])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sN7x20vzLzDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:00:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sN7xn54g8zDrgh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:01:33 +1000 (AEST)
 Subject: [PATCH 0/5] PowerPC: Fine-tuning for three function implementations
 References: <566ABCD9.1060404@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- Julia Lawall <julia.lawall@lip6.fr>
+ Julia Lawall <julia.lawall@lip6.fr>, Paolo Bonzini <pbonzini@redhat.com>
 To: linuxppc-dev@lists.ozlabs.org, Adam Buchbinder
  <adam.buchbinder@gmail.com>, Andrew Donnellan
  <andrew.donnellan@au1.ibm.com>,
@@ -16,8 +16,8 @@ To: linuxppc-dev@lists.ozlabs.org, Adam Buchbinder
  Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
  Sudeep Holla <Sudeep.Holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <4c0babe9-0192-1a99-7ff3-5028cc69325d@users.sourceforge.net>
-Date: Mon, 29 Aug 2016 13:00:13 +0200
+Message-ID: <fe8faf9e-01bb-4f3e-8258-ecb37ba15c9f@users.sourceforge.net>
+Date: Mon, 29 Aug 2016 13:00:54 +0200
 MIME-Version: 1.0
 In-Reply-To: <566ABCD9.1060404@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
