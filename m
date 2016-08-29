@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNQlf48jGzDrh3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 08:08:46 +1000 (AEST)
-Message-ID: <1472508517.2388.9.camel@kernel.crashing.org>
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.8-4 tag
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc dev
- list <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 30 Aug 2016 08:08:37 +1000
-In-Reply-To: <CA+55aFwo321H+EYjOuwhfJvrn+vbfoT0fV8TMHSy2C0BYSD+EA@mail.gmail.com>
-References: <1472445840.2889.99.camel@kernel.crashing.org>
- <CA+55aFwo321H+EYjOuwhfJvrn+vbfoT0fV8TMHSy2C0BYSD+EA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNS3b5FVZzDrdq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 09:07:39 +1000 (AEST)
+Date: Mon, 29 Aug 2016 16:07:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>, Vlastimil
+ Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Mahesh Salgaonkar
+ <mahesh@linux.vnet.ibm.com>, Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v3 0/3] Account reserved memory when allocating system hash
+Message-Id: <20160829160737.819633db830d332dd669bcdf@linux-foundation.org>
+In-Reply-To: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
+References: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-08-29 at 12:15 -0700, Linus Torvalds wrote:
-> On Sun, Aug 28, 2016 at 9:44 PM, Benjamin Herrenschmidt
-> > <benh@kernel.crashing.org> wrote:
-> > 
-> > 
-> > This is my first signed-tag and use of 2fa so I hope I got it all right...
-> > I tried to use the same format Michael uses for the tag etc...
-> 
-> The signature all looks fine, but when the contents of the tag are
-> just the same git information that you can get from git itself, it's
-> not useful as a merge message. So I prefer the actual high-level "what
-> changed" message instead:
-> 
-> > 
-> > We have some misc fixes for powerpc 4.8. Some trivial bits and some
-> > regressions, and a trivial cleanup or two that I saw no point in letting
-> > rot in patchwork.
-> 
-> .. although optimally with a *bit* more detail.
-> 
-> Anyway, pulled.
+On Mon, 29 Aug 2016 18:36:47 +0530 Srikar Dronamraju <srikar@linux.vnet.ibm.com> wrote:
 
-Ok. Will fix that next time.
+> Fadump kernel reserves large chunks of memory even before the pages are
+> initialised. This could mean memory that corresponds to several nodes might
+> fall in memblock reserved regions.
+> 
+> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
+> only certain size memory per node. The certain size takes into account
+> the dentry and inode cache sizes. However such a kernel when booting a
+> secondary kernel will not be able to allocate the required amount of
+> memory to suffice for the dentry and inode caches. This results in
+> crashes like the below on large systems such as 32 TB systems.
+> 
+> Dentry cache hash table entries: 536870912 (order: 16, 4294967296 bytes)
+> vmalloc: allocation failure, allocated 4097114112 of 17179934720 bytes
+> swapper/0: page allocation failure: order:0, mode:0x2080020(GFP_ATOMIC)
+> CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.6-master+ #3
+> Call Trace:
+> [c00000000108fb10] [c0000000007fac88] dump_stack+0xb0/0xf0 (unreliable)
+> [c00000000108fb50] [c000000000235264] warn_alloc_failed+0x114/0x160
+> [c00000000108fbf0] [c000000000281484] __vmalloc_node_range+0x304/0x340
+> [c00000000108fca0] [c00000000028152c] __vmalloc+0x6c/0x90
+> [c00000000108fd40] [c000000000aecfb0]
+> alloc_large_system_hash+0x1b8/0x2c0
+> [c00000000108fe00] [c000000000af7240] inode_init+0x94/0xe4
+> [c00000000108fe80] [c000000000af6fec] vfs_caches_init+0x8c/0x13c
+> [c00000000108ff00] [c000000000ac4014] start_kernel+0x50c/0x578
+> [c00000000108ff90] [c000000000008c6c] start_here_common+0x20/0xa8
+> 
+> This patchset solves this problem by accounting the size of reserved memory
+> when calculating the size of large system hashes.
+> 
+> While this patchset applies on v4.8-rc3, it cannot be tested on v4.8-rc3
+> because of http://lkml.kernel.org/r/20160829093844.GA2592@linux.vnet.ibm.com
+> However it has been tested on v4.7/v4.6 and v4.4
 
-Cheers,
-Ben.
+That looks like a pretty serious regression.
+
+I'll grab the patchset anyway.  It will come good when we fix that kswapd
+thing.
