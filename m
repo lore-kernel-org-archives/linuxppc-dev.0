@@ -1,24 +1,24 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNLQc1DJTzDrgx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 04:53:41 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
-CC: LABBE Corentin <clabbe.montjoie@gmail.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org, mpm@selenic.com, olof@lixom.net,
- linuxppc-dev@lists.ozlabs.org
-Date: Mon, 29 Aug 2016 18:52:15 +0100 (BST)
-Message-ID: <48b8455031e.651d5701@auth.smtp.1and1.co.uk>
-In-Reply-To: <CANc+2y4JqGRXCLUEpMo8EB8thW5jsweh0Lg2VjuvpNgSR-AwMA@mail.gmail.com>
-References: <1472124856-12767-1-git-send-email-prasannatsmkumar@gmail.com>
- <20160825121546.GA25650@Red>
- <CANc+2y4JqGRXCLUEpMo8EB8thW5jsweh0Lg2VjuvpNgSR-AwMA@mail.gmail.com>
-Subject: Re: hwrng: pasemi_rng.c: Migrate to managed API
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNLvS6RKbzDrgx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 05:15:16 +1000 (AEST)
+Received: by mail-oi0-x241.google.com with SMTP id t127so13069425oie.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 12:15:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: linus971@gmail.com
+In-Reply-To: <1472445840.2889.99.camel@kernel.crashing.org>
+References: <1472445840.2889.99.camel@kernel.crashing.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 29 Aug 2016 12:15:13 -0700
+Message-ID: <CA+55aFwo321H+EYjOuwhfJvrn+vbfoT0fV8TMHSy2C0BYSD+EA@mail.gmail.com>
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.8-4 tag
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello PrasannaKumar
-
-On 25/08/2016, PrasannaKumar Muralidharan wrote:
->> I will propose to use devm_ioremap_resource() instead for removing this
->> hardcoded 0x100, but i cannot find any user of this driver in any dts.
->> (And so cannot check that this 0x100 is given in any DT resource node)
+On Sun, Aug 28, 2016 at 9:44 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
 >
->> Is this normal ?
->
-> I wanted to use devm_ioremap_resource but could not find DT entry
-> required for this driver in any of the .dts files. So did not change
-> that. I could not find any dts/dtsi for this platform. So I assume
-> that the dtb is not present in the kernel, dtb is supplied by the
-> bootloader. I may be wrong in this. Can anyone confirm this?
+> This is my first signed-tag and use of 2fa so I hope I got it all right...
+> I tried to use the same format Michael uses for the tag etc...
 
-On mine (Amigaone X1000) that is correct, we boot linux with a vmlinux file,
-and the bootloader (CFE) passes a fixed dtb. I think it is possible to dump
-the tree from inside CFE, if it would help I can invetigate?
+The signature all looks fine, but when the contents of the tag are
+just the same git information that you can get from git itself, it's
+not useful as a merge message. So I prefer the actual high-level "what
+changed" message instead:
 
-Regards
-Darren
+> We have some misc fixes for powerpc 4.8. Some trivial bits and some
+> regressions, and a trivial cleanup or two that I saw no point in letting
+> rot in patchwork.
+
+.. although optimally with a *bit* more detail.
+
+Anyway, pulled.
+
+                 Linus
