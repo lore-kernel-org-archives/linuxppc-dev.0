@@ -3,9 +3,9 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNS3b5FVZzDrdq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 09:07:39 +1000 (AEST)
-Date: Mon, 29 Aug 2016 16:07:37 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNS4m10ZPzDrpd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 09:08:40 +1000 (AEST)
+Date: Mon, 29 Aug 2016 16:08:37 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>, Vlastimil
@@ -14,7 +14,7 @@ Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>, Vlastimil
  <mahesh@linux.vnet.ibm.com>, Hari Bathini <hbathini@linux.vnet.ibm.com>,
  Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
 Subject: Re: [PATCH v3 0/3] Account reserved memory when allocating system hash
-Message-Id: <20160829160737.819633db830d332dd669bcdf@linux-foundation.org>
+Message-Id: <20160829160837.497c6e8ead41f4558c0850e3@linux-foundation.org>
 In-Reply-To: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
 References: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
 Mime-Version: 1.0
@@ -59,12 +59,5 @@ On Mon, 29 Aug 2016 18:36:47 +0530 Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 > 
 > This patchset solves this problem by accounting the size of reserved memory
 > when calculating the size of large system hashes.
-> 
-> While this patchset applies on v4.8-rc3, it cannot be tested on v4.8-rc3
-> because of http://lkml.kernel.org/r/20160829093844.GA2592@linux.vnet.ibm.com
-> However it has been tested on v4.7/v4.6 and v4.4
 
-That looks like a pretty serious regression.
-
-I'll grab the patchset anyway.  It will come good when we fix that kswapd
-thing.
+What's the priority on this, btw?  Not needed in earlier kernels?
