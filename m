@@ -1,11 +1,10 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Received: from mout.web.de (mout.web.de [212.227.15.4])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sN87G3kFxzDrgY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:09:46 +1000 (AEST)
-Subject: [PATCH 2/5] powerpc-MSI: Use kmalloc_array() in
- ppc4xx_setup_msi_irqs()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sN88S6VCXzDrnL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:10:48 +1000 (AEST)
+Subject: [PATCH 3/5] powerpc-MSI-HSTA: Use kmalloc_array() in hsta_msi_probe()
 To: linuxppc-dev@lists.ozlabs.org, Adam Buchbinder
  <adam.buchbinder@gmail.com>, Andrew Donnellan
  <andrew.donnellan@au1.ibm.com>,
@@ -18,8 +17,8 @@ References: <566ABCD9.1060404@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
  Julia Lawall <julia.lawall@lip6.fr>, Paolo Bonzini <pbonzini@redhat.com>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <01cf542d-c65e-ff66-6fb0-5ce75af184de@users.sourceforge.net>
-Date: Mon, 29 Aug 2016 13:09:08 +0200
+Message-ID: <0c2c17e0-aed2-4b66-371d-fada59cd0861@users.sourceforge.net>
+Date: Mon, 29 Aug 2016 13:10:05 +0200
 MIME-Version: 1.0
 In-Reply-To: <fe8faf9e-01bb-4f3e-8258-ecb37ba15c9f@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -33,7 +32,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 29 Aug 2016 11:11:24 +0200
+Date: Mon, 29 Aug 2016 11:20:39 +0200
 
 * A multiplication for the size determination of a memory allocation
   indicated that an array data structure should be processed.
@@ -47,23 +46,23 @@ Date: Mon, 29 Aug 2016 11:11:24 +0200
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/sysdev/ppc4xx_msi.c | 4 +++-
+ arch/powerpc/sysdev/ppc4xx_hsta_msi.c | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_msi.c b/arch/powerpc/sysdev/ppc4xx_msi.c
-index 8fb8061..0bd5e4b 100644
---- a/arch/powerpc/sysdev/ppc4xx_msi.c
-+++ b/arch/powerpc/sysdev/ppc4xx_msi.c
-@@ -89,7 +89,9 @@ static int ppc4xx_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- 	if (type == PCI_CAP_ID_MSIX)
- 		pr_debug("ppc4xx msi: MSI-X untested, trying anyway.\n");
+diff --git a/arch/powerpc/sysdev/ppc4xx_hsta_msi.c b/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
+index 52a93dc..691db9a 100644
+--- a/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
++++ b/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
+@@ -156,7 +156,9 @@ static int hsta_msi_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto out;
  
--	msi_data->msi_virqs = kmalloc((msi_irqs) * sizeof(int), GFP_KERNEL);
-+	msi_data->msi_virqs = kmalloc_array(msi_irqs,
-+					    sizeof(*msi_data->msi_virqs),
-+					    GFP_KERNEL);
- 	if (!msi_data->msi_virqs)
- 		return -ENOMEM;
- 
+-	ppc4xx_hsta_msi.irq_map = kmalloc(sizeof(int) * irq_count, GFP_KERNEL);
++	ppc4xx_hsta_msi.irq_map = kmalloc_array(irq_count,
++						sizeof(*ppc4xx_hsta_msi.irq_map),
++						GFP_KERNEL);
+ 	if (!ppc4xx_hsta_msi.irq_map) {
+ 		ret = -ENOMEM;
+ 		goto out1;
 -- 
 2.9.3
