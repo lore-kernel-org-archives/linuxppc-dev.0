@@ -1,54 +1,24 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNwsX2NVFzDrhM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 03:45:36 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7UHhimb059966
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 13:45:33 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0b-001b2d01.pphosted.com with ESMTP id 255368hycr-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 13:45:33 -0400
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 30 Aug 2016 14:45:28 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id B6EF51DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 13:45:14 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7UHjNip7930178
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 14:45:23 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7UHiMqC010710
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 14:44:23 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: kexec@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, Eric Biederman <ebiederm@xmission.com>,
- Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
- Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v7 06/13] powerpc: Generalize elf64_apply_relocate_add.
-Date: Tue, 30 Aug 2016 14:43:54 -0300
-In-Reply-To: <1472579041-26033-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1472579041-26033-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1472579041-26033-7-git-send-email-bauerman@linux.vnet.ibm.com>
+Return-Path: <kim.phillips@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sNyjN6cPqzDrhs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 05:08:40 +1000 (AEST)
+Date: Tue, 30 Aug 2016 14:08:34 -0500
+From: Kim Phillips <kim.phillips@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Alexander Shishkin
+ <alexander.shishkin@linux.intel.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Kees Cook <keescook@chromium.org>, Johannes
+ Weiner <hannes@cmpxchg.org>, Arnd Bergmann <arnd@arndb.de>, Tejun Heo
+ <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Michael Ellerman <mpe@ellerman.id.au>, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Mark Rutland
+ <mark.rutland@arm.com>
+Subject: [PATCH 1/2] perf_event: remove unused DEBUG_PERF_USE_VMALLOC
+Message-Id: <20160830140834.6d1edf7abd9d95c02dae7820@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,208 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When apply_relocate_add is called, modules are already loaded at their
-final location in memory so Elf64_Shdr.sh_addr can be used for accessing
-the section contents as well as the base address for relocations.
+This 'DEBUG'-prefixed version of PERF_USE_VMALLOC is not used anywhere.
+It appears to be leftovers from commit 906010b "perf_event: Provide
+vmalloc() based mmap() backing" that introduced it.
 
-This is not the case for kexec's purgatory, because it will only be
-copied to its final location right before being executed. Therefore,
-it needs to be relocated while it is still in a temporary buffer. In
-this case, Elf64_Shdr.sh_addr can't be used to access the sections'
-contents.
+Not sure what commit cb30711 "perf_event: Don't allow vmalloc() backed
+perf on powerpc" was trying to do with it either.
 
-This patch allows elf64_apply_relocate_add to be used when the ELF
-binary is not yet at its final location by adding an addr_base argument
-to specify the address at which the section will be loaded, and rela,
-loc_base and syms_base to point to the sections' contents.
-
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Signed-off-by: Kim Phillips <kim.phillips@arm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/elf_util.h |  6 ++--
- arch/powerpc/kernel/elf_util_64.c   | 63 +++++++++++++++++++++++++------------
- arch/powerpc/kernel/module_64.c     | 17 ++++++++--
- 3 files changed, 61 insertions(+), 25 deletions(-)
+ init/Kconfig | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/elf_util.h b/arch/powerpc/include/asm/elf_util.h
-index 37372559fe62..a012ba03282d 100644
---- a/arch/powerpc/include/asm/elf_util.h
-+++ b/arch/powerpc/include/asm/elf_util.h
-@@ -64,7 +64,9 @@ static inline unsigned long my_r2(const struct elf_info *elf_info)
- }
+diff --git a/init/Kconfig b/init/Kconfig
+index cac3f09..934a61f 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1707,19 +1707,6 @@ config PERF_EVENTS
  
- int elf64_apply_relocate_add(const struct elf_info *elf_info,
--			     const char *strtab, unsigned int symindex,
--			     unsigned int relsec, const char *obj_name);
-+			     const char *strtab, const Elf64_Rela *rela,
-+			     unsigned int num_rela, void *syms_base,
-+			     void *loc_base, Elf64_Addr addr_base,
-+			     const char *obj_name);
+ 	  Say Y if unsure.
  
- #endif /* _ASM_POWERPC_ELF_UTIL_H */
-diff --git a/arch/powerpc/kernel/elf_util_64.c b/arch/powerpc/kernel/elf_util_64.c
-index decad2c34f38..8e5d400ac9f2 100644
---- a/arch/powerpc/kernel/elf_util_64.c
-+++ b/arch/powerpc/kernel/elf_util_64.c
-@@ -69,33 +69,56 @@ static void squash_toc_save_inst(const char *name, unsigned long addr) { }
-  * elf64_apply_relocate_add - apply 64 bit RELA relocations
-  * @elf_info:		Support information for the ELF binary being relocated.
-  * @strtab:		String table for the associated symbol table.
-- * @symindex:		Section header index for the associated symbol table.
-- * @relsec:		Section header index for the relocations to apply.
-+ * @rela:		Contents of the section with the relocations to apply.
-+ * @num_rela:		Number of relocation entries in the section.
-+ * @syms_base:		Contents of the associated symbol table.
-+ * @loc_base:		Contents of the section to which relocations apply.
-+ * @addr_base:		The address where the section will be loaded in memory.
-  * @obj_name:		The name of the ELF binary, for information messages.
-+ *
-+ * Applies RELA relocations to an ELF file already at its final location
-+ * in memory (in which case loc_base == addr_base), or still in a temporary
-+ * buffer.
-  */
- int elf64_apply_relocate_add(const struct elf_info *elf_info,
--			     const char *strtab, unsigned int symindex,
--			     unsigned int relsec, const char *obj_name)
-+			     const char *strtab, const Elf64_Rela *rela,
-+			     unsigned int num_rela, void *syms_base,
-+			     void *loc_base, Elf64_Addr addr_base,
-+			     const char *obj_name)
- {
- 	unsigned int i;
--	Elf64_Shdr *sechdrs = elf_info->sechdrs;
--	Elf64_Rela *rela = (void *)sechdrs[relsec].sh_addr;
--	Elf64_Sym *sym;
- 	unsigned long *location;
-+	unsigned long address;
- 	unsigned long value;
-+	const char *name;
-+	Elf64_Sym *sym;
-+
-+	for (i = 0; i < num_rela; i++) {
-+		/*
-+		 * rels[i].r_offset contains the byte offset from the beginning
-+		 * of section to the storage unit affected.
-+		 *
-+		 * This is the location to update in the temporary buffer where
-+		 * the section is currently loaded. The section will finally
-+		 * be loaded to a different address later, pointed to by
-+		 * addr_base.
-+		 */
-+		location = loc_base + rela[i].r_offset;
-+
-+		/* Final address of the location. */
-+		address = addr_base + rela[i].r_offset;
+-config DEBUG_PERF_USE_VMALLOC
+-	default n
+-	bool "Debug: use vmalloc to back perf mmap() buffers"
+-	depends on PERF_EVENTS && DEBUG_KERNEL && !PPC
+-	select PERF_USE_VMALLOC
+-	help
+-	 Use vmalloc memory to back perf mmap() buffers.
+-
+-	 Mostly useful for debugging the vmalloc code on platforms
+-	 that don't require it.
+-
+-	 Say N if unsure.
+-
+ endmenu
  
-+		/* This is the symbol the relocation is referring to. */
-+		sym = (Elf64_Sym *) syms_base + ELF64_R_SYM(rela[i].r_info);
- 
--	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
--		/* This is where to make the change */
--		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
--			+ rela[i].r_offset;
--		/* This is the symbol it is referring to */
--		sym = (Elf64_Sym *)sechdrs[symindex].sh_addr
--			+ ELF64_R_SYM(rela[i].r_info);
-+		if (sym->st_name)
-+			name = strtab + sym->st_name;
-+		else
-+			name = "<unnamed symbol>";
- 
- 		pr_debug("RELOC at %p: %li-type as %s (0x%lx) + %li\n",
- 		       location, (long)ELF64_R_TYPE(rela[i].r_info),
--		       strtab + sym->st_name, (unsigned long)sym->st_value,
-+		       name, (unsigned long)sym->st_value,
- 		       (long)rela[i].r_addend);
- 
- 		/* `Everything is relative'. */
-@@ -187,7 +210,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
- 				value += local_entry_offset(sym);
- 
- 			/* Convert value to relative */
--			value -= (unsigned long)location;
-+			value -= address;
- 			if (value + 0x2000000 > 0x3ffffff || (value & 3) != 0){
- 				pr_err("%s: REL24 %li out of range!\n",
- 				       obj_name, (long int)value);
-@@ -202,7 +225,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
- 
- 		case R_PPC64_REL64:
- 			/* 64 bits relative (used by features fixups) */
--			*location = value - (unsigned long)location;
-+			*location = value - address;
- 			break;
- 
- 		case R_PPC64_TOCSAVE:
-@@ -218,7 +241,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
- 			 * Optimize ELFv2 large code model entry point if
- 			 * the TOC is within 2GB range of current location.
- 			 */
--			value = my_r2(elf_info) - (unsigned long)location;
-+			value = my_r2(elf_info) - address;
- 			if (value + 0x80008000 > 0xffffffff)
- 				break;
- 			/*
-@@ -242,7 +265,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
- 
- 		case R_PPC64_REL16_HA:
- 			/* Subtract location pointer */
--			value -= (unsigned long)location;
-+			value -= address;
- 			value = ((value + 0x8000) >> 16);
- 			*((uint16_t *) location)
- 				= (*((uint16_t *) location) & ~0xffff)
-@@ -251,7 +274,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
- 
- 		case R_PPC64_REL16_LO:
- 			/* Subtract location pointer */
--			value -= (unsigned long)location;
-+			value -= address;
- 			*((uint16_t *) location)
- 				= (*((uint16_t *) location) & ~0xffff)
- 				| (value & 0xffff);
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index b929560ecd5b..590e2413974f 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -439,16 +439,26 @@ int restore_r2(u32 *instruction, const char *obj_name)
- 	return 1;
- }
- 
-+/*
-+ * When this function is called, the module is already at its final location in
-+ * memory, so Elf64_Shdr.sh_addr can be used for accessing the section
-+ * contents as well as the base address for relocations.
-+ */
- int apply_relocate_add(Elf64_Shdr *sechdrs,
- 		       const char *strtab,
- 		       unsigned int symindex,
- 		       unsigned int relsec,
- 		       struct module *me)
- {
-+	Elf64_Shdr *rel_section = &sechdrs[relsec];
-+	void *syms_base = (void *) sechdrs[symindex].sh_addr;
-+	Elf64_Addr addr_base = sechdrs[rel_section->sh_info].sh_addr;
-+	const Elf64_Rela *rela = (const Elf64_Rela *) rel_section->sh_addr;
-+	unsigned int num_rela = rel_section->sh_size / sizeof(Elf64_Rela);
- 	Elf64_Sym *sym;
- 
- 	pr_debug("Applying ADD relocate section %u to %u\n", relsec,
--	       sechdrs[relsec].sh_info);
-+		 rel_section->sh_info);
- 
- 	/* First time we're called, we can fix up .TOC. */
- 	if (!me->arch.toc_fixed) {
-@@ -460,8 +470,9 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 		me->arch.toc_fixed = true;
- 	}
- 
--	return elf64_apply_relocate_add(&me->arch.elf_info, strtab, symindex,
--					relsec, me->name);
-+	return elf64_apply_relocate_add(&me->arch.elf_info, strtab, rela,
-+					num_rela, syms_base, (void *) addr_base,
-+					addr_base, me->name);
- }
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
+ config VM_EVENT_COUNTERS
 -- 
-1.9.1
+2.9.3
