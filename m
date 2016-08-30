@@ -1,25 +1,50 @@
-Return-Path: <xdrudis@tinet.cat>
-Received: from mx2.tinet.org (mx2.tinet.org [195.77.216.147])
- by lists.ozlabs.org (Postfix) with ESMTP id 3sNN7N66LTzDrh3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 06:10:38 +1000 (AEST)
-Received: from smtp01.tinet.org (smtp01.tinet.org [195.77.216.131]) by
- mx2.tinet.org with ESMTP id JFFpDyJC4qpORrhQ for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 22:10:31 +0200 (CEST)
-Date: Mon, 29 Aug 2016 21:54:28 +0200
-From: Xavi Drudis Ferran <xdrudis@tinet.cat>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xavi Drudis Ferran <xdrudis@tinet.cat>, fabio.estevam@nxp.com,
- Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Shengjiu Wang <shengjiu.wang@freescale.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Setting some clocks back to DUMMY fixes spdif output on imx6q
- wandboard rev B1
-Message-ID: <20160829195428.GD1967@begut>
-References: <20160828160055.GA2122@begut>
- <20160829192820.GA14207@Asurada-Nvidia>
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNWs96LgYzDrh4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 11:58:53 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7U1wkgD110461
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:58:51 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 253714c8c2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2016 21:58:50 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 30 Aug 2016 11:58:48 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6534A2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 11:58:46 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7U1wkKI48824464
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 11:58:46 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7U1wjZi004480
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 11:58:46 +1000
+Subject: Re: [PATCH] cxl: use pcibios_free_controller_deferred() when removing
+ vPHBs
+To: linuxppc-dev@lists.ozlabs.org
+References: <1471505714-30049-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Cc: clombard@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
+ mrochs@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
+ fbarrat@linux.vnet.ibm.com, mauricfo@linux.vnet.ibm.com,
+ helgaas@kernel.org, imunsie@au1.ibm.com, felix@linux.vnet.ibm.com,
+ ukrishn@linux.vnet.ibm.com, stable@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 30 Aug 2016 11:58:44 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160829192820.GA14207@Asurada-Nvidia>
+In-Reply-To: <1471505714-30049-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <3049096a-97ea-9549-ee29-ae937708cf45@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +54,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-El Mon, Aug 29, 2016 at 12:28:21PM -0700, Nicolin Chen deia:
-> 
-> Yes, it seems that it also tried to correct the clock sources
-> as those were not available when adding the S/PDIF support at
-> the first place.
+Hi stable team,
+
+The following patch, which ended up upstream as 
+6f38a8b9a45833495dc878c335c5431cd98a16ed:
+
+On 18/08/16 17:35, Andrew Donnellan wrote:
+> When cxl removes a vPHB, it's possible that the pci_controller may be freed
+> before all references to the devices on the vPHB have been released. This
+> in turn causes an invalid memory access when the devices are eventually
+> released, as pcibios_release_device() attempts to call the phb's
+> release_device hook.
 >
+> In cxl_pci_vphb_remove(), remove the existing call to
+> pcibios_free_controller(). Instead, use
+> pcibios_free_controller_deferred() to free the pci_controller after all
+> devices have been released. Export pci_set_host_bridge_release() so we can
+> do this.
+>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+>
+> ---
+>
+> This patch requires http://patchwork.ozlabs.org/patch/658324/. It should go
+> through the powerpc tree.
 
-I wonder if maybe they need to be defined, assigned or somehow listed
-elsewhere and they are not for wandboard quad (but are for other boards)?
- 
-> > The issue is fixed for me with this patch but I'm not sure what's the
-> > best way to help fix any issue someone else may have or what other
-> > info or test you might need. Any guidance welcome. 
-> 
-> > --- linux-4.7-no-spdif-out/arch/arm/boot/dts/imx6qdl.dtsi	2016-07-25 00:19:43.000000000 +0200
-> > +++ linux-4.7/arch/arm/boot/dts/imx6qdl.dtsi	2016-08-28 17:59:14.276774409 +0200
-> > @@ -240,9 +240,9 @@
-> >  					       <&sdma 15 18 0>;
-> >  					dma-names = "rx", "tx";
-> >  					clocks = <&clks IMX6QDL_CLK_SPDIF_GCLK>, <&clks IMX6QDL_CLK_OSC>,
-> > -						 <&clks IMX6QDL_CLK_SPDIF>, <&clks IMX6QDL_CLK_ASRC>,
-> > -						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_ESAI_EXTAL>,
-> > -						 <&clks IMX6QDL_CLK_IPG>, <&clks IMX6QDL_CLK_MLB>,
-> > +						 <&clks IMX6QDL_CLK_SPDIF>, <&clks IMX6QDL_CLK_DUMMY>,
-> > +						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_DUMMY>,
-> > +						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_DUMMY>,
-> >  						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_SPBA>;
-> >  					clock-names = "core",  "rxtx0",
-> >  						      "rxtx1", "rxtx2",
-> 
+This depends on 2dd9c11b9d4dfbd6c070eab7b81197f65e82f1a0 which didn't 
+end up being tagged as cc: stable. It also ended up being applied in the 
+wrong order in the powerpc/fixes tree...
 
-> This looks like that you merely revert the SPDIF_GCLK. 
 
-I revert only some clocks, yes. I left SPDIF_GCLK and CLK_SBPA intact.
-So it is a partial revert of the commit.
-
-> Would you
-> please do a little debug using "#define DEBUG 1" and check printk
-> from fsl_spdif_probe_txclk() to see the difference between before
-> and after Shengjiu's commit?
-
-Yes, but I'm compiling the kernel in the wandboard, so it'll take me some time. 
-
-Thank you. 
+Thanks,
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
