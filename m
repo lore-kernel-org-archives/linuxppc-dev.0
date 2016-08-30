@@ -1,8 +1,8 @@
 Return-Path: <kim.phillips@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3sNyjN6cPqzDrhs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 05:08:40 +1000 (AEST)
-Date: Tue, 30 Aug 2016 14:08:34 -0500
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sNyjQ1LpnzDrht
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 05:08:42 +1000 (AEST)
+Date: Tue, 30 Aug 2016 14:08:39 -0500
 From: Kim Phillips <kim.phillips@arm.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>, Alexander Shishkin
@@ -15,8 +15,8 @@ Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Michael Ellerman <mpe@ellerman.id.au>, Catalin Marinas
  <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Mark Rutland
  <mark.rutland@arm.com>
-Subject: [PATCH 1/2] perf_event: remove unused DEBUG_PERF_USE_VMALLOC
-Message-Id: <20160830140834.6d1edf7abd9d95c02dae7820@arm.com>
+Subject: [PATCH 2/2] arm64: don't select PERF_USE_VMALLOC by default
+Message-Id: <20160830140839.75e0689719bf884c9e38e5e4@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,43 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This 'DEBUG'-prefixed version of PERF_USE_VMALLOC is not used anywhere.
-It appears to be leftovers from commit 906010b "perf_event: Provide
-vmalloc() based mmap() backing" that introduced it.
-
-Not sure what commit cb30711 "perf_event: Don't allow vmalloc() backed
-perf on powerpc" was trying to do with it either.
+Any arm64 based parts that have cache aliasing issues can set it
+manually.  Apparently dragged in from ARM(32) defaults in commit
+8c2c3df "arm64: Build infrastructure".
 
 Signed-off-by: Kim Phillips <kim.phillips@arm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
 ---
- init/Kconfig | 13 -------------
- 1 file changed, 13 deletions(-)
+ arch/arm64/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/init/Kconfig b/init/Kconfig
-index cac3f09..934a61f 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1707,19 +1707,6 @@ config PERF_EVENTS
- 
- 	  Say Y if unsure.
- 
--config DEBUG_PERF_USE_VMALLOC
--	default n
--	bool "Debug: use vmalloc to back perf mmap() buffers"
--	depends on PERF_EVENTS && DEBUG_KERNEL && !PPC
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index bc3f00f..2e6874f 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -105,7 +105,6 @@ config ARM64
+ 	select OF_NUMA if NUMA && OF
+ 	select OF_RESERVED_MEM
+ 	select PCI_ECAM if ACPI
 -	select PERF_USE_VMALLOC
--	help
--	 Use vmalloc memory to back perf mmap() buffers.
--
--	 Mostly useful for debugging the vmalloc code on platforms
--	 that don't require it.
--
--	 Say N if unsure.
--
- endmenu
- 
- config VM_EVENT_COUNTERS
+ 	select POWER_RESET
+ 	select POWER_SUPPLY
+ 	select SPARSE_IRQ
 -- 
 2.9.3
