@@ -1,34 +1,23 @@
-Return-Path: <mgorman@techsingularity.net>
-Received: from outbound-smtp11.blacknight.com (outbound-smtp11.blacknight.com
- [46.22.139.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nilayvaish@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNsCb26j1zDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 01:00:58 +1000 (AEST)
-Received: from mail.blacknight.com (pemlinmail06.blacknight.ie [81.17.255.152])
- by outbound-smtp11.blacknight.com (Postfix) with ESMTPS id 364011C1F24
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 16:00:54 +0100 (IST)
-Date: Tue, 30 Aug 2016 16:00:51 +0100
-From: Mel Gorman <mgorman@techsingularity.net>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Linux-MM <linux-mm@kvack.org>, Rik van Riel <riel@surriel.com>,
- Vlastimil Babka <vbabka@suse.cz>, Johannes Weiner <hannes@cmpxchg.org>,
- Minchan Kim <minchan@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- LKML <linux-kernel@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>
-Subject: Re: [PATCH 07/34] mm, vmscan: make kswapd reclaim in terms of nodes
-Message-ID: <20160830150051.GW8119@techsingularity.net>
-References: <1467970510-21195-1-git-send-email-mgorman@techsingularity.net>
- <1467970510-21195-8-git-send-email-mgorman@techsingularity.net>
- <20160829093844.GA2592@linux.vnet.ibm.com>
- <20160830120728.GV8119@techsingularity.net>
- <20160830142508.GA10514@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNtZX1LYGzDr5y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 02:02:28 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id f128so2627397ith.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 09:02:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20160830142508.GA10514@linux.vnet.ibm.com>
+In-Reply-To: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
+From: Nilay Vaish <nilayvaish@gmail.com>
+Date: Tue, 30 Aug 2016 11:01:45 -0500
+Message-ID: <CACbG3094rSX9qfngBPSzetG21_=yW1pdxcAeVZOyNj=AJmdL6Q@mail.gmail.com>
+Subject: Re: [PATCH 00/13] Add support for perf_arch_regs
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,52 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 30, 2016 at 07:55:08PM +0530, Srikar Dronamraju wrote:
-> > > 
-> > > This patch seems to hurt FA_DUMP functionality. This behaviour is not
-> > > seen on v4.7 but only after this patch.
-> > > 
-> > > So when a kernel on a multinode machine with memblock_reserve() such
-> > > that most of the nodes have zero available memory, kswapd seems to be
-> > > consuming 100% of the time.
-> > > 
-> > 
-> > Why is FA_DUMP specifically the trigger? If the nodes have zero available
-> > memory then is the zone_populated() check failing when FA_DUMP is enabled? If
-> > so, that would both allow kswapd to wake and stay awake.
-> > 
-> 
-> The trigger is memblock_reserve() for the complete node memory.  And
-> this is exactly what FA_DUMP does.  Here again the node has memory but
-> its all reserved so there is no free memory in the node.
-> 
-> Did you mean populated_zone() when you said zone_populated or have I
-> mistaken? populated_zone() does return 1 since it checks for
-> zone->present_pages.
-> 
+On 28 August 2016 at 16:00, Madhavan Srinivasan
+<maddy@linux.vnet.ibm.com> wrote:
+> Patchset to extend PERF_SAMPLE_REGS_INTR to include
+> platform specific PMU registers.
+>
+> Patchset applies cleanly on tip:perf/core branch
+>
+> It's a perennial request from hardware folks to be able to
+> see the raw values of the pmu registers. Partly it's so that
+> they can verify perf is doing what they want, and some
+> of it is that they're interested in some of the more obscure
+> info that isn't plumbed out through other perf interfaces.
+>
+> Over the years internally we have used various hack to get
+> the requested data out but this is an attempt to use a
+> somewhat standard mechanism (using PERF_SAMPLE_REGS_INTR).
+>
+> This would also be helpful for those of us working on the perf
+> hardware backends, to be able to verify that we're programming
+> things correctly, without resorting to debug printks etc.
+>
+> Mechanism proposed:
+>
+> 1)perf_regs structure is extended with a perf_arch_regs structure
+> which each arch/ can populate with their specific platform
+> registers to sample on each perf interrupt and an arch_regs_mask
+> variable, which is for perf tool to know about the perf_arch_regs
+> that are supported.
+>
+> 2)perf/core func perf_sample_regs_intr() extended to update
+> the perf_arch_regs structure and the perf_arch_reg_mask. Set of new
+> support functions added perf_get_arch_regs_mask() and
+> perf_get_arch_reg() to aid the updates from arch/ side.
+>
+> 3) perf/core funcs perf_prepare_sample() and perf_output_sample()
+> are extended to support the update for the perf_arch_regs_mask and
+> perf_arch_regs in the sample
+>
+> 4)perf/core func perf_output_sample_regs() extended to dump
+> the arch_regs to the output sample.
+>
+> 5)Finally, perf tool side is updated to include a new element
+> "arch_regs_mask" in the "struct regs_dump", event sample funcs
+> and print functions are updated to support perf_arch_regs.
+>
 
-Yes, I meant populated_zone(). Using present pages may have hidden
-a long-lived corner case as it was unexpected that an entire node
-would be reserved. The old code happened to survive *probably* because
-pgdat_reclaimable would look false and kswapd checks for pgdat being
-balanced would happen to do the right thing in this case.
+I read the patch series and I have one suggestion to make.  I think we
+should not use 'arch regs' to refer to these pmu registers.  I think
+architectural registers typically refer to the ones that hold the
+state of the process.  Can we replace arch_regs by pmu_regs, or some
+other choice?
 
-Can you check if something like this works?
-
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index d572b78b65e1..cf64a5456cf6 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -830,7 +830,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
- 
- static inline int populated_zone(struct zone *zone)
- {
--	return (!!zone->present_pages);
-+	return (!!zone->managed_pages);
- }
- 
- extern int movable_zone;
-
--- 
-Mel Gorman
-SUSE Labs
+Thanks
+Nilay
