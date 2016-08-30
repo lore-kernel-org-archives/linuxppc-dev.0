@@ -1,19 +1,19 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNh6l00mWzDrhd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 18:11:11 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id g202so785738pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 01:11:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNh6p0bfmzDrmy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 18:11:14 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id h186so786708pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 01:11:13 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: stewart@linux.vnet.ibm.com,
 	Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 4/6] powerpc/boot: remove legacy gzip wrapper
-Date: Tue, 30 Aug 2016 18:10:34 +1000
-Message-Id: <1472544636-7837-5-git-send-email-oohall@gmail.com>
+Subject: [PATCH 5/6] powerpc/boot: add xz support to the wrapper script
+Date: Tue, 30 Aug 2016 18:10:35 +1000
+Message-Id: <1472544636-7837-6-git-send-email-oohall@gmail.com>
 In-Reply-To: <1472544636-7837-1-git-send-email-oohall@gmail.com>
 References: <1472544636-7837-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,276 +25,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This code is no longer used and can be removed.
+This modifies the script so that the -Z option takes an argument to
+specify the compression type. It can either be 'gz', 'xz' or 'none'.
+The legazy --no-gzip and -z options are still supported and will set
+the compression to none and gzip respectively, but they are not
+documented.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- arch/powerpc/boot/gunzip_util.c | 204 ----------------------------------------
- arch/powerpc/boot/gunzip_util.h |  45 ---------
- 2 files changed, 249 deletions(-)
- delete mode 100644 arch/powerpc/boot/gunzip_util.c
- delete mode 100644 arch/powerpc/boot/gunzip_util.h
+ arch/powerpc/boot/Makefile |  7 ++++--
+ arch/powerpc/boot/wrapper  | 61 ++++++++++++++++++++++++++++++++++------------
+ 2 files changed, 50 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/boot/gunzip_util.c b/arch/powerpc/boot/gunzip_util.c
-deleted file mode 100644
-index 9dc52501de83..000000000000
---- a/arch/powerpc/boot/gunzip_util.c
-+++ /dev/null
-@@ -1,204 +0,0 @@
--/*
-- * Copyright 2007 David Gibson, IBM Corporation.
-- * Based on earlier work, Copyright (C) Paul Mackerras 1997.
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 3fdd74ac2fae..482bac2af1ff 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -212,10 +212,13 @@ CROSSWRAP := -C "$(CROSS_COMPILE)"
+ endif
+ endif
+ 
++compressor-$(CONFIG_KERNEL_GZIP) := gz
++
+ # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
+ quiet_cmd_wrap	= WRAP    $@
+-      cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+-		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
++      cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -Z $(compressor-y) -c -o $@ -p $2 \
++		$(CROSSWRAP) $(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) \
++		vmlinux
+ 
+ image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
+ image-$(CONFIG_PPC_POWERNV)		+= zImage.pseries
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 6681ec3625c9..cf7631be5007 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -20,6 +20,8 @@
+ # -D dir	specify directory containing data files used by script
+ #		(default ./arch/powerpc/boot)
+ # -W dir	specify working directory for temporary files (default .)
++# -z		use gzip (legacy)
++# -Z zsuffix    compression to use (gz, xz or none)
+ 
+ # Stop execution if any command fails
+ set -e
+@@ -38,7 +40,7 @@ dtb=
+ dts=
+ cacheit=
+ binary=
+-gzip=.gz
++compression=.gz
+ pie=
+ format=
+ 
+@@ -59,7 +61,8 @@ tmpdir=.
+ usage() {
+     echo 'Usage: wrapper [-o output] [-p platform] [-i initrd]' >&2
+     echo '       [-d devtree] [-s tree.dts] [-c] [-C cross-prefix]' >&2
+-    echo '       [-D datadir] [-W workingdir] [--no-gzip] [vmlinux]' >&2
++    echo '       [-D datadir] [-W workingdir] [-Z (gz|xz|none)]' >&2
++    echo '       [--no-compression] [vmlinux]' >&2
+     exit 1
+ }
+ 
+@@ -126,8 +129,24 @@ while [ "$#" -gt 0 ]; do
+ 	[ "$#" -gt 0 ] || usage
+ 	tmpdir="$1"
+ 	;;
++    -z)
++	compression=.gz
++	;;
++    -Z)
++	shift
++	[ "$#" -gt 0 ] || usage
++        [ "$1" != "gz" -o "$1" != "xz" -o "$1" != "none" ] || usage
++
++	compression=".$1"
++
++        if [ $compression = ".none" ]; then
++                compression=
++        fi
++	;;
+     --no-gzip)
+-        gzip=
++        # a "feature" of the the wrapper script is that it can be used outside
++        # the kernel tree. So keeping this around for backwards compatibility.
++        compression=
+         ;;
+     -?)
+ 	usage
+@@ -140,6 +159,7 @@ while [ "$#" -gt 0 ]; do
+     shift
+ done
+ 
++
+ if [ -n "$dts" ]; then
+     if [ ! -r "$dts" -a -r "$object/dts/$dts" ]; then
+ 	dts="$object/dts/$dts"
+@@ -212,7 +232,7 @@ miboot|uboot*)
+     ;;
+ cuboot*)
+     binary=y
+-    gzip=
++    compression=
+     case "$platform" in
+     *-mpc866ads|*-mpc885ads|*-adder875*|*-ep88xc)
+         platformo=$object/cuboot-8xx.o
+@@ -243,7 +263,7 @@ cuboot*)
+ ps3)
+     platformo="$object/ps3-head.o $object/ps3-hvcall.o $object/ps3.o"
+     lds=$object/zImage.ps3.lds
+-    gzip=
++    compression=
+     ext=bin
+     objflags="-O binary --set-section-flags=.bss=contents,alloc,load,data"
+     ksection=.kernel:vmlinux.bin
+@@ -310,27 +330,37 @@ mvme7100)
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
+-if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
+-    ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
+ 
+-    strip_size=$(stat -c %s $vmz.$$)
++# Calculate the vmlinux.strip size
++${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
++strip_size=$(stat -c %s $vmz.$$)
+ 
+-    if [ -n "$gzip" ]; then
++if [ -z "$cacheit" -o ! -f "$vmz$compression" -o "$vmz$compression" -ot "$kernel" ]; then
++    # recompress the image if we need to
++    case $compression in
++    .xz)
++        xz --check=crc32 -f -9 "$vmz.$$"
++        ;;
++    .gz)
+         gzip -n -f -9 "$vmz.$$"
+-    fi
++        ;;
++    *)
++        # drop the compression suffix so the stripped vmlinux is used
++        compression=
++    	;;
++    esac
+ 
+     if [ -n "$cacheit" ]; then
+-	mv -f "$vmz.$$$gzip" "$vmz$gzip"
++	mv -f "$vmz.$$$compression" "$vmz$compression"
+     else
+ 	vmz="$vmz.$$"
+     fi
+ else
+-    # Calculate the vmlinux.strip size
+-    ${CROSS}objcopy $objflags "$kernel" "$vmz.$$"
+-    strip_size=$(stat -c %s $vmz.$$)
+     rm -f $vmz.$$
+ fi
+ 
++vmz="$vmz$compression"
++
+ if [ "$make_space" = "y" ]; then
+ 	# Round the size to next higher MB limit
+ 	round_size=$(((strip_size + 0xfffff) & 0xfff00000))
+@@ -346,8 +376,6 @@ if [ "$make_space" = "y" ]; then
+ 	fi
+ fi
+ 
+-vmz="$vmz$gzip"
 -
--#include <stddef.h>
--#include "string.h"
--#include "stdio.h"
--#include "ops.h"
--#include "gunzip_util.h"
--
--#define HEAD_CRC	2
--#define EXTRA_FIELD	4
--#define ORIG_NAME	8
--#define COMMENT		0x10
--#define RESERVED	0xe0
--
--/**
-- * gunzip_start - prepare to decompress gzip data
-- * @state:     decompressor state structure to be initialized
-- * @src:       buffer containing gzip compressed or uncompressed data
-- * @srclen:    size in bytes of the buffer at src
-- *
-- * If the buffer at @src contains a gzip header, this function
-- * initializes zlib to decompress the data, storing the decompression
-- * state in @state.  The other functions in this file can then be used
-- * to decompress data from the gzipped stream.
-- *
-- * If the buffer at @src does not contain a gzip header, it is assumed
-- * to contain uncompressed data.  The buffer information is recorded
-- * in @state and the other functions in this file will simply copy
-- * data from the uncompressed data stream at @src.
-- *
-- * Any errors, such as bad compressed data, cause an error to be
-- * printed an the platform's exit() function to be called.
-- */
--void gunzip_start(struct gunzip_state *state, void *src, int srclen)
--{
--	char *hdr = src;
--	int hdrlen = 0;
--
--	memset(state, 0, sizeof(*state));
--
--	/* Check for gzip magic number */
--	if ((hdr[0] == 0x1f) && (hdr[1] == 0x8b)) {
--		/* gzip data, initialize zlib parameters */
--		int r, flags;
--
--		state->s.workspace = state->scratch;
--		if (zlib_inflate_workspacesize() > sizeof(state->scratch))
--			fatal("insufficient scratch space for gunzip\n\r");
--
--		/* skip header */
--		hdrlen = 10;
--		flags = hdr[3];
--		if (hdr[2] != Z_DEFLATED || (flags & RESERVED) != 0)
--			fatal("bad gzipped data\n\r");
--		if ((flags & EXTRA_FIELD) != 0)
--			hdrlen = 12 + hdr[10] + (hdr[11] << 8);
--		if ((flags & ORIG_NAME) != 0)
--			while (hdr[hdrlen++] != 0)
--				;
--		if ((flags & COMMENT) != 0)
--			while (hdr[hdrlen++] != 0)
--				;
--		if ((flags & HEAD_CRC) != 0)
--			hdrlen += 2;
--		if (hdrlen >= srclen)
--			fatal("gunzip_start: ran out of data in header\n\r");
--
--		r = zlib_inflateInit2(&state->s, -MAX_WBITS);
--		if (r != Z_OK)
--			fatal("inflateInit2 returned %d\n\r", r);
--	}
--
--	state->s.total_in = hdrlen;
--	state->s.next_in = src + hdrlen;
--	state->s.avail_in = srclen - hdrlen;
--}
--
--/**
-- * gunzip_partial - extract bytes from a gzip data stream
-- * @state:     gzip state structure previously initialized by gunzip_start()
-- * @dst:       buffer to store extracted data
-- * @dstlen:    maximum number of bytes to extract
-- *
-- * This function extracts at most @dstlen bytes from the data stream
-- * previously associated with @state by gunzip_start(), decompressing
-- * if necessary.  Exactly @dstlen bytes are extracted unless the data
-- * stream doesn't contain enough bytes, in which case the entire
-- * remainder of the stream is decompressed.
-- *
-- * Returns the actual number of bytes extracted.  If any errors occur,
-- * such as a corrupted compressed stream, an error is printed an the
-- * platform's exit() function is called.
-- */
--int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen)
--{
--	int len;
--
--	if (state->s.workspace) {
--		/* gunzipping */
--		int r;
--
--		state->s.next_out = dst;
--		state->s.avail_out = dstlen;
--		r = zlib_inflate(&state->s, Z_FULL_FLUSH);
--		if (r != Z_OK && r != Z_STREAM_END)
--			fatal("inflate returned %d msg: %s\n\r", r, state->s.msg);
--		len = state->s.next_out - (Byte *)dst;
--	} else {
--		/* uncompressed image */
--		len = min(state->s.avail_in, (uLong)dstlen);
--		memcpy(dst, state->s.next_in, len);
--		state->s.next_in += len;
--		state->s.avail_in -= len;
--	}
--	return len;
--}
--
--/**
-- * gunzip_exactly - extract a fixed number of bytes from a gzip data stream
-- * @state:     gzip state structure previously initialized by gunzip_start()
-- * @dst:       buffer to store extracted data
-- * @dstlen:    number of bytes to extract
-- *
-- * This function extracts exactly @dstlen bytes from the data stream
-- * previously associated with @state by gunzip_start(), decompressing
-- * if necessary.
-- *
-- * If there are less @dstlen bytes available in the data stream, or if
-- * any other errors occur, such as a corrupted compressed stream, an
-- * error is printed an the platform's exit() function is called.
-- */
--void gunzip_exactly(struct gunzip_state *state, void *dst, int dstlen)
--{
--	int len;
--
--	len  = gunzip_partial(state, dst, dstlen);
--	if (len < dstlen)
--		fatal("\n\rgunzip_exactly: ran out of data!"
--				" Wanted %d, got %d.\n\r", dstlen, len);
--}
--
--/**
-- * gunzip_discard - discard bytes from a gzip data stream
-- * @state:     gzip state structure previously initialized by gunzip_start()
-- * @len:       number of bytes to discard
-- *
-- * This function extracts, then discards exactly @len bytes from the
-- * data stream previously associated with @state by gunzip_start().
-- * Subsequent gunzip_partial(), gunzip_exactly() or gunzip_finish()
-- * calls will extract the data following the discarded bytes in the
-- * data stream.
-- *
-- * If there are less @len bytes available in the data stream, or if
-- * any other errors occur, such as a corrupted compressed stream, an
-- * error is printed an the platform's exit() function is called.
-- */
--void gunzip_discard(struct gunzip_state *state, int len)
--{
--	static char discard_buf[128];
--
--	while (len > sizeof(discard_buf)) {
--		gunzip_exactly(state, discard_buf, sizeof(discard_buf));
--		len -= sizeof(discard_buf);
--	}
--
--	if (len > 0)
--		gunzip_exactly(state, discard_buf, len);
--}
--
--/**
-- * gunzip_finish - extract all remaining bytes from a gzip data stream
-- * @state:     gzip state structure previously initialized by gunzip_start()
-- * @dst:       buffer to store extracted data
-- * @dstlen:    maximum number of bytes to extract
-- *
-- * This function extracts all remaining data, or at most @dstlen
-- * bytes, from the stream previously associated with @state by
-- * gunzip_start().  zlib is then shut down, so it is an error to use
-- * any of the functions in this file on @state until it is
-- * re-initialized with another call to gunzip_start().
-- *
-- * If any errors occur, such as a corrupted compressed stream, an
-- * error is printed an the platform's exit() function is called.
-- */
--int gunzip_finish(struct gunzip_state *state, void *dst, int dstlen)
--{
--	int len;
--
--	len = gunzip_partial(state, dst, dstlen);
--
--	if (state->s.workspace) {
--		zlib_inflateEnd(&state->s);
--	}
--
--	return len;
--}
-diff --git a/arch/powerpc/boot/gunzip_util.h b/arch/powerpc/boot/gunzip_util.h
-deleted file mode 100644
-index b3dfa6e87b3a..000000000000
---- a/arch/powerpc/boot/gunzip_util.h
-+++ /dev/null
-@@ -1,45 +0,0 @@
--/*
-- * Decompression convenience functions
-- *
-- * Copyright 2007 David Gibson, IBM Corporation.
-- *
-- * This file is licensed under the terms of the GNU General Public
-- * License version 2.  This program is licensed "as is" without any
-- * warranty of any kind, whether express or implied.
-- */
--#ifndef _PPC_BOOT_GUNZIP_UTIL_H_
--#define _PPC_BOOT_GUNZIP_UTIL_H_
--
--#include "zlib.h"
--
--/*
-- * These functions are designed to make life easy for decompressing
-- * kernel images, initrd images or any other gzip compressed image,
-- * particularly if its useful to decompress part of the image (e.g. to
-- * examine headers) before decompressing the remainder.
-- *
-- * To use:
-- *     - declare a gunzip_state structure
-- *     - use gunzip_start() to initialize the state, associating it
-- *       with a stream of compressed data
-- *     - use gunzip_partial(), gunzip_exactly() and gunzip_discard()
-- *       in any combination to extract pieces of data from the stream
-- *     - Finally use gunzip_finish() to extract the tail of the
-- *       compressed stream and wind up zlib
-- */
--
--/* scratch space for gunzip; 46912 is from zlib_inflate_workspacesize() */
--#define GUNZIP_SCRATCH_SIZE	46912
--
--struct gunzip_state {
--	z_stream s;
--	char scratch[46912];
--};
--
--void gunzip_start(struct gunzip_state *state, void *src, int srclen);
--int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen);
--void gunzip_exactly(struct gunzip_state *state, void *dst, int len);
--void gunzip_discard(struct gunzip_state *state, int len);
--int gunzip_finish(struct gunzip_state *state, void *dst, int len);
--
--#endif /* _PPC_BOOT_GUNZIP_UTIL_H_ */
+ # Extract kernel version information, some platforms want to include
+ # it in the image header
+ version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
+@@ -417,6 +445,7 @@ if [ "$platform" != "miboot" ]; then
+     if [ -n "$link_address" ] ; then
+         text_start="-Ttext $link_address"
+     fi
++#link everything
+     ${CROSS}ld -m $format -T $lds $text_start $pie -o "$ofile" \
+ 	$platformo $tmp $object/wrapper.a
+     rm $tmp
 -- 
 2.5.5
