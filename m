@@ -1,22 +1,34 @@
 Return-Path: <nilayvaish@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNtZX1LYGzDr5y
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 02:02:28 +1000 (AEST)
-Received: by mail-it0-x242.google.com with SMTP id f128so2627397ith.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 09:02:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNtpF5RxWzDr6Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 02:12:37 +1000 (AEST)
+Received: by mail-it0-x241.google.com with SMTP id n75so2645196ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 09:12:37 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1472418058-28659-5-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1472418058-28659-5-git-send-email-maddy@linux.vnet.ibm.com>
 From: Nilay Vaish <nilayvaish@gmail.com>
-Date: Tue, 30 Aug 2016 11:01:45 -0500
-Message-ID: <CACbG3094rSX9qfngBPSzetG21_=yW1pdxcAeVZOyNj=AJmdL6Q@mail.gmail.com>
-Subject: Re: [PATCH 00/13] Add support for perf_arch_regs
+Date: Tue, 30 Aug 2016 11:11:55 -0500
+Message-ID: <CACbG308C-mCLxQbZ2ZmXFiC4FdV=e-k6gKMgHeyUZ9E53epu8g@mail.gmail.com>
+Subject: Re: [PATCH 04/13] perf/core: Extend perf_output_sample_regs() to
+ include perf_arch_regs
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Jiri Olsa <jolsa@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Stephane Eranian <eranian@gmail.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,55 +41,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On 28 August 2016 at 16:00, Madhavan Srinivasan
 <maddy@linux.vnet.ibm.com> wrote:
-> Patchset to extend PERF_SAMPLE_REGS_INTR to include
-> platform specific PMU registers.
+> diff --git a/kernel/events/core.c b/kernel/events/core.c
+> index 274288819829..e16bf4d057d1 100644
+> --- a/kernel/events/core.c
+> +++ b/kernel/events/core.c
+> @@ -5371,16 +5371,24 @@ u64 __attribute__((weak)) perf_arch_reg_value(struct perf_arch_regs *regs,
 >
-> Patchset applies cleanly on tip:perf/core branch
+>  static void
+>  perf_output_sample_regs(struct perf_output_handle *handle,
+> -                       struct pt_regs *regs, u64 mask)
+> +                               struct perf_regs *regs, u64 mask)
+>  {
+>         int bit;
+>         DECLARE_BITMAP(_mask, 64);
+> +       u64 arch_regs_mask = regs->arch_regs_mask;
 >
-> It's a perennial request from hardware folks to be able to
-> see the raw values of the pmu registers. Partly it's so that
-> they can verify perf is doing what they want, and some
-> of it is that they're interested in some of the more obscure
-> info that isn't plumbed out through other perf interfaces.
+>         bitmap_from_u64(_mask, mask);
+>         for_each_set_bit(bit, _mask, sizeof(mask) * BITS_PER_BYTE) {
+>                 u64 val;
 >
-> Over the years internally we have used various hack to get
-> the requested data out but this is an attempt to use a
-> somewhat standard mechanism (using PERF_SAMPLE_REGS_INTR).
+> -               val = perf_reg_value(regs, bit);
+> +               val = perf_reg_value(regs->regs, bit);
+> +               perf_output_put(handle, val);
+> +       }
+> +
+> +       bitmap_from_u64(_mask, arch_regs_mask);
+> +       for_each_set_bit(bit, _mask, sizeof(mask) * BITS_PER_BYTE) {
+> +               u64 val;
+> +               val = perf_arch_reg_value(regs->arch_regs, bit);
+>                 perf_output_put(handle, val);
+>         }
+>  }
+> @@ -5792,7 +5800,7 @@ void perf_output_sample(struct perf_output_handle *handle,
+>                 if (abi) {
+>                         u64 mask = event->attr.sample_regs_user;
+>                         perf_output_sample_regs(handle,
+> -                                               data->regs_user.regs,
+> +                                               &data->regs_user,
+>                                                 mask);
+>                 }
+>         }
+> @@ -5827,7 +5835,7 @@ void perf_output_sample(struct perf_output_handle *handle,
+>                         u64 mask = event->attr.sample_regs_intr;
 >
-> This would also be helpful for those of us working on the perf
-> hardware backends, to be able to verify that we're programming
-> things correctly, without resorting to debug printks etc.
->
-> Mechanism proposed:
->
-> 1)perf_regs structure is extended with a perf_arch_regs structure
-> which each arch/ can populate with their specific platform
-> registers to sample on each perf interrupt and an arch_regs_mask
-> variable, which is for perf tool to know about the perf_arch_regs
-> that are supported.
->
-> 2)perf/core func perf_sample_regs_intr() extended to update
-> the perf_arch_regs structure and the perf_arch_reg_mask. Set of new
-> support functions added perf_get_arch_regs_mask() and
-> perf_get_arch_reg() to aid the updates from arch/ side.
->
-> 3) perf/core funcs perf_prepare_sample() and perf_output_sample()
-> are extended to support the update for the perf_arch_regs_mask and
-> perf_arch_regs in the sample
->
-> 4)perf/core func perf_output_sample_regs() extended to dump
-> the arch_regs to the output sample.
->
-> 5)Finally, perf tool side is updated to include a new element
-> "arch_regs_mask" in the "struct regs_dump", event sample funcs
-> and print functions are updated to support perf_arch_regs.
+>                         perf_output_sample_regs(handle,
+> -                                               data->regs_intr.regs,
+> +                                               &data->regs_intr,
+>                                                 mask);
+>                 }
+>         }
+> --
+> 2.7.4
 >
 
-I read the patch series and I have one suggestion to make.  I think we
-should not use 'arch regs' to refer to these pmu registers.  I think
-architectural registers typically refer to the ones that hold the
-state of the process.  Can we replace arch_regs by pmu_regs, or some
-other choice?
+I would like to suggest a slightly different version.  Would it make
+more sense to have something like following:
 
-Thanks
+@@ -5792,7 +5800,7 @@ void perf_output_sample(struct perf_output_handle *handle,
+                 if (abi) {
+                        u64 mask = event->attr.sample_regs_user;
+                        perf_output_sample_regs(handle,
+                                                data->regs_user.regs,
+                                                mask);
+                }
++
++              if (arch_regs_mask) {
++                   perf_output_pmu_regs(handle,
+data->regs_users.arch_regs, arch_regs_mask);
++              }
+        }
+
+
+Somehow I don't like outputting the two sets of registers through the
+same function call.
+
+--
 Nilay
