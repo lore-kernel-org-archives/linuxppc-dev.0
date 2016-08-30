@@ -3,46 +3,46 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sP3QT6Dn1zDrjL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 08:41:05 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sP3QW4N8hzDrjC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 08:41:07 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7UMZbbq041529
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 18:41:04 -0400
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2553665ybn-1
+ u7UMXJ0X079923
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 18:41:06 -0400
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2553655q8e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 18:41:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 18:41:05 -0400
 Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Wed, 31 Aug 2016 04:11:00 +0530
+ Wed, 31 Aug 2016 04:11:02 +0530
 Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 49B7B125805B
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 958163940069
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 04:11:00 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7UMeu4723265494
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 04:10:56 +0530
+ u7UMex0i22872254
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 04:10:59 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7UMetEb015837
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 04:10:57 +0530
+ u7UMexvm015981
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 04:11:00 +0530
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-security-module <linux-security-module@vger.kernel.org>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
+Cc: Andreas Steffen <andreas.steffen@strongswan.org>,
  linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
  kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATHC v2 8/9] ima: define a canonical binary_runtime_measurements
- list format
-Date: Tue, 30 Aug 2016 18:40:10 -0400
+ Andrew Morton <akpm@linux-foundation.org>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: [PATHC v2 9/9] ima: platform-independent hash value
+Date: Tue, 30 Aug 2016 18:40:11 -0400
 In-Reply-To: <1472596811-9596-1-git-send-email-zohar@linux.vnet.ibm.com>
 References: <1472596811-9596-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-Id: <1472596811-9596-9-git-send-email-zohar@linux.vnet.ibm.com>
+Message-Id: <1472596811-9596-10-git-send-email-zohar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,259 +52,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The IMA binary_runtime_measurements list is currently in platform native
-format.
+From: Andreas Steffen <andreas.steffen@strongswan.org>
 
-To allow restoring a measurement list carried across kexec with a
-different endianness than the targeted kernel, this patch defines
-little-endian as the canonical format.  For big endian systems wanting
-to save/restore the measurement list from a system with a different
-endianness, a new boot command line parameter named "ima_canonical_fmt"
-is defined.
+For remote attestion it is important for the ima measurement values
+to be platform-independent. Therefore integer fields to be hashed
+must be converted to canonical format.
 
-Considerations: use of the "ima_canonical_fmt" boot command line
-option will break existing userspace applications on big endian systems
-expecting the binary_runtime_measurements list to be in platform native
-format.
+Changelog:
+- Define canonical format as little endian (Mimi)
 
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+Signed-off-by: Andreas Steffen <andreas.steffen@strongswan.org>
+Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 ---
- Documentation/kernel-parameters.txt       |  4 ++++
- security/integrity/ima/ima.h              |  6 ++++++
- security/integrity/ima/ima_fs.c           | 28 +++++++++++++++++++++-------
- security/integrity/ima/ima_kexec.c        | 11 +++++++++--
- security/integrity/ima/ima_template.c     | 24 ++++++++++++++++++++++--
- security/integrity/ima/ima_template_lib.c |  6 ++++--
- 6 files changed, 66 insertions(+), 13 deletions(-)
+ security/integrity/ima/ima_crypto.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 46c030a..5e8037fc 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1580,6 +1580,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			The builtin appraise policy appraises all files
- 			owned by uid=0.
+diff --git a/security/integrity/ima/ima_crypto.c b/security/integrity/ima/ima_crypto.c
+index 38f2ed8..38d6f5d 100644
+--- a/security/integrity/ima/ima_crypto.c
++++ b/security/integrity/ima/ima_crypto.c
+@@ -477,11 +477,13 @@ static int ima_calc_field_array_hash_tfm(struct ima_field_data *field_data,
+ 		u8 buffer[IMA_EVENT_NAME_LEN_MAX + 1] = { 0 };
+ 		u8 *data_to_hash = field_data[i].data;
+ 		u32 datalen = field_data[i].len;
++		u32 datalen_to_hash = !ima_canonical_fmt ? datalen :
++			cpu_to_le32(datalen);
  
-+	ima_canonical_fmt [IMA]
-+			Use the canonical format for the binary runtime
-+			measurements, instead of host native format.
-+
- 	ima_hash=	[IMA]
- 			Format: { md5 | sha1 | rmd160 | sha256 | sha384
- 				   | sha512 | ... }
-diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-index e8303c9..eb0f4dd 100644
---- a/security/integrity/ima/ima.h
-+++ b/security/integrity/ima/ima.h
-@@ -112,6 +112,12 @@ struct ima_kexec_hdr {
- 	u64 count;
- };
- 
-+/*
-+ * The default binary_runtime_measurements list format is defined as the
-+ * platform native format.  The canonical format is defined as little-endian.
-+ */
-+extern bool ima_canonical_fmt;
-+
- /* Internal IMA function definitions */
- int ima_init(void);
- int ima_fs_init(void);
-diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
-index 66e5dd5..2bcad99 100644
---- a/security/integrity/ima/ima_fs.c
-+++ b/security/integrity/ima/ima_fs.c
-@@ -28,6 +28,16 @@
- 
- static DEFINE_MUTEX(ima_write_mutex);
- 
-+bool ima_canonical_fmt;
-+static int __init default_canonical_fmt_setup(char *str)
-+{
-+#ifdef __BIG_ENDIAN
-+	ima_canonical_fmt = 1;
-+#endif
-+	return 1;
-+}
-+__setup("ima_canonical_fmt", default_canonical_fmt_setup);
-+
- static int valid_policy = 1;
- #define TMPBUFLEN 12
- static ssize_t ima_show_htable_value(char __user *buf, size_t count,
-@@ -122,7 +132,7 @@ int ima_measurements_show(struct seq_file *m, void *v)
- 	struct ima_queue_entry *qe = v;
- 	struct ima_template_entry *e;
- 	char *template_name;
--	int namelen;
-+	u32 pcr, namelen, template_data_len; /* temporary fields */
- 	bool is_ima_template = false;
- 	int i;
- 
-@@ -139,25 +149,29 @@ int ima_measurements_show(struct seq_file *m, void *v)
- 	 * PCR used defaults to the same (config option) in
- 	 * little-endian format, unless set in policy
- 	 */
--	ima_putc(m, &e->pcr, sizeof(e->pcr));
-+	pcr = !ima_canonical_fmt ? e->pcr : cpu_to_le32(e->pcr);
-+	ima_putc(m, &pcr, sizeof(e->pcr));
- 
- 	/* 2nd: template digest */
- 	ima_putc(m, e->digest, TPM_DIGEST_SIZE);
- 
- 	/* 3rd: template name size */
--	namelen = strlen(template_name);
-+	namelen = !ima_canonical_fmt ? strlen(template_name) :
-+		cpu_to_le32(strlen(template_name));
- 	ima_putc(m, &namelen, sizeof(namelen));
- 
- 	/* 4th:  template name */
--	ima_putc(m, template_name, namelen);
-+	ima_putc(m, template_name, strlen(template_name));
- 
- 	/* 5th:  template length (except for 'ima' template) */
- 	if (strcmp(template_name, IMA_TEMPLATE_IMA_NAME) == 0)
- 		is_ima_template = true;
- 
--	if (!is_ima_template)
--		ima_putc(m, &e->template_data_len,
--			 sizeof(e->template_data_len));
-+	if (!is_ima_template) {
-+		template_data_len = !ima_canonical_fmt ? e->template_data_len :
-+			cpu_to_le32(e->template_data_len);
-+		ima_putc(m, &template_data_len, sizeof(e->template_data_len));
-+	}
- 
- 	/* 6th:  template specific data */
- 	for (i = 0; i < e->template_desc->num_fields; i++) {
-diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
-index 0e4d0db..cf38ccc 100644
---- a/security/integrity/ima/ima_kexec.c
-+++ b/security/integrity/ima/ima_kexec.c
-@@ -33,8 +33,7 @@ static int ima_dump_measurement_list(unsigned long *buffer_size, void **buffer,
- {
- 	struct ima_queue_entry *qe;
- 	struct seq_file file;
--	struct ima_kexec_hdr khdr = {
--		.version = 1, .buffer_size = 0, .count = 0};
-+	struct ima_kexec_hdr khdr;
- 	int ret = 0;
- 
- 	/* segment size can't change between kexec load and execute */
-@@ -48,6 +47,8 @@ static int ima_dump_measurement_list(unsigned long *buffer_size, void **buffer,
- 	file.read_pos = 0;
- 	file.count = sizeof(khdr);	/* reserved space */
- 
-+	memset(&khdr, 0, sizeof(khdr));
-+	khdr.version = 1;
- 	list_for_each_entry_rcu(qe, &ima_measurements, later) {
- 		if (file.count < file.size) {
- 			khdr.count++;
-@@ -66,7 +67,13 @@ static int ima_dump_measurement_list(unsigned long *buffer_size, void **buffer,
- 	 * (eg. version, buffer size, number of measurements)
- 	 */
- 	khdr.buffer_size = file.count;
-+	if (ima_canonical_fmt) {
-+		khdr.version = cpu_to_le16(khdr.version);
-+		khdr.count = cpu_to_le64(khdr.count);
-+		khdr.buffer_size = cpu_to_le64(khdr.buffer_size);
-+	}
- 	memcpy(file.buf, &khdr, sizeof(khdr));
-+
- 	print_hex_dump(KERN_DEBUG, "ima dump: ", DUMP_PREFIX_NONE,
- 			16, 1, file.buf,
- 			file.count < 100 ? file.count : 100, true);
-diff --git a/security/integrity/ima/ima_template.c b/security/integrity/ima/ima_template.c
-index fd46c65..6ba22fc 100644
---- a/security/integrity/ima/ima_template.c
-+++ b/security/integrity/ima/ima_template.c
-@@ -302,6 +302,9 @@ static int ima_restore_template_data(struct ima_template_desc *template_desc,
- 		}
- 		offset += sizeof(field_data->len);
- 
-+		if (ima_canonical_fmt)
-+			field_data->len = le32_to_cpu(field_data->len);
-+
- 		if (offset > (template_data_size - field_data->len)) {
- 			pr_err("Restoring the template field data failed\n");
- 			ret = -EINVAL;
-@@ -352,7 +355,7 @@ int ima_restore_measurement_list(loff_t size, void *buf)
- 	struct binary_data_v1 *data_v1;
- 
- 	void *bufp = buf + sizeof(*khdr);
--	void *bufendp = buf + khdr->buffer_size;
-+	void *bufendp;
- 	struct ima_template_entry *entry;
- 	struct ima_template_desc *template_desc;
- 	unsigned long count = 0;
-@@ -361,6 +364,12 @@ int ima_restore_measurement_list(loff_t size, void *buf)
- 	if (!buf || size < sizeof(*khdr))
- 		return 0;
- 
-+	if (ima_canonical_fmt) {
-+		khdr->version = le16_to_cpu(khdr->version);
-+		khdr->count = le64_to_cpu(khdr->count);
-+		khdr->buffer_size = le64_to_cpu(khdr->buffer_size);
-+	}
-+
- 	if (khdr->version != 1) {
- 		pr_err("attempting to restore a incompatible measurement list");
- 		return 0;
-@@ -371,6 +380,7 @@ int ima_restore_measurement_list(loff_t size, void *buf)
- 	 * v1 format: pcr, digest, template-name-len, template-name,
- 	 *	      template-data-size, template-data
- 	 */
-+	bufendp = buf + khdr->buffer_size;
- 	while ((bufp < bufendp) && (count++ < khdr->count)) {
- 		if (count > ULONG_MAX - 1) {
- 			pr_err("attempting to restore too many measurements");
-@@ -378,6 +388,11 @@ int ima_restore_measurement_list(loff_t size, void *buf)
- 		}
- 
- 		hdr_v1 = bufp;
-+
-+		if (ima_canonical_fmt)
-+			hdr_v1->template_name_len =
-+			    le32_to_cpu(hdr_v1->template_name_len);
-+
- 		if ((hdr_v1->template_name_len > MAX_TEMPLATE_NAME_LEN) ||
- 		    ((bufp + hdr_v1->template_name_len) > bufendp)) {
- 			pr_err("attempting to restore a template name \
-@@ -427,6 +442,10 @@ int ima_restore_measurement_list(loff_t size, void *buf)
- 		}
- 		bufp += (u_int8_t) sizeof(data_v1->template_data_size);
- 
-+		if (ima_canonical_fmt)
-+			data_v1->template_data_size =
-+			    le32_to_cpu(data_v1->template_data_size);
-+
- 		if (bufp > (bufendp - data_v1->template_data_size)) {
- 			pr_err("restoring the template data failed\n");
- 			ret = -EINVAL;
-@@ -441,7 +460,8 @@ int ima_restore_measurement_list(loff_t size, void *buf)
- 			break;
- 
- 		memcpy(entry->digest, hdr_v1->digest, TPM_DIGEST_SIZE);
--		entry->pcr = hdr_v1->pcr;
-+		if (ima_canonical_fmt)
-+			entry->pcr = le32_to_cpu(hdr_v1->pcr);
- 		ret = ima_restore_measurement_entry(entry);
- 		if (ret < 0)
- 			break;
-diff --git a/security/integrity/ima/ima_template_lib.c b/security/integrity/ima/ima_template_lib.c
-index f9bae04..cde2f69 100644
---- a/security/integrity/ima/ima_template_lib.c
-+++ b/security/integrity/ima/ima_template_lib.c
-@@ -103,8 +103,10 @@ static void ima_show_template_data_binary(struct seq_file *m,
- 	u32 len = (show == IMA_SHOW_BINARY_OLD_STRING_FMT) ?
- 	    strlen(field_data->data) : field_data->len;
- 
--	if (show != IMA_SHOW_BINARY_NO_FIELD_LEN)
--		ima_putc(m, &len, sizeof(len));
-+	if (show != IMA_SHOW_BINARY_NO_FIELD_LEN) {
-+		u32 field_len = !ima_canonical_fmt ? len : cpu_to_le32(len);
-+		ima_putc(m, &field_len, sizeof(field_len));
-+	}
- 
- 	if (!len)
- 		return;
+ 		if (strcmp(td->name, IMA_TEMPLATE_IMA_NAME) != 0) {
+ 			rc = crypto_shash_update(shash,
+-						(const u8 *) &field_data[i].len,
+-						sizeof(field_data[i].len));
++						(const u8 *) &datalen_to_hash,
++						sizeof(datalen_to_hash));
+ 			if (rc)
+ 				break;
+ 		} else if (strcmp(td->fields[i]->field_id, "n") == 0) {
 -- 
 2.1.0
