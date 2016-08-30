@@ -1,21 +1,33 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mgorman@techsingularity.net>
+Received: from outbound-smtp08.blacknight.com (outbound-smtp08.blacknight.com
+ [46.22.139.13])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNh6r2yF9zDrmy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 18:11:16 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id i6so792657pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 01:11:16 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: stewart@linux.vnet.ibm.com,
-	Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 6/6] powerpc/boot: Add support for XZ compression
-Date: Tue, 30 Aug 2016 18:10:36 +1000
-Message-Id: <1472544636-7837-7-git-send-email-oohall@gmail.com>
-In-Reply-To: <1472544636-7837-1-git-send-email-oohall@gmail.com>
-References: <1472544636-7837-1-git-send-email-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNnMW0ZgdzDrhL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 22:07:34 +1000 (AEST)
+Received: from mail.blacknight.com (pemlinmail05.blacknight.ie [81.17.254.26])
+ by outbound-smtp08.blacknight.com (Postfix) with ESMTPS id
+ EAA881C18DA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 13:07:29 +0100 (IST)
+Date: Tue, 30 Aug 2016 13:07:28 +0100
+From: Mel Gorman <mgorman@techsingularity.net>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Linux-MM <linux-mm@kvack.org>, Rik van Riel <riel@surriel.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Johannes Weiner <hannes@cmpxchg.org>,
+ Minchan Kim <minchan@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ LKML <linux-kernel@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>
+Subject: Re: [PATCH 07/34] mm, vmscan: make kswapd reclaim in terms of nodes
+Message-ID: <20160830120728.GV8119@techsingularity.net>
+References: <1467970510-21195-1-git-send-email-mgorman@techsingularity.net>
+ <1467970510-21195-8-git-send-email-mgorman@techsingularity.net>
+ <20160829093844.GA2592@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20160829093844.GA2592@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,131 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds an option to use XZ compression for the kernel image.
-Currently this is only enabled for PPC64 targets since the bulk of the
-32bit platforms produce uboot images which do not use the wrapper.
+On Mon, Aug 29, 2016 at 03:08:44PM +0530, Srikar Dronamraju wrote:
+> > Patch "mm: vmscan: Begin reclaiming pages on a per-node basis" started
+> > thinking of reclaim in terms of nodes but kswapd is still zone-centric. This
+> > patch gets rid of many of the node-based versus zone-based decisions.
+> > 
+> > o A node is considered balanced when any eligible lower zone is balanced.
+> >   This eliminates one class of age-inversion problem because we avoid
+> >   reclaiming a newer page just because it's in the wrong zone
+> > o pgdat_balanced disappears because we now only care about one zone being
+> >   balanced.
+> > o Some anomalies related to writeback and congestion tracking being based on
+> >   zones disappear.
+> > o kswapd no longer has to take care to reclaim zones in the reverse order
+> >   that the page allocator uses.
+> > o Most importantly of all, reclaim from node 0 with multiple zones will
+> >   have similar aging and reclaiming characteristics as every
+> >   other node.
+> > 
+> > Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+> > Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+> > Acked-by: Vlastimil Babka <vbabka@suse.cz>
+> 
+> This patch seems to hurt FA_DUMP functionality. This behaviour is not
+> seen on v4.7 but only after this patch.
+> 
+> So when a kernel on a multinode machine with memblock_reserve() such
+> that most of the nodes have zero available memory, kswapd seems to be
+> consuming 100% of the time.
+> 
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/boot/Makefile             |  2 ++
- arch/powerpc/boot/decompress.c         |  5 +++++
- arch/powerpc/boot/types.h              | 10 +++++++++
- arch/powerpc/boot/xz_config.h          | 39 ++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype |  1 +
- 5 files changed, 57 insertions(+)
- create mode 100644 arch/powerpc/boot/xz_config.h
+Why is FA_DUMP specifically the trigger? If the nodes have zero available
+memory then is the zone_populated() check failing when FA_DUMP is enabled? If
+so, that would both allow kswapd to wake and stay awake.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 482bac2af1ff..de36806c1a73 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -20,6 +20,7 @@
- all: $(obj)/zImage
- 
- compress-$(CONFIG_KERNEL_GZIP) := CONFIG_KERNEL_GZIP
-+compress-$(CONFIG_KERNEL_XZ)   := CONFIG_KERNEL_XZ
- 
- BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -fno-strict-aliasing -Os -msoft-float -pipe \
-@@ -213,6 +214,7 @@ endif
- endif
- 
- compressor-$(CONFIG_KERNEL_GZIP) := gz
-+compressor-$(CONFIG_KERNEL_XZ)   := xz
- 
- # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
- quiet_cmd_wrap	= WRAP    $@
-diff --git a/arch/powerpc/boot/decompress.c b/arch/powerpc/boot/decompress.c
-index 60fc6fb26867..8f32ea4289af 100644
---- a/arch/powerpc/boot/decompress.c
-+++ b/arch/powerpc/boot/decompress.c
-@@ -37,6 +37,11 @@
- #	include "decompress_inflate.c"
- #endif
- 
-+#ifdef CONFIG_KERNEL_XZ
-+#	include "xz_config.h"
-+#	include "../../../lib/decompress_unxz.c"
-+#endif
-+
- /* globals for tracking the state of the decompression */
- static unsigned long decompressed_bytes;
- static unsigned long limit;
-diff --git a/arch/powerpc/boot/types.h b/arch/powerpc/boot/types.h
-index 85565a89bcc2..0362a262a299 100644
---- a/arch/powerpc/boot/types.h
-+++ b/arch/powerpc/boot/types.h
-@@ -34,4 +34,14 @@ typedef s64 int64_t;
- 	(void) (&_x == &_y);	\
- 	_x > _y ? _x : _y; })
- 
-+#define min_t(type, a, b) min(((type) a), ((type) b))
-+#define max_t(type, a, b) max(((type) a), ((type) b))
-+
-+#ifndef true
-+#define true 1
-+#endif
-+
-+#ifndef false
-+#define false 0
-+#endif
- #endif /* _TYPES_H_ */
-diff --git a/arch/powerpc/boot/xz_config.h b/arch/powerpc/boot/xz_config.h
-new file mode 100644
-index 000000000000..5c6afdbca642
---- /dev/null
-+++ b/arch/powerpc/boot/xz_config.h
-@@ -0,0 +1,39 @@
-+#ifndef __XZ_CONFIG_H__
-+#define __XZ_CONFIG_H__
-+
-+/*
-+ * most of this is copied from lib/xz/xz_private.h, we can't use their defines
-+ * since the boot wrapper is not built in the same environment as the rest of
-+ * the kernel.
-+ */
-+
-+#include "types.h"
-+#include "swab.h"
-+
-+static inline uint32_t swab32p(void *p)
-+{
-+	uint32_t *q = p;
-+
-+	return swab32(*q);
-+}
-+
-+#ifdef __LITTLE_ENDIAN__
-+#define get_le32(p) (*((uint32_t *) (p)))
-+#else
-+#define get_le32(p) swab32p(p)
-+#endif
-+
-+#define memeq(a, b, size) (memcmp(a, b, size) == 0)
-+#define memzero(buf, size) memset(buf, 0, size)
-+
-+/* prevent the inclusion of the xz-preboot MM headers */
-+#define DECOMPR_MM_H
-+#define memmove memmove
-+#define XZ_EXTERN static
-+
-+/* xz.h needs to be included directly since we need enum xz_mode */
-+#include "../../../include/linux/xz.h"
-+
-+#undef XZ_EXTERN
-+
-+#endif
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f32edec13fd1..d5da55b01027 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -2,6 +2,7 @@ config PPC64
- 	bool "64-bit kernel"
- 	default n
- 	select ZLIB_DEFLATE
-+	select HAVE_KERNEL_XZ
- 	help
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
 -- 
-2.5.5
+Mel Gorman
+SUSE Labs
