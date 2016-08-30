@@ -1,26 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <prasannatsmkumar@gmail.com>
+Received: from mail-yb0-x229.google.com (mail-yb0-x229.google.com
+ [IPv6:2607:f8b0:4002:c09::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sNXhQ6mzFzDr5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 12:36:22 +1000 (AEST)
-Message-ID: <1472524565.2388.26.camel@kernel.crashing.org>
-Subject: Re: [PATCH] cxl: use pcibios_free_controller_deferred() when
- removing vPHBs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- mrochs@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
- fbarrat@linux.vnet.ibm.com, mauricfo@linux.vnet.ibm.com,
- helgaas@kernel.org, imunsie@au1.ibm.com, felix@linux.vnet.ibm.com,
- ukrishn@linux.vnet.ibm.com, stable@vger.kernel.org
-Date: Tue, 30 Aug 2016 12:36:05 +1000
-In-Reply-To: <3049096a-97ea-9549-ee29-ae937708cf45@au1.ibm.com>
-References: <1471505714-30049-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <3049096a-97ea-9549-ee29-ae937708cf45@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sNfvl4L1nzDr5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 17:16:35 +1000 (AEST)
+Received: by mail-yb0-x229.google.com with SMTP id h3so3488882ybi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 00:16:35 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <48b8455031e.651d5701@auth.smtp.1and1.co.uk>
+References: <1472124856-12767-1-git-send-email-prasannatsmkumar@gmail.com>
+ <20160825121546.GA25650@Red>
+ <CANc+2y4JqGRXCLUEpMo8EB8thW5jsweh0Lg2VjuvpNgSR-AwMA@mail.gmail.com>
+ <48b8455031e.651d5701@auth.smtp.1and1.co.uk>
+From: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+Date: Tue, 30 Aug 2016 12:46:32 +0530
+Message-ID: <CANc+2y64+ECEh0GwQU4qQrEtsFjjbmaRJYt1t=J1Q3nT6TG6sA@mail.gmail.com>
+Subject: Re: hwrng: pasemi_rng.c: Migrate to managed API
+To: Darren Stevens <darren@stevens-zone.net>
+Cc: LABBE Corentin <clabbe.montjoie@gmail.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org, mpm@selenic.com,
+ olof@lixom.net, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-30 at 11:58 +1000, Andrew Donnellan wrote:
-> Hi stable team,
-> 
-> The following patch, which ended up upstream as 
-> 6f38a8b9a45833495dc878c335c5431cd98a16ed:
-> 
-> On 18/08/16 17:35, Andrew Donnellan wrote:
-> > 
-> > When cxl removes a vPHB, it's possible that the pci_controller may be freed
-> > before all references to the devices on the vPHB have been released. This
-> > in turn causes an invalid memory access when the devices are eventually
-> > released, as pcibios_release_device() attempts to call the phb's
-> > release_device hook.
-> > 
-> > In cxl_pci_vphb_remove(), remove the existing call to
-> > pcibios_free_controller(). Instead, use
-> > pcibios_free_controller_deferred() to free the pci_controller after all
-> > devices have been released. Export pci_set_host_bridge_release() so we can
-> > do this.
-> > 
-> > Cc: stable@vger.kernel.org
-> > > > Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> > 
-> > ---
-> > 
-> > > > This patch requires http://patchwork.ozlabs.org/patch/658324/. It should go
-> > through the powerpc tree.
-> 
-> This depends on 2dd9c11b9d4dfbd6c070eab7b81197f65e82f1a0 which didn't 
-> end up being tagged as cc: stable. It also ended up being applied in the 
-> wrong order in the powerpc/fixes tree...
+Hi Darren,
 
-My fault. Best at this point is to also apply 2dd9c11b9d4dfbd6c070eab7b81197f65e82f1a0
-to stable.
+>> I wanted to use devm_ioremap_resource but could not find DT entry
+>> required for this driver in any of the .dts files. So did not change
+>> that. I could not find any dts/dtsi for this platform. So I assume
+>> that the dtb is not present in the kernel, dtb is supplied by the
+>> bootloader. I may be wrong in this. Can anyone confirm this?
+>
+> On mine (Amigaone X1000) that is correct, we boot linux with a vmlinux file,
+> and the bootloader (CFE) passes a fixed dtb. I think it is possible to dump
+> the tree from inside CFE, if it would help I can invetigate?
 
-Cheers,
-Ben.
+I don't know if it is possible to get dts from dtb even if you manage
+to extract devicetree blob from your system.
+
+Labbe, Do you know anyway to get dts from dtb? Is this step really
+required to remove 0x100 value for this patch given that the value was
+present here for years? If extracting dtb and converting dtb to dts is
+easy and not time consuming, I am in favour of finding a way to remove
+hard coded value.
