@@ -1,25 +1,26 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
+ [IPv6:2607:f8b0:4002:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPS3935PYzDrnL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 00:10:45 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
- LABBE Corentin <clabbe.montjoie@gmail.com>, linux-crypto@vger.kernel.org,
- mpm@selenic.com, olof@lixom.net, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 31 Aug 2016 15:02:53 +0100 (BST)
-Message-ID: <48bab268a61.66716f37@auth.smtp.1and1.co.uk>
-In-Reply-To: <CANc+2y64+ECEh0GwQU4qQrEtsFjjbmaRJYt1t=J1Q3nT6TG6sA@mail.gmail.com>
-References: <1472124856-12767-1-git-send-email-prasannatsmkumar@gmail.com>
- <20160825121546.GA25650@Red>
- <CANc+2y4JqGRXCLUEpMo8EB8thW5jsweh0Lg2VjuvpNgSR-AwMA@mail.gmail.com>
- <48b8455031e.651d5701@auth.smtp.1and1.co.uk>
- <CANc+2y64+ECEh0GwQU4qQrEtsFjjbmaRJYt1t=J1Q3nT6TG6sA@mail.gmail.com>
-Subject: Re: hwrng: pasemi_rng.c: Migrate to managed API
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPSLJ6GcrzDrhc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 00:23:52 +1000 (AEST)
+Received: by mail-yw0-x243.google.com with SMTP id j12so1995261ywb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 07:23:52 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Wed, 31 Aug 2016 10:23:48 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
+Cc: Geoff Levand <geoff@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ps3: Remove deprecated create_singlethread_workqueue
+Message-ID: <20160831142348.GJ12660@htj.duckdns.org>
+References: <20160830171450.GA1890@Karyakshetra>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160830171450.GA1890@Karyakshetra>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello PrasannaKumar
+On Tue, Aug 30, 2016 at 10:44:51PM +0530, Bhaktipriya Shridhar wrote:
+> The workqueue "ps3av->wq" queues a single work item &ps3av->work and hence
+> doesn't require ordering. It is involved in waking up ps3avd to do the
+> video mode setting and hence it's not being used on a memory reclaim
+> path. Hence, it has been converted to use system_wq.
+> 
+> System workqueues have been able to handle high level of concurrency
+> for a long time now and hence it's not required to have a singlethreaded
+> workqueue just to gain concurrency. Unlike a dedicated per-cpu workqueue
+> created with create_singlethread_workqueue(), system_wq allows multiple
+> work items to overlap executions even on the same CPU; however, a
+> per-cpu workqueue doesn't have any CPU locality or global ordering
+> guarantee unless the target CPU is explicitly specified and thus the
+> increase of local concurrency shouldn't make any difference.
+> 
+> The work item has been flushed in ps3av_remove to ensure that
+> there are no pending tasks while disconnecting the driver.
+> 
+> Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
 
-On 30/08/2016, PrasannaKumar Muralidharan wrote:
-> Hi Darren,
->> On mine (Amigaone X1000) that is correct, we boot linux with a vmlinux
->> file, and the bootloader (CFE) passes a fixed dtb. I think it is
->> possible to dump the tree from inside CFE, if it would help I can
->> invetigate?
->
-> I don't know if it is possible to get dts from dtb even if you manage
-> to extract devicetree blob from your system.
+Acked-by: Tejun Heo <tj@kernel.org>
 
-I didn't explain well, There is a CFE command 'show devtree' here's the
-relevant bits (I Hope)
+Thanks.
 
-[CFE ]CFE> show devtree
-[/]
- | #interrupt-cells                 val   0x00000002
- | #address-cells                   val   0x00000002
- | #size-cells                      val   0x00000002
-
-...[snip]...
-
-   [sdc@fc000000]
-    | name                          str   'sdc' 
-    | device_type                   str   'sdc' 
-    | #address-cells                val   0x00000001
-    | #size-cells                   val   0x00000001
-    | compatible                    str   '1682m-sdc' 'pasemi,pwrficient-sdc'
-'pasemi,sdc' 
-    | reg                           cell  00000000 FC000000 00000000 00800000 
-
-...[snip]...
-
-      [rng@fc105000]
-       | name                       str   'rng' 
-       | device_type                str   'rng' 
-       | compatible                 str   '1682m-rng' 'pasemi,pwrficient-rng'
-'pasemi,rng' 
-       | reg                        cell  FC105000 00001000 
-
-
-Regards
+-- 
+tejun
