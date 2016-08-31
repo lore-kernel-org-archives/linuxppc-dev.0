@@ -1,28 +1,56 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
- [IPv6:2607:f8b0:400e:c00::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPBzB5Mf4zDrhy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 14:21:25 +1000 (AEST)
-Received: by mail-pf0-x233.google.com with SMTP id p64so14941364pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2016 21:21:25 -0700 (PDT)
-Date: Tue, 30 Aug 2016 21:21:01 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Xavi Drudis Ferran <xdrudis@tinet.cat>
-Cc: fabio.estevam@nxp.com, Timur Tabi <timur@tabi.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>,
- Shengjiu Wang <shengjiu.wang@freescale.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Setting some clocks back to DUMMY fixes spdif output on imx6q
- wandboard rev B1
-Message-ID: <20160831042100.GA3308@Asurada>
-References: <20160828160055.GA2122@begut>
- <20160829192820.GA14207@Asurada-Nvidia>
- <20160829195428.GD1967@begut> <20160830111414.GA1968@begut>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPFPH4MXczDrhc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 16:10:43 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7V63Asf044357
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 02:10:41 -0400
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 255ncrumvm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 02:10:40 -0400
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 31 Aug 2016 11:40:36 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 46F18E0074
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 11:39:25 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7V6ADgu15991032
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 11:40:13 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7V6A1AE028021
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 11:40:12 +0530
+Date: Wed, 31 Aug 2016 11:39:59 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Mel Gorman <mgorman@techsingularity.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-MM <linux-mm@kvack.org>,
+ Rik van Riel <riel@surriel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Johannes Weiner <hannes@cmpxchg.org>, Minchan Kim <minchan@kernel.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, LKML <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>
+Subject: Re: [PATCH 07/34] mm, vmscan: make kswapd reclaim in terms of nodes
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1467970510-21195-1-git-send-email-mgorman@techsingularity.net>
+ <1467970510-21195-8-git-send-email-mgorman@techsingularity.net>
+ <20160829093844.GA2592@linux.vnet.ibm.com>
+ <20160830120728.GV8119@techsingularity.net>
+ <20160830142508.GA10514@linux.vnet.ibm.com>
+ <20160830150051.GW8119@techsingularity.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160830111414.GA1968@begut>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20160830150051.GW8119@techsingularity.net>
+Message-Id: <20160831060959.GA6787@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,119 +60,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 30, 2016 at 01:14:14PM +0200, Xavi Drudis Ferran wrote:
-
-> linux-libre-4.7 without my patch, i.e. clocks defined like this :
-> arch/arm/boot/dts/imx6qdl.dtsi:
-> aips-bus@02000000 { /* AIPS1 */
-> [...]
->    spba-bus@02000000 {
-> [...]
->        spdif: spdif@02004000 {
->           clocks = <&clks IMX6QDL_CLK_SPDIF_GCLK>, <&clks IMX6QDL_CLK_OSC>,
->                    <&clks IMX6QDL_CLK_SPDIF>, <&clks IMX6QDL_CLK_ASRC>,
->                    <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_ESAI_EXTAL>,
->                    <&clks IMX6QDL_CLK_IPG>, <&clks IMX6QDL_CLK_MLB>,
->                    <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_SPBA>;
->           clock-names = "core",  "rxtx0",
->                         "rxtx1", "rxtx2",
->                         "rxtx3", "rxtx4",
->                         "rxtx5", "rxtx6",
->                         "rxtx7", "spba";
-> [...]
-
-> [    9.376398] fsl-spdif-dai 2004000.spdif: use rxtx6 as tx clock source for 44100Hz sample rate
-> [    9.376404] fsl-spdif-dai 2004000.spdif: use txclk df 94 for 44100Hz sample rate
-> [    9.376409] fsl-spdif-dai 2004000.spdif: the best rate for 44100Hz sample rate is 43882Hz
-
-Without your patch, it chose rxtx6 (MLB) as the source for 44.1KHz.
-
-> linux-libre-4.7 with my patch, i.e. clocks defined like this :
-> arch/arm/boot/dts/imx6qdl.dtsi:
-> aips-bus@02000000 { /* AIPS1 */
-> [...]
->    spba-bus@02000000 {
-> [...]
->       spdif: spdif@02004000 {
->           clocks = <&clks IMX6QDL_CLK_SPDIF_GCLK>, <&clks IMX6QDL_CLK_OSC>,
->                    <&clks IMX6QDL_CLK_SPDIF>, <&clks IMX6QDL_CLK_DUMMY>,
->                    <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_DUMMY>,
->                    <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_DUMMY>,
->                    <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_SPBA>;
->           clock-names = "core",  "rxtx0",
->                         "rxtx1", "rxtx2",
->                         "rxtx3", "rxtx4",
->                         "rxtx5", "rxtx6",
->                         "rxtx7", "spba";
-> [...]
-
-> [    6.662922] fsl-spdif-dai 2004000.spdif: use rxtx1 as tx clock source for 44100Hz sample rate
-> [    6.662927] fsl-spdif-dai 2004000.spdif: use txclk df 9 for 44100Hz sample rate
-> [    6.662932] fsl-spdif-dai 2004000.spdif: the best rate for 44100Hz sample rate is 43859Hz
-
-With your patch, it selects rxtx1 (the dedicated SPDIF baud clock).
-
-> Does it mean that a 43859Hz clock is close enough to theoretical 44100Hz
-> but  43882Hz is not ? 
-
-No, the problem is not at the rate but the source -- Although the
-MLB clock exists in the clock tree as a better rate provider, it
-might not be correctly enabled or running at the rate it claims.
-
-> Maybe there's something wrong with rxtx6 (IMX6QDL_CLK_MLB). This clock
-
-Yes.
-
-> does not seem to be used elsewhere (I mean in files, it's used in any
-> board that includes imx6qdl.dtsi)
+> > The trigger is memblock_reserve() for the complete node memory.  And
+> > this is exactly what FA_DUMP does.  Here again the node has memory but
+> > its all reserved so there is no free memory in the node.
+> > 
+> > Did you mean populated_zone() when you said zone_populated or have I
+> > mistaken? populated_zone() does return 1 since it checks for
+> > zone->present_pages.
+> > 
 > 
+> Yes, I meant populated_zone(). Using present pages may have hidden
+> a long-lived corner case as it was unexpected that an entire node
+> would be reserved. The old code happened to survive *probably* because
+> pgdat_reclaimable would look false and kswapd checks for pgdat being
+> balanced would happen to do the right thing in this case.
 > 
-> include/dt-bindings/clock/imx6qdl-clock.h: 
-> #define IMX6QDL_CLK_MLB						139
- 
-> Might it have to do with the fact I'm using (still trying in fact) to use etnaviv ?
+> Can you check if something like this works?
 > 
-> drivers/clk/imx/clk-imx6q.c:
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index d572b78b65e1..cf64a5456cf6 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -830,7 +830,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
 > 
->    if (clk_on_imx6dl())
->       /*
->        * The multiplexer and divider of the imx6q clock gpu2d get
->        * redefined/reused as mlb_sys_sel and mlb_sys_clk_podf on imx6dl.
->        */
->        clk[IMX6QDL_CLK_MLB] = imx_clk_gate2("mlb",            "gpu2d_core_podf",   base + 0x74, 18);
->    else
->        clk[IMX6QDL_CLK_MLB] = imx_clk_gate2("mlb",            "axi",               base + 0x74, 18);
+>  static inline int populated_zone(struct zone *zone)
+>  {
+> -	return (!!zone->present_pages);
+> +	return (!!zone->managed_pages);
+>  }
 > 
+>  extern int movable_zone;
 > 
-> But I'm on a imx6q not imx6dl .
 
-There are five MLB clocks sharing the same clock gate according
-to CCM chapter in the Reference Manual of imx6q. But five clocks
-come from three different parent clocks, and I am wondering if
-the MLB clock that's connected to the S/PDIF module is really
-derived from this AXI.
-
-Hope Fabio might be able to help on the clock tree issue here:)
-
-> --- linux-4.7-no-spdif-out/arch/arm/boot/dts/imx6qdl.dtsi	2016-07-25 00:19:43.000000000 +0200
-> +++ linux-4.7/arch/arm/boot/dts/imx6qdl.dtsi	2016-08-30 12:51:37.369431791 +0200
-> @@ -242,7 +242,7 @@
->  					clocks = <&clks IMX6QDL_CLK_SPDIF_GCLK>, <&clks IMX6QDL_CLK_OSC>,
->  						 <&clks IMX6QDL_CLK_SPDIF>, <&clks IMX6QDL_CLK_ASRC>,
->  						 <&clks IMX6QDL_CLK_DUMMY>, <&clks IMX6QDL_CLK_ESAI_EXTAL>,
-> -						 <&clks IMX6QDL_CLK_IPG>, <&clks IMX6QDL_CLK_MLB>,
-> +						 <&clks IMX6QDL_CLK_IPG>, <&clks IMX6QDL_CLK_DUMMY>,
-
-As MLB might be gated or not available at all, disabling it is a
-quick work around.
- 
-> AFAICS it just uses rxtx5 (IMX6QDL_CLK_IPG) for 32KHz and gets a little closer to that. 
-> But I haven't tried to play at 32KHz
-> 
-> Is there anything else I can try ? 
-
-Another solution for you could be to change the rates of two of
-those existing clocks to the perfect rates for 44.1KHz and 48KHz
-respectively, 22579200Hz and 24576000Hz for example. (If you
-only need one sample rate support, changing rxtx1 SPDIF clock
-only then.)
+This indeed fixes the problem.
+Please add my 
+Tested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
