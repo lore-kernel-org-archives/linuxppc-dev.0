@@ -1,31 +1,34 @@
-Return-Path: <xdrudis@tinet.cat>
-Received: from mx2.tinet.org (mx2.tinet.org [195.77.216.147])
- by lists.ozlabs.org (Postfix) with ESMTP id 3sPRZd1lRSzDrfP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 23:49:29 +1000 (AEST)
-Received: from smtp01.tinet.org (smtp01.tinet.org [195.77.216.131]) by
- mx2.tinet.org with ESMTP id 5JuBvbikhChnGoDx for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 15:49:26 +0200 (CEST)
-Date: Wed, 31 Aug 2016 15:49:25 +0200
-From: Xavi Drudis Ferran <xdrudis@tinet.cat>
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Xavi Drudis Ferran <xdrudis@tinet.cat>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- Shengjiu Wang <shengjiu.wang@freescale.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Timur Tabi <timur@tabi.org>,
- Fabio Estevam <fabio.estevam@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [alsa-devel] Setting some clocks back to DUMMY fixes spdif
- output on imx6q wandboard rev B1
-Message-ID: <20160831134925.GB1967@begut>
+Return-Path: <festevam@gmail.com>
+Received: from mail-ua0-x232.google.com (mail-ua0-x232.google.com
+ [IPv6:2607:f8b0:400c:c08::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPRs73Nh0zDrfP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 00:02:03 +1000 (AEST)
+Received: by mail-ua0-x232.google.com with SMTP id l94so89981856ual.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 07:02:03 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20160831134733.GA1967@begut>
 References: <20160828160055.GA2122@begut>
  <20160829192820.GA14207@Asurada-Nvidia>
  <20160829195428.GD1967@begut> <20160830111414.GA1968@begut>
  <20160831042100.GA3308@Asurada> <20160831091013.GA3185@begut>
  <CAOMZO5AoCo9Faq7oWgRQUE0Hg+Pg+i6z8eg-qeLFDvwpoEqz_g@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAOMZO5AoCo9Faq7oWgRQUE0Hg+Pg+i6z8eg-qeLFDvwpoEqz_g@mail.gmail.com>
+ <CAOMZO5CFsXR8zsPXGOKMqfFkCjzdpTbHz=u8DjQODY4hSakv9Q@mail.gmail.com>
+ <20160831134733.GA1967@begut>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 31 Aug 2016 11:02:00 -0300
+Message-ID: <CAOMZO5AaPqSDfYmGkg4tP9Aw4mwoPVCky2T-_uhjGRLQrAQQ6g@mail.gmail.com>
+Subject: Re: [alsa-devel] Setting some clocks back to DUMMY fixes spdif output
+ on imx6q wandboard rev B1
+To: Xavi Drudis Ferran <xdrudis@tinet.cat>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@freescale.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ Timur Tabi <timur@tabi.org>, Fabio Estevam <fabio.estevam@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +38,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-El Wed, Aug 31, 2016 at 10:11:13AM -0300, Fabio Estevam deia:
-> 2. SPDIF clock rate not accurate. Probably using PLL4 as SPDIF source
-> would help to get more accurate SPDIF clock rates.
-> 
-> Could you please try the untested change?
-> 
-> --- a/drivers/clk/imx/clk-imx6q.c
-> +++ b/drivers/clk/imx/clk-imx6q.c
-> @@ -623,7 +623,7 @@ static void __init imx6q_clocks_init(struct
-> device_node *ccm_node)
->                 pr_warn("failed to set up CLKO: %d\n", ret);
-> 
->         /* Audio-related clocks configuration */
-> -       clk_set_parent(clk[IMX6QDL_CLK_SPDIF_SEL],
-> clk[IMX6QDL_CLK_PLL3_PFD3_454M]);
-> +       clk_set_parent(clk[IMX6QDL_CLK_SPDIF_SEL],
-> clk[IMX6QDL_CLK_PLL4_AUDIO_DIV]);
-> 
->         /* All existing boards with PCIe use LVDS1 */
->         if (IS_ENABLED(CONFIG_PCI_IMX6))
->
+Hi Xavi,
 
-I'm going to try. I'll take a while. I'll report the result later.
+On Wed, Aug 31, 2016 at 10:47 AM, Xavi Drudis Ferran <xdrudis@tinet.cat> wrote:
 
-Thank you very much.
+> If it's easy for you to send it yourself, I would prefer so and I'm
+> grateful. If not, it'll be an exercise for me, no problem.
+
+I have just submitted the patch with you on Cc.
+
+If you could reply to it with your Tested-by tag, that would be great.
+
+Thanks
