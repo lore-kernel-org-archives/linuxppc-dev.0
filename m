@@ -1,27 +1,24 @@
-Return-Path: <xdrudis@tinet.cat>
-Received: from mx2.tinet.org (mx2.tinet.org [195.77.216.147])
- by lists.ozlabs.org (Postfix) with ESMTP id 3sPKNb5ljyzDrhc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 19:10:23 +1000 (AEST)
-Received: from smtp01.tinet.org (smtp01.tinet.org [195.77.216.131]) by
- mx2.tinet.org with ESMTP id YTYg0z6pOlfm1XqX for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 11:10:16 +0200 (CEST)
-Date: Wed, 31 Aug 2016 11:10:13 +0200
-From: Xavi Drudis Ferran <xdrudis@tinet.cat>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xavi Drudis Ferran <xdrudis@tinet.cat>, fabio.estevam@nxp.com,
- Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Shengjiu Wang <shengjiu.wang@freescale.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Setting some clocks back to DUMMY fixes spdif output on imx6q
- wandboard rev B1
-Message-ID: <20160831091013.GA3185@begut>
-References: <20160828160055.GA2122@begut>
- <20160829192820.GA14207@Asurada-Nvidia>
- <20160829195428.GD1967@begut> <20160830111414.GA1968@begut>
- <20160831042100.GA3308@Asurada>
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPLDm3XQ9zDrhc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 19:48:37 +1000 (AEST)
+Date: Wed, 31 Aug 2016 11:48:33 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+ Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v3 0/3] Account reserved memory when allocating system hash
+Message-ID: <20160831094832.GA21661@dhcp22.suse.cz>
+References: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160831042100.GA3308@Asurada>
+In-Reply-To: <1472476010-4709-1-git-send-email-srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,70 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-El Tue, Aug 30, 2016 at 09:21:01PM -0700, Nicolin Chen deia:
+On Mon 29-08-16 18:36:47, Srikar Dronamraju wrote:
+> Fadump kernel reserves large chunks of memory even before the pages are
+> initialised. This could mean memory that corresponds to several nodes might
+> fall in memblock reserved regions.
 > 
-> No, the problem is not at the rate but the source -- Although the
-> MLB clock exists in the clock tree as a better rate provider, it
-> might not be correctly enabled or running at the rate it claims.
+> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
+> only certain size memory per node. The certain size takes into account
+> the dentry and inode cache sizes. However such a kernel when booting a
+> secondary kernel will not be able to allocate the required amount of
+> memory to suffice for the dentry and inode caches. This results in
+> crashes like the below on large systems such as 32 TB systems.
 > 
-
+> Dentry cache hash table entries: 536870912 (order: 16, 4294967296 bytes)
+> vmalloc: allocation failure, allocated 4097114112 of 17179934720 bytes
+> swapper/0: page allocation failure: order:0, mode:0x2080020(GFP_ATOMIC)
+> CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.6-master+ #3
+> Call Trace:
+> [c00000000108fb10] [c0000000007fac88] dump_stack+0xb0/0xf0 (unreliable)
+> [c00000000108fb50] [c000000000235264] warn_alloc_failed+0x114/0x160
+> [c00000000108fbf0] [c000000000281484] __vmalloc_node_range+0x304/0x340
+> [c00000000108fca0] [c00000000028152c] __vmalloc+0x6c/0x90
+> [c00000000108fd40] [c000000000aecfb0]
+> alloc_large_system_hash+0x1b8/0x2c0
+> [c00000000108fe00] [c000000000af7240] inode_init+0x94/0xe4
+> [c00000000108fe80] [c000000000af6fec] vfs_caches_init+0x8c/0x13c
+> [c00000000108ff00] [c000000000ac4014] start_kernel+0x50c/0x578
+> [c00000000108ff90] [c000000000008c6c] start_here_common+0x20/0xa8
 > 
-> There are five MLB clocks sharing the same clock gate according
-> to CCM chapter in the Reference Manual of imx6q. But five clocks
-> come from three different parent clocks, and I am wondering if
-> the MLB clock that's connected to the S/PDIF module is really
-> derived from this AXI.
+> This patchset solves this problem by accounting the size of reserved memory
+> when calculating the size of large system hashes.
+
+So I think that this is just a fallout from how fadump is hackish and
+tricky. Reserving large portion/majority of memory from the kernel just
+sounds like a mind field. This patchset is dealing with one particular
+problem. Fair enough, it seems like the easiest way to go and something
+that would be stable backport safe as well so
+Acked-by: Michal Hocko <mhocko@suse.com> to those whole series
+
+but I cannot say I would be happy about the whole fadump thing...
+
+> While this patchset applies on v4.8-rc3, it cannot be tested on v4.8-rc3
+> because of http://lkml.kernel.org/r/20160829093844.GA2592@linux.vnet.ibm.com
+> However it has been tested on v4.7/v4.6 and v4.4
+
+another supporting argument for the above. 15 out of 16 nodes without
+any memory... Sigh
+
+> v2: http://lkml.kernel.org/r/1470330729-6273-1-git-send-email-srikar@linux.vnet.ibm.com 
 > 
-> Hope Fabio might be able to help on the clock tree issue here:)
->
-
-I hope too, it's a little over my head, to be euphemistic. 
-
+> Cc: linux-mm@kvack.org
+> Cc: Mel Gorman <mgorman@techsingularity.net>
+> Cc: Vlastimil Babka <vbabka@suse.cz>
+> Cc: Michal Hocko <mhocko@kernel.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> Cc: Dave Hansen <dave.hansen@intel.com>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 > 
-> Another solution for you could be to change the rates of two of
-> those existing clocks to the perfect rates for 44.1KHz and 48KHz
-> respectively, 22579200Hz and 24576000Hz for example. (If you
-> only need one sample rate support, changing rxtx1 SPDIF clock
-> only then.)
+> Srikar Dronamraju (3):
+>   mm: Introduce arch_reserved_kernel_pages()
+>   mm/memblock: Expose total reserved memory
+>   powerpc: Implement arch_reserved_kernel_pages
+> 
+>  arch/powerpc/include/asm/mmzone.h |  3 +++
+>  arch/powerpc/kernel/fadump.c      |  5 +++++
+>  include/linux/memblock.h          |  1 +
+>  include/linux/mm.h                |  3 +++
+>  mm/memblock.c                     |  5 +++++
+>  mm/page_alloc.c                   | 12 ++++++++++++
+>  6 files changed, 29 insertions(+)
+> 
+> -- 
+> 1.8.5.6
 
-Thank you very much.  I'm not sure what practical problem that would
-solve for me, audio sounds quite right to my ears with the workaround
-(disabling MLB). I've looked page 121 of
-http://cache.freescale.com/files/32bit/doc/data_sheet/IMX6DQIEC.pdf
-And it seems like the the margin for the SPDIF clock would be 16 ns
-and I'm like 10 times out of spec. But I can't hear the problem.  I
-may try it one day to hear how it sounds.
-
-I'll try to remember it if I ever come across some problem with my audio.
-For now what I'd like is to stay as close to linux-libre mainline 
-as possible, so the quick workaround is enough for me. 
-
-Now for the general case, I'm not sure what the solution should be.
-Page 4 of the pdf above says MLB is not present in industrial "parts",
-only automotive, or consumer "parts". There are several versions of
-IMX6Q in the market.  What version must I have ? I guess consumer
-(with MLB) but I'm not sure... According to the wandboard-quad-rev-b1
-manual its consumer, MCIMX6Q5EYM10AC, so I should have MLB, I guess.
-
-$ cat /proc/cpuinfo 
-processor	   : 0
-model name	   : ARMv7 Processor rev 10 (v7l)
-BogoMIPS	   : 7.54
-Features	   : half thumb fastmult vfp edsp thumbee neon vfpv3 tls vfpd32 
-CPU implementer	   : 0x41
-CPU architecture: 7
-CPU variant	  : 0x2
-CPU part	  : 0xc09
-CPU revision	  : 10
-[...]
-
-I can't tell what CPU part : 0xc09 means.
-
-In the reference manual pg 796 I see the same gate seems to affect Media
-Local Bus (MLB) clock and Digital Transmission Content Protection
-(DTCP). I don't use DTCP but I haven't done anything to disable it.
-
-http://www.nxp.com/files/32bit/doc/ref_manual/IMX6DQRM.pdf?fasp=1&WT_TYPE=Reference%20Manuals&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation&fileExt=.pdf
-
-
-Thanks again, you've been very helpful. 
+-- 
+Michal Hocko
+SUSE Labs
