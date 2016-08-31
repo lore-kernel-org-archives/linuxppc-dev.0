@@ -1,34 +1,18 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-ua0-x232.google.com (mail-ua0-x232.google.com
- [IPv6:2607:f8b0:400c:c08::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPRs73Nh0zDrfP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 00:02:03 +1000 (AEST)
-Received: by mail-ua0-x232.google.com with SMTP id l94so89981856ual.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 07:02:03 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPRwl41smzDrfP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 00:05:10 +1000 (AEST)
+From: Darren Stevens <darren@stevens-zone.net>
+To: linuxppc-dev@lists.ozlabs.org
+CC: olof@lixom.net,
+	Christian Zigotzky <chzigotzky@xenosoft.de>
+Date: Wed, 31 Aug 2016 13:24:34 +0100 (BST)
+Message-ID: <48ba9b706b8.834928d@auth.smtp.1and1.co.uk>
+Subject: [ RFC PATCH 1/3] powerpc/pasemi: Add Nemo motherboard config option.
 MIME-Version: 1.0
-In-Reply-To: <20160831134733.GA1967@begut>
-References: <20160828160055.GA2122@begut>
- <20160829192820.GA14207@Asurada-Nvidia>
- <20160829195428.GD1967@begut> <20160830111414.GA1968@begut>
- <20160831042100.GA3308@Asurada> <20160831091013.GA3185@begut>
- <CAOMZO5AoCo9Faq7oWgRQUE0Hg+Pg+i6z8eg-qeLFDvwpoEqz_g@mail.gmail.com>
- <CAOMZO5CFsXR8zsPXGOKMqfFkCjzdpTbHz=u8DjQODY4hSakv9Q@mail.gmail.com>
- <20160831134733.GA1967@begut>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Wed, 31 Aug 2016 11:02:00 -0300
-Message-ID: <CAOMZO5AaPqSDfYmGkg4tP9Aw4mwoPVCky2T-_uhjGRLQrAQQ6g@mail.gmail.com>
-Subject: Re: [alsa-devel] Setting some clocks back to DUMMY fixes spdif output
- on imx6q wandboard rev B1
-To: Xavi Drudis Ferran <xdrudis@tinet.cat>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>,
- Shengjiu Wang <shengjiu.wang@freescale.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>,
- Timur Tabi <timur@tabi.org>, Fabio Estevam <fabio.estevam@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6dab4a80700c8394.89"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,15 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Xavi,
+Warning: This is a message in MIME format. Your mail reader does
+not support MIME. Some parts of this message will be readable as
+plain text. To see the rest, you will need to upgrade your mail
+reader. Following are some URLs where you can find MIME-capable
+mail programs for common platforms:
 
-On Wed, Aug 31, 2016 at 10:47 AM, Xavi Drudis Ferran <xdrudis@tinet.cat> wrote:
+  AmigaOS...........: http://yam.ch/
+  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
 
-> If it's easy for you to send it yourself, I would prefer so and I'm
-> grateful. If not, it'll be an exercise for me, no problem.
+General information about MIME can be found at:
+http://en.wikipedia.org/wiki/MIME
 
-I have just submitted the patch with you on Cc.
+----=_BOUNDARY.6dab4a80700c8394.89
+Content-Type: text/plain
 
-If you could reply to it with your Tested-by tag, that would be great.
+    Add config option for the Nemo motherboard used in the Amigaone X1000.
+    This is a custom PASemi board with an AMD SB600 southbridge, and needs
+    some patches to it device tree. This option will be used to build these
+    into the kernel
 
-Thanks
+    Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+
+---
+
+----=_BOUNDARY.6dab4a80700c8394.89
+Content-Type: text/plain;
+	name="nemo_0.patch"
+Content-Disposition: attachment;
+	filename="nemo_0.patch";
+	size=716
+
+diff --git a/arch/powerpc/platforms/pasemi/Kconfig b/arch/powerpc/platforms/pasemi/Kconfig
+index 00d4b28..c7f1dbe 100644
+--- a/arch/powerpc/platforms/pasemi/Kconfig
++++ b/arch/powerpc/platforms/pasemi/Kconfig
+@@ -14,6 +14,16 @@ config PPC_PASEMI
+ menu "PA Semi PWRficient options"
+ 	depends on PPC_PASEMI
+ 
++config PPC_PASEMI_NEMO
++	bool "Nemo motherboard Support"
++	depends on PPC_PASEMI
++	select PPC_I8259
++	help
++	  This option enables support for the 'Nemo' motherboard
++	  used in A-Eons's Amigaone X1000. This consists of some
++	  device tree patches and workarounds for the SB600 South
++	  Bridge that provides SATA/USB/Audio.
++
+ config PPC_PASEMI_IOMMU
+ 	bool "PA Semi IOMMU support"
+ 	depends on PPC_PASEMI
+
+----=_BOUNDARY.6dab4a80700c8394.89--
