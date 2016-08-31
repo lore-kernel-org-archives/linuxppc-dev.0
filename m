@@ -1,36 +1,23 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f65.google.com (mail-wm0-f65.google.com [74.125.82.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPN296StKzDrhc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 21:09:37 +1000 (AEST)
-Received: by mail-wm0-f65.google.com with SMTP id i5so7087053wmg.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 04:09:37 -0700 (PDT)
-Date: Wed, 31 Aug 2016 13:09:33 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Mel Gorman <mgorman@techsingularity.net>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux-MM <linux-mm@kvack.org>, Rik van Riel <riel@surriel.com>,
- Vlastimil Babka <vbabka@suse.cz>, Johannes Weiner <hannes@cmpxchg.org>,
- Minchan Kim <minchan@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- LKML <linux-kernel@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>
-Subject: Re: [PATCH 07/34] mm, vmscan: make kswapd reclaim in terms of nodes
-Message-ID: <20160831110932.GB21661@dhcp22.suse.cz>
-References: <1467970510-21195-1-git-send-email-mgorman@techsingularity.net>
- <1467970510-21195-8-git-send-email-mgorman@techsingularity.net>
- <20160829093844.GA2592@linux.vnet.ibm.com>
- <20160830120728.GV8119@techsingularity.net>
- <20160830142508.GA10514@linux.vnet.ibm.com>
- <20160830150051.GW8119@techsingularity.net>
- <20160831060959.GA6787@linux.vnet.ibm.com>
- <20160831084942.GX8119@techsingularity.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPNmg6QKJzDrhc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 21:42:59 +1000 (AEST)
+Date: Wed, 31 Aug 2016 13:42:54 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, ak@linux.intel.com
+Cc: mingo@redhat.com, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, peterz@infradead.org,
+ maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v20 00/20] perf, tools: Add support for PMU events in
+ JSON format
+Message-ID: <20160831114254.GA9001@krava>
+References: <1466481770-25290-1-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160831084942.GX8119@techsingularity.net>
+In-Reply-To: <1466481770-25290-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,74 +27,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 31-08-16 09:49:42, Mel Gorman wrote:
-> On Wed, Aug 31, 2016 at 11:39:59AM +0530, Srikar Dronamraju wrote:
-> > This indeed fixes the problem.
-> > Please add my 
-> > Tested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> > 
+On Mon, Jun 20, 2016 at 09:02:30PM -0700, Sukadev Bhattiprolu wrote:
+> CPUs support a large number of performance monitoring events (PMU events)
+> and often these events are very specific to an architecture/model of the
+> CPU. To use most of these PMU events with perf, we currently have to identify
+> them by their raw codes:
 > 
-> Ok, thanks. Unfortunately we cannot do a wide conversion like this
-> because some users of populated_zone() really meant to check for
-> present_pages. In all cases, the expectation was that reserved pages
-> would be tiny but fadump messes that up. Can you verify this also works
-> please?
+> 	perf stat -e r100f2 sleep 1
 > 
-> ---8<---
-> mm, vmscan: Only allocate and reclaim from zones with pages managed by the buddy allocator
+> This patchset allows architectures to specify these PMU events in JSON
+> files located in 'tools/perf/pmu-events/arch/' of the mainline tree.
+> The events from the JSON files for the architecture are then built into
+> the perf binary.
 > 
-> Firmware Assisted Dump (FA_DUMP) on ppc64 reserves substantial amounts
-> of memory when booting a secondary kernel. Srikar Dronamraju reported that
-> multiple nodes may have no memory managed by the buddy allocator but still
-> return true for populated_zone().
+> At run time, perf identifies the specific set of events for the CPU and
+> creates "event aliases". These aliases allow users to specify events by
+> "name" as:
 > 
-> Commit 1d82de618ddd ("mm, vmscan: make kswapd reclaim in terms of nodes")
-> was reported to cause kswapd to spin at 100% CPU usage when fadump was
-> enabled. The old code happened to deal with the situation of a populated
-> node with zero free pages by co-incidence but the current code tries to
-> reclaim populated zones without realising that is impossible.
+> 	perf stat -e pm_1plus_ppc_cmpl sleep 1
 > 
-> We cannot just convert populated_zone() as many existing users really
-> need to check for present_pages. This patch introduces a managed_zone()
-> helper and uses it in the few cases where it is critical that the check
-> is made for managed pages -- zonelist constuction and page reclaim.
+> The file, 'tools/perf/pmu-events/README' in [PATCH 16/16] gives more
+> details.
+> 
+> Note:
+> 	- All known events tables for the architecture are included in the
+> 	  perf binary.
+> 
+> 	- For architectures that don't have any JSON files, an empty mapping
+> 	  table is created and they should continue to build.
+> 
+> Thanks to input from Andi Kleen, Jiri Olsa, Namhyung Kim and Ingo Molnar.
+> 
+> These patches are available from:
+> 
+> 	https://github.com/sukadev/linux.git 
+> 	
+> 	Branch			Description
+> 	------------------------------------------------------
+> 	json-code-v20		Source Code only 
+> 	json-data-v20		x86 and Powerpc datafiles only
+> 	json-code+data-v20	Both code and data (for build/test)
+> 	
+> NOTE: 	Only "source code" patches (i.e those in json-code-v20) are being
+> 	emailed.  Please pull the "data files" from the json-data-v20 branch.
+> 
+> Changelog[v20]
+> 	- Rebase to recent perf/core
+> 	- Add Patch 20/20 to allow perf-stat to work with the period= field
 
-OK, the patch makes sense to me. I am not happy about two very similar
-functions, to be honest though. managed vs. present checks will be quite
-subtle and it is not entirely clear when to use which one. I agree that
-the reclaim path is the most critical one so the patch seems OK to me.
-At least from a quick glance it should help with the reported issue so
-feel free to add
-Acked-by: Michal Hocko <mhocko@suse.com>
+hi,
+I had discussion with Ingo about the state of this patchset
+and there's one more requirement from his side - to split
+event files into per topic files
 
-I expect we might want to turn other places as well but they are far
-from critical. I would appreciate some lead there and stick a clarifying
-comment
+I made some initial changes over latest Sukadev's branch
+and came up with something like this:
 
-[...]
-> -static inline int populated_zone(struct zone *zone)
-> +/* Returns true if a zone has pages managed by the buddy allocator */
+	$ find pmu-events/arch/x86/
+	pmu-events/arch/x86/
+	pmu-events/arch/x86/NehalemEX_core
+	pmu-events/arch/x86/NehalemEX_core/Memory.json
+	pmu-events/arch/x86/NehalemEX_core/Virtual-Memory.json
+	pmu-events/arch/x86/NehalemEX_core/Cache.json
+	pmu-events/arch/x86/NehalemEX_core/Pipeline.json
+	pmu-events/arch/x86/NehalemEX_core/Floating-point.json
+	pmu-events/arch/x86/NehalemEX_core/Other.json
+	pmu-events/arch/x86/mapfile.csv
+	pmu-events/arch/x86/Broadwell_core
+	pmu-events/arch/x86/Broadwell_core/Memory.json
+	pmu-events/arch/x86/Broadwell_core/Virtual-Memory.json
+	pmu-events/arch/x86/Broadwell_core/Cache.json
+	pmu-events/arch/x86/Broadwell_core/Pipeline.json
+	pmu-events/arch/x86/Broadwell_core/Floating-point.json
+	pmu-events/arch/x86/Broadwell_core/Other.json
+	pmu-events/arch/x86/Broadwell_core/Frontend.json
 
-/*
- * Returns true if a zone has pages managed by the buddy allocator.
- * All the reclaim decisions have to use this function rather than
- * populated_zone(). If the whole zone is reserved then we can easily
- * end up with populated_zone() && !managed_zone().
- */
+so let's have a discussion if this is acceptable for you guys
 
-What do you think?
+I've already made some changes in pmu-events/* to support
+this hierarchy to see how bad the change would be.. and
+it's not that bad ;-)
 
-> +static inline bool managed_zone(struct zone *zone)
->  {
-> -	return (!!zone->present_pages);
-> +	return zone->managed_pages;
-> +}
-> +
-> +/* Returns true if a zone has memory */
-> +static inline bool populated_zone(struct zone *zone)
-> +{
-> +	return zone->present_pages;
->  }
--- 
-Michal Hocko
-SUSE Labs
+you can check followin patches (only 2 Intel files transformed):
+
+	1d5ffa8bb969 perf, tools: Change jevents
+	65919f8901e3 perf, tools: Split Broadwell_core.json
+	7cd309a85465 perf, tools: Add Broadwell V14 event file
+	e316aff2dd4e perf, tools: Split NehalemEX_core.json
+	e19e8de49408 perf, tools: Add NehalemEX V1 event file
+
+It's available in:
+  git://git.kernel.org/pub/scm/linux/kernel/git/jolsa/perf.git
+  perf/json
+
+thanks,
+jirka
