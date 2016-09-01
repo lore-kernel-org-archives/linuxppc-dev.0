@@ -1,32 +1,33 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <rui.teng@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPv2h1NQpzDrgX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 17:26:52 +1000 (AEST)
-Date: Thu, 1 Sep 2016 09:26:29 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@kernel.org>, Jiri Olsa <jolsa@kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Stephane Eranian <eranian@gmail.com>,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 01/13] perf/core: Add perf_arch_regs and mask to
- perf_regs structure
-Message-ID: <20160901072629.GJ10153@twins.programming.kicks-ass.net>
-References: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1472418058-28659-2-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1472418058-28659-2-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPvXn1Mg5zDrgX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 17:49:28 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u817hKBN125059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 03:49:26 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 256cqbsfnu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Sep 2016 03:49:26 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rui.teng@linux.vnet.ibm.com>;
+ Thu, 1 Sep 2016 01:49:24 -0600
+From: Rui Teng <rui.teng@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Rui Teng <rui.teng@linux.vnet.ibm.com>
+Subject: [PATCH] [V3] powerpc/mm: Add validation for platform reserved memory
+ ranges
+Date: Thu,  1 Sep 2016 15:48:44 +0800
+Message-Id: <1472716124-3344-1-git-send-email-rui.teng@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +37,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 29, 2016 at 02:30:46AM +0530, Madhavan Srinivasan wrote:
-> It's a perennial request from hardware folks to be able to
-> see the raw values of the pmu registers. Partly it's so that
-> they can verify perf is doing what they want, and some
-> of it is that they're interested in some of the more obscure
-> info that isn't plumbed out through other perf interfaces.
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-How much and what is that? Can't we try and get interfaces sorted?
+For partition running on PHYP, there can be a adjunct partition
+which shares the virtual address range with the operating system.
+Virtual address ranges which can be used by the adjunct partition
+are communicated with virtual device node of the device tree with
+a property known as "ibm,reserved-virtual-addresses". This patch
+introduces a new function named 'validate_reserved_va_range' which
+is called  during initialization to validate that these reserved
+virtual address ranges do not overlap with the address ranges used
+by the kernel for all supported memory contexts. This helps prevent
+the possibility of getting return codes similar to H_RESOURCE for
+H_PROTECT hcalls for conflicting HPTE entries.
 
-> Over the years internally have used various hack to get
-> the requested data out but this is an attempt to use a
-> somewhat standard mechanism (using PERF_SAMPLE_REGS_INTR).
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Signed-off-by: Rui Teng <rui.teng@linux.vnet.ibm.com>
+---
+- Tested on both POWER8 LE and BE platforms
 
-Not really liking that. It assumes too much and doesn't seem to cover
-about half the perf use-cases.
+Changes in V3:
+- Use u32 and u64 to store the virtual address and use CPU endian mask.
 
-It assumes the machine state can be captured by registers (this is false
-for things like Intel DS/PT, which have state in memory), it might
-assume <= 64 registers but I didn't look that closely, this too might
-become somewhat restrictive.
+Changes in V2:
+- Added braces to the definition of LINUX_VA_BITS
+- Adjusted tabs as spaces for the definition of PARTIAL_LINUX_VA_MASK
 
-Worse, it doesn't work for !sampling workloads, of which you also very
-much want to verify programming etc.
+---
+ arch/powerpc/mm/hash_utils_64.c | 68 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
 
-> This would also be helpful for those of us working on the perf
-> hardware backends, to be able to verify that we're programming
-> things correctly, without resorting to debug printks etc.
-
-On x86 we can trace the MSR writes. No need to add debug printk()s.
-We could (and I have on occasion) added tracepoints (well trace_printk)
-to the Intel DS memory stores to see what was written there.
-
-Tracing is much more flexible for debugging this stuff.
-
-Can't you do something along those lines?
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 0821556..85c5123 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1733,3 +1733,71 @@ void hash__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	/* Finally limit subsequent allocations */
+ 	memblock_set_current_limit(ppc64_rma_size);
+ }
++
++/*
++ * PAPR says that each reserved virtual address range record
++ * contains three be32 elements which is of toal 12 bytes.
++ * First two be32 elements contain the abbreviated virtual
++ * address (high order 32 bits and low order 32 bits that
++ * generate the abbreviated virtual address of 64 bits which
++ * need to be concatenated with 24 bits of 0 at the end) and
++ * the third be32 element contains the size of the reserved
++ * virtual address range as number of consecutive 4K pages.
++ */
++struct reserved_va_record {
++	u32	high_addr;
++	u32	low_addr;
++	u32	nr_pages_4K;
++};
++
++/*
++ * Linux uses 65 bits (CONTEXT_BITS + ESID_BITS + SID_SHIFT)
++ * of virtual address. As reserved virtual address comes in
++ * as an abbreviated form (64 bits) from the device tree, we
++ * will use a partial address bit mask (65 >> 24) to match it
++ * for simplicity.
++ */
++#define RVA_LESS_BITS		24
++#define LINUX_VA_BITS		(CONTEXT_BITS + ESID_BITS + SID_SHIFT)
++#define PARTIAL_LINUX_VA_MASK	((1ULL << (LINUX_VA_BITS - RVA_LESS_BITS)) - 1)
++
++static int __init validate_reserved_va_range(void)
++{
++	struct reserved_va_record rva;
++	struct device_node *np;
++	int records, i;
++	u64 vaddr;
++
++	np = of_find_node_by_name(NULL, "vdevice");
++	if (!np)
++		return -ENODEV;
++
++	records = of_property_count_elems_of_size(np,
++			"ibm,reserved-virtual-addresses",
++				sizeof(struct reserved_va_record));
++	if (records < 0)
++		return records;
++
++	for (i = 0; i < records; i++) {
++		of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i, &rva.high_addr);
++		of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i + 1, &rva.low_addr);
++		of_property_read_u32_index(np,
++			"ibm,reserved-virtual-addresses",
++				3 * i + 2, &rva.nr_pages_4K);
++
++		vaddr =  rva.high_addr;
++		vaddr =  (vaddr << 32) | rva.low_addr;
++		if (unlikely(!(vaddr & ~PARTIAL_LINUX_VA_MASK))) {
++			pr_err("RVA [0x%llx000000 (0x%x in bytes)] overlapped\n",
++					vaddr, rva.nr_pages_4K * 4096);
++			BUG();
++		}
++	}
++	of_node_put(np);
++	return 0;
++}
++device_initcall(validate_reserved_va_range);
+-- 
+2.7.4
