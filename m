@@ -1,20 +1,43 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sQJLF0DbczDrgX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2016 09:26:45 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id vy10so4763766pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Sep 2016 16:26:44 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Daniel Axtens <dja@axtens.net>
-Subject: [PATCH 3/3] powerpc/sparse: Add more assembler prototypes.
-Date: Fri,  2 Sep 2016 09:26:21 +1000
-Message-Id: <1472772381-22696-3-git-send-email-dja@axtens.net>
-In-Reply-To: <1472772381-22696-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sQJcS3xbczDrgX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2016 09:39:03 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u81NX44Z086213
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 19:39:02 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 256b6987j5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Sep 2016 19:39:02 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 2 Sep 2016 09:38:59 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 229463578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2016 09:38:58 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u81NcvNP61407450
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2016 09:38:57 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u81NcvpP023076
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2016 09:38:57 +1000
+Subject: Re: [PATCH 1/3] powerpc/sparse: Make a bunch of things static
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org
 References: <1472772381-22696-1-git-send-email-dja@axtens.net>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 2 Sep 2016 09:38:55 +1000
+MIME-Version: 1.0
+In-Reply-To: <1472772381-22696-1-git-send-email-dja@axtens.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <9988ac7d-a1d8-c425-1661-17d3b23d563c@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,170 +47,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Another set of things that are only called from assembler and so need
-prototypes to keep sparse happy.
+On 02/09/16 09:26, Daniel Axtens wrote:
+> Squash a bunch of sparse warnings by making things static.
+>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
----
+> -struct irq_domain *iic_get_irq_host(int node)
+> +static struct irq_domain *iic_get_irq_host(int node)
+>  {
+>  	return iic_host;
+>  }
 
-Again, created semi-programatically and compile-tested against
-top-level defconfigs.
----
- arch/powerpc/include/asm/asm-prototypes.h | 32 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/irq.c                 |  1 +
- arch/powerpc/kernel/process.c             |  1 +
- arch/powerpc/kernel/prom_init.c           |  1 +
- arch/powerpc/kernel/ptrace.c              |  1 +
- arch/powerpc/kernel/signal_32.c           |  1 +
- arch/powerpc/kernel/signal_64.c           |  1 +
- arch/powerpc/kernel/syscalls.c            |  1 +
- arch/powerpc/kernel/time.c                |  1 +
- 9 files changed, 40 insertions(+)
+Should probably get rid of the symbol export here too.
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 600c7994e99e..a52e4aae1387 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -15,6 +15,8 @@
- #include <linux/threads.h>
- #include <linux/kprobes.h>
- 
-+#include <uapi/asm/ucontext.h>
-+
- /* SMP */
- extern struct thread_info *current_set[NR_CPUS];
- extern struct thread_info *secondary_ti;
-@@ -111,4 +113,34 @@ int kvmppc_rm_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
- int kvmppc_rm_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr);
- int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr);
- 
-+
-+/* signals, syscalls and interrupts */
-+int sys_swapcontext(struct ucontext __user *old_ctx,
-+                    struct ucontext __user *new_ctx,
-+                    long ctx_size, long r6, long r7, long r8, struct pt_regs *regs);
-+long sys_switch_endian(void);
-+notrace unsigned int __check_irq_replay(void);
-+void notrace restore_interrupts(void);
-+
-+/* ptrace */
-+long do_syscall_trace_enter(struct pt_regs *regs);
-+void do_syscall_trace_leave(struct pt_regs *regs);
-+
-+/* process */
-+void restore_math(struct pt_regs *regs);
-+void restore_tm_state(struct pt_regs *regs);
-+
-+/* prom_init (OpenFirmware) */
-+unsigned long __init prom_init(unsigned long r3, unsigned long r4,
-+                               unsigned long pp,
-+                               unsigned long r6, unsigned long r7,
-+                               unsigned long kbase);
-+
-+/* setup */
-+void __init early_setup(unsigned long dt_ptr);
-+void early_setup_secondary(void);
-+
-+/* time */
-+void accumulate_stolen_time(void);
-+
- #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 08887cf2b20e..9594ac8e7090 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -67,6 +67,7 @@
- #include <asm/smp.h>
- #include <asm/debug.h>
- #include <asm/livepatch.h>
-+#include <asm/asm-prototypes.h>
- 
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 9ee2623e0f67..ce8a26a0c947 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -59,6 +59,7 @@
- #include <asm/exec.h>
- #include <asm/livepatch.h>
- #include <asm/cpu_has_feature.h>
-+#include <asm/asm-prototypes.h>
- 
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 4e74fc588a3f..84b0d677f6ce 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -42,6 +42,7 @@
- #include <asm/sections.h>
- #include <asm/machdep.h>
- #include <asm/opal.h>
-+#include <asm/asm-prototypes.h>
- 
- #include <linux/linux_logo.h>
- 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index bf91658a8a40..2299bf60780d 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -39,6 +39,7 @@
- #include <asm/pgtable.h>
- #include <asm/switch_to.h>
- #include <asm/tm.h>
-+#include <asm/asm-prototypes.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/syscalls.h>
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index b6aa378aff63..c35186b46590 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -44,6 +44,7 @@
- #include <asm/vdso.h>
- #include <asm/switch_to.h>
- #include <asm/tm.h>
-+#include <asm/asm-prototypes.h>
- #ifdef CONFIG_PPC64
- #include "ppc32.h"
- #include <asm/unistd.h>
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 7e49984d4331..3e8feb1824d8 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -35,6 +35,7 @@
- #include <asm/vdso.h>
- #include <asm/switch_to.h>
- #include <asm/tm.h>
-+#include <asm/asm-prototypes.h>
- 
- #include "signal.h"
- 
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index 5fa92706444b..644cce3d8dce 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -40,6 +40,7 @@
- #include <asm/syscalls.h>
- #include <asm/time.h>
- #include <asm/unistd.h>
-+#include <asm/asm-prototypes.h>
- 
- static inline unsigned long do_mmap2(unsigned long addr, size_t len,
- 			unsigned long prot, unsigned long flags,
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 3efbedefba6a..67859b7d1c97 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -73,6 +73,7 @@
- #include <asm/vdso_datapage.h>
- #include <asm/firmware.h>
- #include <asm/cputime.h>
-+#include <asm/asm-prototypes.h>
- 
- /* powerpc clocksource/clockevent code */
- 
 -- 
-2.7.4
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
