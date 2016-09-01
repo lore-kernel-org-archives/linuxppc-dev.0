@@ -1,28 +1,29 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prasannatsmkumar@gmail.com>
+Received: from mail-yw0-x22a.google.com (mail-yw0-x22a.google.com
+ [IPv6:2607:f8b0:4002:c05::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPt7v44jjzDrn1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 16:46:19 +1000 (AEST)
-Date: Thu, 1 Sep 2016 08:46:13 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, mingo@redhat.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, peterz@infradead.org,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v20 00/20] perf, tools: Add support for PMU events in
- JSON format
-Message-ID: <20160901064613.GA17731@krava>
-References: <1466481770-25290-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20160831114254.GA9001@krava>
- <20160831144247.GV3078@tassilo.jf.intel.com>
- <20160831145459.GA32396@krava>
- <20160831161530.GW3078@tassilo.jf.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPtRT4j72zDqXr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 16:59:49 +1000 (AEST)
+Received: by mail-yw0-x22a.google.com with SMTP id r9so45153009ywg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 23:59:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160831161530.GW3078@tassilo.jf.intel.com>
+In-Reply-To: <48bab268a61.66716f37@auth.smtp.1and1.co.uk>
+References: <1472124856-12767-1-git-send-email-prasannatsmkumar@gmail.com>
+ <20160825121546.GA25650@Red>
+ <CANc+2y4JqGRXCLUEpMo8EB8thW5jsweh0Lg2VjuvpNgSR-AwMA@mail.gmail.com>
+ <48b8455031e.651d5701@auth.smtp.1and1.co.uk>
+ <CANc+2y64+ECEh0GwQU4qQrEtsFjjbmaRJYt1t=J1Q3nT6TG6sA@mail.gmail.com>
+ <48bab268a61.66716f37@auth.smtp.1and1.co.uk>
+From: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+Date: Thu, 1 Sep 2016 12:29:47 +0530
+Message-ID: <CANc+2y5jJ9GNg10ob3o7CLqzLqt9+oH8vU_RmEUjAfDdwOft9A@mail.gmail.com>
+Subject: Re: hwrng: pasemi_rng.c: Migrate to managed API
+To: Darren Stevens <darren@stevens-zone.net>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+ LABBE Corentin <clabbe.montjoie@gmail.com>, linux-crypto@vger.kernel.org,
+ mpm@selenic.com, olof@lixom.net, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,25 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 31, 2016 at 09:15:30AM -0700, Andi Kleen wrote:
-> > > 
-> > > > 
-> > > > I've already made some changes in pmu-events/* to support
-> > > > this hierarchy to see how bad the change would be.. and
-> > > > it's not that bad ;-)
-> > > 
-> > > Everything has to be automated, please no manual changes.
-> > 
-> > sure
-> > 
-> > so, if you're ok with the layout, how do you want to proceed further?
-> 
-> If the split version is acceptable it's fine for me to merge it.
-> 
-> I'll add split-json to my scripting, so the next update would
-> be split too.
+> I didn't explain well, There is a CFE command 'show devtree' here's the
+> relevant bits (I Hope)
 
-ook, I'll wait for patches then
+This is much simple than I expected.
 
-thanks,
-jirka
+> [CFE ]CFE> show devtree
+> [/]
+>  | #interrupt-cells                 val   0x00000002
+>  | #address-cells                   val   0x00000002
+>  | #size-cells                      val   0x00000002
+>
+> ...[snip]...
+>
+>    [sdc@fc000000]
+>     | name                          str   'sdc'
+>     | device_type                   str   'sdc'
+>     | #address-cells                val   0x00000001
+>     | #size-cells                   val   0x00000001
+>     | compatible                    str   '1682m-sdc' 'pasemi,pwrficient-sdc'
+> 'pasemi,sdc'
+>     | reg                           cell  00000000 FC000000 00000000 00800000
+>
+> ...[snip]...
+>
+>       [rng@fc105000]
+>        | name                       str   'rng'
+>        | device_type                str   'rng'
+>        | compatible                 str   '1682m-rng' 'pasemi,pwrficient-rng'
+> 'pasemi,rng'
+>        | reg                        cell  FC105000 00001000
+>
+
+Device tree provided by CFE has the size. I will send another patch
+which uses devm_ioremap_resource().
+
+Appreciate your help. Thank you :).
