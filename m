@@ -1,33 +1,40 @@
-Return-Path: <rui.teng@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPvXn1Mg5zDrgX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 17:49:28 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u817hKBN125059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 03:49:26 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 256cqbsfnu-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sQ2MZ3B2xzDrcD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 22:56:57 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u81CqiVo105359
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 08:56:53 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2569vg9jvj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Sep 2016 03:49:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Sep 2016 08:56:53 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rui.teng@linux.vnet.ibm.com>;
- Thu, 1 Sep 2016 01:49:24 -0600
-From: Rui Teng <rui.teng@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Rui Teng <rui.teng@linux.vnet.ibm.com>
-Subject: [PATCH] [V3] powerpc/mm: Add validation for platform reserved memory
- ranges
-Date: Thu,  1 Sep 2016 15:48:44 +0800
-Message-Id: <1472716124-3344-1-git-send-email-rui.teng@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Thu, 1 Sep 2016 09:56:51 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 35098352005F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 08:56:26 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u81CumHH4288526
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 09:56:48 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u81Cumpl031209
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 09:56:48 -0300
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: jthumshirn@suse.com, duwe@suse.com
+Subject: [PATCH] powerpc: add kernel parameter iommu_alloc_quiet
+Date: Thu,  1 Sep 2016 09:56:42 -0300
+Message-Id: <1472734602-14330-1-git-send-email-mauricfo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,111 +44,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+This patch introduces the 'iommu_alloc_quiet=driver_name' parameter
+to suppress the 'iommu_alloc failures' messages for that one driver.
 
-For partition running on PHYP, there can be a adjunct partition
-which shares the virtual address range with the operating system.
-Virtual address ranges which can be used by the adjunct partition
-are communicated with virtual device node of the device tree with
-a property known as "ibm,reserved-virtual-addresses". This patch
-introduces a new function named 'validate_reserved_va_range' which
-is called  during initialization to validate that these reserved
-virtual address ranges do not overlap with the address ranges used
-by the kernel for all supported memory contexts. This helps prevent
-the possibility of getting return codes similar to H_RESOURCE for
-H_PROTECT hcalls for conflicting HPTE entries.
+This is an additional approach for this 'problem' of flooding logs,
+not as fine-grained and not enabled by default as DMA_ATTR_NO_WARN,
+but it has the advantage that it doesn't introduce any ABI changes.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Rui Teng <rui.teng@linux.vnet.ibm.com>
+That is important/requirement for the distribution kernels - where
+the DMA_ATTR_NO_WARN changes to 'enum dma_attr' are not acceptable
+because it breaks the kernel ABI.
+
+Tested on next-20160825 + nvme changed not to use DMA_ATTR_NO_WARN.
+
+ - test-case: default / no iommu_alloc_quiet
+ - result:    messages occur
+
+    # dmesg -c | grep iommu_alloc_quiet
+    #
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+    <...>
+    [   31.753230] nvme 0000:00:06.0: iommu_alloc failed, tbl c0000003f7080c00 vaddr c00000022bf30000 npages 16
+
+ - test-case: iommu_alloc_quiet=(null)
+ - result:    messages occur
+
+    # dmesg -c | grep iommu_alloc_quiet
+    [    0.000000] Kernel command line: root=<...> ro disable_ddw iommu_alloc_quiet=
+    [    0.000000] iommu_alloc_quiet: driver ''
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+    <...>
+    [   29.032848] nvme 0000:00:06.0: iommu_alloc failed, tbl c0000003f7190c00 vaddr c000000238fc0000 npages 16
+
+ - test-case: iommu_alloc_quiet=(length overflow)
+ - result:    messages occur
+
+    # dmesg -c | grep iommu_alloc_quiet
+    [    0.000000] Kernel command line: root=<...> ro disable_ddw iommu_alloc_quiet=0123456789abcdef0123456789abcdef
+    [    0.000000] iommu_alloc_quiet: driver '0123456789abcde'
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+    <...>
+    [   54.913279] nvme 0000:00:06.0: iommu_alloc failed, tbl c0000003f7120c00 vaddr c00000022d960000 npages 16
+
+ - test-case: iommu_alloc_quiet=nvme
+ - result:    messages do not occur
+
+    # dmesg -c | grep iommu_alloc_quiet
+    [    0.000000] Kernel command line: root=<...> ro disable_ddw iommu_alloc_quiet=nvme
+    [    0.000000] iommu_alloc_quiet: driver 'nvme'
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+
+    # dd if=/dev/zero of=/dev/nvme0n1p1 bs=64k count=128k 2>/dev/null; dmesg -c
+
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 ---
-- Tested on both POWER8 LE and BE platforms
+ arch/powerpc/kernel/iommu.c | 25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
-Changes in V3:
-- Use u32 and u64 to store the virtual address and use CPU endian mask.
-
-Changes in V2:
-- Added braces to the definition of LINUX_VA_BITS
-- Adjusted tabs as spaces for the definition of PARTIAL_LINUX_VA_MASK
-
----
- arch/powerpc/mm/hash_utils_64.c | 68 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
-
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0821556..85c5123 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1733,3 +1733,71 @@ void hash__setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	/* Finally limit subsequent allocations */
- 	memblock_set_current_limit(ppc64_rma_size);
- }
-+
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 5f202a5..8524d91 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -65,6 +65,23 @@ static int __init setup_iommu(char *str)
+ 
+ __setup("iommu=", setup_iommu);
+ 
 +/*
-+ * PAPR says that each reserved virtual address range record
-+ * contains three be32 elements which is of toal 12 bytes.
-+ * First two be32 elements contain the abbreviated virtual
-+ * address (high order 32 bits and low order 32 bits that
-+ * generate the abbreviated virtual address of 64 bits which
-+ * need to be concatenated with 24 bits of 0 at the end) and
-+ * the third be32 element contains the size of the reserved
-+ * virtual address range as number of consecutive 4K pages.
++ * iommu_alloc_quiet: string with one driver name
++ * not to print 'iommu_alloc failed' messages for.
 + */
-+struct reserved_va_record {
-+	u32	high_addr;
-+	u32	low_addr;
-+	u32	nr_pages_4K;
-+};
++#define IOMMU_ALLOC_QUIET_LEN	16 /* includes '\0' */
++static char iommu_alloc_quiet[IOMMU_ALLOC_QUIET_LEN];
 +
-+/*
-+ * Linux uses 65 bits (CONTEXT_BITS + ESID_BITS + SID_SHIFT)
-+ * of virtual address. As reserved virtual address comes in
-+ * as an abbreviated form (64 bits) from the device tree, we
-+ * will use a partial address bit mask (65 >> 24) to match it
-+ * for simplicity.
-+ */
-+#define RVA_LESS_BITS		24
-+#define LINUX_VA_BITS		(CONTEXT_BITS + ESID_BITS + SID_SHIFT)
-+#define PARTIAL_LINUX_VA_MASK	((1ULL << (LINUX_VA_BITS - RVA_LESS_BITS)) - 1)
-+
-+static int __init validate_reserved_va_range(void)
++static int __init setup_iommu_alloc_quiet(char *str)
 +{
-+	struct reserved_va_record rva;
-+	struct device_node *np;
-+	int records, i;
-+	u64 vaddr;
-+
-+	np = of_find_node_by_name(NULL, "vdevice");
-+	if (!np)
-+		return -ENODEV;
-+
-+	records = of_property_count_elems_of_size(np,
-+			"ibm,reserved-virtual-addresses",
-+				sizeof(struct reserved_va_record));
-+	if (records < 0)
-+		return records;
-+
-+	for (i = 0; i < records; i++) {
-+		of_property_read_u32_index(np,
-+			"ibm,reserved-virtual-addresses",
-+				3 * i, &rva.high_addr);
-+		of_property_read_u32_index(np,
-+			"ibm,reserved-virtual-addresses",
-+				3 * i + 1, &rva.low_addr);
-+		of_property_read_u32_index(np,
-+			"ibm,reserved-virtual-addresses",
-+				3 * i + 2, &rva.nr_pages_4K);
-+
-+		vaddr =  rva.high_addr;
-+		vaddr =  (vaddr << 32) | rva.low_addr;
-+		if (unlikely(!(vaddr & ~PARTIAL_LINUX_VA_MASK))) {
-+			pr_err("RVA [0x%llx000000 (0x%x in bytes)] overlapped\n",
-+					vaddr, rva.nr_pages_4K * 4096);
-+			BUG();
-+		}
-+	}
-+	of_node_put(np);
-+	return 0;
++	strncpy(iommu_alloc_quiet, str, IOMMU_ALLOC_QUIET_LEN);
++	iommu_alloc_quiet[IOMMU_ALLOC_QUIET_LEN - 1] = '\0';
++	pr_info("iommu_alloc_quiet: driver '%s'\n", iommu_alloc_quiet);
++	return 1;
 +}
-+device_initcall(validate_reserved_va_range);
++
++__setup("iommu_alloc_quiet=", setup_iommu_alloc_quiet);
++
+ static DEFINE_PER_CPU(unsigned int, iommu_pool_hash);
+ 
+ /*
+@@ -479,8 +496,8 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 
+ 		/* Handle failure */
+ 		if (unlikely(entry == DMA_ERROR_CODE)) {
+-			if (!(attrs & DMA_ATTR_NO_WARN) &&
+-			    printk_ratelimit())
++			if (strncmp(iommu_alloc_quiet, dev->driver->name, IOMMU_ALLOC_QUIET_LEN) &&
++			    !(attrs & DMA_ATTR_NO_WARN) && printk_ratelimit())
+ 				dev_info(dev, "iommu_alloc failed, tbl %p "
+ 					 "vaddr %lx npages %lu\n", tbl, vaddr,
+ 					 npages);
+@@ -777,8 +794,8 @@ dma_addr_t iommu_map_page(struct device *dev, struct iommu_table *tbl,
+ 					 mask >> tbl->it_page_shift, align,
+ 					 attrs);
+ 		if (dma_handle == DMA_ERROR_CODE) {
+-			if (!(attrs & DMA_ATTR_NO_WARN) &&
+-			    printk_ratelimit())  {
++			if (strncmp(iommu_alloc_quiet, dev->driver->name, IOMMU_ALLOC_QUIET_LEN) &&
++			    !(attrs & DMA_ATTR_NO_WARN) && printk_ratelimit()) {
+ 				dev_info(dev, "iommu_alloc failed, tbl %p "
+ 					 "vaddr %p npages %d\n", tbl, vaddr,
+ 					 npages);
 -- 
-2.7.4
+1.8.3.1
