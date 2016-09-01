@@ -1,24 +1,46 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sPlkX1y23zDrnC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 11:57:23 +1000 (AEST)
-Date: Thu, 1 Sep 2016 09:57:12 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-security-module <linux-security-module@vger.kernel.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-ima-devel@lists.sourceforge.net, kexec@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATHC v2 5/9] ima: on soft reboot, save the measurement list
-Message-ID: <20160901015712.GA3425@dhcp-128-65.nay.redhat.com>
-References: <1472596811-9596-1-git-send-email-zohar@linux.vnet.ibm.com>
- <1472596811-9596-6-git-send-email-zohar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sPnKL0typzDrn1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 13:09:08 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8132WkB037865
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 23:09:04 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2569u0e4j9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2016 23:09:03 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 1 Sep 2016 13:09:00 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 14D993578056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2016 13:08:58 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8138wCv27459672
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 13:08:58 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8138vG0014404
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Sep 2016 13:08:57 +1000
+Subject: Re: [PATCH 00/13] Add support for perf_arch_regs
+To: Nilay Vaish <nilayvaish@gmail.com>
+References: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <CACbG3094rSX9qfngBPSzetG21_=yW1pdxcAeVZOyNj=AJmdL6Q@mail.gmail.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Thu, 1 Sep 2016 08:38:56 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1472596811-9596-6-git-send-email-zohar@linux.vnet.ibm.com>
+In-Reply-To: <CACbG3094rSX9qfngBPSzetG21_=yW1pdxcAeVZOyNj=AJmdL6Q@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <dff96585-7f0e-5b81-e318-902f5c03bfb8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,209 +50,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Mimi
-
-On 08/30/16 at 06:40pm, Mimi Zohar wrote:
-> From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> 
-> This patch uses the kexec buffer passing mechanism to pass the
-> serialized IMA binary_runtime_measurements to the next kernel.
-> 
-> Changelog v2:
-> - Fix build issue by defining a stub ima_add_kexec_buffer and stub
->   struct kimage when CONFIG_IMA=n and CONFIG_IMA_KEXEC=n. (Fenguang Wu)
-> - removed kexec_add_handover_buffer() checksum argument.
-> - added skip_checksum member to kexec_buf
-> - only register reboot notifier once
-> 
-> Changelog v1:
-> - updated to call IMA functions  (Mimi)
-> - move code from ima_template.c to ima_kexec.c (Mimi)
-> 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-> ---
->  include/linux/ima.h                | 12 ++++++
->  kernel/kexec_file.c                |  4 ++
->  security/integrity/ima/ima_kexec.c | 88 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 104 insertions(+)
-> 
-> diff --git a/include/linux/ima.h b/include/linux/ima.h
-> index 0eb7c2e..7f6952f 100644
-> --- a/include/linux/ima.h
-> +++ b/include/linux/ima.h
-> @@ -11,6 +11,7 @@
->  #define _LINUX_IMA_H
->  
->  #include <linux/fs.h>
-> +#include <linux/kexec.h>
->  struct linux_binprm;
->  
->  #ifdef CONFIG_IMA
-> @@ -23,6 +24,10 @@ extern int ima_post_read_file(struct file *file, void *buf, loff_t size,
->  			      enum kernel_read_file_id id);
->  extern void ima_post_path_mknod(struct dentry *dentry);
->  
-> +#ifdef CONFIG_IMA_KEXEC
-> +extern void ima_add_kexec_buffer(struct kimage *image);
-> +#endif
-> +
->  #else
->  static inline int ima_bprm_check(struct linux_binprm *bprm)
->  {
-> @@ -62,6 +67,13 @@ static inline void ima_post_path_mknod(struct dentry *dentry)
->  
->  #endif /* CONFIG_IMA */
->  
-> +#ifndef CONFIG_IMA_KEXEC
-> +struct kimage;
-> +
-> +static inline void ima_add_kexec_buffer(struct kimage *image)
-> +{}
-> +#endif
-> +
->  #ifdef CONFIG_IMA_APPRAISE
->  extern void ima_inode_post_setattr(struct dentry *dentry);
->  extern int ima_inode_setxattr(struct dentry *dentry, const char *xattr_name,
-> diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-> index 0e90d14..9585861 100644
-> --- a/kernel/kexec_file.c
-> +++ b/kernel/kexec_file.c
-> @@ -19,6 +19,7 @@
->  #include <linux/mutex.h>
->  #include <linux/list.h>
->  #include <linux/fs.h>
-> +#include <linux/ima.h>
->  #include <crypto/hash.h>
->  #include <crypto/sha.h>
->  #include <linux/syscalls.h>
-> @@ -200,6 +201,9 @@ kimage_file_prepare_segments(struct kimage *image, int kernel_fd, int initrd_fd,
->  		return ret;
->  	image->kernel_buf_len = size;
->  
-> +	/* IMA needs to pass the measurement list to the next kernel. */
-> +	ima_add_kexec_buffer(image);
-> +
->  	/* Call arch image probe handlers */
->  	ret = arch_kexec_kernel_image_probe(image, image->kernel_buf,
->  					    image->kernel_buf_len);
-> diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
-> index e77ca9d..0e4d0db 100644
-> --- a/security/integrity/ima/ima_kexec.c
-> +++ b/security/integrity/ima/ima_kexec.c
-> @@ -23,6 +23,11 @@
->  
->  #include "ima.h"
->  
-> +#ifdef CONFIG_IMA_KEXEC
-> +/* Physical address of the measurement buffer in the next kernel. */
-> +static unsigned long kexec_buffer_load_addr;
-> +static size_t kexec_segment_size;
-> +
->  static int ima_dump_measurement_list(unsigned long *buffer_size, void **buffer,
->  				     unsigned long segment_size)
->  {
-> @@ -75,6 +80,89 @@ out:
->  }
->  
->  /*
-> + * Called during kexec execute so that IMA can save the measurement list.
-> + */
-> +static int ima_update_kexec_buffer(struct notifier_block *self,
-> +				   unsigned long action, void *data)
-> +{
-> +	void *kexec_buffer = NULL;
-> +	size_t kexec_buffer_size;
-> +	int ret;
-> +
-> +	if (!kexec_in_progress)
-> +		return NOTIFY_OK;
-> +
-> +	kexec_buffer_size = ima_get_binary_runtime_size();
-> +	if (kexec_buffer_size >
-> +	    (kexec_segment_size - sizeof(struct ima_kexec_hdr))) {
-> +		pr_err("Binary measurement list grew too large.\n");
-> +		goto out;
-> +	}
-> +
-> +	ima_dump_measurement_list(&kexec_buffer_size, &kexec_buffer,
-> +				  kexec_segment_size);
-> +	if (!kexec_buffer) {
-> +		pr_err("Not enough memory for the kexec measurement buffer.\n");
-> +		goto out;
-> +	}
-> +	ret = kexec_update_segment(kexec_buffer, kexec_buffer_size,
-> +				   kexec_buffer_load_addr, kexec_segment_size);
-> +	if (ret)
-> +		pr_err("Error updating kexec buffer: %d\n", ret);
-> +out:
-> +	return NOTIFY_OK;
-> +}
-> +
-> +struct notifier_block update_buffer_nb = {
-> +	.notifier_call = ima_update_kexec_buffer,
-> +};
-> +
-> +/*
-> + * Called during kexec_file_load so that IMA can add a segment to the kexec
-> + * image for the measurement list for the next kernel.
-> + */
-> +void ima_add_kexec_buffer(struct kimage *image)
-> +{
-> +	static int registered = 0;
-> +	struct kexec_buf kbuf = { .image = image, .buf_align = PAGE_SIZE,
-> +				  .buf_min = 0, .buf_max = ULONG_MAX,
-> +				  .top_down = true, .skip_checksum = true };
-> +	int ret;
-> +
-> +	if (!kexec_can_hand_over_buffer())
-> +		return;
-> +
-> +	kexec_segment_size = ALIGN(ima_get_binary_runtime_size() + PAGE_SIZE,
-> +				   PAGE_SIZE);
-> +
-> +	if (kexec_segment_size >= (ULONG_MAX - sizeof(long))) {
-> +		pr_err("Binary measurement list too large.\n");
-> +		return;
-> +	}
-
-Now we added a limitation that total segment size can not be larger than
-half of totalram. see kernel/kexec_core.c sanity_check_segment_list()
-
-So can it fail early here if kexec_segment_size is over half of total
-ram?
-
-> +
-> +	/* Ask not to checksum the segment, we will update it later. */
-> +	kbuf.buffer = NULL;
-> +	kbuf.bufsz = 0;
-> +	kbuf.memsz = kexec_segment_size;
-> +	ret = kexec_add_handover_buffer(&kbuf);
-> +	if (ret) {
-> +		pr_err("Error passing over kexec measurement buffer.\n");
-> +		return;
-> +	}
-> +	kexec_buffer_load_addr = kbuf.mem;
-> +
-> +	pr_debug("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
-> +		 kexec_buffer_load_addr);
-> +
-> +	if (registered)
-> +		return;
-> +
-> +	register_reboot_notifier(&update_buffer_nb);
-> +	registered = 1;
-> +}
-> +#endif /* IMA_KEXEC */
-> +
-> +/*
->   * Restore the measurement list from the previous kernel.
->   */
->  void ima_load_kexec_buffer(void)
-> -- 
-> 2.1.0
-> 
 
 
-Thanks
-Dave
+On Tuesday 30 August 2016 09:31 PM, Nilay Vaish wrote:
+> On 28 August 2016 at 16:00, Madhavan Srinivasan
+> <maddy@linux.vnet.ibm.com> wrote:
+>> Patchset to extend PERF_SAMPLE_REGS_INTR to include
+>> platform specific PMU registers.
+>>
+>> Patchset applies cleanly on tip:perf/core branch
+>>
+>> It's a perennial request from hardware folks to be able to
+>> see the raw values of the pmu registers. Partly it's so that
+>> they can verify perf is doing what they want, and some
+>> of it is that they're interested in some of the more obscure
+>> info that isn't plumbed out through other perf interfaces.
+>>
+>> Over the years internally we have used various hack to get
+>> the requested data out but this is an attempt to use a
+>> somewhat standard mechanism (using PERF_SAMPLE_REGS_INTR).
+>>
+>> This would also be helpful for those of us working on the perf
+>> hardware backends, to be able to verify that we're programming
+>> things correctly, without resorting to debug printks etc.
+>>
+>> Mechanism proposed:
+>>
+>> 1)perf_regs structure is extended with a perf_arch_regs structure
+>> which each arch/ can populate with their specific platform
+>> registers to sample on each perf interrupt and an arch_regs_mask
+>> variable, which is for perf tool to know about the perf_arch_regs
+>> that are supported.
+>>
+>> 2)perf/core func perf_sample_regs_intr() extended to update
+>> the perf_arch_regs structure and the perf_arch_reg_mask. Set of new
+>> support functions added perf_get_arch_regs_mask() and
+>> perf_get_arch_reg() to aid the updates from arch/ side.
+>>
+>> 3) perf/core funcs perf_prepare_sample() and perf_output_sample()
+>> are extended to support the update for the perf_arch_regs_mask and
+>> perf_arch_regs in the sample
+>>
+>> 4)perf/core func perf_output_sample_regs() extended to dump
+>> the arch_regs to the output sample.
+>>
+>> 5)Finally, perf tool side is updated to include a new element
+>> "arch_regs_mask" in the "struct regs_dump", event sample funcs
+>> and print functions are updated to support perf_arch_regs.
+>>
+> I read the patch series and I have one suggestion to make.  I think we
+> should not use 'arch regs' to refer to these pmu registers.  I think
+Reason is that they are arch specific pmu regs. But I guess we can go with
+pmu_regs also. And having a "pregs" as option to list in -I? will be fine?
+(patch 13 in the patch series)
+
+
+Maddy
+
+> architectural registers typically refer to the ones that hold the
+> state of the process.  Can we replace arch_regs by pmu_regs, or some
+> other choice?
+>
+> Thanks
+> Nilay
+>
