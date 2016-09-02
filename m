@@ -1,33 +1,50 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <zohar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sQdYJ0mj8zDrfR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2016 22:22:27 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u82CDlAJ108642
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2016 08:22:24 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2575vwctpk-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sQfvT0Km9zDrpD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2016 23:23:15 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u82DMa2o004249
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2016 09:23:13 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2576nt508y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Sep 2016 08:22:24 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Sep 2016 09:23:12 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 2 Sep 2016 06:22:23 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc/mm: Don't alias user region to other regions
- below PAGE_OFFSET
-In-Reply-To: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
-References: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
-Date: Fri, 02 Sep 2016 17:52:16 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87vayeqyo7.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Fri, 2 Sep 2016 23:23:09 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id BA7512BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2016 23:23:06 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u82DN6qd60096634
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2016 23:23:06 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u82DN5uL006362
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Sep 2016 23:23:06 +1000
+Subject: Re: [PATHC v2 5/9] ima: on soft reboot, save the measurement list
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Dave Young <dyoung@redhat.com>
+Cc: linux-security-module <linux-security-module@vger.kernel.org>, Thiago
+ Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-ima-devel@lists.sourceforge.net, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Andrew Morton
+ <akpm@linux-foundation.org>
+Date: Fri, 02 Sep 2016 09:22:59 -0400
+In-Reply-To: <20160901015712.GA3425@dhcp-128-65.nay.redhat.com>
+References: <1472596811-9596-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <1472596811-9596-6-git-send-email-zohar@linux.vnet.ibm.com>
+ <20160901015712.GA3425@dhcp-128-65.nay.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1472822579.3669.13.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,98 +54,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Dave,
 
-Hi Paul,
+On Thu, 2016-09-01 at 09:57 +0800, Dave Young wrote:
+> On 08/30/16 at 06:40pm, Mimi Zohar wrote:
 
-Really nice catch. Was this found by code analysis or do we have any
-reported issue around this ?
+> > + * Called during kexec_file_load so that IMA can add a segment to the kexec
+> > + * image for the measurement list for the next kernel.
+> > + */
+> > +void ima_add_kexec_buffer(struct kimage *image)
+> > +{
+> > +	static int registered = 0;
+> > +	struct kexec_buf kbuf = { .image = image, .buf_align = PAGE_SIZE,
+> > +				  .buf_min = 0, .buf_max = ULONG_MAX,
+> > +				  .top_down = true, .skip_checksum = true };
+> > +	int ret;
+> > +
+> > +	if (!kexec_can_hand_over_buffer())
+> > +		return;
+> > +
+> > +	kexec_segment_size = ALIGN(ima_get_binary_runtime_size() + PAGE_SIZE,
+> > +				   PAGE_SIZE);
+> > +
+> > +	if (kexec_segment_size >= (ULONG_MAX - sizeof(long))) {
+> > +		pr_err("Binary measurement list too large.\n");
+> > +		return;
+> > +	}
+> 
+> Now we added a limitation that total segment size can not be larger than
+> half of totalram. see kernel/kexec_core.c sanity_check_segment_list()
+> 
+> So can it fail early here if kexec_segment_size is over half of total
+> ram?
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+Sure, I'll include this change in the next post.
 
-> In commit c60ac5693c47 ("powerpc: Update kernel VSID range", 2013-03-13)
-> we lost a check on the region number (the top four bits of the effective
-> address) for addresses below PAGE_OFFSET.  That commit replaced a check
-> that the top 18 bits were all zero with a check that bits 46 - 59 were
-> zero (performed for all addresses, not just user addresses).
-
-To make review easy for others, here is the relevant diff from that commit.
-
- _GLOBAL(slb_allocate_realmode)
--       /* r3 = faulting address */
-+       /*
-+        * check for bad kernel/user address
-+        * (ea & ~REGION_MASK) >= PGTABLE_RANGE
-+        */
-+       rldicr. r9,r3,4,(63 - 46 - 4)
-+       bne-    8f
- 
-        srdi    r9,r3,60                /* get region */
-
-......
-And because we were doing the above check, I removed
-.........
-
- BEGIN_FTR_SECTION
-        b       slb_finish_load
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
-        b       slb_finish_load_1T
- 
--0:     /* user address: proto-VSID = context << 15 | ESID. First check
--        * if the address is within the boundaries of the user region
--        */
--       srdi.   r9,r10,USER_ESID_BITS
--       bne-    8f                      /* invalid ea bits set */
--
--
-+0:
-
-
->
-> This means that userspace can access an address like 0x1000_0xxx_xxxx_xxxx
-> and we will insert a valid SLB entry for it.  The VSID used will be the
-> same as if the top 4 bits were 0, but the page size will be some random
-> value obtained by indexing beyond the end of the mm_ctx_high_slices_psize
-> array in the paca.  If that page size is the same as would be used for
-> region 0, then userspace just has an alias of the region 0 space.  If the
-> page size is different, then no HPTE will be found for the access, and
-> the process will get a SIGSEGV (since hash_page_mm() will refuse to create
-> a HPTE for the bogus address).
->
-> The access beyond the end of the mm_ctx_high_slices_psize can be at most
-> 5.5MB past the array, and so will be in RAM somewhere.  Since the access
-> is a load performed in real mode, it won't fault or crash the kernel.
-> At most this bug could perhaps leak a little bit of information about
-> blocks of 32 bytes of memory located at offsets of i * 512kB past the
-> paca->mm_ctx_high_slices_psize array, for 1 <= i <= 11.
-
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
->
-> Cc: stable@vger.kernel.org # v3.10+
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> ---
->  arch/powerpc/mm/slb_low.S | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-> index dfdb90c..9f19834 100644
-> --- a/arch/powerpc/mm/slb_low.S
-> +++ b/arch/powerpc/mm/slb_low.S
-> @@ -113,7 +113,12 @@ BEGIN_FTR_SECTION
->  END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
->  	b	slb_finish_load_1T
->
-> -0:
-> +0:	/*
-> +	 * For userspace addresses, make sure this is region 0.
-> +	 */
-> +	cmpdi	r9, 0
-> +	bne	8f
-> +
->  	/* when using slices, we extract the psize off the slice bitmaps
->  	 * and then we need to get the sllp encoding off the mmu_psize_defs
->  	 * array.
-> -- 
-> 2.7.4
+Mimi
