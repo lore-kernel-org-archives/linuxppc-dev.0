@@ -1,27 +1,52 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <lurodriguez@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sQv830HQhzDrnx
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Sep 2016 08:34:58 +1000 (AEST)
-Message-ID: <1472854611.2313.5.camel@kernel.crashing.org>
-Subject: Re: [Ksummit-discuss] [CORE TOPIC] (group) maintainership models
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>, Arnd Bergmann
- <arnd@arndb.de>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Vinod Koul <vinod.koul@intel.com>, Mark Brown <broonie@kernel.org>,
- ksummit-discuss@lists.linuxfoundation.org, Dave Airlie <airlied@linux.ie>,
- "Nikula, Jani" <jani.nikula@linux.intel.com>, Grant Likely
- <grant.likely@linaro.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Sat, 03 Sep 2016 08:16:51 +1000
-In-Reply-To: <CA+55aFzw-KkQOhVJG+c-WEFA=6o5aXy=yU9KXQ7jwy-xy--d9Q@mail.gmail.com>
-References: <CAKMK7uEuqLLf2bCyB-sAuu5WvVA1Kp7Jvc33k3um5DfdQr4eyg@mail.gmail.com>
- <20160902104619.GD9355@localhost>
- <CA+55aFwSpNrOuOzaR5hh0A1XvuTu0=xVbE_CV1RVf9GMrTPDNQ@mail.gmail.com>
- <7359509.5sppVSLXcK@wuerfel>
- <CA+55aFzw-KkQOhVJG+c-WEFA=6o5aXy=yU9KXQ7jwy-xy--d9Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sQx1T06q9zDrht
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Sep 2016 09:59:24 +1000 (AEST)
+Date: Sat, 3 Sep 2016 01:59:16 +0200
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Felix Fietkau <nbd@nbd.name>,
+ David Woodhouse <dwmw2@infradead.org>,
+ =?iso-8859-1?Q?J=F6rg_R=F6del?= <jroedel@suse.de>,
+ Joerg Roedel <joro@8bytes.org>, Roman Pen <r.peniaev@gmail.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Ming Lei <ming.lei@canonical.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Marek <mmarek@suse.com>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Vikram Mulukutla <markivx@codeaurora.org>,
+ Stephen Boyd <stephen.boyd@linaro.org>, zohar@linux.vnet.ibm.com,
+ Mark Brown <broonie@kernel.org>, Takashi Iwai <tiwai@suse.de>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Christian Lamparter <chunkeey@googlemail.com>, hauke@hauke-m.de,
+ Josh Boyer <jwboyer@fedoraproject.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, jslaby@suse.com,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Andy Lutomirski <luto@amacapital.net>,
+ Wu Fengguang <fengguang.wu@intel.com>, rpurdie@rpsys.net,
+ j.anaszewski@samsung.com, Abhay_Salunke@dell.com,
+ Julia Lawall <Julia.Lawall@lip6.fr>, Gilles.Muller@lip6.fr,
+ nicolas.palix@imag.fr, Tom Gundersen <teg@jklm.no>,
+ David Howells <dhowells@redhat.com>, Alessandro Rubini <rubini@gnudd.com>,
+ Kevin Cernekee <cernekee@gmail.com>,
+ Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
+ Thierry Martinez <martinez@nsup.org>, cocci@systeme.lip6.fr,
+ linux-serial@vger.kernel.org, linux-doc@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 2/5] firmware: annotate thou shalt not request fw on
+ init or probe
+Message-ID: <20160902235916.GO3296@wotan.suse.de>
+References: <1466117661-22075-1-git-send-email-mcgrof@kernel.org>
+ <1466117661-22075-3-git-send-email-mcgrof@kernel.org>
+ <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
+ <20160824203901.GT3296@wotan.suse.de>
+ <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
+ <20160825194133.GC3296@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160825194133.GC3296@wotan.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +56,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-09-02 at 13:26 -0700, Linus Torvalds wrote:
-> On Fri, Sep 2, 2016 at 1:06 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+On Thu, Aug 25, 2016 at 09:41:33PM +0200, Luis R. Rodriguez wrote:
+> On Thu, Aug 25, 2016 at 01:05:44PM +0200, Daniel Vetter wrote:
+> > On Wed, Aug 24, 2016 at 10:39 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> > Some users want a fully running gfx stack 2s after power-on. There's
+> > not even enough time to load an uefi or vga driver first. i915
+> > directly initializes the gpu from power-on state on those.
+> 
+> I see.. thanks.
+> 
+> > >> I think what would work is loading the different subsystems of the
+> > >> driver in parallel (we already do that largely)
+> > >
+> > > Init level stuff is actually pretty synchronous, and in fact both
+> > > init and probe are called serially. There are a few subsystems which
+> > > have been doing things a bit differently, but these are exceptions.
+> > >
+> > > When you say we already do this largely, can you describe a bit more
+> > > precisely what you mean ?
 > > 
+> > Oh, this isn't subsystems as in linux device/driver model, but
+> > different parts within the driver. We fire up a bunch of struct work
+> > to get various bits done asynchronously.
+> 
+> Thanks for the clarification.
+
+<-- snip -->
+
+> > One of the proposals which would have worked for us died a while back:
 > > 
-> > When I once looked, I thought all drivers using NO_IRQ were
-> > specific
-> > to powerpc or one of the less common architectures.
-
-We deprecated NO_IRQ ages ago, it's 0 like it should be, but yes we may
-have forgotten to "cleanup" the old users.
- 
-> powerpc definitely does seem to be the biggest case, with about half
-> the instances of NO_IRQ being under arch/powerpc/ (and a few more in
-> ppc-specific drivers).
+> > https://lkml.org/lkml/2014/6/15/47
 > 
-> Adding the powerpc maintainers to the list - because it would really
-> be nice to get rid of it, or at least make it *so* rare that we don't
-> have people re-introducing it again because they thought it was the
-> right thing to do.
-
-Right. Originally it was -1 for us which causes the whole problem. I
-changed it to be 0 after doing the whole irq domain remapping thing.
-That was a loooong time ago.
-
-> A fair amount of of it could even be done by some trivial scripting.
-> Something like
+> Interesting, the problem stated here, which comes from the fact (as clarified
+> above) the rootfs comes up only *after* we run do_initcalls() as such there are
+> possible theoretical races even with request_firmware_nowait() -- as such that
+> justifies even more the SmPL grammar rule to include even request_firmware_nowait()
+> on probe / init as this patch has.
 > 
->   git grep -wl NO_IRQ arch/powerpc/ | while read a
->   do
->       sed 's/(\([a-z_]*irq\) != NO_IRQ)/(\1)/' < $a > $a.new
->       sed 's/(\([a-z_]*irq\) == NO_IRQ)/(!\1)/' < $a.new > $a
->   done
-> 
-> does fix at least a few of the cases. It still leaves several
-> assignments and "return NO_IRQ;" statements, but a few more
-> sed-scripts would take care of most of it. Then remove the #define,
-> and do a full build to find any straggling cases.
-> 
-> Michael? Ben?
+> Anyway yeah that patch has good intentions but its wrong for a slew of reasons.
+> The problem is the same as discussed with Bjorn recently. The solution
+> discussed is that since only userspace knows when the *real* rootfs is ready
+> (because of slew of reasons) the best we can do is have an event issued by
+> userspace to inform us of that.
 
-It can just be replaced with "0" in all powerpc related cases yes.
+OK I have something I think we can build upon for this. Will send RFC.
 
-Cheers,
-Ben.
+  Luis
