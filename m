@@ -1,27 +1,41 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lurodriguez@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sQmBf3JcLzDrnt
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Sep 2016 03:21:46 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id cf3so5781639pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Sep 2016 10:21:46 -0700 (PDT)
-Date: Fri, 2 Sep 2016 10:21:43 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Colin King <colin.king@canonical.com>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: fsl_esai: fix spelling mistake "Transmition" ->
- "Transmission"
-Message-ID: <20160902172142.GA3180@Asurada-Nvidia>
-References: <20160902140723.26593-1-colin.king@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sQnd43JHvzDrp2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Sep 2016 04:26:15 +1000 (AEST)
+Date: Fri, 2 Sep 2016 20:26:06 +0200
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: mcgrof@kernel.org, ming.lei@canonical.com, akpm@linux-foundation.org,
+ gregkh@linuxfoundation.org, dmitry.torokhov@gmail.com,
+ linux-doc@vger.kernel.org, Gilles.Muller@lip6.fr, tiwai@suse.de,
+ Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Alessandro Rubini <rubini@gnudd.com>, stephen.boyd@linaro.org,
+ bjorn.andersson@linaro.org, teg@jklm.no, chunkeey@googlemail.com,
+ cocci@systeme.lip6.fr, jwboyer@fedoraproject.org,
+ Jonathan Corbet <corbet@lwn.net>, Kevin Cernekee <cernekee@gmail.com>,
+ Thierry Martinez <martinez@nsup.org>, linux-serial@vger.kernel.org,
+ jslaby@suse.com, zohar@linux.vnet.ibm.com,
+ arend.vanspriel@broadcom.com, linuxppc-dev@lists.ozlabs.org,
+ Kees Cook <keescook@chromium.org>, hauke@hauke-m.de,
+ nicolas.palix@imag.fr, Abhay_Salunke@dell.com, Julia.Lawall@lip6.fr,
+ broonie@kernel.org, j.anaszewski@samsung.com, kvalo@codeaurora.org,
+ dhowells@redhat.com, dwmw2@infradead.org, markivx@codeaurora.org,
+ daniel.wagner@bmw-carit.de, linux-kernel@vger.kernel.org,
+ luto@amacapital.net, mmarek@suse.com, rpurdie@rpsys.net,
+ johannes@sipsolutions.net, fengguang.wu@intel.com,
+ torvalds@linux-foundation.org
+Subject: Re: [PATCH v3 2/5] firmware: annotate thou shalt not request fw on
+ init or probe
+Message-ID: <20160902182606.GN3296@wotan.suse.de>
+References: <1466117661-22075-1-git-send-email-mcgrof@kernel.org>
+ <1471999507-913-1-git-send-email-mcgrof@kernel.org>
+ <1471999507-913-3-git-send-email-mcgrof@kernel.org>
+ <20160824081738.GA8991@visitor2.iram.es>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160902140723.26593-1-colin.king@canonical.com>
+In-Reply-To: <20160824081738.GA8991@visitor2.iram.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +45,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 02, 2016 at 03:07:23PM +0100, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
+On Wed, Aug 24, 2016 at 10:17:38AM +0200, Gabriel Paubert wrote:
+> On Tue, Aug 23, 2016 at 05:45:04PM -0700, mcgrof@kernel.org wrote:
 > 
-> Trivial fix to spelling mistakes in dev_dbg messages
+> [snip]
+> > ---
+> >  Documentation/firmware_class/README                |  20 ++++
+> >  drivers/base/Kconfig                               |   2 +-
+> >  .../request_firmware-avoid-init-probe-init.cocci   | 130 +++++++++++++++++++++
+> >  3 files changed, 151 insertions(+), 1 deletion(-)
+> >  create mode 100644 scripts/coccinelle/api/request_firmware-avoid-init-probe-init.cocci
+> > 
+> > diff --git a/Documentation/firmware_class/README b/Documentation/firmware_class/README
+> > index cafdca8b3b15..056d1cb9d365 100644
+> > --- a/Documentation/firmware_class/README
+> > +++ b/Documentation/firmware_class/README
+> > @@ -93,6 +93,26 @@
+> >     user contexts to request firmware asynchronously, but can't be called
+> >     in atomic contexts.
+> >  
+> > +Requirements:
+> > +=============
+> > +
+> > +You should avoid at all costs requesting firmware on both init and probe paths
+> > +of your device driver. Reason for this is the complexity needed to ensure a
+> > +firmware will be available for a driver early in boot through different
+> > +build configurations. Consider built-in drivers needing firmware early, or
+> > +consider a driver assuming it will only get firmware after pivot_root().
+> > +
+> > +Drivers that really need firmware early should use stuff the firmware in
 > 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Minor grammatical nit: s/use//
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Fixed, thanks.
 
-Thanks
-
-> ---
->  sound/soc/fsl/fsl_esai.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-> index 26a90e1..e927955 100644
-> --- a/sound/soc/fsl/fsl_esai.c
-> +++ b/sound/soc/fsl/fsl_esai.c
-> @@ -77,19 +77,19 @@ static irqreturn_t esai_isr(int irq, void *devid)
->  	regmap_read(esai_priv->regmap, REG_ESAI_ESR, &esr);
->  
->  	if (esr & ESAI_ESR_TINIT_MASK)
-> -		dev_dbg(&pdev->dev, "isr: Transmition Initialized\n");
-> +		dev_dbg(&pdev->dev, "isr: Transmission Initialized\n");
->  
->  	if (esr & ESAI_ESR_RFF_MASK)
->  		dev_warn(&pdev->dev, "isr: Receiving overrun\n");
->  
->  	if (esr & ESAI_ESR_TFE_MASK)
-> -		dev_warn(&pdev->dev, "isr: Transmition underrun\n");
-> +		dev_warn(&pdev->dev, "isr: Transmission underrun\n");
->  
->  	if (esr & ESAI_ESR_TLS_MASK)
->  		dev_dbg(&pdev->dev, "isr: Just transmitted the last slot\n");
->  
->  	if (esr & ESAI_ESR_TDE_MASK)
-> -		dev_dbg(&pdev->dev, "isr: Transmition data exception\n");
-> +		dev_dbg(&pdev->dev, "isr: Transmission data exception\n");
->  
->  	if (esr & ESAI_ESR_TED_MASK)
->  		dev_dbg(&pdev->dev, "isr: Transmitting even slots\n");
-> -- 
-> 2.9.3
-> 
+  Luis
