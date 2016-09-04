@@ -1,30 +1,35 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sRfk14zj5zDrfR
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Sep 2016 14:18:32 +1000 (AEST)
-Date: Sun, 4 Sep 2016 07:18:22 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Fam Zheng <famz@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- Keith Busch <keith.busch@intel.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
- Brian Norris <computersforpeace@gmail.com>,
- Paul Mackerras <paulus@samba.org>, linux-mtd@lists.infradead.org,
- "Ed L. Cashin" <ed.cashin@acm.org>, Jens Axboe <axboe@kernel.dk>,
- Minchan Kim <minchan@kernel.org>,
- virtualization@lists.linux-foundation.org,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Nitin Gupta <ngupta@vflare.org>, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 09/15] virtio-blk: Pass attribute group to device_add_disk
-Message-ID: <20160904041822.wxab7bsq4pnj4spr@redhat.com>
-References: <1471418115-3654-1-git-send-email-famz@redhat.com>
- <1471418115-3654-10-git-send-email-famz@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sRr0b2vKYzDrfR
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Sep 2016 21:16:47 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u84BCTeb081133
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 4 Sep 2016 07:16:44 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 258btxtdf2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Sep 2016 07:16:44 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 4 Sep 2016 05:16:43 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH 3/3] powerpc/mm: Speed up computation of base and actual
+ page size for a HPTE
+In-Reply-To: <20160902115055.GC12433@fergus.ozlabs.ibm.com>
+References: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
+ <20160902115055.GC12433@fergus.ozlabs.ibm.com>
+Date: Sun, 04 Sep 2016 16:46:36 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1471418115-3654-10-git-send-email-famz@redhat.com>
+Content-Type: text/plain
+Message-Id: <87mvjnrk2z.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,103 +39,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 17, 2016 at 03:15:09PM +0800, Fam Zheng wrote:
-> Previously after device_add_disk returns, the KOBJ_ADD uevent is already
-> emitted. Adding attributes after that is a poor usage of kobject, and
-> in practice may result in race conditions with userspace, for
-> example udev checks availability of certain attributes and initializes
-> /dev entries conditionally.
-> 
-> device_add_disk can handle adding attribute group better, so use it.
-> 
-> Meanwhile, handle error of device_add_disk.
-> 
-> Signed-off-by: Fam Zheng <famz@redhat.com>
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-Feel free to merge this with the rest of patchset
-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+> +/*
+> + * Fill in the hpte_page_sizes[] array.
+> + * We go through the mmu_psize_defs[] array looking for all the
+> + * supported base/actual page size combinations.  Each combination
+> + * has a unique pagesize encoding (penc) value in the low bits of
+> + * the LP field of the HPTE.  For actual page sizes less than 1MB,
+> + * some of the upper LP bits are used for RPN bits, meaning that
+> + * we need to fill in several entries in hpte_page_sizes[].
+> + */
 
 
+May be can put the details of upper LP bits used for RPN here. ie, add
+the below in the comment ?
 
-> ---
->  drivers/block/virtio_blk.c | 38 +++++++++++++++++++++++++++-----------
->  1 file changed, 27 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
-> index 4564df5..ff60d82 100644
-> --- a/drivers/block/virtio_blk.c
-> +++ b/drivers/block/virtio_blk.c
-> @@ -522,10 +522,10 @@ virtblk_cache_type_show(struct device *dev, struct device_attribute *attr,
->  	return snprintf(buf, 40, "%s\n", virtblk_cache_types[writeback]);
->  }
->  
-> -static const struct device_attribute dev_attr_cache_type_ro =
-> +static struct device_attribute dev_attr_cache_type_ro =
->  	__ATTR(cache_type, S_IRUGO,
->  	       virtblk_cache_type_show, NULL);
-> -static const struct device_attribute dev_attr_cache_type_rw =
-> +static struct device_attribute dev_attr_cache_type_rw =
->  	__ATTR(cache_type, S_IRUGO|S_IWUSR,
->  	       virtblk_cache_type_show, virtblk_cache_type_store);
->  
-> @@ -550,6 +550,26 @@ static struct blk_mq_ops virtio_mq_ops = {
->  static unsigned int virtblk_queue_depth;
->  module_param_named(queue_depth, virtblk_queue_depth, uint, 0444);
->  
-> +static struct attribute *virtblk_attrs_ro[] = {
-> +	&dev_attr_serial.attr,
-> +	&dev_attr_cache_type_ro.attr,
-> +	NULL
-> +};
+		/*
+		 * encoding bits per actual page size
+		 *        PTE LP     actual page size
+		 *    rrrr rrrz		>=8KB
+		 *    rrrr rrzz		>=16KB
+		 *    rrrr rzzz		>=32KB
+		 *    rrrr zzzz		>=64KB
+		 * .......
+		 */
+
+
+> +static void init_hpte_page_sizes(void)
+> +{
+> +	long int ap, bp;
+> +	long int shift, penc;
 > +
-> +static struct attribute *virtblk_attrs_rw[] = {
-> +	&dev_attr_serial.attr,
-> +	&dev_attr_cache_type_rw.attr,
-> +	NULL
-> +};
+> +	for (bp = 0; bp < MMU_PAGE_COUNT; ++bp) {
+> +		if (!mmu_psize_defs[bp].shift)
+> +			continue;	/* not a supported page size */
+> +		for (ap = bp; ap < MMU_PAGE_COUNT; ++ap) {
+> +			penc = mmu_psize_defs[bp].penc[ap];
+> +			if (penc == -1)
+> +				continue;
+> +			shift = mmu_psize_defs[ap].shift - LP_SHIFT;
+> +			if (shift <= 0)
+> +				continue;	/* should never happen */
+> +			while (penc < (1 << LP_BITS)) {
+> +				hpte_page_sizes[penc] = (ap << 4) | bp;
+> +				penc += 1 << shift;
+> +			}
+
+Can you add a comment around that while loop ? ie something like.
+/*
+ * if we are using all LP_BITs in penc, fill the array such that we
+ * replicate the ap and bp information, ignoring those bits. They will
+ * be filled by rpn bits in hpte.
+ */
+
+
+> +		}
+> +	}
+> +}
 > +
-> +static struct attribute_group virtblk_attr_group_ro = {
-> +	.attrs		= virtblk_attrs_ro,
-> +};
-> +
-> +static struct attribute_group virtblk_attr_group_rw = {
-> +	.attrs		= virtblk_attrs_rw,
-> +};
-> +
->  static int virtblk_probe(struct virtio_device *vdev)
+>  static void __init htab_init_page_sizes(void)
 >  {
->  	struct virtio_blk *vblk;
-> @@ -560,6 +580,7 @@ static int virtblk_probe(struct virtio_device *vdev)
->  	u32 v, blk_size, sg_elems, opt_io_size;
->  	u16 min_io_size;
->  	u8 physical_block_exp, alignment_offset;
-> +	struct attribute_group *attr_group;
->  
->  	if (!vdev->config->get) {
->  		dev_err(&vdev->dev, "%s failure: config access disabled\n",
-> @@ -719,19 +740,14 @@ static int virtblk_probe(struct virtio_device *vdev)
->  
->  	virtio_device_ready(vdev);
->  
-> -	device_add_disk(&vdev->dev, vblk->disk, NULL);
-> -	err = device_create_file(disk_to_dev(vblk->disk), &dev_attr_serial);
-> -	if (err)
-> -		goto out_del_disk;
-> -
->  	if (virtio_has_feature(vdev, VIRTIO_BLK_F_CONFIG_WCE))
-> -		err = device_create_file(disk_to_dev(vblk->disk),
-> -					 &dev_attr_cache_type_rw);
-> +		attr_group = &virtblk_attr_group_rw;
->  	else
-> -		err = device_create_file(disk_to_dev(vblk->disk),
-> -					 &dev_attr_cache_type_ro);
-> +		attr_group = &virtblk_attr_group_ro;
-> +	err = device_add_disk(&vdev->dev, vblk->disk, attr_group);
->  	if (err)
->  		goto out_del_disk;
+> +	init_hpte_page_sizes();
 > +
->  	return 0;
->  
->  out_del_disk:
+>  	if (!debug_pagealloc_enabled()) {
+>  		/*
+>  		 * Pick a size for the linear mapping. Currently, we only
 > -- 
-> 2.7.4
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+-aneesh
