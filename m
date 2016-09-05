@@ -1,35 +1,17 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sSHhW4s8yzDrht
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Sep 2016 15:04:27 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8552rcD126091
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Sep 2016 01:04:24 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 258c4uj69p-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Sep 2016 01:04:24 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 4 Sep 2016 23:04:23 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH 3/3] powerpc/mm: Speed up computation of base and actual
- page size for a HPTE
-In-Reply-To: <20160902115055.GC12433@fergus.ozlabs.ibm.com>
-References: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
- <20160902115055.GC12433@fergus.ozlabs.ibm.com>
-Date: Mon, 05 Sep 2016 10:34:16 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <877farq6nj.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sSKsn2PvyzDrn7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Sep 2016 16:42:37 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/8xx: add system_reset_exception
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20160905064232.2CEB11A245A@localhost.localdomain>
+Date: Mon,  5 Sep 2016 08:42:31 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,36 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> +static void init_hpte_page_sizes(void)
-> +{
-> +	long int ap, bp;
-> +	long int shift, penc;
-> +
-> +	for (bp = 0; bp < MMU_PAGE_COUNT; ++bp) {
-> +		if (!mmu_psize_defs[bp].shift)
-> +			continue;	/* not a supported page size */
-> +		for (ap = bp; ap < MMU_PAGE_COUNT; ++ap) {
-> +			penc = mmu_psize_defs[bp].penc[ap];
-> +			if (penc == -1)
-> +				continue;
-> +			shift = mmu_psize_defs[ap].shift - LP_SHIFT;
-> +			if (shift <= 0)
-> +				continue;	/* should never happen */
-> +			while (penc < (1 << LP_BITS)) {
-> +				hpte_page_sizes[penc] = (ap << 4) | bp;
-> +				penc += 1 << shift;
-> +			}
-> +		}
-> +	}
-> +}
-> +
+When the watchdog is in NMI mode, the system reset interrupt is
+generated when the watchdog counter expires.
 
-Going through this again, it is confusing . How are we differentiating
-between the below penc values
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_8xx.S | 2 +-
+ arch/powerpc/kernel/traps.c    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
- 0000 000z		>=8KB (z = 1)
- 0000 zzzz		>=64KB (zzzz = 0001)
-
-Those are made up 'z' values.
-
--aneesh
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 43ddaae..f7b8007 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -227,7 +227,7 @@ i##n:								\
+ 			  ret_from_except)
+ 
+ /* System reset */
+-	EXCEPTION(0x100, Reset, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x100, Reset, system_reset_exception, EXC_XFER_STD)
+ 
+ /* Machine check */
+ 	. = 0x200
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 2cb5892..f8fa11b 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -269,7 +269,6 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+ 	force_sig_info(signr, &info, current);
+ }
+ 
+-#ifdef CONFIG_PPC64
+ void system_reset_exception(struct pt_regs *regs)
+ {
+ 	/* See if any machine dependent calls */
+@@ -287,6 +286,7 @@ void system_reset_exception(struct pt_regs *regs)
+ 	/* What should we do here? We could issue a shutdown or hard reset. */
+ }
+ 
++#ifdef CONFIG_PPC64
+ /*
+  * This function is called in real mode. Strictly no printk's please.
+  *
+-- 
+2.1.0
