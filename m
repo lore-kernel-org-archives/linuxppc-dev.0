@@ -3,41 +3,40 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sSmZV3v65zDrq7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sSmZV6JL5zDrpq
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 09:45:54 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u85Nh28S022087
+ u85Nh0fj047233
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Sep 2016 19:45:52 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 259d8ss5ww-1
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 259dr182n3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Sep 2016 19:45:51 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Sep 2016 19:45:52 -0400
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
  Tue, 6 Sep 2016 09:45:49 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D20872BB005C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 09:45:45 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 19E1D2CE805F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 09:45:46 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u85Njj2l37224544
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 09:45:45 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u85NjjAn014455
+ u85Njk1Y50331690
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 09:45:46 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u85NjjRO026520
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 09:45:45 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: wei.guo.simon@gmail.com, mikey@neuling.org
-Subject: [PATCH v4 14/20] selftests/powerpc: Add checks for transactional GPRs
- in signal contexts
-Date: Tue,  6 Sep 2016 09:44:42 +1000
+Subject: [PATCH v4 20/20] powerpc: Remove do_load_up_transact_{fpu,altivec}
+Date: Tue,  6 Sep 2016 09:44:48 +1000
 In-Reply-To: <20160905234448.5866-1-cyrilbur@gmail.com>
 References: <20160905234448.5866-1-cyrilbur@gmail.com>
-Message-Id: <20160905234448.5866-15-cyrilbur@gmail.com>
+Message-Id: <20160905234448.5866-21-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,258 +46,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a thread receives a signal while transactional the kernel creates a
-second context to show the transactional state of the process. This
-test loads some known values and waits for a signal and confirms that
-the expected values are in the signal context.
+Previous rework of TM code leaves these functions unused
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/tm/Makefile        |   7 +-
- .../powerpc/tm/tm-signal-context-chk-gpr.c         |  90 ++++++++++++++++
- tools/testing/selftests/powerpc/tm/tm-signal.S     | 114 +++++++++++++++++++++
- 3 files changed, 210 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal.S
+ arch/powerpc/include/asm/tm.h |  5 -----
+ arch/powerpc/kernel/fpu.S     | 26 --------------------------
+ arch/powerpc/kernel/vector.S  | 25 -------------------------
+ 3 files changed, 56 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 9d301d7..2b6fe8f 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,5 +1,7 @@
-+SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr
-+
- TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
--	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
-+	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
+diff --git a/arch/powerpc/include/asm/tm.h b/arch/powerpc/include/asm/tm.h
+index c22d704..82e06ca 100644
+--- a/arch/powerpc/include/asm/tm.h
++++ b/arch/powerpc/include/asm/tm.h
+@@ -9,11 +9,6 @@
  
- all: $(TEST_PROGS)
+ #ifndef __ASSEMBLY__
  
-@@ -11,6 +13,9 @@ tm-syscall: tm-syscall-asm.S
- tm-syscall: CFLAGS += -I../../../../../usr/include
- tm-tmspr: CFLAGS += -pthread
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-extern void do_load_up_transact_fpu(struct thread_struct *thread);
+-extern void do_load_up_transact_altivec(struct thread_struct *thread);
+-#endif
+-
+ extern void tm_enable(void);
+ extern void tm_reclaim(struct thread_struct *thread,
+ 		       unsigned long orig_msr, uint8_t cause);
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index 181c187..08d14b0 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -50,32 +50,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
+ #define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base)
+ #define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
  
-+$(SIGNAL_CONTEXT_CHK_TESTS): tm-signal.S
-+$(SIGNAL_CONTEXT_CHK_TESTS): CFLAGS += -mhtm -m64
-+
- include ../../lib.mk
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-/* void do_load_up_transact_fpu(struct thread_struct *thread)
+- *
+- * This is similar to load_up_fpu but for the transactional version of the FP
+- * register set.  It doesn't mess with the task MSR or valid flags.
+- * Furthermore, we don't do lazy FP with TM currently.
+- */
+-_GLOBAL(do_load_up_transact_fpu)
+-	mfmsr	r6
+-	ori	r5,r6,MSR_FP
+-#ifdef CONFIG_VSX
+-BEGIN_FTR_SECTION
+-	oris	r5,r5,MSR_VSX@h
+-END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+-#endif
+-	SYNC
+-	MTMSRD(r5)
+-
+-	addi	r7,r3,THREAD_CKFPSTATE
+-	lfd	fr0,FPSTATE_FPSCR(r7)
+-	MTFSF_L(fr0)
+-	REST_32FPVSRS(0, R4, R7)
+-
+-	blr
+-#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+-
+ /*
+  * Load state from memory into FP registers including FPSCR.
+  * Assumes the caller has enabled FP in the MSR.
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index 7dc4021..bc85bdf 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -7,31 +7,6 @@
+ #include <asm/page.h>
+ #include <asm/ptrace.h>
  
- clean:
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
-new file mode 100644
-index 0000000..df91330
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
-@@ -0,0 +1,90 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be
-+ * delivered while the thread was in a transaction.
-+ * Expected behaviour is that the checkpointed state is in the user
-+ * context passed to the signal handler. The speculated state can be
-+ * accessed with the uc_link pointer.
-+ *
-+ * The rationale for this is that if TM unaware code (which linked
-+ * against TM libs) installs a signal handler it will not know of the
-+ * speculative nature of the 'live' registers and may infer the wrong
-+ * thing.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include <altivec.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define MAX_ATTEMPT 500000
-+
-+#define NV_GPR_REGS 18
-+
-+long tm_signal_self_context_load(pid_t pid, long *gprs, double *fps, vector int *vms, vector int *vss);
-+
-+static sig_atomic_t fail;
-+
-+static long gps[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-+					 -1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18};
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	int i;
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	for (i = 0; i < NV_GPR_REGS && !fail; i++) {
-+		fail = (ucp->uc_mcontext.gp_regs[i + 14] != gps[i]);
-+		fail |= (tm_ucp->uc_mcontext.gp_regs[i + 14] != gps[i + NV_GPR_REGS]);
-+		if (fail)
-+			printf("Failed on %d GPR %lu or %lu\n", i,
-+					ucp->uc_mcontext.gp_regs[i + 14], tm_ucp->uc_mcontext.gp_regs[i + 14]);
-+	}
-+}
-+
-+static int tm_signal_context_chk_gpr()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (i < MAX_ATTEMPT && !fail) {
-+		rc = tm_signal_self_context_load(pid, gps, NULL, NULL, NULL);
-+		FAIL_IF(rc != pid);
-+		i++;
-+	}
-+
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk_gpr, "tm_signal_context_chk_gpr");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal.S b/tools/testing/selftests/powerpc/tm/tm-signal.S
-new file mode 100644
-index 0000000..4e13e8b
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal.S
-@@ -0,0 +1,114 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include "../basic_asm.h"
-+#include "../gpr_asm.h"
-+#include "../fpu_asm.h"
-+#include "../vmx_asm.h"
-+#include "../vsx_asm.h"
-+
-+/*
-+ * Large caveat here being that the caller cannot expect the
-+ * signal to always be sent! The hardware can (AND WILL!) abort
-+ * the transaction between the tbegin and the tsuspend (however
-+ * unlikely it seems or infrequently it actually happens).
-+ * You have been warned.
-+ */
-+/* long tm_signal_self(pid_t pid, long *gprs, double *fps, vector *vms, vector *vss); */
-+FUNC_START(tm_signal_self_context_load)
-+	PUSH_BASIC_STACK(512)
-+	/*
-+	 * Don't strictly need to save and restore as it depends on if
-+	 * we're going to use them, however this reduces messy logic
-+	 */
-+	PUSH_VMX(STACK_FRAME_LOCAL(5,0),r8)
-+	PUSH_FPU(512)
-+	PUSH_NVREGS_BELOW_FPU(512)
-+	std r3, STACK_FRAME_PARAM(0)(sp) /* pid */
-+	std r4, STACK_FRAME_PARAM(1)(sp) /* gps */
-+	std r5, STACK_FRAME_PARAM(2)(sp) /* fps */
-+	std r6, STACK_FRAME_PARAM(3)(sp) /* vms */
-+	std r7, STACK_FRAME_PARAM(4)(sp) /* vss */
-+
-+	ld r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi r3, 0
-+	beq skip_gpr_lc
-+	bl load_gpr
-+skip_gpr_lc:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lc
-+	bl load_fpu
-+skip_fpu_lc:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lc
-+	bl load_vmx
-+skip_vmx_lc:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lc
-+	bl load_vsx
-+skip_vsx_lc:
-+	/*
-+	 * Set r3 (return value) before tbegin. Use the pid as a known
-+	 * 'all good' return value, zero is used to indicate a non-doomed
-+	 * transaction.
-+	 */
-+	ld	r3, STACK_FRAME_PARAM(0)(sp)
-+	tbegin.
-+	beq	1f
-+	tsuspend. /* Can't enter a syscall transactionally */
-+	ld	r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi	r3, 0
-+	beq skip_gpr_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	bl load_gpr
-+skip_gpr_lt:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	bl load_fpu
-+skip_fpu_lt:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vmx
-+skip_vmx_lt:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vsx
-+skip_vsx_lt:
-+	li	r0, 37 /* sys_kill */
-+	ld r3, STACK_FRAME_PARAM(0)(sp) /* pid */
-+	li r4, 10 /* SIGUSR1 */
-+	sc /* Taking the signal will doom the transaction */
-+	tabort. 0
-+	tresume. /* Be super sure we abort */
-+	/*
-+	 * This will cause us to resume doomed transaction and cause
-+	 * hardware to cleanup, we'll end up at 1: anything between
-+	 * tresume. and 1: shouldn't ever run.
-+	 */
-+	li r3, 0
-+	1:
-+	POP_VMX(STACK_FRAME_LOCAL(5,0),r4)
-+	POP_FPU(512)
-+	POP_NVREGS_BELOW_FPU(512)
-+	POP_BASIC_STACK(512)
-+	blr
-+FUNC_END(tm_signal_self_context_load)
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-/* void do_load_up_transact_altivec(struct thread_struct *thread)
+- *
+- * This is similar to load_up_altivec but for the transactional version of the
+- * vector regs.  It doesn't mess with the task MSR or valid flags.
+- * Furthermore, VEC laziness is not supported with TM currently.
+- */
+-_GLOBAL(do_load_up_transact_altivec)
+-	mfmsr	r6
+-	oris	r5,r6,MSR_VEC@h
+-	MTMSRD(r5)
+-	isync
+-
+-	li	r4,1
+-	stw	r4,THREAD_USED_VR(r3)
+-
+-	li	r10,THREAD_CKVRSTATE+VRSTATE_VSCR
+-	lvx	v0,r10,r3
+-	mtvscr	v0
+-	addi	r10,r3,THREAD_CKVRSTATE
+-	REST_32VRS(0,r4,r10)
+-
+-	blr
+-#endif
+-
+ /*
+  * Load state from memory into VMX registers including VSCR.
+  * Assumes the caller has enabled VMX in the MSR.
 -- 
 2.9.3
