@@ -3,41 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sSmZV546CzDrqC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sSmZV3v65zDrq7
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 09:45:54 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u85Nh0fi047233
+ u85Nh28S022087
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Sep 2016 19:45:52 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 259dr182n2-1
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 259d8ss5ww-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Sep 2016 19:45:52 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Sep 2016 19:45:51 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Tue, 6 Sep 2016 09:45:48 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 163972BB0060
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 09:45:46 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u85NjkD65177826
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 09:45:46 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u85NjjIB026516
+ Tue, 6 Sep 2016 09:45:49 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D20872BB005C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 09:45:45 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u85Njj2l37224544
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 09:45:45 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u85NjjAn014455
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 09:45:45 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: wei.guo.simon@gmail.com, mikey@neuling.org
-Subject: [PATCH v4 16/20] selftests/powerpc: Add checks for transactional VMXs
+Subject: [PATCH v4 14/20] selftests/powerpc: Add checks for transactional GPRs
  in signal contexts
-Date: Tue,  6 Sep 2016 09:44:44 +1000
+Date: Tue,  6 Sep 2016 09:44:42 +1000
 In-Reply-To: <20160905234448.5866-1-cyrilbur@gmail.com>
 References: <20160905234448.5866-1-cyrilbur@gmail.com>
-Message-Id: <20160905234448.5866-17-cyrilbur@gmail.com>
+Message-Id: <20160905234448.5866-15-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,28 +54,42 @@ the expected values are in the signal context.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/tm/Makefile        |   3 +-
- .../powerpc/tm/tm-signal-context-chk-vmx.c         | 110 +++++++++++++++++++++
- 2 files changed, 112 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
+ tools/testing/selftests/powerpc/tm/Makefile        |   7 +-
+ .../powerpc/tm/tm-signal-context-chk-gpr.c         |  90 ++++++++++++++++
+ tools/testing/selftests/powerpc/tm/tm-signal.S     | 114 +++++++++++++++++++++
+ 3 files changed, 210 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal.S
 
 diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 103648f..06c44aa 100644
+index 9d301d7..2b6fe8f 100644
 --- a/tools/testing/selftests/powerpc/tm/Makefile
 +++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,4 +1,5 @@
--SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu
-+SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu \
-+	tm-signal-context-chk-vmx
- 
+@@ -1,5 +1,7 @@
++SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr
++
  TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
- 	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
+-	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
++	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
+ 
+ all: $(TEST_PROGS)
+ 
+@@ -11,6 +13,9 @@ tm-syscall: tm-syscall-asm.S
+ tm-syscall: CFLAGS += -I../../../../../usr/include
+ tm-tmspr: CFLAGS += -pthread
+ 
++$(SIGNAL_CONTEXT_CHK_TESTS): tm-signal.S
++$(SIGNAL_CONTEXT_CHK_TESTS): CFLAGS += -mhtm -m64
++
+ include ../../lib.mk
+ 
+ clean:
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
 new file mode 100644
-index 0000000..f0ee55f
+index 0000000..df91330
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
-@@ -0,0 +1,110 @@
++++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
+@@ -0,0 +1,90 @@
 +/*
 + * Copyright 2016, Cyril Bur, IBM Corp.
 + *
@@ -101,7 +115,6 @@ index 0000000..f0ee55f
 +
 +#include <stdlib.h>
 +#include <stdio.h>
-+#include <string.h>
 +#include <signal.h>
 +#include <unistd.h>
 +
@@ -112,22 +125,14 @@ index 0000000..f0ee55f
 +
 +#define MAX_ATTEMPT 500000
 +
-+#define NV_VMX_REGS 12
++#define NV_GPR_REGS 18
 +
 +long tm_signal_self_context_load(pid_t pid, long *gprs, double *fps, vector int *vms, vector int *vss);
 +
 +static sig_atomic_t fail;
 +
-+vector int vms[] = {
-+	{1, 2, 3, 4 },{5, 6, 7, 8 },{9, 10,11,12},
-+	{13,14,15,16},{17,18,19,20},{21,22,23,24},
-+	{25,26,27,28},{29,30,31,32},{33,34,35,36},
-+	{37,38,39,40},{41,42,43,44},{45,46,47,48},
-+	{-1, -2, -3, -4}, {-5, -6, -7, -8}, {-9, -10,-11,-12},
-+	{-13,-14,-15,-16},{-17,-18,-19,-20},{-21,-22,-23,-24},
-+	{-25,-26,-27,-28},{-29,-30,-31,-32},{-33,-34,-35,-36},
-+	{-37,-38,-39,-40},{-41,-42,-43,-44},{-45,-46,-47,-48}
-+};
++static long gps[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
++					 -1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18};
 +
 +static void signal_usr1(int signum, siginfo_t *info, void *uc)
 +{
@@ -135,27 +140,16 @@ index 0000000..f0ee55f
 +	ucontext_t *ucp = uc;
 +	ucontext_t *tm_ucp = ucp->uc_link;
 +
-+	for (i = 0; i < NV_VMX_REGS && !fail; i++) {
-+		fail = memcmp(ucp->uc_mcontext.v_regs->vrregs[i + 20],
-+				&vms[i], sizeof(vector int));
-+		fail |= memcmp(tm_ucp->uc_mcontext.v_regs->vrregs[i + 20],
-+				&vms[i + NV_VMX_REGS], sizeof (vector int));
-+
-+		if (fail) {
-+			int j;
-+
-+			fprintf(stderr, "Failed on %d vmx 0x", i);
-+			for (j = 0; j < 4; j++)
-+				fprintf(stderr, "%04x", ucp->uc_mcontext.v_regs->vrregs[i + 20][j]);
-+			fprintf(stderr, " vs 0x");
-+			for (j = 0 ; j < 4; j++)
-+				fprintf(stderr, "%04x", tm_ucp->uc_mcontext.v_regs->vrregs[i + 20][j]);
-+			fprintf(stderr, "\n");
-+		}
++	for (i = 0; i < NV_GPR_REGS && !fail; i++) {
++		fail = (ucp->uc_mcontext.gp_regs[i + 14] != gps[i]);
++		fail |= (tm_ucp->uc_mcontext.gp_regs[i + 14] != gps[i + NV_GPR_REGS]);
++		if (fail)
++			printf("Failed on %d GPR %lu or %lu\n", i,
++					ucp->uc_mcontext.gp_regs[i + 14], tm_ucp->uc_mcontext.gp_regs[i + 14]);
 +	}
 +}
 +
-+static int tm_signal_context_chk()
++static int tm_signal_context_chk_gpr()
 +{
 +	struct sigaction act;
 +	int i;
@@ -174,7 +168,7 @@ index 0000000..f0ee55f
 +
 +	i = 0;
 +	while (i < MAX_ATTEMPT && !fail) {
-+		rc = tm_signal_self_context_load(pid, NULL, NULL, vms, NULL);
++		rc = tm_signal_self_context_load(pid, gps, NULL, NULL, NULL);
 +		FAIL_IF(rc != pid);
 +		i++;
 +	}
@@ -184,7 +178,127 @@ index 0000000..f0ee55f
 +
 +int main(void)
 +{
-+	return test_harness(tm_signal_context_chk, "tm_signal_context_chk_vmx");
++	return test_harness(tm_signal_context_chk_gpr, "tm_signal_context_chk_gpr");
 +}
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal.S b/tools/testing/selftests/powerpc/tm/tm-signal.S
+new file mode 100644
+index 0000000..4e13e8b
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-signal.S
+@@ -0,0 +1,114 @@
++/*
++ * Copyright 2015, Cyril Bur, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include "../basic_asm.h"
++#include "../gpr_asm.h"
++#include "../fpu_asm.h"
++#include "../vmx_asm.h"
++#include "../vsx_asm.h"
++
++/*
++ * Large caveat here being that the caller cannot expect the
++ * signal to always be sent! The hardware can (AND WILL!) abort
++ * the transaction between the tbegin and the tsuspend (however
++ * unlikely it seems or infrequently it actually happens).
++ * You have been warned.
++ */
++/* long tm_signal_self(pid_t pid, long *gprs, double *fps, vector *vms, vector *vss); */
++FUNC_START(tm_signal_self_context_load)
++	PUSH_BASIC_STACK(512)
++	/*
++	 * Don't strictly need to save and restore as it depends on if
++	 * we're going to use them, however this reduces messy logic
++	 */
++	PUSH_VMX(STACK_FRAME_LOCAL(5,0),r8)
++	PUSH_FPU(512)
++	PUSH_NVREGS_BELOW_FPU(512)
++	std r3, STACK_FRAME_PARAM(0)(sp) /* pid */
++	std r4, STACK_FRAME_PARAM(1)(sp) /* gps */
++	std r5, STACK_FRAME_PARAM(2)(sp) /* fps */
++	std r6, STACK_FRAME_PARAM(3)(sp) /* vms */
++	std r7, STACK_FRAME_PARAM(4)(sp) /* vss */
++
++	ld r3, STACK_FRAME_PARAM(1)(sp)
++	cmpdi r3, 0
++	beq skip_gpr_lc
++	bl load_gpr
++skip_gpr_lc:
++	ld r3, STACK_FRAME_PARAM(2)(sp)
++	cmpdi	r3, 0
++	beq	skip_fpu_lc
++	bl load_fpu
++skip_fpu_lc:
++	ld r3, STACK_FRAME_PARAM(3)(sp)
++	cmpdi r3, 0
++	beq	skip_vmx_lc
++	bl load_vmx
++skip_vmx_lc:
++	ld r3, STACK_FRAME_PARAM(4)(sp)
++	cmpdi	r3, 0
++	beq	skip_vsx_lc
++	bl load_vsx
++skip_vsx_lc:
++	/*
++	 * Set r3 (return value) before tbegin. Use the pid as a known
++	 * 'all good' return value, zero is used to indicate a non-doomed
++	 * transaction.
++	 */
++	ld	r3, STACK_FRAME_PARAM(0)(sp)
++	tbegin.
++	beq	1f
++	tsuspend. /* Can't enter a syscall transactionally */
++	ld	r3, STACK_FRAME_PARAM(1)(sp)
++	cmpdi	r3, 0
++	beq skip_gpr_lt
++	/* Get the second half of the array */
++	addi	r3, r3, 8 * 18
++	bl load_gpr
++skip_gpr_lt:
++	ld r3, STACK_FRAME_PARAM(2)(sp)
++	cmpdi	r3, 0
++	beq	skip_fpu_lt
++	/* Get the second half of the array */
++	addi	r3, r3, 8 * 18
++	bl load_fpu
++skip_fpu_lt:
++	ld r3, STACK_FRAME_PARAM(3)(sp)
++	cmpdi r3, 0
++	beq	skip_vmx_lt
++	/* Get the second half of the array */
++	addi	r3, r3, 16 * 12
++	bl load_vmx
++skip_vmx_lt:
++	ld r3, STACK_FRAME_PARAM(4)(sp)
++	cmpdi	r3, 0
++	beq	skip_vsx_lt
++	/* Get the second half of the array */
++	addi	r3, r3, 16 * 12
++	bl load_vsx
++skip_vsx_lt:
++	li	r0, 37 /* sys_kill */
++	ld r3, STACK_FRAME_PARAM(0)(sp) /* pid */
++	li r4, 10 /* SIGUSR1 */
++	sc /* Taking the signal will doom the transaction */
++	tabort. 0
++	tresume. /* Be super sure we abort */
++	/*
++	 * This will cause us to resume doomed transaction and cause
++	 * hardware to cleanup, we'll end up at 1: anything between
++	 * tresume. and 1: shouldn't ever run.
++	 */
++	li r3, 0
++	1:
++	POP_VMX(STACK_FRAME_LOCAL(5,0),r4)
++	POP_FPU(512)
++	POP_NVREGS_BELOW_FPU(512)
++	POP_BASIC_STACK(512)
++	blr
++FUNC_END(tm_signal_self_context_load)
 -- 
 2.9.3
