@@ -1,21 +1,43 @@
-Return-Path: <debbugs@buxtehude.debian.org>
-Received: from buxtehude.debian.org (buxtehude.debian.org
- [IPv6:2607:f8f0:610:4000:2015:12:0:147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sSSS03B68zDrns
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Sep 2016 21:39:12 +1000 (AEST)
-Subject: Bug#836741: linux: FTBFS on powerpcspe due to the use of unsupported
- instructions
-Reply-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- 836741@bugs.debian.org
-Resent-Message-ID: <handler.836741.B.14730753048480@bugs.debian.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Debian Bug Tracking System <submit@bugs.debian.org>
-Message-ID: <147307529891.26744.6537243126225612598.reportbug@ikarus>
-Date: Mon, 05 Sep 2016 13:34:58 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sSbsW66tLzDrfR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 03:13:18 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u85HD3hR135885
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Sep 2016 13:13:15 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 258bv053eb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Sep 2016 13:13:15 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 6 Sep 2016 03:13:11 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7DF0F2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 03:13:09 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u85HD9Xg60096592
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 03:13:09 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u85HD8JP011792
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 03:13:09 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, mpe@ellerman.id.au
+Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
+ linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [RFC PATCH v5 00/12] powerpc: "paca->soft_enabled" based local atomic
+ operation implementation
+Date: Mon,  5 Sep 2016 22:42:43 +0530
+Message-Id: <1473095575-21023-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +47,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Source: linux
-Version: 4.7.2-1
-Severity: normal
-User: debian-powerpc@lists.debian.org
-Usertags: powerpcspe
+Local atomic operations are fast and highly reentrant per CPU counters.
+Used for percpu variable updates. Local atomic operations only guarantee
+variable modification atomicity wrt the CPU which owns the data and
+these needs to be executed in a preemption safe way.
 
-Hi!
+Here is the design of the patchset. Since local_* operations
+are only need to be atomic to interrupts (IIUC), we have two options.
+Either replay the "op" if interrupted or replay the interrupt after
+the "op". Initial patchset posted was based on implementing local_* operation
+based on CR5 which replay's the "op". Patchset had issues in case of
+rewinding the address pointor from an array. This make the slow patch
+really slow. Since CR5 based implementation proposed using __ex_table to find
+the rewind address, this rasied concerns about size of __ex_table and vmlinux.
 
-Linux 4.7.x introduced another regression on powerpcspe due to the use of
-unsupported assembly instructions [1]:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
 
-/<<PKGBUILDDIR>>/arch/powerpc/xmon/spr_access.S: Assembler messages:
-/<<PKGBUILDDIR>>/arch/powerpc/xmon/spr_access.S:5: Error: unrecognized opcode: `ld'
-/<<PKGBUILDDIR>>/arch/powerpc/xmon/spr_access.S:10: Error: unrecognized opcode: `ld'
-/<<PKGBUILDDIR>>/scripts/Makefile.build:331: recipe for target 'arch/powerpc/xmon/spr_access.o' failed
-make[6]: *** [arch/powerpc/xmon/spr_access.o] Error 1
+But this patchset uses Benjamin Herrenschmidt suggestion of using
+arch_local_irq_disable() to soft_disable interrupts (including PMIs).
+After finishing the "op", arch_local_irq_restore() called and correspondingly
+interrupts are replayed if any occured.
 
-This is very reminiscent of #823526 [2] which also used some FPU instructions
-not available on powerpcspe/e500. And, indeed, like "ldarx" and "stdcx", "ld"
-is not available on e500 either [3] (see p. 3-68).
+Current paca->soft_enabled logic is reserved and MASKABLE_EXCEPTION_* macros
+are extended to support this feature.
 
-I haven't looked at the code yet, but I assume guarding the code with some
-additional #ifdef's should fix the issue the same way as in #823526.
+patch re-write the current local_* functions to use arch_local_irq_disbale.
+Base flow for each function is
 
-Thanks,
-Adrian
+ {
+        arch_local_irq_and_pmu_save()
+        load
+        ..
+        store
+        arch_local_irq_and_pmu_restore()
+ }
 
-> [1] https://buildd.debian.org/status/fetch.php?pkg=linux&arch=powerpcspe&ver=4.7.2-1&stamp=1472977882
-> [2] https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=823526
-> [3] http://www.nxp.com/files/32bit/doc/ref_manual/E500CORERM.pdf
+Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
+instruction pair is used for local_* operations, which are heavy
+on cycle count and they dont support a local variant. So to
+see whether the new implementation helps, used a modified
+version of Rusty's benchmark code on local_t.
+
+https://lkml.org/lkml/2008/12/16/450
+
+Modifications to Rusty's benchmark code:
+ - Executed only local_t test
+
+Here are the values with the patch.
+
+Time in ns per iteration
+
+Local_t         Without Patch           With Patch
+
+_inc                    28              8
+_add                    28              8
+_read                   3               3
+_add_return             28              7
+
+Currently only asm/local.h has been rewrite, and also
+the entire change is tested only in PPC64 (pseries guest)
+and PPC64 LE host. Have only compile tested ppc64e_*.
+
+First four are the clean up patches which lays the foundation
+to make things easier. Fifth patch in the patchset reverse the
+current soft_enabled logic and commit message details the reason and
+need for this change. Sixth and seventh patch refactor's the __EXPECTION_PROLOG_1
+code to support addition of a new parameter to MASKABLE_* macros. New parameter
+will give the possible mask for the interrupt. Rest of the patches are
+to add support for maskable PMI and implementation of local_t using arch_local_irq_*().
+
+Since the patchset is experimental, testing done only on pseries and
+powernv platforms. Have only compile tested the patchset for Book3e.
+
+Changelog RFC v4:
+1)Fix build breaks in in ppc64e_defconfig compilation
+2)Merged PMI replay code with the exception vector changes patch
+3)Renamed the new API to set PMI mask bit as suggested
+4)Modified the current arch_local_save and new API function call to
+  "OR" and store the value to ->soft_enabled instead of just store.
+5)Updated the check in the arch_local_irq_restore() to alway check for
+  greather than or zero to _LINUX mask bit.
+6)Updated the commit messages.
+
+Changelog RFC v3:
+1)Squashed PMI masked interrupt patch and replay patch together
+2)Have created a new patch which includes a new Kconfig and set_irq_set_mask()
+3)Fixed the compilation issue with IRQ_DISABLE_MASK_* macros in book3e_*
+
+Changelog RFC v2:
+1)Renamed IRQ_DISABLE_LEVEL_* to IRQ_DISABLE_MASK_* and made logic changes
+  to treat soft_enabled as a mask and not a flag or level.
+2)Added a new Kconfig variable to support a WARN_ON
+3)Refactored patchset for eaiser review.
+4)Made changes to commit messages.
+5)Made changes for BOOK3E version
+
+Changelog RFC v1:
+
+1)Commit messages are improved.
+2)Renamed the arch_local_irq_disable_var to soft_irq_set_level as suggested
+3)Renamed the LAZY_INTERRUPT* macro to IRQ_DISABLE_LEVEL_* as suggested
+4)Extended the MASKABLE_EXCEPTION* macros to support additional parameter.
+5)Each MASKABLE_EXCEPTION_* macro will carry a "mask_level"
+6)Logic to decide on jump to maskable_handler in SOFTEN_TEST is now based on
+  "mask_level"
+7)__EXCEPTION_PROLOG_1 is factored out to support "mask_level" parameter.
+  This reduced the code changes needed for supporting "mask_level" parameters.
+
+
+
+Madhavan Srinivasan (12):
+  powerpc: Add #defs for paca->soft_enabled flags
+  powerpc: Cleanup to use IRQ_DISABLE_MASK_* macros for
+    paca->soft_enabled update
+  powerpc: move set_soft_enabled()
+  powerpc: Use set_soft_enabled api to update paca->soft_enabled
+  powerpc: reverse the soft_enable logic
+  powerpc: Avoid using EXCEPTION_PROLOG_1 macro in MASKABLE_*
+  powerpc: Add new _EXCEPTION_PROLOG_1 macro
+  powerpc: Introduce new mask bit for soft_enabled
+  powerpc: Add "bitmask" paramater to MASKABLE_* macros
+  powerpc: Add support to mask perf interrupts and reply them
+  powerpc: Add a Kconfig and a function to set new soft_enabled mask
+  powerpc: rewrite local_t using soft_irq
+
+ arch/powerpc/Kconfig                     |   4 ++
+ arch/powerpc/include/asm/exception-64s.h | 103 +++++++++++++++++++++----------
+ arch/powerpc/include/asm/hw_irq.h        |  53 +++++++++++++---
+ arch/powerpc/include/asm/irqflags.h      |   8 +--
+ arch/powerpc/include/asm/kvm_ppc.h       |   2 +-
+ arch/powerpc/include/asm/local.h         |  93 +++++++++++++++++++---------
+ arch/powerpc/kernel/entry_64.S           |  24 ++++---
+ arch/powerpc/kernel/exceptions-64e.S     |   8 +--
+ arch/powerpc/kernel/exceptions-64s.S     |  42 ++++++++-----
+ arch/powerpc/kernel/head_64.S            |   5 +-
+ arch/powerpc/kernel/idle_book3e.S        |   3 +-
+ arch/powerpc/kernel/idle_power4.S        |   3 +-
+ arch/powerpc/kernel/irq.c                |  32 ++++++----
+ arch/powerpc/kernel/process.c            |   3 +-
+ arch/powerpc/kernel/setup_64.c           |   5 +-
+ arch/powerpc/kernel/time.c               |   4 +-
+ arch/powerpc/mm/hugetlbpage.c            |   2 +-
+ arch/powerpc/perf/core-book3s.c          |   2 +-
+ 18 files changed, 271 insertions(+), 125 deletions(-)
 
 --
- .''`.  John Paul Adrian Glaubitz
- : :' :  Debian Developer - glaubitz@debian.org
- `. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
-   `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+2.7.4
