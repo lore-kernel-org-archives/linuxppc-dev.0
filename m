@@ -1,48 +1,19 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sT7cb0vlDzDsM6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:03:58 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u86E31sY129353
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 10:03:57 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 259vyt8hve-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2016 10:03:56 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Wed, 7 Sep 2016 00:03:52 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7016F3578056
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:03:51 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u86E3pGJ56950786
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Sep 2016 00:03:51 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u86E3o1J028480
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Sep 2016 00:03:51 +1000
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-security-module <linux-security-module@vger.kernel.org>
-Cc: Andreas Steffen <andreas.steffen@strongswan.org>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
- kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: [PATCH v3 9/9] ima: platform-independent hash value
-Date: Tue,  6 Sep 2016 10:03:04 -0400
-In-Reply-To: <1473170584-15094-1-git-send-email-zohar@linux.vnet.ibm.com>
-References: <1473170584-15094-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-Id: <1473170584-15094-10-git-send-email-zohar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sT81L2tHQzDrpN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:21:57 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Remove all usages of NO_IRQ
+Date: Tue, 06 Sep 2016 16:22:23 +0200
+Message-ID: <4300236.QNKFM5GGo3@wuerfel>
+In-Reply-To: <1473162804-6802-1-git-send-email-mpe@ellerman.id.au>
+References: <1473162804-6802-1-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,40 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andreas Steffen <andreas.steffen@strongswan.org>
+On Tuesday, September 6, 2016 9:53:24 PM CEST Michael Ellerman wrote:
+>  drivers/macintosh/macio_asic.c                   |  4 ++--
+>  drivers/macintosh/rack-meter.c                   |  2 +-
+>  drivers/macintosh/smu.c                          | 18 +++++++++---------
+>  drivers/macintosh/via-cuda.c                     |  2 +-
+>  drivers/macintosh/via-pmu.c                      |  6 +++---
+>  drivers/ps3/ps3-vuart.c                          |  4 ++--
+>  sound/aoa/core/gpio-feature.c                    |  4 ++--
+>  sound/ppc/tumbler.c                              |  8 ++++----
 
-For remote attestion it is important for the ima measurement values
-to be platform-independent. Therefore integer fields to be hashed
-must be converted to canonical format.
+I've got a tree in which I've fixed up all drivers that use NO_IRQ on
+ARM (tested with lots of randconfig builds). I found a couple remaining
+ones that all look powerpc specific:
 
-Changelog:
-- Define canonical format as little endian (Mimi)
+drivers/ata/pata_mpc52xx.c:	if (ata_irq == NO_IRQ) {
+drivers/ata/sata_dwc_460ex.c:   if (hsdev->dma->irq == NO_IRQ) {
+drivers/dma/bestcomm/bestcomm.c:		if (tsk->irq != NO_IRQ)
+drivers/dma/fsl_raid.c:	if (chan->irq == NO_IRQ) {
+drivers/dma/fsldma.c:	if (fdev->irq != NO_IRQ) {
+drivers/dma/mpc512x_dma.c:	if (mdma->irq == NO_IRQ) {
+drivers/dma/ppc4xx/adma.c:	if (adev->irq == NO_IRQ) {
+drivers/edac/mpc85xx_edac.c:	pdata->irq = NO_IRQ;
+drivers/edac/mv64x60_edac.c:	pdata->irq = NO_IRQ;
+drivers/edac/ppc4xx_edac.c:	pdata->irqs.sec		= NO_IRQ;
+drivers/iommu/fsl_pamu.c:	if (irq != NO_IRQ)
+drivers/media/platform/fsl-viu.c:	if (viu_irq == NO_IRQ) {
+drivers/mtd/nand/mpc5121_nfc.c:	if (prv->irq == NO_IRQ) {
+drivers/net/ethernet/freescale/fs_enet/mac-fcc.c:	if (fep->interrupt == NO_IRQ)
+drivers/net/ethernet/freescale/fs_enet/mac-fec.c:	if (fep->interrupt == NO_IRQ)
+drivers/net/ethernet/freescale/fs_enet/mac-scc.c:	if (fep->interrupt == NO_IRQ)
+drivers/net/ethernet/ibm/emac/core.c:	if (dev->emac_irq != NO_IRQ)
+drivers/net/ethernet/ibm/emac/mal.c:	if (mal->txeob_irq == NO_IRQ || mal->rxeob_irq == NO_IRQ ||
+drivers/net/ethernet/ibm/ibmvnic.c:		if (scrq->irq == NO_IRQ) {
+drivers/net/ethernet/toshiba/ps3_gelic_net.c:	netdev->irq = NO_IRQ;
+drivers/pcmcia/electra_cf.c:	cf->irq = NO_IRQ;
+drivers/soc/fsl/qe/qe_ic.c:		return NO_IRQ;
+drivers/spi/spi-mpc52xx.c:	if (status && (irq != NO_IRQ))
+drivers/tty/ehv_bytechan.c:	if (stdout_irq == NO_IRQ) {
+drivers/tty/serial/cpm_uart/cpm_uart_core.c:	if (pinfo->port.irq == NO_IRQ) {
+drivers/uio/uio_fsl_elbc_gpcm.c:	if (irq != NO_IRQ) {
+drivers/usb/host/ehci-grlib.c:	if (irq == NO_IRQ) {
+drivers/usb/host/ehci-ppc-of.c:	if (irq == NO_IRQ) {
+drivers/usb/host/fhci-hcd.c:	if (usb_irq == NO_IRQ) {
+drivers/usb/host/ohci-ppc-of.c:	if (irq == NO_IRQ) {
+drivers/usb/host/uhci-grlib.c:	if (irq == NO_IRQ) {
+drivers/video/fbdev/mb862xx/mb862xxfbdrv.c:	if (par->irq == NO_IRQ) {
+drivers/virt/fsl_hypervisor.c:		if (!handle || (irq == NO_IRQ)) {
+include/soc/fsl/qe/qe_ic.h:	if (cascade_irq != NO_IRQ)
 
-Signed-off-by: Andreas Steffen <andreas.steffen@strongswan.org>
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
----
- security/integrity/ima/ima_crypto.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+They should all be as easy to replace as the others.
 
-diff --git a/security/integrity/ima/ima_crypto.c b/security/integrity/ima/ima_crypto.c
-index 38f2ed8..802d5d2 100644
---- a/security/integrity/ima/ima_crypto.c
-+++ b/security/integrity/ima/ima_crypto.c
-@@ -477,11 +477,13 @@ static int ima_calc_field_array_hash_tfm(struct ima_field_data *field_data,
- 		u8 buffer[IMA_EVENT_NAME_LEN_MAX + 1] = { 0 };
- 		u8 *data_to_hash = field_data[i].data;
- 		u32 datalen = field_data[i].len;
-+		u32 datalen_to_hash =
-+		    !ima_canonical_fmt ? datalen : cpu_to_le32(datalen);
- 
- 		if (strcmp(td->name, IMA_TEMPLATE_IMA_NAME) != 0) {
- 			rc = crypto_shash_update(shash,
--						(const u8 *) &field_data[i].len,
--						sizeof(field_data[i].len));
-+						(const u8 *) &datalen_to_hash,
-+						sizeof(datalen_to_hash));
- 			if (rc)
- 				break;
- 		} else if (strcmp(td->fields[i]->field_id, "n") == 0) {
--- 
-2.1.0
+	Arnd
