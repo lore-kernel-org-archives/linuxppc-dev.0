@@ -1,29 +1,22 @@
 Return-Path: <yamada.masahiro@socionext.com>
-Received: from condef001-v.nifty.com (condef001-v.nifty.com [210.131.4.238])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
+ (using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (112/168 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sT4Cp3SnkzDrqg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 21:30:46 +1000 (AEST)
-Received: from conuserg-08.nifty.com ([10.26.8.71])by condef001-v.nifty.com
- with ESMTP id u86BLkxH001977
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 20:21:59 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sT4SW6z1DzDrq2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 21:41:47 +1000 (AEST)
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: linuxppc-dev@lists.ozlabs.org
+To: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.com>,
+ Jaroslav Kysela <perex@perex.cz>
 Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
  Geoff Levand <geoff@infradead.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Khem Raj <raj.khem@gmail.com>,
- Cyril Bur <cyrilbur@gmail.com>, kvm@vger.kernel.org,
- Simon Guo <wei.guo.simon@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Kees Cook <keescook@chromium.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Mark Brown <broonie@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Alexander Graf <agraf@suse.com>, kvm-ppc@vger.kernel.org,
  linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
- Rashmica Gupta <rashmicy@gmail.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc: squash lines for simple wrapper functions
-Date: Tue,  6 Sep 2016 20:21:50 +0900
-Message-Id: <1473160910-20247-1-git-send-email-yamada.masahiro@socionext.com>
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ALSA: squash lines for simple wrapper functions
+Date: Tue,  6 Sep 2016 20:41:19 +0900
+Message-Id: <1473162079-25001-1-git-send-email-yamada.masahiro@socionext.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,152 +31,166 @@ Remove unneeded variables and assignments.
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
 
- arch/powerpc/kernel/ptrace.c            | 42 ++++++++++-----------------------
- arch/powerpc/kvm/booke.c                |  5 +---
- arch/powerpc/platforms/ps3/repository.c | 22 ++++-------------
- 3 files changed, 18 insertions(+), 51 deletions(-)
+ sound/aoa/fabrics/layout.c                  |  7 +------
+ sound/pci/asihpi/hpifunc.c                  |  7 ++-----
+ sound/pci/ctxfi/ctvmem.c                    |  6 +-----
+ sound/pci/emu10k1/p16v.c                    | 16 ++++------------
+ sound/pci/ice1712/ice1724.c                 |  4 +---
+ sound/ppc/snd_ps3.c                         |  4 +---
+ sound/soc/intel/baytrail/sst-baytrail-ipc.c | 12 +++---------
+ 7 files changed, 13 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index bf91658..1979bae 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1714,11 +1714,8 @@ static int ppr_get(struct task_struct *target,
- 		      unsigned int pos, unsigned int count,
- 		      void *kbuf, void __user *ubuf)
+diff --git a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
+index 8f71f7e..b6ba091 100644
+--- a/sound/aoa/fabrics/layout.c
++++ b/sound/aoa/fabrics/layout.c
+@@ -1161,12 +1161,7 @@ static struct soundbus_driver aoa_soundbus_driver = {
+ 
+ static int __init aoa_fabric_layout_init(void)
  {
--	int ret;
+-	int err;
 -
--	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				&target->thread.ppr, 0, sizeof(u64));
--	return ret;
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				   &target->thread.ppr, 0, sizeof(u64));
+-	err = soundbus_register_driver(&aoa_soundbus_driver);
+-	if (err)
+-		return err;
+-	return 0;
++	return soundbus_register_driver(&aoa_soundbus_driver);
  }
  
- static int ppr_set(struct task_struct *target,
-@@ -1726,11 +1723,8 @@ static int ppr_set(struct task_struct *target,
- 		      unsigned int pos, unsigned int count,
- 		      const void *kbuf, const void __user *ubuf)
+ static void __exit aoa_fabric_layout_exit(void)
+diff --git a/sound/pci/asihpi/hpifunc.c b/sound/pci/asihpi/hpifunc.c
+index 510e56c..f9b5764 100644
+--- a/sound/pci/asihpi/hpifunc.c
++++ b/sound/pci/asihpi/hpifunc.c
+@@ -2323,11 +2323,8 @@ u16 hpi_sample_clock_get_source_index(u32 h_control, u16 *pw_source_index)
+ u16 hpi_sample_clock_query_local_rate(const u32 h_clock, const u32 index,
+ 	u32 *prate)
  {
--	int ret;
+-	u16 err;
+-	err = hpi_control_query(h_clock, HPI_SAMPLECLOCK_LOCAL_SAMPLERATE,
+-		index, 0, prate);
 -
--	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				&target->thread.ppr, 0, sizeof(u64));
--	return ret;
-+	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				  &target->thread.ppr, 0, sizeof(u64));
+-	return err;
++	return hpi_control_query(h_clock, HPI_SAMPLECLOCK_LOCAL_SAMPLERATE,
++				 index, 0, prate);
  }
  
- static int dscr_get(struct task_struct *target,
-@@ -1738,22 +1732,16 @@ static int dscr_get(struct task_struct *target,
- 		      unsigned int pos, unsigned int count,
- 		      void *kbuf, void __user *ubuf)
+ u16 hpi_sample_clock_set_local_rate(u32 h_control, u32 sample_rate)
+diff --git a/sound/pci/ctxfi/ctvmem.c b/sound/pci/ctxfi/ctvmem.c
+index 419306e..520e19b 100644
+--- a/sound/pci/ctxfi/ctvmem.c
++++ b/sound/pci/ctxfi/ctvmem.c
+@@ -166,11 +166,7 @@ static void ct_vm_unmap(struct ct_vm *vm, struct ct_vm_block *block)
+ static dma_addr_t
+ ct_get_ptp_phys(struct ct_vm *vm, int index)
  {
--	int ret;
+-	dma_addr_t addr;
 -
--	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				&target->thread.dscr, 0, sizeof(u64));
--	return ret;
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				   &target->thread.dscr, 0, sizeof(u64));
- }
- static int dscr_set(struct task_struct *target,
- 		      const struct user_regset *regset,
- 		      unsigned int pos, unsigned int count,
- 		      const void *kbuf, const void __user *ubuf)
- {
--	int ret;
+-	addr = (index >= CT_PTP_NUM) ? ~0UL : vm->ptp[index].addr;
 -
--	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				&target->thread.dscr, 0, sizeof(u64));
--	return ret;
-+	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				  &target->thread.dscr, 0, sizeof(u64));
- }
- #endif
- #ifdef CONFIG_PPC_BOOK3S_64
-@@ -1762,22 +1750,16 @@ static int tar_get(struct task_struct *target,
- 		      unsigned int pos, unsigned int count,
- 		      void *kbuf, void __user *ubuf)
- {
--	int ret;
--
--	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				&target->thread.tar, 0, sizeof(u64));
--	return ret;
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				   &target->thread.tar, 0, sizeof(u64));
- }
- static int tar_set(struct task_struct *target,
- 		      const struct user_regset *regset,
- 		      unsigned int pos, unsigned int count,
- 		      const void *kbuf, const void __user *ubuf)
- {
--	int ret;
--
--	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				&target->thread.tar, 0, sizeof(u64));
--	return ret;
-+	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				  &target->thread.tar, 0, sizeof(u64));
+-	return addr;
++	return (index >= CT_PTP_NUM) ? ~0UL : vm->ptp[index].addr;
  }
  
- static int ebb_active(struct task_struct *target,
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 02b4672..881e136 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -1767,10 +1767,7 @@ int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
- int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
-                                   struct kvm_translation *tr)
- {
--	int r;
--
--	r = kvmppc_core_vcpu_translate(vcpu, tr);
--	return r;
-+	return kvmppc_core_vcpu_translate(vcpu, tr);
- }
- 
- int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
-diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-index 814a7ea..50dbaf2 100644
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -170,14 +170,8 @@ int ps3_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
- 
- int ps3_repository_read_bus_id(unsigned int bus_index, u64 *bus_id)
+ int ct_vm_create(struct ct_vm **rvm, struct pci_dev *pci)
+diff --git a/sound/pci/emu10k1/p16v.c b/sound/pci/emu10k1/p16v.c
+index 3c60b43..87f6622 100644
+--- a/sound/pci/emu10k1/p16v.c
++++ b/sound/pci/emu10k1/p16v.c
+@@ -300,37 +300,29 @@ static int snd_p16v_pcm_open_capture(struct snd_pcm_substream *substream)
+ static int snd_p16v_pcm_hw_params_playback(struct snd_pcm_substream *substream,
+ 				      struct snd_pcm_hw_params *hw_params)
  {
 -	int result;
--
--	result = read_node(PS3_LPAR_ID_PME,
--		make_first_field("bus", bus_index),
--		make_field("id", 0),
--		0, 0,
--		bus_id, NULL);
+-	result = snd_pcm_lib_malloc_pages(substream,
++	return snd_pcm_lib_malloc_pages(substream,
+ 					params_buffer_bytes(hw_params));
 -	return result;
-+	return read_node(PS3_LPAR_ID_PME, make_first_field("bus", bus_index),
-+			 make_field("id", 0), 0, 0, bus_id, NULL);
  }
  
- int ps3_repository_read_bus_type(unsigned int bus_index,
-@@ -224,15 +218,9 @@ int ps3_repository_read_dev_str(unsigned int bus_index,
- int ps3_repository_read_dev_id(unsigned int bus_index, unsigned int dev_index,
- 	u64 *dev_id)
+ /* hw_params callback */
+ static int snd_p16v_pcm_hw_params_capture(struct snd_pcm_substream *substream,
+ 				      struct snd_pcm_hw_params *hw_params)
  {
 -	int result;
--
--	result = read_node(PS3_LPAR_ID_PME,
--		make_first_field("bus", bus_index),
--		make_field("dev", dev_index),
--		make_field("id", 0),
--		0,
--		dev_id, NULL);
+-	result = snd_pcm_lib_malloc_pages(substream,
++	return snd_pcm_lib_malloc_pages(substream,
+ 					params_buffer_bytes(hw_params));
 -	return result;
-+	return read_node(PS3_LPAR_ID_PME, make_first_field("bus", bus_index),
-+			 make_field("dev", dev_index), make_field("id", 0), 0,
-+			 dev_id, NULL);
  }
  
- int ps3_repository_read_dev_type(unsigned int bus_index,
+ 
+ /* hw_free callback */
+ static int snd_p16v_pcm_hw_free_playback(struct snd_pcm_substream *substream)
+ {
+-	int result;
+-	result = snd_pcm_lib_free_pages(substream);
+-	return result;
++	return snd_pcm_lib_free_pages(substream);
+ }
+ 
+ /* hw_free callback */
+ static int snd_p16v_pcm_hw_free_capture(struct snd_pcm_substream *substream)
+ {
+-	int result;
+-	result = snd_pcm_lib_free_pages(substream);
+-	return result;
++	return snd_pcm_lib_free_pages(substream);
+ }
+ 
+ 
+diff --git a/sound/pci/ice1712/ice1724.c b/sound/pci/ice1712/ice1724.c
+index 0b22c00..4731e9c 100644
+--- a/sound/pci/ice1712/ice1724.c
++++ b/sound/pci/ice1712/ice1724.c
+@@ -620,9 +620,7 @@ static const unsigned int stdclock_rate_list[16] = {
+ 
+ static unsigned int stdclock_get_rate(struct snd_ice1712 *ice)
+ {
+-	unsigned int rate;
+-	rate = stdclock_rate_list[inb(ICEMT1724(ice, RATE)) & 15];
+-	return rate;
++	return stdclock_rate_list[inb(ICEMT1724(ice, RATE)) & 15];
+ }
+ 
+ static void stdclock_set_rate(struct snd_ice1712 *ice, unsigned int rate)
+diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+index 3682425..b84d7d3 100644
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -564,9 +564,7 @@ static int snd_ps3_pcm_hw_params(struct snd_pcm_substream *substream,
+ 
+ static int snd_ps3_pcm_hw_free(struct snd_pcm_substream *substream)
+ {
+-	int ret;
+-	ret = snd_pcm_lib_free_pages(substream);
+-	return ret;
++	return snd_pcm_lib_free_pages(substream);
+ };
+ 
+ static int snd_ps3_delay_to_bytes(struct snd_pcm_substream *substream,
+diff --git a/sound/soc/intel/baytrail/sst-baytrail-ipc.c b/sound/soc/intel/baytrail/sst-baytrail-ipc.c
+index 5bbaa66..c8455b4 100644
+--- a/sound/soc/intel/baytrail/sst-baytrail-ipc.c
++++ b/sound/soc/intel/baytrail/sst-baytrail-ipc.c
+@@ -184,15 +184,9 @@ struct sst_byt {
+ 
+ static inline u64 sst_byt_header(int msg_id, int data, bool large, int str_id)
+ {
+-	u64 header;
+-
+-	header = IPC_HEADER_MSG_ID(msg_id) |
+-		 IPC_HEADER_STR_ID(str_id) |
+-		 IPC_HEADER_LARGE(large) |
+-		 IPC_HEADER_DATA(data) |
+-		 SST_BYT_IPCX_BUSY;
+-
+-	return header;
++	return IPC_HEADER_MSG_ID(msg_id) | IPC_HEADER_STR_ID(str_id) |
++	       IPC_HEADER_LARGE(large) | IPC_HEADER_DATA(data) |
++	       SST_BYT_IPCX_BUSY;
+ }
+ 
+ static inline u16 sst_byt_header_msg_id(u64 header)
 -- 
 1.9.1
