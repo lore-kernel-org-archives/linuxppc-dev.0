@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sT7c31hqlzDsFM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:03:31 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sT7c83wjCzDsLx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:03:36 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u86E30ML129221
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 10:03:28 -0400
+ u86E30DU009194
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 10:03:34 -0400
 Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 259vyt8gty-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 259x0qcuk3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2016 10:03:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2016 10:03:32 -0400
 Received: from localhost
  by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Wed, 7 Sep 2016 00:03:20 +1000
+ Wed, 7 Sep 2016 00:03:28 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3A1032BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:03:17 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7EBBA2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:03:25 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u86E3HKZ7602624
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Sep 2016 00:03:17 +1000
+ u86E3PZZ3932606
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Sep 2016 00:03:25 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u86E3Ghf027629
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Sep 2016 00:03:17 +1000
+ u86E3OU7027774
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Sep 2016 00:03:25 +1000
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-security-module <linux-security-module@vger.kernel.org>
 Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
@@ -37,11 +37,12 @@ Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
  linux-kernel@vger.kernel.org,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 1/9] ima: on soft reboot, restore the measurement list
-Date: Tue,  6 Sep 2016 10:02:56 -0400
+Subject: [PATCH v3 3/9] ima: maintain memory size needed for serializing the
+ measurement list
+Date: Tue,  6 Sep 2016 10:02:58 -0400
 In-Reply-To: <1473170584-15094-1-git-send-email-zohar@linux.vnet.ibm.com>
 References: <1473170584-15094-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-Id: <1473170584-15094-2-git-send-email-zohar@linux.vnet.ibm.com>
+Message-Id: <1473170584-15094-4-git-send-email-zohar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,353 +52,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The TPM PCRs are only reset on a hard reboot.  In order to validate a
-TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
-of the running kernel must be saved and restored on boot.  This patch
-restores the measurement list.
+In preparation for serializing the binary_runtime_measurements, this patch
+maintains the amount of memory required.
 
-Changelog v2:
-- redefined ima_kexec_hdr to use types with well defined sizes (M. Ellerman)
-- defined missing ima_load_kexec_buffer() stub function
-
-Changelog v1:
-- call ima_load_kexec_buffer() (Thiago)
+Changelog v3:
+- include the ima_kexec_hdr size in the binary_runtime_measurement size.
 
 Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 ---
- security/integrity/ima/Makefile       |   1 +
- security/integrity/ima/ima.h          |  18 ++++
- security/integrity/ima/ima_init.c     |   2 +
- security/integrity/ima/ima_kexec.c    |  55 +++++++++++
- security/integrity/ima/ima_queue.c    |  10 ++
- security/integrity/ima/ima_template.c | 170 ++++++++++++++++++++++++++++++++++
- 6 files changed, 256 insertions(+)
- create mode 100644 security/integrity/ima/ima_kexec.c
+ security/integrity/ima/Kconfig     | 12 +++++++++
+ security/integrity/ima/ima.h       |  1 +
+ security/integrity/ima/ima_queue.c | 53 ++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 64 insertions(+), 2 deletions(-)
 
-diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
-index 9aeaeda..56093be 100644
---- a/security/integrity/ima/Makefile
-+++ b/security/integrity/ima/Makefile
-@@ -8,4 +8,5 @@ obj-$(CONFIG_IMA) += ima.o
- ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
- 	 ima_policy.o ima_template.o ima_template_lib.o
- ima-$(CONFIG_IMA_APPRAISE) += ima_appraise.o
-+ima-$(CONFIG_KEXEC_FILE) += ima_kexec.o
- obj-$(CONFIG_IMA_BLACKLIST_KEYRING) += ima_mok.o
+diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
+index 5487827..1c5a1c2 100644
+--- a/security/integrity/ima/Kconfig
++++ b/security/integrity/ima/Kconfig
+@@ -27,6 +27,18 @@ config IMA
+ 	  to learn more about IMA.
+ 	  If unsure, say N.
+ 
++config IMA_KEXEC
++	bool "Enable carrying the IMA measurement list across a soft boot"
++	depends on IMA && TCG_TPM && KEXEC_FILE
++	default n
++	help
++	   TPM PCRs are only reset on a hard reboot.  In order to validate
++	   a TPM's quote after a soft boot, the IMA measurement list of the
++	   running kernel must be saved and restored on boot.
++
++	   Depending on the IMA policy, the measurement list can grow to
++	   be very large.
++
+ config IMA_MEASURE_PCR_IDX
+ 	int
+ 	depends on IMA
 diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-index db25f54..e7b3755 100644
+index e7b3755..f9cd08e 100644
 --- a/security/integrity/ima/ima.h
 +++ b/security/integrity/ima/ima.h
-@@ -102,6 +102,15 @@ struct ima_queue_entry {
- };
- extern struct list_head ima_measurements;	/* list of all measurements */
- 
-+/* Some details preceding the binary serialized measurement list */
-+struct ima_kexec_hdr {
-+	u16 version;
-+	u16 _reserved0;
-+	u32 _reserved1;
-+	u64 buffer_size;
-+	u64 count;
-+};
-+
- /* Internal IMA function definitions */
- int ima_init(void);
- int ima_fs_init(void);
-@@ -122,8 +131,17 @@ int ima_init_crypto(void);
- void ima_putc(struct seq_file *m, void *data, int datalen);
- void ima_print_digest(struct seq_file *m, u8 *digest, u32 size);
+@@ -133,6 +133,7 @@ void ima_print_digest(struct seq_file *m, u8 *digest, u32 size);
  struct ima_template_desc *ima_template_desc_current(void);
-+int ima_restore_measurement_entry(struct ima_template_entry *entry);
-+int ima_restore_measurement_list(loff_t bufsize, void *buf);
+ int ima_restore_measurement_entry(struct ima_template_entry *entry);
+ int ima_restore_measurement_list(loff_t bufsize, void *buf);
++unsigned long ima_get_binary_runtime_size(void);
  int ima_init_template(void);
  
-+#ifdef CONFIG_KEXEC_FILE
-+void ima_load_kexec_buffer(void);
-+#else
-+static inline void ima_load_kexec_buffer(void)
-+{}
-+#endif
-+
- /*
-  * used to protect h_table and sha_table
-  */
-diff --git a/security/integrity/ima/ima_init.c b/security/integrity/ima/ima_init.c
-index 32912bd..3ba0ca4 100644
---- a/security/integrity/ima/ima_init.c
-+++ b/security/integrity/ima/ima_init.c
-@@ -128,6 +128,8 @@ int __init ima_init(void)
- 	if (rc != 0)
- 		return rc;
- 
-+	ima_load_kexec_buffer();
-+
- 	rc = ima_add_boot_aggregate();	/* boot aggregate must be first entry */
- 	if (rc != 0)
- 		return rc;
-diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
-new file mode 100644
-index 0000000..6a046ad
---- /dev/null
-+++ b/security/integrity/ima/ima_kexec.c
-@@ -0,0 +1,55 @@
-+/*
-+ * Copyright (C) 2016 IBM Corporation
-+ *
-+ * Authors:
-+ * Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-+ * Mimi Zohar <zohar@linux.vnet.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+#include <linux/fcntl.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/seq_file.h>
-+#include <linux/rculist.h>
-+#include <linux/rcupdate.h>
-+#include <linux/parser.h>
-+#include <linux/vmalloc.h>
-+#include <linux/kexec.h>
-+#include <linux/reboot.h>
-+
-+#include "ima.h"
-+
-+/*
-+ * Restore the measurement list from the previous kernel.
-+ */
-+void ima_load_kexec_buffer(void)
-+{
-+	void *kexec_buffer = NULL;
-+	size_t kexec_buffer_size = 0;
-+	int rc;
-+
-+	rc = kexec_get_handover_buffer(&kexec_buffer, &kexec_buffer_size);
-+	switch (rc) {
-+	case 0:
-+		rc = ima_restore_measurement_list(kexec_buffer_size,
-+						  kexec_buffer);
-+		if (rc != 0)
-+			pr_err("Failed to restore the measurement list: %d\n",
-+				rc);
-+
-+		kexec_free_handover_buffer();
-+		break;
-+	case -ENOTSUPP:
-+		pr_debug("Restoring the measurement list not supported\n");
-+		break;
-+	case -ENOENT:
-+		pr_debug("No measurement list to restore\n");
-+		break;
-+	default:
-+		pr_debug("Error restoring the measurement list: %d\n", rc);
-+	}
-+}
+ #ifdef CONFIG_KEXEC_FILE
 diff --git a/security/integrity/ima/ima_queue.c b/security/integrity/ima/ima_queue.c
-index 32f6ac0..4b1bb77 100644
+index 12d1b04..3a3cc2a 100644
 --- a/security/integrity/ima/ima_queue.c
 +++ b/security/integrity/ima/ima_queue.c
-@@ -149,3 +149,13 @@ out:
- 			    op, audit_cause, result, audit_info);
+@@ -29,6 +29,11 @@
+ #define AUDIT_CAUSE_LEN_MAX 32
+ 
+ LIST_HEAD(ima_measurements);	/* list of all measurements */
++#ifdef CONFIG_IMA_KEXEC
++static unsigned long binary_runtime_size;
++#else
++static unsigned long binary_runtime_size = ULONG_MAX;
++#endif
+ 
+ /* key: inode (before secure-hashing a file) */
+ struct ima_h_table ima_htable = {
+@@ -64,6 +69,24 @@ static struct ima_queue_entry *ima_lookup_digest_entry(u8 *digest_value,
+ 	return ret;
+ }
+ 
++/*
++ * Calculate the memory required for serializing a single
++ * binary_runtime_measurement list entry, which contains a
++ * couple of variable length fields (e.g template name and data).
++ */
++static int get_binary_runtime_size(struct ima_template_entry *entry)
++{
++	int size = 0;
++
++	size += sizeof(u32);	/* pcr */
++	size += sizeof(entry->digest);
++	size += sizeof(int);	/* template name size field */
++	size += strlen(entry->template_desc->name);
++	size += sizeof(entry->template_data_len);
++	size += entry->template_data_len;
++	return size;
++}
++
+ /* ima_add_template_entry helper function:
+  * - Add template entry to the measurement list and hash table, for
+  *   all entries except those carried across kexec.
+@@ -90,9 +113,30 @@ static int ima_add_digest_entry(struct ima_template_entry *entry, int flags)
+ 		key = ima_hash_key(entry->digest);
+ 		hlist_add_head_rcu(&qe->hnext, &ima_htable.queue[key]);
+ 	}
++
++	if (binary_runtime_size != ULONG_MAX) {
++		int size;
++
++		size = get_binary_runtime_size(entry);
++		binary_runtime_size = (binary_runtime_size < ULONG_MAX - size) ?
++		     binary_runtime_size + size : ULONG_MAX;
++	}
+ 	return 0;
+ }
+ 
++/*
++ * Return the amount of memory required for serializing the
++ * entire binary_runtime_measurement list, including the ima_kexec_hdr
++ * structure.
++ */
++unsigned long ima_get_binary_runtime_size(void)
++{
++	if (binary_runtime_size >= (ULONG_MAX - sizeof(struct ima_kexec_hdr)))
++		return ULONG_MAX;
++	else
++		return binary_runtime_size + sizeof(struct ima_kexec_hdr);
++};
++
+ static int ima_pcr_extend(const u8 *hash, int pcr)
+ {
+ 	int result = 0;
+@@ -106,8 +150,13 @@ static int ima_pcr_extend(const u8 *hash, int pcr)
  	return result;
  }
-+
-+int ima_restore_measurement_entry(struct ima_template_entry *entry)
-+{
-+	int result = 0;
-+
-+	mutex_lock(&ima_extend_list_mutex);
-+	result = ima_add_digest_entry(entry);
-+	mutex_unlock(&ima_extend_list_mutex);
-+	return result;
-+}
-diff --git a/security/integrity/ima/ima_template.c b/security/integrity/ima/ima_template.c
-index febd12e..7c90075 100644
---- a/security/integrity/ima/ima_template.c
-+++ b/security/integrity/ima/ima_template.c
-@@ -37,6 +37,7 @@ static struct ima_template_field supported_fields[] = {
- 	{.field_id = "sig", .field_init = ima_eventsig_init,
- 	 .field_show = ima_show_template_sig},
- };
-+#define MAX_TEMPLATE_NAME_LEN 15
  
- static struct ima_template_desc *ima_template;
- static struct ima_template_desc *lookup_template_desc(const char *name);
-@@ -205,3 +206,172 @@ int __init ima_init_template(void)
- 
- 	return result;
- }
-+
-+static int ima_restore_template_data(struct ima_template_desc *template_desc,
-+				     void *template_data,
-+				     int template_data_size,
-+				     struct ima_template_entry **entry)
-+{
-+	struct binary_field_data {
-+		u32 len;
-+		u8 data[0];
-+	} __packed;
-+
-+	struct binary_field_data *field_data;
-+	int offset = 0;
-+	int ret = 0;
-+	int i;
-+
-+	*entry = kzalloc(sizeof(**entry) +
-+		    template_desc->num_fields * sizeof(struct ima_field_data),
-+		    GFP_NOFS);
-+	if (!*entry)
-+		return -ENOMEM;
-+
-+	(*entry)->template_desc = template_desc;
-+	for (i = 0; i < template_desc->num_fields; i++) {
-+		field_data = template_data + offset;
-+
-+		/* Each field of the template data is prefixed with a length. */
-+		if (offset > (template_data_size - sizeof(field_data->len))) {
-+			pr_err("Restoring the template field failed\n");
-+			ret = -EINVAL;
-+			break;
-+		}
-+		offset += sizeof(field_data->len);
-+
-+		if (offset > (template_data_size - field_data->len)) {
-+			pr_err("Restoring the template field data failed\n");
-+			ret = -EINVAL;
-+			break;
-+		}
-+		offset += field_data->len;
-+
-+		(*entry)->template_data[i].len = field_data->len;
-+		(*entry)->template_data_len += sizeof(field_data->len);
-+
-+		(*entry)->template_data[i].data =
-+			kzalloc(field_data->len + 1, GFP_KERNEL);
-+		if (!(*entry)->template_data[i].data) {
-+			ret = -ENOMEM;
-+			break;
-+		}
-+		memcpy((*entry)->template_data[i].data, field_data->data,
-+			field_data->len);
-+		(*entry)->template_data_len += field_data->len;
-+	}
-+
-+	if (ret < 0) {
-+		ima_free_template_entry(*entry);
-+		*entry = NULL;
-+	}
-+
-+	return ret;
-+}
-+
-+/* Restore the serialized binary measurement list without extending PCRs. */
-+int ima_restore_measurement_list(loff_t size, void *buf)
-+{
-+	struct binary_hdr_v1 {
-+		u32 pcr;
-+		u8 digest[TPM_DIGEST_SIZE];
-+		u32 template_name_len;
-+		char template_name[0];
-+	} __packed;
-+	char template_name[MAX_TEMPLATE_NAME_LEN];
-+
-+	struct binary_data_v1 {
-+		u32 template_data_size;
-+		char template_data[0];
-+	} __packed;
-+
-+	struct ima_kexec_hdr *khdr = buf;
-+	struct binary_hdr_v1 *hdr_v1;
-+	struct binary_data_v1 *data_v1;
-+
-+	void *bufp = buf + sizeof(*khdr);
-+	void *bufendp = buf + khdr->buffer_size;
-+	struct ima_template_entry *entry;
-+	struct ima_template_desc *template_desc;
-+	unsigned long count = 0;
-+	int ret = 0;
-+
-+	if (!buf || size < sizeof(*khdr))
-+		return 0;
-+
-+	if (khdr->version != 1) {
-+		pr_err("attempting to restore a incompatible measurement list");
-+		return 0;
-+	}
-+
-+	/*
-+	 * ima kexec buffer prefix: version, buffer size, count
-+	 * v1 format: pcr, digest, template-name-len, template-name,
-+	 *	      template-data-size, template-data
-+	 */
-+	while ((bufp < bufendp) && (count++ < khdr->count)) {
-+		if (count > ULONG_MAX - 1) {
-+			pr_err("attempting to restore too many measurements");
-+			ret = -EINVAL;
-+		}
-+
-+		hdr_v1 = bufp;
-+		if ((hdr_v1->template_name_len > MAX_TEMPLATE_NAME_LEN) ||
-+		    ((bufp + hdr_v1->template_name_len) > bufendp)) {
-+			pr_err("attempting to restore a template name \
-+				that is too long\n");
-+			ret = -EINVAL;
-+			break;
-+		}
-+		bufp += sizeof(*hdr_v1);
-+
-+		/* template name is not null terminated */
-+		memcpy(template_name, bufp, hdr_v1->template_name_len);
-+		template_name[hdr_v1->template_name_len] = 0;
-+
-+		if (strcmp(template_name, "ima") == 0) {
-+			pr_err("attempting to restore an unsupported \
-+				template \"%s\" failed\n", template_name);
-+			ret = -EINVAL;
-+			break;
-+		}
-+		data_v1 = bufp += (u_int8_t)hdr_v1->template_name_len;
-+
-+		/* get template format */
-+		template_desc = lookup_template_desc(template_name);
-+		if (!template_desc) {
-+			pr_err("template \"%s\" not found\n", template_name);
-+			ret = -EINVAL;
-+			break;
-+		}
-+
-+		if (bufp > (bufendp - sizeof(data_v1->template_data_size))) {
-+			pr_err("restoring the template data size failed\n");
-+			ret = -EINVAL;
-+			break;
-+		}
-+		bufp += (u_int8_t) sizeof(data_v1->template_data_size);
-+
-+		if (bufp > (bufendp - data_v1->template_data_size)) {
-+			pr_err("restoring the template data failed\n");
-+			ret = -EINVAL;
-+			break;
-+		}
-+
-+		ret = ima_restore_template_data(template_desc,
-+						data_v1->template_data,
-+						data_v1->template_data_size,
-+						&entry);
-+		if (ret < 0)
-+			break;
-+
-+		memcpy(entry->digest, hdr_v1->digest, TPM_DIGEST_SIZE);
-+		entry->pcr = hdr_v1->pcr;
-+		ret = ima_restore_measurement_entry(entry);
-+		if (ret < 0)
-+			break;
-+
-+		bufp += data_v1->template_data_size;
-+	}
-+	return ret;
-+}
+-/* Add template entry to the measurement list and hash table,
+- * and extend the pcr.
++/*
++ * Add template entry to the measurement list and hash table, and
++ * extend the pcr.
++ *
++ * On systems which support carrying the IMA measurement list across
++ * kexec, maintain the total memory size required for serializing the
++ * binary_runtime_measurements.
+  */
+ int ima_add_template_entry(struct ima_template_entry *entry, int violation,
+ 			   const char *op, struct inode *inode,
 -- 
 2.1.0
