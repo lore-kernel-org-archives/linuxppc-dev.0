@@ -1,27 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sSqSg5S0fzDrpk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 11:56:03 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id ez1so10110511pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Sep 2016 18:56:03 -0700 (PDT)
-Subject: Re: [RESEND][v2][PATCH] KVM: PPC: Book3S HV: Migrate pinned pages out
- of CMA
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-References: <20160714042536.GG18277@balbir.ozlabs.ibm.com>
- <3ba0fa6c-bfe6-a395-9c32-db8d6261559d@ozlabs.ru>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <cf34d62d-164c-bc7b-5538-ebd3c22657a5@gmail.com>
-Date: Tue, 6 Sep 2016 11:55:54 +1000
-MIME-Version: 1.0
-In-Reply-To: <3ba0fa6c-bfe6-a395-9c32-db8d6261559d@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sSss50ylbzDrpn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 13:43:52 +1000 (AEST)
+Message-ID: <1473133425.2313.58.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/xics/opal: Fix processor numbers in OPAL ICP
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <michaele@au1.ibm.com>
+Date: Tue, 06 Sep 2016 13:43:45 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When using the OPAL ICP backend we incorrectly pass Linux CPU numbers
+rather than HW CPU numbers to OPAL.
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Fixes: d74361881f0dfe5f9dcac37d1b753a15a2345d8c
 
-On 31/08/16 14:14, Alexey Kardashevskiy wrote:
-> On 14/07/16 14:25, Balbir Singh wrote:
->>
->> From: Balbir Singh <bsingharora@gmail.com>
->> Subject: [RESEND][v2][PATCH] KVM: PPC: Book3S HV: Migrate pinned pages out of CMA
->>
->> When PCI Device pass-through is enabled via VFIO, KVM-PPC will
->> pin pages using get_user_pages_fast(). One of the downsides of
->> the pinning is that the page could be in CMA region. The CMA
->> region is used for other allocations like the hash page table.
->> Ideally we want the pinned pages to be from non CMA region.
->>
->> This patch (currently only for KVM PPC with VFIO) forcefully
->> migrates the pages out (huge pages are omitted for the moment).
->> There are more efficient ways of doing this, but that might
->> be elaborate and might impact a larger audience beyond just
->> the kvm ppc implementation.
->>
->> The magic is in new_iommu_non_cma_page() which allocates the
->> new page from a non CMA region.
->>
->> I've tested the patches lightly at my end, but there might be bugs
->> For example if after lru_add_drain(), the page is not isolated
->> is this a BUG?
->>
->> Previous discussion was at
->> http://permalink.gmane.org/gmane.linux.kernel.mm/136738
->>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Paul Mackerras <paulus@ozlabs.org>
->> Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
->>
->> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> 
-> 
-> 
-> Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> 
-
-Thanks! I tested this patch against latest mainline and here are the test results
-
-
-System RAM - 64GB
-
-VM instance 1 - size 55GB
-
-Before patch - nr_free_cma after launch 8900
-After patch - nr_free_cma after launch 39500
-
-Balbir Singh.
+---
+diff --git a/arch/powerpc/sysdev/xics/icp-opal.c b/arch/powerpc/sysdev/xics/icp-opal.c
+index 57d72f1..9114243 100644
+--- a/arch/powerpc/sysdev/xics/icp-opal.c
++++ b/arch/powerpc/sysdev/xics/icp-opal.c
+@@ -23,10 +23,10 @@
+ 
+ static void icp_opal_teardown_cpu(void)
+ {
+-	int cpu = smp_processor_id();
++	int hw_cpu = hard_smp_processor_id();
+ 
+ 	/* Clear any pending IPI */
+-	opal_int_set_mfrr(cpu, 0xff);
++	opal_int_set_mfrr(hw_cpu, 0xff);
+ }
+ 
+ static void icp_opal_flush_ipi(void)
+@@ -101,14 +101,16 @@ static void icp_opal_eoi(struct irq_data *d)
+ 
+ static void icp_opal_cause_ipi(int cpu, unsigned long data)
+ {
+-	opal_int_set_mfrr(cpu, IPI_PRIORITY);
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++
++	opal_int_set_mfrr(hw_cpu, IPI_PRIORITY);
+ }
+ 
+ static irqreturn_t icp_opal_ipi_action(int irq, void *dev_id)
+ {
+-	int cpu = smp_processor_id();
++	int hw_cpu = hard_smp_processor_id();
+ 
+-	opal_int_set_mfrr(cpu, 0xff);
++	opal_int_set_mfrr(hw_cpu, 0xff);
+ 
+ 	return smp_ipi_demux();
+ }
