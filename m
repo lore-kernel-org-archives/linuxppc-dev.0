@@ -1,28 +1,29 @@
-Return-Path: <MeghanSaitwal@Eaton.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from condef001-v.nifty.com (condef001-v.nifty.com [210.131.4.238])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sSNXC1B3jzDrnr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Sep 2016 18:42:35 +1000 (AEST)
-Received: from tccbw2.etn.com (mail2.eaton.com [192.104.67.3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sSNXB5tHfz9sBR
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Sep 2016 18:42:34 +1000 (AEST)
-Received: from SIMTCSGWY01.napa.ad.etn.com (simtcsgwy01.napa.ad.etn.com
- [151.110.126.183])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (No client certificate requested)
- by tccbw2.etn.com (Eaton Corp) with ESMTPS id 4827F97EA1DC3AA7
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Sep 2016 04:37:26 -0400 (EDT)
-From: <MeghanSaitwal@Eaton.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: How to submit patche to this list?
-Date: Mon, 5 Sep 2016 08:37:24 +0000
-Message-ID: <CDD76EB921100341B75E76FF5FC7731F1F14026F@SIMTCSMB06.napa.ad.etn.com>
-Content-Type: multipart/alternative;
- boundary="_000_CDD76EB921100341B75E76FF5FC7731F1F14026FSIMTCSMB06napaa_"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sT4Cp3SnkzDrqg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 21:30:46 +1000 (AEST)
+Received: from conuserg-08.nifty.com ([10.26.8.71])by condef001-v.nifty.com
+ with ESMTP id u86BLkxH001977
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 20:21:59 +0900
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Geoff Levand <geoff@infradead.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, Khem Raj <raj.khem@gmail.com>,
+ Cyril Bur <cyrilbur@gmail.com>, kvm@vger.kernel.org,
+ Simon Guo <wei.guo.simon@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Kees Cook <keescook@chromium.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Alexander Graf <agraf@suse.com>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
+ Rashmica Gupta <rashmicy@gmail.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: squash lines for simple wrapper functions
+Date: Tue,  6 Sep 2016 20:21:50 +0900
+Message-Id: <1473160910-20247-1-git-send-email-yamada.masahiro@socionext.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,80 +33,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_CDD76EB921100341B75E76FF5FC7731F1F14026FSIMTCSMB06napaa_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Remove unneeded variables and assignments.
 
-Hi,
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
 
-I want to know about the procedure to submit the patch to this list.
+ arch/powerpc/kernel/ptrace.c            | 42 ++++++++++-----------------------
+ arch/powerpc/kvm/booke.c                |  5 +---
+ arch/powerpc/platforms/ps3/repository.c | 22 ++++-------------
+ 3 files changed, 18 insertions(+), 51 deletions(-)
 
-
-Thanks,
-Meghan Saitwal
-
---_000_CDD76EB921100341B75E76FF5FC7731F1F14026FSIMTCSMB06napaa_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
-osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
-//www.w3.org/TR/REC-html40">
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
->
-<meta name=3D"Generator" content=3D"Microsoft Word 14 (filtered medium)">
-<style><!--
-/* Font Definitions */
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-/* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;
-	font-family:"Calibri","sans-serif";}
-@page WordSection1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.WordSection1
-	{page:WordSection1;}
---></style><!--[if gte mso 9]><xml>
-<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
-<o:shapelayout v:ext=3D"edit">
-<o:idmap v:ext=3D"edit" data=3D"1" />
-</o:shapelayout></xml><![endif]-->
-</head>
-<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
-<div class=3D"WordSection1">
-<p class=3D"MsoNormal">Hi,<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">I want to know about the procedure to submit the pat=
-ch to this list.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Thanks,<o:p></o:p></p>
-<p class=3D"MsoNormal">Meghan Saitwal<o:p></o:p></p>
-</div>
-</body>
-</html>
-
---_000_CDD76EB921100341B75E76FF5FC7731F1F14026FSIMTCSMB06napaa_--
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index bf91658..1979bae 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1714,11 +1714,8 @@ static int ppr_get(struct task_struct *target,
+ 		      unsigned int pos, unsigned int count,
+ 		      void *kbuf, void __user *ubuf)
+ {
+-	int ret;
+-
+-	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+-				&target->thread.ppr, 0, sizeof(u64));
+-	return ret;
++	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++				   &target->thread.ppr, 0, sizeof(u64));
+ }
+ 
+ static int ppr_set(struct task_struct *target,
+@@ -1726,11 +1723,8 @@ static int ppr_set(struct task_struct *target,
+ 		      unsigned int pos, unsigned int count,
+ 		      const void *kbuf, const void __user *ubuf)
+ {
+-	int ret;
+-
+-	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+-				&target->thread.ppr, 0, sizeof(u64));
+-	return ret;
++	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				  &target->thread.ppr, 0, sizeof(u64));
+ }
+ 
+ static int dscr_get(struct task_struct *target,
+@@ -1738,22 +1732,16 @@ static int dscr_get(struct task_struct *target,
+ 		      unsigned int pos, unsigned int count,
+ 		      void *kbuf, void __user *ubuf)
+ {
+-	int ret;
+-
+-	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+-				&target->thread.dscr, 0, sizeof(u64));
+-	return ret;
++	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++				   &target->thread.dscr, 0, sizeof(u64));
+ }
+ static int dscr_set(struct task_struct *target,
+ 		      const struct user_regset *regset,
+ 		      unsigned int pos, unsigned int count,
+ 		      const void *kbuf, const void __user *ubuf)
+ {
+-	int ret;
+-
+-	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+-				&target->thread.dscr, 0, sizeof(u64));
+-	return ret;
++	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				  &target->thread.dscr, 0, sizeof(u64));
+ }
+ #endif
+ #ifdef CONFIG_PPC_BOOK3S_64
+@@ -1762,22 +1750,16 @@ static int tar_get(struct task_struct *target,
+ 		      unsigned int pos, unsigned int count,
+ 		      void *kbuf, void __user *ubuf)
+ {
+-	int ret;
+-
+-	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+-				&target->thread.tar, 0, sizeof(u64));
+-	return ret;
++	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++				   &target->thread.tar, 0, sizeof(u64));
+ }
+ static int tar_set(struct task_struct *target,
+ 		      const struct user_regset *regset,
+ 		      unsigned int pos, unsigned int count,
+ 		      const void *kbuf, const void __user *ubuf)
+ {
+-	int ret;
+-
+-	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+-				&target->thread.tar, 0, sizeof(u64));
+-	return ret;
++	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				  &target->thread.tar, 0, sizeof(u64));
+ }
+ 
+ static int ebb_active(struct task_struct *target,
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 02b4672..881e136 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -1767,10 +1767,7 @@ int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
+ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
+                                   struct kvm_translation *tr)
+ {
+-	int r;
+-
+-	r = kvmppc_core_vcpu_translate(vcpu, tr);
+-	return r;
++	return kvmppc_core_vcpu_translate(vcpu, tr);
+ }
+ 
+ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
+index 814a7ea..50dbaf2 100644
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -170,14 +170,8 @@ int ps3_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
+ 
+ int ps3_repository_read_bus_id(unsigned int bus_index, u64 *bus_id)
+ {
+-	int result;
+-
+-	result = read_node(PS3_LPAR_ID_PME,
+-		make_first_field("bus", bus_index),
+-		make_field("id", 0),
+-		0, 0,
+-		bus_id, NULL);
+-	return result;
++	return read_node(PS3_LPAR_ID_PME, make_first_field("bus", bus_index),
++			 make_field("id", 0), 0, 0, bus_id, NULL);
+ }
+ 
+ int ps3_repository_read_bus_type(unsigned int bus_index,
+@@ -224,15 +218,9 @@ int ps3_repository_read_dev_str(unsigned int bus_index,
+ int ps3_repository_read_dev_id(unsigned int bus_index, unsigned int dev_index,
+ 	u64 *dev_id)
+ {
+-	int result;
+-
+-	result = read_node(PS3_LPAR_ID_PME,
+-		make_first_field("bus", bus_index),
+-		make_field("dev", dev_index),
+-		make_field("id", 0),
+-		0,
+-		dev_id, NULL);
+-	return result;
++	return read_node(PS3_LPAR_ID_PME, make_first_field("bus", bus_index),
++			 make_field("dev", dev_index), make_field("id", 0), 0,
++			 dev_id, NULL);
+ }
+ 
+ int ps3_repository_read_dev_type(unsigned int bus_index,
+-- 
+1.9.1
