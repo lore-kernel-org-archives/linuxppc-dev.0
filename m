@@ -1,21 +1,43 @@
-Return-Path: <afleming@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sTGSB2T4mzDrp5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 05:12:10 +1000 (AEST)
-Received: by mail-oi0-x243.google.com with SMTP id w78so10911989oie.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2016 12:12:10 -0700 (PDT)
-From: Andy Fleming <afleming@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	scottwood@freescale.com
-Cc: aperez@alexperez.com
-Subject: [PATCH 3/3] Cyrus: create a defconfig
-Date: Tue,  6 Sep 2016 14:11:59 -0500
-Message-Id: <1473189119-29458-4-git-send-email-afleming@gmail.com>
-In-Reply-To: <1473189119-29458-1-git-send-email-afleming@gmail.com>
-References: <1473189119-29458-1-git-send-email-afleming@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sTHfh3D8HzDrnw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 06:06:18 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u86K3JQr082135
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Sep 2016 16:06:15 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25a1kkh80s-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2016 16:06:15 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Tue, 6 Sep 2016 16:06:15 -0400
+Subject: Re: [PATCH 2/6] cxlflash: Remove the device cleanly in the system
+ shutdown path
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+References: <1472848612-64888-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1472848756-64998-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <609a0eff-d4e4-03ea-739f-770fc24860ef@au1.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Date: Tue, 6 Sep 2016 15:06:12 -0500
+MIME-Version: 1.0
+In-Reply-To: <609a0eff-d4e4-03ea-739f-770fc24860ef@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <155be261-b2e5-c408-81e9-59634bd7bf95@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +47,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This sets up the proper config elements for Power and Reset to work
-properly (using the gpio pins).
 
-Signed-off-by: Andy Fleming <afleming@gmail.com>
----
- arch/powerpc/Makefile                      | 5 +++++
- arch/powerpc/configs/cyrus_basic_defconfig | 9 +++++++++
- 2 files changed, 14 insertions(+)
- create mode 100644 arch/powerpc/configs/cyrus_basic_defconfig
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 1934707..83f257e 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -332,6 +332,11 @@ corenet64_smp_defconfig:
- 	$(call merge_into_defconfig,corenet_basic_defconfig,\
- 		85xx-64bit 85xx-smp altivec 85xx-hw fsl-emb-nonhw)
- 
-+PHONY += cyrus_defconfig
-+cyrus_defconfig:
-+	$(call merge_into_defconfig,cyrus_basic_defconfig,\
-+		85xx-64bit 85xx-smp altivec 85xx-hw fsl-emb-nonhw)
-+
- PHONY += mpc86xx_defconfig
- mpc86xx_defconfig:
- 	$(call merge_into_defconfig,mpc86xx_basic_defconfig,\
-diff --git a/arch/powerpc/configs/cyrus_basic_defconfig b/arch/powerpc/configs/cyrus_basic_defconfig
-new file mode 100644
-index 0000000..975150c
---- /dev/null
-+++ b/arch/powerpc/configs/cyrus_basic_defconfig
-@@ -0,0 +1,9 @@
-+CONFIG_CORENET_GENERIC=y
-+CONFIG_USERLIB=y
-+CONFIG_GPIO_GENERIC_PLATFORM=y
-+CONFIG_POWER_SUPPLY=y
-+CONFIG_POWER_RESET=y
-+CONFIG_POWER_RESET_GPIO=y
-+CONFIG_POWER_RESET_GPIO_RESTART=y
-+CONFIG_RESET_CONTROLLER=y
-+CONFIG_EXT3_FS=y
--- 
-1.9.1
+On 9/5/2016 2:12 AM, Andrew Donnellan wrote:
+> On 03/09/16 06:39, Uma Krishnan wrote:
+>> Commit 704c4b0ddc03 ("cxlflash: Shutdown notify support for CXL Flash
+>> cards") was recently introduced to notify the AFU when a system is going
+>> down. Due to the position of the cxlflash driver in the device stack,
+>> cxlflash devices are _always_ removed during a reboot/shutdown. This can
+>> lead to a crash if the cxlflash shutdown hook is invoked _after_ the
+>> shutdown hook for the owning virtual PHB. Furthermore, the current
+>> implementation of shutdown/remove hooks for cxlflash are not tolerant to
+>> being invoked when the device is not enabled. This can also lead to a
+>> crash in situations where the remove hook is invoked after the device has
+>> been removed via the vPHBs shutdown hook. An example of this scenario
+>> would be an EEH reset failure while a reboot/shutdown is in progress.
+>>
+>> To solve both problems, the shutdown hook for cxlflash is updated to
+>> simply remove the device. This path already includes the AFU notification
+>> and thus this solution will continue to perform the original intent. At
+>> the same time, the remove hook is updated to protect against being
+>> called when the device is not enabled.
+>>
+>> Fixes: 704c4b0ddc03 ("cxlflash: Shutdown notify support for CXL Flash
+>> cards")
+>> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+>> ---
+>>  drivers/scsi/cxlflash/main.c | 18 ++++++------------
+>>  1 file changed, 6 insertions(+), 12 deletions(-)
+>>
+>> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+>> index b063c41..4c2559a 100644
+>> --- a/drivers/scsi/cxlflash/main.c
+>> +++ b/drivers/scsi/cxlflash/main.c
+>> @@ -823,17 +823,6 @@ static void notify_shutdown(struct cxlflash_cfg
+>> *cfg, bool wait)
+>>  }
+>>
+>>  /**
+>> - * cxlflash_shutdown() - shutdown handler
+>> - * @pdev:    PCI device associated with the host.
+>> - */
+>> -static void cxlflash_shutdown(struct pci_dev *pdev)
+>> -{
+>> -    struct cxlflash_cfg *cfg = pci_get_drvdata(pdev);
+>> -
+>> -    notify_shutdown(cfg, false);
+>
+> You can get rid of the second parameter to notify_shutdown() now.
+>
+
+Valid comment. This was considered while working the patch. I left it
+for now, in case we need this flag in future. If we end up not having
+to use it, I will clean it up in a future patch.
+
+>> -}
+>> -
+>> -/**
+>>   * cxlflash_remove() - PCI entry point to tear down host
+>>   * @pdev:    PCI device associated with the host.
+>>   *
+>> @@ -844,6 +833,11 @@ static void cxlflash_remove(struct pci_dev *pdev)
+>>      struct cxlflash_cfg *cfg = pci_get_drvdata(pdev);
+>>      ulong lock_flags;
+>>
+>> +    if (!pci_is_enabled(pdev)) {
+>> +        pr_debug("%s: Device is disabled\n", __func__);
+>> +        return;
+>> +    }
+>> +
+>>      /* If a Task Management Function is active, wait for it to complete
+>>       * before continuing with remove.
+>>       */
+>> @@ -2685,7 +2679,7 @@ static struct pci_driver cxlflash_driver = {
+>>      .id_table = cxlflash_pci_table,
+>>      .probe = cxlflash_probe,
+>>      .remove = cxlflash_remove,
+>> -    .shutdown = cxlflash_shutdown,
+>> +    .shutdown = cxlflash_remove,
+>
+> What's the justification for using cxlflash_remove() as the shutdown
+> hook, rather than just not having a shutdown hook at all?
+>
+
+Even though cxlflash gets cleaned up via cxl_remove() shutdown
+hook, today it is a dependency on the code external to our driver.
+To protect us from future API changes that could possibly impact
+cxlflash, we want to maintain a clean and reliable way to get
+called in the shutdown path.
