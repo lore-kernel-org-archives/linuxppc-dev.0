@@ -1,57 +1,19 @@
-Return-Path: <bjorn.andersson@linaro.org>
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <glaubitz@physik.fu-berlin.de>
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
+ [130.133.4.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sTDYX3fNPzDsGm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 03:46:39 +1000 (AEST)
-Received: by mail-pa0-x236.google.com with SMTP id cm16so25744788pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2016 10:46:39 -0700 (PDT)
-Date: Tue, 6 Sep 2016 10:46:31 -0700
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, Felix Fietkau <nbd@nbd.name>,
- David Woodhouse <dwmw2@infradead.org>,
- Roman Pen <r.peniaev@gmail.com>, Ming Lei <ming.lei@canonical.com>,
- Andrew Morton <akpm@linux-foundation.org>, Michal Marek <mmarek@suse.com>,
- Greg KH <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Vikram Mulukutla <markivx@codeaurora.org>,
- Stephen Boyd <stephen.boyd@linaro.org>,
- Mark Brown <broonie@kernel.org>, Takashi Iwai <tiwai@suse.de>,
- Johannes Berg <johannes@sipsolutions.net>,
- Christian Lamparter <chunkeey@googlemail.com>,
- Hauke Mehrtens <hauke@hauke-m.de>, Josh Boyer <jwboyer@fedoraproject.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Jiri Slaby <jslaby@suse.com>, Andy Lutomirski <luto@amacapital.net>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Richard Purdie <rpurdie@rpsys.net>, Jeff Mahoney <jeffm@suse.com>,
- Jacek Anaszewski <j.anaszewski@samsung.com>, Abhay_Salunke@dell.com,
- Julia Lawall <Julia.Lawall@lip6.fr>, Gilles.Muller@lip6.fr,
- nicolas.palix@imag.fr, Tom Gundersen <teg@jklm.no>,
- Kay Sievers <kay@vrfy.org>, David Howells <dhowells@redhat.com>,
- Alessandro Rubini <rubini@gnudd.com>, Kevin Cernekee <cernekee@gmail.com>,
- Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
- Thierry Martinez <martinez@nsup.org>, cocci@systeme.lip6.fr,
- linux-serial@vger.kernel.org,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC] fs: add userspace critical mounts event support
-Message-ID: <20160906174630.GB15161@tuxbot>
-References: <1466117661-22075-1-git-send-email-mcgrof@kernel.org>
- <1466117661-22075-3-git-send-email-mcgrof@kernel.org>
- <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
- <20160824203901.GT3296@wotan.suse.de>
- <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
- <20160825194133.GC3296@wotan.suse.de>
- <20160902235916.GO3296@wotan.suse.de>
- <20160903002014.GP3296@wotan.suse.de>
- <CA+55aFy4_QLYiQxtKpq0FJD7eSBRZ8nXS=Ruuz1TYodHdE_dCA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sTK2J0K5lzDrpM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 07:08:23 +1000 (AEST)
+To: Paul Mackerras <paulus@samba.org>
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Subject: Build regression introduced by
+ 31cdd0c39c7544ced79da53aa0b7e989f3a39582
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Message-ID: <829134bc-381a-7f45-a99a-0b7e66642246@physik.fu-berlin.de>
+Date: Tue, 6 Sep 2016 23:01:02 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFy4_QLYiQxtKpq0FJD7eSBRZ8nXS=Ruuz1TYodHdE_dCA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,49 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 02 Sep 21:11 PDT 2016, Linus Torvalds wrote:
+Hi Paul!
 
-Linus, I reversed the order of your questions/answers to fit my answer
-better.
+I'm referring to your change [1]:
 
-> On Fri, Sep 2, 2016 at 5:20 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
-> >
-> > Thoughts ?
-> What are the drivers that need this, and why can't those drivers just
-> be fixed to not do braindead things?
-> 
+"powerpc/xmon: Fix SPR read/write commands and add command to dump SPRs"
 
-I have several cases where remoteproc drivers are used boot DSPs upon
-boot of the device, but the firmware files are way too big for being
-stored in initramfs and all consumers of the provided services are
-(semi-) probable as the remote processor is booted.
+which introduced assembly code in the new file arch/powerpc/xmon/spr_access.S.
 
-I.e. we need some way to figure out when these files become available so
-we can bring these remote processors up.
+Unfortunately, this code contains assembly instructions which are not available on
+all ppc targets. In particular, this change breaks the build on PPC e500v2 targets,
+see the corresponding Debian bug report [2].
 
-> It's basically the kernel giving up, and relying on user space to give
-> a single flag, and it's broken nasty crap.  Worse, it's broken nasty
-> crap with a user interface, so we'll be stuck with it forever. Please
-> no.
-> 
+Could you have a look and possibly add some guarding #ifdefs for the ppc targets
+where "ld" is not a supported instruction?
 
-There are several cases where there granularity of a single flag is not
-enough and we do already have a working mechanism for relying on user
-space to inform the kernel that firmware is available:
-CONFIG_FW_LOADER_USER_HELPER_FALLBACK
+Thanks,
+Adrian
 
-Another available solution is, as you say, using kernel modules.  But I
-really do not like the deployment issues that comes with kernel modules
-during development. (The firmware and remoteproc driver normally does
-not have the same flow through a development process)
+> [1] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=31cdd0c39c7544ced79da53aa0b7e989f3a39582
+> [2] https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=836741
 
-> 
-> I really think this is a horrible hack.
-> 
-
-I agree, but that said, I would appreciate a automagical mechanism that
-would relieve user space from having to signal to the kernel that the
-firmware partition has been mounted.
-
-Regards,
-Bjorn
+-- 
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer - glaubitz@debian.org
+`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
