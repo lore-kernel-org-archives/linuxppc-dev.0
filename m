@@ -1,19 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sT81L2tHQzDrpN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 00:21:57 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Remove all usages of NO_IRQ
-Date: Tue, 06 Sep 2016 16:22:23 +0200
-Message-ID: <4300236.QNKFM5GGo3@wuerfel>
-In-Reply-To: <1473162804-6802-1-git-send-email-mpe@ellerman.id.au>
-References: <1473162804-6802-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sTCSC706TzDsGT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 02:56:58 +1000 (AEST)
+Date: Tue, 6 Sep 2016 11:56:52 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, alex.williamson@redhat.com,
+ paulus@samba.org, aik@ozlabs.ru, gwshan@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, zhong@linux.vnet.ibm.com
+Subject: Re: [PATCH v4 3/5] PCI: Do not disable memory decoding in
+ pci_reassigndev_resource_alignment()
+Message-ID: <20160906165652.GE1214@localhost>
+References: <1470980546-2918-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1470980546-2918-4-git-send-email-xyjxie@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1470980546-2918-4-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,55 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, September 6, 2016 9:53:24 PM CEST Michael Ellerman wrote:
->  drivers/macintosh/macio_asic.c                   |  4 ++--
->  drivers/macintosh/rack-meter.c                   |  2 +-
->  drivers/macintosh/smu.c                          | 18 +++++++++---------
->  drivers/macintosh/via-cuda.c                     |  2 +-
->  drivers/macintosh/via-pmu.c                      |  6 +++---
->  drivers/ps3/ps3-vuart.c                          |  4 ++--
->  sound/aoa/core/gpio-feature.c                    |  4 ++--
->  sound/ppc/tumbler.c                              |  8 ++++----
+On Fri, Aug 12, 2016 at 01:42:24PM +0800, Yongji Xie wrote:
+> We should not disable memory decoding when we reassign alignment
+> in pci_reassigndev_resource_alignment(). It's meaningless and
+> have some side effects. For example, we found it would break
+> this kind of P2P bridge:
+> 
+> 0001:02:02.0 PCI bridge: PLX Technology, Inc. PEX 8718 16-Lane,
+> 5-Port PCI Express Gen 3 (8.0 GT/s) Switch (rev aa)
 
-I've got a tree in which I've fixed up all drivers that use NO_IRQ on
-ARM (tested with lots of randconfig builds). I found a couple remaining
-ones that all look powerpc specific:
+I doubt that turning memory decode off breaks this bridge.  I can
+believe that it could cause a problem, but I doubt it would be
+specific to this bridge.
 
-drivers/ata/pata_mpc52xx.c:	if (ata_irq == NO_IRQ) {
-drivers/ata/sata_dwc_460ex.c:   if (hsdev->dma->irq == NO_IRQ) {
-drivers/dma/bestcomm/bestcomm.c:		if (tsk->irq != NO_IRQ)
-drivers/dma/fsl_raid.c:	if (chan->irq == NO_IRQ) {
-drivers/dma/fsldma.c:	if (fdev->irq != NO_IRQ) {
-drivers/dma/mpc512x_dma.c:	if (mdma->irq == NO_IRQ) {
-drivers/dma/ppc4xx/adma.c:	if (adev->irq == NO_IRQ) {
-drivers/edac/mpc85xx_edac.c:	pdata->irq = NO_IRQ;
-drivers/edac/mv64x60_edac.c:	pdata->irq = NO_IRQ;
-drivers/edac/ppc4xx_edac.c:	pdata->irqs.sec		= NO_IRQ;
-drivers/iommu/fsl_pamu.c:	if (irq != NO_IRQ)
-drivers/media/platform/fsl-viu.c:	if (viu_irq == NO_IRQ) {
-drivers/mtd/nand/mpc5121_nfc.c:	if (prv->irq == NO_IRQ) {
-drivers/net/ethernet/freescale/fs_enet/mac-fcc.c:	if (fep->interrupt == NO_IRQ)
-drivers/net/ethernet/freescale/fs_enet/mac-fec.c:	if (fep->interrupt == NO_IRQ)
-drivers/net/ethernet/freescale/fs_enet/mac-scc.c:	if (fep->interrupt == NO_IRQ)
-drivers/net/ethernet/ibm/emac/core.c:	if (dev->emac_irq != NO_IRQ)
-drivers/net/ethernet/ibm/emac/mal.c:	if (mal->txeob_irq == NO_IRQ || mal->rxeob_irq == NO_IRQ ||
-drivers/net/ethernet/ibm/ibmvnic.c:		if (scrq->irq == NO_IRQ) {
-drivers/net/ethernet/toshiba/ps3_gelic_net.c:	netdev->irq = NO_IRQ;
-drivers/pcmcia/electra_cf.c:	cf->irq = NO_IRQ;
-drivers/soc/fsl/qe/qe_ic.c:		return NO_IRQ;
-drivers/spi/spi-mpc52xx.c:	if (status && (irq != NO_IRQ))
-drivers/tty/ehv_bytechan.c:	if (stdout_irq == NO_IRQ) {
-drivers/tty/serial/cpm_uart/cpm_uart_core.c:	if (pinfo->port.irq == NO_IRQ) {
-drivers/uio/uio_fsl_elbc_gpcm.c:	if (irq != NO_IRQ) {
-drivers/usb/host/ehci-grlib.c:	if (irq == NO_IRQ) {
-drivers/usb/host/ehci-ppc-of.c:	if (irq == NO_IRQ) {
-drivers/usb/host/fhci-hcd.c:	if (usb_irq == NO_IRQ) {
-drivers/usb/host/ohci-ppc-of.c:	if (irq == NO_IRQ) {
-drivers/usb/host/uhci-grlib.c:	if (irq == NO_IRQ) {
-drivers/video/fbdev/mb862xx/mb862xxfbdrv.c:	if (par->irq == NO_IRQ) {
-drivers/virt/fsl_hypervisor.c:		if (!handle || (irq == NO_IRQ)) {
-include/soc/fsl/qe/qe_ic.h:	if (cascade_irq != NO_IRQ)
+I also don't think it's meaningless.  After your patch, we throw away
+our knowledge of what the BAR contains when we set "r->start = 0".
+But if you leave memory decoding enabled, the device will still
+respond at whatever address the BAR contains.  That seems like a
+problem.
 
-They should all be as easy to replace as the others.
-
-	Arnd
+> And it may also potentially break the PCI devices with mmio_always_on
+> bit set.
+> 
+> Besides, disabling memory decoding is not expected in some fixup
+> function such as fixup_vga(). The fixup_vga() read PCI_COMMAND_MEMORY
+> to know whether the devices has been initialized by the firmware or
+> not. Disabling memory decoding would cause the one initialized by
+> firmware may not be set as the default VGA device when more than one
+> graphics adapter is present.
+> 
+> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+> ---
+>  drivers/pci/pci.c |    8 +-------
+>  1 file changed, 1 insertion(+), 7 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index b8357d7..caa0894 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -5046,7 +5046,6 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  	int i;
+>  	struct resource *r;
+>  	resource_size_t align, size;
+> -	u16 command;
+>  
+>  	/*
+>  	 * VF BARs are RO zero according to SR-IOV spec 3.4.1.11. Their
+> @@ -5069,12 +5068,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  		return;
+>  	}
+>  
+> -	dev_info(&dev->dev,
+> -		"Disabling memory decoding and releasing memory resources.\n");
+> -	pci_read_config_word(dev, PCI_COMMAND, &command);
+> -	command &= ~PCI_COMMAND_MEMORY;
+> -	pci_write_config_word(dev, PCI_COMMAND, command);
+> -
+> +	dev_info(&dev->dev, "Releasing memory resources.\n");
+>  	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++) {
+>  		r = &dev->resource[i];
+>  		if (!(r->flags & IORESOURCE_MEM))
+> -- 
+> 1.7.9.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
