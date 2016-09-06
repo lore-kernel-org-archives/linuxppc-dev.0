@@ -1,13 +1,17 @@
-Return-Path: <lurodriguez@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bjorn.andersson@linaro.org>
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sTL0w2lfszDrq8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 07:52:16 +1000 (AEST)
-Date: Tue, 6 Sep 2016 23:52:04 +0200
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sTLqD1fmrzDrpN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2016 08:28:55 +1000 (AEST)
+Received: by mail-pf0-x230.google.com with SMTP id 128so3237028pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2016 15:28:55 -0700 (PDT)
+Date: Tue, 6 Sep 2016 15:28:47 -0700
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
  "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
  Jacek Anaszewski <j.anaszewski@samsung.com>,
  David Woodhouse <dwmw2@infradead.org>,
@@ -19,13 +23,11 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  Andy Lutomirski <luto@amacapital.net>, Richard Purdie <rpurdie@rpsys.net>,
  Wu Fengguang <fengguang.wu@intel.com>,
  Johannes Berg <johannes@sipsolutions.net>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>,
  Michal Marek <mmarek@suse.com>, Hauke Mehrtens <hauke@hauke-m.de>,
  Mark Brown <broonie@kernel.org>, Jiri Slaby <jslaby@suse.com>,
  Ming Lei <ming.lei@canonical.com>, Daniel Vetter <daniel.vetter@ffwll.ch>,
  Kevin Cernekee <cernekee@gmail.com>, Jeff Mahoney <jeffm@suse.com>,
  Greg KH <gregkh@linuxfoundation.org>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
  Jonathan Corbet <corbet@lwn.net>, Felix Fietkau <nbd@nbd.name>,
  David Howells <dhowells@redhat.com>,
  Vikram Mulukutla <markivx@codeaurora.org>,
@@ -39,9 +41,8 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  Thierry Martinez <martinez@nsup.org>,
  Josh Boyer <jwboyer@fedoraproject.org>
 Subject: Re: [RFC] fs: add userspace critical mounts event support
-Message-ID: <20160906215204.GR3296@wotan.suse.de>
-References: <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
- <20160825194133.GC3296@wotan.suse.de>
+Message-ID: <20160906222847.GF15161@tuxbot>
+References: <20160825194133.GC3296@wotan.suse.de>
  <20160902235916.GO3296@wotan.suse.de>
  <20160903002014.GP3296@wotan.suse.de>
  <CA+55aFy4_QLYiQxtKpq0FJD7eSBRZ8nXS=Ruuz1TYodHdE_dCA@mail.gmail.com>
@@ -50,9 +51,10 @@ References: <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
  <20160903174939.GB32345@dtor-ws>
  <CA+55aFwLrXRUO9n75Sthu+g73BEjskAgUkguyLwU=JA_PNzdOQ@mail.gmail.com>
  <CAKdAkRTv5Fv54wetBqkS+EyEuP_k5exJat+QXBLtTkFLO_-maQ@mail.gmail.com>
+ <20160906215204.GR3296@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKdAkRTv5Fv54wetBqkS+EyEuP_k5exJat+QXBLtTkFLO_-maQ@mail.gmail.com>
+In-Reply-To: <20160906215204.GR3296@wotan.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,92 +64,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 03, 2016 at 11:10:02AM -0700, Dmitry Torokhov wrote:
-> On Sat, Sep 3, 2016 at 11:01 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> > On Sat, Sep 3, 2016 at 10:49 AM, Dmitry Torokhov
-> > <dmitry.torokhov@gmail.com> wrote:
-> >>
-> >> Unfortunately module loading and availability of firmware is very
-> >> loosely coupled.
-> >
-> > The whole "let's add a new magical proc entry 
+On Tue 06 Sep 14:52 PDT 2016, Luis R. Rodriguez wrote:
 
-To be fair it was using a generic sysfs entry.
+> We already have MODULE_FIRMWARE(), we could have MODULE_FIRMWARE_REQ() or
+> something like it to help annotate the the driver was only functional with the
+> firmware, punt things to kmod to deal with the requirements.
 
-> > to say that all
-> > filesystems are mounted" is all about the user space coupling them.
-> 
-> I was thinking if we kernel could post "conditions" (maybe simple strings)
-> that it waits for, and userspace could unlock these "conditions". One of them
-> might be "firmware available".
+That implies that a single driver will only use a single version of the
+firmware. There are cases where we want a single driver to load firmware
+depending on e.g. hardware revisions, or previous firmware version and
+there are cases where we want to load firmware based on requested
+use-cases.
 
-Dmitry, you seem to be suggesting a generic kernel-userspace "registry" for
-intertwined dependencies that the kernel needs and only userspace can provide,
-is that right?
-
-If so it sounds overly complicated to resolve this. Do we have other uses
-outside of kernel_read_file_from_path() you had in mind for this?
-
-> > I'm just saying that if user space must know about when firmware is
-> > ready to be loaded anyway, just do it right. Not with some hacky "you
-> > can now do random things" flag.
-
-Note, this isn't just about firmware since we now have a generic API to read
-files from the kernel, so kernel_read_file_from_path(). Firmware is now just
-*one* user case. Also a complexity here is this is not just for modules but
-also for built-in drivers as well. And you want the option to update the
-files without the driver.
-
-The proposed solution provides a generic broad syfs entry for letting userspace
-inform the kernel when files from the filesystems where it would typically read
-from (I'm calling them critical filesystems for lack of a better term) can be
-accessible. Something more specific requires a bit more thought given this is
-not anymore about just firmware, must also address built-in drivers, and allow
-for updates.
-
-> >  But by having user space actually say
-> > "put this module together with this firmware".
-
-Keep in mind this isn't about just firmware anymore, and we have to consider
-built-in drivers as well. But if we were to just consider firmware... for the
-sake of following with examples.
-
-How would this registry work?
-
-We already have MODULE_FIRMWARE(), we could have MODULE_FIRMWARE_REQ() or
-something like it to help annotate the the driver was only functional with the
-firmware, punt things to kmod to deal with the requirements.  kmod would only
-load the driver if the firmware is present as well, otherwise it could just
-return a new -ENOFIRMWARE and try to defer module loading for a later time, it
-would load the driver once and if the firmware becomes available... This all
-seems rather hacky.
-
-For built-in drivers.. the vmlinux would have the associated firmware reqs, it
-would still need a way to let userspace know when such firmware is ready. What
-kernel <-> userspace API would we want to use for this ? Or as you note we
-could just prevent such drivers to be built-in. I'd be happy with this, however
-I don't think the distributions using non-modular kernels will be.
-
-Now whatever we come up with recall this isn't just about firmware anymore.
-Which is why I ended up bundling all these requirements up into one generic
-"kernel reads file from filesystem" requirement. I can see the syfs approach
-being considered hacky -- but I gladly welcome an actual alternative
-suggestion.
-
-> > If you just put the two pieces together, then the module "will just work".
-> >
-> > And quite frankly, that sounds like a much better maintenance practice
-> > anyway. If some module doesn't work without the firmware, then dammit,
-> > the two *should* go together. Putting them in two different places
-> > would be *INSANE*.
-> 
-> Quite often it does until it does not. Most of the touch controllers
-> work just fine until some event (abrupt cutting of power for example)
-> where nvram gets corrupted and they come up in bootloader mode. It is
-> just an example.
-
-You want to also opt-in for updates, you don't want to require re-building
-a driver for a firmware fix, for instance.
-
- Luis
+Regards,
+Bjorn
