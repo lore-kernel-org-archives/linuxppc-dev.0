@@ -1,22 +1,35 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conuserg-12.nifty.com (conuserg-12.nifty.com [210.131.2.79])
- (using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (112/168 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sT4SW6z1DzDrq2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 21:41:47 +1000 (AEST)
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.com>,
- Jaroslav Kysela <perex@perex.cz>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- Geoff Levand <geoff@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Mark Brown <broonie@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ALSA: squash lines for simple wrapper functions
-Date: Tue,  6 Sep 2016 20:41:19 +0900
-Message-Id: <1473162079-25001-1-git-send-email-yamada.masahiro@socionext.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sT5vP4jl2zDrvH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2016 22:46:41 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc <linux-mmc@vger.kernel.org>,
+ Scott Wood <oss@buserror.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-clk <linux-clk@vger.kernel.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>,
+ Joerg Roedel <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ Yang-Leo Li <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>
+Subject: Re: [v11, 7/8] base: soc: introduce soc_device_match() interface
+Date: Tue, 06 Sep 2016 14:46:08 +0200
+Message-ID: <6515108.aCEls7dUuW@wuerfel>
+In-Reply-To: <CAPDyKFrvg3Qr5m3xXvywsCoVvaiF7ggHAj0Aw=WCOXg65Pt0PQ@mail.gmail.com>
+References: <1473150503-9550-1-git-send-email-yangbo.lu@nxp.com>
+ <1473150503-9550-8-git-send-email-yangbo.lu@nxp.com>
+ <CAPDyKFrvg3Qr5m3xXvywsCoVvaiF7ggHAj0Aw=WCOXg65Pt0PQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,171 +39,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove unneeded variables and assignments.
+On Tuesday, September 6, 2016 1:44:23 PM CEST Ulf Hansson wrote:
+> On 6 September 2016 at 10:28, Yangbo Lu <yangbo.lu@nxp.com> wrote:
+> > We keep running into cases where device drivers want to know the exact
+> > version of the a SoC they are currently running on. In the past, this has
+> > usually been done through a vendor specific API that can be called by a
+> > driver, or by directly accessing some kind of version register that is
+> > not part of the device itself but that belongs to a global register area
+> > of the chip.
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
+Please add "From: Arnd Bergmann <arnd@arndb.de>" as the first line, to
+preserve authorship. If you use "git send-email" or "git format-patch",
+that should happen automatically if the author field is set right
+(if not, use 'git commit --amend --author="Arnd Bergmann <arnd@arndb.de>"'
+to fix it).
 
- sound/aoa/fabrics/layout.c                  |  7 +------
- sound/pci/asihpi/hpifunc.c                  |  7 ++-----
- sound/pci/ctxfi/ctvmem.c                    |  6 +-----
- sound/pci/emu10k1/p16v.c                    | 16 ++++------------
- sound/pci/ice1712/ice1724.c                 |  4 +---
- sound/ppc/snd_ps3.c                         |  4 +---
- sound/soc/intel/baytrail/sst-baytrail-ipc.c | 12 +++---------
- 7 files changed, 13 insertions(+), 43 deletions(-)
+> > +
+> > +/*
+> > + * soc_device_match - identify the SoC in the machine
+> > + * @matches: zero-terminated array of possible matches
+> 
+> Perhaps also express the constraint on the matching entries. As you
+> need at least one of the ->machine(), ->family(), ->revision() or
+> ->soc_id() callbacks implemented, right!?
 
-diff --git a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
-index 8f71f7e..b6ba091 100644
---- a/sound/aoa/fabrics/layout.c
-+++ b/sound/aoa/fabrics/layout.c
-@@ -1161,12 +1161,7 @@ static struct soundbus_driver aoa_soundbus_driver = {
- 
- static int __init aoa_fabric_layout_init(void)
- {
--	int err;
--
--	err = soundbus_register_driver(&aoa_soundbus_driver);
--	if (err)
--		return err;
--	return 0;
-+	return soundbus_register_driver(&aoa_soundbus_driver);
- }
- 
- static void __exit aoa_fabric_layout_exit(void)
-diff --git a/sound/pci/asihpi/hpifunc.c b/sound/pci/asihpi/hpifunc.c
-index 510e56c..f9b5764 100644
---- a/sound/pci/asihpi/hpifunc.c
-+++ b/sound/pci/asihpi/hpifunc.c
-@@ -2323,11 +2323,8 @@ u16 hpi_sample_clock_get_source_index(u32 h_control, u16 *pw_source_index)
- u16 hpi_sample_clock_query_local_rate(const u32 h_clock, const u32 index,
- 	u32 *prate)
- {
--	u16 err;
--	err = hpi_control_query(h_clock, HPI_SAMPLECLOCK_LOCAL_SAMPLERATE,
--		index, 0, prate);
--
--	return err;
-+	return hpi_control_query(h_clock, HPI_SAMPLECLOCK_LOCAL_SAMPLERATE,
-+				 index, 0, prate);
- }
- 
- u16 hpi_sample_clock_set_local_rate(u32 h_control, u32 sample_rate)
-diff --git a/sound/pci/ctxfi/ctvmem.c b/sound/pci/ctxfi/ctvmem.c
-index 419306e..520e19b 100644
---- a/sound/pci/ctxfi/ctvmem.c
-+++ b/sound/pci/ctxfi/ctvmem.c
-@@ -166,11 +166,7 @@ static void ct_vm_unmap(struct ct_vm *vm, struct ct_vm_block *block)
- static dma_addr_t
- ct_get_ptp_phys(struct ct_vm *vm, int index)
- {
--	dma_addr_t addr;
--
--	addr = (index >= CT_PTP_NUM) ? ~0UL : vm->ptp[index].addr;
--
--	return addr;
-+	return (index >= CT_PTP_NUM) ? ~0UL : vm->ptp[index].addr;
- }
- 
- int ct_vm_create(struct ct_vm **rvm, struct pci_dev *pci)
-diff --git a/sound/pci/emu10k1/p16v.c b/sound/pci/emu10k1/p16v.c
-index 3c60b43..87f6622 100644
---- a/sound/pci/emu10k1/p16v.c
-+++ b/sound/pci/emu10k1/p16v.c
-@@ -300,37 +300,29 @@ static int snd_p16v_pcm_open_capture(struct snd_pcm_substream *substream)
- static int snd_p16v_pcm_hw_params_playback(struct snd_pcm_substream *substream,
- 				      struct snd_pcm_hw_params *hw_params)
- {
--	int result;
--	result = snd_pcm_lib_malloc_pages(substream,
-+	return snd_pcm_lib_malloc_pages(substream,
- 					params_buffer_bytes(hw_params));
--	return result;
- }
- 
- /* hw_params callback */
- static int snd_p16v_pcm_hw_params_capture(struct snd_pcm_substream *substream,
- 				      struct snd_pcm_hw_params *hw_params)
- {
--	int result;
--	result = snd_pcm_lib_malloc_pages(substream,
-+	return snd_pcm_lib_malloc_pages(substream,
- 					params_buffer_bytes(hw_params));
--	return result;
- }
- 
- 
- /* hw_free callback */
- static int snd_p16v_pcm_hw_free_playback(struct snd_pcm_substream *substream)
- {
--	int result;
--	result = snd_pcm_lib_free_pages(substream);
--	return result;
-+	return snd_pcm_lib_free_pages(substream);
- }
- 
- /* hw_free callback */
- static int snd_p16v_pcm_hw_free_capture(struct snd_pcm_substream *substream)
- {
--	int result;
--	result = snd_pcm_lib_free_pages(substream);
--	return result;
-+	return snd_pcm_lib_free_pages(substream);
- }
- 
- 
-diff --git a/sound/pci/ice1712/ice1724.c b/sound/pci/ice1712/ice1724.c
-index 0b22c00..4731e9c 100644
---- a/sound/pci/ice1712/ice1724.c
-+++ b/sound/pci/ice1712/ice1724.c
-@@ -620,9 +620,7 @@ static const unsigned int stdclock_rate_list[16] = {
- 
- static unsigned int stdclock_get_rate(struct snd_ice1712 *ice)
- {
--	unsigned int rate;
--	rate = stdclock_rate_list[inb(ICEMT1724(ice, RATE)) & 15];
--	return rate;
-+	return stdclock_rate_list[inb(ICEMT1724(ice, RATE)) & 15];
- }
- 
- static void stdclock_set_rate(struct snd_ice1712 *ice, unsigned int rate)
-diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-index 3682425..b84d7d3 100644
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -564,9 +564,7 @@ static int snd_ps3_pcm_hw_params(struct snd_pcm_substream *substream,
- 
- static int snd_ps3_pcm_hw_free(struct snd_pcm_substream *substream)
- {
--	int ret;
--	ret = snd_pcm_lib_free_pages(substream);
--	return ret;
-+	return snd_pcm_lib_free_pages(substream);
- };
- 
- static int snd_ps3_delay_to_bytes(struct snd_pcm_substream *substream,
-diff --git a/sound/soc/intel/baytrail/sst-baytrail-ipc.c b/sound/soc/intel/baytrail/sst-baytrail-ipc.c
-index 5bbaa66..c8455b4 100644
---- a/sound/soc/intel/baytrail/sst-baytrail-ipc.c
-+++ b/sound/soc/intel/baytrail/sst-baytrail-ipc.c
-@@ -184,15 +184,9 @@ struct sst_byt {
- 
- static inline u64 sst_byt_header(int msg_id, int data, bool large, int str_id)
- {
--	u64 header;
--
--	header = IPC_HEADER_MSG_ID(msg_id) |
--		 IPC_HEADER_STR_ID(str_id) |
--		 IPC_HEADER_LARGE(large) |
--		 IPC_HEADER_DATA(data) |
--		 SST_BYT_IPCX_BUSY;
--
--	return header;
-+	return IPC_HEADER_MSG_ID(msg_id) | IPC_HEADER_STR_ID(str_id) |
-+	       IPC_HEADER_LARGE(large) | IPC_HEADER_DATA(data) |
-+	       SST_BYT_IPCX_BUSY;
- }
- 
- static inline u16 sst_byt_header_msg_id(u64 header)
--- 
-1.9.1
+They are not callbacks, just strings. Having an empty entry indicates
+the end of the array, and this is not called.
+
+> > + *
+> > + * returns the first matching entry of the argument array, or NULL
+> > + * if none of them match.
+> > + *
+> > + * This function is meant as a helper in place of of_match_node()
+> > + * in cases where either no device tree is available or the information
+> > + * in a device node is insufficient to identify a particular variant
+> > + * by its compatible strings or other properties. For new devices,
+> > + * the DT binding should always provide unique compatible strings
+> > + * that allow the use of of_match_node() instead.
+> > + *
+> > + * The calling function can use the .data entry of the
+> > + * soc_device_attribute to pass a structure or function pointer for
+> > + * each entry.
+> 
+> I don't get the use case behind this, could you elaborate?
+> 
+> Perhaps we should postpone adding the .data entry until we actually
+> see a need for it?
+
+I think the interface is rather useless without a way to figure
+out which entry you got. Almost all users of of_match_node()
+actually use the returned ->data field, and I expect this to
+be the same here.
+
+> > + */
+> > +const struct soc_device_attribute *soc_device_match(
+> > +       const struct soc_device_attribute *matches)
+> > +{
+> > +       struct device *dev;
+> > +       int ret;
+> > +
+> > +       for (ret = 0; ret == 0; matches++) {
+> 
+> This loop looks a bit weird and unsafe.
+
+Ah, and I thought I was being clever ;-)
+
+> 1) Perhaps using a while loop makes this more readable?
+> 2) As this is an exported API, I guess validation of the ->matches
+> pointer needs to be done before accessing it.
+
+Sounds fine.
+
+> > +               if (!(matches->machine || matches->family ||
+> > +                     matches->revision || matches->soc_id))
+> > +                       return NULL;
+> > +               dev = NULL;
+> 
+> There's no need to use a struct device just to assign it to NULL.
+> Instead just provide the function below with NULL.
+>
+> > +               ret = bus_for_each_dev(&soc_bus_type, dev, (void *)matches,
+> > +                                      soc_device_match_one);
+
+
+I don't remember what led to this, I think you are right, we should
+just pass NULL as most other callers.
+
+Thanks for the review.
+
+	ARnd
