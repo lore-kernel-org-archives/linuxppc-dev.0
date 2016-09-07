@@ -1,31 +1,39 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sTmFv4hJQzDsFv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 00:34:59 +1000 (AEST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org, linux-security-module@vger.kernel.org,
- linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dave Young <dyoung@redhat.com>,
- Vivek Goyal <vgoyal@redhat.com>, Baoquan He <bhe@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Balbir Singh <bsingharora@gmail.com>
-References: <1472579105-26296-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <8760q7lswz.fsf@x220.int.ebiederm.org>
-Date: Wed, 07 Sep 2016 09:19:40 -0500
-In-Reply-To: <8760q7lswz.fsf@x220.int.ebiederm.org> (Eric W. Biederman's
- message of "Wed, 07 Sep 2016 08:51:24 -0500")
-Message-ID: <871t0vlrlv.fsf@x220.int.ebiederm.org>
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sTnhx0YMHzDsG1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 01:40:00 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u87Fbf8h092339
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Sep 2016 11:39:58 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25a2y052vy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Sep 2016 11:39:58 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Wed, 7 Sep 2016 09:39:56 -0600
+Subject: Re: [PATCH v6 0/7] perf: Cross arch annotate + few miscellaneous fixes
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ acme@kernel.org
+References: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, mingo@redhat.com, alexander.shishkin@linux.intel.com,
+ treeze.taeung@gmail.com, naveen.n.rao@linux.vnet.ibm.com,
+ markus@trippelsdorf.de, chris.ryder@arm.com, pawel.moll@arm.com,
+ mhiramat@kernel.org, rmk+kernel@arm.linux.org.uk, jolsa@kernel.org,
+ mpe@ellerman.id.au, hemant@linux.vnet.ibm.com, namhyung@kernel.org,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Wed, 7 Sep 2016 21:09:40 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [PATCH v4 0/5] kexec_file: Add buffer hand-over for the next
- kernel
+In-Reply-To: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <57D034BC.2090101@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +43,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+Hello,
 
-> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
->
->> Hello,
->>
->> The purpose of this new version of the series is to fix a small issue that
->> I found, which is that the kernel doesn't remove the memory reservation
->> for the hand-over buffer it received from the previous kernel in the
->> device tree it sets up for the next kernel. The result is that for each
->> successive kexec, a stale hand-over buffer is left behind, wasting memory.
->>
->> This is fixed by changes to kexec_free_handover_buffer and
->> setup_handover_buffer in patch 2. The other change is to fix checkpatch
->> warnings in the last patch.
->
-> This is fundamentally broken.  You do not increase the integrity of a
-> system by dropping integrity checks.
->
-> No. No. No. No.
->
-> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Any update on this?
 
-To be constructive the way we have handled similiar situations in the
-past (hotplu memory) is to call kexec_load again.
+-Ravi
 
-Eric
+On Friday 19 August 2016 06:29 PM, Ravi Bangoria wrote:
+> Currently Perf annotate support code navigation (branches and calls)
+> only when run on the same architecture where perf.data was recorded.
+> But, for example, record on powerpc server and annotate on client's
+> x86 desktop is not supported.
+>
+> This patchset enables cross arch annotate. Currently I've used x86
+> and arm instructions which are already available and added support
+> for powerpc.
+>
+> Additionally this patch series also contains few other related fixes.
+>
+> Patches are prepared on top of acme/perf/core and tested it with x86
+> and powerpc only.
+>
+> Note for arm:
+> I don't have arm test machine. As suggested by Russell in one of the
+> review comment, I've copied all instructions from default table to
+> arm table. This way it want break tool on arm but cleanup is needed
+> for x86 specific instructions added in arm table.
+>
+> Example:
+>
+>   Record on powerpc:
+>   $ ./perf record -a
+>
+>   Report -> Annotate on x86:
+>   $ ./perf report -i perf.data.powerpc --vmlinux vmlinux.powerpc
+>
+> Changes in v6:
+>   - Instead of adding only those instructions defined in #ifdef __arm__,
+>     add all instructions from default table to arm table.
+>
+> v5 link:
+>   https://lkml.org/lkml/2016/8/19/35
+>
+> Naveen N. Rao (1):
+>   perf annotate: Add support for powerpc
+>
+> Ravi Bangoria (6):
+>   perf: Define macro for normalized arch names
+>   perf annotate: Add cross arch annotate support
+>   perf annotate: Do not ignore call instruction with indirect target
+>   perf annotate: Show raw form for jump instruction with indirect target
+>   perf annotate: Support jump instruction with target as second operand
+>   perf annotate: Fix jump target outside of function address range
+>
+>  tools/perf/arch/common.c           |  36 ++--
+>  tools/perf/arch/common.h           |  11 ++
+>  tools/perf/builtin-top.c           |   2 +-
+>  tools/perf/ui/browsers/annotate.c  |   8 +-
+>  tools/perf/ui/gtk/annotate.c       |   2 +-
+>  tools/perf/util/annotate.c         | 330 +++++++++++++++++++++++++++++++------
+>  tools/perf/util/annotate.h         |  10 +-
+>  tools/perf/util/unwind-libunwind.c |   4 +-
+>  8 files changed, 327 insertions(+), 76 deletions(-)
+>
