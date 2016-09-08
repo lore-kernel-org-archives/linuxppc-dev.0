@@ -1,28 +1,25 @@
-Return-Path: <paolo.bonzini@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Return-Path: <weiyj.lk@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVGSk2PWJzDsTX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 20:16:06 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id l65so7094505wmf.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Sep 2016 03:16:06 -0700 (PDT)
-Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Subject: Re: [PATCH v2 3/3] powerpc/mm: Speed up computation of base and
- actual page size for a HPTE
-To: Paul Mackerras <paulus@ozlabs.org>,
- Michael Ellerman <michael@ellerman.id.au>
-References: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
- <20160902115055.GC12433@fergus.ozlabs.ibm.com>
- <20160907061709.GD21443@fergus.ozlabs.ibm.com>
- <20160908100836.GA4965@fergus.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <4ba4f3d7-eadc-5d20-534e-afc7075938fc@redhat.com>
-Date: Thu, 8 Sep 2016 12:16:00 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVNst4tMYzDrgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 01:04:50 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id x24so2621953pfa.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Sep 2016 08:04:50 -0700 (PDT)
+From: Wei Yongjun <weiyj.lk@gmail.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-scsi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -next] scsi: ibmvfc: fix typo in parameter description
+Date: Thu,  8 Sep 2016 15:04:41 +0000
+Message-Id: <1473347081-25953-1-git-send-email-weiyj.lk@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20160908100836.GA4965@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,25 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Wei Yongjun <weiyongjun1@huawei.com>
 
+Fix typo in parameter description.
 
-On 08/09/2016 12:08, Paul Mackerras wrote:
->> > 
->> >  arch/powerpc/include/asm/book3s/64/mmu-hash.h | 37 ++++++++++++
->> >  arch/powerpc/include/asm/kvm_book3s_64.h      | 87 +++------------------------
->> >  arch/powerpc/include/asm/mmu.h                |  1 +
->> >  arch/powerpc/mm/hash_native_64.c              | 42 +------------
->> >  arch/powerpc/mm/hash_utils_64.c               | 55 +++++++++++++++++
-> This of course touches two maintainers' areas.  Michael and Paolo, how
-> do you want to proceed here?  Can this just go through Michael's tree?
-> Or should I make a topic branch off Linus' tree that you can both
-> pull, or should I split the patch into two (i.e. everything except the
-> kvm_book3s_64.h change in the first patch, and the kvm_book3s_64.h
-> change in the second) and get Michael to put the first one in a topic
-> branch that I can then pull and apply the second patch onto?
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This patch seems separate from the other two (I can't really tell since
-there wasn't a cover letter on linuxppc-dev).  Can you place it in a
-pull request for both Michael and myself?
-
-Paolo
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 6b92169..56b9f45 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -88,7 +88,7 @@ module_param_named(log_level, log_level, uint, 0);
+ MODULE_PARM_DESC(log_level, "Set to 0 - 4 for increasing verbosity of device driver. "
+ 		 "[Default=" __stringify(IBMVFC_DEFAULT_LOG_LEVEL) "]");
+ module_param_named(cls3_error, cls3_error, uint, 0);
+-MODULE_PARM_DESC(log_level, "Enable FC Class 3 Error Recovery. "
++MODULE_PARM_DESC(cls3_error, "Enable FC Class 3 Error Recovery. "
+ 		 "[Default=" __stringify(IBMVFC_CLS3_ERROR) "]");
+ 
+ static const struct {
