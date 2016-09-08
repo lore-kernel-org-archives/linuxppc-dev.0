@@ -2,16 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVFr65lf1zDsTF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 19:47:50 +1000 (AEST)
-In-Reply-To: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVFr758WlzDsTF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 19:47:51 +1000 (AEST)
+In-Reply-To: <20160826144513.A71561A245B@localhost.localdomain>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [1/3] powerpc/mm: Don't alias user region to other regions below
- PAGE_OFFSET
-Message-Id: <3sVFr64s0Rz9s36@ozlabs.org>
-Date: Thu,  8 Sep 2016 19:47:50 +1000 (AEST)
+Cc: Antoine Blangy <antoine.blangy@c-s.fr>,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: powerpc/32: fix again csum_partial_copy_generic()
+Message-Id: <3sVFr73rMsz9s3v@ozlabs.org>
+Date: Thu,  8 Sep 2016 19:47:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,36 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-02-09 at 11:47:59 UTC, Paul Mackerras wrote:
-> In commit c60ac5693c47 ("powerpc: Update kernel VSID range", 2013-03-13)
-> we lost a check on the region number (the top four bits of the effective
-> address) for addresses below PAGE_OFFSET.  That commit replaced a check
-> that the top 18 bits were all zero with a check that bits 46 - 59 were
-> zero (performed for all addresses, not just user addresses).
+On Fri, 2016-26-08 at 14:45:13 UTC, Christophe Leroy wrote:
+> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
+> based on copy_tofrom_user()") introduced a bug when destination
+> address is odd and len is lower than cacheline size.
 > 
-> This means that userspace can access an address like 0x1000_0xxx_xxxx_xxxx
-> and we will insert a valid SLB entry for it.  The VSID used will be the
-> same as if the top 4 bits were 0, but the page size will be some random
-> value obtained by indexing beyond the end of the mm_ctx_high_slices_psize
-> array in the paca.  If that page size is the same as would be used for
-> region 0, then userspace just has an alias of the region 0 space.  If the
-> page size is different, then no HPTE will be found for the access, and
-> the process will get a SIGSEGV (since hash_page_mm() will refuse to create
-> a HPTE for the bogus address).
+> In that case the resulting csum value doesn't have to be rotated one
+> byte because the cache-aligned copy part is skipped so no alignment
+> is performed.
 > 
-> The access beyond the end of the mm_ctx_high_slices_psize can be at most
-> 5.5MB past the array, and so will be in RAM somewhere.  Since the access
-> is a load performed in real mode, it won't fault or crash the kernel.
-> At most this bug could perhaps leak a little bit of information about
-> blocks of 32 bytes of memory located at offsets of i * 512kB past the
-> paca->mm_ctx_high_slices_psize array, for 1 <= i <= 11.
-> 
-> Cc: stable@vger.kernel.org # v3.10+
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic() based on copy_tofrom_user()")
+> Cc: stable@vger.kernel.org
+> Reported-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Tested-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/f077aaf0754bcba0fffdbd925b
+https://git.kernel.org/powerpc/c/8540571e01f973d321b0821f4f
 
 cheers
