@@ -1,22 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVFYv1Ms9zDsYy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 19:35:31 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 4/5] powerpc/fadump: Make ELF eflags depend on endian
-In-Reply-To: <2cc58c5b-9465-207d-60d8-f09dff6ca0c8@linux.vnet.ibm.com>
-References: <1473139963-7496-1-git-send-email-dja@axtens.net>
- <1473139963-7496-4-git-send-email-dja@axtens.net>
- <2cc58c5b-9465-207d-60d8-f09dff6ca0c8@linux.vnet.ibm.com>
-Date: Thu, 08 Sep 2016 19:35:29 +1000
-Message-ID: <87fupalony.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVFr65lf1zDsTF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 19:47:50 +1000 (AEST)
+In-Reply-To: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [1/3] powerpc/mm: Don't alias user region to other regions below
+ PAGE_OFFSET
+Message-Id: <3sVFr64s0Rz9s36@ozlabs.org>
+Date: Thu,  8 Sep 2016 19:47:50 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,73 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+On Fri, 2016-02-09 at 11:47:59 UTC, Paul Mackerras wrote:
+> In commit c60ac5693c47 ("powerpc: Update kernel VSID range", 2013-03-13)
+> we lost a check on the region number (the top four bits of the effective
+> address) for addresses below PAGE_OFFSET.  That commit replaced a check
+> that the top 18 bits were all zero with a check that bits 46 - 59 were
+> zero (performed for all addresses, not just user addresses).
+> 
+> This means that userspace can access an address like 0x1000_0xxx_xxxx_xxxx
+> and we will insert a valid SLB entry for it.  The VSID used will be the
+> same as if the top 4 bits were 0, but the page size will be some random
+> value obtained by indexing beyond the end of the mm_ctx_high_slices_psize
+> array in the paca.  If that page size is the same as would be used for
+> region 0, then userspace just has an alias of the region 0 space.  If the
+> page size is different, then no HPTE will be found for the access, and
+> the process will get a SIGSEGV (since hash_page_mm() will refuse to create
+> a HPTE for the bogus address).
+> 
+> The access beyond the end of the mm_ctx_high_slices_psize can be at most
+> 5.5MB past the array, and so will be in RAM somewhere.  Since the access
+> is a load performed in real mode, it won't fault or crash the kernel.
+> At most this bug could perhaps leak a little bit of information about
+> blocks of 32 bytes of memory located at offsets of i * 512kB past the
+> paca->mm_ctx_high_slices_psize array, for 1 <= i <= 11.
+> 
+> Cc: stable@vger.kernel.org # v3.10+
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-> On 09/06/2016 11:02 AM, Daniel Axtens wrote:
->> Firmware Assisted Dump is a facility to dump kernel core with assistance
->> from firmware.  As part of this process the kernel ELF version is
->> stored.
->> 
->> Currently, fadump.h defines this to 0 if it is not already defined. This
->> clashes with a define in elf.h which sets it based on the current task -
->> not based on the kernel.
->> 
->> When the kernel is compiled on LE, the kernel will always be version
->> 2. Otherwise it will be version 0. So the correct behaviour is to set
->> the ELF eflags based on the endianness of the kernel. Do that.
->> 
->> Remove the definition in fadump.h, which becomes unused.
->> 
->> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
->> Signed-off-by: Daniel Axtens <dja@axtens.net>
->> 
->> ---
->> 
->> Mahesh or Hari: I'm not familiar with this code at all, so if either of
->> you could check that this makes sense I would really appreciate that.
->> Thanks!
->> ---
->>  arch/powerpc/include/asm/fadump.h | 4 ----
->>  arch/powerpc/kernel/fadump.c      | 6 +++++-
->>  2 files changed, 5 insertions(+), 5 deletions(-)
->> 
->> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
->> index b4407d0add27..0031806475f0 100644
->> --- a/arch/powerpc/include/asm/fadump.h
->> +++ b/arch/powerpc/include/asm/fadump.h
->> @@ -45,10 +45,6 @@
->> 
->>  #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
->> 
->> -#ifndef ELF_CORE_EFLAGS
->> -#define ELF_CORE_EFLAGS 0
->> -#endif
->> -
->>  /* Firmware provided dump sections */
->>  #define FADUMP_CPU_STATE_DATA	0x0001
->>  #define FADUMP_HPTE_REGION	0x0002
->> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
->> index 0638b82ce294..457f08e544c6 100644
->> --- a/arch/powerpc/kernel/fadump.c
->> +++ b/arch/powerpc/kernel/fadump.c
->> @@ -779,7 +779,11 @@ static int fadump_init_elfcore_header(char *bufp)
->>  	elf->e_entry = 0;
->>  	elf->e_phoff = sizeof(struct elfhdr);
->>  	elf->e_shoff = 0;
->> -	elf->e_flags = ELF_CORE_EFLAGS;
->> +#ifdef __LITTLE_ENDIAN__
->
-> Wouldn't '#ifdef PPC64_ELF_ABI_v2' be more appropriate here ?
+Applied to powerpc fixes, thanks.
 
-Actually I think even more correct is:
-
-    #if defined(_CALL_ELF)
-            elf->e_flags = _CALL_ELF;
-    #else
-            elf->e_flags = 0;
-    #endif
-
-So I'll do that.
+https://git.kernel.org/powerpc/c/f077aaf0754bcba0fffdbd925b
 
 cheers
