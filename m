@@ -1,22 +1,49 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Vineet.Gupta1@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVQM74WSCzDqXr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 02:11:47 +1000 (AEST)
-Date: Fri, 9 Sep 2016 01:11:38 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
- hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com, mhiramat@kernel.org
-Subject: Re: [PATCH 0/3] OPTPROBES for powerpc
-Message-Id: <20160909011138.b8e7add1364006fced47a877@kernel.org>
-In-Reply-To: <1473240792-10596-1-git-send-email-anju@linux.vnet.ibm.com>
-References: <1473240792-10596-1-git-send-email-anju@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVQlF03qqzDrHp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 02:29:12 +1000 (AEST)
+From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Alexey Brodkin <Alexey.Brodkin@synopsys.com>,
+ Vineet Gupta <Vineet.Gupta1@synopsys.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ "Will  Deacon" <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
+ "James  E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "David  S. Miller" <davem@davemloft.net>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H.  Peter Anvin" <hpa@zytor.com>, <x86@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>,
+ "Linus  Walleij" <linus.walleij@linaro.org>,
+ Matthew Wilcox <willy@linux.intel.com>,
+ Alexander Potapenko <glider@google.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Ming Lin <ming.l@ssi.samsung.com>, Arnd Bergmann <arnd@arndb.de>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "Borislav  Petkov" <bp@suse.de>, Andi Kleen <ak@linux.intel.com>,
+ Boqun Feng <boqun.feng@gmail.com>, <linux-alpha@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-mips@linux-mips.org>,
+ <linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, <sparclinux@vger.kernel.org>,
+ <linux-snps-arc@lists.infradead.org>, <linux-arch@vger.kernel.org>
+Subject: [PATCH] atomic64: No need for CONFIG_ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+Date: Thu, 8 Sep 2016 09:28:18 -0700
+Message-ID: <1473352098-5822-1-git-send-email-vgupta@synopsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,154 +53,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anju,
+This came to light when implementing native 64-bit atomics for ARCv2.
 
-On Wed,  7 Sep 2016 15:03:09 +0530
-Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
+The atomic64 self-test code uses CONFIG_ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+to check whether atomic64_dec_if_positive() is available.
+It seems it was needed when not every arch defined it.
+However as of current code the Kconfig option seems needless
 
-> This is the patchset of the kprobes jump optimization
-> (a.k.a OPTPROBES)for powerpc. Kprobe being an inevitable tool
-> for kernel developers, enhancing the performance of kprobe has
-> got much importance.
-> 
-> Currently kprobes inserts a trap instruction to probe a running kernel.
-> Jump optimization allows kprobes to replace the trap with a branch,
-> reducing the probe overhead drastically.
+- for CONFIG_GENERIC_ATOMIC64 it is auto-enabled in lib/Kconfig and a
+  generic definition of API is present lib/atomic64.c
+- arches with native 64-bit atomics select it in arch/*/Kconfig and
+  define the API in their headers
 
-Thank you for updating the series :)
-I'll check that.
+So I see no point in keeping the Kconfig option
 
-> 
-> In this series, conditional branch instructions are not considered for
-> optimization as they have to be assessed carefully in SMP systems.
+Compile tested for 2 representatives:
+ - blackfin (CONFIG_GENERIC_ATOMIC64)
+ - x86 (!CONFIG_GENERIC_ATOMIC64)
 
-So, what kind of problem are there on PPC? (can conditional flag be
-changed by other cpu?)
+Also logistics wise it seemed simpler to just do this in 1 patch vs.
+splitting per arch - but I can break it up if maintainer feel that
+is better to avoid conflicts.
 
-Thanks,
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Chris Metcalf <cmetcalf@mellanox.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vineet Gupta <vgupta@synopsys.com>
+Cc: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Matthew Wilcox <willy@linux.intel.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Ming Lin <ming.l@ssi.samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Boqun Feng <boqun.feng@gmail.com>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-mips@linux-mips.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-snps-arc@lists.infradead.org
+Cc: linux-arch@vger.kernel.org
+Signed-off-by: Vineet Gupta <vgupta@synopsys.com>
+---
+ arch/alpha/Kconfig   | 1 -
+ arch/arm/Kconfig     | 1 -
+ arch/arm64/Kconfig   | 1 -
+ arch/mips/Kconfig    | 1 -
+ arch/parisc/Kconfig  | 1 -
+ arch/powerpc/Kconfig | 1 -
+ arch/s390/Kconfig    | 1 -
+ arch/sparc/Kconfig   | 1 -
+ arch/tile/Kconfig    | 1 -
+ arch/x86/Kconfig     | 1 -
+ lib/Kconfig          | 3 ---
+ lib/atomic64_test.c  | 4 ----
+ 12 files changed, 17 deletions(-)
 
-> 
-> 
-> Performance:
-> =============
-> An optimized kprobe in powerpc is 1.05 to 4.7 times faster than a kprobe.
-> 
-> Example:
-> 
-> Placed a probe at an offset 0x50 in _do_fork().
-> *Time Diff here is, difference in time before hitting the probe and
-> after the probed instruction. mftb() is employed in kernel/fork.c for
-> this purpose.
-> 
-> # echo 0 > /proc/sys/debug/kprobes-optimization
-> Kprobes globally unoptimized
-> [  233.607120] Time Diff = 0x1f0
-> [  233.608273] Time Diff = 0x1ee
-> [  233.609228] Time Diff = 0x203
-> [  233.610400] Time Diff = 0x1ec
-> [  233.611335] Time Diff = 0x200
-> [  233.612552] Time Diff = 0x1f0
-> [  233.613386] Time Diff = 0x1ee
-> [  233.614547] Time Diff = 0x212
-> [  233.615570] Time Diff = 0x206
-> [  233.616819] Time Diff = 0x1f3
-> [  233.617773] Time Diff = 0x1ec
-> [  233.618944] Time Diff = 0x1fb
-> [  233.619879] Time Diff = 0x1f0
-> [  233.621066] Time Diff = 0x1f9
-> [  233.621999] Time Diff = 0x283
-> [  233.623281] Time Diff = 0x24d
-> [  233.624172] Time Diff = 0x1ea
-> [  233.625381] Time Diff = 0x1f0
-> [  233.626358] Time Diff = 0x200
-> [  233.627572] Time Diff = 0x1ed
-> 
-> # echo 1 > /proc/sys/debug/kprobes-optimization
-> Kprobes globally optimized
-> [   70.797075] Time Diff = 0x103
-> [   70.799102] Time Diff = 0x181
-> [   70.801861] Time Diff = 0x15e
-> [   70.803466] Time Diff = 0xf0
-> [   70.804348] Time Diff = 0xd0
-> [   70.805653] Time Diff = 0xad
-> [   70.806477] Time Diff = 0xe0
-> [   70.807725] Time Diff = 0xbe
-> [   70.808541] Time Diff = 0xc3
-> [   70.810191] Time Diff = 0xc7
-> [   70.811007] Time Diff = 0xc0
-> [   70.812629] Time Diff = 0xc0
-> [   70.813640] Time Diff = 0xda
-> [   70.814915] Time Diff = 0xbb
-> [   70.815726] Time Diff = 0xc4
-> [   70.816955] Time Diff = 0xc0
-> [   70.817778] Time Diff = 0xcd
-> [   70.818999] Time Diff = 0xcd
-> [   70.820099] Time Diff = 0xcb
-> [   70.821333] Time Diff = 0xf0
-> 
-> Implementation:
-> ===================
-> 
-> The trap instruction is replaced by a branch to a detour buffer. To address
-> the limitation of branch instruction in power architecture detour buffer
-> slot is allocated from a reserved area . This will ensure that the branch
-> is within ± 32 MB range. Patch 2/3 furnishes this. The current kprobes
-> insn caches allocate memory area for insn slots with module_alloc(). This
-> will always be beyond ± 32MB range.
-> 
-> The detour buffer contains a call to optimized_callback() which in turn
-> call the pre_handler(). Once the pre-handler is run, the original
-> instruction is emulated from the detour buffer itself. Also the detour
-> buffer is equipped with a branch back to the normal work flow after the
-> probed instruction is emulated. Before preparing optimization, Kprobes
-> inserts original(breakpoint instruction)kprobe on the specified address.
-> So, even if the kprobe is not possible to be optimized, it just uses a
-> normal kprobe.
-> 
-> Limitations:
-> ==============
-> - Number of probes which can be optimized is limited by the size of the
->   area reserved.
-> - Currently instructions which can be emulated are the only candidates for
->   optimization.
-> - Conditional branch instructions are not optimized.
-> - Probes on kernel module region are not considered for optimization now.
-> 
-> RFC patchset for optprobes: https://lkml.org/lkml/2016/5/31/375
-> 			    https://lkml.org/lkml/2016/5/31/376
-> 			    https://lkml.org/lkml/2016/5/31/377
-> 			    https://lkml.org/lkml/2016/5/31/378 
-> 
-> Changes from RFC-v3 :
-> 
-> - Optimization for kporbe(in case of branch instructions) is limited to
->   unconditional branch instructions only, since the conditional
->   branches are to be assessed carefully in SMP systems.
-> - create_return_branch() is omitted.
-> - Comments by Masami are addressed.
->  
-> 
-> Anju T Sudhakar (3):
->   arch/powerpc : Add detour buffer support for optprobes
->   arch/powerpc : optprobes for powerpc core
->   arch/powerpc : Enable optprobes support in powerpc
-> 
->  .../features/debug/optprobes/arch-support.txt      |   2 +-
->  arch/powerpc/Kconfig                               |   1 +
->  arch/powerpc/include/asm/kprobes.h                 |  24 ++
->  arch/powerpc/include/asm/sstep.h                   |   1 +
->  arch/powerpc/kernel/Makefile                       |   1 +
->  arch/powerpc/kernel/optprobes.c                    | 329 +++++++++++++++++++++
->  arch/powerpc/kernel/optprobes_head.S               | 119 ++++++++
->  arch/powerpc/lib/sstep.c                           |  21 ++
->  8 files changed, 497 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/kernel/optprobes.c
->  create mode 100644 arch/powerpc/kernel/optprobes_head.S
-> 
-> -- 
-> 2.7.4
-> 
-
-
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 7f312d80b43b..0e49d39ea74a 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -15,7 +15,6 @@ config ALPHA
+ 	select GENERIC_IRQ_SHOW
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select AUDIT_ARCH
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_SMP_IDLE_THREAD
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index a9c4e48bb7ec..2a50957c7bfb 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1,7 +1,6 @@
+ config ARM
+ 	bool
+ 	default y
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index bc3f00f586f1..3df2ca7efbcc 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -6,7 +6,6 @@ config ARM64
+ 	select ACPI_MCFG if ACPI
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+ 	select ARCH_HAS_KCOV
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 26388562e300..5bbea197c220 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -30,7 +30,6 @@ config MIPS
+ 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if CPU_SUPPORTS_HUGEPAGES && 64BIT
+ 	select RTC_LIB if !MACH_LOONGSON64
+ 	select GENERIC_ATOMIC64 if !64BIT
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select HAVE_DMA_CONTIGUOUS
+ 	select HAVE_DMA_API_DEBUG
+ 	select GENERIC_IRQ_PROBE
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index cd8778103165..9e40b52c0721 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -15,7 +15,6 @@ config PARISC
+ 	select BUILDTIME_EXTABLE_SORT
+ 	select HAVE_PERF_EVENTS
+ 	select GENERIC_ATOMIC64 if !64BIT
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select BROKEN_RODATA
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PCI_IOMAP
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 927d2ab2ce08..18d1b42cf545 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -113,7 +113,6 @@ config PPC
+ 	select HAVE_DEBUG_KMEMLEAK
+ 	select ARCH_HAS_SG_CHAIN
+ 	select GENERIC_ATOMIC64 if PPC32
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_PERF_REGS
+ 	select HAVE_PERF_USER_STACK_DUMP
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index e751fe25d6ab..af52b07efde2 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -67,7 +67,6 @@ config DEBUG_RODATA
+ 
+ config S390
+ 	def_bool y
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_DEBUG_STRICT_USER_COPY_CHECKS
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_ELF_RANDOMIZE
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 59b09600dd32..bfedbe0cb7b2 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -22,7 +22,6 @@ config SPARC
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_EXIT_THREAD
+ 	select SYSCTL_EXCEPTION_TRACE
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select RTC_CLASS
+ 	select RTC_DRV_M48T59
+ 	select RTC_SYSTOHC
+diff --git a/arch/tile/Kconfig b/arch/tile/Kconfig
+index 4820a02838ac..12eda5440c93 100644
+--- a/arch/tile/Kconfig
++++ b/arch/tile/Kconfig
+@@ -3,7 +3,6 @@
+ 
+ config TILE
+ 	def_bool y
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_DEBUG_STRICT_USER_COPY_CHECKS
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index c580d8c33562..0cf609998550 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -23,7 +23,6 @@ config X86
+ 	select ARCH_CLOCKSOURCE_DATA
+ 	select ARCH_DISCARD_MEMBLOCK
+ 	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
+-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_DEBUG_STRICT_USER_COPY_CHECKS
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_ELF_RANDOMIZE
+diff --git a/lib/Kconfig b/lib/Kconfig
+index d79909dc01ec..0e74df3c5441 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -457,9 +457,6 @@ config NLATTR
+ config GENERIC_ATOMIC64
+        bool
+ 
+-config ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+-	def_bool y if GENERIC_ATOMIC64
+-
+ config LRU_CACHE
+ 	tristate
+ 
+diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
+index dbb369145dda..46042901130f 100644
+--- a/lib/atomic64_test.c
++++ b/lib/atomic64_test.c
+@@ -213,7 +213,6 @@ static __init void test_atomic64(void)
+ 	r += one;
+ 	BUG_ON(v.counter != r);
+ 
+-#ifdef CONFIG_ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	INIT(onestwos);
+ 	BUG_ON(atomic64_dec_if_positive(&v) != (onestwos - 1));
+ 	r -= one;
+@@ -226,9 +225,6 @@ static __init void test_atomic64(void)
+ 	INIT(-one);
+ 	BUG_ON(atomic64_dec_if_positive(&v) != (-one - one));
+ 	BUG_ON(v.counter != r);
+-#else
+-#warning Please implement atomic64_dec_if_positive for your architecture and select the above Kconfig symbol
+-#endif
+ 
+ 	INIT(onestwos);
+ 	BUG_ON(!atomic64_inc_not_zero(&v));
 -- 
-Masami Hiramatsu <mhiramat@kernel.org>
+2.7.4
