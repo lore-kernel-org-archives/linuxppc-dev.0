@@ -1,51 +1,22 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVPHK4NR0zDrgZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 01:23:25 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u88FMSoX053093
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Sep 2016 11:23:22 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25axg9vk0g-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Sep 2016 11:23:22 -0400
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 8 Sep 2016 12:23:19 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 325A81DC0070
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Sep 2016 11:23:16 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u88FNGdB4755620
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Sep 2016 12:23:16 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u88FNFXo032515
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Sep 2016 12:23:15 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Tony Lindgren <tony@atomide.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Eric Biederman <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
- Dave Young <dyoung@redhat.com>, Mimi Zohar <zohar@linux.vnet.ibm.com>,
- linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org
-Subject: Re: Kexec regression in next-20160906
-Date: Thu, 08 Sep 2016 12:23:13 -0300
-In-Reply-To: <20160907080807.GD5783@n2100.arm.linux.org.uk>
-References: <20160906220936.4txqzodkgknhjiyh@atomide.com>
- <2229914.bQjEFCIRgO@hactar> <20160907080807.GD5783@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <8729269.3rIvqbaU1r@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVQM74WSCzDqXr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 02:11:47 +1000 (AEST)
+Date: Fri, 9 Sep 2016 01:11:38 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com, mhiramat@kernel.org
+Subject: Re: [PATCH 0/3] OPTPROBES for powerpc
+Message-Id: <20160909011138.b8e7add1364006fced47a877@kernel.org>
+In-Reply-To: <1473240792-10596-1-git-send-email-anju@linux.vnet.ibm.com>
+References: <1473240792-10596-1-git-send-email-anju@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-2022-JP
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,23 +26,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Mittwoch, 07 September 2016, 09:08:07 schrieb Russell King - ARM Linux:
-> Any change to a UAPI header needs to be carefully considered and
-> questioned as it is always a potential userspace breakage - and in
-> the kernel, we're supposed to be doing our up-most to avoid
-> breaking userspace.
-> 
-> It's not like it was in the old days when we didn't have the UAPI
-> seperate - today, we can find these things by looking at the patch
-> diffstat and seeing whether any file in "uapi" is touched.  That
-> should be the trigger for a really in-depth review of the change.
+Hi Anju,
 
-No UAPI header is touched by this patch series. That is because there are 
-two definitions of struct kexec_segment, one in include/linux/kexec.h and 
-the other one in include/uapi/linux/kexec.h. My patch changed the former.
-I was unaware of the second definition in the latter.
+On Wed,  7 Sep 2016 15:03:09 +0530
+Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
+
+> This is the patchset of the kprobes jump optimization
+> (a.k.a OPTPROBES)for powerpc. Kprobe being an inevitable tool
+> for kernel developers, enhancing the performance of kprobe has
+> got much importance.
+> 
+> Currently kprobes inserts a trap instruction to probe a running kernel.
+> Jump optimization allows kprobes to replace the trap with a branch,
+> reducing the probe overhead drastically.
+
+Thank you for updating the series :)
+I'll check that.
+
+> 
+> In this series, conditional branch instructions are not considered for
+> optimization as they have to be assessed carefully in SMP systems.
+
+So, what kind of problem are there on PPC? (can conditional flag be
+changed by other cpu?)
+
+Thanks,
+
+> 
+> 
+> Performance:
+> =============
+> An optimized kprobe in powerpc is 1.05 to 4.7 times faster than a kprobe.
+> 
+> Example:
+> 
+> Placed a probe at an offset 0x50 in _do_fork().
+> *Time Diff here is, difference in time before hitting the probe and
+> after the probed instruction. mftb() is employed in kernel/fork.c for
+> this purpose.
+> 
+> # echo 0 > /proc/sys/debug/kprobes-optimization
+> Kprobes globally unoptimized
+> [  233.607120] Time Diff = 0x1f0
+> [  233.608273] Time Diff = 0x1ee
+> [  233.609228] Time Diff = 0x203
+> [  233.610400] Time Diff = 0x1ec
+> [  233.611335] Time Diff = 0x200
+> [  233.612552] Time Diff = 0x1f0
+> [  233.613386] Time Diff = 0x1ee
+> [  233.614547] Time Diff = 0x212
+> [  233.615570] Time Diff = 0x206
+> [  233.616819] Time Diff = 0x1f3
+> [  233.617773] Time Diff = 0x1ec
+> [  233.618944] Time Diff = 0x1fb
+> [  233.619879] Time Diff = 0x1f0
+> [  233.621066] Time Diff = 0x1f9
+> [  233.621999] Time Diff = 0x283
+> [  233.623281] Time Diff = 0x24d
+> [  233.624172] Time Diff = 0x1ea
+> [  233.625381] Time Diff = 0x1f0
+> [  233.626358] Time Diff = 0x200
+> [  233.627572] Time Diff = 0x1ed
+> 
+> # echo 1 > /proc/sys/debug/kprobes-optimization
+> Kprobes globally optimized
+> [   70.797075] Time Diff = 0x103
+> [   70.799102] Time Diff = 0x181
+> [   70.801861] Time Diff = 0x15e
+> [   70.803466] Time Diff = 0xf0
+> [   70.804348] Time Diff = 0xd0
+> [   70.805653] Time Diff = 0xad
+> [   70.806477] Time Diff = 0xe0
+> [   70.807725] Time Diff = 0xbe
+> [   70.808541] Time Diff = 0xc3
+> [   70.810191] Time Diff = 0xc7
+> [   70.811007] Time Diff = 0xc0
+> [   70.812629] Time Diff = 0xc0
+> [   70.813640] Time Diff = 0xda
+> [   70.814915] Time Diff = 0xbb
+> [   70.815726] Time Diff = 0xc4
+> [   70.816955] Time Diff = 0xc0
+> [   70.817778] Time Diff = 0xcd
+> [   70.818999] Time Diff = 0xcd
+> [   70.820099] Time Diff = 0xcb
+> [   70.821333] Time Diff = 0xf0
+> 
+> Implementation:
+> ===================
+> 
+> The trap instruction is replaced by a branch to a detour buffer. To address
+> the limitation of branch instruction in power architecture detour buffer
+> slot is allocated from a reserved area . This will ensure that the branch
+> is within ± 32 MB range. Patch 2/3 furnishes this. The current kprobes
+> insn caches allocate memory area for insn slots with module_alloc(). This
+> will always be beyond ± 32MB range.
+> 
+> The detour buffer contains a call to optimized_callback() which in turn
+> call the pre_handler(). Once the pre-handler is run, the original
+> instruction is emulated from the detour buffer itself. Also the detour
+> buffer is equipped with a branch back to the normal work flow after the
+> probed instruction is emulated. Before preparing optimization, Kprobes
+> inserts original(breakpoint instruction)kprobe on the specified address.
+> So, even if the kprobe is not possible to be optimized, it just uses a
+> normal kprobe.
+> 
+> Limitations:
+> ==============
+> - Number of probes which can be optimized is limited by the size of the
+>   area reserved.
+> - Currently instructions which can be emulated are the only candidates for
+>   optimization.
+> - Conditional branch instructions are not optimized.
+> - Probes on kernel module region are not considered for optimization now.
+> 
+> RFC patchset for optprobes: https://lkml.org/lkml/2016/5/31/375
+> 			    https://lkml.org/lkml/2016/5/31/376
+> 			    https://lkml.org/lkml/2016/5/31/377
+> 			    https://lkml.org/lkml/2016/5/31/378 
+> 
+> Changes from RFC-v3 :
+> 
+> - Optimization for kporbe(in case of branch instructions) is limited to
+>   unconditional branch instructions only, since the conditional
+>   branches are to be assessed carefully in SMP systems.
+> - create_return_branch() is omitted.
+> - Comments by Masami are addressed.
+>  
+> 
+> Anju T Sudhakar (3):
+>   arch/powerpc : Add detour buffer support for optprobes
+>   arch/powerpc : optprobes for powerpc core
+>   arch/powerpc : Enable optprobes support in powerpc
+> 
+>  .../features/debug/optprobes/arch-support.txt      |   2 +-
+>  arch/powerpc/Kconfig                               |   1 +
+>  arch/powerpc/include/asm/kprobes.h                 |  24 ++
+>  arch/powerpc/include/asm/sstep.h                   |   1 +
+>  arch/powerpc/kernel/Makefile                       |   1 +
+>  arch/powerpc/kernel/optprobes.c                    | 329 +++++++++++++++++++++
+>  arch/powerpc/kernel/optprobes_head.S               | 119 ++++++++
+>  arch/powerpc/lib/sstep.c                           |  21 ++
+>  8 files changed, 497 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/powerpc/kernel/optprobes.c
+>  create mode 100644 arch/powerpc/kernel/optprobes_head.S
+> 
+> -- 
+> 2.7.4
+> 
+
 
 -- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Masami Hiramatsu <mhiramat@kernel.org>
