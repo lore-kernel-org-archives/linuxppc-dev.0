@@ -1,19 +1,39 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVxPT4kqjzDrpX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 22:30:37 +1000 (AEST)
-Message-Id: <a10f253184fd01d022ee987a295dcd62fef0b174.1473422536.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1473422536.git.christophe.leroy@c-s.fr>
-References: <cover.1473422536.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 1/3] net: fs_enet: merge NAPI RX and NAPI TX
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVv9L2nfZzDrpW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 20:49:58 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u89Ah69a011097
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Sep 2016 06:49:56 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25bc2qmp3r-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Sep 2016 06:49:55 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Fri, 9 Sep 2016 04:49:55 -0600
+Subject: Re: [PATCH 2/3] arch/powerpc : optprobes for powerpc core
+To: Masami Hiramatsu <mhiramat@kernel.org>
+References: <1473240792-10596-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1473240792-10596-3-git-send-email-anju@linux.vnet.ibm.com>
+ <20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-Date: Fri,  9 Sep 2016 14:26:21 +0200 (CEST)
+ ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Date: Fri, 9 Sep 2016 16:19:41 +0530
+MIME-Version: 1.0
+In-Reply-To: <20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org>
+Content-Type: multipart/alternative;
+ boundary="------------22A023E59D0B2A24D5044014"
+Message-Id: <fd56afb9-c78e-521c-ef60-3e75cb6e24c7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,780 +43,951 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Initially, a NAPI TX routine has been implemented separately from
-NAPI RX, as done on the freescale/gianfar driver.
+This is a multi-part message in MIME format.
+--------------22A023E59D0B2A24D5044014
+Content-Type: text/plain; charset=iso-2022-jp; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
 
-By merging NAPI RX and NAPI TX, we reduce the amount of TX completion
-interrupts.
+Hi Masami,
 
-Handling of the budget in association with TX interrupts is based on
-indications provided at https://wiki.linuxfoundation.org/networking/napi
-We never proceed more than the complete TX ring on a single run.
 
-At the same time, we fix an issue in the handling of fep->tx_free:
+Thank you for reviewing the patch.
 
-It is only when fep->tx_free goes up to MAX_SKB_FRAGS that
-we need to wake up the queue. There is no need to call
-netif_wake_queue() at every packet successfully transmitted.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On Thursday 08 September 2016 10:17 PM, Masami Hiramatsu wrote:
+> On Wed,  7 Sep 2016 15:03:11 +0530
+> Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
+>
+>> Instructions which can be emulated are suppliants for optimization.
+>> Before optimization ensure that the address range between the detour
+>> buffer allocated and the instruction being probed is within ± 32MB.
+>>
+>> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/sstep.h |   1 +
+>>   arch/powerpc/kernel/optprobes.c  | 329 +++++++++++++++++++++++++++++++++++++++
+>>   arch/powerpc/lib/sstep.c         |  21 +++
+>>   3 files changed, 351 insertions(+)
+>>   create mode 100644 arch/powerpc/kernel/optprobes.c
+>>
+>> diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+>> index d3a42cc..cd5f6ab 100644
+>> --- a/arch/powerpc/include/asm/sstep.h
+>> +++ b/arch/powerpc/include/asm/sstep.h
+>> @@ -25,6 +25,7 @@ struct pt_regs;
+>>   
+>>   /* Emulate instructions that cause a transfer of control. */
+>>   extern int emulate_step(struct pt_regs *regs, unsigned int instr);
+>> +extern int optprobe_conditional_branch_check(unsigned int instr);
+>>   
+>>   enum instruction_type {
+>>   	COMPUTE,		/* arith/logical/CR op, etc. */
+>> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+>> new file mode 100644
+>> index 0000000..7983d07
+>> --- /dev/null
+>> +++ b/arch/powerpc/kernel/optprobes.c
+>> @@ -0,0 +1,329 @@
+>> +/*
+>> + * Code for Kernel probes Jump optimization.
+>> + *
+>> + * Copyright 2016, Anju T, IBM Corp.
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the License, or (at your option) any later version.
+>> + */
+>> +
+>> +#include <linux/kprobes.h>
+>> +#include <linux/jump_label.h>
+>> +#include <linux/types.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/list.h>
+>> +#include <asm/kprobes.h>
+>> +#include <asm/ptrace.h>
+>> +#include <asm/cacheflush.h>
+>> +#include <asm/code-patching.h>
+>> +#include <asm/sstep.h>
+>> +
+>> +DEFINE_INSN_CACHE_OPS(ppc_optinsn)
+>> +
+>> +#define TMPL_CALL_HDLR_IDX	\
+>> +	(optprobe_template_call_handler - optprobe_template_entry)
+>> +#define TMPL_EMULATE_IDX	\
+>> +	(optprobe_template_call_emulate - optprobe_template_entry)
+>> +#define TMPL_RET_IDX	\
+>> +	(optprobe_template_ret - optprobe_template_entry)
+>> +#define TMPL_KP_IDX	\
+>> +	(optprobe_template_kp_addr - optprobe_template_entry)
+>> +#define TMPL_OP1_IDX	\
+>> +	(optprobe_template_op_address1 - optprobe_template_entry)
+>> +#define TMPL_INSN_IDX	\
+>> +	(optprobe_template_insn - optprobe_template_entry)
+>> +#define TMPL_END_IDX	\
+>> +	(optprobe_template_end - optprobe_template_entry)
+>> +
+>> +static bool insn_page_in_use;
+>> +
+>> +static void *__ppc_alloc_insn_page(void)
+>> +{
+>> +	if (insn_page_in_use)
+>> +		return NULL;
+>> +	insn_page_in_use = true;
+>> +	return &optinsn_slot;
+>> +}
+>> +
+>> +static void __ppc_free_insn_page(void *page __maybe_unused)
+>> +{
+>> +	insn_page_in_use = false;
+>> +}
+>> +
+>> +struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
+>> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
+>> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
+>> +	/* insn_size initialized later */
+>> +	.alloc = __ppc_alloc_insn_page,
+>> +	.free = __ppc_free_insn_page,
+>> +	.nr_garbage = 0,
+>> +};
+>> +
+>> +kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
+>> +{
+>> +	/*
+>> +	 * The insn slot is allocated from the reserved
+>> +	 * area(ie &optinsn_slot).We are not optimizing probes
+>> +	 * at module_addr now.
+>> +	 */
+>> +	if (is_kernel_addr((unsigned long)op->kp.addr))
+>> +		return get_ppc_optinsn_slot();
+>> +	return NULL;
+>> +}
+>> +
+>> +static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
+>> +{
+>> +	if (!op->optinsn.insn)
+>> +		return;
+>> +	if (is_kernel_addr((unsigned long)op->kp.addr))
+>> +		free_ppc_optinsn_slot(op->optinsn.insn, 0);
+>> +}
+>> +
+>> +static unsigned long can_optimize(struct kprobe *p)
+>> +{
+>> +	struct pt_regs *regs;
+>> +	unsigned int instr;
+>> +
+>> +	/*
+>> +	 * Not optimizing the kprobe placed by
+>> +	 * kretprobe during boot time
+>> +	 */
+>> +	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
+>> +		return 0;
+>> +
+>> +	regs = kmalloc(sizeof(*regs), GFP_KERNEL);
+>> +	if (!regs)
+>> +		return -ENOMEM;
+>> +	memset(regs, 0, sizeof(struct pt_regs));
+>> +	memcpy(regs, current_pt_regs(), sizeof(struct pt_regs));
+>> +	regs->nip = (unsigned long)p->addr;
+>> +	instr = *p->ainsn.insn;
+>> +
+>> +	/* Ensure the instruction can be emulated */
+>> +	if (emulate_step(regs, instr) != 1)
+>> +		return 0;
+>> +	/* Conditional branches are not optimized */
+>> +	if (optprobe_conditional_branch_check(instr) != 1)
+>> +		return 0;
+>> +	return regs->nip;
+> Could you free regs here? Or allocate it on stack.
+
+yes. 'regs' can be freed here.
+>
+>> +}
+>> +
+>> +static void
+>> +optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
+>> +{
+>> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+>> +	unsigned long flags;
+>> +
+>> +	local_irq_save(flags);
+>> +
+>> +	if (kprobe_running()) {
+>> +		kprobes_inc_nmissed_count(&op->kp);
+>> +	} else {
+>> +		__this_cpu_write(current_kprobe, &op->kp);
+>> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+>> +		opt_pre_handler(&op->kp, regs);
+>> +		__this_cpu_write(current_kprobe, NULL);
+>> +	}
+>> +	local_irq_restore(flags);
+>> +}
+>> +NOKPROBE_SYMBOL(optimized_callback);
+>> +
+>> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	ppc_free_optinsn_slot(op);
+>> +	op->optinsn.insn = NULL;
+>> +}
+>> +
+>> +/*
+>> + * emulate_step() requires insn to be emulated as
+>> + * second parameter. Load register 'r4' with the
+>> + * instruction.
+>> + */
+>> +void create_load_emulate_insn(unsigned int insn, kprobe_opcode_t *addr)
+>> +{
+>> +	u32 instr, instr2;
+>> +
+>> +	/* synthesize addis r4,0,(insn)@h */
+>> +	 instr = 0x3c000000 | 0x800000 | ((insn >> 16) & 0xffff);
+>> +	*addr++ = instr;
+>> +
+>> +	/* ori r4,r4,(insn)@l */
+>> +	instr2 = 0x60000000 | 0x40000 | 0x800000;
+>> +	instr2 = instr2 | (insn & 0xffff);
+>> +	*addr = instr2;
+>> +}
+>> +
+>> +/*
+>> + * optimized_kprobe structure is required as a parameter
+>> + * for invoking optimized_callback() from detour buffer.
+>> + * Load this value into register 'r3'.
+>> + */
+>> +void create_load_address_insn(unsigned long val, kprobe_opcode_t *addr)
+>> +{
+>> +	u32 instr1, instr2, instr3, instr4, instr5;
+>> +	/*
+>> +	 * 64bit immediate load into r3.
+>> +	 * lis r3,(op)@highest
+>> +	 */
+>> +	instr1 = 0x3c000000 | 0x600000 | ((val >> 48) & 0xffff);
+>> +	*addr++ = instr1;
+>> +
+>> +	/* ori r3,r3,(op)@higher */
+>> +	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val >> 32) & 0xffff);
+>> +	*addr++ = instr2;
+>> +
+>> +	/* rldicr r3,r3,32,31 */
+>> +	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 & 0x1f) << 11);
+>> +	instr3 = instr3 | ((31 & 0x1f) << 6) | ((32 & 0x20) >> 4);
+>> +	*addr++ = instr3;
+>> +
+>> +	/* oris r3,r3,(op)@h */
+>> +	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val >> 16) & 0xffff);
+>> +	*addr++ = instr4;
+>> +
+>> +	/* ori r3,r3,(op)@l */
+>> +	instr5 = 0x60000000 | 0x30000 | 0x600000 | (val & 0xffff);
+>> +	*addr = instr5;
+>> +}
+>> +
+>> +int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+>> +{
+>> +	kprobe_opcode_t *buff, branch, branch2, branch3;
+>> +	long rel_chk, ret_chk;
+>> +	unsigned long nip;
+>> +
+>> +	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
+>> +	op->optinsn.insn = NULL;
+>> +	nip = can_optimize(p);
+>> +
+>> +	if (!nip)
+>> +		return -EILSEQ;
+>> +
+>> +	/* Allocate instruction slot for detour buffer */
+>> +	buff = ppc_get_optinsn_slot(op);
+>> +	if (!buff)
+>> +		return -ENOMEM;
+>> +
+>> +	/*
+>> +	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
+>> +	 *
+>> +	 * The target address has to be relatively nearby, to permit use
+>> +	 * of branch instruction in powerpc because the address is specified
+>> +	 * in an immediate field in the instruction opcode itself, ie 24 bits
+>> +	 * in the opcode specify the address. Therefore the address gap should
+>> +	 * be 32MB on either side of the current instruction.
+>> +	 */
+>> +	rel_chk = (long)buff - (unsigned long)p->addr;
+>> +	if (rel_chk < -0x2000000 || rel_chk > 0x1fffffc || rel_chk & 0x3) {
+>> +		ppc_free_optinsn_slot(op);
+> This doesn't work because op->optinsn.insn is NULL here. (buff is assigned
+> at the end of this function)
+
+yes. You are right. Need to free 'buff' here.
+Thank you for pointing out this.
+>> +		return -ERANGE;
+>> +	}
+>> +	/* Check the return address is also within 32MB range */
+>> +	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)nip;
+>> +	if (ret_chk < -0x2000000 || ret_chk > 0x1fffffc || ret_chk & 0x3) {
+>> +		ppc_free_optinsn_slot(op);
+> ditto.
+>
+>> +		return -ERANGE;
+>> +	}
+>> +
+>> +	/* Do Copy arch specific instance from template */
+>> +	memcpy(buff, optprobe_template_entry,
+>> +	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
+>> +
+>> +	/* Load address into register */
+>> +	create_load_address_insn((unsigned long)p->addr, buff + TMPL_KP_IDX);
+>> +	create_load_address_insn((unsigned long)op, buff + TMPL_OP1_IDX);
+>> +
+>> +	/*
+>> +	 * Create a branch to the optimized_callback function.
+>> +	 * optimized_callback, points to the global entry point.
+>> +	 * Add +8, to create a branch to the LEP of the function.
+>> +	 */
+>> +	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
+>> +			       (unsigned long)optimized_callback + 8,
+>> +				BRANCH_SET_LINK);
+>> +
+>> +	/* Place the branch instr into the trampoline */
+>> +	buff[TMPL_CALL_HDLR_IDX] = branch;
+>> +
+>> +	/* Load instruction to be emulated into relevant register */
+>> +	create_load_emulate_insn(*p->ainsn.insn, buff + TMPL_INSN_IDX);
+>> +
+>> +	/*
+>> +	 * Create a branch instruction into the emulate_step.
+>> +	 * Add +8, to create the branch to LEP of emulate_step().
+>> +	 */
+>> +	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
+>> +				(unsigned long)emulate_step + 8,
+>> +				BRANCH_SET_LINK);
+>> +	buff[TMPL_EMULATE_IDX] = branch3;
+>> +
+>> +	/* Create a branch for jumping back */
+>> +	branch2 = create_branch((unsigned int *)buff + TMPL_RET_IDX,
+>> +				(unsigned long)nip, 0);
+>> +	buff[TMPL_RET_IDX] = branch2;
+>> +
+>> +	op->optinsn.insn = buff;
+>> +	smp_mb();
+>> +	return 0;
+>> +}
+>> +
+>> +int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
+>> +{
+>> +	return optinsn->insn != NULL;
+>> +}
+>> +
+>> +/*
+>> + * Here,kprobe opt always replace one instruction (4 bytes
+>> + * aligned and 4 bytes long). It is impossible to encounter another
+>> + * kprobe in the address range. So always return 0.
+>> + */
+>> +int arch_check_optimized_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	return 0;
+>> +}
+>> +
+>> +void arch_optimize_kprobes(struct list_head *oplist)
+>> +{
+>> +	struct optimized_kprobe *op;
+>> +	struct optimized_kprobe *tmp;
+>> +
+>> +	unsigned int branch;
+>> +
+>> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+>> +		/*
+>> +		 * Backup instructions which will be replaced
+>> +		 * by jump address
+>> +		 */
+>> +		memcpy(op->optinsn.copied_insn, op->kp.addr,
+>> +		       RELATIVEJUMP_SIZE);
+>> +		branch = create_branch((unsigned int *)op->kp.addr,
+>> +				       (unsigned long)op->optinsn.insn, 0);
+>> +		*op->kp.addr = branch;
+> Hmm, wouldn't we have to use patch_instruction() here?
+> (It seems ppc kprobe implementation should also be updated to use it...)
+>> +		list_del_init(&op->list);
+>> +	}
+>> +}
+>> +
+>> +void arch_unoptimize_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	arch_arm_kprobe(&op->kp);
+>> +}
+>> +
+>> +void arch_unoptimize_kprobes(struct list_head *oplist,
+>> +			     struct list_head *done_list)
+>> +{
+>> +	struct optimized_kprobe *op;
+>> +	struct optimized_kprobe *tmp;
+>> +
+>> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+>> +		arch_unoptimize_kprobe(op);
+>> +		list_move(&op->list, done_list);
+>> +	}
+>> +}
+>> +
+>> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+>> +				 unsigned long addr)
+>> +{
+>> +	return 0;
+> Here, please check the address range as same as arm32 optprobe implementation.
+>
+> e.g.
+>          return ((unsigned long)op->kp.addr <= addr &&
+>                  (unsigned long)op->kp.addr + RELATIVEJUMP_SIZE > addr);
+>
+>
+> Thank you,
+
+Do we really need this? The only case this check will succeed is if  
+kp.addr is not a multiple of 4, which is not a valid address at all  
+onPower. So should we again check here for that?
+
+
+
+Thanks and regards
+-Anju
+>> +}
+>> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+>> index 3362299..c4b8259 100644
+>> --- a/arch/powerpc/lib/sstep.c
+>> +++ b/arch/powerpc/lib/sstep.c
+>> @@ -2018,3 +2018,24 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+>>   	regs->nip = truncate_if_32bit(regs->msr, regs->nip + 4);
+>>   	return 1;
+>>   }
+>> +
+>> +/* Before optimizing, ensure that the probed instruction is not a
+>> + * conditional branch instruction
+>> + */
+>> +int __kprobes optprobe_conditional_branch_check(unsigned int instr)
+>> +{
+>> +	unsigned int opcode;
+>> +
+>> +	opcode = instr >> 26;
+>> +	if (opcode == 16)
+>> +		return 0;
+>> +	if (opcode == 19) {
+>> +		switch ((instr >> 1) & 0x3ff) {
+>> +		case 16:        /* bclr, bclrl */
+>> +		case 528:       /* bcctr, bcctrl */
+>> +		case 560:       /* bctar, bctarl */
+>> +			return 0;
+>> +		}
+>> +	}
+>> +	return 1;
+>> +}
+>> -- 
+>> 1.8.3.1
+>>
+>
+
+
+--------------22A023E59D0B2A24D5044014
+Content-Type: text/html; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=iso-2022-jp"
+      http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <p>Hi Masami,</p>
+    <p><br>
+    </p>
+    <p>Thank you for reviewing the patch.<br>
+    </p>
+    <br>
+    <div class="moz-cite-prefix">On Thursday 08 September 2016 10:17 PM,
+      Masami Hiramatsu wrote:<br>
+    </div>
+    <blockquote
+      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
+      type="cite">
+      <pre wrap="">On Wed,  7 Sep 2016 15:03:11 +0530
+Anju T Sudhakar <a class="moz-txt-link-rfc2396E" href="mailto:anju@linux.vnet.ibm.com">&lt;anju@linux.vnet.ibm.com&gt;</a> wrote:
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">Instructions which can be emulated are suppliants for optimization.
+Before optimization ensure that the address range between the detour
+buffer allocated and the instruction being probed is within ± 32MB.
+
+Signed-off-by: Anju T Sudhakar <a class="moz-txt-link-rfc2396E" href="mailto:anju@linux.vnet.ibm.com">&lt;anju@linux.vnet.ibm.com&gt;</a>
 ---
-v2: Limitation of TX completion loop to the size of the TX ring to avoid
-infinite loop.
+ arch/powerpc/include/asm/sstep.h |   1 +
+ arch/powerpc/kernel/optprobes.c  | 329 +++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/lib/sstep.c         |  21 +++
+ 3 files changed, 351 insertions(+)
+ create mode 100644 arch/powerpc/kernel/optprobes.c
 
- .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 268 +++++++++------------
- drivers/net/ethernet/freescale/fs_enet/fs_enet.h   |  16 +-
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c   |  57 +----
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c   |  57 +----
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c   |  57 +----
- 5 files changed, 160 insertions(+), 295 deletions(-)
+diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+index d3a42cc..cd5f6ab 100644
+--- a/arch/powerpc/include/asm/sstep.h
++++ b/arch/powerpc/include/asm/sstep.h
+@@ -25,6 +25,7 @@ struct pt_regs;
+ 
+ /* Emulate instructions that cause a transfer of control. */
+ extern int emulate_step(struct pt_regs *regs, unsigned int instr);
++extern int optprobe_conditional_branch_check(unsigned int instr);
+ 
+ enum instruction_type {
+ 	COMPUTE,		/* arith/logical/CR op, etc. */
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+new file mode 100644
+index 0000000..7983d07
+--- /dev/null
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -0,0 +1,329 @@
++/*
++ * Code for Kernel probes Jump optimization.
++ *
++ * Copyright 2016, Anju T, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include &lt;linux/kprobes.h&gt;
++#include &lt;linux/jump_label.h&gt;
++#include &lt;linux/types.h&gt;
++#include &lt;linux/slab.h&gt;
++#include &lt;linux/list.h&gt;
++#include &lt;asm/kprobes.h&gt;
++#include &lt;asm/ptrace.h&gt;
++#include &lt;asm/cacheflush.h&gt;
++#include &lt;asm/code-patching.h&gt;
++#include &lt;asm/sstep.h&gt;
++
++DEFINE_INSN_CACHE_OPS(ppc_optinsn)
++
++#define TMPL_CALL_HDLR_IDX	\
++	(optprobe_template_call_handler - optprobe_template_entry)
++#define TMPL_EMULATE_IDX	\
++	(optprobe_template_call_emulate - optprobe_template_entry)
++#define TMPL_RET_IDX	\
++	(optprobe_template_ret - optprobe_template_entry)
++#define TMPL_KP_IDX	\
++	(optprobe_template_kp_addr - optprobe_template_entry)
++#define TMPL_OP1_IDX	\
++	(optprobe_template_op_address1 - optprobe_template_entry)
++#define TMPL_INSN_IDX	\
++	(optprobe_template_insn - optprobe_template_entry)
++#define TMPL_END_IDX	\
++	(optprobe_template_end - optprobe_template_entry)
++
++static bool insn_page_in_use;
++
++static void *__ppc_alloc_insn_page(void)
++{
++	if (insn_page_in_use)
++		return NULL;
++	insn_page_in_use = true;
++	return &amp;optinsn_slot;
++}
++
++static void __ppc_free_insn_page(void *page __maybe_unused)
++{
++	insn_page_in_use = false;
++}
++
++struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
++	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
++	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
++	/* insn_size initialized later */
++	.alloc = __ppc_alloc_insn_page,
++	.free = __ppc_free_insn_page,
++	.nr_garbage = 0,
++};
++
++kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
++{
++	/*
++	 * The insn slot is allocated from the reserved
++	 * area(ie &amp;optinsn_slot).We are not optimizing probes
++	 * at module_addr now.
++	 */
++	if (is_kernel_addr((unsigned long)op-&gt;kp.addr))
++		return get_ppc_optinsn_slot();
++	return NULL;
++}
++
++static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
++{
++	if (!op-&gt;optinsn.insn)
++		return;
++	if (is_kernel_addr((unsigned long)op-&gt;kp.addr))
++		free_ppc_optinsn_slot(op-&gt;optinsn.insn, 0);
++}
++
++static unsigned long can_optimize(struct kprobe *p)
++{
++	struct pt_regs *regs;
++	unsigned int instr;
++
++	/*
++	 * Not optimizing the kprobe placed by
++	 * kretprobe during boot time
++	 */
++	if (p-&gt;addr == (kprobe_opcode_t *)&amp;kretprobe_trampoline)
++		return 0;
++
++	regs = kmalloc(sizeof(*regs), GFP_KERNEL);
++	if (!regs)
++		return -ENOMEM;
++	memset(regs, 0, sizeof(struct pt_regs));
++	memcpy(regs, current_pt_regs(), sizeof(struct pt_regs));
++	regs-&gt;nip = (unsigned long)p-&gt;addr;
++	instr = *p-&gt;ainsn.insn;
++
++	/* Ensure the instruction can be emulated */
++	if (emulate_step(regs, instr) != 1)
++		return 0;
++	/* Conditional branches are not optimized */
++	if (optprobe_conditional_branch_check(instr) != 1)
++		return 0;
++	return regs-&gt;nip;
+</pre>
+      </blockquote>
+      <pre wrap="">
+Could you free regs here? Or allocate it on stack.</pre>
+    </blockquote>
+    <br>
+    yes. 'regs' can be freed here.<br>
+    <blockquote
+      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
+      type="cite">
+      <pre wrap="">
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 61fd486..37574a9 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -60,6 +60,9 @@ module_param(fs_enet_debug, int, 0);
- MODULE_PARM_DESC(fs_enet_debug,
- 		 "Freescale bitmapped debugging message enable value");
- 
-+#define RX_RING_SIZE	32
-+#define TX_RING_SIZE	64
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+}
 +
- #ifdef CONFIG_NET_POLL_CONTROLLER
- static void fs_enet_netpoll(struct net_device *dev);
- #endif
-@@ -79,8 +82,8 @@ static void skb_align(struct sk_buff *skb, int align)
- 		skb_reserve(skb, align - off);
- }
- 
--/* NAPI receive function */
--static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
-+/* NAPI function */
-+static int fs_enet_napi(struct napi_struct *napi, int budget)
- {
- 	struct fs_enet_private *fep = container_of(napi, struct fs_enet_private, napi);
- 	struct net_device *dev = fep->ndev;
-@@ -90,9 +93,102 @@ static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
- 	int received = 0;
- 	u16 pkt_len, sc;
- 	int curidx;
-+	int dirtyidx, do_wake, do_restart;
-+	int tx_left = TX_RING_SIZE;
- 
--	if (budget <= 0)
--		return received;
-+	spin_lock(&fep->tx_lock);
-+	bdp = fep->dirty_tx;
++static void
++optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
++{
++	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
++	unsigned long flags;
 +
-+	/* clear status bits for napi*/
-+	(*fep->ops->napi_clear_event)(dev);
++	local_irq_save(flags);
 +
-+	do_wake = do_restart = 0;
-+	while (((sc = CBDR_SC(bdp)) & BD_ENET_TX_READY) == 0 && tx_left) {
-+		dirtyidx = bdp - fep->tx_bd_base;
++	if (kprobe_running()) {
++		kprobes_inc_nmissed_count(&amp;op-&gt;kp);
++	} else {
++		__this_cpu_write(current_kprobe, &amp;op-&gt;kp);
++		kcb-&gt;kprobe_status = KPROBE_HIT_ACTIVE;
++		opt_pre_handler(&amp;op-&gt;kp, regs);
++		__this_cpu_write(current_kprobe, NULL);
++	}
++	local_irq_restore(flags);
++}
++NOKPROBE_SYMBOL(optimized_callback);
 +
-+		if (fep->tx_free == fep->tx_ring)
-+			break;
++void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
++{
++	ppc_free_optinsn_slot(op);
++	op-&gt;optinsn.insn = NULL;
++}
 +
-+		skb = fep->tx_skbuff[dirtyidx];
++/*
++ * emulate_step() requires insn to be emulated as
++ * second parameter. Load register 'r4' with the
++ * instruction.
++ */
++void create_load_emulate_insn(unsigned int insn, kprobe_opcode_t *addr)
++{
++	u32 instr, instr2;
 +
-+		/*
-+		 * Check for errors.
-+		 */
-+		if (sc & (BD_ENET_TX_HB | BD_ENET_TX_LC |
-+			  BD_ENET_TX_RL | BD_ENET_TX_UN | BD_ENET_TX_CSL)) {
++	/* synthesize addis r4,0,(insn)@h */
++	 instr = 0x3c000000 | 0x800000 | ((insn &gt;&gt; 16) &amp; 0xffff);
++	*addr++ = instr;
 +
-+			if (sc & BD_ENET_TX_HB)	/* No heartbeat */
-+				fep->stats.tx_heartbeat_errors++;
-+			if (sc & BD_ENET_TX_LC)	/* Late collision */
-+				fep->stats.tx_window_errors++;
-+			if (sc & BD_ENET_TX_RL)	/* Retrans limit */
-+				fep->stats.tx_aborted_errors++;
-+			if (sc & BD_ENET_TX_UN)	/* Underrun */
-+				fep->stats.tx_fifo_errors++;
-+			if (sc & BD_ENET_TX_CSL)	/* Carrier lost */
-+				fep->stats.tx_carrier_errors++;
++	/* ori r4,r4,(insn)@l */
++	instr2 = 0x60000000 | 0x40000 | 0x800000;
++	instr2 = instr2 | (insn &amp; 0xffff);
++	*addr = instr2;
++}
 +
-+			if (sc & (BD_ENET_TX_LC | BD_ENET_TX_RL | BD_ENET_TX_UN)) {
-+				fep->stats.tx_errors++;
-+				do_restart = 1;
-+			}
-+		} else
-+			fep->stats.tx_packets++;
++/*
++ * optimized_kprobe structure is required as a parameter
++ * for invoking optimized_callback() from detour buffer.
++ * Load this value into register 'r3'.
++ */
++void create_load_address_insn(unsigned long val, kprobe_opcode_t *addr)
++{
++	u32 instr1, instr2, instr3, instr4, instr5;
++	/*
++	 * 64bit immediate load into r3.
++	 * lis r3,(op)@highest
++	 */
++	instr1 = 0x3c000000 | 0x600000 | ((val &gt;&gt; 48) &amp; 0xffff);
++	*addr++ = instr1;
 +
-+		if (sc & BD_ENET_TX_READY) {
-+			dev_warn(fep->dev,
-+				 "HEY! Enet xmit interrupt and TX_READY.\n");
-+		}
++	/* ori r3,r3,(op)@higher */
++	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val &gt;&gt; 32) &amp; 0xffff);
++	*addr++ = instr2;
 +
-+		/*
-+		 * Deferred means some collisions occurred during transmit,
-+		 * but we eventually sent the packet OK.
-+		 */
-+		if (sc & BD_ENET_TX_DEF)
-+			fep->stats.collisions++;
++	/* rldicr r3,r3,32,31 */
++	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 &amp; 0x1f) &lt;&lt; 11);
++	instr3 = instr3 | ((31 &amp; 0x1f) &lt;&lt; 6) | ((32 &amp; 0x20) &gt;&gt; 4);
++	*addr++ = instr3;
 +
-+		/* unmap */
-+		if (fep->mapped_as_page[dirtyidx])
-+			dma_unmap_page(fep->dev, CBDR_BUFADDR(bdp),
-+				       CBDR_DATLEN(bdp), DMA_TO_DEVICE);
-+		else
-+			dma_unmap_single(fep->dev, CBDR_BUFADDR(bdp),
-+					 CBDR_DATLEN(bdp), DMA_TO_DEVICE);
++	/* oris r3,r3,(op)@h */
++	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val &gt;&gt; 16) &amp; 0xffff);
++	*addr++ = instr4;
 +
-+		/*
-+		 * Free the sk buffer associated with this last transmit.
-+		 */
-+		if (skb) {
-+			dev_kfree_skb(skb);
-+			fep->tx_skbuff[dirtyidx] = NULL;
-+		}
++	/* ori r3,r3,(op)@l */
++	instr5 = 0x60000000 | 0x30000 | 0x600000 | (val &amp; 0xffff);
++	*addr = instr5;
++}
 +
-+		/*
-+		 * Update pointer to next buffer descriptor to be transmitted.
-+		 */
-+		if ((sc & BD_ENET_TX_WRAP) == 0)
-+			bdp++;
-+		else
-+			bdp = fep->tx_bd_base;
++int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
++{
++	kprobe_opcode_t *buff, branch, branch2, branch3;
++	long rel_chk, ret_chk;
++	unsigned long nip;
 +
-+		/*
-+		 * Since we have freed up a buffer, the ring is no longer
-+		 * full.
-+		 */
-+		if (++fep->tx_free == MAX_SKB_FRAGS)
-+			do_wake = 1;
-+		tx_left--;
++	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
++	op-&gt;optinsn.insn = NULL;
++	nip = can_optimize(p);
++
++	if (!nip)
++		return -EILSEQ;
++
++	/* Allocate instruction slot for detour buffer */
++	buff = ppc_get_optinsn_slot(op);
++	if (!buff)
++		return -ENOMEM;
++
++	/*
++	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
++	 *
++	 * The target address has to be relatively nearby, to permit use
++	 * of branch instruction in powerpc because the address is specified
++	 * in an immediate field in the instruction opcode itself, ie 24 bits
++	 * in the opcode specify the address. Therefore the address gap should
++	 * be 32MB on either side of the current instruction.
++	 */
++	rel_chk = (long)buff - (unsigned long)p-&gt;addr;
++	if (rel_chk &lt; -0x2000000 || rel_chk &gt; 0x1fffffc || rel_chk &amp; 0x3) {
++		ppc_free_optinsn_slot(op);
+</pre>
+      </blockquote>
+      <pre wrap="">
+This doesn't work because op-&gt;optinsn.insn is NULL here. (buff is assigned
+at the end of this function)
+</pre>
+    </blockquote>
+    <br>
+    yes. You are right. Need to free 'buff' here. <br>
+    Thank you for pointing out this.<br>
+    <blockquote
+      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
+      type="cite">
+      <pre wrap="">
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+		return -ERANGE;
++	}
++	/* Check the return address is also within 32MB range */
++	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)nip;
++	if (ret_chk &lt; -0x2000000 || ret_chk &gt; 0x1fffffc || ret_chk &amp; 0x3) {
++		ppc_free_optinsn_slot(op);
+</pre>
+      </blockquote>
+      <pre wrap="">
+ditto.
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+		return -ERANGE;
 +	}
 +
-+	fep->dirty_tx = bdp;
++	/* Do Copy arch specific instance from template */
++	memcpy(buff, optprobe_template_entry,
++	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
 +
-+	if (do_restart)
-+		(*fep->ops->tx_restart)(dev);
++	/* Load address into register */
++	create_load_address_insn((unsigned long)p-&gt;addr, buff + TMPL_KP_IDX);
++	create_load_address_insn((unsigned long)op, buff + TMPL_OP1_IDX);
 +
-+	spin_unlock(&fep->tx_lock);
++	/*
++	 * Create a branch to the optimized_callback function.
++	 * optimized_callback, points to the global entry point.
++	 * Add +8, to create a branch to the LEP of the function.
++	 */
++	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
++			       (unsigned long)optimized_callback + 8,
++				BRANCH_SET_LINK);
 +
-+	if (do_wake)
-+		netif_wake_queue(dev);
- 
- 	/*
- 	 * First, grab all of the stats for the incoming packet.
-@@ -100,10 +196,8 @@ static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
- 	 */
- 	bdp = fep->cur_rx;
- 
--	/* clear RX status bits for napi*/
--	(*fep->ops->napi_clear_rx_event)(dev);
--
--	while (((sc = CBDR_SC(bdp)) & BD_ENET_RX_EMPTY) == 0) {
-+	while (((sc = CBDR_SC(bdp)) & BD_ENET_RX_EMPTY) == 0 &&
-+	       received < budget) {
- 		curidx = bdp - fep->rx_bd_base;
- 
- 		/*
-@@ -197,134 +291,19 @@ static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
- 			bdp = fep->rx_bd_base;
- 
- 		(*fep->ops->rx_bd_done)(dev);
--
--		if (received >= budget)
--			break;
- 	}
- 
- 	fep->cur_rx = bdp;
- 
--	if (received < budget) {
-+	if (received < budget && tx_left) {
- 		/* done */
- 		napi_complete(napi);
--		(*fep->ops->napi_enable_rx)(dev);
--	}
--	return received;
--}
-+		(*fep->ops->napi_enable)(dev);
- 
--static int fs_enet_tx_napi(struct napi_struct *napi, int budget)
--{
--	struct fs_enet_private *fep = container_of(napi, struct fs_enet_private,
--						   napi_tx);
--	struct net_device *dev = fep->ndev;
--	cbd_t __iomem *bdp;
--	struct sk_buff *skb;
--	int dirtyidx, do_wake, do_restart;
--	u16 sc;
--	int has_tx_work = 0;
--
--	spin_lock(&fep->tx_lock);
--	bdp = fep->dirty_tx;
--
--	/* clear TX status bits for napi*/
--	(*fep->ops->napi_clear_tx_event)(dev);
--
--	do_wake = do_restart = 0;
--	while (((sc = CBDR_SC(bdp)) & BD_ENET_TX_READY) == 0) {
--		dirtyidx = bdp - fep->tx_bd_base;
--
--		if (fep->tx_free == fep->tx_ring)
--			break;
--
--		skb = fep->tx_skbuff[dirtyidx];
--
--		/*
--		 * Check for errors.
--		 */
--		if (sc & (BD_ENET_TX_HB | BD_ENET_TX_LC |
--			  BD_ENET_TX_RL | BD_ENET_TX_UN | BD_ENET_TX_CSL)) {
--
--			if (sc & BD_ENET_TX_HB)	/* No heartbeat */
--				fep->stats.tx_heartbeat_errors++;
--			if (sc & BD_ENET_TX_LC)	/* Late collision */
--				fep->stats.tx_window_errors++;
--			if (sc & BD_ENET_TX_RL)	/* Retrans limit */
--				fep->stats.tx_aborted_errors++;
--			if (sc & BD_ENET_TX_UN)	/* Underrun */
--				fep->stats.tx_fifo_errors++;
--			if (sc & BD_ENET_TX_CSL)	/* Carrier lost */
--				fep->stats.tx_carrier_errors++;
--
--			if (sc & (BD_ENET_TX_LC | BD_ENET_TX_RL | BD_ENET_TX_UN)) {
--				fep->stats.tx_errors++;
--				do_restart = 1;
--			}
--		} else
--			fep->stats.tx_packets++;
--
--		if (sc & BD_ENET_TX_READY) {
--			dev_warn(fep->dev,
--				 "HEY! Enet xmit interrupt and TX_READY.\n");
--		}
--
--		/*
--		 * Deferred means some collisions occurred during transmit,
--		 * but we eventually sent the packet OK.
--		 */
--		if (sc & BD_ENET_TX_DEF)
--			fep->stats.collisions++;
--
--		/* unmap */
--		if (fep->mapped_as_page[dirtyidx])
--			dma_unmap_page(fep->dev, CBDR_BUFADDR(bdp),
--				       CBDR_DATLEN(bdp), DMA_TO_DEVICE);
--		else
--			dma_unmap_single(fep->dev, CBDR_BUFADDR(bdp),
--					 CBDR_DATLEN(bdp), DMA_TO_DEVICE);
--
--		/*
--		 * Free the sk buffer associated with this last transmit.
--		 */
--		if (skb) {
--			dev_kfree_skb(skb);
--			fep->tx_skbuff[dirtyidx] = NULL;
--		}
--
--		/*
--		 * Update pointer to next buffer descriptor to be transmitted.
--		 */
--		if ((sc & BD_ENET_TX_WRAP) == 0)
--			bdp++;
--		else
--			bdp = fep->tx_bd_base;
--
--		/*
--		 * Since we have freed up a buffer, the ring is no longer
--		 * full.
--		 */
--		if (++fep->tx_free >= MAX_SKB_FRAGS)
--			do_wake = 1;
--		has_tx_work = 1;
--	}
--
--	fep->dirty_tx = bdp;
--
--	if (do_restart)
--		(*fep->ops->tx_restart)(dev);
--
--	if (!has_tx_work) {
--		napi_complete(napi);
--		(*fep->ops->napi_enable_tx)(dev);
-+		return received;
- 	}
- 
--	spin_unlock(&fep->tx_lock);
--
--	if (do_wake)
--		netif_wake_queue(dev);
--
--	if (has_tx_work)
--		return budget;
--	return 0;
-+	return budget;
++	/* Place the branch instr into the trampoline */
++	buff[TMPL_CALL_HDLR_IDX] = branch;
++
++	/* Load instruction to be emulated into relevant register */
++	create_load_emulate_insn(*p-&gt;ainsn.insn, buff + TMPL_INSN_IDX);
++
++	/*
++	 * Create a branch instruction into the emulate_step.
++	 * Add +8, to create the branch to LEP of emulate_step().
++	 */
++	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
++				(unsigned long)emulate_step + 8,
++				BRANCH_SET_LINK);
++	buff[TMPL_EMULATE_IDX] = branch3;
++
++	/* Create a branch for jumping back */
++	branch2 = create_branch((unsigned int *)buff + TMPL_RET_IDX,
++				(unsigned long)nip, 0);
++	buff[TMPL_RET_IDX] = branch2;
++
++	op-&gt;optinsn.insn = buff;
++	smp_mb();
++	return 0;
++}
++
++int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
++{
++	return optinsn-&gt;insn != NULL;
++}
++
++/*
++ * Here,kprobe opt always replace one instruction (4 bytes
++ * aligned and 4 bytes long). It is impossible to encounter another
++ * kprobe in the address range. So always return 0.
++ */
++int arch_check_optimized_kprobe(struct optimized_kprobe *op)
++{
++	return 0;
++}
++
++void arch_optimize_kprobes(struct list_head *oplist)
++{
++	struct optimized_kprobe *op;
++	struct optimized_kprobe *tmp;
++
++	unsigned int branch;
++
++	list_for_each_entry_safe(op, tmp, oplist, list) {
++		/*
++		 * Backup instructions which will be replaced
++		 * by jump address
++		 */
++		memcpy(op-&gt;optinsn.copied_insn, op-&gt;kp.addr,
++		       RELATIVEJUMP_SIZE);
++		branch = create_branch((unsigned int *)op-&gt;kp.addr,
++				       (unsigned long)op-&gt;optinsn.insn, 0);
++		*op-&gt;kp.addr = branch;
+</pre>
+      </blockquote>
+      <pre wrap="">
+Hmm, wouldn't we have to use patch_instruction() here?
+(It seems ppc kprobe implementation should also be updated to use it...)</pre>
+    </blockquote>
+    <blockquote
+      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
+      type="cite">
+      <pre wrap="">
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+		list_del_init(&amp;op-&gt;list);
++	}
++}
++
++void arch_unoptimize_kprobe(struct optimized_kprobe *op)
++{
++	arch_arm_kprobe(&amp;op-&gt;kp);
++}
++
++void arch_unoptimize_kprobes(struct list_head *oplist,
++			     struct list_head *done_list)
++{
++	struct optimized_kprobe *op;
++	struct optimized_kprobe *tmp;
++
++	list_for_each_entry_safe(op, tmp, oplist, list) {
++		arch_unoptimize_kprobe(op);
++		list_move(&amp;op-&gt;list, done_list);
++	}
++}
++
++int arch_within_optimized_kprobe(struct optimized_kprobe *op,
++				 unsigned long addr)
++{
++	return 0;
+</pre>
+      </blockquote>
+      <pre wrap="">
+Here, please check the address range as same as arm32 optprobe implementation.
+
+e.g.
+        return ((unsigned long)op-&gt;kp.addr &lt;= addr &amp;&amp;
+                (unsigned long)op-&gt;kp.addr + RELATIVEJUMP_SIZE &gt; addr);
+
+
+Thank you,
+</pre>
+    </blockquote>
+    <br>
+    Do we really need this? <font size="+2"><font size="+1">The only
+        case this check will succeed is if kp.addr is not a multiple of
+        4, which is not a valid address at all on</font></font><font
+      size="+2"><font size="+1"> Power. So should we again check here
+        for that</font>?<br>
+      <br>
+      <br>
+    </font><br>
+    Thanks and regards<br>
+    -Anju<font size="+2"><br>
+    </font>
+    <blockquote
+      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
+      type="cite">
+      <pre wrap="">
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">+}
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 3362299..c4b8259 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -2018,3 +2018,24 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	regs-&gt;nip = truncate_if_32bit(regs-&gt;msr, regs-&gt;nip + 4);
+ 	return 1;
  }
- 
- /*
-@@ -350,18 +329,18 @@ fs_enet_interrupt(int irq, void *dev_id)
- 		nr++;
- 
- 		int_clr_events = int_events;
--		int_clr_events &= ~fep->ev_napi_rx;
-+		int_clr_events &= ~fep->ev_napi;
- 
- 		(*fep->ops->clear_int_events)(dev, int_clr_events);
- 
- 		if (int_events & fep->ev_err)
- 			(*fep->ops->ev_error)(dev, int_events);
- 
--		if (int_events & fep->ev_rx) {
-+		if (int_events & fep->ev) {
- 			napi_ok = napi_schedule_prep(&fep->napi);
- 
--			(*fep->ops->napi_disable_rx)(dev);
--			(*fep->ops->clear_int_events)(dev, fep->ev_napi_rx);
-+			(*fep->ops->napi_disable)(dev);
-+			(*fep->ops->clear_int_events)(dev, fep->ev_napi);
- 
- 			/* NOTE: it is possible for FCCs in NAPI mode    */
- 			/* to submit a spurious interrupt while in poll  */
-@@ -369,17 +348,6 @@ fs_enet_interrupt(int irq, void *dev_id)
- 				__napi_schedule(&fep->napi);
- 		}
- 
--		if (int_events & fep->ev_tx) {
--			napi_ok = napi_schedule_prep(&fep->napi_tx);
--
--			(*fep->ops->napi_disable_tx)(dev);
--			(*fep->ops->clear_int_events)(dev, fep->ev_napi_tx);
--
--			/* NOTE: it is possible for FCCs in NAPI mode    */
--			/* to submit a spurious interrupt while in poll  */
--			if (napi_ok)
--				__napi_schedule(&fep->napi_tx);
--		}
- 	}
- 
- 	handled = nr > 0;
-@@ -659,7 +627,8 @@ static void fs_timeout(struct net_device *dev)
- 	}
- 
- 	phy_start(dev->phydev);
--	wake = fep->tx_free && !(CBDR_SC(fep->cur_tx) & BD_ENET_TX_READY);
-+	wake = fep->tx_free >= MAX_SKB_FRAGS &&
-+	       !(CBDR_SC(fep->cur_tx) & BD_ENET_TX_READY);
- 	spin_unlock_irqrestore(&fep->lock, flags);
- 
- 	if (wake)
-@@ -751,11 +720,10 @@ static int fs_enet_open(struct net_device *dev)
- 	int err;
- 
- 	/* to initialize the fep->cur_rx,... */
--	/* not doing this, will cause a crash in fs_enet_rx_napi */
-+	/* not doing this, will cause a crash in fs_enet_napi */
- 	fs_init_bds(fep->ndev);
- 
- 	napi_enable(&fep->napi);
--	napi_enable(&fep->napi_tx);
- 
- 	/* Install our interrupt handler. */
- 	r = request_irq(fep->interrupt, fs_enet_interrupt, IRQF_SHARED,
-@@ -763,7 +731,6 @@ static int fs_enet_open(struct net_device *dev)
- 	if (r != 0) {
- 		dev_err(fep->dev, "Could not allocate FS_ENET IRQ!");
- 		napi_disable(&fep->napi);
--		napi_disable(&fep->napi_tx);
- 		return -EINVAL;
- 	}
- 
-@@ -771,7 +738,6 @@ static int fs_enet_open(struct net_device *dev)
- 	if (err) {
- 		free_irq(fep->interrupt, dev);
- 		napi_disable(&fep->napi);
--		napi_disable(&fep->napi_tx);
- 		return err;
- 	}
- 	phy_start(dev->phydev);
-@@ -789,7 +755,6 @@ static int fs_enet_close(struct net_device *dev)
- 	netif_stop_queue(dev);
- 	netif_carrier_off(dev);
- 	napi_disable(&fep->napi);
--	napi_disable(&fep->napi_tx);
- 	phy_stop(dev->phydev);
- 
- 	spin_lock_irqsave(&fep->lock, flags);
-@@ -939,8 +904,8 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 		fpi->cp_command = *data;
- 	}
- 
--	fpi->rx_ring = 32;
--	fpi->tx_ring = 64;
-+	fpi->rx_ring = RX_RING_SIZE;
-+	fpi->tx_ring = TX_RING_SIZE;
- 	fpi->rx_copybreak = 240;
- 	fpi->napi_weight = 17;
- 	fpi->phy_node = of_parse_phandle(ofdev->dev.of_node, "phy-handle", 0);
-@@ -1024,8 +989,7 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 
- 	ndev->netdev_ops = &fs_enet_netdev_ops;
- 	ndev->watchdog_timeo = 2 * HZ;
--	netif_napi_add(ndev, &fep->napi, fs_enet_rx_napi, fpi->napi_weight);
--	netif_tx_napi_add(ndev, &fep->napi_tx, fs_enet_tx_napi, 2);
-+	netif_napi_add(ndev, &fep->napi, fs_enet_napi, fpi->napi_weight);
- 
- 	ndev->ethtool_ops = &fs_ethtool_ops;
- 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-index e29f54a..fee24c8 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-@@ -81,12 +81,9 @@ struct fs_ops {
- 	void (*adjust_link)(struct net_device *dev);
- 	void (*restart)(struct net_device *dev);
- 	void (*stop)(struct net_device *dev);
--	void (*napi_clear_rx_event)(struct net_device *dev);
--	void (*napi_enable_rx)(struct net_device *dev);
--	void (*napi_disable_rx)(struct net_device *dev);
--	void (*napi_clear_tx_event)(struct net_device *dev);
--	void (*napi_enable_tx)(struct net_device *dev);
--	void (*napi_disable_tx)(struct net_device *dev);
-+	void (*napi_clear_event)(struct net_device *dev);
-+	void (*napi_enable)(struct net_device *dev);
-+	void (*napi_disable)(struct net_device *dev);
- 	void (*rx_bd_done)(struct net_device *dev);
- 	void (*tx_kickstart)(struct net_device *dev);
- 	u32 (*get_int_events)(struct net_device *dev);
-@@ -122,7 +119,6 @@ struct phy_info {
- 
- struct fs_enet_private {
- 	struct napi_struct napi;
--	struct napi_struct napi_tx;
- 	struct device *dev;	/* pointer back to the device (must be initialized first) */
- 	struct net_device *ndev;
- 	spinlock_t lock;	/* during all ops except TX pckt processing */
-@@ -152,10 +148,8 @@ struct fs_enet_private {
- 	int oldduplex, oldspeed, oldlink;	/* current settings */
- 
- 	/* event masks */
--	u32 ev_napi_rx;		/* mask of NAPI rx events */
--	u32 ev_napi_tx;		/* mask of NAPI rx events */
--	u32 ev_rx;		/* rx event mask          */
--	u32 ev_tx;		/* tx event mask          */
-+	u32 ev_napi;		/* mask of NAPI events */
-+	u32 ev;			/* event mask          */
- 	u32 ev_err;		/* error event mask       */
- 
- 	u16 bd_rx_empty;	/* mask of BD rx empty	  */
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index d71761a..7919896 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -124,10 +124,8 @@ out:
- 	return ret;
- }
- 
--#define FCC_NAPI_RX_EVENT_MSK	(FCC_ENET_RXF | FCC_ENET_RXB)
--#define FCC_NAPI_TX_EVENT_MSK	(FCC_ENET_TXB)
--#define FCC_RX_EVENT		(FCC_ENET_RXF)
--#define FCC_TX_EVENT		(FCC_ENET_TXB)
-+#define FCC_NAPI_EVENT_MSK	(FCC_ENET_RXF | FCC_ENET_RXB | FCC_ENET_TXB)
-+#define FCC_EVENT		(FCC_ENET_RXF | FCC_ENET_TXB)
- #define FCC_ERR_EVENT_MSK	(FCC_ENET_TXE)
- 
- static int setup_data(struct net_device *dev)
-@@ -137,10 +135,8 @@ static int setup_data(struct net_device *dev)
- 	if (do_pd_setup(fep) != 0)
- 		return -EINVAL;
- 
--	fep->ev_napi_rx = FCC_NAPI_RX_EVENT_MSK;
--	fep->ev_napi_tx = FCC_NAPI_TX_EVENT_MSK;
--	fep->ev_rx = FCC_RX_EVENT;
--	fep->ev_tx = FCC_TX_EVENT;
-+	fep->ev_napi = FCC_NAPI_EVENT_MSK;
-+	fep->ev = FCC_EVENT;
- 	fep->ev_err = FCC_ERR_EVENT_MSK;
- 
- 	return 0;
-@@ -424,52 +420,28 @@ static void stop(struct net_device *dev)
- 	fs_cleanup_bds(dev);
- }
- 
--static void napi_clear_rx_event(struct net_device *dev)
-+static void napi_clear_event_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	fcc_t __iomem *fccp = fep->fcc.fccp;
- 
--	W16(fccp, fcc_fcce, FCC_NAPI_RX_EVENT_MSK);
-+	W16(fccp, fcc_fcce, FCC_NAPI_EVENT_MSK);
- }
- 
--static void napi_enable_rx(struct net_device *dev)
-+static void napi_enable_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	fcc_t __iomem *fccp = fep->fcc.fccp;
- 
--	S16(fccp, fcc_fccm, FCC_NAPI_RX_EVENT_MSK);
-+	S16(fccp, fcc_fccm, FCC_NAPI_EVENT_MSK);
- }
- 
--static void napi_disable_rx(struct net_device *dev)
-+static void napi_disable_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	fcc_t __iomem *fccp = fep->fcc.fccp;
- 
--	C16(fccp, fcc_fccm, FCC_NAPI_RX_EVENT_MSK);
--}
--
--static void napi_clear_tx_event(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	fcc_t __iomem *fccp = fep->fcc.fccp;
--
--	W16(fccp, fcc_fcce, FCC_NAPI_TX_EVENT_MSK);
--}
--
--static void napi_enable_tx(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	fcc_t __iomem *fccp = fep->fcc.fccp;
--
--	S16(fccp, fcc_fccm, FCC_NAPI_TX_EVENT_MSK);
--}
--
--static void napi_disable_tx(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	fcc_t __iomem *fccp = fep->fcc.fccp;
--
--	C16(fccp, fcc_fccm, FCC_NAPI_TX_EVENT_MSK);
-+	C16(fccp, fcc_fccm, FCC_NAPI_EVENT_MSK);
- }
- 
- static void rx_bd_done(struct net_device *dev)
-@@ -595,12 +567,9 @@ const struct fs_ops fs_fcc_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.napi_clear_rx_event	= napi_clear_rx_event,
--	.napi_enable_rx		= napi_enable_rx,
--	.napi_disable_rx	= napi_disable_rx,
--	.napi_clear_tx_event	= napi_clear_tx_event,
--	.napi_enable_tx		= napi_enable_tx,
--	.napi_disable_tx	= napi_disable_tx,
-+	.napi_clear_event	= napi_clear_event_fs,
-+	.napi_enable		= napi_enable_fs,
-+	.napi_disable		= napi_disable_fs,
- 	.rx_bd_done		= rx_bd_done,
- 	.tx_kickstart		= tx_kickstart,
- 	.get_int_events		= get_int_events,
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index 35a318e..21fbaaf 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -109,10 +109,8 @@ static int do_pd_setup(struct fs_enet_private *fep)
- 	return 0;
- }
- 
--#define FEC_NAPI_RX_EVENT_MSK	(FEC_ENET_RXF | FEC_ENET_RXB)
--#define FEC_NAPI_TX_EVENT_MSK	(FEC_ENET_TXF)
--#define FEC_RX_EVENT		(FEC_ENET_RXF)
--#define FEC_TX_EVENT		(FEC_ENET_TXF)
-+#define FEC_NAPI_EVENT_MSK	(FEC_ENET_RXF | FEC_ENET_RXB | FEC_ENET_TXF)
-+#define FEC_EVENT		(FEC_ENET_RXF | FEC_ENET_TXF)
- #define FEC_ERR_EVENT_MSK	(FEC_ENET_HBERR | FEC_ENET_BABR | \
- 				 FEC_ENET_BABT | FEC_ENET_EBERR)
- 
-@@ -126,10 +124,8 @@ static int setup_data(struct net_device *dev)
- 	fep->fec.hthi = 0;
- 	fep->fec.htlo = 0;
- 
--	fep->ev_napi_rx = FEC_NAPI_RX_EVENT_MSK;
--	fep->ev_napi_tx = FEC_NAPI_TX_EVENT_MSK;
--	fep->ev_rx = FEC_RX_EVENT;
--	fep->ev_tx = FEC_TX_EVENT;
-+	fep->ev_napi = FEC_NAPI_EVENT_MSK;
-+	fep->ev = FEC_EVENT;
- 	fep->ev_err = FEC_ERR_EVENT_MSK;
- 
- 	return 0;
-@@ -396,52 +392,28 @@ static void stop(struct net_device *dev)
- 	}
- }
- 
--static void napi_clear_rx_event(struct net_device *dev)
-+static void napi_clear_event_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	struct fec __iomem *fecp = fep->fec.fecp;
- 
--	FW(fecp, ievent, FEC_NAPI_RX_EVENT_MSK);
-+	FW(fecp, ievent, FEC_NAPI_EVENT_MSK);
- }
- 
--static void napi_enable_rx(struct net_device *dev)
-+static void napi_enable_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	struct fec __iomem *fecp = fep->fec.fecp;
- 
--	FS(fecp, imask, FEC_NAPI_RX_EVENT_MSK);
-+	FS(fecp, imask, FEC_NAPI_EVENT_MSK);
- }
- 
--static void napi_disable_rx(struct net_device *dev)
-+static void napi_disable_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	struct fec __iomem *fecp = fep->fec.fecp;
- 
--	FC(fecp, imask, FEC_NAPI_RX_EVENT_MSK);
--}
--
--static void napi_clear_tx_event(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	struct fec __iomem *fecp = fep->fec.fecp;
--
--	FW(fecp, ievent, FEC_NAPI_TX_EVENT_MSK);
--}
--
--static void napi_enable_tx(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	struct fec __iomem *fecp = fep->fec.fecp;
--
--	FS(fecp, imask, FEC_NAPI_TX_EVENT_MSK);
--}
--
--static void napi_disable_tx(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	struct fec __iomem *fecp = fep->fec.fecp;
--
--	FC(fecp, imask, FEC_NAPI_TX_EVENT_MSK);
-+	FC(fecp, imask, FEC_NAPI_EVENT_MSK);
- }
- 
- static void rx_bd_done(struct net_device *dev)
-@@ -513,12 +485,9 @@ const struct fs_ops fs_fec_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.napi_clear_rx_event	= napi_clear_rx_event,
--	.napi_enable_rx		= napi_enable_rx,
--	.napi_disable_rx	= napi_disable_rx,
--	.napi_clear_tx_event	= napi_clear_tx_event,
--	.napi_enable_tx		= napi_enable_tx,
--	.napi_disable_tx	= napi_disable_tx,
-+	.napi_clear_event	= napi_clear_event_fs,
-+	.napi_enable		= napi_enable_fs,
-+	.napi_disable		= napi_disable_fs,
- 	.rx_bd_done		= rx_bd_done,
- 	.tx_kickstart		= tx_kickstart,
- 	.get_int_events		= get_int_events,
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index e8b9c33..9d52e1e 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -115,10 +115,8 @@ static int do_pd_setup(struct fs_enet_private *fep)
- 	return 0;
- }
- 
--#define SCC_NAPI_RX_EVENT_MSK	(SCCE_ENET_RXF | SCCE_ENET_RXB)
--#define SCC_NAPI_TX_EVENT_MSK	(SCCE_ENET_TXB)
--#define SCC_RX_EVENT		(SCCE_ENET_RXF)
--#define SCC_TX_EVENT		(SCCE_ENET_TXB)
-+#define SCC_NAPI_EVENT_MSK	(SCCE_ENET_RXF | SCCE_ENET_RXB | SCCE_ENET_TXB)
-+#define SCC_EVENT		(SCCE_ENET_RXF | SCCE_ENET_TXB)
- #define SCC_ERR_EVENT_MSK	(SCCE_ENET_TXE | SCCE_ENET_BSY)
- 
- static int setup_data(struct net_device *dev)
-@@ -130,10 +128,8 @@ static int setup_data(struct net_device *dev)
- 	fep->scc.hthi = 0;
- 	fep->scc.htlo = 0;
- 
--	fep->ev_napi_rx = SCC_NAPI_RX_EVENT_MSK;
--	fep->ev_napi_tx = SCC_NAPI_TX_EVENT_MSK;
--	fep->ev_rx = SCC_RX_EVENT;
--	fep->ev_tx = SCC_TX_EVENT | SCCE_ENET_TXE;
-+	fep->ev_napi = SCC_NAPI_EVENT_MSK;
-+	fep->ev = SCC_EVENT | SCCE_ENET_TXE;
- 	fep->ev_err = SCC_ERR_EVENT_MSK;
- 
- 	return 0;
-@@ -379,52 +375,28 @@ static void stop(struct net_device *dev)
- 	fs_cleanup_bds(dev);
- }
- 
--static void napi_clear_rx_event(struct net_device *dev)
-+static void napi_clear_event_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	scc_t __iomem *sccp = fep->scc.sccp;
- 
--	W16(sccp, scc_scce, SCC_NAPI_RX_EVENT_MSK);
-+	W16(sccp, scc_scce, SCC_NAPI_EVENT_MSK);
- }
- 
--static void napi_enable_rx(struct net_device *dev)
-+static void napi_enable_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	scc_t __iomem *sccp = fep->scc.sccp;
- 
--	S16(sccp, scc_sccm, SCC_NAPI_RX_EVENT_MSK);
-+	S16(sccp, scc_sccm, SCC_NAPI_EVENT_MSK);
- }
- 
--static void napi_disable_rx(struct net_device *dev)
-+static void napi_disable_fs(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	scc_t __iomem *sccp = fep->scc.sccp;
- 
--	C16(sccp, scc_sccm, SCC_NAPI_RX_EVENT_MSK);
--}
--
--static void napi_clear_tx_event(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	scc_t __iomem *sccp = fep->scc.sccp;
--
--	W16(sccp, scc_scce, SCC_NAPI_TX_EVENT_MSK);
--}
--
--static void napi_enable_tx(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	scc_t __iomem *sccp = fep->scc.sccp;
--
--	S16(sccp, scc_sccm, SCC_NAPI_TX_EVENT_MSK);
--}
--
--static void napi_disable_tx(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	scc_t __iomem *sccp = fep->scc.sccp;
--
--	C16(sccp, scc_sccm, SCC_NAPI_TX_EVENT_MSK);
-+	C16(sccp, scc_sccm, SCC_NAPI_EVENT_MSK);
- }
- 
- static void rx_bd_done(struct net_device *dev)
-@@ -497,12 +469,9 @@ const struct fs_ops fs_scc_ops = {
- 	.set_multicast_list	= set_multicast_list,
- 	.restart		= restart,
- 	.stop			= stop,
--	.napi_clear_rx_event	= napi_clear_rx_event,
--	.napi_enable_rx		= napi_enable_rx,
--	.napi_disable_rx	= napi_disable_rx,
--	.napi_clear_tx_event	= napi_clear_tx_event,
--	.napi_enable_tx		= napi_enable_tx,
--	.napi_disable_tx	= napi_disable_tx,
-+	.napi_clear_event	= napi_clear_event_fs,
-+	.napi_enable		= napi_enable_fs,
-+	.napi_disable		= napi_disable_fs,
- 	.rx_bd_done		= rx_bd_done,
- 	.tx_kickstart		= tx_kickstart,
- 	.get_int_events		= get_int_events,
++
++/* Before optimizing, ensure that the probed instruction is not a
++ * conditional branch instruction
++ */
++int __kprobes optprobe_conditional_branch_check(unsigned int instr)
++{
++	unsigned int opcode;
++
++	opcode = instr &gt;&gt; 26;
++	if (opcode == 16)
++		return 0;
++	if (opcode == 19) {
++		switch ((instr &gt;&gt; 1) &amp; 0x3ff) {
++		case 16:        /* bclr, bclrl */
++		case 528:       /* bcctr, bcctrl */
++		case 560:       /* bctar, bctarl */
++			return 0;
++		}
++	}
++	return 1;
++}
 -- 
-2.1.0
+1.8.3.1
+
+</pre>
+      </blockquote>
+      <pre wrap="">
+
+</pre>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------22A023E59D0B2A24D5044014--
