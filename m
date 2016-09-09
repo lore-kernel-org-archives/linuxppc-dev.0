@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <glaubitz@physik.fu-berlin.de>
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
+ [130.133.4.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVq0j5sh2zDrgX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 17:42:12 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH v2 1/5] powerpc/cell: drop unused iic_get_irq_host()
-Date: Fri, 09 Sep 2016 09:42:06 +0200
-Message-ID: <4412383.iXkqCAodFZ@wuerfel>
-In-Reply-To: <87wpildhsa.fsf@possimpible.ozlabs.ibm.com>
-References: <1473139963-7496-1-git-send-email-dja@axtens.net>
- <6411576.kd9HS3NQth@wuerfel> <87wpildhsa.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVsv1109NzDrpW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 19:52:28 +1000 (AEST)
+Subject: Re: Build regression introduced by
+ 31cdd0c39c7544ced79da53aa0b7e989f3a39582
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
+References: <829134bc-381a-7f45-a99a-0b7e66642246@physik.fu-berlin.de>
+ <20160907012356.GA21443@fergus.ozlabs.ibm.com>
+ <87a8fhlv2t.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Message-ID: <5f47ce4e-646f-9532-307a-2904c298e64e@physik.fu-berlin.de>
+Date: Fri, 9 Sep 2016 11:45:45 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <87a8fhlv2t.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, September 9, 2016 10:43:33 AM CEST Daniel Axtens wrote:
-> Hi Arnd,
-> 
-> > I'm currently experimenting with a patch that adds -Wmissing-declaration to
-> > the normal kernel CFLAGS for everyone, and fixing up the warnings I get with
-> > that on ARM.
-> >
-> > Are you looking at all the powerpc specific code? If we can catch all the
-> > existing warnings for some of the major architectures, we can hopefully
-> > enable this in the mainline kernel at some point so we don't need sparse
-> > for it any more.
-> 
-> At the moment I'm just trying to squash sparse warnings on powerpc. This
-> particular catch came from making something static via a dodgy python
-> script and then Andrew finding it was EXPORTed. Removing the EXPORT
-> threw the warning - so it's a bit more complex than just a sparse
-> warning.
+On 09/09/2016 03:29 AM, Michael Ellerman wrote:
+> Interestingly it builds fine for me, even for 32-bit configs, I assume
+> because my toolchains are 32/64-bit they are able to cope with it. I'll
+> try and built a 32-bit only toolchain to catch these problems in future.
 
-I think we just need to pick one of these three cases each time
-we see the warning:
+Yeah, I was just asking myself the same question after seeing your patch
+on the list as the kernel package builds fine on Debian's powerpc port [1].
 
-- if it's used elsewhere, include the correct header
-- if it's not used at all, remove the function
-- if it's only used in the same file, make it static.
-- if it's exported, decide whether to add a declaration in a
-  header or remove the function along with the export.
+However, the powerpc Debian package always builds a 64-bit kernel image
+as well in order to be able to use a 32-bit userland on a 64-bit kernel
+when the hardware is capable of 64-bit. So, your guess above might actually
+be true, but I haven't tested it.
 
-> I think powerpc has the missing prototype warnings enabled and -Werror
-> as well.
+What I do know is that "ld" is definitely not available on PowerPC e500
+while "lwz" is available, see 3-68 in the e500 reference manual [2].
 
-All architectures have -Wstrict-prototypes enabled, but not
--Wmissing-prototypes, -Wmissing-declarations or
--Wmissing-variable-declarations, which are similar to what sparse
-does.
+Thanks for the quick fix!
 
-	Arnd
+Adrian
+
+> [1] https://buildd.debian.org/status/fetch.php?pkg=linux&arch=powerpc&ver=4.7.2-1&stamp=1472464832
+> [2] http://www.nxp.com/files/32bit/doc/ref_manual/E500CORERM.pdf
+
+-- 
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer - glaubitz@debian.org
+`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
