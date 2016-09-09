@@ -1,39 +1,55 @@
-Return-Path: <anju@linux.vnet.ibm.com>
+Return-Path: <zohar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVv9L2nfZzDrpW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 20:49:58 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVyFV1xXpzDrgX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 23:08:45 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u89Ah69a011097
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Sep 2016 06:49:56 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25bc2qmp3r-1
+ u89D3Ow0046722
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Sep 2016 09:08:44 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25bc36j825-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Sep 2016 06:49:55 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Sep 2016 09:08:43 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Fri, 9 Sep 2016 04:49:55 -0600
-Subject: Re: [PATCH 2/3] arch/powerpc : optprobes for powerpc core
-To: Masami Hiramatsu <mhiramat@kernel.org>
-References: <1473240792-10596-1-git-send-email-anju@linux.vnet.ibm.com>
- <1473240792-10596-3-git-send-email-anju@linux.vnet.ibm.com>
- <20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
- mpe@ellerman.id.au, hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Fri, 9 Sep 2016 16:19:41 +0530
-MIME-Version: 1.0
-In-Reply-To: <20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org>
-Content-Type: multipart/alternative;
- boundary="------------22A023E59D0B2A24D5044014"
-Message-Id: <fd56afb9-c78e-521c-ef60-3e75cb6e24c7@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Fri, 9 Sep 2016 23:08:41 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 949263578058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 23:08:39 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u89D8d7w53674108
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Sep 2016 23:08:39 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u89D8cJp028149
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Sep 2016 23:08:39 +1000
+Subject: Re: [PATCH v4 0/5] kexec_file: Add buffer hand-over for the next
+ kernel
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ kexec@lists.infradead.org, linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Dave Young <dyoung@redhat.com>, Vivek Goyal
+ <vgoyal@redhat.com>, Baoquan He <bhe@redhat.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Stewart Smith <stewart@linux.vnet.ibm.com>, Eric
+ Richter <erichte@linux.vnet.ibm.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 09 Sep 2016 09:08:33 -0400
+In-Reply-To: <87k2elhg22.fsf@x220.int.ebiederm.org>
+References: <1472579105-26296-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <8760q7lswz.fsf@x220.int.ebiederm.org>
+ <871t0vlrlv.fsf@x220.int.ebiederm.org> <3106532.NfQxgDJQ20@hactar>
+ <87k2elhg22.fsf@x220.int.ebiederm.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1473426513.2926.246.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,951 +59,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------22A023E59D0B2A24D5044014
-Content-Type: text/plain; charset=iso-2022-jp; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
+On Thu, 2016-09-08 at 23:07 -0500, Eric W. Biederman wrote:
+> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+> 
+> > Am Mittwoch, 07 September 2016, 09:19:40 schrieb Eric W. Biederman:
+> >> ebiederm@xmission.com (Eric W. Biederman) writes:
+> >> > Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+> >> >> Hello,
+> >> >> 
+> >> >> The purpose of this new version of the series is to fix a small issue
+> >> >> that I found, which is that the kernel doesn't remove the memory
+> >> >> reservation for the hand-over buffer it received from the previous
+> >> >> kernel in the device tree it sets up for the next kernel. The result
+> >> >> is that for each successive kexec, a stale hand-over buffer is left
+> >> >> behind, wasting memory.
+> >> >> 
+> >> >> This is fixed by changes to kexec_free_handover_buffer and
+> >> >> setup_handover_buffer in patch 2. The other change is to fix checkpatch
+> >> >> warnings in the last patch.
+> >> > 
+> >> > This is fundamentally broken.  You do not increase the integrity of a
+> >> > system by dropping integrity checks.
+> >> > 
+> >> > No. No. No. No.
+> >> > 
+> >> > Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> >
+> > The IMA measurement list can be verified without the need of a checksum over 
+> > its contents by replaying the PCR extend operations and checking that the 
+> > result matches the registers in the TPM device. So the fact that it is not 
+> > part of the kexec segments checksum verification doesn't actually reduce the 
+> > integrity of the system.
+> 
+> Bit flips and errant DMA transfers are the concern here.  That happens
+> routinely and can easily result in a corrupt data structure which may be
+> non-trivial to verify.
 
-Hi Masami,
+Point taken.  Before using the measurement list, the hash needs to be
+verified.  So then the question is when and where that hash should be
+taken and included.
 
+New measurements can take place between the kexec load and execute.
+Those measurements would be included in an additional execute of kexec
+load, as you suggested. There are additional new measurements that are
+the result of the kexec execute itself, as Thiago pointed out.  Having
+to know a priori what those measurements are, or should be, makes
+carrying the measurement list across kexec brittle.
 
-Thank you for reviewing the patch.
+One solution, as suggested by Thiago, would be to calculate the
+measurement list hash, include the hash in the ima_kexec_hdr and verify
+the hash, before restoring the measurement list.  Another option would
+be to calculate the image hash on kexec load either with  a zero filled
+measurement list segment or without the segment, verify the image hash
+on kexec execute, before re-calculating the image hash.
 
+> > Currently, IMA doesn't perform that verification when it restores the 
+> > measurement list from the kexec handover buffer, so if you believe it's 
+> > necessary to do that check at boot time, we could do one of the following:
+> >
+> > 1. Have IMA replay the PCR extend operations when it restores the 
+> > measurement list from the handover buffer and validate it against the TPM 
+> > PCRs, or
+> >
+> > 2. Have a buffer hash in the ima_kexec_hdr that IMA includes in the handover 
+> > buffer, and verify the buffer checksum before restoring the measurement 
+> > list.
+> >
+> > What do you think?
+> 
+> I think you are playing very much with fire and I am extremely
+> uncomfortable with the entire concept.  I think you are making things
+> more complicated in a way that will allow system to try and start
+> booting when their memory is correct.  Which may wind up corrupting
+> someones non-volatile storage.
 
-On Thursday 08 September 2016 10:17 PM, Masami Hiramatsu wrote:
-> On Wed,  7 Sep 2016 15:03:11 +0530
-> Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
->
->> Instructions which can be emulated are suppliants for optimization.
->> Before optimization ensure that the address range between the detour
->> buffer allocated and the instruction being probed is within ± 32MB.
->>
->> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/include/asm/sstep.h |   1 +
->>   arch/powerpc/kernel/optprobes.c  | 329 +++++++++++++++++++++++++++++++++++++++
->>   arch/powerpc/lib/sstep.c         |  21 +++
->>   3 files changed, 351 insertions(+)
->>   create mode 100644 arch/powerpc/kernel/optprobes.c
->>
->> diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
->> index d3a42cc..cd5f6ab 100644
->> --- a/arch/powerpc/include/asm/sstep.h
->> +++ b/arch/powerpc/include/asm/sstep.h
->> @@ -25,6 +25,7 @@ struct pt_regs;
->>   
->>   /* Emulate instructions that cause a transfer of control. */
->>   extern int emulate_step(struct pt_regs *regs, unsigned int instr);
->> +extern int optprobe_conditional_branch_check(unsigned int instr);
->>   
->>   enum instruction_type {
->>   	COMPUTE,		/* arith/logical/CR op, etc. */
->> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
->> new file mode 100644
->> index 0000000..7983d07
->> --- /dev/null
->> +++ b/arch/powerpc/kernel/optprobes.c
->> @@ -0,0 +1,329 @@
->> +/*
->> + * Code for Kernel probes Jump optimization.
->> + *
->> + * Copyright 2016, Anju T, IBM Corp.
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the License, or (at your option) any later version.
->> + */
->> +
->> +#include <linux/kprobes.h>
->> +#include <linux/jump_label.h>
->> +#include <linux/types.h>
->> +#include <linux/slab.h>
->> +#include <linux/list.h>
->> +#include <asm/kprobes.h>
->> +#include <asm/ptrace.h>
->> +#include <asm/cacheflush.h>
->> +#include <asm/code-patching.h>
->> +#include <asm/sstep.h>
->> +
->> +DEFINE_INSN_CACHE_OPS(ppc_optinsn)
->> +
->> +#define TMPL_CALL_HDLR_IDX	\
->> +	(optprobe_template_call_handler - optprobe_template_entry)
->> +#define TMPL_EMULATE_IDX	\
->> +	(optprobe_template_call_emulate - optprobe_template_entry)
->> +#define TMPL_RET_IDX	\
->> +	(optprobe_template_ret - optprobe_template_entry)
->> +#define TMPL_KP_IDX	\
->> +	(optprobe_template_kp_addr - optprobe_template_entry)
->> +#define TMPL_OP1_IDX	\
->> +	(optprobe_template_op_address1 - optprobe_template_entry)
->> +#define TMPL_INSN_IDX	\
->> +	(optprobe_template_insn - optprobe_template_entry)
->> +#define TMPL_END_IDX	\
->> +	(optprobe_template_end - optprobe_template_entry)
->> +
->> +static bool insn_page_in_use;
->> +
->> +static void *__ppc_alloc_insn_page(void)
->> +{
->> +	if (insn_page_in_use)
->> +		return NULL;
->> +	insn_page_in_use = true;
->> +	return &optinsn_slot;
->> +}
->> +
->> +static void __ppc_free_insn_page(void *page __maybe_unused)
->> +{
->> +	insn_page_in_use = false;
->> +}
->> +
->> +struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
->> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
->> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
->> +	/* insn_size initialized later */
->> +	.alloc = __ppc_alloc_insn_page,
->> +	.free = __ppc_free_insn_page,
->> +	.nr_garbage = 0,
->> +};
->> +
->> +kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
->> +{
->> +	/*
->> +	 * The insn slot is allocated from the reserved
->> +	 * area(ie &optinsn_slot).We are not optimizing probes
->> +	 * at module_addr now.
->> +	 */
->> +	if (is_kernel_addr((unsigned long)op->kp.addr))
->> +		return get_ppc_optinsn_slot();
->> +	return NULL;
->> +}
->> +
->> +static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
->> +{
->> +	if (!op->optinsn.insn)
->> +		return;
->> +	if (is_kernel_addr((unsigned long)op->kp.addr))
->> +		free_ppc_optinsn_slot(op->optinsn.insn, 0);
->> +}
->> +
->> +static unsigned long can_optimize(struct kprobe *p)
->> +{
->> +	struct pt_regs *regs;
->> +	unsigned int instr;
->> +
->> +	/*
->> +	 * Not optimizing the kprobe placed by
->> +	 * kretprobe during boot time
->> +	 */
->> +	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
->> +		return 0;
->> +
->> +	regs = kmalloc(sizeof(*regs), GFP_KERNEL);
->> +	if (!regs)
->> +		return -ENOMEM;
->> +	memset(regs, 0, sizeof(struct pt_regs));
->> +	memcpy(regs, current_pt_regs(), sizeof(struct pt_regs));
->> +	regs->nip = (unsigned long)p->addr;
->> +	instr = *p->ainsn.insn;
->> +
->> +	/* Ensure the instruction can be emulated */
->> +	if (emulate_step(regs, instr) != 1)
->> +		return 0;
->> +	/* Conditional branches are not optimized */
->> +	if (optprobe_conditional_branch_check(instr) != 1)
->> +		return 0;
->> +	return regs->nip;
-> Could you free regs here? Or allocate it on stack.
+Everything that was previously included in the image hash, before this
+proposed patch set, is still included in the image hash.
 
-yes. 'regs' can be freed here.
->
->> +}
->> +
->> +static void
->> +optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
->> +{
->> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
->> +	unsigned long flags;
->> +
->> +	local_irq_save(flags);
->> +
->> +	if (kprobe_running()) {
->> +		kprobes_inc_nmissed_count(&op->kp);
->> +	} else {
->> +		__this_cpu_write(current_kprobe, &op->kp);
->> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
->> +		opt_pre_handler(&op->kp, regs);
->> +		__this_cpu_write(current_kprobe, NULL);
->> +	}
->> +	local_irq_restore(flags);
->> +}
->> +NOKPROBE_SYMBOL(optimized_callback);
->> +
->> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
->> +{
->> +	ppc_free_optinsn_slot(op);
->> +	op->optinsn.insn = NULL;
->> +}
->> +
->> +/*
->> + * emulate_step() requires insn to be emulated as
->> + * second parameter. Load register 'r4' with the
->> + * instruction.
->> + */
->> +void create_load_emulate_insn(unsigned int insn, kprobe_opcode_t *addr)
->> +{
->> +	u32 instr, instr2;
->> +
->> +	/* synthesize addis r4,0,(insn)@h */
->> +	 instr = 0x3c000000 | 0x800000 | ((insn >> 16) & 0xffff);
->> +	*addr++ = instr;
->> +
->> +	/* ori r4,r4,(insn)@l */
->> +	instr2 = 0x60000000 | 0x40000 | 0x800000;
->> +	instr2 = instr2 | (insn & 0xffff);
->> +	*addr = instr2;
->> +}
->> +
->> +/*
->> + * optimized_kprobe structure is required as a parameter
->> + * for invoking optimized_callback() from detour buffer.
->> + * Load this value into register 'r3'.
->> + */
->> +void create_load_address_insn(unsigned long val, kprobe_opcode_t *addr)
->> +{
->> +	u32 instr1, instr2, instr3, instr4, instr5;
->> +	/*
->> +	 * 64bit immediate load into r3.
->> +	 * lis r3,(op)@highest
->> +	 */
->> +	instr1 = 0x3c000000 | 0x600000 | ((val >> 48) & 0xffff);
->> +	*addr++ = instr1;
->> +
->> +	/* ori r3,r3,(op)@higher */
->> +	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val >> 32) & 0xffff);
->> +	*addr++ = instr2;
->> +
->> +	/* rldicr r3,r3,32,31 */
->> +	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 & 0x1f) << 11);
->> +	instr3 = instr3 | ((31 & 0x1f) << 6) | ((32 & 0x20) >> 4);
->> +	*addr++ = instr3;
->> +
->> +	/* oris r3,r3,(op)@h */
->> +	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val >> 16) & 0xffff);
->> +	*addr++ = instr4;
->> +
->> +	/* ori r3,r3,(op)@l */
->> +	instr5 = 0x60000000 | 0x30000 | 0x600000 | (val & 0xffff);
->> +	*addr = instr5;
->> +}
->> +
->> +int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
->> +{
->> +	kprobe_opcode_t *buff, branch, branch2, branch3;
->> +	long rel_chk, ret_chk;
->> +	unsigned long nip;
->> +
->> +	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
->> +	op->optinsn.insn = NULL;
->> +	nip = can_optimize(p);
->> +
->> +	if (!nip)
->> +		return -EILSEQ;
->> +
->> +	/* Allocate instruction slot for detour buffer */
->> +	buff = ppc_get_optinsn_slot(op);
->> +	if (!buff)
->> +		return -ENOMEM;
->> +
->> +	/*
->> +	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
->> +	 *
->> +	 * The target address has to be relatively nearby, to permit use
->> +	 * of branch instruction in powerpc because the address is specified
->> +	 * in an immediate field in the instruction opcode itself, ie 24 bits
->> +	 * in the opcode specify the address. Therefore the address gap should
->> +	 * be 32MB on either side of the current instruction.
->> +	 */
->> +	rel_chk = (long)buff - (unsigned long)p->addr;
->> +	if (rel_chk < -0x2000000 || rel_chk > 0x1fffffc || rel_chk & 0x3) {
->> +		ppc_free_optinsn_slot(op);
-> This doesn't work because op->optinsn.insn is NULL here. (buff is assigned
-> at the end of this function)
+Lets assume  for a moment that the measurement list hash is stored in
+the ima_kexec_hdr.  In addition to preventing the measurement list from
+being restored, we could either allow the reboot without the measurement
+list to occur or halt the system.
 
-yes. You are right. Need to free 'buff' here.
-Thank you for pointing out this.
->> +		return -ERANGE;
->> +	}
->> +	/* Check the return address is also within 32MB range */
->> +	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)nip;
->> +	if (ret_chk < -0x2000000 || ret_chk > 0x1fffffc || ret_chk & 0x3) {
->> +		ppc_free_optinsn_slot(op);
-> ditto.
->
->> +		return -ERANGE;
->> +	}
->> +
->> +	/* Do Copy arch specific instance from template */
->> +	memcpy(buff, optprobe_template_entry,
->> +	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
->> +
->> +	/* Load address into register */
->> +	create_load_address_insn((unsigned long)p->addr, buff + TMPL_KP_IDX);
->> +	create_load_address_insn((unsigned long)op, buff + TMPL_OP1_IDX);
->> +
->> +	/*
->> +	 * Create a branch to the optimized_callback function.
->> +	 * optimized_callback, points to the global entry point.
->> +	 * Add +8, to create a branch to the LEP of the function.
->> +	 */
->> +	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
->> +			       (unsigned long)optimized_callback + 8,
->> +				BRANCH_SET_LINK);
->> +
->> +	/* Place the branch instr into the trampoline */
->> +	buff[TMPL_CALL_HDLR_IDX] = branch;
->> +
->> +	/* Load instruction to be emulated into relevant register */
->> +	create_load_emulate_insn(*p->ainsn.insn, buff + TMPL_INSN_IDX);
->> +
->> +	/*
->> +	 * Create a branch instruction into the emulate_step.
->> +	 * Add +8, to create the branch to LEP of emulate_step().
->> +	 */
->> +	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
->> +				(unsigned long)emulate_step + 8,
->> +				BRANCH_SET_LINK);
->> +	buff[TMPL_EMULATE_IDX] = branch3;
->> +
->> +	/* Create a branch for jumping back */
->> +	branch2 = create_branch((unsigned int *)buff + TMPL_RET_IDX,
->> +				(unsigned long)nip, 0);
->> +	buff[TMPL_RET_IDX] = branch2;
->> +
->> +	op->optinsn.insn = buff;
->> +	smp_mb();
->> +	return 0;
->> +}
->> +
->> +int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
->> +{
->> +	return optinsn->insn != NULL;
->> +}
->> +
->> +/*
->> + * Here,kprobe opt always replace one instruction (4 bytes
->> + * aligned and 4 bytes long). It is impossible to encounter another
->> + * kprobe in the address range. So always return 0.
->> + */
->> +int arch_check_optimized_kprobe(struct optimized_kprobe *op)
->> +{
->> +	return 0;
->> +}
->> +
->> +void arch_optimize_kprobes(struct list_head *oplist)
->> +{
->> +	struct optimized_kprobe *op;
->> +	struct optimized_kprobe *tmp;
->> +
->> +	unsigned int branch;
->> +
->> +	list_for_each_entry_safe(op, tmp, oplist, list) {
->> +		/*
->> +		 * Backup instructions which will be replaced
->> +		 * by jump address
->> +		 */
->> +		memcpy(op->optinsn.copied_insn, op->kp.addr,
->> +		       RELATIVEJUMP_SIZE);
->> +		branch = create_branch((unsigned int *)op->kp.addr,
->> +				       (unsigned long)op->optinsn.insn, 0);
->> +		*op->kp.addr = branch;
-> Hmm, wouldn't we have to use patch_instruction() here?
-> (It seems ppc kprobe implementation should also be updated to use it...)
->> +		list_del_init(&op->list);
->> +	}
->> +}
->> +
->> +void arch_unoptimize_kprobe(struct optimized_kprobe *op)
->> +{
->> +	arch_arm_kprobe(&op->kp);
->> +}
->> +
->> +void arch_unoptimize_kprobes(struct list_head *oplist,
->> +			     struct list_head *done_list)
->> +{
->> +	struct optimized_kprobe *op;
->> +	struct optimized_kprobe *tmp;
->> +
->> +	list_for_each_entry_safe(op, tmp, oplist, list) {
->> +		arch_unoptimize_kprobe(op);
->> +		list_move(&op->list, done_list);
->> +	}
->> +}
->> +
->> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
->> +				 unsigned long addr)
->> +{
->> +	return 0;
-> Here, please check the address range as same as arm32 optprobe implementation.
->
-> e.g.
->          return ((unsigned long)op->kp.addr <= addr &&
->                  (unsigned long)op->kp.addr + RELATIVEJUMP_SIZE > addr);
->
->
-> Thank you,
+Rebooting without the measurement list would result in the attestation
+of the system failing.
 
-Do we really need this? The only case this check will succeed is if  
-kp.addr is not a multiple of 4, which is not a valid address at all  
-onPower. So should we again check here for that?
+> It makes me doubly nervous that this adds a general purpose facility
+> that is generally not at all reusable.
 
+Thiago has already agreed to reverting the skip hash bit. 
 
+> I have seen malicious actors cause entirely too much damage to be at all
+> comfortable using a data structure before we validate that it was valid
+> before we started booting.  This isn't the same case but it is close
+> enough I don't trust someone just splatting data structures.
+> We can't guarantee integrity but we should not bypass best practices
+> either.
+> 
+> >> To be constructive the way we have handled similiar situations in the
+> >> past (hotplu memory) is to call kexec_load again.
+> >
+> > Thanks for your suggestion. Unfortunately it's always possible for new 
+> > measurements to be added to the measurement list between the kexec_file_load 
+> > and the reboot. We see that happen in practice with system scripts and 
+> > configuration files that are only read or executed during the reboot 
+> > process. They are only measured by IMA as a result of the kexec execute.
+> 
+> If I understand what you are saying correctly I expect things could be
+> setup so that those measurements are forced to happen before kexec load.
 
-Thanks and regards
--Anju
->> +}
->> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
->> index 3362299..c4b8259 100644
->> --- a/arch/powerpc/lib/sstep.c
->> +++ b/arch/powerpc/lib/sstep.c
->> @@ -2018,3 +2018,24 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
->>   	regs->nip = truncate_if_32bit(regs->msr, regs->nip + 4);
->>   	return 1;
->>   }
->> +
->> +/* Before optimizing, ensure that the probed instruction is not a
->> + * conditional branch instruction
->> + */
->> +int __kprobes optprobe_conditional_branch_check(unsigned int instr)
->> +{
->> +	unsigned int opcode;
->> +
->> +	opcode = instr >> 26;
->> +	if (opcode == 16)
->> +		return 0;
->> +	if (opcode == 19) {
->> +		switch ((instr >> 1) & 0x3ff) {
->> +		case 16:        /* bclr, bclrl */
->> +		case 528:       /* bcctr, bcctrl */
->> +		case 560:       /* bctar, bctarl */
->> +			return 0;
->> +		}
->> +	}
->> +	return 1;
->> +}
->> -- 
->> 1.8.3.1
->>
->
+> Especially in a boot loader context which you described earlier I
+> believe you should have quite a lot of control of the system.  Having a
+> facility that fundamentally undermines the design of kexec for a case
+> where someone might do something you have not predicted does not make me
+> comfortable.
+> 
+> Which is to say I don't see why you can't measure things before the
+> kexec_load system call in a tightly controlled setup like a boot loader.
+> Which should make it that in practice no measurements change.  I believe
+> that should increase the reliability of the system overall.
 
+Either we measure everything possible, making the measurement list
+unnecessarily large, or have a brittle system that could break the
+attestation of the target system, if any packages add new files/scripts
+that are accessed on a soft reboot.
 
---------------22A023E59D0B2A24D5044014
-Content-Type: text/html; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
+> Having code in the kernel that updates a buffer that kexec will use
+> after that buffer is loaded in memory honestely gives me the heebie
+> jeebies.
 
-<html>
-  <head>
-    <meta content="text/html; charset=iso-2022-jp"
-      http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <p>Hi Masami,</p>
-    <p><br>
-    </p>
-    <p>Thank you for reviewing the patch.<br>
-    </p>
-    <br>
-    <div class="moz-cite-prefix">On Thursday 08 September 2016 10:17 PM,
-      Masami Hiramatsu wrote:<br>
-    </div>
-    <blockquote
-      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
-      type="cite">
-      <pre wrap="">On Wed,  7 Sep 2016 15:03:11 +0530
-Anju T Sudhakar <a class="moz-txt-link-rfc2396E" href="mailto:anju@linux.vnet.ibm.com">&lt;anju@linux.vnet.ibm.com&gt;</a> wrote:
+To address your understandable concerns, we suggested two possible
+solutions for including and verifying the measurement list hash.
+- calculate the image hash on load, verify it on kexec reload, before
+recalculating the image hash with the measurement list segment.
+- defer hashing and verifying the measurement list hash to IMA.
 
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">Instructions which can be emulated are suppliants for optimization.
-Before optimization ensure that the address range between the detour
-buffer allocated and the instruction being probed is within ± 32MB.
-
-Signed-off-by: Anju T Sudhakar <a class="moz-txt-link-rfc2396E" href="mailto:anju@linux.vnet.ibm.com">&lt;anju@linux.vnet.ibm.com&gt;</a>
----
- arch/powerpc/include/asm/sstep.h |   1 +
- arch/powerpc/kernel/optprobes.c  | 329 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/lib/sstep.c         |  21 +++
- 3 files changed, 351 insertions(+)
- create mode 100644 arch/powerpc/kernel/optprobes.c
-
-diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
-index d3a42cc..cd5f6ab 100644
---- a/arch/powerpc/include/asm/sstep.h
-+++ b/arch/powerpc/include/asm/sstep.h
-@@ -25,6 +25,7 @@ struct pt_regs;
- 
- /* Emulate instructions that cause a transfer of control. */
- extern int emulate_step(struct pt_regs *regs, unsigned int instr);
-+extern int optprobe_conditional_branch_check(unsigned int instr);
- 
- enum instruction_type {
- 	COMPUTE,		/* arith/logical/CR op, etc. */
-diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-new file mode 100644
-index 0000000..7983d07
---- /dev/null
-+++ b/arch/powerpc/kernel/optprobes.c
-@@ -0,0 +1,329 @@
-+/*
-+ * Code for Kernel probes Jump optimization.
-+ *
-+ * Copyright 2016, Anju T, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include &lt;linux/kprobes.h&gt;
-+#include &lt;linux/jump_label.h&gt;
-+#include &lt;linux/types.h&gt;
-+#include &lt;linux/slab.h&gt;
-+#include &lt;linux/list.h&gt;
-+#include &lt;asm/kprobes.h&gt;
-+#include &lt;asm/ptrace.h&gt;
-+#include &lt;asm/cacheflush.h&gt;
-+#include &lt;asm/code-patching.h&gt;
-+#include &lt;asm/sstep.h&gt;
-+
-+DEFINE_INSN_CACHE_OPS(ppc_optinsn)
-+
-+#define TMPL_CALL_HDLR_IDX	\
-+	(optprobe_template_call_handler - optprobe_template_entry)
-+#define TMPL_EMULATE_IDX	\
-+	(optprobe_template_call_emulate - optprobe_template_entry)
-+#define TMPL_RET_IDX	\
-+	(optprobe_template_ret - optprobe_template_entry)
-+#define TMPL_KP_IDX	\
-+	(optprobe_template_kp_addr - optprobe_template_entry)
-+#define TMPL_OP1_IDX	\
-+	(optprobe_template_op_address1 - optprobe_template_entry)
-+#define TMPL_INSN_IDX	\
-+	(optprobe_template_insn - optprobe_template_entry)
-+#define TMPL_END_IDX	\
-+	(optprobe_template_end - optprobe_template_entry)
-+
-+static bool insn_page_in_use;
-+
-+static void *__ppc_alloc_insn_page(void)
-+{
-+	if (insn_page_in_use)
-+		return NULL;
-+	insn_page_in_use = true;
-+	return &amp;optinsn_slot;
-+}
-+
-+static void __ppc_free_insn_page(void *page __maybe_unused)
-+{
-+	insn_page_in_use = false;
-+}
-+
-+struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
-+	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
-+	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
-+	/* insn_size initialized later */
-+	.alloc = __ppc_alloc_insn_page,
-+	.free = __ppc_free_insn_page,
-+	.nr_garbage = 0,
-+};
-+
-+kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
-+{
-+	/*
-+	 * The insn slot is allocated from the reserved
-+	 * area(ie &amp;optinsn_slot).We are not optimizing probes
-+	 * at module_addr now.
-+	 */
-+	if (is_kernel_addr((unsigned long)op-&gt;kp.addr))
-+		return get_ppc_optinsn_slot();
-+	return NULL;
-+}
-+
-+static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
-+{
-+	if (!op-&gt;optinsn.insn)
-+		return;
-+	if (is_kernel_addr((unsigned long)op-&gt;kp.addr))
-+		free_ppc_optinsn_slot(op-&gt;optinsn.insn, 0);
-+}
-+
-+static unsigned long can_optimize(struct kprobe *p)
-+{
-+	struct pt_regs *regs;
-+	unsigned int instr;
-+
-+	/*
-+	 * Not optimizing the kprobe placed by
-+	 * kretprobe during boot time
-+	 */
-+	if (p-&gt;addr == (kprobe_opcode_t *)&amp;kretprobe_trampoline)
-+		return 0;
-+
-+	regs = kmalloc(sizeof(*regs), GFP_KERNEL);
-+	if (!regs)
-+		return -ENOMEM;
-+	memset(regs, 0, sizeof(struct pt_regs));
-+	memcpy(regs, current_pt_regs(), sizeof(struct pt_regs));
-+	regs-&gt;nip = (unsigned long)p-&gt;addr;
-+	instr = *p-&gt;ainsn.insn;
-+
-+	/* Ensure the instruction can be emulated */
-+	if (emulate_step(regs, instr) != 1)
-+		return 0;
-+	/* Conditional branches are not optimized */
-+	if (optprobe_conditional_branch_check(instr) != 1)
-+		return 0;
-+	return regs-&gt;nip;
-</pre>
-      </blockquote>
-      <pre wrap="">
-Could you free regs here? Or allocate it on stack.</pre>
-    </blockquote>
-    <br>
-    yes. 'regs' can be freed here.<br>
-    <blockquote
-      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
-      type="cite">
-      <pre wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">+}
-+
-+static void
-+optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
-+{
-+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+
-+	if (kprobe_running()) {
-+		kprobes_inc_nmissed_count(&amp;op-&gt;kp);
-+	} else {
-+		__this_cpu_write(current_kprobe, &amp;op-&gt;kp);
-+		kcb-&gt;kprobe_status = KPROBE_HIT_ACTIVE;
-+		opt_pre_handler(&amp;op-&gt;kp, regs);
-+		__this_cpu_write(current_kprobe, NULL);
-+	}
-+	local_irq_restore(flags);
-+}
-+NOKPROBE_SYMBOL(optimized_callback);
-+
-+void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
-+{
-+	ppc_free_optinsn_slot(op);
-+	op-&gt;optinsn.insn = NULL;
-+}
-+
-+/*
-+ * emulate_step() requires insn to be emulated as
-+ * second parameter. Load register 'r4' with the
-+ * instruction.
-+ */
-+void create_load_emulate_insn(unsigned int insn, kprobe_opcode_t *addr)
-+{
-+	u32 instr, instr2;
-+
-+	/* synthesize addis r4,0,(insn)@h */
-+	 instr = 0x3c000000 | 0x800000 | ((insn &gt;&gt; 16) &amp; 0xffff);
-+	*addr++ = instr;
-+
-+	/* ori r4,r4,(insn)@l */
-+	instr2 = 0x60000000 | 0x40000 | 0x800000;
-+	instr2 = instr2 | (insn &amp; 0xffff);
-+	*addr = instr2;
-+}
-+
-+/*
-+ * optimized_kprobe structure is required as a parameter
-+ * for invoking optimized_callback() from detour buffer.
-+ * Load this value into register 'r3'.
-+ */
-+void create_load_address_insn(unsigned long val, kprobe_opcode_t *addr)
-+{
-+	u32 instr1, instr2, instr3, instr4, instr5;
-+	/*
-+	 * 64bit immediate load into r3.
-+	 * lis r3,(op)@highest
-+	 */
-+	instr1 = 0x3c000000 | 0x600000 | ((val &gt;&gt; 48) &amp; 0xffff);
-+	*addr++ = instr1;
-+
-+	/* ori r3,r3,(op)@higher */
-+	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val &gt;&gt; 32) &amp; 0xffff);
-+	*addr++ = instr2;
-+
-+	/* rldicr r3,r3,32,31 */
-+	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 &amp; 0x1f) &lt;&lt; 11);
-+	instr3 = instr3 | ((31 &amp; 0x1f) &lt;&lt; 6) | ((32 &amp; 0x20) &gt;&gt; 4);
-+	*addr++ = instr3;
-+
-+	/* oris r3,r3,(op)@h */
-+	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val &gt;&gt; 16) &amp; 0xffff);
-+	*addr++ = instr4;
-+
-+	/* ori r3,r3,(op)@l */
-+	instr5 = 0x60000000 | 0x30000 | 0x600000 | (val &amp; 0xffff);
-+	*addr = instr5;
-+}
-+
-+int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
-+{
-+	kprobe_opcode_t *buff, branch, branch2, branch3;
-+	long rel_chk, ret_chk;
-+	unsigned long nip;
-+
-+	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
-+	op-&gt;optinsn.insn = NULL;
-+	nip = can_optimize(p);
-+
-+	if (!nip)
-+		return -EILSEQ;
-+
-+	/* Allocate instruction slot for detour buffer */
-+	buff = ppc_get_optinsn_slot(op);
-+	if (!buff)
-+		return -ENOMEM;
-+
-+	/*
-+	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
-+	 *
-+	 * The target address has to be relatively nearby, to permit use
-+	 * of branch instruction in powerpc because the address is specified
-+	 * in an immediate field in the instruction opcode itself, ie 24 bits
-+	 * in the opcode specify the address. Therefore the address gap should
-+	 * be 32MB on either side of the current instruction.
-+	 */
-+	rel_chk = (long)buff - (unsigned long)p-&gt;addr;
-+	if (rel_chk &lt; -0x2000000 || rel_chk &gt; 0x1fffffc || rel_chk &amp; 0x3) {
-+		ppc_free_optinsn_slot(op);
-</pre>
-      </blockquote>
-      <pre wrap="">
-This doesn't work because op-&gt;optinsn.insn is NULL here. (buff is assigned
-at the end of this function)
-</pre>
-    </blockquote>
-    <br>
-    yes. You are right. Need to free 'buff' here. <br>
-    Thank you for pointing out this.<br>
-    <blockquote
-      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
-      type="cite">
-      <pre wrap="">
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">+		return -ERANGE;
-+	}
-+	/* Check the return address is also within 32MB range */
-+	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)nip;
-+	if (ret_chk &lt; -0x2000000 || ret_chk &gt; 0x1fffffc || ret_chk &amp; 0x3) {
-+		ppc_free_optinsn_slot(op);
-</pre>
-      </blockquote>
-      <pre wrap="">
-ditto.
-
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">+		return -ERANGE;
-+	}
-+
-+	/* Do Copy arch specific instance from template */
-+	memcpy(buff, optprobe_template_entry,
-+	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
-+
-+	/* Load address into register */
-+	create_load_address_insn((unsigned long)p-&gt;addr, buff + TMPL_KP_IDX);
-+	create_load_address_insn((unsigned long)op, buff + TMPL_OP1_IDX);
-+
-+	/*
-+	 * Create a branch to the optimized_callback function.
-+	 * optimized_callback, points to the global entry point.
-+	 * Add +8, to create a branch to the LEP of the function.
-+	 */
-+	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
-+			       (unsigned long)optimized_callback + 8,
-+				BRANCH_SET_LINK);
-+
-+	/* Place the branch instr into the trampoline */
-+	buff[TMPL_CALL_HDLR_IDX] = branch;
-+
-+	/* Load instruction to be emulated into relevant register */
-+	create_load_emulate_insn(*p-&gt;ainsn.insn, buff + TMPL_INSN_IDX);
-+
-+	/*
-+	 * Create a branch instruction into the emulate_step.
-+	 * Add +8, to create the branch to LEP of emulate_step().
-+	 */
-+	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
-+				(unsigned long)emulate_step + 8,
-+				BRANCH_SET_LINK);
-+	buff[TMPL_EMULATE_IDX] = branch3;
-+
-+	/* Create a branch for jumping back */
-+	branch2 = create_branch((unsigned int *)buff + TMPL_RET_IDX,
-+				(unsigned long)nip, 0);
-+	buff[TMPL_RET_IDX] = branch2;
-+
-+	op-&gt;optinsn.insn = buff;
-+	smp_mb();
-+	return 0;
-+}
-+
-+int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
-+{
-+	return optinsn-&gt;insn != NULL;
-+}
-+
-+/*
-+ * Here,kprobe opt always replace one instruction (4 bytes
-+ * aligned and 4 bytes long). It is impossible to encounter another
-+ * kprobe in the address range. So always return 0.
-+ */
-+int arch_check_optimized_kprobe(struct optimized_kprobe *op)
-+{
-+	return 0;
-+}
-+
-+void arch_optimize_kprobes(struct list_head *oplist)
-+{
-+	struct optimized_kprobe *op;
-+	struct optimized_kprobe *tmp;
-+
-+	unsigned int branch;
-+
-+	list_for_each_entry_safe(op, tmp, oplist, list) {
-+		/*
-+		 * Backup instructions which will be replaced
-+		 * by jump address
-+		 */
-+		memcpy(op-&gt;optinsn.copied_insn, op-&gt;kp.addr,
-+		       RELATIVEJUMP_SIZE);
-+		branch = create_branch((unsigned int *)op-&gt;kp.addr,
-+				       (unsigned long)op-&gt;optinsn.insn, 0);
-+		*op-&gt;kp.addr = branch;
-</pre>
-      </blockquote>
-      <pre wrap="">
-Hmm, wouldn't we have to use patch_instruction() here?
-(It seems ppc kprobe implementation should also be updated to use it...)</pre>
-    </blockquote>
-    <blockquote
-      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
-      type="cite">
-      <pre wrap="">
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">+		list_del_init(&amp;op-&gt;list);
-+	}
-+}
-+
-+void arch_unoptimize_kprobe(struct optimized_kprobe *op)
-+{
-+	arch_arm_kprobe(&amp;op-&gt;kp);
-+}
-+
-+void arch_unoptimize_kprobes(struct list_head *oplist,
-+			     struct list_head *done_list)
-+{
-+	struct optimized_kprobe *op;
-+	struct optimized_kprobe *tmp;
-+
-+	list_for_each_entry_safe(op, tmp, oplist, list) {
-+		arch_unoptimize_kprobe(op);
-+		list_move(&amp;op-&gt;list, done_list);
-+	}
-+}
-+
-+int arch_within_optimized_kprobe(struct optimized_kprobe *op,
-+				 unsigned long addr)
-+{
-+	return 0;
-</pre>
-      </blockquote>
-      <pre wrap="">
-Here, please check the address range as same as arm32 optprobe implementation.
-
-e.g.
-        return ((unsigned long)op-&gt;kp.addr &lt;= addr &amp;&amp;
-                (unsigned long)op-&gt;kp.addr + RELATIVEJUMP_SIZE &gt; addr);
-
-
-Thank you,
-</pre>
-    </blockquote>
-    <br>
-    Do we really need this? <font size="+2"><font size="+1">The only
-        case this check will succeed is if kp.addr is not a multiple of
-        4, which is not a valid address at all on</font></font><font
-      size="+2"><font size="+1"> Power. So should we again check here
-        for that</font>?<br>
-      <br>
-      <br>
-    </font><br>
-    Thanks and regards<br>
-    -Anju<font size="+2"><br>
-    </font>
-    <blockquote
-      cite="mid:20160909014701.8d59bdb341a19a9f98f7ee64@kernel.org"
-      type="cite">
-      <pre wrap="">
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">+}
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 3362299..c4b8259 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -2018,3 +2018,24 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
- 	regs-&gt;nip = truncate_if_32bit(regs-&gt;msr, regs-&gt;nip + 4);
- 	return 1;
- }
-+
-+/* Before optimizing, ensure that the probed instruction is not a
-+ * conditional branch instruction
-+ */
-+int __kprobes optprobe_conditional_branch_check(unsigned int instr)
-+{
-+	unsigned int opcode;
-+
-+	opcode = instr &gt;&gt; 26;
-+	if (opcode == 16)
-+		return 0;
-+	if (opcode == 19) {
-+		switch ((instr &gt;&gt; 1) &amp; 0x3ff) {
-+		case 16:        /* bclr, bclrl */
-+		case 528:       /* bcctr, bcctrl */
-+		case 560:       /* bctar, bctarl */
-+			return 0;
-+		}
-+	}
-+	return 1;
-+}
--- 
-1.8.3.1
-
-</pre>
-      </blockquote>
-      <pre wrap="">
-
-</pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------22A023E59D0B2A24D5044014--
+Mimi
