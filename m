@@ -1,23 +1,57 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVdk01rCdzDrp7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 10:43:51 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id ez1so3026561pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Sep 2016 17:43:50 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/5] powerpc/cell: drop unused iic_get_irq_host()
-In-Reply-To: <6411576.kd9HS3NQth@wuerfel>
-References: <1473139963-7496-1-git-send-email-dja@axtens.net>
- <6411576.kd9HS3NQth@wuerfel>
-Date: Fri, 09 Sep 2016 10:43:33 +1000
-Message-ID: <87wpildhsa.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVdlX6c67zDrqP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 10:45:12 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u890hgeB038114
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Sep 2016 20:45:10 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25bc2r7kg8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Sep 2016 20:45:09 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 9 Sep 2016 10:45:06 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 22F522CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 10:45:05 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u890j5DO5636380
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Sep 2016 10:45:05 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u890j3Ee023829
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Sep 2016 10:45:04 +1000
+Subject: Re: [PATCH 01/13] perf/core: Add perf_arch_regs and mask to perf_regs
+ structure
+To: Peter Zijlstra <peterz@infradead.org>
+References: <1472418058-28659-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1472418058-28659-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160901072629.GJ10153@twins.programming.kicks-ass.net>
+ <750f1871-9efd-01d3-386d-be93908ca94a@linux.vnet.ibm.com>
+ <20160906091042.GJ10153@twins.programming.kicks-ass.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
+ Jiri Olsa <jolsa@kernel.org>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Stephane Eranian <eranian@gmail.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Fri, 9 Sep 2016 06:14:53 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+In-Reply-To: <20160906091042.GJ10153@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <2bbb5bfe-d096-d82a-398e-0c2df4242d7b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +61,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
 
-Hi Arnd,
 
-> I'm currently experimenting with a patch that adds -Wmissing-declaration to
-> the normal kernel CFLAGS for everyone, and fixing up the warnings I get with
-> that on ARM.
+On Tuesday 06 September 2016 02:40 PM, Peter Zijlstra wrote:
+> On Tue, Sep 06, 2016 at 09:55:43AM +0530, Madhavan Srinivasan wrote:
+>>
+>> On Thursday 01 September 2016 12:56 PM, Peter Zijlstra wrote:
+>>> On Mon, Aug 29, 2016 at 02:30:46AM +0530, Madhavan Srinivasan wrote:
+>>>> It's a perennial request from hardware folks to be able to
+>>>> see the raw values of the pmu registers. Partly it's so that
+>>>> they can verify perf is doing what they want, and some
+>>>> of it is that they're interested in some of the more obscure
+>>>> info that isn't plumbed out through other perf interfaces.
+>>> How much and what is that? Can't we try and get interfaces sorted?
+>> We have bunch of registers which exports information regarding the
+>> sampled instruction like SIER/SIAR/SDAR/MMCRA. Lot of bits in these
+>> registers are not yet architected and incase of SIER register, some of
+>> the bits are not plumbed out and we are working on getting some these
+>> exposed via perf.
+> What kind of information is this? I'm not familiar with the Power PMU
+> all that much, so you'll have to spell it out, not just mention the
+> registers its stuffed in.
+
+
+Sure. When we profile for sample events,
+SIER (Sampled Instruction Event Register) provides additional
+information about the sampled event when PMI occurred.
+
+SIER [41:42] indicates whether the SIAR(Sampled instruction address 
+registers)
+and SDAR (Sampled data address register) are valid for the sampled event.
+
+SIER [46:48] indicates the type of intructions,
+
+001 Load Instruction
+010 Store instruction
+011 Branch Instruction
+100 Floating Point Instruction other than a Load or Store instruction
+101 Fixed Point Instruction other than a Load or Store instruction
+110 Condition Register or System Call Instruction
+
+SIER[49:51] gives information on the source of the sampled
+instruction like instruction came from primary, secondary,
+tertiary cache or beyond.
+
+SIER[52:55] provide information on branch type instructions
+Like mispredict and cause of it.
+
+SIER[56:59] provides information on translation and also
+source of translation like TLB, secondary cache, tertiary
+or beyond
+
+SIER[60:62] provides the interesting data on the storage
+access like L1/l2/L3... so on.
+
+Most of these could be plumbed out through standard mechanisms
+and it's all the other bits that are more interesting, but
+these are not architected and not public.
+
+Like wise, MMCRA (Monitor Mode Control Register A) is a
+configuration register for sampling and thresholding events.
+Provide data on various event configuration information.
+
+Link to the PowerISA v2.07 and Chapters 9 describes in
+detail on these registers.
+
+https://www.power.org/wp-content/uploads/2013/05/PowerISA_V2.07_PUBLIC.pdf
+
+Maddy
+
+
 >
-> Are you looking at all the powerpc specific code? If we can catch all the
-> existing warnings for some of the major architectures, we can hopefully
-> enable this in the mainline kernel at some point so we don't need sparse
-> for it any more.
-
-At the moment I'm just trying to squash sparse warnings on powerpc. This
-particular catch came from making something static via a dodgy python
-script and then Andrew finding it was EXPORTed. Removing the EXPORT
-threw the warning - so it's a bit more complex than just a sparse
-warning.
-
-I think powerpc has the missing prototype warnings enabled and -Werror
-as well.
-
-Andrew Donellan was telling me there's a Coccinelle script that looks
-for things that are both static and EXPORTed - maybe that's worth
-following up on this point?
-
-Regards,
-Daniel
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJX0gW1AAoJEPC3R3P2I92FbYcP/jCL2IUQKhzgKFJ8pb5Nwb1Z
-Te4usx72lxTTXzgz+eGfVb6ClR0wcuFg2t2vXP5lldmQLqMBq0LTdoeKchTXB8Ru
-29V3eo85H2tEybClz6Be2txpe1QTEUU3wwwlpYa/pxyU/RohVUJWrtOB4qxVDZVb
-uSWIZslIRvxDBLsQRfTkKxTRayktx7AuEwf3jmNiZMvcOdz6E2iaEewalTZBg1Z+
-Z5VcUOgx7bQTbr+gp11gDY/qc4QodZvA8BW2TDg0KeI6t94vfggNPgjd37npw7k7
-3C9UmZioZkpt2+jfx2IKDVfUaoq0uISbQOMD3C/1X6FpdujoaWFORgwZUPXt0NlL
-k/nY48bQRKHq+q2X4Kn+a8fPKkT6NvcRopT7oyXB14c6ZENfQPWslWOtRU1xPhr/
-/GS/1amN5hb5RByvH1jJR6J1DN6x/6sY+WTjx1j0Axc6TamAvlAp7YV6BMJP6ncj
-5stXEOl+RE/VylmLmZbhr1/dVFLrThwJ9fp3t08hX6Ty5DRvy7kIXTKiMnBQbDLa
-8zVkHJx6NKSBUnOu9ubiur02GRXJb1UIsS4QJBOx5vEFzvMgCI7G0YveC845k+hB
-z8FtIZnPQMbSwaOSAMi5aJkYWfPlfVn/nH+zXnrq90tCAdrUrCGBtyKC7FlAnbuI
-/gcU663ryLztBaDvXZDa
-=kjJu
------END PGP SIGNATURE-----
---=-=-=--
