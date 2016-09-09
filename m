@@ -1,23 +1,24 @@
-Return-Path: <glaubitz@physik.fu-berlin.de>
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
- [130.133.4.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVsv1109NzDrpW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 19:52:28 +1000 (AEST)
-Subject: Re: Build regression introduced by
- 31cdd0c39c7544ced79da53aa0b7e989f3a39582
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
-References: <829134bc-381a-7f45-a99a-0b7e66642246@physik.fu-berlin.de>
- <20160907012356.GA21443@fergus.ozlabs.ibm.com>
- <87a8fhlv2t.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Message-ID: <5f47ce4e-646f-9532-307a-2904c298e64e@physik.fu-berlin.de>
-Date: Fri, 9 Sep 2016 11:45:45 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVvDn4SPpzDrpW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 20:52:57 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Daniel Axtens <dja@axtens.net>, Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/ptrace: Fix cppcheck issue in
+ gpr32_set_common/gpr32_get_common.
+In-Reply-To: <871t1dr716.fsf@possimpible.ozlabs.ibm.com>
+References: <1471695863-8660-1-git-send-email-wei.guo.simon@gmail.com>
+ <878tvmrjoc.fsf@possimpible.ozlabs.ibm.com>
+ <20160824073826.GA16442@simonLocalRHEL7.x64>
+ <871t1dr716.fsf@possimpible.ozlabs.ibm.com>
+Date: Fri, 09 Sep 2016 20:52:52 +1000
+Message-ID: <871t0tl4zf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87a8fhlv2t.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/09/2016 03:29 AM, Michael Ellerman wrote:
-> Interestingly it builds fine for me, even for 32-bit configs, I assume
-> because my toolchains are 32/64-bit they are able to cope with it. I'll
-> try and built a 32-bit only toolchain to catch these problems in future.
+Daniel Axtens <dja@axtens.net> writes:
 
-Yeah, I was just asking myself the same question after seeing your patch
-on the list as the kernel package builds fine on Debian's powerpc port [1].
+> [ Unknown signature status ]
+> Simon Guo <wei.guo.simon@gmail.com> writes:
+>
+>> I think keeping tm_active argument for "ifndef CONFIG_PPC_TRANSACTIONAL_MEM" 
+>> case (with __maybe_unused prefix) will be somehow strange -- Whatever
+>> value is provided in the caller function for tm_active, programmer might be 
+>> puzzled and cost sometime to think about it.  I don't like to use 
+>> "__maybe_unused" to bypass this warning.
+>
+> Fair enough. I don't have strong feelings either way - we'll see if the
+> maintainers have any thoughts.
 
-However, the powerpc Debian package always builds a 64-bit kernel image
-as well in order to be able to use a 32-bit userland on a 64-bit kernel
-when the hardware is capable of 64-bit. So, your guess above might actually
-be true, but I haven't tested it.
+I do - Sorry Simon but your patch just adds too many #ifdefs.
 
-What I do know is that "ld" is definitely not available on PowerPC e500
-while "lwz" is available, see 3-68 in the e500 reference manual [2].
+Any time you have to do something like:
 
-Thanks for the quick fix!
+	+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+		}
+	+#endif
 
-Adrian
+It should be a sign that something has gone wrong :)
 
-> [1] https://buildd.debian.org/status/fetch.php?pkg=linux&arch=powerpc&ver=4.7.2-1&stamp=1472464832
-> [2] http://www.nxp.com/files/32bit/doc/ref_manual/E500CORERM.pdf
+Does Cyril's series to rework the TM structures help at all with this
+warning?
 
--- 
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer - glaubitz@debian.org
-`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+cheers
