@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sVxPT4YfszDrgX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sVxPT4krzzDrpZ
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2016 22:30:37 +1000 (AEST)
-Message-Id: <2d086551100dc2b6e33066bafffc2754144de450.1473422536.git.christophe.leroy@c-s.fr>
+Message-Id: <26d42fa7ad67a8d9779440779a429db3b078b392.1473422536.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1473422536.git.christophe.leroy@c-s.fr>
 References: <cover.1473422536.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 2/3] net: fs_enet: don't unmap DMA when packet len is below
- copybreak
+Subject: [PATCH v2 3/3] net: fs_enet: make rx_copybreak value configurable
 To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
  Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org
-Date: Fri,  9 Sep 2016 14:26:23 +0200 (CEST)
+Date: Fri,  9 Sep 2016 14:26:25 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,98 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the length of the packet is below the defined copybreak limit,
-the received packet is copied into a newly allocated skb in order
-to reuse the skb. This is only interesting if it allow us to avoid
-a new DMA mapping. We shall therefore not DMA unmap and remap the
-skb->data. Instead, we invalidate the cache
-with dma_sync_single_for_cpu() once the received data has been
-copied into the new skb.
+Measurement shows that on a MPC8xx running at 132MHz, the optimal
+limit is 112:
+* 114 bytes packets are processed in 147 TB ticks with higher copybreak
+* 114 bytes packets are processed in 148 TB ticks with lower copybreak
+* 128 bytes packets are processed in 154 TB ticks with higher copybreak
+* 128 bytes packets are processed in 148 TB ticks with lower copybreak
+* 238 bytes packets are processed in 172 TB ticks with higher copybreak
+* 238 bytes packets are processed in 148 TB ticks with lower copybreak
 
-The following measures have been obtained on a mpc885 running at 132Mhz.
-Measurement is done using the timebase with packets sent to the target
-with 'ping -s 1' (packet len is 60):
-* Without this patch: 182 TB ticks
-* With this patch: 143 TB ticks
-
-As a comparison, if we set the copybreak limit to 0, then we get
-148 TB ticks. It means that without this patch, duration is even
-worse when copying received data to a new skb instead of
-allocating a new skb for next packet to be received
+However it might be different on other processors
+and/or frequencies. So it is useful to make it configurable.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 36 ++++++++++++----------
- 1 file changed, 20 insertions(+), 16 deletions(-)
+v2: ethtool parameter instead of module parameter
+
+ .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 40 ++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
 diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 37574a9..f2a60cd 100644
+index f2a60cd..dc120c1 100644
 --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
 +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -226,21 +226,10 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- 			if (sc & BD_ENET_RX_OV)
- 				fep->stats.rx_crc_errors++;
+@@ -830,6 +830,44 @@ static void fs_set_msglevel(struct net_device *dev, u32 value)
+ 	fep->msg_enable = value;
+ }
  
--			skb = fep->rx_skbuff[curidx];
--
--			dma_unmap_single(fep->dev, CBDR_BUFADDR(bdp),
--				L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
--				DMA_FROM_DEVICE);
--
--			skbn = skb;
--
-+			skbn = fep->rx_skbuff[curidx];
- 		} else {
- 			skb = fep->rx_skbuff[curidx];
- 
--			dma_unmap_single(fep->dev, CBDR_BUFADDR(bdp),
--				L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
--				DMA_FROM_DEVICE);
--
- 			/*
- 			 * Process the incoming frame.
- 			 */
-@@ -256,12 +245,30 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- 					skb_copy_from_linear_data(skb,
- 						      skbn->data, pkt_len);
- 					swap(skb, skbn);
-+					dma_sync_single_for_cpu(fep->dev,
-+						CBDR_BUFADDR(bdp),
-+						L1_CACHE_ALIGN(pkt_len),
-+						DMA_FROM_DEVICE);
- 				}
- 			} else {
- 				skbn = netdev_alloc_skb(dev, ENET_RX_FRSIZE);
- 
--				if (skbn)
-+				if (skbn) {
-+					dma_addr_t dma;
++static int fs_get_tunable(struct net_device *dev,
++			  const struct ethtool_tunable *tuna, void *data)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	struct fs_platform_info *fpi = fep->fpi;
++	int ret = 0;
 +
- 					skb_align(skbn, ENET_RX_ALIGN);
++	switch (tuna->id) {
++	case ETHTOOL_RX_COPYBREAK:
++		*(u32 *)data = fpi->rx_copybreak;
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
 +
-+					dma_unmap_single(fep->dev,
-+						CBDR_BUFADDR(bdp),
-+						L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
-+						DMA_FROM_DEVICE);
++	return ret;
++}
 +
-+					dma = dma_map_single(fep->dev,
-+						skbn->data,
-+						L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
-+						DMA_FROM_DEVICE);
-+					CBDW_BUFADDR(bdp, dma);
-+				}
- 			}
++static int fs_set_tunable(struct net_device *dev,
++			  const struct ethtool_tunable *tuna, const void *data)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	struct fs_platform_info *fpi = fep->fpi;
++	int ret = 0;
++
++	switch (tuna->id) {
++	case ETHTOOL_RX_COPYBREAK:
++		fpi->rx_copybreak = *(u32 *)data;
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	return ret;
++}
++
+ static const struct ethtool_ops fs_ethtool_ops = {
+ 	.get_drvinfo = fs_get_drvinfo,
+ 	.get_regs_len = fs_get_regs_len,
+@@ -841,6 +879,8 @@ static const struct ethtool_ops fs_ethtool_ops = {
+ 	.get_ts_info = ethtool_op_get_ts_info,
+ 	.get_link_ksettings = phy_ethtool_get_link_ksettings,
+ 	.set_link_ksettings = phy_ethtool_set_link_ksettings,
++	.get_tunable = fs_get_tunable,
++	.set_tunable = fs_set_tunable,
+ };
  
- 			if (skbn != NULL) {
-@@ -276,9 +283,6 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
- 		}
- 
- 		fep->rx_skbuff[curidx] = skbn;
--		CBDW_BUFADDR(bdp, dma_map_single(fep->dev, skbn->data,
--			     L1_CACHE_ALIGN(PKT_MAXBUF_SIZE),
--			     DMA_FROM_DEVICE));
- 		CBDW_DATLEN(bdp, 0);
- 		CBDW_SC(bdp, (sc & ~BD_ENET_RX_STATS) | BD_ENET_RX_EMPTY);
- 
+ static int fs_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 -- 
 2.1.0
