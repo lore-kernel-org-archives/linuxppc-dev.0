@@ -1,18 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sWTqR2BXfzDrq8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Sep 2016 19:51:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sWTsQ128mzDrq8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Sep 2016 19:53:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Meelis Roos <mroos@linux.ee>,
- Linux Kernel list <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: UBSAN: Undefined behaviour in arch/powerpc/kernel/cputable.c
-In-Reply-To: <alpine.LRH.2.20.1609091556420.29746@math.ut.ee>
-References: <alpine.LRH.2.20.1609091556420.29746@math.ut.ee>
-Date: Sat, 10 Sep 2016 19:51:29 +1000
-Message-ID: <87r38snkv2.fsf@concordia.ellerman.id.au>
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Build regression introduced by
+ 31cdd0c39c7544ced79da53aa0b7e989f3a39582
+In-Reply-To: <5f47ce4e-646f-9532-307a-2904c298e64e@physik.fu-berlin.de>
+References: <829134bc-381a-7f45-a99a-0b7e66642246@physik.fu-berlin.de>
+ <20160907012356.GA21443@fergus.ozlabs.ibm.com>
+ <87a8fhlv2t.fsf@concordia.ellerman.id.au>
+ <5f47ce4e-646f-9532-307a-2904c298e64e@physik.fu-berlin.de>
+Date: Sat, 10 Sep 2016 19:53:13 +1000
+Message-ID: <87oa3wnks6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,47 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Meelis Roos <mroos@linux.ee> writes:
+John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> writes:
 
-> Got this on my PowerPC G4 (533 MHz, PowerPC 7410, PowerMac3,4 platform), 
-> with gcc version 5.3.1 20160509 (Debian 5.3.1-19):
+> On 09/09/2016 03:29 AM, Michael Ellerman wrote:
+>> Interestingly it builds fine for me, even for 32-bit configs, I assume
+>> because my toolchains are 32/64-bit they are able to cope with it. I'll
+>> try and built a 32-bit only toolchain to catch these problems in future.
 >
-> [    0.000000] ================================================================================
-> [    0.000000] UBSAN: Undefined behaviour in arch/powerpc/kernel/cputable.c:2240:25
-> [    0.000000] shift exponent 32 is too large for 32-bit type 'long unsigned int'
-> [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 4.8.0-rc5-00075-gd71f058 #106
-> [    0.000000] Call Trace:
-> [    0.000000] [c0a5ff10] [c03aa588] ubsan_epilogue+0x18/0x4c (unreliable)
-> [    0.000000] [c0a5ff20] [c03aab38] __ubsan_handle_shift_out_of_bounds+0xe8/0x13c
-> [    0.000000] [c0a5ffa0] [c07c42d0] cpu_feature_keys_init+0xa0/0xb8
-> [    0.000000] [c0a5ffd0] [c07ca1fc] setup_feature_keys+0x14/0x24
-> [    0.000000] [c0a5ffe0] [c07c6c74] machine_init+0x18/0x58
-> [    0.000000] [c0a5fff0] [c000341c] start_here+0x38/0x78
-> [    0.000000] ================================================================================
+> Yeah, I was just asking myself the same question after seeing your patch
+> on the list as the kernel package builds fine on Debian's powerpc port [1].
+>
+> However, the powerpc Debian package always builds a 64-bit kernel image
+> as well in order to be able to use a 32-bit userland on a 64-bit kernel
+> when the hardware is capable of 64-bit. So, your guess above might actually
+> be true, but I haven't tested it.
 
-Oops, my bad.
+I built a 32-bit only toolchain, ie. one that doesn't accept -m64. But
+it still happily assembles a .S with "ld" in it. So not sure what's
+going on with that.
 
-#define NUM_CPU_FTR_KEYS	64
+> What I do know is that "ld" is definitely not available on PowerPC e500
+> while "lwz" is available, see 3-68 in the e500 reference manual [2].
 
-...
+Yep.
 
-	for (i = 0; i < NUM_CPU_FTR_KEYS; i++) {
-		unsigned long f = 1ul << i;
+> Thanks for the quick fix!
 
-Does this fix it?
+I assume by that it worked for you? I'll add a Tested-by: for you?
 
 cheers
-
-diff --git a/arch/powerpc/include/asm/cpu_has_feature.h b/arch/powerpc/include/asm/cpu_has_feature.h
-index 2ef55f8968a2..b312b152461b 100644
---- a/arch/powerpc/include/asm/cpu_has_feature.h
-+++ b/arch/powerpc/include/asm/cpu_has_feature.h
-@@ -15,7 +15,7 @@ static inline bool early_cpu_has_feature(unsigned long feature)
- #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
- #include <linux/jump_label.h>
- 
--#define NUM_CPU_FTR_KEYS	64
-+#define NUM_CPU_FTR_KEYS	BITS_PER_LONG
- 
- extern struct static_key_true cpu_feature_keys[NUM_CPU_FTR_KEYS];
- 
