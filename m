@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sWTy46xntzDsPv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Sep 2016 19:57:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sWV0J08LFzDrq9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Sep 2016 19:59:12 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: dougthompson@xmission.com, bp@alien8.de, mchehab@kernel.org,
- linux-edac@vger.kernel.org
+To: davem@davemloft.net,
+	netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org,
 	arnd@arndb.de
-Subject: [PATCH] drivers/edac: NO_IRQ removal from powerpc-only drivers
-Date: Sat, 10 Sep 2016 19:57:08 +1000
-Message-Id: <1473501428-8217-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH] net: Remove NO_IRQ from powerpc-only network drivers
+Date: Sat, 10 Sep 2016 19:59:05 +1000
+Message-Id: <1473501545-10134-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,105 +27,164 @@ from powerpc-only drivers.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/edac/mpc85xx_edac.c | 6 +++---
- drivers/edac/mv64x60_edac.c | 8 ++++----
- drivers/edac/ppc4xx_edac.c  | 6 +++---
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/freescale/fman/fman_mac.h   |  2 +-
+ drivers/net/ethernet/freescale/fs_enet/mac-fcc.c |  2 +-
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c |  2 +-
+ drivers/net/ethernet/freescale/fs_enet/mac-scc.c |  2 +-
+ drivers/net/ethernet/ibm/emac/core.c             | 10 +++++-----
+ drivers/net/ethernet/ibm/emac/mal.c              |  5 ++---
+ drivers/net/ethernet/ibm/ibmvnic.c               |  4 ++--
+ drivers/net/ethernet/toshiba/ps3_gelic_net.c     |  4 ++--
+ 8 files changed, 15 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index ca63d0da8889..e12b8e166a53 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -267,7 +267,7 @@ static int mpc85xx_pci_err_probe(struct platform_device *op)
+diff --git a/drivers/net/ethernet/freescale/fman/fman_mac.h b/drivers/net/ethernet/freescale/fman/fman_mac.h
+index 8ddeedbcef9c..ddf0260176c9 100644
+--- a/drivers/net/ethernet/freescale/fman/fman_mac.h
++++ b/drivers/net/ethernet/freescale/fman/fman_mac.h
+@@ -192,7 +192,7 @@ struct fman_mac_params {
+ 	/* A handle to the FM object this port related to */
+ 	void *fm;
+ 	/* MDIO exceptions interrupt source - not valid for all
+-	 * MACs; MUST be set to 'NO_IRQ' for MACs that don't have
++	 * MACs; MUST be set to 0 for MACs that don't have
+ 	 * mdio-irq, or for polling
+ 	 */
+ 	void *dev_id; /* device cookie used by the exception cbs */
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+index d71761a34022..7a3277419876 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+@@ -90,7 +90,7 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 	int ret = -EINVAL;
  
- 	pdata = pci->pvt_info;
- 	pdata->name = "mpc85xx_pci_err";
--	pdata->irq = NO_IRQ;
-+	pdata->irq = 0;
+ 	fep->interrupt = irq_of_parse_and_map(ofdev->dev.of_node, 0);
+-	if (fep->interrupt == NO_IRQ)
++	if (!fep->interrupt)
+ 		goto out;
  
- 	plat_data = op->dev.platform_data;
- 	if (!plat_data) {
-@@ -588,7 +588,7 @@ static int mpc85xx_l2_err_probe(struct platform_device *op)
+ 	fep->fcc.fccp = of_iomap(ofdev->dev.of_node, 0);
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+index 35a318ed3a62..a09ba70cf09f 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+@@ -99,7 +99,7 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 	struct platform_device *ofdev = to_platform_device(fep->dev);
  
- 	pdata = edac_dev->pvt_info;
- 	pdata->name = "mpc85xx_l2_err";
--	pdata->irq = NO_IRQ;
-+	pdata->irq = 0;
- 	edac_dev->dev = &op->dev;
- 	dev_set_drvdata(edac_dev->dev, edac_dev);
- 	edac_dev->ctl_name = pdata->name;
-@@ -1058,7 +1058,7 @@ static int mpc85xx_mc_err_probe(struct platform_device *op)
+ 	fep->interrupt = irq_of_parse_and_map(ofdev->dev.of_node, 0);
+-	if (fep->interrupt == NO_IRQ)
++	if (!fep->interrupt)
+ 		return -EINVAL;
  
- 	pdata = mci->pvt_info;
- 	pdata->name = "mpc85xx_mc_err";
--	pdata->irq = NO_IRQ;
-+	pdata->irq = 0;
- 	mci->pdev = &op->dev;
- 	pdata->edac_idx = edac_mc_idx++;
- 	dev_set_drvdata(mci->pdev, mci);
-diff --git a/drivers/edac/mv64x60_edac.c b/drivers/edac/mv64x60_edac.c
-index 6c54127e6eae..69c559189490 100644
---- a/drivers/edac/mv64x60_edac.c
-+++ b/drivers/edac/mv64x60_edac.c
-@@ -118,7 +118,7 @@ static int mv64x60_pci_err_probe(struct platform_device *pdev)
+ 	fep->fec.fecp = of_iomap(ofdev->dev.of_node, 0);
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+index e8b9c33d35b4..69654fa67ca0 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+@@ -99,7 +99,7 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 	struct platform_device *ofdev = to_platform_device(fep->dev);
  
- 	pdata->pci_hose = pdev->id;
- 	pdata->name = "mpc85xx_pci_err";
--	pdata->irq = NO_IRQ;
-+	pdata->irq = 0;
- 	platform_set_drvdata(pdev, pci);
- 	pci->dev = &pdev->dev;
- 	pci->dev_name = dev_name(&pdev->dev);
-@@ -291,7 +291,7 @@ static int mv64x60_sram_err_probe(struct platform_device *pdev)
+ 	fep->interrupt = irq_of_parse_and_map(ofdev->dev.of_node, 0);
+-	if (fep->interrupt == NO_IRQ)
++	if (!fep->interrupt)
+ 		return -EINVAL;
  
- 	pdata = edac_dev->pvt_info;
- 	pdata->name = "mv64x60_sram_err";
--	pdata->irq = NO_IRQ;
-+	pdata->irq = 0;
- 	edac_dev->dev = &pdev->dev;
- 	platform_set_drvdata(pdev, edac_dev);
- 	edac_dev->dev_name = dev_name(&pdev->dev);
-@@ -459,7 +459,7 @@ static int mv64x60_cpu_err_probe(struct platform_device *pdev)
+ 	fep->scc.sccp = of_iomap(ofdev->dev.of_node, 0);
+diff --git a/drivers/net/ethernet/ibm/emac/core.c b/drivers/net/ethernet/ibm/emac/core.c
+index 4c9771d57d6e..ec4d0f3b7850 100644
+--- a/drivers/net/ethernet/ibm/emac/core.c
++++ b/drivers/net/ethernet/ibm/emac/core.c
+@@ -2750,7 +2750,7 @@ static int emac_probe(struct platform_device *ofdev)
+ 	/* Get interrupts. EMAC irq is mandatory, WOL irq is optional */
+ 	dev->emac_irq = irq_of_parse_and_map(np, 0);
+ 	dev->wol_irq = irq_of_parse_and_map(np, 1);
+-	if (dev->emac_irq == NO_IRQ) {
++	if (!dev->emac_irq) {
+ 		printk(KERN_ERR "%s: Can't map main interrupt\n", np->full_name);
+ 		goto err_free;
+ 	}
+@@ -2913,9 +2913,9 @@ static int emac_probe(struct platform_device *ofdev)
+  err_reg_unmap:
+ 	iounmap(dev->emacp);
+  err_irq_unmap:
+-	if (dev->wol_irq != NO_IRQ)
++	if (dev->wol_irq)
+ 		irq_dispose_mapping(dev->wol_irq);
+-	if (dev->emac_irq != NO_IRQ)
++	if (dev->emac_irq)
+ 		irq_dispose_mapping(dev->emac_irq);
+  err_free:
+ 	free_netdev(ndev);
+@@ -2957,9 +2957,9 @@ static int emac_remove(struct platform_device *ofdev)
+ 	emac_dbg_unregister(dev);
+ 	iounmap(dev->emacp);
  
- 	pdata = edac_dev->pvt_info;
- 	pdata->name = "mv64x60_cpu_err";
--	pdata->irq = NO_IRQ;
-+	pdata->irq = 0;
- 	edac_dev->dev = &pdev->dev;
- 	platform_set_drvdata(pdev, edac_dev);
- 	edac_dev->dev_name = dev_name(&pdev->dev);
-@@ -727,7 +727,7 @@ static int mv64x60_mc_err_probe(struct platform_device *pdev)
- 	mci->pdev = &pdev->dev;
- 	platform_set_drvdata(pdev, mci);
- 	pdata->name = "mv64x60_mc_err";
--	pdata->irq = NO_IRQ;
-+	pdata->irq = 0;
- 	mci->dev_name = dev_name(&pdev->dev);
- 	pdata->edac_idx = edac_mc_idx++;
+-	if (dev->wol_irq != NO_IRQ)
++	if (dev->wol_irq)
+ 		irq_dispose_mapping(dev->wol_irq);
+-	if (dev->emac_irq != NO_IRQ)
++	if (dev->emac_irq)
+ 		irq_dispose_mapping(dev->emac_irq);
  
-diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
-index d3a64ba61fa3..ee84343f660f 100644
---- a/drivers/edac/ppc4xx_edac.c
-+++ b/drivers/edac/ppc4xx_edac.c
-@@ -1029,8 +1029,8 @@ static int ppc4xx_edac_mc_init(struct mem_ctl_info *mci,
- 	pdata			= mci->pvt_info;
+ 	free_netdev(dev->ndev);
+diff --git a/drivers/net/ethernet/ibm/emac/mal.c b/drivers/net/ethernet/ibm/emac/mal.c
+index fdb5cdb3cd15..aaf6fec566b5 100644
+--- a/drivers/net/ethernet/ibm/emac/mal.c
++++ b/drivers/net/ethernet/ibm/emac/mal.c
+@@ -597,9 +597,8 @@ static int mal_probe(struct platform_device *ofdev)
+ 		mal->rxde_irq = irq_of_parse_and_map(ofdev->dev.of_node, 4);
+ 	}
  
- 	pdata->dcr_host		= *dcr_host;
--	pdata->irqs.sec		= NO_IRQ;
--	pdata->irqs.ded		= NO_IRQ;
-+	pdata->irqs.sec		= 0;
-+	pdata->irqs.ded		= 0;
+-	if (mal->txeob_irq == NO_IRQ || mal->rxeob_irq == NO_IRQ ||
+-	    mal->serr_irq == NO_IRQ || mal->txde_irq == NO_IRQ ||
+-	    mal->rxde_irq == NO_IRQ) {
++	if (!mal->txeob_irq || !mal->rxeob_irq || !mal->serr_irq ||
++	    !mal->txde_irq  || !mal->rxde_irq) {
+ 		printk(KERN_ERR
+ 		       "mal%d: failed to map interrupts !\n", index);
+ 		err = -ENODEV;
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 88f3c85fb04a..b334fc018215 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1422,7 +1422,7 @@ static int init_sub_crq_irqs(struct ibmvnic_adapter *adapter)
+ 		scrq = adapter->tx_scrq[i];
+ 		scrq->irq = irq_create_mapping(NULL, scrq->hw_irq);
  
- 	/* Initialize controller capabilities and configuration */
+-		if (scrq->irq == NO_IRQ) {
++		if (!scrq->irq) {
+ 			rc = -EINVAL;
+ 			dev_err(dev, "Error mapping irq\n");
+ 			goto req_tx_irq_failed;
+@@ -1442,7 +1442,7 @@ static int init_sub_crq_irqs(struct ibmvnic_adapter *adapter)
+ 	for (i = 0; i < adapter->req_rx_queues; i++) {
+ 		scrq = adapter->rx_scrq[i];
+ 		scrq->irq = irq_create_mapping(NULL, scrq->hw_irq);
+-		if (scrq->irq == NO_IRQ) {
++		if (!scrq->irq) {
+ 			rc = -EINVAL;
+ 			dev_err(dev, "Error mapping irq\n");
+ 			goto req_rx_irq_failed;
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+index 79f0ec4e51ac..bc258d7e41df 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+@@ -1791,7 +1791,7 @@ fail_alloc_rx:
+ 	gelic_card_free_chain(card, card->tx_chain.head);
+ fail_alloc_tx:
+ 	free_irq(card->irq, card);
+-	netdev->irq = NO_IRQ;
++	netdev->irq = 0;
+ fail_request_irq:
+ 	ps3_sb_event_receive_port_destroy(dev, card->irq);
+ fail_alloc_irq:
+@@ -1843,7 +1843,7 @@ static int ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
+ 	netdev0 = card->netdev[GELIC_PORT_ETHERNET_0];
+ 	/* disconnect event port */
+ 	free_irq(card->irq, card);
+-	netdev0->irq = NO_IRQ;
++	netdev0->irq = 0;
+ 	ps3_sb_event_receive_port_destroy(card->dev, card->irq);
  
-@@ -1111,7 +1111,7 @@ static int ppc4xx_edac_register_irq(struct platform_device *op,
- 	ded_irq = irq_of_parse_and_map(np, INTMAP_ECCDED_INDEX);
- 	sec_irq = irq_of_parse_and_map(np, INTMAP_ECCSEC_INDEX);
- 
--	if (ded_irq == NO_IRQ || sec_irq == NO_IRQ) {
-+	if (!ded_irq || !sec_irq) {
- 		ppc4xx_edac_mc_printk(KERN_ERR, mci,
- 				      "Unable to map interrupts.\n");
- 		status = -ENODEV;
+ 	wait_event(card->waitq,
 -- 
 2.7.4
