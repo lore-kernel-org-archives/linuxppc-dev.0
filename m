@@ -1,27 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <bp@alien8.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sWVcm1npzzDrq8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Sep 2016 20:27:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kim Phillips <kim.phillips@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Kees Cook <keescook@chromium.org>,
- Johannes Weiner <hannes@cmpxchg.org>, Arnd Bergmann <arnd@arndb.de>,
- Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 1/2] perf_event: remove unused DEBUG_PERF_USE_VMALLOC
-In-Reply-To: <20160830140834.6d1edf7abd9d95c02dae7820@arm.com>
-References: <20160830140834.6d1edf7abd9d95c02dae7820@arm.com>
-Date: Sat, 10 Sep 2016 20:27:18 +1000
-Message-ID: <87lgz0nj7d.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sWcpf3KvCzDrq8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Sep 2016 01:06:18 +1000 (AEST)
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by ozlabs.org (Postfix) with ESMTP id 3sWcpd6B2Qz9rxv
+ for <linuxppc-dev@ozlabs.org>; Sun, 11 Sep 2016 01:06:17 +1000 (AEST)
+Date: Sat, 10 Sep 2016 16:53:20 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: dougthompson@xmission.com, mchehab@kernel.org,
+ linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, arnd@arndb.de
+Subject: Re: [PATCH] drivers/edac: NO_IRQ removal from powerpc-only drivers
+Message-ID: <20160910145320.bg6s6wo5ya7zzw2n@pd.tnic>
+References: <1473501428-8217-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1473501428-8217-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +28,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kim Phillips <kim.phillips@arm.com> writes:
+On Sat, Sep 10, 2016 at 07:57:08PM +1000, Michael Ellerman wrote:
+> We'd like to eventually remove NO_IRQ on powerpc, so remove usages of it
+> from powerpc-only drivers.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  drivers/edac/mpc85xx_edac.c | 6 +++---
+>  drivers/edac/mv64x60_edac.c | 8 ++++----
+>  drivers/edac/ppc4xx_edac.c  | 6 +++---
+>  3 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+> index ca63d0da8889..e12b8e166a53 100644
+> --- a/drivers/edac/mpc85xx_edac.c
+> +++ b/drivers/edac/mpc85xx_edac.c
+> @@ -267,7 +267,7 @@ static int mpc85xx_pci_err_probe(struct platform_device *op)
+>  
+>  	pdata = pci->pvt_info;
+>  	pdata->name = "mpc85xx_pci_err";
+> -	pdata->irq = NO_IRQ;
+> +	pdata->irq = 0;
+>  
+>  	plat_data = op->dev.platform_data;
+>  	if (!plat_data) {
 
-> This 'DEBUG'-prefixed version of PERF_USE_VMALLOC is not used anywhere.
-> It appears to be leftovers from commit 906010b "perf_event: Provide
-> vmalloc() based mmap() backing" that introduced it.
->
-> Not sure what commit cb30711 "perf_event: Don't allow vmalloc() backed
-> perf on powerpc" was trying to do with it either.
+So all of those pdata structs come from kzalloc() so you don't really
+have to assign to 0 - simply kill the line.
 
-Preventing its use on powerpc, because it doesn't work, I thought the
-change log was pretty clear:
+> @@ -588,7 +588,7 @@ static int mpc85xx_l2_err_probe(struct platform_device *op)
+>  
+>  	pdata = edac_dev->pvt_info;
+>  	pdata->name = "mpc85xx_l2_err";
+> -	pdata->irq = NO_IRQ;
+> +	pdata->irq = 0;
+>  	edac_dev->dev = &op->dev;
+>  	dev_set_drvdata(edac_dev->dev, edac_dev);
+>  	edac_dev->ctl_name = pdata->name;
+> @@ -1058,7 +1058,7 @@ static int mpc85xx_mc_err_probe(struct platform_device *op)
+>  
+>  	pdata = mci->pvt_info;
+>  	pdata->name = "mpc85xx_mc_err";
+> -	pdata->irq = NO_IRQ;
+> +	pdata->irq = 0;
+>  	mci->pdev = &op->dev;
+>  	pdata->edac_idx = edac_mc_idx++;
+>  	dev_set_drvdata(mci->pdev, mci);
 
-    perf_event: Don't allow vmalloc() backed perf on powerpc
-    
-    On powerpc the perf event interrupt is not masked when interrupts are
-    disabled, allowing it to function as an NMI.
-    
-    This causes problems if perf is using vmalloc. If we take a page fault
-    on the vmalloc region the fault handler will fail the page fault because
-    it detects we are coming in from an NMI (see do_hash_page()).
-    
-    We don't actually need or want vmalloc backed perf so just disable it on
-    powerpc.
+That part went into drivers/edac/fsl_ddr_edac.c which is only the
+freescale memory controller being shared between ARM and PPC, see
 
+http://git.kernel.org/cgit/linux/kernel/git/bp/bp.git/log/?h=for-next
 
-If there are ARM cpus that don't want it enabled then you should
-probably do a similar patch for ARM.
+But that shouldn't change the issue wrt ->irq as now it is implicitly 0.
 
-cheers
+IOW, you can drop this hunk.
+
+Please send v2 against the above branch or linux-next.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
