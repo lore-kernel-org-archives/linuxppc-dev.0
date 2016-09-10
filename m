@@ -1,17 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <glaubitz@physik.fu-berlin.de>
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de
+ [130.133.4.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sWV324CrxzDrq8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Sep 2016 20:01:34 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linux-pcmcia@lists.infradead.org
-Cc: linuxppc-dev@ozlabs.org,
-	arnd@arndb.de,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers/pcmcia: NO_IRQ removal for electra_cf.c
-Date: Sat, 10 Sep 2016 20:01:30 +1000
-Message-Id: <1473501690-11987-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sWV5t3QdJzDrq8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Sep 2016 20:04:02 +1000 (AEST)
+Subject: Re: Build regression introduced by
+ 31cdd0c39c7544ced79da53aa0b7e989f3a39582
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
+References: <829134bc-381a-7f45-a99a-0b7e66642246@physik.fu-berlin.de>
+ <20160907012356.GA21443@fergus.ozlabs.ibm.com>
+ <87a8fhlv2t.fsf@concordia.ellerman.id.au>
+ <5f47ce4e-646f-9532-307a-2904c298e64e@physik.fu-berlin.de>
+ <87oa3wnks6.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Message-ID: <292771f6-34f6-06f1-6050-2d60751c9489@physik.fu-berlin.de>
+Date: Sat, 10 Sep 2016 12:03:48 +0200
+MIME-Version: 1.0
+In-Reply-To: <87oa3wnks6.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,35 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We'd like to eventually remove NO_IRQ on powerpc, so remove usages of it
-from electra_cf.c which is a powerpc-only driver.
+On 09/10/2016 11:53 AM, Michael Ellerman wrote:
+>> Thanks for the quick fix!
+> 
+> I assume by that it worked for you? I'll add a Tested-by: for you?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/pcmcia/electra_cf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Not yet. I just got my second PowerPC e500 evaluation board yesterday and the
+other board is running 24/7 as an automatic build machine. I will need a few
+days to be able to assemble the second machine since I need to order some parts
+(SSD, power supply, memory and so on) first.
 
-diff --git a/drivers/pcmcia/electra_cf.c b/drivers/pcmcia/electra_cf.c
-index 4d7bc3f4124a..c6fe2a4a7a6a 100644
---- a/drivers/pcmcia/electra_cf.c
-+++ b/drivers/pcmcia/electra_cf.c
-@@ -207,7 +207,7 @@ static int electra_cf_probe(struct platform_device *ofdev)
- 		return -ENOMEM;
- 
- 	setup_timer(&cf->timer, electra_cf_timer, (unsigned long)cf);
--	cf->irq = NO_IRQ;
-+	cf->irq = 0;
- 
- 	cf->ofdev = ofdev;
- 	cf->mem_phys = mem.start;
-@@ -313,7 +313,7 @@ fail3:
- fail2:
- 	release_mem_region(cf->mem_phys, cf->mem_size);
- fail1:
--	if (cf->irq != NO_IRQ)
-+	if (cf->irq)
- 		free_irq(cf->irq, cf);
- 
- 	if (cf->io_virt)
+Cheers,
+Adrian
+
 -- 
-2.7.4
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer - glaubitz@debian.org
+`. `'   Freie Universitaet Berlin - glaubitz@physik.fu-berlin.de
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
