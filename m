@@ -1,21 +1,28 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sXXsw6XZkzDrcD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 13:12:20 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id g202so7412207pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Sep 2016 20:12:20 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Daniel Axtens <dja@axtens.net>, Michael Ellerman <mpe@ellerman.id.au>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2] powerpc/ptrace: Fix cppcheck issue in
- gpr32_set_common/gpr32_get_common()
-Date: Sun, 11 Sep 2016 21:44:13 +0800
-Message-Id: <1473601453-9660-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sXY9b3LdkzDsMB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 13:25:55 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id x24so7405932pfa.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Sep 2016 20:25:55 -0700 (PDT)
+Date: Sun, 11 Sep 2016 21:58:57 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Cyril Bur <cyrilbur@gmail.com>, Michael Neuling <mikey@neuling.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Amanieu d'Antras <amanieu@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: set used_vsr/used_vr/used_spe in sigreturn path
+ when MSR bits are active
+Message-ID: <20160911135857.GA1137@simonLocalRHEL7.x64>
+References: <1469520361-9035-1-git-send-email-wei.guo.simon@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1469520361-9035-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,155 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+On Tue, Jul 26, 2016 at 04:06:01PM +0800, wei.guo.simon@gmail.com wrote:
+> From: Simon Guo <wei.guo.simon@gmail.com>
+> 
+> Normally, when MSR[VSX/VR/SPE] bits = 1, the used_vsr/used_vr/used_spe
+> bit have already been set. However signal frame locates at user space
+> and it is controlled by user application. It is up to kernel to make
+> sure used_vsr/used_vr/used_spe(in kernel)=1 and consistent with MSR
+> bits.
+> 
+> For example, CRIU application, who utilizes sigreturn to restore
+> checkpointed process, will lead to the case where MSR[VSX] bit is
+> active in signal frame, but used_vsx bit is not set. (the same applies
+> to VR/SPE).
+> 
+> This patch will reinforce this at kernel by always setting used_* bit
+> when MSR related bits are active in signal frame and we are doing
+> sigreturn.
+> 
+> This patch is based on Ben's Proposal.
+> 
+Hi Michael,
 
-The ckpt_regs usage in gpr32_set_common/gpr32_get_common() will lead to
-following cppcheck error at ifndef CONFIG_PPC_TRANSACTIONAL_MEM case:
+Just a ping for this patch. 
+The history locates at:
+http://linuxppc.10917.n7.nabble.com/PATCH-v4-powerpc-Export-thread-struct-used-vr-used-vsr-to-user-space-td110147.html#a110161
 
-[arch/powerpc/kernel/ptrace.c:2062]:
-(error) Uninitialized variable: ckpt_regs
-[arch/powerpc/kernel/ptrace.c:2130]:
-(error) Uninitialized variable: ckpt_regs
+If any addtional work required, please let me know.
 
-The problem is due to gpr32_set_common() used ckpt_regs variable which
-only makes sense at #ifdef CONFIG_PPC_TRANSACTIONAL_MEM.
-
-This patch fix this issue by passing in "regs" parameter instead.
-
-Reported-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- arch/powerpc/kernel/ptrace.c | 74 +++++++++++++++++---------------------------
- 1 file changed, 29 insertions(+), 45 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index bf91658..74eadb4 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -2065,33 +2065,12 @@ static const struct user_regset_view user_ppc_native_view = {
- static int gpr32_get_common(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     unsigned int pos, unsigned int count,
--			    void *kbuf, void __user *ubuf, bool tm_active)
-+			    void *kbuf, void __user *ubuf,
-+			    unsigned long *regs)
- {
--	const unsigned long *regs = &target->thread.regs->gpr[0];
--	const unsigned long *ckpt_regs;
- 	compat_ulong_t *k = kbuf;
- 	compat_ulong_t __user *u = ubuf;
- 	compat_ulong_t reg;
--	int i;
--
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
--#endif
--	if (tm_active) {
--		regs = ckpt_regs;
--	} else {
--		if (target->thread.regs == NULL)
--			return -EIO;
--
--		if (!FULL_REGS(target->thread.regs)) {
--			/*
--			 * We have a partial register set.
--			 * Fill 14-31 with bogus values.
--			 */
--			for (i = 14; i < 32; i++)
--				target->thread.regs->gpr[i] = NV_REG_POISON;
--		}
--	}
- 
- 	pos /= sizeof(reg);
- 	count /= sizeof(reg);
-@@ -2133,29 +2112,13 @@ static int gpr32_get_common(struct task_struct *target,
- static int gpr32_set_common(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     unsigned int pos, unsigned int count,
--		     const void *kbuf, const void __user *ubuf, bool tm_active)
-+		     const void *kbuf, const void __user *ubuf,
-+		     unsigned long *regs)
- {
--	unsigned long *regs = &target->thread.regs->gpr[0];
--	unsigned long *ckpt_regs;
- 	const compat_ulong_t *k = kbuf;
- 	const compat_ulong_t __user *u = ubuf;
- 	compat_ulong_t reg;
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
--#endif
--
--	if (tm_active) {
--		regs = ckpt_regs;
--	} else {
--		regs = &target->thread.regs->gpr[0];
--
--		if (target->thread.regs == NULL)
--			return -EIO;
--
--		CHECK_FULL_REGS(target->thread.regs);
--	}
--
- 	pos /= sizeof(reg);
- 	count /= sizeof(reg);
- 
-@@ -2220,7 +2183,8 @@ static int tm_cgpr32_get(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     void *kbuf, void __user *ubuf)
- {
--	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 1);
-+	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf,
-+			&target->thread.ckpt_regs.gpr[0]);
- }
- 
- static int tm_cgpr32_set(struct task_struct *target,
-@@ -2228,7 +2192,8 @@ static int tm_cgpr32_set(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     const void *kbuf, const void __user *ubuf)
- {
--	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 1);
-+	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf,
-+			&target->thread.ckpt_regs.gpr[0]);
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
-@@ -2237,7 +2202,21 @@ static int gpr32_get(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     void *kbuf, void __user *ubuf)
- {
--	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 0);
-+	int i;
-+
-+	if (target->thread.regs == NULL)
-+		return -EIO;
-+
-+	if (!FULL_REGS(target->thread.regs)) {
-+		/*
-+		 * We have a partial register set.
-+		 * Fill 14-31 with bogus values.
-+		 */
-+		for (i = 14; i < 32; i++)
-+			target->thread.regs->gpr[i] = NV_REG_POISON;
-+	}
-+	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf,
-+			&target->thread.regs->gpr[0]);
- }
- 
- static int gpr32_set(struct task_struct *target,
-@@ -2245,7 +2224,12 @@ static int gpr32_set(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     const void *kbuf, const void __user *ubuf)
- {
--	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 0);
-+	if (target->thread.regs == NULL)
-+		return -EIO;
-+
-+	CHECK_FULL_REGS(target->thread.regs);
-+	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf,
-+			&target->thread.regs->gpr[0]);
- }
- 
- /*
--- 
-1.8.3.1
+Thanks,
+- Simon
