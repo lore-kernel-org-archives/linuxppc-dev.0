@@ -1,24 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sXXgz579rzDsMB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 13:03:43 +1000 (AEST)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paolo Bonzini <pbonzini@redhat.com>, Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v2 3/3] powerpc/mm: Speed up computation of base and
- actual page size for a HPTE
-In-Reply-To: <4ba4f3d7-eadc-5d20-534e-afc7075938fc@redhat.com>
-References: <20160902114759.GA12433@fergus.ozlabs.ibm.com>
- <20160902115055.GC12433@fergus.ozlabs.ibm.com>
- <20160907061709.GD21443@fergus.ozlabs.ibm.com>
- <20160908100836.GA4965@fergus.ozlabs.ibm.com>
- <4ba4f3d7-eadc-5d20-534e-afc7075938fc@redhat.com>
-Date: Mon, 12 Sep 2016 13:03:43 +1000
-Message-ID: <877fahrf8w.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sXXsw6XZkzDrcD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 13:12:20 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id g202so7412207pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Sep 2016 20:12:20 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Daniel Axtens <dja@axtens.net>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH v2] powerpc/ptrace: Fix cppcheck issue in
+ gpr32_set_common/gpr32_get_common()
+Date: Sun, 11 Sep 2016 21:44:13 +0800
+Message-Id: <1473601453-9660-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +25,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paolo Bonzini <pbonzini@redhat.com> writes:
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-> On 08/09/2016 12:08, Paul Mackerras wrote:
->>> > 
->>> >  arch/powerpc/include/asm/book3s/64/mmu-hash.h | 37 ++++++++++++
->>> >  arch/powerpc/include/asm/kvm_book3s_64.h      | 87 +++------------------------
->>> >  arch/powerpc/include/asm/mmu.h                |  1 +
->>> >  arch/powerpc/mm/hash_native_64.c              | 42 +------------
->>> >  arch/powerpc/mm/hash_utils_64.c               | 55 +++++++++++++++++
->> This of course touches two maintainers' areas.  Michael and Paolo, how
->> do you want to proceed here?  Can this just go through Michael's tree?
->> Or should I make a topic branch off Linus' tree that you can both
->> pull, or should I split the patch into two (i.e. everything except the
->> kvm_book3s_64.h change in the first patch, and the kvm_book3s_64.h
->> change in the second) and get Michael to put the first one in a topic
->> branch that I can then pull and apply the second patch onto?
->
-> This patch seems separate from the other two (I can't really tell since
-> there wasn't a cover letter on linuxppc-dev).
+The ckpt_regs usage in gpr32_set_common/gpr32_get_common() will lead to
+following cppcheck error at ifndef CONFIG_PPC_TRANSACTIONAL_MEM case:
 
-Yeah. I've merged 1/3 as a fix, and will take 2/3 into next.
+[arch/powerpc/kernel/ptrace.c:2062]:
+(error) Uninitialized variable: ckpt_regs
+[arch/powerpc/kernel/ptrace.c:2130]:
+(error) Uninitialized variable: ckpt_regs
 
-> Can you place it in a pull request for both Michael and myself?
+The problem is due to gpr32_set_common() used ckpt_regs variable which
+only makes sense at #ifdef CONFIG_PPC_TRANSACTIONAL_MEM.
 
-Paul and I talked about this offline, he's going to create a topic
-branch with this in it.
+This patch fix this issue by passing in "regs" parameter instead.
 
-I'll hold off merging it until closer to the merge window, and I'll
-merge it then if we are actually seeing conflicts between the PPC & KVM
-trees caused by this.
+Reported-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+---
+ arch/powerpc/kernel/ptrace.c | 74 +++++++++++++++++---------------------------
+ 1 file changed, 29 insertions(+), 45 deletions(-)
 
-cheers
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index bf91658..74eadb4 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -2065,33 +2065,12 @@ static const struct user_regset_view user_ppc_native_view = {
+ static int gpr32_get_common(struct task_struct *target,
+ 		     const struct user_regset *regset,
+ 		     unsigned int pos, unsigned int count,
+-			    void *kbuf, void __user *ubuf, bool tm_active)
++			    void *kbuf, void __user *ubuf,
++			    unsigned long *regs)
+ {
+-	const unsigned long *regs = &target->thread.regs->gpr[0];
+-	const unsigned long *ckpt_regs;
+ 	compat_ulong_t *k = kbuf;
+ 	compat_ulong_t __user *u = ubuf;
+ 	compat_ulong_t reg;
+-	int i;
+-
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
+-#endif
+-	if (tm_active) {
+-		regs = ckpt_regs;
+-	} else {
+-		if (target->thread.regs == NULL)
+-			return -EIO;
+-
+-		if (!FULL_REGS(target->thread.regs)) {
+-			/*
+-			 * We have a partial register set.
+-			 * Fill 14-31 with bogus values.
+-			 */
+-			for (i = 14; i < 32; i++)
+-				target->thread.regs->gpr[i] = NV_REG_POISON;
+-		}
+-	}
+ 
+ 	pos /= sizeof(reg);
+ 	count /= sizeof(reg);
+@@ -2133,29 +2112,13 @@ static int gpr32_get_common(struct task_struct *target,
+ static int gpr32_set_common(struct task_struct *target,
+ 		     const struct user_regset *regset,
+ 		     unsigned int pos, unsigned int count,
+-		     const void *kbuf, const void __user *ubuf, bool tm_active)
++		     const void *kbuf, const void __user *ubuf,
++		     unsigned long *regs)
+ {
+-	unsigned long *regs = &target->thread.regs->gpr[0];
+-	unsigned long *ckpt_regs;
+ 	const compat_ulong_t *k = kbuf;
+ 	const compat_ulong_t __user *u = ubuf;
+ 	compat_ulong_t reg;
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
+-#endif
+-
+-	if (tm_active) {
+-		regs = ckpt_regs;
+-	} else {
+-		regs = &target->thread.regs->gpr[0];
+-
+-		if (target->thread.regs == NULL)
+-			return -EIO;
+-
+-		CHECK_FULL_REGS(target->thread.regs);
+-	}
+-
+ 	pos /= sizeof(reg);
+ 	count /= sizeof(reg);
+ 
+@@ -2220,7 +2183,8 @@ static int tm_cgpr32_get(struct task_struct *target,
+ 		     unsigned int pos, unsigned int count,
+ 		     void *kbuf, void __user *ubuf)
+ {
+-	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 1);
++	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf,
++			&target->thread.ckpt_regs.gpr[0]);
+ }
+ 
+ static int tm_cgpr32_set(struct task_struct *target,
+@@ -2228,7 +2192,8 @@ static int tm_cgpr32_set(struct task_struct *target,
+ 		     unsigned int pos, unsigned int count,
+ 		     const void *kbuf, const void __user *ubuf)
+ {
+-	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 1);
++	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf,
++			&target->thread.ckpt_regs.gpr[0]);
+ }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
+@@ -2237,7 +2202,21 @@ static int gpr32_get(struct task_struct *target,
+ 		     unsigned int pos, unsigned int count,
+ 		     void *kbuf, void __user *ubuf)
+ {
+-	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 0);
++	int i;
++
++	if (target->thread.regs == NULL)
++		return -EIO;
++
++	if (!FULL_REGS(target->thread.regs)) {
++		/*
++		 * We have a partial register set.
++		 * Fill 14-31 with bogus values.
++		 */
++		for (i = 14; i < 32; i++)
++			target->thread.regs->gpr[i] = NV_REG_POISON;
++	}
++	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf,
++			&target->thread.regs->gpr[0]);
+ }
+ 
+ static int gpr32_set(struct task_struct *target,
+@@ -2245,7 +2224,12 @@ static int gpr32_set(struct task_struct *target,
+ 		     unsigned int pos, unsigned int count,
+ 		     const void *kbuf, const void __user *ubuf)
+ {
+-	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 0);
++	if (target->thread.regs == NULL)
++		return -EIO;
++
++	CHECK_FULL_REGS(target->thread.regs);
++	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf,
++			&target->thread.regs->gpr[0]);
+ }
+ 
+ /*
+-- 
+1.8.3.1
