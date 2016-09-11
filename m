@@ -1,19 +1,28 @@
-Return-Path: <fedora@leemhuis.info>
-Received: from basicbox7.server-home.net (basicbox7.server-home.net
- [195.137.212.29])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sXCQp5ngtzDsGT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 00:06:10 +1000 (AEST)
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.8: Reported regressions as of Sunday, 2016-09-11
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Message-ID: <b196cb0d-3945-2d46-601c-8e7b24978b17@leemhuis.info>
-Date: Sun, 11 Sep 2016 15:57:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sXRw44MZ7zDrpT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 09:28:52 +1000 (AEST)
+Date: Mon, 12 Sep 2016 09:25:47 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
+ Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH 6/6] KVM: PPC: e500: Rename jump labels in
+ kvmppc_e500_tlb_init()
+Message-ID: <20160911232547.GA9873@fergus.ozlabs.ibm.com>
+References: <566ABCD9.1060404@users.sourceforge.net>
+ <c3fd4483-38d2-af0f-0e19-a7e57e120c5b@users.sourceforge.net>
+ <165cb42e-f9fe-83ad-7c4c-299a805dbe6e@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <165cb42e-f9fe-83ad-7c4c-299a805dbe6e@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,101 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi! Here is my third regression report for Linux 4.8. It lists 10
-regressions I'm aware of. 6 of them are new; 3 mentioned in the last
-report sent two weeks ago got fixed; 3 got removed for other reasons
-(see below).
+On Sun, Aug 28, 2016 at 07:19:22PM +0200, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 28 Aug 2016 18:45:26 +0200
+> 
+> Adjust jump labels according to the current Linux coding style convention.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-As always: Are you aware of any other regressions? Then please let me
-know (simply CC regressions@leemhuis.info). And tell me if there is
-anything in the report that shouldn't be there.
+With this I get a compile error:
 
-Ciao, Thorsten
+  CC      arch/powerpc/kvm/e500_mmu.o
+/home/paulus/kernel/kvm/arch/powerpc/kvm/e500_mmu.c: In function ‘kvmppc_e500_tlb_init’:
+/home/paulus/kernel/kvm/arch/powerpc/kvm/e500_mmu.c:910:3: error: label ‘err’ used but not defined
+   goto err;
+   ^
+/home/paulus/kernel/kvm/scripts/Makefile.build:289: recipe for target 'arch/powerpc/kvm/e500_mmu.o' failed
+make[2]: *** [arch/powerpc/kvm/e500_mmu.o] Error 1
 
-P.S.: Sorry for not sending a report last week, I did not find the time
-as I was travelling :-/
-
-
-== Current regressions ==
-
-Desc: genirq: Flags mismatch irq 8, 00000088 (mmc0) vs. 00000080 (rtc0). mmc0: Failed to request irq 8: -16
-Repo: 2016-08-01 https://bugzilla.kernel.org/show_bug.cgi?id=150881
-Stat: 2016-09-09 https://bugzilla.kernel.org/show_bug.cgi?id=150881#c34
-Note: root cause somewhere in the main gpio merge for 4.8, but problematic commit still unknown
-
-Desc: [lkp] [xfs] 68a9f5e700: aim7.jobs-per-min -13.6% regression
-Repo: 2016-08-09 http://www.spinics.net/lists/kernel/msg2317052.html
-Stat: 2016-09-09 https://marc.info/?t=147341519500003&r=1&w=2
-Note: Mel working on it in his spare time, but "The progression of this series has been unsatisfactory."
-
-Desc: DT/OCTEON driver probing broken
-Repo: 2016-08-16 http://www.spinics.net/lists/devicetree/msg138990.html
-Stat: 2016-08-30 http://www.spinics.net/lists/devicetree/msg140682.html
-Note: stalled, poked Rob
-
-Desc: gpio-leds broken on OCTEON
-Repo: 2016-08-23 http://www.spinics.net/lists/devicetree/msg139863.html
-Stat: 2016-08-25 http://www.spinics.net/lists/devicetree/msg140179.html
-Note: stalled, poked list
-
-Desc: Skylake graphics regression: projector failure with 4.8-rc3
-Repo: 2016-08-26 http://www.spinics.net/lists/intel-gfx/msg105478.html
-Stat: 2016-09-01 https://lkml.org/lkml/2016/8/31/946
-Note: looks a bit stalled, but guess jejb still has not forgotten about it
-
-Desc: lk 4.8 + !CONFIG_SHMEM + shmat() = oops
-Repo: 2016-08-30 http://www.spinics.net/lists/linux-mm/msg112920.html
-Stat: 2016-09-07 http://www.spinics.net/lists/linux-mm/msg113177.html
-Note: patch "ipc/shm: fix crash if CONFIG_SHMEM is not set" is going to fix this
-
-Desc: ath9k: bring back direction setting in ath9k_{start_stop}
-Repo: 2016-09-01 https://marc.info/?l=linux-wireless&m=147292415030585&w=2
-Stat: 2016-09-07 https://marc.info/?l=linux-wireless&m=147325468810927&w=2
-Note: fix heading upstream
-
-Desc: regression in re-read operation by iozone ~10%
-Repo: 2016-09-02 https://bugzilla.kernel.org/show_bug.cgi?id=155821
-Stat: n/a 
-Note: told reporter he might be better of posting about the issue to some mailing list
-
-Desc: Suspend fails & system is unusable after attempt (Dell XPS 13 9350 / Skylake)
-Repo: 2016-09-08 https://bugzilla.kernel.org/show_bug.cgi?id=156361
-Stat: n/a 
-Note: quite new
-
-Desc: CPU speed set very low
-Repo: 2016-09-09 https://lkml.org/lkml/2016/9/9/608
-Stat: n/a 
-Note: quite new
-
-== Going to be removed from the list ==
-
-Desc: [lkp] [mm, page_alloc] e6cbd7f2ef: pixz.throughput -5.1% regression due to mm, page_alloc: remove fair zone allocation policy
-Repo: 2016-08-08 https://marc.info/?l=linux-kernel&m=147064515210332&w=3
-Stat: 2016-08-30 https://lkml.org/lkml/2016/8/30/176
-Note: Quoting Mel: Drop it for the moment. My expectation is that it's a relatively minor hazard. […]
-
-Desc: Intermittent crash on reboot (acpi_ex_system_reset_event)
-Repo: 2016-08-04 https://bugzilla.kernel.org/show_bug.cgi?id=151441
-Stat: 2016-08-15 https://bugzilla.kernel.org/show_bug.cgi?id=151441#c7
-Note: reporter stopped seeing this crash
-
-Desc: Commit cb4f71c429 deliberately changes order of network interfaces
-Repo: 2016-08-21 http://www.spinics.net/lists/kernel/msg2325600.html
-Stat: n/a 
-Note: long discussion if this is considered a regression at all; mentioned it in the last report to make sure people are aware of the issue; nothing happened since then, so I assume people do not consider it a regression
-
-
-== Fixed since last report ==
-
-Desc: irqdomain: Don't set type when mapping an IRQ breaks nexus7 gpio buttons
-Repo: 2016-07-30 https://marc.info/?l=linux-kernel&m=146985356305280&w=2
-Fix:  https://git.kernel.org/torvalds/c/1e12c4a9393b75a744aada2c8115434572698bc3
-
-Desc: imx-drm: Possible regression after update to atomic: black screen after Weston starts
-Repo: 2016-08-13 http://www.spinics.net/lists/kernel/msg2320013.html
-Fix:  https://git.kernel.org/torvalds/c/c6c1f9bc798bee7cfc2e172cd2c9b48187d801a7
-
-Desc: Bluetooth: Fix bt_sock_recvmsg when MSG_TRUNC is not set
-Repo: 2016-08-25 http://www.spinics.net/lists/linux-bluetooth/msg68012.html
-Fix:  https://git.kernel.org/torvalds/c/90a56f72edb088c678083c32d05936c7c8d9a948
+Paul.
