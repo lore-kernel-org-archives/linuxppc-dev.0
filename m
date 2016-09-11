@@ -1,28 +1,19 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fedora@leemhuis.info>
+Received: from basicbox7.server-home.net (basicbox7.server-home.net
+ [195.137.212.29])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sX8pK4vYjzDsFG
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Sep 2016 22:07:53 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id pp5so6354917pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Sep 2016 05:07:52 -0700 (PDT)
-Date: Sun, 11 Sep 2016 20:07:44 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/ptrace: Fix cppcheck issue in
- gpr32_set_common/gpr32_get_common.
-Message-ID: <20160911120743.GA22669@simonLocalRHEL7.x64>
-References: <1471695863-8660-1-git-send-email-wei.guo.simon@gmail.com>
- <878tvmrjoc.fsf@possimpible.ozlabs.ibm.com>
- <20160824073826.GA16442@simonLocalRHEL7.x64>
- <871t1dr716.fsf@possimpible.ozlabs.ibm.com>
- <871t0tl4zf.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sXCQp5ngtzDsGT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 00:06:10 +1000 (AEST)
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Subject: Linux 4.8: Reported regressions as of Sunday, 2016-09-11
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Message-ID: <b196cb0d-3945-2d46-601c-8e7b24978b17@leemhuis.info>
+Date: Sun, 11 Sep 2016 15:57:31 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <871t0tl4zf.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,158 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 09, 2016 at 08:52:52PM +1000, Michael Ellerman wrote:
-> I do - Sorry Simon but your patch just adds too many #ifdefs.
-> 
-> Any time you have to do something like:
-> 
-> 	+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> 		}
-> 	+#endif
-> 
-> It should be a sign that something has gone wrong :)
-> 
-> Does Cyril's series to rework the TM structures help at all with this
-> warning?
-Hi Michael,
+Hi! Here is my third regression report for Linux 4.8. It lists 10
+regressions I'm aware of. 6 of them are new; 3 mentioned in the last
+report sent two weeks ago got fixed; 3 got removed for other reasons
+(see below).
 
-What cppchecker complains is only concerned with GPR:
-gpr32_get/set_common() which is used by tm_cgpr32_get()/gpr32_get().
+As always: Are you aware of any other regressions? Then please let me
+know (simply CC regressions@leemhuis.info). And tell me if there is
+anything in the report that shouldn't be there.
 
-Cyril's patch changes TM FPR/VR/VSX state saving location to be consistent with 
-GPR's.  It doesn't actually modify TM GPR behavior. 
+Ciao, Thorsten
 
-So Cyril's work doesn't relate with this cppchecker complaining issue.
+P.S.: Sorry for not sending a report last week, I did not find the time
+as I was travelling :-/
 
 
-Thanks for the feedback regarding too many ifdefs.  Is following implemention 
-better for this issue?
+== Current regressions ==
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index bf91658..cf48e98 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -2065,34 +2065,14 @@ static const struct user_regset_view user_ppc_native_view = {
- static int gpr32_get_common(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     unsigned int pos, unsigned int count,
--			    void *kbuf, void __user *ubuf, bool tm_active)
-+			    void *kbuf, void __user *ubuf,
-+			    unsigned long *regs)
- {
--	const unsigned long *regs = &target->thread.regs->gpr[0];
--	const unsigned long *ckpt_regs;
- 	compat_ulong_t *k = kbuf;
- 	compat_ulong_t __user *u = ubuf;
- 	compat_ulong_t reg;
- 	int i;
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
--#endif
--	if (tm_active) {
--		regs = ckpt_regs;
--	} else {
--		if (target->thread.regs == NULL)
--			return -EIO;
--
--		if (!FULL_REGS(target->thread.regs)) {
--			/*
--			 * We have a partial register set.
--			 * Fill 14-31 with bogus values.
--			 */
--			for (i = 14; i < 32; i++)
--				target->thread.regs->gpr[i] = NV_REG_POISON;
--		}
--	}
--
- 	pos /= sizeof(reg);
- 	count /= sizeof(reg);
- 
-@@ -2133,29 +2113,13 @@ static int gpr32_get_common(struct task_struct *target,
- static int gpr32_set_common(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     unsigned int pos, unsigned int count,
--		     const void *kbuf, const void __user *ubuf, bool tm_active)
-+		     const void *kbuf, const void __user *ubuf,
-+		     unsigned long *regs)
- {
--	unsigned long *regs = &target->thread.regs->gpr[0];
--	unsigned long *ckpt_regs;
- 	const compat_ulong_t *k = kbuf;
- 	const compat_ulong_t __user *u = ubuf;
- 	compat_ulong_t reg;
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
--#endif
--
--	if (tm_active) {
--		regs = ckpt_regs;
--	} else {
--		regs = &target->thread.regs->gpr[0];
--
--		if (target->thread.regs == NULL)
--			return -EIO;
--
--		CHECK_FULL_REGS(target->thread.regs);
--	}
--
- 	pos /= sizeof(reg);
- 	count /= sizeof(reg);
- 
-@@ -2220,7 +2184,7 @@ static int tm_cgpr32_get(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     void *kbuf, void __user *ubuf)
- {
--	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 1);
-+	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, &target->thread.ckpt_regs.gpr[0]);
- }
- 
- static int tm_cgpr32_set(struct task_struct *target,
-@@ -2228,7 +2192,7 @@ static int tm_cgpr32_set(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     const void *kbuf, const void __user *ubuf)
- {
--	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 1);
-+	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, &target->thread.ckpt_regs.gpr[0]);
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
-@@ -2237,7 +2201,18 @@ static int gpr32_get(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     void *kbuf, void __user *ubuf)
- {
--	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 0);
-+	if (target->thread.regs == NULL)
-+		return -EIO;
-+
-+	if (!FULL_REGS(target->thread.regs)) {
-+		/*
-+		 * We have a partial register set.
-+		 * Fill 14-31 with bogus values.
-+		 */
-+		for (i = 14; i < 32; i++)
-+			target->thread.regs->gpr[i] = NV_REG_POISON;
-+	}
-+	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, &target->thread.regs->gpr[0]);
- }
- 
- static int gpr32_set(struct task_struct *target,
-@@ -2245,7 +2220,11 @@ static int gpr32_set(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     const void *kbuf, const void __user *ubuf)
- {
--	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 0);
-+	if (target->thread.regs == NULL)
-+		return -EIO;
-+
-+	CHECK_FULL_REGS(target->thread.regs);
-+	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, &target->thread.regs->gpr[0]);
- }
- 
- /*
+Desc: genirq: Flags mismatch irq 8, 00000088 (mmc0) vs. 00000080 (rtc0). mmc0: Failed to request irq 8: -16
+Repo: 2016-08-01 https://bugzilla.kernel.org/show_bug.cgi?id=150881
+Stat: 2016-09-09 https://bugzilla.kernel.org/show_bug.cgi?id=150881#c34
+Note: root cause somewhere in the main gpio merge for 4.8, but problematic commit still unknown
+
+Desc: [lkp] [xfs] 68a9f5e700: aim7.jobs-per-min -13.6% regression
+Repo: 2016-08-09 http://www.spinics.net/lists/kernel/msg2317052.html
+Stat: 2016-09-09 https://marc.info/?t=147341519500003&r=1&w=2
+Note: Mel working on it in his spare time, but "The progression of this series has been unsatisfactory."
+
+Desc: DT/OCTEON driver probing broken
+Repo: 2016-08-16 http://www.spinics.net/lists/devicetree/msg138990.html
+Stat: 2016-08-30 http://www.spinics.net/lists/devicetree/msg140682.html
+Note: stalled, poked Rob
+
+Desc: gpio-leds broken on OCTEON
+Repo: 2016-08-23 http://www.spinics.net/lists/devicetree/msg139863.html
+Stat: 2016-08-25 http://www.spinics.net/lists/devicetree/msg140179.html
+Note: stalled, poked list
+
+Desc: Skylake graphics regression: projector failure with 4.8-rc3
+Repo: 2016-08-26 http://www.spinics.net/lists/intel-gfx/msg105478.html
+Stat: 2016-09-01 https://lkml.org/lkml/2016/8/31/946
+Note: looks a bit stalled, but guess jejb still has not forgotten about it
+
+Desc: lk 4.8 + !CONFIG_SHMEM + shmat() = oops
+Repo: 2016-08-30 http://www.spinics.net/lists/linux-mm/msg112920.html
+Stat: 2016-09-07 http://www.spinics.net/lists/linux-mm/msg113177.html
+Note: patch "ipc/shm: fix crash if CONFIG_SHMEM is not set" is going to fix this
+
+Desc: ath9k: bring back direction setting in ath9k_{start_stop}
+Repo: 2016-09-01 https://marc.info/?l=linux-wireless&m=147292415030585&w=2
+Stat: 2016-09-07 https://marc.info/?l=linux-wireless&m=147325468810927&w=2
+Note: fix heading upstream
+
+Desc: regression in re-read operation by iozone ~10%
+Repo: 2016-09-02 https://bugzilla.kernel.org/show_bug.cgi?id=155821
+Stat: n/a 
+Note: told reporter he might be better of posting about the issue to some mailing list
+
+Desc: Suspend fails & system is unusable after attempt (Dell XPS 13 9350 / Skylake)
+Repo: 2016-09-08 https://bugzilla.kernel.org/show_bug.cgi?id=156361
+Stat: n/a 
+Note: quite new
+
+Desc: CPU speed set very low
+Repo: 2016-09-09 https://lkml.org/lkml/2016/9/9/608
+Stat: n/a 
+Note: quite new
+
+== Going to be removed from the list ==
+
+Desc: [lkp] [mm, page_alloc] e6cbd7f2ef: pixz.throughput -5.1% regression due to mm, page_alloc: remove fair zone allocation policy
+Repo: 2016-08-08 https://marc.info/?l=linux-kernel&m=147064515210332&w=3
+Stat: 2016-08-30 https://lkml.org/lkml/2016/8/30/176
+Note: Quoting Mel: Drop it for the moment. My expectation is that it's a relatively minor hazard. […]
+
+Desc: Intermittent crash on reboot (acpi_ex_system_reset_event)
+Repo: 2016-08-04 https://bugzilla.kernel.org/show_bug.cgi?id=151441
+Stat: 2016-08-15 https://bugzilla.kernel.org/show_bug.cgi?id=151441#c7
+Note: reporter stopped seeing this crash
+
+Desc: Commit cb4f71c429 deliberately changes order of network interfaces
+Repo: 2016-08-21 http://www.spinics.net/lists/kernel/msg2325600.html
+Stat: n/a 
+Note: long discussion if this is considered a regression at all; mentioned it in the last report to make sure people are aware of the issue; nothing happened since then, so I assume people do not consider it a regression
 
 
-Thanks,
-- Simon
+== Fixed since last report ==
+
+Desc: irqdomain: Don't set type when mapping an IRQ breaks nexus7 gpio buttons
+Repo: 2016-07-30 https://marc.info/?l=linux-kernel&m=146985356305280&w=2
+Fix:  https://git.kernel.org/torvalds/c/1e12c4a9393b75a744aada2c8115434572698bc3
+
+Desc: imx-drm: Possible regression after update to atomic: black screen after Weston starts
+Repo: 2016-08-13 http://www.spinics.net/lists/kernel/msg2320013.html
+Fix:  https://git.kernel.org/torvalds/c/c6c1f9bc798bee7cfc2e172cd2c9b48187d801a7
+
+Desc: Bluetooth: Fix bt_sock_recvmsg when MSG_TRUNC is not set
+Repo: 2016-08-25 http://www.spinics.net/lists/linux-bluetooth/msg68012.html
+Fix:  https://git.kernel.org/torvalds/c/90a56f72edb088c678083c32d05936c7c8d9a948
