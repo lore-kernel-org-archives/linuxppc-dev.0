@@ -1,16 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sY25S0lQtzDsNS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 08:09:00 +1000 (AEST)
-In-Reply-To: <1473648890-17909-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sY25T0W0lzDsNS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 08:09:01 +1000 (AEST)
+In-Reply-To: <1473225390-4281-1-git-send-email-ego@linux.vnet.ibm.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mroos@linux.ee
-Subject: Re: powerpc/kernel: Fix size of NUM_CPU_FTR_KEYS on 32-bit
-Message-Id: <3sY25R5SPmz9sfH@ozlabs.org>
-Date: Tue, 13 Sep 2016 08:08:59 +1000 (AEST)
+Cc: "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Neuling <michael.neuling@au1.ibm.com>
+Subject: Re: powernv: Restore SPRs correctly upon wake up from hypervisor
+ state loss
+Message-Id: <3sY25S6bdKz9sdn@ozlabs.org>
+Date: Tue, 13 Sep 2016 08:09:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,25 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-12-09 at 02:54:50 UTC, Michael Ellerman wrote:
-> The number of CPU feature keys is meant to map 1:1 to the number of CPU
-> feature flags defined in cputable.h, and the latter must fit in an
-> unsigned long.
+On Wed, 2016-07-09 at 05:16:30 UTC, "Gautham R. Shenoy" wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> In commit 4db7327194db ("powerpc: Add option to use jump label for
-> cpu_has_feature()"), I incorrectly defined NUM_CPU_FTR_KEYS to 64.
+> pnv_wakeup_tb_loss function currently expects the cr4 to be "eq" if
+> the CPU is waking up from a complete hypervisor state loss. Hence, it
+> currently restores the SPR contents only if cr4 is "eq".
 > 
-> There should be no real adverse consequences of this bug, other than us
-> allocating too many keys.
+> However, after the commit bcef83a00dc4 ("powerpc/powernv: Add platform
+> support for stop instruction"), on ISA_V300 CPUs, the function
+> pnv_restore_hyp_resource sets cr4 to contain the result of the
+> comparison between state the CPU has woken up and the first deepest
+> stop state before calling pnv_wakeup_tb_loss.
 > 
-> Fix it by using BITS_PER_LONG.
+> Thus if the CPU woke up from a state that is deeper than the first
+> deepest stop state, cr4 have "gt" set and hence, pnv_wakeup_tb_loss
+> will fail to restore the SPRs on waking up from such a state.
 > 
-> Fixes: 4db7327194db ("powerpc: Add option to use jump label for cpu_has_feature()")
-> Tested-by: Meelis Roos <mroos@linux.ee>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fix the code in pnv_wakeup_tb_loss to restore the SPR states when cr4 is
+> "eq" or "gt".
+> 
+> Fixes: Commit bcef83a00dc4 ("powerpc/powernv: Add platform support for stop instruction")
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Reviewed-by: Shreyas B. Prabhu <shreyasbp@gmail.com>
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/ffed15d3ce3f710b94e6f402e1
+https://git.kernel.org/powerpc/c/bd00a240dc52e28706fbbe3ace
 
 cheers
