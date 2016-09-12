@@ -1,28 +1,15 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sXY9b3LdkzDsMB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 13:25:55 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id x24so7405932pfa.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Sep 2016 20:25:55 -0700 (PDT)
-Date: Sun, 11 Sep 2016 21:58:57 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Cyril Bur <cyrilbur@gmail.com>, Michael Neuling <mikey@neuling.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Amanieu d'Antras <amanieu@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: set used_vsr/used_vr/used_spe in sigreturn path
- when MSR bits are active
-Message-ID: <20160911135857.GA1137@simonLocalRHEL7.x64>
-References: <1469520361-9035-1-git-send-email-wei.guo.simon@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1469520361-9035-1-git-send-email-wei.guo.simon@gmail.com>
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sXZKL0j2szDsMB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 14:17:42 +1000 (AEST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Russell Currey <ruscur@russell.cc>
+Subject: [PATCH 1/3] powerpc/eeh: Null check uses of eeh_pe_bus_get
+Date: Mon, 12 Sep 2016 14:17:22 +1000
+Message-Id: <20160912041724.16646-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,33 +19,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 26, 2016 at 04:06:01PM +0800, wei.guo.simon@gmail.com wrote:
-> From: Simon Guo <wei.guo.simon@gmail.com>
-> 
-> Normally, when MSR[VSX/VR/SPE] bits = 1, the used_vsr/used_vr/used_spe
-> bit have already been set. However signal frame locates at user space
-> and it is controlled by user application. It is up to kernel to make
-> sure used_vsr/used_vr/used_spe(in kernel)=1 and consistent with MSR
-> bits.
-> 
-> For example, CRIU application, who utilizes sigreturn to restore
-> checkpointed process, will lead to the case where MSR[VSX] bit is
-> active in signal frame, but used_vsx bit is not set. (the same applies
-> to VR/SPE).
-> 
-> This patch will reinforce this at kernel by always setting used_* bit
-> when MSR related bits are active in signal frame and we are doing
-> sigreturn.
-> 
-> This patch is based on Ben's Proposal.
-> 
-Hi Michael,
+eeh_pe_bus_get() can return NULL if a PCI bus isn't found for a given PE.
+Some callers don't check this, and can cause a null pointer dereference
+under certain circumstances.
 
-Just a ping for this patch. 
-The history locates at:
-http://linuxppc.10917.n7.nabble.com/PATCH-v4-powerpc-Export-thread-struct-used-vr-used-vsr-to-user-space-td110147.html#a110161
+Fix this by checking NULL everywhere eeh_pe_bus_get() is called.
 
-If any addtional work required, please let me know.
+Cc: stable #3.10+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/kernel/eeh_driver.c             | 8 ++++++++
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 5 +++++
+ 2 files changed, 13 insertions(+)
 
-Thanks,
-- Simon
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 5f36e8a..29aa8d1 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -994,6 +994,14 @@ static void eeh_handle_special_event(void)
+ 				/* Notify all devices to be down */
+ 				eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+ 				bus = eeh_pe_bus_get(phb_pe);
++				if (!bus) {
++					pr_err("%s: Cannot find PCI bus for "
++					       "PHB#%d-PE#%x\n",
++					       __func__,
++					       pe->phb->global_number,
++					       pe->addr);
++					break;
++				}
+ 				eeh_pe_dev_traverse(pe,
+ 					eeh_report_failure, NULL);
+ 				pci_hp_remove_devices(bus);
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 86544ea..cb08e6a 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -1091,6 +1091,11 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
+ 	}
+ 
+ 	bus = eeh_pe_bus_get(pe);
++	if (!bus) {
++		pr_err("%s: Cannot find PCI bus for PHB#%d-PE#%x\n",
++			__func__, pe->phb->global_number, pe->addr);
++		return -EIO;
++	}
+ 	if (pe->type & EEH_PE_VF)
+ 		return pnv_eeh_reset_vf_pe(pe, option);
+ 
+-- 
+2.9.3
