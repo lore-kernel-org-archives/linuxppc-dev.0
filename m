@@ -1,29 +1,23 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sXfjG6Rf8zDsPC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 17:35:14 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id i75so2777657pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 00:35:14 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Cyril Bur <cyrilbur@gmail.com>, Chris Smart <chris@distroguy.com>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Michael Neuling <mikey@neuling.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Simon Guo <wei.guo.simon@gmail.com>, Jack Miller <jack@codezen.org>,
- Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Subject: [PATCH v14 15/15] selftests/powerpc: Fix a build issue
-Date: Mon, 12 Sep 2016 15:33:25 +0800
-Message-Id: <1473665605-11890-16-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sXftN3BStzDsZw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 17:43:08 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Borislav Petkov <bp@alien8.de>, dougthompson@xmission.com,
+ mchehab@kernel.org, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] drivers/edac: NO_IRQ removal from powerpc-only drivers
+Date: Mon, 12 Sep 2016 09:36:22 +0200
+Message-ID: <4413035.eY2sIBJ9x6@wuerfel>
+In-Reply-To: <874m5lrafq.fsf@concordia.ellerman.id.au>
+References: <1473501428-8217-1-git-send-email-mpe@ellerman.id.au>
+ <20160910145320.bg6s6wo5ya7zzw2n@pd.tnic>
+ <874m5lrafq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,55 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+On Monday, September 12, 2016 2:47:37 PM CEST Michael Ellerman wrote:
+> >> @@ -1058,7 +1058,7 @@ static int mpc85xx_mc_err_probe(struct platform_device *op)
+> >>  
+> >>      pdata = mci->pvt_info;
+> >>      pdata->name = "mpc85xx_mc_err";
+> >> -    pdata->irq = NO_IRQ;
+> >> +    pdata->irq = 0;
+> >>      mci->pdev = &op->dev;
+> >>      pdata->edac_idx = edac_mc_idx++;
+> >>      dev_set_drvdata(mci->pdev, mci);
+> >
+> > That part went into drivers/edac/fsl_ddr_edac.c which is only the
+> > freescale memory controller being shared between ARM and PPC, see
+> >
+> > http://git.kernel.org/cgit/linux/kernel/git/bp/bp.git/log/?h=for-next
+> >
+> > But that shouldn't change the issue wrt ->irq as now it is implicitly 0.
+> 
+> Ah OK.
+> 
+> NO_IRQ is -1 on ARM (or at least it can be?), see arch/arm/include/asm/irq.h.
+> 
+> So I'll leave that one alone for now.
 
-Fixes the following build failure -
+I don't think there is any way to build the mpc85xx on ARM, it depends
+on the powerpc-specific "FSL_SOC" symbol and it uses the in_be32/out_be32
+MMIO helpers that are not defined on ARM.
 
-cp_abort.c:90:3: error: ‘for’ loop initial declarations are only
-allowed in C99 or C11 mode
-   for (int i = 0; i < NUM_LOOPS; i++) {
-   ^
-cp_abort.c:90:3: note: use option -std=c99, -std=gnu99, -std=c11 or
--std=gnu11 to compile your code
-cp_abort.c:97:3: error: ‘for’ loop initial declarations are only
-allowed in C99 or C11 mode
-   for (int i = 0; i < NUM_LOOPS; i++) {
+I've sent patches to remove all uses of NO_IRQ that happen on ARM.
+Please remove this instance too.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- tools/testing/selftests/powerpc/context_switch/cp_abort.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/tools/testing/selftests/powerpc/context_switch/cp_abort.c b/tools/testing/selftests/powerpc/context_switch/cp_abort.c
-index 5a5b55a..1ce7dce 100644
---- a/tools/testing/selftests/powerpc/context_switch/cp_abort.c
-+++ b/tools/testing/selftests/powerpc/context_switch/cp_abort.c
-@@ -67,7 +67,7 @@ int test_cp_abort(void)
- 	/* 128 bytes for a full cache line */
- 	char buf[128] __cacheline_aligned;
- 	cpu_set_t cpuset;
--	int fd1[2], fd2[2], pid;
-+	int fd1[2], fd2[2], pid, i;
- 	char c;
- 
- 	/* only run this test on a P9 or later */
-@@ -87,14 +87,14 @@ int test_cp_abort(void)
- 	FAIL_IF(pid < 0);
- 
- 	if (!pid) {
--		for (int i = 0; i < NUM_LOOPS; i++) {
-+		for (i = 0; i < NUM_LOOPS; i++) {
- 			FAIL_IF((write(fd1[WRITE_FD], &c, 1)) != 1);
- 			FAIL_IF((read(fd2[READ_FD], &c, 1)) != 1);
- 			/* A paste succeeds if CR0 EQ bit is set */
- 			FAIL_IF(paste(buf) & 0x20000000);
- 		}
- 	} else {
--		for (int i = 0; i < NUM_LOOPS; i++) {
-+		for (i = 0; i < NUM_LOOPS; i++) {
- 			FAIL_IF((read(fd1[READ_FD], &c, 1)) != 1);
- 			copy(buf);
- 			FAIL_IF((write(fd2[WRITE_FD], &c, 1) != 1));
--- 
-1.8.3.1
+	Arnd
