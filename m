@@ -1,17 +1,43 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sXZSx3SbRzDsMB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 14:24:17 +1000 (AEST)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Russell Currey <ruscur@russell.cc>
-Subject: [PATCH 2/3] powernv/eeh: Skip finding bus for VF resets
-Date: Mon, 12 Sep 2016 14:17:23 +1000
-Message-Id: <20160912041724.16646-2-ruscur@russell.cc>
-In-Reply-To: <20160912041724.16646-1-ruscur@russell.cc>
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sXZpR69P0zDsMB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 14:39:26 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8C4bpjQ005847
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 00:39:24 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25ce5wm6bn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 00:39:24 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 12 Sep 2016 14:39:21 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 443F82CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 14:39:20 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8C4dKrK62324990
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 14:39:20 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8C4dKSp008488
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 14:39:20 +1000
+Subject: Re: [PATCH 1/3] powerpc/eeh: Null check uses of eeh_pe_bus_get
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 References: <20160912041724.16646-1-ruscur@russell.cc>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Mon, 12 Sep 2016 14:39:19 +1000
+MIME-Version: 1.0
+In-Reply-To: <20160912041724.16646-1-ruscur@russell.cc>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <56556240-3093-54b9-cce8-a2d6a24bfc32@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,41 +47,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the PE used in pnv_eeh_reset() is that of a VF,
-pnv_eeh_reset_vf_pe() is used.  Unlike the other reset functions called
-in pnv_eeh_reset(), the VF reset doesn't require a bus, and if a bus was
-missing the function would error out before resetting the VF PE.
+On 12/09/16 14:17, Russell Currey wrote:
+> eeh_pe_bus_get() can return NULL if a PCI bus isn't found for a given PE.
+> Some callers don't check this, and can cause a null pointer dereference
+> under certain circumstances.
+>
+> Fix this by checking NULL everywhere eeh_pe_bus_get() is called.
+>
+> Cc: stable #3.10+
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-To avoid this, reorder the VF reset function to occur before finding and
-checking the bus.
+Looks good to me.
 
-Cc: stable #3.10+
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index cb08e6a..68f1a85 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1090,14 +1090,15 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
- 		}
- 	}
- 
-+	if (pe->type & EEH_PE_VF)
-+		return pnv_eeh_reset_vf_pe(pe, option);
-+
- 	bus = eeh_pe_bus_get(pe);
- 	if (!bus) {
- 		pr_err("%s: Cannot find PCI bus for PHB#%d-PE#%x\n",
- 			__func__, pe->phb->global_number, pe->addr);
- 		return -EIO;
- 	}
--	if (pe->type & EEH_PE_VF)
--		return pnv_eeh_reset_vf_pe(pe, option);
- 
- 	if (pci_is_root_bus(bus) ||
- 	    pci_is_root_bus(bus->parent))
 -- 
-2.9.3
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
