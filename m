@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvF3TR2zDrp3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:25 +1000 (AEST)
-In-Reply-To: <48ba9b706b8.834928d@auth.smtp.1and1.co.uk>
-To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvJ4cLxzDsTV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:28 +1000 (AEST)
+In-Reply-To: <1473139963-7496-1-git-send-email-dja@axtens.net>
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: olof@lixom.net, Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: [RFC,1/3] powerpc/pasemi: Add Nemo motherboard config option.
-Message-Id: <3sYNvF29msz9svs@ozlabs.org>
-Date: Tue, 13 Sep 2016 22:16:25 +1000 (AEST)
+Cc: Daniel Axtens <dja@axtens.net>
+Subject: Re: [v2,1/5] powerpc/cell: drop unused iic_get_irq_host()
+Message-Id: <3sYNvJ3kRSz9t0J@ozlabs.org>
+Date: Tue, 13 Sep 2016 22:16:28 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,16 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-31-08 at 12:24:34 UTC, Darren Stevens wrote:
-> Add config option for the Nemo motherboard used in the Amigaone X1000.
->     This is a custom PASemi board with an AMD SB600 southbridge, and needs
->     some patches to it device tree. This option will be used to build these
->     into the kernel
+On Tue, 2016-06-09 at 05:32:39 UTC, Daniel Axtens wrote:
+> Sparse checking revealed that it is no longer used.
+> There is an EXPORT_SYMBOL_GPL, but there's no header that
+> provides a prototype, so nothing should be using it anyway.
 > 
->     Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+> Remove it.
+> 
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/88c13e2f4f0487a67f9eed044b
+https://git.kernel.org/powerpc/c/bc42f1d9f5b31060a3c6b83983
 
 cheers
