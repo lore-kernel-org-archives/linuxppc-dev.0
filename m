@@ -1,35 +1,28 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYJYY096pzDsTN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 19:00:48 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8D8xwvV069465
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 05:00:47 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25dyk81aam-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 05:00:46 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Tue, 13 Sep 2016 03:00:45 -0600
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-To: bhelgaas@google.com
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alex.williamson@redhat.com, paulus@samba.org, aik@ozlabs.ru,
- gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
- mpe@ellerman.id.au, zhong@linux.vnet.ibm.com
-Subject: [PATCH v5 4/4] PCI: Add a macro to set default alignment for all PCI
- devices
-Date: Tue, 13 Sep 2016 17:00:34 +0800
-In-Reply-To: <1473757234-5284-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1473757234-5284-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Message-Id: <1473757234-5284-5-git-send-email-xyjxie@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYJqX60JjzDrfR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 19:12:56 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id z84so1021587pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 02:12:56 -0700 (PDT)
+Date: Tue, 13 Sep 2016 19:12:44 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michal Marek <mmarek@suse.cz>, linux-arch@vger.kernel.org, Kees Cook
+ <keescook@chromium.org>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: linux-next: manual merge of the kbuild tree with Linus' tree
+Message-ID: <20160913191244.117b544f@roar.ozlabs.ibm.com>
+In-Reply-To: <14221699.K7eb6JGeeL@wuerfel>
+References: <20160912113224.792b24f0@canb.auug.org.au>
+ <20160913093945.521a28b4@canb.auug.org.au>
+ <20160913140257.6d2de178@canb.auug.org.au>
+ <14221699.K7eb6JGeeL@wuerfel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,55 +32,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When vfio passthroughs a PCI device of which MMIO BARs are
-smaller than PAGE_SIZE, guest will not handle the mmio
-accesses to the BARs which leads to mmio emulations in host.
+On Tue, 13 Sep 2016 09:48:03 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-This is because vfio will not allow to passthrough one BAR's
-mmio page which may be shared with other BARs. Otherwise,
-there will be a backdoor that guest can use to access BARs
-of other guest.
+> On Tuesday, September 13, 2016 2:02:57 PM CEST Stephen Rothwell wrote:
+> > [For the new cc's, we are discussing the "thin archives" and "link dead
+> > code/data elimination" patches in the kbuild tree.]
+> > 
+> > On Tue, 13 Sep 2016 09:39:45 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:  
+> > >
+> > > On Mon, 12 Sep 2016 11:03:08 +0200 Michal Marek <mmarek@suse.cz> wrote:  
+> > > >
+> > > > On 2016-09-12 04:53, Nicholas Piggin wrote:    
+> > > > > Question, what is the best way to merge dependent patches? Considering
+> > > > > they will need a good amount of architecture testing, I think they will
+> > > > > have to go via arch trees. But it also does not make sense to merge these
+> > > > > kbuild changes upstream first, without having tested them.      
+> > > > 
+> > > > I think it makes sense to merge the kbuild changes via kbuild.git, even
+> > > > if they are unused and untested. Any follow-up fixes required to enable
+> > > > the first architecture can go through the respective architecture tree.
+> > > > Does that sound OK?    
+> > > 
+> > > And if you guarantee not to rebase the kbuild tree (or at least the
+> > > subset containing these patches), then each of the architecture trees
+> > > can just merge your tree (or a tag?) and then implement any necessary
+> > > arch dependent changes.  I fixes are necessary, they can also be merged
+> > > into the architecture trees.  
+> > 
+> > Except, of course, the kbuild tree still has the asm EXPORT_SYMBOL
+> > patches that produce warnings on PowerPC  (And I am still reverting
+> > the PowerPC specific one of those patches).  
+> 
+> Is that really powerpc specific? I have the same problem on ARM
+> and I don't see how any architecture would not have it.
+> 
+> I prototyped the patch below, which fixes it for me, but I have
+> not dared submit that workaround because it's butt ugly.
 
-This patch adds a macro to set default alignment for all
-PCI devices. Then we could solve this issue on some platforms
-which would easily hit this issue because of their 64K page
-such as PowerNV platform by defining this macro as PAGE_SIZE.
+No it's not powerpc specific, it's just that powerpc build dies
+if there are unresolved relocations.
 
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pci.h |    4 ++++
- drivers/pci/pci.c              |    4 ++++
- 2 files changed, 8 insertions(+)
+Interesting approach. I have something different that may rival
+yours for ugliness, but maybe keeps the muck a bit more contained.
+I was just about to submit it, but now I'll wait to see if there is
+a preference between the approaches:
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index e9bd6cf..5e31bc2 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -28,6 +28,10 @@
- #define PCIBIOS_MIN_IO		0x1000
- #define PCIBIOS_MIN_MEM		0x10000000
+(Note this patch alone does not resolve all export symbols, each
+arch next needs to add C prototypes for their .S exports)
+
+ scripts/Makefile.build | 71 +++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 65 insertions(+), 6 deletions(-)
+
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 11602e5..1e89908 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -158,7 +158,8 @@ cmd_cpp_i_c       = $(CPP) $(c_flags) -o $@ $<
+ $(obj)/%.i: $(src)/%.c FORCE
+ 	$(call if_changed_dep,cpp_i_c)
  
-+#ifdef CONFIG_PPC_POWERNV
-+#define PCIBIOS_DEFAULT_ALIGNMENT	PAGE_SIZE
-+#endif
+-cmd_gensymtypes =                                                           \
++# These mirror gensymtypes_S and co below, keep them in synch.
++cmd_gensymtypes_c =                                                         \
+     $(CPP) -D__GENKSYMS__ $(c_flags) $< |                                   \
+     $(GENKSYMS) $(if $(1), -T $(2))                                         \
+      $(patsubst y,-s _,$(CONFIG_HAVE_UNDERSCORE_SYMBOL_PREFIX))             \
+@@ -168,7 +169,7 @@ cmd_gensymtypes =                                                           \
+ quiet_cmd_cc_symtypes_c = SYM $(quiet_modtag) $@
+ cmd_cc_symtypes_c =                                                         \
+     set -e;                                                                 \
+-    $(call cmd_gensymtypes,true,$@) >/dev/null;                             \
++    $(call cmd_gensymtypes_c,true,$@) >/dev/null;                           \
+     test -s $@ || rm -f $@
+ 
+ $(obj)/%.symtypes : $(src)/%.c FORCE
+@@ -197,9 +198,10 @@ else
+ #   the actual value of the checksum generated by genksyms
+ 
+ cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
+-cmd_modversions =								\
 +
- struct pci_dev;
++cmd_modversions_c =								\
+ 	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then		\
+-		$(call cmd_gensymtypes,$(KBUILD_SYMTYPES),$(@:.o=.symtypes))	\
++		$(call cmd_gensymtypes_c,$(KBUILD_SYMTYPES),$(@:.o=.symtypes))	\
+ 		    > $(@D)/.tmp_$(@F:.o=.ver);					\
+ 										\
+ 		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 			\
+@@ -267,13 +269,14 @@ endif # CONFIG_STACK_VALIDATION
+ define rule_cc_o_c
+ 	$(call echo-cmd,checksrc) $(cmd_checksrc)			  \
+ 	$(call cmd_and_fixdep,cc_o_c)					  \
+-	$(cmd_modversions)						  \
++	$(cmd_modversions_c)						  \
+ 	$(cmd_objtool)						          \
+ 	$(call echo-cmd,record_mcount) $(cmd_record_mcount)
+ endef
  
- /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 37f8062..9c61cbe 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4959,6 +4959,10 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
- 	resource_size_t align = 0;
- 	char *p;
+ define rule_as_o_S
+ 	$(call cmd_and_fixdep,as_o_S)					  \
++	$(cmd_modversions_S)						  \
+ 	$(cmd_objtool)
+ endef
  
-+#ifdef PCIBIOS_DEFAULT_ALIGNMENT
-+	align = PCIBIOS_DEFAULT_ALIGNMENT;
-+	*resize = false;
-+#endif
- 	spin_lock(&resource_alignment_lock);
- 	p = resource_alignment_param;
- 	if (pci_has_flag(PCI_PROBE_ONLY)) {
+@@ -313,6 +316,32 @@ modkern_aflags := $(KBUILD_AFLAGS_KERNEL) $(AFLAGS_KERNEL)
+ $(real-objs-m)      : modkern_aflags := $(KBUILD_AFLAGS_MODULE) $(AFLAGS_MODULE)
+ $(real-objs-m:.o=.s): modkern_aflags := $(KBUILD_AFLAGS_MODULE) $(AFLAGS_MODULE)
+ 
++# .S file exports must have their C prototypes defined in asm/asm-prototypes.h
++# or a file that it includes, in order to get versioned symbols. We build a
++# dummy C file that includes asm-prototypes and the EXPORT_SYMBOL lines from
++# the .S file (with trailing ';'), and run genksyms on that, to extract vers.
++#
++# These mirror gensymtypes_c and co above, keep them in synch.
++cmd_gensymtypes_S =                                                         \
++    (echo "\#include <linux/kernel.h>" ;                                    \
++     echo "\#include <asm/asm-prototypes.h>" ;                              \
++     grep EXPORT_SYMBOL $< | sed 's/$$/;/' ) |                              \
++    $(CPP) -D__GENKSYMS__ $(c_flags) -xc - |                                \
++    $(GENKSYMS) $(if $(1), -T $(2))                                         \
++     $(patsubst y,-s _,$(CONFIG_HAVE_UNDERSCORE_SYMBOL_PREFIX))             \
++     $(if $(KBUILD_PRESERVE),-p)                                            \
++     -r $(firstword $(wildcard $(2:.symtypes=.symref) /dev/null))
++
++quiet_cmd_cc_symtypes_S = SYM $(quiet_modtag) $@
++cmd_cc_symtypes_S =                                                         \
++    set -e;                                                                 \
++    $(call cmd_gensymtypes_S,true,$@) >/dev/null;                           \
++    test -s $@ || rm -f $@
++
++$(obj)/%.symtypes : $(src)/%.S FORCE
++	$(call cmd,cc_symtypes_S)
++
++
+ quiet_cmd_cpp_s_S = CPP $(quiet_modtag) $@
+ cmd_cpp_s_S       = $(CPP) $(a_flags) -o $@ $<
+ 
+@@ -320,7 +349,37 @@ $(obj)/%.s: $(src)/%.S FORCE
+ 	$(call if_changed_dep,cpp_s_S)
+ 
+ quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
+-cmd_as_o_S       = $(CC) $(a_flags) -c -o $@ $<
++
++ifndef CONFIG_MODVERSIONS
++cmd_as_o_S = $(CC) $(a_flags) -c -o $@ $<
++
++else
++
++ASM_PROTOTYPES := $(wildcard $(srctree)/arch/$(SRCARCH)/include/asm/asm-prototypes.h)
++
++ifeq ($(ASM_PROTOTYPES),)
++cmd_as_o_S = $(CC) $(a_flags) -c -o $@ $<
++
++else
++
++# versioning matches the C process described above, with difference that
++# we parse asm-prototypes.h C header to get function definitions.
++
++cmd_as_o_S = $(CC) $(a_flags) -c -o $(@D)/.tmp_$(@F) $<
++
++cmd_modversions_S =								\
++	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then		\
++		$(call cmd_gensymtypes_S,$(KBUILD_SYMTYPES),$(@:.o=.symtypes))	\
++		    > $(@D)/.tmp_$(@F:.o=.ver);					\
++										\
++		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 			\
++			-T $(@D)/.tmp_$(@F:.o=.ver);				\
++		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);		\
++	else									\
++		mv -f $(@D)/.tmp_$(@F) $@;					\
++	fi;
++endif
++endif
+ 
+ $(obj)/%.o: $(src)/%.S $(objtool_obj) FORCE
+ 	$(call if_changed_rule,as_o_S)
 -- 
-1.7.9.5
+2.9.3
