@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvJ4cLxzDsTV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:28 +1000 (AEST)
-In-Reply-To: <1473139963-7496-1-git-send-email-dja@axtens.net>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvK3QGYzDsTp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:29 +1000 (AEST)
+In-Reply-To: <1469510970-11599-2-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Daniel Axtens <dja@axtens.net>
-Subject: Re: [v2,1/5] powerpc/cell: drop unused iic_get_irq_host()
-Message-Id: <3sYNvJ3kRSz9t0J@ozlabs.org>
-Date: Tue, 13 Sep 2016 22:16:28 +1000 (AEST)
+Cc: Nick Piggin <npiggin@gmail.com>
+Subject: Re: [2/2] powerpc/64: Do load of PACAKBASE in LOAD_HANDLER
+Message-Id: <3sYNvK281Vz9t0G@ozlabs.org>
+Date: Tue, 13 Sep 2016 22:16:29 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-06-09 at 05:32:39 UTC, Daniel Axtens wrote:
-> Sparse checking revealed that it is no longer used.
-> There is an EXPORT_SYMBOL_GPL, but there's no header that
-> provides a prototype, so nothing should be using it anyway.
+On Tue, 2016-26-07 at 05:29:30 UTC, Michael Ellerman wrote:
+> The LOAD_HANDLER macro requires that you have previously loaded "reg"
+> with PACAKBASE. Although that gives callers flexibility to get PACAKBASE
+> in some interesting way, none of the callers actually do that. So fold
+> the load of PACAKBASE into the macro, making it simpler for callers to
+> use correctly.
 > 
-> Remove it.
-> 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Nick Piggin <npiggin@gmail.com>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/bc42f1d9f5b31060a3c6b83983
+https://git.kernel.org/powerpc/c/d8d42b0511fefc78165ee9b4c2
 
 cheers
