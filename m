@@ -1,27 +1,20 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYBfc3z4BzDrp5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 14:34:48 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id ph5so2564275pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 21:34:48 -0700 (PDT)
-Subject: Re: [RFC] KVM: PPC: Book3S HV: Fall back to same size HPT in
- allocation ioctl
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-References: <1473678797-22069-1-git-send-email-khandual@linux.vnet.ibm.com>
- <CAKTCnz=W4JD2n-Gne2f1WpstPvKnVHRGaB485ibRdmvmGfF0jA@mail.gmail.com>
- <57D77B8F.6030801@linux.vnet.ibm.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYBrB53jszDsQd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 14:43:06 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id 128so9045251pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 21:43:06 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <f76332f8-d4b2-043c-1e72-da0f7cb12758@gmail.com>
-Date: Tue, 13 Sep 2016 14:34:41 +1000
-MIME-Version: 1.0
-In-Reply-To: <57D77B8F.6030801@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Balbir Singh <bsingharora@gmail.com>, Paul Mackerras <paulus@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH v1] Fix __tlbiel in hash_native_64
+Date: Tue, 13 Sep 2016 14:42:41 +1000
+Message-Id: <1473741761-2795-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +24,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+__tlbie and __tlbiel are out of sync. __tlbie does the right thing
+it calls tlbie with "tlbie rb, L" if CPU_FTR_ARCH_206 (cpu feature) is clear
+and with "tlbie rb" otherwise. During the cleanup of __tlbiel I noticed
+that __tlbiel was setting bit 11 PPC_BIT(21) independent of the ISA
+version for non-4k (L) pages. This patch fixes that issue. It also changes
+the current PPC_TLBIEL to PPC_TLBIEL_5 and introduces a new PPC_TLBIEL similar
+to PPC_TLBIE.
 
+The arguments to PPC_TLBIE have also been changed/switched in order
+to be consistent with the actual assembly usage for clearer reading
+of code.
 
-On 13/09/16 14:07, Anshuman Khandual wrote:
-> On 09/12/2016 05:03 PM, Balbir Singh wrote:
->> On Mon, Sep 12, 2016 at 9:13 PM, Anshuman Khandual
->> <khandual@linux.vnet.ibm.com> wrote:
->>>> When the HPT size is explicitly passed on from the userspace, currently
->>>> the KVM_PPC_ALLOCATE_HTAB will try to allocate the requested size of HPT
->>>> from reserved CMA area and if that is not possible, the allocation just
->>>> fails. With the commit 572abd563befd56 ("KVM: PPC: Book3S HV: Don't fall
->>>> back to smaller HPT size in allocation ioctl"), it does not even try to
->>>> allocate the same order pages from the page allocator before failing for
->>>> good. Same order allocation should be attempted from the page allocator
->>>> as a fallback option when the CMA allocation attempt fails.
->>>>
->>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->>>> ---
->>>> - This change saves guests from failing to start after migration
->>>>
->>>>  arch/powerpc/kvm/book3s_64_mmu_hv.c | 8 ++++++++
->>>>  1 file changed, 8 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->>>> index 05f09ae..0a30eb4 100644
->>>> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
->>>> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->>>> @@ -78,6 +78,14 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
->>>>                         --order;
->>>>         }
->>>>
->>>> +       /*
->>>> +        * Fallback in case the userspace has provided a size via ioctl.
->>>> +        * Try allocating the same order pages from the page allocator.
->>>> +        */
->>>> +       if (!hpt && order > PPC_MIN_HPT_ORDER && htab_orderp)
->>>> +               hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_REPEAT|
->>>> +                       __GFP_NOWARN, order - PAGE_SHIFT);
->>>> +
->> How often does this succeed? Please provide data. I presume this for
-> 
-> During continuous guest VM migration test from source host to destination host
-> this patch was able to prevent guest creation failure after migration on the
-> destination host which was failing after 2-3 days. We have not seen the failure
-> till now even after 3-4 days.
-> 
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
 
-OK.. the CMA failures need analysis. Are we just ignoring a CMA bug? IOW, why
-would CMA allocation fail -- CMA size is too small to accommodate the required
-number of allocations? 
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/include/asm/ppc-opcode.h |  9 ++++++---
+ arch/powerpc/mm/hash_native_64.c      | 14 ++++++++------
+ arch/powerpc/mm/tlb-radix.c           |  4 ++--
+ 3 files changed, 16 insertions(+), 11 deletions(-)
 
->> the case where guest pages are pinned?
-> 
-> Hmm, need to check that in the test setup. There was nothing running inside the
-> guests though. IIUC, HPT size of the guest is computed based on the max memory
-> the guest is ever going to have irrespective of the RAM usage before migration.
-> How does pinning effect the HPT size ?
-> 
-
-If the pinned pages (from anywhere) belong to CMA, then CMA allocations would start failing
-
-
-Balbir Singh
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 127ebf5..308004a 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -354,14 +354,17 @@
+ #define PPC_TLBILX_VA(a, b)	PPC_TLBILX(3, a, b)
+ #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
+ 					__PPC_WC(w))
+-#define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
+-					       ___PPC_RB(a) | ___PPC_RS(lp))
++#define PPC_TLBIE(rb,lp) 	stringify_in_c(.long PPC_INST_TLBIE | \
++					       ___PPC_RB(rb) | ___PPC_RS(lp))
+ #define	PPC_TLBIE_5(rb,rs,ric,prs,r) \
+ 				stringify_in_c(.long PPC_INST_TLBIE | \
+ 					___PPC_RB(rb) | ___PPC_RS(rs) | \
+ 					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
+ 					___PPC_R(r))
+-#define	PPC_TLBIEL(rb,rs,ric,prs,r) \
++#define	PPC_TLBIEL(rb,lp) \
++				stringify_in_c(.long PPC_INST_TLBIEL | \
++					___PPC_RB(rb) | ___PPC_RS(lp))
++#define	PPC_TLBIEL_5(rb,rs,ric,prs,r) \
+ 				stringify_in_c(.long PPC_INST_TLBIEL | \
+ 					___PPC_RB(rb) | ___PPC_RS(rs) | \
+ 					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 0e4e965..ae17d4c 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -74,7 +74,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 		va |= ssize << 8;
+ 		sllp = get_sllp_encoding(apsize);
+ 		va |= sllp << 5;
+-		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
++		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%0,%1), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+ 			     : "memory");
+ 		break;
+@@ -93,7 +93,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 		 */
+ 		va |= (vpn & 0xfe); /* AVAL */
+ 		va |= 1; /* L */
+-		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0), %2)
++		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%0,%1), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+ 			     : "memory");
+ 		break;
+@@ -123,8 +123,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 		va |= ssize << 8;
+ 		sllp = get_sllp_encoding(apsize);
+ 		va |= sllp << 5;
+-		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
+-			     : : "r"(va) : "memory");
++		asm volatile(ASM_FTR_IFCLR("tlbiel %0,0", PPC_TLBIEL(%0,%1), %2)
++			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
++			     : "memory");
+ 		break;
+ 	default:
+ 		/* We need 14 to 14 + i bits of va */
+@@ -141,8 +142,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 		 */
+ 		va |= (vpn & 0xfe);
+ 		va |= 1; /* L */
+-		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+-			     : : "r"(va) : "memory");
++		asm volatile(ASM_FTR_IFCLR("tlbiel %0,1", PPC_TLBIEL(%0,%1), %2)
++			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
++			     : "memory");
+ 		break;
+ 	}
+ 
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 48df05e..7d31440 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -35,7 +35,7 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
+ 	r = 1;   /* raidx format */
+ 
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
++	asm volatile(PPC_TLBIEL_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
+ }
+@@ -80,7 +80,7 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ 	r = 1;   /* raidx format */
+ 
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
++	asm volatile(PPC_TLBIEL_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
+ }
+-- 
+2.5.5
