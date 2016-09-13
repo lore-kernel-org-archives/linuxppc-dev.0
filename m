@@ -1,26 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sY6Sl2tGGzDrHp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 11:25:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sY6wG0WXbzDrgX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 11:46:22 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Colin King <colin.king@canonical.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- Kevin Hao <haokexin@gmail.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/32: add missing \n at end of printk warning
- message
-In-Reply-To: <fcc50e93-5009-496d-3251-b2d7ef820224@c-s.fr>
-References: <20160912101224.24877-1-colin.king@canonical.com>
- <fcc50e93-5009-496d-3251-b2d7ef820224@c-s.fr>
-Date: Tue, 13 Sep 2016 11:25:58 +1000
-Message-ID: <87sht4pp3t.fsf@concordia.ellerman.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>, Paolo Bonzini <pbonzini@redhat.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+ Daniel Axtens <dja@axtens.net>, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2] powerpc: move hmi.c to arch/powerpc/kvm/
+In-Reply-To: <20160912005621.GE9873@fergus.ozlabs.ibm.com>
+References: <1470920863-15375-1-git-send-email-pbonzini@redhat.com>
+ <20160912005621.GE9873@fergus.ozlabs.ibm.com>
+Date: Tue, 13 Sep 2016 11:46:21 +1000
+Message-ID: <87oa3spo5u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-> Le 12/09/2016 =C3=A0 12:12, Colin King a =C3=A9crit :
->> diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
->> index 448685f..b532dd9 100644
->> --- a/arch/powerpc/mm/init_32.c
->> +++ b/arch/powerpc/mm/init_32.c
->> @@ -137,7 +137,7 @@ void __init MMU_init(void)
->>  	if (memblock.memory.cnt > 1) {
->>  #ifndef CONFIG_WII
->>  		memblock_enforce_memory_limit(memblock.memory.regions[0].size);
->> -		printk(KERN_WARNING "Only using first contiguous memory region");
->> +		printk(KERN_WARNING "Only using first contiguous memory region\n");
+> On Thu, Aug 11, 2016 at 03:07:43PM +0200, Paolo Bonzini wrote:
+>> hmi.c functions are unused unless sibling_subcore_state is nonzero, and
+>> that in turn happens only if KVM is in use.  So move the code to
+>> arch/powerpc/kvm/, putting it under CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>> rather than CONFIG_PPC_BOOK3S_64.  The sibling_subcore_state is also
+>> included in struct paca_struct only if KVM is supported by the kernel.
+>> 
+>> Cc: Daniel Axtens <dja@axtens.net>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: kvm-ppc@vger.kernel.org
+>> Cc: kvm@vger.kernel.org
+>> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 >
-> This line was already 81 characters long. It is now 83.
+> Thanks, patch applied to my kvm-ppc-infrastructure branch, which is
+> merged into my kvm-ppc-next branch.
 
-That doesn't really bother me.
+Ben already merged this into the powerpc tree, which has since gone to
+Linus:
 
-> I would suggest to use pr_warn() instead in order to shorten the line.
-
-But I do like pr_warn(), it's less shouty.
-
-I'll fix it up when I apply it.
+  https://git.kernel.org/torvalds/c/7c379526d7e7
 
 cheers
