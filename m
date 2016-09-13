@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvD4cVnzDrp3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:24 +1000 (AEST)
-In-Reply-To: <1469510970-11599-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvF3TR2zDrp3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:25 +1000 (AEST)
+In-Reply-To: <48ba9b706b8.834928d@auth.smtp.1and1.co.uk>
+To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nick Piggin <npiggin@gmail.com>
-Subject: Re: [1/2] powerpc/64: Correct comment on LOAD_HANDLER()
-Message-Id: <3sYNvD3lCBz9snm@ozlabs.org>
-Date: Tue, 13 Sep 2016 22:16:24 +1000 (AEST)
+Cc: olof@lixom.net, Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: [RFC,1/3] powerpc/pasemi: Add Nemo motherboard config option.
+Message-Id: <3sYNvF29msz9svs@ozlabs.org>
+Date: Tue, 13 Sep 2016 22:16:25 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-26-07 at 05:29:29 UTC, Michael Ellerman wrote:
-> The comment for LOAD_HANDLER() was wrong. The part about kdump has not
-> been true since 1f6a93e4c35e ("powerpc: Make it possible to move the
-> interrupt handlers away from the kernel").
+On Wed, 2016-31-08 at 12:24:34 UTC, Darren Stevens wrote:
+> Add config option for the Nemo motherboard used in the Amigaone X1000.
+>     This is a custom PASemi board with an AMD SB600 southbridge, and needs
+>     some patches to it device tree. This option will be used to build these
+>     into the kernel
 > 
-> Describe how it currently works, and combine the two separate comments
-> into one.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Nick Piggin <npiggin@gmail.com>
+>     Signed-off-by: Darren Stevens <darren@stevens-zone.net>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/27510235dd2bb1ab01d27b01f0
+https://git.kernel.org/powerpc/c/88c13e2f4f0487a67f9eed044b
 
 cheers
