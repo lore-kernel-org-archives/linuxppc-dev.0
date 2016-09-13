@@ -1,41 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYFRN0WjfzDsQd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 16:40:15 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8D6bmNc113941
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 02:40:13 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25dwtxbwv7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 02:40:12 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 13 Sep 2016 16:40:10 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 12E432BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 16:40:07 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8D6e6gP2359732
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 16:40:06 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8D6e6ee019782
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 16:40:06 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYFRW5f0tzDsTW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 16:40:23 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id h5so8825719pao.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 23:40:23 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, fbarrat@linux.vnet.ibm.com,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/powernv: Fix the state of root PE
-Date: Tue, 13 Sep 2016 16:40:24 +1000
-Message-Id: <1473748824-21550-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, Paul Mackerras <paulus@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: [PATCH v2] Fix __tlbiel in hash_native_64
+Date: Tue, 13 Sep 2016 16:40:07 +1000
+Message-Id: <1473748807-9604-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,40 +25,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PE for root bus (root PE) can be removed because of PCI hot
-remove in EEH recovery path for fenced PHB error. We need update
-@phb->root_pe_populated accordingly so that the root PE can be
-populated again in forthcoming PCI hot add path. Also, the PE
-shouldn't be destroyed as it's global and reserved resource.
+__tlbie and __tlbiel are out of sync. __tlbie does the right thing
+it calls tlbie with "tlbie rb, L" if CPU_FTR_ARCH_206 (cpu feature) is clear
+and with "tlbie rb" otherwise. During the cleanup of __tlbiel I noticed
+that __tlbiel was setting bit 11 PPC_BIT(21) independent of the ISA
+version for non-4k (L) pages. This patch fixes that issue. It also changes
+the current PPC_TLBIEL to PPC_TLBIEL_5 and introduces a new PPC_TLBIEL similar
+to PPC_TLBIE.
 
-Fixes: c5f7700bbd2e ("powerpc/powernv: Dynamically release PE")
-Reported-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+The arguments to PPC_TLBIE have also been changed/switched in order
+to be consistent with the actual assembly usage for clearer reading
+of code.
+
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/ppc-opcode.h |  9 ++++++---
+ arch/powerpc/mm/hash_native_64.c      | 14 ++++++++------
+ arch/powerpc/mm/tlb-radix.c           |  4 ++--
+ 3 files changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index e98f4a8..c38a6a1 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3426,7 +3426,16 @@ static void pnv_ioda_release_pe(struct pnv_ioda_pe *pe)
- 		}
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 127ebf5..308004a 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -354,14 +354,17 @@
+ #define PPC_TLBILX_VA(a, b)	PPC_TLBILX(3, a, b)
+ #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
+ 					__PPC_WC(w))
+-#define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
+-					       ___PPC_RB(a) | ___PPC_RS(lp))
++#define PPC_TLBIE(rb,lp) 	stringify_in_c(.long PPC_INST_TLBIE | \
++					       ___PPC_RB(rb) | ___PPC_RS(lp))
+ #define	PPC_TLBIE_5(rb,rs,ric,prs,r) \
+ 				stringify_in_c(.long PPC_INST_TLBIE | \
+ 					___PPC_RB(rb) | ___PPC_RS(rs) | \
+ 					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
+ 					___PPC_R(r))
+-#define	PPC_TLBIEL(rb,rs,ric,prs,r) \
++#define	PPC_TLBIEL(rb,lp) \
++				stringify_in_c(.long PPC_INST_TLBIEL | \
++					___PPC_RB(rb) | ___PPC_RS(lp))
++#define	PPC_TLBIEL_5(rb,rs,ric,prs,r) \
+ 				stringify_in_c(.long PPC_INST_TLBIEL | \
+ 					___PPC_RB(rb) | ___PPC_RS(rs) | \
+ 					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 0e4e965..b3c34c8 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -74,7 +74,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 		va |= ssize << 8;
+ 		sllp = get_sllp_encoding(apsize);
+ 		va |= sllp << 5;
+-		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
++		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%0,%1), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+ 			     : "memory");
+ 		break;
+@@ -93,7 +93,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+ 		 */
+ 		va |= (vpn & 0xfe); /* AVAL */
+ 		va |= 1; /* L */
+-		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0), %2)
++		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%0,%1), %2)
+ 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+ 			     : "memory");
+ 		break;
+@@ -123,8 +123,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 		va |= ssize << 8;
+ 		sllp = get_sllp_encoding(apsize);
+ 		va |= sllp << 5;
+-		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
+-			     : : "r"(va) : "memory");
++		asm volatile(ASM_FTR_IFCLR("tlbiel %0,0", PPC_TLBIEL(%0,0), %1)
++			     : : "r" (va),  "i" (CPU_FTR_ARCH_206)
++			     : "memory");
+ 		break;
+ 	default:
+ 		/* We need 14 to 14 + i bits of va */
+@@ -141,8 +142,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+ 		 */
+ 		va |= (vpn & 0xfe);
+ 		va |= 1; /* L */
+-		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+-			     : : "r"(va) : "memory");
++		asm volatile(ASM_FTR_IFCLR("tlbiel %0,1", PPC_TLBIEL(%0,0), %1)
++			     : : "r" (va), "i" (CPU_FTR_ARCH_206)
++			     : "memory");
+ 		break;
  	}
  
--	pnv_ioda_free_pe(pe);
-+	/* The PE for root bus can be removed because of hotplug in EEH
-+	 * recovery for fenced PHB error. We need mark the PE dead so
-+	 * that it can be populated again in PCI hot add path. The PE
-+	 * shouldn't be destroyed as it's the global reserved resource.
-+	 */
-+	if (phb->ioda.root_pe_populated &&
-+	    phb->ioda.root_pe_idx == pe->pe_number)
-+		phb->ioda.root_pe_populated = false;
-+	else
-+		pnv_ioda_free_pe(pe);
- }
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 48df05e..7d31440 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -35,7 +35,7 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
+ 	r = 1;   /* raidx format */
  
- static void pnv_pci_release_device(struct pci_dev *pdev)
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
++	asm volatile(PPC_TLBIEL_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
+ }
+@@ -80,7 +80,7 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ 	r = 1;   /* raidx format */
+ 
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
++	asm volatile(PPC_TLBIEL_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
+ }
 -- 
-2.1.0
+2.5.5
