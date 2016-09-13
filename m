@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvT1PBWzDsTd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:37 +1000 (AEST)
-In-Reply-To: <20160828105900.10041-1-colin.king@canonical.com>
-To: Colin King <colin.king@canonical.com>, Geoff Levand <geoff@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvV0fjMzDsVP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:38 +1000 (AEST)
+In-Reply-To: <1473150519-30931-1-git-send-email-prasannatsmkumar@gmail.com>
+To: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>, olof@lixom.net,
+ linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ herbert@gondor.apana.org.au, mpm@selenic.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: powerpc/ps3: fix spelling mistake in function name
-Message-Id: <3sYNvT0gMVz9t1H@ozlabs.org>
+Cc: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+Subject: Re: hwrng: pasemi-rng - Use linux/io.h instead of asm/io.h
+Message-Id: <3sYNvT6H6Yz9t1T@ozlabs.org>
 Date: Tue, 13 Sep 2016 22:16:37 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,16 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-28-08 at 10:59:00 UTC, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
+On Tue, 2016-06-09 at 08:28:39 UTC, PrasannaKumar Muralidharan wrote:
+> Checkpatch.pl warns about usage of asm/io.h. Use linux/io.h instead.
 > 
-> Trivial fix to spelling mistake in dev_warn message and remove
-> extraneous trailing whitespace at end of the message.
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Signed-off-by: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6f95d4b2f655faaf38804999de
+https://git.kernel.org/powerpc/c/63019f3cab99c7acd27df5a5b8
 
 cheers
