@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvS3VjQzDsT4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:36 +1000 (AEST)
-In-Reply-To: <1473601453-9660-1-git-send-email-wei.guo.simon@gmail.com>
-To: Simon Guo <wei.guo.simon@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYNvT1PBWzDsTd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:16:37 +1000 (AEST)
+In-Reply-To: <20160828105900.10041-1-colin.king@canonical.com>
+To: Colin King <colin.king@canonical.com>, Geoff Levand <geoff@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Simon Guo <wei.guo.simon@gmail.com>, Daniel Axtens <dja@axtens.net>
-Subject: Re: [v2] powerpc/ptrace: Fix cppcheck issue in
- gpr32_set_common/gpr32_get_common()
-Message-Id: <3sYNvS2K8Gz9t1L@ozlabs.org>
-Date: Tue, 13 Sep 2016 22:16:36 +1000 (AEST)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: powerpc/ps3: fix spelling mistake in function name
+Message-Id: <3sYNvT0gMVz9t1H@ozlabs.org>
+Date: Tue, 13 Sep 2016 22:16:37 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-11-09 at 13:44:13 UTC, Simon Guo wrote:
-> From: Simon Guo <wei.guo.simon@gmail.com>
+On Sun, 2016-28-08 at 10:59:00 UTC, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> The ckpt_regs usage in gpr32_set_common/gpr32_get_common() will lead to
-> following cppcheck error at ifndef CONFIG_PPC_TRANSACTIONAL_MEM case:
+> Trivial fix to spelling mistake in dev_warn message and remove
+> extraneous trailing whitespace at end of the message.
 > 
-> [arch/powerpc/kernel/ptrace.c:2062]:
-> (error) Uninitialized variable: ckpt_regs
-> [arch/powerpc/kernel/ptrace.c:2130]:
-> (error) Uninitialized variable: ckpt_regs
-> 
-> The problem is due to gpr32_set_common() used ckpt_regs variable which
-> only makes sense at #ifdef CONFIG_PPC_TRANSACTIONAL_MEM.
-> 
-> This patch fix this issue by passing in "regs" parameter instead.
-> 
-> Reported-by: Daniel Axtens <dja@axtens.net>
-> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/261831160d4df6bafe2f0e12e6
+https://git.kernel.org/powerpc/c/6f95d4b2f655faaf38804999de
 
 cheers
