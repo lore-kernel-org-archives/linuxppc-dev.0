@@ -1,21 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sY8m42X2MzDsTK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 13:09:24 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id h5so8598218pao.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 20:09:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sY8m70jNYzDsTV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 13:09:27 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id ph5so2474370pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 20:09:27 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 7/8] powerpc/pseries: use single macro for both parts of OOL
- exception
-Date: Tue, 13 Sep 2016 13:08:45 +1000
-Message-Id: <20160913030846.29790-8-npiggin@gmail.com>
+Subject: [PATCH 8/8] powerpc/pseries: remove unused exception code,
+ small cleanups
+Date: Tue, 13 Sep 2016 13:08:46 +1000
+Message-Id: <20160913030846.29790-9-npiggin@gmail.com>
 In-Reply-To: <20160913030846.29790-1-npiggin@gmail.com>
 References: <20160913030846.29790-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,136 +27,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simple substitution. This is possible now that both parts of the OOL
-initial handler get linked into their correct location.
+This was not done before the big patches because I only noticed
+them afterwards. It has become much easier to see which handlers
+are branched to from which exception vectors now, and to see
+exactly what vector space is being used for what.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 55 ++++++++++++------------------------
- 1 file changed, 18 insertions(+), 37 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 5dd7f0b..a647779 100644
+index a647779..4d06af3 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -901,8 +901,7 @@ VECTOR_HANDLER_VIRT(single_step, 0x4d00, 0x4e00, 0xd00)
- TRAMP_KVM(PACA_EXGEN, 0xd00)
+@@ -89,6 +89,9 @@ USE_FIXED_SECTION(real_vectors)
+ 	.globl __start_interrupts
+ __start_interrupts:
+ 
++/* No virt vectors corresponding with 0x0..0x100 */
++VECTOR_HANDLER_VIRT_NONE(0x4000, 0x4100)
++
+ VECTOR_HANDLER_REAL_BEGIN(system_reset, 0x100, 0x200)
+ 	SET_SCRATCH0(r13)
+ #ifdef CONFIG_PPC_P7_NAP
+@@ -902,9 +905,7 @@ TRAMP_KVM(PACA_EXGEN, 0xd00)
  COMMON_HANDLER(single_step_common, 0xd00, single_step_exception)
  
--__VECTOR_HANDLER_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
--__TRAMP_HANDLER_REAL_OOL_HV(h_data_storage, 0xe00)
-+VECTOR_HANDLER_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
- VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e00, 0x4e20)
- 	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
- VECTOR_HANDLER_VIRT_END(unused, 0x4e00, 0x4e20)
-@@ -922,8 +921,7 @@ COMMON_HANDLER_END(h_data_storage_common)
- COMMON_HANDLER(trap_0e_common, 0xe00, unknown_exception)
+ VECTOR_HANDLER_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
+-VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e00, 0x4e20)
+-	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
+-VECTOR_HANDLER_VIRT_END(unused, 0x4e00, 0x4e20)
++VECTOR_HANDLER_VIRT_NONE(0x4e00, 0x4e20)
+ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0xe00)
+ COMMON_HANDLER_BEGIN(h_data_storage_common)
+ 	mfspr   r10,SPRN_HDAR
+@@ -918,13 +919,10 @@ COMMON_HANDLER_BEGIN(h_data_storage_common)
+ 	bl      unknown_exception
+ 	b       ret_from_except
+ COMMON_HANDLER_END(h_data_storage_common)
+-COMMON_HANDLER(trap_0e_common, 0xe00, unknown_exception)
  
  
--__VECTOR_HANDLER_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
--__TRAMP_HANDLER_REAL_OOL_HV(h_instr_storage, 0xe20)
-+VECTOR_HANDLER_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
- VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e20, 0x4e40)
- 	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
- VECTOR_HANDLER_VIRT_END(unused, 0x4e20, 0x4e40)
-@@ -931,10 +929,8 @@ TRAMP_KVM_HV(PACA_EXGEN, 0xe20)
+ VECTOR_HANDLER_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
+-VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e20, 0x4e40)
+-	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
+-VECTOR_HANDLER_VIRT_END(unused, 0x4e20, 0x4e40)
++VECTOR_HANDLER_VIRT_NONE(0x4e20, 0x4e40)
+ TRAMP_KVM_HV(PACA_EXGEN, 0xe20)
  COMMON_HANDLER(h_instr_storage_common, 0xe20, unknown_exception)
  
- 
--__VECTOR_HANDLER_REAL_OOL_HV(emulation_assist, 0xe40, 0xe60)
--__TRAMP_HANDLER_REAL_OOL_HV(emulation_assist, 0xe40)
--__VECTOR_HANDLER_VIRT_OOL_HV(emulation_assist, 0x4e40, 0x4e60)
--__TRAMP_HANDLER_VIRT_OOL_HV(emulation_assist, 0xe40)
-+VECTOR_HANDLER_REAL_OOL_HV(emulation_assist, 0xe40, 0xe60)
-+VECTOR_HANDLER_VIRT_OOL_HV(emulation_assist, 0x4e40, 0x4e60, 0xe40)
- TRAMP_KVM_HV(PACA_EXGEN, 0xe40)
+@@ -935,11 +933,14 @@ TRAMP_KVM_HV(PACA_EXGEN, 0xe40)
  COMMON_HANDLER(emulation_assist_common, 0xe40, emulation_assist_interrupt)
  
-@@ -997,10 +993,8 @@ COMMON_HANDLER_END(hmi_exception_early)
- COMMON_HANDLER_ASYNC(hmi_exception_common, 0xe60, handle_hmi_exception)
  
- 
--__VECTOR_HANDLER_REAL_OOL_MASKABLE_HV(h_doorbell, 0xe80, 0xea0)
--__TRAMP_HANDLER_REAL_OOL_MASKABLE_HV(h_doorbell, 0xe80)
--__VECTOR_HANDLER_VIRT_OOL_MASKABLE_HV(h_doorbell, 0x4e80, 0x4ea0)
--__TRAMP_HANDLER_VIRT_OOL_MASKABLE_HV(h_doorbell, 0xe80)
-+VECTOR_HANDLER_REAL_OOL_MASKABLE_HV(h_doorbell, 0xe80, 0xea0)
-+VECTOR_HANDLER_VIRT_OOL_MASKABLE_HV(h_doorbell, 0x4e80, 0x4ea0, 0xe80)
- TRAMP_KVM_HV(PACA_EXGEN, 0xe80)
- #ifdef CONFIG_PPC_DOORBELL
- COMMON_HANDLER_ASYNC(h_doorbell_common, 0xe80, doorbell_exception)
-@@ -1009,10 +1003,8 @@ COMMON_HANDLER_ASYNC(h_doorbell_common, 0xe80, unknown_exception)
++/*
++ * hmi_exception trampoline is a special case. It jumps to hmi_exception_early
++ * first, and then eventaully from there to the trampoline to get into virtual
++ * mode.
++ */
+ __VECTOR_HANDLER_REAL_OOL_HV_DIRECT(hmi_exception, 0xe60, 0xe80, hmi_exception_early)
+ __TRAMP_HANDLER_REAL_OOL_MASKABLE_HV(hmi_exception, 0xe60)
+-VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e60, 0x4e80)
+-	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
+-VECTOR_HANDLER_VIRT_END(unused, 0x4e60, 0x4e80)
++VECTOR_HANDLER_VIRT_NONE(0x4e60, 0x4e80)
+ TRAMP_KVM_HV(PACA_EXGEN, 0xe60)
+ COMMON_HANDLER_BEGIN(hmi_exception_early)
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, 0xe60)
+@@ -1117,6 +1118,7 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1200)
+ COMMON_HANDLER(cbe_system_error_common, 0x1200, cbe_system_error_exception)
+ #else /* CONFIG_CBE_RAS */
+ VECTOR_HANDLER_REAL_NONE(0x1200, 0x1300)
++VECTOR_HANDLER_VIRT_NONE(0x5200, 0x5300)
  #endif
  
  
--__VECTOR_HANDLER_REAL_OOL_MASKABLE_HV(h_virt_irq, 0xea0, 0xec0)
--__TRAMP_HANDLER_REAL_OOL_MASKABLE_HV(h_virt_irq, 0xea0)
--__VECTOR_HANDLER_VIRT_OOL_MASKABLE_HV(h_virt_irq, 0x4ea0, 0x4ec0)
--__TRAMP_HANDLER_VIRT_OOL_MASKABLE_HV(h_virt_irq, 0xea0)
-+VECTOR_HANDLER_REAL_OOL_MASKABLE_HV(h_virt_irq, 0xea0, 0xec0)
-+VECTOR_HANDLER_VIRT_OOL_MASKABLE_HV(h_virt_irq, 0x4ea0, 0x4ec0, 0xea0)
- TRAMP_KVM_HV(PACA_EXGEN, 0xea0)
- COMMON_HANDLER_ASYNC(h_virt_irq_common, 0xea0, do_IRQ)
+@@ -1231,6 +1233,7 @@ COMMON_HANDLER(cbe_maintenance_common, 0x1600, cbe_maintenance_exception)
  
-@@ -1021,18 +1013,14 @@ VECTOR_HANDLER_REAL_NONE(0xec0, 0xf00)
- VECTOR_HANDLER_VIRT_NONE(0x4ec0, 0x4f00)
+ #else /* CONFIG_CBE_RAS */
+ VECTOR_HANDLER_REAL_NONE(0x1600, 0x1700)
++VECTOR_HANDLER_VIRT_NONE(0x5600, 0x5700)
+ #endif
  
  
--__VECTOR_HANDLER_REAL_OOL(performance_monitor, 0xf00, 0xf20)
--__TRAMP_HANDLER_REAL_OOL(performance_monitor, 0xf00)
--__VECTOR_HANDLER_VIRT_OOL(performance_monitor, 0x4f00, 0x4f20)
--__TRAMP_HANDLER_VIRT_OOL(performance_monitor, 0xf00)
-+VECTOR_HANDLER_REAL_OOL(performance_monitor, 0xf00, 0xf20)
-+VECTOR_HANDLER_VIRT_OOL(performance_monitor, 0x4f00, 0x4f20, 0xf00)
- TRAMP_KVM(PACA_EXGEN, 0xf00)
- COMMON_HANDLER_ASYNC(performance_monitor_common, 0xf00, performance_monitor_exception)
+@@ -1252,8 +1255,11 @@ COMMON_HANDLER(cbe_thermal_common, 0x1800, cbe_thermal_exception)
  
+ #else /* CONFIG_CBE_RAS */
+ VECTOR_HANDLER_REAL_NONE(0x1800, 0x1900)
++VECTOR_HANDLER_VIRT_NONE(0x5800, 0x5900)
+ #endif
  
--__VECTOR_HANDLER_REAL_OOL(altivec_unavailable, 0xf20, 0xf40)
--__TRAMP_HANDLER_REAL_OOL(altivec_unavailable, 0xf20)
--__VECTOR_HANDLER_VIRT_OOL(altivec_unavailable, 0x4f20, 0x4f40)
--__TRAMP_HANDLER_VIRT_OOL(altivec_unavailable, 0xf20)
-+VECTOR_HANDLER_REAL_OOL(altivec_unavailable, 0xf20, 0xf40)
-+VECTOR_HANDLER_VIRT_OOL(altivec_unavailable, 0x4f20, 0x4f40, 0xf20)
- TRAMP_KVM(PACA_EXGEN, 0xf20)
- COMMON_HANDLER_BEGIN(altivec_unavailable_common)
- 	EXCEPTION_PROLOG_COMMON(0xf20, PACA_EXGEN)
-@@ -1069,11 +1057,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- COMMON_HANDLER_END(altivec_unavailable_common)
++/* Real vector area ends at 0x18ff */
++VECTOR_HANDLER_VIRT_NONE(0x5900, 0x6000)
  
- 
--
--__VECTOR_HANDLER_REAL_OOL(vsx_unavailable, 0xf40, 0xf60)
--__TRAMP_HANDLER_REAL_OOL(vsx_unavailable, 0xf40)
--__VECTOR_HANDLER_VIRT_OOL(vsx_unavailable, 0x4f40, 0x4f60)
--__TRAMP_HANDLER_VIRT_OOL(vsx_unavailable, 0xf40)
-+VECTOR_HANDLER_REAL_OOL(vsx_unavailable, 0xf40, 0xf60)
-+VECTOR_HANDLER_VIRT_OOL(vsx_unavailable, 0x4f40, 0x4f60, 0xf40)
- TRAMP_KVM(PACA_EXGEN, 0xf40)
- COMMON_HANDLER_BEGIN(vsx_unavailable_common)
- 	EXCEPTION_PROLOG_COMMON(0xf40, PACA_EXGEN)
-@@ -1109,18 +1094,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- COMMON_HANDLER_END(vsx_unavailable_common)
- 
- 
--__VECTOR_HANDLER_REAL_OOL(facility_unavailable, 0xf60, 0xf80)
--__TRAMP_HANDLER_REAL_OOL(facility_unavailable, 0xf60)
--__VECTOR_HANDLER_VIRT_OOL(facility_unavailable, 0x4f60, 0x4f80)
--__TRAMP_HANDLER_VIRT_OOL(facility_unavailable, 0xf60)
-+VECTOR_HANDLER_REAL_OOL(facility_unavailable, 0xf60, 0xf80)
-+VECTOR_HANDLER_VIRT_OOL(facility_unavailable, 0x4f60, 0x4f80, 0xf60)
- TRAMP_KVM(PACA_EXGEN, 0xf60)
- COMMON_HANDLER(facility_unavailable_common, 0xf60, facility_unavailable_exception)
- 
- 
--__VECTOR_HANDLER_REAL_OOL_HV(h_facility_unavailable, 0xf80, 0xfa0)
--__TRAMP_HANDLER_REAL_OOL_HV(h_facility_unavailable, 0xf80)
--__VECTOR_HANDLER_VIRT_OOL_HV(h_facility_unavailable, 0x4f80, 0x4fa0)
--__TRAMP_HANDLER_VIRT_OOL_HV(h_facility_unavailable, 0xf80)
-+VECTOR_HANDLER_REAL_OOL_HV(h_facility_unavailable, 0xf80, 0xfa0)
-+VECTOR_HANDLER_VIRT_OOL_HV(h_facility_unavailable, 0x4f80, 0x4fa0, 0xf80)
- TRAMP_KVM_HV(PACA_EXGEN, 0xf80)
- COMMON_HANDLER(h_facility_unavailable_common, 0xf80, facility_unavailable_exception)
- 
+ /*
+  * An interrupt came in while soft-disabled. We set paca->irq_happened, then:
 -- 
 2.9.3
