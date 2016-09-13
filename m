@@ -1,24 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYBx55vQxzDsQd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 14:47:21 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id ph5so2577558pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 21:47:21 -0700 (PDT)
-Subject: Re: [PATCH v1] Fix __tlbiel in hash_native_64
-To: linuxppc-dev@lists.ozlabs.org
-References: <1473741761-2795-1-git-send-email-bsingharora@gmail.com>
-Cc: Paul Mackerras <paulus@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <michael@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <3240f8ca-4817-7773-23c7-84f3d779a421@gmail.com>
-Date: Tue, 13 Sep 2016 14:47:16 +1000
-MIME-Version: 1.0
-In-Reply-To: <1473741761-2795-1-git-send-email-bsingharora@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYDJY24G1zDsQd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 15:49:17 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id 128so9119660pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2016 22:49:17 -0700 (PDT)
+Message-ID: <1473745750.15800.1.camel@gmail.com>
+Subject: Re: [PATCH v14 00/15] selftests/powerpc: Add ptrace tests for ppc
+ registers
+From: Cyril Bur <cyrilbur@gmail.com>
+To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Suraj Jitindar Singh
+ <sjitindarsingh@gmail.com>, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>,  Rashmica Gupta <rashmicy@gmail.com>
+Date: Tue, 13 Sep 2016 15:49:10 +1000
+In-Reply-To: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
+References: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +29,289 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 13/09/16 14:42, Balbir Singh wrote:
-> __tlbie and __tlbiel are out of sync. __tlbie does the right thing
-> it calls tlbie with "tlbie rb, L" if CPU_FTR_ARCH_206 (cpu feature) is clear
-> and with "tlbie rb" otherwise. During the cleanup of __tlbiel I noticed
-> that __tlbiel was setting bit 11 PPC_BIT(21) independent of the ISA
-> version for non-4k (L) pages. This patch fixes that issue. It also changes
-> the current PPC_TLBIEL to PPC_TLBIEL_5 and introduces a new PPC_TLBIEL similar
-> to PPC_TLBIE.
+On Mon, 2016-09-12 at 15:33 +0800, wei.guo.simon@gmail.com wrote:
+> From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> The arguments to PPC_TLBIE have also been changed/switched in order
-> to be consistent with the actual assembly usage for clearer reading
-> of code.
+> This selftest suite is for PPC register ptrace functionality. It
+> is also useful for Transaction Memory functionality verification.
 > 
-> Cc: Paul Mackerras <paulus@ozlabs.org>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Cc: Michael Ellerman <michael@ellerman.id.au>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
-Please ignore.. resending with fixes
+Hi Simon,
 
-Balbir
+Thanks for putting the effort in to get these merged! I have a few
+remarks that apply to more than one patch which I'll say here.
+
+I'm not sure #defining the TM instructions as .long for the selftests
+is useful. Compilers these days know about the instructions 'tbegin.'
+'tsuspend.' and the like, I would question anyone using a compiler old
+enough not to know about these...
+
+There are a few assembly fpu register load functions that could be
+consolidated into those in math/ and even some in tm/
+
+Doing while(ptr); to wait for another thread should be 
+
+while(ptr)
+    asm volatile("" : : : "memory");
+
+Documentation/volatile-considered-harmful.txt for reasons why.
+Even knowing this I did it your way without thinking in a selftest I
+wrote doing similar things and it turns out that it didn't work [the
+way we both expect it would].
+
+Having said all that, I'm aware that these are selftests and this
+series could be nicer but I won't lose any sleep if they were merged
+almost as is. Thanks for your work!
+
+Finally, they didn't compile for me, I did a git rebase --exec with my
+build scripts and:
+
+selftests/powerpc: Add ptrace tests for EBB
+	[snip]
+	*** No rule to make target 'ptrace.S', needed by 'ptrace-ebb'.
+(that appears fixed by subsequent patch)
+
+selftests/powerpc: Add ptrace tests for GPR/FPR registers
+	Seems to have failed horribly and those problems continue...
+
+I applied these to powerpc-next at:
+commit c6935931c1894ff857616ff8549b61236a19148f
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Sun Sep 4 14:31:46 2016 -0700
+
+    Linux 4.8-rc5
+
+Should I have based on something else?
+
+> Test Result (All tests pass on both BE and LE) 
+> ---------------------------------------------- 
+> ptrace-ebb	PASS 
+> ptrace-gpr	PASS 
+> ptrace-tm-gpr	PASS 
+> ptrace-tm-spd-gpr	PASS 
+> ptrace-tar	PASS 
+> ptrace-tm-tar	PASS 
+> ptrace-tm-spd-tar	PASS 
+> ptrace-vsx	PASS 
+> ptrace-tm-vsx	PASS 
+> ptrace-tm-spd-vsx	PASS 
+> ptrace-tm-spr	PASS 
+> 
+> Previous versions: 
+> ================== 
+> RFC: https://lkml.org/lkml/2014/4/1/292
+> V1:  https://lkml.org/lkml/2014/4/2/43
+> V2:  https://lkml.org/lkml/2014/5/5/88
+> V3:  https://lkml.org/lkml/2014/5/23/486
+> V4:  https://lkml.org/lkml/2014/11/11/6
+> V5:  https://lkml.org/lkml/2014/11/25/134
+> V6:  https://lkml.org/lkml/2014/12/2/98
+> V7:  https://lkml.org/lkml/2015/1/14/19
+> V8:  https://lkml.org/lkml/2015/5/19/700
+> V9:  https://lkml.org/lkml/2015/10/8/522
+> V10: https://lkml.org/lkml/2016/2/16/219
+> V11: https://lkml.org/lkml/2016/7/16/231
+> V12: https://lkml.org/lkml/2016/7/27/134
+> V13: https://lkml.org/lkml/2016/7/27/656
+> 
+> Changes in V14: 
+> --------------- 
+> - Remove duplicated NT_PPC_xxx register macro in 
+> tools/testing/selftests/powerpc/ptrace/ptrace.h
+> - Clean some coding style warning
+> 
+> Changes in V13: 
+> --------------- 
+> - Remove Cc lines from changelog
+> - Add more Signed-off-by lines of Simon Guo
+> 
+> Changes in V12: 
+> --------------- 
+> - Revert change which is trying to incoporate following patch:
+>   [PATCH 3/5] powerpc: tm: Always use fp_state and vr_state to store
+> live registers
+> - Release share memory resource in all self test cases
+> - Optimize tfhar usage in ptrace-tm-spr.c
+> 
+> Changes in V11: 
+> --------------- 
+> - Rework based on following patch:
+>   [PATCH 3/5] powerpc: tm: Always use fp_state and vr_state to store
+> live registers
+> - Split EBB/PMU register ptrace implementation.
+> - Clean some coding style warning
+> - Added more shared memory based sync between parent and child during
+> TM tests
+> - Re worded some of the commit messages and cleaned them up
+> - selftests/powerpc/ebb/reg.h has already moved as
+> selftests/powerpc/reg.h
+>   Dropped the previous patch doing the same thing
+> - Combined the definitions of SPRN_DSCR from dscr/ test cases
+> - Fixed dscr/ test cases for new SPRN_DSCR_PRIV definition available
+> 
+> Changes in V10: 
+> --------------- 
+> - Rebased against the latest mainline 
+> - Fixed couple of build failures in the test cases related to aux
+> vector 
+> 
+> Changes in V9: 
+> -------------- 
+> - Fixed static build check failure after tm_orig_msr got dropped 
+> - Fixed asm volatile construct for used registers set 
+> - Fixed EBB, VSX, VMX tests for LE 
+> - Fixed TAR test which was failing because of system calls 
+> - Added checks for PPC_FEATURE2_HTM aux feature in the tests 
+> - Fixed copyright statements 
+> 
+> Changes in V8: 
+> -------------- 
+> - Split the misc register set into individual ELF core notes 
+> - Implemented support for VSX register set (on and off TM) 
+> - Implemented support for EBB register set 
+> - Implemented review comments on previous versions 
+> - Some code re-arrangements, re-writes and documentation 
+> - Added comprehensive list of test cases into selftests 
+> 
+> Changes in V7: 
+> -------------- 
+> - Fixed a config directive in the MISC code 
+> - Merged the two gitignore patches into a single one 
+> 
+> Changes in V6: 
+> -------------- 
+> - Added two git ignore patches for powerpc selftests 
+> - Re-formatted all in-code function definitions in kernel-doc format 
+> 
+> Changes in V5: 
+> -------------- 
+> - Changed flush_tmregs_to_thread, so not to take into account self
+> tracing 
+> - Dropped the 3rd patch in the series which had merged two functions 
+> - Fixed one build problem for the misc debug register patch 
+> - Accommodated almost all the review comments from Suka on the 6th
+> patch 
+> - Minor changes to the self test program 
+> - Changed commit messages for some of the patches 
+> 
+> Changes in V4: 
+> -------------- 
+> - Added one test program into the powerpc selftest bucket in this
+> regard 
+> - Split the 2nd patch in the previous series into four different
+> patches 
+> - Accommodated most of the review comments on the previous patch
+> series 
+> - Added a patch to merge functions __switch_to_tm and
+> tm_reclaim_task 
+> 
+> Changes in V3: 
+> -------------- 
+> - Added two new error paths in every TM related get/set functions
+> when regset 
+> support is not present on the system (ENODEV) or when the process
+> does not 
+> have any transaction active (ENODATA) in the context 
+> - Installed the active hooks for all the newly added regset core note
+> types 
+> 
+> Changes in V2: 
+> -------------- 
+> - Removed all the power specific ptrace requests corresponding to new
+> NT_PPC_* 
+> elf core note types. Now all the register sets can be accessed from
+> ptrace 
+> through PTRACE_GETREGSET/PTRACE_SETREGSET using the individual
+> NT_PPC* core 
+> note type instead 
+> - Fixed couple of attribute values for REGSET_TM_CGPR register set 
+> - Renamed flush_tmreg_to_thread as flush_tmregs_to_thread 
+> - Fixed 32 bit checkpointed GPR support 
+> - Changed commit messages accordingly 
+> -------------
+> 
+> Anshuman Khandual (15):
+>   selftests/powerpc: Add more SPR numbers, TM & VMX instructions to
+>     'reg.h'
+>   selftests/powerpc: Use the new SPRN_DSCR_PRIV definiton
+>   selftests/powerpc: Add ptrace tests for EBB
+>   selftests/powerpc: Add ptrace tests for GPR/FPR registers
+>   selftests/powerpc: Add ptrace tests for GPR/FPR registers in TM
+>   selftests/powerpc: Add ptrace tests for GPR/FPR registers in
+> suspended
+>     TM
+>   selftests/powerpc: Add ptrace tests for TAR, PPR, DSCR registers
+>   selftests/powerpc: Add ptrace tests for TAR, PPR, DSCR in TM
+>   selftests/powerpc: Add ptrace tests for TAR, PPR, DSCR in suspended
+> TM
+>   selftests/powerpc: Add ptrace tests for VSX, VMX registers
+>   selftests/powerpc: Add ptrace tests for VSX, VMX registers in TM
+>   selftests/powerpc: Add ptrace tests for VSX, VMX registers in
+>     suspended TM
+>   selftests/powerpc: Add ptrace tests for TM SPR registers
+>   selftests/powerpc: Add .gitignore file for ptrace executables
+>   selftests/powerpc: Fix a build issue
+> 
+>  tools/testing/selftests/powerpc/Makefile           |   3 +-
+>  .../selftests/powerpc/context_switch/cp_abort.c    |   6 +-
+>  tools/testing/selftests/powerpc/dscr/dscr.h        |  10 +-
+>  tools/testing/selftests/powerpc/ptrace/.gitignore  |  11 +
+>  tools/testing/selftests/powerpc/ptrace/Makefile    |  13 +
+>  .../testing/selftests/powerpc/ptrace/ptrace-ebb.c  | 188 +++++
+>  .../testing/selftests/powerpc/ptrace/ptrace-ebb.h  |  99 +++
+>  .../testing/selftests/powerpc/ptrace/ptrace-gpr.c  | 196 ++++++
+>  .../testing/selftests/powerpc/ptrace/ptrace-gpr.h  |  74 ++
+>  .../testing/selftests/powerpc/ptrace/ptrace-tar.c  | 159 +++++
+>  .../testing/selftests/powerpc/ptrace/ptrace-tar.h  |  50 ++
+>  .../selftests/powerpc/ptrace/ptrace-tm-gpr.c       | 296 ++++++++
+>  .../selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c   | 324 +++++++++
+>  .../selftests/powerpc/ptrace/ptrace-tm-spd-tar.c   | 195 ++++++
+>  .../selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c   | 219 ++++++
+>  .../selftests/powerpc/ptrace/ptrace-tm-spr.c       | 186 +++++
+>  .../selftests/powerpc/ptrace/ptrace-tm-tar.c       | 182 +++++
+>  .../selftests/powerpc/ptrace/ptrace-tm-vsx.c       | 206 ++++++
+>  .../testing/selftests/powerpc/ptrace/ptrace-vsx.c  | 140 ++++
+>  .../testing/selftests/powerpc/ptrace/ptrace-vsx.h  | 127 ++++
+>  tools/testing/selftests/powerpc/ptrace/ptrace.S    | 396 +++++++++++
+>  tools/testing/selftests/powerpc/ptrace/ptrace.h    | 771
+> +++++++++++++++++++++
+>  tools/testing/selftests/powerpc/reg.h              |  42 +-
+>  23 files changed, 3880 insertions(+), 13 deletions(-)
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/.gitignore
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/Makefile
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> ebb.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> ebb.h
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> gpr.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> gpr.h
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> tar.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> tar.h
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
+> gpr.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
+> spd-gpr.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
+> spd-tar.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
+> spd-vsx.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
+> spr.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
+> tar.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
+> vsx.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> vsx.c
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-
+> vsx.h
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.S
+>  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.h
+> 
