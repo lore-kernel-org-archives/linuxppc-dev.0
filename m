@@ -3,18 +3,18 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZCHx5BZpzDscY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 06:07:09 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZCHy2fD3zDsXL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 06:07:10 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8EK2sPv087510
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:07:07 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25ewdfgv1d-1
+ u8EK5ZHU050773
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:07:08 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25esush6mk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:07:07 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:07:08 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
  Wed, 14 Sep 2016 14:07:07 -0600
@@ -31,11 +31,12 @@ Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
  Balbir Singh <bsingharora@gmail.com>, linux-doc@vger.kernel.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  devicetree@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v2 2/3] powerpc/mm: allow memory hotplug into a memoryless node
-Date: Wed, 14 Sep 2016 15:06:57 -0500
+Subject: [PATCH v2 1/3] drivers/of: recognize status property of dt memory
+ nodes
+Date: Wed, 14 Sep 2016 15:06:56 -0500
 In-Reply-To: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
 References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
-Message-Id: <1473883618-14998-3-git-send-email-arbab@linux.vnet.ibm.com>
+Message-Id: <1473883618-14998-2-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,53 +46,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the check which prevents us from hotplugging into an empty node.
+Respect the standard dt "status" property when scanning memory nodes in
+early_init_dt_scan_memory(), so that if the property is present and not
+"okay", no memory will be added.
 
-This limitation has been questioned before [1], and judging by the
-response, there doesn't seem to be a reason we can't remove it. No issues
-have been found in light testing.
+The use case at hand is accelerator or device memory, which may be
+unusable until post-boot initialization of the memory link. Such a node
+can be described in the dt as any other, given its status is "disabled".
+Per the device tree specification,
 
-[1] http://lkml.kernel.org/r/CAGZKiBrmkSa1yyhbf5hwGxubcjsE5SmkSMY4tpANERMe2UG4bg@mail.gmail.com
-    http://lkml.kernel.org/r/20160511215051.GF22115@arbab-laptop.austin.ibm.com
+"disabled"
+	Indicates that the device is not presently operational, but it
+	might become operational in the future (for example, something
+	is not plugged in, or switched off).
+
+Once such memory is made operational, it can then be hotplugged.
 
 Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-Acked-by: Balbir Singh <bsingharora@gmail.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/numa.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+ drivers/of/fdt.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 75b9cd6..d7ac419 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1121,7 +1121,7 @@ static int hot_add_node_scn_to_nid(unsigned long scn_addr)
- int hot_add_scn_to_nid(unsigned long scn_addr)
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 085c638..fc19590 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -1022,8 +1022,10 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+ 				     int depth, void *data)
  {
- 	struct device_node *memory = NULL;
--	int nid, found = 0;
-+	int nid;
+ 	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
++	const char *status;
+ 	const __be32 *reg, *endp;
+ 	int l;
++	bool add_memory;
  
- 	if (!numa_enabled || (min_common_depth < 0))
- 		return first_online_node;
-@@ -1137,17 +1137,6 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
- 	if (nid < 0 || !node_online(nid))
- 		nid = first_online_node;
+ 	/* We are scanning "memory" nodes only */
+ 	if (type == NULL) {
+@@ -1044,6 +1046,9 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
  
--	if (NODE_DATA(nid)->node_spanned_pages)
--		return nid;
--
--	for_each_online_node(nid) {
--		if (NODE_DATA(nid)->node_spanned_pages) {
--			found = 1;
--			break;
--		}
--	}
--
--	BUG_ON(!found);
- 	return nid;
- }
+ 	endp = reg + (l / sizeof(__be32));
+ 
++	status = of_get_flat_dt_prop(node, "status", NULL);
++	add_memory = !status || !strcmp(status, "okay");
++
+ 	pr_debug("memory scan node %s, reg size %d,\n", uname, l);
+ 
+ 	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
+@@ -1057,6 +1062,9 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+ 		pr_debug(" - %llx ,  %llx\n", (unsigned long long)base,
+ 		    (unsigned long long)size);
+ 
++		if (!add_memory)
++			continue;
++
+ 		early_init_dt_add_memory_arch(base, size);
+ 	}
  
 -- 
 1.8.3.1
