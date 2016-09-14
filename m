@@ -1,53 +1,21 @@
-Return-Path: <rob@landley.net>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYm1v2hTNzDsF9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 12:38:26 +1000 (AEST)
-Received: by mail-it0-x244.google.com with SMTP id x192so305221itb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 19:38:26 -0700 (PDT)
-Subject: Re: [RFC] fs: add userspace critical mounts event support
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>,
- Daniel Vetter <daniel.vetter@ffwll.ch>, Mimi Zohar
- <zohar@linux.vnet.ibm.com>, Felix Fietkau <nbd@nbd.name>,
- David Woodhouse <dwmw2@infradead.org>, Roman Pen <r.peniaev@gmail.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Ming Lei <ming.lei@canonical.com>, Andrew Morton
- <akpm@linux-foundation.org>, Michal Marek <mmarek@suse.com>,
- Greg KH <gregkh@linuxfoundation.org>
-References: <1466117661-22075-1-git-send-email-mcgrof@kernel.org>
- <1466117661-22075-3-git-send-email-mcgrof@kernel.org>
- <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
- <20160824203901.GT3296@wotan.suse.de>
- <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
- <20160825194133.GC3296@wotan.suse.de> <20160902235916.GO3296@wotan.suse.de>
- <20160903002014.GP3296@wotan.suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Vikram Mulukutla <markivx@codeaurora.org>,
- Stephen Boyd <stephen.boyd@linaro.org>, Mark Brown <broonie@kernel.org>,
- Takashi Iwai <tiwai@suse.de>, Johannes Berg <johannes@sipsolutions.net>,
- Christian Lamparter <chunkeey@googlemail.com>, hauke@hauke-m.de,
- Josh Boyer <jwboyer@fedoraproject.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, jslaby@suse.com,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Andy Lutomirski <luto@amacapital.net>, Wu Fengguang
- <fengguang.wu@intel.com>, rpurdie@rpsys.net, Jeff Mahoney <jeffm@suse.com>,
- j.anaszewski@samsung.com, Abhay_Salunke@dell.com,
- Julia Lawall <Julia.Lawall@lip6.fr>, Gilles.Muller@lip6.fr,
- nicolas.palix@imag.fr, Tom Gundersen <teg@jklm.no>,
- Kay Sievers <kay@vrfy.org>, David Howells <dhowells@redhat.com>,
- Alessandro Rubini <rubini@gnudd.com>, Kevin Cernekee <cernekee@gmail.com>,
- Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
- Thierry Martinez <martinez@nsup.org>, cocci@systeme.lip6.fr,
- linux-serial@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-From: Rob Landley <rob@landley.net>
-Message-ID: <6332a54e-74c6-eafd-368e-71e87a3fa34e@landley.net>
-Date: Tue, 13 Sep 2016 21:38:17 -0500
-MIME-Version: 1.0
-In-Reply-To: <20160903002014.GP3296@wotan.suse.de>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYm9x0zLQzDsF9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 12:45:25 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id p2so46802pap.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 19:45:24 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michal Marek <mmarek@suse.cz>,
+	linux-kbuild@vger.kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] powerpc/64: whitelist unresolved modversions CRCs
+Date: Wed, 14 Sep 2016 12:45:07 +1000
+Message-Id: <20160914024507.8759-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,31 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/02/2016 07:20 PM, Luis R. Rodriguez wrote:
-> kernel_read_file_from_path() can try to read a file from
-> the system's filesystem. This is typically done for firmware
-> for instance, which lives in /lib/firmware. One issue with
-> this is that the kernel cannot know for sure when the real
-> final /lib/firmare/ is ready, and even if you use initramfs
-> drivers are currently initialized *first* prior to the initramfs
-> kicking off.
+These are a symptom of CRC generation failure in generic
+build code, and not powerpc specific.
 
-Why?
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
 
-> During init we run through all init calls first
-> (do_initcalls()) and finally the initramfs is processed via
-> prepare_namespace():
+Hi Michal,
 
-What's the downside of moving initramfs cpio extraction earlier in the boot?
+Please merge this via your trees with Al's patches. I have
+a patch that can catch crc generation failure generically,
+and both Arnd and I have some ideas to fix crc generation
+for .S exports. This should get powerpc building again with
+your tree.
 
-I did some shuffling around of those code to make initmpfs work, does
-anybody know why initramfs extraction _before_ we initialize drivers
-would be a bad thing? (The cpio is in memory, either linked into the
-kernel or from the bootloader. No drivers are needed to extract it,
-that's sort of the point.)
+Thanks,
+Nick
 
-The only things I can think of are memory churn (large contiguous
-physical page allocations), or if a driver somehow got us access to more
-physical memory?
 
-Rob
+ arch/powerpc/relocs_check.sh | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/relocs_check.sh b/arch/powerpc/relocs_check.sh
+index 2e4ebd0..ec2d5c8 100755
+--- a/arch/powerpc/relocs_check.sh
++++ b/arch/powerpc/relocs_check.sh
+@@ -30,6 +30,7 @@ bad_relocs=$(
+ 	# On PPC64:
+ 	#	R_PPC64_RELATIVE, R_PPC64_NONE
+ 	#	R_PPC64_ADDR64 mach_<name>
++	#	R_PPC64_ADDR64 __crc_<name>
+ 	# On PPC:
+ 	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
+ 	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
+@@ -41,7 +42,8 @@ R_PPC_ADDR16_HI
+ R_PPC_ADDR16_HA
+ R_PPC_RELATIVE
+ R_PPC_NONE' |
+-	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_'
++	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_' |
++	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+__crc_'
+ )
+ 
+ if [ -z "$bad_relocs" ]; then
+-- 
+2.9.3
