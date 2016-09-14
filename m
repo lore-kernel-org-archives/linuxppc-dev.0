@@ -1,35 +1,39 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZCG20hDWzDsWl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 06:05:29 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZCHx1T1bzDsgN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 06:07:08 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8EK2p0K109611
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:05:28 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25f8ubm9bj-1
+ u8EK2r6O143110
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:07:06 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25es0p3x47-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:05:28 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 16:07:06 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 14 Sep 2016 14:05:27 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2B5481FF002E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 14:05:06 -0600 (MDT)
-To: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH V5 8/8] powerpc: Enable support for new DRC devtree properties
-Date: Wed, 14 Sep 2016 15:05:24 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <6f98d032-7699-770c-cabb-e2e645c8647c@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Wed, 14 Sep 2016 14:07:05 -0600
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH v2 0/3] powerpc/mm: movable hotplug memory nodes
+Date: Wed, 14 Sep 2016 15:06:55 -0500
+Message-Id: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prom_init.c: Enable support for new DRC device tree properties
-"ibm,drc-info" and "ibm,dynamic-memory-v2" in initial handshake
-between the Linux kernel and the front end processor.
+These changes enable onlining memory into ZONE_MOVABLE on power, and the 
+creation of discrete nodes of movable memory.
 
-[V2: Revise constant names.]
-[V3: No change.]
-[V4: Update comments]
-[V5: Resynchronize/resubmit]
+We provide a way to describe the extents and numa associativity of such 
+a node in the device tree, yet still defer the memory addition to take 
+place post-boot through hotplug.
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-diff -Naur linux-rhel/arch/powerpc/kernel/prom_init.c linux-rhel-patch/arch/powerpc/kernel/prom_init.c
---- linux-rhel/arch/powerpc/kernel/prom_init.c	2016-03-03 07:36:25.000000000 -0600
-+++ linux-rhel-patch/arch/powerpc/kernel/prom_init.c	2016-06-20 15:59:58.016373676 -0500
-@@ -695,7 +695,7 @@ unsigned char ibm_architecture_vec[] = {
- 	OV4_MIN_ENT_CAP,		/* minimum VP entitled capacity */
- 
- 	/* option vector 5: PAPR/OF options */
--	VECTOR_LENGTH(18),		/* length */
-+	VECTOR_LENGTH(22),		/* length */
- 	0,				/* don't ignore, don't halt */
- 	OV5_FEAT(OV5_LPAR) | OV5_FEAT(OV5_SPLPAR) | OV5_FEAT(OV5_LARGE_PAGES) |
- 	OV5_FEAT(OV5_DRCONF_MEMORY) | OV5_FEAT(OV5_DONATE_DEDICATE_CPU) |
-@@ -728,6 +728,10 @@ unsigned char ibm_architecture_vec[] = {
- 	OV5_FEAT(OV5_PFO_HW_RNG) | OV5_FEAT(OV5_PFO_HW_ENCR) |
- 	OV5_FEAT(OV5_PFO_HW_842),
- 	OV5_FEAT(OV5_SUB_PROCESSORS),
-+	0,
-+	0,
-+	0,
-+	OV5_FEAT(OV5_DYN_MEM_V2) | OV5_FEAT(OV5_DRC_INFO),
- 
- 	/* option vector 6: IBM PAPR hints */
- 	VECTOR_LENGTH(3),		/* length */
+In v1, this patchset introduced a new dt compatible id to explicitly 
+create a memoryless node at boot. Here, things have been simplified to 
+be applicable regardless of the status of node hotplug on power. We 
+still intend to enable hotadding a pgdat, but that's now untangled as a 
+separate topic.
+
+v2:
+* Use the "status" property of standard dt memory nodes instead of 
+  introducing a new "ibm,hotplug-aperture" compatible id.
+
+* Remove the patch which explicitly creates a memoryless node. This set 
+  no longer has any bearing on whether the pgdat is created at boot or 
+  at the time of memory addition.
+
+v1:
+* http://lkml.kernel.org/r/1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com
+
+Reza Arbab (3):
+  drivers/of: recognize status property of dt memory nodes
+  powerpc/mm: allow memory hotplug into a memoryless node
+  mm: enable CONFIG_MOVABLE_NODE on powerpc
+
+ Documentation/kernel-parameters.txt |  2 +-
+ arch/powerpc/mm/numa.c              | 13 +------------
+ drivers/of/fdt.c                    |  8 ++++++++
+ mm/Kconfig                          |  2 +-
+ 4 files changed, 11 insertions(+), 14 deletions(-)
+
+-- 
+1.8.3.1
