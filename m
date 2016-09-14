@@ -1,47 +1,27 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYnlX5TFgzDsVf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 13:56:08 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8E3r05I127576
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 23:56:06 -0400
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25ewde4xy9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 23:56:06 -0400
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 14 Sep 2016 09:26:03 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 99D38E0024
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 09:25:15 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8E3u0t639649500
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 09:26:00 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8E3txMC014425
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 09:25:59 +0530
-Date: Wed, 14 Sep 2016 09:25:58 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [RFC] KVM: PPC: Book3S HV: Fall back to same size HPT in
- allocation ioctl
-References: <1473678797-22069-1-git-send-email-khandual@linux.vnet.ibm.com>
- <87bmzrpd37.fsf@concordia.ellerman.id.au>
- <20160914001239.GB27379@fergus.ozlabs.ibm.com>
-In-Reply-To: <20160914001239.GB27379@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <57D8CA4E.5040205@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYp2p5P7SzDrHp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 14:09:22 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id pp5so134820pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 21:09:22 -0700 (PDT)
+Message-ID: <1473826155.2554.6.camel@gmail.com>
+Subject: Re: [PATCH v14 00/15] selftests/powerpc: Add ptrace tests for ppc
+ registers
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Simon Guo <wei.guo.simon@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>, Rashmica Gupta <rashmicy@gmail.com>
+Date: Wed, 14 Sep 2016 14:09:15 +1000
+In-Reply-To: <20160912170105.GA17588@simonLocalRHEL7.x64>
+References: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
+ <1473745750.15800.1.camel@gmail.com>
+ <20160912170105.GA17588@simonLocalRHEL7.x64>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,45 +31,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/14/2016 05:42 AM, Paul Mackerras wrote:
-> On Wed, Sep 14, 2016 at 09:57:48AM +1000, Michael Ellerman wrote:
->> > Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
->> > 
->>> > > When the HPT size is explicitly passed on from the userspace, currently
->>> > > the KVM_PPC_ALLOCATE_HTAB will try to allocate the requested size of HPT
->>> > > from reserved CMA area and if that is not possible, the allocation just
->>> > > fails. With the commit 572abd563befd56 ("KVM: PPC: Book3S HV: Don't fall
->>> > > back to smaller HPT size in allocation ioctl"), it does not even try to
->>> > > allocate the same order pages from the page allocator before failing for
->>> > > good. Same order allocation should be attempted from the page allocator
->>> > > as a fallback option when the CMA allocation attempt fails.
->> > 
->> > It looks like if CMA is not configured we will just fail instantly.
->> > 
->> > So this does look like something we should fix.
->> > 
->> > But I think it is just a bug in commit 572abd563bef ("KVM: PPC: Book3S
->> > HV: Don't fall back to smaller HPT size in allocation ioctl"), which did:
->> > 
->> > diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> > index 1f9c0a17f445..10722b1e38b5 100644
->> > --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> > +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> > @@ -70,7 +70,8 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
->> >         }
->> >  
->> >         /* Lastly try successively smaller sizes from the page allocator */
->> > -       while (!hpt && order > PPC_MIN_HPT_ORDER) {
->> > +       /* Only do this if userspace didn't specify a size via ioctl */
->> > +       while (!hpt && order > PPC_MIN_HPT_ORDER && !htab_orderp) {
->> >                 hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_REPEAT|
->> >                                        __GFP_NOWARN, order - PAGE_SHIFT);
->> >                 if (!hpt)
->> > 
->> > 
->> > Instead of guarding the loop entry with !htab_orderp, it should have
->> > allowed the loop to enter, but prevented it from iterating if the
->> > allocation fails and htab_orderp != 0.
-> You're right.  I'll fix it.
+On Tue, 2016-09-13 at 01:01 +0800, Simon Guo wrote:
+> Hi Cyril,
+> On Tue, Sep 13, 2016 at 03:49:10PM +1000, Cyril Bur wrote:
+> > 
+> > Thanks for putting the effort in to get these merged! I have a few
+> > remarks that apply to more than one patch which I'll say here.
+> > 
+> > I'm not sure #defining the TM instructions as .long for the
+> > selftests
+> > is useful. Compilers these days know about the instructions
+> > 'tbegin.'
+> > 'tsuspend.' and the like, I would question anyone using a compiler
+> > old
+> > enough not to know about these...
+> I agree. But let me check with original author Anshuman firstly.
+> 
 
-Thanks Paul, so I will not be sending follow up patch on this.
+Great!
+
+I'll send through my other emails that I actually wrote before this
+one, please ignore if I've repeated myself.
+
+> > 
+> > 
+> > There are a few assembly fpu register load functions that could be
+> > consolidated into those in math/ and even some in tm/
+> Will rework that.
+> 
+
+Thanks
+
+> > 
+> > 
+> > Doing while(ptr); to wait for another thread should be 
+> > 
+> > while(ptr)
+> >     asm volatile("" : : : "memory");
+> > 
+> > Documentation/volatile-considered-harmful.txt for reasons why.
+> > Even knowing this I did it your way without thinking in a selftest
+> > I
+> > wrote doing similar things and it turns out that it didn't work
+> > [the
+> > way we both expect it would].
+> You are right.
+> 
+
+Thanks
+
+> > 
+> > 
+> > Having said all that, I'm aware that these are selftests and this
+> > series could be nicer but I won't lose any sleep if they were
+> > merged
+> > almost as is. Thanks for your work!
+> > 
+> > Finally, they didn't compile for me, I did a git rebase --exec with
+> > my
+> > build scripts and:
+> > 
+> > selftests/powerpc: Add ptrace tests for EBB
+> > 	[snip]
+> > 	*** No rule to make target 'ptrace.S', needed by 'ptrace-ebb'.
+> > (that appears fixed by subsequent patch)
+> > 
+> > selftests/powerpc: Add ptrace tests for GPR/FPR registers
+> > 	Seems to have failed horribly and those problems continue...
+> > 
+> > I applied these to powerpc-next at:
+> > commit c6935931c1894ff857616ff8549b61236a19148f
+> > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date:   Sun Sep 4 14:31:46 2016 -0700
+> > 
+> >     Linux 4.8-rc5
+> > 
+> > Should I have based on something else?
+> I didn't reproduce the latter error and I also applied on c69359.
+> My build script is only one line:
+> make -C tools/testing/selftests TARGETS=powerpc 1>/dev/null
+> 
+
+I do the same except without TARGETS=powerpc (I test with all the
+selftests). The difference I suspect is that I'm cross compiling and
+the #include <linux/elf.h> in ptrace.h is the problem. On my x86
+machine this includes an x86 version which has different defines.
+
+
+> Did I miss anything with your build script?
+> Anyway I need to fix that.
+
+Its messy but I think the accepted solution for kselftests is to do:
+
+#include "../../../../../usr/include/linux/elf.h"
+
+which I believe will get the headers generated for the target by `make
+headers_install` and therefore should match that for which the
+kselftests are being compiled.
+
+> 
+> Thanks for the sharing. Most are good comments and I will rework
+> that.
+> 
+> BR,
+> - Simon
