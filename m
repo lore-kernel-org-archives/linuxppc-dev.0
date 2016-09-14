@@ -1,20 +1,47 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <santhog4@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYvtH2Dv3zDsW6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 18:32:23 +1000 (AEST)
-Message-ID: <1473839468.8689.342.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powernv/pci: Fix m64 checks for SR-IOV and window
- alignment
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Wed, 14 Sep 2016 17:51:08 +1000
-In-Reply-To: <20160914063717.2673-1-ruscur@russell.cc>
-References: <20160914063717.2673-1-ruscur@russell.cc>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYykZ12PKzDsW5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:40:53 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8EAbsDv013751
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 06:40:50 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25excd28qe-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 06:40:50 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <santhog4@linux.vnet.ibm.com>;
+ Wed, 14 Sep 2016 20:40:47 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C04A32BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:40:45 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8EAejPb52297840
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:40:45 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8EAejte000768
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:40:45 +1000
+Subject: Re: [V2] powerpc/Kconfig: Update config option based on page size.
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <3qk8fY48r6z9t45@ozlabs.org> <87y4893ar2.fsf@skywalker.in.ibm.com>
+From: santhosh <santhog4@linux.vnet.ibm.com>
+Cc: manvanth@linux.vnet.ibm.com
+Date: Wed, 14 Sep 2016 16:10:43 +0530
+MIME-Version: 1.0
+In-Reply-To: <87y4893ar2.fsf@skywalker.in.ibm.com>
+Content-Type: multipart/alternative;
+ boundary="------------7CE09EFBA896CDD3EF8FDE17"
+Message-Id: <0d167ff1-cc0e-35bc-479c-aec77d2c8556@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,104 +51,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-09-14 at 16:37 +1000, Russell Currey wrote:
-> Commit 5958d19a143e checks for prefetchable m64 BARs by comparing the
-> addresses instead of using resource flags.  This broke SR-IOV as the
-> m64
-> check in pnv_pci_ioda_fixup_iov_resources() fails.
-> 
-> The condition in pnv_pci_window_alignment() also changed to checking
-> only IORESOURCE_MEM_64 instead of both IORESOURCE_MEM_64 and
-> IORESOURCE_PREFETCH.
+This is a multi-part message in MIME format.
+--------------7CE09EFBA896CDD3EF8FDE17
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-CC'ing Gavin who might have some insight in the matter.
 
-Why do we check for prefetch ? On PCIe, any 64-bit BAR can live under a
-prefetchable region afaik... Gavin, any idea ?
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>
+>> On Fri, 2016-19-02 at 05:38:47 UTC, Rashmica Gupta wrote:
+>>> Currently on PPC64 changing kernel pagesize from 4K to 64K leaves
+>>> FORCE_MAX_ZONEORDER set to 13 - which produces a compile error.
+>>>
+>> ...
+>>> So, update the range of FORCE_MAX_ZONEORDER from 9-64 to 8-9 for 64K pages
+>>> and from 13-64 to 9-13 for 4K pages.
+>>>
+>>> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+>>> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+>> Applied to powerpc next, thanks.
+>>
+>> https://git.kernel.org/powerpc/c/a7ee539584acf4a565b7439cea
+>>
+> HPAGE_PMD_ORDER is not something we should check w.r.t 4k linux page
+> size. We do have the below constraint w.r.t hugetlb pages
+>
+> static inline bool hstate_is_gigantic(struct hstate *h)
+> {
+> 	return huge_page_order(h) >= MAX_ORDER;
+> }
+>
+> That require MAX_ORDER to be greater than 12.
+>
+> Did we test hugetlbfs 4k config with this patch ? Will it work if we
+> start marking hugepage as gigantic page ?
+>
+> -aneesh
+>
+Hello Rashmica,
 
-Also:
+With upstream linux kernel 4.8.0-rc1-00006-gbae9cc6 compiled with linux 
+4k page size we are not able set hugepages, Aneesh had a look at the 
+problem and he mentioned this commit is causing the issue.
 
-> Revert these cases to the previous behaviour, adding a new helper
-> function
-> to do so.  This is named pnv_pci_is_m64_flags() to make it clear this
-> function is only looking at resource flags and should not be relied
-> on for
-> non-SRIOV resources.
-> 
-> Fixes: 5958d19a143e ("Fix incorrect PE reservation attempt on some
-> 64-bit BARs")
-> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
-> b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index c16d790..2f25622 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -124,6 +124,13 @@ static inline bool pnv_pci_is_m64(struct pnv_phb
-> *phb, struct resource *r)
->  		r->start < (phb->ioda.m64_base + phb-
-> >ioda.m64_size));
->  }
->  
-> +static inline bool pnv_pci_is_m64_flags(unsigned long
-> resource_flags)
-> +{
-> +	unsigned long flags = (IORESOURCE_MEM_64 |
-> IORESOURCE_PREFETCH);
-> +
-> +	return (resource_flags & flags) == flags;
-> +}
-> 
-I don't agree. See below.
+*Details:*
+We are using pkvm ubuntu 16.04 guest with upstream kernel 
+[4.8.0-rc1-00006-gbae9cc6] compiled with  4k page size
 
->  static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int
-> pe_no)
->  {
->  	phb->ioda.pe_array[pe_no].phb = phb;
-> @@ -2871,7 +2878,7 @@ static void
-> pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->  		res = &pdev->resource[i + PCI_IOV_RESOURCES];
->  		if (!res->flags || res->parent)
->  			continue;
-> -		if (!pnv_pci_is_m64(phb, res)) {
-> +		if (!pnv_pci_is_m64_flags(res->flags)) {
->  			dev_warn(&pdev->dev, "Don't support SR-IOV
-> with"
->  					" non M64 VF BAR%d: %pR.
-> \n",
->  				 i, res);
+o/p from guest:
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:      16384 kB
 
-What is that function actually doing ? Having IORESOURCE_64 and
-PREFETCHABLE is completely orthogonal to being in the M64 region. This
-is the bug my original patch was fixing in fact as it's possible for
-the allocator to put a 64-bit resource in the M32 region.
+Page sizes from device-tree: [dmesg]
+[    0.000000] base_shift=12: shift=12, sllp=0x0000, avpnm=0x00000000, 
+tlbiel=1, penc=0
+[    0.000000] base_shift=12: shift=24, sllp=0x0000, avpnm=0x00000000, 
+tlbiel=1, penc=56
+[    0.000000] base_shift=24: shift=24, sllp=0x0100, avpnm=0x00000001, 
+tlbiel=0, penc=0
 
-> @@ -3096,7 +3103,7 @@ static resource_size_t
-> pnv_pci_window_alignment(struct pci_bus *bus,
->  	 * alignment for any 64-bit resource, PCIe doesn't care and
->  	 * bridges only do 64-bit prefetchable anyway.
->  	 */
-> -	if (phb->ioda.m64_segsize && (type & IORESOURCE_MEM_64))
-> +	if (phb->ioda.m64_segsize && pnv_pci_is_m64_flags(type))
->  		return phb->ioda.m64_segsize;
+while trying to configure the hugepages inside the guest it throws the 
+below error:
 
-I disagree similarly. 64-bit non-prefetchable resources should live in
-the M64 space as well.
+echo 100 > /proc/sys/vm/nr_hugepages
+-bash: echo: write error: Invalid argument
 
->  	if (type & IORESOURCE_MEM)
->  		return phb->ioda.m32_segsize;
+*Note*: we do not see the problem when the linux page is 64k
 
-Something seems to be deeply wrong here and this patch looks to me that
-it's just papering over the problem in way that could bring back the
-bugs I've seen if the generic allocator decides to put things in the
-M32 window.
+Thanks,
+Santhosh G
 
-We need to look at this more closely and understand WTF that code
-intends means to do.
 
-Cheers,
-Ben.
+--------------7CE09EFBA896CDD3EF8FDE17
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <p><br>
+    </p>
+    <blockquote cite="mid:87y4893ar2.fsf@skywalker.in.ibm.com"
+      type="cite">
+      <pre wrap="">Michael Ellerman <a class="moz-txt-link-rfc2396E" href="mailto:mpe@ellerman.id.au">&lt;mpe@ellerman.id.au&gt;</a> writes:
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">On Fri, 2016-19-02 at 05:38:47 UTC, Rashmica Gupta wrote:
+</pre>
+        <blockquote type="cite">
+          <pre wrap="">Currently on PPC64 changing kernel pagesize from 4K to 64K leaves
+FORCE_MAX_ZONEORDER set to 13 - which produces a compile error.
+
+</pre>
+        </blockquote>
+        <pre wrap="">...
+</pre>
+        <blockquote type="cite">
+          <pre wrap="">So, update the range of FORCE_MAX_ZONEORDER from 9-64 to 8-9 for 64K pages
+and from 13-64 to 9-13 for 4K pages.
+
+Signed-off-by: Rashmica Gupta <a class="moz-txt-link-rfc2396E" href="mailto:rashmicy@gmail.com">&lt;rashmicy@gmail.com&gt;</a>
+Reviewed-by: Balbir Singh <a class="moz-txt-link-rfc2396E" href="mailto:bsingharora@gmail.com">&lt;bsingharora@gmail.com&gt;</a>
+</pre>
+        </blockquote>
+        <pre wrap="">
+Applied to powerpc next, thanks.
+
+<a class="moz-txt-link-freetext" href="https://git.kernel.org/powerpc/c/a7ee539584acf4a565b7439cea">https://git.kernel.org/powerpc/c/a7ee539584acf4a565b7439cea</a>
+
+</pre>
+      </blockquote>
+      <pre wrap="">
+HPAGE_PMD_ORDER is not something we should check w.r.t 4k linux page
+size. We do have the below constraint w.r.t hugetlb pages
+
+static inline bool hstate_is_gigantic(struct hstate *h)
+{
+	return huge_page_order(h) &gt;= MAX_ORDER;
+}
+
+That require MAX_ORDER to be greater than 12.
+
+Did we test hugetlbfs 4k config with this patch ? Will it work if we
+start marking hugepage as gigantic page ?
+
+-aneesh
+
+</pre>
+    </blockquote>
+    Hello Rashmica,<br>
+    <br>
+    With upstream linux kernel 4.8.0-rc1-00006-gbae9cc6 compiled with
+    linux 4k page size we are not able set hugepages, Aneesh had a look
+    at the problem and he mentioned this commit is causing the issue.<br>
+    <br>
+    <b>Details:</b><br>
+    We are using pkvm ubuntu 16.04 guest with upstream kernel
+    [4.8.0-rc1-00006-gbae9cc6] compiled with  4k page size<br>
+    <br>
+    o/p from guest:<br>
+    HugePages_Total:       0<br>
+    HugePages_Free:        0<br>
+    HugePages_Rsvd:        0<br>
+    HugePages_Surp:        0<br>
+    Hugepagesize:      16384 kB<br>
+    <br>
+    Page sizes from device-tree: [dmesg]<br>
+    [    0.000000] base_shift=12: shift=12, sllp=0x0000,
+    avpnm=0x00000000, tlbiel=1, penc=0<br>
+    [    0.000000] base_shift=12: shift=24, sllp=0x0000,
+    avpnm=0x00000000, tlbiel=1, penc=56<br>
+    [    0.000000] base_shift=24: shift=24, sllp=0x0100,
+    avpnm=0x00000001, tlbiel=0, penc=0<br>
+    <br>
+    while trying to configure the hugepages inside the guest it throws
+    the below error:<br>
+     <br>
+    echo 100 &gt; /proc/sys/vm/nr_hugepages<br>
+    -bash: echo: write error: Invalid argument<br>
+    <br>
+    <b>Note</b>: we do not see the problem when the linux page is 64k<br>
+    <br>
+    Thanks,<br>
+    Santhosh G<br>
+    <br>
+  </body>
+</html>
+
+--------------7CE09EFBA896CDD3EF8FDE17--
