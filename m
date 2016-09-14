@@ -1,29 +1,46 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYqGD4MqSzDsXM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 15:04:20 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id 128so202581pfb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 22:04:20 -0700 (PDT)
-Message-ID: <1473829452.2554.19.camel@gmail.com>
-Subject: Re: [PATCH v14 13/15] selftests/powerpc: Add ptrace tests for TM
- SPR registers
-From: Cyril Bur <cyrilbur@gmail.com>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Chris Smart <chris@distroguy.com>, Suraj Jitindar Singh
- <sjitindarsingh@gmail.com>, Michael Neuling <mikey@neuling.org>, Anshuman
- Khandual <khandual@linux.vnet.ibm.com>, Jack Miller <jack@codezen.org>,
- Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Date: Wed, 14 Sep 2016 15:04:12 +1000
-In-Reply-To: <1473665605-11890-14-git-send-email-wei.guo.simon@gmail.com>
-References: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
- <1473665605-11890-14-git-send-email-wei.guo.simon@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYqpF2RRlzDrqB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 15:28:37 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8E5SRmW005612
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 01:28:34 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25evyusj4m-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 01:28:34 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 14 Sep 2016 15:28:06 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id F059B3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 15:28:04 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8E5S4IA50331680
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 15:28:04 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8E5S4s8003773
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 15:28:04 +1000
+Date: Wed, 14 Sep 2016 10:58:03 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+CC: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [RFC] KVM: PPC: Book3S HV: Fall back to same size HPT in
+ allocation ioctl
+References: <1473678797-22069-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <87bmzrpd37.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87bmzrpd37.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <57D8DFE3.50700@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,105 +50,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-09-12 at 15:33 +0800, wei.guo.simon@gmail.com wrote:
-> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+On 09/14/2016 05:27 AM, Michael Ellerman wrote:
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+
+Not sure whether this mail ever went. Sending it again.
+
 > 
-> This patch adds ptrace interface test for TM SPR registers. This
-> also adds ptrace interface based helper functions related to TM
-> SPR registers access.
+>> > When the HPT size is explicitly passed on from the userspace, currently
+>> > the KVM_PPC_ALLOCATE_HTAB will try to allocate the requested size of HPT
+>> > from reserved CMA area and if that is not possible, the allocation just
+>> > fails. With the commit 572abd563befd56 ("KVM: PPC: Book3S HV: Don't fall
+>> > back to smaller HPT size in allocation ioctl"), it does not even try to
+>> > allocate the same order pages from the page allocator before failing for
+>> > good. Same order allocation should be attempted from the page allocator
+>> > as a fallback option when the CMA allocation attempt fails.
+> It looks like if CMA is not configured we will just fail instantly.
+
+Right and also we have this fallback registered any way. I wonder
+why we are still debating about the need of a fallback mechanism
+when we already have got one.
+
 > 
-
-I'm seeing this one fail a lot, it does occasionally succeed but fails
-a lot on my test setup.
-
-I use qemu on a power8 for most of my testing:
-qemu-system-ppc64 --enable-kvm -machine pseries,accel=kvm,usb=off -m
-4096 -realtime mlock=off -smp 4,sockets=1,cores=2,threads=2 -nographic
--vga none
-
-
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-> ---
->  tools/testing/selftests/powerpc/ptrace/Makefile    |   3 +-
->  .../selftests/powerpc/ptrace/ptrace-tm-spr.c       | 186
-> +++++++++++++++++++++
->  tools/testing/selftests/powerpc/ptrace/ptrace.h    |  35 ++++
->  3 files changed, 223 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-
-> spr.c
+> So this does look like something we should fix.
 > 
-> diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile
-> b/tools/testing/selftests/powerpc/ptrace/Makefile
-> index 797840a..f34670e 100644
-> --- a/tools/testing/selftests/powerpc/ptrace/Makefile
-> +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-> @@ -1,7 +1,8 @@
->  TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr
-> \
->  ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx
-> \
-> -ptrace-tm-spd-vsx
-> +ptrace-tm-spd-vsx ptrace-tm-spr
->  
-> +include ../../lib.mk
->  
->  all: $(TEST_PROGS)
->  CFLAGS += -m64
-> diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
-> b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
-> new file mode 100644
-> index 0000000..2863070
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
-> @@ -0,0 +1,186 @@
-> +/*
-> + * Ptrace test TM SPR registers
-> + *
-> + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +#include "ptrace.h"
-> +
-> +/* Tracee and tracer shared data */
-> +struct shared {
-> +	int flag;
-> +	struct tm_spr_regs regs;
-> +};
-> +unsigned long tfhar;
-> +
-> +int shm_id;
-> +volatile struct shared *cptr, *pptr;
-> +
-> +int shm_id1;
-> +volatile int *cptr1, *pptr1;
-> +
-> +#define TM_SCHED	0xde0000018c000001
-> +#define TM_KVM_SCHED	0xe0000001ac000001
-> +
-> +int validate_tm_spr(struct tm_spr_regs *regs)
-> +{
-> +	if (regs->tm_tfhar != tfhar)
-> +		return TEST_FAIL;
-> +
-> +	if ((regs->tm_texasr != TM_SCHED) && (regs->tm_texasr !=
-> TM_KVM_SCHED))
-> +		return TEST_FAIL;
+> But I think it is just a bug in commit 572abd563bef ("KVM: PPC: Book3S
+> HV: Don't fall back to smaller HPT size in allocation ioctl"), which did:
 
-The above condition fails, should this test try again if this condition
-is true, rather than fail?
+Hmm, I think its something the commit missed to accommodate for.
+But maybe yes, its a bug in the commit.
 
-> +
-> +	if ((regs->tm_texasr == TM_KVM_SCHED) && (regs->tm_tfiar !=
-> 0))
-> +		return TEST_FAIL;
-> +
-> +	return TEST_PASS;
-> +}
-> +
+> 
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index 1f9c0a17f445..10722b1e38b5 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -70,7 +70,8 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
+>         }
+> 
+>         /* Lastly try successively smaller sizes from the page allocator */
+> -       while (!hpt && order > PPC_MIN_HPT_ORDER) {
+> +       /* Only do this if userspace didn't specify a size via ioctl */
+> +       while (!hpt && order > PPC_MIN_HPT_ORDER && !htab_orderp) {
+>                 hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_REPEAT|
+>                                        __GFP_NOWARN, order - PAGE_SHIFT);
+>                 if (!hpt)
+> 
+> 
+> Instead of guarding the loop entry with !htab_orderp, it should have
+> allowed the loop to enter, but prevented it from iterating if the
+> allocation fails and htab_orderp != 0.
 
-[snip]
+Right and thats what Aneesh's proposed patch (in the other thread) does.
