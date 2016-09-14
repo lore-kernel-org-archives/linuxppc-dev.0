@@ -1,42 +1,20 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYvDq5gGGzDsZ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 18:03:23 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8E83Hli074955
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 04:03:21 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25eupkjbab-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 04:03:20 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Wed, 14 Sep 2016 18:02:40 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D097D2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 18:02:37 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8E82bdU52822256
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 18:02:37 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8E82boa020789
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 18:02:37 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: mikey@neuling.org, anton@samba.org, wei.guo.simon@gmail.com
-Subject: [PATCH 1/2] powerpc: tm: Add TM Unavailable Exception
-Date: Wed, 14 Sep 2016 18:02:15 +1000
-In-Reply-To: <20160914080216.13833-1-cyrilbur@gmail.com>
-References: <20160914080216.13833-1-cyrilbur@gmail.com>
-Message-Id: <20160914080216.13833-2-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYvtH2Dv3zDsW6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 18:32:23 +1000 (AEST)
+Message-ID: <1473839468.8689.342.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powernv/pci: Fix m64 checks for SR-IOV and window
+ alignment
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Wed, 14 Sep 2016 17:51:08 +1000
+In-Reply-To: <20160914063717.2673-1-ruscur@russell.cc>
+References: <20160914063717.2673-1-ruscur@russell.cc>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,68 +24,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the kernel disables transactional memory (TM) and userspace still
-tries TM related actions (TM instructions or TM SPR accesses) TM aware
-hardware will cause the kernel to take a facility unavailable
-exception.
+On Wed, 2016-09-14 at 16:37 +1000, Russell Currey wrote:
+> Commit 5958d19a143e checks for prefetchable m64 BARs by comparing the
+> addresses instead of using resource flags.  This broke SR-IOV as the
+> m64
+> check in pnv_pci_ioda_fixup_iov_resources() fails.
+> 
+> The condition in pnv_pci_window_alignment() also changed to checking
+> only IORESOURCE_MEM_64 instead of both IORESOURCE_MEM_64 and
+> IORESOURCE_PREFETCH.
 
-Add checks for the exception being caused by illegal TM access in
-userspace.
+CC'ing Gavin who might have some insight in the matter.
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- arch/powerpc/kernel/traps.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+Why do we check for prefetch ? On PCIe, any 64-bit BAR can live under a
+prefetchable region afaik... Gavin, any idea ?
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 0eba74b..cd40130 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1372,6 +1372,13 @@ void vsx_unavailable_exception(struct pt_regs *regs)
- }
- 
- #ifdef CONFIG_PPC64
-+static void tm_unavailable(struct pt_regs *regs)
-+{
-+	pr_emerg("Unrecoverable TM Unavailable Exception "
-+			"%lx at %lx\n", regs->trap, regs->nip);
-+	die("Unrecoverable TM Unavailable Exception", regs, SIGABRT);
-+}
-+
- void facility_unavailable_exception(struct pt_regs *regs)
- {
- 	static char *facility_strings[] = {
-@@ -1451,6 +1458,23 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 		return;
- 	}
- 
-+	/*
-+	 * TM Unavailable
-+	 *
-+	 * If
-+	 *  - firmware bits say don't do TM or
-+	 *  - CONFIG_PPC_TRANSACTIONAL_MEM was not set and
-+	 *  - hardware is actually TM aware
-+	 * Then userspace can spam the console (even with the use of
-+	 * _ratelimited), just send the SIGILL.
-+	 */
-+	if (status == FSCR_TM_LG) {
-+		if (!cpu_has_feature(CPU_FTR_TM))
-+			goto out;
-+		tm_unavailable(regs);
-+		return;
-+	}
-+
- 	if ((status < ARRAY_SIZE(facility_strings)) &&
- 	    facility_strings[status])
- 		facility = facility_strings[status];
-@@ -1463,6 +1487,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 		"%sFacility '%s' unavailable, exception at 0x%lx, MSR=%lx\n",
- 		hv ? "Hypervisor " : "", facility, regs->nip, regs->msr);
- 
-+out:
- 	if (user_mode(regs)) {
- 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
- 		return;
--- 
-2.9.3
+Also:
+
+> Revert these cases to the previous behaviour, adding a new helper
+> function
+> to do so.  This is named pnv_pci_is_m64_flags() to make it clear this
+> function is only looking at resource flags and should not be relied
+> on for
+> non-SRIOV resources.
+> 
+> Fixes: 5958d19a143e ("Fix incorrect PE reservation attempt on some
+> 64-bit BARs")
+> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
+> b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index c16d790..2f25622 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -124,6 +124,13 @@ static inline bool pnv_pci_is_m64(struct pnv_phb
+> *phb, struct resource *r)
+>  		r->start < (phb->ioda.m64_base + phb-
+> >ioda.m64_size));
+>  }
+>  
+> +static inline bool pnv_pci_is_m64_flags(unsigned long
+> resource_flags)
+> +{
+> +	unsigned long flags = (IORESOURCE_MEM_64 |
+> IORESOURCE_PREFETCH);
+> +
+> +	return (resource_flags & flags) == flags;
+> +}
+> 
+I don't agree. See below.
+
+>  static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int
+> pe_no)
+>  {
+>  	phb->ioda.pe_array[pe_no].phb = phb;
+> @@ -2871,7 +2878,7 @@ static void
+> pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>  		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>  		if (!res->flags || res->parent)
+>  			continue;
+> -		if (!pnv_pci_is_m64(phb, res)) {
+> +		if (!pnv_pci_is_m64_flags(res->flags)) {
+>  			dev_warn(&pdev->dev, "Don't support SR-IOV
+> with"
+>  					" non M64 VF BAR%d: %pR.
+> \n",
+>  				 i, res);
+
+What is that function actually doing ? Having IORESOURCE_64 and
+PREFETCHABLE is completely orthogonal to being in the M64 region. This
+is the bug my original patch was fixing in fact as it's possible for
+the allocator to put a 64-bit resource in the M32 region.
+
+> @@ -3096,7 +3103,7 @@ static resource_size_t
+> pnv_pci_window_alignment(struct pci_bus *bus,
+>  	 * alignment for any 64-bit resource, PCIe doesn't care and
+>  	 * bridges only do 64-bit prefetchable anyway.
+>  	 */
+> -	if (phb->ioda.m64_segsize && (type & IORESOURCE_MEM_64))
+> +	if (phb->ioda.m64_segsize && pnv_pci_is_m64_flags(type))
+>  		return phb->ioda.m64_segsize;
+
+I disagree similarly. 64-bit non-prefetchable resources should live in
+the M64 space as well.
+
+>  	if (type & IORESOURCE_MEM)
+>  		return phb->ioda.m32_segsize;
+
+Something seems to be deeply wrong here and this patch looks to me that
+it's just papering over the problem in way that could bring back the
+bugs I've seen if the generic allocator decides to put things in the
+M32 window.
+
+We need to look at this more closely and understand WTF that code
+intends means to do.
+
+Cheers,
+Ben.
