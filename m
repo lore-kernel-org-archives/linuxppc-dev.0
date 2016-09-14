@@ -1,28 +1,24 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sYq4X3JDRzDsZQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 14:55:56 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id z84so192267pfi.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2016 21:55:56 -0700 (PDT)
-Message-ID: <1473828948.2554.14.camel@gmail.com>
-Subject: Re: [PATCH v14 15/15] selftests/powerpc: Fix a build issue
-From: Cyril Bur <cyrilbur@gmail.com>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Chris Smart <chris@distroguy.com>, Suraj Jitindar Singh
- <sjitindarsingh@gmail.com>, Michael Neuling <mikey@neuling.org>, Anshuman
- Khandual <khandual@linux.vnet.ibm.com>, Jack Miller <jack@codezen.org>,
- Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Date: Wed, 14 Sep 2016 14:55:48 +1000
-In-Reply-To: <1473665605-11890-16-git-send-email-wei.guo.simon@gmail.com>
-References: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
- <1473665605-11890-16-git-send-email-wei.guo.simon@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sYqF52rNwzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 15:03:21 +1000 (AEST)
+Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
+ [150.101.137.141])
+ by ozlabs.org (Postfix) with ESMTP id 3sYqF51JPmz9stY
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 15:03:21 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, stewart@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/powernv: Initialise nest mmu
+Date: Wed, 14 Sep 2016 15:02:56 +1000
+Message-ID: <35949087.yEIrgECls7@new-mexico>
+In-Reply-To: <1471243919-18362-1-git-send-email-alistair@popple.id.au>
+References: <1471243919-18362-1-git-send-email-alistair@popple.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +28,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-09-12 at 15:33 +0800, wei.guo.simon@gmail.com wrote:
-> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+On Mon, 15 Aug 2016 04:51:59 PM Alistair Popple wrote:
+> POWER9 contains an off core mmu called the nest mmu (NMMU). This is
+> used by other hardware units on the chip to translate virtual
+> addresses into real addresses. The unit attempting an address
+> translation provides the majority of the context required for the
+> translation request except for the base address of the partition table
+> (ie. the PTCR) which needs to be programmed into the NMMU.
 > 
-> Fixes the following build failure -
+> This patch adds a call to OPAL to set the PTCR for the nest mmu in
+> opal_init().
 > 
-> cp_abort.c:90:3: error: ‘for’ loop initial declarations are only
-> allowed in C99 or C11 mode
->    for (int i = 0; i < NUM_LOOPS; i++) {
->    ^
-> cp_abort.c:90:3: note: use option -std=c99, -std=gnu99, -std=c11 or
-> -std=gnu11 to compile your code
-> cp_abort.c:97:3: error: ‘for’ loop initial declarations are only
-> allowed in C99 or C11 mode
->    for (int i = 0; i < NUM_LOOPS; i++) {
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
-
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
 > ---
->  tools/testing/selftests/powerpc/context_switch/cp_abort.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git
-> a/tools/testing/selftests/powerpc/context_switch/cp_abort.c
-> b/tools/testing/selftests/powerpc/context_switch/cp_abort.c
-> index 5a5b55a..1ce7dce 100644
-> --- a/tools/testing/selftests/powerpc/context_switch/cp_abort.c
-> +++ b/tools/testing/selftests/powerpc/context_switch/cp_abort.c
-> @@ -67,7 +67,7 @@ int test_cp_abort(void)
->  	/* 128 bytes for a full cache line */
->  	char buf[128] __cacheline_aligned;
->  	cpu_set_t cpuset;
-> -	int fd1[2], fd2[2], pid;
-> +	int fd1[2], fd2[2], pid, i;
->  	char c;
->  
->  	/* only run this test on a P9 or later */
-> @@ -87,14 +87,14 @@ int test_cp_abort(void)
->  	FAIL_IF(pid < 0);
->  
->  	if (!pid) {
-> -		for (int i = 0; i < NUM_LOOPS; i++) {
-> +		for (i = 0; i < NUM_LOOPS; i++) {
->  			FAIL_IF((write(fd1[WRITE_FD], &c, 1)) != 1);
->  			FAIL_IF((read(fd2[READ_FD], &c, 1)) != 1);
->  			/* A paste succeeds if CR0 EQ bit is set */
->  			FAIL_IF(paste(buf) & 0x20000000);
->  		}
->  	} else {
-> -		for (int i = 0; i < NUM_LOOPS; i++) {
-> +		for (i = 0; i < NUM_LOOPS; i++) {
->  			FAIL_IF((read(fd1[READ_FD], &c, 1)) != 1);
->  			copy(buf);
->  			FAIL_IF((write(fd2[WRITE_FD], &c, 1) != 1));
+> This patch depends on a new OPAL call which has yet to be added to
+> skiboot, although the patch to do so has been posted to
+> http://patchwork.ozlabs.org/patch/659106/
+
+This has now gone into skiboot with the same OPAL call number :-
+https://github.com/open-power/skiboot/commit/84e63a8d4fd9eb3efc872099d579c49fef6a5810
+
+>  arch/powerpc/include/asm/opal-api.h            | 3 ++-
+>  arch/powerpc/include/asm/opal.h                | 1 +
+>  arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
+>  arch/powerpc/platforms/powernv/opal.c          | 3 +++
+>  4 files changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0e2e57b..a0aa285 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -167,7 +167,8 @@
+>  #define OPAL_INT_EOI				124
+>  #define OPAL_INT_SET_MFRR			125
+>  #define OPAL_PCI_TCE_KILL			126
+> -#define OPAL_LAST				126
+> +#define OPAL_NMMU_SET_PTCR			127
+> +#define OPAL_LAST				127
+> 
+>  /* Device tree flags */
+> 
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index ee05bd2..433df5e 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -228,6 +228,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+>  int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+>  			     uint32_t pe_num, uint32_t tce_size,
+>  			     uint64_t dma_addr, uint32_t npages);
+> +int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
+> 
+>  /* Internal functions */
+>  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index 3d29d40..a955649 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -308,3 +308,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+>  OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+>  OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
+>  OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
+> +OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index 8b4fc68..b533245 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -762,6 +762,9 @@ static int __init opal_init(void)
+>  	/* Initialise OPAL kmsg dumper for flushing console on panic */
+>  	opal_kmsg_init();
+> 
+> +	/* Update partition table control register on all Nest MMUs */
+> +	opal_nmmu_set_ptcr(-1UL, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
+> +
+>  	return 0;
+>  }
+>  machine_subsys_initcall(powernv, opal_init);
+> --
+> 2.1.4
