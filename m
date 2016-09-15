@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZKhL1hLTzDsXC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 10:55:14 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZKhS3zQqzDsWy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 10:55:20 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8F0qdLv132542
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:11 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25f1nqysub-1
+ u8F0qc7I044692
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:19 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25exqrphy3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:18 -0400
 Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Wed, 14 Sep 2016 21:55:08 -0300
+ Wed, 14 Sep 2016 21:55:11 -0300
 Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id ABF433520068
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:54:43 -0400 (EDT)
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 61BFF1DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:09 -0400 (EDT)
 Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
  by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8F0t6c74939940
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:55:06 -0300
+ u8F0t9ao4481094
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:55:09 -0300
 Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
  by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8F0t5GL005488
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:55:06 -0300
+ u8F0t81n005601
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:55:09 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
@@ -43,11 +43,11 @@ Cc: linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  "H. Peter Anvin" <hpa@zytor.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v5 4/5] kexec_file: Add mechanism to update kexec segments.
-Date: Wed, 14 Sep 2016 21:54:49 -0300
+Subject: [PATCH v5 5/5] IMA: Demonstration code for kexec buffer passing.
+Date: Wed, 14 Sep 2016 21:54:50 -0300
 In-Reply-To: <1473900890-1476-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1473900890-1476-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1473900890-1476-5-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1473900890-1476-6-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,418 +57,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kexec_update_segment allows a given segment in kexec_image to have
-its contents updated. This is useful if the current kernel wants to
-send information to the next kernel that is up-to-date at the time of
-reboot.
+This shows how kernel code can use the kexec buffer passing mechanism
+to pass information to the next kernel.
 
-Before modifying the segment the image checksum is verified, and after
-the segment is updated the checksum is recalculated and updated in the
-kexec image.
+This patch is not intended to be committed.
 
-Suggested-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+[akpm@linux-foundation.org: coding-style fixes]
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- include/linux/kexec.h   |   2 +
- kernel/kexec_core.c     |   5 -
- kernel/kexec_file.c     | 331 ++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/kexec_internal.h |   6 +
- 4 files changed, 339 insertions(+), 5 deletions(-)
+ include/linux/ima.h                   | 11 +++++
+ kernel/kexec_file.c                   |  4 ++
+ security/integrity/ima/ima.h          |  5 +++
+ security/integrity/ima/ima_init.c     | 26 +++++++++++
+ security/integrity/ima/ima_template.c | 85 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 131 insertions(+)
 
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 768245aa76bf..81aca6acc3b0 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -183,6 +183,8 @@ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
- 			       int (*func)(u64, u64, void *));
- extern int kexec_add_buffer(struct kexec_buf *kbuf);
- int kexec_locate_mem_hole(struct kexec_buf *kbuf);
-+int kexec_update_segment(const char *buffer, size_t bufsz,
-+			 unsigned long load_addr, size_t memsz);
- #endif /* CONFIG_KEXEC_FILE */
+diff --git a/include/linux/ima.h b/include/linux/ima.h
+index 0eb7c2e7f0d6..96528d007139 100644
+--- a/include/linux/ima.h
++++ b/include/linux/ima.h
+@@ -11,6 +11,7 @@
+ #define _LINUX_IMA_H
  
- struct kimage {
-diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index 561675589511..a86596984454 100644
---- a/kernel/kexec_core.c
-+++ b/kernel/kexec_core.c
-@@ -551,11 +551,6 @@ void kimage_terminate(struct kimage *image)
- 	*image->entry = IND_DONE;
+ #include <linux/fs.h>
++#include <linux/kexec.h>
+ struct linux_binprm;
+ 
+ #ifdef CONFIG_IMA
+@@ -23,6 +24,10 @@ extern int ima_post_read_file(struct file *file, void *buf, loff_t size,
+ 			      enum kernel_read_file_id id);
+ extern void ima_post_path_mknod(struct dentry *dentry);
+ 
++#ifdef CONFIG_KEXEC_FILE
++extern void ima_add_kexec_buffer(struct kimage *image);
++#endif
++
+ #else
+ static inline int ima_bprm_check(struct linux_binprm *bprm)
+ {
+@@ -60,6 +65,12 @@ static inline void ima_post_path_mknod(struct dentry *dentry)
+ 	return;
  }
  
--#define for_each_kimage_entry(image, ptr, entry) \
--	for (ptr = &image->head; (entry = *ptr) && !(entry & IND_DONE); \
--		ptr = (entry & IND_INDIRECTION) ? \
--			boot_phys_to_virt((entry & PAGE_MASK)) : ptr + 1)
--
- static void kimage_free_entry(kimage_entry_t entry)
- {
- 	struct page *page;
++#ifdef CONFIG_KEXEC_FILE
++static inline void ima_add_kexec_buffer(struct kimage *image)
++{
++}
++#endif
++
+ #endif /* CONFIG_IMA */
+ 
+ #ifdef CONFIG_IMA_APPRAISE
 diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 35b04296484b..fbcec07bb3f5 100644
+index fbcec07bb3f5..0146619479a6 100644
 --- a/kernel/kexec_file.c
 +++ b/kernel/kexec_file.c
-@@ -18,6 +18,7 @@
- #include <linux/kexec.h>
- #include <linux/mutex.h>
+@@ -20,6 +20,7 @@
  #include <linux/list.h>
-+#include <linux/highmem.h>
+ #include <linux/highmem.h>
  #include <linux/fs.h>
++#include <linux/ima.h>
  #include <crypto/hash.h>
  #include <crypto/sha.h>
-@@ -591,6 +592,336 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
+ #include <linux/syscalls.h>
+@@ -252,6 +253,9 @@ kimage_file_prepare_segments(struct kimage *image, int kernel_fd, int initrd_fd,
+ 		}
+ 	}
+ 
++	/* IMA needs to pass the measurement list to the next kernel. */
++	ima_add_kexec_buffer(image);
++
+ 	/* Call arch image load handlers */
+ 	ldata = arch_kexec_kernel_image_load(image);
+ 
+diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+index db25f54a04fe..0334001055d7 100644
+--- a/security/integrity/ima/ima.h
++++ b/security/integrity/ima/ima.h
+@@ -102,6 +102,11 @@ struct ima_queue_entry {
+ };
+ extern struct list_head ima_measurements;	/* list of all measurements */
+ 
++#ifdef CONFIG_KEXEC_FILE
++extern void *kexec_buffer;
++extern size_t kexec_buffer_size;
++#endif
++
+ /* Internal IMA function definitions */
+ int ima_init(void);
+ int ima_fs_init(void);
+diff --git a/security/integrity/ima/ima_init.c b/security/integrity/ima/ima_init.c
+index 32912bd54ead..a1924d0f3b2b 100644
+--- a/security/integrity/ima/ima_init.c
++++ b/security/integrity/ima/ima_init.c
+@@ -21,6 +21,7 @@
+ #include <linux/scatterlist.h>
+ #include <linux/slab.h>
+ #include <linux/err.h>
++#include <linux/kexec.h>
+ 
+ #include "ima.h"
+ 
+@@ -104,6 +105,29 @@ void __init ima_load_x509(void)
+ }
+ #endif
+ 
++#ifdef CONFIG_KEXEC_FILE
++static void ima_load_kexec_buffer(void)
++{
++	int rc;
++
++	/* Fetch the buffer from the previous kernel, if any. */
++	rc = kexec_get_handover_buffer(&kexec_buffer, &kexec_buffer_size);
++	if (rc == 0) {
++		/* Demonstrate that buffer handover works. */
++		pr_err("kexec buffer contents: %s\n", (char *) kexec_buffer);
++		pr_err("kexec buffer contents after update: %s\n",
++		       (char *) kexec_buffer + 4 * PAGE_SIZE + 10);
++
++		kexec_free_handover_buffer();
++	} else if (rc == -ENOENT)
++		pr_debug("No kexec buffer from the previous kernel.\n");
++	else
++		pr_debug("Error restoring kexec buffer: %d\n", rc);
++}
++#else
++static void ima_load_kexec_buffer(void) { }
++#endif
++
+ int __init ima_init(void)
+ {
+ 	u8 pcr_i[TPM_DIGEST_SIZE];
+@@ -134,5 +158,7 @@ int __init ima_init(void)
+ 
+ 	ima_init_policy();
+ 
++	ima_load_kexec_buffer();
++
+ 	return ima_fs_init();
+ }
+diff --git a/security/integrity/ima/ima_template.c b/security/integrity/ima/ima_template.c
+index febd12ed9b55..92ea3afd9a1f 100644
+--- a/security/integrity/ima/ima_template.c
++++ b/security/integrity/ima/ima_template.c
+@@ -15,6 +15,8 @@
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
++#include <linux/kexec.h>
++#include <linux/reboot.h>
+ #include "ima.h"
+ #include "ima_template_lib.h"
+ 
+@@ -182,6 +184,89 @@ static int template_desc_init_fields(const char *template_fmt,
  	return 0;
  }
  
-+/**
-+ * @kexec_image_visit_segments() - call function on each segment page
-+ * @image:	kexec image to inspect.
-+ * @func:	Function to call on each page.
-+ * @data:	Data pointer to pass to @func.
-+ *
-+ * Iterate through the @image entries, calling @func with the given @data
-+ * on each segment page. dest is the start address of the page in the next
-+ * kernel's address space, and addr is the address of the page in this kernel's
-+ * address space.
-+ *
-+ * Stop iterating if @func returns non-zero, and return that value.
-+ *
-+ * Return: zero if all pages were visited, @func return value if non-zero.
++#ifdef CONFIG_KEXEC_FILE
++void *kexec_buffer;
++size_t kexec_buffer_size;
++
++/* Physical address of the measurement buffer in the next kernel. */
++unsigned long kexec_buffer_load_addr;
++
++/*
++ * Called during reboot. IMA can add here new events that were generated after
++ * the kexec image was loaded.
 + */
-+static int kexec_image_visit_segments(struct kimage *image,
-+				      int (*func)(void *data,
-+						  unsigned long dest,
-+						  void *addr),
-+				      void *data)
++static int ima_update_kexec_buffer(struct notifier_block *self,
++				   unsigned long action, void *data)
 +{
 +	int ret;
-+	unsigned long entry, dest = 0;
-+	unsigned long *ptr = NULL;
 +
-+	for_each_kimage_entry(image, ptr, entry) {
-+		void *addr = (void *) (entry & PAGE_MASK);
-+
-+		switch (entry & IND_FLAGS) {
-+		case IND_DESTINATION:
-+			dest = (unsigned long) addr;
-+			break;
-+		case IND_SOURCE:
-+			/* Shouldn't happen, but verify just to be safe. */
-+			if (WARN_ON(!dest)) {
-+				pr_err("Invalid kexec entries list.");
-+				return -EINVAL;
-+			}
-+
-+			ret = func(data, dest, addr);
-+			if (ret)
-+				break;
-+
-+			dest += PAGE_SIZE;
-+		}
-+
-+		/* Shouldn't happen, but verify just to be safe. */
-+		if (WARN_ON(ptr == NULL)) {
-+			pr_err("Invalid kexec entries list.");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+struct image_digest_data {
-+	unsigned long digest_load_addr;
-+	struct shash_desc *desc;
-+};
-+
-+static int calculate_image_digest(void *data, unsigned long dest, void *addr)
-+{
-+	struct image_digest_data *d = (struct image_digest_data *) data;
-+	void *page_addr;
-+	unsigned long offset;
-+	int ret;
-+
-+	/* Assumption: the digest segment is PAGE_SIZE long. */
-+	if (dest == d->digest_load_addr)
-+		return 0;
-+
-+	page_addr = kmap_atomic(kmap_to_page(addr));
-+
-+	offset = dest & ~PAGE_MASK;
-+	ret = crypto_shash_update(d->desc, page_addr + offset,
-+				  PAGE_SIZE - offset);
-+
-+	kunmap_atomic(page_addr);
-+
-+	return ret;
-+}
-+
-+/**
-+ * kexec_calculate_image_digest() - calculate the digest of the kexec image
-+ * @image:	kexec image with segments already loaded into it.
-+ * @digest:	Buffer of at least SHA256_DIGEST_SIZE bytes.
-+ *
-+ * This function goes through the @image->head list, calculates the checksum
-+ * of the segment contents and puts the result in @digest, which is assumed
-+ * to be big enough to hold an SHA256 digest.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+static int kexec_calculate_image_digest(struct kimage *image, void *digest)
-+{
-+	struct crypto_shash *tfm;
-+	struct shash_desc *desc;
-+	int ret;
-+	size_t desc_size;
-+	struct purgatory_info *pi = &image->purgatory_info;
-+	struct image_digest_data d;
-+
-+	tfm = crypto_alloc_shash("sha256", 0, 0);
-+	if (IS_ERR(tfm)) {
-+		ret = PTR_ERR(tfm);
-+		goto out;
-+	}
-+
-+	desc_size = crypto_shash_descsize(tfm) + sizeof(*desc);
-+	desc = kzalloc(desc_size, GFP_KERNEL);
-+	if (!desc) {
-+		ret = -ENOMEM;
-+		goto out_free_tfm;
-+	}
-+
-+	desc->tfm   = tfm;
-+	desc->flags = 0;
-+
-+	ret = crypto_shash_init(desc);
-+	if (ret < 0)
-+		goto out_free_desc;
-+
-+	d.desc = desc;
-+	d.digest_load_addr = pi->digest_load_addr;
-+	ret = kexec_image_visit_segments(image, calculate_image_digest, &d);
-+
-+	if (!ret)
-+		ret = crypto_shash_final(desc, digest);
-+
-+out_free_desc:
-+	kfree(desc);
-+out_free_tfm:
-+	kfree(tfm);
-+out:
-+	return ret;
-+}
-+
-+struct get_digest_data {
-+	void *digest;
-+	unsigned long digest_load_addr;
-+	size_t bufsz;
-+	size_t memsz;
-+};
-+
-+static int get_digest(void *data, unsigned long dest, void *addr)
-+{
-+	struct get_digest_data *d = (struct get_digest_data *) data;
-+	void *page_addr;
-+	unsigned long offset;
-+	size_t uchunk, mchunk;
-+
-+	if (dest != d->digest_load_addr)
-+		return 0;
-+
-+	page_addr = kmap_atomic(kmap_to_page(addr));
-+
-+	offset = dest & ~PAGE_MASK;
-+	mchunk = min_t(size_t, d->memsz, PAGE_SIZE - offset);
-+	uchunk = min(d->bufsz, mchunk);
-+	memcpy(d->digest, page_addr + offset, uchunk);
-+
-+	kunmap_atomic(page_addr);
-+
-+	d->digest += mchunk;
-+	d->bufsz -= uchunk;
-+	d->digest_load_addr += mchunk;
-+	d->memsz -= mchunk;
-+
-+	return d->memsz > 0 ? 0 : 1;
-+}
-+
-+static int kexec_image_get_digest(struct kimage *image, void *digest)
-+{
-+	int ret;
-+	struct get_digest_data d;
-+
-+	d.digest = digest;
-+	d.digest_load_addr = image->purgatory_info.digest_load_addr;
-+	d.bufsz = SHA256_DIGEST_SIZE;
-+	d.memsz = SHA256_DIGEST_SIZE;
-+	ret = kexec_image_visit_segments(image, get_digest, &d);
-+
-+	return d.bufsz == 0 ? 0 : -ENOENT;
-+}
-+
-+struct update_segment_data {
-+	const char *buffer;
-+	size_t bufsz;
-+	size_t memsz;
-+	unsigned long load_addr;
-+};
-+
-+static int update_segment(void *data, unsigned long dest, void *addr)
-+{
-+	struct update_segment_data *d = (struct update_segment_data *) data;
-+	void *page_addr;
-+	unsigned long offset;
-+	size_t uchunk, mchunk;
-+
-+	if (dest != d->load_addr)
-+		return 0;
-+
-+	page_addr = kmap_atomic(kmap_to_page(addr));
-+
-+	offset = d->load_addr & ~PAGE_MASK;
-+	mchunk = min_t(size_t, d->memsz, PAGE_SIZE - offset);
-+	uchunk = min(d->bufsz, mchunk);
-+	memcpy(page_addr + offset, d->buffer, uchunk);
-+
-+	kunmap_atomic(page_addr);
-+
-+	d->bufsz -= uchunk;
-+	d->load_addr += mchunk;
-+	d->buffer += mchunk;
-+	d->memsz -= mchunk;
-+
-+	return d->memsz > 0 ? 0 : 1;
-+}
-+
-+static int do_kexec_update_segment(const char *buffer, size_t bufsz,
-+				   unsigned long load_addr, size_t memsz)
-+{
-+	int i;
-+	struct update_segment_data d;
-+
-+	if (kexec_image == NULL) {
-+		pr_err("Can't update segment: no kexec image loaded.\n");
-+		return -EINVAL;
-+	}
++	if (!kexec_in_progress)
++		return NOTIFY_OK;
 +
 +	/*
-+	 * kexec_add_buffer rounds up segment sizes to PAGE_SIZE, so
-+	 * we have to do it here as well.
++	 * Add content deep in the buffer to show that we can update
++	 * all of it.
 +	 */
-+	memsz = ALIGN(memsz, PAGE_SIZE);
++	strcpy(kexec_buffer + 4 * PAGE_SIZE + 10,
++	       "Updated kexec buffer contents.");
 +
-+	for (i = 0; i < kexec_image->nr_segments; i++)
-+		/* We only support updating whole segments. */
-+		if (load_addr == kexec_image->segment[i].mem &&
-+		    memsz == kexec_image->segment[i].memsz)
-+			break;
-+
-+	if (WARN_ON(i == kexec_image->nr_segments)) {
-+		pr_debug("Couldn't find segment to update: 0x%lx, size 0x%zx\n",
-+			 load_addr, memsz);
-+		return -EINVAL;
-+	}
-+
-+	d.buffer = buffer;
-+	d.bufsz = bufsz;
-+	d.load_addr = load_addr;
-+	d.memsz = memsz;
-+	kexec_image_visit_segments(kexec_image, update_segment, &d);
-+
-+	return 0;
-+}
-+
-+
-+/**
-+ * kexec_update_segment() - update the contents of a kimage segment
-+ * @buffer:	New contents of the segment.
-+ * @bufsz:	@buffer size.
-+ * @load_addr:	Segment's physical address in the next kernel.
-+ * @memsz:	Segment size.
-+ *
-+ * This function assumes kexec_mutex is held.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int kexec_update_segment(const char *buffer, size_t bufsz,
-+			 unsigned long load_addr, size_t memsz)
-+{
-+	int ret;
-+	void *digest, *orig_digest;
-+	struct purgatory_info *pi = &kexec_image->purgatory_info;
-+
-+	digest = kzalloc(SHA256_DIGEST_SIZE, GFP_KERNEL);
-+	if (!digest)
-+		return -ENOMEM;
-+
-+	orig_digest = kzalloc(SHA256_DIGEST_SIZE, GFP_KERNEL);
-+	if (!orig_digest) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	/* First, verify the kexec image integrity. */
-+	ret = kexec_image_get_digest(kexec_image, orig_digest);
-+	if (ret) {
-+		pr_debug("Can't get kexec image checksum.\n");
-+		goto out;
-+	}
-+
-+	ret = kexec_calculate_image_digest(kexec_image, digest);
-+	if (ret) {
-+		pr_debug("Can't calculate kexec image checksum.\n");
-+		goto out;
-+	}
-+
-+	ret = memcmp(digest, orig_digest, SHA256_DIGEST_SIZE);
-+	if (ret) {
-+		pr_debug("The kexec image was corrupted in memory.\n");
-+		ret = -ENOEXEC;
-+		goto out;
-+	}
-+
-+	/* Now, update the segment we were asked to update. */
-+	ret = do_kexec_update_segment(buffer, bufsz, load_addr, memsz);
++	ret = kexec_update_segment(kexec_buffer, kexec_buffer_size,
++				   kexec_buffer_load_addr, kexec_buffer_size);
 +	if (ret)
-+		goto out;
++		pr_err("Error updating kexec buffer: %d\n", ret);
 +
-+	/* Calculate the new kexec image checksum. */
-+	ret = kexec_calculate_image_digest(kexec_image, digest);
-+	if (ret) {
-+		pr_debug("Can't calculate kexec image checksum.\n");
-+		goto out;
-+	}
-+
-+	/* Update the segment containing the kexec image checksum. */
-+	ret = do_kexec_update_segment(digest, SHA256_DIGEST_SIZE,
-+				      pi->digest_load_addr, SHA256_DIGEST_SIZE);
-+
-+out:
-+	kfree(digest);
-+	kfree(orig_digest);
-+
-+	return ret;
++	return NOTIFY_OK;
 +}
 +
- /* Calculate and store the digest of segments */
- static int kexec_calculate_store_digests(struct kimage *image)
++struct notifier_block update_buffer_nb = {
++	.notifier_call = ima_update_kexec_buffer,
++};
++
++/*
++ * Called during kexec_file_load so that IMA can add a segment to the kexec
++ * image with the measurement event log for the next kernel.
++ */
++void ima_add_kexec_buffer(struct kimage *image)
++{
++	/* Ask not to checksum the segment, we may have to update it later. */
++	struct kexec_buf kbuf = { .image = image, .buf_align = PAGE_SIZE,
++				  .buf_min = 0, .buf_max = ULONG_MAX,
++				  .top_down = true };
++	bool first_kexec_load = kexec_buffer_load_addr == 0;
++	int ret;
++
++	if (!kexec_can_hand_over_buffer())
++		return;
++
++	if (!first_kexec_load)
++		kfree(kexec_buffer);
++
++	/* Create a relatively big buffer, for testing. */
++	kexec_buffer_size = kbuf.bufsz = kbuf.memsz = 5 * PAGE_SIZE;
++	kexec_buffer = kbuf.buffer = kzalloc(kexec_buffer_size, GFP_KERNEL);
++	if (!kexec_buffer) {
++		pr_err("Not enough memory for the kexec measurement buffer.\n");
++		return;
++	}
++
++	/* Add some content for demonstration purposes. */
++	strcpy(kexec_buffer, "Buffer contents at kexec load time.");
++
++	ret = kexec_add_handover_buffer(&kbuf);
++	if (ret) {
++		pr_err("Error passing over kexec measurement buffer.\n");
++		return;
++	}
++	kexec_buffer_load_addr = kbuf.mem;
++
++	if (first_kexec_load)
++		register_reboot_notifier(&update_buffer_nb);
++
++	pr_debug("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
++		 kexec_buffer_load_addr);
++}
++#endif /* CONFIG_KEXEC_FILE */
++
+ struct ima_template_desc *ima_template_desc_current(void)
  {
-diff --git a/kernel/kexec_internal.h b/kernel/kexec_internal.h
-index 4cef7e4706b0..9bb05a08e31a 100644
---- a/kernel/kexec_internal.h
-+++ b/kernel/kexec_internal.h
-@@ -14,6 +14,12 @@ int kimage_is_destination_range(struct kimage *image,
- 
- extern struct mutex kexec_mutex;
- 
-+#define for_each_kimage_entry(image, ptr, entry) \
-+	for (ptr = &image->head; (entry = *ptr) && !(entry & IND_DONE); \
-+		ptr = (entry & IND_INDIRECTION) ? \
-+			boot_phys_to_virt((entry & PAGE_MASK)) : ptr + 1)
-+
-+
- #ifdef CONFIG_KEXEC_FILE
- struct kexec_sha_region {
- 	unsigned long start;
+ 	if (!ima_template)
 -- 
 1.9.1
