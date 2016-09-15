@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZKhB5bzJzDsW4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 10:55:06 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZKhD5zyQzDsXJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 10:55:08 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8F0qcLt017561
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:05 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25esustum4-1
+ u8F0qeFg044749
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:06 -0400
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25exqrphu5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:06 -0400
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Wed, 14 Sep 2016 21:55:01 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id C7ACF1DC0070
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:54:59 -0400 (EDT)
+ Wed, 14 Sep 2016 21:55:04 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id DC9CC1DC0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:55:01 -0400 (EDT)
 Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8F0sxdW5230680
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:54:59 -0300
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8F0t11D29753812
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:55:01 -0300
 Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
  by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8F0swL1005244
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:54:59 -0300
+ u8F0t0oo005320
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 21:55:01 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
@@ -43,12 +43,12 @@ Cc: linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  "H. Peter Anvin" <hpa@zytor.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v5 1/5] kexec_file: Include the purgatory segment in the kexec
- image checksum.
-Date: Wed, 14 Sep 2016 21:54:46 -0300
+Subject: [PATCH v5 2/5] kexec_file: Add buffer hand-over support for the next
+ kernel
+Date: Wed, 14 Sep 2016 21:54:47 -0300
 In-Reply-To: <1473900890-1476-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1473900890-1476-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1473900890-1476-2-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1473900890-1476-3-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,269 +58,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, the purgatory segment is skipped from the kexec image checksum
-because it is modified to include the calculated digest.
+The buffer hand-over mechanism allows the currently running kernel to pass
+data to kernel that will be kexec'd via a kexec segment. The second kernel
+can check whether the previous kernel sent data and retrieve it.
 
-By putting the digest in a separate kexec segment, we can include the
-purgatory segment in the kexec image verification since it won't need
-to be modified anymore.
-
-With this change, the only part of the kexec image that is not covered
-by the checksum is the digest itself.
-
-Even with the digest stored separately, x86 needs to leave the purgatory
-segment out of the checksum calculation because it modifies the purgatory
-code in relocate_kernel. We use CONFIG_ARCH_MODIFIES_KEXEC_PURGATORY to
-allow the powerpc purgatory to be protected by the checksum while still
-preserving x86 behavior.
+This is the architecture-independent part of the feature.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- arch/powerpc/purgatory/purgatory.c |   4 +-
- arch/x86/Kconfig                   |   6 +++
- arch/x86/purgatory/purgatory.c     |   2 +-
- include/linux/kexec.h              |   6 +++
- kernel/kexec_file.c                | 100 +++++++++++++++++++++++++------------
- 5 files changed, 84 insertions(+), 34 deletions(-)
+ include/linux/kexec.h | 31 +++++++++++++++++++++++
+ kernel/kexec_file.c   | 68 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+)
 
-diff --git a/arch/powerpc/purgatory/purgatory.c b/arch/powerpc/purgatory/purgatory.c
-index 5b006d685cf2..f19ac3d5a7d5 100644
---- a/arch/powerpc/purgatory/purgatory.c
-+++ b/arch/powerpc/purgatory/purgatory.c
-@@ -17,7 +17,7 @@
- #include "kexec-sha256.h"
- 
- struct kexec_sha_region sha_regions[SHA256_REGIONS] = {};
--u8 sha256_digest[SHA256_DIGEST_SIZE] = { 0 };
-+u8 *sha256_digest = NULL;
- 
- int verify_sha256_digest(void)
- {
-@@ -40,7 +40,7 @@ int verify_sha256_digest(void)
- 		printf("\n");
- 
- 		printf("sha256_digest: ");
--		for (i = 0; i < sizeof(sha256_digest); i++)
-+		for (i = 0; i < SHA256_DIGEST_SIZE; i++)
- 			printf("%hhx ", sha256_digest[i]);
- 
- 		printf("\n");
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 2a1f0ce7c59a..dcd1679f3005 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1792,6 +1792,11 @@ config SECCOMP
- 
- source kernel/Kconfig.hz
- 
-+# x86 needs to relocate the purgatory after the checksum is calculated,
-+# therefore the purgatory cannot be part of the kexec image checksum.
-+config ARCH_MODIFIES_KEXEC_PURGATORY
-+	bool
-+
- config KEXEC
- 	bool "kexec system call"
- 	select KEXEC_CORE
-@@ -1812,6 +1817,7 @@ config KEXEC
- config KEXEC_FILE
- 	bool "kexec file based system call"
- 	select KEXEC_CORE
-+	select ARCH_MODIFIES_KEXEC_PURGATORY
- 	select BUILD_BIN2C
- 	depends on X86_64
- 	depends on CRYPTO=y
-diff --git a/arch/x86/purgatory/purgatory.c b/arch/x86/purgatory/purgatory.c
-index 25e068ba3382..391c6a66cb03 100644
---- a/arch/x86/purgatory/purgatory.c
-+++ b/arch/x86/purgatory/purgatory.c
-@@ -22,7 +22,7 @@ unsigned long backup_dest = 0;
- unsigned long backup_src = 0;
- unsigned long backup_sz = 0;
- 
--u8 sha256_digest[SHA256_DIGEST_SIZE] = { 0 };
-+u8 *sha256_digest = NULL;
- 
- struct sha_region sha_regions[16] = {};
- 
 diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index d419d0e51fe5..2a96292ee544 100644
+index 2a96292ee544..768245aa76bf 100644
 --- a/include/linux/kexec.h
 +++ b/include/linux/kexec.h
-@@ -124,8 +124,14 @@ struct purgatory_info {
- 	 */
- 	void *purgatory_buf;
+@@ -389,6 +389,37 @@ static inline void *boot_phys_to_virt(unsigned long entry)
+ 	return phys_to_virt(boot_phys_to_phys(entry));
+ }
  
-+	/* Digest of the contents of segments. */
-+	void *digest_buf;
++#ifdef CONFIG_KEXEC_FILE
++bool __weak kexec_can_hand_over_buffer(void);
++int __weak arch_kexec_add_handover_buffer(struct kimage *image,
++					  unsigned long load_addr,
++					  unsigned long size);
++int kexec_add_handover_buffer(struct kexec_buf *kbuf);
++int __weak kexec_get_handover_buffer(void **addr, unsigned long *size);
++int __weak kexec_free_handover_buffer(void);
++#else
++struct kexec_buf;
 +
- 	/* Address where purgatory is finally loaded and is executed from */
- 	unsigned long purgatory_load_addr;
++static inline bool kexec_can_hand_over_buffer(void)
++{
++	return false;
++}
 +
-+	/* Address where the digest is loaded. */
-+	unsigned long digest_load_addr;
- };
- 
- typedef int (kexec_probe_t)(const char *kernel_buf, unsigned long kernel_size);
++static inline int kexec_add_handover_buffer(struct kexec_buf *kbuf)
++{
++	return -ENOTSUPP;
++}
++
++static inline int kexec_get_handover_buffer(void **addr, unsigned long *size)
++{
++	return -ENOTSUPP;
++}
++
++static inline int kexec_free_handover_buffer(void)
++{
++	return -ENOTSUPP;
++}
++#endif /* CONFIG_KEXEC_FILE */
+ #else /* !CONFIG_KEXEC_CORE */
+ struct pt_regs;
+ struct task_struct;
 diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 0c2df7f73792..6f7fa8901171 100644
+index 6f7fa8901171..35b04296484b 100644
 --- a/kernel/kexec_file.c
 +++ b/kernel/kexec_file.c
-@@ -98,6 +98,9 @@ void kimage_file_post_load_cleanup(struct kimage *image)
- 	vfree(pi->purgatory_buf);
- 	pi->purgatory_buf = NULL;
+@@ -116,6 +116,74 @@ void kimage_file_post_load_cleanup(struct kimage *image)
+ 	image->image_loader_data = NULL;
+ }
  
-+	kfree(pi->digest_buf);
-+	pi->digest_buf = NULL;
++/**
++ * kexec_can_hand_over_buffer() - can we pass data to the kexec'd kernel?
++ */
++bool __weak kexec_can_hand_over_buffer(void)
++{
++	return false;
++}
 +
- 	vfree(pi->sechdrs);
- 	pi->sechdrs = NULL;
- 
-@@ -527,7 +530,6 @@ static int kexec_calculate_store_digests(struct kimage *image)
- 	struct shash_desc *desc;
- 	int ret = 0, i, j, zero_buf_sz, sha_region_sz;
- 	size_t desc_size, nullsz;
--	char *digest;
- 	void *zero_buf;
- 	struct kexec_sha_region *sha_regions;
- 	struct purgatory_info *pi = &image->purgatory_info;
-@@ -553,6 +555,37 @@ static int kexec_calculate_store_digests(struct kimage *image)
- 	if (!sha_regions)
- 		goto out_free_desc;
- 
-+	/*
-+	 * Set sha_regions early so that we can write it to the purgatory
-+	 * and include it in the checksum.
-+	 */
-+	for (j = i = 0; i < image->nr_segments; i++) {
-+		struct kexec_segment *ksegment = &image->segment[i];
++/**
++ * arch_kexec_add_handover_buffer() - do arch-specific steps to handover buffer
++ *
++ * Architectures should use this function to pass on the handover buffer
++ * information to the next kernel.
++ *
++ * Return: 0 on success, negative errno on error.
++ */
++int __weak arch_kexec_add_handover_buffer(struct kimage *image,
++					  unsigned long load_addr,
++					  unsigned long size)
++{
++	return -ENOTSUPP;
++}
 +
-+		if (ksegment->kbuf == pi->digest_buf)
-+			continue;
++/**
++ * kexec_add_handover_buffer() - add buffer to be used by the next kernel
++ * @kbuf:	Buffer contents and memory parameters.
++ *
++ * This function assumes that kexec_mutex is held.
++ * On successful return, @kbuf->mem will have the physical address of
++ * the buffer in the next kernel.
++ *
++ * Return: 0 on success, negative errno on error.
++ */
++int kexec_add_handover_buffer(struct kexec_buf *kbuf)
++{
++	int ret;
 +
-+		if (IS_ENABLED(CONFIG_ARCH_MODIFIES_KEXEC_PURGATORY) &&
-+		    ksegment->kbuf == pi->purgatory_buf)
-+			continue;
++	if (!kexec_can_hand_over_buffer())
++		return -ENOTSUPP;
 +
-+		sha_regions[j].start = ksegment->mem;
-+		sha_regions[j].len = ksegment->memsz;
-+		j++;
-+	}
-+
-+	ret = kexec_purgatory_get_set_symbol(image, "sha_regions", sha_regions,
-+					     sha_region_sz, false);
++	ret = kexec_add_buffer(kbuf);
 +	if (ret)
-+		goto out_free_sha_regions;
++		return ret;
 +
-+	ret = kexec_purgatory_get_set_symbol(image, "sha256_digest",
-+					     &pi->digest_load_addr,
-+					     sizeof(pi->digest_load_addr),
-+					     false);
-+	if (ret)
-+		goto out_free_sha_regions;
++	return arch_kexec_add_handover_buffer(kbuf->image, kbuf->mem,
++					      kbuf->memsz);
++}
 +
- 	desc->tfm   = tfm;
- 	desc->flags = 0;
- 
-@@ -560,21 +593,24 @@ static int kexec_calculate_store_digests(struct kimage *image)
- 	if (ret < 0)
- 		goto out_free_sha_regions;
- 
--	digest = kzalloc(SHA256_DIGEST_SIZE, GFP_KERNEL);
--	if (!digest) {
--		ret = -ENOMEM;
--		goto out_free_sha_regions;
--	}
--
--	for (j = i = 0; i < image->nr_segments; i++) {
-+	for (i = 0; i < image->nr_segments; i++) {
- 		struct kexec_segment *ksegment;
- 
- 		ksegment = &image->segment[i];
- 		/*
--		 * Skip purgatory as it will be modified once we put digest
--		 * info in purgatory.
-+		 * Skip the digest segment as it will be modified with the
-+		 * result of the checksum calculation.
- 		 */
--		if (ksegment->kbuf == pi->purgatory_buf)
-+		if (ksegment->kbuf == pi->digest_buf)
-+			continue;
++/**
++ * kexec_get_handover_buffer() - get handover buffer from the previous kernel
++ * @addr:	On successful return, set to point to the buffer contents.
++ * @size:	On successful return, set to the buffer size.
++ *
++ * Return: 0 on success, negative errno on error.
++ */
++int __weak kexec_get_handover_buffer(void **addr, unsigned long *size)
++{
++	return -ENOTSUPP;
++}
 +
-+		/*
-+		 * Some architectures need to modify the purgatory before
-+		 * jumping into it, so in those cases we need to skip the
-+		 * purgatory from the checksum calculation.
-+		 */
-+		if (IS_ENABLED(CONFIG_ARCH_MODIFIES_KEXEC_PURGATORY) &&
-+		    ksegment->kbuf == pi->purgatory_buf)
- 			continue;
- 
- 		ret = crypto_shash_update(desc, ksegment->kbuf,
-@@ -600,29 +636,11 @@ static int kexec_calculate_store_digests(struct kimage *image)
- 
- 		if (ret)
- 			break;
--
--		sha_regions[j].start = ksegment->mem;
--		sha_regions[j].len = ksegment->memsz;
--		j++;
- 	}
- 
--	if (!ret) {
--		ret = crypto_shash_final(desc, digest);
--		if (ret)
--			goto out_free_digest;
--		ret = kexec_purgatory_get_set_symbol(image, "sha_regions",
--						sha_regions, sha_region_sz, 0);
--		if (ret)
--			goto out_free_digest;
--
--		ret = kexec_purgatory_get_set_symbol(image, "sha256_digest",
--						digest, SHA256_DIGEST_SIZE, 0);
--		if (ret)
--			goto out_free_digest;
--	}
-+	if (!ret)
-+		ret = crypto_shash_final(desc, pi->digest_buf);
- 
--out_free_digest:
--	kfree(digest);
- out_free_sha_regions:
- 	vfree(sha_regions);
- out_free_desc:
-@@ -875,6 +893,10 @@ int kexec_load_purgatory(struct kimage *image, unsigned long min,
- 			 unsigned long *load_addr)
- {
- 	struct purgatory_info *pi = &image->purgatory_info;
-+	struct kexec_buf kbuf = { .image = image, .bufsz = SHA256_DIGEST_SIZE,
-+				  .memsz = SHA256_DIGEST_SIZE, .buf_align = 1,
-+				  .buf_min = min, .buf_max = max,
-+				  .top_down = top_down };
- 	int ret;
- 
- 	if (kexec_purgatory_size <= 0)
-@@ -900,6 +922,22 @@ int kexec_load_purgatory(struct kimage *image, unsigned long min,
- 	if (ret)
- 		return ret;
- 
-+	pi->digest_buf = kzalloc(SHA256_DIGEST_SIZE, GFP_KERNEL);
-+	if (!pi->digest_buf) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
++/**
++ * kexec_free_handover_buffer() - free memory used by the handover buffer
++ */
++int __weak kexec_free_handover_buffer(void)
++{
++	return -ENOTSUPP;
++}
 +
-+	/*
-+	 * Add a separate segment for the digest so that we don't have to modify
-+	 * the purgatory segment after we calculate the kexec image checksum.
-+	 */
-+	kbuf.buffer = pi->digest_buf;
-+	ret = kexec_add_buffer(&kbuf);
-+	if (ret)
-+		goto out;
-+	pi->digest_load_addr = kbuf.mem;
-+
- 	ret = kexec_apply_relocations(image);
- 	if (ret)
- 		goto out;
+ /*
+  * In file mode list of segments is prepared by kernel. Copy relevant
+  * data from user space, do error checking, prepare segment list
 -- 
 1.9.1
