@@ -1,49 +1,44 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZbjL5tl9zDsXY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:27:02 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8FBNLUx041056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 07:27:00 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25fsbhc843-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZdqT23vRzDsXT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:29 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8FCw62l096228
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:26 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25fmmjq0uk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 07:26:59 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:26 -0400
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Thu, 15 Sep 2016 21:26:54 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 545B73578056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:26:52 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8FBQqr761931656
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:26:52 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8FBQp3V008497
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:26:52 +1000
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-security-module <linux-security-module@vger.kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
- Andreas Steffen <andreas.steffen@strongswan.org>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
- kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: [PATCH v4 9/9] ima: platform-independent hash value
-Date: Thu, 15 Sep 2016 07:26:11 -0400
-In-Reply-To: <1473938771-2782-1-git-send-email-zohar@linux.vnet.ibm.com>
-References: <1473938771-2782-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-Id: <1473938771-2782-10-git-send-email-zohar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 15 Sep 2016 23:02:23 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A05152BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:20 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8FD2K7c61472802
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:20 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8FD2JYe030406
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:20 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, mpe@ellerman.id.au
+Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
+ linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH 01/13] powerpc: Add #defs for paca->soft_enabled flags
+Date: Thu, 15 Sep 2016 18:31:51 +0530
+In-Reply-To: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1473944523-624-2-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,40 +48,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andreas Steffen <andreas.steffen@strongswan.org>
+Two #defs IRQ_DISABLE_LEVEL_NONE and IRQ_DISABLE_LEVEL_LINUX
+are added to be used when updating paca->soft_enabled.
 
-For remote attestion it is important for the ima measurement values
-to be platform-independent. Therefore integer fields to be hashed
-must be converted to canonical format.
-
-Changelog:
-- Define canonical format as little endian (Mimi)
-
-Signed-off-by: Andreas Steffen <andreas.steffen@strongswan.org>
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- security/integrity/ima/ima_crypto.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/security/integrity/ima/ima_crypto.c b/security/integrity/ima/ima_crypto.c
-index 38f2ed8..802d5d2 100644
---- a/security/integrity/ima/ima_crypto.c
-+++ b/security/integrity/ima/ima_crypto.c
-@@ -477,11 +477,13 @@ static int ima_calc_field_array_hash_tfm(struct ima_field_data *field_data,
- 		u8 buffer[IMA_EVENT_NAME_LEN_MAX + 1] = { 0 };
- 		u8 *data_to_hash = field_data[i].data;
- 		u32 datalen = field_data[i].len;
-+		u32 datalen_to_hash =
-+		    !ima_canonical_fmt ? datalen : cpu_to_le32(datalen);
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index c7d82ff62a33..df5def1f635a 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -27,6 +27,12 @@
+ #define PACA_IRQ_EE_EDGE	0x10 /* BookE only */
+ #define PACA_IRQ_HMI		0x20
  
- 		if (strcmp(td->name, IMA_TEMPLATE_IMA_NAME) != 0) {
- 			rc = crypto_shash_update(shash,
--						(const u8 *) &field_data[i].len,
--						sizeof(field_data[i].len));
-+						(const u8 *) &datalen_to_hash,
-+						sizeof(datalen_to_hash));
- 			if (rc)
- 				break;
- 		} else if (strcmp(td->fields[i]->field_id, "n") == 0) {
++/*
++ * flags for paca->soft_enabled
++ */
++#define IRQ_DISABLE_MASK_NONE		1
++#define IRQ_DISABLE_MASK_LINUX		0
++
+ #endif /* CONFIG_PPC64 */
+ 
+ #ifndef __ASSEMBLY__
 -- 
-2.1.0
+2.7.4
