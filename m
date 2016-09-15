@@ -1,47 +1,45 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZMHR3stKzDsTX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZMHR4T7lzDsW3
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 12:07:15 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sZMHQ5M4Dz9t0t
+ by ozlabs.org (Postfix) with ESMTPS id 3sZMHQ6y5kz9t0p
  for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:14 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8F23LB3102936
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:12 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25exsn0m1x-1
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8F23J5Y083672
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:13 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25ewqam1h5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:12 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 15 Sep 2016 12:07:09 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4F4CF2CE8054
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:08 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8F278TL6488554
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:08 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8F277Cs030650
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:08 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3D6FB2BB0054
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:07 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8F277Bc2425174
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:07 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8F276U3024587
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:07 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH 2/4] powerpc/eeh: Export eeh_pe_state_mark()
-Date: Thu, 15 Sep 2016 12:07:20 +1000
-In-Reply-To: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Message-Id: <1473905242-898-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 0/4] powerpc/powernv: PCI Surprise Hotplug Support
+Date: Thu, 15 Sep 2016 12:07:18 +1000
+Message-Id: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,26 +49,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This exports eeh_pe_state_mark(). It will be used to mark the surprise
-hot removed PE as isolated to avoid unexpected EEH error reporting in
-surprise remove path.
+This series of patches supports PCI surprise hotplug on PowerNV platform.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_pe.c | 1 +
- 1 file changed, 1 insertion(+)
+   * This newly added functionality depends on skiboot's changes. However,
+     the functionality is disabled simply when skiboot doesn't support it.
+     For one specific slot, property "ibm,slot-surprise-pluggable" of the
+     slot's device node is set to 1 when surprise hotplug is claimed by
+     skiboot. 
+   * The interrupts because of presence and link state change are enabled
+     in order to support PCI surprise hotplug. The surprise hotplug events
+     are queued to the PCI slot and they're picked up for further processing
+     in serialized fashion. The surprise and managed hotplug share same code
+     flow except: the affected PEs are put into frozen state to avoid unexpected
+     EEH error reporting in surprise hot remove path.
 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index f0520da..de7d091 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -581,6 +581,7 @@ void eeh_pe_state_mark(struct eeh_pe *pe, int state)
- {
- 	eeh_pe_traverse(pe, __eeh_pe_state_mark, &state);
- }
-+EXPORT_SYMBOL_GPL(eeh_pe_state_mark);
- 
- static void *__eeh_pe_dev_mode_mark(void *data, void *flag)
- {
+PATCH[1/4] and PATCH[2/4] allows to freeze PEs to avoid unexpected EEH error
+reporting in PCI surprise hot remove path. PATCH[3/4] clears PE's frozen state
+on initializing it because the PE might have been put into frozen state in last
+PCI surprise hot remove. PATCH[4/4] supports PCI surprise hotplug in the PowerNV
+PCI hotplug driver.
+
+Gavin Shan (4):
+  powerpc/eeh: Allow to freeze PE in eeh_pe_set_option()
+  powerpc/eeh: Export eeh_pe_state_mark()
+  powerpc/powernv: Unfreeze PE on allocation
+  drivers/pci/hotplug: Support surprise hotplug
+
+ arch/powerpc/include/asm/pnv-pci.h        |   9 ++
+ arch/powerpc/kernel/eeh.c                 |   1 +
+ arch/powerpc/kernel/eeh_pe.c              |   1 +
+ arch/powerpc/platforms/powernv/pci-ioda.c |  12 ++
+ drivers/pci/hotplug/pnv_php.c             | 219 ++++++++++++++++++++++++++++++
+ 5 files changed, 242 insertions(+)
+
 -- 
 2.1.0
