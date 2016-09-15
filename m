@@ -1,25 +1,24 @@
 Return-Path: <npiggin@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZPfr1w9fzDsWb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 13:54:12 +1000 (AEST)
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sZPfq5Ksxz9s8x
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 13:54:11 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id oz2so1548794pac.0
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 20:54:11 -0700 (PDT)
-Date: Thu, 15 Sep 2016 13:54:03 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZPnV61gJzDsWh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 13:59:58 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id z84so1641323pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Sep 2016 20:59:58 -0700 (PDT)
+Date: Thu, 15 Sep 2016 13:59:48 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Don't change the section in _GLOBAL()
-Message-ID: <20160915135403.172e2e3e@roar.ozlabs.ibm.com>
-In-Reply-To: <1473900020-3281-1-git-send-email-mpe@ellerman.id.au>
-References: <1473900020-3281-1-git-send-email-mpe@ellerman.id.au>
+To: Carlos Eduardo Seo <cseo@linux.vnet.ibm.com>
+Cc: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, mikey@neuling.org, wei.guo.simon@gmail.com,
+ anton@samba.org
+Subject: Re: [PATCH 0/2] Enable MSR_TM lazily
+Message-ID: <20160915135948.3da473dd@roar.ozlabs.ibm.com>
+In-Reply-To: <cdf17bd0-d421-7cb6-527d-ab9e916edafa@linux.vnet.ibm.com>
+References: <20160914080216.13833-1-cyrilbur@gmail.com>
+ <20160914212824.4936a9a2@roar.ozlabs.ibm.com>
+ <cdf17bd0-d421-7cb6-527d-ab9e916edafa@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,77 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 Sep 2016 10:40:20 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Wed, 14 Sep 2016 11:10:22 -0300
+Carlos Eduardo Seo <cseo@linux.vnet.ibm.com> wrote:
 
-> Currently the _GLOBAL() macro unilaterally sets the assembler section to
-> ".text" at the start of the macro. This is rude as the caller may be
-> using a different section.
+> On 9/14/16 8:28 AM, Nicholas Piggin wrote:
+> >
+> > How common it is for glibc to be built with elision?
+> >  
 > 
-> So let the caller decide which section to emit the code into. On big
-> endian we do need to switch to the ".opd" section to emit the OPD, but
-> do that with pushsection/popsection, thereby leaving the original
-> section intact.
+> Not that common. We have it built with TLE support in Ubuntu (starting 
+> in 15.04), SLES 12 (since SP2) and AT 9.0-0.
 > 
-> The only place I could find where this requires changes to the code is
-> in misc_32.S, where we need to switch back to ".text" after
-> flush_icache_range() which is in ".kprobes.text".
+> However, it is only enabled by default in Ubuntu. For SLES and AT 9.0, 
+> the user has to set an env var to enable it (it's a hack).
 > 
-> I verified that the order of all entries in System.map is unchanged
-> after this patch. The actual addresses shift around slightly so you
-> can't just diff the System.map.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> There is some work upstream to add a tunables framework to glibc. That 
+> will allow us to properly provide a way to users enable/disable TLE as 
+> they wish. That patch is almost in, and as soon as it's committed, we'll 
+> start working on the tunable for TLE.
 
-Excellent, thanks for going through it.
+Okay, but for TLE-enabled case, we still want to skip the tabort
+before syscall on recent kernels, so we could add that now with a 
+relatively small patch couldn't we?
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
-> ---
-> 
-> If anyone can think of a better method to verify we are still emitting
-> everything in the same sections let me know.
-> 
-> 
->  arch/powerpc/include/asm/ppc_asm.h | 8 ++------
->  arch/powerpc/kernel/misc_32.S      | 3 +++
->  2 files changed, 5 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-> index d5d5b5e348f2..479287045166 100644
-> --- a/arch/powerpc/include/asm/ppc_asm.h
-> +++ b/arch/powerpc/include/asm/ppc_asm.h
-> @@ -201,14 +201,12 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  #ifdef PPC64_ELF_ABI_v2
->  
->  #define _GLOBAL(name) \
-> -	.section ".text"; \
->  	.align 2 ; \
->  	.type name,@function; \
->  	.globl name; \
->  name:
->  
->  #define _GLOBAL_TOC(name) \
-> -	.section ".text"; \
->  	.align 2 ; \
->  	.type name,@function; \
->  	.globl name; \
-> @@ -232,16 +230,15 @@ name:
->  #define GLUE(a,b) XGLUE(a,b)
->  
->  #define _GLOBAL(name) \
-> -	.section ".text"; \
->  	.align 2 ; \
->  	.globl name; \
->  	.globl GLUE(.,name); \
-> -	.section ".opd","aw"; \
-> +	.pushsection ".opd","aw"; \
->  name: \
->  	.quad GLUE(.,name); \
->  	.quad .TOC.@tocbase; \
->  	.quad 0; \
-> -	.previous; \
-> +	.popsection; \
-
-I think you can still use .section and .previous here, but it's
-much of a muchness.
+Thanks,
+Nick
