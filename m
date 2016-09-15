@@ -1,45 +1,20 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZfkx2dYLzDsXk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:43:35 +1000 (AEST)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 7B8BB20534
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 13:43:31 +0000 (UTC)
-Received: from mail-yb0-f177.google.com (mail-yb0-f177.google.com
- [209.85.213.177])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D1E1C2046F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 13:43:29 +0000 (UTC)
-Received: by mail-yb0-f177.google.com with SMTP id d69so33035866ybf.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 06:43:29 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1473883618-14998-2-git-send-email-arbab@linux.vnet.ibm.com>
-References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1473883618-14998-2-git-send-email-arbab@linux.vnet.ibm.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 15 Sep 2016 08:43:08 -0500
-Message-ID: <CAL_JsqK5ngY-eJggPSo5AGcv4CC2b8Y1X_aYzr06_Zf6Kv-u=w@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] drivers/of: recognize status property of dt memory
- nodes
-To: Reza Arbab <arbab@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
- Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZgmZ1k1bzDsXr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 00:30:05 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id pp5so2200240pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 07:30:05 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] powerpc: do not use kprobe section to exempt exception
+ handlers
+Date: Fri, 16 Sep 2016 00:29:44 +1000
+Message-Id: <20160915142944.9322-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,66 +24,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 14, 2016 at 3:06 PM, Reza Arbab <arbab@linux.vnet.ibm.com> wrote:
-> Respect the standard dt "status" property when scanning memory nodes in
-> early_init_dt_scan_memory(), so that if the property is present and not
-> "okay", no memory will be added.
->
-> The use case at hand is accelerator or device memory, which may be
-> unusable until post-boot initialization of the memory link. Such a node
-> can be described in the dt as any other, given its status is "disabled".
-> Per the device tree specification,
->
-> "disabled"
->         Indicates that the device is not presently operational, but it
->         might become operational in the future (for example, something
->         is not plugged in, or switched off).
->
-> Once such memory is made operational, it can then be hotplugged.
->
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-> ---
->  drivers/of/fdt.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
->
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 085c638..fc19590 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -1022,8 +1022,10 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
->                                      int depth, void *data)
->  {
->         const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-> +       const char *status;
->         const __be32 *reg, *endp;
->         int l;
-> +       bool add_memory;
->
->         /* We are scanning "memory" nodes only */
->         if (type == NULL) {
-> @@ -1044,6 +1046,9 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
->
->         endp = reg + (l / sizeof(__be32));
->
-> +       status = of_get_flat_dt_prop(node, "status", NULL);
-> +       add_memory = !status || !strcmp(status, "okay");
+Use the blacklist macros instead. This allows the linker to move
+exception handler functions close to callers and avoids trampolines in
+larger kernels.
 
-Move this into it's own function to mirror the unflattened version
-(of_device_is_available). Also, make sure the logic is the same. IIRC,
-"ok" is also allowed.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/asm-prototypes.h |  6 +++---
+ arch/powerpc/kernel/hw_breakpoint.c       |  9 ++++++---
+ arch/powerpc/kernel/traps.c               | 21 ++++++++++++++-------
+ arch/powerpc/mm/fault.c                   |  4 ++--
+ 4 files changed, 25 insertions(+), 15 deletions(-)
 
-> +
->         pr_debug("memory scan node %s, reg size %d,\n", uname, l);
->
->         while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
-> @@ -1057,6 +1062,9 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
->                 pr_debug(" - %llx ,  %llx\n", (unsigned long long)base,
->                     (unsigned long long)size);
->
-> +               if (!add_memory)
-> +                       continue;
-
-There's no point in checking this in the loop. status applies to the
-whole node. Just return up above.
-
-Rob
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index e71b909..b1c3abe 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -52,8 +52,8 @@ void SMIException(struct pt_regs *regs);
+ void handle_hmi_exception(struct pt_regs *regs);
+ void instruction_breakpoint_exception(struct pt_regs *regs);
+ void RunModeException(struct pt_regs *regs);
+-void __kprobes single_step_exception(struct pt_regs *regs);
+-void __kprobes program_check_exception(struct pt_regs *regs);
++void single_step_exception(struct pt_regs *regs);
++void program_check_exception(struct pt_regs *regs);
+ void alignment_exception(struct pt_regs *regs);
+ void StackOverflow(struct pt_regs *regs);
+ void nonrecoverable_exception(struct pt_regs *regs);
+@@ -70,6 +70,6 @@ void unrecoverable_exception(struct pt_regs *regs);
+ void kernel_bad_stack(struct pt_regs *regs);
+ void system_reset_exception(struct pt_regs *regs);
+ void machine_check_exception(struct pt_regs *regs);
+-void __kprobes emulation_assist_interrupt(struct pt_regs *regs);
++void emulation_assist_interrupt(struct pt_regs *regs);
+ 
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index aec9a1b..9781c69 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -206,7 +206,7 @@ void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs)
+ /*
+  * Handle debug exception notifications.
+  */
+-int __kprobes hw_breakpoint_handler(struct die_args *args)
++int hw_breakpoint_handler(struct die_args *args)
+ {
+ 	int rc = NOTIFY_STOP;
+ 	struct perf_event *bp;
+@@ -290,11 +290,12 @@ out:
+ 	rcu_read_unlock();
+ 	return rc;
+ }
++NOKPROBE_SYMBOL(hw_breakpoint_handler);
+ 
+ /*
+  * Handle single-step exceptions following a DABR hit.
+  */
+-static int __kprobes single_step_dabr_instruction(struct die_args *args)
++static int single_step_dabr_instruction(struct die_args *args)
+ {
+ 	struct pt_regs *regs = args->regs;
+ 	struct perf_event *bp = NULL;
+@@ -329,11 +330,12 @@ static int __kprobes single_step_dabr_instruction(struct die_args *args)
+ 
+ 	return NOTIFY_STOP;
+ }
++NOKPROBE_SYMBOL(single_step_dabr_instruction);
+ 
+ /*
+  * Handle debug exception notifications.
+  */
+-int __kprobes hw_breakpoint_exceptions_notify(
++int hw_breakpoint_exceptions_notify(
+ 		struct notifier_block *unused, unsigned long val, void *data)
+ {
+ 	int ret = NOTIFY_DONE;
+@@ -349,6 +351,7 @@ int __kprobes hw_breakpoint_exceptions_notify(
+ 
+ 	return ret;
+ }
++NOKPROBE_SYMBOL(hw_breakpoint_exceptions_notify);
+ 
+ /*
+  * Release the user breakpoints used by ptrace
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 62859eb..7cbd6cf 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -117,7 +117,7 @@ static int die_owner = -1;
+ static unsigned int die_nest_count;
+ static int die_counter;
+ 
+-static unsigned __kprobes long oops_begin(struct pt_regs *regs)
++static unsigned long oops_begin(struct pt_regs *regs)
+ {
+ 	int cpu;
+ 	unsigned long flags;
+@@ -144,8 +144,9 @@ static unsigned __kprobes long oops_begin(struct pt_regs *regs)
+ 		pmac_backlight_unblank();
+ 	return flags;
+ }
++NOKPROBE_SYMBOL(oops_begin);
+ 
+-static void __kprobes oops_end(unsigned long flags, struct pt_regs *regs,
++static void oops_end(unsigned long flags, struct pt_regs *regs,
+ 			       int signr)
+ {
+ 	bust_spinlocks(0);
+@@ -196,8 +197,9 @@ static void __kprobes oops_end(unsigned long flags, struct pt_regs *regs,
+ 		panic("Fatal exception");
+ 	do_exit(signr);
+ }
++NOKPROBE_SYMBOL(oops_end);
+ 
+-static int __kprobes __die(const char *str, struct pt_regs *regs, long err)
++static int __die(const char *str, struct pt_regs *regs, long err)
+ {
+ 	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
+ #ifdef CONFIG_PREEMPT
+@@ -221,6 +223,7 @@ static int __kprobes __die(const char *str, struct pt_regs *regs, long err)
+ 
+ 	return 0;
+ }
++NOKPROBE_SYMBOL(__die);
+ 
+ void die(const char *str, struct pt_regs *regs, long err)
+ {
+@@ -802,7 +805,7 @@ void RunModeException(struct pt_regs *regs)
+ 	_exception(SIGTRAP, regs, 0, 0);
+ }
+ 
+-void __kprobes single_step_exception(struct pt_regs *regs)
++void single_step_exception(struct pt_regs *regs)
+ {
+ 	enum ctx_state prev_state = exception_enter();
+ 
+@@ -819,6 +822,7 @@ void __kprobes single_step_exception(struct pt_regs *regs)
+ bail:
+ 	exception_exit(prev_state);
+ }
++NOKPROBE_SYMBOL(single_step_exception);
+ 
+ /*
+  * After we have successfully emulated an instruction, we have to
+@@ -1140,7 +1144,7 @@ static int emulate_math(struct pt_regs *regs)
+ static inline int emulate_math(struct pt_regs *regs) { return -1; }
+ #endif
+ 
+-void __kprobes program_check_exception(struct pt_regs *regs)
++void program_check_exception(struct pt_regs *regs)
+ {
+ 	enum ctx_state prev_state = exception_enter();
+ 	unsigned int reason = get_reason(regs);
+@@ -1260,16 +1264,18 @@ sigill:
+ bail:
+ 	exception_exit(prev_state);
+ }
++NOKPROBE_SYMBOL(program_check_exception);
+ 
+ /*
+  * This occurs when running in hypervisor mode on POWER6 or later
+  * and an illegal instruction is encountered.
+  */
+-void __kprobes emulation_assist_interrupt(struct pt_regs *regs)
++void emulation_assist_interrupt(struct pt_regs *regs)
+ {
+ 	regs->msr |= REASON_ILLEGAL;
+ 	program_check_exception(regs);
+ }
++NOKPROBE_SYMBOL(emulation_assist_interrupt);
+ 
+ void alignment_exception(struct pt_regs *regs)
+ {
+@@ -1656,7 +1662,7 @@ static void handle_debug(struct pt_regs *regs, unsigned long debug_status)
+ 		mtspr(SPRN_DBCR0, current->thread.debug.dbcr0);
+ }
+ 
+-void __kprobes DebugException(struct pt_regs *regs, unsigned long debug_status)
++void DebugException(struct pt_regs *regs, unsigned long debug_status)
+ {
+ 	current->thread.debug.dbsr = debug_status;
+ 
+@@ -1717,6 +1723,7 @@ void __kprobes DebugException(struct pt_regs *regs, unsigned long debug_status)
+ 	} else
+ 		handle_debug(regs, debug_status);
+ }
++NOKPROBE_SYMBOL(DebugException);
+ #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
+ 
+ #if !defined(CONFIG_TAU_INT)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index bb1ffc5..d0b137d 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -205,7 +205,7 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+  * The return value is 0 if the fault was handled, or the signal
+  * number if this is a kernel fault that can't be handled here.
+  */
+-int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
++int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 			    unsigned long error_code)
+ {
+ 	enum ctx_state prev_state = exception_enter();
+@@ -498,8 +498,8 @@ bad_area_nosemaphore:
+ bail:
+ 	exception_exit(prev_state);
+ 	return rc;
+-
+ }
++NOKPROBE_SYMBOL(do_page_fault);
+ 
+ /*
+  * bad_page_fault is called when we have a bad access from the kernel.
+-- 
+2.9.3
