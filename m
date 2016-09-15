@@ -1,44 +1,45 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <robh+dt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZdr05KZ0zDsYn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:56 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8FCxMm0084607
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:54 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25ftr6w15s-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:54 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 15 Sep 2016 23:02:50 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 726312CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:48 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8FD2mh61573326
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:48 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8FD2lv6032084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:48 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, mpe@ellerman.id.au
-Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
- linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH 13/13] powerpc: rewrite local_t using soft_irq
-Date: Thu, 15 Sep 2016 18:32:03 +0530
-In-Reply-To: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1473944523-624-14-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZfkx2dYLzDsXk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:43:35 +1000 (AEST)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 7B8BB20534
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 13:43:31 +0000 (UTC)
+Received: from mail-yb0-f177.google.com (mail-yb0-f177.google.com
+ [209.85.213.177])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id D1E1C2046F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 13:43:29 +0000 (UTC)
+Received: by mail-yb0-f177.google.com with SMTP id d69so33035866ybf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 06:43:29 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1473883618-14998-2-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1473883618-14998-2-git-send-email-arbab@linux.vnet.ibm.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Thu, 15 Sep 2016 08:43:08 -0500
+Message-ID: <CAL_JsqK5ngY-eJggPSo5AGcv4CC2b8Y1X_aYzr06_Zf6Kv-u=w@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] drivers/of: recognize status property of dt memory
+ nodes
+To: Reza Arbab <arbab@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
+ Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,268 +49,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Local atomic operations are fast and highly reentrant per CPU counters.
-Used for percpu variable updates. Local atomic operations only guarantee
-variable modification atomicity wrt the CPU which owns the data and
-these needs to be executed in a preemption safe way.
+On Wed, Sep 14, 2016 at 3:06 PM, Reza Arbab <arbab@linux.vnet.ibm.com> wrote:
+> Respect the standard dt "status" property when scanning memory nodes in
+> early_init_dt_scan_memory(), so that if the property is present and not
+> "okay", no memory will be added.
+>
+> The use case at hand is accelerator or device memory, which may be
+> unusable until post-boot initialization of the memory link. Such a node
+> can be described in the dt as any other, given its status is "disabled".
+> Per the device tree specification,
+>
+> "disabled"
+>         Indicates that the device is not presently operational, but it
+>         might become operational in the future (for example, something
+>         is not plugged in, or switched off).
+>
+> Once such memory is made operational, it can then be hotplugged.
+>
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> ---
+>  drivers/of/fdt.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 085c638..fc19590 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -1022,8 +1022,10 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+>                                      int depth, void *data)
+>  {
+>         const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+> +       const char *status;
+>         const __be32 *reg, *endp;
+>         int l;
+> +       bool add_memory;
+>
+>         /* We are scanning "memory" nodes only */
+>         if (type == NULL) {
+> @@ -1044,6 +1046,9 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+>
+>         endp = reg + (l / sizeof(__be32));
+>
+> +       status = of_get_flat_dt_prop(node, "status", NULL);
+> +       add_memory = !status || !strcmp(status, "okay");
 
-Here is the design of this patch. Since local_* operations
-are only need to be atomic to interrupts (IIUC), we have two options.
-Either replay the "op" if interrupted or replay the interrupt after
-the "op". Initial patchset posted was based on implementing local_* operation
-based on CR5 which replay's the "op". Patchset had issues in case of
-rewinding the address pointor from an array. This make the slow patch
-really slow. Since CR5 based implementation proposed using __ex_table to find
-the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
+Move this into it's own function to mirror the unflattened version
+(of_device_is_available). Also, make sure the logic is the same. IIRC,
+"ok" is also allowed.
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
+> +
+>         pr_debug("memory scan node %s, reg size %d,\n", uname, l);
+>
+>         while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
+> @@ -1057,6 +1062,9 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+>                 pr_debug(" - %llx ,  %llx\n", (unsigned long long)base,
+>                     (unsigned long long)size);
+>
+> +               if (!add_memory)
+> +                       continue;
 
-But this patch uses, local_irq_pmu_save to soft_disable
-interrupts (including PMIs). After finishing the "op", local_irq_pmu_restore()
-called and correspondingly interrupts are replayed if any occured.
+There's no point in checking this in the loop. status applies to the
+whole node. Just return up above.
 
-patch re-write the current local_* functions to use arch_local_irq_disbale.
-Base flow for each function is
-
-{
-	local_irq_pmu_save(flags)
-	load
-	..
-	store
-	local_irq_pmu_restore(flags)
-}
-
-Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
-instruction pair is used for local_* operations, which are heavy
-on cycle count and they dont support a local variant. So to
-see whether the new implementation helps, used a modified
-version of Rusty's benchmark code on local_t.
-
-https://lkml.org/lkml/2008/12/16/450
-
-Modifications to Rusty's benchmark code:
-- Executed only local_t test
-
-Here are the values with the patch.
-
-Time in ns per iteration
-
-Local_t             Without Patch           With Patch
-
-_inc                        28              8
-_add                        28              8
-_read                       3               3
-_add_return         28              7
-
-Currently only asm/local.h has been rewrite, and also
-the entire change is tested only in PPC64 (pseries guest)
-and PPC64 host (LE)
-
-TODO:
-	- local_cmpxchg and local_xchg needs modification.
-
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/local.h | 94 ++++++++++++++++++++++++++++------------
- 1 file changed, 66 insertions(+), 28 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-index b8da91363864..fb5728abb4e9 100644
---- a/arch/powerpc/include/asm/local.h
-+++ b/arch/powerpc/include/asm/local.h
-@@ -3,6 +3,9 @@
- 
- #include <linux/percpu.h>
- #include <linux/atomic.h>
-+#include <linux/irqflags.h>
-+
-+#include <asm/hw_irq.h>
- 
- typedef struct
- {
-@@ -14,24 +17,50 @@ typedef struct
- #define local_read(l)	atomic_long_read(&(l)->a)
- #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
- 
--#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
--#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
--#define local_inc(l)	atomic_long_inc(&(l)->a)
--#define local_dec(l)	atomic_long_dec(&(l)->a)
-+static __inline__ void local_add(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	add     %0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	local_irq_pmu_restore(flags);
-+}
-+
-+static __inline__ void local_sub(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	subf    %0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	local_irq_pmu_restore(flags);
-+}
- 
- static __inline__ long local_add_return(long a, local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	local_irq_pmu_save(flags);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%2,0) "			# local_add_return\n\
-+	PPC_LL" %0,0(%2)\n\
- 	add	%0,%1,%0\n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%2 \n\
--	bne-	1b"
-+	PPC_STL	"%0,0(%2)\n"
- 	: "=&r" (t)
- 	: "r" (a), "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	local_irq_pmu_restore(flags);
- 
- 	return t;
- }
-@@ -41,16 +70,18 @@ static __inline__ long local_add_return(long a, local_t *l)
- static __inline__ long local_sub_return(long a, local_t *l)
- {
- 	long t;
-+	unsigned long flags;
-+
-+	local_irq_pmu_save(flags);
- 
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%2,0) "			# local_sub_return\n\
-+"1:"	PPC_LL" %0,0(%2)\n\
- 	subf	%0,%1,%0\n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%2 \n\
--	bne-	1b"
-+	PPC_STL	"%0,0(%2)\n"
- 	: "=&r" (t)
- 	: "r" (a), "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	local_irq_pmu_restore(flags);
- 
- 	return t;
- }
-@@ -58,16 +89,17 @@ static __inline__ long local_sub_return(long a, local_t *l)
- static __inline__ long local_inc_return(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	local_irq_pmu_save(flags);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_inc_return\n\
-+"1:"	PPC_LL" %0,0(%1)\n\
- 	addic	%0,%0,1\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1 \n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "xer", "memory");
-+	local_irq_pmu_restore(flags);
- 
- 	return t;
- }
-@@ -85,20 +117,24 @@ static __inline__ long local_inc_return(local_t *l)
- static __inline__ long local_dec_return(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	local_irq_pmu_save(flags);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_dec_return\n\
-+	PPC_LL" %0,0(%1)\n\
- 	addic	%0,%0,-1\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1\n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "xer", "memory");
-+	local_irq_pmu_restore(flags);
- 
- 	return t;
- }
- 
-+#define local_inc(l)	local_inc_return(l)
-+#define local_dec(l)	local_dec_return(l)
-+
- #define local_cmpxchg(l, o, n) \
- 	(cmpxchg_local(&((l)->a.counter), (o), (n)))
- #define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
-@@ -115,20 +151,21 @@ static __inline__ long local_dec_return(local_t *l)
- static __inline__ int local_add_unless(local_t *l, long a, long u)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	local_irq_pmu_save(flags);
- 	__asm__ __volatile__ (
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_add_unless\n\
-+	PPC_LL" %0,0(%1)\n\
- 	cmpw	0,%0,%3 \n\
- 	beq-	2f \n\
- 	add	%0,%2,%0 \n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%1 \n\
--	bne-	1b \n"
-+	PPC_STL" %0,0(%1) \n"
- "	subf	%0,%2,%0 \n\
- 2:"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter)), "r" (a), "r" (u)
- 	: "cc", "memory");
-+	local_irq_pmu_restore(flags);
- 
- 	return t != u;
- }
-@@ -145,19 +182,20 @@ static __inline__ int local_add_unless(local_t *l, long a, long u)
- static __inline__ long local_dec_if_positive(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	local_irq_pmu_save(flags);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_dec_if_positive\n\
-+	PPC_LL" %0,0(%1)\n\
- 	cmpwi	%0,1\n\
- 	addi	%0,%0,-1\n\
- 	blt-	2f\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1\n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	"\n\
- 2:"	: "=&b" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	local_irq_pmu_restore(flags);
- 
- 	return t;
- }
--- 
-2.7.4
+Rob
