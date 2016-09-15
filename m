@@ -1,22 +1,46 @@
-Return-Path: <pavel@ucw.cz>
-Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
- [195.113.26.193])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZYSc2xStzDsXL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 19:45:52 +1000 (AEST)
-Date: Thu, 15 Sep 2016 11:37:56 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Thorsten Leemhuis <regressions@leemhuis.info>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: Linux 4.8: Reported regressions as of Sunday, 2016-08-28
-Message-ID: <20160915093756.GB13132@amd>
-References: <3b3d733e-f193-b039-6113-6c0e5b44c4e7@leemhuis.info>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3b3d733e-f193-b039-6113-6c0e5b44c4e7@leemhuis.info>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZbhl6Q57zDsTX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:26:31 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8FBNLV7084184
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 07:26:29 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25fpy8kqpv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 07:26:29 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Thu, 15 Sep 2016 21:26:25 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 07F053578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:26:23 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8FBQNoB6816230
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:26:23 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8FBQMMA007941
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 21:26:22 +1000
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-security-module <linux-security-module@vger.kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
+ kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v4 0/9] ima: carry the measurement list across kexec 
+Date: Thu, 15 Sep 2016 07:26:02 -0400
+Message-Id: <1473938771-2782-1-git-send-email-zohar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +50,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi!
+The TPM PCRs are only reset on a hard reboot.  In order to validate a
+TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
+of the running kernel must be saved and then restored on the subsequent
+boot, possibly of a different architecture.
 
-> Hi! Here is my second regression report for Linux 4.8. It lists 11
-> regressions. 5 of them are new; 5 mentioned in the last report two 
-> weeks ago got fixed.
-> 
-> FWIW: A small detail: I did not include "Regression - SATA disks behind 
-> USB ones on v4.8-rc1, breaking boot. [Re: Who reordered my disks]" 
-> (http://www.spinics.net/lists/linux-usb/msg144871.html ) in below list 
-> report. The discussion mentions that device names like /dev/sd? are not 
-> considered stable as they might change depending on various factors -- 
-> like the order in which modules are loaded or other timing issues (like 
-> in this case). That is how it is afaik (even if it's not well known), 
-> and that's why I didn't include the issue; let me know if you think it 
-> should be on the list.
-> 
-> OTOH I included "Commit cb4f71c429 deliberately changes order of 
-> network interfaces" (http://www.spinics.net/lists/kernel/msg2325600.html )
-> for now, as I think traditional network interface names (eth0, eth1, ...)
-> might be considered stable -- but I'm not sure, that's why I raise it
-> here.
-> 
-> Anyway, you know the drill: Are you aware of any other regressions?
-> Then please let me know. And tell me if there is anything in the
-> report that shouldn't be there.
-> 
-> Ciao, Thorsten
-> 
-> P.S.: Thanks to all those that Aaro Koskinen, Hans de Goede, Pavel 
-> Machek for CCing me when reporting regressions. Much appreciated! Ohh, 
-> and thx to all those that replied when I asked them for status updates
-> when things look stuck.
+The existing securityfs binary_runtime_measurements file conveniently
+provides a serialized format of the IMA measurement list. This patch
+set serializes the measurement list in this format and restores it.
 
-Hmm, and there's one more apparently. See
+Up to now, the binary_runtime_measurements was defined as architecture
+native format.  The assumption being that userspace could and would
+handle any architecture conversions.  With the ability of carrying the
+measurement list across kexec, possibly from one architecture to a
+different one, the per boot architecture information is lost and with it
+the ability of recalculating the template digest hash.  To resolve this
+problem, without breaking the existing ABI, this patch set introduces
+the boot command line option "ima_canonical_fmt", which is arbitrarily
+defined as little endian.
 
-Date: Tue, 13 Sep 2016 22:38:45 +0200
-From: Martin Steigerwald <martin@lichtvoll.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, daniel.vetter@intel.com,
-        jani.nikula@linux.intel.com, intel-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, "Rafael J. Wysocki"
-        <rjw@rjwysocki.net>
-Subject: Re: 4.8-rc1: it is now common that machine needs re-run of xrandr
-        after resume
-User-Agent: KMail/5.2.3 (Linux/4.8.0-rc6-tp520-btrfstrim+; KDE/5.25.0; x86_64;  
-        ; )
+The need for this boot command line option will be limited to the
+existing version 1 format of the binary_runtime_measurements.
+Subsequent formats will be defined as canonical format (eg. TPM 2.0
+support for larger digests).
 
-I'm glad I'm not the only one seeing it, but I don't have idea how to
-actually debug it.
+This patch set pre-req's Thiago Bauermann's "kexec_file: Add buffer
+hand-over for the next kernel" patch set. 
 
-Thanks and best regards,
-									Pavel
+These patches can also be found in the next-kexec-restore branch of:
+git://git.kernel.org/pub/scm/linux/kernel/git/zohar/linux-integrity.git
+
+Changelog v4:
+- Fixed "spinlock bad magic" BUG - reported by Dmitry Vyukov
+- Rebased on Thiago Bauermann's v5 patch set
+- Removed the skip_checksum initialization  
+
+Changelog v3:
+- Cleaned up the code for calculating the requested kexec segment size
+needed for the IMA measurement list, limiting the segment size to half
+of the totalram_pages.
+- Fixed kernel test robot reports as enumerated in the respective
+patch changelog.
+
+Changelog v2:
+- Canonical measurement list support added
+- Redefined the ima_kexec_hdr struct to use well defined sizes
+
+Mimi
+
+Andreas Steffen (1):
+  ima: platform-independent hash value
+
+Mimi Zohar (7):
+  ima: on soft reboot, restore the measurement list
+  ima: permit duplicate measurement list entries
+  ima: maintain memory size needed for serializing the measurement list
+  ima: serialize the binary_runtime_measurements
+  ima: store the builtin/custom template definitions in a list
+  ima: support restoring multiple template formats
+  ima: define a canonical binary_runtime_measurements list format
+
+Thiago Jung Bauermann (1):
+  ima: on soft reboot, save the measurement list
+
+ Documentation/kernel-parameters.txt       |   4 +
+ include/linux/ima.h                       |  12 ++
+ kernel/kexec_file.c                       |   4 +
+ security/integrity/ima/Kconfig            |  12 ++
+ security/integrity/ima/Makefile           |   1 +
+ security/integrity/ima/ima.h              |  28 +++
+ security/integrity/ima/ima_crypto.c       |   6 +-
+ security/integrity/ima/ima_fs.c           |  30 ++-
+ security/integrity/ima/ima_init.c         |   2 +
+ security/integrity/ima/ima_kexec.c        | 209 +++++++++++++++++++++
+ security/integrity/ima/ima_main.c         |   1 +
+ security/integrity/ima/ima_queue.c        |  76 +++++++-
+ security/integrity/ima/ima_template.c     | 293 ++++++++++++++++++++++++++++--
+ security/integrity/ima/ima_template_lib.c |   7 +-
+ 14 files changed, 653 insertions(+), 32 deletions(-)
+ create mode 100644 security/integrity/ima/ima_kexec.c
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.1.0
