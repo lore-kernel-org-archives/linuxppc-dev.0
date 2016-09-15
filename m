@@ -1,44 +1,45 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZdqg50dwzDsYR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:39 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZdqk2GYzzDsYr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:42 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8FCw9Ia087016
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:37 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25fmcqqfnn-1
+ u8FCw6dX031264
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:40 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25fpy8rn98-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:37 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 09:02:40 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 15 Sep 2016 23:02:34 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 201C82BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:32 +1000 (EST)
+ Thu, 15 Sep 2016 23:02:37 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 73F783578057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:34 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8FD2W9Y64290968
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:32 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8FD2Y3x40239290
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:34 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8FD2V07031275
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:31 +1000
+ u8FD2XkS031363
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 23:02:34 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, mpe@ellerman.id.au
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH 06/13] powerpc: reverse the soft_enable logic
-Date: Thu, 15 Sep 2016 18:31:56 +0530
+Subject: [PATCH 07/13] powerpc: Avoid using EXCEPTION_PROLOG_1 macro in
+ MASKABLE_*
+Date: Thu, 15 Sep 2016 18:31:57 +0530
 In-Reply-To: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1473944523-624-7-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1473944523-624-8-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,83 +49,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"paca->soft_enabled" is used as a flag to mask some of interrupts.
-Currently supported flags values and their details:
-
-soft_enabled    MSR[EE]
-
-0               0       Disabled (PMI and HMI not masked)
-1               1       Enabled
-
-"paca->soft_enabled" is initialized to 1 to make the interripts as
-enabled. arch_local_irq_disable() will toggle the value when interrupts
-needs to disbled. At this point, the interrupts are not actually disabled,
-instead, interrupt vector has code to check for the flag and mask it when it occurs.
-By "mask it", it update interrupt paca->irq_happened and return.
-arch_local_irq_restore() is called to re-enable interrupts, which checks and
-replays interrupts if any occured.
-
-Now, as mentioned, current logic doesnot mask "performance monitoring interrupts"
-and PMIs are implemented as NMI. But this patchset depends on local_irq_*
-for a successful local_* update. Meaning, mask all possible interrupts during
-local_* update and replay them after the update.
-
-So the idea here is to reserve the "paca->soft_enabled" logic. New values and
-details:
-
-soft_enabled    MSR[EE]
-
-1               0       Disabled  (PMI and HMI not masked)
-0               1       Enabled
-
-Reason for the this change is to create foundation for a third flag value "2"
-for "soft_enabled" to add support to mask PMIs. When ->soft_enabled is
-set to a value "2", PMI interrupts are mask and when set to a value
-of "1", PMI are not mask.
+Currently we use both EXCEPTION_PROLOG_1 and __EXCEPTION_PROLOG_1
+in the MASKABLE_* macros. As a cleanup, this patch makes MASKABLE_*
+to use only __EXCEPTION_PROLOG_1. There is not logic change.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/hw_irq.h | 4 ++--
- arch/powerpc/kernel/entry_64.S    | 5 ++---
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index dc3c248f9244..fd9b421f9020 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -30,8 +30,8 @@
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 38272fe8a757..75e262466b85 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -450,7 +450,7 @@ label##_hv:								\
+ #define MASKABLE_EXCEPTION_HV_OOL(vec, label)				\
+ 	.globl label##_hv;						\
+ label##_hv:								\
+-	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
++	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_TEST_HV, vec);		\
+ 	EXCEPTION_PROLOG_PSERIES_1(label##_common, EXC_HV);
+ 
+ #define __MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra)	\
+@@ -478,7 +478,7 @@ label##_relon_hv:							\
+ #define MASKABLE_RELON_EXCEPTION_HV_OOL(vec, label)			\
+ 	.globl label##_relon_hv;					\
+ label##_relon_hv:							\
+-	EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_HV, vec);		\
++	__EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_HV, vec);		\
+ 	EXCEPTION_PROLOG_PSERIES_1(label##_common, EXC_HV);
+ 
  /*
-  * flags for paca->soft_enabled
-  */
--#define IRQ_DISABLE_MASK_NONE		1
--#define IRQ_DISABLE_MASK_LINUX		0
-+#define IRQ_DISABLE_MASK_NONE		0
-+#define IRQ_DISABLE_MASK_LINUX		1
- 
- #endif /* CONFIG_PPC64 */
- 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index aef7b64cbbeb..879aeb11ad29 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -131,8 +131,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 	 */
- #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_BUG)
- 	lbz	r10,PACASOFTIRQEN(r13)
--	xori	r10,r10,IRQ_DISABLE_MASK_NONE
--1:	tdnei	r10,0
-+1:	tdnei	r10,IRQ_DISABLE_MASK_NONE
- 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
- #endif
- 
-@@ -1012,7 +1011,7 @@ _GLOBAL(enter_rtas)
- 	 * check it with the asm equivalent of WARN_ON
- 	 */
- 	lbz	r0,PACASOFTIRQEN(r13)
--1:	tdnei	r0,IRQ_DISABLE_MASK_LINUX
-+1:	tdeqi	r0,IRQ_DISABLE_MASK_NONE
- 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
- #endif
- 	
 -- 
 2.7.4
