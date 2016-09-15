@@ -1,47 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <npiggin@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZMHV4sd7zDsX1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 12:07:18 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZPfr1w9fzDsWb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 13:54:12 +1000 (AEST)
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sZMHT6gspz9sD5
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:17 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8F23OMe021715
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:16 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25exqrryjt-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:16 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 15 Sep 2016 12:07:11 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D413E3578056
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:09 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8F2791C56557654
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:09 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8F279J8027990
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:09 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH 4/4] drivers/pci/hotplug: Support surprise hotplug
-Date: Thu, 15 Sep 2016 12:07:22 +1000
-In-Reply-To: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Message-Id: <1473905242-898-5-git-send-email-gwshan@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3sZPfq5Ksxz9s8x
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 13:54:11 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id oz2so1548794pac.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 20:54:11 -0700 (PDT)
+Date: Thu, 15 Sep 2016 13:54:03 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Don't change the section in _GLOBAL()
+Message-ID: <20160915135403.172e2e3e@roar.ozlabs.ibm.com>
+In-Reply-To: <1473900020-3281-1-git-send-email-mpe@ellerman.id.au>
+References: <1473900020-3281-1-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,313 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This supports PCI surprise hotplug. The design is highlighted as
-below:
+On Thu, 15 Sep 2016 10:40:20 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-   * The PCI slot's surprise hotplug capability is exposed through
-     device node property "ibm,slot-surprise-pluggable", meaning
-     PCI surprise hotplug will be disabled if skiboot doesn't support
-     it yet.
-   * The interrupt because of presence or link state change is raised
-     on surprise hotplug event. One event is allocated and queued to
-     the PCI slot for workqueue to pick it up and process in serialized
-     fashion. The code flow for surprise hotplug is same to that for
-     managed hotplug except: the affected PEs are put into frozen state
-     to avoid unexpected EEH error reporting in surprise hot remove path.
+> Currently the _GLOBAL() macro unilaterally sets the assembler section to
+> ".text" at the start of the macro. This is rude as the caller may be
+> using a different section.
+> 
+> So let the caller decide which section to emit the code into. On big
+> endian we do need to switch to the ".opd" section to emit the OPD, but
+> do that with pushsection/popsection, thereby leaving the original
+> section intact.
+> 
+> The only place I could find where this requires changes to the code is
+> in misc_32.S, where we need to switch back to ".text" after
+> flush_icache_range() which is in ".kprobes.text".
+> 
+> I verified that the order of all entries in System.map is unchanged
+> after this patch. The actual addresses shift around slightly so you
+> can't just diff the System.map.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pnv-pci.h |   9 ++
- drivers/pci/hotplug/pnv_php.c      | 219 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 228 insertions(+)
+Excellent, thanks for going through it.
 
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index 0cbd813..4ccd2b4 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -48,6 +48,12 @@ void pnv_cxl_phb_set_peer_afu(struct pci_dev *dev, struct cxl_afu *afu);
- 
- #endif
- 
-+struct pnv_php_event {
-+	bool			added;
-+	struct pnv_php_slot	*php_slot;
-+	struct work_struct	work;
-+};
-+
- struct pnv_php_slot {
- 	struct hotplug_slot		slot;
- 	struct hotplug_slot_info	slot_info;
-@@ -60,6 +66,9 @@ struct pnv_php_slot {
- #define PNV_PHP_STATE_POPULATED		2
- #define PNV_PHP_STATE_OFFLINE		3
- 	int				state;
-+	int				irq;
-+	struct workqueue_struct		*wq;
-+	struct pnv_php_event		*event;
- 	struct device_node		*dn;
- 	struct pci_dev			*pdev;
- 	struct pci_bus			*bus;
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 21f1f9d..0358aa7 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -30,13 +30,42 @@ static void pnv_php_register(struct device_node *dn);
- static void pnv_php_unregister_one(struct device_node *dn);
- static void pnv_php_unregister(struct device_node *dn);
- 
-+static void pnv_php_disable_irq(struct pnv_php_slot *php_slot)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	u16 ctrl;
-+
-+	if (php_slot->irq > 0) {
-+		pcie_capability_read_word(pdev, PCI_EXP_SLTCTL, &ctrl);
-+		ctrl &= ~(PCI_EXP_SLTCTL_HPIE |
-+			  PCI_EXP_SLTCTL_PDCE |
-+			  PCI_EXP_SLTCTL_DLLSCE);
-+		pcie_capability_write_word(pdev, PCI_EXP_SLTCTL, ctrl);
-+
-+		free_irq(php_slot->irq, php_slot);
-+		php_slot->irq = 0;
-+	}
-+
-+	if (php_slot->wq) {
-+		destroy_workqueue(php_slot->wq);
-+		php_slot->wq = NULL;
-+	}
-+
-+	if (pdev->msix_enabled)
-+		pci_disable_msix(pdev);
-+	else if (pdev->msi_enabled)
-+		pci_disable_msi(pdev);
-+}
-+
- static void pnv_php_free_slot(struct kref *kref)
- {
- 	struct pnv_php_slot *php_slot = container_of(kref,
- 					struct pnv_php_slot, kref);
- 
- 	WARN_ON(!list_empty(&php_slot->children));
-+	pnv_php_disable_irq(php_slot);
- 	kfree(php_slot->name);
-+	kfree(php_slot->event);
- 	kfree(php_slot);
- }
- 
-@@ -536,9 +565,16 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
- 	if (unlikely(!php_slot))
- 		return NULL;
- 
-+	php_slot->event = kzalloc(sizeof(struct pnv_php_event), GFP_KERNEL);
-+	if (unlikely(!php_slot->event)) {
-+		kfree(php_slot);
-+		return NULL;
-+	}
-+
- 	php_slot->name = kstrdup(label, GFP_KERNEL);
- 	if (unlikely(!php_slot->name)) {
- 		kfree(php_slot);
-+		kfree(php_slot->event);
- 		return NULL;
- 	}
- 
-@@ -616,6 +652,184 @@ static int pnv_php_register_slot(struct pnv_php_slot *php_slot)
- 	return 0;
- }
- 
-+static int pnv_php_enable_msix(struct pnv_php_slot *php_slot)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	struct msix_entry entry;
-+	int nr_entries, ret;
-+	u16 pcie_flag;
-+
-+	/* Get total number of MSIx entries */
-+	nr_entries = pci_msix_vec_count(pdev);
-+	if (nr_entries < 0)
-+		return nr_entries;
-+
-+	/* Check hotplug MSIx entry is in range */
-+	pcie_capability_read_word(pdev, PCI_EXP_FLAGS, &pcie_flag);
-+	entry.entry = (pcie_flag & PCI_EXP_FLAGS_IRQ) >> 9;
-+	if (entry.entry >= nr_entries)
-+		return -ERANGE;
-+
-+	/* Enable MSIx */
-+	ret = pci_enable_msix_exact(pdev, &entry, 1);
-+	if (ret) {
-+		dev_warn(&pdev->dev, "Error %d enabling MSIx\n", ret);
-+		return ret;
-+	}
-+
-+	return entry.vector;
-+}
-+
-+static void pnv_php_event_handler(struct work_struct *work)
-+{
-+	struct pnv_php_event *event =
-+		container_of(work, struct pnv_php_event, work);
-+	struct pnv_php_slot *php_slot = event->php_slot;
-+
-+	if (event->added)
-+		pnv_php_enable_slot(&php_slot->slot);
-+	else
-+		pnv_php_disable_slot(&php_slot->slot);
-+
-+	kfree(event);
-+}
-+
-+static irqreturn_t pnv_php_interrupt(int irq, void *data)
-+{
-+	struct pnv_php_slot *php_slot = data;
-+	struct pci_dev *pchild, *pdev = php_slot->pdev;
-+	struct eeh_dev *edev;
-+	struct eeh_pe *pe;
-+	struct pnv_php_event *event;
-+	u16 sts, lsts;
-+	u8 presence;
-+	bool added;
-+	unsigned long flags;
-+	int ret;
-+
-+	pcie_capability_read_word(pdev, PCI_EXP_SLTSTA, &sts);
-+	sts &= (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC);
-+	pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, sts);
-+	if (sts & PCI_EXP_SLTSTA_DLLSC) {
-+		pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lsts);
-+		added = !!(lsts & PCI_EXP_LNKSTA_DLLLA);
-+	} else if (sts & PCI_EXP_SLTSTA_PDC) {
-+		ret = pnv_pci_get_presence_state(php_slot->id, &presence);
-+		if (!ret)
-+			return IRQ_HANDLED;
-+		added = !!(presence == OPAL_PCI_SLOT_PRESENT);
-+	} else {
-+		return IRQ_NONE;
-+	}
-+
-+	/* We need freeze the PE in PCI hot remove case. The event that
-+	 * was allocated in advanced is used. The time to allocate the
-+	 * memory for the event is saved so that we can freeze the PE
-+	 * quikly as possible.
-+	 */
-+	event = php_slot->event;
-+	php_slot->event = NULL;
-+	if (unlikely(!event))
-+		event = kzalloc(sizeof(*event), GFP_ATOMIC);
-+	if (unlikely(!event)) {
-+		dev_warn(&pdev->dev, "PCI slot [%s] missed hotplug event 0x%04x\n",
-+			 php_slot->name, sts);
-+		return IRQ_HANDLED;
-+	}
-+
-+	if (!added) {
-+		pchild = list_first_entry_or_null(&php_slot->bus->devices,
-+						  struct pci_dev, bus_list);
-+		edev = pchild ? pci_dev_to_eeh_dev(pchild) : NULL;
-+		pe = edev ? edev->pe : NULL;
-+		if (likely(pe)) {
-+			eeh_serialize_lock(&flags);
-+			eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
-+			eeh_serialize_unlock(flags);
-+			eeh_pe_set_option(pe, EEH_OPT_FREEZE_PE);
-+		}
-+	}
-+
-+	dev_info(&pdev->dev, "PCI slot [%s] %s (IRQ: %d)\n",
-+		 php_slot->name, added ? "added" : "removed", irq);
-+	php_slot->event = kzalloc(sizeof(*event), GFP_ATOMIC);
-+	INIT_WORK(&event->work, pnv_php_event_handler);
-+	event->added = added;
-+	event->php_slot = php_slot;
-+	queue_work(php_slot->wq, &event->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	u16 sts, ctrl;
-+	int ret;
-+
-+	/* Allocate workqueue */
-+	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
-+	if (!php_slot->wq) {
-+		dev_warn(&pdev->dev, "Cannot alloc workqueue\n");
-+		pnv_php_disable_irq(php_slot);
-+		return;
-+	}
-+
-+	/* Clear pending interrupts */
-+	pcie_capability_read_word(pdev, PCI_EXP_SLTSTA, &sts);
-+	sts |= (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC);
-+	pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, sts);
-+
-+	/* Request the interrupt */
-+	ret = request_irq(irq, pnv_php_interrupt, IRQF_SHARED,
-+			  php_slot->name, php_slot);
-+	if (ret) {
-+		pnv_php_disable_irq(php_slot);
-+		dev_warn(&pdev->dev, "Error %d enabling IRQ %d\n", ret, irq);
-+		return;
-+	}
-+
-+	/* Enable the interrupts */
-+	pcie_capability_read_word(pdev, PCI_EXP_SLTCTL, &ctrl);
-+	ctrl |= (PCI_EXP_SLTCTL_HPIE |
-+		 PCI_EXP_SLTCTL_PDCE |
-+		 PCI_EXP_SLTCTL_DLLSCE);
-+	pcie_capability_write_word(pdev, PCI_EXP_SLTCTL, ctrl);
-+
-+	/* The interrupt is initialized successfully when @irq is valid */
-+	php_slot->irq = irq;
-+}
-+
-+static void pnv_php_enable_irq(struct pnv_php_slot *php_slot)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	int irq, ret;
-+
-+	ret = pci_enable_device(pdev);
-+	if (ret) {
-+		dev_warn(&pdev->dev, "Error %d enabling device\n", ret);
-+		return;
-+	}
-+
-+	pci_set_master(pdev);
-+
-+	/* Enable MSIx interrupt */
-+	irq = pnv_php_enable_msix(php_slot);
-+	if (irq > 0) {
-+		pnv_php_init_irq(php_slot, irq);
-+		return;
-+	}
-+
-+	/* Use MSI if MSIx doesn't work. Fail back to legacy INTx
-+	 * if MSI doesn't work either
-+	 */
-+	ret = pci_enable_msi(pdev);
-+	if (!ret || pdev->irq) {
-+		irq = pdev->irq;
-+		pnv_php_init_irq(php_slot, irq);
-+	}
-+}
-+
- static int pnv_php_register_one(struct device_node *dn)
- {
- 	struct pnv_php_slot *php_slot;
-@@ -643,6 +857,11 @@ static int pnv_php_register_one(struct device_node *dn)
- 	if (unlikely(ret))
- 		goto unregister_slot;
- 
-+	/* Enable interrupt if the slot supports surprise hotplug */
-+	prop32 = of_get_property(dn, "ibm,slot-surprise-pluggable", NULL);
-+	if (prop32 && of_read_number(prop32, 1))
-+		pnv_php_enable_irq(php_slot);
-+
- 	return 0;
- 
- unregister_slot:
--- 
-2.1.0
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+
+> ---
+> 
+> If anyone can think of a better method to verify we are still emitting
+> everything in the same sections let me know.
+> 
+> 
+>  arch/powerpc/include/asm/ppc_asm.h | 8 ++------
+>  arch/powerpc/kernel/misc_32.S      | 3 +++
+>  2 files changed, 5 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+> index d5d5b5e348f2..479287045166 100644
+> --- a/arch/powerpc/include/asm/ppc_asm.h
+> +++ b/arch/powerpc/include/asm/ppc_asm.h
+> @@ -201,14 +201,12 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>  #ifdef PPC64_ELF_ABI_v2
+>  
+>  #define _GLOBAL(name) \
+> -	.section ".text"; \
+>  	.align 2 ; \
+>  	.type name,@function; \
+>  	.globl name; \
+>  name:
+>  
+>  #define _GLOBAL_TOC(name) \
+> -	.section ".text"; \
+>  	.align 2 ; \
+>  	.type name,@function; \
+>  	.globl name; \
+> @@ -232,16 +230,15 @@ name:
+>  #define GLUE(a,b) XGLUE(a,b)
+>  
+>  #define _GLOBAL(name) \
+> -	.section ".text"; \
+>  	.align 2 ; \
+>  	.globl name; \
+>  	.globl GLUE(.,name); \
+> -	.section ".opd","aw"; \
+> +	.pushsection ".opd","aw"; \
+>  name: \
+>  	.quad GLUE(.,name); \
+>  	.quad .TOC.@tocbase; \
+>  	.quad 0; \
+> -	.previous; \
+> +	.popsection; \
+
+I think you can still use .section and .previous here, but it's
+much of a muchness.
