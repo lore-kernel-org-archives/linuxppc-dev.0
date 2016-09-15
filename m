@@ -2,46 +2,46 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZMHS3m0WzDsTX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 12:07:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZMHV4sd7zDsX1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 12:07:18 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sZMHR6Hk8z9sD5
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:15 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3sZMHT6gspz9sD5
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:17 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8F23HsO020817
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:14 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25exce9mkg-1
+ u8F23OMe021715
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:16 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25exqrryjt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:14 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2016 22:07:16 -0400
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 15 Sep 2016 12:07:11 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D057B2CE8056
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:08 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8F278R163307888
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:08 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8F278Z6006004
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:08 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D413E3578056
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:09 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8F2791C56557654
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:09 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8F279J8027990
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2016 12:07:09 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH 3/4] powerpc/powernv: Unfreeze PE on allocation
-Date: Thu, 15 Sep 2016 12:07:21 +1000
+Subject: [PATCH 4/4] drivers/pci/hotplug: Support surprise hotplug
+Date: Thu, 15 Sep 2016 12:07:22 +1000
 In-Reply-To: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Message-Id: <1473905242-898-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Message-Id: <1473905242-898-5-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,40 +51,313 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This unfreezes PE when it's initialized because the PE might be put
-into frozen state in the last hot remove path. It's not harmful to
-do so if the PE is already in unfrozen state.
+This supports PCI surprise hotplug. The design is highlighted as
+below:
+
+   * The PCI slot's surprise hotplug capability is exposed through
+     device node property "ibm,slot-surprise-pluggable", meaning
+     PCI surprise hotplug will be disabled if skiboot doesn't support
+     it yet.
+   * The interrupt because of presence or link state change is raised
+     on surprise hotplug event. One event is allocated and queued to
+     the PCI slot for workqueue to pick it up and process in serialized
+     fashion. The code flow for surprise hotplug is same to that for
+     managed hotplug except: the affected PEs are put into frozen state
+     to avoid unexpected EEH error reporting in surprise hot remove path.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ arch/powerpc/include/asm/pnv-pci.h |   9 ++
+ drivers/pci/hotplug/pnv_php.c      | 219 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 228 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index c38a6a1..5122257 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -126,9 +126,21 @@ static inline bool pnv_pci_is_m64(struct pnv_phb *phb, struct resource *r)
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index 0cbd813..4ccd2b4 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -48,6 +48,12 @@ void pnv_cxl_phb_set_peer_afu(struct pci_dev *dev, struct cxl_afu *afu);
  
- static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int pe_no)
+ #endif
+ 
++struct pnv_php_event {
++	bool			added;
++	struct pnv_php_slot	*php_slot;
++	struct work_struct	work;
++};
++
+ struct pnv_php_slot {
+ 	struct hotplug_slot		slot;
+ 	struct hotplug_slot_info	slot_info;
+@@ -60,6 +66,9 @@ struct pnv_php_slot {
+ #define PNV_PHP_STATE_POPULATED		2
+ #define PNV_PHP_STATE_OFFLINE		3
+ 	int				state;
++	int				irq;
++	struct workqueue_struct		*wq;
++	struct pnv_php_event		*event;
+ 	struct device_node		*dn;
+ 	struct pci_dev			*pdev;
+ 	struct pci_bus			*bus;
+diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+index 21f1f9d..0358aa7 100644
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -30,13 +30,42 @@ static void pnv_php_register(struct device_node *dn);
+ static void pnv_php_unregister_one(struct device_node *dn);
+ static void pnv_php_unregister(struct device_node *dn);
+ 
++static void pnv_php_disable_irq(struct pnv_php_slot *php_slot)
++{
++	struct pci_dev *pdev = php_slot->pdev;
++	u16 ctrl;
++
++	if (php_slot->irq > 0) {
++		pcie_capability_read_word(pdev, PCI_EXP_SLTCTL, &ctrl);
++		ctrl &= ~(PCI_EXP_SLTCTL_HPIE |
++			  PCI_EXP_SLTCTL_PDCE |
++			  PCI_EXP_SLTCTL_DLLSCE);
++		pcie_capability_write_word(pdev, PCI_EXP_SLTCTL, ctrl);
++
++		free_irq(php_slot->irq, php_slot);
++		php_slot->irq = 0;
++	}
++
++	if (php_slot->wq) {
++		destroy_workqueue(php_slot->wq);
++		php_slot->wq = NULL;
++	}
++
++	if (pdev->msix_enabled)
++		pci_disable_msix(pdev);
++	else if (pdev->msi_enabled)
++		pci_disable_msi(pdev);
++}
++
+ static void pnv_php_free_slot(struct kref *kref)
  {
-+	s64 rc;
-+
- 	phb->ioda.pe_array[pe_no].phb = phb;
- 	phb->ioda.pe_array[pe_no].pe_number = pe_no;
+ 	struct pnv_php_slot *php_slot = container_of(kref,
+ 					struct pnv_php_slot, kref);
  
-+	/* Clear the PE frozen state as it might be put into frozen state
-+	 * in the last PCI remove path. It's not harmful to do so when the
-+	 * PE is already in unfrozen state.
-+	 */
-+	rc = opal_pci_eeh_freeze_clear(phb->opal_id, pe_no,
-+				       OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
-+	if (rc != OPAL_SUCCESS)
-+		pr_warn("%s: Error %lld unfreezing PHB#%d-PE#%d\n",
-+			__func__, rc, phb->hose->global_number, pe_no);
-+
- 	return &phb->ioda.pe_array[pe_no];
+ 	WARN_ON(!list_empty(&php_slot->children));
++	pnv_php_disable_irq(php_slot);
+ 	kfree(php_slot->name);
++	kfree(php_slot->event);
+ 	kfree(php_slot);
  }
  
+@@ -536,9 +565,16 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
+ 	if (unlikely(!php_slot))
+ 		return NULL;
+ 
++	php_slot->event = kzalloc(sizeof(struct pnv_php_event), GFP_KERNEL);
++	if (unlikely(!php_slot->event)) {
++		kfree(php_slot);
++		return NULL;
++	}
++
+ 	php_slot->name = kstrdup(label, GFP_KERNEL);
+ 	if (unlikely(!php_slot->name)) {
+ 		kfree(php_slot);
++		kfree(php_slot->event);
+ 		return NULL;
+ 	}
+ 
+@@ -616,6 +652,184 @@ static int pnv_php_register_slot(struct pnv_php_slot *php_slot)
+ 	return 0;
+ }
+ 
++static int pnv_php_enable_msix(struct pnv_php_slot *php_slot)
++{
++	struct pci_dev *pdev = php_slot->pdev;
++	struct msix_entry entry;
++	int nr_entries, ret;
++	u16 pcie_flag;
++
++	/* Get total number of MSIx entries */
++	nr_entries = pci_msix_vec_count(pdev);
++	if (nr_entries < 0)
++		return nr_entries;
++
++	/* Check hotplug MSIx entry is in range */
++	pcie_capability_read_word(pdev, PCI_EXP_FLAGS, &pcie_flag);
++	entry.entry = (pcie_flag & PCI_EXP_FLAGS_IRQ) >> 9;
++	if (entry.entry >= nr_entries)
++		return -ERANGE;
++
++	/* Enable MSIx */
++	ret = pci_enable_msix_exact(pdev, &entry, 1);
++	if (ret) {
++		dev_warn(&pdev->dev, "Error %d enabling MSIx\n", ret);
++		return ret;
++	}
++
++	return entry.vector;
++}
++
++static void pnv_php_event_handler(struct work_struct *work)
++{
++	struct pnv_php_event *event =
++		container_of(work, struct pnv_php_event, work);
++	struct pnv_php_slot *php_slot = event->php_slot;
++
++	if (event->added)
++		pnv_php_enable_slot(&php_slot->slot);
++	else
++		pnv_php_disable_slot(&php_slot->slot);
++
++	kfree(event);
++}
++
++static irqreturn_t pnv_php_interrupt(int irq, void *data)
++{
++	struct pnv_php_slot *php_slot = data;
++	struct pci_dev *pchild, *pdev = php_slot->pdev;
++	struct eeh_dev *edev;
++	struct eeh_pe *pe;
++	struct pnv_php_event *event;
++	u16 sts, lsts;
++	u8 presence;
++	bool added;
++	unsigned long flags;
++	int ret;
++
++	pcie_capability_read_word(pdev, PCI_EXP_SLTSTA, &sts);
++	sts &= (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC);
++	pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, sts);
++	if (sts & PCI_EXP_SLTSTA_DLLSC) {
++		pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lsts);
++		added = !!(lsts & PCI_EXP_LNKSTA_DLLLA);
++	} else if (sts & PCI_EXP_SLTSTA_PDC) {
++		ret = pnv_pci_get_presence_state(php_slot->id, &presence);
++		if (!ret)
++			return IRQ_HANDLED;
++		added = !!(presence == OPAL_PCI_SLOT_PRESENT);
++	} else {
++		return IRQ_NONE;
++	}
++
++	/* We need freeze the PE in PCI hot remove case. The event that
++	 * was allocated in advanced is used. The time to allocate the
++	 * memory for the event is saved so that we can freeze the PE
++	 * quikly as possible.
++	 */
++	event = php_slot->event;
++	php_slot->event = NULL;
++	if (unlikely(!event))
++		event = kzalloc(sizeof(*event), GFP_ATOMIC);
++	if (unlikely(!event)) {
++		dev_warn(&pdev->dev, "PCI slot [%s] missed hotplug event 0x%04x\n",
++			 php_slot->name, sts);
++		return IRQ_HANDLED;
++	}
++
++	if (!added) {
++		pchild = list_first_entry_or_null(&php_slot->bus->devices,
++						  struct pci_dev, bus_list);
++		edev = pchild ? pci_dev_to_eeh_dev(pchild) : NULL;
++		pe = edev ? edev->pe : NULL;
++		if (likely(pe)) {
++			eeh_serialize_lock(&flags);
++			eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
++			eeh_serialize_unlock(flags);
++			eeh_pe_set_option(pe, EEH_OPT_FREEZE_PE);
++		}
++	}
++
++	dev_info(&pdev->dev, "PCI slot [%s] %s (IRQ: %d)\n",
++		 php_slot->name, added ? "added" : "removed", irq);
++	php_slot->event = kzalloc(sizeof(*event), GFP_ATOMIC);
++	INIT_WORK(&event->work, pnv_php_event_handler);
++	event->added = added;
++	event->php_slot = php_slot;
++	queue_work(php_slot->wq, &event->work);
++
++	return IRQ_HANDLED;
++}
++
++static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
++{
++	struct pci_dev *pdev = php_slot->pdev;
++	u16 sts, ctrl;
++	int ret;
++
++	/* Allocate workqueue */
++	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
++	if (!php_slot->wq) {
++		dev_warn(&pdev->dev, "Cannot alloc workqueue\n");
++		pnv_php_disable_irq(php_slot);
++		return;
++	}
++
++	/* Clear pending interrupts */
++	pcie_capability_read_word(pdev, PCI_EXP_SLTSTA, &sts);
++	sts |= (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC);
++	pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, sts);
++
++	/* Request the interrupt */
++	ret = request_irq(irq, pnv_php_interrupt, IRQF_SHARED,
++			  php_slot->name, php_slot);
++	if (ret) {
++		pnv_php_disable_irq(php_slot);
++		dev_warn(&pdev->dev, "Error %d enabling IRQ %d\n", ret, irq);
++		return;
++	}
++
++	/* Enable the interrupts */
++	pcie_capability_read_word(pdev, PCI_EXP_SLTCTL, &ctrl);
++	ctrl |= (PCI_EXP_SLTCTL_HPIE |
++		 PCI_EXP_SLTCTL_PDCE |
++		 PCI_EXP_SLTCTL_DLLSCE);
++	pcie_capability_write_word(pdev, PCI_EXP_SLTCTL, ctrl);
++
++	/* The interrupt is initialized successfully when @irq is valid */
++	php_slot->irq = irq;
++}
++
++static void pnv_php_enable_irq(struct pnv_php_slot *php_slot)
++{
++	struct pci_dev *pdev = php_slot->pdev;
++	int irq, ret;
++
++	ret = pci_enable_device(pdev);
++	if (ret) {
++		dev_warn(&pdev->dev, "Error %d enabling device\n", ret);
++		return;
++	}
++
++	pci_set_master(pdev);
++
++	/* Enable MSIx interrupt */
++	irq = pnv_php_enable_msix(php_slot);
++	if (irq > 0) {
++		pnv_php_init_irq(php_slot, irq);
++		return;
++	}
++
++	/* Use MSI if MSIx doesn't work. Fail back to legacy INTx
++	 * if MSI doesn't work either
++	 */
++	ret = pci_enable_msi(pdev);
++	if (!ret || pdev->irq) {
++		irq = pdev->irq;
++		pnv_php_init_irq(php_slot, irq);
++	}
++}
++
+ static int pnv_php_register_one(struct device_node *dn)
+ {
+ 	struct pnv_php_slot *php_slot;
+@@ -643,6 +857,11 @@ static int pnv_php_register_one(struct device_node *dn)
+ 	if (unlikely(ret))
+ 		goto unregister_slot;
+ 
++	/* Enable interrupt if the slot supports surprise hotplug */
++	prop32 = of_get_property(dn, "ibm,slot-surprise-pluggable", NULL);
++	if (prop32 && of_read_number(prop32, 1))
++		pnv_php_enable_irq(php_slot);
++
+ 	return 0;
+ 
+ unregister_slot:
 -- 
 2.1.0
