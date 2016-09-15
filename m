@@ -1,19 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+ [195.113.26.193])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZXft4SKTzDrfR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 19:09:42 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id p2so1888781pap.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 02:09:42 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH][RFC] powerpc/64: exception exit do not reload SRR[01] if
- unchanged
-Date: Thu, 15 Sep 2016 19:09:29 +1000
-Message-Id: <20160915090929.1380-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZYSc2xStzDsXL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 19:45:52 +1000 (AEST)
+Date: Thu, 15 Sep 2016 11:37:56 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Linux 4.8: Reported regressions as of Sunday, 2016-08-28
+Message-ID: <20160915093756.GB13132@amd>
+References: <3b3d733e-f193-b039-6113-6c0e5b44c4e7@leemhuis.info>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3b3d733e-f193-b039-6113-6c0e5b44c4e7@leemhuis.info>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,84 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is not ready yet, but it's a proof of concept for the approach to
-speed up exception exit: avoid the mtspr instructions if the yare not
-required. This saves 20 cycles per call on a getppid syscall
-microbenchmark, so it seems worth looking into.
+Hi!
 
-A few issues to be solved.
+> Hi! Here is my second regression report for Linux 4.8. It lists 11
+> regressions. 5 of them are new; 5 mentioned in the last report two 
+> weeks ago got fixed.
+> 
+> FWIW: A small detail: I did not include "Regression - SATA disks behind 
+> USB ones on v4.8-rc1, breaking boot. [Re: Who reordered my disks]" 
+> (http://www.spinics.net/lists/linux-usb/msg144871.html ) in below list 
+> report. The discussion mentions that device names like /dev/sd? are not 
+> considered stable as they might change depending on various factors -- 
+> like the order in which modules are loaded or other timing issues (like 
+> in this case). That is how it is afaik (even if it's not well known), 
+> and that's why I didn't include the issue; let me know if you think it 
+> should be on the list.
+> 
+> OTOH I included "Commit cb4f71c429 deliberately changes order of 
+> network interfaces" (http://www.spinics.net/lists/kernel/msg2325600.html )
+> for now, as I think traditional network interface names (eth0, eth1, ...)
+> might be considered stable -- but I'm not sure, that's why I raise it
+> here.
+> 
+> Anyway, you know the drill: Are you aware of any other regressions?
+> Then please let me know. And tell me if there is anything in the
+> report that shouldn't be there.
+> 
+> Ciao, Thorsten
+> 
+> P.S.: Thanks to all those that Aaro Koskinen, Hans de Goede, Pavel 
+> Machek for CCing me when reporting regressions. Much appreciated! Ohh, 
+> and thx to all those that replied when I asked them for status updates
+> when things look stuck.
 
-Firstly, realmode exceptions use an rfid to switch on relocation and
-branch to common handler. This trashes SRR[01], so realmode exceptions
-will always miss and be pessimised with this patch. We can avoid that
-by doing a bctr to 0xc000... from realmode to enter the handler, and
-then use mtmsrd to switch on relocation. The ISA actually suggests
-this might be faster in some implementations, and on POWER8 it does
-seem to be faster by about 6 cycles.
+Hmm, and there's one more apparently. See
 
-Secondly, avoiding the mfsprs would be nice if possible, and should
-give a couple more cycles. We could use a byte in the paca to track
-whether the SPRs are valid for the current exception. Anything
-modifying SPRs including nested exceptions would clear the bit when
-they're done. This is a bit more intrusive.
+Date: Tue, 13 Sep 2016 22:38:45 +0200
+From: Martin Steigerwald <martin@lichtvoll.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, daniel.vetter@intel.com,
+        jani.nikula@linux.intel.com, intel-gfx@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, "Rafael J. Wysocki"
+        <rjw@rjwysocki.net>
+Subject: Re: 4.8-rc1: it is now common that machine needs re-run of xrandr
+        after resume
+User-Agent: KMail/5.2.3 (Linux/4.8.0-rc6-tp520-btrfstrim+; KDE/5.25.0; x86_64;  
+        ; )
 
-Finally, should gather some statistics for success vs failure.
----
- arch/powerpc/kernel/entry_64.S | 28 +++++++++++++++++++++++-----
- 1 file changed, 23 insertions(+), 5 deletions(-)
+I'm glad I'm not the only one seeing it, but I don't have idea how to
+actually debug it.
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 585b9ca..c836967 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -250,12 +250,21 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 
- 	ld	r13,GPR13(r1)	/* only restore r13 if returning to usermode */
--1:	ld	r2,GPR2(r1)
-+1:
-+	mfspr	r11,SPRN_SRR0
-+	mfspr	r12,SPRN_SRR1
-+	cmpld	r7,r11
-+	beq	5f
-+	mtspr	SPRN_SRR0,r7
-+5:
-+	cmpld	r8,r12
-+	beq	6f
-+	mtspr	SPRN_SRR1,r8
-+6:
-+	ld	r2,GPR2(r1)
- 	ld	r1,GPR1(r1)
- 	mtlr	r4
- 	mtcr	r5
--	mtspr	SPRN_SRR0,r7
--	mtspr	SPRN_SRR1,r8
- 	RFI
- 	b	.	/* prevent speculative execution */
- 
-@@ -859,12 +868,21 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ACCOUNT_CPU_USER_EXIT(r13, r2, r4)
- 	REST_GPR(13, r1)
- 1:
-+	mfspr	r0,SPRN_SRR0
-+	mfspr	r2,SPRN_SRR1
-+	ld	r4,_NIP(r1)
-+
-+	cmpld	r0,r4
-+	beq	5f
-+	mtspr	SPRN_SRR0,r4
-+5:
-+	cmpld	r2,r3
-+	beq	6f
- 	mtspr	SPRN_SRR1,r3
-+6:
- 
- 	ld	r2,_CCR(r1)
- 	mtcrf	0xFF,r2
--	ld	r2,_NIP(r1)
--	mtspr	SPRN_SRR0,r2
- 
- 	ld	r0,GPR0(r1)
- 	ld	r2,GPR2(r1)
+Thanks and best regards,
+									Pavel
 -- 
-2.9.3
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
