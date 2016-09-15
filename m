@@ -1,15 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sZX092cSQzDsW4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 18:39:37 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/powernv/pci: Fix missed TCE invalidations that should
- fallback to OPAL
-Date: Thu, 15 Sep 2016 18:39:34 +1000
-Message-Id: <1473928774-22519-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sZXX85Z5fzDsWc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 19:03:52 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id pp5so1888318pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2016 02:03:52 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc/64s: optimise syscall entry for virtual,
+ relocatable case
+Date: Thu, 15 Sep 2016 19:03:21 +1000
+Message-Id: <20160915090321.787-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,41 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit f0228c413011 ("powerpc/powernv/pci: Fallback to OPAL for TCE
-invalidations"), we added logic to fallback to OPAL for doing TCE
-invalidations if we can't do it in Linux.
+The mflr r10 instruction was left over saving of lr when the code used
+lr to branch to system_call_entry from the exception handler. That was
+changed by 6a404806d to use the count register. The value is never used
+now, so mflr can be removed, and r10 can be used for storage rather than
+spilling to the SPR scratch register.
 
-Ben sent a v2 of the patch, containing these additional call sites, but
-I had already applied v1 and didn't notice. So fix them now.
+The scratch register spill causes a long pipeline stall due to the SPR
+read after write. This change brings getppid syscall cost from 406 to
+376 cycles on POWER8. getppid for non-relocatable case is 371 cycles.
 
-Fixes: f0228c413011 ("powerpc/powernv/pci: Fallback to OPAL for TCE invalidations")
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index da5da11a6223..bc0c91e84ca0 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2217,7 +2217,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
- 
- 	pnv_pci_link_table_and_group(phb->hose->node, num,
- 			tbl, &pe->table_group);
--	pnv_pci_phb3_tce_invalidate_pe(pe);
-+	pnv_pci_ioda2_tce_invalidate_pe(pe);
- 
- 	return 0;
- }
-@@ -2355,7 +2355,7 @@ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
- 	if (ret)
- 		pe_warn(pe, "Unmapping failed, ret = %ld\n", ret);
- 	else
--		pnv_pci_phb3_tce_invalidate_pe(pe);
-+		pnv_pci_ioda2_tce_invalidate_pe(pe);
- 
- 	pnv_pci_unlink_table_and_group(table_group->tables[num], table_group);
- 
+ arch/powerpc/kernel/exceptions-64s.S | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index df6d45e..2cdd64f 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -63,15 +63,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
+ 	 * is volatile across system calls.
+ 	 */
+ #define SYSCALL_PSERIES_2_DIRECT				\
+-	mflr	r10 ;						\
+ 	ld	r12,PACAKBASE(r13) ; 				\
+ 	LOAD_HANDLER(r12, system_call_entry) ;			\
+ 	mtctr	r12 ;						\
+ 	mfspr	r12,SPRN_SRR1 ;					\
+-	/* Re-use of r13... No spare regs to do this */	\
+-	li	r13,MSR_RI ;					\
+-	mtmsrd 	r13,1 ;						\
+-	GET_PACA(r13) ;	/* get r13 back */			\
++	li	r10,MSR_RI ;					\
++	mtmsrd 	r10,1 ;						\
+ 	bctr ;
+ #else
+ 	/* We can branch directly */
 -- 
-2.7.4
+2.9.3
