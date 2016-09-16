@@ -1,19 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sbmBl53lKzDsdw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Sep 2016 18:53:03 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds  <torvalds@linux-foundation.org>
-Cc: ego@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.8-6 tag
-Date: Sat, 17 Sep 2016 18:52:52 +1000
-Message-ID: <87vaxunc0r.fsf@concordia.ellerman.id.au>
+Return-Path: <Marcin.Nowakowski@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sb6Ll3P8vzDsXV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:27:43 +1000 (AEST)
+From: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Marcin Nowakowski <marcin.nowakowski@imgtec.com>, Steven Rostedt
+ <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 08/11] powerpc/tracing: fix compat syscall handling
+Date: Fri, 16 Sep 2016 09:11:24 +0200
+Message-ID: <1474009887-7225-9-git-send-email-marcin.nowakowski@imgtec.com>
+In-Reply-To: <1474009887-7225-1-git-send-email-marcin.nowakowski@imgtec.com>
+References: <1474009887-7225-1-git-send-email-marcin.nowakowski@imgtec.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+Adapt the code to make use of new syscall handling interface
 
-Hi Linus,
+Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/include/asm/ftrace.h | 11 +++++++++++
+ arch/powerpc/kernel/ftrace.c      |  4 ++++
+ 2 files changed, 15 insertions(+)
 
-Please pull some more powerpc fixes for 4.8:
-
-The following changes since commit f077aaf0754bcba0fffdbd925bc12f09cd1e38aa:
-
-  powerpc/mm: Don't alias user region to other regions below PAGE_OFFSET (2016-09-08 13:15:33 +1000)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.8-6
-
-for you to fetch changes up to ed7d9a1d7da6fe7b1c7477dc70e95051583fd60c:
-
-  powerpc/powernv/pci: Fix missed TCE invalidations that should fallback to OPAL (2016-09-15 17:05:11 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.8 #6
-
-Fixes for code merged this cycle:
- - Fix restore of SPRs upon wake up from hypervisor state loss from Gautham R. Shenoy
- - Fix the state of root PE from Gavin Shan
- - Detach from PE on releasing PCI device from Gavin Shan
- - Fix size of NUM_CPU_FTR_KEYS on 32-bit
- - Fix missed TCE invalidations that should fallback to OPAL
-
-----------------------------------------------------------------
-Gautham R. Shenoy (1):
-      powerpc/powernv: Fix restore of SPRs upon wake up from hypervisor state loss
-
-Gavin Shan (2):
-      powerpc/powernv: Fix the state of root PE
-      powerpc/powernv: Detach from PE on releasing PCI device
-
-Michael Ellerman (2):
-      powerpc/kernel: Fix size of NUM_CPU_FTR_KEYS on 32-bit
-      powerpc/powernv/pci: Fix missed TCE invalidations that should fallback to OPAL
-
- arch/powerpc/include/asm/cpu_has_feature.h |  2 +-
- arch/powerpc/kernel/idle_book3s.S          | 10 +++++-----
- arch/powerpc/platforms/powernv/pci-ioda.c  | 26 +++++++++++++++++++++++---
- 3 files changed, 29 insertions(+), 9 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJX3QRlAAoJEFHr6jzI4aWArj0QALw1tS8UMdfBPQoWbrLzBey9
-ui1CKKin9tVO46PAyaXUC5PEuC8BRT5Thboh3CtFnuMdsJTfSHRunB7qreDPZ1ag
-m6zv6Jr3HaM+JEVR89jN6ei7VgH3juMcLzuTWBwts9KBns3allqEb8wbAYuzpqo2
-xOF9Lw1WwPYta21u+cl2FjTkx4fo0K+Sy1QGN9/gBVMhIJmXnagZ7XP8e70Ha/CZ
-gQS8aWbLpr4gy4I7uVvcEH1rI5KCfFOm9bUSsDXpenr56l3ifaLMNF2/P8XMHce6
-eVePQSPwt9Bz6lGBv5EAEd2dDiMgs+oOVV3fhCk22ze/I0m3t11eXPz3S9SlS5xC
-7Grp9FjOJKBQ9vDC6KqWA4sId10WhNbA2tC2iE8MhGrmTKkkNTq6m4NZZqSt0Y0a
-XL/dWtUWr6O8JhSW3hgalZ6wxjgbptM7gDPTN1x6cdQ2xo6bFRHCS3FEEYQlD7eL
-QPb0N/6IKDGXD9LrXo5PzLUOXE9TuitlbREQIFojzjeBECNosCSN2+JkvJIRKmYm
-5X0YrnOhpbmGEVj6v6i+O9sCQU8fNaA2vYX6TO2a0VQ/WQFsK/IkWIUN+xu3r3N0
-o6/oqZGiWNJsDLl6PXZISrhbnEk+OJiTizn/rqLHv5VvkcRC37l/fY+5nQ8rbqDS
-+Qm06G4uwcxeeAQeWn/A
-=Vw1F
------END PGP SIGNATURE-----
---=-=-=--
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index 9697a73..d2ea3b6 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -86,6 +86,17 @@ static inline bool arch_syscall_match_sym_name(const char *sym, const char *name
+ 	return !strcmp(sym + prefix_len + 1, name + prefix_len);
+ }
+ #endif
++
++#if defined(CONFIG_COMPAT)
++#include <linux/compat.h>
++#include <asm/compat.h>
++
++#define ARCH_COMPAT_SYSCALL_NUMBERS_OVERLAP 1
++static inline bool arch_trace_is_compat_syscall(struct pt_regs *regs)
++{
++	return in_compat_syscall();
++}
++#endif /* CONFIG_COMPAT */
+ #endif /* CONFIG_FTRACE_SYSCALLS && !__ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_FTRACE */
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 71f4d07..0764fa5 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -605,6 +605,10 @@ out:
+ #if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64)
+ unsigned long __init arch_syscall_addr(int nr, bool compat)
+ {
++#ifdef CONFIG_COMPAT
++	if (compat)
++		return sys_call_table[nr*2+1];
++#endif
+ 	return sys_call_table[nr*2];
+ }
+ #endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 */
+-- 
+2.7.4
