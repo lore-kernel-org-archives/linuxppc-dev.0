@@ -1,24 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sb9hJ0hnhzDsZf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 19:58:08 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id vz6so3305646pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 02:58:08 -0700 (PDT)
-Date: Fri, 16 Sep 2016 19:57:54 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 05/13] powerpc: Add soft_enabled manipulation functions
-Message-ID: <20160916195754.47de292e@roar.ozlabs.ibm.com>
-In-Reply-To: <1473944523-624-6-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1473944523-624-6-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sb9mS0hkzzDsTS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 20:01:44 +1000 (AEST)
+Subject: Re: powerpc: Discard ffs() function and use builtin_ffs instead
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <3r5flF6kL6z9t5R@ozlabs.org>
+ <762b62b5-0246-7045-e4cf-7559ab8c5bb2@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <c05ada1f-1499-1218-2c35-5dd0070fe2f7@c-s.fr>
+Date: Fri, 16 Sep 2016 12:01:39 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <762b62b5-0246-7045-e4cf-7559ab8c5bb2@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 Sep 2016 18:31:55 +0530
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
-> Add new soft_enabled_* manipulation function and implement
-> arch_local_* using the soft_enabled_* wrappers.
-> 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/hw_irq.h | 32 ++++++++++++++------------------
->  1 file changed, 14 insertions(+), 18 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index f828b8f8df02..dc3c248f9244 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -53,21 +53,7 @@ static inline notrace void soft_enabled_set(unsigned long enable)
->  	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
->  }
->  
-> -static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
-> -{
-> -	unsigned long flags;
-> -
-> -	asm volatile(
-> -		"lbz %0,%1(13); stb %2,%1(13)"
-> -		: "=r" (flags)
-> -		: "i" (offsetof(struct paca_struct, soft_enabled)),\
-> -		  "r" (enable)
-> -		: "memory");
-> -
-> -	return flags;
-> -}
-> -
-> -static inline unsigned long arch_local_save_flags(void)
-> +static inline notrace unsigned long soft_enabled_return(void)
->  {
->  	unsigned long flags;
->  
-> @@ -79,20 +65,30 @@ static inline unsigned long arch_local_save_flags(void)
->  	return flags;
->  }
->  
-> -static inline unsigned long arch_local_irq_disable(void)
-> +static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
->  {
->  	unsigned long flags, zero;
->  
->  	asm volatile(
-> -		"li %1,%3; lbz %0,%2(13); stb %1,%2(13)"
-> +		"mr %1,%3; lbz %0,%2(13); stb %1,%2(13)"
->  		: "=r" (flags), "=&r" (zero)
->  		: "i" (offsetof(struct paca_struct, soft_enabled)),\
-> -		  "i" (IRQ_DISABLE_MASK_LINUX)
-> +		  "r" (enable)
->  		: "memory");
->  
->  	return flags;
->  }
 
-As we talked about earlier, it would be nice to add builtin_constant
-variants to avoid the extra instruction. If you prefer to do that
-after this series, that's fine.
+Le 13/05/2016 à 08:53, Christophe Leroy a écrit :
+>
+>
+> Le 13/05/2016 à 08:16, Michael Ellerman a écrit :
+>> On Thu, 2016-12-05 at 15:32:22 UTC, Christophe Leroy wrote:
+>>> With the ffs() function as defined in arch/powerpc/include/asm/bitops.h
+>>> GCC will not optimise the code in case of constant parameter, as shown
+>>> by the small exemple below.
+>>>
+>>> int ffs_test(void)
+>>> {
+>>>     return 4 << ffs(31);
+>>> }
+>>>
+>>> c0012334 <ffs_test>:
+>>> c0012334:       39 20 00 01     li      r9,1
+>>> c0012338:       38 60 00 04     li      r3,4
+>>> c001233c:       7d 29 00 34     cntlzw  r9,r9
+>>> c0012340:       21 29 00 20     subfic  r9,r9,32
+>>> c0012344:       7c 63 48 30     slw     r3,r3,r9
+>>> c0012348:       4e 80 00 20     blr
+>>>
+>>> With this patch, the same function will compile as follows:
+>>>
+>>> c0012334 <ffs_test>:
+>>> c0012334:       38 60 00 08     li      r3,8
+>>> c0012338:       4e 80 00 20     blr
+>>
+>> But what code does it generate when it's not a constant?
+>
+> The generated code is the same with and without the patch when not a 
+> constant:
+>
+> int ffs_test2(int x)
+> {
+>     return ffs(x);
+> }
+>
+> c001233c <ffs_test2>:
+> c001233c:       7d 23 00 d0     neg     r9,r3
+> c0012340:       7d 23 18 38     and     r3,r9,r3
+> c0012344:       7c 63 00 34     cntlzw  r3,r3
+> c0012348:       20 63 00 20     subfic  r3,r3,32
+> c001234c:       4e 80 00 20     blr
+>
+>>
+>> And which gcc version first added the builtin version?
+> Don't know, but __builtin_ffs() is already used in 
+> arch/powerpc/include/asm/page_32.h
+>
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Hi Michael,
+
+Any change to get it into 4.9 ?
+
+Christophe
