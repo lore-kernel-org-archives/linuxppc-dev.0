@@ -1,21 +1,27 @@
-Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0061.outbound.protection.outlook.com [104.47.34.61])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.183])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sbFls4l4RzDsfJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 23:01:29 +1000 (AEST)
-From: Claudiu Manoil <claudiu.manoil@nxp.com>
-To: <linuxppc-dev@lists.ozlabs.org>, Scott Wood <scottwood@freescale.com>
-CC: <linux-kernel@vger.kernel.org>, Roy Pledge <roy.pledge@nxp.com>
-Subject: [PATCH 5/5] arch/powerpc: Add CONFIG_FSL_DPAA to
- corenetXX_smp_defconfig
-Date: Fri, 16 Sep 2016 16:00:32 +0300
-Message-ID: <1474030832-20611-6-git-send-email-claudiu.manoil@nxp.com>
-In-Reply-To: <1474030832-20611-1-git-send-email-claudiu.manoil@nxp.com>
-References: <1474030832-20611-1-git-send-email-claudiu.manoil@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sbGGh1rhTzDscD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 23:24:44 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Nicholas Piggin' <npiggin@gmail.com>
+CC: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>, "anton@samba.org" <anton@samba.org>
+Subject: RE: [PATCH 04/13] powerpc: Use soft_enabled_set api to update
+ paca->soft_enabled
+Date: Fri, 16 Sep 2016 13:22:24 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB00FF847@AcuExch.aculab.com>
+References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1473944523-624-5-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160916195302.6b2f3320@roar.ozlabs.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB00FF817@AcuExch.aculab.com>
+ <20160916215923.08c6aa2a@roar.ozlabs.ibm.com>
+In-Reply-To: <20160916215923.08c6aa2a@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,66 +31,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable the drivers on the powerpc arch.
+From: Nicholas Piggin
+> Sent: 16 September 2016 12:59
+> On Fri, 16 Sep 2016 11:43:13 +0000
+> David Laight <David.Laight@ACULAB.COM> wrote:
+>=20
+> > From: Nicholas Piggin
+> > > Sent: 16 September 2016 10:53
+> > > On Thu, 15 Sep 2016 18:31:54 +0530
+> > > Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+> > >
+> > > > Force use of soft_enabled_set() wrapper to update paca-soft_enabled
+> > > > wherever possisble. Also add a new wrapper function, soft_enabled_s=
+et_return(),
+> > > > added to force the paca->soft_enabled updates.
+> > ...
+> > > > diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/inclu=
+de/asm/hw_irq.h
+> > > > index 8fad8c24760b..f828b8f8df02 100644
+> > > > --- a/arch/powerpc/include/asm/hw_irq.h
+> > > > +++ b/arch/powerpc/include/asm/hw_irq.h
+> > > > @@ -53,6 +53,20 @@ static inline notrace void soft_enabled_set(unsi=
+gned long enable)
+> > > >  	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)=
+));
+> > > >  }
+> > > >
+> > > > +static inline notrace unsigned long soft_enabled_set_return(unsign=
+ed long enable)
+> > > > +{
+> > > > +	unsigned long flags;
+> > > > +
+> > > > +	asm volatile(
+> > > > +		"lbz %0,%1(13); stb %2,%1(13)"
+> > > > +		: "=3Dr" (flags)
+> > > > +		: "i" (offsetof(struct paca_struct, soft_enabled)),\
+> > > > +		  "r" (enable)
+> > > > +		: "memory");
+> > > > +
+> > > > +	return flags;
+> > > > +}
+> > >
+> > > Why do you have the "memory" clobber here while soft_enabled_set() do=
+es not?
+> >
+> > I wondered about the missing memory clobber earlier.
+> >
+> > Any 'clobber' ought to be restricted to the referenced memory area.
+> > If the structure is only referenced by r13 through 'asm volatile' it is=
+n't needed.
+>=20
+> Well a clobber (compiler barrier) at some point is needed in irq_disable =
+and
+> irq_enable paths, so we correctly open and close the critical section vs =
+interrupts.
+> I just wonder about these helpers. It might be better to take the clobber=
+s out of
+> there and add barrier(); in callers, which would make it more obvious.
 
-Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
-Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
----
- arch/powerpc/Makefile            | 4 ++--
- arch/powerpc/configs/dpaa.config | 1 +
- drivers/soc/Kconfig              | 1 +
- drivers/soc/fsl/Makefile         | 1 +
- 4 files changed, 5 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/configs/dpaa.config
+If the memory clobber is needed to synchronise with the rest of the code
+rather than just ensuring the compiler doesn't reorder accesses via r13
+then I'd add an explicit barrier() somewhere - even if in these helpers.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 1934707..f36347c 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -325,12 +325,12 @@ mpc85xx_smp_defconfig:
- PHONY += corenet32_smp_defconfig
- corenet32_smp_defconfig:
- 	$(call merge_into_defconfig,corenet_basic_defconfig,\
--		85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw)
-+		85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw dpaa)
- 
- PHONY += corenet64_smp_defconfig
- corenet64_smp_defconfig:
- 	$(call merge_into_defconfig,corenet_basic_defconfig,\
--		85xx-64bit 85xx-smp altivec 85xx-hw fsl-emb-nonhw)
-+		85xx-64bit 85xx-smp altivec 85xx-hw fsl-emb-nonhw dpaa)
- 
- PHONY += mpc86xx_defconfig
- mpc86xx_defconfig:
-diff --git a/arch/powerpc/configs/dpaa.config b/arch/powerpc/configs/dpaa.config
-new file mode 100644
-index 0000000..efa99c0
---- /dev/null
-+++ b/arch/powerpc/configs/dpaa.config
-@@ -0,0 +1 @@
-+CONFIG_FSL_DPAA=y
-diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
-index fe42a2f..e6e90e8 100644
---- a/drivers/soc/Kconfig
-+++ b/drivers/soc/Kconfig
-@@ -1,6 +1,7 @@
- menu "SOC (System On Chip) specific Drivers"
- 
- source "drivers/soc/bcm/Kconfig"
-+source "drivers/soc/fsl/qbman/Kconfig"
- source "drivers/soc/fsl/qe/Kconfig"
- source "drivers/soc/mediatek/Kconfig"
- source "drivers/soc/qcom/Kconfig"
-diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-index 203307f..75e1f53 100644
---- a/drivers/soc/fsl/Makefile
-+++ b/drivers/soc/fsl/Makefile
-@@ -2,5 +2,6 @@
- # Makefile for the Linux Kernel SOC fsl specific device drivers
- #
- 
-+obj-$(CONFIG_FSL_DPAA)                 += qbman/
- obj-$(CONFIG_QUICC_ENGINE)		+= qe/
- obj-$(CONFIG_CPM)			+= qe/
--- 
-1.7.11.7
+Potentially the helper wants a memory clobber for the (r13) area
+and a separate barrier() to ensure the interrupts are masked for the
+right code.
+Even if both are together in the same helper.
+
+	David
