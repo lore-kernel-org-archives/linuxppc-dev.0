@@ -1,21 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sb6Jm6xV7zDqXr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:26:00 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id 6so310440pfl.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 00:26:00 -0700 (PDT)
-Subject: [PATCH v2] Remove duplicate setting of the B field in tlbie
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: kvm-ppc@vger.kernel.org, LINUX FOR POWERPC <linuxppc-dev@lists.ozlabs.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <f706a4d0-40d5-2eaa-67d9-8fb02475ca4d@gmail.com>
-Date: Fri, 16 Sep 2016 17:25:50 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sb6d40BghzDsZH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:40:08 +1000 (AEST)
+Message-Id: <cover.1474009019.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 0/3] powerpc: implementation of huge pages for 8xx
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 16 Sep 2016 09:40:01 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is v2 of patch serie is the implementation of support of
+hugepages for the 8xx.
+v1 of the serie was including some other fixes and
+optimisations/reorganisations for the 8xx. Now the patch has been
+split and this part only focuses on the implementation of
+hugepages.
 
-Remove duplicate setting of the the "B" field when doing a tlbie(l).
-In compute_tlbie_rb(), the "B" field is set again just before
-returning the rb value to be used for tlbie(l).
+Compared the v1, the last patch has been split in two parts.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
-Changelog - Leave the more readable version around
+This patch serie applies on top of the patch serie named
+"Optimisation on 8xx prior to hugepage implementation"
 
- arch/powerpc/include/asm/kvm_book3s_64.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Christophe Leroy (3):
+  powerpc: port 64 bits pgtable_cache to 32 bits
+  powerpc: get hugetlbpage handling more generic
+  powerpc/8xx: Implement support of hugepages
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 88d17b4..aa7d4fd 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -159,7 +159,6 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
- 	/* This covers 14..54 bits of va*/
- 	rb = (v & ~0x7fUL) << 16;		/* AVA field */
- 
--	rb |= (v >> HPTE_V_SSIZE_SHIFT) << 8;	/*  B field */
- 	/*
- 	 * AVA in v had cleared lower 23 bits. We need to derive
- 	 * that from pteg index
-@@ -211,7 +210,7 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
- 		break;
- 	}
- 	}
--	rb |= (v >> 54) & 0x300;		/* B field */
-+	rb |= (v >> HPTE_V_SSIZE_SHIFT) << 8;	/* B field */
- 	return rb;
- }
- 
+ arch/powerpc/include/asm/book3s/32/pgalloc.h |  44 +++++-
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  43 +++---
+ arch/powerpc/include/asm/book3s/64/pgtable.h |   3 -
+ arch/powerpc/include/asm/hugetlb.h           |  19 ++-
+ arch/powerpc/include/asm/mmu-8xx.h           |  35 +++++
+ arch/powerpc/include/asm/mmu.h               |  23 +--
+ arch/powerpc/include/asm/nohash/32/pgalloc.h |  44 +++++-
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  45 +++---
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h |   1 +
+ arch/powerpc/include/asm/nohash/64/pgtable.h |   2 -
+ arch/powerpc/include/asm/nohash/pgtable.h    |   4 +
+ arch/powerpc/include/asm/pgtable.h           |   2 +
+ arch/powerpc/include/asm/reg_8xx.h           |   2 +-
+ arch/powerpc/kernel/head_8xx.S               | 119 ++++++++++++++-
+ arch/powerpc/mm/Makefile                     |   3 +-
+ arch/powerpc/mm/hugetlbpage.c                | 212 ++++++++++++---------------
+ arch/powerpc/mm/init-common.c                | 147 +++++++++++++++++++
+ arch/powerpc/mm/init_64.c                    |  77 ----------
+ arch/powerpc/mm/pgtable_32.c                 |  37 -----
+ arch/powerpc/mm/tlb_nohash.c                 |  21 ++-
+ arch/powerpc/platforms/8xx/Kconfig           |   1 +
+ arch/powerpc/platforms/Kconfig.cputype       |   1 +
+ 22 files changed, 572 insertions(+), 313 deletions(-)
+ create mode 100644 arch/powerpc/mm/init-common.c
+
 -- 
-2.5.5
+2.1.0
