@@ -1,45 +1,21 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sb6CR61H4zDskW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:21:23 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8G7IVeO133540
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 03:21:21 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25fnnyw2jb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 03:21:21 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 16 Sep 2016 17:21:18 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B3AF82BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:21:15 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8G7LFE551970142
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:21:15 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8G7LEnR012440
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:21:15 +1000
-Subject: Re: [PATCH] MAINTAINERS: Update cxl maintainers
-To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
-References: <1474000124-4646-1-git-send-email-mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Fri, 16 Sep 2016 17:21:14 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sb6Jm6xV7zDqXr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:26:00 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id 6so310440pfl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 00:26:00 -0700 (PDT)
+Subject: [PATCH v2] Remove duplicate setting of the B field in tlbie
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: kvm-ppc@vger.kernel.org, LINUX FOR POWERPC <linuxppc-dev@lists.ozlabs.org>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <f706a4d0-40d5-2eaa-67d9-8fb02475ca4d@gmail.com>
+Date: Fri, 16 Sep 2016 17:25:50 +1000
 MIME-Version: 1.0
-In-Reply-To: <1474000124-4646-1-git-send-email-mikey@neuling.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <5e2af05a-38ff-a43e-67c9-3fb9abc28bfa@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,33 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/09/16 14:28, Michael Neuling wrote:
- > Fred has taken over the cxl maintenance I was doing.  This updates the
- > MAINTAINERS file to reflect this.
- >
- > It also removes a duplicate entry in the files covered.
- >
- > Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Remove duplicate setting of the the "B" field when doing a tlbie(l).
+In compute_tlbie_rb(), the "B" field is set again just before
+returning the rb value to be used for tlbie(l).
 
- >  CXL (IBM Coherent Accelerator Processor Interface CAPI) DRIVER
- >  M:    Ian Munsie <imunsie@au1.ibm.com>
- > -M:    Michael Neuling <mikey@neuling.org>
- > +M:    Frederic Barrat <fbarrat@linux.vnet.ibm.com>
- >  L:    linuxppc-dev@lists.ozlabs.org
- >  S:    Supported
- >  F:    drivers/misc/cxl/
- >  F:    include/misc/cxl*
- >  F:    include/uapi/misc/cxl.h
- >  F:    Documentation/powerpc/cxl.txt
- > -F:    Documentation/powerpc/cxl.txt
- >  F:    Documentation/ABI/testing/sysfs-class-cxl
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+Changelog - Leave the more readable version around
 
-We should probably add:
+ arch/powerpc/include/asm/kvm_book3s_64.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-F:    arch/powerpc/platforms/powernv/pci-cxl.c
-
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 88d17b4..aa7d4fd 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -159,7 +159,6 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+ 	/* This covers 14..54 bits of va*/
+ 	rb = (v & ~0x7fUL) << 16;		/* AVA field */
+ 
+-	rb |= (v >> HPTE_V_SSIZE_SHIFT) << 8;	/*  B field */
+ 	/*
+ 	 * AVA in v had cleared lower 23 bits. We need to derive
+ 	 * that from pteg index
+@@ -211,7 +210,7 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+ 		break;
+ 	}
+ 	}
+-	rb |= (v >> 54) & 0x300;		/* B field */
++	rb |= (v >> HPTE_V_SSIZE_SHIFT) << 8;	/* B field */
+ 	return rb;
+ }
+ 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.5.5
