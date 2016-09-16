@@ -1,22 +1,23 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sbB5T5zCNzDsck
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 20:16:29 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id q2so804900pfj.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 03:16:29 -0700 (PDT)
-Date: Fri, 16 Sep 2016 20:16:20 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sbBV548CGzDsZW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 20:34:21 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id pp5so3336258pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 03:34:21 -0700 (PDT)
+Date: Fri, 16 Sep 2016 20:34:11 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
  paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 09/13] powerpc: Introduce new mask bit for soft_enabled
-Message-ID: <20160916201620.7c927e60@roar.ozlabs.ibm.com>
-In-Reply-To: <1473944523-624-10-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 12/13] powerpc: Add a Kconfig and a functions to set new
+ soft_enabled mask
+Message-ID: <20160916203411.5f0cab34@roar.ozlabs.ibm.com>
+In-Reply-To: <1473944523-624-13-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1473944523-624-10-git-send-email-maddy@linux.vnet.ibm.com>
+ <1473944523-624-13-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,114 +29,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 Sep 2016 18:31:59 +0530
+On Thu, 15 Sep 2016 18:32:02 +0530
 Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
-> Currently soft_enabled is used as the flag to determine
-> the interrupt state. Patch extends the soft_enabled
-> to be used as a mask instead of a flag.
+> New Kconfig is added "CONFIG_IRQ_DEBUG_SUPPORT" to add warn_on
+> to alert the invalid transitions. Have also moved the code under
+> the CONFIG_TRACE_IRQFLAGS in arch_local_irq_restore() to new Kconfig
+> as suggested.
 
-This should be the title of the patch, IMO. Introducing the new
-mask bit is incidental (and could be moved to patch 11). The key
-here of course is switching the tests from a flag to a mask.
+I can't tempt you to put the Kconfig changes into their own patch? :)
 
-Very cool that you got this all worked out without adding any
-new instructions.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
+> To support disabling and enabling of irq with PMI, set of
+> new powerpc_local_irq_pmu_save() and powerpc_local_irq_restore()
+> functions are added. And powerpc_local_irq_save() implemented,
+> by adding a new soft_enabled manipulation function soft_enabled_or_return().
+> Local_irq_pmu_* macros are provided to access these powerpc_local_irq_pmu*
+> functions which includes trace_hardirqs_on|off() to match what we
+> have in include/linux/irqflags.h.
 > 
 > Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/exception-64s.h | 4 ++--
->  arch/powerpc/include/asm/hw_irq.h        | 1 +
->  arch/powerpc/include/asm/irqflags.h      | 4 ++--
->  arch/powerpc/kernel/entry_64.S           | 4 ++--
->  arch/powerpc/kernel/exceptions-64e.S     | 6 +++---
->  5 files changed, 10 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-> index dd3253bd0d8e..1eea4ab75607 100644
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -430,9 +430,9 @@ label##_relon_hv:						\
+
+> @@ -81,6 +81,20 @@ static inline notrace unsigned long soft_enabled_set_return(unsigned long enable
+>  	return flags;
+>  }
 >  
->  #define __SOFTEN_TEST(h, vec)						\
->  	lbz	r10,PACASOFTIRQEN(r13);					\
-> -	cmpwi	r10,IRQ_DISABLE_MASK_LINUX;							\
-> +	andi.	r10,r10,IRQ_DISABLE_MASK_LINUX;				\
->  	li	r10,SOFTEN_VALUE_##vec;					\
-> -	beq	masked_##h##interrupt
-> +	bne	masked_##h##interrupt
->  #define _SOFTEN_TEST(h, vec)	__SOFTEN_TEST(h, vec)
+> +static inline notrace unsigned long soft_enabled_or_return(unsigned long enable)
+> +{
+> +	unsigned long flags, zero;
+> +
+> +	asm volatile(
+> +		"mr %1,%3; lbz %0,%2(13); or %1,%0,%1; stb %1,%2(13)"
+> +		: "=r" (flags), "=&r"(zero)
+> +		: "i" (offsetof(struct paca_struct, soft_enabled)),\
+> +		  "r" (enable)
+> +		: "memory");
+> +
+> +	return flags;
+> +}
+
+Another candidate for builtin_constification using immediates. And do you
+actually need the initial mr instruction there?
+
+
+> @@ -105,7 +119,7 @@ static inline unsigned long arch_local_irq_save(void)
 >  
->  #define SOFTEN_TEST_PR(vec)						\
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index fd9b421f9020..245262c02bab 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -32,6 +32,7 @@
->   */
->  #define IRQ_DISABLE_MASK_NONE		0
->  #define IRQ_DISABLE_MASK_LINUX		1
-> +#define IRQ_DISABLE_MASK_PMU		2
+>  static inline bool arch_irqs_disabled_flags(unsigned long flags)
+>  {
+> -	return flags == IRQ_DISABLE_MASK_LINUX;
+> +	return (flags);
+>  }
 >  
->  #endif /* CONFIG_PPC64 */
+>  static inline bool arch_irqs_disabled(void)
+
+This part logically belongs in patch 11, but it also needs to be changed,
+I think? Keep in mind it's the generic kernel asking whether it has "Linux
+interrupts" disabled.
+
+    return flags & IRQ_DISABLE_MASK_LINUX;
+
+> @@ -113,6 +127,59 @@ static inline bool arch_irqs_disabled(void)
+>  	return arch_irqs_disabled_flags(arch_local_save_flags());
+>  }
 >  
-> diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
-> index d0ed2a7d7d10..9ff09747a226 100644
-> --- a/arch/powerpc/include/asm/irqflags.h
-> +++ b/arch/powerpc/include/asm/irqflags.h
-> @@ -48,11 +48,11 @@
->  #define RECONCILE_IRQ_STATE(__rA, __rB)		\
->  	lbz	__rA,PACASOFTIRQEN(r13);	\
->  	lbz	__rB,PACAIRQHAPPENED(r13);	\
-> -	cmpwi	cr0,__rA,IRQ_DISABLE_MASK_LINUX;\
-> +	andi.	__rA,__rA,IRQ_DISABLE_MASK_LINUX;\
->  	li	__rA,IRQ_DISABLE_MASK_LINUX;	\
->  	ori	__rB,__rB,PACA_IRQ_HARD_DIS;	\
->  	stb	__rB,PACAIRQHAPPENED(r13);	\
-> -	beq	44f;				\
-> +	bne	44f;				\
->  	stb	__rA,PACASOFTIRQEN(r13);	\
->  	TRACE_DISABLE_INTS;			\
->  44:
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index 879aeb11ad29..533e363914a9 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -764,8 +764,8 @@ restore:
->  	 */
->  	ld	r5,SOFTE(r1)
->  	lbz	r6,PACASOFTIRQEN(r13)
-> -	cmpwi	cr0,r5,IRQ_DISABLE_MASK_LINUX
-> -	beq	restore_irq_off
-> +	andi.	r5,r5,IRQ_DISABLE_MASK_LINUX
-> +	bne	restore_irq_off
->  
->  	/* We are enabling, were we already enabled ? Yes, just return */
->  	cmpwi	cr0,r6,IRQ_DISABLE_MASK_NONE
-> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-> index 5c628b5696f6..8e40df2c2f30 100644
-> --- a/arch/powerpc/kernel/exceptions-64e.S
-> +++ b/arch/powerpc/kernel/exceptions-64e.S
-> @@ -212,8 +212,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
->  	/* Interrupts had better not already be enabled... */
->  	twnei	r6,IRQ_DISABLE_MASK_LINUX
->  
-> -	cmpwi	cr0,r5,IRQ_DISABLE_MASK_LINUX
-> -	beq	1f
-> +	andi.	r5,r5,IRQ_DISABLE_MASK_LINUX
-> +	bne	1f
->  
->  	TRACE_ENABLE_INTS
->  	stb	r5,PACASOFTIRQEN(r13)
-> @@ -352,7 +352,7 @@ ret_from_mc_except:
->  
->  #define PROLOG_ADDITION_MASKABLE_GEN(n)					    \
->  	lbz	r10,PACASOFTIRQEN(r13); /* are irqs soft-disabled ? */	    \
-> -	cmpwi	cr0,r10,IRQ_DISABLE_MASK_LINUX;/* yes -> go out of line */ \
-> +	andi.	r10,r10,IRQ_DISABLE_MASK_LINUX;/* yes -> go out of line */ \
->  	beq	masked_interrupt_book3e_##n
->  
->  #define PROLOG_ADDITION_2REGS_GEN(n)					    \
+> +static inline void powerpc_local_irq_pmu_restore(unsigned long flags)
+> +{
+> +	arch_local_irq_restore(flags);
+> +}
+> +
+> +static inline unsigned long powerpc_local_irq_pmu_disable(void)
+> +{
+> +	return soft_enabled_or_return(IRQ_DISABLE_MASK_LINUX | IRQ_DISABLE_MASK_PMU);
+> +}
+> +
+> +static inline unsigned long powerpc_local_irq_pmu_save(void)
+> +{
+> +	return powerpc_local_irq_pmu_disable();
+> +}
+> +
+> +#define raw_local_irq_pmu_save(flags)					\
+> +	do {								\
+> +		typecheck(unsigned long, flags);			\
+> +		flags = powerpc_local_irq_pmu_save();			\
+> +	} while(0)
+> +
+> +#define raw_local_irq_pmu_restore(flags)				\
+> +	do {								\
+> +		typecheck(unsigned long, flags);			\
+> +		powerpc_local_irq_pmu_restore(flags);			\
+> +	} while(0)
+> +
+> +#ifdef CONFIG_TRACE_IRQFLAGS
+> +#define local_irq_pmu_save(flags)		\
+> +	do {					\
+> +		raw_local_irq_pmu_save(flags);	\
+> +		trace_hardirqs_off();		\
+> +	} while(0)
+> +#define local_irq_pmu_restore(flags)			\
+> +	do {						\
+> +		if (raw_irqs_disabled_flags(flags)) {   \
+> +			raw_local_irq_pmu_restore(flags);\
+> +			trace_hardirqs_off();		\
+> +		} else {				\
+> +			trace_hardirqs_on();		\
+> +			raw_local_irq_pmu_restore(flags);\
+> +		}					\
+> +	} while(0)
+> +#else
+> +#define local_irq_pmu_save(flags)		\
+> +	do {					\
+> +		raw_local_irq_pmu_save(flags);	\
+> +	} while(0)
+> +#define local_irq_pmu_restore(flags)			\
+> +	do { raw_local_irq_pmu_restore(flags); } while (0)
+> +#endif /* CONFIG_TRACE_IRQFLAGS */
+> +
+> +
+
+This looks pretty good. When I suggested powerpc_ prefix, I intended in these
+functions here, so it wouldn't match with the local_irq_ namespace of generic
+kernel. But that was just an idea. If you prefer to do it this way, could you
+just drop the powerpc_ wrappers entirely?
+
+A comment above that says it comes from the generic Linux local_irq code
+might be an idea too.
+
+Provided at least the arch_irqs_disabled_flags comment gets addressed:
+
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
