@@ -1,29 +1,22 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sbR3q20ZYzDsdk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Sep 2016 06:00:54 +1000 (AEST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- linux-security-module <linux-security-module@vger.kernel.org>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
- kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-References: <1472596811-9596-1-git-send-email-zohar@linux.vnet.ibm.com>
- <20160831135047.4b05a7f912f158ed5f888241@linux-foundation.org>
- <1472683086.2607.17.camel@linux.vnet.ibm.com>
- <1473954263.2526.88.camel@linux.vnet.ibm.com>
-Date: Fri, 16 Sep 2016 14:47:13 -0500
-In-Reply-To: <1473954263.2526.88.camel@linux.vnet.ibm.com> (Mimi Zohar's
- message of "Thu, 15 Sep 2016 11:44:23 -0400")
-Message-ID: <87lgyrsk3i.fsf@x220.int.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [PATHC v2 0/9] ima: carry the measurement list across kexec
+Return-Path: <yinghai@kernel.org>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sbR5s55F3zDscg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Sep 2016 06:02:41 +1000 (AEST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Khalid Aziz <khalid.aziz@oracle.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org
+Subject: [PATCH v14 03/17] PCI: Remove __pci_mmap_make_offset()
+Date: Fri, 16 Sep 2016 13:01:53 -0700
+Message-Id: <20160916200207.21439-4-yinghai@kernel.org>
+In-Reply-To: <20160916200207.21439-1-yinghai@kernel.org>
+References: <20160916200207.21439-1-yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,83 +26,367 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+After
+  PCI: Let pci_mmap_page_range() take resource address
+No user for __pci_mmap_make_offset in those arch.
 
-> Hi Andrew,
->
-> On Wed, 2016-08-31 at 18:38 -0400, Mimi Zohar wrote:
->> On Wed, 2016-08-31 at 13:50 -0700, Andrew Morton wrote:
->> > On Tue, 30 Aug 2016 18:40:02 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
->> > 
->> > > The TPM PCRs are only reset on a hard reboot.  In order to validate a
->> > > TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
->> > > of the running kernel must be saved and then restored on the subsequent
->> > > boot, possibly of a different architecture.
->> > > 
->> > > The existing securityfs binary_runtime_measurements file conveniently
->> > > provides a serialized format of the IMA measurement list. This patch
->> > > set serializes the measurement list in this format and restores it.
->> > > 
->> > > Up to now, the binary_runtime_measurements was defined as architecture
->> > > native format.  The assumption being that userspace could and would
->> > > handle any architecture conversions.  With the ability of carrying the
->> > > measurement list across kexec, possibly from one architecture to a
->> > > different one, the per boot architecture information is lost and with it
->> > > the ability of recalculating the template digest hash.  To resolve this
->> > > problem, without breaking the existing ABI, this patch set introduces
->> > > the boot command line option "ima_canonical_fmt", which is arbitrarily
->> > > defined as little endian.
->> > > 
->> > > The need for this boot command line option will be limited to the
->> > > existing version 1 format of the binary_runtime_measurements.
->> > > Subsequent formats will be defined as canonical format (eg. TPM 2.0
->> > > support for larger digests).
->> > > 
->> > > This patch set pre-req's Thiago Bauermann's "kexec_file: Add buffer
->> > > hand-over for the next kernel" patch set. 
->> > > 
->> > > These patches can also be found in the next-kexec-restore branch of:
->> > > git://git.kernel.org/pub/scm/linux/kernel/git/zohar/linux-integrity.git
->> > 
->> > I'll merge these into -mm to get some linux-next exposure.  I don't
->> > know what your upstream merge plans will be?
->> 
->> Sounds good.  I'm hoping to get some review/comments on this patch set
->> as well.  At the moment, I'm chasing down a kernel test robot report
->> from this afternoon.
->
-> My concern about changing the canonical format as originally defined in
-> patch 9/9 from big endian to little endian never materialized.  Andreas
-> Steffan, the patch author, is happy either way.
->
-> We proposed two methods of addressing Eric Biederman's concerns of not
-> including the IMA measurement list segment in the kexec hash as
-> described in  https://lkml.org/lkml/2016/9/9/355.
->
-> - defer calculating and verifying the serialized IMA measurement list
-> buffer hash to IMA
-> - calculate the kexec hash on load, verify it on the kexec execute,
-> before re-calculating and updating it.
+Remove them.
 
-I need to ask: How this is anticipated to interact with kexec on panic?
-Because honestly I can't see this ever working in that case.  The
-assumption is that the original kernel has gone crazy.  So from a
-practical standpoint any trusted path should have been invalided.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-xtensa@linux-xtensa.org
+---
+ arch/microblaze/pci/pci-common.c |  63 ----------------------
+ arch/powerpc/kernel/pci-common.c |  63 ----------------------
+ arch/sparc/kernel/pci.c          | 113 ---------------------------------------
+ arch/xtensa/kernel/pci.c         |  62 ---------------------
+ 4 files changed, 301 deletions(-)
 
-This entire idea of updating the kexec image makes me extremely
-extremely nervious.  It feels like sticking a screw driver through the
-spokes of your bicicle tires while ridding down the road.
-
-I can see tracking to see if the list has changed at some
-point and causing a reboot(LINUX_REBOOT_CMD_KEXEC) to fail.
-
-At least the common bootloader cases that I know of using kexec are very
-minimal distributions that live in a ramdisk and as such it should be
-very straight forward to measure what is needed at or before
-sys_kexec_load.  But that was completely dismissed as unrealistic so I
-don't have a clue what actual problem you are trying to solve.
-
-If there is anyway we can start small and not with this big scary
-infrastructure change I would very much prefer it.
-
-Eric
+diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
+index 9e3bc05..e7cd0ab 100644
+--- a/arch/microblaze/pci/pci-common.c
++++ b/arch/microblaze/pci/pci-common.c
+@@ -156,69 +156,6 @@ void pcibios_set_master(struct pci_dev *dev)
+  */
+ 
+ /*
+- * Adjust vm_pgoff of VMA such that it is the physical page offset
+- * corresponding to the 32-bit pci bus offset for DEV requested by the user.
+- *
+- * Basically, the user finds the base address for his device which he wishes
+- * to mmap.  They read the 32-bit value from the config space base register,
+- * add whatever PAGE_SIZE multiple offset they wish, and feed this into the
+- * offset parameter of mmap on /proc/bus/pci/XXX for that device.
+- *
+- * Returns negative error code on failure, zero on success.
+- */
+-static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
+-					       resource_size_t *offset,
+-					       enum pci_mmap_state mmap_state)
+-{
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-	unsigned long io_offset = 0;
+-	int i, res_bit;
+-
+-	if (!hose)
+-		return NULL;		/* should never happen */
+-
+-	/* If memory, add on the PCI bridge address offset */
+-	if (mmap_state == pci_mmap_mem) {
+-#if 0 /* See comment in pci_resource_to_user() for why this is disabled */
+-		*offset += hose->pci_mem_offset;
+-#endif
+-		res_bit = IORESOURCE_MEM;
+-	} else {
+-		io_offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-		*offset += io_offset;
+-		res_bit = IORESOURCE_IO;
+-	}
+-
+-	/*
+-	 * Check that the offset requested corresponds to one of the
+-	 * resources of the device.
+-	 */
+-	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+-		struct resource *rp = &dev->resource[i];
+-		int flags = rp->flags;
+-
+-		/* treat ROM as memory (should be already) */
+-		if (i == PCI_ROM_RESOURCE)
+-			flags |= IORESOURCE_MEM;
+-
+-		/* Active and same type? */
+-		if ((flags & res_bit) == 0)
+-			continue;
+-
+-		/* In the range of this resource? */
+-		if (*offset < (rp->start & PAGE_MASK) || *offset > rp->end)
+-			continue;
+-
+-		/* found it! construct the final physical address */
+-		if (mmap_state == pci_mmap_io)
+-			*offset += hose->io_base_phys - io_offset;
+-		return rp;
+-	}
+-
+-	return NULL;
+-}
+-
+-/*
+  * This one is used by /dev/mem and fbdev who have no clue about the
+  * PCI device, it tries to find the PCI device first and calls the
+  * above routine
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 67b2e68..07fa9d5 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -388,69 +388,6 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
+  */
+ 
+ /*
+- * Adjust vm_pgoff of VMA such that it is the physical page offset
+- * corresponding to the 32-bit pci bus offset for DEV requested by the user.
+- *
+- * Basically, the user finds the base address for his device which he wishes
+- * to mmap.  They read the 32-bit value from the config space base register,
+- * add whatever PAGE_SIZE multiple offset they wish, and feed this into the
+- * offset parameter of mmap on /proc/bus/pci/XXX for that device.
+- *
+- * Returns negative error code on failure, zero on success.
+- */
+-static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
+-					       resource_size_t *offset,
+-					       enum pci_mmap_state mmap_state)
+-{
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-	unsigned long io_offset = 0;
+-	int i, res_bit;
+-
+-	if (hose == NULL)
+-		return NULL;		/* should never happen */
+-
+-	/* If memory, add on the PCI bridge address offset */
+-	if (mmap_state == pci_mmap_mem) {
+-#if 0 /* See comment in pci_resource_to_user() for why this is disabled */
+-		*offset += hose->pci_mem_offset;
+-#endif
+-		res_bit = IORESOURCE_MEM;
+-	} else {
+-		io_offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-		*offset += io_offset;
+-		res_bit = IORESOURCE_IO;
+-	}
+-
+-	/*
+-	 * Check that the offset requested corresponds to one of the
+-	 * resources of the device.
+-	 */
+-	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+-		struct resource *rp = &dev->resource[i];
+-		int flags = rp->flags;
+-
+-		/* treat ROM as memory (should be already) */
+-		if (i == PCI_ROM_RESOURCE)
+-			flags |= IORESOURCE_MEM;
+-
+-		/* Active and same type? */
+-		if ((flags & res_bit) == 0)
+-			continue;
+-
+-		/* In the range of this resource? */
+-		if (*offset < (rp->start & PAGE_MASK) || *offset > rp->end)
+-			continue;
+-
+-		/* found it! construct the final physical address */
+-		if (mmap_state == pci_mmap_io)
+-			*offset += hose->io_base_phys - io_offset;
+-		return rp;
+-	}
+-
+-	return NULL;
+-}
+-
+-/*
+  * This one is used by /dev/mem and fbdev who have no clue about the
+  * PCI device, it tries to find the PCI device first and calls the
+  * above routine
+diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+index 5f2d78e..c7d2ce6 100644
+--- a/arch/sparc/kernel/pci.c
++++ b/arch/sparc/kernel/pci.c
+@@ -732,119 +732,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ 
+ /* Platform support for /proc/bus/pci/X/Y mmap()s. */
+ 
+-/* If the user uses a host-bridge as the PCI device, he may use
+- * this to perform a raw mmap() of the I/O or MEM space behind
+- * that controller.
+- *
+- * This can be useful for execution of x86 PCI bios initialization code
+- * on a PCI card, like the xfree86 int10 stuff does.
+- */
+-static int __pci_mmap_make_offset_bus(struct pci_dev *pdev, struct vm_area_struct *vma,
+-				      enum pci_mmap_state mmap_state)
+-{
+-	struct pci_pbm_info *pbm = pdev->dev.archdata.host_controller;
+-	unsigned long space_size, user_offset, user_size;
+-
+-	if (mmap_state == pci_mmap_io) {
+-		space_size = resource_size(&pbm->io_space);
+-	} else {
+-		space_size = resource_size(&pbm->mem_space);
+-	}
+-
+-	/* Make sure the request is in range. */
+-	user_offset = vma->vm_pgoff << PAGE_SHIFT;
+-	user_size = vma->vm_end - vma->vm_start;
+-
+-	if (user_offset >= space_size ||
+-	    (user_offset + user_size) > space_size)
+-		return -EINVAL;
+-
+-	if (mmap_state == pci_mmap_io) {
+-		vma->vm_pgoff = (pbm->io_space.start +
+-				 user_offset) >> PAGE_SHIFT;
+-	} else {
+-		vma->vm_pgoff = (pbm->mem_space.start +
+-				 user_offset) >> PAGE_SHIFT;
+-	}
+-
+-	return 0;
+-}
+-
+-/* Adjust vm_pgoff of VMA such that it is the physical page offset
+- * corresponding to the 32-bit pci bus offset for DEV requested by the user.
+- *
+- * Basically, the user finds the base address for his device which he wishes
+- * to mmap.  They read the 32-bit value from the config space base register,
+- * add whatever PAGE_SIZE multiple offset they wish, and feed this into the
+- * offset parameter of mmap on /proc/bus/pci/XXX for that device.
+- *
+- * Returns negative error code on failure, zero on success.
+- */
+-static int __pci_mmap_make_offset(struct pci_dev *pdev,
+-				  struct vm_area_struct *vma,
+-				  enum pci_mmap_state mmap_state)
+-{
+-	unsigned long user_paddr, user_size;
+-	int i, err;
+-
+-	/* First compute the physical address in vma->vm_pgoff,
+-	 * making sure the user offset is within range in the
+-	 * appropriate PCI space.
+-	 */
+-	err = __pci_mmap_make_offset_bus(pdev, vma, mmap_state);
+-	if (err)
+-		return err;
+-
+-	/* If this is a mapping on a host bridge, any address
+-	 * is OK.
+-	 */
+-	if ((pdev->class >> 8) == PCI_CLASS_BRIDGE_HOST)
+-		return err;
+-
+-	/* Otherwise make sure it's in the range for one of the
+-	 * device's resources.
+-	 */
+-	user_paddr = vma->vm_pgoff << PAGE_SHIFT;
+-	user_size = vma->vm_end - vma->vm_start;
+-
+-	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+-		struct resource *rp = &pdev->resource[i];
+-		resource_size_t aligned_end;
+-
+-		/* Active? */
+-		if (!rp->flags)
+-			continue;
+-
+-		/* Same type? */
+-		if (i == PCI_ROM_RESOURCE) {
+-			if (mmap_state != pci_mmap_mem)
+-				continue;
+-		} else {
+-			if ((mmap_state == pci_mmap_io &&
+-			     (rp->flags & IORESOURCE_IO) == 0) ||
+-			    (mmap_state == pci_mmap_mem &&
+-			     (rp->flags & IORESOURCE_MEM) == 0))
+-				continue;
+-		}
+-
+-		/* Align the resource end to the next page address.
+-		 * PAGE_SIZE intentionally added instead of (PAGE_SIZE - 1),
+-		 * because actually we need the address of the next byte
+-		 * after rp->end.
+-		 */
+-		aligned_end = (rp->end + PAGE_SIZE) & PAGE_MASK;
+-
+-		if ((rp->start <= user_paddr) &&
+-		    (user_paddr + user_size) <= aligned_end)
+-			break;
+-	}
+-
+-	if (i > PCI_ROM_RESOURCE)
+-		return -EINVAL;
+-
+-	return 0;
+-}
+-
+ /* Set vm_page_prot of VMA, as appropriate for this architecture, for a pci
+  * device mapping.
+  */
+diff --git a/arch/xtensa/kernel/pci.c b/arch/xtensa/kernel/pci.c
+index 4c5f1fa..97ad3dd 100644
+--- a/arch/xtensa/kernel/pci.c
++++ b/arch/xtensa/kernel/pci.c
+@@ -272,68 +272,6 @@ pci_controller_num(struct pci_dev *dev)
+  */
+ 
+ /*
+- * Adjust vm_pgoff of VMA such that it is the physical page offset
+- * corresponding to the 32-bit pci bus offset for DEV requested by the user.
+- *
+- * Basically, the user finds the base address for his device which he wishes
+- * to mmap.  They read the 32-bit value from the config space base register,
+- * add whatever PAGE_SIZE multiple offset they wish, and feed this into the
+- * offset parameter of mmap on /proc/bus/pci/XXX for that device.
+- *
+- * Returns negative error code on failure, zero on success.
+- */
+-static __inline__ int
+-__pci_mmap_make_offset(struct pci_dev *dev, struct vm_area_struct *vma,
+-		       enum pci_mmap_state mmap_state)
+-{
+-	struct pci_controller *pci_ctrl = (struct pci_controller*) dev->sysdata;
+-	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
+-	unsigned long io_offset = 0;
+-	int i, res_bit;
+-
+-	if (pci_ctrl == 0)
+-		return -EINVAL;		/* should never happen */
+-
+-	/* If memory, add on the PCI bridge address offset */
+-	if (mmap_state == pci_mmap_mem) {
+-		res_bit = IORESOURCE_MEM;
+-	} else {
+-		io_offset = (unsigned long)pci_ctrl->io_space.base;
+-		offset += io_offset;
+-		res_bit = IORESOURCE_IO;
+-	}
+-
+-	/*
+-	 * Check that the offset requested corresponds to one of the
+-	 * resources of the device.
+-	 */
+-	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+-		struct resource *rp = &dev->resource[i];
+-		int flags = rp->flags;
+-
+-		/* treat ROM as memory (should be already) */
+-		if (i == PCI_ROM_RESOURCE)
+-			flags |= IORESOURCE_MEM;
+-
+-		/* Active and same type? */
+-		if ((flags & res_bit) == 0)
+-			continue;
+-
+-		/* In the range of this resource? */
+-		if (offset < (rp->start & PAGE_MASK) || offset > rp->end)
+-			continue;
+-
+-		/* found it! construct the final physical address */
+-		if (mmap_state == pci_mmap_io)
+-			offset += pci_ctrl->io_space.start - io_offset;
+-		vma->vm_pgoff = offset >> PAGE_SHIFT;
+-		return 0;
+-	}
+-
+-	return -EINVAL;
+-}
+-
+-/*
+  * Set vm_page_prot of VMA, as appropriate for this architecture, for a pci
+  * device mapping.
+  */
+-- 
+2.8.3
