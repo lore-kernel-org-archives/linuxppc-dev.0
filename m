@@ -1,22 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sb9mS0hkzzDsTS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 20:01:44 +1000 (AEST)
-Subject: Re: powerpc: Discard ffs() function and use builtin_ffs instead
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <3r5flF6kL6z9t5R@ozlabs.org>
- <762b62b5-0246-7045-e4cf-7559ab8c5bb2@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <c05ada1f-1499-1218-2c35-5dd0070fe2f7@c-s.fr>
-Date: Fri, 16 Sep 2016 12:01:39 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sb9sC5h4JzDsGT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 20:05:51 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id 21so2016555pfy.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 03:05:51 -0700 (PDT)
+Date: Fri, 16 Sep 2016 20:05:37 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 06/13] powerpc: reverse the soft_enable logic
+Message-ID: <20160916200537.50562560@roar.ozlabs.ibm.com>
+In-Reply-To: <1473944523-624-7-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1473944523-624-7-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <762b62b5-0246-7045-e4cf-7559ab8c5bb2@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +28,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 15 Sep 2016 18:31:56 +0530
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
+> "paca->soft_enabled" is used as a flag to mask some of interrupts.
+> Currently supported flags values and their details:
+> 
+> soft_enabled    MSR[EE]
+> 
+> 0               0       Disabled (PMI and HMI not masked)
+> 1               1       Enabled
+> 
+> "paca->soft_enabled" is initialized to 1 to make the interripts as
+> enabled. arch_local_irq_disable() will toggle the value when interrupts
+> needs to disbled. At this point, the interrupts are not actually disabled,
+> instead, interrupt vector has code to check for the flag and mask it when it occurs.
+> By "mask it", it update interrupt paca->irq_happened and return.
+> arch_local_irq_restore() is called to re-enable interrupts, which checks and
+> replays interrupts if any occured.
+> 
+> Now, as mentioned, current logic doesnot mask "performance monitoring interrupts"
+> and PMIs are implemented as NMI. But this patchset depends on local_irq_*
+> for a successful local_* update. Meaning, mask all possible interrupts during
+> local_* update and replay them after the update.
+> 
+> So the idea here is to reserve the "paca->soft_enabled" logic. New values and
+> details:
+> 
+> soft_enabled    MSR[EE]
+> 
+> 1               0       Disabled  (PMI and HMI not masked)
+> 0               1       Enabled
+> 
+> Reason for the this change is to create foundation for a third flag value "2"
+> for "soft_enabled" to add support to mask PMIs. When ->soft_enabled is
+> set to a value "2", PMI interrupts are mask and when set to a value
+> of "1", PMI are not mask.
+> 
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/hw_irq.h | 4 ++--
+>  arch/powerpc/kernel/entry_64.S    | 5 ++---
+>  2 files changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+> index dc3c248f9244..fd9b421f9020 100644
+> --- a/arch/powerpc/include/asm/hw_irq.h
+> +++ b/arch/powerpc/include/asm/hw_irq.h
+> @@ -30,8 +30,8 @@
+>  /*
+>   * flags for paca->soft_enabled
+>   */
+> -#define IRQ_DISABLE_MASK_NONE		1
+> -#define IRQ_DISABLE_MASK_LINUX		0
+> +#define IRQ_DISABLE_MASK_NONE		0
+> +#define IRQ_DISABLE_MASK_LINUX		1
+>  
+>  #endif /* CONFIG_PPC64 */
+>  
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index aef7b64cbbeb..879aeb11ad29 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -131,8 +131,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>  	 */
+>  #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_BUG)
+>  	lbz	r10,PACASOFTIRQEN(r13)
+> -	xori	r10,r10,IRQ_DISABLE_MASK_NONE
+> -1:	tdnei	r10,0
+> +1:	tdnei	r10,IRQ_DISABLE_MASK_NONE
+>  	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
+>  #endif
+>  
+> @@ -1012,7 +1011,7 @@ _GLOBAL(enter_rtas)
+>  	 * check it with the asm equivalent of WARN_ON
+>  	 */
+>  	lbz	r0,PACASOFTIRQEN(r13)
+> -1:	tdnei	r0,IRQ_DISABLE_MASK_LINUX
+> +1:	tdeqi	r0,IRQ_DISABLE_MASK_NONE
+>  	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
+>  #endif
+>  	
 
-Le 13/05/2016 à 08:53, Christophe Leroy a écrit :
->
->
-> Le 13/05/2016 à 08:16, Michael Ellerman a écrit :
->> On Thu, 2016-12-05 at 15:32:22 UTC, Christophe Leroy wrote:
->>> With the ffs() function as defined in arch/powerpc/include/asm/bitops.h
->>> GCC will not optimise the code in case of constant parameter, as shown
->>> by the small exemple below.
->>>
->>> int ffs_test(void)
->>> {
->>>     return 4 << ffs(31);
->>> }
->>>
->>> c0012334 <ffs_test>:
->>> c0012334:       39 20 00 01     li      r9,1
->>> c0012338:       38 60 00 04     li      r3,4
->>> c001233c:       7d 29 00 34     cntlzw  r9,r9
->>> c0012340:       21 29 00 20     subfic  r9,r9,32
->>> c0012344:       7c 63 48 30     slw     r3,r3,r9
->>> c0012348:       4e 80 00 20     blr
->>>
->>> With this patch, the same function will compile as follows:
->>>
->>> c0012334 <ffs_test>:
->>> c0012334:       38 60 00 08     li      r3,8
->>> c0012338:       4e 80 00 20     blr
->>
->> But what code does it generate when it's not a constant?
->
-> The generated code is the same with and without the patch when not a 
-> constant:
->
-> int ffs_test2(int x)
-> {
->     return ffs(x);
-> }
->
-> c001233c <ffs_test2>:
-> c001233c:       7d 23 00 d0     neg     r9,r3
-> c0012340:       7d 23 18 38     and     r3,r9,r3
-> c0012344:       7c 63 00 34     cntlzw  r3,r3
-> c0012348:       20 63 00 20     subfic  r3,r3,32
-> c001234c:       4e 80 00 20     blr
->
->>
->> And which gcc version first added the builtin version?
-> Don't know, but __builtin_ffs() is already used in 
-> arch/powerpc/include/asm/page_32.h
->
+We specifically want to ensure that _LINUX interrupts are disabled
+here. Not that we allow masking of others without _LINUX now, but
+current behavior is checking that LINUX ones are masked.
 
-Hi Michael,
+Otherwise it seems okay.
 
-Any change to get it into 4.9 ?
+It might be nice after this series to do a pass and rename
+soft_enabled to soft_masked.
 
-Christophe
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
