@@ -1,19 +1,45 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sb5nr2SGpzDsb0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:02:39 +1000 (AEST)
-Message-Id: <c6d677afa418ca84c2b512b6fba7fd030da92bbd.1474004639.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1474004638.git.christophe.leroy@c-s.fr>
-References: <cover.1474004638.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 3/3] powerpc/8xx: make user addr DTLB miss the short path
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 16 Sep 2016 08:42:08 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sb6046yBnzDscL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:11:32 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8G6wBBr121145
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 03:11:30 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25ftr85ed4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 03:11:29 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 16 Sep 2016 17:11:27 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id F041F2CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:11:24 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8G7BO4I6357468
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:11:24 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8G7BO5P006104
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2016 17:11:24 +1000
+Subject: Re: [PATCH] MAINTAINERS: Update cxl maintainers
+To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
+References: <1474000124-4646-1-git-send-email-mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 16 Sep 2016 17:11:23 +1000
+MIME-Version: 1.0
+In-Reply-To: <1474000124-4646-1-git-send-email-mikey@neuling.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <af48338c-458e-3cba-5166-b0fa731b854d@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,145 +49,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-User space DTLB miss represent approximatly 90% of TLB misses
-so make it the shortest path.
+On 16/09/16 14:28, Michael Neuling wrote:
+> Fred has taken over the cxl maintenance I was doing.  This updates the
+> MAINTAINERS file to reflect this.
+>
+> It also removes a duplicate entry in the files covered.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Also remove an unneccessary double jump in FixupDAR
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Before this patch, we spend 3.3 TB ticks in the handler for each
-user address miss and 3.4 TB ticks for each kernel address miss
-After this patch, we send 3.0 TB ticks in the handler for each
-user address miss and 3.9 TB ticks for each kernel address miss
-Taking into account that user misses represent 90% of the total,
-this patch provides an improvement of approx. 9%
+>  CXL (IBM Coherent Accelerator Processor Interface CAPI) DRIVER
+>  M:	Ian Munsie <imunsie@au1.ibm.com>
+> -M:	Michael Neuling <mikey@neuling.org>
+> +M:	Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+>  L:	linuxppc-dev@lists.ozlabs.org
+>  S:	Supported
+>  F:	drivers/misc/cxl/
+>  F:	include/misc/cxl*
+>  F:	include/uapi/misc/cxl.h
+>  F:	Documentation/powerpc/cxl.txt
+> -F:	Documentation/powerpc/cxl.txt
+>  F:	Documentation/ABI/testing/sysfs-class-cxl
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 53 ++++++++++++++++++------------------------
- 1 file changed, 23 insertions(+), 30 deletions(-)
+We should probably add:
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 9cc240d..bfe4907 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -384,30 +384,31 @@ InstructionTLBMiss:
- 
- 	. = 0x1200
- DataStoreTLBMiss:
-+	mtspr	SPRN_SPRG_SCRATCH2, r3
- 	EXCEPTION_PROLOG_0
--	mfcr	r10
-+	mfcr	r3
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	mfspr	r11, SPRN_MD_EPN
--	rlwinm	r11, r11, 16, 0xfff8
-+	mfspr	r10, SPRN_MD_EPN
-+	rlwinm	r10, r10, 16, 0xfff8
-+	cmpli	cr0, r10, PAGE_OFFSET@h
-+	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
-+	blt+	3f
- #ifndef CONFIG_PIN_TLB_IMMR
--	cmpli	cr0, r11, VIRT_IMMR_BASE@h
-+	cmpli	cr0, r10, VIRT_IMMR_BASE@h
- #endif
--	cmpli	cr7, r11, PAGE_OFFSET@h
-+_ENTRY(DTLBMiss_cmp)
-+	cmpli	cr7, r10, (PAGE_OFFSET + 0x1800000)@h
-+	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- #ifndef CONFIG_PIN_TLB_IMMR
- _ENTRY(DTLBMiss_jmp)
- 	beq-	DTLBMissIMMR
- #endif
--	bge-	cr7, DTLBMissLinear
--
--	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
-+	blt	cr7, DTLBMissLinear
- 3:
--	mtcr	r10
--#ifdef CONFIG_8xx_CPU6
--	mtspr	SPRN_SPRG_SCRATCH2, r3
--#endif
-+	mtcr	r3
- 	mfspr	r10, SPRN_MD_EPN
- 
- 	/* Insert level 1 index */
-@@ -460,9 +461,7 @@ _ENTRY(DTLBMiss_jmp)
- 	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
- 
- 	/* Restore registers */
--#ifdef CONFIG_8xx_CPU6
- 	mfspr	r3, SPRN_SPRG_SCRATCH2
--#endif
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	EXCEPTION_EPILOG_0
- 	rfi
-@@ -533,7 +532,7 @@ DARFixed:/* Return from dcbx instruction bug workaround */
-  * not enough space in the DataStoreTLBMiss area.
-  */
- DTLBMissIMMR:
--	mtcr	r10
-+	mtcr	r3
- 	/* Set 512k byte guarded page and mark it valid */
- 	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
- 	MTSPR_CPU6(SPRN_MD_TWC, r10, r11)
-@@ -545,27 +544,23 @@ DTLBMissIMMR:
- 
- 	li	r11, RPN_PATTERN
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r3, SPRN_SPRG_SCRATCH2
- 	EXCEPTION_EPILOG_0
- 	rfi
- 
- DTLBMissLinear:
--_ENTRY(DTLBMiss_cmp)
--	cmpli	cr0, r11, (PAGE_OFFSET + 0x1800000)@h
--	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
--	bge-	3b
--
--	mtcr	r10
-+	mtcr	r3
- 	/* Set 8M byte page and mark it valid */
--	li	r10, MD_PS8MEG | MD_SVALID
--	MTSPR_CPU6(SPRN_MD_TWC, r10, r11)
--	mfspr	r10, SPRN_MD_EPN
--	rlwinm	r10, r10, 0, 0x0f800000		/* 8xx supports max 256Mb RAM */
-+	li	r11, MD_PS8MEG | MD_SVALID
-+	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
-+	rlwinm	r10, r10, 16, 0x0f800000	/* 8xx supports max 256Mb RAM */
- 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY	| \
- 			  _PAGE_PRESENT
- 	MTSPR_CPU6(SPRN_MD_RPN, r10, r11)	/* Update TLB entry */
- 
- 	li	r11, RPN_PATTERN
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r3, SPRN_SPRG_SCRATCH2
- 	EXCEPTION_EPILOG_0
- 	rfi
- 
-@@ -585,7 +580,9 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	rlwinm	r11, r10, 16, 0xfff8
- _ENTRY(FixupDAR_cmp)
- 	cmpli	cr7, r11, (PAGE_OFFSET + 0x1800000)@h
--	blt-	cr7, 200f
-+	/* create physical page address from effective address */
-+	tophys(r11, r10)
-+	blt-	cr7, 201f
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 	/* Insert level 1 index */
- 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-@@ -615,10 +612,6 @@ _ENTRY(FixupDAR_cmp)
- 141:	mfspr	r10,SPRN_SPRG_SCRATCH2
- 	b	DARFixed	/* Nope, go back to normal TLB processing */
- 
--	/* create physical page address from effective address */
--200:	tophys(r11, r10)
--	b	201b
--
- 144:	mfspr	r10, SPRN_DSISR
- 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
- 	mtspr	SPRN_DSISR, r10
+F:	arch/powerpc/platforms/powernv/pci-cxl.c
+
 -- 
-2.1.0
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
