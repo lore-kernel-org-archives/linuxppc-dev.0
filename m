@@ -1,39 +1,17 @@
-Return-Path: <riesebie@lxtec.de>
-Received: from mailout3.hostsharing.net (mailout3.hostsharing.net
- [176.9.242.54])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <regressions@leemhuis.info>
+Received: from basicbox7.server-home.net (basicbox7.server-home.net
+ [195.137.212.29])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3scRJL1tVyzDsbC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 21:15:14 +1000 (AEST)
-Received: from h06.hostsharing.net (h06.hostsharing.net [83.223.95.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mailout3.hostsharing.net (Postfix) with ESMTPS id 5B40C101E9E7B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 13:08:47 +0200 (CEST)
-Received: from mail.home.lxtec.de
- (HSI-KBW-46-223-54-142.hsi.kabel-badenwuerttemberg.de [46.223.54.142])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h06.hostsharing.net (Postfix) with ESMTPSA id 1D5AA600058B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 13:08:47 +0200 (CEST)
-Received: from localhost ([127.0.0.1])
- by mail.home.lxtec.de with esmtp (Exim 4.87 2 (LXTEC))
- id 1blZxl-0005CJ-Un
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 13:08:45 +0200
-Received: from mail.home.lxtec.de ([IPv6:::1])
- by localhost (baumbart.home.lxtec.de [IPv6:::1]) (amavisd-new, port 10024)
- with ESMTP id bfLaR4mwMaMz for <linuxppc-dev@lists.ozlabs.org>;
- Sun, 18 Sep 2016 13:08:45 +0200 (CEST)
-Received: from aragorn.home.lxtec.de ([192.168.200.203])
- by mail.home.lxtec.de with smtp (Exim 4.87 2 (LXTEC))
- id 1blZxl-0005CE-NT
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 13:08:45 +0200
-Date: Sun, 18 Sep 2016 13:08:45 +0200
-From: Elimar Riesebieter <riesebie@lxtec.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Removed dependency on IDE_GD_ATA if ADB_PMU_LED_DISK is
- selected.
-Message-ID: <20160918110845.akvr46gdpuubo2q2@aragorn.home.lxtec.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3scVCQ14ZpzDsbC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 23:26:10 +1000 (AEST)
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Subject: Linux 4.8: Reported regressions as of Sunday, 2016-09-18
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Message-ID: <724a8e1c-0141-d663-cda3-8fc0310989ea@leemhuis.info>
+Date: Sun, 18 Sep 2016 15:20:53 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,32 +23,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can use the front led of powerbooks/ibooks as a disk activitiy imaginati=
-on
-without the deprecated IDE_GD_ATA.
+Hi! Here is my fourth regression report for Linux 4.8. It lists 14
+regressions I'm aware of. 5 of them are new; 1 mentioned in last 
+weeks report got fixed.
 
-Signed-off-by: Elimar Riesebieter <riesebie@lxtec.de>
----
- drivers/macintosh/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+As always: Are you aware of any other regressions? Then please let me
+know (simply CC regressions@leemhuis.info). And pls tell me if there
+is anything in the report that shouldn't be there.
 
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index d28690f..5d80810 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -102,7 +102,6 @@ config ADB_PMU_LED_DISK
- 	bool "Use front LED as DISK LED by default"
- 	depends on ADB_PMU_LED
- 	depends on LEDS_CLASS
--	depends on IDE_GD_ATA
- 	select LEDS_TRIGGERS
- 	select LEDS_TRIGGER_DISK
- 	help
---=20
-2.9.3
+Ciao, Thorsten
 
+== Current regressions ==
 
---=20
-  "Talking much about oneself can also
-   be a means to conceal oneself."
-         -Friedrich Nietzsche
+Desc: genirq: Flags mismatch irq 8, 00000088 (mmc0) vs. 00000080 (rtc0). mmc0: Failed to request irq 8: -16
+Repo: 2016-08-01 https://bugzilla.kernel.org/show_bug.cgi?id=150881
+Stat: 2016-09-09 https://bugzilla.kernel.org/show_bug.cgi?id=150881#c34
+Note: stalled; root cause somewhere in the main gpio merge for 4.8, but problematic commit still unknown
+
+Desc: [lkp] [xfs] 68a9f5e700: aim7.jobs-per-min -13.6% regression
+Repo: 2016-08-09 http://www.spinics.net/lists/kernel/msg2317052.html
+Stat: 2016-09-09 https://marc.info/?t=147341519500003&r=1&w=2
+Note: looks like post-4.8 material at this point: Mel working on it in his spare time, but "The progression of this series has been unsatisfactory."
+
+Desc: scsi host6: runtime PM trying to activate child device host6 but parent (2-2:1.0) is not active
+Repo: 2016-08-15 https://bugzilla.kernel.org/show_bug.cgi?id=153171
+Stat: 2016-09-14 https://bugzilla.kernel.org/show_bug.cgi?id=153171#c5
+Note: patch available; mkp "I would like the change to get a bit of soak time before we backport it."
+
+Desc: DT/OCTEON driver probing broken
+Repo: 2016-08-16 http://www.spinics.net/lists/devicetree/msg138990.html
+Stat: 2016-08-30 http://www.spinics.net/lists/devicetree/msg140682.html
+Note: stalled, poked Rob a week ago, got no reply
+
+Desc: gpio-leds broken on OCTEON
+Repo: 2016-08-23 http://www.spinics.net/lists/devicetree/msg139863.html
+Stat: 2016-09-12 http://www.spinics.net/lists/devicetree/msg140179.html
+Note: patch in Linux MIPS patchwork https://patchwork.linux-mips.org/patch/14091/
+
+Desc: Skylake graphics regression: projector failure with 4.8-rc3
+Repo: 2016-08-26 http://www.spinics.net/lists/intel-gfx/msg105478.html
+Stat: 2016-09-01 https://lkml.org/lkml/2016/8/31/946
+Note: stalled, poked lists
+
+Desc: lk 4.8 + !CONFIG_SHMEM + shmat() = oops
+Repo: 2016-08-30 http://www.spinics.net/lists/linux-mm/msg112920.html
+Stat: 2016-09-07 http://www.spinics.net/lists/linux-mm/msg113177.html
+Note: just like last week: patch "ipc/shm: fix crash if CONFIG_SHMEM is not set" is going to fix this, but has not hit mainline yet
+
+Desc: regression in re-read operation by iozone ~10%
+Repo: 2016-09-02 https://bugzilla.kernel.org/show_bug.cgi?id=155821
+Stat: n/a 
+Note: stalled; told reporter he might be better of posting about the issue to some mailing list
+
+Desc: brcmfmac is preventing suspend (Dell XPS 13 9350 / Skylake)/
+Repo: 2016-09-13 https://bugzilla.kernel.org/show_bug.cgi?id=156631
+Stat: n/a 
+Note: used to be https://bugzilla.kernel.org/show_bug.cgi?id=156361 in last weeks report
+
+Desc: CPU speed set very low
+Repo: 2016-09-09 https://lkml.org/lkml/2016/9/9/608
+Stat: 2016-09-14 https://lkml.org/lkml/2016/9/14/588
+Note: Larry: "Testing continues."
+
+Desc: pinctrl: qcom: Clear all function selection bits introduced a regression by not properly masking the calculated value.
+Repo: 2016-09-12 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1229055.html
+Stat: n/a 
+Note: Patch available in initial report
+
+Desc: WARN in vb2_dma_sg_alloc when makes dvbstream fail with with AverMedia Hybrid+FM
+Repo: 2016-09-13 https://bugzilla.kernel.org/show_bug.cgi?id=156751
+Stat: n/a 
+Note: told reporter he might be better of posting the issue to linux-media
+
+Desc: it is now common that machine needs re-run of xrandr after resume
+Repo: 2016-09-13 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1230782.html
+Stat: 2016-09-15 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1232834.html http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1231104.html
+Note: Seems Martin isn't seeing the problem anymore; Pavel's issue might be a different problem anyway; and he now has a userland-problem that complicates testing
+
+Desc: usb: gadget: udc: atmel: fix endpoint name
+Repo: 2016-09-15 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1232309.html http://www.mail-archive.com/linux-usb@vger.kernel.org/msg80645.html 
+Stat: n/a 
+Note: Patch available: "Felipe, Greg,It is clearly a regression and material for 4.8-fixes."
+
+== Fixed since last report ==
+
+Desc: ath9k: bring back direction setting in ath9k_{start_stop}
+Repo: 2016-09-01 https://marc.info/?l=linux-wireless&m=147292415030585&w=2
+Fix:  https://git.kernel.org/torvalds/c/e34f2ff40e0339f6a379e1ecf49e8f2759056453
