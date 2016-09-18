@@ -1,19 +1,50 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from basicbox7.server-home.net (basicbox7.server-home.net
- [195.137.212.29])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3scVCQ14ZpzDsbC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 23:26:10 +1000 (AEST)
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.8: Reported regressions as of Sunday, 2016-09-18
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Message-ID: <724a8e1c-0141-d663-cda3-8fc0310989ea@leemhuis.info>
-Date: Sun, 18 Sep 2016 15:20:53 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3schs636JNzDscZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 07:26:00 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8ILMc2q032339
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 17:25:58 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25gyf2qtdb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 17:25:58 -0400
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Sun, 18 Sep 2016 18:25:56 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 3B57D352005F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 17:25:30 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8ILPrO54907206
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 18:25:53 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8ILPrhb010108
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 18:25:53 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linux-security-module <linux-security-module@vger.kernel.org>,
+ linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
+ kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATHC v2 0/9] ima: carry the measurement list across kexec
+Date: Sun, 18 Sep 2016 18:25:51 -0300
+In-Reply-To: <87d1k3p0jy.fsf@x220.int.ebiederm.org>
+References: <1472596811-9596-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <2097581.F8Sg9EkmE6@hactar> <87d1k3p0jy.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <15061913.JRHEL97DN3@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,90 +54,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi! Here is my fourth regression report for Linux 4.8. It lists 14
-regressions I'm aware of. 5 of them are new; 1 mentioned in last 
-weeks report got fixed.
+Am Samstag, 17 September 2016, 00:17:37 schrieb Eric W. Biederman:
+> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+> > Hello Eric,
+> > 
+> > Am Freitag, 16 September 2016, 14:47:13 schrieb Eric W. Biederman:
+> >> I can see tracking to see if the list has changed at some
+> >> point and causing a reboot(LINUX_REBOOT_CMD_KEXEC) to fail.
+> > 
+> > Yes, that is an interesting feature that I can add using the checksum-
+> > verifying part of my code. I can submit a patch for that if there's
+> > interest, adding a reboot notifier that verifies the checksum and causes
+> > a regular reboot instead of a kexec reboot if the checksum fails.
+> 
+> I was thinking an early failure instead of getting all of the way down
+> into a kernel an discovering the tpm/ima subsystem would not
+> initialized.  But where that falls in the reboot pathway I don't expect
+> there is much value in it.
 
-As always: Are you aware of any other regressions? Then please let me
-know (simply CC regressions@leemhuis.info). And pls tell me if there
-is anything in the report that shouldn't be there.
+I'm not sure I understand. What I described doesn't involve the tpm or ima. 
+I'm suggesting that if I take the parts of patch 4/5 in the kexec hand-over 
+buffer series that verify the image checksum, I can submit a separate patch 
+that checks the integrity of the kexec image early in kernel_kexec() and 
+reverts to a regular reboot if the check fails. This would be orthogonal to 
+ima carrying its measurement list across kexec.
 
-Ciao, Thorsten
+I think there is value in that, because if the kexec image is corrupted the 
+machine will just get stuck in the purgatory and (unless it's a platform 
+where the purgatory can print to the console) without even an error message 
+explaining what is going on. Whereas if we notice the corruption before 
+jumping into the purgatory we can switch to a regular reboot and the machine 
+will boot successfully.
 
-== Current regressions ==
+To have an early failure, when would the checksum verification be done?
+What I can think of is to have kexec_file_load accept a new flag 
+KEXEC_FILE_VERIFY_IMAGE, which userspace could use to request an integrity 
+check when it's about to start the reboot procedure. Then it can decide to 
+either reload the kernel or use a regular reboot if the image is corrupted.
 
-Desc: genirq: Flags mismatch irq 8, 00000088 (mmc0) vs. 00000080 (rtc0). mmc0: Failed to request irq 8: -16
-Repo: 2016-08-01 https://bugzilla.kernel.org/show_bug.cgi?id=150881
-Stat: 2016-09-09 https://bugzilla.kernel.org/show_bug.cgi?id=150881#c34
-Note: stalled; root cause somewhere in the main gpio merge for 4.8, but problematic commit still unknown
+Is this what you had in mind?
 
-Desc: [lkp] [xfs] 68a9f5e700: aim7.jobs-per-min -13.6% regression
-Repo: 2016-08-09 http://www.spinics.net/lists/kernel/msg2317052.html
-Stat: 2016-09-09 https://marc.info/?t=147341519500003&r=1&w=2
-Note: looks like post-4.8 material at this point: Mel working on it in his spare time, but "The progression of this series has been unsatisfactory."
+> >> At least the common bootloader cases that I know of using kexec are
+> >> very
+> >> minimal distributions that live in a ramdisk and as such it should be
+> >> very straight forward to measure what is needed at or before
+> >> sys_kexec_load.  But that was completely dismissed as unrealistic so I
+> >> don't have a clue what actual problem you are trying to solve.
+> > 
+> > We are interested in solving the problem in a general way because it
+> > will be useful to us in the future for the case of an arbitrary number
+> > of kexecs (and thus not only a bootloader but also multiple full-blown
+> > distros may be involved in the chain).
+> > 
+> > But you are right that for the use case for which we currently need this
+> > feature it's feasible to measure everything upfront. We can cross the
+> > other bridge when we get there.
+> 
+> Then let's start there.  Passing the measurment list is something that
+> should not be controversial.
 
-Desc: scsi host6: runtime PM trying to activate child device host6 but parent (2-2:1.0) is not active
-Repo: 2016-08-15 https://bugzilla.kernel.org/show_bug.cgi?id=153171
-Stat: 2016-09-14 https://bugzilla.kernel.org/show_bug.cgi?id=153171#c5
-Note: patch available; mkp "I would like the change to get a bit of soak time before we backport it."
+Great!
 
-Desc: DT/OCTEON driver probing broken
-Repo: 2016-08-16 http://www.spinics.net/lists/devicetree/msg138990.html
-Stat: 2016-08-30 http://www.spinics.net/lists/devicetree/msg140682.html
-Note: stalled, poked Rob a week ago, got no reply
+> >> If there is anyway we can start small and not with this big scary
+> >> infrastructure change I would very much prefer it.
+> > 
+> > Sounds good. If we pre-measure everything then the following patches
+> > from my buffer hand-over series are enough:
+> > 
+> > [PATCH v5 2/5] kexec_file: Add buffer hand-over support for the next
+> > kernel [PATCH v5 3/5] powerpc: kexec_file: Add buffer hand-over support
+> > for the next kernel
+> > 
+> > Would you consider including those two?
+> > 
+> > And like I mentioned in the cover letter, patch 1/5 is an interesting
+> > improvement that is worth considering.
+> 
+> So from 10,000 feet I think that is correct.
+> 
+> I am not quite certain why a new mechanism is being invented.  We have
+> other information that is already passed (much of it architecture
+> specific) like the flattened device tree.  If you remove the need to
+> update the information can you just append this information to the
+> flattened device tree without a new special mechanism to pass the data?
+> 
+> I am just reluctant to invent a new mechanism when there is an existing
+> mechanism that looks like it should work without problems.
 
-Desc: gpio-leds broken on OCTEON
-Repo: 2016-08-23 http://www.spinics.net/lists/devicetree/msg139863.html
-Stat: 2016-09-12 http://www.spinics.net/lists/devicetree/msg140179.html
-Note: patch in Linux MIPS patchwork https://patchwork.linux-mips.org/patch/14091/
+Michael Ellerman suggested putting the buffer contents inside the device 
+tree itself, but the s390 people are also planning to implement this 
+feature. That architecture doesn't use device trees, so a solution that 
+depends on DTs won't help them.
 
-Desc: Skylake graphics regression: projector failure with 4.8-rc3
-Repo: 2016-08-26 http://www.spinics.net/lists/intel-gfx/msg105478.html
-Stat: 2016-09-01 https://lkml.org/lkml/2016/8/31/946
-Note: stalled, poked lists
+With this mechanism each architecture will still need its own way of 
+communicating to the next kernel where the buffer is, but I think it's 
+easier to pass a base address and length than to pass a whole buffer.
 
-Desc: lk 4.8 + !CONFIG_SHMEM + shmat() = oops
-Repo: 2016-08-30 http://www.spinics.net/lists/linux-mm/msg112920.html
-Stat: 2016-09-07 http://www.spinics.net/lists/linux-mm/msg113177.html
-Note: just like last week: patch "ipc/shm: fix crash if CONFIG_SHMEM is not set" is going to fix this, but has not hit mainline yet
+I suppose we could piggyback the ima measurements buffer at the end of one 
+of the other segments such as the kernel or, in the case of powerpc, the dtb 
+but it looks hackish to me. I think it's cleaner to put it in its own 
+segment.
 
-Desc: regression in re-read operation by iozone ~10%
-Repo: 2016-09-02 https://bugzilla.kernel.org/show_bug.cgi?id=155821
-Stat: n/a 
-Note: stalled; told reporter he might be better of posting about the issue to some mailing list
-
-Desc: brcmfmac is preventing suspend (Dell XPS 13 9350 / Skylake)/
-Repo: 2016-09-13 https://bugzilla.kernel.org/show_bug.cgi?id=156631
-Stat: n/a 
-Note: used to be https://bugzilla.kernel.org/show_bug.cgi?id=156361 in last weeks report
-
-Desc: CPU speed set very low
-Repo: 2016-09-09 https://lkml.org/lkml/2016/9/9/608
-Stat: 2016-09-14 https://lkml.org/lkml/2016/9/14/588
-Note: Larry: "Testing continues."
-
-Desc: pinctrl: qcom: Clear all function selection bits introduced a regression by not properly masking the calculated value.
-Repo: 2016-09-12 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1229055.html
-Stat: n/a 
-Note: Patch available in initial report
-
-Desc: WARN in vb2_dma_sg_alloc when makes dvbstream fail with with AverMedia Hybrid+FM
-Repo: 2016-09-13 https://bugzilla.kernel.org/show_bug.cgi?id=156751
-Stat: n/a 
-Note: told reporter he might be better of posting the issue to linux-media
-
-Desc: it is now common that machine needs re-run of xrandr after resume
-Repo: 2016-09-13 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1230782.html
-Stat: 2016-09-15 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1232834.html http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1231104.html
-Note: Seems Martin isn't seeing the problem anymore; Pavel's issue might be a different problem anyway; and he now has a userland-problem that complicates testing
-
-Desc: usb: gadget: udc: atmel: fix endpoint name
-Repo: 2016-09-15 http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1232309.html http://www.mail-archive.com/linux-usb@vger.kernel.org/msg80645.html 
-Stat: n/a 
-Note: Patch available: "Felipe, Greg,It is clearly a regression and material for 4.8-fixes."
-
-== Fixed since last report ==
-
-Desc: ath9k: bring back direction setting in ath9k_{start_stop}
-Repo: 2016-09-01 https://marc.info/?l=linux-wireless&m=147292415030585&w=2
-Fix:  https://git.kernel.org/torvalds/c/e34f2ff40e0339f6a379e1ecf49e8f2759056453
+-- 
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
