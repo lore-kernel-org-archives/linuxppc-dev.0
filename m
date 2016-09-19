@@ -1,31 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdCcQ5BH5zDsd9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 03:31:50 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8JHRpWX028560
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 13:31:43 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25jkmftmef-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 13:31:42 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 19 Sep 2016 11:31:42 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: Update the FORCE_MAX_ZONEORDER range to enable
- hugetlb
-Date: Mon, 19 Sep 2016 23:01:33 +0530
-Message-Id: <1474306293-15390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdDz65QX7zDsd9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 04:33:06 +1000 (AEST)
+Subject: Re: [PATCH v2 2/3] powerpc: get hugetlbpage handling more generic
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+References: <cover.1474009019.git.christophe.leroy@c-s.fr>
+ <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
+ <87poo0xx13.fsf@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <2c8682d7-78ce-0aaf-79bd-85a85849e227@c-s.fr>
+Date: Mon, 19 Sep 2016 20:32:59 +0200
+MIME-Version: 1.0
+In-Reply-To: <87poo0xx13.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,50 +28,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For hugetlb to work with 4K page size, we need the MAX_ORDER to be more
-than 13. When switching from a 64K page size to 4K linux page size using
-make nconfig, we endup with a CONFIG_FORCE_MAX_ZONEORDER value of 9.
-This results in 16M hugepage to be considered as a gigantic huge page
-which inturn can result in failure to setup hugepages if gigantic
-hugepage support is not enabled.
 
-This also results in kernel crash with 4K radix configuration. We
-hit the below BUG_ON on radix
 
- kernel BUG at mm/huge_memory.c:364!
- Oops: Exception in kernel mode, sig: 5 [#1]
- SMP NR_CPUS=2048 NUMA PowerNV
- Modules linked in:
- CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.8.0-rc1-00006-gbae9cc6 #1
- task: c0000000f1af8000 task.stack: c0000000f1aec000
- NIP: c000000000c5fa0c LR: c000000000c5f9d8 CTR: c000000000c5f9a4
- REGS: c0000000f1aef920 TRAP: 0700   Not tainted (4.8.0-rc1-00006-gbae9cc6)
- MSR: 9000000102029033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE,TM[E]>  CR: 24000844  XER: 00000000
- CFAR: c000000000c5f9e0 SOFTE: 1
-.....
- NIP [c000000000c5fa0c] hugepage_init+0x68/0x238
- LR [c000000000c5f9d8] hugepage_init+0x34/0x238
+Le 19/09/2016 à 07:45, Aneesh Kumar K.V a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>
+>> Today there are two implementations of hugetlbpages which are managed
+>> by exclusive #ifdefs:
+>> * FSL_BOOKE: several directory entries points to the same single hugepage
+>> * BOOK3S: one upper level directory entry points to a table of hugepages
+>>
+>> In preparation of implementation of hugepage support on the 8xx, we
+>> need a mix of the two above solutions, because the 8xx needs both cases
+>> depending on the size of pages:
+>> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
+>> that 2 PGD entries will be necessary to cover an 8M hugepage while a
+>> single PGD entry will cover 8x 512k hugepages.
+>> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
+>> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
+>> hugepages will be covers by one PGD entry.
+>>
+>> This patch:
+>> * removes #ifdefs in favor of if/else based on the range sizes
+>> * merges the two huge_pte_alloc() functions as they are pretty similar
+>> * merges the two hugetlbpage_init() functions as they are pretty similar
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>> v2: This part is new and results from a split of last patch of v1 serie in
+>> two parts
+>>
+>>  arch/powerpc/mm/hugetlbpage.c | 189 +++++++++++++++++-------------------------
+>>  1 file changed, 77 insertions(+), 112 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+>> index 8a512b1..2119f00 100644
+>> --- a/arch/powerpc/mm/hugetlbpage.c
+>> +++ b/arch/powerpc/mm/hugetlbpage.c
 
-Fixes: a7ee539584acf ("powerpc/Kconfig: Update config option based on page size")
+[...]
 
-Reported-by: Santhosh <santhog4@linux.vnet.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+>> -#ifdef CONFIG_PPC_FSL_BOOK3E
+>>  struct kmem_cache *hugepte_cache;
+>>  static int __init hugetlbpage_init(void)
+>>  {
+>>  	int psize;
+>>
+>> -	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+>> -		unsigned shift;
+>> -
+>> -		if (!mmu_psize_defs[psize].shift)
+>> -			continue;
+>> -
+>> -		shift = mmu_psize_to_shift(psize);
+>> -
+>> -		/* Don't treat normal page sizes as huge... */
+>> -		if (shift != PAGE_SHIFT)
+>> -			if (add_huge_page_size(1ULL << shift) < 0)
+>> -				continue;
+>> -	}
+>> -
+>> -	/*
+>> -	 * Create a kmem cache for hugeptes.  The bottom bits in the pte have
+>> -	 * size information encoded in them, so align them to allow this
+>> -	 */
+>> -	hugepte_cache =  kmem_cache_create("hugepte-cache", sizeof(pte_t),
+>> -					   HUGEPD_SHIFT_MASK + 1, 0, NULL);
+>> -	if (hugepte_cache == NULL)
+>> -		panic("%s: Unable to create kmem cache for hugeptes\n",
+>> -		      __func__);
+>> -
+>> -	/* Default hpage size = 4M */
+>> -	if (mmu_psize_defs[MMU_PAGE_4M].shift)
+>> -		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_4M].shift;
+>> -	else
+>> -		panic("%s: Unable to set default huge page size\n", __func__);
+>> -
+>> -
+>> -	return 0;
+>> -}
+>> -#else
+>> -static int __init hugetlbpage_init(void)
+>> -{
+>> -	int psize;
+>> -
+>> +#if !defined(CONFIG_PPC_FSL_BOOK3E)
+>>  	if (!radix_enabled() && !mmu_has_feature(MMU_FTR_16M_PAGE))
+>>  		return -ENODEV;
+>> -
+>> +#endif
+>
+> Do we need that #if ? radix_enabled() should become 0 and that if
+> condition should be removed at compile time isn't it ? or are you
+> finding errors with that ?
+
+Having radix_enabled() being 0, it becomes:
+
+if (!mmu_has_feature(MMU_FTR_16M_PAGE))
+	return -ENODEV;
+
+Which means hugepage will only be handled by CPUs having 16M pages. 
+That's the issue.
+
+>
+>
+>>  	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+>>  		unsigned shift;
+>>  		unsigned pdshift;
+>> @@ -860,16 +807,31 @@ static int __init hugetlbpage_init(void)
+>>  		 * if we have pdshift and shift value same, we don't
+>>  		 * use pgt cache for hugepd.
+>>  		 */
+>> -		if (pdshift != shift) {
+>> +		if (pdshift > shift) {
+>>  			pgtable_cache_add(pdshift - shift, NULL);
+>>  			if (!PGT_CACHE(pdshift - shift))
+>>  				panic("hugetlbpage_init(): could not create "
+>>  				      "pgtable cache for %d bit pagesize\n", shift);
+>> +		} else if (!hugepte_cache) {
+>> +			/*
+>> +			 * Create a kmem cache for hugeptes.  The bottom bits in
+>> +			 * the pte have size information encoded in them, so
+>> +			 * align them to allow this
+>> +			 */
+>> +			hugepte_cache = kmem_cache_create("hugepte-cache",
+>> +							  sizeof(pte_t),
+>> +							  HUGEPD_SHIFT_MASK + 1,
+>> +							  0, NULL);
+>> +			if (hugepte_cache == NULL)
+>> +				panic("%s: Unable to create kmem cache "
+>> +				      "for hugeptes\n", __func__);
+>> +
+>
+>
+> We don't need hugepte_cache for book3s 64K. I guess we will endup
+> creating one here ?
+
+Should not, because on book3s 64k, we will have pdshift > shift
+won't we ?
+
+>
+>>  		}
+>>  	}
+>>
+>>  	/* Set default large page size. Currently, we pick 16M or 1M
+>>  	 * depending on what is available
+>> +	 * We select 4M on other ones.
+>>  	 */
+>>  	if (mmu_psize_defs[MMU_PAGE_16M].shift)
+>>  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
+>> @@ -877,11 +839,14 @@ static int __init hugetlbpage_init(void)
+>>  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
+>>  	else if (mmu_psize_defs[MMU_PAGE_2M].shift)
+>>  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_2M].shift;
+>> -
+>> +	else if (mmu_psize_defs[MMU_PAGE_4M].shift)
+>> +		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_4M].shift;
+>> +	else
+>> +		panic("%s: Unable to set default huge page size\n", __func__);
+>>
+>>  	return 0;
+>>  }
+>> -#endif
+>> +
+>>  arch_initcall(hugetlbpage_init);
+>>
+>>  void flush_dcache_icache_hugepage(struct page *page)
+>> --
+>> 2.1.0
+
 ---
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 927d2ab2ce08..792cb1768c8f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -637,7 +637,7 @@ config FORCE_MAX_ZONEORDER
- 	int "Maximum zone order"
- 	range 8 9 if PPC64 && PPC_64K_PAGES
- 	default "9" if PPC64 && PPC_64K_PAGES
--	range 9 13 if PPC64 && !PPC_64K_PAGES
-+	range 13 13 if PPC64 && !PPC_64K_PAGES
- 	default "13" if PPC64 && !PPC_64K_PAGES
- 	range 9 64 if PPC32 && PPC_16K_PAGES
- 	default "9" if PPC32 && PPC_16K_PAGES
--- 
-2.7.4
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
