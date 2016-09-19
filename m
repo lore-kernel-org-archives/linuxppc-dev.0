@@ -1,31 +1,27 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <rui.zhang@intel.com>
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3scqgq4blWzDsZ8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 12:33:27 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id my20so3248791pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2016 19:33:27 -0700 (PDT)
-Date: Mon, 19 Sep 2016 10:33:38 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Shuah Khan <shuah@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Chris Smart <chris@distroguy.com>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Michael Neuling <mikey@neuling.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Jack Miller <jack@codezen.org>, Rashmica Gupta <rashmicy@gmail.com>,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v14 13/15] selftests/powerpc: Add ptrace tests for TM SPR
- registers
-Message-ID: <20160919023338.GA3797@simonLocalRHEL7.x64>
-References: <1473665605-11890-1-git-send-email-wei.guo.simon@gmail.com>
- <1473665605-11890-14-git-send-email-wei.guo.simon@gmail.com>
- <1473829452.2554.19.camel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1473829452.2554.19.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3scqwm4Qr6zDsZ8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 12:44:40 +1000 (AEST)
+Message-ID: <1474253068.23153.2.camel@intel.com>
+Subject: Re: [PATCH V2 1/7] dt-bindings: Update QorIQ TMU thermal bindings
+From: Zhang Rui <rui.zhang@intel.com>
+To: Leo Li <pku.leo@gmail.com>, Rob Herring <robh@kernel.org>
+Cc: Jia Hongtao <hongtao.jia@nxp.com>, devicetree@vger.kernel.org,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, Scott
+ Wood <scott.wood@nxp.com>, Eduardo Valentin <edubezval@gmail.com>, Kumar
+ Gala <galak@codeaurora.org>, Shawn Guo <shawnguo@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>
+Date: Mon, 19 Sep 2016 10:44:28 +0800
+In-Reply-To: <CADRPPNQ+hikr1qNK1wPbLnhudUrU1bN_2iuYyRQnqCN4Zwh83Q@mail.gmail.com>
+References: <1465270054-31512-1-git-send-email-hongtao.jia@nxp.com>
+ <20160608195241.GA6805@rob-hp-laptop>
+ <CADRPPNQ+hikr1qNK1wPbLnhudUrU1bN_2iuYyRQnqCN4Zwh83Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 14, 2016 at 03:04:12PM +1000, Cyril Bur wrote:
-> On Mon, 2016-09-12 at 15:33 +0800, wei.guo.simon@gmail.com wrote:
-> > From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+On 三, 2016-09-14 at 11:40 -0500, Leo Li wrote:
+> On Wed, Jun 8, 2016 at 2:52 PM, Rob Herring <robh@kernel.org> wrote:
 > > 
-> > This patch adds ptrace interface test for TM SPR registers. This
-> > also adds ptrace interface based helper functions related to TM
-> > SPR registers access.
-> > 
+> > On Tue, Jun 07, 2016 at 11:27:34AM +0800, Jia Hongtao wrote:
+> > > 
+> > > For different types of SoC the sensor id and endianness may vary.
+> > > "#thermal-sensor-cells" is used to provide sensor id information.
+> > > "little-endian" property is to tell the endianness of TMU.
+> > > 
+> > > Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+> > > ---
+> > > Changes for V2:
+> > > * Remove formatting chnages.
+> > > 
+> > >  Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 7
+> > > +++++++
+> > >  1 file changed, 7 insertions(+)
+> > Acked-by: Rob Herring <robh@kernel.org>
+> Hi Zhang Rui,
 > 
-> I'm seeing this one fail a lot, it does occasionally succeed but fails
-> a lot on my test setup.
+> Since you have applied the driver patch, can you also apply the
+> binding patch?  The binding is supposed to go with the driver.
 > 
-> I use qemu on a power8 for most of my testing:
-> qemu-system-ppc64 --enable-kvm -machine pseries,accel=kvm,usb=off -m
-> 4096 -realtime mlock=off -smp 4,sockets=1,cores=2,threads=2 -nographic
-> -vga none
-Hi Cyril,
 
-Sorry for the late response. I am just back from a vacation.
-Strangely the case always succeed in my machine. I will try to 
-reproduce it with your configuration.
+Do you mean I should take both patch 1/7 and 7/7? I can not see the
+other patches in this patch set.
 
-> > +	if ((regs->tm_texasr != TM_SCHED) && (regs->tm_texasr !=
-> > TM_KVM_SCHED))
-> > +		return TEST_FAIL;
-> 
-> The above condition fails, should this test try again if this condition
-> is true, rather than fail?
-If you have the value of "regs->tm_texasr" in hand, please let
-me know.
-
-Thanks for the elaborated comment in other mails and I will 
-work on that.
-
-BR,
-- Simon
+thanks,
+rui
