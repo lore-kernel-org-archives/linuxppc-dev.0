@@ -3,45 +3,45 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3scvsT72HNzDsd8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:42:05 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3scvxV3006zDsd8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:34 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8J5biII034226
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:42:04 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25hr4hkch2-1
+ u8J5hSfo013463
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:32 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25h1wdqyq3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:42:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:32 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 19 Sep 2016 15:42:01 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3D50F2BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:41:59 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8J5fx6s6357304
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:41:59 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8J5fwZn032261
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:41:59 +1000
-Subject: Re: [PATCH 05/13] powerpc: Add soft_enabled manipulation functions
+ Mon, 19 Sep 2016 15:45:29 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D71C82CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:26 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8J5jQHS5112170
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:26 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8J5jQbE004796
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:26 +1000
+Subject: Re: [PATCH 06/13] powerpc: reverse the soft_enable logic
 To: Nicholas Piggin <npiggin@gmail.com>
 References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1473944523-624-6-git-send-email-maddy@linux.vnet.ibm.com>
- <20160916195754.47de292e@roar.ozlabs.ibm.com>
+ <1473944523-624-7-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160916200537.50562560@roar.ozlabs.ibm.com>
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
  paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Mon, 19 Sep 2016 11:11:56 +0530
+Date: Mon, 19 Sep 2016 11:15:24 +0530
 MIME-Version: 1.0
-In-Reply-To: <20160916195754.47de292e@roar.ozlabs.ibm.com>
+In-Reply-To: <20160916200537.50562560@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <3bc73f70-d62c-ca43-e302-eaf396026bee@linux.vnet.ibm.com>
+Message-Id: <d1a5a75b-e7a0-aaf5-4ee3-150b6c991a7f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,70 +53,98 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Friday 16 September 2016 03:27 PM, Nicholas Piggin wrote:
-> On Thu, 15 Sep 2016 18:31:55 +0530
+On Friday 16 September 2016 03:35 PM, Nicholas Piggin wrote:
+> On Thu, 15 Sep 2016 18:31:56 +0530
 > Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 >
->> Add new soft_enabled_* manipulation function and implement
->> arch_local_* using the soft_enabled_* wrappers.
+>> "paca->soft_enabled" is used as a flag to mask some of interrupts.
+>> Currently supported flags values and their details:
+>>
+>> soft_enabled    MSR[EE]
+>>
+>> 0               0       Disabled (PMI and HMI not masked)
+>> 1               1       Enabled
+>>
+>> "paca->soft_enabled" is initialized to 1 to make the interripts as
+>> enabled. arch_local_irq_disable() will toggle the value when interrupts
+>> needs to disbled. At this point, the interrupts are not actually disabled,
+>> instead, interrupt vector has code to check for the flag and mask it when it occurs.
+>> By "mask it", it update interrupt paca->irq_happened and return.
+>> arch_local_irq_restore() is called to re-enable interrupts, which checks and
+>> replays interrupts if any occured.
+>>
+>> Now, as mentioned, current logic doesnot mask "performance monitoring interrupts"
+>> and PMIs are implemented as NMI. But this patchset depends on local_irq_*
+>> for a successful local_* update. Meaning, mask all possible interrupts during
+>> local_* update and replay them after the update.
+>>
+>> So the idea here is to reserve the "paca->soft_enabled" logic. New values and
+>> details:
+>>
+>> soft_enabled    MSR[EE]
+>>
+>> 1               0       Disabled  (PMI and HMI not masked)
+>> 0               1       Enabled
+>>
+>> Reason for the this change is to create foundation for a third flag value "2"
+>> for "soft_enabled" to add support to mask PMIs. When ->soft_enabled is
+>> set to a value "2", PMI interrupts are mask and when set to a value
+>> of "1", PMI are not mask.
 >>
 >> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 >> ---
->>   arch/powerpc/include/asm/hw_irq.h | 32 ++++++++++++++------------------
->>   1 file changed, 14 insertions(+), 18 deletions(-)
+>>   arch/powerpc/include/asm/hw_irq.h | 4 ++--
+>>   arch/powerpc/kernel/entry_64.S    | 5 ++---
+>>   2 files changed, 4 insertions(+), 5 deletions(-)
 >>
 >> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
->> index f828b8f8df02..dc3c248f9244 100644
+>> index dc3c248f9244..fd9b421f9020 100644
 >> --- a/arch/powerpc/include/asm/hw_irq.h
 >> +++ b/arch/powerpc/include/asm/hw_irq.h
->> @@ -53,21 +53,7 @@ static inline notrace void soft_enabled_set(unsigned long enable)
->>   	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
->>   }
+>> @@ -30,8 +30,8 @@
+>>   /*
+>>    * flags for paca->soft_enabled
+>>    */
+>> -#define IRQ_DISABLE_MASK_NONE		1
+>> -#define IRQ_DISABLE_MASK_LINUX		0
+>> +#define IRQ_DISABLE_MASK_NONE		0
+>> +#define IRQ_DISABLE_MASK_LINUX		1
 >>   
->> -static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
->> -{
->> -	unsigned long flags;
->> -
->> -	asm volatile(
->> -		"lbz %0,%1(13); stb %2,%1(13)"
->> -		: "=r" (flags)
->> -		: "i" (offsetof(struct paca_struct, soft_enabled)),\
->> -		  "r" (enable)
->> -		: "memory");
->> -
->> -	return flags;
->> -}
->> -
->> -static inline unsigned long arch_local_save_flags(void)
->> +static inline notrace unsigned long soft_enabled_return(void)
->>   {
->>   	unsigned long flags;
+>>   #endif /* CONFIG_PPC64 */
 >>   
->> @@ -79,20 +65,30 @@ static inline unsigned long arch_local_save_flags(void)
->>   	return flags;
->>   }
+>> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+>> index aef7b64cbbeb..879aeb11ad29 100644
+>> --- a/arch/powerpc/kernel/entry_64.S
+>> +++ b/arch/powerpc/kernel/entry_64.S
+>> @@ -131,8 +131,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>>   	 */
+>>   #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_BUG)
+>>   	lbz	r10,PACASOFTIRQEN(r13)
+>> -	xori	r10,r10,IRQ_DISABLE_MASK_NONE
+>> -1:	tdnei	r10,0
+>> +1:	tdnei	r10,IRQ_DISABLE_MASK_NONE
+>>   	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
+>>   #endif
 >>   
->> -static inline unsigned long arch_local_irq_disable(void)
->> +static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
->>   {
->>   	unsigned long flags, zero;
->>   
->>   	asm volatile(
->> -		"li %1,%3; lbz %0,%2(13); stb %1,%2(13)"
->> +		"mr %1,%3; lbz %0,%2(13); stb %1,%2(13)"
->>   		: "=r" (flags), "=&r" (zero)
->>   		: "i" (offsetof(struct paca_struct, soft_enabled)),\
->> -		  "i" (IRQ_DISABLE_MASK_LINUX)
->> +		  "r" (enable)
->>   		: "memory");
->>   
->>   	return flags;
->>   }
-> As we talked about earlier, it would be nice to add builtin_constant
-> variants to avoid the extra instruction. If you prefer to do that
-> after this series, that's fine.
+>> @@ -1012,7 +1011,7 @@ _GLOBAL(enter_rtas)
+>>   	 * check it with the asm equivalent of WARN_ON
+>>   	 */
+>>   	lbz	r0,PACASOFTIRQEN(r13)
+>> -1:	tdnei	r0,IRQ_DISABLE_MASK_LINUX
+>> +1:	tdeqi	r0,IRQ_DISABLE_MASK_NONE
+>>   	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
+>>   #endif
+>>   	
+> We specifically want to ensure that _LINUX interrupts are disabled
+> here. Not that we allow masking of others without _LINUX now, but
+> current behavior is checking that LINUX ones are masked.
+>
+> Otherwise it seems okay.
+>
+> It might be nice after this series to do a pass and rename
+> soft_enabled to soft_masked.
 
-True. my bad. Will look into this.
+Yes definitely, I do have it in my todo.
 
 Maddy
 
