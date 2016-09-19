@@ -1,37 +1,31 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdBtS3SDwzDsd9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 02:58:56 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdCcQ5BH5zDsd9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 03:31:50 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8JGwl6D028814
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 12:58:53 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25h1q5q5pn-1
+ u8JHRpWX028560
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 13:31:43 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25jkmftmef-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 12:58:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 13:31:42 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 19 Sep 2016 10:58:52 -0600
-Date: Mon, 19 Sep 2016 09:58:10 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: peterz@infradead.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- mingo@kernel.org, ak@linux.intel.com, namhyung@kernel.org
-Subject: Re: [PATCH v21 00/20] perf, tools: Add support for PMU events in
- JSON format
-References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <20160919165810.GA6879@us.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 19 Sep 2016 11:31:42 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm: Update the FORCE_MAX_ZONEORDER range to enable
+ hugetlb
+Date: Mon, 19 Sep 2016 23:01:33 +0530
+Message-Id: <1474306293-15390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,179 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I messed up the Cc list. Fixing it now.
+For hugetlb to work with 4K page size, we need the MAX_ORDER to be more
+than 13. When switching from a 64K page size to 4K linux page size using
+make nconfig, we endup with a CONFIG_FORCE_MAX_ZONEORDER value of 9.
+This results in 16M hugepage to be considered as a gigantic huge page
+which inturn can result in failure to setup hugepages if gigantic
+hugepage support is not enabled.
 
-Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
-> CPUs support a large number of performance monitoring events (PMU events)
-> and often these events are very specific to an architecture/model of the
-> CPU. To use most of these PMU events with perf, we currently have to identify
-> them by their raw codes:
-> 
-> 	perf stat -e r100f2 sleep 1
-> 
-> This patchset allows architectures to specify these PMU events in JSON
-> files located in 'tools/perf/pmu-events/arch/' of the mainline tree.
-> The events from the JSON files for the architecture are then built into
-> the perf binary.
-> 
-> At run time, perf identifies the specific set of events for the CPU and
-> creates "event aliases". These aliases allow users to specify events by
-> "name" as:
-> 
-> 	perf stat -e pm_1plus_ppc_cmpl sleep 1
-> 
-> The file, 'tools/perf/pmu-events/README' in [PATCH 15/19] gives more
-> details.
-> 
-> Note:
-> 	- All known events tables for the architecture are included in the
-> 	  perf binary.
-> 
-> 	- For architectures that don't have any JSON files, an empty mapping
-> 	  table is created and they should continue to build.
-> 
-> Thanks to input from Andi Kleen, Jiri Olsa, Namhyung Kim and Ingo Molnar.
-> 
-> These patches are available from:
-> 
-> 	https://github.com/sukadev/linux.git 
-> 	
-> 	Branch			Description
-> 	------------------------------------------------------
-> 	json-code-v21		Source Code only 
-> 	json-code+data-v21	Both code and data (for build/test/pull)
-> 	
-> NOTE: 	Only "source code" patches (i.e those in json-code-v21) are being
-> 	emailed. Please pull the json-code+data-v21 branch for build/test.
-> 
-> Changelog[v21]
-> 	- Rebase to recent perf/core
-> 	- Group the PMU events supported by a CPU model into topics and
-> 	  create a separate JSON file for each topic for each CPU (code
-> 	  and input from Jiri Olsa).
-> 
-> Changelog[v20]
-> 	- Rebase to recent perf/core
-> 	- Add Patch 20/20 to allow perf-stat to work with the period= field
-> 
-> Changelog[v19]
-> 	Rebase to recent perf/core; fix couple lines >80 chars.
-> 
-> Changelog[v18]
-> 	Rebase to recent perf/core; fix minor merge conflicts.
-> 
-> Changelog[v17]
-> 	Rebase to recent perf/core; couple of small fixes to processing Intel
-> 	JSON files; allow case-insensitive PMU event names.
-> 
-> Changelog[v16]
-> 	Rebase to recent perf/core; fix minor merge conflicts; drop 3 patches
-> 	that were merged into perf/core.
-> 
-> Changelog[v15]
-> 	Code changes:
-> 	- Fix 'perf list' usage string and update man page.
-> 	- Remove a redundant __maybe_unused tag.
-> 	- Rebase to recent perf/core branch.
-> 
-> 	Data files updates: json-files-5 branch
-> 	- Rebase to perf/intel-json-files-5 from Andi Kleen
-> 	- Add patch from Madhavan Srinivasan for couple more Powerpc models
-> 
-> Changelog[v14]
-> 	Comments from Jiri Olsa:
-> 	- Change parameter name/type for pmu_add_cpu_aliases (from void *data
-> 	  to list_head *head)
-> 	- Use asprintf() in file_name_to_tablename() and simplify/reorg code.
-> 	- Use __weak definition from <linux/compile.h>
-> 	- Use fopen() with mode "w" and eliminate unlink()
-> 	- Remove minor TODO.
-> 	- Add error check for return value from strdup() in print_pmu_events().
-> 	- Move independent changes from patches 3,11,12 .. to separate patches
-> 	  for easier review/backport.
-> 	- Clarify mapfile's "header line support" in patch description.
-> 	- Fix build failure with DEBUG=1
-> 
-> 	Comment from Andi Kleen:
-> 	- In tools/perf/pmu-events/Build, check for 'mapfile.csv' rather than
-> 	  'mapfile*'
-> 
-> 	Misc:
-> 	- Minor changes/clarifications to tools/perf/pmu-events/README.
-> 
-> 
-> Changelog[v13]
-> 	Version: Individual patches have their own history :-) that I am
-> 	preserving. Patchset version (v13) is for overall patchset and is
-> 	somewhat arbitrary.
-> 
-> 	- Added support for "categories" of events to perf
-> 	- Add mapfile, jevents build dependency on pmu-events.c
-> 	- Silence jevents when parsing JSON files unless V=1 is specified
-> 	- Cleanup error messages
-> 	- Fix memory leak with ->cpuid
-> 	- Rebase to Arnaldo's tree
-> 	- Allow overriding CPUID via environment variable
-> 	- Support long descriptions for events
-> 	- Handle header line in mapfile.csv
-> 	- Cleanup JSON files (trim PublicDescription if identical to/prefix of
-> 	  BriefDescription field)
-> 
-> 
-> Andi Kleen (12):
->   perf, tools: Add jsmn `jasmine' JSON parser
->   perf, tools, jevents: Program to convert JSON file to C style file
->   perf, tools: Support CPU id matching for x86 v2
->   perf, tools: Support alias descriptions
->   perf, tools: Query terminal width and use in perf list
->   perf, tools: Add a --no-desc flag to perf list
->   perf, tools: Add override support for event list CPUID
->   perf, tools: Add support for event list topics
->   perf, tools, jevents: Handle header line in mapfile
->   perf, tools: Make alias matching case-insensitive
->   perf, tools, pmu-events: Fix fixed counters on Intel
->   perf, tools, pmu-events: Add Skylake frontend MSR support
-> 
-> Sukadev Bhattiprolu (7):
->   perf, tools: Use pmu_events table to create aliases
->   perf, tools: Support CPU ID matching for Powerpc
->   perf, tools, jevents: Add support for long descriptions
->   perf, tools: Add alias support for long descriptions
->   perf, tools: Support long descriptions with perf list
->   perf, tools: Add README for info on parsing JSON/map files
->   Allow period= in perf stat CPU event descriptions.
-> 
->  tools/lib/subcmd/pager.c               |  16 +
->  tools/lib/subcmd/pager.h               |   1 +
->  tools/perf/Documentation/perf-list.txt |  12 +-
->  tools/perf/Makefile.perf               |  28 +-
->  tools/perf/arch/powerpc/util/header.c  |  11 +
->  tools/perf/arch/x86/util/header.c      |  24 +-
->  tools/perf/builtin-list.c              |  20 +-
->  tools/perf/pmu-events/Build            |  11 +
->  tools/perf/pmu-events/README           | 148 ++++++
->  tools/perf/pmu-events/jevents.c        | 811 +++++++++++++++++++++++++++++++++
->  tools/perf/pmu-events/jevents.h        |  18 +
->  tools/perf/pmu-events/jsmn.c           | 313 +++++++++++++
->  tools/perf/pmu-events/jsmn.h           |  67 +++
->  tools/perf/pmu-events/json.c           | 162 +++++++
->  tools/perf/pmu-events/json.h           |  42 ++
->  tools/perf/pmu-events/pmu-events.h     |  37 ++
->  tools/perf/util/header.h               |   1 +
->  tools/perf/util/parse-events.c         |   8 +-
->  tools/perf/util/parse-events.h         |   3 +-
->  tools/perf/util/pmu.c                  | 177 ++++++-
->  tools/perf/util/pmu.h                  |   6 +-
->  21 files changed, 1880 insertions(+), 36 deletions(-)
->  create mode 100644 tools/perf/pmu-events/Build
->  create mode 100644 tools/perf/pmu-events/README
->  create mode 100644 tools/perf/pmu-events/jevents.c
->  create mode 100644 tools/perf/pmu-events/jevents.h
->  create mode 100644 tools/perf/pmu-events/jsmn.c
->  create mode 100644 tools/perf/pmu-events/jsmn.h
->  create mode 100644 tools/perf/pmu-events/json.c
->  create mode 100644 tools/perf/pmu-events/json.h
->  create mode 100644 tools/perf/pmu-events/pmu-events.h
-> 
-> -- 
-> 1.8.3.1
+This also results in kernel crash with 4K radix configuration. We
+hit the below BUG_ON on radix
+
+ kernel BUG at mm/huge_memory.c:364!
+ Oops: Exception in kernel mode, sig: 5 [#1]
+ SMP NR_CPUS=2048 NUMA PowerNV
+ Modules linked in:
+ CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.8.0-rc1-00006-gbae9cc6 #1
+ task: c0000000f1af8000 task.stack: c0000000f1aec000
+ NIP: c000000000c5fa0c LR: c000000000c5f9d8 CTR: c000000000c5f9a4
+ REGS: c0000000f1aef920 TRAP: 0700   Not tainted (4.8.0-rc1-00006-gbae9cc6)
+ MSR: 9000000102029033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE,TM[E]>  CR: 24000844  XER: 00000000
+ CFAR: c000000000c5f9e0 SOFTE: 1
+.....
+ NIP [c000000000c5fa0c] hugepage_init+0x68/0x238
+ LR [c000000000c5f9d8] hugepage_init+0x34/0x238
+
+Fixes: a7ee539584acf ("powerpc/Kconfig: Update config option based on page size")
+
+Reported-by: Santhosh <santhog4@linux.vnet.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 927d2ab2ce08..792cb1768c8f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -637,7 +637,7 @@ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
+ 	range 8 9 if PPC64 && PPC_64K_PAGES
+ 	default "9" if PPC64 && PPC_64K_PAGES
+-	range 9 13 if PPC64 && !PPC_64K_PAGES
++	range 13 13 if PPC64 && !PPC_64K_PAGES
+ 	default "13" if PPC64 && !PPC_64K_PAGES
+ 	range 9 64 if PPC32 && PPC_16K_PAGES
+ 	default "9" if PPC32 && PPC_16K_PAGES
+-- 
+2.7.4
