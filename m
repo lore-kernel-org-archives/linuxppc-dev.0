@@ -1,34 +1,31 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sd46B3nLlzDsd9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 21:53:38 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id vz6so6920418pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 04:53:38 -0700 (PDT)
-Subject: Re: [PATCH v2 2/3] powerpc/mm: allow memory hotplug into a memoryless
- node
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1473883618-14998-3-git-send-email-arbab@linux.vnet.ibm.com>
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, linux-mm@kvack.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <15d62e9c-38e6-dfd3-0ee2-6885cbfbe315@gmail.com>
-Date: Mon, 19 Sep 2016 21:53:49 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sd53m2j6XzDsd9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 22:36:36 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id l132so13537454wmf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 05:36:36 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1473883618-14998-3-git-send-email-arbab@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <CAJRA9dwyJ+5XuD7i0ktwvx3Md9p_Z9tiVZCWvO_gK1kfG-+ccA@mail.gmail.com>
+References: <CANtoAtPSgkxEvAdOs-gZGOECYN8OFTvwRrsg+US41ji1fGEDLA@mail.gmail.com>
+ <969BB53B-CB30-49DC-B6C5-4D2381ECE6EE@gmail.com>
+ <CANtoAtN1K3OAoXsgeMOWui_jEZO3X1fJAmRX-LeO_Du8h3T9kg@mail.gmail.com>
+ <1472122446.2246.93.camel@kernel.crashing.org> <57DF23C4.20508@gmail.com>
+ <CAJRA9dwyJ+5XuD7i0ktwvx3Md9p_Z9tiVZCWvO_gK1kfG-+ccA@mail.gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 19 Sep 2016 14:36:12 +0200
+Message-ID: <CA+7wUsyOSCJzymLe7vyub8dvyvsEDuVU0auO2rGi6ohkBKBEoQ@mail.gmail.com>
+Subject: Re: PowerPC agpmode issues
+To: "Herminio Hernandez, Jr." <herminio.hernandezjr@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Mike <michael.heltne@gmail.com>, Pranith Kumar <bobby.prani@gmail.com>,
+ "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,27 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
+On Mon, Sep 19, 2016 at 11:13 AM, Herminio Hernandez, Jr.
+<herminio.hernandezjr@gmail.com> wrote:
+> Apologies for the previous email.
+>
+> What I was trying to say was I just recently installed Debain on my PowerMac
+> G5. I upgraded to sid and install the nonfree firmware. After reboot I
+> noticed that GPU acclleration was broken and I recieved the following error
+>
+> [   10.428542] [drm] Loading R300 Microcode
+> [   10.486631] radeon 0000:f0:10.0: firmware: direct-loading firmware
+> radeon/R300_cp.bin
+> [   10.486865] [drm] radeon: ring at 0x0000000000010000
+> [   10.634417] [drm:.r100_ring_test [radeon]] *ERROR* radeon: ring test
+> failed (scratch(0x15E4)=0xCAFEDEAD)
+> [   10.634526] [drm:.r100_cp_init [radeon]] *ERROR* radeon: cp isn't working
+[...]
+> [   11.935061] [drm] Forcing AGP to PCI mode
 
-On 15/09/16 06:06, Reza Arbab wrote:
-> Remove the check which prevents us from hotplugging into an empty node.
-> 
-> This limitation has been questioned before [1], and judging by the
-> response, there doesn't seem to be a reason we can't remove it. No issues
-> have been found in light testing.
-> 
-> [1] http://lkml.kernel.org/r/CAGZKiBrmkSa1yyhbf5hwGxubcjsE5SmkSMY4tpANERMe2UG4bg@mail.gmail.com
->     http://lkml.kernel.org/r/20160511215051.GF22115@arbab-laptop.austin.ibm.com
-> 
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
-> 
+Well that is really odd. I am trying hard to push my pci patch upstream:
 
-I presume you've tested with CONFIG_NODES_SHIFT of 8 (255 nodes?)
+https://patchwork.kernel.org/patch/9088181/
 
-Balbir Singh.
+I do believe PCI mode always work, so I would be interested if you
+could report the bug upstream to have PCI mode work on all Powermac
+(AGP is know to be broken).
+
+Pay attention to your /etc/modules file check whether or not it
+contains a option for the loaded modules, eg:
+
+radeon.agpmode=-1
+
+Finally your dmesg looks odd since the line `[drm] Forcing AGP to PCI
+mode` comes only after the first error.
+
+-M
