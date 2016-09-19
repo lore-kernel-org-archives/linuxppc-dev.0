@@ -1,24 +1,28 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3scxrx0vVQzDsd9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 17:11:44 +1000 (AEST)
-Date: Mon, 19 Sep 2016 09:11:38 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- acme@kernel.org, peterz@infradead.org, mingo@redhat.com,
- alexander.shishkin@linux.intel.com, matt.fleming@intel.com,
- anju@linux.vnet.ibm.com, mpe@ellerman.id.au, jolsa@kernel.org,
- wangnan0@huawei.com, jpoimboe@redhat.com, mhiramat@kernel.org,
- namhyung@kernel.org
-Subject: Re: [PATCH] perf tests: Add dwarf unwind test for powerpc
-Message-ID: <20160919071138.GB20798@krava>
-References: <1474267100-31079-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3scxwn3yLCzDsdP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 17:15:05 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id hi10so671776pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 00:15:05 -0700 (PDT)
+Subject: Re: [V2] powerpc/Kconfig: Update config option based on page size.
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ santhosh <santhog4@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Rashmica Gupta <rashmicy@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <3qk8fY48r6z9t45@ozlabs.org> <87y4893ar2.fsf@skywalker.in.ibm.com>
+ <0d167ff1-cc0e-35bc-479c-aec77d2c8556@linux.vnet.ibm.com>
+ <1e406f4d-25bc-c92b-8a5e-5d59ae28a274@gmail.com>
+ <87oa3nyivt.fsf@linux.vnet.ibm.com>
+Cc: manvanth@linux.vnet.ibm.com
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <1bbaa3d4-b6a2-542f-f00f-7315a0a9d13f@gmail.com>
+Date: Mon, 19 Sep 2016 17:15:17 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1474267100-31079-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+In-Reply-To: <87oa3nyivt.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 19, 2016 at 02:38:20AM -0400, Ravi Bangoria wrote:
-> User stack dump feature is recently added for powerpc. But there was no
-> test case available to test it. This test works same as other on arch by
-> preparing stack frame on perf test thread and comparing each frame by
-> unwinding it.
-> 
->   $ ./perf test 50
->     50: Test dwarf unwind    : Ok
-> 
-> User stack dump for powerpc: https://lkml.org/lkml/2016/4/28/482
-> 
-> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 
-can't test, but looks good
 
-Acked-by: Jiri Olsa <jolsa@kernel.org>
+On 17/09/16 01:16, Aneesh Kumar K.V wrote:
+> -	range 9 13 if PPC64 && !PPC_64K_PAGES
+> +	range 13 13 if PPC64 && !PPC_64K_PAGES
+>  	default "13" if PPC64 && !PPC_64K_PAGES
 
-thanks,
-jirka
+Do we still want t to be 13 13 or 12 13? 
+Looks like the lower side of the range can cause issues based
+on the values of Huge page size
+
+
+Balbir Singh.
