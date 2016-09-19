@@ -1,31 +1,26 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sd53m2j6XzDsd9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 22:36:36 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id l132so13537454wmf.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 05:36:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sd8qS3HwkzDsd9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 01:26:12 +1000 (AEST)
+Date: Mon, 19 Sep 2016 12:26:02 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ peterz@infradead.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, treeze.taeung@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, markus@trippelsdorf.de,
+ chris.ryder@arm.com, pawel.moll@arm.com, mhiramat@kernel.org,
+ rmk+kernel@arm.linux.org.uk, jolsa@kernel.org, mpe@ellerman.id.au,
+ hemant@linux.vnet.ibm.com, namhyung@kernel.org
+Subject: Re: [PATCH v6 3/7] perf annotate: Add support for powerpc
+Message-ID: <20160919152602.GB4840@kernel.org>
+References: <1471611578-11255-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1471611578-11255-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <CAJRA9dwyJ+5XuD7i0ktwvx3Md9p_Z9tiVZCWvO_gK1kfG-+ccA@mail.gmail.com>
-References: <CANtoAtPSgkxEvAdOs-gZGOECYN8OFTvwRrsg+US41ji1fGEDLA@mail.gmail.com>
- <969BB53B-CB30-49DC-B6C5-4D2381ECE6EE@gmail.com>
- <CANtoAtN1K3OAoXsgeMOWui_jEZO3X1fJAmRX-LeO_Du8h3T9kg@mail.gmail.com>
- <1472122446.2246.93.camel@kernel.crashing.org> <57DF23C4.20508@gmail.com>
- <CAJRA9dwyJ+5XuD7i0ktwvx3Md9p_Z9tiVZCWvO_gK1kfG-+ccA@mail.gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Mon, 19 Sep 2016 14:36:12 +0200
-Message-ID: <CA+7wUsyOSCJzymLe7vyub8dvyvsEDuVU0auO2rGi6ohkBKBEoQ@mail.gmail.com>
-Subject: Re: PowerPC agpmode issues
-To: "Herminio Hernandez, Jr." <herminio.hernandezjr@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Mike <michael.heltne@gmail.com>, Pranith Kumar <bobby.prani@gmail.com>,
- "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1471611578-11255-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,40 +30,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Em Fri, Aug 19, 2016 at 06:29:34PM +0530, Ravi Bangoria escreveu:
+> From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+> 
+> +static struct ins *ins__find_powerpc(const char *name)
+> +{
+> +	int i;
+> +	struct ins *ins;
+> +	struct ins_ops *ops;
+> +	static struct instructions_powerpc head;
+> +	static bool list_initialized;
+> +
+> +	/*
+> +	 * - Interested only if instruction starts with 'b'.
+> +	 * - Few start with 'b', but aren't branch instructions.
+> +	 */
+> +	if (name[0] != 'b'             ||
+> +	    !strncmp(name, "bcd", 3)   ||
+> +	    !strncmp(name, "brinc", 5) ||
+> +	    !strncmp(name, "bper", 4))
+> +		return NULL;
+> +
+> +	if (!list_initialized) {
+> +		INIT_LIST_HEAD(&head.list);
+> +		list_initialized = true;
+> +	}
 
-On Mon, Sep 19, 2016 at 11:13 AM, Herminio Hernandez, Jr.
-<herminio.hernandezjr@gmail.com> wrote:
-> Apologies for the previous email.
->
-> What I was trying to say was I just recently installed Debain on my PowerMac
-> G5. I upgraded to sid and install the nonfree firmware. After reboot I
-> noticed that GPU acclleration was broken and I recieved the following error
->
-> [   10.428542] [drm] Loading R300 Microcode
-> [   10.486631] radeon 0000:f0:10.0: firmware: direct-loading firmware
-> radeon/R300_cp.bin
-> [   10.486865] [drm] radeon: ring at 0x0000000000010000
-> [   10.634417] [drm:.r100_ring_test [radeon]] *ERROR* radeon: ring test
-> failed (scratch(0x15E4)=0xCAFEDEAD)
-> [   10.634526] [drm:.r100_cp_init [radeon]] *ERROR* radeon: cp isn't working
-[...]
-> [   11.935061] [drm] Forcing AGP to PCI mode
+Why not ditch list_initialized and instead just declare the list as:
 
-Well that is really odd. I am trying hard to push my pci patch upstream:
+static struct instructions_powerpc head = {
+	.list = LIST_HEAD_INIT(head.list),
+}
 
-https://patchwork.kernel.org/patch/9088181/
+Just like the kernel sources do? See for instance:
 
-I do believe PCI mode always work, so I would be interested if you
-could report the bug upstream to have PCI mode work on all Powermac
-(AGP is know to be broken).
+  net/core/net_namespace.c
 
-Pay attention to your /etc/modules file check whether or not it
-contains a option for the loaded modules, eg:
+struct net init_net = {
+        .dev_base_head = LIST_HEAD_INIT(init_net.dev_base_head),
+};
 
-radeon.agpmode=-1
-
-Finally your dmesg looks odd since the line `[drm] Forcing AGP to PCI
-mode` comes only after the first error.
-
--M
+> +
+> +	/*
+> +	 * Return if we already have object of 'struct ins' for this instruction
+> +	 */
+> +	ins = list_search__ins_powerpc(&head, name);
+> +	if (ins)
+> +		return ins;
+> +
+> +	ops = &jump_ops;
+> +
+> +	i = strlen(name) - 1;
+> +	if (i < 0)
+> +		return NULL;
+> +
+> +	/* ignore optional hints at the end of the instructions */
+> +	if (name[i] == '+' || name[i] == '-')
+> +		i--;
+> +
+> +	if (name[i] == 'l' || (name[i] == 'a' && name[i-1] == 'l')) {
+> +		/*
+> +		 * if the instruction ends up with 'l' or 'la', then
+> +		 * those are considered 'calls' since they update LR.
+> +		 * ... except for 'bnl' which is branch if not less than
+> +		 * and the absolute form of the same.
+> +		 */
+> +		if (strcmp(name, "bnl") && strcmp(name, "bnl+") &&
+> +		    strcmp(name, "bnl-") && strcmp(name, "bnla") &&
+> +		    strcmp(name, "bnla+") && strcmp(name, "bnla-"))
+> +			ops = &call_ops;
+> +	}
+> +	if (name[i] == 'r' && name[i-1] == 'l')
+> +		/*
+> +		 * instructions ending with 'lr' are considered to be
+> +		 * return instructions
+> +		 */
+> +		ops = &ret_ops;
+> +
+> +	/*
+> +	 * Add instruction to list so next time no need to
+> +	 * allocate memory for it.
+> +	 */
+> +	return list_add__ins_powerpc(&head, name, ops);
+> +}
+> +
+>  static void ins__sort(struct ins *instructions, int nmemb)
+>  {
+>  	qsort(instructions, nmemb, sizeof(struct ins), ins__cmp);
+> @@ -585,6 +699,8 @@ static struct ins *ins__find(const char *name, const char *norm_arch)
+>  	} else if (!strcmp(norm_arch, NORM_ARM)) {
+>  		instructions = instructions_arm;
+>  		nmemb = ARRAY_SIZE(instructions_arm);
+> +	} else if (!strcmp(norm_arch, NORM_POWERPC)) {
+> +		return ins__find_powerpc(name);
+>  	} else {
+>  		pr_err("perf annotate not supported by %s arch\n", norm_arch);
+>  		return NULL;
+> -- 
+> 2.5.5
