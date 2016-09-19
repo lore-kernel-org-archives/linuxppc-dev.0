@@ -1,23 +1,23 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3scvxx0fYjzDsdw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:56 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8J5hQkp094123
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:54 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25gyf33pfd-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3scw3P0WZbzDsd8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:50:40 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8J5hQNs029348
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:50:39 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25h2bhy2kc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:50:38 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 18 Sep 2016 23:45:53 -0600
+ Mon, 19 Sep 2016 01:50:37 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -28,10 +28,10 @@ Subject: Re: [PATCH v2 2/3] powerpc: get hugetlbpage handling more generic
 In-Reply-To: <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
 References: <cover.1474009019.git.christophe.leroy@c-s.fr>
  <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
-Date: Mon, 19 Sep 2016 11:15:44 +0530
+Date: Mon, 19 Sep 2016 11:20:29 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87poo0xx13.fsf@linux.vnet.ibm.com>
+Message-Id: <87mvj4xwt6.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,198 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+
 Christophe Leroy <christophe.leroy@c-s.fr> writes:
-
-> Today there are two implementations of hugetlbpages which are managed
-> by exclusive #ifdefs:
-> * FSL_BOOKE: several directory entries points to the same single hugepage
-> * BOOK3S: one upper level directory entry points to a table of hugepages
->
-> In preparation of implementation of hugepage support on the 8xx, we
-> need a mix of the two above solutions, because the 8xx needs both cases
-> depending on the size of pages:
-> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
-> that 2 PGD entries will be necessary to cover an 8M hugepage while a
-> single PGD entry will cover 8x 512k hugepages.
-> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
-> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
-> hugepages will be covers by one PGD entry.
->
-> This patch:
-> * removes #ifdefs in favor of if/else based on the range sizes
-> * merges the two huge_pte_alloc() functions as they are pretty similar
-> * merges the two hugetlbpage_init() functions as they are pretty similar
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
-> v2: This part is new and results from a split of last patch of v1 serie in
-> two parts
->
->  arch/powerpc/mm/hugetlbpage.c | 189 +++++++++++++++++-------------------------
->  1 file changed, 77 insertions(+), 112 deletions(-)
->
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 8a512b1..2119f00 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -64,14 +64,16 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
->  {
->  	struct kmem_cache *cachep;
->  	pte_t *new;
-> -
-> -#ifdef CONFIG_PPC_FSL_BOOK3E
->  	int i;
-> -	int num_hugepd = 1 << (pshift - pdshift);
-> -	cachep = hugepte_cache;
-> -#else
-> -	cachep = PGT_CACHE(pdshift - pshift);
-> -#endif
-> +	int num_hugepd;
+> +#else
+> +static void hugepd_free(struct mmu_gather *tlb, void *hugepte)
+> +{
+> +	BUG();
+> +}
 > +
-> +	if (pshift >= pdshift) {
-> +		cachep = hugepte_cache;
-> +		num_hugepd = 1 << (pshift - pdshift);
-> +	} else {
-> +		cachep = PGT_CACHE(pdshift - pshift);
-> +		num_hugepd = 1;
-> +	}
-
-Is there a way to hint likely/unlikely branch based on the page size
-selected at build time ?
+>  #endif
 
 
+I was expecting that BUG will get removed in the next patch. But I don't
+see it in the next patch. Considering
 
->  
->  	new = kmem_cache_zalloc(cachep, GFP_KERNEL);
->  
-> @@ -89,7 +91,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
->  	smp_wmb();
->  
->  	spin_lock(&mm->page_table_lock);
-> -#ifdef CONFIG_PPC_FSL_BOOK3E
-> +
->  	/*
->  	 * We have multiple higher-level entries that point to the same
->  	 * actual pte location.  Fill in each as we go and backtrack on error.
-> @@ -100,8 +102,13 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
->  		if (unlikely(!hugepd_none(*hpdp)))
->  			break;
->  		else
+@@ -475,11 +453,10 @@ static void free_hugepd_range(struct mmu_gather *tlb, hugepd_t *hpdp, int pdshif
+        for (i = 0; i < num_hugepd; i++, hpdp++)
+                hpdp->pd = 0;
 
-....
+-#ifdef CONFIG_PPC_FSL_BOOK3E
+-	hugepd_free(tlb, hugepte);
+-#else
+-	pgtable_free_tlb(tlb, hugepte, pdshift - shift);
+-#endif
++	if (shift >= pdshift)
++		hugepd_free(tlb, hugepte);
++	else
++		pgtable_free_tlb(tlb, hugepte, pdshift - shift);
+ }
 
-> -#ifdef CONFIG_PPC_FSL_BOOK3E
->  struct kmem_cache *hugepte_cache;
->  static int __init hugetlbpage_init(void)
->  {
->  	int psize;
->  
-> -	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
-> -		unsigned shift;
-> -
-> -		if (!mmu_psize_defs[psize].shift)
-> -			continue;
-> -
-> -		shift = mmu_psize_to_shift(psize);
-> -
-> -		/* Don't treat normal page sizes as huge... */
-> -		if (shift != PAGE_SHIFT)
-> -			if (add_huge_page_size(1ULL << shift) < 0)
-> -				continue;
-> -	}
-> -
-> -	/*
-> -	 * Create a kmem cache for hugeptes.  The bottom bits in the pte have
-> -	 * size information encoded in them, so align them to allow this
-> -	 */
-> -	hugepte_cache =  kmem_cache_create("hugepte-cache", sizeof(pte_t),
-> -					   HUGEPD_SHIFT_MASK + 1, 0, NULL);
-> -	if (hugepte_cache == NULL)
-> -		panic("%s: Unable to create kmem cache for hugeptes\n",
-> -		      __func__);
-> -
-> -	/* Default hpage size = 4M */
-> -	if (mmu_psize_defs[MMU_PAGE_4M].shift)
-> -		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_4M].shift;
-> -	else
-> -		panic("%s: Unable to set default huge page size\n", __func__);
-> -
-> -
-> -	return 0;
-> -}
-> -#else
-> -static int __init hugetlbpage_init(void)
-> -{
-> -	int psize;
-> -
-> +#if !defined(CONFIG_PPC_FSL_BOOK3E)
->  	if (!radix_enabled() && !mmu_has_feature(MMU_FTR_16M_PAGE))
->  		return -ENODEV;
-> -
-> +#endif
+What is that I am missing ?
 
-Do we need that #if ? radix_enabled() should become 0 and that if
-condition should be removed at compile time isn't it ? or are you
-finding errors with that ?
-
-
->  	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
->  		unsigned shift;
->  		unsigned pdshift;
-> @@ -860,16 +807,31 @@ static int __init hugetlbpage_init(void)
->  		 * if we have pdshift and shift value same, we don't
->  		 * use pgt cache for hugepd.
->  		 */
-> -		if (pdshift != shift) {
-> +		if (pdshift > shift) {
->  			pgtable_cache_add(pdshift - shift, NULL);
->  			if (!PGT_CACHE(pdshift - shift))
->  				panic("hugetlbpage_init(): could not create "
->  				      "pgtable cache for %d bit pagesize\n", shift);
-> +		} else if (!hugepte_cache) {
-> +			/*
-> +			 * Create a kmem cache for hugeptes.  The bottom bits in
-> +			 * the pte have size information encoded in them, so
-> +			 * align them to allow this
-> +			 */
-> +			hugepte_cache = kmem_cache_create("hugepte-cache",
-> +							  sizeof(pte_t),
-> +							  HUGEPD_SHIFT_MASK + 1,
-> +							  0, NULL);
-> +			if (hugepte_cache == NULL)
-> +				panic("%s: Unable to create kmem cache "
-> +				      "for hugeptes\n", __func__);
-> +
-
-
-We don't need hugepte_cache for book3s 64K. I guess we will endup
-creating one here ?
-
->  		}
->  	}
->  
->  	/* Set default large page size. Currently, we pick 16M or 1M
->  	 * depending on what is available
-> +	 * We select 4M on other ones.
->  	 */
->  	if (mmu_psize_defs[MMU_PAGE_16M].shift)
->  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
-> @@ -877,11 +839,14 @@ static int __init hugetlbpage_init(void)
->  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
->  	else if (mmu_psize_defs[MMU_PAGE_2M].shift)
->  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_2M].shift;
-> -
-> +	else if (mmu_psize_defs[MMU_PAGE_4M].shift)
-> +		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_4M].shift;
-> +	else
-> +		panic("%s: Unable to set default huge page size\n", __func__);
->  
->  	return 0;
->  }
-> -#endif
-> +
->  arch_initcall(hugetlbpage_init);
->  
->  void flush_dcache_icache_hugepage(struct page *page)
-> -- 
-> 2.1.0
+-aneesh
