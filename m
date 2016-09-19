@@ -1,46 +1,24 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdFnV0syjzDsfc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 05:09:49 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8JJ8iOW041044
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:09:47 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25h2bk32mf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:09:47 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 19 Sep 2016 20:09:45 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 8E1B817D8024
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 20:11:40 +0100 (BST)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8JJ9gdT13631890
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 19:09:42 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8JJ9fY6023277
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 13:09:42 -0600
-Subject: Re: [PATCH] MAINTAINERS: Update cxl maintainers
-To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
-References: <1474000124-4646-1-git-send-email-mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 19 Sep 2016 21:09:40 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdHBt0PcYzDsft
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 06:13:26 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id b184so16792754wma.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 13:13:25 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1474000124-4646-1-git-send-email-mikey@neuling.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <8559cb6d-488e-6383-e74b-97bc466507b1@linux.vnet.ibm.com>
+In-Reply-To: <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
+References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
+ <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
+From: Leo Li <pku.leo@gmail.com>
+Date: Mon, 19 Sep 2016 15:13:21 -0500
+Message-ID: <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
+Subject: Re: [PATCH v5 2/2] QE: remove PPCisms for QE
+To: Zhao Qiang <qiang.zhao@nxp.com>
+Cc: Scott Wood <oss@buserror.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,14 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Le 16/09/2016 à 06:28, Michael Neuling a écrit :
-> Fred has taken over the cxl maintenance I was doing.  This updates the
-> MAINTAINERS file to reflect this.
+On Mon, Jul 25, 2016 at 12:43 AM, Zhao Qiang <qiang.zhao@nxp.com> wrote:
+> QE was supported on PowerPC, and dependent on PPC,
+> Now it is supported on other platforms. so remove PPCisms.
 >
-> It also removes a duplicate entry in the files covered.
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> ---
+> Changes for v2:
+>         - na
+> Changes for v3:
+>         - add NO_IRQ
+> Changes for v4:
+>         - modify spin_event_timeout to opencoded timeout loop
+>         - remove NO_IRQ
+>         - modify virq_to_hw to opencoed code
+> Changes for v5:
+>         - modify commit msg
+>         - modify depends of QUICC_ENGINE
+>         - add kerneldoc header for qe_issue_cmd
 >
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+>  drivers/irqchip/qe_ic.c       | 28 +++++++++------
+>  drivers/soc/fsl/qe/Kconfig    |  2 +-
+>  drivers/soc/fsl/qe/qe.c       | 80 ++++++++++++++++++++++++++-----------------
+>  drivers/soc/fsl/qe/qe_io.c    | 42 ++++++++++-------------
+>  drivers/soc/fsl/qe/qe_tdm.c   |  8 ++---
+>  drivers/soc/fsl/qe/ucc.c      | 10 +++---
+>  drivers/soc/fsl/qe/ucc_fast.c | 68 ++++++++++++++++++------------------
+>  include/soc/fsl/qe/qe.h       |  1 -
+>  include/soc/fsl/qe/qe_ic.h    | 12 +++----
+>  9 files changed, 133 insertions(+), 118 deletions(-)
+>
 
+[snip]
 
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
+> index 73a2e08..b26b643 100644
+> --- a/drivers/soc/fsl/qe/Kconfig
+> +++ b/drivers/soc/fsl/qe/Kconfig
+> @@ -4,7 +4,7 @@
+>
+>  config QUICC_ENGINE
+>         bool "Freescale QUICC Engine (QE) Support"
+> -       depends on FSL_SOC && PPC32
+> +       depends on OF && HAS_IOMEM
+>         select GENERIC_ALLOCATOR
+>         select CRC32
+>         help
+
+You make it possible to build QE drivers on ARM, but the UCC_GETH
+fails to build on arm64.  Please make sure all these drivers can build
+on other architectures.  Or you can simply make them only build for
+Power architecture as most of them are not available on ARM.
+
+Regards,
+Leo
