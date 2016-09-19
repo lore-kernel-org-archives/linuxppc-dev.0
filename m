@@ -1,47 +1,37 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3scvxV3006zDsd8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:34 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8J5hSfo013463
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:32 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25h1wdqyq3-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3scvxx0fYjzDsdw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:56 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8J5hQkp094123
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:54 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25gyf33pfd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:32 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 01:45:53 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 19 Sep 2016 15:45:29 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D71C82CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:26 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8J5jQHS5112170
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:26 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8J5jQbE004796
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 15:45:26 +1000
-Subject: Re: [PATCH 06/13] powerpc: reverse the soft_enable logic
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <1473944523-624-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1473944523-624-7-git-send-email-maddy@linux.vnet.ibm.com>
- <20160916200537.50562560@roar.ozlabs.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Mon, 19 Sep 2016 11:15:24 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 18 Sep 2016 23:45:53 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/3] powerpc: get hugetlbpage handling more generic
+In-Reply-To: <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
+References: <cover.1474009019.git.christophe.leroy@c-s.fr>
+ <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
+Date: Mon, 19 Sep 2016 11:15:44 +0530
 MIME-Version: 1.0
-In-Reply-To: <20160916200537.50562560@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <d1a5a75b-e7a0-aaf5-4ee3-150b6c991a7f@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <87poo0xx13.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,103 +41,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+
+> Today there are two implementations of hugetlbpages which are managed
+> by exclusive #ifdefs:
+> * FSL_BOOKE: several directory entries points to the same single hugepage
+> * BOOK3S: one upper level directory entry points to a table of hugepages
+>
+> In preparation of implementation of hugepage support on the 8xx, we
+> need a mix of the two above solutions, because the 8xx needs both cases
+> depending on the size of pages:
+> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
+> that 2 PGD entries will be necessary to cover an 8M hugepage while a
+> single PGD entry will cover 8x 512k hugepages.
+> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
+> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
+> hugepages will be covers by one PGD entry.
+>
+> This patch:
+> * removes #ifdefs in favor of if/else based on the range sizes
+> * merges the two huge_pte_alloc() functions as they are pretty similar
+> * merges the two hugetlbpage_init() functions as they are pretty similar
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+> v2: This part is new and results from a split of last patch of v1 serie in
+> two parts
+>
+>  arch/powerpc/mm/hugetlbpage.c | 189 +++++++++++++++++-------------------------
+>  1 file changed, 77 insertions(+), 112 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 8a512b1..2119f00 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -64,14 +64,16 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  {
+>  	struct kmem_cache *cachep;
+>  	pte_t *new;
+> -
+> -#ifdef CONFIG_PPC_FSL_BOOK3E
+>  	int i;
+> -	int num_hugepd = 1 << (pshift - pdshift);
+> -	cachep = hugepte_cache;
+> -#else
+> -	cachep = PGT_CACHE(pdshift - pshift);
+> -#endif
+> +	int num_hugepd;
+> +
+> +	if (pshift >= pdshift) {
+> +		cachep = hugepte_cache;
+> +		num_hugepd = 1 << (pshift - pdshift);
+> +	} else {
+> +		cachep = PGT_CACHE(pdshift - pshift);
+> +		num_hugepd = 1;
+> +	}
+
+Is there a way to hint likely/unlikely branch based on the page size
+selected at build time ?
 
 
-On Friday 16 September 2016 03:35 PM, Nicholas Piggin wrote:
-> On Thu, 15 Sep 2016 18:31:56 +0530
-> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
->
->> "paca->soft_enabled" is used as a flag to mask some of interrupts.
->> Currently supported flags values and their details:
->>
->> soft_enabled    MSR[EE]
->>
->> 0               0       Disabled (PMI and HMI not masked)
->> 1               1       Enabled
->>
->> "paca->soft_enabled" is initialized to 1 to make the interripts as
->> enabled. arch_local_irq_disable() will toggle the value when interrupts
->> needs to disbled. At this point, the interrupts are not actually disabled,
->> instead, interrupt vector has code to check for the flag and mask it when it occurs.
->> By "mask it", it update interrupt paca->irq_happened and return.
->> arch_local_irq_restore() is called to re-enable interrupts, which checks and
->> replays interrupts if any occured.
->>
->> Now, as mentioned, current logic doesnot mask "performance monitoring interrupts"
->> and PMIs are implemented as NMI. But this patchset depends on local_irq_*
->> for a successful local_* update. Meaning, mask all possible interrupts during
->> local_* update and replay them after the update.
->>
->> So the idea here is to reserve the "paca->soft_enabled" logic. New values and
->> details:
->>
->> soft_enabled    MSR[EE]
->>
->> 1               0       Disabled  (PMI and HMI not masked)
->> 0               1       Enabled
->>
->> Reason for the this change is to create foundation for a third flag value "2"
->> for "soft_enabled" to add support to mask PMIs. When ->soft_enabled is
->> set to a value "2", PMI interrupts are mask and when set to a value
->> of "1", PMI are not mask.
->>
->> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/include/asm/hw_irq.h | 4 ++--
->>   arch/powerpc/kernel/entry_64.S    | 5 ++---
->>   2 files changed, 4 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
->> index dc3c248f9244..fd9b421f9020 100644
->> --- a/arch/powerpc/include/asm/hw_irq.h
->> +++ b/arch/powerpc/include/asm/hw_irq.h
->> @@ -30,8 +30,8 @@
->>   /*
->>    * flags for paca->soft_enabled
->>    */
->> -#define IRQ_DISABLE_MASK_NONE		1
->> -#define IRQ_DISABLE_MASK_LINUX		0
->> +#define IRQ_DISABLE_MASK_NONE		0
->> +#define IRQ_DISABLE_MASK_LINUX		1
->>   
->>   #endif /* CONFIG_PPC64 */
->>   
->> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
->> index aef7b64cbbeb..879aeb11ad29 100644
->> --- a/arch/powerpc/kernel/entry_64.S
->> +++ b/arch/powerpc/kernel/entry_64.S
->> @@ -131,8 +131,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->>   	 */
->>   #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_BUG)
->>   	lbz	r10,PACASOFTIRQEN(r13)
->> -	xori	r10,r10,IRQ_DISABLE_MASK_NONE
->> -1:	tdnei	r10,0
->> +1:	tdnei	r10,IRQ_DISABLE_MASK_NONE
->>   	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
->>   #endif
->>   
->> @@ -1012,7 +1011,7 @@ _GLOBAL(enter_rtas)
->>   	 * check it with the asm equivalent of WARN_ON
->>   	 */
->>   	lbz	r0,PACASOFTIRQEN(r13)
->> -1:	tdnei	r0,IRQ_DISABLE_MASK_LINUX
->> +1:	tdeqi	r0,IRQ_DISABLE_MASK_NONE
->>   	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
->>   #endif
->>   	
-> We specifically want to ensure that _LINUX interrupts are disabled
-> here. Not that we allow masking of others without _LINUX now, but
-> current behavior is checking that LINUX ones are masked.
->
-> Otherwise it seems okay.
->
-> It might be nice after this series to do a pass and rename
-> soft_enabled to soft_masked.
 
-Yes definitely, I do have it in my todo.
+>  
+>  	new = kmem_cache_zalloc(cachep, GFP_KERNEL);
+>  
+> @@ -89,7 +91,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  	smp_wmb();
+>  
+>  	spin_lock(&mm->page_table_lock);
+> -#ifdef CONFIG_PPC_FSL_BOOK3E
+> +
+>  	/*
+>  	 * We have multiple higher-level entries that point to the same
+>  	 * actual pte location.  Fill in each as we go and backtrack on error.
+> @@ -100,8 +102,13 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  		if (unlikely(!hugepd_none(*hpdp)))
+>  			break;
+>  		else
 
-Maddy
+....
 
->
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
->
+> -#ifdef CONFIG_PPC_FSL_BOOK3E
+>  struct kmem_cache *hugepte_cache;
+>  static int __init hugetlbpage_init(void)
+>  {
+>  	int psize;
+>  
+> -	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+> -		unsigned shift;
+> -
+> -		if (!mmu_psize_defs[psize].shift)
+> -			continue;
+> -
+> -		shift = mmu_psize_to_shift(psize);
+> -
+> -		/* Don't treat normal page sizes as huge... */
+> -		if (shift != PAGE_SHIFT)
+> -			if (add_huge_page_size(1ULL << shift) < 0)
+> -				continue;
+> -	}
+> -
+> -	/*
+> -	 * Create a kmem cache for hugeptes.  The bottom bits in the pte have
+> -	 * size information encoded in them, so align them to allow this
+> -	 */
+> -	hugepte_cache =  kmem_cache_create("hugepte-cache", sizeof(pte_t),
+> -					   HUGEPD_SHIFT_MASK + 1, 0, NULL);
+> -	if (hugepte_cache == NULL)
+> -		panic("%s: Unable to create kmem cache for hugeptes\n",
+> -		      __func__);
+> -
+> -	/* Default hpage size = 4M */
+> -	if (mmu_psize_defs[MMU_PAGE_4M].shift)
+> -		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_4M].shift;
+> -	else
+> -		panic("%s: Unable to set default huge page size\n", __func__);
+> -
+> -
+> -	return 0;
+> -}
+> -#else
+> -static int __init hugetlbpage_init(void)
+> -{
+> -	int psize;
+> -
+> +#if !defined(CONFIG_PPC_FSL_BOOK3E)
+>  	if (!radix_enabled() && !mmu_has_feature(MMU_FTR_16M_PAGE))
+>  		return -ENODEV;
+> -
+> +#endif
+
+Do we need that #if ? radix_enabled() should become 0 and that if
+condition should be removed at compile time isn't it ? or are you
+finding errors with that ?
+
+
+>  	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+>  		unsigned shift;
+>  		unsigned pdshift;
+> @@ -860,16 +807,31 @@ static int __init hugetlbpage_init(void)
+>  		 * if we have pdshift and shift value same, we don't
+>  		 * use pgt cache for hugepd.
+>  		 */
+> -		if (pdshift != shift) {
+> +		if (pdshift > shift) {
+>  			pgtable_cache_add(pdshift - shift, NULL);
+>  			if (!PGT_CACHE(pdshift - shift))
+>  				panic("hugetlbpage_init(): could not create "
+>  				      "pgtable cache for %d bit pagesize\n", shift);
+> +		} else if (!hugepte_cache) {
+> +			/*
+> +			 * Create a kmem cache for hugeptes.  The bottom bits in
+> +			 * the pte have size information encoded in them, so
+> +			 * align them to allow this
+> +			 */
+> +			hugepte_cache = kmem_cache_create("hugepte-cache",
+> +							  sizeof(pte_t),
+> +							  HUGEPD_SHIFT_MASK + 1,
+> +							  0, NULL);
+> +			if (hugepte_cache == NULL)
+> +				panic("%s: Unable to create kmem cache "
+> +				      "for hugeptes\n", __func__);
+> +
+
+
+We don't need hugepte_cache for book3s 64K. I guess we will endup
+creating one here ?
+
+>  		}
+>  	}
+>  
+>  	/* Set default large page size. Currently, we pick 16M or 1M
+>  	 * depending on what is available
+> +	 * We select 4M on other ones.
+>  	 */
+>  	if (mmu_psize_defs[MMU_PAGE_16M].shift)
+>  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
+> @@ -877,11 +839,14 @@ static int __init hugetlbpage_init(void)
+>  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
+>  	else if (mmu_psize_defs[MMU_PAGE_2M].shift)
+>  		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_2M].shift;
+> -
+> +	else if (mmu_psize_defs[MMU_PAGE_4M].shift)
+> +		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_4M].shift;
+> +	else
+> +		panic("%s: Unable to set default huge page size\n", __func__);
+>  
+>  	return 0;
+>  }
+> -#endif
+> +
+>  arch_initcall(hugetlbpage_init);
+>  
+>  void flush_dcache_icache_hugepage(struct page *page)
+> -- 
+> 2.1.0
