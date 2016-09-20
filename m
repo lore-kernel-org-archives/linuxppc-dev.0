@@ -1,26 +1,27 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdSWM494tzDsTW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 13:13:19 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id oz2so248594pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 20:13:19 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/mm: Update the FORCE_MAX_ZONEORDER range to
- enable hugetlb
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1474306293-15390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <2d14a740-2345-99d0-4d7e-ae052d416f6d@gmail.com>
- <871t0fxoxr.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <02de1513-b7de-39f1-fe3c-066014107560@gmail.com>
-Date: Tue, 20 Sep 2016 13:13:11 +1000
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sdSXb4PT0zDsgG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 13:14:23 +1000 (AEST)
+Subject: Re: PowerPC agpmode issues
+To: Mathieu Malaterre <malat@debian.org>,
+ "Herminio Hernandez, Jr." <herminio.hernandezjr@gmail.com>
+References: <CANtoAtPSgkxEvAdOs-gZGOECYN8OFTvwRrsg+US41ji1fGEDLA@mail.gmail.com>
+ <969BB53B-CB30-49DC-B6C5-4D2381ECE6EE@gmail.com>
+ <CANtoAtN1K3OAoXsgeMOWui_jEZO3X1fJAmRX-LeO_Du8h3T9kg@mail.gmail.com>
+ <1472122446.2246.93.camel@kernel.crashing.org> <57DF23C4.20508@gmail.com>
+ <CAJRA9dwyJ+5XuD7i0ktwvx3Md9p_Z9tiVZCWvO_gK1kfG-+ccA@mail.gmail.com>
+ <CA+7wUsyOSCJzymLe7vyub8dvyvsEDuVU0auO2rGi6ohkBKBEoQ@mail.gmail.com>
+Cc: Mike <michael.heltne@gmail.com>,
+ "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Pranith Kumar <bobby.prani@gmail.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+From: =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>
+Message-ID: <28807f61-b73e-b695-ea6a-cb51c1554144@daenzer.net>
+Date: Tue, 20 Sep 2016 12:05:17 +0900
 MIME-Version: 1.0
-In-Reply-To: <871t0fxoxr.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <CA+7wUsyOSCJzymLe7vyub8dvyvsEDuVU0auO2rGi6ohkBKBEoQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 19/09/16 09:36 PM, Mathieu Malaterre wrote:
+> 
+> Finally your dmesg looks odd since the line `[drm] Forcing AGP to PCI
+> mode` comes only after the first error.
+
+That isn't odd but the AGP->PCI(e) fallback mechanism working as
+intended, trying AGP first and falling back to PCIe if AGP fails.
+
+Herminio, does the problem also occur if you specify radeon.agpmode=-1
+(or maybe =1) on the kernel command line?
 
 
-On 20/09/16 12:52, Aneesh Kumar K.V wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
-> 
->> On 20/09/16 03:31, Aneesh Kumar K.V wrote:
-[...]
->>
->> Do we need the range to be 12 13?
-> 
-> static inline bool hstate_is_gigantic(struct hstate *h)
-> {
-> 	return huge_page_order(h) >= MAX_ORDER;
-> }
-> 
-> We consider hstate gigantic if it also == MAX_ORDER. Hence it should
-> be > 12 .
-> 
-
-Good point, agreed
-
-Balbir Singh.
+-- 
+Earthling Michel Dänzer               |               http://www.amd.com
+Libre software enthusiast             |             Mesa and X developer
