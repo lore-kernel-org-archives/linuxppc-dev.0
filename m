@@ -1,22 +1,20 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdVCW3gVxzDsff
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 14:29:42 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id n24so332650pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 21:29:42 -0700 (PDT)
-Received: from canetoad.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id h67sm46153521pfg.32.2016.09.19.21.29.39
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 19 Sep 2016 21:29:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdVCX2GgqzDsff
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 14:29:44 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id 6so335460pfl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 21:29:44 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [v2] XZ compressed zImage support
-Date: Tue, 20 Sep 2016 14:29:18 +1000
-Message-Id: <1474345764-28038-1-git-send-email-oohall@gmail.com>
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH v2 1/6] powerpc/boot: add sed script
+Date: Tue, 20 Sep 2016 14:29:19 +1000
+Message-Id: <1474345764-28038-2-git-send-email-oohall@gmail.com>
+In-Reply-To: <1474345764-28038-1-git-send-email-oohall@gmail.com>
+References: <1474345764-28038-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series adds support for using XZ compression in addition to gzip in the
-kernel boot wrapper. Currently this is only enabled for 64bit Book3S processors
-since it seems that some embedded platforms rely on uBoot (or similar) to
-decompress the image rather than having the kernel decompress itself. Enabling
-it for other platforms should be fairly straight forward though.
+The powerpc boot wrapper is compiled with a separate "bootcc" toolchain
+rather than the toolchain used for the rest of the kernel. The main
+problem with this is that the wrapper does not have access to the kernel
+headers (without a lot of gross hacks). To get around this the required
+headers are copied into the build directory via several sed scripts
+which rewrite problematic includes. This patch moves these fixups out of
+the makefile into a separate .sed script file to clean up makefile
+slightly.
 
-Supporting other compression algorithms (like ARM and x86 do) is possible, but
-painful. Each algorithm includes some kernel headers even when the #defines
-that are supposed to make them usable in a pre-boot environment are set.
-Including kernel headers is an issue because on powerpc  the boot wrapper is
-compiled with a different toolchain and possibly for a different target for
-backwards compatibility reasons*. This makes it difficult to include kernel
-headers since the include paths, etc are not setup for BOOTCC.
-
-This can be worked around by rewriting parts of the each decompressor with sed
-scripts, but the rewriting requried is specific to each decompressor.
-
--oliver
-
-*powermacs have 32bit firmware that cannot directly load a 64bit kernel. A 64
-bit big endian kernel has a 32bit wrapper to work around this. On 64bit little
-endian we don't have this legacy problem so the wrapper is also 64bit little
-endian, but the toolchain issues are still there.
-
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-Changes from v1:
-	fixed some missing dependecies in the Makefile that were causing random
-	build breaks.
+ arch/powerpc/boot/Makefile          | 16 +++++-----------
+ arch/powerpc/boot/fixup-headers.sed | 12 ++++++++++++
+ 2 files changed, 17 insertions(+), 11 deletions(-)
+ create mode 100644 arch/powerpc/boot/fixup-headers.sed
 
-	Fixed "make clean" so that it would remove the files copied into
-	arch/powerpc/boot/ when the wrapper was built.
-
-	previously this series renamed "zlibheader" to "zlibheaders". There were
-	consequences.
----
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index df0fd406aed1..7d6768253caa 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -125,23 +125,17 @@ obj-wlib := $(addsuffix .o, $(basename $(addprefix $(obj)/, $(src-wlib))))
+ obj-plat := $(addsuffix .o, $(basename $(addprefix $(obj)/, $(src-plat))))
+ obj-plat: $(libfdt)
+ 
+-quiet_cmd_copy_zlib = COPY    $@
+-      cmd_copy_zlib = sed "s@__used@@;s@<linux/\([^>]*\).*@\"\1\"@" $< > $@
+-
+-quiet_cmd_copy_zlibheader = COPY    $@
+-      cmd_copy_zlibheader = sed "s@<linux/\([^>]*\).*@\"\1\"@" $< > $@
+-# stddef.h for NULL
+-quiet_cmd_copy_zliblinuxheader = COPY    $@
+-      cmd_copy_zliblinuxheader = sed "s@<linux/string.h>@\"string.h\"@;s@<linux/kernel.h>@<stddef.h>@;s@<linux/\([^>]*\).*@\"\1\"@" $< > $@
++quiet_cmd_copy_kern_src = COPY    $@
++      cmd_copy_kern_src = sed -f $(srctree)/arch/powerpc/boot/fixup-headers.sed $< > $@
+ 
+ $(addprefix $(obj)/,$(zlib)): $(obj)/%: $(srctree)/lib/zlib_inflate/%
+-	$(call cmd,copy_zlib)
++	$(call cmd,copy_kern_src)
+ 
+ $(addprefix $(obj)/,$(zlibheader)): $(obj)/%: $(srctree)/lib/zlib_inflate/%
+-	$(call cmd,copy_zlibheader)
++	$(call cmd,copy_kern_src)
+ 
+ $(addprefix $(obj)/,$(zliblinuxheader)): $(obj)/%: $(srctree)/include/linux/%
+-	$(call cmd,copy_zliblinuxheader)
++	$(call cmd,copy_kern_src)
+ 
+ quiet_cmd_copy_libfdt = COPY    $@
+       cmd_copy_libfdt = cp $< $@
+diff --git a/arch/powerpc/boot/fixup-headers.sed b/arch/powerpc/boot/fixup-headers.sed
+new file mode 100644
+index 000000000000..96362428eb37
+--- /dev/null
++++ b/arch/powerpc/boot/fixup-headers.sed
+@@ -0,0 +1,12 @@
++# Copyright 2016 IBM Corporation.
++#
++# This program is free software; you can redistribute it and/or modify it
++# under the terms of the GNU General Public License version 2 or later as
++# published by the Free Software Foundation.
++
++s@#include <linux/decompress/mm\.h>@@;
++s@\"zlib_inflate/\([^\"]*\).*@"\1"@;
++s@<linux/kernel.h>@<stddef.h>@;
++
++s@__used@@;
++s@<linux/\([^>]*\).*@"\1"@;
+-- 
+2.5.5
