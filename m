@@ -1,20 +1,26 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdVCk488bzDsg0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 14:29:54 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id 6so335645pfl.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 21:29:54 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH v2 6/6] powerpc/boot: Add support for XZ compression
-Date: Tue, 20 Sep 2016 14:29:24 +1000
-Message-Id: <1474345764-28038-7-git-send-email-oohall@gmail.com>
-In-Reply-To: <1474345764-28038-1-git-send-email-oohall@gmail.com>
-References: <1474345764-28038-1-git-send-email-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdWNF6wbzzDsTW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 15:22:21 +1000 (AEST)
+Subject: Re: [PATCH v2 2/3] powerpc: get hugetlbpage handling more generic
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+References: <cover.1474009019.git.christophe.leroy@c-s.fr>
+ <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
+ <87mvj4xwt6.fsf@linux.vnet.ibm.com>
+ <68949cf6-c70b-f616-4586-fa438a7c17cd@c-s.fr>
+ <877fa7xq1v.fsf@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <0f2ea710-1e14-8b80-7480-cea9ffbe9dfa@c-s.fr>
+Date: Tue, 20 Sep 2016 07:22:17 +0200
+MIME-Version: 1.0
+In-Reply-To: <877fa7xq1v.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,139 +30,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds an option to use XZ compression for the kernel image.
-Currently this is only enabled for PPC64 targets since the bulk of the
-32bit platforms produce uboot images which do not use the wrapper.
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/boot/Makefile             |  3 +++
- arch/powerpc/boot/decompress.c         |  5 +++++
- arch/powerpc/boot/types.h              | 10 +++++++++
- arch/powerpc/boot/xz_config.h          | 39 ++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype |  1 +
- 5 files changed, 58 insertions(+)
- create mode 100644 arch/powerpc/boot/xz_config.h
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 9fb451d0586e..eae2dc8bc218 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -20,6 +20,7 @@
- all: $(obj)/zImage
- 
- compress-$(CONFIG_KERNEL_GZIP) := CONFIG_KERNEL_GZIP
-+compress-$(CONFIG_KERNEL_XZ)   := CONFIG_KERNEL_XZ
- 
- BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -fno-strict-aliasing -Os -msoft-float -pipe \
-@@ -226,6 +227,7 @@ endif
- endif
- 
- compressor-$(CONFIG_KERNEL_GZIP) := gz
-+compressor-$(CONFIG_KERNEL_XZ)   := xz
- 
- # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
- quiet_cmd_wrap	= WRAP    $@
-@@ -433,6 +435,7 @@ clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
- # clean up files cached by wrapper
- clean-kernel-base := vmlinux.strip vmlinux.bin
- clean-kernel := $(addsuffix .gz,$(clean-kernel-base))
-+clean-kernel += $(addsuffix .xz,$(clean-kernel-base))
- # If not absolute clean-files are relative to $(obj).
- clean-files += $(addprefix $(objtree)/, $(clean-kernel))
- 
-diff --git a/arch/powerpc/boot/decompress.c b/arch/powerpc/boot/decompress.c
-index 60fc6fb26867..8f32ea4289af 100644
---- a/arch/powerpc/boot/decompress.c
-+++ b/arch/powerpc/boot/decompress.c
-@@ -37,6 +37,11 @@
- #	include "decompress_inflate.c"
- #endif
- 
-+#ifdef CONFIG_KERNEL_XZ
-+#	include "xz_config.h"
-+#	include "../../../lib/decompress_unxz.c"
-+#endif
-+
- /* globals for tracking the state of the decompression */
- static unsigned long decompressed_bytes;
- static unsigned long limit;
-diff --git a/arch/powerpc/boot/types.h b/arch/powerpc/boot/types.h
-index 85565a89bcc2..0362a262a299 100644
---- a/arch/powerpc/boot/types.h
-+++ b/arch/powerpc/boot/types.h
-@@ -34,4 +34,14 @@ typedef s64 int64_t;
- 	(void) (&_x == &_y);	\
- 	_x > _y ? _x : _y; })
- 
-+#define min_t(type, a, b) min(((type) a), ((type) b))
-+#define max_t(type, a, b) max(((type) a), ((type) b))
-+
-+#ifndef true
-+#define true 1
-+#endif
-+
-+#ifndef false
-+#define false 0
-+#endif
- #endif /* _TYPES_H_ */
-diff --git a/arch/powerpc/boot/xz_config.h b/arch/powerpc/boot/xz_config.h
-new file mode 100644
-index 000000000000..5c6afdbca642
---- /dev/null
-+++ b/arch/powerpc/boot/xz_config.h
-@@ -0,0 +1,39 @@
-+#ifndef __XZ_CONFIG_H__
-+#define __XZ_CONFIG_H__
-+
-+/*
-+ * most of this is copied from lib/xz/xz_private.h, we can't use their defines
-+ * since the boot wrapper is not built in the same environment as the rest of
-+ * the kernel.
-+ */
-+
-+#include "types.h"
-+#include "swab.h"
-+
-+static inline uint32_t swab32p(void *p)
-+{
-+	uint32_t *q = p;
-+
-+	return swab32(*q);
-+}
-+
-+#ifdef __LITTLE_ENDIAN__
-+#define get_le32(p) (*((uint32_t *) (p)))
-+#else
-+#define get_le32(p) swab32p(p)
-+#endif
-+
-+#define memeq(a, b, size) (memcmp(a, b, size) == 0)
-+#define memzero(buf, size) memset(buf, 0, size)
-+
-+/* prevent the inclusion of the xz-preboot MM headers */
-+#define DECOMPR_MM_H
-+#define memmove memmove
-+#define XZ_EXTERN static
-+
-+/* xz.h needs to be included directly since we need enum xz_mode */
-+#include "../../../include/linux/xz.h"
-+
-+#undef XZ_EXTERN
-+
-+#endif
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f32edec13fd1..d5da55b01027 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -2,6 +2,7 @@ config PPC64
- 	bool "64-bit kernel"
- 	default n
- 	select ZLIB_DEFLATE
-+	select HAVE_KERNEL_XZ
- 	help
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
--- 
-2.5.5
+Le 20/09/2016 à 04:28, Aneesh Kumar K.V a écrit :
+> christophe leroy <christophe.leroy@c-s.fr> writes:
+>
+>> Le 19/09/2016 à 07:50, Aneesh Kumar K.V a écrit :
+>>>
+>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>> +#else
+>>>> +static void hugepd_free(struct mmu_gather *tlb, void *hugepte)
+>>>> +{
+>>>> +	BUG();
+>>>> +}
+>>>> +
+>>>>  #endif
+>>>
+>>>
+>>> I was expecting that BUG will get removed in the next patch. But I don't
+>>> see it in the next patch. Considering
+>>>
+>>> @@ -475,11 +453,10 @@ static void free_hugepd_range(struct mmu_gather *tlb, hugepd_t *hpdp, int pdshif
+>>>         for (i = 0; i < num_hugepd; i++, hpdp++)
+>>>                 hpdp->pd = 0;
+>>>
+>>> -#ifdef CONFIG_PPC_FSL_BOOK3E
+>>> -	hugepd_free(tlb, hugepte);
+>>> -#else
+>>> -	pgtable_free_tlb(tlb, hugepte, pdshift - shift);
+>>> -#endif
+>>> +	if (shift >= pdshift)
+>>> +		hugepd_free(tlb, hugepte);
+>>> +	else
+>>> +		pgtable_free_tlb(tlb, hugepte, pdshift - shift);
+>>>  }
+>>>
+>>> What is that I am missing ?
+>>>
+>>
+>> Previously, call to hugepd_free() was compiled only when #ifdef
+>> CONFIG_PPC_FSL_BOOK3E
+>> Now, it is compiled at all time, but it should never be called if not
+>> CONFIG_PPC_FSL_BOOK3E because we always have shift < pdshift in that case.
+>> Then the function needs to be defined anyway but should never be called.
+>> Should I just define it static inline {} ?
+>>
+>
+> For 8M with 4K mode, we have shift >= pdshift right ?
+>
+
+Yes, thats the reason why in the following patch we get. That way we get 
+a real hugepd_free() also for the 8xx.
+
+@@ -366,7 +373,7 @@ int alloc_bootmem_huge_page(struct hstate *hstate)
+  }
+  #endif
+
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
+  #define HUGEPD_FREELIST_SIZE \
+  	((PAGE_SIZE - sizeof(struct hugepd_freelist)) / sizeof(pte_t))
+
+
+
+Christophe
