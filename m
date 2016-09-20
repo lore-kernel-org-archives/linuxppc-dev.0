@@ -1,24 +1,39 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdQCm6fqHzDsfd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 11:29:40 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id 21so153278pfy.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 18:29:40 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/mm: Update the FORCE_MAX_ZONEORDER range to
- enable hugetlb
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1474306293-15390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <2d14a740-2345-99d0-4d7e-ae052d416f6d@gmail.com>
-Date: Tue, 20 Sep 2016 11:29:33 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdRXd6xklzDsTW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 12:29:21 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8K2THBu112358
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 22:29:19 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25jamahtun-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 22:29:17 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 19 Sep 2016 20:28:53 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: christophe leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/3] powerpc: get hugetlbpage handling more generic
+In-Reply-To: <68949cf6-c70b-f616-4586-fa438a7c17cd@c-s.fr>
+References: <cover.1474009019.git.christophe.leroy@c-s.fr>
+ <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
+ <87mvj4xwt6.fsf@linux.vnet.ibm.com>
+ <68949cf6-c70b-f616-4586-fa438a7c17cd@c-s.fr>
+Date: Tue, 20 Sep 2016 07:58:44 +0530
 MIME-Version: 1.0
-In-Reply-To: <1474306293-15390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
+Message-Id: <877fa7xq1v.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +43,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+christophe leroy <christophe.leroy@c-s.fr> writes:
 
+> Le 19/09/2016 =C3=A0 07:50, Aneesh Kumar K.V a =C3=A9crit :
+>>
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>> +#else
+>>> +static void hugepd_free(struct mmu_gather *tlb, void *hugepte)
+>>> +{
+>>> +	BUG();
+>>> +}
+>>> +
+>>>  #endif
+>>
+>>
+>> I was expecting that BUG will get removed in the next patch. But I don't
+>> see it in the next patch. Considering
+>>
+>> @@ -475,11 +453,10 @@ static void free_hugepd_range(struct mmu_gather *t=
+lb, hugepd_t *hpdp, int pdshif
+>>         for (i =3D 0; i < num_hugepd; i++, hpdp++)
+>>                 hpdp->pd =3D 0;
+>>
+>> -#ifdef CONFIG_PPC_FSL_BOOK3E
+>> -	hugepd_free(tlb, hugepte);
+>> -#else
+>> -	pgtable_free_tlb(tlb, hugepte, pdshift - shift);
+>> -#endif
+>> +	if (shift >=3D pdshift)
+>> +		hugepd_free(tlb, hugepte);
+>> +	else
+>> +		pgtable_free_tlb(tlb, hugepte, pdshift - shift);
+>>  }
+>>
+>> What is that I am missing ?
+>>
+>
+> Previously, call to hugepd_free() was compiled only when #ifdef=20
+> CONFIG_PPC_FSL_BOOK3E
+> Now, it is compiled at all time, but it should never be called if not=20
+> CONFIG_PPC_FSL_BOOK3E because we always have shift < pdshift in that case.
+> Then the function needs to be defined anyway but should never be called.=
+=20
+> Should I just define it static inline {} ?
+>
 
-On 20/09/16 03:31, Aneesh Kumar K.V wrote:
-> For hugetlb to work with 4K page size, we need the MAX_ORDER to be more
-> than 13. When switching from a 64K page size to 4K linux page size using
-> make nconfig, we endup with a CONFIG_FORCE_MAX_ZONEORDER value of 9.
-> This results in 16M hugepage to be considered as a gigantic huge page
-> which inturn can result in failure to setup hugepages if gigantic
-> hugepage support is not enabled.
-> 
-> This also results in kernel crash with 4K radix configuration. We
-> hit the below BUG_ON on radix
-> 
->  kernel BUG at mm/huge_memory.c:364!
->  Oops: Exception in kernel mode, sig: 5 [#1]
->  SMP NR_CPUS=2048 NUMA PowerNV
->  Modules linked in:
->  CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.8.0-rc1-00006-gbae9cc6 #1
->  task: c0000000f1af8000 task.stack: c0000000f1aec000
->  NIP: c000000000c5fa0c LR: c000000000c5f9d8 CTR: c000000000c5f9a4
->  REGS: c0000000f1aef920 TRAP: 0700   Not tainted (4.8.0-rc1-00006-gbae9cc6)
->  MSR: 9000000102029033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE,TM[E]>  CR: 24000844  XER: 00000000
->  CFAR: c000000000c5f9e0 SOFTE: 1
-> .....
->  NIP [c000000000c5fa0c] hugepage_init+0x68/0x238
->  LR [c000000000c5f9d8] hugepage_init+0x34/0x238
-> 
-> Fixes: a7ee539584acf ("powerpc/Kconfig: Update config option based on page size")
-> 
-> Reported-by: Santhosh <santhog4@linux.vnet.ibm.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 927d2ab2ce08..792cb1768c8f 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -637,7 +637,7 @@ config FORCE_MAX_ZONEORDER
->  	int "Maximum zone order"
->  	range 8 9 if PPC64 && PPC_64K_PAGES
->  	default "9" if PPC64 && PPC_64K_PAGES
-> -	range 9 13 if PPC64 && !PPC_64K_PAGES
-> +	range 13 13 if PPC64 && !PPC_64K_PAGES
+For 8M with 4K mode, we have shift >=3D pdshift right ?
 
-Do we need the range to be 12 13?
-
->  	default "13" if PPC64 && !PPC_64K_PAGES
->  	range 9 64 if PPC32 && PPC_16K_PAGES
->  	default "9" if PPC32 && PPC_16K_PAGES
-> 
-
-Otherwise
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+-aneesh
