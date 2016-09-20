@@ -1,24 +1,19 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdTYn4ThqzDsfn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 14:00:29 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id vz6so293447pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2016 21:00:29 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/64s: optimise syscall entry for virtual,
- relocatable case
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20160915090321.787-1-npiggin@gmail.com>
-Cc: Michael Neuling <mikey@neuling.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <f1aba0ad-04e3-9e27-439d-dad4e34c0c2f@gmail.com>
-Date: Tue, 20 Sep 2016 14:00:23 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdV7108b7zDsfh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 14:25:49 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: exception optimise MSR handling
+In-Reply-To: <20160915090446.898-1-npiggin@gmail.com>
+References: <20160915090446.898-1-npiggin@gmail.com>
+Date: Tue, 20 Sep 2016 14:25:48 +1000
+Message-ID: <87shsvrycz.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20160915090321.787-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Nicholas Piggin <npiggin@gmail.com> writes:
 
+> mtmsrd with L=1 only affects MSR_EE and MSR_RI bits, and we always
+> know what state those bits are, so the kernel MSR does not need to be
+> loaded when modifying them.
+>
+> mtmsrd is often in the critical execution path, so avoiding dependency
+> on even L1 load is noticable. On a POWER8 this saves about 3 cycles
+> from the syscall path, and possibly a few from other exception returns
+> (not measured).
 
-On 15/09/16 19:03, Nicholas Piggin wrote:
-> The mflr r10 instruction was left over saving of lr when the code used
-> lr to branch to system_call_entry from the exception handler. That was
-> changed by 6a404806d to use the count register. The value is never used
-> now, so mflr can be removed, and r10 can be used for storage rather than
-> spilling to the SPR scratch register.
-> 
-> The scratch register spill causes a long pipeline stall due to the SPR
-> read after write. This change brings getppid syscall cost from 406 to
-> 376 cycles on POWER8. getppid for non-relocatable case is 371 cycles.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> 
->  arch/powerpc/kernel/exceptions-64s.S | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index df6d45e..2cdd64f 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -63,15 +63,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
->  	 * is volatile across system calls.
->  	 */
->  #define SYSCALL_PSERIES_2_DIRECT				\
-> -	mflr	r10 ;						\
->  	ld	r12,PACAKBASE(r13) ; 				\
->  	LOAD_HANDLER(r12, system_call_entry) ;			\
->  	mtctr	r12 ;						\
->  	mfspr	r12,SPRN_SRR1 ;					\
-> -	/* Re-use of r13... No spare regs to do this */	\
-> -	li	r13,MSR_RI ;					\
-> -	mtmsrd 	r13,1 ;						\
-> -	GET_PACA(r13) ;	/* get r13 back */			\
-> +	li	r10,MSR_RI ;					\
-> +	mtmsrd 	r10,1 ;						\
->  	bctr ;
+This looks good in principle.
+
+My worry is that these code paths have lots of assumptions about what's
+left in registers, so we may have a path somewhere which expects rX to
+contain PACAKMSR. Hence the review below ...
+
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 6b8bc0d..585b9ca 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -139,7 +139,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>  #ifdef CONFIG_PPC_BOOK3E
+>  	wrteei	1
 >  #else
->  	/* We can branch directly */
-> 
+> -	ld	r11,PACAKMSR(r13)
+> +	li	r11,MSR_RI
+>  	ori	r11,r11,MSR_EE
+>  	mtmsrd	r11,1
+>  #endif /* CONFIG_PPC_BOOK3E */
 
-The patch makes sense
+	/* We do need to set SOFTE in the stack frame or the return
+	 * from interrupt will be painful
+	 */
+	li	r10,1
+	std	r10,SOFTE(r1)
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+	CURRENT_THREAD_INFO(r11, r1)
+
+So that's one OK. r11 isn't used again until its clobbered here.
+
+
+> @@ -195,7 +195,6 @@ system_call:			/* label this so stack traces look sane */
+
+#ifdef CONFIG_PPC_BOOK3S
+	/* No MSR:RI on BookE */
+	andi.	r10,r8,MSR_RI
+	beq-	unrecov_restore
+#endif
+
+So at this point r10 == MSR_RI, otherwise we would have taken the branch.
+
+	/*
+	 * Disable interrupts so current_thread_info()->flags can't change,
+	 * and so that we don't get interrupted after loading SRR0/1.
+	 */
+>  #ifdef CONFIG_PPC_BOOK3E
+>  	wrteei	0
+>  #else
+> -	ld	r10,PACAKMSR(r13)
+>  	/*
+>  	 * For performance reasons we clear RI the same time that we
+>  	 * clear EE. We only need to clear RI just before we restore r13
+>	 * below, but batching it with EE saves us one expensive mtmsrd call.
+>  	 * We have to be careful to restore RI if we branch anywhere from
+>  	 * here (eg syscall_exit_work).
+>  	 */
+> -	li	r9,MSR_RI
+> -	andc	r11,r10,r9
+> +	li	r11,0
+>  	mtmsrd	r11,1
+>  #endif /* CONFIG_PPC_BOOK3E */
+
+	ld	r9,TI_FLAGS(r12)
+	li	r11,-MAX_ERRNO
+	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+	bne-	syscall_exit_work
+
+Which is:
+
+syscall_exit_work:
+#ifdef CONFIG_PPC_BOOK3S
+	mtmsrd	r10,1		/* Restore RI */
+#endif
+
+So that appears to still work. But it's super fragile.
+
+What I'd like to do is drop that optimisation of clearing RI early with
+EE. That would avoid us needing to restore RI in syscall_exit_work and
+before restore_math (and reclearing it after).
+
+But I guess that will hurt performance too much :/
+
+cheers
