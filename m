@@ -1,18 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdYdh0q26zDsfh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 17:04:08 +1000 (AEST)
-In-Reply-To: <1473748807-9604-1-git-send-email-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdZX24TvYzDsfh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 17:44:18 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id n24so570961pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 00:44:18 -0700 (PDT)
+Subject: Re: [2/2] Detect instruction fetch denied and report
+To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
+ paulus@samba.org
+References: <3sdY0t2gfYz9svs@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [v2] Fix __tlbiel in hash_native_64
-Message-Id: <3sdYdg6rwYz9sdn@ozlabs.org>
-Date: Tue, 20 Sep 2016 17:04:07 +1000 (AEST)
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <104b6975-6615-e723-e46a-36e98dc46db2@gmail.com>
+Date: Tue, 20 Sep 2016 17:44:12 +1000
+MIME-Version: 1.0
+In-Reply-To: <3sdY0t2gfYz9svs@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-13-09 at 06:40:07 UTC, Balbir Singh wrote:
-> __tlbie and __tlbiel are out of sync. __tlbie does the right thing
-> it calls tlbie with "tlbie rb, L" if CPU_FTR_ARCH_206 (cpu feature) is clear
-> and with "tlbie rb" otherwise. During the cleanup of __tlbiel I noticed
-> that __tlbiel was setting bit 11 PPC_BIT(21) independent of the ISA
-> version for non-4k (L) pages. This patch fixes that issue. It also changes
-> the current PPC_TLBIEL to PPC_TLBIEL_5 and introduces a new PPC_TLBIEL similar
-> to PPC_TLBIE.
 
-This should give more description of what the problem is, ie. we're setting a
-bit in the instruction which is reserved on some processors, before talking
-about the solution or what tlbie does.
- 
-> The arguments to PPC_TLBIE have also been changed/switched in order
-> to be consistent with the actual assembly usage for clearer reading
-> of code.
 
-The whole thing should be split in 3 patches:
+On 20/09/16 16:35, Michael Ellerman wrote:
+> On Mon, 2016-22-08 at 01:56:57 UTC, Balbir Singh wrote:
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index a4db22f..f162e77 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -404,6 +404,10 @@ good_area:
+>>  		    (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
+>>  		     !(vma->vm_flags & (VM_READ | VM_WRITE))))
+>>  			goto bad_area;
+>> +#ifdef CONFIG_PPC_RADIX_MMU
+> 
+> We shouldn't need the #ifdef, radix_enabled() will be false.
+> 
+>> +		if (radix_enabled() && regs->msr & PPC_BIT(35))
+>> +			goto bad_area;
+> 
+> Is it really architected as radix only?
+> 
+> Personally I dislike PPC_BIT(), I'd rather you just used 0x10000000. That way
+> when I'm staring at a register dump I have some chance of spotting that mask.
+> 
+> Also brackets around the bitwise & would make me feel more comfortable.
+> 
+> cheers
+> 
 
-One which fixes the buglet where we set L=1 on 2.06 and 2.07.
-One which renames PPC_TLBIEL() to PPC_TLBIEL_5().
-One which switches the order of the arguments to PPC_TLBIEL().
 
-Also do we even need a macro for the two argument form? We've had uses of the
-two argument tlbie since 2011, so I suspect the assembler will happily accept
-it?
+Will make the changes and submit
 
-cheers
+Balbir
