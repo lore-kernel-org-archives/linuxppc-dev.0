@@ -1,43 +1,46 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdbc33Lx6zDsff
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 18:32:51 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8K8RmH6016799
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 04:32:49 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25jpd2rsss-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdgJV5SzxzDsfj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 21:19:38 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8KBI5S5139687
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 07:19:36 -0400
+Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25jnp6tpbw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 04:32:48 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 07:19:35 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 20 Sep 2016 02:32:48 -0600
-Date: Tue, 20 Sep 2016 14:02:36 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Michael Neuling <mikey@neuling.org>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] powernv:idle:Implement lite variant of
- power_enter_stop
-Reply-To: ego@linux.vnet.ibm.com
-References: <cover.1474015799.git.ego@linux.vnet.ibm.com>
- <86d28da16d5bf66f111cc93eea3f000e41faff57.1474015799.git.ego@linux.vnet.ibm.com>
- <a7ad3c83-b6cd-0a20-5775-b7f41c5a6d23@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Tue, 20 Sep 2016 12:19:33 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id DA9CB17D8063
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 12:21:29 +0100 (BST)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8KBJV7T14549284
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 11:19:31 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8KAJX9Z009404
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 04:19:33 -0600
+Subject: Re: [PATCH][RFC] Implement arch primitives for busywait loops
+To: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org
+References: <20160916085736.7857-1-npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-s390 <linux-s390@vger.kernel.org>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Date: Tue, 20 Sep 2016 13:19:30 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <a7ad3c83-b6cd-0a20-5775-b7f41c5a6d23@gmail.com>
-Message-Id: <20160920083236.GA22328@in.ibm.com>
+In-Reply-To: <20160916085736.7857-1-npiggin@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <60adab94-f32e-2287-4821-81a88fa366d4@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,71 +50,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Balbir,
-
-On Tue, Sep 20, 2016 at 03:54:43PM +1000, Balbir Singh wrote:
-> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> > index 479c256..c3d3fed 100644
-> > --- a/arch/powerpc/platforms/powernv/idle.c
-> > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > @@ -244,8 +244,15 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
-> >  static void power9_idle(void)
-> >  {
-> >  	/* Requesting stop state 0 */
-> > -	power9_idle_stop(0);
-> > +	power9_idle_stop(0, 0);
-> >  }
-> > +
-> > +static void power9_idle_lite(void)
-> > +{
-> > +	/* Requesting stop state 0 with ESL=EC=0 */
-> > +	power9_idle_stop(0, 1);
-> > +}
-> > +
-> >  /*
-> >   * First deep stop state. Used to figure out when to save/restore
-> >   * hypervisor context.
-> > @@ -414,8 +421,12 @@ static int __init pnv_init_idle_states(void)
-> >  
-> >  	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
-> >  		ppc_md.power_save = power7_idle;
-> > -	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
-> > -		ppc_md.power_save = power9_idle;
-> > +	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST) {
-> > +		if (supported_cpuidle_states & OPAL_PM_WAKEUP_AT_NEXT_INST)
-> > +			ppc_md.power_save = power9_idle_lite;
-> > +		else
-> > +			ppc_md.power_save = power9_idle;
-> > +	}
+On 09/16/2016 10:57 AM, Nicholas Piggin wrote:
+> Implementing busy wait loops with cpu_relax() in callers poses
+> some difficulties for powerpc.
 > 
-> If I am reading this correctly we decide at boot time whether we support
-> wakeup at next instruction and make that the default sleep state.
-> I am a little surprised that these are exclusive. I was expecting
-> power9_idle_lite to be one of the states to go into before
-> power9_idle
-
-At boot time, we initialize ppc_md.power_save to
-power9_idle/power9_idle_lite which ends up being the default idle
-function in the absence of the cpuidle subsystem. When cpuidle is
-available, idle code will call cpuidle governors which will determine
-the appropriate idle state that can be entered into. Each of these
-idle states has an associated callback function. In case of the
-idle-states without OPAL_PM_STOP_INST_FAST associated with them, the
-callback is stop_loop() and when the flag is set, the callback
-function is stop_lite_loop().  So when cpuidle is present, these
-states are not exclusive.
-
-Note that both power9_idle() and power9_idle_lite() call stop0. Just
-that the former executes stop0 with ESL=EC=1 and latter with ESL=EC=0.
-
-That said, you're right that in the absence of the cpuidle governor,
-if the lite variant of stop is advertised by the firmware through the
-device-tree, we end up picking the liter version of stop0 as the
-default idle state. Do you suggest that we retain power9_idle which
-calls stop0 with ESL=EC=1 ? 
-
-> Balbir Singh.
+> First, we want to put our SMT thread into a low priority mode for the
+> duration of the loop, but then return to normal priority after exiting
+> the loop.  Dependong on the CPU design, 'HMT_low() ; HMT_medium();' as
+> cpu_relax() does may have HMT_medium take effect before HMT_low made
+> any (or much) difference.
 > 
---
-Thanks and Regards
-gautham.
+> Second, it can be beneficial for some implementations to spin on the
+> exit condition with a statically predicted-not-taken branch (i.e.,
+> always predict the loop will exit).
+> 
+> This is a quick RFC with a couple of users converted to see what
+> people think. I don't use a C branch with hints, because we don't want
+> the compiler moving the loop body out of line, which makes it a bit
+> messy unfortunately. If there's a better way to do it, I'm all ears.
+> 
+> I would not propose to switch all callers immediately, just some
+> core synchronisation primitives.
+Just a FYA,
+
+On s390 we have a private version of cpu_relax that yields the cpu
+time slice back to the hypervisor via a hypercall. As this turned out
+to be problematic in some cases there is also now a cpu_relax_lowlatency.
+
+Now, this seems still problematic as there are too many places still 
+using cpu_relax instead of cpu_relax_lowlatency. So my plan is to do 
+a change of that, make cpu_relax just be a barrier and add a new 
+cpu_relax_yield that gives up the time slice. (so that s390 cpu_relax
+is just like any other cpu_relax)
+
+As far as I can tell the only place where I want to change cpu_relax
+to cpu_relax_lowlatency after that change is the stop machine run 
+code, so I hope to have no conflicts with your changes.
+> 
+> ---
+>  arch/powerpc/include/asm/processor.h | 22 ++++++++++++++++++++++
+>  include/asm-generic/barrier.h        |  7 ++-----
+>  include/linux/bit_spinlock.h         |  5 ++---
+>  include/linux/cgroup.h               |  7 ++-----
+>  include/linux/seqlock.h              | 10 ++++------
+>  5 files changed, 32 insertions(+), 19 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+> index 68e3bf5..e10aee2 100644
+> --- a/arch/powerpc/include/asm/processor.h
+> +++ b/arch/powerpc/include/asm/processor.h
+> @@ -402,6 +402,28 @@ static inline unsigned long __pack_fe01(unsigned int fpmode)
+> 
+>  #ifdef CONFIG_PPC64
+>  #define cpu_relax()	do { HMT_low(); HMT_medium(); barrier(); } while (0)
+> +
+> +#define spin_do						\
+> +do {							\
+> +	HMT_low();					\
+> +	__asm__ __volatile__ (	"1010:");
+> +
+> +#define spin_while(cond)				\
+> +	barrier();					\
+> +	__asm__ __volatile__ (	"cmpdi	%0,0	\n\t"	\
+> +				"beq-	1010b	\n\t"	\
+> +				: : "r" (cond));	\
+> +	HMT_medium();					\
+> +} while (0)
+> +
+> +#define spin_until(cond)				\
+> +	barrier();					\
+> +	__asm__ __volatile__ (	"cmpdi	%0,0	\n\t"	\
+> +				"bne-	1010b	\n\t"	\
+> +				: : "r" (cond));	\
+> +	HMT_medium();					\
+> +} while (0)
+> +
+>  #else
+>  #define cpu_relax()	barrier()
+>  #endif
+> diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
+> index fe297b5..4c53b3a 100644
+> --- a/include/asm-generic/barrier.h
+> +++ b/include/asm-generic/barrier.h
+> @@ -235,12 +235,9 @@ do {									\
+>  #define smp_cond_load_acquire(ptr, cond_expr) ({		\
+>  	typeof(ptr) __PTR = (ptr);				\
+>  	typeof(*ptr) VAL;					\
+> -	for (;;) {						\
+> +	spin_do {						\
+>  		VAL = READ_ONCE(*__PTR);			\
+> -		if (cond_expr)					\
+> -			break;					\
+> -		cpu_relax();					\
+> -	}							\
+> +	} spin_until (cond_expr);				\
+>  	smp_acquire__after_ctrl_dep();				\
+>  	VAL;							\
+>  })
+> diff --git a/include/linux/bit_spinlock.h b/include/linux/bit_spinlock.h
+> index 3b5bafc..695743c 100644
+> --- a/include/linux/bit_spinlock.h
+> +++ b/include/linux/bit_spinlock.h
+> @@ -25,9 +25,8 @@ static inline void bit_spin_lock(int bitnum, unsigned long *addr)
+>  #if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
+>  	while (unlikely(test_and_set_bit_lock(bitnum, addr))) {
+>  		preempt_enable();
+> -		do {
+> -			cpu_relax();
+> -		} while (test_bit(bitnum, addr));
+> +		spin_do {
+> +		} spin_while (test_bit(bitnum, addr));
+>  		preempt_disable();
+>  	}
+>  #endif
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index 984f73b..e7d395f 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -450,12 +450,9 @@ task_get_css(struct task_struct *task, int subsys_id)
+>  	struct cgroup_subsys_state *css;
+> 
+>  	rcu_read_lock();
+> -	while (true) {
+> +	spin_do {
+>  		css = task_css(task, subsys_id);
+> -		if (likely(css_tryget_online(css)))
+> -			break;
+> -		cpu_relax();
+> -	}
+> +	} spin_until (likely(css_tryget_online(css)));
+>  	rcu_read_unlock();
+>  	return css;
+>  }
+> diff --git a/include/linux/seqlock.h b/include/linux/seqlock.h
+> index ead9765..93ed609 100644
+> --- a/include/linux/seqlock.h
+> +++ b/include/linux/seqlock.h
+> @@ -108,12 +108,10 @@ static inline unsigned __read_seqcount_begin(const seqcount_t *s)
+>  {
+>  	unsigned ret;
+> 
+> -repeat:
+> -	ret = READ_ONCE(s->sequence);
+> -	if (unlikely(ret & 1)) {
+> -		cpu_relax();
+> -		goto repeat;
+> -	}
+> +	spin_do {
+> +		ret = READ_ONCE(s->sequence);
+> +	} spin_while (unlikely(ret & 1));
+> +
+>  	return ret;
+>  }
+> 
