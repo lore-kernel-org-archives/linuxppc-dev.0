@@ -1,16 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sdjhk3YwCzDsfj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 23:07:18 +1000 (AEST)
-In-Reply-To: <20160915090446.898-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sdjhl3L0KzDsfj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 23:07:19 +1000 (AEST)
+In-Reply-To: <5667FBD5.2050206@linux.vnet.ibm.com>
+To: xinhui <xinhui.pan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: exception optimise MSR handling
-Message-Id: <3sdjhk2jgmz9sC7@ozlabs.org>
-Date: Tue, 20 Sep 2016 23:07:18 +1000 (AEST)
+Cc: Andrzej Hajda <a.hajda@samsung.com>,
+ Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>
+Subject: Re: powerpc/nvram: Fix a memory leak in err path
+Message-Id: <3sdjhl1yhFz9sQw@ozlabs.org>
+Date: Tue, 20 Sep 2016 23:07:19 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-15-09 at 09:04:46 UTC, Nicholas Piggin wrote:
-> mtmsrd with L=1 only affects MSR_EE and MSR_RI bits, and we always
-> know what state those bits are, so the kernel MSR does not need to be
-> loaded when modifying them.
+On Wed, 2015-09-12 at 10:00:53 UTC, xinhui wrote:
+> If kmemdup fails, We need kfree *buff* first then return -ENOMEM.
+> Otherwise there is a memory leak.
 > 
-> mtmsrd is often in the critical execution path, so avoiding dependency
-> on even L1 load is noticable. On a POWER8 this saves about 3 cycles
-> from the syscall path, and possibly a few from other exception returns
-> (not measured).
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/49d09bf2a66f4b5a6eabefb0d4
+https://git.kernel.org/powerpc/c/0d0fecc5b5bfddb0e67bef985c
 
 cheers
