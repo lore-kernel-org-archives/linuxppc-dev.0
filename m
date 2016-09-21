@@ -1,19 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfK5v5vC4zDsTQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 22:42:43 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 6/6] powerpc/boot: Add support for XZ compression
-In-Reply-To: <1474345764-28038-7-git-send-email-oohall@gmail.com>
-References: <1474345764-28038-1-git-send-email-oohall@gmail.com>
- <1474345764-28038-7-git-send-email-oohall@gmail.com>
-Date: Wed, 21 Sep 2016 22:42:42 +1000
-Message-ID: <87k2e58lvh.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfKdk3djczDsgf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 23:06:50 +1000 (AEST)
+From: Thomas Huth <thuth@redhat.com>
+To: Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org
+Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Alexander Graf <agraf@suse.com>,
+ stable@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3s PR: Allow access to unprivileged MMCR2
+ register
+Date: Wed, 21 Sep 2016 15:06:45 +0200
+Message-Id: <1474463205-5965-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,12 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
-> This patch adds an option to use XZ compression for the kernel image.
-> Currently this is only enabled for PPC64 targets since the bulk of the
-> 32bit platforms produce uboot images which do not use the wrapper.
+The MMCR2 register is available twice, one time with number 785
+(privileged access), and one time with number 769 (unprivileged,
+but it can be disabled completely). In former times, the Linux
+kernel was using the unprivileged register 769 only, but since
+commit 8dd75ccb571f3c92c ("powerpc: Use privileged SPR number
+for MMCR2"), it uses the privileged register 785 instead.
+The KVM-PR code then of course also switched to use the SPR 785,
+but this is causing older guest kernels to crash, since these
+kernels still access 769 instead. So to support older kernels
+with KVM-PR again, we have to support register 769 in KVM-PR, too.
 
-For the benefit of the list, this is failing to boot on some machines.
-Oliver is debugging it for me :)
+Fixes: 8dd75ccb571f3c92c48014b3dabd3d51a115ab41
+Cc: stable@vger.kernel.org # v3.10+
+Signed-off-by: Thomas Huth <thuth@redhat.com>
+---
+ arch/powerpc/include/asm/reg.h    | 1 +
+ arch/powerpc/kvm/book3s_emulate.c | 2 ++
+ 2 files changed, 3 insertions(+)
 
-cheers
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index f69f40f..978dada 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -737,6 +737,7 @@
+ #define   MMCR0_FCHV	0x00000001UL /* freeze conditions in hypervisor mode */
+ #define SPRN_MMCR1	798
+ #define SPRN_MMCR2	785
++#define SPRN_UMMCR2	769
+ #define SPRN_MMCRA	0x312
+ #define   MMCRA_SDSYNC	0x80000000UL /* SDAR synced with SIAR */
+ #define   MMCRA_SDAR_DCACHE_MISS 0x40000000UL
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 2afdb9c..729f8fa 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -498,6 +498,7 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+ 	case SPRN_MMCR0:
+ 	case SPRN_MMCR1:
+ 	case SPRN_MMCR2:
++	case SPRN_UMMCR2:
+ #endif
+ 		break;
+ unprivileged:
+@@ -640,6 +641,7 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+ 	case SPRN_MMCR0:
+ 	case SPRN_MMCR1:
+ 	case SPRN_MMCR2:
++	case SPRN_UMMCR2:
+ 	case SPRN_TIR:
+ #endif
+ 		*spr_val = 0;
+-- 
+1.8.3.1
