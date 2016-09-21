@@ -1,49 +1,17 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfMq44QxWzDsgg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 00:45:04 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8LEigRx093546
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 10:45:02 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25k6cm4pyn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 10:45:01 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 21 Sep 2016 08:44:09 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Reza Arbab <arbab@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v2 3/3] mm: enable CONFIG_MOVABLE_NODE on powerpc
-In-Reply-To: <20160921140846.m6wp2ij5f2fx4cps@arbab-laptop>
-References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1473883618-14998-4-git-send-email-arbab@linux.vnet.ibm.com>
- <87h99cxv00.fsf@linux.vnet.ibm.com>
- <20160921054500.lrqktzjqjhuzewqg@arbab-laptop>
- <87oa3hwwxs.fsf@linux.vnet.ibm.com>
- <20160921140846.m6wp2ij5f2fx4cps@arbab-laptop>
-Date: Wed, 21 Sep 2016 20:13:37 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87h999wbxi.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfMwF3rkNzDsgg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 00:49:33 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/64: get rid of MIN_HUGEPTE_SHIFT
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20160921144928.4EB431A2455@localhost.localdomain>
+Date: Wed, 21 Sep 2016 16:49:27 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,69 +21,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reza Arbab <arbab@linux.vnet.ibm.com> writes:
+MIN_HUGEPTE_SHIFT hasn't been used since commit d1837cba5d5d5
+("powerpc/mm: Cleanup initialization of hugepages on powerpc")
 
-> On Wed, Sep 21, 2016 at 12:39:51PM +0530, Aneesh Kumar K.V wrote:
->>What I was checking was how will one mark a node movable in ppc64 ? I
->>don't see ppc64 code doing the equivalent of memblock_mark_hotplug().
->
-> Post boot, the marking mechanism is not necessary. You can create a 
-> movable node by putting all of the node's memory into ZONE_MOVABLE 
-> during the hotplug.
->
->>So when you say "Onlining memory into ZONE_MOVABLE requires
->>CONFIG_MOVABLE_NODE" where is that restriction ?. IIUC,
->>should_add_memory_movable() will only return ZONE_MOVABLE only if it is
->>non empty and MOVABLE_NODE will create a ZONE_MOVABLE zone by default
->>only if it finds a memblock marked hotpluggable. So wondering if we
->>are not calling memblock_mark_hotplug() how is it working. Or am I
->>missing something ?
->
-> You are looking at the addition step of hotplug. You're correct there, 
-> the memory is added to the default zone, not ZONE_MOVABLE. The 
-> transition to ZONE_MOVABLE takes place during the onlining step. In 
-> online_pages():
->
-> 	zone = move_pfn_range(zone_shift, pfn, pfn + nr_pages);
->
-> The reason we need CONFIG_MOVABLE_NODE is right before that:
->
-> 	if ((zone_idx(zone) > ZONE_NORMAL ||
-> 	    online_type == MMOP_ONLINE_MOVABLE) &&
-> 	    !can_online_high_movable(zone))
-> 		return -EINVAL;
->
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/book3s/64/hash-4k.h     | 3 ---
+ arch/powerpc/include/asm/book3s/64/hash-64k.h    | 3 ---
+ arch/powerpc/include/asm/nohash/64/pgtable-4k.h  | 3 ---
+ arch/powerpc/include/asm/nohash/64/pgtable-64k.h | 3 ---
+ 4 files changed, 12 deletions(-)
 
-So we are looking at two step online process here. The above explained
-the details nicely. Can you capture these details in the commit message. ie,
-to say that when using 'echo online-movable > state' we allow the move from
-normal to movable only if movable node is set. Also you may want to
-mention that we still don't support the auto-online to movable.
-
-
-> where can_online_high_movable() is defined like this:
->
-> 	#ifdef CONFIG_MOVABLE_NODE
-> 	/*
-> 	 * When CONFIG_MOVABLE_NODE, we permit onlining of a node which doesn't have
-> 	 * normal memory.
-> 	 */
-> 	static bool can_online_high_movable(struct zone *zone)
-> 	{
-> 		return true;
-> 	}
-> 	#else /* CONFIG_MOVABLE_NODE */
-> 	/* ensure every online node has NORMAL memory */
-> 	static bool can_online_high_movable(struct zone *zone)
-> 	{
-> 		return node_state(zone_to_nid(zone), N_NORMAL_MEMORY);
-> 	}
-> 	#endif /* CONFIG_MOVABLE_NODE */
->
-> To be more clear, I can change the commit log to say "Onlining all of a 
-> node's memory into ZONE_MOVABLE requires CONFIG_MOVABLE_NODE".
->
-> -- 
-> Reza Arbab
-
--aneesh
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 1af837c..1c64bc6 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -16,9 +16,6 @@
+ #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
+ #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
+ 
+-/* With 4k base page size, hugepage PTEs go at the PMD level */
+-#define MIN_HUGEPTE_SHIFT	PMD_SHIFT
+-
+ /* PTE flags to conserve for HPTE identification */
+ #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
+ 			 H_PAGE_F_SECOND | H_PAGE_F_GIX)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 5aae4f5..f3dd21e 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -6,9 +6,6 @@
+ #define H_PUD_INDEX_SIZE  5
+ #define H_PGD_INDEX_SIZE  12
+ 
+-/* With 4k base page size, hugepage PTEs go at the PMD level */
+-#define MIN_HUGEPTE_SHIFT	PAGE_SHIFT
+-
+ #define H_PAGE_COMBO	0x00001000 /* this is a combo 4k page */
+ #define H_PAGE_4K_PFN	0x00002000 /* PFN is for a single 4k page */
+ /*
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable-4k.h b/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
+index fc7d517..d0db987 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
+@@ -27,9 +27,6 @@
+ #define PMD_SIZE	(1UL << PMD_SHIFT)
+ #define PMD_MASK	(~(PMD_SIZE-1))
+ 
+-/* With 4k base page size, hugepage PTEs go at the PMD level */
+-#define MIN_HUGEPTE_SHIFT	PMD_SHIFT
+-
+ /* PUD_SHIFT determines what a third-level page table entry can map */
+ #define PUD_SHIFT	(PMD_SHIFT + PMD_INDEX_SIZE)
+ #define PUD_SIZE	(1UL << PUD_SHIFT)
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
+index 9083245..55b28ef 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
+@@ -31,9 +31,6 @@
+ #define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
+ #define PTRS_PER_PGD	(1 << PGD_INDEX_SIZE)
+ 
+-/* With 4k base page size, hugepage PTEs go at the PMD level */
+-#define MIN_HUGEPTE_SHIFT	PAGE_SHIFT
+-
+ /* PMD_SHIFT determines what a second-level page table entry can map */
+ #define PMD_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
+ #define PMD_SIZE	(1UL << PMD_SHIFT)
+-- 
+2.1.0
