@@ -1,17 +1,45 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfMwF3rkNzDsgg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 00:49:33 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/64: get rid of MIN_HUGEPTE_SHIFT
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20160921144928.4EB431A2455@localhost.localdomain>
-Date: Wed, 21 Sep 2016 16:49:27 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfPGF2TfJzDsgj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 01:50:12 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8LFmosK071675
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 11:50:10 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25khh97pg6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 11:50:09 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Thu, 22 Sep 2016 01:50:06 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8F0712BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 01:50:04 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8LFo40T63373538
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 01:50:04 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8LFo3mQ005984
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 01:50:04 +1000
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, acme@kernel.org, kim.phillips@arm.com
+Cc: linuxppc-dev@lists.ozlabs.org, peterz@infradead.org, mingo@redhat.com,
+ alexander.shishkin@linux.intel.com, treeze.taeung@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, markus@trippelsdorf.de,
+ namhyung@kernel.org, pawel.moll@arm.com, chris.ryder@arm.com,
+ jolsa@kernel.org, mhiramat@kernel.org,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: [PATCH v7 0/6] perf annotate: Cross arch support + few fixes
+Date: Wed, 21 Sep 2016 21:17:50 +0530
+Message-Id: <1474472876-2706-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,72 +49,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MIN_HUGEPTE_SHIFT hasn't been used since commit d1837cba5d5d5
-("powerpc/mm: Cleanup initialization of hugepages on powerpc")
+Currently Perf annotate support code navigation (branches and calls)
+only when run on the same architecture where perf.data was recorded.
+But, for example, record on powerpc server and annotate on client's
+x86 desktop is not supported.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/book3s/64/hash-4k.h     | 3 ---
- arch/powerpc/include/asm/book3s/64/hash-64k.h    | 3 ---
- arch/powerpc/include/asm/nohash/64/pgtable-4k.h  | 3 ---
- arch/powerpc/include/asm/nohash/64/pgtable-64k.h | 3 ---
- 4 files changed, 12 deletions(-)
+This patchset adds supports for that.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 1af837c..1c64bc6 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -16,9 +16,6 @@
- #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
- #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
- 
--/* With 4k base page size, hugepage PTEs go at the PMD level */
--#define MIN_HUGEPTE_SHIFT	PMD_SHIFT
--
- /* PTE flags to conserve for HPTE identification */
- #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
- 			 H_PAGE_F_SECOND | H_PAGE_F_GIX)
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index 5aae4f5..f3dd21e 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -6,9 +6,6 @@
- #define H_PUD_INDEX_SIZE  5
- #define H_PGD_INDEX_SIZE  12
- 
--/* With 4k base page size, hugepage PTEs go at the PMD level */
--#define MIN_HUGEPTE_SHIFT	PAGE_SHIFT
--
- #define H_PAGE_COMBO	0x00001000 /* this is a combo 4k page */
- #define H_PAGE_4K_PFN	0x00002000 /* PFN is for a single 4k page */
- /*
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable-4k.h b/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
-index fc7d517..d0db987 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
-@@ -27,9 +27,6 @@
- #define PMD_SIZE	(1UL << PMD_SHIFT)
- #define PMD_MASK	(~(PMD_SIZE-1))
- 
--/* With 4k base page size, hugepage PTEs go at the PMD level */
--#define MIN_HUGEPTE_SHIFT	PMD_SHIFT
--
- /* PUD_SHIFT determines what a third-level page table entry can map */
- #define PUD_SHIFT	(PMD_SHIFT + PMD_INDEX_SIZE)
- #define PUD_SIZE	(1UL << PUD_SHIFT)
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
-index 9083245..55b28ef 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
-@@ -31,9 +31,6 @@
- #define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
- #define PTRS_PER_PGD	(1 << PGD_INDEX_SIZE)
- 
--/* With 4k base page size, hugepage PTEs go at the PMD level */
--#define MIN_HUGEPTE_SHIFT	PAGE_SHIFT
--
- /* PMD_SHIFT determines what a second-level page table entry can map */
- #define PMD_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
- #define PMD_SIZE	(1UL << PMD_SHIFT)
+Example:
+
+  Record on powerpc:
+  $ ./perf record -a
+
+  Report -> Annotate on x86:
+  $ ./perf report -i perf.data.powerpc --vmlinux vmlinux.powerpc
+
+Changes in v7:
+  - Using string for normalized arch names instread of macros.(i.e.
+    removed patch 1/7 of v6)
+  - In patch 1/6, make norm_arch as global var instead of passing them
+    to each parser.
+  - In patch 1/6 and 6/6, little bit change in initializing instruction
+    list.
+  - patch 4/7 of v6 is already accepted. Removed that in v7.
+  - Address other review comments.
+  - Added more examples in patch descriptions.
+
+v6 link:
+  https://lkml.org/lkml/2016/8/19/411
+
+Kim, I don't have arm test machine. Can you please help me to test
+this on arm.
+
+
+Kim Phillips (1):
+  perf annotate: cross arch annotate support fixes for ARM
+
+Naveen N. Rao (1):
+  perf annotate: Add support for powerpc
+
+Ravi Bangoria (4):
+  perf annotate: Add cross arch annotate support
+  perf annotate: Show raw form for jump instruction with indirect target
+  perf annotate: Support jump instruction with target as second operand
+  perf annotate: Fix jump target outside of function address range
+
+ tools/perf/builtin-top.c          |   2 +-
+ tools/perf/ui/browsers/annotate.c |   8 +-
+ tools/perf/ui/gtk/annotate.c      |   2 +-
+ tools/perf/util/annotate.c        | 259 ++++++++++++++++++++++++++++++++------
+ tools/perf/util/annotate.h        |   8 +-
+ 5 files changed, 232 insertions(+), 47 deletions(-)
+
 -- 
-2.1.0
+2.5.5
