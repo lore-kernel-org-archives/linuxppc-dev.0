@@ -1,18 +1,34 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peda@axentia.se>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00104.outbound.protection.outlook.com [40.107.0.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfKdk3djczDsgf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 23:06:50 +1000 (AEST)
-From: Thomas Huth <thuth@redhat.com>
-To: Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org
-Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>, Alexander Graf <agraf@suse.com>,
- stable@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Book3s PR: Allow access to unprivileged MMCR2
- register
-Date: Wed, 21 Sep 2016 15:06:45 +0200
-Message-Id: <1474463205-5965-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfCNz4L30zDt3l
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 18:25:22 +1000 (AEST)
+Subject: Re: [v12, 7/8] base: soc: introduce soc_device_match() interface
+To: Alexander Shiyan <shc_work@mail.ru>, Yangbo Lu <yangbo.lu@nxp.com>
+References: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
+ <1474441040-11946-8-git-send-email-yangbo.lu@nxp.com>
+ <1474444574.270880035@f136.i.mail.ru>
+CC: Mark Rutland <mark.rutland@arm.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
+ Minghuan Lian <minghuan.lian@nxp.com>, <linux-i2c@vger.kernel.org>,
+ <linux-clk@vger.kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>, Russell King
+ <linux@arm.linux.org.uk>, Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ Joerg Roedel <joro@8bytes.org>, Jochen Friedrich <jochen@scram.de>, Claudiu
+ Manoil <claudiu.manoil@freescale.com>, <devicetree@vger.kernel.org>, Kumar
+ Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Santosh
+ Shilimkar <ssantosh@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, <iommu@lists.linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-mmc@vger.kernel.org>,
+ <ulf.hansson@linaro.org>, Scott Wood <oss@buserror.net>, Arnd Bergmann
+ <arnd@arndb.de>
+From: Peter Rosin <peda@axentia.se>
+Message-ID: <aa53da4f-205d-cfa1-c85c-00e82e928bbc@axentia.se>
+Date: Wed, 21 Sep 2016 10:25:08 +0200
+MIME-Version: 1.0
+In-Reply-To: <1474444574.270880035@f136.i.mail.ru>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MMCR2 register is available twice, one time with number 785
-(privileged access), and one time with number 769 (unprivileged,
-but it can be disabled completely). In former times, the Linux
-kernel was using the unprivileged register 769 only, but since
-commit 8dd75ccb571f3c92c ("powerpc: Use privileged SPR number
-for MMCR2"), it uses the privileged register 785 instead.
-The KVM-PR code then of course also switched to use the SPR 785,
-but this is causing older guest kernels to crash, since these
-kernels still access 769 instead. So to support older kernels
-with KVM-PR again, we have to support register 769 in KVM-PR, too.
+On 2016-09-21 09:56, Alexander Shiyan wrote:
+>> Среда, 21 сентября 2016, 9:57 +03:00 от Yangbo Lu <yangbo.lu@nxp.com>:
+>>
+>> From: Arnd Bergmann < arnd@arndb.de >
+>>
+>> We keep running into cases where device drivers want to know the exact
+>> version of the a SoC they are currently running on. In the past, this has
+>> usually been done through a vendor specific API that can be called by a
+>> driver, or by directly accessing some kind of version register that is
+>> not part of the device itself but that belongs to a global register area
+>> of the chip.
+> ...
+>> +const struct soc_device_attribute *soc_device_match(
+>> +const struct soc_device_attribute *matches)
+>> +{
+>> +int ret = 0;
+>> +
+>> +if (!matches)
+>> +return NULL;
+>> +
+>> +while (!ret) {
+>> +if (!(matches->machine || matches->family ||
+>> +      matches->revision || matches->soc_id))
+>> +break;
+>> +ret = bus_for_each_dev(&soc_bus_type, NULL, (void *)matches,
+>> +       soc_device_match_one);
+>> +if (!ret)
+>> +matches++;
+> 
+> So, what happen if next "matches" (after increment) will be NULL?
 
-Fixes: 8dd75ccb571f3c92c48014b3dabd3d51a115ab41
-Cc: stable@vger.kernel.org # v3.10+
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- arch/powerpc/include/asm/reg.h    | 1 +
- arch/powerpc/kvm/book3s_emulate.c | 2 ++
- 2 files changed, 3 insertions(+)
+A crash?
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index f69f40f..978dada 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -737,6 +737,7 @@
- #define   MMCR0_FCHV	0x00000001UL /* freeze conditions in hypervisor mode */
- #define SPRN_MMCR1	798
- #define SPRN_MMCR2	785
-+#define SPRN_UMMCR2	769
- #define SPRN_MMCRA	0x312
- #define   MMCRA_SDSYNC	0x80000000UL /* SDAR synced with SIAR */
- #define   MMCRA_SDAR_DCACHE_MISS 0x40000000UL
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 2afdb9c..729f8fa 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -498,6 +498,7 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
- 	case SPRN_MMCR0:
- 	case SPRN_MMCR1:
- 	case SPRN_MMCR2:
-+	case SPRN_UMMCR2:
- #endif
- 		break;
- unprivileged:
-@@ -640,6 +641,7 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
- 	case SPRN_MMCR0:
- 	case SPRN_MMCR1:
- 	case SPRN_MMCR2:
-+	case SPRN_UMMCR2:
- 	case SPRN_TIR:
- #endif
- 		*spr_val = 0;
--- 
-1.8.3.1
+> I think you should use while(matches) at the start of this procedure.
+
+*arrgh*
+
+*If* matches wrap, you indeed have *big* problems. *Elsewhere*
+
+Hint: Please read the review comments on the previous version of this
+series [1] before commenting further.
+
+Cheers,
+Peter
+
+[1] https://www.mail-archive.com/netdev@vger.kernel.org/msg126617.html
