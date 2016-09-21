@@ -1,20 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00072.outbound.protection.outlook.com [40.107.0.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sf0kM3JSJzDsfl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 10:24:43 +1000 (AEST)
-Date: Wed, 21 Sep 2016 10:24:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Michal
- Marek <mmarek@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Al Viro
- <viro@zeniv.linux.org.uk>, Nicholas Piggin <npiggin@gmail.com>
-Subject: linux-next: manual merge of the powerpc tree with the kbuild tree
-Message-ID: <20160921102442.1061af69@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sf1pZ1NW7zDsfl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 11:13:25 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Leo Li <pku.leo@gmail.com>
+CC: Scott Wood <oss@buserror.net>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, "X.B.
+ Xie" <xiaobo.xie@nxp.com>
+Subject: RE: [PATCH v5 2/2] QE: remove PPCisms for QE
+Date: Wed, 21 Sep 2016 01:13:19 +0000
+Message-ID: <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
+ <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
+ <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
+In-Reply-To: <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
-
-Today's linux-next merge of the powerpc tree got conflicts in:
-
-  arch/powerpc/kernel/misc_32.S
-  arch/powerpc/kernel/misc_64.S
-
-between commit:
-
-  9445aa1a3062 ("ppc: move exports to definitions")
-
-from the kbuild tree and commit:
-
-  6f698df10cb2 ("powerpc/kernel: Use kprobe blacklist for asm functions")
-
-from the powerpc tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
--- 
-Cheers,
-Stephen Rothwell
-
-diff --cc arch/powerpc/kernel/misc_32.S
-index f5156105c5f3,03756ffdcd71..000000000000
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@@ -360,7 -358,8 +360,9 @@@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_
-  	sync				/* additional sync needed on g4 */
-  	isync
-  	blr
-+ _ASM_NOKPROBE_SYMBOL(flush_icache_range)
- +EXPORT_SYMBOL(flush_icache_range)
-+ 
-  /*
-   * Flush a particular page from the data cache to RAM.
-   * Note: this is necessary because the instruction cache does *not*
-diff --cc arch/powerpc/kernel/misc_64.S
-index 8b526846e72a,5d7e583f1588..000000000000
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@@ -110,8 -109,8 +110,9 @@@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_
-  	bdnz	2b
-  	isync
-  	blr
-- 	.previous .text
-+ _ASM_NOKPROBE_SYMBOL(flush_icache_range)
- +EXPORT_SYMBOL(flush_icache_range)
-+ 
-  /*
-   * Like above, but only do the D-cache.
-   *
+T24gTW9uLCBTZXAgMjAsIDIwMTYgYXQgNDoxMyBBTSwgTGVvIExpIHdyb3RlOg0KPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMZW8gTGkgW21haWx0bzpwa3UubGVvQGdtYWls
+LmNvbV0NCj4gU2VudDogVHVlc2RheSwgU2VwdGVtYmVyIDIwLCAyMDE2IDQ6MTMgQU0NCj4gVG86
+IFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gQ2M6IFNjb3R0IFdvb2QgPG9zc0Bi
+dXNlcnJvci5uZXQ+OyBsaW51eHBwYy1kZXYgPGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJz
+Lm9yZz47IGxrbWwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBYLkIuIFhpZQ0KPiA8
+eGlhb2JvLnhpZUBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY1IDIvMl0gUUU6IHJl
+bW92ZSBQUENpc21zIGZvciBRRQ0KPiANCj4gT24gTW9uLCBKdWwgMjUsIDIwMTYgYXQgMTI6NDMg
+QU0sIFpoYW8gUWlhbmcgPHFpYW5nLnpoYW9AbnhwLmNvbT4gd3JvdGU6DQo+ID4gUUUgd2FzIHN1
+cHBvcnRlZCBvbiBQb3dlclBDLCBhbmQgZGVwZW5kZW50IG9uIFBQQywgTm93IGl0IGlzIHN1cHBv
+cnRlZA0KPiA+IG9uIG90aGVyIHBsYXRmb3Jtcy4gc28gcmVtb3ZlIFBQQ2lzbXMuDQo+ID4NCj4g
+PiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQG54cC5jb20+DQo+ID4gLS0t
+DQo+ID4gQ2hhbmdlcyBmb3IgdjI6DQo+ID4gICAgICAgICAtIG5hDQo+ID4gQ2hhbmdlcyBmb3Ig
+djM6DQo+ID4gICAgICAgICAtIGFkZCBOT19JUlENCj4gPiBDaGFuZ2VzIGZvciB2NDoNCj4gPiAg
+ICAgICAgIC0gbW9kaWZ5IHNwaW5fZXZlbnRfdGltZW91dCB0byBvcGVuY29kZWQgdGltZW91dCBs
+b29wDQo+ID4gICAgICAgICAtIHJlbW92ZSBOT19JUlENCj4gPiAgICAgICAgIC0gbW9kaWZ5IHZp
+cnFfdG9faHcgdG8gb3BlbmNvZWQgY29kZSBDaGFuZ2VzIGZvciB2NToNCj4gPiAgICAgICAgIC0g
+bW9kaWZ5IGNvbW1pdCBtc2cNCj4gPiAgICAgICAgIC0gbW9kaWZ5IGRlcGVuZHMgb2YgUVVJQ0Nf
+RU5HSU5FDQo+ID4gICAgICAgICAtIGFkZCBrZXJuZWxkb2MgaGVhZGVyIGZvciBxZV9pc3N1ZV9j
+bWQNCj4gPg0KPiA+ICBkcml2ZXJzL2lycWNoaXAvcWVfaWMuYyAgICAgICB8IDI4ICsrKysrKysr
+Ky0tLS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZyAgICB8ICAyICstDQo+ID4g
+IGRyaXZlcnMvc29jL2ZzbC9xZS9xZS5jICAgICAgIHwgODAgKysrKysrKysrKysrKysrKysrKysr
+KysrKystLS0tLS0tLS0tLS0tLQ0KPiAtLS0NCj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL3FlX2lv
+LmMgICAgfCA0MiArKysrKysrKysrLS0tLS0tLS0tLS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wv
+cWUvcWVfdGRtLmMgICB8ICA4ICsrLS0tDQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2MuYyAg
+ICAgIHwgMTAgKysrLS0tDQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2NfZmFzdC5jIHwgNjgg
+KysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gIGluY2x1ZGUvc29jL2Zz
+bC9xZS9xZS5oICAgICAgIHwgIDEgLQ0KPiA+ICBpbmNsdWRlL3NvYy9mc2wvcWUvcWVfaWMuaCAg
+ICB8IDEyICsrKy0tLS0NCj4gPiAgOSBmaWxlcyBjaGFuZ2VkLCAxMzMgaW5zZXJ0aW9ucygrKSwg
+MTE4IGRlbGV0aW9ucygtKQ0KPiA+DQo+IA0KPiBbc25pcF0NCj4gDQo+ID4gZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvc29jL2ZzbC9xZS9LY29uZmlnIGIvZHJpdmVycy9zb2MvZnNsL3FlL0tjb25maWcN
+Cj4gPiBpbmRleCA3M2EyZTA4Li5iMjZiNjQzIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvc29j
+L2ZzbC9xZS9LY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL3FlL0tjb25maWcNCj4g
+PiBAQCAtNCw3ICs0LDcgQEANCj4gPg0KPiA+ICBjb25maWcgUVVJQ0NfRU5HSU5FDQo+ID4gICAg
+ICAgICBib29sICJGcmVlc2NhbGUgUVVJQ0MgRW5naW5lIChRRSkgU3VwcG9ydCINCj4gPiAtICAg
+ICAgIGRlcGVuZHMgb24gRlNMX1NPQyAmJiBQUEMzMg0KPiA+ICsgICAgICAgZGVwZW5kcyBvbiBP
+RiAmJiBIQVNfSU9NRU0NCj4gPiAgICAgICAgIHNlbGVjdCBHRU5FUklDX0FMTE9DQVRPUg0KPiA+
+ICAgICAgICAgc2VsZWN0IENSQzMyDQo+ID4gICAgICAgICBoZWxwDQo+IA0KPiBZb3UgbWFrZSBp
+dCBwb3NzaWJsZSB0byBidWlsZCBRRSBkcml2ZXJzIG9uIEFSTSwgYnV0IHRoZSBVQ0NfR0VUSCBm
+YWlscyB0bw0KPiBidWlsZCBvbiBhcm02NC4gIFBsZWFzZSBtYWtlIHN1cmUgYWxsIHRoZXNlIGRy
+aXZlcnMgY2FuIGJ1aWxkIG9uIG90aGVyDQo+IGFyY2hpdGVjdHVyZXMuICBPciB5b3UgY2FuIHNp
+bXBseSBtYWtlIHRoZW0gb25seSBidWlsZCBmb3IgUG93ZXIgYXJjaGl0ZWN0dXJlDQo+IGFzIG1v
+c3Qgb2YgdGhlbSBhcmUgbm90IGF2YWlsYWJsZSBvbiBBUk0uDQo+IA0KDQpNb3N0IG9mIHRoZW0g
+YXJlIG5vdCBhdmFpbGFibGUgb24gQVJNIGFuZCBBUk02NC4NCk5vdywgb25seSBxZS1oZGxjIGlz
+IGF2YWlsYWJsZSBvbiBBUk02NC4NCg0KQlINCi1aaGFvIFFpYW5nDQo=
