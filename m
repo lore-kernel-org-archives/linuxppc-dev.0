@@ -1,24 +1,19 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00072.outbound.protection.outlook.com [40.107.0.72])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sf1pZ1NW7zDsfl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 11:13:25 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Leo Li <pku.leo@gmail.com>
-CC: Scott Wood <oss@buserror.net>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, "X.B.
- Xie" <xiaobo.xie@nxp.com>
-Subject: RE: [PATCH v5 2/2] QE: remove PPCisms for QE
-Date: Wed, 21 Sep 2016 01:13:19 +0000
-Message-ID: <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
- <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
- <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
-In-Reply-To: <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sf5R51Cm7zDsgf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 13:56:49 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id n24so1771789pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2016 20:56:49 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc/64: abstract EE/RI handling between E/S cases
+Date: Wed, 21 Sep 2016 13:54:08 +1000
+Message-Id: <20160921035408.6232-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,48 +23,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gTW9uLCBTZXAgMjAsIDIwMTYgYXQgNDoxMyBBTSwgTGVvIExpIHdyb3RlOg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMZW8gTGkgW21haWx0bzpwa3UubGVvQGdtYWls
-LmNvbV0NCj4gU2VudDogVHVlc2RheSwgU2VwdGVtYmVyIDIwLCAyMDE2IDQ6MTMgQU0NCj4gVG86
-IFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gQ2M6IFNjb3R0IFdvb2QgPG9zc0Bi
-dXNlcnJvci5uZXQ+OyBsaW51eHBwYy1kZXYgPGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJz
-Lm9yZz47IGxrbWwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBYLkIuIFhpZQ0KPiA8
-eGlhb2JvLnhpZUBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY1IDIvMl0gUUU6IHJl
-bW92ZSBQUENpc21zIGZvciBRRQ0KPiANCj4gT24gTW9uLCBKdWwgMjUsIDIwMTYgYXQgMTI6NDMg
-QU0sIFpoYW8gUWlhbmcgPHFpYW5nLnpoYW9AbnhwLmNvbT4gd3JvdGU6DQo+ID4gUUUgd2FzIHN1
-cHBvcnRlZCBvbiBQb3dlclBDLCBhbmQgZGVwZW5kZW50IG9uIFBQQywgTm93IGl0IGlzIHN1cHBv
-cnRlZA0KPiA+IG9uIG90aGVyIHBsYXRmb3Jtcy4gc28gcmVtb3ZlIFBQQ2lzbXMuDQo+ID4NCj4g
-PiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQG54cC5jb20+DQo+ID4gLS0t
-DQo+ID4gQ2hhbmdlcyBmb3IgdjI6DQo+ID4gICAgICAgICAtIG5hDQo+ID4gQ2hhbmdlcyBmb3Ig
-djM6DQo+ID4gICAgICAgICAtIGFkZCBOT19JUlENCj4gPiBDaGFuZ2VzIGZvciB2NDoNCj4gPiAg
-ICAgICAgIC0gbW9kaWZ5IHNwaW5fZXZlbnRfdGltZW91dCB0byBvcGVuY29kZWQgdGltZW91dCBs
-b29wDQo+ID4gICAgICAgICAtIHJlbW92ZSBOT19JUlENCj4gPiAgICAgICAgIC0gbW9kaWZ5IHZp
-cnFfdG9faHcgdG8gb3BlbmNvZWQgY29kZSBDaGFuZ2VzIGZvciB2NToNCj4gPiAgICAgICAgIC0g
-bW9kaWZ5IGNvbW1pdCBtc2cNCj4gPiAgICAgICAgIC0gbW9kaWZ5IGRlcGVuZHMgb2YgUVVJQ0Nf
-RU5HSU5FDQo+ID4gICAgICAgICAtIGFkZCBrZXJuZWxkb2MgaGVhZGVyIGZvciBxZV9pc3N1ZV9j
-bWQNCj4gPg0KPiA+ICBkcml2ZXJzL2lycWNoaXAvcWVfaWMuYyAgICAgICB8IDI4ICsrKysrKysr
-Ky0tLS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZyAgICB8ICAyICstDQo+ID4g
-IGRyaXZlcnMvc29jL2ZzbC9xZS9xZS5jICAgICAgIHwgODAgKysrKysrKysrKysrKysrKysrKysr
-KysrKystLS0tLS0tLS0tLS0tLQ0KPiAtLS0NCj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL3FlX2lv
-LmMgICAgfCA0MiArKysrKysrKysrLS0tLS0tLS0tLS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wv
-cWUvcWVfdGRtLmMgICB8ICA4ICsrLS0tDQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2MuYyAg
-ICAgIHwgMTAgKysrLS0tDQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2NfZmFzdC5jIHwgNjgg
-KysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gIGluY2x1ZGUvc29jL2Zz
-bC9xZS9xZS5oICAgICAgIHwgIDEgLQ0KPiA+ICBpbmNsdWRlL3NvYy9mc2wvcWUvcWVfaWMuaCAg
-ICB8IDEyICsrKy0tLS0NCj4gPiAgOSBmaWxlcyBjaGFuZ2VkLCAxMzMgaW5zZXJ0aW9ucygrKSwg
-MTE4IGRlbGV0aW9ucygtKQ0KPiA+DQo+IA0KPiBbc25pcF0NCj4gDQo+ID4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvc29jL2ZzbC9xZS9LY29uZmlnIGIvZHJpdmVycy9zb2MvZnNsL3FlL0tjb25maWcN
-Cj4gPiBpbmRleCA3M2EyZTA4Li5iMjZiNjQzIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvc29j
-L2ZzbC9xZS9LY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL3FlL0tjb25maWcNCj4g
-PiBAQCAtNCw3ICs0LDcgQEANCj4gPg0KPiA+ICBjb25maWcgUVVJQ0NfRU5HSU5FDQo+ID4gICAg
-ICAgICBib29sICJGcmVlc2NhbGUgUVVJQ0MgRW5naW5lIChRRSkgU3VwcG9ydCINCj4gPiAtICAg
-ICAgIGRlcGVuZHMgb24gRlNMX1NPQyAmJiBQUEMzMg0KPiA+ICsgICAgICAgZGVwZW5kcyBvbiBP
-RiAmJiBIQVNfSU9NRU0NCj4gPiAgICAgICAgIHNlbGVjdCBHRU5FUklDX0FMTE9DQVRPUg0KPiA+
-ICAgICAgICAgc2VsZWN0IENSQzMyDQo+ID4gICAgICAgICBoZWxwDQo+IA0KPiBZb3UgbWFrZSBp
-dCBwb3NzaWJsZSB0byBidWlsZCBRRSBkcml2ZXJzIG9uIEFSTSwgYnV0IHRoZSBVQ0NfR0VUSCBm
-YWlscyB0bw0KPiBidWlsZCBvbiBhcm02NC4gIFBsZWFzZSBtYWtlIHN1cmUgYWxsIHRoZXNlIGRy
-aXZlcnMgY2FuIGJ1aWxkIG9uIG90aGVyDQo+IGFyY2hpdGVjdHVyZXMuICBPciB5b3UgY2FuIHNp
-bXBseSBtYWtlIHRoZW0gb25seSBidWlsZCBmb3IgUG93ZXIgYXJjaGl0ZWN0dXJlDQo+IGFzIG1v
-c3Qgb2YgdGhlbSBhcmUgbm90IGF2YWlsYWJsZSBvbiBBUk0uDQo+IA0KDQpNb3N0IG9mIHRoZW0g
-YXJlIG5vdCBhdmFpbGFibGUgb24gQVJNIGFuZCBBUk02NC4NCk5vdywgb25seSBxZS1oZGxjIGlz
-IGF2YWlsYWJsZSBvbiBBUk02NC4NCg0KQlINCi1aaGFvIFFpYW5nDQo=
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+
+This moves some of the ifdefs out of line and hopefully makes things
+slightly more readable. Should be no generated code changes.
+
+ arch/powerpc/kernel/entry_64.S | 111 +++++++++++++++++++++++------------------
+ 1 file changed, 62 insertions(+), 49 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 585b9ca..0a1e33b 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -40,6 +40,54 @@
+ #include <asm/ppc-opcode.h>
+ 
+ /*
++ * Interrrupt disabling abstraction between BOOK3E and BOOK3S.
++ * - SET/CLEAR_EE must only be used with RI set.
++ * - SET/CLEAR_RI must only be used with EE clear.
++ * - SET/CLEAR_EE_RI must only be used when both bits get modified.
++ */
++#ifdef CONFIG_PPC_BOOK3E
++
++/* BOOK3E does not have RI handling, so that gets compiled away. */
++#define SET_EE(reg)		wrteei	1
++#define CLEAR_EE(reg)		wrteei	0
++#define SET_RI(reg)
++#define CLEAR_RI(reg)
++#define SET_EE_RI(reg)		SET_EE(reg)
++#define CLEAR_EE_RI(reg		CLEAR_EE(reg)
++
++#else /* CONFIG_PPC_BOOK3E */
++
++/*
++ * BOOK3S mtmsrd L=1 only modifies EE and RI bits of MSR. A single ori
++ * instruction could be used to set both bits in the register without changing
++ * other bits (which do not affect mtmsrd L=1), however it's likely that
++ * instruction scheduling would consider this a dependency.
++ */
++#define SET_EE_RI(reg)		\
++	li	reg,MSR_RI;	\
++	ori	reg,reg,MSR_EE;	\
++	mtmsrd	reg,1
++
++#define CLEAR_EE_RI(reg)	\
++	li	reg,0;		\
++	mtmsrd	reg,1
++
++#define CLEAR_EE(reg)		\
++	li	reg,MSR_RI;	\
++	mtmsrd	reg,1
++
++#define SET_EE(reg)		SET_EE_RI(reg)
++
++#define CLEAR_RI(reg)		CLEAR_EE_RI(reg)
++
++#define SET_RI(reg)		\
++	li	reg,MSR_RI;	\
++	mtmsrd	reg,1
++
++#endif /* CONFIG_PPC_BOOK3E */
++
++
++/*
+  * System calls.
+  */
+ 	.section	".toc","aw"
+@@ -136,13 +184,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,BUGFLAG_WARNING
+ #endif
+ 
+-#ifdef CONFIG_PPC_BOOK3E
+-	wrteei	1
+-#else
+-	li	r11,MSR_RI
+-	ori	r11,r11,MSR_EE
+-	mtmsrd	r11,1
+-#endif /* CONFIG_PPC_BOOK3E */
++	SET_EE_RI(r11)
+ 
+ 	/* We do need to set SOFTE in the stack frame or the return
+ 	 * from interrupt will be painful
+@@ -191,20 +233,15 @@ system_call:			/* label this so stack traces look sane */
+ 	/*
+ 	 * Disable interrupts so current_thread_info()->flags can't change,
+ 	 * and so that we don't get interrupted after loading SRR0/1.
+-	 */
+-#ifdef CONFIG_PPC_BOOK3E
+-	wrteei	0
+-#else
+-	/*
++	 *
++	 * BOOK3S:
+ 	 * For performance reasons we clear RI the same time that we
+ 	 * clear EE. We only need to clear RI just before we restore r13
+ 	 * below, but batching it with EE saves us one expensive mtmsrd call.
+ 	 * We have to be careful to restore RI if we branch anywhere from
+ 	 * here (eg syscall_exit_work).
+ 	 */
+-	li	r11,0
+-	mtmsrd	r11,1
+-#endif /* CONFIG_PPC_BOOK3E */
++	CLEAR_EE_RI(r11)
+ 
+ 	ld	r9,TI_FLAGS(r12)
+ 	li	r11,-MAX_ERRNO
+@@ -218,15 +255,9 @@ system_call:			/* label this so stack traces look sane */
+ 	bne	3f
+ #endif
+ 2:	addi    r3,r1,STACK_FRAME_OVERHEAD
+-#ifdef CONFIG_PPC_BOOK3S
+-	li	r10,MSR_RI
+-	mtmsrd	r10,1		/* Restore RI */
+-#endif
++	SET_RI(r10) /* See above RI optimisation */
+ 	bl	restore_math
+-#ifdef CONFIG_PPC_BOOK3S
+-	li	r11,0
+-	mtmsrd	r11,1
+-#endif
++	CLEAR_RI(r11)
+ 	ld	r8,_MSR(r1)
+ 	ld	r3,RESULT(r1)
+ 	li	r11,-MAX_ERRNO
+@@ -304,13 +335,11 @@ syscall_enosys:
+ 	b	.Lsyscall_exit
+ 	
+ syscall_exit_work:
+-#ifdef CONFIG_PPC_BOOK3S
+-	li	r10,MSR_RI
+-	mtmsrd	r10,1		/* Restore RI */
+-#endif
+-	/* If TIF_RESTOREALL is set, don't scribble on either r3 or ccr.
+-	 If TIF_NOERROR is set, just save r3 as it is. */
+-
++	SET_RI(r10) /* See above RI optimisation */
++	/*
++	 * If TIF_RESTOREALL is set, don't scribble on either r3 or ccr.
++	 * If TIF_NOERROR is set, just save r3 as it is.
++	 */
+ 	andi.	r0,r9,_TIF_RESTOREALL
+ 	beq+	0f
+ 	REST_NVGPRS(r1)
+@@ -349,13 +378,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	beq	ret_from_except_lite
+ 
+ 	/* Re-enable interrupts */
+-#ifdef CONFIG_PPC_BOOK3E
+-	wrteei	1
+-#else
+-	li	r10,MSR_RI
+-	ori	r10,r10,MSR_EE
+-	mtmsrd	r10,1
+-#endif /* CONFIG_PPC_BOOK3E */
++	SET_EE_RI(r10)
+ 
+ 	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+@@ -614,12 +637,7 @@ _GLOBAL(ret_from_except_lite)
+ 	 * can't change between when we test it and when we return
+ 	 * from the interrupt.
+ 	 */
+-#ifdef CONFIG_PPC_BOOK3E
+-	wrteei	0
+-#else
+-	li	r10,MSR_RI
+-	mtmsrd	r10,1		  /* Update machine state */
+-#endif /* CONFIG_PPC_BOOK3E */
++	CLEAR_EE(r10)
+ 
+ 	CURRENT_THREAD_INFO(r9, r1)
+ 	ld	r3,_MSR(r1)
+@@ -746,12 +764,7 @@ resume_kernel:
+ 	 * when we return from the interrupt, and so that we don't get
+ 	 * interrupted after loading SRR0/1.
+ 	 */
+-#ifdef CONFIG_PPC_BOOK3E
+-	wrteei	0
+-#else
+-	li	r10,MSR_RI
+-	mtmsrd	r10,1		  /* Update machine state */
+-#endif /* CONFIG_PPC_BOOK3E */
++	CLEAR_EE(r10)
+ #endif /* CONFIG_PREEMPT */
+ 
+ 	.globl	fast_exc_return_irq
+-- 
+2.9.3
