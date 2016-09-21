@@ -1,10 +1,10 @@
 Return-Path: <yangbo.lu@nxp.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0081.outbound.protection.outlook.com [104.47.40.81])
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0081.outbound.protection.outlook.com [104.47.34.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sf9jc59r4zDshV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 17:09:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sf9jl4KhpzDshd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 17:09:47 +1000 (AEST)
 From: Yangbo Lu <yangbo.lu@nxp.com>
 To: <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>, Scott Wood
  <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
@@ -19,9 +19,9 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
  "Kumar Gala" <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
  Leo Li <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian
  <minghuan.lian@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v12, 1/8] dt: bindings: update Freescale DCFG compatible
-Date: Wed, 21 Sep 2016 14:57:13 +0800
-Message-ID: <1474441040-11946-2-git-send-email-yangbo.lu@nxp.com>
+Subject: [v12, 2/8] ARM64: dts: ls2080a: add device configuration node
+Date: Wed, 21 Sep 2016 14:57:14 +0800
+Message-ID: <1474441040-11946-3-git-send-email-yangbo.lu@nxp.com>
 In-Reply-To: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
 References: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
@@ -35,45 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead
-of 'fsl,ls1021a-dcfg' to include more chips such as ls1021a,
-ls1043a, and ls2080a.
+Add the dts node for device configuration unit that provides
+general purpose configuration and status for the device.
 
 Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
-Acked-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Scott Wood <oss@buserror.net>
+Acked-by: Scott Wood <oss@buserror.net>
 ---
-Changes for v8:
+Changes for v5:
 	- Added this patch
+Changes for v6:
+	- None
+Changes for v7:
+	- None
+Changes for v8:
+	- Added 'Acked-by: Scott Wood'
 Changes for v9:
-	- Added a list for the possible compatibles
+	- None
 Changes for v10:
 	- None
 Changes for v11:
-	- Added 'Acked-by: Rob Herring'
-	- Updated commit message by Scott
+	- None
 Changes for v12:
 	- None
 ---
- Documentation/devicetree/bindings/arm/fsl.txt | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
-index dbbc095..713c1ae 100644
---- a/Documentation/devicetree/bindings/arm/fsl.txt
-+++ b/Documentation/devicetree/bindings/arm/fsl.txt
-@@ -119,7 +119,11 @@ Freescale DCFG
- configuration and status for the device. Such as setting the secondary
- core start address and release the secondary core from holdoff and startup.
-   Required properties:
--  - compatible: should be "fsl,ls1021a-dcfg"
-+  - compatible: should be "fsl,<chip>-dcfg"
-+    Possible compatibles:
-+	"fsl,ls1021a-dcfg"
-+	"fsl,ls1043a-dcfg"
-+	"fsl,ls2080a-dcfg"
-   - reg : should contain base address and length of DCFG memory-mapped registers
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
+index e3b6034..f231a14 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
+@@ -215,6 +215,12 @@
+ 			clocks = <&sysclk>;
+ 		};
  
- Example:
++		dcfg: dcfg@1e00000 {
++			compatible = "fsl,ls2080a-dcfg", "syscon";
++			reg = <0x0 0x1e00000 0x0 0x10000>;
++			little-endian;
++		};
++
+ 		serial0: serial@21c0500 {
+ 			compatible = "fsl,ns16550", "ns16550a";
+ 			reg = <0x0 0x21c0500 0x0 0x100>;
 -- 
 2.1.0.27.g96db324
