@@ -1,26 +1,44 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-yb0-x22d.google.com (mail-yb0-x22d.google.com
- [IPv6:2607:f8b0:4002:c09::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfMLW2YFpzDt2D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 00:23:47 +1000 (AEST)
-Received: by mail-yb0-x22d.google.com with SMTP id u125so32188965ybg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 07:23:47 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Wed, 21 Sep 2016 10:23:43 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christoph Lameter <cl@linux.com>, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] percpu: improve generic percpu modify-return
- implementation
-Message-ID: <20160921142343.GA10734@htj.duckdns.org>
-References: <20160921085137.862-1-npiggin@gmail.com>
- <20160921205711.4e804777@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfMbG4DYhzDsgh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 00:34:50 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8LEXTvg110634
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 10:34:48 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25kta9dvy6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 10:34:47 -0400
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Wed, 21 Sep 2016 11:34:45 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.18.232.225])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 73459352006C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 10:34:18 -0400 (EDT)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8LEYgpr39452680
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 11:34:42 -0300
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8LEYfGv020698
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 11:34:42 -0300
+Subject: Re: powerpc: add kernel parameter iommu_alloc_quiet
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <3sfLdY1WwLz9syB@ozlabs.org>
+Cc: jthumshirn@suse.com, duwe@suse.com
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Wed, 21 Sep 2016 11:34:38 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160921205711.4e804777@roar.ozlabs.ibm.com>
+In-Reply-To: <3sfLdY1WwLz9syB@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <d5a4d7c5-a700-b990-620d-132f09d69be0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,57 +48,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Nick.
+Hi Michael,
 
-How have you been? :)
+Thanks for the review.
 
-On Wed, Sep 21, 2016 at 08:57:11PM +1000, Nicholas Piggin wrote:
-> On Wed, 21 Sep 2016 18:51:37 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
-> 
-> > Some architectures require an additional load to find the address of
-> > percpu pointers. In some implemenatations, the C aliasing rules do not
-> > allow the result of that load to be kept over the store that modifies
-> > the percpu variable, which causes additional loads.
-> 
-> Sorry I picked up an old patch here. This one should be better.
-> 
-> From d0cb9052d6f4c31d24f999b7b0cecb34681eee9b Mon Sep 17 00:00:00 2001
-> From: Nicholas Piggin <npiggin@gmail.com>
-> Date: Wed, 21 Sep 2016 18:23:43 +1000
-> Subject: [PATCH] percpu: improve generic percpu modify-return implementations
-> 
-> Some architectures require an additional load to find the address of
-> percpu pointers. In some implemenatations, the C aliasing rules do not
-> allow the result of that load to be kept over the store that modifies
-> the percpu variable, which causes additional loads.
-> 
-> Work around this by finding the pointer first, then operating on that.
-> 
-> It's also possible to mark things as restrict and those kind of games,
-> but that can require larger and arch specific changes.
-> 
-> On powerpc, __this_cpu_inc_return compiles to:
-> 
->         ld 10,48(13)
->         ldx 9,3,10
->         addi 9,9,1
->         stdx 9,3,10
->         ld 9,48(13)
->         ldx 3,9,3
-> 
-> With this patch it compiles to:
-> 
->         ld 10,48(13)
->         ldx 9,3,10
->         addi 9,9,1
->         stdx 9,3,10
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On 09/21/2016 10:51 AM, Michael Ellerman wrote:
+>> That is important/requirement for the distribution kernels - where
+>> the DMA_ATTR_NO_WARN changes to 'enum dma_attr' are not acceptable
+>> because it breaks the kernel ABI.
+[snip]
+ > Removing an entry from an enum would break the API (Note _P_). But I 
+don't see
+ > how adding one does.
 
-Patch looks good to me but seems QP encoded.  Can you please resend?
+Agree.. I should have worded 'already-built out-of-tree modules'.
 
-Thanks and it's great to see you again!
+If I understand it correctly, this chunk will change the value of
+DMA_ATTR_MAX, and thus break the ABI for out-of-tree modules that
+depend on it. (Not that I know of any that use it, but that's the
+reason that causes distro kernel builds to fail w/ this applied.)
+
+@@ -19,6 +19,7 @@ enum dma_attr {
+  	DMA_ATTR_SKIP_CPU_SYNC,
+  	DMA_ATTR_FORCE_CONTIGUOUS,
+  	DMA_ATTR_ALLOC_SINGLE_PAGES,
++	DMA_ATTR_NO_WARN,
+  	DMA_ATTR_MAX,
+  };
+
+> Also kernel command line parameters are really poor in terms of usability. Folks
+> really don't want to have to change their kernel command line.
+>
+> If we really need a hack for distros then I'd suggest we add a global struct
+> driver * in the powerpc iommu code, and then when nvme loads it sets that to
+> point at itself, and then the check becomes:
+
+Agree w/ cmdline args are poor for usability, and that this new hack is
+certainly smarter -- however, it does not provide any option/choice for
+the user of whether enable/disable it (ie driver automatically sets it).
+
+Although that isn't a problem for older downstream nvme drivers, which
+have a single OK-to-fail dma mapping callsite (so the message doesn't
+matter at all), the newer downstream drivers also have a Not-OK-to-fail
+callsite, which is still worth to get the 'iommu_alloc failed' message
+(per Ben's point of 'message useful for debugging').
+
+For the latter, I think an upstream patch like this suggestion is not
+a generally acceptable approach.
+
+So, the intent is to have a single/common hack that upstream is OK w/,
+then apply that downstream in the multiple distros.  Of course, if you
+are not OK w/ this patch (which is obviously fair) we'll have to try it
+downstream only, and there we can diverge in the implementations.
+
+Please let me know your thoughts on it.
+
+Thanks!
 
 -- 
-tejun
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
