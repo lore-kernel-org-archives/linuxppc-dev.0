@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfBVH1rTLzDshQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 17:44:55 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id n24so2027973pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 00:44:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfBVK3l7gzDshH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 17:44:57 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id s3so575629pay.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 00:44:57 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/41] powerpc/64s: consolidate Instruction Segment 0x480
- interrupt
-Date: Wed, 21 Sep 2016 17:43:35 +1000
-Message-Id: <20160921074407.4885-10-npiggin@gmail.com>
+Subject: [PATCH 10/41] powerpc/64s: consolidate External 0x500 interrupt
+Date: Wed, 21 Sep 2016 17:43:36 +1000
+Message-Id: <20160921074407.4885-11-npiggin@gmail.com>
 In-Reply-To: <20160921074407.4885-1-npiggin@gmail.com>
 References: <20160921074407.4885-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,223 +27,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 183 ++++++++++++++++++-----------------
- 1 file changed, 93 insertions(+), 90 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 24 +++++++++++++-----------
+ 1 file changed, 13 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 5f08388..0320b60 100644
+index 0320b60..fc5ad5c 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -643,6 +643,99 @@ VECTOR_HANDLER_REAL_BEGIN(instruction_access_slb, 0x480, 0x500)
- #endif
- VECTOR_HANDLER_REAL_END(instruction_access_slb, 0x480, 0x500)
+@@ -752,6 +752,19 @@ do_kvm_0x500:
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ VECTOR_HANDLER_REAL_END(hardware_interrupt, 0x500, 0x600)
  
-+VECTOR_HANDLER_VIRT_BEGIN(instruction_access_slb, 0x4480, 0x4500)
-+	SET_SCRATCH0(r13)
-+	EXCEPTION_PROLOG_0(PACA_EXSLB)
-+	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x480)
-+	std	r3,PACA_EXSLB+EX_R3(r13)
-+	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
-+	mfspr	r12,SPRN_SRR1
-+#ifndef CONFIG_RELOCATABLE
-+	b	slb_miss_realmode
-+#else
-+	mfctr	r11
-+	ld	r10,PACAKBASE(r13)
-+	LOAD_HANDLER(r10, slb_miss_realmode)
-+	mtctr	r10
-+	bctr
-+#endif
-+VECTOR_HANDLER_VIRT_END(instruction_access_slb, 0x4480, 0x4500)
-+TRAMP_KVM(PACA_EXSLB, 0x480)
++VECTOR_HANDLER_VIRT_BEGIN(hardware_interrupt, 0x4500, 0x4600)
++	.globl hardware_interrupt_relon_hv;
++hardware_interrupt_relon_hv:
++	BEGIN_FTR_SECTION
++		_MASKABLE_RELON_EXCEPTION_PSERIES(0x500, hardware_interrupt_common, EXC_HV, SOFTEN_TEST_HV)
++	FTR_SECTION_ELSE
++		_MASKABLE_RELON_EXCEPTION_PSERIES(0x500, FIXED_SECTION_REL_ADDR(text, hardware_interrupt_common), EXC_STD, SOFTEN_TEST_PR)
++	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
++VECTOR_HANDLER_VIRT_END(hardware_interrupt, 0x4500, 0x4600)
++
++COMMON_HANDLER_ASYNC(hardware_interrupt_common, 0x500, do_IRQ)
 +
 +
-+/* This handler is used by both 0x380 and 0x480 slb miss interrupts */
-+COMMON_HANDLER_BEGIN(slb_miss_realmode)
-+	/*
-+	 * r13 points to the PACA, r9 contains the saved CR,
-+	 * r12 contain the saved SRR1, SRR0 is still ready for return
-+	 * r3 has the faulting address
-+	 * r9 - r13 are saved in paca->exslb.
-+	 * r3 is saved in paca->slb_r3
-+	 * We assume we aren't going to take any exceptions during this
-+	 * procedure.
-+	 */
-+	mflr	r10
-+#ifdef CONFIG_RELOCATABLE
-+	mtctr	r11
-+#endif
-+
-+	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
-+	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
-+
-+#ifdef CONFIG_PPC_STD_MMU_64
-+BEGIN_MMU_FTR_SECTION
-+	bl	slb_allocate_realmode
-+END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
-+#endif
-+	/* All done -- return from exception. */
-+
-+	ld	r10,PACA_EXSLB+EX_LR(r13)
-+	ld	r3,PACA_EXSLB+EX_R3(r13)
-+	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
-+
-+	mtlr	r10
-+	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
-+BEGIN_MMU_FTR_SECTION
-+	beq-	2f
-+FTR_SECTION_ELSE
-+	b	2f
-+ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
-+
-+.machine	push
-+.machine	"power4"
-+	mtcrf	0x80,r9
-+	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
-+.machine	pop
-+
-+	RESTORE_PPR_PACA(PACA_EXSLB, r9)
-+	ld	r9,PACA_EXSLB+EX_R9(r13)
-+	ld	r10,PACA_EXSLB+EX_R10(r13)
-+	ld	r11,PACA_EXSLB+EX_R11(r13)
-+	ld	r12,PACA_EXSLB+EX_R12(r13)
-+	ld	r13,PACA_EXSLB+EX_R13(r13)
-+	rfid
-+	b	.	/* prevent speculative execution */
-+
-+2:	mfspr	r11,SPRN_SRR0
-+	ld	r10,PACAKBASE(r13)
-+	LOAD_HANDLER(r10,unrecov_slb)
-+	mtspr	SPRN_SRR0,r10
-+	ld	r10,PACAKMSR(r13)
-+	mtspr	SPRN_SRR1,r10
-+	rfid
-+	b	.
-+COMMON_HANDLER_END(slb_miss_realmode)
-+
-+COMMON_HANDLER_BEGIN(unrecov_slb)
-+	EXCEPTION_PROLOG_COMMON(0x4100, PACA_EXSLB)
-+	RECONCILE_IRQ_STATE(r10, r11)
-+	bl	save_nvgprs
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	unrecoverable_exception
-+	b	1b
-+COMMON_HANDLER_END(unrecov_slb)
-+
-+
- VECTOR_HANDLER_REAL_BEGIN(hardware_interrupt, 0x500, 0x600)
- 	.globl hardware_interrupt_hv;
- hardware_interrupt_hv:
-@@ -805,7 +898,6 @@ VECTOR_HANDLER_REAL_NONE(0x1800, 0x1900)
- /*** Out of line interrupts support ***/
+ VECTOR_HANDLER_REAL(alignment, 0x600, 0x700)
  
- 	/* moved from 0x200 */
--TRAMP_KVM(PACA_EXSLB, 0x480)
- TRAMP_KVM(PACA_EXGEN, 0x900)
- TRAMP_KVM_HV(PACA_EXGEN, 0x980)
+ TRAMP_KVM(PACA_EXGEN, 0x600)
+@@ -1122,7 +1135,6 @@ TRAMP_HANDLER_END(kvmppc_skip_Hinterrupt)
  
-@@ -1078,24 +1170,6 @@ COMMON_HANDLER(altivec_assist_common, 0x1700, unknown_exception)
+ /*** Common interrupt handlers ***/
+ 
+-COMMON_HANDLER_ASYNC(hardware_interrupt_common, 0x500, do_IRQ)
+ COMMON_HANDLER_ASYNC(decrementer_common, 0x900, timer_interrupt)
+ COMMON_HANDLER(hdecrementer_common, 0x980, hdec_interrupt)
+ 
+@@ -1170,16 +1182,6 @@ COMMON_HANDLER(altivec_assist_common, 0x1700, unknown_exception)
  
  
  
--VECTOR_HANDLER_VIRT_BEGIN(instruction_access_slb, 0x4480, 0x4500)
--	SET_SCRATCH0(r13)
--	EXCEPTION_PROLOG_0(PACA_EXSLB)
--	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x480)
--	std	r3,PACA_EXSLB+EX_R3(r13)
--	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
--	mfspr	r12,SPRN_SRR1
--#ifndef CONFIG_RELOCATABLE
--	b	slb_miss_realmode
--#else
--	mfctr	r11
--	ld	r10,PACAKBASE(r13)
--	LOAD_HANDLER(r10, slb_miss_realmode)
--	mtctr	r10
--	bctr
--#endif
--VECTOR_HANDLER_VIRT_END(instruction_access_slb, 0x4480, 0x4500)
+-VECTOR_HANDLER_VIRT_BEGIN(hardware_interrupt, 0x4500, 0x4600)
+-	.globl hardware_interrupt_relon_hv;
+-hardware_interrupt_relon_hv:
+-	BEGIN_FTR_SECTION
+-		_MASKABLE_RELON_EXCEPTION_PSERIES(0x500, hardware_interrupt_common, EXC_HV, SOFTEN_TEST_HV)
+-	FTR_SECTION_ELSE
+-		_MASKABLE_RELON_EXCEPTION_PSERIES(0x500, FIXED_SECTION_REL_ADDR(text, hardware_interrupt_common), EXC_STD, SOFTEN_TEST_PR)
+-	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+-VECTOR_HANDLER_VIRT_END(hardware_interrupt, 0x4500, 0x4600)
 -
- VECTOR_HANDLER_VIRT_BEGIN(hardware_interrupt, 0x4500, 0x4600)
- 	.globl hardware_interrupt_relon_hv;
- hardware_interrupt_relon_hv:
-@@ -1399,77 +1473,6 @@ hmi_exception_after_realmode:
- 	b	tramp_real_hmi_exception
- COMMON_HANDLER_END(hmi_exception_early)
- 
--/*
-- * r13 points to the PACA, r9 contains the saved CR,
-- * r12 contain the saved SRR1, SRR0 is still ready for return
-- * r3 has the faulting address
-- * r9 - r13 are saved in paca->exslb.
-- * r3 is saved in paca->slb_r3
-- * We assume we aren't going to take any exceptions during this procedure.
-- */
--COMMON_HANDLER_BEGIN(slb_miss_realmode)
--	mflr	r10
--#ifdef CONFIG_RELOCATABLE
--	mtctr	r11
--#endif
--
--	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
--	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
--
--#ifdef CONFIG_PPC_STD_MMU_64
--BEGIN_MMU_FTR_SECTION
--	bl	slb_allocate_realmode
--END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
--#endif
--	/* All done -- return from exception. */
--
--	ld	r10,PACA_EXSLB+EX_LR(r13)
--	ld	r3,PACA_EXSLB+EX_R3(r13)
--	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
--
--	mtlr	r10
--	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
--BEGIN_MMU_FTR_SECTION
--	beq-	2f
--FTR_SECTION_ELSE
--	b	2f
--ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
--
--.machine	push
--.machine	"power4"
--	mtcrf	0x80,r9
--	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
--.machine	pop
--
--	RESTORE_PPR_PACA(PACA_EXSLB, r9)
--	ld	r9,PACA_EXSLB+EX_R9(r13)
--	ld	r10,PACA_EXSLB+EX_R10(r13)
--	ld	r11,PACA_EXSLB+EX_R11(r13)
--	ld	r12,PACA_EXSLB+EX_R12(r13)
--	ld	r13,PACA_EXSLB+EX_R13(r13)
--	rfid
--	b	.	/* prevent speculative execution */
--
--2:	mfspr	r11,SPRN_SRR0
--	ld	r10,PACAKBASE(r13)
--	LOAD_HANDLER(r10,unrecov_slb)
--	mtspr	SPRN_SRR0,r10
--	ld	r10,PACAKMSR(r13)
--	mtspr	SPRN_SRR1,r10
--	rfid
--	b	.
--COMMON_HANDLER_END(slb_miss_realmode)
--
--COMMON_HANDLER_BEGIN(unrecov_slb)
--	EXCEPTION_PROLOG_COMMON(0x4100, PACA_EXSLB)
--	RECONCILE_IRQ_STATE(r10, r11)
--	bl	save_nvgprs
--1:	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	unrecoverable_exception
--	b	1b
--COMMON_HANDLER_END(unrecov_slb)
--
--
- #ifdef CONFIG_PPC_970_NAP
- TRAMP_HANDLER_BEGIN(power4_fixup_nap)
- 	andc	r9,r9,r10
+ VECTOR_HANDLER_VIRT(alignment, 0x4600, 0x4700, 0x600)
+ VECTOR_HANDLER_VIRT(program_check, 0x4700, 0x4800, 0x700)
+ VECTOR_HANDLER_VIRT(fp_unavailable, 0x4800, 0x4900, 0x800)
 -- 
 2.9.3
