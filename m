@@ -1,18 +1,19 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sf5fD5wRszDsgf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 14:06:28 +1000 (AEST)
-Message-ID: <1474430783.3091.10.camel@russell.cc>
-Subject: Re: [1/3] powerpc/eeh: Null check uses of eeh_pe_bus_get
-From: Russell Currey <ruscur@russell.cc>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 21 Sep 2016 14:06:23 +1000
-In-Reply-To: <3sf5YS0BVKz9sxN@ozlabs.org>
-References: <3sf5YS0BVKz9sxN@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sf5hP4YYPzDsTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 14:08:21 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/4] drivers/pci/hotplug: Support surprise hotplug
+In-Reply-To: <1473905242-898-5-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1473905242-898-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1473905242-898-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Wed, 21 Sep 2016 14:08:18 +1000
+Message-ID: <8737ktao99.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-09-21 at 14:02 +1000, Michael Ellerman wrote:
-> On Mon, 2016-12-09 at 04:17:22 UTC, Russell Currey wrote:
-> > 
-> > eeh_pe_bus_get() can return NULL if a PCI bus isn't found for a given PE.
-> > Some callers don't check this, and can cause a null pointer dereference
-> > under certain circumstances.
-> > 
-> > Fix this by checking NULL everywhere eeh_pe_bus_get() is called.
-> > 
-> > Cc: stable #3.10+
-> 
-> This looks like it's a fix for 8a6b1bc70dbb ("powerpc/eeh: EEH core to handle
-> special event") ?
-> 
-> Which was merged in v3.11-rc1.
-> 
-> If so I'll add a fixes line pointing at that commit and update the stable tag
-> to
-> v3.11+.
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-Thanks.
+> This supports PCI surprise hotplug. The design is highlighted as
+> below:
+>
+>    * The PCI slot's surprise hotplug capability is exposed through
+>      device node property "ibm,slot-surprise-pluggable", meaning
+>      PCI surprise hotplug will be disabled if skiboot doesn't support
+>      it yet.
+>    * The interrupt because of presence or link state change is raised
+>      on surprise hotplug event. One event is allocated and queued to
+>      the PCI slot for workqueue to pick it up and process in serialized
+>      fashion. The code flow for surprise hotplug is same to that for
+>      managed hotplug except: the affected PEs are put into frozen state
+>      to avoid unexpected EEH error reporting in surprise hot remove path.
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/pnv-pci.h |   9 ++
+>  drivers/pci/hotplug/pnv_php.c      | 219 +++++++++++++++++++++++++++++++++++++
 
-Also, the other two patches in this series shouldn't go to stable, that was my
-mistake.
+Can you please resend this and Cc linux-pci and Bjorn, thanks.
 
-> 
-> cheers
+cheers
