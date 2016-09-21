@@ -1,46 +1,24 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sf7yl61CQzDsgg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 15:50:55 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8L5o4J1145827
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 01:50:53 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25jua9nvp7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 01:50:53 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Wed, 21 Sep 2016 01:50:52 -0400
-Date: Wed, 21 Sep 2016 00:50:38 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sf8TS63nXzDsgf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 16:14:04 +1000 (AEST)
+Subject: Re: [PATCH v2 2/3] powerpc: get hugetlbpage handling more generic
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v2 2/3] powerpc/mm: allow memory hotplug into a
- memoryless node
-References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1473883618-14998-3-git-send-email-arbab@linux.vnet.ibm.com>
- <15d62e9c-38e6-dfd3-0ee2-6885cbfbe315@gmail.com>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+References: <cover.1474009019.git.christophe.leroy@c-s.fr>
+ <dab1fde59f711dd7d3f1996dee72f61c46033f47.1474009019.git.christophe.leroy@c-s.fr>
+ <87poo0xx13.fsf@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <f475bfc1-ff00-46cb-7c5b-85e8d51e34e0@c-s.fr>
+Date: Wed, 21 Sep 2016 08:13:56 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <15d62e9c-38e6-dfd3-0ee2-6885cbfbe315@gmail.com>
-Message-Id: <20160921055038.o2z73uwmxpxlabmd@arbab-laptop>
+In-Reply-To: <87poo0xx13.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,12 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 19, 2016 at 09:53:49PM +1000, Balbir Singh wrote:
->I presume you've tested with CONFIG_NODES_SHIFT of 8 (255 nodes?)
 
-Oh yes, definitely.
 
-The large number of possible nodes does not come into play here.
+Le 19/09/2016 à 07:45, Aneesh Kumar K.V a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>
+>> Today there are two implementations of hugetlbpages which are managed
+>> by exclusive #ifdefs:
+>> * FSL_BOOKE: several directory entries points to the same single hugepage
+>> * BOOK3S: one upper level directory entry points to a table of hugepages
+>>
+>> In preparation of implementation of hugepage support on the 8xx, we
+>> need a mix of the two above solutions, because the 8xx needs both cases
+>> depending on the size of pages:
+>> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
+>> that 2 PGD entries will be necessary to cover an 8M hugepage while a
+>> single PGD entry will cover 8x 512k hugepages.
+>> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
+>> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
+>> hugepages will be covers by one PGD entry.
+>>
+>> This patch:
+>> * removes #ifdefs in favor of if/else based on the range sizes
+>> * merges the two huge_pte_alloc() functions as they are pretty similar
+>> * merges the two hugetlbpage_init() functions as they are pretty similar
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>> v2: This part is new and results from a split of last patch of v1 serie in
+>> two parts
+>>
+>>  arch/powerpc/mm/hugetlbpage.c | 189 +++++++++++++++++-------------------------
+>>  1 file changed, 77 insertions(+), 112 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+>> index 8a512b1..2119f00 100644
+>> --- a/arch/powerpc/mm/hugetlbpage.c
+>> +++ b/arch/powerpc/mm/hugetlbpage.c
+>> @@ -64,14 +64,16 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>>  {
+>>  	struct kmem_cache *cachep;
+>>  	pte_t *new;
+>> -
+>> -#ifdef CONFIG_PPC_FSL_BOOK3E
+>>  	int i;
+>> -	int num_hugepd = 1 << (pshift - pdshift);
+>> -	cachep = hugepte_cache;
+>> -#else
+>> -	cachep = PGT_CACHE(pdshift - pshift);
+>> -#endif
+>> +	int num_hugepd;
+>> +
+>> +	if (pshift >= pdshift) {
+>> +		cachep = hugepte_cache;
+>> +		num_hugepd = 1 << (pshift - pdshift);
+>> +	} else {
+>> +		cachep = PGT_CACHE(pdshift - pshift);
+>> +		num_hugepd = 1;
+>> +	}
+>
+> Is there a way to hint likely/unlikely branch based on the page size
+> selected at build time ?
 
--- 
-Reza Arbab
+Is that really worth it, won't it be negligeable compared to  other 
+actions in that function (like for instance kmem_cache_zalloc()) ?
+Can't we just trust GCC on that one ?
+
+Christophe
