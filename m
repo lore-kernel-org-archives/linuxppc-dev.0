@@ -1,47 +1,50 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
+Return-Path: <arbab@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfYft3R1PzDsjr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 08:08:38 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfZ7c4HbYzDsTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 08:30:04 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8LM3X22085006
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 18:08:36 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25k6cmprrp-1
+ u8LMSdwV082080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 18:30:02 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25kurqw9xy-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 18:08:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 18:30:02 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 21 Sep 2016 16:08:35 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B3A4C3E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 16:08:31 -0600 (MDT)
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8LM8U5Z16712004
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 15:08:31 -0700
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 89B986A047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 16:08:31 -0600 (MDT)
-Received: from oc1376853207.ibm.com (unknown [9.53.92.233])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP id 5FADF6A03B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 16:08:31 -0600 (MDT)
-To: linuxppc-dev@lists.ozlabs.org
-In-Reply-To: c77dcd04-b878-476c-ad49-bf4a6def1116@linux.vnet.ibm.com
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: Resend: [PATCH V7 8/8] powerpc: Enable support for new DRC devtree
- properties
-Date: Wed, 21 Sep 2016 17:08:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Wed, 21 Sep 2016 18:30:01 -0400
+Date: Wed, 21 Sep 2016 17:29:46 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH v2 3/3] mm: enable CONFIG_MOVABLE_NODE on powerpc
+References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1473883618-14998-4-git-send-email-arbab@linux.vnet.ibm.com>
+ <87h99cxv00.fsf@linux.vnet.ibm.com>
+ <20160921054500.lrqktzjqjhuzewqg@arbab-laptop>
+ <87oa3hwwxs.fsf@linux.vnet.ibm.com>
+ <20160921140846.m6wp2ij5f2fx4cps@arbab-laptop>
+ <87h999wbxi.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <971f3dc0-1057-4d79-0029-cd926b1153a9@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <87h999wbxi.fsf@linux.vnet.ibm.com>
+Message-Id: <20160921222946.on4jcxgk7nerrbh4@arbab-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,45 +54,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-prom_init.c: Enable support for new DRC device tree properties
-"ibm,drc-info" and "ibm,dynamic-memory-v2" in initial handshake
-between the Linux kernel and the front end processor.
+On Wed, Sep 21, 2016 at 08:13:37PM +0530, Aneesh Kumar K.V wrote:
+>So we are looking at two step online process here. The above explained
+>the details nicely. Can you capture these details in the commit message. ie,
+>to say that when using 'echo online-movable > state' we allow the move from
+>normal to movable only if movable node is set. Also you may want to
+>mention that we still don't support the auto-online to movable.
 
-[V2: Revise constant names.]
-[V3: No change.]
-[V4: Update comments]
-[V5: Resynchronize/resubmit]
-[V6: Resynchronize to latest kernel commit code]
-[V7: Correct mail threading]
-
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-diff -Naur linux-rhel/arch/powerpc/kernel/prom_init.c linux-rhel-patch/arch/powerpc/kernel/prom_init.c
---- linux-rhel/arch/powerpc/kernel/prom_init.c	2016-03-03 07:36:25.000000000 -0600
-+++ linux-rhel-patch/arch/powerpc/kernel/prom_init.c	2016-06-20 15:59:58.016373676 -0500
-@@ -695,7 +695,7 @@
- 	OV4_MIN_ENT_CAP,		/* minimum VP entitled capacity */
- 
- 	/* option vector 5: PAPR/OF options */
--	VECTOR_LENGTH(21),		/* length */
-+	VECTOR_LENGTH(22),		/* length */
- 	0,				/* don't ignore, don't halt */
- 	OV5_FEAT(OV5_LPAR) | OV5_FEAT(OV5_SPLPAR) | OV5_FEAT(OV5_LARGE_PAGES) |
- 	OV5_FEAT(OV5_DRCONF_MEMORY) | OV5_FEAT(OV5_DONATE_DEDICATE_CPU) |
-@@ -731,6 +731,7 @@
- 	0,							/* Byte 19 */
- 	0,							/* Byte 20 */
- 	OV5_FEAT(OV5_SUB_PROCESSORS),				/* Byte 21 */
-+	OV5_FEAT(OV5_DYN_MEM_V2) | OV5_FEAT(OV5_DRC_INFO),	/* Byte 22 */
- 
- 	/* option vector 6: IBM PAPR hints */
- 	VECTOR_LENGTH(3),		/* length */
+Sure, no problem. I'll use a more verbose commit message in v3.
 
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+Reza Arbab
