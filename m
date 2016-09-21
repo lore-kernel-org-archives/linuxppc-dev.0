@@ -1,37 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfQnt6cyKzDslW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 02:59:14 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8LGw5fi082441
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 12:59:12 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25kkqbdn6a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 12:59:12 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 21 Sep 2016 10:58:55 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 3/3] powerpc/8xx: Implement support of hugepages
-In-Reply-To: <b59c1fce3f5e5f95fd7e70874278ce3602d571aa.1474441302.git.christophe.leroy@c-s.fr>
-References: <cover.1474441301.git.christophe.leroy@c-s.fr>
- <b59c1fce3f5e5f95fd7e70874278ce3602d571aa.1474441302.git.christophe.leroy@c-s.fr>
-Date: Wed, 21 Sep 2016 22:28:42 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfSYb3VF1zDsgj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 04:18:43 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id b184so10011818wma.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 11:18:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <8760ppw5od.fsf@linux.vnet.ibm.com>
+In-Reply-To: <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
+ <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
+ <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
+ <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+From: Leo Li <pku.leo@gmail.com>
+Date: Wed, 21 Sep 2016 13:18:39 -0500
+Message-ID: <CADRPPNTJGSrNskUVz1xMmbXWGwyEAJ_toW+kHy3_JJTvxeq6gA@mail.gmail.com>
+Subject: Re: [PATCH v5 2/2] QE: remove PPCisms for QE
+To: Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Scott Wood <oss@buserror.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>, "X.B. Xie" <xiaobo.xie@nxp.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,45 +30,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On Tue, Sep 20, 2016 at 8:13 PM, Qiang Zhao <qiang.zhao@nxp.com> wrote:
+> On Mon, Sep 20, 2016 at 4:13 AM, Leo Li wrote:
+>> -----Original Message-----
+>> From: Leo Li [mailto:pku.leo@gmail.com]
+>> Sent: Tuesday, September 20, 2016 4:13 AM
+>> To: Qiang Zhao <qiang.zhao@nxp.com>
+>> Cc: Scott Wood <oss@buserror.net>; linuxppc-dev <linuxppc-
+>> dev@lists.ozlabs.org>; lkml <linux-kernel@vger.kernel.org>; X.B. Xie
+>> <xiaobo.xie@nxp.com>
+>> Subject: Re: [PATCH v5 2/2] QE: remove PPCisms for QE
+>>
+>> On Mon, Jul 25, 2016 at 12:43 AM, Zhao Qiang <qiang.zhao@nxp.com> wrote:
+>> > QE was supported on PowerPC, and dependent on PPC, Now it is supported
+>> > on other platforms. so remove PPCisms.
+>> >
+>> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+>> > ---
+>> > Changes for v2:
+>> >         - na
+>> > Changes for v3:
+>> >         - add NO_IRQ
+>> > Changes for v4:
+>> >         - modify spin_event_timeout to opencoded timeout loop
+>> >         - remove NO_IRQ
+>> >         - modify virq_to_hw to opencoed code Changes for v5:
+>> >         - modify commit msg
+>> >         - modify depends of QUICC_ENGINE
+>> >         - add kerneldoc header for qe_issue_cmd
+>> >
+>> >  drivers/irqchip/qe_ic.c       | 28 +++++++++------
+>> >  drivers/soc/fsl/qe/Kconfig    |  2 +-
+>> >  drivers/soc/fsl/qe/qe.c       | 80 ++++++++++++++++++++++++++--------------
+>> ---
+>> >  drivers/soc/fsl/qe/qe_io.c    | 42 ++++++++++-------------
+>> >  drivers/soc/fsl/qe/qe_tdm.c   |  8 ++---
+>> >  drivers/soc/fsl/qe/ucc.c      | 10 +++---
+>> >  drivers/soc/fsl/qe/ucc_fast.c | 68 ++++++++++++++++++------------------
+>> >  include/soc/fsl/qe/qe.h       |  1 -
+>> >  include/soc/fsl/qe/qe_ic.h    | 12 +++----
+>> >  9 files changed, 133 insertions(+), 118 deletions(-)
+>> >
+>>
+>> [snip]
+>>
+>> > diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
+>> > index 73a2e08..b26b643 100644
+>> > --- a/drivers/soc/fsl/qe/Kconfig
+>> > +++ b/drivers/soc/fsl/qe/Kconfig
+>> > @@ -4,7 +4,7 @@
+>> >
+>> >  config QUICC_ENGINE
+>> >         bool "Freescale QUICC Engine (QE) Support"
+>> > -       depends on FSL_SOC && PPC32
+>> > +       depends on OF && HAS_IOMEM
+>> >         select GENERIC_ALLOCATOR
+>> >         select CRC32
+>> >         help
+>>
+>> You make it possible to build QE drivers on ARM, but the UCC_GETH fails to
+>> build on arm64.  Please make sure all these drivers can build on other
+>> architectures.  Or you can simply make them only build for Power architecture
+>> as most of them are not available on ARM.
+>>
+>
+> Most of them are not available on ARM and ARM64.
+> Now, only qe-hdlc is available on ARM64.
 
-> 8xx uses a two level page table with two different linux page size
-> support (4k and 16k). 8xx also support two different hugepage sizes
-> 512k and 8M. In order to support them on linux we define two different
-> page table layout.
->
-> The size of pages is in the PGD entry, using PS field (bits 28-29):
-> 00 : Small pages (4k or 16k)
-> 01 : 512k pages
-> 10 : reserved
-> 11 : 8M pages
->
-> For 512K hugepage size a pgd entry have the below format
-> [<hugepte address >0101] . The hugepte table allocated will contain 8
-> entries pointing to 512K huge pte in 4k pages mode and 64 entries in
-> 16k pages mode.
->
-> For 8M in 16k mode, a pgd entry have the below format
-> [<hugepte address >1101] . The hugepte table allocated will contain 8
-> entries pointing to 8M huge pte.
->
-> For 8M in 4k mode, multiple pgd entries point to the same hugepte
-> address and pgd entry will have the below format
-> [<hugepte address>1101]. The hugepte table allocated will only have one
-> entry.
->
-> For the time being, we do not support CPU15 ERRATA when HUGETLB is
-> selected
->
+Then you should update the Kconfig for these drivers too, if they are
+only depending on CONFIG_QUICC_ENGINE.
 
-For the generic bits
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
-> v2: This v1 was split in two parts. This part focuses on adding the
-> support on 8xx. It also fixes an error in TLBmiss handlers in the
-> case of 8M hugepages in 16k pages mode.
->
-
--aneesh
+Regards,
+Leo
