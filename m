@@ -1,52 +1,28 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sg2d441YzzDsj8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:53:44 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sg2d40nkpz9t1h
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 02:53:43 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8MGqhpC019662
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 12:53:42 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25m08emmrv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 12:53:42 -0400
-Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Thu, 22 Sep 2016 22:23:39 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id D11D53940066
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 22:23:36 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8MGra4o33685570
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 22:23:36 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8MGrZWM022613
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 22:23:36 +0530
-Subject: Re: [PATCH v2] powerpc/mm: export current mmu mode info
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <147456009252.14735.18189822731283851598.stgit@hbathini.in.ibm.com>
- <87eg4bzyuf.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Thu, 22 Sep 2016 22:23:32 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sg6Hb5nZWzDskv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 05:38:51 +1000 (AEST)
+Received: by mail-wm0-x243.google.com with SMTP id w84so15731643wmg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 12:38:51 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <87eg4bzyuf.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <92b66a3f-809b-bd63-22cd-56e7707de479@linux.vnet.ibm.com>
+In-Reply-To: <AM3PR04MB11857AE8D2B0BE56121B97D391C90@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
+ <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
+ <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
+ <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <CADRPPNTJGSrNskUVz1xMmbXWGwyEAJ_toW+kHy3_JJTvxeq6gA@mail.gmail.com>
+ <AM3PR04MB11857AE8D2B0BE56121B97D391C90@AM3PR04MB1185.eurprd04.prod.outlook.com>
+From: Leo Li <pku.leo@gmail.com>
+Date: Thu, 22 Sep 2016 14:38:48 -0500
+Message-ID: <CADRPPNQ5qSy5KKe1KFd0cqcaJHHqjxmUHDs4DvzLOKs9r0fPzQ@mail.gmail.com>
+Subject: Re: [PATCH v5 2/2] QE: remove PPCisms for QE
+To: Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Scott Wood <oss@buserror.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>, "X.B. Xie" <xiaobo.xie@nxp.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,202 +32,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Aneesh,
-
-
-On Thursday 22 September 2016 09:54 PM, Aneesh Kumar K.V wrote:
-> Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+On Wed, Sep 21, 2016 at 8:43 PM, Qiang Zhao <qiang.zhao@nxp.com> wrote:
+> On Mon, Sep 22, 2016 at 2:19 AM, Leo Li wrote:
+>> -----Original Message-----
+>> From: Leo Li [mailto:pku.leo@gmail.com]
+>> Sent: Thursday, September 22, 2016 2:19 AM
+>> To: Qiang Zhao <qiang.zhao@nxp.com>
+>> Cc: Scott Wood <oss@buserror.net>; linuxppc-dev <linuxppc-
+>> dev@lists.ozlabs.org>; lkml <linux-kernel@vger.kernel.org>; X.B. Xie
+>> <xiaobo.xie@nxp.com>
+>> Subject: Re: [PATCH v5 2/2] QE: remove PPCisms for QE
+>>
+>> On Tue, Sep 20, 2016 at 8:13 PM, Qiang Zhao <qiang.zhao@nxp.com> wrote:
+>> > On Mon, Sep 20, 2016 at 4:13 AM, Leo Li wrote:
+>> >> -----Original Message-----
+>> >> From: Leo Li [mailto:pku.leo@gmail.com]
+>> >> Sent: Tuesday, September 20, 2016 4:13 AM
+>> >> To: Qiang Zhao <qiang.zhao@nxp.com>
+>> >> Cc: Scott Wood <oss@buserror.net>; linuxppc-dev <linuxppc-
+>> >> dev@lists.ozlabs.org>; lkml <linux-kernel@vger.kernel.org>; X.B. Xie
+>> >> <xiaobo.xie@nxp.com>
+>> >> Subject: Re: [PATCH v5 2/2] QE: remove PPCisms for QE
+>> >>
+>> >> On Mon, Jul 25, 2016 at 12:43 AM, Zhao Qiang <qiang.zhao@nxp.com>
+>> wrote:
+>> >> > QE was supported on PowerPC, and dependent on PPC, Now it is
+>> >> > supported on other platforms. so remove PPCisms.
+>> >> >
+>> >> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+>> >> > ---
+>> >> > Changes for v2:
+>> >> >         - na
+>> >> > Changes for v3:
+>> >> >         - add NO_IRQ
+>> >> > Changes for v4:
+>> >> >         - modify spin_event_timeout to opencoded timeout loop
+>> >> >         - remove NO_IRQ
+>> >> >         - modify virq_to_hw to opencoed code Changes for v5:
+>> >> >         - modify commit msg
+>> >> >         - modify depends of QUICC_ENGINE
+>> >> >         - add kerneldoc header for qe_issue_cmd
+>> >> >
+>> >> >  drivers/irqchip/qe_ic.c       | 28 +++++++++------
+>> >> >  drivers/soc/fsl/qe/Kconfig    |  2 +-
+>> >> >  drivers/soc/fsl/qe/qe.c       | 80 ++++++++++++++++++++++++++----------
+>> ----
+>> >> ---
+>> >> >  drivers/soc/fsl/qe/qe_io.c    | 42 ++++++++++-------------
+>> >> >  drivers/soc/fsl/qe/qe_tdm.c   |  8 ++---
+>> >> >  drivers/soc/fsl/qe/ucc.c      | 10 +++---
+>> >> >  drivers/soc/fsl/qe/ucc_fast.c | 68 ++++++++++++++++++------------------
+>> >> >  include/soc/fsl/qe/qe.h       |  1 -
+>> >> >  include/soc/fsl/qe/qe_ic.h    | 12 +++----
+>> >> >  9 files changed, 133 insertions(+), 118 deletions(-)
+>> >> >
+>> >>
+>> >> [snip]
+>> >>
+>> >> > diff --git a/drivers/soc/fsl/qe/Kconfig
+>> >> > b/drivers/soc/fsl/qe/Kconfig index 73a2e08..b26b643 100644
+>> >> > --- a/drivers/soc/fsl/qe/Kconfig
+>> >> > +++ b/drivers/soc/fsl/qe/Kconfig
+>> >> > @@ -4,7 +4,7 @@
+>> >> >
+>> >> >  config QUICC_ENGINE
+>> >> >         bool "Freescale QUICC Engine (QE) Support"
+>> >> > -       depends on FSL_SOC && PPC32
+>> >> > +       depends on OF && HAS_IOMEM
+>> >> >         select GENERIC_ALLOCATOR
+>> >> >         select CRC32
+>> >> >         help
+>> >>
+>> >> You make it possible to build QE drivers on ARM, but the UCC_GETH
+>> >> fails to build on arm64.  Please make sure all these drivers can
+>> >> build on other architectures.  Or you can simply make them only build
+>> >> for Power architecture as most of them are not available on ARM.
+>> >>
+>> >
+>> > Most of them are not available on ARM and ARM64.
+>> > Now, only qe-hdlc is available on ARM64.
+>>
+>> Then you should update the Kconfig for these drivers too, if they are only
+>> depending on CONFIG_QUICC_ENGINE.
 >
->> The kernel now supports both radix and hash MMU modes. Tools like crash
->> and makedumpfile need to know the current MMU mode the kernel is using,
->> to debug/analyze it.  The current MMU mode depends on hardware support
->> and also whether disable_radix cmdline parameter is passed to the kernel.
->> The mmu_features member of cpu_spec structure holds the current MMU mode
->> a cpu is using. But the above mentioned tools need to know the MMU mode
->> early in their init process, when they may not have access to offset info
->> of structure members. A hard-coded offset may help but it won't be robust.
-> IIUC, you walk the linux page table and that should be more or less same
+> You mean adding "depends on FSL_SOC && PPC32 " to the drivers that are not available for ARM?
 
-Taking the case of crash tool, vmemmap start value is currently
-hard-coded to 0xf000000000000000UL but it changed to
-0xc00a000000000000UL in case of radix.
+Yes.  Previously these drivers get the architecture limitation from
+CONFIG_QUICC_ENGINE, but now they need them by their own.
 
-> between radix/hash right except few bits. Now what crash will be
-> interested in will be the RPN part of the table which should be same
-> between hash/radix.
-
-Though the walk is pretty much the same, the tool still needs to know
-the right index values and vmemmap start to use, as they are different
-for radix and hash..
-
->> This patch introduces a new global variable, which holds the current MMU
->> mode the kernel is running in and can be accessed by tools early in thier
->> init process,
-> Init process of what ? kernel or crash tool ?
-
-tool initialization - crash or makedumpfile..
-
->> helping tools to initialize accurately for each MMU mode.
->> This patch also optimizes the radix_enabled() function call.
->>
-> how do you differentiate between the hold linux page table format and
-> the new ? Can you also summarize what crash tool look for in the page
-> table ?
-
-It needs the index sizes, masked bit values and page flag info to
-do the page table walk. Since they can be different for hash and
-radix..
-
->> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
->> ---
->>
->> Changes from v1:
->> * Patch name changed from "ppc64/book3s: export mmu type info"
->> * Optimized radix_enabled() function
->>
->>
->>   arch/powerpc/include/asm/mmu.h      |   22 +++++++++++++++++++++-
->>   arch/powerpc/kernel/machine_kexec.c |    3 +++
->>   arch/powerpc/mm/hash_utils_64.c     |    2 ++
->>   arch/powerpc/mm/pgtable-radix.c     |    2 ++
->>   arch/powerpc/mm/pgtable.c           |    6 ++++++
->>   arch/powerpc/mm/tlb_hash32.c        |    1 +
->>   arch/powerpc/mm/tlb_nohash.c        |    2 ++
->>   7 files changed, 37 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
->> index e2fb408..558987c 100644
->> --- a/arch/powerpc/include/asm/mmu.h
->> +++ b/arch/powerpc/include/asm/mmu.h
->> @@ -199,6 +199,21 @@ static inline void mmu_clear_feature(unsigned long feature)
->>
->>   extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
->>
->> +/*
->> + * Possible MMU modes
->> + */
->> +#define MMU_MODE_NONE           0
->> +#define MMU_MODE_RADIX          1
->> +#define MMU_MODE_HASH           2
->> +#define MMU_MODE_HASH32         3
->> +#define MMU_MODE_NOHASH         4
->> +#define MMU_MODE_NOHASH32       5
->> +
->> +/*
->> + * current MMU mode
->> + */
->> +extern unsigned int current_mmu_mode __read_mostly;
->> +
->>   #ifdef CONFIG_PPC64
->>   /* This is our real memory area size on ppc64 server, on embedded, we
->>    * make it match the size our of bolted TLB area
->> @@ -218,7 +233,12 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
->>   #ifdef CONFIG_PPC_RADIX_MMU
->>   static inline bool radix_enabled(void)
->>   {
->> -	return mmu_has_feature(MMU_FTR_TYPE_RADIX);
->> +	if (current_mmu_mode == MMU_MODE_RADIX)
->> +		return true;
->> +	else if (current_mmu_mode != MMU_MODE_NONE)
->> +		return false;
->> +	else
->> +		return mmu_has_feature(MMU_FTR_TYPE_RADIX);
->>   }
->>
-> That is not optimization, that makes it slow. We hotpatch mmu_has_feature().
-
-Ugh! I didn't consider that..
-
-Thanks
-Hari
-
->>   static inline bool early_radix_enabled(void)
->> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
->> index 2694d07..4ecc184 100644
->> --- a/arch/powerpc/kernel/machine_kexec.c
->> +++ b/arch/powerpc/kernel/machine_kexec.c
->> @@ -77,6 +77,9 @@ void arch_crash_save_vmcoreinfo(void)
->>   	VMCOREINFO_SYMBOL(contig_page_data);
->>   #endif
->>   #if defined(CONFIG_PPC64) && defined(CONFIG_SPARSEMEM_VMEMMAP)
->> +#ifdef CONFIG_PPC_BOOK3S
->> +	VMCOREINFO_SYMBOL(current_mmu_mode);
->> +#endif
->>   	VMCOREINFO_SYMBOL(vmemmap_list);
->>   	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
->>   	VMCOREINFO_SYMBOL(mmu_psize_defs);
->> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
->> index 0821556..a566a95 100644
->> --- a/arch/powerpc/mm/hash_utils_64.c
->> +++ b/arch/powerpc/mm/hash_utils_64.c
->> @@ -886,6 +886,8 @@ void __init hash__early_init_devtree(void)
->>
->>   void __init hash__early_init_mmu(void)
->>   {
->> +	current_mmu_mode = MMU_MODE_HASH;
->> +
->>   	htab_init_page_sizes();
->>
->>   	/*
->> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
->> index af897d9..4b0ad48 100644
->> --- a/arch/powerpc/mm/pgtable-radix.c
->> +++ b/arch/powerpc/mm/pgtable-radix.c
->> @@ -298,6 +298,8 @@ void __init radix__early_init_mmu(void)
->>   {
->>   	unsigned long lpcr;
->>
->> +	current_mmu_mode = MMU_MODE_RADIX;
->> +
->>   #ifdef CONFIG_PPC_64K_PAGES
->>   	/* PAGE_SIZE mappings */
->>   	mmu_virtual_psize = MMU_PAGE_64K;
->> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
->> index 0b6fb24..4638a00 100644
->> --- a/arch/powerpc/mm/pgtable.c
->> +++ b/arch/powerpc/mm/pgtable.c
->> @@ -31,6 +31,12 @@
->>   #include <asm/tlbflush.h>
->>   #include <asm/tlb.h>
->>
->> +/*
->> + * current MMU mode
->> + */
->> +unsigned int current_mmu_mode __read_mostly = MMU_MODE_NONE;
->> +EXPORT_SYMBOL(current_mmu_mode);
->> +
->>   static inline int is_exec_fault(void)
->>   {
->>   	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
->> diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
->> index 702d768..0b55425 100644
->> --- a/arch/powerpc/mm/tlb_hash32.c
->> +++ b/arch/powerpc/mm/tlb_hash32.c
->> @@ -170,4 +170,5 @@ EXPORT_SYMBOL(flush_tlb_range);
->>
->>   void __init early_init_mmu(void)
->>   {
->> +	current_mmu_mode = MMU_MODE_HASH32;
->>   }
->> diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
->> index 050badc..74300a7 100644
->> --- a/arch/powerpc/mm/tlb_nohash.c
->> +++ b/arch/powerpc/mm/tlb_nohash.c
->> @@ -720,6 +720,7 @@ static void __init early_mmu_set_memory_limit(void)
->>   /* boot cpu only */
->>   void __init early_init_mmu(void)
->>   {
->> +	current_mmu_mode = MMU_MODE_NOHASH;
->>   	early_init_mmu_global();
->>   	early_init_this_mmu();
->>   	early_mmu_set_memory_limit();
->> @@ -772,6 +773,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
->>   #else /* ! CONFIG_PPC64 */
->>   void __init early_init_mmu(void)
->>   {
->> +	current_mmu_mode = MMU_MODE_NOHASH32;
->>   #ifdef CONFIG_PPC_47x
->>   	early_init_mmu_47x();
->>   #endif
->
-> -aneesh
+Regards,
+Leo
