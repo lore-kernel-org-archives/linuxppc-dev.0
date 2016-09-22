@@ -1,27 +1,24 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sg02S0x3JzDshh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 00:57:03 +1000 (AEST)
-Date: Thu, 22 Sep 2016 11:56:55 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@kernel.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, peterz@infradead.org,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v21 00/20] perf, tools: Add support for PMU events in
- JSON format
-Message-ID: <20160922145655.GA5588@kernel.org>
-References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20160919212017.GA11991@kernel.org>
- <20160919233113.GB11991@kernel.org>
- <20160919233753.GC11991@kernel.org>
- <20160920000258.GD11991@kernel.org>
- <20160920002820.GE11991@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160920002820.GE11991@kernel.org>
+Return-Path: <kim.phillips@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sg0486HBxzDsl2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 00:58:32 +1000 (AEST)
+Date: Thu, 22 Sep 2016 09:58:26 -0500
+From: Kim Phillips <kim.phillips@arm.com>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: <linux-kernel@vger.kernel.org>, <acme@kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <peterz@infradead.org>,
+ <mingo@redhat.com>, <alexander.shishkin@linux.intel.com>,
+ <treeze.taeung@gmail.com>, <naveen.n.rao@linux.vnet.ibm.com>,
+ <markus@trippelsdorf.de>, <namhyung@kernel.org>, <pawel.moll@arm.com>,
+ <chris.ryder@arm.com>, <jolsa@kernel.org>, <mhiramat@kernel.org>
+Subject: Re: [PATCH v7 0/6] perf annotate: Cross arch support + few fixes
+Message-Id: <20160922095826.e3e5986e5acf0b2f692ef55b@arm.com>
+In-Reply-To: <57E36995.4090101@linux.vnet.ibm.com>
+References: <1474472876-2706-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20160921143427.8db0abae30690baadc18de01@arm.com>
+ <57E36995.4090101@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-oops, Jiri wasn't CCed, fixing it...
+On Thu, 22 Sep 2016 10:48:13 +0530
+Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> wrote:
 
-Em Mon, Sep 19, 2016 at 09:28:20PM -0300, Arnaldo Carvalho de Melo escreveu:
-> Em Mon, Sep 19, 2016 at 09:02:58PM -0300, Arnaldo Carvalho de Melo escreveu:
-> > Em Mon, Sep 19, 2016 at 08:37:53PM -0300, Arnaldo Carvalho de Melo escreveu:
-> > > yeah, changing that typedef + true def to plain include <stdbool.h>
-> > > makes it progress to the next failure, which is in cross compilation
-> > > environments, such as using fedora 24 + the Android NDK to try to build
-> > > a ARM android binary.
+> On Thursday 22 September 2016 01:04 AM, Kim Phillips wrote:
+> > On Wed, 21 Sep 2016 21:17:50 +0530
+> > Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> wrote:
+> >
+> >> Kim, I don't have arm test machine. Can you please help me to test
+> >> this on arm.
+> > This works for me:  hitting return on return instructions yields
+> > "Invalid jump offset", but I'll get that later.
 > 
-> > 14 fedora:24-x-ARC-uClibc: FAIL
-> >   GEN      /tmp/build/perf/pmu-events/pmu-events.c
-> > /bin/sh: /tmp/build/perf/pmu-events/jevents: cannot execute binary file: Exec format error
-> > pmu-events/Build:11: recipe for target '/tmp/build/perf/pmu-events/pmu-events.c' failed
-> > make[2]: *** [/tmp/build/perf/pmu-events/pmu-events.c] Error 126
-> > Makefile.perf:461: recipe for target '/tmp/build/perf/pmu-events/pmu-events-in.o' failed
-> > make[1]: *** [/tmp/build/perf/pmu-events/pmu-events-in.o] Error 2
-> > make[1]: *** Waiting for unfinished jobs....
+> Thanks Kim.
 > 
-> Jiri, we need something similar to scripts/Makefile.host :-\
-> 
-> Calling it a day, perhaps, for now, we should just detect that it is a
-> corss compile env (CROSS_COMPILE is set) and exclude all this code from
-> the build, emitting a warning.
-> 
-> I left what I did at the tmp.perf/core branch of my repo at
-> git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git.
-> 
-> - Arnaldo
+> Hmm.. so, ins__find_arm does not contain logic for return instructions. Navigation
+> with return instruction is working fine for x86 and powerpc.
+
+Right, for ARM, in order to match return instructions, 'lr' must be
+found to be the operand of the branch instruction, which is not
+contained in the 'name' variable passed to ins__find().
+
+I don't want this to inhibit acceptance of this series, however: I plan
+on addressing it afterwards, unless, of course, it is perceived as a
+problem somehow (compatibility-wise, it is not because it is an error
+at the moment).
+
+Thanks,
+
+Kim
