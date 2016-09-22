@@ -1,17 +1,17 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0071.outbound.protection.outlook.com [104.47.34.71])
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0048.outbound.protection.outlook.com [104.47.38.48])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sg0D94vbczDsjB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 01:05:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sg0DC0plwzDsjY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 01:05:30 +1000 (AEST)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, Scott Wood <oss@buserror.net>, Roy Pledge
  <roy.pledge@nxp.com>
-Subject: [PATCH v2 1/5] soc/fsl: Introduce DPAA 1.x BMan device driver
-Date: Thu, 22 Sep 2016 18:04:08 +0300
-Message-ID: <1474556652-5044-2-git-send-email-claudiu.manoil@nxp.com>
+Subject: [PATCH v2 4/5] soc/qman: Add self-test for QMan driver
+Date: Thu, 22 Sep 2016 18:04:11 +0300
+Message-ID: <1474556652-5044-5-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1474556652-5044-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1474556652-5044-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -25,84 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This driver enables the Freescale DPAA 1.x Buffer Manager block.
-BMan is a hardware accelerator that manages buffer pools.  It allows
-CPUs and other accelerators connected to the SoC datapath to acquire
-and release buffers during data processing.
+Add self tests for the DPAA 1.x Queue Manager driver. The tests
+ensure that the driver can properly enqueue and dequeue to/from
+frame queues using the QMan portal infrastructure.
 
 Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
-v2:
-* FSL_DPAA depends on FSL_SOC_BOOKE (fixes allyesconfig build)
-* further code cleanup and improvements around portal probing
+v2: none
 
- drivers/soc/fsl/qbman/Kconfig       |  28 ++
- drivers/soc/fsl/qbman/Makefile      |   2 +
- drivers/soc/fsl/qbman/bman.c        | 797 ++++++++++++++++++++++++++++++++++++
- drivers/soc/fsl/qbman/bman_ccsr.c   | 263 ++++++++++++
- drivers/soc/fsl/qbman/bman_portal.c | 219 ++++++++++
- drivers/soc/fsl/qbman/bman_priv.h   |  80 ++++
- drivers/soc/fsl/qbman/dpaa_sys.h    | 103 +++++
- include/soc/fsl/bman.h              | 129 ++++++
- 8 files changed, 1621 insertions(+)
- create mode 100644 drivers/soc/fsl/qbman/Kconfig
- create mode 100644 drivers/soc/fsl/qbman/Makefile
- create mode 100644 drivers/soc/fsl/qbman/bman.c
- create mode 100644 drivers/soc/fsl/qbman/bman_ccsr.c
- create mode 100644 drivers/soc/fsl/qbman/bman_portal.c
- create mode 100644 drivers/soc/fsl/qbman/bman_priv.h
- create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.h
- create mode 100644 include/soc/fsl/bman.h
+ drivers/soc/fsl/qbman/Kconfig           |  23 ++
+ drivers/soc/fsl/qbman/Makefile          |   5 +
+ drivers/soc/fsl/qbman/qman_test.c       |  62 ++++
+ drivers/soc/fsl/qbman/qman_test.h       |  36 ++
+ drivers/soc/fsl/qbman/qman_test_api.c   | 252 +++++++++++++
+ drivers/soc/fsl/qbman/qman_test_stash.c | 617 ++++++++++++++++++++++++++++++++
+ 6 files changed, 995 insertions(+)
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_api.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_stash.c
 
 diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-new file mode 100644
-index 0000000..8f2df64
---- /dev/null
+index e6da6a2..757033c 100644
+--- a/drivers/soc/fsl/qbman/Kconfig
 +++ b/drivers/soc/fsl/qbman/Kconfig
-@@ -0,0 +1,28 @@
-+menuconfig FSL_DPAA
-+	bool "Freescale DPAA 1.x support"
-+	depends on FSL_SOC_BOOKE
-+	select GENERIC_ALLOCATOR
+@@ -41,4 +41,27 @@ config FSL_BMAN_TEST_API
+ 	  high-level API testing with them (whichever portal(s) are affine
+ 	  to the cpu(s) the test executes on).
+ 
++config FSL_QMAN_TEST
++	tristate "QMan self-tests"
 +	help
-+	  The Freescale Data Path Acceleration Architecture (DPAA) is a set of
-+	  hardware components on specific QorIQ multicore processors.
-+	  This architecture provides the infrastructure to support simplified
-+	  sharing of networking interfaces and accelerators by multiple CPUs.
-+	  The major h/w blocks composing DPAA are BMan and QMan.
++	  Compile self-test code for QMan.
 +
-+	  The Buffer Manager (BMan) is a hardware buffer pool management block
-+	  that allows software and accelerators on the datapath to acquire and
-+	  release buffers in order to build frames.
-+
-+	  The Queue Manager (QMan) is a hardware queue management block
-+	  that allows software and accelerators on the datapath to enqueue and
-+	  dequeue frames in order to communicate.
-+
-+if FSL_DPAA
-+
-+config FSL_DPAA_CHECKING
-+	bool "Additional driver checking"
++config FSL_QMAN_TEST_API
++	bool "QMan high-level self-test"
++	depends on FSL_QMAN_TEST
++	default y
 +	help
-+	  Compiles in additional checks, to sanity-check the drivers and
-+	  any use of the exported API. Not recommended for performance.
++	  This requires the presence of cpu-affine portals, and performs
++	  high-level API testing with them (whichever portal(s) are affine to
++	  the cpu(s) the test executes on).
 +
-+endif # FSL_DPAA
++config FSL_QMAN_TEST_STASH
++	bool "QMan 'hot potato' data-stashing self-test"
++	depends on FSL_QMAN_TEST
++	default y
++	help
++	  This performs a "hot potato" style test enqueuing/dequeuing a frame
++	  across a series of FQs scheduled to different portals (and cpus), with
++	  DQRR, data and context stashing always on.
++
+ endif # FSL_DPAA
 diff --git a/drivers/soc/fsl/qbman/Makefile b/drivers/soc/fsl/qbman/Makefile
-new file mode 100644
-index 0000000..855c3ac
---- /dev/null
+index 714dd97..7ae199f 100644
+--- a/drivers/soc/fsl/qbman/Makefile
 +++ b/drivers/soc/fsl/qbman/Makefile
-@@ -0,0 +1,2 @@
-+obj-$(CONFIG_FSL_DPAA)                          += bman_ccsr.o bman_portal.o \
-+						   bman.o
-diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
+@@ -5,3 +5,8 @@ obj-$(CONFIG_FSL_DPAA)                          += bman_ccsr.o qman_ccsr.o \
+ obj-$(CONFIG_FSL_BMAN_TEST)                     += bman-test.o
+ bman-test-y                                      = bman_test.o
+ bman-test-$(CONFIG_FSL_BMAN_TEST_API)           += bman_test_api.o
++
++obj-$(CONFIG_FSL_QMAN_TEST)			+= qman-test.o
++qman-test-y					 = qman_test.o
++qman-test-$(CONFIG_FSL_QMAN_TEST_API)		+= qman_test_api.o
++qman-test-$(CONFIG_FSL_QMAN_TEST_STASH)		+= qman_test_stash.o
+diff --git a/drivers/soc/fsl/qbman/qman_test.c b/drivers/soc/fsl/qbman/qman_test.c
 new file mode 100644
-index 0000000..ffa48fd
+index 0000000..18f7f02
 --- /dev/null
-+++ b/drivers/soc/fsl/qbman/bman.c
-@@ -0,0 +1,797 @@
++++ b/drivers/soc/fsl/qbman/qman_test.c
+@@ -0,0 +1,62 @@
 +/* Copyright 2008 - 2016 Freescale Semiconductor, Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
@@ -133,1048 +127,44 @@ index 0000000..ffa48fd
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#include "bman_priv.h"
++#include "qman_test.h"
 +
-+#define IRQNAME		"BMan portal %d"
-+#define MAX_IRQNAME	16	/* big enough for "BMan portal %d" */
++MODULE_AUTHOR("Geoff Thorpe");
++MODULE_LICENSE("Dual BSD/GPL");
++MODULE_DESCRIPTION("QMan testing");
 +
-+/* Portal register assists */
-+
-+/* Cache-inhibited register offsets */
-+#define BM_REG_RCR_PI_CINH	0x0000
-+#define BM_REG_RCR_CI_CINH	0x0004
-+#define BM_REG_RCR_ITR		0x0008
-+#define BM_REG_CFG		0x0100
-+#define BM_REG_SCN(n)		(0x0200 + ((n) << 2))
-+#define BM_REG_ISR		0x0e00
-+#define BM_REG_IER		0x0e04
-+#define BM_REG_ISDR		0x0e08
-+#define BM_REG_IIR		0x0e0c
-+
-+/* Cache-enabled register offsets */
-+#define BM_CL_CR		0x0000
-+#define BM_CL_RR0		0x0100
-+#define BM_CL_RR1		0x0140
-+#define BM_CL_RCR		0x1000
-+#define BM_CL_RCR_PI_CENA	0x3000
-+#define BM_CL_RCR_CI_CENA	0x3100
-+
-+/*
-+ * Portal modes.
-+ *   Enum types;
-+ *     pmode == production mode
-+ *     cmode == consumption mode,
-+ *   Enum values use 3 letter codes. First letter matches the portal mode,
-+ *   remaining two letters indicate;
-+ *     ci == cache-inhibited portal register
-+ *     ce == cache-enabled portal register
-+ *     vb == in-band valid-bit (cache-enabled)
-+ */
-+enum bm_rcr_pmode {		/* matches BCSP_CFG::RPM */
-+	bm_rcr_pci = 0,		/* PI index, cache-inhibited */
-+	bm_rcr_pce = 1,		/* PI index, cache-enabled */
-+	bm_rcr_pvb = 2		/* valid-bit */
-+};
-+enum bm_rcr_cmode {		/* s/w-only */
-+	bm_rcr_cci,		/* CI index, cache-inhibited */
-+	bm_rcr_cce		/* CI index, cache-enabled */
-+};
-+
-+
-+/* --- Portal structures --- */
-+
-+#define BM_RCR_SIZE		8
-+
-+/* Release Command */
-+struct bm_rcr_entry {
-+	union {
-+		struct {
-+			u8 _ncw_verb; /* writes to this are non-coherent */
-+			u8 bpid; /* used with BM_RCR_VERB_CMD_BPID_SINGLE */
-+			u8 __reserved1[62];
-+		};
-+		struct bm_buffer bufs[8];
-+	};
-+};
-+#define BM_RCR_VERB_VBIT		0x80
-+#define BM_RCR_VERB_CMD_MASK		0x70	/* one of two values; */
-+#define BM_RCR_VERB_CMD_BPID_SINGLE	0x20
-+#define BM_RCR_VERB_CMD_BPID_MULTI	0x30
-+#define BM_RCR_VERB_BUFCOUNT_MASK	0x0f	/* values 1..8 */
-+
-+struct bm_rcr {
-+	struct bm_rcr_entry *ring, *cursor;
-+	u8 ci, available, ithresh, vbit;
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	u32 busy;
-+	enum bm_rcr_pmode pmode;
-+	enum bm_rcr_cmode cmode;
-+#endif
-+};
-+
-+/* MC (Management Command) command */
-+struct bm_mc_command {
-+	u8 _ncw_verb; /* writes to this are non-coherent */
-+	u8 bpid; /* used by acquire command */
-+	u8 __reserved[62];
-+};
-+#define BM_MCC_VERB_VBIT		0x80
-+#define BM_MCC_VERB_CMD_MASK		0x70	/* where the verb contains; */
-+#define BM_MCC_VERB_CMD_ACQUIRE		0x10
-+#define BM_MCC_VERB_CMD_QUERY		0x40
-+#define BM_MCC_VERB_ACQUIRE_BUFCOUNT	0x0f	/* values 1..8 go here */
-+
-+/* MC result, Acquire and Query Response */
-+union bm_mc_result {
-+	struct {
-+		u8 verb;
-+		u8 bpid;
-+		u8 __reserved[62];
-+	};
-+	struct bm_buffer bufs[8];
-+};
-+#define BM_MCR_VERB_VBIT		0x80
-+#define BM_MCR_VERB_CMD_MASK		BM_MCC_VERB_CMD_MASK
-+#define BM_MCR_VERB_CMD_ACQUIRE		BM_MCC_VERB_CMD_ACQUIRE
-+#define BM_MCR_VERB_CMD_QUERY		BM_MCC_VERB_CMD_QUERY
-+#define BM_MCR_VERB_CMD_ERR_INVALID	0x60
-+#define BM_MCR_VERB_CMD_ERR_ECC		0x70
-+#define BM_MCR_VERB_ACQUIRE_BUFCOUNT	BM_MCC_VERB_ACQUIRE_BUFCOUNT /* 0..8 */
-+#define BM_MCR_TIMEOUT			10000 /* us */
-+
-+struct bm_mc {
-+	struct bm_mc_command *cr;
-+	union bm_mc_result *rr;
-+	u8 rridx, vbit;
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	enum {
-+		/* Can only be _mc_start()ed */
-+		mc_idle,
-+		/* Can only be _mc_commit()ed or _mc_abort()ed */
-+		mc_user,
-+		/* Can only be _mc_retry()ed */
-+		mc_hw
-+	} state;
-+#endif
-+};
-+
-+struct bm_addr {
-+	void __iomem *ce;	/* cache-enabled */
-+	void __iomem *ci;	/* cache-inhibited */
-+};
-+
-+struct bm_portal {
-+	struct bm_addr addr;
-+	struct bm_rcr rcr;
-+	struct bm_mc mc;
-+} ____cacheline_aligned;
-+
-+/* Cache-inhibited register access. */
-+static inline u32 bm_in(struct bm_portal *p, u32 offset)
++static int test_init(void)
 +{
-+	return __raw_readl(p->addr.ci + offset);
-+}
++	int loop = 1;
++	int err = 0;
 +
-+static inline void bm_out(struct bm_portal *p, u32 offset, u32 val)
-+{
-+	__raw_writel(val, p->addr.ci + offset);
-+}
-+
-+/* Cache Enabled Portal Access */
-+static inline void bm_cl_invalidate(struct bm_portal *p, u32 offset)
-+{
-+	dpaa_invalidate(p->addr.ce + offset);
-+}
-+
-+static inline void bm_cl_touch_ro(struct bm_portal *p, u32 offset)
-+{
-+	dpaa_touch_ro(p->addr.ce + offset);
-+}
-+
-+static inline u32 bm_ce_in(struct bm_portal *p, u32 offset)
-+{
-+	return __raw_readl(p->addr.ce + offset);
-+}
-+
-+struct bman_portal {
-+	struct bm_portal p;
-+	/* interrupt sources processed by portal_isr(), configurable */
-+	unsigned long irq_sources;
-+	/* probing time config params for cpu-affine portals */
-+	const struct bm_portal_config *config;
-+	char irqname[MAX_IRQNAME];
-+};
-+
-+static cpumask_t affine_mask;
-+static DEFINE_SPINLOCK(affine_mask_lock);
-+static DEFINE_PER_CPU(struct bman_portal, bman_affine_portal);
-+
-+static inline struct bman_portal *get_affine_portal(void)
-+{
-+	return &get_cpu_var(bman_affine_portal);
-+}
-+
-+static inline void put_affine_portal(void)
-+{
-+	put_cpu_var(bman_affine_portal);
-+}
-+
-+/*
-+ * This object type refers to a pool, it isn't *the* pool. There may be
-+ * more than one such object per BMan buffer pool, eg. if different users of the
-+ * pool are operating via different portals.
-+ */
-+struct bman_pool {
-+	/* index of the buffer pool to encapsulate (0-63) */
-+	u32 bpid;
-+	/* Used for hash-table admin when using depletion notifications. */
-+	struct bman_portal *portal;
-+	struct bman_pool *next;
-+};
-+
-+static u32 poll_portal_slow(struct bman_portal *p, u32 is);
-+
-+static irqreturn_t portal_isr(int irq, void *ptr)
-+{
-+	struct bman_portal *p = ptr;
-+	struct bm_portal *portal = &p->p;
-+	u32 clear = p->irq_sources;
-+	u32 is = bm_in(portal, BM_REG_ISR) & p->irq_sources;
-+
-+	if (unlikely(!is))
-+		return IRQ_NONE;
-+
-+	clear |= poll_portal_slow(p, is);
-+	bm_out(portal, BM_REG_ISR, clear);
-+	return IRQ_HANDLED;
-+}
-+
-+/* --- RCR API --- */
-+
-+#define RCR_SHIFT	ilog2(sizeof(struct bm_rcr_entry))
-+#define RCR_CARRY	(uintptr_t)(BM_RCR_SIZE << RCR_SHIFT)
-+
-+/* Bit-wise logic to wrap a ring pointer by clearing the "carry bit" */
-+static struct bm_rcr_entry *rcr_carryclear(struct bm_rcr_entry *p)
-+{
-+	uintptr_t addr = (uintptr_t)p;
-+
-+	addr &= ~RCR_CARRY;
-+
-+	return (struct bm_rcr_entry *)addr;
-+}
-+
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+/* Bit-wise logic to convert a ring pointer to a ring index */
-+static int rcr_ptr2idx(struct bm_rcr_entry *e)
-+{
-+	return ((uintptr_t)e >> RCR_SHIFT) & (BM_RCR_SIZE - 1);
-+}
-+#endif
-+
-+/* Increment the 'cursor' ring pointer, taking 'vbit' into account */
-+static inline void rcr_inc(struct bm_rcr *rcr)
-+{
-+	/* increment to the next RCR pointer and handle overflow and 'vbit' */
-+	struct bm_rcr_entry *partial = rcr->cursor + 1;
-+
-+	rcr->cursor = rcr_carryclear(partial);
-+	if (partial != rcr->cursor)
-+		rcr->vbit ^= BM_RCR_VERB_VBIT;
-+}
-+
-+static int bm_rcr_get_avail(struct bm_portal *portal)
-+{
-+	struct bm_rcr *rcr = &portal->rcr;
-+
-+	return rcr->available;
-+}
-+
-+static int bm_rcr_get_fill(struct bm_portal *portal)
-+{
-+	struct bm_rcr *rcr = &portal->rcr;
-+
-+	return BM_RCR_SIZE - 1 - rcr->available;
-+}
-+
-+static void bm_rcr_set_ithresh(struct bm_portal *portal, u8 ithresh)
-+{
-+	struct bm_rcr *rcr = &portal->rcr;
-+
-+	rcr->ithresh = ithresh;
-+	bm_out(portal, BM_REG_RCR_ITR, ithresh);
-+}
-+
-+static void bm_rcr_cce_prefetch(struct bm_portal *portal)
-+{
-+	__maybe_unused struct bm_rcr *rcr = &portal->rcr;
-+
-+	DPAA_ASSERT(rcr->cmode == bm_rcr_cce);
-+	bm_cl_touch_ro(portal, BM_CL_RCR_CI_CENA);
-+}
-+
-+static u8 bm_rcr_cce_update(struct bm_portal *portal)
-+{
-+	struct bm_rcr *rcr = &portal->rcr;
-+	u8 diff, old_ci = rcr->ci;
-+
-+	DPAA_ASSERT(rcr->cmode == bm_rcr_cce);
-+	rcr->ci = bm_ce_in(portal, BM_CL_RCR_CI_CENA) & (BM_RCR_SIZE - 1);
-+	bm_cl_invalidate(portal, BM_CL_RCR_CI_CENA);
-+	diff = dpaa_cyc_diff(BM_RCR_SIZE, old_ci, rcr->ci);
-+	rcr->available += diff;
-+	return diff;
-+}
-+
-+static inline struct bm_rcr_entry *bm_rcr_start(struct bm_portal *portal)
-+{
-+	struct bm_rcr *rcr = &portal->rcr;
-+
-+	DPAA_ASSERT(!rcr->busy);
-+	if (!rcr->available)
-+		return NULL;
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	rcr->busy = 1;
-+#endif
-+	dpaa_zero(rcr->cursor);
-+	return rcr->cursor;
-+}
-+
-+static inline void bm_rcr_pvb_commit(struct bm_portal *portal, u8 myverb)
-+{
-+	struct bm_rcr *rcr = &portal->rcr;
-+	struct bm_rcr_entry *rcursor;
-+
-+	DPAA_ASSERT(rcr->busy);
-+	DPAA_ASSERT(rcr->pmode == bm_rcr_pvb);
-+	DPAA_ASSERT(rcr->available >= 1);
-+	dma_wmb();
-+	rcursor = rcr->cursor;
-+	rcursor->_ncw_verb = myverb | rcr->vbit;
-+	dpaa_flush(rcursor);
-+	rcr_inc(rcr);
-+	rcr->available--;
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	rcr->busy = 0;
-+#endif
-+}
-+
-+static int bm_rcr_init(struct bm_portal *portal, enum bm_rcr_pmode pmode,
-+		       enum bm_rcr_cmode cmode)
-+{
-+	struct bm_rcr *rcr = &portal->rcr;
-+	u32 cfg;
-+	u8 pi;
-+
-+	rcr->ring = portal->addr.ce + BM_CL_RCR;
-+	rcr->ci = bm_in(portal, BM_REG_RCR_CI_CINH) & (BM_RCR_SIZE - 1);
-+	pi = bm_in(portal, BM_REG_RCR_PI_CINH) & (BM_RCR_SIZE - 1);
-+	rcr->cursor = rcr->ring + pi;
-+	rcr->vbit = (bm_in(portal, BM_REG_RCR_PI_CINH) & BM_RCR_SIZE) ?
-+		BM_RCR_VERB_VBIT : 0;
-+	rcr->available = BM_RCR_SIZE - 1
-+		- dpaa_cyc_diff(BM_RCR_SIZE, rcr->ci, pi);
-+	rcr->ithresh = bm_in(portal, BM_REG_RCR_ITR);
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	rcr->busy = 0;
-+	rcr->pmode = pmode;
-+	rcr->cmode = cmode;
-+#endif
-+	cfg = (bm_in(portal, BM_REG_CFG) & 0xffffffe0)
-+		| (pmode & 0x3); /* BCSP_CFG::RPM */
-+	bm_out(portal, BM_REG_CFG, cfg);
-+	return 0;
-+}
-+
-+static void bm_rcr_finish(struct bm_portal *portal)
-+{
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	struct bm_rcr *rcr = &portal->rcr;
-+	int i;
-+
-+	DPAA_ASSERT(!rcr->busy);
-+
-+	i = bm_in(portal, BM_REG_RCR_PI_CINH) & (BM_RCR_SIZE - 1);
-+	if (i != rcr_ptr2idx(rcr->cursor))
-+		pr_crit("losing uncommited RCR entries\n");
-+
-+	i = bm_in(portal, BM_REG_RCR_CI_CINH) & (BM_RCR_SIZE - 1);
-+	if (i != rcr->ci)
-+		pr_crit("missing existing RCR completions\n");
-+	if (rcr->ci != rcr_ptr2idx(rcr->cursor))
-+		pr_crit("RCR destroyed unquiesced\n");
-+#endif
-+}
-+
-+/* --- Management command API --- */
-+static int bm_mc_init(struct bm_portal *portal)
-+{
-+	struct bm_mc *mc = &portal->mc;
-+
-+	mc->cr = portal->addr.ce + BM_CL_CR;
-+	mc->rr = portal->addr.ce + BM_CL_RR0;
-+	mc->rridx = (__raw_readb(&mc->cr->_ncw_verb) & BM_MCC_VERB_VBIT) ?
-+		    0 : 1;
-+	mc->vbit = mc->rridx ? BM_MCC_VERB_VBIT : 0;
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	mc->state = mc_idle;
-+#endif
-+	return 0;
-+}
-+
-+static void bm_mc_finish(struct bm_portal *portal)
-+{
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	struct bm_mc *mc = &portal->mc;
-+
-+	DPAA_ASSERT(mc->state == mc_idle);
-+	if (mc->state != mc_idle)
-+		pr_crit("Losing incomplete MC command\n");
-+#endif
-+}
-+
-+static inline struct bm_mc_command *bm_mc_start(struct bm_portal *portal)
-+{
-+	struct bm_mc *mc = &portal->mc;
-+
-+	DPAA_ASSERT(mc->state == mc_idle);
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	mc->state = mc_user;
-+#endif
-+	dpaa_zero(mc->cr);
-+	return mc->cr;
-+}
-+
-+static inline void bm_mc_commit(struct bm_portal *portal, u8 myverb)
-+{
-+	struct bm_mc *mc = &portal->mc;
-+	union bm_mc_result *rr = mc->rr + mc->rridx;
-+
-+	DPAA_ASSERT(mc->state == mc_user);
-+	dma_wmb();
-+	mc->cr->_ncw_verb = myverb | mc->vbit;
-+	dpaa_flush(mc->cr);
-+	dpaa_invalidate_touch_ro(rr);
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	mc->state = mc_hw;
-+#endif
-+}
-+
-+static inline union bm_mc_result *bm_mc_result(struct bm_portal *portal)
-+{
-+	struct bm_mc *mc = &portal->mc;
-+	union bm_mc_result *rr = mc->rr + mc->rridx;
-+
-+	DPAA_ASSERT(mc->state == mc_hw);
-+	/*
-+	 * The inactive response register's verb byte always returns zero until
-+	 * its command is submitted and completed. This includes the valid-bit,
-+	 * in case you were wondering...
-+	 */
-+	if (!__raw_readb(&rr->verb)) {
-+		dpaa_invalidate_touch_ro(rr);
-+		return NULL;
-+	}
-+	mc->rridx ^= 1;
-+	mc->vbit ^= BM_MCC_VERB_VBIT;
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+	mc->state = mc_idle;
-+#endif
-+	return rr;
-+}
-+
-+static inline int bm_mc_result_timeout(struct bm_portal *portal,
-+				       union bm_mc_result **mcr)
-+{
-+	int timeout = BM_MCR_TIMEOUT;
-+
-+	do {
-+		*mcr = bm_mc_result(portal);
-+		if (*mcr)
++	while (loop--) {
++#ifdef CONFIG_FSL_QMAN_TEST_STASH
++		err = qman_test_stash();
++		if (err)
 +			break;
-+		udelay(1);
-+	} while (--timeout);
-+
-+	return timeout;
-+}
-+
-+/* Disable all BSCN interrupts for the portal */
-+static void bm_isr_bscn_disable(struct bm_portal *portal)
-+{
-+	bm_out(portal, BM_REG_SCN(0), 0);
-+	bm_out(portal, BM_REG_SCN(1), 0);
-+}
-+
-+static int bman_create_portal(struct bman_portal *portal,
-+			      const struct bm_portal_config *c)
-+{
-+	struct bm_portal *p;
-+	int ret;
-+
-+	p = &portal->p;
-+	/*
-+	 * prep the low-level portal struct with the mapped addresses from the
-+	 * config, everything that follows depends on it and "config" is more
-+	 * for (de)reference...
-+	 */
-+	p->addr.ce = c->addr_virt[DPAA_PORTAL_CE];
-+	p->addr.ci = c->addr_virt[DPAA_PORTAL_CI];
-+	if (bm_rcr_init(p, bm_rcr_pvb, bm_rcr_cce)) {
-+		dev_err(c->dev, "RCR initialisation failed\n");
-+		goto fail_rcr;
-+	}
-+	if (bm_mc_init(p)) {
-+		dev_err(c->dev, "MC initialisation failed\n");
-+		goto fail_mc;
-+	}
-+	/*
-+	 * Default to all BPIDs disabled, we enable as required at
-+	 * run-time.
-+	 */
-+	bm_isr_bscn_disable(p);
-+
-+	/* Write-to-clear any stale interrupt status bits */
-+	bm_out(p, BM_REG_ISDR, 0xffffffff);
-+	portal->irq_sources = 0;
-+	bm_out(p, BM_REG_IER, 0);
-+	bm_out(p, BM_REG_ISR, 0xffffffff);
-+	snprintf(portal->irqname, MAX_IRQNAME, IRQNAME, c->cpu);
-+	if (request_irq(c->irq, portal_isr, 0, portal->irqname,	portal)) {
-+		dev_err(c->dev, "request_irq() failed\n");
-+		goto fail_irq;
-+	}
-+	if (c->cpu != -1 && irq_can_set_affinity(c->irq) &&
-+	    irq_set_affinity(c->irq, cpumask_of(c->cpu))) {
-+		dev_err(c->dev, "irq_set_affinity() failed\n");
-+		goto fail_affinity;
-+	}
-+
-+	/* Need RCR to be empty before continuing */
-+	ret = bm_rcr_get_fill(p);
-+	if (ret) {
-+		dev_err(c->dev, "RCR unclean\n");
-+		goto fail_rcr_empty;
-+	}
-+	/* Success */
-+	portal->config = c;
-+
-+	bm_out(p, BM_REG_ISDR, 0);
-+	bm_out(p, BM_REG_IIR, 0);
-+
-+	return 0;
-+
-+fail_rcr_empty:
-+fail_affinity:
-+	free_irq(c->irq, portal);
-+fail_irq:
-+	bm_mc_finish(p);
-+fail_mc:
-+	bm_rcr_finish(p);
-+fail_rcr:
-+	return -EIO;
-+}
-+
-+struct bman_portal *bman_create_affine_portal(const struct bm_portal_config *c)
-+{
-+	struct bman_portal *portal;
-+	int err;
-+
-+	portal = &per_cpu(bman_affine_portal, c->cpu);
-+	err = bman_create_portal(portal, c);
-+	if (err)
-+		return NULL;
-+
-+	spin_lock(&affine_mask_lock);
-+	cpumask_set_cpu(c->cpu, &affine_mask);
-+	spin_unlock(&affine_mask_lock);
-+
-+	return portal;
-+}
-+
-+static u32 poll_portal_slow(struct bman_portal *p, u32 is)
-+{
-+	u32 ret = is;
-+
-+	if (is & BM_PIRQ_RCRI) {
-+		bm_rcr_cce_update(&p->p);
-+		bm_rcr_set_ithresh(&p->p, 0);
-+		bm_out(&p->p, BM_REG_ISR, BM_PIRQ_RCRI);
-+		is &= ~BM_PIRQ_RCRI;
-+	}
-+
-+	/* There should be no status register bits left undefined */
-+	DPAA_ASSERT(!is);
-+	return ret;
-+}
-+
-+int bman_p_irqsource_add(struct bman_portal *p, u32 bits)
-+{
-+	unsigned long irqflags;
-+
-+	local_irq_save(irqflags);
-+	set_bits(bits & BM_PIRQ_VISIBLE, &p->irq_sources);
-+	bm_out(&p->p, BM_REG_IER, p->irq_sources);
-+	local_irq_restore(irqflags);
-+	return 0;
-+}
-+
-+static int bm_shutdown_pool(u32 bpid)
-+{
-+	struct bm_mc_command *bm_cmd;
-+	union bm_mc_result *bm_res;
-+
-+	while (1) {
-+		struct bman_portal *p = get_affine_portal();
-+		/* Acquire buffers until empty */
-+		bm_cmd = bm_mc_start(&p->p);
-+		bm_cmd->bpid = bpid;
-+		bm_mc_commit(&p->p, BM_MCC_VERB_CMD_ACQUIRE | 1);
-+		if (!bm_mc_result_timeout(&p->p, &bm_res)) {
-+			put_affine_portal();
-+			pr_crit("BMan Acquire Command timedout\n");
-+			return -ETIMEDOUT;
-+		}
-+		if (!(bm_res->verb & BM_MCR_VERB_ACQUIRE_BUFCOUNT)) {
-+			put_affine_portal();
-+			/* Pool is empty */
-+			return 0;
-+		}
-+		put_affine_portal();
-+	}
-+
-+	return 0;
-+}
-+
-+struct gen_pool *bm_bpalloc;
-+
-+static int bm_alloc_bpid_range(u32 *result, u32 count)
-+{
-+	unsigned long addr;
-+
-+	addr = gen_pool_alloc(bm_bpalloc, count);
-+	if (!addr)
-+		return -ENOMEM;
-+
-+	*result = addr & ~DPAA_GENALLOC_OFF;
-+
-+	return 0;
-+}
-+
-+static int bm_release_bpid(u32 bpid)
-+{
-+	int ret;
-+
-+	ret = bm_shutdown_pool(bpid);
-+	if (ret) {
-+		pr_debug("BPID %d leaked\n", bpid);
-+		return ret;
-+	}
-+
-+	gen_pool_free(bm_bpalloc, bpid | DPAA_GENALLOC_OFF, 1);
-+	return 0;
-+}
-+
-+struct bman_pool *bman_new_pool(void)
-+{
-+	struct bman_pool *pool = NULL;
-+	u32 bpid;
-+
-+	if (bm_alloc_bpid_range(&bpid, 1))
-+		return NULL;
-+
-+	pool = kmalloc(sizeof(*pool), GFP_KERNEL);
-+	if (!pool)
-+		goto err;
-+
-+	pool->bpid = bpid;
-+
-+	return pool;
-+err:
-+	bm_release_bpid(bpid);
-+	kfree(pool);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(bman_new_pool);
-+
-+void bman_free_pool(struct bman_pool *pool)
-+{
-+	bm_release_bpid(pool->bpid);
-+
-+	kfree(pool);
-+}
-+EXPORT_SYMBOL(bman_free_pool);
-+
-+int bman_get_bpid(const struct bman_pool *pool)
-+{
-+	return pool->bpid;
-+}
-+EXPORT_SYMBOL(bman_get_bpid);
-+
-+static void update_rcr_ci(struct bman_portal *p, int avail)
-+{
-+	if (avail)
-+		bm_rcr_cce_prefetch(&p->p);
-+	else
-+		bm_rcr_cce_update(&p->p);
-+}
-+
-+int bman_release(struct bman_pool *pool, const struct bm_buffer *bufs, u8 num)
-+{
-+	struct bman_portal *p;
-+	struct bm_rcr_entry *r;
-+	unsigned long irqflags;
-+	int avail, timeout = 1000; /* 1ms */
-+	int i = num - 1;
-+
-+	DPAA_ASSERT(num > 0 && num <= 8);
-+
-+	do {
-+		p = get_affine_portal();
-+		local_irq_save(irqflags);
-+		avail = bm_rcr_get_avail(&p->p);
-+		if (avail < 2)
-+			update_rcr_ci(p, avail);
-+		r = bm_rcr_start(&p->p);
-+		local_irq_restore(irqflags);
-+		put_affine_portal();
-+		if (likely(r))
++#endif
++#ifdef CONFIG_FSL_QMAN_TEST_API
++		err = qman_test_api();
++		if (err)
 +			break;
-+
-+		udelay(1);
-+	} while (--timeout);
-+
-+	if (unlikely(!timeout))
-+		return -ETIMEDOUT;
-+
-+	p = get_affine_portal();
-+	local_irq_save(irqflags);
-+	/*
-+	 * we can copy all but the first entry, as this can trigger badness
-+	 * with the valid-bit
-+	 */
-+	bm_buffer_set64(r->bufs, bm_buffer_get64(bufs));
-+	bm_buffer_set_bpid(r->bufs, pool->bpid);
-+	if (i)
-+		memcpy(&r->bufs[1], &bufs[1], i * sizeof(bufs[0]));
-+
-+	bm_rcr_pvb_commit(&p->p, BM_RCR_VERB_CMD_BPID_SINGLE |
-+			  (num & BM_RCR_VERB_BUFCOUNT_MASK));
-+
-+	local_irq_restore(irqflags);
-+	put_affine_portal();
-+	return 0;
-+}
-+EXPORT_SYMBOL(bman_release);
-+
-+int bman_acquire(struct bman_pool *pool, struct bm_buffer *bufs, u8 num)
-+{
-+	struct bman_portal *p = get_affine_portal();
-+	struct bm_mc_command *mcc;
-+	union bm_mc_result *mcr;
-+	int ret;
-+
-+	DPAA_ASSERT(num > 0 && num <= 8);
-+
-+	mcc = bm_mc_start(&p->p);
-+	mcc->bpid = pool->bpid;
-+	bm_mc_commit(&p->p, BM_MCC_VERB_CMD_ACQUIRE |
-+		     (num & BM_MCC_VERB_ACQUIRE_BUFCOUNT));
-+	if (!bm_mc_result_timeout(&p->p, &mcr)) {
-+		put_affine_portal();
-+		pr_crit("BMan Acquire Timeout\n");
-+		return -ETIMEDOUT;
++#endif
 +	}
-+	ret = mcr->verb & BM_MCR_VERB_ACQUIRE_BUFCOUNT;
-+	if (bufs)
-+		memcpy(&bufs[0], &mcr->bufs[0], num * sizeof(bufs[0]));
-+
-+	put_affine_portal();
-+	if (ret != num)
-+		ret = -ENOMEM;
-+	return ret;
++	return err;
 +}
-+EXPORT_SYMBOL(bman_acquire);
 +
-+const struct bm_portal_config *
-+bman_get_bm_portal_config(const struct bman_portal *portal)
++static void test_exit(void)
 +{
-+	return portal->config;
 +}
-diff --git a/drivers/soc/fsl/qbman/bman_ccsr.c b/drivers/soc/fsl/qbman/bman_ccsr.c
++
++module_init(test_init);
++module_exit(test_exit);
+diff --git a/drivers/soc/fsl/qbman/qman_test.h b/drivers/soc/fsl/qbman/qman_test.h
 new file mode 100644
-index 0000000..9deb052
+index 0000000..d5f8cb2
 --- /dev/null
-+++ b/drivers/soc/fsl/qbman/bman_ccsr.c
-@@ -0,0 +1,263 @@
-+/* Copyright (c) 2009 - 2016 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include "bman_priv.h"
-+
-+u16 bman_ip_rev;
-+EXPORT_SYMBOL(bman_ip_rev);
-+
-+/* Register offsets */
-+#define REG_FBPR_FPC		0x0800
-+#define REG_ECSR		0x0a00
-+#define REG_ECIR		0x0a04
-+#define REG_EADR		0x0a08
-+#define REG_EDATA(n)		(0x0a10 + ((n) * 0x04))
-+#define REG_SBEC(n)		(0x0a80 + ((n) * 0x04))
-+#define REG_IP_REV_1		0x0bf8
-+#define REG_IP_REV_2		0x0bfc
-+#define REG_FBPR_BARE		0x0c00
-+#define REG_FBPR_BAR		0x0c04
-+#define REG_FBPR_AR		0x0c10
-+#define REG_SRCIDR		0x0d04
-+#define REG_LIODNR		0x0d08
-+#define REG_ERR_ISR		0x0e00
-+#define REG_ERR_IER		0x0e04
-+#define REG_ERR_ISDR		0x0e08
-+
-+/* Used by all error interrupt registers except 'inhibit' */
-+#define BM_EIRQ_IVCI	0x00000010	/* Invalid Command Verb */
-+#define BM_EIRQ_FLWI	0x00000008	/* FBPR Low Watermark */
-+#define BM_EIRQ_MBEI	0x00000004	/* Multi-bit ECC Error */
-+#define BM_EIRQ_SBEI	0x00000002	/* Single-bit ECC Error */
-+#define BM_EIRQ_BSCN	0x00000001	/* pool State Change Notification */
-+
-+struct bman_hwerr_txt {
-+	u32 mask;
-+	const char *txt;
-+};
-+
-+static const struct bman_hwerr_txt bman_hwerr_txts[] = {
-+	{ BM_EIRQ_IVCI, "Invalid Command Verb" },
-+	{ BM_EIRQ_FLWI, "FBPR Low Watermark" },
-+	{ BM_EIRQ_MBEI, "Multi-bit ECC Error" },
-+	{ BM_EIRQ_SBEI, "Single-bit ECC Error" },
-+	{ BM_EIRQ_BSCN, "Pool State Change Notification" },
-+};
-+
-+/* Only trigger low water mark interrupt once only */
-+#define BMAN_ERRS_TO_DISABLE BM_EIRQ_FLWI
-+
-+/* Pointer to the start of the BMan's CCSR space */
-+static u32 __iomem *bm_ccsr_start;
-+
-+static inline u32 bm_ccsr_in(u32 offset)
-+{
-+	return ioread32be(bm_ccsr_start + offset/4);
-+}
-+static inline void bm_ccsr_out(u32 offset, u32 val)
-+{
-+	iowrite32be(val, bm_ccsr_start + offset/4);
-+}
-+
-+static void bm_get_version(u16 *id, u8 *major, u8 *minor)
-+{
-+	u32 v = bm_ccsr_in(REG_IP_REV_1);
-+	*id = (v >> 16);
-+	*major = (v >> 8) & 0xff;
-+	*minor = v & 0xff;
-+}
-+
-+/* signal transactions for FBPRs with higher priority */
-+#define FBPR_AR_RPRIO_HI BIT(30)
-+
-+static void bm_set_memory(u64 ba, u32 size)
-+{
-+	u32 exp = ilog2(size);
-+	/* choke if size isn't within range */
-+	DPAA_ASSERT(size >= 4096 && size <= 1024*1024*1024 &&
-+		   is_power_of_2(size));
-+	/* choke if '[e]ba' has lower-alignment than 'size' */
-+	DPAA_ASSERT(!(ba & (size - 1)));
-+	bm_ccsr_out(REG_FBPR_BARE, upper_32_bits(ba));
-+	bm_ccsr_out(REG_FBPR_BAR, lower_32_bits(ba));
-+	bm_ccsr_out(REG_FBPR_AR, exp - 1);
-+}
-+
-+/*
-+ * Location and size of BMan private memory
-+ *
-+ * Ideally we would use the DMA API to turn rmem->base into a DMA address
-+ * (especially if iommu translations ever get involved).  Unfortunately, the
-+ * DMA API currently does not allow mapping anything that is not backed with
-+ * a struct page.
-+ */
-+static dma_addr_t fbpr_a;
-+static size_t fbpr_sz;
-+
-+static int bman_fbpr(struct reserved_mem *rmem)
-+{
-+	fbpr_a = rmem->base;
-+	fbpr_sz = rmem->size;
-+
-+	WARN_ON(!(fbpr_a && fbpr_sz));
-+
-+	return 0;
-+}
-+RESERVEDMEM_OF_DECLARE(bman_fbpr, "fsl,bman-fbpr", bman_fbpr);
-+
-+static irqreturn_t bman_isr(int irq, void *ptr)
-+{
-+	u32 isr_val, ier_val, ecsr_val, isr_mask, i;
-+	struct device *dev = ptr;
-+
-+	ier_val = bm_ccsr_in(REG_ERR_IER);
-+	isr_val = bm_ccsr_in(REG_ERR_ISR);
-+	ecsr_val = bm_ccsr_in(REG_ECSR);
-+	isr_mask = isr_val & ier_val;
-+
-+	if (!isr_mask)
-+		return IRQ_NONE;
-+
-+	for (i = 0; i < ARRAY_SIZE(bman_hwerr_txts); i++) {
-+		if (bman_hwerr_txts[i].mask & isr_mask) {
-+			dev_err_ratelimited(dev, "ErrInt: %s\n",
-+					    bman_hwerr_txts[i].txt);
-+			if (bman_hwerr_txts[i].mask & ecsr_val) {
-+				/* Re-arm error capture registers */
-+				bm_ccsr_out(REG_ECSR, ecsr_val);
-+			}
-+			if (bman_hwerr_txts[i].mask & BMAN_ERRS_TO_DISABLE) {
-+				dev_dbg(dev, "Disabling error 0x%x\n",
-+					bman_hwerr_txts[i].mask);
-+				ier_val &= ~bman_hwerr_txts[i].mask;
-+				bm_ccsr_out(REG_ERR_IER, ier_val);
-+			}
-+		}
-+	}
-+	bm_ccsr_out(REG_ERR_ISR, isr_val);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int fsl_bman_probe(struct platform_device *pdev)
-+{
-+	int ret, err_irq;
-+	struct device *dev = &pdev->dev;
-+	struct device_node *node = dev->of_node;
-+	struct resource *res;
-+	u16 id, bm_pool_cnt;
-+	u8 major, minor;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(dev, "Can't get %s property 'IORESOURCE_MEM'\n",
-+			node->full_name);
-+		return -ENXIO;
-+	}
-+	bm_ccsr_start = devm_ioremap(dev, res->start,
-+				     res->end - res->start + 1);
-+	if (!bm_ccsr_start)
-+		return -ENXIO;
-+
-+	bm_get_version(&id, &major, &minor);
-+	if (major == 1 && minor == 0) {
-+		bman_ip_rev = BMAN_REV10;
-+		bm_pool_cnt = BM_POOL_MAX;
-+	} else if (major == 2 && minor == 0) {
-+		bman_ip_rev = BMAN_REV20;
-+		bm_pool_cnt = 8;
-+	} else if (major == 2 && minor == 1) {
-+		bman_ip_rev = BMAN_REV21;
-+		bm_pool_cnt = BM_POOL_MAX;
-+	} else {
-+		dev_err(dev, "Unknown Bman version:%04x,%02x,%02x\n",
-+			id, major, minor);
-+		return -ENODEV;
-+	}
-+
-+	bm_set_memory(fbpr_a, fbpr_sz);
-+
-+	err_irq = platform_get_irq(pdev, 0);
-+	if (err_irq <= 0) {
-+		dev_info(dev, "Can't get %s IRQ\n", node->full_name);
-+		return -ENODEV;
-+	}
-+	ret = devm_request_irq(dev, err_irq, bman_isr, IRQF_SHARED, "bman-err",
-+			       dev);
-+	if (ret)  {
-+		dev_err(dev, "devm_request_irq() failed %d for '%s'\n",
-+			ret, node->full_name);
-+		return ret;
-+	}
-+	/* Disable Buffer Pool State Change */
-+	bm_ccsr_out(REG_ERR_ISDR, BM_EIRQ_BSCN);
-+	/*
-+	 * Write-to-clear any stale bits, (eg. starvation being asserted prior
-+	 * to resource allocation during driver init).
-+	 */
-+	bm_ccsr_out(REG_ERR_ISR, 0xffffffff);
-+	/* Enable Error Interrupts */
-+	bm_ccsr_out(REG_ERR_IER, 0xffffffff);
-+
-+	bm_bpalloc = devm_gen_pool_create(dev, 0, -1, "bman-bpalloc");
-+	if (IS_ERR(bm_bpalloc)) {
-+		ret = PTR_ERR(bm_bpalloc);
-+		dev_err(dev, "bman-bpalloc pool init failed (%d)\n", ret);
-+		return ret;
-+	}
-+
-+	/* seed BMan resource pool */
-+	ret = gen_pool_add(bm_bpalloc, DPAA_GENALLOC_OFF, bm_pool_cnt, -1);
-+	if (ret) {
-+		dev_err(dev, "Failed to seed BPID range [%d..%d] (%d)\n",
-+			0, bm_pool_cnt - 1, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+};
-+
-+static const struct of_device_id fsl_bman_ids[] = {
-+	{
-+		.compatible = "fsl,bman",
-+	},
-+	{}
-+};
-+
-+static struct platform_driver fsl_bman_driver = {
-+	.driver = {
-+		.name = KBUILD_MODNAME,
-+		.of_match_table = fsl_bman_ids,
-+		.suppress_bind_attrs = true,
-+	},
-+	.probe = fsl_bman_probe,
-+};
-+
-+builtin_platform_driver(fsl_bman_driver);
-diff --git a/drivers/soc/fsl/qbman/bman_portal.c b/drivers/soc/fsl/qbman/bman_portal.c
-new file mode 100644
-index 0000000..6579cc1
---- /dev/null
-+++ b/drivers/soc/fsl/qbman/bman_portal.c
-@@ -0,0 +1,219 @@
++++ b/drivers/soc/fsl/qbman/qman_test.h
+@@ -0,0 +1,36 @@
 +/* Copyright 2008 - 2016 Freescale Semiconductor, Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
@@ -1205,524 +195,892 @@ index 0000000..6579cc1
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#include "bman_priv.h"
-+
-+static struct bman_portal *affine_bportals[NR_CPUS];
-+static struct cpumask portal_cpus;
-+/* protect bman global registers and global data shared among portals */
-+static DEFINE_SPINLOCK(bman_lock);
-+
-+static struct bman_portal *init_pcfg(struct bm_portal_config *pcfg)
-+{
-+	struct bman_portal *p = bman_create_affine_portal(pcfg);
-+
-+	if (!p) {
-+		dev_crit(pcfg->dev, "%s: Portal failure on cpu %d\n",
-+			 __func__, pcfg->cpu);
-+		return NULL;
-+	}
-+
-+	bman_p_irqsource_add(p, BM_PIRQ_RCRI);
-+	affine_bportals[pcfg->cpu] = p;
-+
-+	dev_info(pcfg->dev, "Portal initialised, cpu %d\n", pcfg->cpu);
-+
-+	return p;
-+}
-+
-+static void bman_offline_cpu(unsigned int cpu)
-+{
-+	struct bman_portal *p = affine_bportals[cpu];
-+	const struct bm_portal_config *pcfg;
-+
-+	if (!p)
-+		return;
-+
-+	pcfg = bman_get_bm_portal_config(p);
-+	if (!pcfg)
-+		return;
-+
-+	irq_set_affinity(pcfg->irq, cpumask_of(0));
-+}
-+
-+static void bman_online_cpu(unsigned int cpu)
-+{
-+	struct bman_portal *p = affine_bportals[cpu];
-+	const struct bm_portal_config *pcfg;
-+
-+	if (!p)
-+		return;
-+
-+	pcfg = bman_get_bm_portal_config(p);
-+	if (!pcfg)
-+		return;
-+
-+	irq_set_affinity(pcfg->irq, cpumask_of(cpu));
-+}
-+
-+static int bman_hotplug_cpu_callback(struct notifier_block *nfb,
-+				     unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long)hcpu;
-+
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		bman_online_cpu(cpu);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
-+		bman_offline_cpu(cpu);
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block bman_hotplug_cpu_notifier = {
-+	.notifier_call = bman_hotplug_cpu_callback,
-+};
-+
-+static int bman_portal_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *node = dev->of_node;
-+	struct bm_portal_config *pcfg;
-+	struct resource *addr_phys[2];
-+	void __iomem *va;
-+	int irq, cpu;
-+
-+	pcfg = devm_kmalloc(dev, sizeof(*pcfg), GFP_KERNEL);
-+	if (!pcfg)
-+		return -ENOMEM;
-+
-+	pcfg->dev = dev;
-+
-+	addr_phys[0] = platform_get_resource(pdev, IORESOURCE_MEM,
-+					     DPAA_PORTAL_CE);
-+	if (!addr_phys[0]) {
-+		dev_err(dev, "Can't get %s property 'reg::CE'\n",
-+			node->full_name);
-+		return -ENXIO;
-+	}
-+
-+	addr_phys[1] = platform_get_resource(pdev, IORESOURCE_MEM,
-+					     DPAA_PORTAL_CI);
-+	if (!addr_phys[1]) {
-+		dev_err(dev, "Can't get %s property 'reg::CI'\n",
-+			node->full_name);
-+		return -ENXIO;
-+	}
-+
-+	pcfg->cpu = -1;
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq <= 0) {
-+		dev_err(dev, "Can't get %s IRQ'\n", node->full_name);
-+		return -ENXIO;
-+	}
-+	pcfg->irq = irq;
-+
-+	va = ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]), 0);
-+	if (!va)
-+		goto err_ioremap1;
-+
-+	pcfg->addr_virt[DPAA_PORTAL_CE] = va;
-+
-+	va = ioremap_prot(addr_phys[1]->start, resource_size(addr_phys[1]),
-+			  _PAGE_GUARDED | _PAGE_NO_CACHE);
-+	if (!va)
-+		goto err_ioremap2;
-+
-+	pcfg->addr_virt[DPAA_PORTAL_CI] = va;
-+
-+	spin_lock(&bman_lock);
-+	cpu = cpumask_next_zero(-1, &portal_cpus);
-+	if (cpu >= nr_cpu_ids) {
-+		/* unassigned portal, skip init */
-+		spin_unlock(&bman_lock);
-+		return 0;
-+	}
-+
-+	cpumask_set_cpu(cpu, &portal_cpus);
-+	spin_unlock(&bman_lock);
-+	pcfg->cpu = cpu;
-+
-+	if (!init_pcfg(pcfg))
-+		goto err_ioremap2;
-+
-+	/* clear irq affinity if assigned cpu is offline */
-+	if (!cpu_online(cpu))
-+		bman_offline_cpu(cpu);
-+
-+	return 0;
-+
-+err_ioremap2:
-+	iounmap(pcfg->addr_virt[DPAA_PORTAL_CE]);
-+err_ioremap1:
-+	dev_err(dev, "ioremap failed\n");
-+	return -ENXIO;
-+}
-+
-+static const struct of_device_id bman_portal_ids[] = {
-+	{
-+		.compatible = "fsl,bman-portal",
-+	},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, bman_portal_ids);
-+
-+static struct platform_driver bman_portal_driver = {
-+	.driver = {
-+		.name = KBUILD_MODNAME,
-+		.of_match_table = bman_portal_ids,
-+	},
-+	.probe = bman_portal_probe,
-+};
-+
-+static int __init bman_portal_driver_register(struct platform_driver *drv)
-+{
-+	int ret;
-+
-+	ret = platform_driver_register(drv);
-+	if (ret < 0)
-+		return ret;
-+
-+	register_hotcpu_notifier(&bman_hotplug_cpu_notifier);
-+
-+	return 0;
-+}
-+
-+module_driver(bman_portal_driver,
-+	      bman_portal_driver_register, platform_driver_unregister);
-diff --git a/drivers/soc/fsl/qbman/bman_priv.h b/drivers/soc/fsl/qbman/bman_priv.h
-new file mode 100644
-index 0000000..f6896a2
---- /dev/null
-+++ b/drivers/soc/fsl/qbman/bman_priv.h
-@@ -0,0 +1,80 @@
-+/* Copyright 2008 - 2016 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
++#include "qman_priv.h"
 +
 +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+#include "dpaa_sys.h"
++int qman_test_stash(void);
++int qman_test_api(void);
+diff --git a/drivers/soc/fsl/qbman/qman_test_api.c b/drivers/soc/fsl/qbman/qman_test_api.c
+new file mode 100644
+index 0000000..6880ff1
+--- /dev/null
++++ b/drivers/soc/fsl/qbman/qman_test_api.c
+@@ -0,0 +1,252 @@
++/* Copyright 2008 - 2016 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
 +
-+#include <soc/fsl/bman.h>
++#include "qman_test.h"
 +
-+/* Portal processing (interrupt) sources */
-+#define BM_PIRQ_RCRI	0x00000002	/* RCR Ring (below threshold) */
++#define CGR_ID		27
++#define POOL_ID		2
++#define FQ_FLAGS	QMAN_FQ_FLAG_DYNAMIC_FQID
++#define NUM_ENQUEUES	10
++#define NUM_PARTIAL	4
++#define PORTAL_SDQCR	(QM_SDQCR_SOURCE_CHANNELS | \
++			QM_SDQCR_TYPE_PRIO_QOS | \
++			QM_SDQCR_TOKEN_SET(0x98) | \
++			QM_SDQCR_CHANNELS_DEDICATED | \
++			QM_SDQCR_CHANNELS_POOL(POOL_ID))
++#define PORTAL_OPAQUE	((void *)0xf00dbeef)
++#define VDQCR_FLAGS	(QMAN_VOLATILE_FLAG_WAIT | QMAN_VOLATILE_FLAG_FINISH)
 +
-+/* Revision info (for errata and feature handling) */
-+#define BMAN_REV10 0x0100
-+#define BMAN_REV20 0x0200
-+#define BMAN_REV21 0x0201
-+extern u16 bman_ip_rev;	/* 0 if uninitialised, otherwise BMAN_REVx */
++static enum qman_cb_dqrr_result cb_dqrr(struct qman_portal *,
++					struct qman_fq *,
++					const struct qm_dqrr_entry *);
++static void cb_ern(struct qman_portal *, struct qman_fq *,
++		   const union qm_mr_entry *);
++static void cb_fqs(struct qman_portal *, struct qman_fq *,
++		   const union qm_mr_entry *);
 +
-+extern struct gen_pool *bm_bpalloc;
++static struct qm_fd fd, fd_dq;
++static struct qman_fq fq_base = {
++	.cb.dqrr = cb_dqrr,
++	.cb.ern = cb_ern,
++	.cb.fqs = cb_fqs
++};
++static DECLARE_WAIT_QUEUE_HEAD(waitqueue);
++static int retire_complete, sdqcr_complete;
 +
-+struct bm_portal_config {
-+	/*
-+	 * Corenet portal addresses;
-+	 * [0]==cache-enabled, [1]==cache-inhibited.
-+	 */
-+	void __iomem *addr_virt[2];
-+	/* Allow these to be joined in lists */
-+	struct list_head list;
-+	struct device *dev;
-+	/* User-visible portal configuration settings */
-+	/* portal is affined to this cpu */
++/* Helpers for initialising and "incrementing" a frame descriptor */
++static void fd_init(struct qm_fd *fd)
++{
++	qm_fd_addr_set64(fd, 0xabdeadbeefLLU);
++	qm_fd_set_contig_big(fd, 0x0000ffff);
++	fd->cmd = 0xfeedf00d;
++}
++
++static void fd_inc(struct qm_fd *fd)
++{
++	u64 t = qm_fd_addr_get64(fd);
++	int z = t >> 40;
++	unsigned int len, off;
++	enum qm_fd_format fmt;
++
++	t <<= 1;
++	if (z)
++		t |= 1;
++	qm_fd_addr_set64(fd, t);
++
++	fmt = qm_fd_get_format(fd);
++	off = qm_fd_get_offset(fd);
++	len = qm_fd_get_length(fd);
++	len--;
++	qm_fd_set_param(fd, fmt, off, len);
++
++	fd->cmd++;
++}
++
++/* The only part of the 'fd' we can't memcmp() is the ppid */
++static int fd_cmp(const struct qm_fd *a, const struct qm_fd *b)
++{
++	int r = (qm_fd_addr_get64(a) == qm_fd_addr_get64(b)) ? 0 : -1;
++
++	if (!r) {
++		enum qm_fd_format fmt_a, fmt_b;
++
++		fmt_a = qm_fd_get_format(a);
++		fmt_b = qm_fd_get_format(b);
++		r = fmt_a - fmt_b;
++	}
++	if (!r)
++		r = a->cfg - b->cfg;
++	if (!r)
++		r = a->cmd - b->cmd;
++	return r;
++}
++
++/* test */
++static int do_enqueues(struct qman_fq *fq)
++{
++	unsigned int loop;
++	int err = 0;
++
++	for (loop = 0; loop < NUM_ENQUEUES; loop++) {
++		if (qman_enqueue(fq, &fd)) {
++			pr_crit("qman_enqueue() failed\n");
++			err = -EIO;
++		}
++		fd_inc(&fd);
++	}
++
++	return err;
++}
++
++int qman_test_api(void)
++{
++	unsigned int flags, frmcnt;
++	int err;
++	struct qman_fq *fq = &fq_base;
++
++	pr_info("%s(): Starting\n", __func__);
++	fd_init(&fd);
++	fd_init(&fd_dq);
++
++	/* Initialise (parked) FQ */
++	err = qman_create_fq(0, FQ_FLAGS, fq);
++	if (err) {
++		pr_crit("qman_create_fq() failed\n");
++		goto failed;
++	}
++	err = qman_init_fq(fq, QMAN_INITFQ_FLAG_LOCAL, NULL);
++	if (err) {
++		pr_crit("qman_init_fq() failed\n");
++		goto failed;
++	}
++	/* Do enqueues + VDQCR, twice. (Parked FQ) */
++	err = do_enqueues(fq);
++	if (err)
++		goto failed;
++	pr_info("VDQCR (till-empty);\n");
++	frmcnt = QM_VDQCR_NUMFRAMES_TILLEMPTY;
++	err = qman_volatile_dequeue(fq, VDQCR_FLAGS, frmcnt);
++	if (err) {
++		pr_crit("qman_volatile_dequeue() failed\n");
++		goto failed;
++	}
++	err = do_enqueues(fq);
++	if (err)
++		goto failed;
++	pr_info("VDQCR (%d of %d);\n", NUM_PARTIAL, NUM_ENQUEUES);
++	frmcnt = QM_VDQCR_NUMFRAMES_SET(NUM_PARTIAL);
++	err = qman_volatile_dequeue(fq, VDQCR_FLAGS, frmcnt);
++	if (err) {
++		pr_crit("qman_volatile_dequeue() failed\n");
++		goto failed;
++	}
++	pr_info("VDQCR (%d of %d);\n", NUM_ENQUEUES - NUM_PARTIAL,
++		NUM_ENQUEUES);
++	frmcnt = QM_VDQCR_NUMFRAMES_SET(NUM_ENQUEUES - NUM_PARTIAL);
++	err = qman_volatile_dequeue(fq, VDQCR_FLAGS, frmcnt);
++	if (err) {
++		pr_err("qman_volatile_dequeue() failed\n");
++		goto failed;
++	}
++
++	err = do_enqueues(fq);
++	if (err)
++		goto failed;
++	pr_info("scheduled dequeue (till-empty)\n");
++	err = qman_schedule_fq(fq);
++	if (err) {
++		pr_crit("qman_schedule_fq() failed\n");
++		goto failed;
++	}
++	wait_event(waitqueue, sdqcr_complete);
++
++	/* Retire and OOS the FQ */
++	err = qman_retire_fq(fq, &flags);
++	if (err < 0) {
++		pr_crit("qman_retire_fq() failed\n");
++		goto failed;
++	}
++	wait_event(waitqueue, retire_complete);
++	if (flags & QMAN_FQ_STATE_BLOCKOOS) {
++		err = -EIO;
++		pr_crit("leaking frames\n");
++		goto failed;
++	}
++	err = qman_oos_fq(fq);
++	if (err) {
++		pr_crit("qman_oos_fq() failed\n");
++		goto failed;
++	}
++	qman_destroy_fq(fq);
++	pr_info("%s(): Finished\n", __func__);
++	return 0;
++
++failed:
++	WARN_ON(1);
++	return err;
++}
++
++static enum qman_cb_dqrr_result cb_dqrr(struct qman_portal *p,
++					struct qman_fq *fq,
++					const struct qm_dqrr_entry *dq)
++{
++	if (WARN_ON(fd_cmp(&fd_dq, &dq->fd))) {
++		pr_err("BADNESS: dequeued frame doesn't match;\n");
++		return qman_cb_dqrr_consume;
++	}
++	fd_inc(&fd_dq);
++	if (!(dq->stat & QM_DQRR_STAT_UNSCHEDULED) && !fd_cmp(&fd_dq, &fd)) {
++		sdqcr_complete = 1;
++		wake_up(&waitqueue);
++	}
++	return qman_cb_dqrr_consume;
++}
++
++static void cb_ern(struct qman_portal *p, struct qman_fq *fq,
++		   const union qm_mr_entry *msg)
++{
++	pr_crit("cb_ern() unimplemented");
++	WARN_ON(1);
++}
++
++static void cb_fqs(struct qman_portal *p, struct qman_fq *fq,
++		   const union qm_mr_entry *msg)
++{
++	u8 verb = (msg->verb & QM_MR_VERB_TYPE_MASK);
++
++	if ((verb != QM_MR_VERB_FQRN) && (verb != QM_MR_VERB_FQRNI)) {
++		pr_crit("unexpected FQS message");
++		WARN_ON(1);
++		return;
++	}
++	pr_info("Retirement message received\n");
++	retire_complete = 1;
++	wake_up(&waitqueue);
++}
+diff --git a/drivers/soc/fsl/qbman/qman_test_stash.c b/drivers/soc/fsl/qbman/qman_test_stash.c
+new file mode 100644
+index 0000000..43cf66b
+--- /dev/null
++++ b/drivers/soc/fsl/qbman/qman_test_stash.c
+@@ -0,0 +1,617 @@
++/* Copyright 2009 - 2016 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "qman_test.h"
++
++#include <linux/dma-mapping.h>
++#include <linux/delay.h>
++
++/*
++ * Algorithm:
++ *
++ * Each cpu will have HP_PER_CPU "handlers" set up, each of which incorporates
++ * an rx/tx pair of FQ objects (both of which are stashed on dequeue). The
++ * organisation of FQIDs is such that the HP_PER_CPU*NUM_CPUS handlers will
++ * shuttle a "hot potato" frame around them such that every forwarding action
++ * moves it from one cpu to another. (The use of more than one handler per cpu
++ * is to allow enough handlers/FQs to truly test the significance of caching -
++ * ie. when cache-expiries are occurring.)
++ *
++ * The "hot potato" frame content will be HP_NUM_WORDS*4 bytes in size, and the
++ * first and last words of the frame data will undergo a transformation step on
++ * each forwarding action. To achieve this, each handler will be assigned a
++ * 32-bit "mixer", that is produced using a 32-bit LFSR. When a frame is
++ * received by a handler, the mixer of the expected sender is XOR'd into all
++ * words of the entire frame, which is then validated against the original
++ * values. Then, before forwarding, the entire frame is XOR'd with the mixer of
++ * the current handler. Apart from validating that the frame is taking the
++ * expected path, this also provides some quasi-realistic overheads to each
++ * forwarding action - dereferencing *all* the frame data, computation, and
++ * conditional branching. There is a "special" handler designated to act as the
++ * instigator of the test by creating an enqueuing the "hot potato" frame, and
++ * to determine when the test has completed by counting HP_LOOPS iterations.
++ *
++ * Init phases:
++ *
++ * 1. prepare each cpu's 'hp_cpu' struct using on_each_cpu(,,1) and link them
++ *    into 'hp_cpu_list'. Specifically, set processor_id, allocate HP_PER_CPU
++ *    handlers and link-list them (but do no other handler setup).
++ *
++ * 2. scan over 'hp_cpu_list' HP_PER_CPU times, the first time sets each
++ *    hp_cpu's 'iterator' to point to its first handler. With each loop,
++ *    allocate rx/tx FQIDs and mixer values to the hp_cpu's iterator handler
++ *    and advance the iterator for the next loop. This includes a final fixup,
++ *    which connects the last handler to the first (and which is why phase 2
++ *    and 3 are separate).
++ *
++ * 3. scan over 'hp_cpu_list' HP_PER_CPU times, the first time sets each
++ *    hp_cpu's 'iterator' to point to its first handler. With each loop,
++ *    initialise FQ objects and advance the iterator for the next loop.
++ *    Moreover, do this initialisation on the cpu it applies to so that Rx FQ
++ *    initialisation targets the correct cpu.
++ */
++
++/*
++ * helper to run something on all cpus (can't use on_each_cpu(), as that invokes
++ * the fn from irq context, which is too restrictive).
++ */
++struct bstrap {
++	int (*fn)(void);
++	atomic_t started;
++};
++static int bstrap_fn(void *bs)
++{
++	struct bstrap *bstrap = bs;
++	int err;
++
++	atomic_inc(&bstrap->started);
++	err = bstrap->fn();
++	if (err)
++		return err;
++	while (!kthread_should_stop())
++		msleep(20);
++	return 0;
++}
++static int on_all_cpus(int (*fn)(void))
++{
 +	int cpu;
-+	/* portal interrupt line */
-+	int irq;
++
++	for_each_cpu(cpu, cpu_online_mask) {
++		struct bstrap bstrap = {
++			.fn = fn,
++			.started = ATOMIC_INIT(0)
++		};
++		struct task_struct *k = kthread_create(bstrap_fn, &bstrap,
++			"hotpotato%d", cpu);
++		int ret;
++
++		if (IS_ERR(k))
++			return -ENOMEM;
++		kthread_bind(k, cpu);
++		wake_up_process(k);
++		/*
++		 * If we call kthread_stop() before the "wake up" has had an
++		 * effect, then the thread may exit with -EINTR without ever
++		 * running the function. So poll until it's started before
++		 * requesting it to stop.
++		 */
++		while (!atomic_read(&bstrap.started))
++			msleep(20);
++		ret = kthread_stop(k);
++		if (ret)
++			return ret;
++	}
++	return 0;
++}
++
++struct hp_handler {
++
++	/* The following data is stashed when 'rx' is dequeued; */
++	/* -------------- */
++	/* The Rx FQ, dequeues of which will stash the entire hp_handler */
++	struct qman_fq rx;
++	/* The Tx FQ we should forward to */
++	struct qman_fq tx;
++	/* The value we XOR post-dequeue, prior to validating */
++	u32 rx_mixer;
++	/* The value we XOR pre-enqueue, after validating */
++	u32 tx_mixer;
++	/* what the hotpotato address should be on dequeue */
++	dma_addr_t addr;
++	u32 *frame_ptr;
++
++	/* The following data isn't (necessarily) stashed on dequeue; */
++	/* -------------- */
++	u32 fqid_rx, fqid_tx;
++	/* list node for linking us into 'hp_cpu' */
++	struct list_head node;
++	/* Just to check ... */
++	unsigned int processor_id;
++} ____cacheline_aligned;
++
++struct hp_cpu {
++	/* identify the cpu we run on; */
++	unsigned int processor_id;
++	/* root node for the per-cpu list of handlers */
++	struct list_head handlers;
++	/* list node for linking us into 'hp_cpu_list' */
++	struct list_head node;
++	/*
++	 * when repeatedly scanning 'hp_list', each time linking the n'th
++	 * handlers together, this is used as per-cpu iterator state
++	 */
++	struct hp_handler *iterator;
 +};
 +
-+struct bman_portal *bman_create_affine_portal(
-+			const struct bm_portal_config *config);
-+/*
-+ * The below bman_p_***() variant might be called in a situation that the cpu
-+ * which the portal affine to is not online yet.
-+ * @bman_portal specifies which portal the API will use.
-+ */
-+int bman_p_irqsource_add(struct bman_portal *p, u32 bits);
++/* Each cpu has one of these */
++static DEFINE_PER_CPU(struct hp_cpu, hp_cpus);
 +
-+/*
-+ * Used by all portal interrupt registers except 'inhibit'
-+ * This mask contains all the "irqsource" bits visible to API users
-+ */
-+#define BM_PIRQ_VISIBLE	BM_PIRQ_RCRI
++/* links together the hp_cpu structs, in first-come first-serve order. */
++static LIST_HEAD(hp_cpu_list);
++static spinlock_t hp_lock = __SPIN_LOCK_UNLOCKED(hp_lock);
 +
-+const struct bm_portal_config *
-+bman_get_bm_portal_config(const struct bman_portal *portal);
-diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/dpaa_sys.h
-new file mode 100644
-index 0000000..b63fd72
---- /dev/null
-+++ b/drivers/soc/fsl/qbman/dpaa_sys.h
-@@ -0,0 +1,103 @@
-+/* Copyright 2008 - 2016 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
++static unsigned int hp_cpu_list_length;
 +
-+#ifndef __DPAA_SYS_H
-+#define __DPAA_SYS_H
++/* the "special" handler, that starts and terminates the test. */
++static struct hp_handler *special_handler;
++static int loop_counter;
 +
-+#include <linux/cpu.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/kthread.h>
-+#include <linux/vmalloc.h>
-+#include <linux/platform_device.h>
-+#include <linux/of_reserved_mem.h>
-+#include <linux/prefetch.h>
-+#include <linux/genalloc.h>
-+#include <asm/cacheflush.h>
++/* handlers are allocated out of this, so they're properly aligned. */
++static struct kmem_cache *hp_handler_slab;
 +
-+/* For 2-element tables related to cache-inhibited and cache-enabled mappings */
-+#define DPAA_PORTAL_CE 0
-+#define DPAA_PORTAL_CI 1
++/* this is the frame data */
++static void *__frame_ptr;
++static u32 *frame_ptr;
++static dma_addr_t frame_dma;
 +
-+#if (L1_CACHE_BYTES != 32) && (L1_CACHE_BYTES != 64)
-+#error "Unsupported Cacheline Size"
-+#endif
++/* the main function waits on this */
++static DECLARE_WAIT_QUEUE_HEAD(queue);
 +
-+static inline void dpaa_flush(void *p)
++#define HP_PER_CPU	2
++#define HP_LOOPS	8
++/* 80 bytes, like a small ethernet frame, and bleeds into a second cacheline */
++#define HP_NUM_WORDS	80
++/* First word of the LFSR-based frame data */
++#define HP_FIRST_WORD	0xabbaf00d
++
++static inline u32 do_lfsr(u32 prev)
 +{
-+#ifdef CONFIG_PPC
-+	flush_dcache_range((unsigned long)p, (unsigned long)p+64);
-+#elif defined(CONFIG_ARM32)
-+	__cpuc_flush_dcache_area(p, 64);
-+#elif defined(CONFIG_ARM64)
-+	__flush_dcache_area(p, 64);
-+#endif
++	return (prev >> 1) ^ (-(prev & 1u) & 0xd0000001u);
 +}
 +
-+#define dpaa_invalidate(p) dpaa_flush(p)
-+
-+#define dpaa_zero(p) memset(p, 0, 64)
-+
-+static inline void dpaa_touch_ro(void *p)
++static int allocate_frame_data(void)
 +{
-+#if (L1_CACHE_BYTES == 32)
-+	prefetch(p+32);
-+#endif
-+	prefetch(p);
++	u32 lfsr = HP_FIRST_WORD;
++	int loop;
++	struct platform_device *pdev = platform_device_alloc("foobar", -1);
++
++	if (!pdev) {
++		pr_crit("platform_device_alloc() failed");
++		return -EIO;
++	}
++	if (platform_device_add(pdev)) {
++		pr_crit("platform_device_add() failed");
++		return -EIO;
++	}
++	__frame_ptr = kmalloc(4 * HP_NUM_WORDS, GFP_KERNEL);
++	if (!__frame_ptr)
++		return -ENOMEM;
++
++	frame_ptr = PTR_ALIGN(__frame_ptr, 64);
++	for (loop = 0; loop < HP_NUM_WORDS; loop++) {
++		frame_ptr[loop] = lfsr;
++		lfsr = do_lfsr(lfsr);
++	}
++	frame_dma = dma_map_single(&pdev->dev, frame_ptr, 4 * HP_NUM_WORDS,
++				   DMA_BIDIRECTIONAL);
++	platform_device_del(pdev);
++	platform_device_put(pdev);
++	return 0;
 +}
 +
-+/* Commonly used combo */
-+static inline void dpaa_invalidate_touch_ro(void *p)
++static void deallocate_frame_data(void)
 +{
-+	dpaa_invalidate(p);
-+	dpaa_touch_ro(p);
++	kfree(__frame_ptr);
 +}
 +
-+
-+#ifdef CONFIG_FSL_DPAA_CHECKING
-+#define DPAA_ASSERT(x) WARN_ON(!(x))
-+#else
-+#define DPAA_ASSERT(x)
-+#endif
-+
-+/* cyclic helper for rings */
-+static inline u8 dpaa_cyc_diff(u8 ringsize, u8 first, u8 last)
++static inline int process_frame_data(struct hp_handler *handler,
++				     const struct qm_fd *fd)
 +{
-+	/* 'first' is included, 'last' is excluded */
-+	if (first <= last)
-+		return last - first;
-+	return ringsize + last - first;
++	u32 *p = handler->frame_ptr;
++	u32 lfsr = HP_FIRST_WORD;
++	int loop;
++
++	if (qm_fd_addr_get64(fd) != handler->addr) {
++		pr_crit("bad frame address");
++		return -EIO;
++	}
++	for (loop = 0; loop < HP_NUM_WORDS; loop++, p++) {
++		*p ^= handler->rx_mixer;
++		if (*p != lfsr) {
++			pr_crit("corrupt frame data");
++			return -EIO;
++		}
++		*p ^= handler->tx_mixer;
++		lfsr = do_lfsr(lfsr);
++	}
++	return 0;
 +}
 +
-+/* Offset applied to genalloc pools due to zero being an error return */
-+#define DPAA_GENALLOC_OFF	0x80000000
-+
-+#endif	/* __DPAA_SYS_H */
-diff --git a/include/soc/fsl/bman.h b/include/soc/fsl/bman.h
-new file mode 100644
-index 0000000..eaaf56d
---- /dev/null
-+++ b/include/soc/fsl/bman.h
-@@ -0,0 +1,129 @@
-+/* Copyright 2008 - 2016 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef __FSL_BMAN_H
-+#define __FSL_BMAN_H
-+
-+/* wrapper for 48-bit buffers */
-+struct bm_buffer {
-+	union {
-+		struct {
-+			__be16 bpid; /* hi 8-bits reserved */
-+			__be16 hi; /* High 16-bits of 48-bit address */
-+			__be32 lo; /* Low 32-bits of 48-bit address */
-+		};
-+		__be64 data;
-+	};
-+} __aligned(8);
-+/*
-+ * Restore the 48 bit address previously stored in BMan
-+ * hardware pools as a dma_addr_t
-+ */
-+static inline dma_addr_t bm_buf_addr(const struct bm_buffer *buf)
++static enum qman_cb_dqrr_result normal_dqrr(struct qman_portal *portal,
++					    struct qman_fq *fq,
++					    const struct qm_dqrr_entry *dqrr)
 +{
-+	return be64_to_cpu(buf->data) & 0xffffffffffffLLU;
++	struct hp_handler *handler = (struct hp_handler *)fq;
++
++	if (process_frame_data(handler, &dqrr->fd)) {
++		WARN_ON(1);
++		goto skip;
++	}
++	if (qman_enqueue(&handler->tx, &dqrr->fd)) {
++		pr_crit("qman_enqueue() failed");
++		WARN_ON(1);
++	}
++skip:
++	return qman_cb_dqrr_consume;
 +}
 +
-+static inline u64 bm_buffer_get64(const struct bm_buffer *buf)
++static enum qman_cb_dqrr_result special_dqrr(struct qman_portal *portal,
++					     struct qman_fq *fq,
++					     const struct qm_dqrr_entry *dqrr)
 +{
-+	return be64_to_cpu(buf->data) & 0xffffffffffffLLU;
++	struct hp_handler *handler = (struct hp_handler *)fq;
++
++	process_frame_data(handler, &dqrr->fd);
++	if (++loop_counter < HP_LOOPS) {
++		if (qman_enqueue(&handler->tx, &dqrr->fd)) {
++			pr_crit("qman_enqueue() failed");
++			WARN_ON(1);
++			goto skip;
++		}
++	} else {
++		pr_info("Received final (%dth) frame\n", loop_counter);
++		wake_up(&queue);
++	}
++skip:
++	return qman_cb_dqrr_consume;
 +}
 +
-+static inline void bm_buffer_set64(struct bm_buffer *buf, u64 addr)
++static int create_per_cpu_handlers(void)
 +{
-+	buf->hi = cpu_to_be16(upper_32_bits(addr));
-+	buf->lo = cpu_to_be32(lower_32_bits(addr));
++	struct hp_handler *handler;
++	int loop;
++	struct hp_cpu *hp_cpu = this_cpu_ptr(&hp_cpus);
++
++	hp_cpu->processor_id = smp_processor_id();
++	spin_lock(&hp_lock);
++	list_add_tail(&hp_cpu->node, &hp_cpu_list);
++	hp_cpu_list_length++;
++	spin_unlock(&hp_lock);
++	INIT_LIST_HEAD(&hp_cpu->handlers);
++	for (loop = 0; loop < HP_PER_CPU; loop++) {
++		handler = kmem_cache_alloc(hp_handler_slab, GFP_KERNEL);
++		if (!handler) {
++			pr_crit("kmem_cache_alloc() failed");
++			WARN_ON(1);
++			return -EIO;
++		}
++		handler->processor_id = hp_cpu->processor_id;
++		handler->addr = frame_dma;
++		handler->frame_ptr = frame_ptr;
++		list_add_tail(&handler->node, &hp_cpu->handlers);
++	}
++	return 0;
 +}
 +
-+static inline u8 bm_buffer_get_bpid(const struct bm_buffer *buf)
++static int destroy_per_cpu_handlers(void)
 +{
-+	return be16_to_cpu(buf->bpid) & 0xff;
++	struct list_head *loop, *tmp;
++	struct hp_cpu *hp_cpu = this_cpu_ptr(&hp_cpus);
++
++	spin_lock(&hp_lock);
++	list_del(&hp_cpu->node);
++	spin_unlock(&hp_lock);
++	list_for_each_safe(loop, tmp, &hp_cpu->handlers) {
++		u32 flags = 0;
++		struct hp_handler *handler = list_entry(loop, struct hp_handler,
++							node);
++		if (qman_retire_fq(&handler->rx, &flags) ||
++		    (flags & QMAN_FQ_STATE_BLOCKOOS)) {
++			pr_crit("qman_retire_fq(rx) failed, flags: %x", flags);
++			WARN_ON(1);
++			return -EIO;
++		}
++		if (qman_oos_fq(&handler->rx)) {
++			pr_crit("qman_oos_fq(rx) failed");
++			WARN_ON(1);
++			return -EIO;
++		}
++		qman_destroy_fq(&handler->rx);
++		qman_destroy_fq(&handler->tx);
++		qman_release_fqid(handler->fqid_rx);
++		list_del(&handler->node);
++		kmem_cache_free(hp_handler_slab, handler);
++	}
++	return 0;
 +}
 +
-+static inline void bm_buffer_set_bpid(struct bm_buffer *buf, int bpid)
++static inline u8 num_cachelines(u32 offset)
 +{
-+	buf->bpid = cpu_to_be16(bpid & 0xff);
++	u8 res = (offset + (L1_CACHE_BYTES - 1))
++			 / (L1_CACHE_BYTES);
++	if (res > 3)
++		return 3;
++	return res;
++}
++#define STASH_DATA_CL \
++	num_cachelines(HP_NUM_WORDS * 4)
++#define STASH_CTX_CL \
++	num_cachelines(offsetof(struct hp_handler, fqid_rx))
++
++static int init_handler(void *h)
++{
++	struct qm_mcc_initfq opts;
++	struct hp_handler *handler = h;
++	int err;
++
++	if (handler->processor_id != smp_processor_id()) {
++		err = -EIO;
++		goto failed;
++	}
++	/* Set up rx */
++	memset(&handler->rx, 0, sizeof(handler->rx));
++	if (handler == special_handler)
++		handler->rx.cb.dqrr = special_dqrr;
++	else
++		handler->rx.cb.dqrr = normal_dqrr;
++	err = qman_create_fq(handler->fqid_rx, 0, &handler->rx);
++	if (err) {
++		pr_crit("qman_create_fq(rx) failed");
++		goto failed;
++	}
++	memset(&opts, 0, sizeof(opts));
++	opts.we_mask = QM_INITFQ_WE_FQCTRL | QM_INITFQ_WE_CONTEXTA;
++	opts.fqd.fq_ctrl = QM_FQCTRL_CTXASTASHING;
++	qm_fqd_set_stashing(&opts.fqd, 0, STASH_DATA_CL, STASH_CTX_CL);
++	err = qman_init_fq(&handler->rx, QMAN_INITFQ_FLAG_SCHED |
++			   QMAN_INITFQ_FLAG_LOCAL, &opts);
++	if (err) {
++		pr_crit("qman_init_fq(rx) failed");
++		goto failed;
++	}
++	/* Set up tx */
++	memset(&handler->tx, 0, sizeof(handler->tx));
++	err = qman_create_fq(handler->fqid_tx, QMAN_FQ_FLAG_NO_MODIFY,
++			     &handler->tx);
++	if (err) {
++		pr_crit("qman_create_fq(tx) failed");
++		goto failed;
++	}
++
++	return 0;
++failed:
++	return err;
 +}
 +
-+/* Managed portal, high-level i/face */
++static void init_handler_cb(void *h)
++{
++	if (init_handler(h))
++		WARN_ON(1);
++}
 +
-+/* Portal and Buffer Pools */
-+struct bman_portal;
-+struct bman_pool;
++static int init_phase2(void)
++{
++	int loop;
++	u32 fqid = 0;
++	u32 lfsr = 0xdeadbeef;
++	struct hp_cpu *hp_cpu;
++	struct hp_handler *handler;
 +
-+#define BM_POOL_MAX		64 /* max # of buffer pools */
++	for (loop = 0; loop < HP_PER_CPU; loop++) {
++		list_for_each_entry(hp_cpu, &hp_cpu_list, node) {
++			int err;
 +
-+/**
-+ * bman_new_pool - Allocates a Buffer Pool object
-+ *
-+ * Creates a pool object, and returns a reference to it or NULL on error.
-+ */
-+struct bman_pool *bman_new_pool(void);
++			if (!loop)
++				hp_cpu->iterator = list_first_entry(
++						&hp_cpu->handlers,
++						struct hp_handler, node);
++			else
++				hp_cpu->iterator = list_entry(
++						hp_cpu->iterator->node.next,
++						struct hp_handler, node);
++			/* Rx FQID is the previous handler's Tx FQID */
++			hp_cpu->iterator->fqid_rx = fqid;
++			/* Allocate new FQID for Tx */
++			err = qman_alloc_fqid(&fqid);
++			if (err) {
++				pr_crit("qman_alloc_fqid() failed");
++				return err;
++			}
++			hp_cpu->iterator->fqid_tx = fqid;
++			/* Rx mixer is the previous handler's Tx mixer */
++			hp_cpu->iterator->rx_mixer = lfsr;
++			/* Get new mixer for Tx */
++			lfsr = do_lfsr(lfsr);
++			hp_cpu->iterator->tx_mixer = lfsr;
++		}
++	}
++	/* Fix up the first handler (fqid_rx==0, rx_mixer=0xdeadbeef) */
++	hp_cpu = list_first_entry(&hp_cpu_list, struct hp_cpu, node);
++	handler = list_first_entry(&hp_cpu->handlers, struct hp_handler, node);
++	if (handler->fqid_rx != 0 || handler->rx_mixer != 0xdeadbeef)
++		return 1;
++	handler->fqid_rx = fqid;
++	handler->rx_mixer = lfsr;
++	/* and tag it as our "special" handler */
++	special_handler = handler;
++	return 0;
++}
 +
-+/**
-+ * bman_free_pool - Deallocates a Buffer Pool object
-+ * @pool: the pool object to release
-+ */
-+void bman_free_pool(struct bman_pool *pool);
++static int init_phase3(void)
++{
++	int loop, err;
++	struct hp_cpu *hp_cpu;
 +
-+/**
-+ * bman_get_bpid - Returns a pool object's BPID.
-+ * @pool: the pool object
-+ *
-+ * The returned value is the index of the encapsulated buffer pool,
-+ * in the range of [0, @BM_POOL_MAX-1].
-+ */
-+int bman_get_bpid(const struct bman_pool *pool);
++	for (loop = 0; loop < HP_PER_CPU; loop++) {
++		list_for_each_entry(hp_cpu, &hp_cpu_list, node) {
++			if (!loop)
++				hp_cpu->iterator = list_first_entry(
++						&hp_cpu->handlers,
++						struct hp_handler, node);
++			else
++				hp_cpu->iterator = list_entry(
++						hp_cpu->iterator->node.next,
++						struct hp_handler, node);
++			preempt_disable();
++			if (hp_cpu->processor_id == smp_processor_id()) {
++				err = init_handler(hp_cpu->iterator);
++				if (err)
++					return err;
++			} else {
++				smp_call_function_single(hp_cpu->processor_id,
++					init_handler_cb, hp_cpu->iterator, 1);
++			}
++			preempt_enable();
++		}
++	}
++	return 0;
++}
 +
-+/**
-+ * bman_release - Release buffer(s) to the buffer pool
-+ * @pool: the buffer pool object to release to
-+ * @bufs: an array of buffers to release
-+ * @num: the number of buffers in @bufs (1-8)
-+ *
-+ * Adds the given buffers to RCR entries. If the RCR ring is unresponsive,
-+ * the function will return -ETIMEDOUT. Otherwise, it returns zero.
-+ */
-+int bman_release(struct bman_pool *pool, const struct bm_buffer *bufs, u8 num);
++static int send_first_frame(void *ignore)
++{
++	u32 *p = special_handler->frame_ptr;
++	u32 lfsr = HP_FIRST_WORD;
++	int loop, err;
++	struct qm_fd fd;
 +
-+/**
-+ * bman_acquire - Acquire buffer(s) from a buffer pool
-+ * @pool: the buffer pool object to acquire from
-+ * @bufs: array for storing the acquired buffers
-+ * @num: the number of buffers desired (@bufs is at least this big)
-+ *
-+ * Issues an "Acquire" command via the portal's management command interface.
-+ * The return value will be the number of buffers obtained from the pool, or a
-+ * negative error code if a h/w error or pool starvation was encountered. In
-+ * the latter case, the content of @bufs is undefined.
-+ */
-+int bman_acquire(struct bman_pool *pool, struct bm_buffer *bufs, u8 num);
++	if (special_handler->processor_id != smp_processor_id()) {
++		err = -EIO;
++		goto failed;
++	}
++	memset(&fd, 0, sizeof(fd));
++	qm_fd_addr_set64(&fd, special_handler->addr);
++	qm_fd_set_contig_big(&fd, HP_NUM_WORDS * 4);
++	for (loop = 0; loop < HP_NUM_WORDS; loop++, p++) {
++		if (*p != lfsr) {
++			err = -EIO;
++			pr_crit("corrupt frame data");
++			goto failed;
++		}
++		*p ^= special_handler->tx_mixer;
++		lfsr = do_lfsr(lfsr);
++	}
++	pr_info("Sending first frame\n");
++	err = qman_enqueue(&special_handler->tx, &fd);
++	if (err) {
++		pr_crit("qman_enqueue() failed");
++		goto failed;
++	}
 +
-+#endif	/* __FSL_BMAN_H */
++	return 0;
++failed:
++	return err;
++}
++
++static void send_first_frame_cb(void *ignore)
++{
++	if (send_first_frame(NULL))
++		WARN_ON(1);
++}
++
++int qman_test_stash(void)
++{
++	int err;
++
++	if (cpumask_weight(cpu_online_mask) < 2) {
++		pr_info("%s(): skip - only 1 CPU\n", __func__);
++		return 0;
++	}
++
++	pr_info("%s(): Starting\n", __func__);
++
++	hp_cpu_list_length = 0;
++	loop_counter = 0;
++	hp_handler_slab = kmem_cache_create("hp_handler_slab",
++			sizeof(struct hp_handler), L1_CACHE_BYTES,
++			SLAB_HWCACHE_ALIGN, NULL);
++	if (!hp_handler_slab) {
++		err = -EIO;
++		pr_crit("kmem_cache_create() failed");
++		goto failed;
++	}
++
++	err = allocate_frame_data();
++	if (err)
++		goto failed;
++
++	/* Init phase 1 */
++	pr_info("Creating %d handlers per cpu...\n", HP_PER_CPU);
++	if (on_all_cpus(create_per_cpu_handlers)) {
++		err = -EIO;
++		pr_crit("on_each_cpu() failed");
++		goto failed;
++	}
++	pr_info("Number of cpus: %d, total of %d handlers\n",
++		hp_cpu_list_length, hp_cpu_list_length * HP_PER_CPU);
++
++	err = init_phase2();
++	if (err)
++		goto failed;
++
++	err = init_phase3();
++	if (err)
++		goto failed;
++
++	preempt_disable();
++	if (special_handler->processor_id == smp_processor_id()) {
++		err = send_first_frame(NULL);
++		if (err)
++			goto failed;
++	} else {
++		smp_call_function_single(special_handler->processor_id,
++					 send_first_frame_cb, NULL, 1);
++	}
++	preempt_enable();
++
++	wait_event(queue, loop_counter == HP_LOOPS);
++	deallocate_frame_data();
++	if (on_all_cpus(destroy_per_cpu_handlers)) {
++		err = -EIO;
++		pr_crit("on_each_cpu() failed");
++		goto failed;
++	}
++	kmem_cache_destroy(hp_handler_slab);
++	pr_info("%s(): Finished\n", __func__);
++
++	return 0;
++failed:
++	WARN_ON(1);
++	return err;
++}
 -- 
 1.7.11.7
