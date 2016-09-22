@@ -1,50 +1,26 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50040.outbound.protection.outlook.com [40.107.5.40])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sfZ7c4HbYzDsTQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 08:30:04 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8LMSdwV082080
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 18:30:02 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25kurqw9xy-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 18:30:02 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Wed, 21 Sep 2016 18:30:01 -0400
-Date: Wed, 21 Sep 2016 17:29:46 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v2 3/3] mm: enable CONFIG_MOVABLE_NODE on powerpc
-References: <1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1473883618-14998-4-git-send-email-arbab@linux.vnet.ibm.com>
- <87h99cxv00.fsf@linux.vnet.ibm.com>
- <20160921054500.lrqktzjqjhuzewqg@arbab-laptop>
- <87oa3hwwxs.fsf@linux.vnet.ibm.com>
- <20160921140846.m6wp2ij5f2fx4cps@arbab-laptop>
- <87h999wbxi.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sffRP3wwWzDshg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 11:44:00 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Leo Li <pku.leo@gmail.com>
+CC: Scott Wood <oss@buserror.net>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, "X.B.
+ Xie" <xiaobo.xie@nxp.com>
+Subject: RE: [PATCH v5 2/2] QE: remove PPCisms for QE
+Date: Thu, 22 Sep 2016 01:43:52 +0000
+Message-ID: <AM3PR04MB11857AE8D2B0BE56121B97D391C90@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
+ <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
+ <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
+ <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <CADRPPNTJGSrNskUVz1xMmbXWGwyEAJ_toW+kHy3_JJTvxeq6gA@mail.gmail.com>
+In-Reply-To: <CADRPPNTJGSrNskUVz1xMmbXWGwyEAJ_toW+kHy3_JJTvxeq6gA@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <87h999wbxi.fsf@linux.vnet.ibm.com>
-Message-Id: <20160921222946.on4jcxgk7nerrbh4@arbab-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,14 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 21, 2016 at 08:13:37PM +0530, Aneesh Kumar K.V wrote:
->So we are looking at two step online process here. The above explained
->the details nicely. Can you capture these details in the commit message. ie,
->to say that when using 'echo online-movable > state' we allow the move from
->normal to movable only if movable node is set. Also you may want to
->mention that we still don't support the auto-online to movable.
-
-Sure, no problem. I'll use a more verbose commit message in v3.
-
--- 
-Reza Arbab
+T24gTW9uLCBTZXAgMjIsIDIwMTYgYXQgMjoxOSBBTSwgTGVvIExpIHdyb3RlOg0KPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMZW8gTGkgW21haWx0bzpwa3UubGVvQGdtYWls
+LmNvbV0NCj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAyMiwgMjAxNiAyOjE5IEFNDQo+IFRv
+OiBRaWFuZyBaaGFvIDxxaWFuZy56aGFvQG54cC5jb20+DQo+IENjOiBTY290dCBXb29kIDxvc3NA
+YnVzZXJyb3IubmV0PjsgbGludXhwcGMtZGV2IDxsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFi
+cy5vcmc+OyBsa21sIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgWC5CLiBYaWUNCj4g
+PHhpYW9iby54aWVAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2NSAyLzJdIFFFOiBy
+ZW1vdmUgUFBDaXNtcyBmb3IgUUUNCj4gDQo+IE9uIFR1ZSwgU2VwIDIwLCAyMDE2IGF0IDg6MTMg
+UE0sIFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4gd3JvdGU6DQo+ID4gT24gTW9uLCBT
+ZXAgMjAsIDIwMTYgYXQgNDoxMyBBTSwgTGVvIExpIHdyb3RlOg0KPiA+PiAtLS0tLU9yaWdpbmFs
+IE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBMZW8gTGkgW21haWx0bzpwa3UubGVvQGdtYWlsLmNv
+bV0NCj4gPj4gU2VudDogVHVlc2RheSwgU2VwdGVtYmVyIDIwLCAyMDE2IDQ6MTMgQU0NCj4gPj4g
+VG86IFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPj4gQ2M6IFNjb3R0IFdvb2Qg
+PG9zc0BidXNlcnJvci5uZXQ+OyBsaW51eHBwYy1kZXYgPGxpbnV4cHBjLQ0KPiA+PiBkZXZAbGlz
+dHMub3psYWJzLm9yZz47IGxrbWwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBYLkIu
+IFhpZQ0KPiA+PiA8eGlhb2JvLnhpZUBueHAuY29tPg0KPiA+PiBTdWJqZWN0OiBSZTogW1BBVENI
+IHY1IDIvMl0gUUU6IHJlbW92ZSBQUENpc21zIGZvciBRRQ0KPiA+Pg0KPiA+PiBPbiBNb24sIEp1
+bCAyNSwgMjAxNiBhdCAxMjo0MyBBTSwgWmhhbyBRaWFuZyA8cWlhbmcuemhhb0BueHAuY29tPg0K
+PiB3cm90ZToNCj4gPj4gPiBRRSB3YXMgc3VwcG9ydGVkIG9uIFBvd2VyUEMsIGFuZCBkZXBlbmRl
+bnQgb24gUFBDLCBOb3cgaXQgaXMNCj4gPj4gPiBzdXBwb3J0ZWQgb24gb3RoZXIgcGxhdGZvcm1z
+LiBzbyByZW1vdmUgUFBDaXNtcy4NCj4gPj4gPg0KPiA+PiA+IFNpZ25lZC1vZmYtYnk6IFpoYW8g
+UWlhbmcgPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPj4gPiAtLS0NCj4gPj4gPiBDaGFuZ2VzIGZv
+ciB2MjoNCj4gPj4gPiAgICAgICAgIC0gbmENCj4gPj4gPiBDaGFuZ2VzIGZvciB2MzoNCj4gPj4g
+PiAgICAgICAgIC0gYWRkIE5PX0lSUQ0KPiA+PiA+IENoYW5nZXMgZm9yIHY0Og0KPiA+PiA+ICAg
+ICAgICAgLSBtb2RpZnkgc3Bpbl9ldmVudF90aW1lb3V0IHRvIG9wZW5jb2RlZCB0aW1lb3V0IGxv
+b3ANCj4gPj4gPiAgICAgICAgIC0gcmVtb3ZlIE5PX0lSUQ0KPiA+PiA+ICAgICAgICAgLSBtb2Rp
+ZnkgdmlycV90b19odyB0byBvcGVuY29lZCBjb2RlIENoYW5nZXMgZm9yIHY1Og0KPiA+PiA+ICAg
+ICAgICAgLSBtb2RpZnkgY29tbWl0IG1zZw0KPiA+PiA+ICAgICAgICAgLSBtb2RpZnkgZGVwZW5k
+cyBvZiBRVUlDQ19FTkdJTkUNCj4gPj4gPiAgICAgICAgIC0gYWRkIGtlcm5lbGRvYyBoZWFkZXIg
+Zm9yIHFlX2lzc3VlX2NtZA0KPiA+PiA+DQo+ID4+ID4gIGRyaXZlcnMvaXJxY2hpcC9xZV9pYy5j
+ICAgICAgIHwgMjggKysrKysrKysrLS0tLS0tDQo+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS9L
+Y29uZmlnICAgIHwgIDIgKy0NCj4gPj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL3FlLmMgICAgICAg
+fCA4MCArKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0NCj4gLS0tLQ0KPiA+PiAt
+LS0NCj4gPj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL3FlX2lvLmMgICAgfCA0MiArKysrKysrKysr
+LS0tLS0tLS0tLS0tLQ0KPiA+PiA+ICBkcml2ZXJzL3NvYy9mc2wvcWUvcWVfdGRtLmMgICB8ICA4
+ICsrLS0tDQo+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2MuYyAgICAgIHwgMTAgKysrLS0t
+DQo+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2NfZmFzdC5jIHwgNjggKysrKysrKysrKysr
+KysrKysrLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4+ID4gIGluY2x1ZGUvc29jL2ZzbC9xZS9xZS5o
+ICAgICAgIHwgIDEgLQ0KPiA+PiA+ICBpbmNsdWRlL3NvYy9mc2wvcWUvcWVfaWMuaCAgICB8IDEy
+ICsrKy0tLS0NCj4gPj4gPiAgOSBmaWxlcyBjaGFuZ2VkLCAxMzMgaW5zZXJ0aW9ucygrKSwgMTE4
+IGRlbGV0aW9ucygtKQ0KPiA+PiA+DQo+ID4+DQo+ID4+IFtzbmlwXQ0KPiA+Pg0KPiA+PiA+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZw0KPiA+PiA+IGIvZHJpdmVycy9z
+b2MvZnNsL3FlL0tjb25maWcgaW5kZXggNzNhMmUwOC4uYjI2YjY0MyAxMDA2NDQNCj4gPj4gPiAt
+LS0gYS9kcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZw0KPiA+PiA+ICsrKyBiL2RyaXZlcnMvc29j
+L2ZzbC9xZS9LY29uZmlnDQo+ID4+ID4gQEAgLTQsNyArNCw3IEBADQo+ID4+ID4NCj4gPj4gPiAg
+Y29uZmlnIFFVSUNDX0VOR0lORQ0KPiA+PiA+ICAgICAgICAgYm9vbCAiRnJlZXNjYWxlIFFVSUND
+IEVuZ2luZSAoUUUpIFN1cHBvcnQiDQo+ID4+ID4gLSAgICAgICBkZXBlbmRzIG9uIEZTTF9TT0Mg
+JiYgUFBDMzINCj4gPj4gPiArICAgICAgIGRlcGVuZHMgb24gT0YgJiYgSEFTX0lPTUVNDQo+ID4+
+ID4gICAgICAgICBzZWxlY3QgR0VORVJJQ19BTExPQ0FUT1INCj4gPj4gPiAgICAgICAgIHNlbGVj
+dCBDUkMzMg0KPiA+PiA+ICAgICAgICAgaGVscA0KPiA+Pg0KPiA+PiBZb3UgbWFrZSBpdCBwb3Nz
+aWJsZSB0byBidWlsZCBRRSBkcml2ZXJzIG9uIEFSTSwgYnV0IHRoZSBVQ0NfR0VUSA0KPiA+PiBm
+YWlscyB0byBidWlsZCBvbiBhcm02NC4gIFBsZWFzZSBtYWtlIHN1cmUgYWxsIHRoZXNlIGRyaXZl
+cnMgY2FuDQo+ID4+IGJ1aWxkIG9uIG90aGVyIGFyY2hpdGVjdHVyZXMuICBPciB5b3UgY2FuIHNp
+bXBseSBtYWtlIHRoZW0gb25seSBidWlsZA0KPiA+PiBmb3IgUG93ZXIgYXJjaGl0ZWN0dXJlIGFz
+IG1vc3Qgb2YgdGhlbSBhcmUgbm90IGF2YWlsYWJsZSBvbiBBUk0uDQo+ID4+DQo+ID4NCj4gPiBN
+b3N0IG9mIHRoZW0gYXJlIG5vdCBhdmFpbGFibGUgb24gQVJNIGFuZCBBUk02NC4NCj4gPiBOb3cs
+IG9ubHkgcWUtaGRsYyBpcyBhdmFpbGFibGUgb24gQVJNNjQuDQo+IA0KPiBUaGVuIHlvdSBzaG91
+bGQgdXBkYXRlIHRoZSBLY29uZmlnIGZvciB0aGVzZSBkcml2ZXJzIHRvbywgaWYgdGhleSBhcmUg
+b25seQ0KPiBkZXBlbmRpbmcgb24gQ09ORklHX1FVSUNDX0VOR0lORS4NCg0KWW91IG1lYW4gYWRk
+aW5nICJkZXBlbmRzIG9uIEZTTF9TT0MgJiYgUFBDMzIgIiB0byB0aGUgZHJpdmVycyB0aGF0IGFy
+ZSBub3QgYXZhaWxhYmxlIGZvciBBUk0/DQoNCkJSDQotWmhhbyBRaWFuZw0K
