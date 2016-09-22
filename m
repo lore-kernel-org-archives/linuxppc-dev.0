@@ -1,26 +1,26 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR03-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr50040.outbound.protection.outlook.com [40.107.5.40])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sffRP3wwWzDshg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 11:44:00 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Leo Li <pku.leo@gmail.com>
-CC: Scott Wood <oss@buserror.net>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, "X.B.
- Xie" <xiaobo.xie@nxp.com>
-Subject: RE: [PATCH v5 2/2] QE: remove PPCisms for QE
-Date: Thu, 22 Sep 2016 01:43:52 +0000
-Message-ID: <AM3PR04MB11857AE8D2B0BE56121B97D391C90@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
- <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
- <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
- <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <CADRPPNTJGSrNskUVz1xMmbXWGwyEAJ_toW+kHy3_JJTvxeq6gA@mail.gmail.com>
-In-Reply-To: <CADRPPNTJGSrNskUVz1xMmbXWGwyEAJ_toW+kHy3_JJTvxeq6gA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sfkDz0SYjzDsgg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 14:35:15 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id 6so3225961pfl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2016 21:35:14 -0700 (PDT)
+Date: Thu, 22 Sep 2016 14:35:00 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Christoph Lameter <cl@linux.com>, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] percpu: improve generic percpu modify-return
+ implementation
+Message-ID: <20160922143500.21809b98@roar.ozlabs.ibm.com>
+In-Reply-To: <20160921142343.GA10734@htj.duckdns.org>
+References: <20160921085137.862-1-npiggin@gmail.com>
+ <20160921205711.4e804777@roar.ozlabs.ibm.com>
+ <20160921142343.GA10734@htj.duckdns.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +30,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gTW9uLCBTZXAgMjIsIDIwMTYgYXQgMjoxOSBBTSwgTGVvIExpIHdyb3RlOg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMZW8gTGkgW21haWx0bzpwa3UubGVvQGdtYWls
-LmNvbV0NCj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAyMiwgMjAxNiAyOjE5IEFNDQo+IFRv
-OiBRaWFuZyBaaGFvIDxxaWFuZy56aGFvQG54cC5jb20+DQo+IENjOiBTY290dCBXb29kIDxvc3NA
-YnVzZXJyb3IubmV0PjsgbGludXhwcGMtZGV2IDxsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFi
-cy5vcmc+OyBsa21sIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgWC5CLiBYaWUNCj4g
-PHhpYW9iby54aWVAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2NSAyLzJdIFFFOiBy
-ZW1vdmUgUFBDaXNtcyBmb3IgUUUNCj4gDQo+IE9uIFR1ZSwgU2VwIDIwLCAyMDE2IGF0IDg6MTMg
-UE0sIFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4gd3JvdGU6DQo+ID4gT24gTW9uLCBT
-ZXAgMjAsIDIwMTYgYXQgNDoxMyBBTSwgTGVvIExpIHdyb3RlOg0KPiA+PiAtLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBMZW8gTGkgW21haWx0bzpwa3UubGVvQGdtYWlsLmNv
-bV0NCj4gPj4gU2VudDogVHVlc2RheSwgU2VwdGVtYmVyIDIwLCAyMDE2IDQ6MTMgQU0NCj4gPj4g
-VG86IFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPj4gQ2M6IFNjb3R0IFdvb2Qg
-PG9zc0BidXNlcnJvci5uZXQ+OyBsaW51eHBwYy1kZXYgPGxpbnV4cHBjLQ0KPiA+PiBkZXZAbGlz
-dHMub3psYWJzLm9yZz47IGxrbWwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBYLkIu
-IFhpZQ0KPiA+PiA8eGlhb2JvLnhpZUBueHAuY29tPg0KPiA+PiBTdWJqZWN0OiBSZTogW1BBVENI
-IHY1IDIvMl0gUUU6IHJlbW92ZSBQUENpc21zIGZvciBRRQ0KPiA+Pg0KPiA+PiBPbiBNb24sIEp1
-bCAyNSwgMjAxNiBhdCAxMjo0MyBBTSwgWmhhbyBRaWFuZyA8cWlhbmcuemhhb0BueHAuY29tPg0K
-PiB3cm90ZToNCj4gPj4gPiBRRSB3YXMgc3VwcG9ydGVkIG9uIFBvd2VyUEMsIGFuZCBkZXBlbmRl
-bnQgb24gUFBDLCBOb3cgaXQgaXMNCj4gPj4gPiBzdXBwb3J0ZWQgb24gb3RoZXIgcGxhdGZvcm1z
-LiBzbyByZW1vdmUgUFBDaXNtcy4NCj4gPj4gPg0KPiA+PiA+IFNpZ25lZC1vZmYtYnk6IFpoYW8g
-UWlhbmcgPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPj4gPiAtLS0NCj4gPj4gPiBDaGFuZ2VzIGZv
-ciB2MjoNCj4gPj4gPiAgICAgICAgIC0gbmENCj4gPj4gPiBDaGFuZ2VzIGZvciB2MzoNCj4gPj4g
-PiAgICAgICAgIC0gYWRkIE5PX0lSUQ0KPiA+PiA+IENoYW5nZXMgZm9yIHY0Og0KPiA+PiA+ICAg
-ICAgICAgLSBtb2RpZnkgc3Bpbl9ldmVudF90aW1lb3V0IHRvIG9wZW5jb2RlZCB0aW1lb3V0IGxv
-b3ANCj4gPj4gPiAgICAgICAgIC0gcmVtb3ZlIE5PX0lSUQ0KPiA+PiA+ICAgICAgICAgLSBtb2Rp
-ZnkgdmlycV90b19odyB0byBvcGVuY29lZCBjb2RlIENoYW5nZXMgZm9yIHY1Og0KPiA+PiA+ICAg
-ICAgICAgLSBtb2RpZnkgY29tbWl0IG1zZw0KPiA+PiA+ICAgICAgICAgLSBtb2RpZnkgZGVwZW5k
-cyBvZiBRVUlDQ19FTkdJTkUNCj4gPj4gPiAgICAgICAgIC0gYWRkIGtlcm5lbGRvYyBoZWFkZXIg
-Zm9yIHFlX2lzc3VlX2NtZA0KPiA+PiA+DQo+ID4+ID4gIGRyaXZlcnMvaXJxY2hpcC9xZV9pYy5j
-ICAgICAgIHwgMjggKysrKysrKysrLS0tLS0tDQo+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS9L
-Y29uZmlnICAgIHwgIDIgKy0NCj4gPj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL3FlLmMgICAgICAg
-fCA4MCArKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0NCj4gLS0tLQ0KPiA+PiAt
-LS0NCj4gPj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL3FlX2lvLmMgICAgfCA0MiArKysrKysrKysr
-LS0tLS0tLS0tLS0tLQ0KPiA+PiA+ICBkcml2ZXJzL3NvYy9mc2wvcWUvcWVfdGRtLmMgICB8ICA4
-ICsrLS0tDQo+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2MuYyAgICAgIHwgMTAgKysrLS0t
-DQo+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2NfZmFzdC5jIHwgNjggKysrKysrKysrKysr
-KysrKysrLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4+ID4gIGluY2x1ZGUvc29jL2ZzbC9xZS9xZS5o
-ICAgICAgIHwgIDEgLQ0KPiA+PiA+ICBpbmNsdWRlL3NvYy9mc2wvcWUvcWVfaWMuaCAgICB8IDEy
-ICsrKy0tLS0NCj4gPj4gPiAgOSBmaWxlcyBjaGFuZ2VkLCAxMzMgaW5zZXJ0aW9ucygrKSwgMTE4
-IGRlbGV0aW9ucygtKQ0KPiA+PiA+DQo+ID4+DQo+ID4+IFtzbmlwXQ0KPiA+Pg0KPiA+PiA+IGRp
-ZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZw0KPiA+PiA+IGIvZHJpdmVycy9z
-b2MvZnNsL3FlL0tjb25maWcgaW5kZXggNzNhMmUwOC4uYjI2YjY0MyAxMDA2NDQNCj4gPj4gPiAt
-LS0gYS9kcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZw0KPiA+PiA+ICsrKyBiL2RyaXZlcnMvc29j
-L2ZzbC9xZS9LY29uZmlnDQo+ID4+ID4gQEAgLTQsNyArNCw3IEBADQo+ID4+ID4NCj4gPj4gPiAg
-Y29uZmlnIFFVSUNDX0VOR0lORQ0KPiA+PiA+ICAgICAgICAgYm9vbCAiRnJlZXNjYWxlIFFVSUND
-IEVuZ2luZSAoUUUpIFN1cHBvcnQiDQo+ID4+ID4gLSAgICAgICBkZXBlbmRzIG9uIEZTTF9TT0Mg
-JiYgUFBDMzINCj4gPj4gPiArICAgICAgIGRlcGVuZHMgb24gT0YgJiYgSEFTX0lPTUVNDQo+ID4+
-ID4gICAgICAgICBzZWxlY3QgR0VORVJJQ19BTExPQ0FUT1INCj4gPj4gPiAgICAgICAgIHNlbGVj
-dCBDUkMzMg0KPiA+PiA+ICAgICAgICAgaGVscA0KPiA+Pg0KPiA+PiBZb3UgbWFrZSBpdCBwb3Nz
-aWJsZSB0byBidWlsZCBRRSBkcml2ZXJzIG9uIEFSTSwgYnV0IHRoZSBVQ0NfR0VUSA0KPiA+PiBm
-YWlscyB0byBidWlsZCBvbiBhcm02NC4gIFBsZWFzZSBtYWtlIHN1cmUgYWxsIHRoZXNlIGRyaXZl
-cnMgY2FuDQo+ID4+IGJ1aWxkIG9uIG90aGVyIGFyY2hpdGVjdHVyZXMuICBPciB5b3UgY2FuIHNp
-bXBseSBtYWtlIHRoZW0gb25seSBidWlsZA0KPiA+PiBmb3IgUG93ZXIgYXJjaGl0ZWN0dXJlIGFz
-IG1vc3Qgb2YgdGhlbSBhcmUgbm90IGF2YWlsYWJsZSBvbiBBUk0uDQo+ID4+DQo+ID4NCj4gPiBN
-b3N0IG9mIHRoZW0gYXJlIG5vdCBhdmFpbGFibGUgb24gQVJNIGFuZCBBUk02NC4NCj4gPiBOb3cs
-IG9ubHkgcWUtaGRsYyBpcyBhdmFpbGFibGUgb24gQVJNNjQuDQo+IA0KPiBUaGVuIHlvdSBzaG91
-bGQgdXBkYXRlIHRoZSBLY29uZmlnIGZvciB0aGVzZSBkcml2ZXJzIHRvbywgaWYgdGhleSBhcmUg
-b25seQ0KPiBkZXBlbmRpbmcgb24gQ09ORklHX1FVSUNDX0VOR0lORS4NCg0KWW91IG1lYW4gYWRk
-aW5nICJkZXBlbmRzIG9uIEZTTF9TT0MgJiYgUFBDMzIgIiB0byB0aGUgZHJpdmVycyB0aGF0IGFy
-ZSBub3QgYXZhaWxhYmxlIGZvciBBUk0/DQoNCkJSDQotWmhhbyBRaWFuZw0K
+On Wed, 21 Sep 2016 10:23:43 -0400
+Tejun Heo <tj@kernel.org> wrote:
+
+> Hello, Nick.
+>=20
+> How have you been? :)
+
+Hey Tejun,
+
+Well thank you, how about you?
+=20
+> On Wed, Sep 21, 2016 at 08:57:11PM +1000, Nicholas Piggin wrote:
+> > On Wed, 21 Sep 2016 18:51:37 +1000
+> > Nicholas Piggin <npiggin@gmail.com> wrote:
+> >  =20
+> > > Some architectures require an additional load to find the address of
+> > > percpu pointers. In some implemenatations, the C aliasing rules do not
+> > > allow the result of that load to be kept over the store that modifies
+> > > the percpu variable, which causes additional loads. =20
+> >=20
+> > Sorry I picked up an old patch here. This one should be better.
+> >=20
+> > From d0cb9052d6f4c31d24f999b7b0cecb34681eee9b Mon Sep 17 00:00:00 2001
+> > From: Nicholas Piggin <npiggin@gmail.com>
+> > Date: Wed, 21 Sep 2016 18:23:43 +1000
+> > Subject: [PATCH] percpu: improve generic percpu modify-return implement=
+ations
+> >=20
+> > Some architectures require an additional load to find the address of
+> > percpu pointers. In some implemenatations, the C aliasing rules do not
+> > allow the result of that load to be kept over the store that modifies
+> > the percpu variable, which causes additional loads.
+> >=20
+> > Work around this by finding the pointer first, then operating on that.
+> >=20
+> > It's also possible to mark things as restrict and those kind of games,
+> > but that can require larger and arch specific changes.
+> >=20
+> > On powerpc, __this_cpu_inc_return compiles to:
+> >=20
+> >         ld 10,48(13)
+> >         ldx 9,3,10
+> >         addi 9,9,1
+> >         stdx 9,3,10
+> >         ld 9,48(13)
+> >         ldx 3,9,3
+> >=20
+> > With this patch it compiles to:
+> >=20
+> >         ld 10,48(13)
+> >         ldx 9,3,10
+> >         addi 9,9,1
+> >         stdx 9,3,10
+> >=20
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com> =20
+>=20
+> Patch looks good to me but seems QP encoded.  Can you please resend?
+>=20
+> Thanks and it's great to see you again!
+>=20
+
+Trying a new mail client, sorry. It *seems* to be working now, how's
+this?
+
+=46rom d0cb9052d6f4c31d24f999b7b0cecb34681eee9b Mon Sep 17 00:00:00 2001
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 21 Sep 2016 18:23:43 +1000
+Subject: [PATCH] percpu: improve generic percpu modify-return implementatio=
+ns
+
+Some architectures require an additional load to find the address of
+percpu pointers. In some implemenatations, the C aliasing rules do not
+allow the result of that load to be kept over the store that modifies
+the percpu variable, which causes additional loads.
+
+Work around this by finding the pointer first, then operating on that.
+
+It's also possible to mark things as restrict and those kind of games,
+but that can require larger and arch specific changes.
+
+On powerpc, __this_cpu_inc_return compiles to:
+
+        ld 10,48(13)
+        ldx 9,3,10
+        addi 9,9,1
+        stdx 9,3,10
+        ld 9,48(13)
+        ldx 3,9,3
+
+With this patch it compiles to:
+
+        ld 10,48(13)
+        ldx 9,3,10
+        addi 9,9,1
+        stdx 9,3,10
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+To: Tejun Heo <tj@kernel.org>
+To: Christoph Lameter <cl@linux.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+---
+ include/asm-generic/percpu.h | 53 +++++++++++++++++++++++++---------------=
+----
+ 1 file changed, 30 insertions(+), 23 deletions(-)
+
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+index 4d9f233..40e8870 100644
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -65,6 +65,11 @@ extern void setup_per_cpu_areas(void);
+ #define PER_CPU_DEF_ATTRIBUTES
+ #endif
+=20
++#define raw_cpu_generic_read(pcp)					\
++({									\
++	*raw_cpu_ptr(&(pcp));						\
++})
++
+ #define raw_cpu_generic_to_op(pcp, val, op)				\
+ do {									\
+ 	*raw_cpu_ptr(&(pcp)) op val;					\
+@@ -72,34 +77,39 @@ do {									\
+=20
+ #define raw_cpu_generic_add_return(pcp, val)				\
+ ({									\
+-	raw_cpu_add(pcp, val);						\
+-	raw_cpu_read(pcp);						\
++	typeof(&(pcp)) __p =3D raw_cpu_ptr(&(pcp));			\
++									\
++	*__p +=3D val;							\
++	*__p;								\
+ })
+=20
+ #define raw_cpu_generic_xchg(pcp, nval)					\
+ ({									\
++	typeof(&(pcp)) __p =3D raw_cpu_ptr(&(pcp));			\
+ 	typeof(pcp) __ret;						\
+-	__ret =3D raw_cpu_read(pcp);					\
+-	raw_cpu_write(pcp, nval);					\
++	__ret =3D *__p;							\
++	*__p =3D nval;							\
+ 	__ret;								\
+ })
+=20
+ #define raw_cpu_generic_cmpxchg(pcp, oval, nval)			\
+ ({									\
++	typeof(&(pcp)) __p =3D raw_cpu_ptr(&(pcp));			\
+ 	typeof(pcp) __ret;						\
+-	__ret =3D raw_cpu_read(pcp);					\
++	__ret =3D *__p;							\
+ 	if (__ret =3D=3D (oval))						\
+-		raw_cpu_write(pcp, nval);				\
++		*__p =3D nval;						\
+ 	__ret;								\
+ })
+=20
+ #define raw_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nv=
+al2) \
+ ({									\
++	typeof(&(pcp1)) __p1 =3D raw_cpu_ptr(&(pcp1));			\
++	typeof(&(pcp2)) __p2 =3D raw_cpu_ptr(&(pcp2));			\
+ 	int __ret =3D 0;							\
+-	if (raw_cpu_read(pcp1) =3D=3D (oval1) &&				\
+-			 raw_cpu_read(pcp2)  =3D=3D (oval2)) {		\
+-		raw_cpu_write(pcp1, nval1);				\
+-		raw_cpu_write(pcp2, nval2);				\
++	if (*__p1 =3D=3D (oval1) && *__p2  =3D=3D (oval2)) {			\
++		*__p1 =3D nval1;						\
++		*__p2 =3D nval2;						\
+ 		__ret =3D 1;						\
+ 	}								\
+ 	(__ret);							\
+@@ -109,7 +119,7 @@ do {									\
+ ({									\
+ 	typeof(pcp) __ret;						\
+ 	preempt_disable();						\
+-	__ret =3D *this_cpu_ptr(&(pcp));					\
++	__ret =3D raw_cpu_generic_read(pcp);				\
+ 	preempt_enable();						\
+ 	__ret;								\
+ })
+@@ -118,17 +128,17 @@ do {									\
+ do {									\
+ 	unsigned long __flags;						\
+ 	raw_local_irq_save(__flags);					\
+-	*raw_cpu_ptr(&(pcp)) op val;					\
++	raw_cpu_generic_to_op(pcp, val, op);				\
+ 	raw_local_irq_restore(__flags);					\
+ } while (0)
+=20
++
+ #define this_cpu_generic_add_return(pcp, val)				\
+ ({									\
+ 	typeof(pcp) __ret;						\
+ 	unsigned long __flags;						\
+ 	raw_local_irq_save(__flags);					\
+-	raw_cpu_add(pcp, val);						\
+-	__ret =3D raw_cpu_read(pcp);					\
++	__ret =3D raw_cpu_generic_add_return(pcp, val);			\
+ 	raw_local_irq_restore(__flags);					\
+ 	__ret;								\
+ })
+@@ -138,8 +148,7 @@ do {									\
+ 	typeof(pcp) __ret;						\
+ 	unsigned long __flags;						\
+ 	raw_local_irq_save(__flags);					\
+-	__ret =3D raw_cpu_read(pcp);					\
+-	raw_cpu_write(pcp, nval);					\
++	__ret =3D raw_cpu_generic_xchg(pcp, nval);			\
+ 	raw_local_irq_restore(__flags);					\
+ 	__ret;								\
+ })
+@@ -149,9 +158,7 @@ do {									\
+ 	typeof(pcp) __ret;						\
+ 	unsigned long __flags;						\
+ 	raw_local_irq_save(__flags);					\
+-	__ret =3D raw_cpu_read(pcp);					\
+-	if (__ret =3D=3D (oval))						\
+-		raw_cpu_write(pcp, nval);				\
++	__ret =3D raw_cpu_generic_cmpxchg(pcp, oval, nval);		\
+ 	raw_local_irq_restore(__flags);					\
+ 	__ret;								\
+ })
+@@ -168,16 +175,16 @@ do {									\
+ })
+=20
+ #ifndef raw_cpu_read_1
+-#define raw_cpu_read_1(pcp)		(*raw_cpu_ptr(&(pcp)))
++#define raw_cpu_read_1(pcp)		raw_cpu_generic_read(pcp)
+ #endif
+ #ifndef raw_cpu_read_2
+-#define raw_cpu_read_2(pcp)		(*raw_cpu_ptr(&(pcp)))
++#define raw_cpu_read_2(pcp)		raw_cpu_generic_read(pcp)
+ #endif
+ #ifndef raw_cpu_read_4
+-#define raw_cpu_read_4(pcp)		(*raw_cpu_ptr(&(pcp)))
++#define raw_cpu_read_4(pcp)		raw_cpu_generic_read(pcp)
+ #endif
+ #ifndef raw_cpu_read_8
+-#define raw_cpu_read_8(pcp)		(*raw_cpu_ptr(&(pcp)))
++#define raw_cpu_read_8(pcp)		raw_cpu_generic_read(pcp)
+ #endif
+=20
+ #ifndef raw_cpu_write_1
+--=20
+2.9.3
