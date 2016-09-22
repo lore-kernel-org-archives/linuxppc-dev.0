@@ -1,28 +1,49 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sg0VV6PRGzDsj8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 01:17:54 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id oz2so3803087pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 08:17:54 -0700 (PDT)
-Date: Thu, 22 Sep 2016 23:17:16 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- peterz@infradead.org, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
- waiman.long@hpe.com, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH v7 4/6] powerpc: lib/locks.c: Add cpu yield/wake helper
- function
-Message-ID: <20160922151716.GA22004@tardis.cn.ibm.com>
-References: <1474277037-15200-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1474277037-15200-5-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sg1VD28dNzDsj6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:02:44 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3sg1VC4tJFz9t0p
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 02:02:43 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8MFwpko091714
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 12:02:41 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25m9p1vxxr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 12:02:41 -0400
+Received: from localhost
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Thu, 22 Sep 2016 21:32:37 +0530
+Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id D64ABE0024
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 21:31:55 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8MG2OOX13500640
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 21:32:24 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8MG2V3r002125
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 21:32:32 +0530
+Subject: [PATCH v2] powerpc/mm: export current mmu mode info
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 22 Sep 2016 21:32:14 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
-In-Reply-To: <1474277037-15200-5-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <147456009252.14735.18189822731283851598.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,153 +53,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The kernel now supports both radix and hash MMU modes. Tools like crash
+and makedumpfile need to know the current MMU mode the kernel is using,
+to debug/analyze it.  The current MMU mode depends on hardware support
+and also whether disable_radix cmdline parameter is passed to the kernel.
+The mmu_features member of cpu_spec structure holds the current MMU mode
+a cpu is using. But the above mentioned tools need to know the MMU mode
+early in their init process, when they may not have access to offset info
+of structure members. A hard-coded offset may help but it won't be robust.
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch introduces a new global variable, which holds the current MMU
+mode the kernel is running in and can be accessed by tools early in thier
+init process, helping tools to initialize accurately for each MMU mode.
+This patch also optimizes the radix_enabled() function call.
 
-Hi Xinhui,
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
 
-On Mon, Sep 19, 2016 at 05:23:55AM -0400, Pan Xinhui wrote:
-> Add two corresponding helper functions to support pv-qspinlock.
->=20
-> For normal use, __spin_yield_cpu will confer current vcpu slices to the
-> target vcpu(say, a lock holder). If target vcpu is not specified or it
-> is in running state, such conferging to lpar happens or not depends.
->=20
-> Because hcall itself will introduce latency and a little overhead. And
-> we do NOT want to suffer any latency on some cases, e.g. in interrupt han=
-dler.
-> The second parameter *confer* can indicate such case.
->=20
-> __spin_wake_cpu is simpiler, it will wake up one vcpu regardless of its
-> current vcpu state.
->=20
-> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/spinlock.h |  4 +++
->  arch/powerpc/lib/locks.c            | 59 +++++++++++++++++++++++++++++++=
-++++++
->  2 files changed, 63 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/a=
-sm/spinlock.h
-> index 6aef8dd..abb6b0f 100644
-> --- a/arch/powerpc/include/asm/spinlock.h
-> +++ b/arch/powerpc/include/asm/spinlock.h
-> @@ -56,9 +56,13 @@
->  /* We only yield to the hypervisor if we are in shared processor mode */
->  #define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
->  extern void __spin_yield(arch_spinlock_t *lock);
-> +extern void __spin_yield_cpu(int cpu, int confer);
-> +extern void __spin_wake_cpu(int cpu);
->  extern void __rw_yield(arch_rwlock_t *lock);
->  #else /* SPLPAR */
->  #define __spin_yield(x)	barrier()
-> +#define __spin_yield_cpu(x,y) barrier()
-> +#define __spin_wake_cpu(x) barrier()
->  #define __rw_yield(x)	barrier()
->  #define SHARED_PROCESSOR	0
->  #endif
-> diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-> index 6574626..892df7d 100644
-> --- a/arch/powerpc/lib/locks.c
-> +++ b/arch/powerpc/lib/locks.c
-> @@ -23,6 +23,65 @@
->  #include <asm/hvcall.h>
->  #include <asm/smp.h>
-> =20
-> +/*
-> + * confer our slices to a specified cpu and return. If it is already run=
-ning or
-> + * cpu is -1, then we will check confer. If confer is NULL, we will retu=
-rn
-> + * otherwise we confer our slices to lpar.
-> + */
-> +void __spin_yield_cpu(int cpu, int confer)
-> +{
-> +	unsigned int holder_cpu =3D cpu, yield_count;
-> +
+Changes from v1:
+* Patch name changed from "ppc64/book3s: export mmu type info"
+* Optimized radix_enabled() function
 
-You don't need @holder_cpu at all, do you?
 
-> +	if (cpu =3D=3D -1)
-> +		goto yield_to_lpar;
-> +
-> +	BUG_ON(holder_cpu >=3D nr_cpu_ids);
-> +	yield_count =3D be32_to_cpu(lppaca_of(holder_cpu).yield_count);
-> +
-> +	/* if cpu is running, confer slices to lpar conditionally*/
-> +	if ((yield_count & 1) =3D=3D 0)
-> +		goto yield_to_lpar;
-> +
-> +	plpar_hcall_norets(H_CONFER,
-> +		get_hard_smp_processor_id(holder_cpu), yield_count);
-> +	return;
-> +
-> +yield_to_lpar:
-> +	if (confer)
-> +		plpar_hcall_norets(H_CONFER, -1, 0);
-> +}
-> +EXPORT_SYMBOL_GPL(__spin_yield_cpu);
-> +
-> +void __spin_wake_cpu(int cpu)
-> +{
-> +	unsigned int holder_cpu =3D cpu;
-> +
+ arch/powerpc/include/asm/mmu.h      |   22 +++++++++++++++++++++-
+ arch/powerpc/kernel/machine_kexec.c |    3 +++
+ arch/powerpc/mm/hash_utils_64.c     |    2 ++
+ arch/powerpc/mm/pgtable-radix.c     |    2 ++
+ arch/powerpc/mm/pgtable.c           |    6 ++++++
+ arch/powerpc/mm/tlb_hash32.c        |    1 +
+ arch/powerpc/mm/tlb_nohash.c        |    2 ++
+ 7 files changed, 37 insertions(+), 1 deletion(-)
 
-Ditto.
-
-Regards,
-Boqun
-
-> +	BUG_ON(holder_cpu >=3D nr_cpu_ids);
-> +	/*
-> +	 * NOTE: we should always do this hcall regardless of
-> +	 * the yield_count of the holder_cpu.
-> +	 * as thers might be a case like below;
-> +	 * CPU 	1				2
-> +	 *				yielded =3D true
-> +	 *	if (yielded)
-> +	 * 	__spin_wake_cpu()
-> +	 * 				__spin_yield_cpu()
-> +	 *
-> +	 * So we might lose a wake if we check the yield_count and
-> +	 * return directly if the holder_cpu is running.
-> +	 * IOW. do NOT code like below.
-> +	 *  yield_count =3D be32_to_cpu(lppaca_of(holder_cpu).yield_count);
-> +	 *  if ((yield_count & 1) =3D=3D 0)
-> +	 *  	return;
-> +	 *
-> +	 * a PROD hcall marks the target_cpu proded, which cause the next cede =
-or confer
-> +	 * called on the target_cpu invalid.
-> +	 */
-> +	plpar_hcall_norets(H_PROD,
-> +		get_hard_smp_processor_id(holder_cpu));
-> +}
-> +EXPORT_SYMBOL_GPL(__spin_wake_cpu);
-> +
->  #ifndef CONFIG_QUEUED_SPINLOCKS
->  void __spin_yield(arch_spinlock_t *lock)
->  {
-> --=20
-> 2.4.11
->=20
-
---yrj/dFKFPuw6o+aM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEcBAABCAAGBQJX4/X4AAoJEEl56MO1B/q4y6gH/2AGxmEsj0HH4US1mcYUC7Qt
-jlvBMes+KDlso1yy+lG5M3U8dmfWVjiN+QHQq/XT7RSU9u69sY0mPzifrRhBt4eF
-Jir1MwKnW4VymB5gjbJakNNaCL48OpaGm4wBZFqkl+9y36Cb3v7ZuSIXtVLbQwmj
-oJt0baU46hGpGKcgAqhPthPqOkaZW/1z8ifW+tZWI84kR+AvstZXYfNgcWqvun7V
-rAddDUiPCoWImT7pzvyrllwp7bMAeezaAALlj5AxfVD6py4mcUfl4itjhT8b6J4v
-QbOwzHakp/UmLlMEairtDiLFglZTbCHY2dm+PCb2myqw1bsGKTdRAnGZIo5CV74=
-=y/qP
------END PGP SIGNATURE-----
-
---yrj/dFKFPuw6o+aM--
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index e2fb408..558987c 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -199,6 +199,21 @@ static inline void mmu_clear_feature(unsigned long feature)
+ 
+ extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
+ 
++/*
++ * Possible MMU modes
++ */
++#define MMU_MODE_NONE           0
++#define MMU_MODE_RADIX          1
++#define MMU_MODE_HASH           2
++#define MMU_MODE_HASH32         3
++#define MMU_MODE_NOHASH         4
++#define MMU_MODE_NOHASH32       5
++
++/*
++ * current MMU mode
++ */
++extern unsigned int current_mmu_mode __read_mostly;
++
+ #ifdef CONFIG_PPC64
+ /* This is our real memory area size on ppc64 server, on embedded, we
+  * make it match the size our of bolted TLB area
+@@ -218,7 +233,12 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+ #ifdef CONFIG_PPC_RADIX_MMU
+ static inline bool radix_enabled(void)
+ {
+-	return mmu_has_feature(MMU_FTR_TYPE_RADIX);
++	if (current_mmu_mode == MMU_MODE_RADIX)
++		return true;
++	else if (current_mmu_mode != MMU_MODE_NONE)
++		return false;
++	else
++		return mmu_has_feature(MMU_FTR_TYPE_RADIX);
+ }
+ 
+ static inline bool early_radix_enabled(void)
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 2694d07..4ecc184 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -77,6 +77,9 @@ void arch_crash_save_vmcoreinfo(void)
+ 	VMCOREINFO_SYMBOL(contig_page_data);
+ #endif
+ #if defined(CONFIG_PPC64) && defined(CONFIG_SPARSEMEM_VMEMMAP)
++#ifdef CONFIG_PPC_BOOK3S
++	VMCOREINFO_SYMBOL(current_mmu_mode);
++#endif
+ 	VMCOREINFO_SYMBOL(vmemmap_list);
+ 	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
+ 	VMCOREINFO_SYMBOL(mmu_psize_defs);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 0821556..a566a95 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -886,6 +886,8 @@ void __init hash__early_init_devtree(void)
+ 
+ void __init hash__early_init_mmu(void)
+ {
++	current_mmu_mode = MMU_MODE_HASH;
++
+ 	htab_init_page_sizes();
+ 
+ 	/*
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index af897d9..4b0ad48 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -298,6 +298,8 @@ void __init radix__early_init_mmu(void)
+ {
+ 	unsigned long lpcr;
+ 
++	current_mmu_mode = MMU_MODE_RADIX;
++
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	/* PAGE_SIZE mappings */
+ 	mmu_virtual_psize = MMU_PAGE_64K;
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 0b6fb24..4638a00 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -31,6 +31,12 @@
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
+ 
++/*
++ * current MMU mode
++ */
++unsigned int current_mmu_mode __read_mostly = MMU_MODE_NONE;
++EXPORT_SYMBOL(current_mmu_mode);
++
+ static inline int is_exec_fault(void)
+ {
+ 	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
+diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
+index 702d768..0b55425 100644
+--- a/arch/powerpc/mm/tlb_hash32.c
++++ b/arch/powerpc/mm/tlb_hash32.c
+@@ -170,4 +170,5 @@ EXPORT_SYMBOL(flush_tlb_range);
+ 
+ void __init early_init_mmu(void)
+ {
++	current_mmu_mode = MMU_MODE_HASH32;
+ }
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index 050badc..74300a7 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -720,6 +720,7 @@ static void __init early_mmu_set_memory_limit(void)
+ /* boot cpu only */
+ void __init early_init_mmu(void)
+ {
++	current_mmu_mode = MMU_MODE_NOHASH;
+ 	early_init_mmu_global();
+ 	early_init_this_mmu();
+ 	early_mmu_set_memory_limit();
+@@ -772,6 +773,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ #else /* ! CONFIG_PPC64 */
+ void __init early_init_mmu(void)
+ {
++	current_mmu_mode = MMU_MODE_NOHASH32;
+ #ifdef CONFIG_PPC_47x
+ 	early_init_mmu_47x();
+ #endif
