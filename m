@@ -1,28 +1,19 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <claudiu.manoil@nxp.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0055.outbound.protection.outlook.com [104.47.36.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sg06M17pPzDshj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 01:00:27 +1000 (AEST)
-Date: Thu, 22 Sep 2016 17:00:22 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, peterz@infradead.org,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v21 00/20] perf, tools: Add support for PMU events in
- JSON format
-Message-ID: <20160922150022.GA20134@krava>
-References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20160919212017.GA11991@kernel.org>
- <20160919233113.GB11991@kernel.org>
- <20160919233753.GC11991@kernel.org>
- <20160920000258.GD11991@kernel.org>
- <20160920002820.GE11991@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sg0D21CZlzDshh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 01:05:21 +1000 (AEST)
+From: Claudiu Manoil <claudiu.manoil@nxp.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+CC: <linux-kernel@vger.kernel.org>, Scott Wood <oss@buserror.net>, Roy Pledge
+ <roy.pledge@nxp.com>
+Subject: [PATCH v2 0/5] Freescale DPAA 1.x QBMan Drivers
+Date: Thu, 22 Sep 2016 18:04:07 +0300
+Message-ID: <1474556652-5044-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160920002820.GE11991@kernel.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 19, 2016 at 09:28:20PM -0300, Arnaldo Carvalho de Melo wrote:
-> Em Mon, Sep 19, 2016 at 09:02:58PM -0300, Arnaldo Carvalho de Melo escreveu:
-> > Em Mon, Sep 19, 2016 at 08:37:53PM -0300, Arnaldo Carvalho de Melo escreveu:
-> > > yeah, changing that typedef + true def to plain include <stdbool.h>
-> > > makes it progress to the next failure, which is in cross compilation
-> > > environments, such as using fedora 24 + the Android NDK to try to build
-> > > a ARM android binary.
-> 
-> > 14 fedora:24-x-ARC-uClibc: FAIL
-> >   GEN      /tmp/build/perf/pmu-events/pmu-events.c
-> > /bin/sh: /tmp/build/perf/pmu-events/jevents: cannot execute binary file: Exec format error
-> > pmu-events/Build:11: recipe for target '/tmp/build/perf/pmu-events/pmu-events.c' failed
-> > make[2]: *** [/tmp/build/perf/pmu-events/pmu-events.c] Error 126
-> > Makefile.perf:461: recipe for target '/tmp/build/perf/pmu-events/pmu-events-in.o' failed
-> > make[1]: *** [/tmp/build/perf/pmu-events/pmu-events-in.o] Error 2
-> > make[1]: *** Waiting for unfinished jobs....
-> 
-> Jiri, we need something similar to scripts/Makefile.host :-\
-> 
-> Calling it a day, perhaps, for now, we should just detect that it is a
-> corss compile env (CROSS_COMPILE is set) and exclude all this code from
-> the build, emitting a warning.
-> 
-> I left what I did at the tmp.perf/core branch of my repo at
-> git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git.
+Add basic support for the Data Path Acceleration Architecture v1.x
+(DPAA 1.x) hardware infrastructure and accelerators found on multicore
+Freescale SoCs, commonly known as the QorIQ series.
 
-as discussed on irc we will disable it for cross builds now,
-because we dont have good solution at the moment.. it's
-similar case as for fixdep tool:
+CC: Roy Pledge <roy.pledge@nxp.com>
 
-    3a70fcd3a4db tools build: Fix cross compile build
-    ...
-    We need to add support for host side tools build, meanwhile
-    disabling fixdep usage for cross arch builds.
+Claudiu Manoil (5):
+  soc/fsl: Introduce DPAA 1.x BMan device driver
+  soc/fsl: Introduce DPAA 1.x QMan device driver
+  soc/bman: Add self-test for BMan driver
+  soc/qman: Add self-test for QMan driver
+  arch/powerpc: Add CONFIG_FSL_DPAA to corenetXX_smp_defconfig
 
-I'll make a change to disable this for crossbuild and
-work on common solution later
+ arch/powerpc/Makefile                   |    4 +-
+ arch/powerpc/configs/dpaa.config        |    1 +
+ drivers/soc/Kconfig                     |    1 +
+ drivers/soc/fsl/Makefile                |    1 +
+ drivers/soc/fsl/qbman/Kconfig           |   67 +
+ drivers/soc/fsl/qbman/Makefile          |   12 +
+ drivers/soc/fsl/qbman/bman.c            |  797 +++++++++
+ drivers/soc/fsl/qbman/bman_ccsr.c       |  263 +++
+ drivers/soc/fsl/qbman/bman_portal.c     |  219 +++
+ drivers/soc/fsl/qbman/bman_priv.h       |   80 +
+ drivers/soc/fsl/qbman/bman_test.c       |   53 +
+ drivers/soc/fsl/qbman/bman_test.h       |   35 +
+ drivers/soc/fsl/qbman/bman_test_api.c   |  151 ++
+ drivers/soc/fsl/qbman/dpaa_sys.h        |  103 ++
+ drivers/soc/fsl/qbman/qman.c            | 2881 +++++++++++++++++++++++++++++++
+ drivers/soc/fsl/qbman/qman_ccsr.c       |  808 +++++++++
+ drivers/soc/fsl/qbman/qman_portal.c     |  355 ++++
+ drivers/soc/fsl/qbman/qman_priv.h       |  371 ++++
+ drivers/soc/fsl/qbman/qman_test.c       |   62 +
+ drivers/soc/fsl/qbman/qman_test.h       |   36 +
+ drivers/soc/fsl/qbman/qman_test_api.c   |  252 +++
+ drivers/soc/fsl/qbman/qman_test_stash.c |  617 +++++++
+ include/soc/fsl/bman.h                  |  129 ++
+ include/soc/fsl/qman.h                  | 1074 ++++++++++++
+ 24 files changed, 8370 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/configs/dpaa.config
+ create mode 100644 drivers/soc/fsl/qbman/Kconfig
+ create mode 100644 drivers/soc/fsl/qbman/Makefile
+ create mode 100644 drivers/soc/fsl/qbman/bman.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_ccsr.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_portal.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_priv.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_test.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_test.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_test_api.c
+ create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.h
+ create mode 100644 drivers/soc/fsl/qbman/qman.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_ccsr.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_portal.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_priv.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_api.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_stash.c
+ create mode 100644 include/soc/fsl/bman.h
+ create mode 100644 include/soc/fsl/qman.h
 
-thanks,
-jirka
+-- 
+1.7.11.7
