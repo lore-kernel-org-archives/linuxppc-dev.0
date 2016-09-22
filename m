@@ -1,49 +1,31 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sg1VD28dNzDsj6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:02:44 +1000 (AEST)
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sg1VC4tJFz9t0p
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 02:02:43 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sg1VY3cLXzDsjk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:03:01 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8MFwpko091714
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 12:02:41 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25m9p1vxxr-1
+ u8MFwq5I106906
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 12:02:58 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25mb26str6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 12:02:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2016 12:02:58 -0400
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Thu, 22 Sep 2016 21:32:37 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id D64ABE0024
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 21:31:55 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8MG2OOX13500640
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 21:32:24 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8MG2V3r002125
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2016 21:32:32 +0530
-Subject: [PATCH v2] powerpc/mm: export current mmu mode info
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 22 Sep 2016 21:32:14 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <147456009252.14735.18189822731283851598.stgit@hbathini.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 22 Sep 2016 10:02:56 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH] powerpc/mm: THP page cache support
+Date: Thu, 22 Sep 2016 21:32:40 +0530
+Message-Id: <1474560160-7327-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,161 +35,297 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel now supports both radix and hash MMU modes. Tools like crash
-and makedumpfile need to know the current MMU mode the kernel is using,
-to debug/analyze it.  The current MMU mode depends on hardware support
-and also whether disable_radix cmdline parameter is passed to the kernel.
-The mmu_features member of cpu_spec structure holds the current MMU mode
-a cpu is using. But the above mentioned tools need to know the MMU mode
-early in their init process, when they may not have access to offset info
-of structure members. A hard-coded offset may help but it won't be robust.
+Update arch hook in the generic THP page cache code, that will
+deposit and withdarw preallocated page table. Archs like ppc64 use
+this preallocated table to store the hash pte slot information.
 
-This patch introduces a new global variable, which holds the current MMU
-mode the kernel is running in and can be accessed by tools early in thier
-init process, helping tools to initialize accurately for each MMU mode.
-This patch also optimizes the radix_enabled() function call.
+This is an RFC patch and I am sharing this early to get feedback on the
+approach taken. I have used stress-ng mmap-file operation and that
+resulted in some thp_file_mmap as show below.
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+[/mnt/stress]$ grep thp_file /proc/vmstat
+thp_file_alloc 25403
+thp_file_mapped 16967
+[/mnt/stress]$
+
+I did observe wrong nr_ptes count once. I need to recreate the problem
+again.
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  3 ++
+ include/asm-generic/pgtable.h                |  8 +++-
+ mm/Kconfig                                   |  6 +--
+ mm/huge_memory.c                             | 19 +++++++++-
+ mm/khugepaged.c                              | 21 ++++++++++-
+ mm/memory.c                                  | 56 +++++++++++++++++++++++-----
+ 6 files changed, 93 insertions(+), 20 deletions(-)
 
-Changes from v1:
-* Patch name changed from "ppc64/book3s: export mmu type info"
-* Optimized radix_enabled() function
-
-
- arch/powerpc/include/asm/mmu.h      |   22 +++++++++++++++++++++-
- arch/powerpc/kernel/machine_kexec.c |    3 +++
- arch/powerpc/mm/hash_utils_64.c     |    2 ++
- arch/powerpc/mm/pgtable-radix.c     |    2 ++
- arch/powerpc/mm/pgtable.c           |    6 ++++++
- arch/powerpc/mm/tlb_hash32.c        |    1 +
- arch/powerpc/mm/tlb_nohash.c        |    2 ++
- 7 files changed, 37 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index e2fb408..558987c 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -199,6 +199,21 @@ static inline void mmu_clear_feature(unsigned long feature)
- 
- extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
- 
-+/*
-+ * Possible MMU modes
-+ */
-+#define MMU_MODE_NONE           0
-+#define MMU_MODE_RADIX          1
-+#define MMU_MODE_HASH           2
-+#define MMU_MODE_HASH32         3
-+#define MMU_MODE_NOHASH         4
-+#define MMU_MODE_NOHASH32       5
-+
-+/*
-+ * current MMU mode
-+ */
-+extern unsigned int current_mmu_mode __read_mostly;
-+
- #ifdef CONFIG_PPC64
- /* This is our real memory area size on ppc64 server, on embedded, we
-  * make it match the size our of bolted TLB area
-@@ -218,7 +233,12 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- #ifdef CONFIG_PPC_RADIX_MMU
- static inline bool radix_enabled(void)
- {
--	return mmu_has_feature(MMU_FTR_TYPE_RADIX);
-+	if (current_mmu_mode == MMU_MODE_RADIX)
-+		return true;
-+	else if (current_mmu_mode != MMU_MODE_NONE)
-+		return false;
-+	else
-+		return mmu_has_feature(MMU_FTR_TYPE_RADIX);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 263bf39ced40..1f45b06ce78e 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -1017,6 +1017,9 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+ 	 */
+ 	return true;
  }
- 
- static inline bool early_radix_enabled(void)
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 2694d07..4ecc184 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -77,6 +77,9 @@ void arch_crash_save_vmcoreinfo(void)
- 	VMCOREINFO_SYMBOL(contig_page_data);
- #endif
- #if defined(CONFIG_PPC64) && defined(CONFIG_SPARSEMEM_VMEMMAP)
-+#ifdef CONFIG_PPC_BOOK3S
-+	VMCOREINFO_SYMBOL(current_mmu_mode);
-+#endif
- 	VMCOREINFO_SYMBOL(vmemmap_list);
- 	VMCOREINFO_SYMBOL(mmu_vmemmap_psize);
- 	VMCOREINFO_SYMBOL(mmu_psize_defs);
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0821556..a566a95 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -886,6 +886,8 @@ void __init hash__early_init_devtree(void)
- 
- void __init hash__early_init_mmu(void)
- {
-+	current_mmu_mode = MMU_MODE_HASH;
 +
- 	htab_init_page_sizes();
- 
++#define arch_needs_pgtable_deposit() (true)
++
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index d4458b6dbfb4..0d1e400e82a2 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -660,11 +660,17 @@ static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
  	/*
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index af897d9..4b0ad48 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -298,6 +298,8 @@ void __init radix__early_init_mmu(void)
- {
- 	unsigned long lpcr;
- 
-+	current_mmu_mode = MMU_MODE_RADIX;
-+
- #ifdef CONFIG_PPC_64K_PAGES
- 	/* PAGE_SIZE mappings */
- 	mmu_virtual_psize = MMU_PAGE_64K;
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 0b6fb24..4638a00 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -31,6 +31,12 @@
- #include <asm/tlbflush.h>
- #include <asm/tlb.h>
- 
-+/*
-+ * current MMU mode
-+ */
-+unsigned int current_mmu_mode __read_mostly = MMU_MODE_NONE;
-+EXPORT_SYMBOL(current_mmu_mode);
-+
- static inline int is_exec_fault(void)
- {
- 	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
-diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
-index 702d768..0b55425 100644
---- a/arch/powerpc/mm/tlb_hash32.c
-+++ b/arch/powerpc/mm/tlb_hash32.c
-@@ -170,4 +170,5 @@ EXPORT_SYMBOL(flush_tlb_range);
- 
- void __init early_init_mmu(void)
- {
-+	current_mmu_mode = MMU_MODE_HASH32;
+ 	 * With split pmd lock we also need to move preallocated
+ 	 * PTE page table if new_pmd is on different PMD page table.
++	 *
++	 * We also don't deposit and withdraw tables for file pages.
+ 	 */
+-	return new_pmd_ptl != old_pmd_ptl;
++	return (new_pmd_ptl != old_pmd_ptl) && vma_is_anonymous(vma);
  }
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 050badc..74300a7 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -720,6 +720,7 @@ static void __init early_mmu_set_memory_limit(void)
- /* boot cpu only */
- void __init early_init_mmu(void)
- {
-+	current_mmu_mode = MMU_MODE_NOHASH;
- 	early_init_mmu_global();
- 	early_init_this_mmu();
- 	early_mmu_set_memory_limit();
-@@ -772,6 +773,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- #else /* ! CONFIG_PPC64 */
- void __init early_init_mmu(void)
- {
-+	current_mmu_mode = MMU_MODE_NOHASH32;
- #ifdef CONFIG_PPC_47x
- 	early_init_mmu_47x();
  #endif
+ 
++#ifndef arch_needs_pgtable_deposit
++#define arch_needs_pgtable_deposit() (false)
++#endif
++
+ /*
+  * This function is meant to be used by sites walking pagetables with
+  * the mmap_sem hold in read mode to protect against MADV_DONTNEED and
+diff --git a/mm/Kconfig b/mm/Kconfig
+index be0ee11fa0d9..0a279d399722 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -447,13 +447,9 @@ choice
+ 	  benefit.
+ endchoice
+ 
+-#
+-# We don't deposit page tables on file THP mapping,
+-# but Power makes use of them to address MMU quirk.
+-#
+ config	TRANSPARENT_HUGE_PAGECACHE
+ 	def_bool y
+-	depends on TRANSPARENT_HUGEPAGE && !PPC
++	depends on TRANSPARENT_HUGEPAGE
+ 
+ #
+ # UP and nommu archs use km based percpu allocator
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index a6abd76baa72..37176f455d16 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1320,6 +1320,14 @@ out_unlocked:
+ 	return ret;
+ }
+ 
++void zap_deposited_table(struct mm_struct *mm, pmd_t *pmd)
++{
++	pgtable_t pgtable;
++	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
++	pte_free(mm, pgtable);
++	atomic_long_dec(&mm->nr_ptes);
++}
++
+ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 		 pmd_t *pmd, unsigned long addr)
+ {
+@@ -1359,6 +1367,8 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 			atomic_long_dec(&tlb->mm->nr_ptes);
+ 			add_mm_counter(tlb->mm, MM_ANONPAGES, -HPAGE_PMD_NR);
+ 		} else {
++			if (arch_needs_pgtable_deposit())
++				zap_deposited_table(tlb->mm, pmd);
+ 			add_mm_counter(tlb->mm, MM_FILEPAGES, -HPAGE_PMD_NR);
+ 		}
+ 		spin_unlock(ptl);
+@@ -1401,8 +1411,7 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
+ 		pmd = pmdp_huge_get_and_clear(mm, old_addr, old_pmd);
+ 		VM_BUG_ON(!pmd_none(*new_pmd));
+ 
+-		if (pmd_move_must_withdraw(new_ptl, old_ptl) &&
+-				vma_is_anonymous(vma)) {
++		if (pmd_move_must_withdraw(new_ptl, old_ptl)) {
+ 			pgtable_t pgtable;
+ 			pgtable = pgtable_trans_huge_withdraw(mm, old_pmd);
+ 			pgtable_trans_huge_deposit(mm, new_pmd, pgtable);
+@@ -1525,6 +1534,12 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
+ 
+ 	if (!vma_is_anonymous(vma)) {
+ 		_pmd = pmdp_huge_clear_flush_notify(vma, haddr, pmd);
++		/*
++		 * We are going to unmap this huge page. So
++		 * just go ahead and zap it
++		 */
++		if (arch_needs_pgtable_deposit())
++			zap_deposited_table(mm, pmd);
+ 		if (is_huge_zero_pmd(_pmd))
+ 			put_huge_zero_page();
+ 		if (vma_is_dax(vma))
+diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+index 728d7790dc2d..9fb7b275cb63 100644
+--- a/mm/khugepaged.c
++++ b/mm/khugepaged.c
+@@ -1240,6 +1240,7 @@ static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
+ 	struct vm_area_struct *vma;
+ 	unsigned long addr;
+ 	pmd_t *pmd, _pmd;
++	bool deposited = false;
+ 
+ 	i_mmap_lock_write(mapping);
+ 	vma_interval_tree_foreach(vma, &mapping->i_mmap, pgoff, pgoff) {
+@@ -1264,10 +1265,26 @@ static void retract_page_tables(struct address_space *mapping, pgoff_t pgoff)
+ 			spinlock_t *ptl = pmd_lock(vma->vm_mm, pmd);
+ 			/* assume page table is clear */
+ 			_pmd = pmdp_collapse_flush(vma, addr, pmd);
++			/*
++			 * now deposit the pgtable for arch that need it
++			 * otherwise free it.
++			 */
++			if (arch_needs_pgtable_deposit()) {
++				/*
++				 * The deposit should be visibile only after
++				 * collapse is seen by others.
++				 */
++				smp_wmb();
++				pgtable_trans_huge_deposit(vma->vm_mm, pmd,
++							   pmd_pgtable(_pmd));
++				deposited = true;
++			}
+ 			spin_unlock(ptl);
+ 			up_write(&vma->vm_mm->mmap_sem);
+-			atomic_long_dec(&vma->vm_mm->nr_ptes);
+-			pte_free(vma->vm_mm, pmd_pgtable(_pmd));
++			if (!deposited) {
++				atomic_long_dec(&vma->vm_mm->nr_ptes);
++				pte_free(vma->vm_mm, pmd_pgtable(_pmd));
++			}
+ 		}
+ 	}
+ 	i_mmap_unlock_write(mapping);
+diff --git a/mm/memory.c b/mm/memory.c
+index 83be99d9d8a1..670152f42aa1 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2935,6 +2935,19 @@ static inline bool transhuge_vma_suitable(struct vm_area_struct *vma,
+ 	return true;
+ }
+ 
++static void deposit_prealloc_pte(struct fault_env *fe)
++{
++	struct vm_area_struct *vma = fe->vma;
++
++	pgtable_trans_huge_deposit(vma->vm_mm, fe->pmd, fe->prealloc_pte);
++	/*
++	 * We are going to consume the prealloc table,
++	 * count that as nr_ptes.
++	 */
++	atomic_long_inc(&vma->vm_mm->nr_ptes);
++	fe->prealloc_pte = 0;
++}
++
+ static int do_set_pmd(struct fault_env *fe, struct page *page)
+ {
+ 	struct vm_area_struct *vma = fe->vma;
+@@ -2949,6 +2962,13 @@ static int do_set_pmd(struct fault_env *fe, struct page *page)
+ 	ret = VM_FAULT_FALLBACK;
+ 	page = compound_head(page);
+ 
++	/*
++	 * Archs like ppc64 need additonal space to store information
++	 * related to pte entry. Use the preallocated table for that.
++	 */
++	if (arch_needs_pgtable_deposit() && !fe->prealloc_pte)
++		fe->prealloc_pte = pte_alloc_one(vma->vm_mm, fe->address);
++
+ 	fe->ptl = pmd_lock(vma->vm_mm, fe->pmd);
+ 	if (unlikely(!pmd_none(*fe->pmd)))
+ 		goto out;
+@@ -2962,6 +2982,11 @@ static int do_set_pmd(struct fault_env *fe, struct page *page)
+ 
+ 	add_mm_counter(vma->vm_mm, MM_FILEPAGES, HPAGE_PMD_NR);
+ 	page_add_file_rmap(page, true);
++	/*
++	 * deposit and withdraw with pmd lock held
++	 */
++	if (arch_needs_pgtable_deposit())
++		deposit_prealloc_pte(fe);
+ 
+ 	set_pmd_at(vma->vm_mm, haddr, fe->pmd, entry);
+ 
+@@ -2971,6 +2996,13 @@ static int do_set_pmd(struct fault_env *fe, struct page *page)
+ 	ret = 0;
+ 	count_vm_event(THP_FILE_MAPPED);
+ out:
++	/*
++	 * If we are going to fallback to pte mapping, do a
++	 * withdraw with pmd lock held.
++	 */
++	if (arch_needs_pgtable_deposit() && (ret == VM_FAULT_FALLBACK ))
++		fe->prealloc_pte = pgtable_trans_huge_withdraw(vma->vm_mm,
++							       fe->pmd);
+ 	spin_unlock(fe->ptl);
+ 	return ret;
+ }
+@@ -3010,18 +3042,20 @@ int alloc_set_pte(struct fault_env *fe, struct mem_cgroup *memcg,
+ 
+ 		ret = do_set_pmd(fe, page);
+ 		if (ret != VM_FAULT_FALLBACK)
+-			return ret;
++			goto fault_handled;
+ 	}
+ 
+ 	if (!fe->pte) {
+ 		ret = pte_alloc_one_map(fe);
+ 		if (ret)
+-			return ret;
++			goto fault_handled;
+ 	}
+ 
+ 	/* Re-check under ptl */
+-	if (unlikely(!pte_none(*fe->pte)))
+-		return VM_FAULT_NOPAGE;
++	if (unlikely(!pte_none(*fe->pte))) {
++		ret = VM_FAULT_NOPAGE;
++		goto fault_handled;
++	}
+ 
+ 	flush_icache_page(vma, page);
+ 	entry = mk_pte(page, vma->vm_page_prot);
+@@ -3041,8 +3075,15 @@ int alloc_set_pte(struct fault_env *fe, struct mem_cgroup *memcg,
+ 
+ 	/* no need to invalidate: a not-present page won't be cached */
+ 	update_mmu_cache(vma, fe->address, fe->pte);
++	ret = 0;
+ 
+-	return 0;
++fault_handled:
++	/* preallocated pagetable is unused: free it */
++	if (fe->prealloc_pte) {
++		pte_free(fe->vma->vm_mm, fe->prealloc_pte);
++		fe->prealloc_pte = 0;
++	}
++	return ret;
+ }
+ 
+ static unsigned long fault_around_bytes __read_mostly =
+@@ -3141,11 +3182,6 @@ static int do_fault_around(struct fault_env *fe, pgoff_t start_pgoff)
+ 
+ 	fe->vma->vm_ops->map_pages(fe, start_pgoff, end_pgoff);
+ 
+-	/* preallocated pagetable is unused: free it */
+-	if (fe->prealloc_pte) {
+-		pte_free(fe->vma->vm_mm, fe->prealloc_pte);
+-		fe->prealloc_pte = 0;
+-	}
+ 	/* Huge page is mapped? Page fault is solved */
+ 	if (pmd_trans_huge(*fe->pmd)) {
+ 		ret = VM_FAULT_NOPAGE;
+-- 
+2.7.4
