@@ -1,21 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yw0-x230.google.com (mail-yw0-x230.google.com
+ [IPv6:2607:f8b0:4002:c05::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgVyX0V2NzDsnZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 21:10:28 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/mm: export current mmu mode info
-In-Reply-To: <147456009252.14735.18189822731283851598.stgit@hbathini.in.ibm.com>
-References: <147456009252.14735.18189822731283851598.stgit@hbathini.in.ibm.com>
-Date: Fri, 23 Sep 2016 21:10:27 +1000
-Message-ID: <87y42i7ty4.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgY9S199QzDsn9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 22:50:02 +1000 (AEST)
+Received: by mail-yw0-x230.google.com with SMTP id u82so112723792ywc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 05:50:02 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Fri, 23 Sep 2016 15:50:00 +0300
+Message-ID: <CAOJe8K0p60fmubbhSHCm0096CTjYjnnfoo_JLuwDcg6fo-=pBg@mail.gmail.com>
+Subject: ehea crash on boot
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+Heh, another thing to debug :)
 
-> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-> index e2fb408..558987c 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -199,6 +199,21 @@ static inline void mmu_clear_feature(unsigned long feature)
->  
->  extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
->  
-> +/*
-> + * Possible MMU modes
-> + */
-> +#define MMU_MODE_NONE           0
-> +#define MMU_MODE_RADIX          1
-> +#define MMU_MODE_HASH           2
-> +#define MMU_MODE_HASH32         3
-> +#define MMU_MODE_NOHASH         4
-> +#define MMU_MODE_NOHASH32       5
-
-These are already defined in the same file:
-
-/*
- * MMU families
- */
-#define MMU_FTR_HPTE_TABLE		ASM_CONST(0x00000001)
-#define MMU_FTR_TYPE_8xx		ASM_CONST(0x00000002)
-#define MMU_FTR_TYPE_40x		ASM_CONST(0x00000004)
-#define MMU_FTR_TYPE_44x		ASM_CONST(0x00000008)
-#define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
-#define MMU_FTR_TYPE_47x		ASM_CONST(0x00000020)
-#define MMU_FTR_TYPE_RADIX		ASM_CONST(0x00000040)
-
-And the values for the current CPU are in cur_cpu_spec->mmu_features.
-
-So if you must export anything, make it that value, and hopefully the
-rest of the patch goes away.
-
-cheers
+mm: Hashing failure ! EA=0xd000080080124040 access=0x800000000000000e
+current=NetworkManager
+trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003bc0300301ae
+mm: Hashing failure ! EA=0xd000080080124040 access=0x800000000000000e
+current=NetworkManager
+trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003bc0300301ae
+Unable to handle kernel paging request for data at address 0xd000080080124040
+Faulting instruction address: 0xc0000000006f21a0
+cpu 0x8: Vector: 300 (Data Access) at [c0000005a8b92b50]
+pc: c0000000006f21a0: .ehea_create_cq+0x160/0x230
+lr: c0000000006f2164: .ehea_create_cq+0x124/0x230
+sp: c0000005a8b92dd0
+msr: 8000000000009032
+dar: d000080080124040
+dsisr: 42000000
+current = 0xc0000005a8b68200
+paca = 0xc00000000ea94000 softe: 0 irq_happened: 0x01
+pid = 6787, comm = NetworkManager
+Linux version 4.8.0-rc6-00214-g4cea877 (kda@ps700) (gcc version 4.8.5
+20150623 (Red Hat 4.8.5-4) (GCC) ) #1 SMP Fri Sep 23 15:01:08 MSK 2016
+enter ? for help
+[c0000005a8b92dd0] c0000000006f2140 .ehea_create_cq+0x100/0x230 (unreliable)
+[c0000005a8b92e70] c0000000006ed448 .ehea_up+0x288/0xed0
+[c0000005a8b92fe0] c0000000006ee314 .ehea_open+0x44/0x130
+[c0000005a8b93070] c000000000812324 .__dev_open+0x154/0x220
+[c0000005a8b93110] c000000000812734 .__dev_change_flags+0xd4/0x1e0
+[c0000005a8b931b0] c00000000081286c .dev_change_flags+0x2c/0x80
+[c0000005a8b93240] c000000000829f0c .do_setlink+0x37c/0xe50
+[c0000005a8b933c0] c00000000082c884 .rtnl_newlink+0x5e4/0x9b0
+[c0000005a8b936d0] c00000000082cd08 .rtnetlink_rcv_msg+0xb8/0x2f0
+[c0000005a8b937a0] c00000000084e25c .netlink_rcv_skb+0x12c/0x150
+[c0000005a8b93830] c000000000829458 .rtnetlink_rcv+0x38/0x60
+[c0000005a8b938b0] c00000000084d814 .netlink_unicast+0x1e4/0x350
+[c0000005a8b93960] c00000000084def8 .netlink_sendmsg+0x418/0x480
+[c0000005a8b93a40] c0000000007defac .sock_sendmsg+0x2c/0x60
+[c0000005a8b93ab0] c0000000007e0cbc .___sys_sendmsg+0x30c/0x320
+[c0000005a8b93c90] c0000000007e21bc .__sys_sendmsg+0x4c/0xb0
+[c0000005a8b93d80] c0000000007e2dec .SyS_socketcall+0x34c/0x3d0
+[c0000005a8b93e30] c00000000000946c system_call+0x38/0x108
