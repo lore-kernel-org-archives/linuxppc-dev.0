@@ -3,40 +3,39 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNVB1RrRzDsmm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:57 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNVB30MyzDsmt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:58 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8N6HZ3s073634
+ u8N6HaAQ110404
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:18:55 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25mqb79a2y-1
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25mqb517te-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:18:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:18:55 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
  Fri, 23 Sep 2016 16:18:51 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 69225357805C
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C22972BB0061
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8N6ImCp66977832
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8N6Im3Z62128128
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8N6Imf6007753
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8N6Imvk031321
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 11/20] selftests/powerpc: Allow tests to extend their kill
- timeout
-Date: Fri, 23 Sep 2016 16:18:17 +1000
+Subject: [PATCH v5 20/20] powerpc: Remove do_load_up_transact_{fpu,altivec}
+Date: Fri, 23 Sep 2016 16:18:26 +1000
 In-Reply-To: <20160923061826.30790-1-cyrilbur@gmail.com>
 References: <20160923061826.30790-1-cyrilbur@gmail.com>
-Message-Id: <20160923061826.30790-12-cyrilbur@gmail.com>
+Message-Id: <20160923061826.30790-21-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,60 +45,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Previous rework of TM code leaves these functions unused
+
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/harness.c | 9 +++++++--
- tools/testing/selftests/powerpc/utils.h   | 2 +-
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/tm.h |  5 -----
+ arch/powerpc/kernel/fpu.S     | 26 --------------------------
+ arch/powerpc/kernel/vector.S  | 25 -------------------------
+ 3 files changed, 56 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
-index 52f9be7..248a820 100644
---- a/tools/testing/selftests/powerpc/harness.c
-+++ b/tools/testing/selftests/powerpc/harness.c
-@@ -19,9 +19,9 @@
- #include "subunit.h"
- #include "utils.h"
+diff --git a/arch/powerpc/include/asm/tm.h b/arch/powerpc/include/asm/tm.h
+index c22d704..82e06ca 100644
+--- a/arch/powerpc/include/asm/tm.h
++++ b/arch/powerpc/include/asm/tm.h
+@@ -9,11 +9,6 @@
  
--#define TIMEOUT		120
- #define KILL_TIMEOUT	5
+ #ifndef __ASSEMBLY__
  
-+static uint64_t timeout = 120;
- 
- int run_test(int (test_function)(void), char *name)
- {
-@@ -44,7 +44,7 @@ int run_test(int (test_function)(void), char *name)
- 	setpgid(pid, pid);
- 
- 	/* Wake us up in timeout seconds */
--	alarm(TIMEOUT);
-+	alarm(timeout);
- 	terminated = false;
- 
- wait:
-@@ -94,6 +94,11 @@ static struct sigaction alarm_action = {
- 	.sa_handler = alarm_handler,
- };
- 
-+void test_harness_set_timeout(uint64_t time)
-+{
-+	timeout = time;
-+}
-+
- int test_harness(int (test_function)(void), char *name)
- {
- 	int rc;
-diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
-index ecd11b5..53405e8 100644
---- a/tools/testing/selftests/powerpc/utils.h
-+++ b/tools/testing/selftests/powerpc/utils.h
-@@ -22,7 +22,7 @@ typedef uint32_t u32;
- typedef uint16_t u16;
- typedef uint8_t u8;
- 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-extern void do_load_up_transact_fpu(struct thread_struct *thread);
+-extern void do_load_up_transact_altivec(struct thread_struct *thread);
+-#endif
 -
-+void test_harness_set_timeout(uint64_t time);
- int test_harness(int (test_function)(void), char *name);
- extern void *get_auxv_entry(int type);
- int pick_online_cpu(void);
+ extern void tm_enable(void);
+ extern void tm_reclaim(struct thread_struct *thread,
+ 		       unsigned long orig_msr, uint8_t cause);
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index 181c187..08d14b0 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -50,32 +50,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
+ #define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base)
+ #define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-/* void do_load_up_transact_fpu(struct thread_struct *thread)
+- *
+- * This is similar to load_up_fpu but for the transactional version of the FP
+- * register set.  It doesn't mess with the task MSR or valid flags.
+- * Furthermore, we don't do lazy FP with TM currently.
+- */
+-_GLOBAL(do_load_up_transact_fpu)
+-	mfmsr	r6
+-	ori	r5,r6,MSR_FP
+-#ifdef CONFIG_VSX
+-BEGIN_FTR_SECTION
+-	oris	r5,r5,MSR_VSX@h
+-END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+-#endif
+-	SYNC
+-	MTMSRD(r5)
+-
+-	addi	r7,r3,THREAD_CKFPSTATE
+-	lfd	fr0,FPSTATE_FPSCR(r7)
+-	MTFSF_L(fr0)
+-	REST_32FPVSRS(0, R4, R7)
+-
+-	blr
+-#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+-
+ /*
+  * Load state from memory into FP registers including FPSCR.
+  * Assumes the caller has enabled FP in the MSR.
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index 7dc4021..bc85bdf 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -7,31 +7,6 @@
+ #include <asm/page.h>
+ #include <asm/ptrace.h>
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-/* void do_load_up_transact_altivec(struct thread_struct *thread)
+- *
+- * This is similar to load_up_altivec but for the transactional version of the
+- * vector regs.  It doesn't mess with the task MSR or valid flags.
+- * Furthermore, VEC laziness is not supported with TM currently.
+- */
+-_GLOBAL(do_load_up_transact_altivec)
+-	mfmsr	r6
+-	oris	r5,r6,MSR_VEC@h
+-	MTMSRD(r5)
+-	isync
+-
+-	li	r4,1
+-	stw	r4,THREAD_USED_VR(r3)
+-
+-	li	r10,THREAD_CKVRSTATE+VRSTATE_VSCR
+-	lvx	v0,r10,r3
+-	mtvscr	v0
+-	addi	r10,r3,THREAD_CKVRSTATE
+-	REST_32VRS(0,r4,r10)
+-
+-	blr
+-#endif
+-
+ /*
+  * Load state from memory into VMX registers including VSCR.
+  * Assumes the caller has enabled VMX in the MSR.
 -- 
 2.10.0
