@@ -1,47 +1,43 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sglVj02y7zDsqj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:40 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sglcz0pxQzDsTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:41:06 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8NKWmZn052264
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:35:38 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb814ts-1
+ u8NKabvx006772
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:41:04 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb91a3w-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:35:38 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:41:04 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Sat, 24 Sep 2016 06:35:35 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 394842CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:34 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8NKZYZW3342620
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:34 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8NKZX1F007357
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:33 +1000
+ Sat, 24 Sep 2016 06:41:02 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 34E9D3578057
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:41:00 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8NKf04f47579230
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:41:00 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8NKexGc008599
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:41:00 +1000
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, "Michael Ellerman" <mpe@ellerman.id.au>
-Cc: "Alexei Starovoitov" <ast@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
- "David S. Miller" <davem@davemloft.net>,
+ netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+Cc: "Michael Ellerman" <mpe@ellerman.id.au>, "Alexei Starovoitov" <ast@fb.com>,
+ Daniel Borkmann <daniel@iogearbox.net>,
  "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>
-Subject: [PATCH 3/3] bpf powerpc: add support for bpf constant blinding
-Date: Sat, 24 Sep 2016 02:05:02 +0530
-In-Reply-To: <40b65ab2bb3a48837ab047a70887de3ccd70c56b.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <40b65ab2bb3a48837ab047a70887de3ccd70c56b.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <40b65ab2bb3a48837ab047a70887de3ccd70c56b.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <40b65ab2bb3a48837ab047a70887de3ccd70c56b.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <0ecead168c80b1c3d8a8101595e689ff7c7a735f.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] bpf samples: fix compiler errors with sockex2 and sockex3
+Date: Sat, 24 Sep 2016 02:10:04 +0530
+Message-Id: <7b29fba6073924dc4c9e7d639eefb0b15a98660d.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,175 +47,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In line with similar support for other architectures by Daniel Borkmann.
-
-'MOD Default X' from test_bpf without constant blinding:
-84 bytes emitted from JIT compiler (pass:3, flen:7)
-d0000000058a4688 + <x>:
-   0:	nop
-   4:	nop
-   8:	std     r27,-40(r1)
-   c:	std     r28,-32(r1)
-  10:	xor     r8,r8,r8
-  14:	xor     r28,r28,r28
-  18:	mr      r27,r3
-  1c:	li      r8,66
-  20:	cmpwi   r28,0
-  24:	bne     0x0000000000000030
-  28:	li      r8,0
-  2c:	b       0x0000000000000044
-  30:	divwu   r9,r8,r28
-  34:	mullw   r9,r28,r9
-  38:	subf    r8,r9,r8
-  3c:	rotlwi  r8,r8,0
-  40:	li      r8,66
-  44:	ld      r27,-40(r1)
-  48:	ld      r28,-32(r1)
-  4c:	mr      r3,r8
-  50:	blr
-
-... and with constant blinding:
-140 bytes emitted from JIT compiler (pass:3, flen:11)
-d00000000bd6ab24 + <x>:
-   0:	nop
-   4:	nop
-   8:	std     r27,-40(r1)
-   c:	std     r28,-32(r1)
-  10:	xor     r8,r8,r8
-  14:	xor     r28,r28,r28
-  18:	mr      r27,r3
-  1c:	lis     r2,-22834
-  20:	ori     r2,r2,36083
-  24:	rotlwi  r2,r2,0
-  28:	xori    r2,r2,36017
-  2c:	xoris   r2,r2,42702
-  30:	rotlwi  r2,r2,0
-  34:	mr      r8,r2
-  38:	rotlwi  r8,r8,0
-  3c:	cmpwi   r28,0
-  40:	bne     0x000000000000004c
-  44:	li      r8,0
-  48:	b       0x000000000000007c
-  4c:	divwu   r9,r8,r28
-  50:	mullw   r9,r28,r9
-  54:	subf    r8,r9,r8
-  58:	rotlwi  r8,r8,0
-  5c:	lis     r2,-17137
-  60:	ori     r2,r2,39065
-  64:	rotlwi  r2,r2,0
-  68:	xori    r2,r2,39131
-  6c:	xoris   r2,r2,48399
-  70:	rotlwi  r2,r2,0
-  74:	mr      r8,r2
-  78:	rotlwi  r8,r8,0
-  7c:	ld      r27,-40(r1)
-  80:	ld      r28,-32(r1)
-  84:	mr      r3,r8
-  88:	blr
+These samples fail to compile as 'struct flow_keys' conflicts with
+definition in net/flow_dissector.h. Fix the same by renaming the
+structure used in the sample.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/net/bpf_jit64.h      |  9 +++++----
- arch/powerpc/net/bpf_jit_comp64.c | 36 +++++++++++++++++++++++++++++-------
- 2 files changed, 34 insertions(+), 11 deletions(-)
+ samples/bpf/sockex2_kern.c | 10 +++++-----
+ samples/bpf/sockex3_kern.c |  8 ++++----
+ samples/bpf/sockex3_user.c |  4 ++--
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/net/bpf_jit64.h b/arch/powerpc/net/bpf_jit64.h
-index 038e00b..62fa758 100644
---- a/arch/powerpc/net/bpf_jit64.h
-+++ b/arch/powerpc/net/bpf_jit64.h
-@@ -39,10 +39,10 @@
- #ifndef __ASSEMBLY__
+diff --git a/samples/bpf/sockex2_kern.c b/samples/bpf/sockex2_kern.c
+index ba0e177..44e5846 100644
+--- a/samples/bpf/sockex2_kern.c
++++ b/samples/bpf/sockex2_kern.c
+@@ -14,7 +14,7 @@ struct vlan_hdr {
+ 	__be16 h_vlan_encapsulated_proto;
+ };
  
- /* BPF register usage */
--#define SKB_HLEN_REG	(MAX_BPF_REG + 0)
--#define SKB_DATA_REG	(MAX_BPF_REG + 1)
--#define TMP_REG_1	(MAX_BPF_REG + 2)
--#define TMP_REG_2	(MAX_BPF_REG + 3)
-+#define SKB_HLEN_REG	(MAX_BPF_JIT_REG + 0)
-+#define SKB_DATA_REG	(MAX_BPF_JIT_REG + 1)
-+#define TMP_REG_1	(MAX_BPF_JIT_REG + 2)
-+#define TMP_REG_2	(MAX_BPF_JIT_REG + 3)
- 
- /* BPF to ppc register mappings */
- static const int b2p[] = {
-@@ -62,6 +62,7 @@ static const int b2p[] = {
- 	/* frame pointer aka BPF_REG_10 */
- 	[BPF_REG_FP] = 31,
- 	/* eBPF jit internal registers */
-+	[BPF_REG_AX] = 2,
- 	[SKB_HLEN_REG] = 25,
- 	[SKB_DATA_REG] = 26,
- 	[TMP_REG_1] = 9,
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 3ec29d6..0fe98a5 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -974,21 +974,37 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	int pass;
- 	int flen;
- 	struct bpf_binary_header *bpf_hdr;
-+	struct bpf_prog *org_fp = fp;
-+	struct bpf_prog *tmp_fp;
-+	bool bpf_blinded = false;
- 
- 	if (!bpf_jit_enable)
--		return fp;
-+		return org_fp;
-+
-+	tmp_fp = bpf_jit_blind_constants(org_fp);
-+	if (IS_ERR(tmp_fp))
-+		return org_fp;
-+
-+	if (tmp_fp != org_fp) {
-+		bpf_blinded = true;
-+		fp = tmp_fp;
-+	}
- 
- 	flen = fp->len;
- 	addrs = kzalloc((flen+1) * sizeof(*addrs), GFP_KERNEL);
--	if (addrs == NULL)
--		return fp;
-+	if (addrs == NULL) {
-+		fp = org_fp;
-+		goto out;
-+	}
-+
-+	memset(&cgctx, 0, sizeof(struct codegen_context));
- 
--	cgctx.idx = 0;
--	cgctx.seen = 0;
- 	/* Scouting faux-generate pass 0 */
--	if (bpf_jit_build_body(fp, 0, &cgctx, addrs))
-+	if (bpf_jit_build_body(fp, 0, &cgctx, addrs)) {
- 		/* We hit something illegal or unsupported. */
-+		fp = org_fp;
- 		goto out;
-+	}
- 
- 	/*
- 	 * Pretend to build prologue, given the features we've seen.  This will
-@@ -1003,8 +1019,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 
- 	bpf_hdr = bpf_jit_binary_alloc(alloclen, &image, 4,
- 			bpf_jit_fill_ill_insns);
--	if (!bpf_hdr)
-+	if (!bpf_hdr) {
-+		fp = org_fp;
- 		goto out;
-+	}
- 
- 	code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
- 
-@@ -1041,6 +1059,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 
- out:
- 	kfree(addrs);
-+
-+	if (bpf_blinded)
-+		bpf_jit_prog_release_other(fp, fp == org_fp ? tmp_fp : org_fp);
-+
- 	return fp;
+-struct flow_keys {
++struct bpf_flow_keys {
+ 	__be32 src;
+ 	__be32 dst;
+ 	union {
+@@ -59,7 +59,7 @@ static inline __u32 ipv6_addr_hash(struct __sk_buff *ctx, __u64 off)
  }
  
+ static inline __u64 parse_ip(struct __sk_buff *skb, __u64 nhoff, __u64 *ip_proto,
+-			     struct flow_keys *flow)
++			     struct bpf_flow_keys *flow)
+ {
+ 	__u64 verlen;
+ 
+@@ -83,7 +83,7 @@ static inline __u64 parse_ip(struct __sk_buff *skb, __u64 nhoff, __u64 *ip_proto
+ }
+ 
+ static inline __u64 parse_ipv6(struct __sk_buff *skb, __u64 nhoff, __u64 *ip_proto,
+-			       struct flow_keys *flow)
++			       struct bpf_flow_keys *flow)
+ {
+ 	*ip_proto = load_byte(skb,
+ 			      nhoff + offsetof(struct ipv6hdr, nexthdr));
+@@ -96,7 +96,7 @@ static inline __u64 parse_ipv6(struct __sk_buff *skb, __u64 nhoff, __u64 *ip_pro
+ 	return nhoff;
+ }
+ 
+-static inline bool flow_dissector(struct __sk_buff *skb, struct flow_keys *flow)
++static inline bool flow_dissector(struct __sk_buff *skb, struct bpf_flow_keys *flow)
+ {
+ 	__u64 nhoff = ETH_HLEN;
+ 	__u64 ip_proto;
+@@ -198,7 +198,7 @@ struct bpf_map_def SEC("maps") hash_map = {
+ SEC("socket2")
+ int bpf_prog2(struct __sk_buff *skb)
+ {
+-	struct flow_keys flow;
++	struct bpf_flow_keys flow;
+ 	struct pair *value;
+ 	u32 key;
+ 
+diff --git a/samples/bpf/sockex3_kern.c b/samples/bpf/sockex3_kern.c
+index 41ae2fd..95907f8 100644
+--- a/samples/bpf/sockex3_kern.c
++++ b/samples/bpf/sockex3_kern.c
+@@ -61,7 +61,7 @@ struct vlan_hdr {
+ 	__be16 h_vlan_encapsulated_proto;
+ };
+ 
+-struct flow_keys {
++struct bpf_flow_keys {
+ 	__be32 src;
+ 	__be32 dst;
+ 	union {
+@@ -88,7 +88,7 @@ static inline __u32 ipv6_addr_hash(struct __sk_buff *ctx, __u64 off)
+ }
+ 
+ struct globals {
+-	struct flow_keys flow;
++	struct bpf_flow_keys flow;
+ };
+ 
+ struct bpf_map_def SEC("maps") percpu_map = {
+@@ -114,14 +114,14 @@ struct pair {
+ 
+ struct bpf_map_def SEC("maps") hash_map = {
+ 	.type = BPF_MAP_TYPE_HASH,
+-	.key_size = sizeof(struct flow_keys),
++	.key_size = sizeof(struct bpf_flow_keys),
+ 	.value_size = sizeof(struct pair),
+ 	.max_entries = 1024,
+ };
+ 
+ static void update_stats(struct __sk_buff *skb, struct globals *g)
+ {
+-	struct flow_keys key = g->flow;
++	struct bpf_flow_keys key = g->flow;
+ 	struct pair *value;
+ 
+ 	value = bpf_map_lookup_elem(&hash_map, &key);
+diff --git a/samples/bpf/sockex3_user.c b/samples/bpf/sockex3_user.c
+index d4184ab..3fcfd8c4 100644
+--- a/samples/bpf/sockex3_user.c
++++ b/samples/bpf/sockex3_user.c
+@@ -7,7 +7,7 @@
+ #include <arpa/inet.h>
+ #include <sys/resource.h>
+ 
+-struct flow_keys {
++struct bpf_flow_keys {
+ 	__be32 src;
+ 	__be32 dst;
+ 	union {
+@@ -49,7 +49,7 @@ int main(int argc, char **argv)
+ 	(void) f;
+ 
+ 	for (i = 0; i < 5; i++) {
+-		struct flow_keys key = {}, next_key;
++		struct bpf_flow_keys key = {}, next_key;
+ 		struct pair value;
+ 
+ 		sleep(1);
 -- 
 2.9.3
