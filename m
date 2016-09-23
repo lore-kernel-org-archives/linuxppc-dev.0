@@ -1,28 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
- [IPv6:2607:f8b0:400e:c00::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgQ8l4tpmzDsmC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 17:33:59 +1000 (AEST)
-Received: by mail-pf0-x229.google.com with SMTP id p64so39456690pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 00:33:59 -0700 (PDT)
-Date: Fri, 23 Sep 2016 17:33:51 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Christoph Lameter <cl@linux.com>, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] percpu: improve generic percpu modify-return
- implementation
-Message-ID: <20160923173351.74a0dd0d@roar.ozlabs.ibm.com>
-In-Reply-To: <20160922160749.GD1892@htj.duckdns.org>
-References: <20160921085137.862-1-npiggin@gmail.com>
- <20160921205711.4e804777@roar.ozlabs.ibm.com>
- <20160921142343.GA10734@htj.duckdns.org>
- <20160922143500.21809b98@roar.ozlabs.ibm.com>
- <20160922160749.GD1892@htj.duckdns.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgVpp6Z48zDsn4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 21:03:46 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Michael Neuling <mikey@neuling.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] powernv:idle:Implement lite variant of
+ power_enter_stop
+In-Reply-To: <86d28da16d5bf66f111cc93eea3f000e41faff57.1474015799.git.ego@linux.vnet.ibm.com>
+References: <cover.1474015799.git.ego@linux.vnet.ibm.com>
+ <86d28da16d5bf66f111cc93eea3f000e41faff57.1474015799.git.ego@linux.vnet.ibm.com>
+Date: Fri, 23 Sep 2016 21:03:45 +1000
+Message-ID: <871t0a98tq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,48 +29,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Sep 2016 12:07:49 -0400
-Tejun Heo <tj@kernel.org> wrote:
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
 
-> Hello,
-> 
-> On Thu, Sep 22, 2016 at 02:35:00PM +1000, Nicholas Piggin wrote:
-> > Well thank you, how about you?  
-> 
-> Heh, can't complain.  Hope to see you around sometime.  It's been
-> forever.
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> This patch adds a function named power_enter_stop_lite() that can
+> execute a stop instruction when ESL and EC bits are set to zero in the
+> PSSCR.  The function handles the wake-up from idle at the instruction
+> immediately after the stop instruction.
+>
+> If the flag OPAL_PM_WAKEUP_AT_NEXT_INST[1] is set in the device tree
+> for a stop state, then use the lite variant for that particular stop
+> state.
 
-Yeah, it has been. Hopefully I'll see you around.
+Hi Gautham,
 
+It seems to me that this would be cleaner if it was modelled as a new
+stop state? Surely it must have different power saving characteristics
+to the existing state?
 
-> > Trying a new mail client, sorry. It *seems* to be working now, how's
-> > this?  
-> 
-> Hmm... Still encoded.
+> [1] : The corresponding patch in skiboot that defines
+>       OPAL_PM_WAKEUP_AT_NEXT_INST and enables it in the device tree
+>       can be found here:
+>       https://lists.ozlabs.org/pipermail/skiboot/2016-September/004805.html
 
-It looks to be a helpful surprise feature of claws. Any line starting with
-the word "From" make it go q-p due to some mail servers treating that
-differently. Sigh.
+Which says "This will reduce the exit latency of the idle state", and
+yet it doesn't change any of the latency/residency values?
 
-> 
-> > From d0cb9052d6f4c31d24f999b7b0cecb34681eee9b Mon Sep 17 00:00:00 2001
-> > From: Nicholas Piggin <npiggin@gmail.com>
-> > Date: Wed, 21 Sep 2016 18:23:43 +1000
-> > Subject: [PATCH] percpu: improve generic percpu modify-return implementations
-> > 
-> > Some architectures require an additional load to find the address of
-> > percpu pointers. In some implemenatations, the C aliasing rules do not
-> > allow the result of that load to be kept over the store that modifies
-> > the percpu variable, which causes additional loads.
-> > 
-> > Work around this by finding the pointer first, then operating on that.
-> > 
-> > It's also possible to mark things as restrict and those kind of games,
-> > but that can require larger and arch specific changes.  
-> 
-> QP-decoded and applied to percpu/for-4.9.
-> 
-> Thanks.
-> 
+If all it does is reduce the exit latency, then shouldn't we always use
+it? Presumably it also saves less power?
 
-Thanks!
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 32d666b..47ee106 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -43,6 +43,8 @@
+>  #define PSSCR_HV_TEMPLATE	PSSCR_ESL | PSSCR_EC | \
+>  				PSSCR_PSLL_MASK | PSSCR_TR_MASK | \
+>  				PSSCR_MTL_MASK
+> +#define PSSCR_HV_TEMPLATE_LITE	PSSCR_PSLL_MASK | PSSCR_TR_MASK | \
+> +				 PSSCR_MTL_MASK
+
+Why do we have these at all? Firmware tells us the PSSCR values to use
+in the "ibm,cpu-idle-state-psscr" property.
+
+If we just used what firmware gave us then we wouldn't need the above,
+or the juggling below.
+
+> @@ -333,13 +349,19 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+>  
+>  /*
+>   * r3 - requested stop state
+> + * r4 - Indicates if the lite variant with ESL=EC=0 should be executed.
+>   */
+>  _GLOBAL(power9_idle_stop)
+> -	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE)
+> -	or	r4,r4,r3
+> +	cmpdi	r4, 1
+> +	bne	4f
+> +	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE_LITE)
+> +	LOAD_REG_ADDR(r5,power_enter_stop_lite)
+> +	b 	5f
+> +4:	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE)
+> +	LOAD_REG_ADDR(r5,power_enter_stop)
+> +5:	or	r4,r4,r3
+>  	mtspr	SPRN_PSSCR, r4
+>  	li	r4, 1
+> -	LOAD_REG_ADDR(r5,power_enter_stop)
+>  	b	pnv_powersave_common
+>  	/* No return */
+>  /*
+
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 479c256..c3d3fed 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -244,8 +244,15 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
+>  static void power9_idle(void)
+>  {
+>  	/* Requesting stop state 0 */
+> -	power9_idle_stop(0);
+>  }
+
+That seems like the root of the problem, why aren't we passing a PSSCR
+value here?
+
+I also don't see us using the psscr-mask property anywhere. Why isn't
+that a bug?
+
+cheers
