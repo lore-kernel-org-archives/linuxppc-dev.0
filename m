@@ -1,42 +1,41 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNV95CXWzDsmq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNVB1WhvzDsms
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:57 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8N6HaLN111637
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8N6HZLW115356
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:18:55 -0400
 Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb694uk-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25mqb514ec-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:18:54 -0400
 Received: from localhost
  by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 23 Sep 2016 16:18:52 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 42C732CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:49 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8N6InFO721174
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:49 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8N6Imh4011137
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:49 +1000
+ Fri, 23 Sep 2016 16:18:51 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id F1D5A3578062
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8N6ImuZ55312506
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8N6ImUU031326
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 18/20] powerpc: tm: Always use fp_state and vr_state to
- store live registers
-Date: Fri, 23 Sep 2016 16:18:24 +1000
+Subject: [PATCH v5 19/20] powerpc: tm: Rename transct_(*) to ck(\1)_state
+Date: Fri, 23 Sep 2016 16:18:25 +1000
 In-Reply-To: <20160923061826.30790-1-cyrilbur@gmail.com>
 References: <20160923061826.30790-1-cyrilbur@gmail.com>
-Message-Id: <20160923061826.30790-19-cyrilbur@gmail.com>
+Message-Id: <20160923061826.30790-20-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,1375 +45,727 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is currently an inconsistency as to how the entire CPU register
-state is saved and restored when a thread uses transactional memory
-(TM).
+Make the structures being used for checkpointed state named
+consistently with the pt_regs/ckpt_regs.
 
-Using transactional memory results in the CPU having duplicated
-(almost) all of its register state. This duplication results in a set
-of registers which can be considered 'live', those being currently
-modified by the instructions being executed and another set that is
-frozen at a point in time.
-
-On context switch, both sets of state have to be saved and (later)
-restored. These two states are often called a variety of different
-things. Common terms for the state which only exists after the CPU has
-entered a transaction (performed a TBEGIN instruction) in hardware are
-'transactional' or 'speculative'.
-
-Between a TBEGIN and a TEND or TABORT (or an event that causes the
-hardware to abort), regardless of the use of TSUSPEND the
-transactional state can be referred to as the live state.
-
-The second state is often to referred to as the 'checkpointed' state
-and is a duplication of the live state when the TBEGIN instruction is
-executed. This state is kept in the hardware and will be rolled back
-to on transaction failure.
-
-Currently all the registers stored in pt_regs are ALWAYS the live
-registers, that is, when a thread has transactional registers their
-values are stored in pt_regs and the checkpointed state is in
-ckpt_regs. A strange opposite is true for fp_state/vr_state. When a
-thread is non transactional fp_state/vr_state holds the live
-registers. When a thread has initiated a transaction fp_state/vr_state
-holds the checkpointed state and transact_fp/transact_vr become the
-structure which holds the live state (at this point it is a
-transactional state).
-
-This method creates confusion as to where the live state is, in some
-circumstances it requires extra work to determine where to put the
-live state and prevents the use of common functions designed (probably
-before TM) to save the live state.
-
-With this patch pt_regs, fp_state and vr_state all represent the
-same thing and the other structures [pending rename] are for
-checkpointed state.
-
-Acked-by: Simon Guo <wei.guo.simon@gmail.com>
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/powerpc/include/asm/processor.h |   7 +-
- arch/powerpc/kernel/process.c        |  83 +++--------
- arch/powerpc/kernel/ptrace.c         | 278 +++++++++--------------------------
- arch/powerpc/kernel/signal_32.c      |  50 +++----
- arch/powerpc/kernel/signal_64.c      |  54 +++----
- arch/powerpc/kernel/tm.S             |  94 ++++++------
- arch/powerpc/kernel/traps.c          |  12 +-
- 7 files changed, 197 insertions(+), 381 deletions(-)
+ arch/powerpc/include/asm/processor.h |  8 ++---
+ arch/powerpc/kernel/asm-offsets.c    | 12 ++++----
+ arch/powerpc/kernel/fpu.S            |  2 +-
+ arch/powerpc/kernel/process.c        |  4 +--
+ arch/powerpc/kernel/ptrace.c         | 46 +++++++++++++--------------
+ arch/powerpc/kernel/signal.h         |  8 ++---
+ arch/powerpc/kernel/signal_32.c      | 60 ++++++++++++++++++------------------
+ arch/powerpc/kernel/signal_64.c      | 32 +++++++++----------
+ arch/powerpc/kernel/tm.S             | 12 ++++----
+ arch/powerpc/kernel/vector.S         |  4 +--
+ 10 files changed, 94 insertions(+), 94 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 68e3bf5..feab2ce 100644
+index feab2ce..b3e0cfc 100644
 --- a/arch/powerpc/include/asm/processor.h
 +++ b/arch/powerpc/include/asm/processor.h
-@@ -267,16 +267,13 @@ struct thread_struct {
- 	unsigned long	tm_dscr;
+@@ -147,7 +147,7 @@ typedef struct {
+ } mm_segment_t;
  
- 	/*
--	 * Transactional FP and VSX 0-31 register set.
--	 * NOTE: the sense of these is the opposite of the integer ckpt_regs!
-+	 * Checkpointed FP and VSX 0-31 register set.
+ #define TS_FPR(i) fp_state.fpr[i][TS_FPROFFSET]
+-#define TS_TRANS_FPR(i) transact_fp.fpr[i][TS_FPROFFSET]
++#define TS_CKFPR(i) ckfp_state.fpr[i][TS_FPROFFSET]
+ 
+ /* FP and VSX 0-31 register set */
+ struct thread_fp_state {
+@@ -275,9 +275,9 @@ struct thread_struct {
  	 *
- 	 * When a transaction is active/signalled/scheduled etc., *regs is the
- 	 * most recent set of/speculated GPRs with ckpt_regs being the older
- 	 * checkpointed regs to which we roll back if transaction aborts.
- 	 *
--	 * However, fpr[] is the checkpointed 'base state' of FP regs, and
--	 * transact_fpr[] is the new set of transactional values.
--	 * VRs work the same way.
-+	 * These are analogous to how ckpt_regs and pt_regs work
+ 	 * These are analogous to how ckpt_regs and pt_regs work
  	 */
- 	struct thread_fp_state transact_fp;
- 	struct thread_vr_state transact_vr;
+-	struct thread_fp_state transact_fp;
+-	struct thread_vr_state transact_vr;
+-	unsigned long	transact_vrsave;
++	struct thread_fp_state ckfp_state; /* Checkpointed FP state */
++	struct thread_vr_state ckvr_state; /* Checkpointed VR state */
++	unsigned long	ckvrsave; /* Checkpointed VRSAVE */
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
+ 	void*		kvm_shadow_vcpu; /* KVM internal data */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index b89d14c..dd0fc33 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -142,12 +142,12 @@ int main(void)
+ 	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
+ 	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
+ 	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
+-	DEFINE(THREAD_TRANSACT_VRSTATE, offsetof(struct thread_struct,
+-						 transact_vr));
+-	DEFINE(THREAD_TRANSACT_VRSAVE, offsetof(struct thread_struct,
+-					    transact_vrsave));
+-	DEFINE(THREAD_TRANSACT_FPSTATE, offsetof(struct thread_struct,
+-						 transact_fp));
++	DEFINE(THREAD_CKVRSTATE, offsetof(struct thread_struct,
++						 ckvr_state));
++	DEFINE(THREAD_CKVRSAVE, offsetof(struct thread_struct,
++					    ckvrsave));
++	DEFINE(THREAD_CKFPSTATE, offsetof(struct thread_struct,
++						 ckfp_state));
+ 	/* Local pt_regs on stack for Transactional Memory funcs. */
+ 	DEFINE(TM_FRAME_SIZE, STACK_FRAME_OVERHEAD +
+ 	       sizeof(struct pt_regs) + 16);
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index 15da2b5..181c187 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -68,7 +68,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	SYNC
+ 	MTMSRD(r5)
+ 
+-	addi	r7,r3,THREAD_TRANSACT_FPSTATE
++	addi	r7,r3,THREAD_CKFPSTATE
+ 	lfd	fr0,FPSTATE_FPSCR(r7)
+ 	MTFSF_L(fr0)
+ 	REST_32FPVSRS(0, R4, R7)
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 45b6ea0..6e9a054 100644
+index 6e9a054..e220330 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -815,26 +815,6 @@ static inline bool hw_brk_match(struct arch_hw_breakpoint *a,
- static void tm_reclaim_thread(struct thread_struct *thr,
- 			      struct thread_info *ti, uint8_t cause)
- {
--	unsigned long msr_diff = 0;
--
--	/*
--	 * If FP/VSX registers have been already saved to the
--	 * thread_struct, move them to the transact_fp array.
--	 * We clear the TIF_RESTORE_TM bit since after the reclaim
--	 * the thread will no longer be transactional.
--	 */
--	if (test_ti_thread_flag(ti, TIF_RESTORE_TM)) {
--		msr_diff = thr->ckpt_regs.msr & ~thr->regs->msr;
--		if (msr_diff & MSR_FP)
--			memcpy(&thr->transact_fp, &thr->fp_state,
--			       sizeof(struct thread_fp_state));
--		if (msr_diff & MSR_VEC)
--			memcpy(&thr->transact_vr, &thr->vr_state,
--			       sizeof(struct thread_vr_state));
--		clear_ti_thread_flag(ti, TIF_RESTORE_TM);
--		msr_diff &= MSR_FP | MSR_VEC | MSR_VSX | MSR_FE0 | MSR_FE1;
--	}
--
- 	/*
- 	 * Use the current MSR TM suspended bit to track if we have
- 	 * checkpointed state outstanding.
-@@ -853,15 +833,9 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- 	if (!MSR_TM_SUSPENDED(mfmsr()))
- 		return;
- 
--	tm_reclaim(thr, thr->regs->msr, cause);
-+	giveup_all(container_of(thr, struct task_struct, thread));
- 
--	/* Having done the reclaim, we now have the checkpointed
--	 * FP/VSX values in the registers.  These might be valid
--	 * even if we have previously called enable_kernel_fp() or
--	 * flush_fp_to_thread(), so update thr->regs->msr to
--	 * indicate their current validity.
--	 */
--	thr->regs->msr |= msr_diff;
-+	tm_reclaim(thr, thr->ckpt_regs.msr, cause);
- }
- 
- void tm_reclaim_current(uint8_t cause)
-@@ -890,14 +864,6 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
- 	if (!MSR_TM_ACTIVE(thr->regs->msr))
- 		goto out_and_saveregs;
- 
--	/* Stash the original thread MSR, as giveup_fpu et al will
--	 * modify it.  We hold onto it to see whether the task used
--	 * FP & vector regs.  If the TIF_RESTORE_TM flag is set,
--	 * ckpt_regs.msr is already set.
--	 */
--	if (!test_ti_thread_flag(task_thread_info(tsk), TIF_RESTORE_TM))
--		thr->ckpt_regs.msr = thr->regs->msr;
--
- 	TM_DEBUG("--- tm_reclaim on pid %d (NIP=%lx, "
- 		 "ccr=%lx, msr=%lx, trap=%lx)\n",
- 		 tsk->pid, thr->regs->nip,
-@@ -955,7 +921,7 @@ static inline void tm_recheckpoint_new_task(struct task_struct *new)
- 	 * If the task was using FP, we non-lazily reload both the original and
- 	 * the speculative FP register states.  This is because the kernel
- 	 * doesn't see if/when a TM rollback occurs, so if we take an FP
--	 * unavoidable later, we are unable to determine which set of FP regs
-+	 * unavailable later, we are unable to determine which set of FP regs
- 	 * need to be restored.
+@@ -851,8 +851,8 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
+ 	 *
+ 	 * In switching we need to maintain a 2nd register state as
+ 	 * oldtask->thread.ckpt_regs.  We tm_reclaim(oldproc); this saves the
+-	 * checkpointed (tbegin) state in ckpt_regs and saves the transactional
+-	 * (current) FPRs into oldtask->thread.transact_fpr[].
++	 * checkpointed (tbegin) state in ckpt_regs, ckfp_state and
++	 * ckvr_state
+ 	 *
+ 	 * We also context switch (save) TFHAR/TEXASR/TFIAR in here.
  	 */
- 	if (!new->thread.regs)
-@@ -971,35 +937,27 @@ static inline void tm_recheckpoint_new_task(struct task_struct *new)
- 		 "(new->msr 0x%lx, new->origmsr 0x%lx)\n",
- 		 new->pid, new->thread.regs->msr, msr);
- 
--	/* This loads the checkpointed FP/VEC state, if used */
- 	tm_recheckpoint(&new->thread, msr);
- 
--	/* This loads the speculative FP/VEC state, if used */
--	if (msr & MSR_FP) {
--		do_load_up_transact_fpu(&new->thread);
--		new->thread.regs->msr |=
--			(MSR_FP | new->thread.fpexc_mode);
--	}
--#ifdef CONFIG_ALTIVEC
--	if (msr & MSR_VEC) {
--		do_load_up_transact_altivec(&new->thread);
--		new->thread.regs->msr |= MSR_VEC;
--	}
--#endif
--	/* We may as well turn on VSX too since all the state is restored now */
--	if (msr & MSR_VSX)
--		new->thread.regs->msr |= MSR_VSX;
-+	/*
-+	 * The checkpointed state has been restored but the live state has
-+	 * not, ensure all the math functionality is turned off to trigger
-+	 * restore_math() to reload.
-+	 */
-+	new->thread.regs->msr &= ~(MSR_FP | MSR_VEC | MSR_VSX);
- 
- 	TM_DEBUG("*** tm_recheckpoint of pid %d complete "
- 		 "(kernel msr 0x%lx)\n",
- 		 new->pid, mfmsr());
- }
- 
--static inline void __switch_to_tm(struct task_struct *prev)
-+static inline void __switch_to_tm(struct task_struct *prev,
-+		struct task_struct *new)
- {
- 	if (cpu_has_feature(CPU_FTR_TM)) {
- 		tm_enable();
- 		tm_reclaim_task(prev);
-+		tm_recheckpoint_new_task(new);
- 	}
- }
- 
-@@ -1021,6 +979,12 @@ void restore_tm_state(struct pt_regs *regs)
- {
- 	unsigned long msr_diff;
- 
-+	/*
-+	 * This is the only moment we should clear TIF_RESTORE_TM as
-+	 * it is here that ckpt_regs.msr and pt_regs.msr become the same
-+	 * again, anything else could lead to an incorrect ckpt_msr being
-+	 * saved and therefore incorrect signal contexts.
-+	 */
- 	clear_thread_flag(TIF_RESTORE_TM);
- 	if (!MSR_TM_ACTIVE(regs->msr))
- 		return;
-@@ -1042,7 +1006,7 @@ void restore_tm_state(struct pt_regs *regs)
- 
- #else
- #define tm_recheckpoint_new_task(new)
--#define __switch_to_tm(prev)
-+#define __switch_to_tm(prev, new)
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
- static inline void save_sprs(struct thread_struct *t)
-@@ -1183,11 +1147,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	 */
- 	save_sprs(&prev->thread);
- 
--	__switch_to_tm(prev);
--
- 	/* Save FPU, Altivec, VSX and SPE state */
- 	giveup_all(prev);
- 
-+	__switch_to_tm(prev, new);
-+
- 	/*
- 	 * We can't take a PMU exception inside _switch() since there is a
- 	 * window where the kernel stack SLB and the kernel stack are out
-@@ -1195,8 +1159,6 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	 */
- 	hard_irq_disable();
- 
--	tm_recheckpoint_new_task(new);
--
- 	/*
- 	 * Call restore_sprs() before calling _switch(). If we move it after
- 	 * _switch() then we miss out on calling it for new tasks. The reason
-@@ -1432,8 +1394,7 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
- 	 * tm_recheckpoint_new_task() (on the same task) to restore the
- 	 * checkpointed state back and the TM mode.
- 	 */
--	__switch_to_tm(src);
--	tm_recheckpoint_new_task(src);
-+	__switch_to_tm(src, src);
- 
- 	*dst = *src;
- 
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index a17c672..7ae744f 100644
+index 7ae744f..b1ec62f 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -403,13 +403,9 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
- }
+@@ -404,7 +404,7 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
  
  /*
-- * When the transaction is active, 'transact_fp' holds the current running
-- * value of all FPR registers and 'fp_state' holds the last checkpointed
-- * value of all FPR registers for the current transaction. When transaction
-- * is not active 'fp_state' holds the current running state of all the FPR
-- * registers. So this function which returns the current running values of
-- * all the FPR registers, needs to know whether any transaction is active
-- * or not.
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'transact_fp' holds the last checkpointed
-+ * value of all FPR registers for the current transaction.
+  * Regardless of transactions, 'fp_state' holds the current running
+- * value of all FPR registers and 'transact_fp' holds the last checkpointed
++ * value of all FPR registers and 'ckfp_state' holds the last checkpointed
+  * value of all FPR registers for the current transaction.
   *
   * Userspace interface buffer layout:
-  *
-@@ -417,13 +413,6 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
-  *	u64	fpr[32];
-  *	u64	fpscr;
-  * };
-- *
-- * There are two config options CONFIG_VSX and CONFIG_PPC_TRANSACTIONAL_MEM
-- * which determines the final code in this function. All the combinations of
-- * these two config options are possible except the one below as transactional
-- * memory config pulls in CONFIG_VSX automatically.
-- *
-- *	!defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
-  */
- static int fpr_get(struct task_struct *target, const struct user_regset *regset,
- 		   unsigned int pos, unsigned int count,
-@@ -432,50 +421,29 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
- #ifdef CONFIG_VSX
- 	u64 buf[33];
- 	int i;
--#endif
--	flush_fp_to_thread(target);
- 
--#if defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
--	/* copy to local buffer then write that out */
--	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
--		flush_altivec_to_thread(target);
--		flush_tmregs_to_thread(target);
--		for (i = 0; i < 32 ; i++)
--			buf[i] = target->thread.TS_TRANS_FPR(i);
--		buf[32] = target->thread.transact_fp.fpscr;
--	} else {
--		for (i = 0; i < 32 ; i++)
--			buf[i] = target->thread.TS_FPR(i);
--		buf[32] = target->thread.fp_state.fpscr;
--	}
--	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
--#endif
-+	flush_fp_to_thread(target);
- 
--#if defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
- 	/* copy to local buffer then write that out */
- 	for (i = 0; i < 32 ; i++)
- 		buf[i] = target->thread.TS_FPR(i);
- 	buf[32] = target->thread.fp_state.fpscr;
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
--#endif
--
--#if !defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
-+#else
- 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
- 		     offsetof(struct thread_fp_state, fpr[32]));
- 
-+	flush_fp_to_thread(target);
-+
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				   &target->thread.fp_state, 0, -1);
- #endif
- }
+@@ -442,7 +442,7 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
  
  /*
-- * When the transaction is active, 'transact_fp' holds the current running
-- * value of all FPR registers and 'fp_state' holds the last checkpointed
-- * value of all FPR registers for the current transaction. When transaction
-- * is not active 'fp_state' holds the current running state of all the FPR
-- * registers. So this function which setss the current running values of
-- * all the FPR registers, needs to know whether any transaction is active
-- * or not.
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'transact_fp' holds the last checkpointed
-+ * value of all FPR registers for the current transaction.
+  * Regardless of transactions, 'fp_state' holds the current running
+- * value of all FPR registers and 'transact_fp' holds the last checkpointed
++ * value of all FPR registers and 'ckfp_state' holds the last checkpointed
+  * value of all FPR registers for the current transaction.
   *
   * Userspace interface buffer layout:
-  *
-@@ -484,12 +452,6 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
-  *	u64	fpscr;
-  * };
-  *
-- * There are two config options CONFIG_VSX and CONFIG_PPC_TRANSACTIONAL_MEM
-- * which determines the final code in this function. All the combinations of
-- * these two config options are possible except the one below as transactional
-- * memory config pulls in CONFIG_VSX automatically.
-- *
-- *	!defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
-  */
- static int fpr_set(struct task_struct *target, const struct user_regset *regset,
- 		   unsigned int pos, unsigned int count,
-@@ -498,44 +460,24 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
- #ifdef CONFIG_VSX
- 	u64 buf[33];
- 	int i;
--#endif
-+
- 	flush_fp_to_thread(target);
- 
--#if defined(CONFIG_VSX) && defined(CONFIG_PPC_TRANSACTIONAL_MEM)
- 	/* copy to local buffer then write that out */
- 	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
- 	if (i)
- 		return i;
- 
--	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
--		flush_altivec_to_thread(target);
--		flush_tmregs_to_thread(target);
--		for (i = 0; i < 32 ; i++)
--			target->thread.TS_TRANS_FPR(i) = buf[i];
--		target->thread.transact_fp.fpscr = buf[32];
--	} else {
--		for (i = 0; i < 32 ; i++)
--			target->thread.TS_FPR(i) = buf[i];
--		target->thread.fp_state.fpscr = buf[32];
--	}
--	return 0;
--#endif
--
--#if defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
--	/* copy to local buffer then write that out */
--	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
--	if (i)
--		return i;
- 	for (i = 0; i < 32 ; i++)
- 		target->thread.TS_FPR(i) = buf[i];
- 	target->thread.fp_state.fpscr = buf[32];
- 	return 0;
--#endif
--
--#if !defined(CONFIG_VSX) && !defined(CONFIG_PPC_TRANSACTIONAL_MEM)
-+#else
- 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
- 		     offsetof(struct thread_fp_state, fpr[32]));
- 
-+	flush_fp_to_thread(target);
-+
- 	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				  &target->thread.fp_state, 0, -1);
- #endif
-@@ -563,13 +505,10 @@ static int vr_active(struct task_struct *target,
- }
+@@ -506,7 +506,7 @@ static int vr_active(struct task_struct *target,
  
  /*
-- * When the transaction is active, 'transact_vr' holds the current running
-- * value of all the VMX registers and 'vr_state' holds the last checkpointed
-- * value of all the VMX registers for the current transaction to fall back
-- * on in case it aborts. When transaction is not active 'vr_state' holds
-- * the current running state of all the VMX registers. So this function which
-- * gets the current running values of all the VMX registers, needs to know
-- * whether any transaction is active or not.
-+ * Regardless of transactions, 'vr_state' holds the current running
-+ * value of all the VMX registers and 'transact_vr' holds the last
-+ * checkpointed value of all the VMX registers for the current
-+ * transaction to fall back on in case it aborts.
+  * Regardless of transactions, 'vr_state' holds the current running
+- * value of all the VMX registers and 'transact_vr' holds the last
++ * value of all the VMX registers and 'ckvr_state' holds the last
+  * checkpointed value of all the VMX registers for the current
+  * transaction to fall back on in case it aborts.
   *
-  * Userspace interface buffer layout:
-  *
-@@ -583,7 +522,6 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
- 		  unsigned int pos, unsigned int count,
- 		  void *kbuf, void __user *ubuf)
- {
--	struct thread_vr_state *addr;
- 	int ret;
- 
- 	flush_altivec_to_thread(target);
-@@ -591,19 +529,8 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
- 	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
- 		     offsetof(struct thread_vr_state, vr[32]));
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
--		flush_fp_to_thread(target);
--		flush_tmregs_to_thread(target);
--		addr = &target->thread.transact_vr;
--	} else {
--		addr = &target->thread.vr_state;
--	}
--#else
--	addr = &target->thread.vr_state;
--#endif
- 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				  addr, 0,
-+				  &target->thread.vr_state, 0,
- 				  33 * sizeof(vector128));
- 	if (!ret) {
- 		/*
-@@ -615,14 +542,7 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
- 		} vrsave;
- 		memset(&vrsave, 0, sizeof(vrsave));
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--		if (MSR_TM_ACTIVE(target->thread.regs->msr))
--			vrsave.word = target->thread.transact_vrsave;
--		else
--			vrsave.word = target->thread.vrsave;
--#else
- 		vrsave.word = target->thread.vrsave;
--#endif
- 
- 		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
- 					  33 * sizeof(vector128), -1);
-@@ -632,13 +552,10 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
- }
+@@ -553,7 +553,7 @@ static int vr_get(struct task_struct *target, const struct user_regset *regset,
  
  /*
-- * When the transaction is active, 'transact_vr' holds the current running
-- * value of all the VMX registers and 'vr_state' holds the last checkpointed
-- * value of all the VMX registers for the current transaction to fall back
-- * on in case it aborts. When transaction is not active 'vr_state' holds
-- * the current running state of all the VMX registers. So this function which
-- * sets the current running values of all the VMX registers, needs to know
-- * whether any transaction is active or not.
-+ * Regardless of transactions, 'vr_state' holds the current running
-+ * value of all the VMX registers and 'transact_vr' holds the last
-+ * checkpointed value of all the VMX registers for the current
-+ * transaction to fall back on in case it aborts.
+  * Regardless of transactions, 'vr_state' holds the current running
+- * value of all the VMX registers and 'transact_vr' holds the last
++ * value of all the VMX registers and 'ckvr_state' holds the last
+  * checkpointed value of all the VMX registers for the current
+  * transaction to fall back on in case it aborts.
   *
-  * Userspace interface buffer layout:
-  *
-@@ -652,7 +569,6 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
- 		  unsigned int pos, unsigned int count,
- 		  const void *kbuf, const void __user *ubuf)
- {
--	struct thread_vr_state *addr;
- 	int ret;
- 
- 	flush_altivec_to_thread(target);
-@@ -660,19 +576,8 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
- 	BUILD_BUG_ON(offsetof(struct thread_vr_state, vscr) !=
- 		     offsetof(struct thread_vr_state, vr[32]));
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
--		flush_fp_to_thread(target);
--		flush_tmregs_to_thread(target);
--		addr = &target->thread.transact_vr;
--	} else {
--		addr = &target->thread.vr_state;
--	}
--#else
--	addr = &target->thread.vr_state;
--#endif
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				 addr, 0,
-+				 &target->thread.vr_state, 0,
- 				 33 * sizeof(vector128));
- 	if (!ret && count > 0) {
- 		/*
-@@ -684,27 +589,12 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
- 		} vrsave;
- 		memset(&vrsave, 0, sizeof(vrsave));
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--		if (MSR_TM_ACTIVE(target->thread.regs->msr))
--			vrsave.word = target->thread.transact_vrsave;
--		else
--			vrsave.word = target->thread.vrsave;
--#else
- 		vrsave.word = target->thread.vrsave;
--#endif
-+
- 		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
- 					 33 * sizeof(vector128), -1);
--		if (!ret) {
--
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--			if (MSR_TM_ACTIVE(target->thread.regs->msr))
--				target->thread.transact_vrsave = vrsave.word;
--			else
--				target->thread.vrsave = vrsave.word;
--#else
-+		if (!ret)
- 			target->thread.vrsave = vrsave.word;
--#endif
--		}
- 	}
- 
- 	return ret;
-@@ -726,13 +616,10 @@ static int vsr_active(struct task_struct *target,
- }
+@@ -617,7 +617,7 @@ static int vsr_active(struct task_struct *target,
  
  /*
-- * When the transaction is active, 'transact_fp' holds the current running
-- * value of all FPR registers and 'fp_state' holds the last checkpointed
-- * value of all FPR registers for the current transaction. When transaction
-- * is not active 'fp_state' holds the current running state of all the FPR
-- * registers. So this function which returns the current running values of
-- * all the FPR registers, needs to know whether any transaction is active
-- * or not.
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'transact_fp' holds the last
-+ * checkpointed value of all FPR registers for the current
-+ * transaction.
+  * Regardless of transactions, 'fp_state' holds the current running
+- * value of all FPR registers and 'transact_fp' holds the last
++ * value of all FPR registers and 'ckfp_state' holds the last
+  * checkpointed value of all FPR registers for the current
+  * transaction.
   *
-  * Userspace interface buffer layout:
-  *
-@@ -747,27 +634,14 @@ static int vsr_get(struct task_struct *target, const struct user_regset *regset,
- 	u64 buf[32];
- 	int ret, i;
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
--#endif
- 	flush_vsx_to_thread(target);
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
--		for (i = 0; i < 32 ; i++)
--			buf[i] = target->thread.
--				transact_fp.fpr[i][TS_VSRLOWOFFSET];
--	} else {
--		for (i = 0; i < 32 ; i++)
--			buf[i] = target->thread.
--				fp_state.fpr[i][TS_VSRLOWOFFSET];
--	}
--#else
- 	for (i = 0; i < 32 ; i++)
- 		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
--#endif
-+
- 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				  buf, 0, 32 * sizeof(double));
- 
-@@ -775,12 +649,10 @@ static int vsr_get(struct task_struct *target, const struct user_regset *regset,
- }
+@@ -650,7 +650,7 @@ static int vsr_get(struct task_struct *target, const struct user_regset *regset,
  
  /*
-- * When the transaction is active, 'transact_fp' holds the current running
-- * value of all FPR registers and 'fp_state' holds the last checkpointed
-- * value of all FPR registers for the current transaction. When transaction
-- * is not active 'fp_state' holds the current running state of all the FPR
-- * registers. So this function which sets the current running values of all
-- * the FPR registers, needs to know whether any transaction is active or not.
-+ * Regardless of transactions, 'fp_state' holds the current running
-+ * value of all FPR registers and 'transact_fp' holds the last
-+ * checkpointed value of all FPR registers for the current
-+ * transaction.
+  * Regardless of transactions, 'fp_state' holds the current running
+- * value of all FPR registers and 'transact_fp' holds the last
++ * value of all FPR registers and 'ckfp_state' holds the last
+  * checkpointed value of all FPR registers for the current
+  * transaction.
   *
-  * Userspace interface buffer layout:
-  *
-@@ -795,31 +667,16 @@ static int vsr_set(struct task_struct *target, const struct user_regset *regset,
- 	u64 buf[32];
- 	int ret,i;
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
--#endif
- 	flush_vsx_to_thread(target);
- 
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				 buf, 0, 32 * sizeof(double));
--
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
--		for (i = 0; i < 32 ; i++)
--			target->thread.transact_fp.
--				fpr[i][TS_VSRLOWOFFSET] = buf[i];
--	} else {
-+	if (!ret)
- 		for (i = 0; i < 32 ; i++)
--			target->thread.fp_state.
--				fpr[i][TS_VSRLOWOFFSET] = buf[i];
--	}
--#else
--	for (i = 0; i < 32 ; i++)
--		target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
--#endif
--
-+			target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
- 
- 	return ret;
- }
-@@ -945,9 +802,9 @@ static int tm_cgpr_get(struct task_struct *target,
- 	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
- 		return -ENODATA;
- 
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
- 
- 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				  &target->thread.ckpt_regs,
-@@ -1010,9 +867,9 @@ static int tm_cgpr_set(struct task_struct *target,
- 	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
- 		return -ENODATA;
- 
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
- 
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				 &target->thread.ckpt_regs,
-@@ -1088,7 +945,7 @@ static int tm_cfpr_active(struct task_struct *target,
+@@ -945,7 +945,7 @@ static int tm_cfpr_active(struct task_struct *target,
   *
   * This function gets in transaction checkpointed FPR registers.
   *
-- * When the transaction is active 'fp_state' holds the checkpointed
-+ * When the transaction is active 'transact_fp' holds the checkpointed
+- * When the transaction is active 'transact_fp' holds the checkpointed
++ * When the transaction is active 'ckfp_state' holds the checkpointed
   * values for the current transaction to fall back on if it aborts
   * in between. This function gets those checkpointed FPR registers.
   * The userspace interface buffer layout is as follows.
-@@ -1112,14 +969,14 @@ static int tm_cfpr_get(struct task_struct *target,
- 	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
- 		return -ENODATA;
- 
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
+@@ -975,8 +975,8 @@ static int tm_cfpr_get(struct task_struct *target,
  
  	/* copy to local buffer then write that out */
  	for (i = 0; i < 32 ; i++)
--		buf[i] = target->thread.TS_FPR(i);
--	buf[32] = target->thread.fp_state.fpscr;
-+		buf[i] = target->thread.TS_TRANS_FPR(i);
-+	buf[32] = target->thread.transact_fp.fpscr;
+-		buf[i] = target->thread.TS_TRANS_FPR(i);
+-	buf[32] = target->thread.transact_fp.fpscr;
++		buf[i] = target->thread.TS_CKFPR(i);
++	buf[32] = target->thread.ckfp_state.fpscr;
  	return user_regset_copyout(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
  }
  
-@@ -1134,7 +991,7 @@ static int tm_cfpr_get(struct task_struct *target,
+@@ -991,7 +991,7 @@ static int tm_cfpr_get(struct task_struct *target,
   *
   * This function sets in transaction checkpointed FPR registers.
   *
-- * When the transaction is active 'fp_state' holds the checkpointed
-+ * When the transaction is active 'transact_fp' holds the checkpointed
+- * When the transaction is active 'transact_fp' holds the checkpointed
++ * When the transaction is active 'ckfp_state' holds the checkpointed
   * FPR register values for the current transaction to fall back on
   * if it aborts in between. This function sets these checkpointed
   * FPR registers. The userspace interface buffer layout is as follows.
-@@ -1158,17 +1015,17 @@ static int tm_cfpr_set(struct task_struct *target,
- 	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
- 		return -ENODATA;
- 
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
- 
- 	/* copy to local buffer then write that out */
- 	i = user_regset_copyin(&pos, &count, &kbuf, &ubuf, buf, 0, -1);
+@@ -1024,8 +1024,8 @@ static int tm_cfpr_set(struct task_struct *target,
  	if (i)
  		return i;
  	for (i = 0; i < 32 ; i++)
--		target->thread.TS_FPR(i) = buf[i];
--	target->thread.fp_state.fpscr = buf[32];
-+		target->thread.TS_TRANS_FPR(i) = buf[i];
-+	target->thread.transact_fp.fpscr = buf[32];
+-		target->thread.TS_TRANS_FPR(i) = buf[i];
+-	target->thread.transact_fp.fpscr = buf[32];
++		target->thread.TS_CKFPR(i) = buf[i];
++	target->thread.ckfp_state.fpscr = buf[32];
  	return 0;
  }
  
-@@ -1203,7 +1060,7 @@ static int tm_cvmx_active(struct task_struct *target,
+@@ -1060,7 +1060,7 @@ static int tm_cvmx_active(struct task_struct *target,
   *
   * This function gets in transaction checkpointed VMX registers.
   *
-- * When the transaction is active 'vr_state' and 'vr_save' hold
-+ * When the transaction is active 'transact_vr' and 'transact_vrsave' hold
+- * When the transaction is active 'transact_vr' and 'transact_vrsave' hold
++ * When the transaction is active 'ckvr_state' and 'ckvrsave' hold
   * the checkpointed values for the current transaction to fall
   * back on if it aborts in between. The userspace interface buffer
   * layout is as follows.
-@@ -1230,12 +1087,12 @@ static int tm_cvmx_get(struct task_struct *target,
- 		return -ENODATA;
- 
- 	/* Flush the state */
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
+@@ -1092,7 +1092,7 @@ static int tm_cvmx_get(struct task_struct *target,
  	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
  
  	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--					&target->thread.vr_state, 0,
-+					&target->thread.transact_vr, 0,
+-					&target->thread.transact_vr, 0,
++					&target->thread.ckvr_state, 0,
  					33 * sizeof(vector128));
  	if (!ret) {
  		/*
-@@ -1246,7 +1103,7 @@ static int tm_cvmx_get(struct task_struct *target,
+@@ -1103,7 +1103,7 @@ static int tm_cvmx_get(struct task_struct *target,
  			u32 word;
  		} vrsave;
  		memset(&vrsave, 0, sizeof(vrsave));
--		vrsave.word = target->thread.vrsave;
-+		vrsave.word = target->thread.transact_vrsave;
+-		vrsave.word = target->thread.transact_vrsave;
++		vrsave.word = target->thread.ckvrsave;
  		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
  						33 * sizeof(vector128), -1);
  	}
-@@ -1265,7 +1122,7 @@ static int tm_cvmx_get(struct task_struct *target,
+@@ -1122,7 +1122,7 @@ static int tm_cvmx_get(struct task_struct *target,
   *
   * This function sets in transaction checkpointed VMX registers.
   *
-- * When the transaction is active 'vr_state' and 'vr_save' hold
-+ * When the transaction is active 'transact_vr' and 'transact_vrsave' hold
+- * When the transaction is active 'transact_vr' and 'transact_vrsave' hold
++ * When the transaction is active 'ckvr_state' and 'ckvrsave' hold
   * the checkpointed values for the current transaction to fall
   * back on if it aborts in between. The userspace interface buffer
   * layout is as follows.
-@@ -1291,12 +1148,12 @@ static int tm_cvmx_set(struct task_struct *target,
- 	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
- 		return -ENODATA;
- 
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
+@@ -1153,7 +1153,7 @@ static int tm_cvmx_set(struct task_struct *target,
  	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
  
  	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--					&target->thread.vr_state, 0,
-+					&target->thread.transact_vr, 0,
+-					&target->thread.transact_vr, 0,
++					&target->thread.ckvr_state, 0,
  					33 * sizeof(vector128));
  	if (!ret && count > 0) {
  		/*
-@@ -1307,11 +1164,11 @@ static int tm_cvmx_set(struct task_struct *target,
+@@ -1164,11 +1164,11 @@ static int tm_cvmx_set(struct task_struct *target,
  			u32 word;
  		} vrsave;
  		memset(&vrsave, 0, sizeof(vrsave));
--		vrsave.word = target->thread.vrsave;
-+		vrsave.word = target->thread.transact_vrsave;
+-		vrsave.word = target->thread.transact_vrsave;
++		vrsave.word = target->thread.ckvrsave;
  		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
  						33 * sizeof(vector128), -1);
  		if (!ret)
--			target->thread.vrsave = vrsave.word;
-+			target->thread.transact_vrsave = vrsave.word;
+-			target->thread.transact_vrsave = vrsave.word;
++			target->thread.ckvrsave = vrsave.word;
  	}
  
  	return ret;
-@@ -1349,7 +1206,7 @@ static int tm_cvsx_active(struct task_struct *target,
+@@ -1206,7 +1206,7 @@ static int tm_cvsx_active(struct task_struct *target,
   *
   * This function gets in transaction checkpointed VSX registers.
   *
-- * When the transaction is active 'fp_state' holds the checkpointed
-+ * When the transaction is active 'transact_fp' holds the checkpointed
+- * When the transaction is active 'transact_fp' holds the checkpointed
++ * When the transaction is active 'ckfp_state' holds the checkpointed
   * values for the current transaction to fall back on if it aborts
   * in between. This function gets those checkpointed VSX registers.
   * The userspace interface buffer layout is as follows.
-@@ -1373,13 +1230,13 @@ static int tm_cvsx_get(struct task_struct *target,
- 		return -ENODATA;
- 
- 	/* Flush the state */
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
+@@ -1236,7 +1236,7 @@ static int tm_cvsx_get(struct task_struct *target,
  	flush_vsx_to_thread(target);
  
  	for (i = 0; i < 32 ; i++)
--		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
-+		buf[i] = target->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET];
+-		buf[i] = target->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET];
++		buf[i] = target->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET];
  	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
  				  buf, 0, 32 * sizeof(double));
  
-@@ -1397,7 +1254,7 @@ static int tm_cvsx_get(struct task_struct *target,
+@@ -1254,7 +1254,7 @@ static int tm_cvsx_get(struct task_struct *target,
   *
   * This function sets in transaction checkpointed VSX registers.
   *
-- * When the transaction is active 'fp_state' holds the checkpointed
-+ * When the transaction is active 'transact_fp' holds the checkpointed
+- * When the transaction is active 'transact_fp' holds the checkpointed
++ * When the transaction is active 'ckfp_state' holds the checkpointed
   * VSX register values for the current transaction to fall back on
   * if it aborts in between. This function sets these checkpointed
   * FPR registers. The userspace interface buffer layout is as follows.
-@@ -1421,15 +1278,16 @@ static int tm_cvsx_set(struct task_struct *target,
- 		return -ENODATA;
- 
- 	/* Flush the state */
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
- 	flush_vsx_to_thread(target);
- 
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+@@ -1287,7 +1287,7 @@ static int tm_cvsx_set(struct task_struct *target,
  				 buf, 0, 32 * sizeof(double));
--	for (i = 0; i < 32 ; i++)
--		target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
-+	if (!ret)
-+		for (i = 0; i < 32 ; i++)
-+			target->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = buf[i];
+ 	if (!ret)
+ 		for (i = 0; i < 32 ; i++)
+-			target->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = buf[i];
++			target->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
  
  	return ret;
  }
-@@ -1485,9 +1343,9 @@ static int tm_spr_get(struct task_struct *target,
- 		return -ENODEV;
+diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
+index 254ca07..7c59d88 100644
+--- a/arch/powerpc/kernel/signal.h
++++ b/arch/powerpc/kernel/signal.h
+@@ -23,22 +23,22 @@ extern int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
  
- 	/* Flush the states */
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
+ extern unsigned long copy_fpr_to_user(void __user *to,
+ 				      struct task_struct *task);
+-extern unsigned long copy_transact_fpr_to_user(void __user *to,
++extern unsigned long copy_ckfpr_to_user(void __user *to,
+ 					       struct task_struct *task);
+ extern unsigned long copy_fpr_from_user(struct task_struct *task,
+ 					void __user *from);
+-extern unsigned long copy_transact_fpr_from_user(struct task_struct *task,
++extern unsigned long copy_ckfpr_from_user(struct task_struct *task,
+ 						 void __user *from);
+ extern unsigned long get_tm_stackpointer(struct task_struct *tsk);
  
- 	/* TFHAR register */
- 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-@@ -1541,9 +1399,9 @@ static int tm_spr_set(struct task_struct *target,
- 		return -ENODEV;
+ #ifdef CONFIG_VSX
+ extern unsigned long copy_vsx_to_user(void __user *to,
+ 				      struct task_struct *task);
+-extern unsigned long copy_transact_vsx_to_user(void __user *to,
++extern unsigned long copy_ckvsx_to_user(void __user *to,
+ 					       struct task_struct *task);
+ extern unsigned long copy_vsx_from_user(struct task_struct *task,
+ 					void __user *from);
+-extern unsigned long copy_transact_vsx_from_user(struct task_struct *task,
++extern unsigned long copy_ckvsx_from_user(struct task_struct *task,
+ 						 void __user *from);
+ #endif
  
- 	/* Flush the states */
-+	flush_tmregs_to_thread(target);
- 	flush_fp_to_thread(target);
- 	flush_altivec_to_thread(target);
--	flush_tmregs_to_thread(target);
- 
- 	/* TFHAR register */
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
 diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 9637f8e..3b9356b 100644
+index 3b9356b..27aa913 100644
 --- a/arch/powerpc/kernel/signal_32.c
 +++ b/arch/powerpc/kernel/signal_32.c
-@@ -526,9 +526,6 @@ static int save_tm_user_regs(struct pt_regs *regs,
- 	 */
- 	regs->msr &= ~MSR_TS_MASK;
+@@ -316,7 +316,7 @@ unsigned long copy_vsx_from_user(struct task_struct *task,
+ }
  
--	/* Make sure floating point registers are stored in regs */
--	flush_fp_to_thread(current);
--
- 	/* Save both sets of general registers */
- 	if (save_general_regs(&current->thread.ckpt_regs, frame)
- 	    || save_general_regs(regs, tm_frame))
-@@ -546,18 +543,17 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-unsigned long copy_transact_fpr_to_user(void __user *to,
++unsigned long copy_ckfpr_to_user(void __user *to,
+ 				  struct task_struct *task)
+ {
+ 	u64 buf[ELF_NFPREG];
+@@ -324,12 +324,12 @@ unsigned long copy_transact_fpr_to_user(void __user *to,
+ 
+ 	/* save FPR copy to local buffer then write to the thread_struct */
+ 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
+-		buf[i] = task->thread.TS_TRANS_FPR(i);
+-	buf[i] = task->thread.transact_fp.fpscr;
++		buf[i] = task->thread.TS_CKFPR(i);
++	buf[i] = task->thread.ckfp_state.fpscr;
+ 	return __copy_to_user(to, buf, ELF_NFPREG * sizeof(double));
+ }
+ 
+-unsigned long copy_transact_fpr_from_user(struct task_struct *task,
++unsigned long copy_ckfpr_from_user(struct task_struct *task,
+ 					  void __user *from)
+ {
+ 	u64 buf[ELF_NFPREG];
+@@ -338,13 +338,13 @@ unsigned long copy_transact_fpr_from_user(struct task_struct *task,
+ 	if (__copy_from_user(buf, from, ELF_NFPREG * sizeof(double)))
+ 		return 1;
+ 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
+-		task->thread.TS_TRANS_FPR(i) = buf[i];
+-	task->thread.transact_fp.fpscr = buf[i];
++		task->thread.TS_CKFPR(i) = buf[i];
++	task->thread.ckfp_state.fpscr = buf[i];
+ 
+ 	return 0;
+ }
+ 
+-unsigned long copy_transact_vsx_to_user(void __user *to,
++unsigned long copy_ckvsx_to_user(void __user *to,
+ 				  struct task_struct *task)
+ {
+ 	u64 buf[ELF_NVSRHALFREG];
+@@ -352,11 +352,11 @@ unsigned long copy_transact_vsx_to_user(void __user *to,
+ 
+ 	/* save FPR copy to local buffer then write to the thread_struct */
+ 	for (i = 0; i < ELF_NVSRHALFREG; i++)
+-		buf[i] = task->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET];
++		buf[i] = task->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET];
+ 	return __copy_to_user(to, buf, ELF_NVSRHALFREG * sizeof(double));
+ }
+ 
+-unsigned long copy_transact_vsx_from_user(struct task_struct *task,
++unsigned long copy_ckvsx_from_user(struct task_struct *task,
+ 					  void __user *from)
+ {
+ 	u64 buf[ELF_NVSRHALFREG];
+@@ -365,7 +365,7 @@ unsigned long copy_transact_vsx_from_user(struct task_struct *task,
+ 	if (__copy_from_user(buf, from, ELF_NVSRHALFREG * sizeof(double)))
+ 		return 1;
+ 	for (i = 0; i < ELF_NVSRHALFREG ; i++)
+-		task->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = buf[i];
++		task->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
+ 	return 0;
+ }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+@@ -385,17 +385,17 @@ inline unsigned long copy_fpr_from_user(struct task_struct *task,
+ }
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-inline unsigned long copy_transact_fpr_to_user(void __user *to,
++inline unsigned long copy_ckfpr_to_user(void __user *to,
+ 					 struct task_struct *task)
+ {
+-	return __copy_to_user(to, task->thread.transact_fp.fpr,
++	return __copy_to_user(to, task->thread.ckfp_state.fpr,
+ 			      ELF_NFPREG * sizeof(double));
+ }
+ 
+-inline unsigned long copy_transact_fpr_from_user(struct task_struct *task,
++inline unsigned long copy_ckfpr_from_user(struct task_struct *task,
+ 						 void __user *from)
+ {
+-	return __copy_from_user(task->thread.transact_fp.fpr, from,
++	return __copy_from_user(task->thread.ckfp_state.fpr, from,
+ 				ELF_NFPREG * sizeof(double));
+ }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+@@ -543,7 +543,7 @@ static int save_tm_user_regs(struct pt_regs *regs,
  #ifdef CONFIG_ALTIVEC
  	/* save altivec registers */
  	if (current->thread.used_vr) {
--		flush_altivec_to_thread(current);
--		if (__copy_to_user(&frame->mc_vregs, &current->thread.vr_state,
-+		if (__copy_to_user(&frame->mc_vregs, &current->thread.transact_vr,
+-		if (__copy_to_user(&frame->mc_vregs, &current->thread.transact_vr,
++		if (__copy_to_user(&frame->mc_vregs, &current->thread.ckvr_state,
  				   ELF_NVRREG * sizeof(vector128)))
  			return 1;
  		if (msr & MSR_VEC) {
- 			if (__copy_to_user(&tm_frame->mc_vregs,
--					   &current->thread.transact_vr,
-+					   &current->thread.vr_state,
- 					   ELF_NVRREG * sizeof(vector128)))
+@@ -553,7 +553,7 @@ static int save_tm_user_regs(struct pt_regs *regs,
  				return 1;
  		} else {
  			if (__copy_to_user(&tm_frame->mc_vregs,
--					   &current->thread.vr_state,
-+					   &current->thread.transact_vr,
+-					   &current->thread.transact_vr,
++					   &current->thread.ckvr_state,
  					   ELF_NVRREG * sizeof(vector128)))
  				return 1;
  		}
-@@ -574,28 +570,28 @@ static int save_tm_user_regs(struct pt_regs *regs,
+@@ -570,8 +570,8 @@ static int save_tm_user_regs(struct pt_regs *regs,
  	 * most significant bits of that same vector. --BenH
  	 */
  	if (cpu_has_feature(CPU_FTR_ALTIVEC))
--		current->thread.vrsave = mfspr(SPRN_VRSAVE);
--	if (__put_user(current->thread.vrsave,
-+		current->thread.transact_vrsave = mfspr(SPRN_VRSAVE);
-+	if (__put_user(current->thread.transact_vrsave,
+-		current->thread.transact_vrsave = mfspr(SPRN_VRSAVE);
+-	if (__put_user(current->thread.transact_vrsave,
++		current->thread.ckvrsave = mfspr(SPRN_VRSAVE);
++	if (__put_user(current->thread.ckvrsave,
  		       (u32 __user *)&frame->mc_vregs[32]))
  		return 1;
  	if (msr & MSR_VEC) {
--		if (__put_user(current->thread.transact_vrsave,
-+		if (__put_user(current->thread.vrsave,
+@@ -579,19 +579,19 @@ static int save_tm_user_regs(struct pt_regs *regs,
  			       (u32 __user *)&tm_frame->mc_vregs[32]))
  			return 1;
  	} else {
--		if (__put_user(current->thread.vrsave,
-+		if (__put_user(current->thread.transact_vrsave,
+-		if (__put_user(current->thread.transact_vrsave,
++		if (__put_user(current->thread.ckvrsave,
  			       (u32 __user *)&tm_frame->mc_vregs[32]))
  			return 1;
  	}
  #endif /* CONFIG_ALTIVEC */
  
--	if (copy_fpr_to_user(&frame->mc_fregs, current))
-+	if (copy_transact_fpr_to_user(&frame->mc_fregs, current))
+-	if (copy_transact_fpr_to_user(&frame->mc_fregs, current))
++	if (copy_ckfpr_to_user(&frame->mc_fregs, current))
  		return 1;
  	if (msr & MSR_FP) {
--		if (copy_transact_fpr_to_user(&tm_frame->mc_fregs, current))
-+		if (copy_fpr_to_user(&tm_frame->mc_fregs, current))
+ 		if (copy_fpr_to_user(&tm_frame->mc_fregs, current))
  			return 1;
  	} else {
--		if (copy_fpr_to_user(&tm_frame->mc_fregs, current))
-+		if (copy_transact_fpr_to_user(&tm_frame->mc_fregs, current))
+-		if (copy_transact_fpr_to_user(&tm_frame->mc_fregs, current))
++		if (copy_ckfpr_to_user(&tm_frame->mc_fregs, current))
  			return 1;
  	}
  
-@@ -607,15 +603,14 @@ static int save_tm_user_regs(struct pt_regs *regs,
+@@ -603,14 +603,14 @@ static int save_tm_user_regs(struct pt_regs *regs,
  	 * contains valid data
  	 */
  	if (current->thread.used_vsr) {
--		flush_vsx_to_thread(current);
--		if (copy_vsx_to_user(&frame->mc_vsregs, current))
-+		if (copy_transact_vsx_to_user(&frame->mc_vsregs, current))
+-		if (copy_transact_vsx_to_user(&frame->mc_vsregs, current))
++		if (copy_ckvsx_to_user(&frame->mc_vsregs, current))
  			return 1;
  		if (msr & MSR_VSX) {
--			if (copy_transact_vsx_to_user(&tm_frame->mc_vsregs,
-+			if (copy_vsx_to_user(&tm_frame->mc_vsregs,
+ 			if (copy_vsx_to_user(&tm_frame->mc_vsregs,
  						      current))
  				return 1;
  		} else {
--			if (copy_vsx_to_user(&tm_frame->mc_vsregs, current))
-+			if (copy_transact_vsx_to_user(&tm_frame->mc_vsregs, current))
+-			if (copy_transact_vsx_to_user(&tm_frame->mc_vsregs, current))
++			if (copy_ckvsx_to_user(&tm_frame->mc_vsregs, current))
  				return 1;
  		}
  
-@@ -797,9 +792,9 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+@@ -792,7 +792,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
  	regs->msr &= ~MSR_VEC;
  	if (msr & MSR_VEC) {
  		/* restore altivec registers from the stack */
--		if (__copy_from_user(&current->thread.vr_state, &sr->mc_vregs,
-+		if (__copy_from_user(&current->thread.transact_vr, &sr->mc_vregs,
+-		if (__copy_from_user(&current->thread.transact_vr, &sr->mc_vregs,
++		if (__copy_from_user(&current->thread.ckvr_state, &sr->mc_vregs,
  				     sizeof(sr->mc_vregs)) ||
--		    __copy_from_user(&current->thread.transact_vr,
-+		    __copy_from_user(&current->thread.vr_state,
+ 		    __copy_from_user(&current->thread.vr_state,
  				     &tm_sr->mc_vregs,
- 				     sizeof(sr->mc_vregs)))
- 			return 1;
-@@ -812,13 +807,13 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+@@ -802,24 +802,24 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	} else if (current->thread.used_vr) {
+ 		memset(&current->thread.vr_state, 0,
+ 		       ELF_NVRREG * sizeof(vector128));
+-		memset(&current->thread.transact_vr, 0,
++		memset(&current->thread.ckvr_state, 0,
+ 		       ELF_NVRREG * sizeof(vector128));
  	}
  
  	/* Always get VRSAVE back */
--	if (__get_user(current->thread.vrsave,
-+	if (__get_user(current->thread.transact_vrsave,
+-	if (__get_user(current->thread.transact_vrsave,
++	if (__get_user(current->thread.ckvrsave,
  		       (u32 __user *)&sr->mc_vregs[32]) ||
--	    __get_user(current->thread.transact_vrsave,
-+	    __get_user(current->thread.vrsave,
+ 	    __get_user(current->thread.vrsave,
  		       (u32 __user *)&tm_sr->mc_vregs[32]))
  		return 1;
  	if (cpu_has_feature(CPU_FTR_ALTIVEC))
--		mtspr(SPRN_VRSAVE, current->thread.vrsave);
-+		mtspr(SPRN_VRSAVE, current->thread.transact_vrsave);
+-		mtspr(SPRN_VRSAVE, current->thread.transact_vrsave);
++		mtspr(SPRN_VRSAVE, current->thread.ckvrsave);
  #endif /* CONFIG_ALTIVEC */
  
  	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1);
-@@ -834,8 +829,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 		 * Restore altivec registers from the stack to a local
+ 
+ 	if (copy_fpr_from_user(current, &sr->mc_fregs) ||
+-	    copy_transact_fpr_from_user(current, &tm_sr->mc_fregs))
++	    copy_ckfpr_from_user(current, &tm_sr->mc_fregs))
+ 		return 1;
+ 
+ #ifdef CONFIG_VSX
+@@ -830,13 +830,13 @@ static long restore_tm_user_regs(struct pt_regs *regs,
  		 * buffer, then write this out to the thread_struct
  		 */
--		if (copy_vsx_from_user(current, &sr->mc_vsregs) ||
--		    copy_transact_vsx_from_user(current, &tm_sr->mc_vsregs))
-+		if (copy_vsx_from_user(current, &tm_sr->mc_vsregs) ||
-+		    copy_transact_vsx_from_user(current, &sr->mc_vsregs))
+ 		if (copy_vsx_from_user(current, &tm_sr->mc_vsregs) ||
+-		    copy_transact_vsx_from_user(current, &sr->mc_vsregs))
++		    copy_ckvsx_from_user(current, &sr->mc_vsregs))
  			return 1;
  		current->thread.used_vsr = true;
  	} else if (current->thread.used_vsr)
-@@ -884,13 +879,14 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 	tm_recheckpoint(&current->thread, msr);
+ 		for (i = 0; i < 32 ; i++) {
+ 			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+-			current->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = 0;
++			current->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+ 		}
+ #endif /* CONFIG_VSX */
  
- 	/* This loads the speculative FP/VEC state, if used */
-+	msr_check_and_set(msr & (MSR_FP | MSR_VEC));
- 	if (msr & MSR_FP) {
--		do_load_up_transact_fpu(&current->thread);
-+		load_fp_state(&current->thread.fp_state);
- 		regs->msr |= (MSR_FP | current->thread.fpexc_mode);
- 	}
- #ifdef CONFIG_ALTIVEC
- 	if (msr & MSR_VEC) {
--		do_load_up_transact_altivec(&current->thread);
-+		load_vr_state(&current->thread.vr_state);
- 		regs->msr |= MSR_VEC;
- 	}
- #endif
 diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index befa10a..af58af5 100644
+index af58af5..96698fd 100644
 --- a/arch/powerpc/kernel/signal_64.c
 +++ b/arch/powerpc/kernel/signal_64.c
-@@ -221,28 +221,25 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
- 	 */
- 	regs->msr &= ~MSR_TS_MASK;
- 
--	flush_fp_to_thread(tsk);
--
- #ifdef CONFIG_ALTIVEC
- 	err |= __put_user(v_regs, &sc->v_regs);
- 	err |= __put_user(tm_v_regs, &tm_sc->v_regs);
- 
+@@ -228,7 +228,7 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
  	/* save altivec registers */
  	if (tsk->thread.used_vr) {
--		flush_altivec_to_thread(tsk);
  		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
--		err |= __copy_to_user(v_regs, &tsk->thread.vr_state,
-+		err |= __copy_to_user(v_regs, &tsk->thread.transact_vr,
+-		err |= __copy_to_user(v_regs, &tsk->thread.transact_vr,
++		err |= __copy_to_user(v_regs, &tsk->thread.ckvr_state,
  				      33 * sizeof(vector128));
  		/* If VEC was enabled there are transactional VRs valid too,
  		 * else they're a copy of the checkpointed VRs.
- 		 */
- 		if (msr & MSR_VEC)
- 			err |= __copy_to_user(tm_v_regs,
--					      &tsk->thread.transact_vr,
-+					      &tsk->thread.vr_state,
+@@ -239,7 +239,7 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
  					      33 * sizeof(vector128));
  		else
  			err |= __copy_to_user(tm_v_regs,
--					      &tsk->thread.vr_state,
-+					      &tsk->thread.transact_vr,
+-					      &tsk->thread.transact_vr,
++					      &tsk->thread.ckvr_state,
  					      33 * sizeof(vector128));
  
  		/* set MSR_VEC in the MSR value in the frame to indicate
-@@ -254,13 +251,13 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+@@ -251,13 +251,13 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
  	 * use altivec.
  	 */
  	if (cpu_has_feature(CPU_FTR_ALTIVEC))
--		tsk->thread.vrsave = mfspr(SPRN_VRSAVE);
--	err |= __put_user(tsk->thread.vrsave, (u32 __user *)&v_regs[33]);
-+		tsk->thread.transact_vrsave = mfspr(SPRN_VRSAVE);
-+	err |= __put_user(tsk->thread.transact_vrsave, (u32 __user *)&v_regs[33]);
+-		tsk->thread.transact_vrsave = mfspr(SPRN_VRSAVE);
+-	err |= __put_user(tsk->thread.transact_vrsave, (u32 __user *)&v_regs[33]);
++		tsk->thread.ckvrsave = mfspr(SPRN_VRSAVE);
++	err |= __put_user(tsk->thread.ckvrsave, (u32 __user *)&v_regs[33]);
  	if (msr & MSR_VEC)
--		err |= __put_user(tsk->thread.transact_vrsave,
-+		err |= __put_user(tsk->thread.vrsave,
+ 		err |= __put_user(tsk->thread.vrsave,
  				  (u32 __user *)&tm_v_regs[33]);
  	else
--		err |= __put_user(tsk->thread.vrsave,
-+		err |= __put_user(tsk->thread.transact_vrsave,
+-		err |= __put_user(tsk->thread.transact_vrsave,
++		err |= __put_user(tsk->thread.ckvrsave,
  				  (u32 __user *)&tm_v_regs[33]);
  
  #else /* CONFIG_ALTIVEC */
-@@ -269,11 +266,11 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+@@ -266,11 +266,11 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
  #endif /* CONFIG_ALTIVEC */
  
  	/* copy fpr regs and fpscr */
--	err |= copy_fpr_to_user(&sc->fp_regs, tsk);
-+	err |= copy_transact_fpr_to_user(&sc->fp_regs, tsk);
+-	err |= copy_transact_fpr_to_user(&sc->fp_regs, tsk);
++	err |= copy_ckfpr_to_user(&sc->fp_regs, tsk);
  	if (msr & MSR_FP)
--		err |= copy_transact_fpr_to_user(&tm_sc->fp_regs, tsk);
--	else
  		err |= copy_fpr_to_user(&tm_sc->fp_regs, tsk);
-+	else
-+		err |= copy_transact_fpr_to_user(&tm_sc->fp_regs, tsk);
+ 	else
+-		err |= copy_transact_fpr_to_user(&tm_sc->fp_regs, tsk);
++		err |= copy_ckfpr_to_user(&tm_sc->fp_regs, tsk);
  
  #ifdef CONFIG_VSX
  	/*
-@@ -282,16 +279,15 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
- 	 * VMX data.
- 	 */
- 	if (tsk->thread.used_vsr) {
--		flush_vsx_to_thread(tsk);
+@@ -282,12 +282,12 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
  		v_regs += ELF_NVRREG;
  		tm_v_regs += ELF_NVRREG;
  
--		err |= copy_vsx_to_user(v_regs, tsk);
-+		err |= copy_transact_vsx_to_user(v_regs, tsk);
+-		err |= copy_transact_vsx_to_user(v_regs, tsk);
++		err |= copy_ckvsx_to_user(v_regs, tsk);
  
  		if (msr & MSR_VSX)
--			err |= copy_transact_vsx_to_user(tm_v_regs, tsk);
--		else
  			err |= copy_vsx_to_user(tm_v_regs, tsk);
-+		else
-+			err |= copy_transact_vsx_to_user(tm_v_regs, tsk);
+ 		else
+-			err |= copy_transact_vsx_to_user(tm_v_regs, tsk);
++			err |= copy_ckvsx_to_user(tm_v_regs, tsk);
  
  		/* set MSR_VSX in the MSR value in the frame to
  		 * indicate that sc->vs_reg) contains valid data.
-@@ -501,9 +497,9 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+@@ -497,7 +497,7 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
  		return -EFAULT;
  	/* Copy 33 vec registers (vr0..31 and vscr) from the stack */
  	if (v_regs != NULL && tm_v_regs != NULL && (msr & MSR_VEC) != 0) {
--		err |= __copy_from_user(&tsk->thread.vr_state, v_regs,
-+		err |= __copy_from_user(&tsk->thread.transact_vr, v_regs,
+-		err |= __copy_from_user(&tsk->thread.transact_vr, v_regs,
++		err |= __copy_from_user(&tsk->thread.ckvr_state, v_regs,
  					33 * sizeof(vector128));
--		err |= __copy_from_user(&tsk->thread.transact_vr, tm_v_regs,
-+		err |= __copy_from_user(&tsk->thread.vr_state, tm_v_regs,
+ 		err |= __copy_from_user(&tsk->thread.vr_state, tm_v_regs,
  					33 * sizeof(vector128));
- 		current->thread.used_vr = true;
+@@ -505,25 +505,25 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
  	}
-@@ -513,9 +509,9 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+ 	else if (tsk->thread.used_vr) {
+ 		memset(&tsk->thread.vr_state, 0, 33 * sizeof(vector128));
+-		memset(&tsk->thread.transact_vr, 0, 33 * sizeof(vector128));
++		memset(&tsk->thread.ckvr_state, 0, 33 * sizeof(vector128));
  	}
  	/* Always get VRSAVE back */
  	if (v_regs != NULL && tm_v_regs != NULL) {
--		err |= __get_user(tsk->thread.vrsave,
--				  (u32 __user *)&v_regs[33]);
- 		err |= __get_user(tsk->thread.transact_vrsave,
-+				  (u32 __user *)&v_regs[33]);
-+		err |= __get_user(tsk->thread.vrsave,
+-		err |= __get_user(tsk->thread.transact_vrsave,
++		err |= __get_user(tsk->thread.ckvrsave,
+ 				  (u32 __user *)&v_regs[33]);
+ 		err |= __get_user(tsk->thread.vrsave,
  				  (u32 __user *)&tm_v_regs[33]);
  	}
  	else {
-@@ -526,8 +522,8 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+ 		tsk->thread.vrsave = 0;
+-		tsk->thread.transact_vrsave = 0;
++		tsk->thread.ckvrsave = 0;
+ 	}
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
  		mtspr(SPRN_VRSAVE, tsk->thread.vrsave);
  #endif /* CONFIG_ALTIVEC */
  	/* restore floating point */
--	err |= copy_fpr_from_user(tsk, &sc->fp_regs);
--	err |= copy_transact_fpr_from_user(tsk, &tm_sc->fp_regs);
-+	err |= copy_fpr_from_user(tsk, &tm_sc->fp_regs);
-+	err |= copy_transact_fpr_from_user(tsk, &sc->fp_regs);
+ 	err |= copy_fpr_from_user(tsk, &tm_sc->fp_regs);
+-	err |= copy_transact_fpr_from_user(tsk, &sc->fp_regs);
++	err |= copy_ckfpr_from_user(tsk, &sc->fp_regs);
  #ifdef CONFIG_VSX
  	/*
  	 * Get additional VSX data. Update v_regs to point after the
-@@ -537,8 +533,8 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
- 	if (v_regs && ((msr & MSR_VSX) != 0)) {
+@@ -534,12 +534,12 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
  		v_regs += ELF_NVRREG;
  		tm_v_regs += ELF_NVRREG;
--		err |= copy_vsx_from_user(tsk, v_regs);
--		err |= copy_transact_vsx_from_user(tsk, tm_v_regs);
-+		err |= copy_vsx_from_user(tsk, tm_v_regs);
-+		err |= copy_transact_vsx_from_user(tsk, v_regs);
+ 		err |= copy_vsx_from_user(tsk, tm_v_regs);
+-		err |= copy_transact_vsx_from_user(tsk, v_regs);
++		err |= copy_ckvsx_from_user(tsk, v_regs);
  		tsk->thread.used_vsr = true;
  	} else {
  		for (i = 0; i < 32 ; i++) {
-@@ -553,17 +549,15 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
- 	/* This loads the checkpointed FP/VEC state, if used */
- 	tm_recheckpoint(&tsk->thread, msr);
- 
--	/* This loads the speculative FP/VEC state, if used */
-+	msr_check_and_set(msr & (MSR_FP | MSR_VEC));
- 	if (msr & MSR_FP) {
--		do_load_up_transact_fpu(&tsk->thread);
-+		load_fp_state(&tsk->thread.fp_state);
- 		regs->msr |= (MSR_FP | tsk->thread.fpexc_mode);
+ 			tsk->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+-			tsk->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = 0;
++			tsk->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+ 		}
  	}
--#ifdef CONFIG_ALTIVEC
- 	if (msr & MSR_VEC) {
--		do_load_up_transact_altivec(&tsk->thread);
-+		load_vr_state(&tsk->thread.vr_state);
- 		regs->msr |= MSR_VEC;
- 	}
--#endif
- 
- 	return err;
- }
+ #endif
 diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 298afcf..7b7088d 100644
+index 7b7088d..3a2d041 100644
 --- a/arch/powerpc/kernel/tm.S
 +++ b/arch/powerpc/kernel/tm.S
-@@ -108,6 +108,7 @@ _GLOBAL(tm_reclaim)
- 	/* We've a struct pt_regs at [r1+STACK_FRAME_OVERHEAD]. */
+@@ -257,19 +257,19 @@ _GLOBAL(tm_reclaim)
+ 	andis.		r0, r4, MSR_VEC@h
+ 	beq	dont_backup_vec
  
- 	std	r3, STK_PARAM(R3)(r1)
-+	std	r4, STK_PARAM(R4)(r1)
- 	SAVE_NVGPRS(r1)
- 
- 	/* We need to setup MSR for VSX register save instructions. */
-@@ -126,43 +127,6 @@ _GLOBAL(tm_reclaim)
- 	mtmsrd	r15
- 	std	r14, TM_FRAME_L0(r1)
- 
--	/* Stash the stack pointer away for use after reclaim */
--	std	r1, PACAR1(r13)
--
--	/* ******************** FPR/VR/VSRs ************
--	 * Before reclaiming, capture the current/transactional FPR/VR
--	* versions /if used/.
--	 *
--	 * (If VSX used, FP and VMX are implied.  Or, we don't need to look
--	 * at MSR.VSX as copying FP regs if .FP, vector regs if .VMX covers it.)
--	 *
--	 * We're passed the thread's MSR as parameter 2.
--	 *
--	 * We enabled VEC/FP/VSX in the msr above, so we can execute these
--	 * instructions!
--	 */
--	andis.		r0, r4, MSR_VEC@h
--	beq	dont_backup_vec
--
 -	addi	r7, r3, THREAD_TRANSACT_VRSTATE
--	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
--	mfvscr	v0
--	li	r6, VRSTATE_VSCR
--	stvx	v0, r7, r6
--dont_backup_vec:
--	mfspr	r0, SPRN_VRSAVE
++	addi	r7, r3, THREAD_CKVRSTATE
+ 	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
+ 	mfvscr	v0
+ 	li	r6, VRSTATE_VSCR
+ 	stvx	v0, r7, r6
+ dont_backup_vec:
+ 	mfspr	r0, SPRN_VRSAVE
 -	std	r0, THREAD_TRANSACT_VRSAVE(r3)
--
--	andi.	r0, r4, MSR_FP
--	beq	dont_backup_fp
--
++	std	r0, THREAD_CKVRSAVE(r3)
+ 
+ 	andi.	r0, r4, MSR_FP
+ 	beq	dont_backup_fp
+ 
 -	addi	r7, r3, THREAD_TRANSACT_FPSTATE
--	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp state */
--
--	mffs    fr0
--	stfd    fr0,FPSTATE_FPSCR(r7)
--
--dont_backup_fp:
- 	/* Do sanity check on MSR to make sure we are suspended */
- 	li	r7, (MSR_TS_S)@higher
- 	srdi	r6, r14, 32
-@@ -170,6 +134,9 @@ dont_backup_fp:
- 1:	tdeqi   r6, 0
- 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,0
++	addi	r7, r3, THREAD_CKFPSTATE
+ 	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp state */
  
-+	/* Stash the stack pointer away for use after reclaim */
-+	std	r1, PACAR1(r13)
-+
- 	/* Clear MSR RI since we are about to change r1, EE is already off. */
- 	li	r4, 0
- 	mtmsrd	r4, 1
-@@ -273,6 +240,43 @@ dont_backup_fp:
- 	 * MSR.
- 	 */
- 
-+
-+	/* ******************** FPR/VR/VSRs ************
-+	 * After reclaiming, capture the checkpointed FPRs/VRs /if used/.
-+	 *
-+	 * (If VSX used, FP and VMX are implied.  Or, we don't need to look
-+	 * at MSR.VSX as copying FP regs if .FP, vector regs if .VMX covers it.)
-+	 *
-+	 * We're passed the thread's MSR as the second parameter
-+	 *
-+	 * We enabled VEC/FP/VSX in the msr above, so we can execute these
-+	 * instructions!
-+	 */
-+	ld	r4, STK_PARAM(R4)(r1)		/* Second parameter, MSR * */
-+	mr	r3, r12
-+	andis.		r0, r4, MSR_VEC@h
-+	beq	dont_backup_vec
-+
-+	addi	r7, r3, THREAD_TRANSACT_VRSTATE
-+	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
-+	mfvscr	v0
-+	li	r6, VRSTATE_VSCR
-+	stvx	v0, r7, r6
-+dont_backup_vec:
-+	mfspr	r0, SPRN_VRSAVE
-+	std	r0, THREAD_TRANSACT_VRSAVE(r3)
-+
-+	andi.	r0, r4, MSR_FP
-+	beq	dont_backup_fp
-+
-+	addi	r7, r3, THREAD_TRANSACT_FPSTATE
-+	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp state */
-+
-+	mffs    fr0
-+	stfd    fr0,FPSTATE_FPSCR(r7)
-+
-+dont_backup_fp:
-+
- 	/* TM regs, incl TEXASR -- these live in thread_struct.  Note they've
- 	 * been updated by the treclaim, to explain to userland the failure
- 	 * cause (aborted).
-@@ -288,6 +292,7 @@ dont_backup_fp:
- 
- 	/* Restore original MSR/IRQ state & clear TM mode */
- 	ld	r14, TM_FRAME_L0(r1)		/* Orig MSR */
-+
- 	li	r15, 0
- 	rldimi  r14, r15, MSR_TS_LG, (63-MSR_TS_LG)-1
- 	mtmsrd  r14
-@@ -356,28 +361,29 @@ _GLOBAL(__tm_recheckpoint)
- 	mtmsr	r5
- 
- #ifdef CONFIG_ALTIVEC
--	/* FP and VEC registers:  These are recheckpointed from thread.fpr[]
--	 * and thread.vr[] respectively.  The thread.transact_fpr[] version
--	 * is more modern, and will be loaded subsequently by any FPUnavailable
--	 * trap.
-+	/*
-+	 * FP and VEC registers: These are recheckpointed from
-+	 * thread.ckfp_state and thread.ckvr_state respectively. The
-+	 * thread.fp_state[] version holds the 'live' (transactional)
-+	 * and will be loaded subsequently by any FPUnavailable trap.
- 	 */
+ 	mffs    fr0
+@@ -370,20 +370,20 @@ _GLOBAL(__tm_recheckpoint)
  	andis.	r0, r4, MSR_VEC@h
  	beq	dont_restore_vec
  
--	addi	r8, r3, THREAD_VRSTATE
-+	addi	r8, r3, THREAD_TRANSACT_VRSTATE
+-	addi	r8, r3, THREAD_TRANSACT_VRSTATE
++	addi	r8, r3, THREAD_CKVRSTATE
  	li	r5, VRSTATE_VSCR
  	lvx	v0, r8, r5
  	mtvscr	v0
  	REST_32VRS(0, r5, r8)			/* r5 scratch, r8 ptr */
  dont_restore_vec:
--	ld	r5, THREAD_VRSAVE(r3)
-+	ld	r5, THREAD_TRANSACT_VRSAVE(r3)
+-	ld	r5, THREAD_TRANSACT_VRSAVE(r3)
++	ld	r5, THREAD_CKVRSAVE(r3)
  	mtspr	SPRN_VRSAVE, r5
  #endif
  
  	andi.	r0, r4, MSR_FP
  	beq	dont_restore_fp
  
--	addi	r8, r3, THREAD_FPSTATE
-+	addi	r8, r3, THREAD_TRANSACT_FPSTATE
+-	addi	r8, r3, THREAD_TRANSACT_FPSTATE
++	addi	r8, r3, THREAD_CKFPSTATE
  	lfd	fr0, FPSTATE_FPSCR(r8)
  	MTFSF_L(fr0)
  	REST_32FPRS_VSRS(0, R4, R8)
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 6b108ed..487e1b4 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1522,7 +1522,8 @@ void fp_unavailable_tm(struct pt_regs *regs)
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index 616a6d8..7dc4021 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -23,10 +23,10 @@ _GLOBAL(do_load_up_transact_altivec)
+ 	li	r4,1
+ 	stw	r4,THREAD_USED_VR(r3)
  
- 	/* If VMX is in use, get the transactional values back */
- 	if (regs->msr & MSR_VEC) {
--		do_load_up_transact_altivec(&current->thread);
-+		msr_check_and_set(MSR_VEC);
-+		load_vr_state(&current->thread.vr_state);
- 		/* At this point all the VSX state is loaded, so enable it */
- 		regs->msr |= MSR_VSX;
- 	}
-@@ -1543,7 +1544,8 @@ void altivec_unavailable_tm(struct pt_regs *regs)
- 	current->thread.used_vr = 1;
+-	li	r10,THREAD_TRANSACT_VRSTATE+VRSTATE_VSCR
++	li	r10,THREAD_CKVRSTATE+VRSTATE_VSCR
+ 	lvx	v0,r10,r3
+ 	mtvscr	v0
+-	addi	r10,r3,THREAD_TRANSACT_VRSTATE
++	addi	r10,r3,THREAD_CKVRSTATE
+ 	REST_32VRS(0,r4,r10)
  
- 	if (regs->msr & MSR_FP) {
--		do_load_up_transact_fpu(&current->thread);
-+		msr_check_and_set(MSR_FP);
-+		load_fp_state(&current->thread.fp_state);
- 		regs->msr |= MSR_VSX;
- 	}
- }
-@@ -1582,10 +1584,12 @@ void vsx_unavailable_tm(struct pt_regs *regs)
- 	 */
- 	tm_recheckpoint(&current->thread, regs->msr & ~orig_msr);
- 
-+	msr_check_and_set(orig_msr & (MSR_FP | MSR_VEC));
-+
- 	if (orig_msr & MSR_FP)
--		do_load_up_transact_fpu(&current->thread);
-+		load_fp_state(&current->thread.fp_state);
- 	if (orig_msr & MSR_VEC)
--		do_load_up_transact_altivec(&current->thread);
-+		load_vr_state(&current->thread.vr_state);
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
+ 	blr
 -- 
 2.10.0
