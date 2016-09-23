@@ -3,40 +3,40 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNV92tR5zDsmY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNV933ZpzDsmj
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:57 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8N6Hdbi110251
+ u8N6Hnbn077089
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:18:54 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb4sn5c-1
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb6sapt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:18:54 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
  Fri, 23 Sep 2016 16:18:52 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9384F2BB005F
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D54532BB0062
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8N6Imq36160846
+ u8N6ImpP5636592
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8N6ImVk011731
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8N6Imna011087
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:48 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 09/20] selftests/powerpc: Move VMX stack frame macros to
- header file
-Date: Fri, 23 Sep 2016 16:18:15 +1000
+Subject: [PATCH v5 05/20] powerpc: Never giveup a reclaimed thread when
+ enabling kernel {fp, altivec, vsx}
+Date: Fri, 23 Sep 2016 16:18:11 +1000
 In-Reply-To: <20160923061826.30790-1-cyrilbur@gmail.com>
 References: <20160923061826.30790-1-cyrilbur@gmail.com>
-Message-Id: <20160923061826.30790-10-cyrilbur@gmail.com>
+Message-Id: <20160923061826.30790-6-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,212 +46,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+After a thread is reclaimed from its active or suspended transactional
+state the checkpointed state exists on CPU, this state (along with the
+live/transactional state) has been saved in its entirety by the
+reclaiming process.
+
+There exists a sequence of events that would cause the kernel to call
+one of enable_kernel_fp(), enable_kernel_altivec() or
+enable_kernel_vsx() after a thread has been reclaimed. These functions
+save away any user state on the CPU so that the kernel can use the
+registers. Not only is this saving away unnecessary at this point, it
+is actually incorrect. It causes a save of the checkpointed state to
+the live structures within the thread struct thus destroying the true
+live state for that thread.
+
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/math/vmx_asm.S | 85 +---------------------
- tools/testing/selftests/powerpc/vmx_asm.h      | 98 ++++++++++++++++++++++++++
- 2 files changed, 99 insertions(+), 84 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/vmx_asm.h
+ arch/powerpc/kernel/process.c | 39 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 36 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/math/vmx_asm.S b/tools/testing/selftests/powerpc/math/vmx_asm.S
-index 1b8c248..fd74da4 100644
---- a/tools/testing/selftests/powerpc/math/vmx_asm.S
-+++ b/tools/testing/selftests/powerpc/math/vmx_asm.S
-@@ -8,90 +8,7 @@
-  */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 34ee5f2..45b6ea0 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -205,12 +205,23 @@ EXPORT_SYMBOL_GPL(flush_fp_to_thread);
  
- #include "../basic_asm.h"
--
--# POS MUST BE 16 ALIGNED!
--#define PUSH_VMX(pos,reg) \
--	li	reg,pos; \
--	stvx	v20,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v21,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v22,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v23,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v24,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v25,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v26,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v27,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v28,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v29,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v30,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v31,reg,sp;
--
--# POS MUST BE 16 ALIGNED!
--#define POP_VMX(pos,reg) \
--	li	reg,pos; \
--	lvx	v20,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v21,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v22,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v23,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v24,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v25,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v26,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v27,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v28,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v29,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v30,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v31,reg,sp;
--
--# Carefull this will 'clobber' vmx (by design)
--# Don't call this from C
--FUNC_START(load_vmx)
--	li	r5,0
--	lvx	v20,r5,r3
--	addi	r5,r5,16
--	lvx	v21,r5,r3
--	addi	r5,r5,16
--	lvx	v22,r5,r3
--	addi	r5,r5,16
--	lvx	v23,r5,r3
--	addi	r5,r5,16
--	lvx	v24,r5,r3
--	addi	r5,r5,16
--	lvx	v25,r5,r3
--	addi	r5,r5,16
--	lvx	v26,r5,r3
--	addi	r5,r5,16
--	lvx	v27,r5,r3
--	addi	r5,r5,16
--	lvx	v28,r5,r3
--	addi	r5,r5,16
--	lvx	v29,r5,r3
--	addi	r5,r5,16
--	lvx	v30,r5,r3
--	addi	r5,r5,16
--	lvx	v31,r5,r3
--	blr
--FUNC_END(load_vmx)
-+#include "../vmx_asm.h"
+ void enable_kernel_fp(void)
+ {
++	unsigned long cpumsr;
++
+ 	WARN_ON(preemptible());
  
- # Should be safe from C, only touches r4, r5 and v0,v1,v2
- FUNC_START(check_vmx)
-diff --git a/tools/testing/selftests/powerpc/vmx_asm.h b/tools/testing/selftests/powerpc/vmx_asm.h
-new file mode 100644
-index 0000000..461845dd
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/vmx_asm.h
-@@ -0,0 +1,98 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
+-	msr_check_and_set(MSR_FP);
++	cpumsr = msr_check_and_set(MSR_FP);
+ 
+ 	if (current->thread.regs && (current->thread.regs->msr & MSR_FP)) {
+ 		check_if_tm_restore_required(current);
++		/*
++		 * If a thread has already been reclaimed then the
++		 * checkpointed registers are on the CPU but have definitely
++		 * been saved by the reclaim code. Don't need to and *cannot*
++		 * giveup as this would save  to the 'live' structure not the
++		 * checkpointed structure.
++		 */
++		if(!msr_tm_active(cpumsr) && msr_tm_active(current->thread.regs->msr))
++			return;
+ 		__giveup_fpu(current);
+ 	}
+ }
+@@ -257,12 +268,23 @@ EXPORT_SYMBOL(giveup_altivec);
+ 
+ void enable_kernel_altivec(void)
+ {
++	unsigned long cpumsr;
 +
-+#include "basic_asm.h"
+ 	WARN_ON(preemptible());
+ 
+-	msr_check_and_set(MSR_VEC);
++	cpumsr = msr_check_and_set(MSR_VEC);
+ 
+ 	if (current->thread.regs && (current->thread.regs->msr & MSR_VEC)) {
+ 		check_if_tm_restore_required(current);
++		/*
++		 * If a thread has already been reclaimed then the
++		 * checkpointed registers are on the CPU but have definitely
++		 * been saved by the reclaim code. Don't need to and *cannot*
++		 * giveup as this would save  to the 'live' structure not the
++		 * checkpointed structure.
++		 */
++		if(!msr_tm_active(cpumsr) && msr_tm_active(current->thread.regs->msr))
++			return;
+ 		__giveup_altivec(current);
+ 	}
+ }
+@@ -331,12 +353,23 @@ static void save_vsx(struct task_struct *tsk)
+ 
+ void enable_kernel_vsx(void)
+ {
++	unsigned long cpumsr;
 +
-+/* POS MUST BE 16 ALIGNED! */
-+#define PUSH_VMX(pos,reg) \
-+	li	reg,pos; \
-+	stvx	v20,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v21,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v22,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v23,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v24,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v25,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v26,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v27,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v28,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v29,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v30,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v31,reg,%r1;
-+
-+/* POS MUST BE 16 ALIGNED! */
-+#define POP_VMX(pos,reg) \
-+	li	reg,pos; \
-+	lvx	v20,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v21,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v22,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v23,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v24,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v25,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v26,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v27,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v28,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v29,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v30,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v31,reg,%r1;
-+
-+/*
-+ * Careful this will 'clobber' vmx (by design)
-+ * Don't call this from C
-+ */
-+FUNC_START(load_vmx)
-+	li	r5,0
-+	lvx	v20,r5,r3
-+	addi	r5,r5,16
-+	lvx	v21,r5,r3
-+	addi	r5,r5,16
-+	lvx	v22,r5,r3
-+	addi	r5,r5,16
-+	lvx	v23,r5,r3
-+	addi	r5,r5,16
-+	lvx	v24,r5,r3
-+	addi	r5,r5,16
-+	lvx	v25,r5,r3
-+	addi	r5,r5,16
-+	lvx	v26,r5,r3
-+	addi	r5,r5,16
-+	lvx	v27,r5,r3
-+	addi	r5,r5,16
-+	lvx	v28,r5,r3
-+	addi	r5,r5,16
-+	lvx	v29,r5,r3
-+	addi	r5,r5,16
-+	lvx	v30,r5,r3
-+	addi	r5,r5,16
-+	lvx	v31,r5,r3
-+	blr
-+FUNC_END(load_vmx)
-+
-+
+ 	WARN_ON(preemptible());
+ 
+-	msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
++	cpumsr = msr_check_and_set(MSR_FP|MSR_VEC|MSR_VSX);
+ 
+ 	if (current->thread.regs && (current->thread.regs->msr & MSR_VSX)) {
+ 		check_if_tm_restore_required(current);
++		/*
++		 * If a thread has already been reclaimed then the
++		 * checkpointed registers are on the CPU but have definitely
++		 * been saved by the reclaim code. Don't need to and *cannot*
++		 * giveup as this would save  to the 'live' structure not the
++		 * checkpointed structure.
++		 */
++		if(!msr_tm_active(cpumsr) && msr_tm_active(current->thread.regs->msr))
++			return;
+ 		if (current->thread.regs->msr & MSR_FP)
+ 			__giveup_fpu(current);
+ 		if (current->thread.regs->msr & MSR_VEC)
 -- 
 2.10.0
