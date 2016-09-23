@@ -1,42 +1,44 @@
-Return-Path: <ego@linux.vnet.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgZTq5S08zDsmq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 23:49:18 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sglVN0GnwzDsn5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:23 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8NDmp8o138520
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 09:49:16 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb7k7wr-1
+ u8NKXrZA048402
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:35:21 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb78ujj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 09:49:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:35:21 -0400
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 23 Sep 2016 07:49:14 -0600
-Date: Fri, 23 Sep 2016 19:18:52 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Michael Neuling <mikey@neuling.org>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] powernv:idle:Implement lite variant of
- power_enter_stop
-Reply-To: ego@linux.vnet.ibm.com
-References: <cover.1474015799.git.ego@linux.vnet.ibm.com>
- <86d28da16d5bf66f111cc93eea3f000e41faff57.1474015799.git.ego@linux.vnet.ibm.com>
- <871t0a98tq.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <871t0a98tq.fsf@concordia.ellerman.id.au>
-Message-Id: <20160923134852.GA22259@in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Sat, 24 Sep 2016 06:35:18 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C83D62BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:16 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8NKZGKA66781248
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:16 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8NKZFd5006789
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 06:35:16 +1000
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, "Michael Ellerman" <mpe@ellerman.id.au>
+Cc: "Alexei Starovoitov" <ast@fb.com>, Daniel Borkmann <daniel@iogearbox.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Ananth N Mavinakayanahalli" <ananth@in.ibm.com>
+Subject: [PATCH 1/3] bpf powerpc: introduce accessors for using the tmp local
+ stack space
+Date: Sat, 24 Sep 2016 02:05:00 +0530
+Message-Id: <40b65ab2bb3a48837ab047a70887de3ccd70c56b.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,128 +48,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+While at it, ensure that the location of the local save area is
+consistent whether or not we setup our own stackframe. This property is
+utilised in the next patch that adds support for tail calls.
 
-On Fri, Sep 23, 2016 at 09:03:45PM +1000, Michael Ellerman wrote:
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
-> 
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >
-> > This patch adds a function named power_enter_stop_lite() that can
-> > execute a stop instruction when ESL and EC bits are set to zero in the
-> > PSSCR.  The function handles the wake-up from idle at the instruction
-> > immediately after the stop instruction.
-> >
-> > If the flag OPAL_PM_WAKEUP_AT_NEXT_INST[1] is set in the device tree
-> > for a stop state, then use the lite variant for that particular stop
-> > state.
-> 
-> Hi Gautham,
-> 
-> It seems to me that this would be cleaner if it was modelled as a new
-> stop state? Surely it must have different power saving characteristics
-> to the existing state?
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/net/bpf_jit64.h      | 16 +++++---
+ arch/powerpc/net/bpf_jit_comp64.c | 79 ++++++++++++++++++++++-----------------
+ 2 files changed, 55 insertions(+), 40 deletions(-)
 
-It is supposed to be a new stop state, whose behaviour is different
-from the existing stop states in terms of where it wakes up from stop.
-
-You are right, it has different power saving characteristics to the
-existing state.
-
-> 
-> > [1] : The corresponding patch in skiboot that defines
-> >       OPAL_PM_WAKEUP_AT_NEXT_INST and enables it in the device tree
-> >       can be found here:
-> >       https://lists.ozlabs.org/pipermail/skiboot/2016-September/004805.html
-> 
-> Which says "This will reduce the exit latency of the idle state", and
-> yet it doesn't change any of the latency/residency values?
-> 
-> If all it does is reduce the exit latency, then shouldn't we always use
-> it? Presumably it also saves less power?
-
-It does save less power compared to the corresponding variant where
-ESL=EC=1.
-
-> 
-> > diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-> > index 32d666b..47ee106 100644
-> > --- a/arch/powerpc/kernel/idle_book3s.S
-> > +++ b/arch/powerpc/kernel/idle_book3s.S
-> > @@ -43,6 +43,8 @@
-> >  #define PSSCR_HV_TEMPLATE	PSSCR_ESL | PSSCR_EC | \
-> >  				PSSCR_PSLL_MASK | PSSCR_TR_MASK | \
-> >  				PSSCR_MTL_MASK
-> > +#define PSSCR_HV_TEMPLATE_LITE	PSSCR_PSLL_MASK | PSSCR_TR_MASK | \
-> > +				 PSSCR_MTL_MASK
-> 
-> Why do we have these at all? Firmware tells us the PSSCR values to use
-> in the "ibm,cpu-idle-state-psscr" property.
-> 
-> If we just used what firmware gave us then we wouldn't need the above,
-> or the juggling below.
-
-Let me rework the patch to use the cpu-idle-state-psscr property which
-is currently set to 0 in the firmware and
-cpu-idle-state-psscr-mask which is set to 0xF for all the stop
-states.
-
-I agree, we can do without the hardcoding of the mask in the
-kernel.
-
-> 
-> > @@ -333,13 +349,19 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
-> >  
-> >  /*
-> >   * r3 - requested stop state
-> > + * r4 - Indicates if the lite variant with ESL=EC=0 should be executed.
-> >   */
-> >  _GLOBAL(power9_idle_stop)
-> > -	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE)
-> > -	or	r4,r4,r3
-> > +	cmpdi	r4, 1
-> > +	bne	4f
-> > +	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE_LITE)
-> > +	LOAD_REG_ADDR(r5,power_enter_stop_lite)
-> > +	b 	5f
-> > +4:	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE)
-> > +	LOAD_REG_ADDR(r5,power_enter_stop)
-> > +5:	or	r4,r4,r3
-> >  	mtspr	SPRN_PSSCR, r4
-> >  	li	r4, 1
-> > -	LOAD_REG_ADDR(r5,power_enter_stop)
-> >  	b	pnv_powersave_common
-> >  	/* No return */
-> >  /*
-> 
-> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> > index 479c256..c3d3fed 100644
-> > --- a/arch/powerpc/platforms/powernv/idle.c
-> > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > @@ -244,8 +244,15 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
-> >  static void power9_idle(void)
-> >  {
-> >  	/* Requesting stop state 0 */
-> > -	power9_idle_stop(0);
-> >  }
-> 
-> That seems like the root of the problem, why aren't we passing a PSSCR
-> value here?
-> 
-> I also don't see us using the psscr-mask property anywhere. Why isn't
-> that a bug?
-
-Because we are only setting the Requested Level field which is the
-bottom 4 bits. Everything else is taken from the hardcoded mask, which
-is not incorrect, but not a very flexible design.
-
-Thanks for the comments Michael. I will come back with a cleaner
-patch.
-
-> 
-> cheers
-> 
-
---
-Thanks and Regards
-gautham.
+diff --git a/arch/powerpc/net/bpf_jit64.h b/arch/powerpc/net/bpf_jit64.h
+index 5046d6f..a1645d7 100644
+--- a/arch/powerpc/net/bpf_jit64.h
++++ b/arch/powerpc/net/bpf_jit64.h
+@@ -16,22 +16,25 @@
+ 
+ /*
+  * Stack layout:
++ * Ensure the top half (upto local_tmp_var) stays consistent
++ * with our redzone usage.
+  *
+  *		[	prev sp		] <-------------
+  *		[   nv gpr save area	] 8*8		|
++ *		[    tail_call_cnt	] 8		|
++ *		[    local_tmp_var	] 8		|
+  * fp (r31) -->	[   ebpf stack space	] 512		|
+- *		[  local/tmp var space	] 16		|
+  *		[     frame header	] 32/112	|
+  * sp (r1) --->	[    stack pointer	] --------------
+  */
+ 
+-/* for bpf JIT code internal usage */
+-#define BPF_PPC_STACK_LOCALS	16
+ /* for gpr non volatile registers BPG_REG_6 to 10, plus skb cache registers */
+ #define BPF_PPC_STACK_SAVE	(8*8)
++/* for bpf JIT code internal usage */
++#define BPF_PPC_STACK_LOCALS	16
+ /* Ensure this is quadword aligned */
+-#define BPF_PPC_STACKFRAME	(STACK_FRAME_MIN_SIZE + BPF_PPC_STACK_LOCALS + \
+-				 MAX_BPF_STACK + BPF_PPC_STACK_SAVE)
++#define BPF_PPC_STACKFRAME	(STACK_FRAME_MIN_SIZE + MAX_BPF_STACK + \
++				 BPF_PPC_STACK_LOCALS + BPF_PPC_STACK_SAVE)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -65,6 +68,9 @@ static const int b2p[] = {
+ 	[TMP_REG_2] = 10
+ };
+ 
++/* PPC NVR range -- update this if we ever use NVRs below r24 */
++#define BPF_PPC_NVR_MIN		24
++
+ /* Assembly helpers */
+ #define DECLARE_LOAD_FUNC(func)	u64 func(u64 r3, u64 r4);			\
+ 				u64 func##_negative_offset(u64 r3, u64 r4);	\
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 6073b78..5f8c91f 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -58,6 +58,35 @@ static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
+ 	return ctx->seen & SEEN_FUNC || bpf_is_seen_register(ctx, BPF_REG_FP);
+ }
+ 
++/*
++ * When not setting up our own stackframe, the redzone usage is:
++ *
++ *		[	prev sp		] <-------------
++ *		[	  ...       	] 		|
++ * sp (r1) --->	[    stack pointer	] --------------
++ *		[   nv gpr save area	] 8*8
++ *		[    tail_call_cnt	] 8
++ *		[    local_tmp_var	] 8
++ *		[   unused red zone	] 208 bytes protected
++ */
++static int bpf_jit_stack_local(struct codegen_context *ctx)
++{
++	if (bpf_has_stack_frame(ctx))
++		return STACK_FRAME_MIN_SIZE + MAX_BPF_STACK;
++	else
++		return -(BPF_PPC_STACK_SAVE + 16);
++}
++
++static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
++{
++	if (reg >= BPF_PPC_NVR_MIN && reg < 32)
++		return (bpf_has_stack_frame(ctx) ? BPF_PPC_STACKFRAME : 0)
++							- (8 * (32 - reg));
++
++	pr_err("BPF JIT is asking about unknown registers");
++	BUG();
++}
++
+ static void bpf_jit_emit_skb_loads(u32 *image, struct codegen_context *ctx)
+ {
+ 	/*
+@@ -100,9 +129,8 @@ static void bpf_jit_emit_func_call(u32 *image, struct codegen_context *ctx, u64
+ static void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+ {
+ 	int i;
+-	bool new_stack_frame = bpf_has_stack_frame(ctx);
+ 
+-	if (new_stack_frame) {
++	if (bpf_has_stack_frame(ctx)) {
+ 		/*
+ 		 * We need a stack frame, but we don't necessarily need to
+ 		 * save/restore LR unless we call other functions
+@@ -122,9 +150,7 @@ static void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+ 	 */
+ 	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
+ 		if (bpf_is_seen_register(ctx, i))
+-			PPC_BPF_STL(b2p[i], 1,
+-				(new_stack_frame ? BPF_PPC_STACKFRAME : 0) -
+-					(8 * (32 - b2p[i])));
++			PPC_BPF_STL(b2p[i], 1, bpf_jit_stack_offsetof(ctx, b2p[i]));
+ 
+ 	/*
+ 	 * Save additional non-volatile regs if we cache skb
+@@ -132,22 +158,21 @@ static void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+ 	 */
+ 	if (ctx->seen & SEEN_SKB) {
+ 		PPC_BPF_STL(b2p[SKB_HLEN_REG], 1,
+-			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_HLEN_REG])));
++				bpf_jit_stack_offsetof(ctx, b2p[SKB_HLEN_REG]));
+ 		PPC_BPF_STL(b2p[SKB_DATA_REG], 1,
+-			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_DATA_REG])));
++				bpf_jit_stack_offsetof(ctx, b2p[SKB_DATA_REG]));
+ 		bpf_jit_emit_skb_loads(image, ctx);
+ 	}
+ 
+ 	/* Setup frame pointer to point to the bpf stack area */
+ 	if (bpf_is_seen_register(ctx, BPF_REG_FP))
+ 		PPC_ADDI(b2p[BPF_REG_FP], 1,
+-				BPF_PPC_STACKFRAME - BPF_PPC_STACK_SAVE);
++				STACK_FRAME_MIN_SIZE + MAX_BPF_STACK);
+ }
+ 
+ static void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+ {
+ 	int i;
+-	bool new_stack_frame = bpf_has_stack_frame(ctx);
+ 
+ 	/* Move result to r3 */
+ 	PPC_MR(3, b2p[BPF_REG_0]);
+@@ -155,20 +180,18 @@ static void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+ 	/* Restore NVRs */
+ 	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
+ 		if (bpf_is_seen_register(ctx, i))
+-			PPC_BPF_LL(b2p[i], 1,
+-				(new_stack_frame ? BPF_PPC_STACKFRAME : 0) -
+-					(8 * (32 - b2p[i])));
++			PPC_BPF_LL(b2p[i], 1, bpf_jit_stack_offsetof(ctx, b2p[i]));
+ 
+ 	/* Restore non-volatile registers used for skb cache */
+ 	if (ctx->seen & SEEN_SKB) {
+ 		PPC_BPF_LL(b2p[SKB_HLEN_REG], 1,
+-			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_HLEN_REG])));
++				bpf_jit_stack_offsetof(ctx, b2p[SKB_HLEN_REG]));
+ 		PPC_BPF_LL(b2p[SKB_DATA_REG], 1,
+-			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_DATA_REG])));
++				bpf_jit_stack_offsetof(ctx, b2p[SKB_DATA_REG]));
+ 	}
+ 
+ 	/* Tear down our stack frame */
+-	if (new_stack_frame) {
++	if (bpf_has_stack_frame(ctx)) {
+ 		PPC_ADDI(1, 1, BPF_PPC_STACKFRAME);
+ 		if (ctx->seen & SEEN_FUNC) {
+ 			PPC_BPF_LL(0, 1, PPC_LR_STKOFF);
+@@ -200,7 +223,6 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 		u64 imm64;
+ 		u8 *func;
+ 		u32 true_cond;
+-		int stack_local_off;
+ 
+ 		/*
+ 		 * addrs[] maps a BPF bytecode address into a real offset from
+@@ -219,9 +241,9 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 		 * optimization but everything else should work without
+ 		 * any issues.
+ 		 */
+-		if (dst_reg >= 24 && dst_reg <= 31)
++		if (dst_reg >= BPF_PPC_NVR_MIN && dst_reg < 32)
+ 			bpf_set_seen_register(ctx, insn[i].dst_reg);
+-		if (src_reg >= 24 && src_reg <= 31)
++		if (src_reg >= BPF_PPC_NVR_MIN && src_reg < 32)
+ 			bpf_set_seen_register(ctx, insn[i].src_reg);
+ 
+ 		switch (code) {
+@@ -490,25 +512,12 @@ bpf_alu32_trunc:
+ 				 * Way easier and faster(?) to store the value
+ 				 * into stack and then use ldbrx
+ 				 *
+-				 * First, determine where in stack we can store
+-				 * this:
+-				 * - if we have allotted a stack frame, then we
+-				 *   will utilize the area set aside by
+-				 *   BPF_PPC_STACK_LOCALS
+-				 * - else, we use the area beneath the NV GPR
+-				 *   save area
+-				 *
+ 				 * ctx->seen will be reliable in pass2, but
+ 				 * the instructions generated will remain the
+ 				 * same across all passes
+ 				 */
+-				if (bpf_has_stack_frame(ctx))
+-					stack_local_off = STACK_FRAME_MIN_SIZE;
+-				else
+-					stack_local_off = -(BPF_PPC_STACK_SAVE + 8);
+-
+-				PPC_STD(dst_reg, 1, stack_local_off);
+-				PPC_ADDI(b2p[TMP_REG_1], 1, stack_local_off);
++				PPC_STD(dst_reg, 1, bpf_jit_stack_local(ctx));
++				PPC_ADDI(b2p[TMP_REG_1], 1, bpf_jit_stack_local(ctx));
+ 				PPC_LDBRX(dst_reg, 0, b2p[TMP_REG_1]);
+ 				break;
+ 			}
+@@ -668,7 +677,7 @@ emit_clear:
+ 
+ 			/* Save skb pointer if we need to re-cache skb data */
+ 			if (bpf_helper_changes_skb_data(func))
+-				PPC_BPF_STL(3, 1, STACK_FRAME_MIN_SIZE);
++				PPC_BPF_STL(3, 1, bpf_jit_stack_local(ctx));
+ 
+ 			bpf_jit_emit_func_call(image, ctx, (u64)func);
+ 
+@@ -678,7 +687,7 @@ emit_clear:
+ 			/* refresh skb cache */
+ 			if (bpf_helper_changes_skb_data(func)) {
+ 				/* reload skb pointer to r3 */
+-				PPC_BPF_LL(3, 1, STACK_FRAME_MIN_SIZE);
++				PPC_BPF_LL(3, 1, bpf_jit_stack_local(ctx));
+ 				bpf_jit_emit_skb_loads(image, ctx);
+ 			}
+ 			break;
+-- 
+2.9.3
