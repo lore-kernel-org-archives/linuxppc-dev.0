@@ -1,19 +1,42 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yw0-x230.google.com (mail-yw0-x230.google.com
- [IPv6:2607:f8b0:4002:c05::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgY9S199QzDsn9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 22:50:02 +1000 (AEST)
-Received: by mail-yw0-x230.google.com with SMTP id u82so112723792ywc.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 05:50:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgZTq5S08zDsmq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 23:49:18 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8NDmp8o138520
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 09:49:16 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb7k7wr-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 09:49:15 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 23 Sep 2016 07:49:14 -0600
+Date: Fri, 23 Sep 2016 19:18:52 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] powernv:idle:Implement lite variant of
+ power_enter_stop
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1474015799.git.ego@linux.vnet.ibm.com>
+ <86d28da16d5bf66f111cc93eea3f000e41faff57.1474015799.git.ego@linux.vnet.ibm.com>
+ <871t0a98tq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Fri, 23 Sep 2016 15:50:00 +0300
-Message-ID: <CAOJe8K0p60fmubbhSHCm0096CTjYjnnfoo_JLuwDcg6fo-=pBg@mail.gmail.com>
-Subject: ehea crash on boot
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <871t0a98tq.fsf@concordia.ellerman.id.au>
+Message-Id: <20160923134852.GA22259@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +46,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Heh, another thing to debug :)
+Hi Michael,
 
-mm: Hashing failure ! EA=0xd000080080124040 access=0x800000000000000e
-current=NetworkManager
-trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003bc0300301ae
-mm: Hashing failure ! EA=0xd000080080124040 access=0x800000000000000e
-current=NetworkManager
-trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003bc0300301ae
-Unable to handle kernel paging request for data at address 0xd000080080124040
-Faulting instruction address: 0xc0000000006f21a0
-cpu 0x8: Vector: 300 (Data Access) at [c0000005a8b92b50]
-pc: c0000000006f21a0: .ehea_create_cq+0x160/0x230
-lr: c0000000006f2164: .ehea_create_cq+0x124/0x230
-sp: c0000005a8b92dd0
-msr: 8000000000009032
-dar: d000080080124040
-dsisr: 42000000
-current = 0xc0000005a8b68200
-paca = 0xc00000000ea94000 softe: 0 irq_happened: 0x01
-pid = 6787, comm = NetworkManager
-Linux version 4.8.0-rc6-00214-g4cea877 (kda@ps700) (gcc version 4.8.5
-20150623 (Red Hat 4.8.5-4) (GCC) ) #1 SMP Fri Sep 23 15:01:08 MSK 2016
-enter ? for help
-[c0000005a8b92dd0] c0000000006f2140 .ehea_create_cq+0x100/0x230 (unreliable)
-[c0000005a8b92e70] c0000000006ed448 .ehea_up+0x288/0xed0
-[c0000005a8b92fe0] c0000000006ee314 .ehea_open+0x44/0x130
-[c0000005a8b93070] c000000000812324 .__dev_open+0x154/0x220
-[c0000005a8b93110] c000000000812734 .__dev_change_flags+0xd4/0x1e0
-[c0000005a8b931b0] c00000000081286c .dev_change_flags+0x2c/0x80
-[c0000005a8b93240] c000000000829f0c .do_setlink+0x37c/0xe50
-[c0000005a8b933c0] c00000000082c884 .rtnl_newlink+0x5e4/0x9b0
-[c0000005a8b936d0] c00000000082cd08 .rtnetlink_rcv_msg+0xb8/0x2f0
-[c0000005a8b937a0] c00000000084e25c .netlink_rcv_skb+0x12c/0x150
-[c0000005a8b93830] c000000000829458 .rtnetlink_rcv+0x38/0x60
-[c0000005a8b938b0] c00000000084d814 .netlink_unicast+0x1e4/0x350
-[c0000005a8b93960] c00000000084def8 .netlink_sendmsg+0x418/0x480
-[c0000005a8b93a40] c0000000007defac .sock_sendmsg+0x2c/0x60
-[c0000005a8b93ab0] c0000000007e0cbc .___sys_sendmsg+0x30c/0x320
-[c0000005a8b93c90] c0000000007e21bc .__sys_sendmsg+0x4c/0xb0
-[c0000005a8b93d80] c0000000007e2dec .SyS_socketcall+0x34c/0x3d0
-[c0000005a8b93e30] c00000000000946c system_call+0x38/0x108
+On Fri, Sep 23, 2016 at 09:03:45PM +1000, Michael Ellerman wrote:
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+> 
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >
+> > This patch adds a function named power_enter_stop_lite() that can
+> > execute a stop instruction when ESL and EC bits are set to zero in the
+> > PSSCR.  The function handles the wake-up from idle at the instruction
+> > immediately after the stop instruction.
+> >
+> > If the flag OPAL_PM_WAKEUP_AT_NEXT_INST[1] is set in the device tree
+> > for a stop state, then use the lite variant for that particular stop
+> > state.
+> 
+> Hi Gautham,
+> 
+> It seems to me that this would be cleaner if it was modelled as a new
+> stop state? Surely it must have different power saving characteristics
+> to the existing state?
+
+It is supposed to be a new stop state, whose behaviour is different
+from the existing stop states in terms of where it wakes up from stop.
+
+You are right, it has different power saving characteristics to the
+existing state.
+
+> 
+> > [1] : The corresponding patch in skiboot that defines
+> >       OPAL_PM_WAKEUP_AT_NEXT_INST and enables it in the device tree
+> >       can be found here:
+> >       https://lists.ozlabs.org/pipermail/skiboot/2016-September/004805.html
+> 
+> Which says "This will reduce the exit latency of the idle state", and
+> yet it doesn't change any of the latency/residency values?
+> 
+> If all it does is reduce the exit latency, then shouldn't we always use
+> it? Presumably it also saves less power?
+
+It does save less power compared to the corresponding variant where
+ESL=EC=1.
+
+> 
+> > diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> > index 32d666b..47ee106 100644
+> > --- a/arch/powerpc/kernel/idle_book3s.S
+> > +++ b/arch/powerpc/kernel/idle_book3s.S
+> > @@ -43,6 +43,8 @@
+> >  #define PSSCR_HV_TEMPLATE	PSSCR_ESL | PSSCR_EC | \
+> >  				PSSCR_PSLL_MASK | PSSCR_TR_MASK | \
+> >  				PSSCR_MTL_MASK
+> > +#define PSSCR_HV_TEMPLATE_LITE	PSSCR_PSLL_MASK | PSSCR_TR_MASK | \
+> > +				 PSSCR_MTL_MASK
+> 
+> Why do we have these at all? Firmware tells us the PSSCR values to use
+> in the "ibm,cpu-idle-state-psscr" property.
+> 
+> If we just used what firmware gave us then we wouldn't need the above,
+> or the juggling below.
+
+Let me rework the patch to use the cpu-idle-state-psscr property which
+is currently set to 0 in the firmware and
+cpu-idle-state-psscr-mask which is set to 0xF for all the stop
+states.
+
+I agree, we can do without the hardcoding of the mask in the
+kernel.
+
+> 
+> > @@ -333,13 +349,19 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+> >  
+> >  /*
+> >   * r3 - requested stop state
+> > + * r4 - Indicates if the lite variant with ESL=EC=0 should be executed.
+> >   */
+> >  _GLOBAL(power9_idle_stop)
+> > -	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE)
+> > -	or	r4,r4,r3
+> > +	cmpdi	r4, 1
+> > +	bne	4f
+> > +	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE_LITE)
+> > +	LOAD_REG_ADDR(r5,power_enter_stop_lite)
+> > +	b 	5f
+> > +4:	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE)
+> > +	LOAD_REG_ADDR(r5,power_enter_stop)
+> > +5:	or	r4,r4,r3
+> >  	mtspr	SPRN_PSSCR, r4
+> >  	li	r4, 1
+> > -	LOAD_REG_ADDR(r5,power_enter_stop)
+> >  	b	pnv_powersave_common
+> >  	/* No return */
+> >  /*
+> 
+> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> > index 479c256..c3d3fed 100644
+> > --- a/arch/powerpc/platforms/powernv/idle.c
+> > +++ b/arch/powerpc/platforms/powernv/idle.c
+> > @@ -244,8 +244,15 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
+> >  static void power9_idle(void)
+> >  {
+> >  	/* Requesting stop state 0 */
+> > -	power9_idle_stop(0);
+> >  }
+> 
+> That seems like the root of the problem, why aren't we passing a PSSCR
+> value here?
+> 
+> I also don't see us using the psscr-mask property anywhere. Why isn't
+> that a bug?
+
+Because we are only setting the Requested Level field which is the
+bottom 4 bits. Everything else is taken from the hardcoded mask, which
+is not incorrect, but not a very flexible design.
+
+Thanks for the comments Michael. I will come back with a cleaner
+patch.
+
+> 
+> cheers
+> 
+
+--
+Thanks and Regards
+gautham.
