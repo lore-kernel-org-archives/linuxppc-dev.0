@@ -1,42 +1,54 @@
-Return-Path: <cyrilbur@gmail.com>
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNVj2h14zDsn6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:19:25 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgNVQ5vsvzDspC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:19:10 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8N6Ha2x116513
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:19:08 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb7sc1j-1
+ by ozlabs.org (Postfix) with ESMTPS id 3sgNVh2P6pz9t14
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 16:19:24 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8N6HZIA115381
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 02:19:22 -0400
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25mqb514va-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 02:19:08 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 02:19:21 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 23 Sep 2016 16:19:02 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2C2582BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:49 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8N6InDE2425204
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:49 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8N6Imjd011133
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 16:18:49 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 17/20] selftests/powerpc: Add checks for transactional VSXs
- in signal contexts
-Date: Fri, 23 Sep 2016 16:18:23 +1000
-In-Reply-To: <20160923061826.30790-1-cyrilbur@gmail.com>
-References: <20160923061826.30790-1-cyrilbur@gmail.com>
-Message-Id: <20160923061826.30790-18-cyrilbur@gmail.com>
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 23 Sep 2016 11:49:18 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8A9D9125805F
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 11:49:34 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8N6JFj131129816
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 11:49:15 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8N6JC4K004923
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2016 11:49:14 +0530
+Subject: Re: [PATCH v2] powerpc/mm: export current mmu mode info
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <147456009252.14735.18189822731283851598.stgit@hbathini.in.ibm.com>
+ <87eg4bzyuf.fsf@linux.vnet.ibm.com>
+ <92b66a3f-809b-bd63-22cd-56e7707de479@linux.vnet.ibm.com>
+ <878tujz0lw.fsf@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Fri, 23 Sep 2016 11:48:59 +0530
+MIME-Version: 1.0
+In-Reply-To: <878tujz0lw.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <615ad108-be19-9be9-77d3-1f3b08b92ba0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,159 +58,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a thread receives a signal while transactional the kernel creates a
-second context to show the transactional state of the process. This
-test loads some known values and waits for a signal and confirms that
-the expected values are in the signal context.
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- tools/testing/selftests/powerpc/tm/Makefile        |   2 +-
- .../powerpc/tm/tm-signal-context-chk-vsx.c         | 125 +++++++++++++++++++++
- 2 files changed, 126 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c
 
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 06c44aa..9d53f8b 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,5 +1,5 @@
- SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu \
--	tm-signal-context-chk-vmx
-+	tm-signal-context-chk-vmx tm-signal-context-chk-vsx
- 
- TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
- 	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c
-new file mode 100644
-index 0000000..b99c3d8
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c
-@@ -0,0 +1,125 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be
-+ * delivered while the thread was in a transaction.
-+ * Expected behaviour is that the checkpointed state is in the user
-+ * context passed to the signal handler. The speculated state can be
-+ * accessed with the uc_link pointer.
-+ *
-+ * The rationale for this is that if TM unaware code (which linked
-+ * against TM libs) installs a signal handler it will not know of the
-+ * speculative nature of the 'live' registers and may infer the wrong
-+ * thing.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include <altivec.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define MAX_ATTEMPT 500000
-+
-+#define NV_VSX_REGS 12
-+
-+long tm_signal_self_context_load(pid_t pid, long *gprs, double *fps, vector int *vms, vector int *vss);
-+
-+static sig_atomic_t fail;
-+
-+vector int vss[] = {
-+	{1, 2, 3, 4 },{5, 6, 7, 8 },{9, 10,11,12},
-+	{13,14,15,16},{17,18,19,20},{21,22,23,24},
-+	{25,26,27,28},{29,30,31,32},{33,34,35,36},
-+	{37,38,39,40},{41,42,43,44},{45,46,47,48},
-+	{-1, -2, -3, -4 },{-5, -6, -7, -8 },{-9, -10,-11,-12},
-+	{-13,-14,-15,-16},{-17,-18,-19,-20},{-21,-22,-23,-24},
-+	{-25,-26,-27,-28},{-29,-30,-31,-32},{-33,-34,-35,-36},
-+	{-37,-38,-39,-40},{-41,-42,-43,-44},{-45,-46,-47,-48}
-+};
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	int i;
-+	uint8_t vsc[sizeof(vector int)];
-+	uint8_t vst[sizeof(vector int)];
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	/*
-+	 * The other half of the VSX regs will be after v_regs.
-+	 *
-+	 * In short, vmx_reserve array holds everything. v_regs is a 16
-+	 * byte aligned pointer at the start of vmx_reserve (vmx_reserve
-+	 * may or may not be 16 aligned) where the v_regs structure exists.
-+	 * (half of) The VSX regsters are directly after v_regs so the
-+	 * easiest way to find them below.
-+	 */
-+	long *vsx_ptr = (long *)(ucp->uc_mcontext.v_regs + 1);
-+	long *tm_vsx_ptr = (long *)(tm_ucp->uc_mcontext.v_regs + 1);
-+	for (i = 0; i < NV_VSX_REGS && !fail; i++) {
-+		memcpy(vsc, &ucp->uc_mcontext.fp_regs[i + 20], 8);
-+		memcpy(vsc + 8, &vsx_ptr[20 + i], 8);
-+		fail = memcmp(vsc, &vss[i], sizeof(vector int));
-+		memcpy(vst, &tm_ucp->uc_mcontext.fp_regs[i + 20], 8);
-+		memcpy(vst + 8, &tm_vsx_ptr[20 + i], 8);
-+		fail |= memcmp(vst, &vss[i + NV_VSX_REGS], sizeof(vector int));
-+
-+		if (fail) {
-+			int j;
-+
-+			fprintf(stderr, "Failed on %d vsx 0x", i);
-+			for (j = 0; j < 16; j++)
-+				fprintf(stderr, "%02x", vsc[j]);
-+			fprintf(stderr, " vs 0x");
-+			for (j = 0; j < 16; j++)
-+				fprintf(stderr, "%02x", vst[j]);
-+			fprintf(stderr, "\n");
-+		}
-+	}
-+}
-+
-+static int tm_signal_context_chk()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (i < MAX_ATTEMPT && !fail) {
-+		rc = tm_signal_self_context_load(pid, NULL, NULL, NULL, vss);
-+		FAIL_IF(rc != pid);
-+		i++;
-+	}
-+
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk, "tm_signal_context_chk_vsx");
-+}
--- 
-2.10.0
+On Friday 23 September 2016 10:14 AM, Aneesh Kumar K.V wrote:
+> Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+>
+>> Hi Aneesh,
+>>
+>>
+>> On Thursday 22 September 2016 09:54 PM, Aneesh Kumar K.V wrote:
+>>> Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+>>>
+>>>> The kernel now supports both radix and hash MMU modes. Tools like crash
+>>>> and makedumpfile need to know the current MMU mode the kernel is using,
+>>>> to debug/analyze it.  The current MMU mode depends on hardware support
+>>>> and also whether disable_radix cmdline parameter is passed to the kernel.
+>>>> The mmu_features member of cpu_spec structure holds the current MMU mode
+>>>> a cpu is using. But the above mentioned tools need to know the MMU mode
+>>>> early in their init process, when they may not have access to offset info
+>>>> of structure members. A hard-coded offset may help but it won't be robust.
+>>> IIUC, you walk the linux page table and that should be more or less same
+>> Taking the case of crash tool, vmemmap start value is currently
+>> hard-coded to 0xf000000000000000UL but it changed to
+>> 0xc00a000000000000UL in case of radix.
+> All of that is already defined as variables in the kernel. You can look at
+> radix__early_init_mmu().
+>
+>
+>>> between radix/hash right except few bits. Now what crash will be
+>>> interested in will be the RPN part of the table which should be same
+>>> between hash/radix.
+>> Though the walk is pretty much the same, the tool still needs to know
+>> the right index values and vmemmap start to use, as they are different
+>> for radix and hash..
+>>
+>>>> This patch introduces a new global variable, which holds the current MMU
+>>>> mode the kernel is running in and can be accessed by tools early in thier
+>>>> init process,
+>>> Init process of what ? kernel or crash tool ?
+>> tool initialization - crash or makedumpfile..
+>>
+>>>> helping tools to initialize accurately for each MMU mode.
+>>>> This patch also optimizes the radix_enabled() function call.
+>>>>
+>>> how do you differentiate between the hold linux page table format and
+>>> the new ? Can you also summarize what crash tool look for in the page
+>>> table ?
+>> It needs the index sizes, masked bit values and page flag info to
+>> do the page table walk. Since they can be different for hash and
+>> radix..
+>>
+> Can you look at radix__early_init_mmu/hash__early_init_mmu and see you
+> can work with the variables defined there ?
+
+Did consider that but didn't opt for it for a few reasons:
+
+1. Will still need to know the MMU mode as huge page address translation
+    is not the same for radix & hash.
+
+2. Will have to get all these values from a crashed kernel when I can 
+set them
+    based on MMU mode. Less dependence on the failed kernel, the better..
+
+3. Stash more variables in vmcoreinfo (for makedumpfile) when one is 
+sufficient
+    to serve the purpose.
+
+Thanks
+Hari
