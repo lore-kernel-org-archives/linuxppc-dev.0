@@ -1,28 +1,20 @@
 Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0088.outbound.protection.outlook.com [104.47.0.88])
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0070.outbound.protection.outlook.com [104.47.38.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgFft3WzdzDsld
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 11:11:02 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Leo Li <pku.leo@gmail.com>
-CC: Scott Wood <oss@buserror.net>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, "X.B.
- Xie" <xiaobo.xie@nxp.com>
-Subject: RE: [PATCH v5 2/2] QE: remove PPCisms for QE
-Date: Fri, 23 Sep 2016 01:10:55 +0000
-Message-ID: <AM3PR04MB1185C226D906CA3E68448B0191C80@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
- <1469425427-33883-2-git-send-email-qiang.zhao@nxp.com>
- <CADRPPNQaPjA1qBab-cRa1Yqmf5h53MPyC0OojO46btBuBjEhfA@mail.gmail.com>
- <AM3PR04MB11858157D9D1455AD49DBF6291F60@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <CADRPPNTJGSrNskUVz1xMmbXWGwyEAJ_toW+kHy3_JJTvxeq6gA@mail.gmail.com>
- <AM3PR04MB11857AE8D2B0BE56121B97D391C90@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <CADRPPNQ5qSy5KKe1KFd0cqcaJHHqjxmUHDs4DvzLOKs9r0fPzQ@mail.gmail.com>
-In-Reply-To: <CADRPPNQ5qSy5KKe1KFd0cqcaJHHqjxmUHDs4DvzLOKs9r0fPzQ@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgHV15HfjzDsky
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 12:33:28 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <oss@buserror.net>
+CC: <pku.leo@gmail.com>, <xiaobo.xie@nxp.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Zhao Qiang
+ <qiang.zhao@nxp.com>
+Subject: [PATCH v6 1/2] qe: modify get_qe_base function
+Date: Fri, 23 Sep 2016 10:20:31 +0800
+Message-ID: <1474597232-33397-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,81 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gRnJpLCBTZXAgMjMsIDIwMTYgYXQgMzozOSBBTSwgTGVvIExpIHdyb3RlOg0KDQo+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IExlbyBMaSBbbWFpbHRvOnBrdS5sZW9AZ21h
-aWwuY29tXQ0KPiBTZW50OiBGcmlkYXksIFNlcHRlbWJlciAyMywgMjAxNiAzOjM5IEFNDQo+IFRv
-OiBRaWFuZyBaaGFvIDxxaWFuZy56aGFvQG54cC5jb20+DQo+IENjOiBTY290dCBXb29kIDxvc3NA
-YnVzZXJyb3IubmV0PjsgbGludXhwcGMtZGV2IDxsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFi
-cy5vcmc+OyBsa21sIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgWC5CLiBYaWUNCj4g
-PHhpYW9iby54aWVAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2NSAyLzJdIFFFOiBy
-ZW1vdmUgUFBDaXNtcyBmb3IgUUUNCj4gDQo+IE9uIFdlZCwgU2VwIDIxLCAyMDE2IGF0IDg6NDMg
-UE0sIFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4gd3JvdGU6DQo+ID4gT24gTW9uLCBT
-ZXAgMjIsIDIwMTYgYXQgMjoxOSBBTSwgTGVvIExpIHdyb3RlOg0KPiA+PiAtLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBMZW8gTGkgW21haWx0bzpwa3UubGVvQGdtYWlsLmNv
-bV0NCj4gPj4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAyMiwgMjAxNiAyOjE5IEFNDQo+ID4+
-IFRvOiBRaWFuZyBaaGFvIDxxaWFuZy56aGFvQG54cC5jb20+DQo+ID4+IENjOiBTY290dCBXb29k
-IDxvc3NAYnVzZXJyb3IubmV0PjsgbGludXhwcGMtZGV2IDxsaW51eHBwYy0NCj4gPj4gZGV2QGxp
-c3RzLm96bGFicy5vcmc+OyBsa21sIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgWC5C
-LiBYaWUNCj4gPj4gPHhpYW9iby54aWVAbnhwLmNvbT4NCj4gPj4gU3ViamVjdDogUmU6IFtQQVRD
-SCB2NSAyLzJdIFFFOiByZW1vdmUgUFBDaXNtcyBmb3IgUUUNCj4gPj4NCj4gPj4gT24gVHVlLCBT
-ZXAgMjAsIDIwMTYgYXQgODoxMyBQTSwgUWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29tPiB3
-cm90ZToNCj4gPj4gPiBPbiBNb24sIFNlcCAyMCwgMjAxNiBhdCA0OjEzIEFNLCBMZW8gTGkgd3Jv
-dGU6DQo+ID4+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+ID4+IEZyb206IExl
-byBMaSBbbWFpbHRvOnBrdS5sZW9AZ21haWwuY29tXQ0KPiA+PiA+PiBTZW50OiBUdWVzZGF5LCBT
-ZXB0ZW1iZXIgMjAsIDIwMTYgNDoxMyBBTQ0KPiA+PiA+PiBUbzogUWlhbmcgWmhhbyA8cWlhbmcu
-emhhb0BueHAuY29tPg0KPiA+PiA+PiBDYzogU2NvdHQgV29vZCA8b3NzQGJ1c2Vycm9yLm5ldD47
-IGxpbnV4cHBjLWRldiA8bGludXhwcGMtDQo+ID4+ID4+IGRldkBsaXN0cy5vemxhYnMub3JnPjsg
-bGttbCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IFguQi4NCj4gPj4gPj4gWGllIDx4
-aWFvYm8ueGllQG54cC5jb20+DQo+ID4+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjUgMi8yXSBR
-RTogcmVtb3ZlIFBQQ2lzbXMgZm9yIFFFDQo+ID4+ID4+DQo+ID4+ID4+IE9uIE1vbiwgSnVsIDI1
-LCAyMDE2IGF0IDEyOjQzIEFNLCBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQG54cC5jb20+DQo+ID4+
-IHdyb3RlOg0KPiA+PiA+PiA+IFFFIHdhcyBzdXBwb3J0ZWQgb24gUG93ZXJQQywgYW5kIGRlcGVu
-ZGVudCBvbiBQUEMsIE5vdyBpdCBpcw0KPiA+PiA+PiA+IHN1cHBvcnRlZCBvbiBvdGhlciBwbGF0
-Zm9ybXMuIHNvIHJlbW92ZSBQUENpc21zLg0KPiA+PiA+PiA+DQo+ID4+ID4+ID4gU2lnbmVkLW9m
-Zi1ieTogWmhhbyBRaWFuZyA8cWlhbmcuemhhb0BueHAuY29tPg0KPiA+PiA+PiA+IC0tLQ0KPiA+
-PiA+PiA+IENoYW5nZXMgZm9yIHYyOg0KPiA+PiA+PiA+ICAgICAgICAgLSBuYQ0KPiA+PiA+PiA+
-IENoYW5nZXMgZm9yIHYzOg0KPiA+PiA+PiA+ICAgICAgICAgLSBhZGQgTk9fSVJRDQo+ID4+ID4+
-ID4gQ2hhbmdlcyBmb3IgdjQ6DQo+ID4+ID4+ID4gICAgICAgICAtIG1vZGlmeSBzcGluX2V2ZW50
-X3RpbWVvdXQgdG8gb3BlbmNvZGVkIHRpbWVvdXQgbG9vcA0KPiA+PiA+PiA+ICAgICAgICAgLSBy
-ZW1vdmUgTk9fSVJRDQo+ID4+ID4+ID4gICAgICAgICAtIG1vZGlmeSB2aXJxX3RvX2h3IHRvIG9w
-ZW5jb2VkIGNvZGUgQ2hhbmdlcyBmb3IgdjU6DQo+ID4+ID4+ID4gICAgICAgICAtIG1vZGlmeSBj
-b21taXQgbXNnDQo+ID4+ID4+ID4gICAgICAgICAtIG1vZGlmeSBkZXBlbmRzIG9mIFFVSUNDX0VO
-R0lORQ0KPiA+PiA+PiA+ICAgICAgICAgLSBhZGQga2VybmVsZG9jIGhlYWRlciBmb3IgcWVfaXNz
-dWVfY21kDQo+ID4+ID4+ID4NCj4gPj4gPj4gPiAgZHJpdmVycy9pcnFjaGlwL3FlX2ljLmMgICAg
-ICAgfCAyOCArKysrKysrKystLS0tLS0NCj4gPj4gPj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL0tj
-b25maWcgICAgfCAgMiArLQ0KPiA+PiA+PiA+ICBkcml2ZXJzL3NvYy9mc2wvcWUvcWUuYyAgICAg
-ICB8IDgwICsrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tDQo+IC0tLS0NCj4gPj4gLS0t
-LQ0KPiA+PiA+PiAtLS0NCj4gPj4gPj4gPiAgZHJpdmVycy9zb2MvZnNsL3FlL3FlX2lvLmMgICAg
-fCA0MiArKysrKysrKysrLS0tLS0tLS0tLS0tLQ0KPiA+PiA+PiA+ICBkcml2ZXJzL3NvYy9mc2wv
-cWUvcWVfdGRtLmMgICB8ICA4ICsrLS0tDQo+ID4+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91
-Y2MuYyAgICAgIHwgMTAgKysrLS0tDQo+ID4+ID4+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS91Y2Nf
-ZmFzdC5jIHwgNjggKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLQ0KPiAtLQ0KPiA+
-PiA+PiA+ICBpbmNsdWRlL3NvYy9mc2wvcWUvcWUuaCAgICAgICB8ICAxIC0NCj4gPj4gPj4gPiAg
-aW5jbHVkZS9zb2MvZnNsL3FlL3FlX2ljLmggICAgfCAxMiArKystLS0tDQo+ID4+ID4+ID4gIDkg
-ZmlsZXMgY2hhbmdlZCwgMTMzIGluc2VydGlvbnMoKyksIDExOCBkZWxldGlvbnMoLSkNCj4gPj4g
-Pj4gPg0KPiA+PiA+Pg0KPiA+PiA+PiBbc25pcF0NCj4gPj4gPj4NCj4gPj4gPj4gPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9zb2MvZnNsL3FlL0tjb25maWcNCj4gPj4gPj4gPiBiL2RyaXZlcnMvc29j
-L2ZzbC9xZS9LY29uZmlnIGluZGV4IDczYTJlMDguLmIyNmI2NDMgMTAwNjQ0DQo+ID4+ID4+ID4g
-LS0tIGEvZHJpdmVycy9zb2MvZnNsL3FlL0tjb25maWcNCj4gPj4gPj4gPiArKysgYi9kcml2ZXJz
-L3NvYy9mc2wvcWUvS2NvbmZpZw0KPiA+PiA+PiA+IEBAIC00LDcgKzQsNyBAQA0KPiA+PiA+PiA+
-DQo+ID4+ID4+ID4gIGNvbmZpZyBRVUlDQ19FTkdJTkUNCj4gPj4gPj4gPiAgICAgICAgIGJvb2wg
-IkZyZWVzY2FsZSBRVUlDQyBFbmdpbmUgKFFFKSBTdXBwb3J0Ig0KPiA+PiA+PiA+IC0gICAgICAg
-ZGVwZW5kcyBvbiBGU0xfU09DICYmIFBQQzMyDQo+ID4+ID4+ID4gKyAgICAgICBkZXBlbmRzIG9u
-IE9GICYmIEhBU19JT01FTQ0KPiA+PiA+PiA+ICAgICAgICAgc2VsZWN0IEdFTkVSSUNfQUxMT0NB
-VE9SDQo+ID4+ID4+ID4gICAgICAgICBzZWxlY3QgQ1JDMzINCj4gPj4gPj4gPiAgICAgICAgIGhl
-bHANCj4gPj4gPj4NCj4gPj4gPj4gWW91IG1ha2UgaXQgcG9zc2libGUgdG8gYnVpbGQgUUUgZHJp
-dmVycyBvbiBBUk0sIGJ1dCB0aGUgVUNDX0dFVEgNCj4gPj4gPj4gZmFpbHMgdG8gYnVpbGQgb24g
-YXJtNjQuICBQbGVhc2UgbWFrZSBzdXJlIGFsbCB0aGVzZSBkcml2ZXJzIGNhbg0KPiA+PiA+PiBi
-dWlsZCBvbiBvdGhlciBhcmNoaXRlY3R1cmVzLiAgT3IgeW91IGNhbiBzaW1wbHkgbWFrZSB0aGVt
-IG9ubHkNCj4gPj4gPj4gYnVpbGQgZm9yIFBvd2VyIGFyY2hpdGVjdHVyZSBhcyBtb3N0IG9mIHRo
-ZW0gYXJlIG5vdCBhdmFpbGFibGUgb24gQVJNLg0KPiA+PiA+Pg0KPiA+PiA+DQo+ID4+ID4gTW9z
-dCBvZiB0aGVtIGFyZSBub3QgYXZhaWxhYmxlIG9uIEFSTSBhbmQgQVJNNjQuDQo+ID4+ID4gTm93
-LCBvbmx5IHFlLWhkbGMgaXMgYXZhaWxhYmxlIG9uIEFSTTY0Lg0KPiA+Pg0KPiA+PiBUaGVuIHlv
-dSBzaG91bGQgdXBkYXRlIHRoZSBLY29uZmlnIGZvciB0aGVzZSBkcml2ZXJzIHRvbywgaWYgdGhl
-eSBhcmUNCj4gPj4gb25seSBkZXBlbmRpbmcgb24gQ09ORklHX1FVSUNDX0VOR0lORS4NCj4gPg0K
-PiA+IFlvdSBtZWFuIGFkZGluZyAiZGVwZW5kcyBvbiBGU0xfU09DICYmIFBQQzMyICIgdG8gdGhl
-IGRyaXZlcnMgdGhhdCBhcmUNCj4gbm90IGF2YWlsYWJsZSBmb3IgQVJNPw0KPiANCj4gWWVzLiAg
-UHJldmlvdXNseSB0aGVzZSBkcml2ZXJzIGdldCB0aGUgYXJjaGl0ZWN0dXJlIGxpbWl0YXRpb24g
-ZnJvbQ0KPiBDT05GSUdfUVVJQ0NfRU5HSU5FLCBidXQgbm93IHRoZXkgbmVlZCB0aGVtIGJ5IHRo
-ZWlyIG93bi4NCj4gDQoNCg0KT2ssIEkgd2lsbCBtb2RpZnkgaXQgaW4gdGhlIG5leHQgdmVydGlv
-bi4NCg0KQlINCi1aaGFvIFFpYW5nDQo=
+modify get_qe_base function with of_address_to_resource
+instead of of_get_property and of_translate_address.
+
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+---
+Changes for v2:
+	- na
+Changes for v3:
+	- na
+Changes for v4:
+	- na
+Changes for v5:
+	- na
+Changes for v6:
+	- na
+
+ drivers/soc/fsl/qe/qe.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 7026507..2707a82 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -69,8 +69,8 @@ static phys_addr_t qebase = -1;
+ phys_addr_t get_qe_base(void)
+ {
+ 	struct device_node *qe;
+-	int size;
+-	const u32 *prop;
++	int ret;
++	struct resource res;
+ 
+ 	if (qebase != -1)
+ 		return qebase;
+@@ -82,9 +82,9 @@ phys_addr_t get_qe_base(void)
+ 			return qebase;
+ 	}
+ 
+-	prop = of_get_property(qe, "reg", &size);
+-	if (prop && size >= sizeof(*prop))
+-		qebase = of_translate_address(qe, prop);
++	ret = of_address_to_resource(qe, 0, &res);
++	if (!ret)
++		qebase = res.start;
+ 	of_node_put(qe);
+ 
+ 	return qebase;
+-- 
+2.1.0.27.g96db324
