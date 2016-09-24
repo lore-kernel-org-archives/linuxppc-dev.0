@@ -1,26 +1,45 @@
-Return-Path: <marcelo.cerri@canonical.com>
-Received: from mail-qk0-x22b.google.com (mail-qk0-x22b.google.com
- [IPv6:2607:f8b0:400d:c09::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <marc.herbert@intel.com>
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgk6K21qQzDsl4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 05:32:55 +1000 (AEST)
-Received: by mail-qk0-x22b.google.com with SMTP id z190so115456926qkc.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2016 12:32:55 -0700 (PDT)
-From: Marcelo Cerri <marcelo.cerri@canonical.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- George Wilson <gcwilson@us.ibm.com>,
- Claudio Carvalho <cclaudio@br.ibm.com>,
- Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>, joy.latten@canonical.com,
- Marcelo Cerri <marcelo.cerri@canonical.com>
-Subject: [PATCH] crypto: sha1-powerpc: little-endian support
-Date: Fri, 23 Sep 2016 16:31:56 -0300
-Message-Id: <1474659116-4689-1-git-send-email-marcelo.cerri@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgtC251smzDsqQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 11:37:32 +1000 (AEST)
+Subject: Re: [RFC] fs: add userspace critical mounts event support
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+References: <1466117661-22075-3-git-send-email-mcgrof@kernel.org>
+ <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
+ <20160824203901.GT3296@wotan.suse.de>
+ <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
+ <20160825194133.GC3296@wotan.suse.de> <20160902235916.GO3296@wotan.suse.de>
+ <20160903002014.GP3296@wotan.suse.de>
+ <CA+55aFy4_QLYiQxtKpq0FJD7eSBRZ8nXS=Ruuz1TYodHdE_dCA@mail.gmail.com>
+ <CAKdAkRSQmz3FoP8Z2ONm7-_A9RHF2Ox6snaCpsyS6HA7=+RerQ@mail.gmail.com>
+ <CA+55aFz4q5peXAeY9h8o3he7R=wXrBSYkOjMM9TehOw=pPoS+Q@mail.gmail.com>
+ <20160903174939.GB32345@dtor-ws>
+ <CA+55aFwLrXRUO9n75Sthu+g73BEjskAgUkguyLwU=JA_PNzdOQ@mail.gmail.com>
+ <CAKdAkRTv5Fv54wetBqkS+EyEuP_k5exJat+QXBLtTkFLO_-maQ@mail.gmail.com>
+Cc: "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ cocci@systeme.lip6.fr, Jacek Anaszewski <j.anaszewski@samsung.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ Julia Lawall <Julia.Lawall@lip6.fr>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>, Andy Lutomirski
+ <luto@amacapital.net>, Richard Purdie <rpurdie@rpsys.net>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ "Luis R. Rodriguez" <mcgrof@kernel.org>, Michal Marek <mmarek@suse.com>,
+ Hauke Mehrtens <hauke@hauke-m.de>, Mark Brown <broonie@kernel.org>,
+ Jiri Slaby <jslaby@suse.com>, Ming Lei <ming.lei@canonical.com>,
+ Daniel Vetter <daniel.v>
+From: "Herbert, Marc" <marc.herbert@intel.com>
+Message-ID: <2deae6da-dd43-7bff-e1fd-ffd26946b928@intel.com>
+Date: Fri, 23 Sep 2016 18:37:28 -0700
+MIME-Version: 1.0
+In-Reply-To: <CAKdAkRTv5Fv54wetBqkS+EyEuP_k5exJat+QXBLtTkFLO_-maQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +49,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The driver does not handle endianness properly when loading the input
-data.
+On 03/09/2016 11:10, Dmitry Torokhov wrote:
+> I was thinking if we kernel could post
+> "conditions" (maybe simple stings) that it waits for, and userspace
+> could unlock these "conditions". One of them might be "firmware
+> available".
 
-Signed-off-by: Marcelo Cerri <marcelo.cerri@canonical.com>
----
- arch/powerpc/crypto/sha1-powerpc-asm.S | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+On idea offered by Josh Triplett that seems to overlap with this one
+is to have something similar to the (deprecated) userhelper with
+*per-blob* requests and notifications except for one major difference:
+userspace would not anymore be in charge of *providing* the blob but
+would instead only *signal* when a given blob becomes available and is
+either found or found missing. Then the kernel loads the blob _by
+itself_; unlike the userhelper. No new “critical filesystem” concept
+and a *per-blob basis*, allowing any variation of blob locations
+across any number of initramfs and filesystems.
 
-diff --git a/arch/powerpc/crypto/sha1-powerpc-asm.S b/arch/powerpc/crypto/sha1-powerpc-asm.S
-index 125e165..82ddc9b 100644
---- a/arch/powerpc/crypto/sha1-powerpc-asm.S
-+++ b/arch/powerpc/crypto/sha1-powerpc-asm.S
-@@ -7,6 +7,15 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- 
-+#ifdef __BIG_ENDIAN__
-+#define LWZ(rt, d, ra)	\
-+	lwz	rt,d(ra)
-+#else
-+#define LWZ(rt, d, ra)	\
-+	li	rt,d;	\
-+	lwbrx	rt,rt,ra
-+#endif
-+
- /*
-  * We roll the registers for T, A, B, C, D, E around on each
-  * iteration; T on iteration t is A on iteration t+1, and so on.
-@@ -23,7 +32,7 @@
- #define W(t)	(((t)%16)+16)
- 
- #define LOADW(t)				\
--	lwz	W(t),(t)*4(r4)
-+	LWZ(W(t),(t)*4,r4)
- 
- #define STEPD0_LOAD(t)				\
- 	andc	r0,RD(t),RB(t);		\
-@@ -33,7 +42,7 @@
- 	add	r0,RE(t),r15;			\
- 	add	RT(t),RT(t),r6;		\
- 	add	r14,r0,W(t);			\
--	lwz	W((t)+4),((t)+4)*4(r4);	\
-+	LWZ(W((t)+4),((t)+4)*4,r4);	\
- 	rotlwi	RB(t),RB(t),30;			\
- 	add	RT(t),RT(t),r14
- 
--- 
-2.7.4
+Could this one fly?
