@@ -1,23 +1,21 @@
-Return-Path: <daniel@iogearbox.net>
-Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jstancek@redhat.com>
+Received: from mx4-phx2.redhat.com (mx4-phx2.redhat.com [209.132.183.25])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sgp7F6SYlzDsqm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 08:34:01 +1000 (AEST)
-Message-ID: <57E5ADD2.7090308@iogearbox.net>
-Date: Sat, 24 Sep 2016 00:33:54 +0200
-From: Daniel Borkmann <daniel@iogearbox.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sgrXZ72SvzDsmb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 10:22:38 +1000 (AEST)
+Date: Fri, 23 Sep 2016 20:22:27 -0400 (EDT)
+From: Jan Stancek <jstancek@redhat.com>
+To: rui.y.wang@intel.com, herbert@gondor.apana.org.au,
+ mhcerri@linux.vnet.ibm.com, leosilva@linux.vnet.ibm.com,
+ pfsmorigo@linux.vnet.ibm.com
+Cc: jstancek@redhat.com, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Message-ID: <1655600242.1561022.1474676547316.JavaMail.zimbra@redhat.com>
+In-Reply-To: <450861381.1559123.1474673197124.JavaMail.zimbra@redhat.com>
+Subject: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
 MIME-Version: 1.0
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-CC: Alexei Starovoitov <ast@fb.com>, "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH 2/3] bpf powerpc: implement support for tail calls
-References: <40b65ab2bb3a48837ab047a70887de3ccd70c56b.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
- <c7c16b999694b2851705d79da939988e521bda3a.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <c7c16b999694b2851705d79da939988e521bda3a.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +25,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/23/2016 10:35 PM, Naveen N. Rao wrote:
-> Tail calls allow JIT'ed eBPF programs to call into other JIT'ed eBPF
-> programs. This can be achieved either by:
-> (1) retaining the stack setup by the first eBPF program and having all
-> subsequent eBPF programs re-using it, or,
-> (2) by unwinding/tearing down the stack and having each eBPF program
-> deal with its own stack as it sees fit.
->
-> To ensure that this does not create loops, there is a limit to how many
-> tail calls can be done (currently 32). This requires the JIT'ed code to
-> maintain a count of the number of tail calls done so far.
->
-> Approach (1) is simple, but requires every eBPF program to have (almost)
-> the same prologue/epilogue, regardless of whether they need it. This is
-> inefficient for small eBPF programs which may not sometimes need a
-> prologue at all. As such, to minimize impact of tail call
-> implementation, we use approach (2) here which needs each eBPF program
-> in the chain to use its own prologue/epilogue. This is not ideal when
-> many tail calls are involved and when all the eBPF programs in the chain
-> have similar prologue/epilogue. However, the impact is restricted to
-> programs that do tail calls. Individual eBPF programs are not affected.
->
-> We maintain the tail call count in a fixed location on the stack and
-> updated tail call count values are passed in through this. The very
-> first eBPF program in a chain sets this up to 0 (the first 2
-> instructions). Subsequent tail calls skip the first two eBPF JIT
-> instructions to maintain the count. For programs that don't do tail
-> calls themselves, the first two instructions are NOPs.
->
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Hi,
 
-Thanks for adding support, Naveen, that's really great! I think 2) seems
-fine as well in this context as prologue size can vary quite a bit here,
-and depending on program types likelihood of tail call usage as well (but
-I wouldn't expect deep nesting). Thanks a lot!
+I'm chasing a memory corruption with 4.8-rc7 as I'm observing random Oopses
+on ppc BE/LE systems (lpars, KVM guests). About 30% of issues is that
+module list gets corrupted, and "cat /proc/modules" or "lsmod" triggers
+an Oops, for example:
+
+[   88.486041] Unable to handle kernel paging request for data at address 0x00000020
+...
+[   88.487658] NIP [c00000000020f820] m_show+0xa0/0x240
+[   88.487689] LR [c00000000020f834] m_show+0xb4/0x240
+[   88.487719] Call Trace:
+[   88.487736] [c0000004b605bbb0] [c00000000020f834] m_show+0xb4/0x240 (unreliable)
+[   88.487796] [c0000004b605bc50] [c00000000045e73c] seq_read+0x36c/0x520
+[   88.487843] [c0000004b605bcf0] [c0000000004e1014] proc_reg_read+0x84/0x120
+[   88.487889] [c0000004b605bd30] [c00000000040df88] vfs_read+0xf8/0x380
+[   88.487934] [c0000004b605bde0] [c00000000040fd40] SyS_read+0x60/0x110
+[   88.487981] [c0000004b605be30] [c000000000009590] system_call+0x38/0xec
+
+0x20 offset is module_use->source, module_use is NULL because module.source_list
+gets corrupted.
+
+The source of corruption appears to originate from a 'ahash' test for p8_ghash:
+
+cryptomgr_test
+ alg_test
+  alg_test_hash
+   test_hash
+    __test_hash
+     ahash_partial_update
+      shash_async_export
+       memcpy
+
+With some extra traces [1], I'm seeing that ahash_partial_update() allocates 56 bytes
+for 'state', and then crypto_ahash_export() writes 76 bytes into it:
+
+[    5.970887] __test_hash alg name p8_ghash, result: c000000004333ac0, key: c0000004b860a500, req: c0000004b860a380
+[    5.970963] state: c000000004333f00, statesize: 56
+[    5.970995] shash_default_export memcpy c000000004333f00 c0000004b860a3e0, len: 76
+
+This seems to directly correspond with:
+  p8_ghash_alg.descsize = sizeof(struct p8_ghash_desc_ctx) == 56
+  shash_tfm->descsize = sizeof(struct p8_ghash_desc_ctx) + crypto_shash_descsize(fallback) == 56 + 20
+where 20 is presumably coming from "ghash_alg.descsize".
+
+My gut feeling was that these 2 should match, but I'd love to hear
+what crypto people think.
+
+Thank you,
+Jan
+
+[1]
+diff --git a/crypto/shash.c b/crypto/shash.c
+index a051541..49fe182 100644
+--- a/crypto/shash.c
++++ b/crypto/shash.c
+@@ -188,6 +188,8 @@ EXPORT_SYMBOL_GPL(crypto_shash_digest);
+
+ static int shash_default_export(struct shash_desc *desc, void *out)
+ {
++       int len = crypto_shash_descsize(desc->tfm);
++       printk("shash_default_export memcpy %p %p, len: %d\n", out, shash_desc_ctx(desc), len);
+        memcpy(out, shash_desc_ctx(desc), crypto_shash_descsize(desc->tfm));
+        return 0;
+ }
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 5c9d5a5..2e54579 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -218,6 +218,8 @@ static int ahash_partial_update(struct ahash_request **preq,
+                pr_err("alt: hash: Failed to alloc state for %s\n", algo);
+                goto out_nostate;
+        }
++       printk("state: %p, statesize: %d\n", state, statesize);
++
+        ret = crypto_ahash_export(req, state);
+        if (ret) {
+                pr_err("alt: hash: Failed to export() for %s\n", algo);
+@@ -288,6 +290,7 @@ static int __test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
+                       "%s\n", algo);
+                goto out_noreq;
+        }
++       printk("__test_hash alg name %s, result: %p, key: %p, req: %p\n", algo, result, key, req);
+        ahash_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
+                                   tcrypt_complete, &tresult);
