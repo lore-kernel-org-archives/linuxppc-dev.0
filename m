@@ -1,17 +1,27 @@
-Return-Path: <vaishali.thakkar@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alexei.starovoitov@gmail.com>
+Received: from mail-pa0-f66.google.com (mail-pa0-f66.google.com
+ [209.85.220.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sh0wW7084zDrKg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 16:40:27 +1000 (AEST)
-From: Vaishali Thakkar <vaishali.thakkar@oracle.com>
-To: qiang.zhao@nxp.com
-Cc: davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Vaishali Thakkar <vaishali.thakkar@oracle.com>
-Subject: [PATCH] fsl/qe: Use resource_size
-Date: Sat, 24 Sep 2016 12:10:06 +0530
-Message-Id: <1474699206-11075-1-git-send-email-vaishali.thakkar@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sh1yF3j4JzDrLQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 17:27:01 +1000 (AEST)
+Received: by mail-pa0-f66.google.com with SMTP id i5so2865044pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2016 00:27:01 -0700 (PDT)
+Date: Sat, 24 Sep 2016 03:25:56 -0400
+From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Michael Ellerman <mpe@ellerman.id.au>, Alexei Starovoitov <ast@fb.com>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH 1/2] bpf samples: fix compiler errors with sockex2 and
+ sockex3
+Message-ID: <20160924072524.GA48029@ast-mbp>
+References: <7b29fba6073924dc4c9e7d639eefb0b15a98660d.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7b29fba6073924dc4c9e7d639eefb0b15a98660d.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,27 +31,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the function resource_size instead of explicit computation.
+On Sat, Sep 24, 2016 at 02:10:04AM +0530, Naveen N. Rao wrote:
+> These samples fail to compile as 'struct flow_keys' conflicts with
+> definition in net/flow_dissector.h. Fix the same by renaming the
+> structure used in the sample.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-Problem found using Coccinelle.
-
-Signed-off-by: Vaishali Thakkar <vaishali.thakkar@oracle.com>
----
- drivers/soc/fsl/qe/qe_tdm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/soc/fsl/qe/qe_tdm.c b/drivers/soc/fsl/qe/qe_tdm.c
-index 5e48b14..124e222 100644
---- a/drivers/soc/fsl/qe/qe_tdm.c
-+++ b/drivers/soc/fsl/qe/qe_tdm.c
-@@ -167,7 +167,7 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 	}
- 
- 	if (siram_init_flag == 0) {
--		memset_io(utdm->siram, 0,  res->end - res->start + 1);
-+		memset_io(utdm->siram, 0,  resource_size(res));
- 		siram_init_flag = 1;
- 	}
- 
--- 
-2.1.4
+Thanks for the fix.
+Acked-by: Alexei Starovoitov <ast@kernel.org>
