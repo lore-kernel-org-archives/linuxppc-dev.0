@@ -2,17 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3shWzz2QzMzDrPM
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 13:00:15 +1000 (AEST)
-In-Reply-To: <20160919105855.435AF1A2455@localhost.localdomain>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3shX002qgxzDrPS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 13:00:16 +1000 (AEST)
+In-Reply-To: <1473162804-6802-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v2] powerpc: fix usage of _PAGE_RO in hugepage
-Message-Id: <3shWzz09hFz9s5g@ozlabs.org>
-Date: Sun, 25 Sep 2016 13:00:14 +1000 (AEST)
+Subject: Re: powerpc: Remove all usages of NO_IRQ
+Message-Id: <3shX000hWqz9t0P@ozlabs.org>
+Date: Sun, 25 Sep 2016 13:00:15 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-19-09 at 10:58:54 UTC, Christophe Leroy wrote:
-> On some CPUs like the 8xx, _PAGE_RW hence _PAGE_WRITE is defined
-> as 0 and _PAGE_RO has to be set when a page is not writable
+On Tue, 2016-06-09 at 11:53:24 UTC, Michael Ellerman wrote:
+> NO_IRQ has been == 0 on powerpc for just over ten years (since commit
+> 0ebfff1491ef ("[POWERPC] Add new interrupt mapping core and change
+> platforms to use it")). It's also 0 on most other arches.
 > 
-> _PAGE_RO is defined by default in pte-common.h, however BOOK3S/64
-> doesn't include that file so _PAGE_RO has to be defined explicitly
-> in book3s/64/pgtable.h
+> Although it's fairly harmless, every now and then it causes confusion
+> when a driver is built on powerpc and another arch which doesn't define
+> NO_IRQ. There's at least 6 definitions of NO_IRQ in drivers/, at least
+> some of which are to work around that problem.
 > 
-> fixes: a7b9f671f2d14 ("powerpc32: adds handling of _PAGE_RO")
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> So we'd like to remove it. This is fairly trivial in the arch code, we
+> just convert:
+> 
+>     if (irq == NO_IRQ)	to	if (!irq)
+>     if (irq != NO_IRQ)	to	if (irq)
+>     irq = NO_IRQ;	to	irq = 0;
+>     return NO_IRQ;	to	return 0;
+> 
+> And a few other odd cases as well.
+> 
+> At least for now we need to continue to #define NO_IRQ, because there is
+> driver code that builds on powerpc and may build on arm (and possibly
+> other arches), where NO_IRQ is *not* == 0. Hopefully they can be fixed
+> in the medium term and we can drop the definition entirely.
+> 
+> Note we also change some occurrences in PPC sound drivers, drivers/ps3,
+> and drivers/macintosh.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/6b8cb66a6a7cc182b47da6a0a1
+https://git.kernel.org/powerpc/c/ef24ba7091517d2bbf9ba2cb42
 
 cheers
