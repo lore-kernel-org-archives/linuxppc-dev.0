@@ -2,14 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3shWzq6cWszDrLj
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 13:00:07 +1000 (AEST)
-In-Reply-To: <20160912041724.16646-1-ruscur@russell.cc>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3shWzr5388zDrLj
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 13:00:08 +1000 (AEST)
+In-Reply-To: <1471596759-3396-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] powerpc/eeh: Null check uses of eeh_pe_bus_get
-Message-Id: <3shWzq5kmPz9sf6@ozlabs.org>
-Date: Sun, 25 Sep 2016 13:00:07 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [V2,
+ 1/5] powerpc/64/kexec: NULL check "clear_all" in kexec_sequence
+Message-Id: <3shWzr4Ndnz9srZ@ozlabs.org>
+Date: Sun, 25 Sep 2016 13:00:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,20 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-12-09 at 04:17:22 UTC, Russell Currey wrote:
-> eeh_pe_bus_get() can return NULL if a PCI bus isn't found for a given PE.
-> Some callers don't check this, and can cause a null pointer dereference
-> under certain circumstances.
+On Fri, 2016-19-08 at 08:52:35 UTC, "Aneesh Kumar K.V" wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> Fix this by checking NULL everywhere eeh_pe_bus_get() is called.
+> With Radix, it can be NULL even on !BOOKE these days so replace
+> the ifdef with a NULL check which is cleaner anyway.
 > 
-> Fixes: 8a6b1bc70dbb ("powerpc/eeh: EEH core to handle special event")
-> Cc: stable@vger.kernel.org # v3.11+
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/04fec21c06e35b169a83e75a84
+https://git.kernel.org/powerpc/c/fc48bad53142c991a5280940fd
 
 cheers
