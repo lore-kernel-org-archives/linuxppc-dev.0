@@ -1,16 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3shXkH12XZzDrQ9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 13:33:27 +1000 (AEST)
-In-Reply-To: <20160914063717.2673-1-ruscur@russell.cc>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: aik@ozlabs.ru, Russell Currey <ruscur@russell.cc>
-Subject: Re: powernv/pci: Fix m64 checks for SR-IOV and window alignment
-Message-Id: <3shXkH00dPz9srZ@ozlabs.org>
-Date: Sun, 25 Sep 2016 13:33:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3shYdZ0vq8zDrLW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 14:14:25 +1000 (AEST)
+Date: Sat, 24 Sep 2016 23:14:11 -0500
+From: Scott Wood <oss@buserror.net>
+To: Zhao Qiang <qiang.zhao@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, pku.leo@gmail.com, xiaobo.xie@nxp.com,
+ linux-kernel@vger.kernel.org
+Message-ID: <20160925041411.GA16092@home.buserror.net>
+References: <1474597232-33397-2-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1474597232-33397-2-git-send-email-qiang.zhao@nxp.com>
+Subject: Re: [v6,2/2] QE: remove PPCisms for QE
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,27 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-14-09 at 06:37:17 UTC, Russell Currey wrote:
-> Commit 5958d19a143e checks for prefetchable m64 BARs by comparing the
-> addresses instead of using resource flags.  This broke SR-IOV as the m64
-> check in pnv_pci_ioda_fixup_iov_resources() fails.
+On Fri, Sep 23, 2016 at 10:20:32AM +0800, Zhao Qiang wrote:
+> QE was supported on PowerPC, and dependent on PPC,
+> Now it is supported on other platforms. so remove PPCisms.
 > 
-> The condition in pnv_pci_window_alignment() also changed to checking
-> only IORESOURCE_MEM_64 instead of both IORESOURCE_MEM_64 and
-> IORESOURCE_PREFETCH.
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> ---
+> Changes for v2:
+> 	- na
+> Changes for v3:
+> 	- add NO_IRQ
+> Changes for v4:
+> 	- modify spin_event_timeout to opencoded timeout loop
+> 	- remove NO_IRQ
+> 	- modify virq_to_hw to opencoed code
+> Changes for v5:
+> 	- modify commit msg
+> 	- modify depends of QUICC_ENGINE
+> 	- add kerneldoc header for qe_issue_cmd
+> Changes for v6:
+> 	- add dependency on FSL_SOC and PPC32 for drivers
+> 	  depending on QUICC_ENGING but not available on ARM
 > 
-> Revert these cases to the previous behaviour, adding a new helper function
-> to do so.  This is named pnv_pci_is_m64_flags() to make it clear this
-> function is only looking at resource flags and should not be relied on for
-> non-SRIOV resources.
-> 
-> Fixes: 5958d19a143e ("Fix incorrect PE reservation attempt on some 64-bit BARs")
-> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> Tested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>  drivers/irqchip/qe_ic.c                | 28 +++++++-----
+>  drivers/net/ethernet/freescale/Kconfig | 10 ++---
+>  drivers/soc/fsl/qe/Kconfig             |  2 +-
+>  drivers/soc/fsl/qe/qe.c                | 80 ++++++++++++++++++++--------------
+>  drivers/soc/fsl/qe/qe_io.c             | 42 ++++++++----------
+>  drivers/soc/fsl/qe/qe_tdm.c            |  8 ++--
+>  drivers/soc/fsl/qe/ucc.c               | 10 ++---
+>  drivers/soc/fsl/qe/ucc_fast.c          | 68 ++++++++++++++---------------
+>  drivers/tty/serial/Kconfig             |  2 +-
+>  drivers/usb/gadget/udc/Kconfig         |  2 +-
+>  drivers/usb/host/Kconfig               |  2 +-
+>  include/soc/fsl/qe/qe.h                |  1 -
+>  include/soc/fsl/qe/qe_ic.h             | 12 ++---
+>  13 files changed, 141 insertions(+), 126 deletions(-)
 
-Applied to powerpc fixes, thanks.
+I assume this means you'll be updating
+http://patchwork.ozlabs.org/patch/654473/
+to be based on top of this...
 
-https://git.kernel.org/powerpc/c/b79331a5eb9f96e4dfd2169745
-
-cheers
+-Scott
