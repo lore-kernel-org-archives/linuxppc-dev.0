@@ -2,20 +2,22 @@ Return-Path: <oss@buserror.net>
 Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3shYl84fDHzDrKv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 14:19:16 +1000 (AEST)
-Date: Sat, 24 Sep 2016 23:19:06 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3shc4b31JPzDrHl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 16:04:31 +1000 (AEST)
+Date: Sun, 25 Sep 2016 01:04:01 -0500
 From: Scott Wood <oss@buserror.net>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, pku.leo@gmail.com, xiaobo.xie@nxp.com,
- linux-kernel@vger.kernel.org
-Message-ID: <20160925041906.GA16719@home.buserror.net>
-References: <1474597232-33397-2-git-send-email-qiang.zhao@nxp.com>
- <20160925041411.GA16092@home.buserror.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Zhao Qiang <qiang.zhao@nxp.com>, "David S. Miller" <davem@davemloft.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+Message-ID: <20160925060401.GA30936@home.buserror.net>
+References: <20160816062620.41D9C1A2456@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160925041411.GA16092@home.buserror.net>
-Subject: Re: [v6,2/2] QE: remove PPCisms for QE
+In-Reply-To: <20160816062620.41D9C1A2456@localhost.localdomain>
+Subject: Re: [v2] soc: fsl/qe: fix Oops on CPM1 (and likely CPM2)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 24, 2016 at 11:14:11PM -0500, Scott Wood wrote:
-> On Fri, Sep 23, 2016 at 10:20:32AM +0800, Zhao Qiang wrote:
-> > QE was supported on PowerPC, and dependent on PPC,
-> > Now it is supported on other platforms. so remove PPCisms.
-> > 
-> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > ---
-> > Changes for v2:
-> > 	- na
-> > Changes for v3:
-> > 	- add NO_IRQ
-> > Changes for v4:
-> > 	- modify spin_event_timeout to opencoded timeout loop
-> > 	- remove NO_IRQ
-> > 	- modify virq_to_hw to opencoed code
-> > Changes for v5:
-> > 	- modify commit msg
-> > 	- modify depends of QUICC_ENGINE
-> > 	- add kerneldoc header for qe_issue_cmd
-> > Changes for v6:
-> > 	- add dependency on FSL_SOC and PPC32 for drivers
-> > 	  depending on QUICC_ENGING but not available on ARM
-> > 
-> >  drivers/irqchip/qe_ic.c                | 28 +++++++-----
-> >  drivers/net/ethernet/freescale/Kconfig | 10 ++---
-> >  drivers/soc/fsl/qe/Kconfig             |  2 +-
-> >  drivers/soc/fsl/qe/qe.c                | 80 ++++++++++++++++++++--------------
-> >  drivers/soc/fsl/qe/qe_io.c             | 42 ++++++++----------
-> >  drivers/soc/fsl/qe/qe_tdm.c            |  8 ++--
-> >  drivers/soc/fsl/qe/ucc.c               | 10 ++---
-> >  drivers/soc/fsl/qe/ucc_fast.c          | 68 ++++++++++++++---------------
-> >  drivers/tty/serial/Kconfig             |  2 +-
-> >  drivers/usb/gadget/udc/Kconfig         |  2 +-
-> >  drivers/usb/host/Kconfig               |  2 +-
-> >  include/soc/fsl/qe/qe.h                |  1 -
-> >  include/soc/fsl/qe/qe_ic.h             | 12 ++---
-> >  13 files changed, 141 insertions(+), 126 deletions(-)
-> 
-> I assume this means you'll be updating
-> http://patchwork.ozlabs.org/patch/654473/
-> to be based on top of this...
+On Tue, Aug 16, 2016 at 08:26:20AM +0200, Christophe Leroy wrote:
+> fixes: 0e6e01ff694ee ("CPM/QE: use genalloc to manage CPM/QE muram")
+> Cc: stable@vger.linux.org
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+[snip]
+>  	muram_pbase = of_translate_address(np, zero);
+>  	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
+> -		pr_err("Cannot translate zero through CPM muram node");
+> +		pr_err("Cannot translate zero through CPM/QE muram node");
+>  		ret = -ENODEV;
+>  		goto out_pool;
+>  	}
+> @@ -83,14 +88,14 @@ int cpm_muram_init(void)
+>  		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
+>  				   GENPOOL_OFFSET, resource_size(&r), -1);
+>  		if (ret) {
+> -			pr_err("QE: couldn't add muram to pool!\n");
+> +			pr_err("CPM/QE: couldn't add muram to pool!\n");
+>  			goto out_pool;
+>  		}
+>  	}
+>  
+>  	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
+>  	if (!muram_vbase) {
+> -		pr_err("Cannot map QE muram");
+> +		pr_err("Cannot map CPM/QE muram");
+>  		ret = -ENOMEM;
+>  		goto out_pool;
+>  	}
 
-Apparently that assumption was wrong, since I now see that you're
-patching drivers/irqchip/qe_ic.c rather than drivers/soc/fsl/qe/qe_ic.c. 
-Please keep the drivers/irqchip stuff separate and send to the
-appropriate maintainers.
+These string changes are not related to the bugfix.  Particularly since
+this is aimed at stable, I'm removing this part of the patch when
+applying.
 
 -Scott
