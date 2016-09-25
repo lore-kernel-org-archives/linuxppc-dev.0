@@ -1,21 +1,26 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00051.outbound.protection.outlook.com [40.107.0.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3shcR34DqXzDrLQ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 16:20:31 +1000 (AEST)
-Date: Sun, 25 Sep 2016 01:20:17 -0500
-From: Scott Wood <oss@buserror.net>
-To: David Engraf <david.engraf@sysgo.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Message-ID: <20160925062017.GA10754@home.buserror.net>
-References: <1471877203-29327-1-git-send-email-david.engraf@sysgo.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3shcZN215HzDrLK
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Sep 2016 16:26:51 +1000 (AEST)
+From: Scott Wood <scott.wood@nxp.com>
+To: Andy Fleming <afleming@gmail.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "aperez@alexperez.com" <aperez@alexperez.com>
+Subject: Re: [PATCH 2/3] corenet: Support gpio power/reset for corenet
+Date: Sun, 25 Sep 2016 06:26:46 +0000
+Message-ID: <DB5PR0401MB1928C5EDE0A986E063BADDCF91CA0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <1473189119-29458-1-git-send-email-afleming@gmail.com>
+ <1473189119-29458-3-git-send-email-afleming@gmail.com>
+ <DB5PR0401MB192878019FFA33204D6A3EBD91F90@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <CAKWjMd4PLus4rDr+SXTPewYRy6E8HBKowyqhiv5rqK+JpayMog@mail.gmail.com>
+ <DB5PR0401MB192850140BF39D4BA322BD6991FF0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <1F518F22-C205-4106-BABF-2917C22E80FB@gmail.com>
+ <DB5PR0401MB1928DE9CD2B29C991EF30A3E91F30@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1471877203-29327-1-git-send-email-david.engraf@sysgo.com>
-Subject: Re: powerpc64: Enable CONFIG_E500 and CONFIG_PPC_E500MC for
- e5500/e6500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 22, 2016 at 04:46:43PM +0200, David Engraf wrote:
-> The PowerPC e5500/e6500 architecture is based on the e500mc core. Enable
-> CONFIG_E500 and CONFIG_PPC_E500MC when e5500/e6500 is used.
-> 
-> This will also fix using CONFIG_PPC_QEMU_E500 on PPC64.
-> 
-> Signed-off-by: David Engraf <david.engraf@sysgo.com>
-> ---
->  arch/powerpc/platforms/Kconfig.cputype | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index f32edec..0382da7 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -125,11 +125,13 @@ config POWER8_CPU
->  
->  config E5500_CPU
->  	bool "Freescale e5500"
-> -	depends on E500
-> +	select E500
-> +	select PPC_E500MC
->  
->  config E6500_CPU
->  	bool "Freescale e6500"
-> -	depends on E500
-> +	select E500
-> +	select PPC_E500MC
-
-These config symbols are for setting -mcpu.  Kernels built with
-CONFIG_GENERIC_CPU should also work on e5500/e6500.
-
-The problem is that CONFIG_PPC_QEMU_E500 doesn't select E500 (I didn't
-notice it before because usually CORENET_GENERIC is enabled as well).
-
-Note that your patch, by eliminating the dependency on E500, would make
-it possible to build a book3s kernel with E5500_CPU/E6500_CPU, which
-doesn't make any sense.
-
--Scott
+On 09/16/2016 04:05 PM, Scott Wood wrote:=0A=
+>>>>    I don't see any other platforms doing this.  How do the nodes get p=
+robed=0A=
+>>>>    for them?=0A=
+>>>>=0A=
+>>>>=0A=
+>>>>    The answer is I don't know, but this is a common issue with adding=
+=0A=
+>>>>    new devices to the device tree in embedded powerpc. The only other=
+=0A=
+>>>>    platforms which have gpio-poweroff nodes in their trees are in=0A=
+>>>>    arch/arm, and none of those platforms call the probing=0A=
+>>>>    function of_platform_bus_probe. I suspect they either probe every=
+=0A=
+>>>>    root node, or they somehow construct the match_id. As noted in the=
+=0A=
+>>>>    above-referenced commit, putting the nodes under the gpio bus does=
+=0A=
+>>>>    not cause them to get probed. This seemed like the best way under=
+=0A=
+>>>>    the current corenet code.=0A=
+>>>=0A=
+>>> Well, let's figure out what it is that PPC should be doing to have=0A=
+>>> things work the way it does on ARM.=0A=
+>>=0A=
+>> For all of the devices? Or just these two?=0A=
+> =0A=
+> All of them.  If ARM isn't maintaining these annoying lists why should=0A=
+> we have to? :-P=0A=
+=0A=
+The answer seems to be using of_platform_populate() rather than=0A=
+of_platform_bus_probe().=0A=
+=0A=
+-Scott=0A=
+=0A=
