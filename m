@@ -1,45 +1,36 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjT0T642JzDrW5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 01:48:57 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjT6R6jgPzDrFn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 01:54:07 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8QFmsh6132571
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 11:48:55 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25q5c7umv5-1
+ u8QFrxke066213
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 11:54:06 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25q59246vv-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 11:48:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 11:54:05 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 26 Sep 2016 11:48:50 -0400
+ Mon, 26 Sep 2016 09:54:03 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v3 5/5] mm: enable CONFIG_MOVABLE_NODE on powerpc
-In-Reply-To: <1474828616-16608-6-git-send-email-arbab@linux.vnet.ibm.com>
-References: <1474828616-16608-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1474828616-16608-6-git-send-email-arbab@linux.vnet.ibm.com>
-Date: Mon, 26 Sep 2016 21:18:35 +0530
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Subject: Re: [RFC PATCH] powerpc/mm: THP page cache support
+In-Reply-To: <20160926105054.GA16074@node.shutemov.name>
+References: <1474560160-7327-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160926105054.GA16074@node.shutemov.name>
+Date: Mon, 26 Sep 2016 21:23:53 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <8737kmach8.fsf@linux.vnet.ibm.com>
+Message-Id: <87wphy8xny.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,53 +40,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reza Arbab <arbab@linux.vnet.ibm.com> writes:
+"Kirill A. Shutemov" <kirill@shutemov.name> writes:
 
-> To create a movable node, we need to hotplug all of its memory into
-> ZONE_MOVABLE.
+> On Thu, Sep 22, 2016 at 09:32:40PM +0530, Aneesh Kumar K.V wrote:
+>> Update arch hook in the generic THP page cache code, that will
+>> deposit and withdarw preallocated page table. Archs like ppc64 use
+>> this preallocated table to store the hash pte slot information.
+>> 
+>> This is an RFC patch and I am sharing this early to get feedback on the
+>> approach taken. I have used stress-ng mmap-file operation and that
+>> resulted in some thp_file_mmap as show below.
+>> 
+>> [/mnt/stress]$ grep thp_file /proc/vmstat
+>> thp_file_alloc 25403
+>> thp_file_mapped 16967
+>> [/mnt/stress]$
+>> 
+>> I did observe wrong nr_ptes count once. I need to recreate the problem
+>> again.
 >
-> Note that to do this, auto_online_blocks should be off. Since the memory
-> will first be added to the default zone, we must explicitly use
-> online_movable to online.
->
-> Because such a node contains no normal memory, can_online_high_movable()
-> will only allow us to do the onlining if CONFIG_MOVABLE_NODE is set.
-> Enable the use of this config option on PPC64 platforms.
+> I don't see anything that could cause that.
 >
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+I still need to debug this.
 
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-> ---
->  Documentation/kernel-parameters.txt | 2 +-
->  mm/Kconfig                          | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> The patch looks good to me (apart from nr_ptes issue). Few minor nitpicks
+> below.
 >
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index a4f4d69..3d8460d 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2344,7 +2344,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  			that the amount of memory usable for all allocations
->  			is not too small.
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/book3s/64/pgtable.h |  3 ++
+>>  include/asm-generic/pgtable.h                |  8 +++-
+>>  mm/Kconfig                                   |  6 +--
+>>  mm/huge_memory.c                             | 19 +++++++++-
+>>  mm/khugepaged.c                              | 21 ++++++++++-
+>>  mm/memory.c                                  | 56 +++++++++++++++++++++++-----
+>>  6 files changed, 93 insertions(+), 20 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> index 263bf39ced40..1f45b06ce78e 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+>> @@ -1017,6 +1017,9 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+>>  	 */
+>>  	return true;
+>>  }
+>> +
+>> +#define arch_needs_pgtable_deposit() (true)
+>> +
+>>  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+>>  #endif /* __ASSEMBLY__ */
+>>  #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
+>> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+>> index d4458b6dbfb4..0d1e400e82a2 100644
+>> --- a/include/asm-generic/pgtable.h
+>> +++ b/include/asm-generic/pgtable.h
+>> @@ -660,11 +660,17 @@ static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
+>>  	/*
+>>  	 * With split pmd lock we also need to move preallocated
+>>  	 * PTE page table if new_pmd is on different PMD page table.
+>> +	 *
+>> +	 * We also don't deposit and withdraw tables for file pages.
+>>  	 */
+>> -	return new_pmd_ptl != old_pmd_ptl;
+>> +	return (new_pmd_ptl != old_pmd_ptl) && vma_is_anonymous(vma);
+>>  }
+>>  #endif
+>>  
+>> +#ifndef arch_needs_pgtable_deposit
+>> +#define arch_needs_pgtable_deposit() (false)
+>> +#endif
+>> +
+>>  /*
+>>   * This function is meant to be used by sites walking pagetables with
+>>   * the mmap_sem hold in read mode to protect against MADV_DONTNEED and
+>> diff --git a/mm/Kconfig b/mm/Kconfig
+>> index be0ee11fa0d9..0a279d399722 100644
+>> --- a/mm/Kconfig
+>> +++ b/mm/Kconfig
+>> @@ -447,13 +447,9 @@ choice
+>>  	  benefit.
+>>  endchoice
+>>  
+>> -#
+>> -# We don't deposit page tables on file THP mapping,
+>> -# but Power makes use of them to address MMU quirk.
+>> -#
+>>  config	TRANSPARENT_HUGE_PAGECACHE
+>>  	def_bool y
+>> -	depends on TRANSPARENT_HUGEPAGE && !PPC
+>> +	depends on TRANSPARENT_HUGEPAGE
+>>  
+>>  #
+>>  # UP and nommu archs use km based percpu allocator
+>> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+>> index a6abd76baa72..37176f455d16 100644
+>> --- a/mm/huge_memory.c
+>> +++ b/mm/huge_memory.c
+>> @@ -1320,6 +1320,14 @@ out_unlocked:
+>>  	return ret;
+>>  }
+>>  
+>> +void zap_deposited_table(struct mm_struct *mm, pmd_t *pmd)
 >
-> -	movable_node	[KNL,X86] Boot-time switch to enable the effects
-> +	movable_node	[KNL,X86,PPC] Boot-time switch to enable the effects
->  			of CONFIG_MOVABLE_NODE=y. See mm/Kconfig for details.
+> static?
+
+Ok I will fix that.
 >
->  	MTD_Partition=	[MTD]
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index be0ee11..4b19cd3 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -153,7 +153,7 @@ config MOVABLE_NODE
->  	bool "Enable to assign a node which has only movable memory"
->  	depends on HAVE_MEMBLOCK
->  	depends on NO_BOOTMEM
-> -	depends on X86_64
-> +	depends on X86_64 || PPC64
->  	depends on NUMA
->  	default n
->  	help
-> -- 
-> 1.8.3.1
+>> +{
+>> +	pgtable_t pgtable;
+>> +	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
+>> +	pte_free(mm, pgtable);
+>> +	atomic_long_dec(&mm->nr_ptes);
+>> +}
+>> +
+>>  int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>>  		 pmd_t *pmd, unsigned long addr)
+>>  {
+>> @@ -1359,6 +1367,8 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>>  			atomic_long_dec(&tlb->mm->nr_ptes);
+>>  			add_mm_counter(tlb->mm, MM_ANONPAGES, -HPAGE_PMD_NR);
+>>  		} else {
+>> +			if (arch_needs_pgtable_deposit())
+>
+> Just hide the arch_needs_pgtable_deposit() check in zap_deposited_table().
+
+
+ok.
+
+>
+>> +				zap_deposited_table(tlb->mm, pmd);
+>>  			add_mm_counter(tlb->mm, MM_FILEPAGES, -HPAGE_PMD_NR);
+>>  		}
+>>  		spin_unlock(ptl);
+
+-aneesh
