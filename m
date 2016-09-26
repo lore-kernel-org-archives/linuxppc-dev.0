@@ -1,22 +1,51 @@
-Return-Path: <david.engraf@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [176.9.12.79])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjHqc6xWMzDrPk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 18:55:40 +1000 (AEST)
-From: David Engraf <david.engraf@sysgo.com>
-Subject: Re: powerpc64: Enable CONFIG_E500 and CONFIG_PPC_E500MC for
- e5500/e6500
-To: Scott Wood <oss@buserror.net>
-References: <1471877203-29327-1-git-send-email-david.engraf@sysgo.com>
- <20160925062017.GA10754@home.buserror.net>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Message-ID: <87664de8-7aea-96a8-9906-cf2ce8d325a2@sysgo.com>
-Date: Mon, 26 Sep 2016 10:48:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjHrk1BQLzDrTn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 18:56:38 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8Q8rEuX077569
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 04:56:36 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25p6ajae1y-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 04:56:36 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 26 Sep 2016 18:56:33 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7E2F5357805E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 18:56:30 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8Q8uUEu65667110
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 18:56:30 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8Q8uT5t001410
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 18:56:30 +1000
+Date: Mon, 26 Sep 2016 14:26:22 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Cc: Daniel Borkmann <daniel@iogearbox.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Alexei Starovoitov <ast@fb.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 2/3] bpf powerpc: implement support for tail calls
+References: <40b65ab2bb3a48837ab047a70887de3ccd70c56b.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
+ <c7c16b999694b2851705d79da939988e521bda3a.1474661927.git.naveen.n.rao@linux.vnet.ibm.com>
+ <57E5ADD2.7090308@iogearbox.net>
+ <20160924073025.GB48071@ast-mbp.thefacebook.com>
 MIME-Version: 1.0
-In-Reply-To: <20160925062017.GA10754@home.buserror.net>
-Content-Type: multipart/mixed; boundary="------------7D9FB6D632217FEE3DE6D715"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160924073025.GB48071@ast-mbp.thefacebook.com>
+Message-Id: <20160926085622.GG15470@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,95 +55,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------7D9FB6D632217FEE3DE6D715
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+On 2016/09/24 03:30AM, Alexei Starovoitov wrote:
+> On Sat, Sep 24, 2016 at 12:33:54AM +0200, Daniel Borkmann wrote:
+> > On 09/23/2016 10:35 PM, Naveen N. Rao wrote:
+> > >Tail calls allow JIT'ed eBPF programs to call into other JIT'ed eBPF
+> > >programs. This can be achieved either by:
+> > >(1) retaining the stack setup by the first eBPF program and having all
+> > >subsequent eBPF programs re-using it, or,
+> > >(2) by unwinding/tearing down the stack and having each eBPF program
+> > >deal with its own stack as it sees fit.
+> > >
+> > >To ensure that this does not create loops, there is a limit to how many
+> > >tail calls can be done (currently 32). This requires the JIT'ed code to
+> > >maintain a count of the number of tail calls done so far.
+> > >
+> > >Approach (1) is simple, but requires every eBPF program to have (almost)
+> > >the same prologue/epilogue, regardless of whether they need it. This is
+> > >inefficient for small eBPF programs which may not sometimes need a
+> > >prologue at all. As such, to minimize impact of tail call
+> > >implementation, we use approach (2) here which needs each eBPF program
+> > >in the chain to use its own prologue/epilogue. This is not ideal when
+> > >many tail calls are involved and when all the eBPF programs in the chain
+> > >have similar prologue/epilogue. However, the impact is restricted to
+> > >programs that do tail calls. Individual eBPF programs are not affected.
+> > >
+> > >We maintain the tail call count in a fixed location on the stack and
+> > >updated tail call count values are passed in through this. The very
+> > >first eBPF program in a chain sets this up to 0 (the first 2
+> > >instructions). Subsequent tail calls skip the first two eBPF JIT
+> > >instructions to maintain the count. For programs that don't do tail
+> > >calls themselves, the first two instructions are NOPs.
+> > >
+> > >Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > 
+> > Thanks for adding support, Naveen, that's really great! I think 2) seems
+> > fine as well in this context as prologue size can vary quite a bit here,
+> > and depending on program types likelihood of tail call usage as well (but
+> > I wouldn't expect deep nesting). Thanks a lot!
+> 
+> Great stuff. In this circumstances approach 2 makes sense to me as well.
 
-Am 25.09.2016 um 08:20 schrieb Scott Wood:
-> On Mon, Aug 22, 2016 at 04:46:43PM +0200, David Engraf wrote:
->> The PowerPC e5500/e6500 architecture is based on the e500mc core. Enable
->> CONFIG_E500 and CONFIG_PPC_E500MC when e5500/e6500 is used.
->>
->> This will also fix using CONFIG_PPC_QEMU_E500 on PPC64.
->>
->> Signed-off-by: David Engraf <david.engraf@sysgo.com>
->> ---
->>  arch/powerpc/platforms/Kconfig.cputype | 6 ++++--
->>  1 file changed, 4 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
->> index f32edec..0382da7 100644
->> --- a/arch/powerpc/platforms/Kconfig.cputype
->> +++ b/arch/powerpc/platforms/Kconfig.cputype
->> @@ -125,11 +125,13 @@ config POWER8_CPU
->>
->>  config E5500_CPU
->>  	bool "Freescale e5500"
->> -	depends on E500
->> +	select E500
->> +	select PPC_E500MC
->>
->>  config E6500_CPU
->>  	bool "Freescale e6500"
->> -	depends on E500
->> +	select E500
->> +	select PPC_E500MC
->
-> These config symbols are for setting -mcpu.  Kernels built with
-> CONFIG_GENERIC_CPU should also work on e5500/e6500.
+Alexie, Daniel,
+Thanks for the quick review!
 
-I don't think so. At least on QEMU it is not working because e5500/e6500 
-is based on the e500mc core and the option CONFIG_PPC_E500MC also 
-controls the cpu features (check cputable.h).
-
-> The problem is that CONFIG_PPC_QEMU_E500 doesn't select E500 (I didn't
-> notice it before because usually CORENET_GENERIC is enabled as well).
-
-I noticed that as well, but I think it makes more sense to select 
-E500/PPC_E500MC within the cputype menu instead of having a dependency 
-which might be not clear for the user. Right now the way how to 
-configure such a BSP is not clear, you need to open "Processor support" 
-and select the "Processor Type", then switch to "Platform support" to 
-select the BSP and afterward got back to "Processor support" to switch 
-from the generic CPU type to e5500/e6500.
-
-> Note that your patch, by eliminating the dependency on E500, would make
-> it possible to build a book3s kernel with E5500_CPU/E6500_CPU, which
-> doesn't make any sense.
-
-You're right. The attached version fixes this.
-
-- David
-
---------------7D9FB6D632217FEE3DE6D715
-Content-Type: text/x-patch;
- name="ppc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="ppc.patch"
-
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f32edec..abd345e 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -125,11 +125,15 @@ config POWER8_CPU
- 
- config E5500_CPU
- 	bool "Freescale e5500"
--	depends on E500
-+	depends on PPC_BOOK3E_64
-+	select E500
-+	select PPC_E500MC
- 
- config E6500_CPU
- 	bool "Freescale e6500"
--	depends on E500
-+	depends on PPC_BOOK3E_64
-+	select E500
-+	select PPC_E500MC
- 
- endchoice
- 
-
---------------7D9FB6D632217FEE3DE6D715--
+- Naveen
