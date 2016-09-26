@@ -1,30 +1,46 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjS0T5QXqzDrRW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 01:03:52 +1000 (AEST)
-Date: Mon, 26 Sep 2016 12:03:43 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- peterz@infradead.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH v21 00/20] perf, tools: Add support for PMU events in
- JSON format
-Message-ID: <20160926150343.GJ5588@kernel.org>
-References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20160919212017.GA11991@kernel.org>
- <20160919233113.GB11991@kernel.org>
- <20160919233753.GC11991@kernel.org>
- <20160920000258.GD11991@kernel.org>
- <20160920002820.GE11991@kernel.org> <20160922150022.GA20134@krava>
- <20160922162713.GA31617@krava> <20160926083533.GA15523@krava>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjSzc0fFPzDrRg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 01:48:11 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8QFlOAC146705
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 11:48:07 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25q5enubay-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 11:48:07 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 26 Sep 2016 09:48:06 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH v3 4/5] powerpc/mm: restore top-down allocation when using
+ movable_node
+In-Reply-To: <1474828616-16608-5-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1474828616-16608-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1474828616-16608-5-git-send-email-arbab@linux.vnet.ibm.com>
+Date: Mon, 26 Sep 2016 21:17:43 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160926083533.GA15523@krava>
+Content-Type: text/plain
+Message-Id: <8760piacio.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,81 +50,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Mon, Sep 26, 2016 at 10:35:33AM +0200, Jiri Olsa escreveu:
-> ping.. is that working for you? IMO we can include this
-> as additional patch to the set..
+Reza Arbab <arbab@linux.vnet.ibm.com> writes:
 
-No, it doesn't fails to build on the first cross env I tried, fixing it
-now, resulting patch:
+> At boot, the movable_node option sets bottom-up memblock allocation.
+>
+> This reduces the chance that, in the window before movable memory has
+> been identified, an allocation for the kernel might come from a movable
+> node. By going bottom-up, early allocations will most likely come from
+> the same node as the kernel image, which is necessarily in a nonmovable
+> node.
+>
+> Then, once any known hotplug memory has been marked, allocation can be
+> reset back to top-down. On x86, this is done in numa_init(). This patch
+> does the same on power, in numa initmem_init().
+>
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/numa.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index d7ac419..fdf1e69 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -945,6 +945,9 @@ void __init initmem_init(void)
+>  	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
+>  	max_pfn = max_low_pfn;
+>
+> +	/* bottom-up allocation may have been set by movable_node */
+> +	memblock_set_bottom_up(false);
+> +
 
-diff --git a/tools/perf/Makefile.config b/tools/perf/Makefile.config
-index 72edf83d76b7..9365c155c6f3 100644
---- a/tools/perf/Makefile.config
-+++ b/tools/perf/Makefile.config
-@@ -758,6 +758,10 @@ ifndef NO_AUXTRACE
-   endif
- endif
- 
-+ifndef CROSS_COMPILE
-+  CFLAGS += -DHAVE_PMU_EVENTS_SUPPORT
-+endif
-+
- # Among the variables below, these:
- #   perfexecdir
- #   template_dir
-diff --git a/tools/perf/Makefile.perf b/tools/perf/Makefile.perf
-index 26dbee50b36c..ee86dbf2814e 100644
---- a/tools/perf/Makefile.perf
-+++ b/tools/perf/Makefile.perf
-@@ -349,7 +349,14 @@ include $(srctree)/tools/build/Makefile.include
- 
- JEVENTS       := $(OUTPUT)pmu-events/jevents
- JEVENTS_IN    := $(OUTPUT)pmu-events/jevents-in.o
-+
-+#
-+# Disabling pmu-events for cross compile, as
-+# we dont support host CC tools building yet.
-+#
-+ifndef CROSS_COMPILE
- PMU_EVENTS_IN := $(OUTPUT)pmu-events/pmu-events-in.o
-+endif
- 
- export JEVENTS
- 
-diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index 2babcdf62839..37f74fcc9ca2 100644
---- a/tools/perf/util/pmu.c
-+++ b/tools/perf/util/pmu.c
-@@ -377,6 +377,8 @@ static int pmu_alias_terms(struct perf_pmu_alias *alias,
- 	return 0;
- }
- 
-+#ifdef HAVE_PMU_EVENTS_SUPPORT
-+
- /*
-  * Reading/parsing the default pmu type value, which should be
-  * located at:
-@@ -473,6 +475,23 @@ static struct cpu_map *pmu_cpumask(const char *name)
- 	return cpus;
- }
- 
-+#else
-+static int pmu_type(const char *name __maybe_unused, __u32 *type)
-+{
-+	*type = 0;
-+	return 0;
-+}
-+
-+static void pmu_read_sysfs(void)
-+{
-+}
-+
-+static struct cpu_map *pmu_cpumask(const char *name __maybe_unused)
-+{
-+	return NULL;
-+}
-+#endif /* HAVE_PMU_EVENTS_SUPPORT */
-+
- struct perf_event_attr * __weak
- perf_pmu__get_default_config(struct perf_pmu *pmu __maybe_unused)
- {
+By then we have done few memblock allocation right ? IMHO, we should do
+this early enough in prom.c after we do parse_early_param, with a
+comment there explaining that, we don't really support hotplug memblock
+and when we do that, this should be moved to a place where we can handle
+memblock allocation such that we avoid spreading memblock allocation to
+movable node.
+
+
+>  	if (parse_numa_properties())
+>  		setup_nonnuma();
+>  	else
+> -- 
+> 1.8.3.1
+
+-aneesh
