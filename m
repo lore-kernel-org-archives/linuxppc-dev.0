@@ -2,11 +2,10 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjcBV1yZLzDrMD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 07:13:06 +1000 (AEST)
-Message-ID: <1474924351.2857.255.camel@kernel.crashing.org>
-Subject: Re: [PATCH v3 4/5] powerpc/mm: restore top-down allocation when
- using movable_node
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjcG72H5gzDrLD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 07:16:15 +1000 (AEST)
+Message-ID: <1474924541.2857.258.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3 5/5] mm: enable CONFIG_MOVABLE_NODE on powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Reza Arbab <arbab@linux.vnet.ibm.com>, Michael Ellerman
  <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Rob Herring
@@ -20,10 +19,10 @@ Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>, Nathan Fontenot
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
  linux-mm@kvack.org
-Date: Tue, 27 Sep 2016 07:12:31 +1000
-In-Reply-To: <1474828616-16608-5-git-send-email-arbab@linux.vnet.ibm.com>
+Date: Tue, 27 Sep 2016 07:15:41 +1000
+In-Reply-To: <1474828616-16608-6-git-send-email-arbab@linux.vnet.ibm.com>
 References: <1474828616-16608-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1474828616-16608-5-git-send-email-arbab@linux.vnet.ibm.com>
+ <1474828616-16608-6-git-send-email-arbab@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,49 +35,61 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Sun, 2016-09-25 at 13:36 -0500, Reza Arbab wrote:
-> At boot, the movable_node option sets bottom-up memblock allocation.
+> To create a movable node, we need to hotplug all of its memory into
+> ZONE_MOVABLE.
 > 
-> This reduces the chance that, in the window before movable memory has
-> been identified, an allocation for the kernel might come from a movable
-> node. By going bottom-up, early allocations will most likely come from
-> the same node as the kernel image, which is necessarily in a nonmovable
-> node.
+> Note that to do this, auto_online_blocks should be off. Since the memory
+> will first be added to the default zone, we must explicitly use
+> online_movable to online.
 > 
-> Then, once any known hotplug memory has been marked, allocation can be
-> reset back to top-down. On x86, this is done in numa_init(). This patch
-> does the same on power, in numa initmem_init().
+> Because such a node contains no normal memory, can_online_high_movable()
+> will only allow us to do the onlining if CONFIG_MOVABLE_NODE is set.
+> Enable the use of this config option on PPC64 platforms.
 
-That's fragile and a bit gross.
+What is that business with a command line argument ? Do that mean that
+we'll need some magic command line argument to properly handle LPC memory
+on CAPI devices or GPUs ? If yes that's bad ... kernel arguments should
+be a last resort.
 
-But then I'm not *that* fan of making accelerator memory be "memory" nodes
-in the first place. Oh well...
+We should have all the information we need from the device-tree.
 
-In any case, if the memory hasn't been hotplug, this shouldn't be necessary
-as we shouldn't be considering it for allocation.
-
-If we want to prevent it for other reason, we should add logic for that
-in memblock, or reserve it early or something like that.
-
-Just relying magically on the direction of the allocator is bad, really bad.
+Note also that we shouldn't need to create those nodes at boot time,
+we need to add the ability to create the whole thing at runtime, we may know
+that there's an NPU with an LPC window in the system but we won't know if it's
+used until it is and for CAPI we just simply don't know until some PCI device
+gets turned into CAPI mode and starts claiming LPC memory...
 
 Ben.
 
 > Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/mm/numa.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  Documentation/kernel-parameters.txt | 2 +-
+>  mm/Kconfig                          | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index d7ac419..fdf1e69 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -945,6 +945,9 @@ void __init initmem_init(void)
-> >  	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
-> >  	max_pfn = max_low_pfn;
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index a4f4d69..3d8460d 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -2344,7 +2344,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+> >  			that the amount of memory usable for all allocations
+> >  			is not too small.
 >  
-> > +	/* bottom-up allocation may have been set by movable_node */
-> > +	memblock_set_bottom_up(false);
-> +
-> >  	if (parse_numa_properties())
-> >  		setup_nonnuma();
-> >  	else
+> > > -	movable_node	[KNL,X86] Boot-time switch to enable the effects
+> > > +	movable_node	[KNL,X86,PPC] Boot-time switch to enable the effects
+> >  			of CONFIG_MOVABLE_NODE=y. See mm/Kconfig for details.
+>  
+> > >  	MTD_Partition=	[MTD]
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index be0ee11..4b19cd3 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -153,7 +153,7 @@ config MOVABLE_NODE
+> >  	bool "Enable to assign a node which has only movable memory"
+> >  	depends on HAVE_MEMBLOCK
+> >  	depends on NO_BOOTMEM
+> > -	depends on X86_64
+> > +	depends on X86_64 || PPC64
+> >  	depends on NUMA
+> >  	default n
+> >  	help
