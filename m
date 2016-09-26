@@ -1,49 +1,28 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <marcelo.cerri@canonical.com>
+Received: from mail-qk0-x229.google.com (mail-qk0-x229.google.com
+ [IPv6:2607:f8b0:400d:c09::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjWGy3bTlzDrSx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 03:31:38 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8QHSkg4004759
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 13:31:36 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25q5928fp5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 13:31:36 -0400
-Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Mon, 26 Sep 2016 23:01:33 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D55AB1258026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 23:01:50 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8QHVTex32636954
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 23:01:30 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8QHVTx2009715
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 23:01:29 +0530
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-security-module <linux-security-module@vger.kernel.org>
-Cc: Andreas Steffen <andreas.steffen@strongswan.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
- kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: [PATCH v5 10/10] ima: platform-independent hash value
-Date: Mon, 26 Sep 2016 13:30:29 -0400
-In-Reply-To: <1474911029-6372-1-git-send-email-zohar@linux.vnet.ibm.com>
-References: <1474911029-6372-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-Id: <1474911029-6372-11-git-send-email-zohar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjWXZ166nzDsqg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 03:43:25 +1000 (AEST)
+Received: by mail-qk0-x229.google.com with SMTP id z190so172240448qkc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 10:43:25 -0700 (PDT)
+Date: Mon, 26 Sep 2016 14:43:17 -0300
+From: Marcelo Cerri <marcelo.cerri@canonical.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jan Stancek <jstancek@redhat.com>, rui.y.wang@intel.com,
+ mhcerri@linux.vnet.ibm.com, leosilva@linux.vnet.ibm.com,
+ pfsmorigo@linux.vnet.ibm.com, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
+Message-ID: <20160926174317.GA21317@gallifrey>
+References: <450861381.1559123.1474673197124.JavaMail.zimbra@redhat.com>
+ <1655600242.1561022.1474676547316.JavaMail.zimbra@redhat.com>
+ <20160926145934.GA5520@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
+In-Reply-To: <20160926145934.GA5520@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,40 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andreas Steffen <andreas.steffen@strongswan.org>
 
-For remote attestion it is important for the ima measurement values
-to be platform-independent. Therefore integer fields to be hashed
-must be converted to canonical format.
+--Dxnq1zWXvFF0Q93v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Changelog:
-- Define canonical format as little endian (Mimi)
+Herbert,
 
-Signed-off-by: Andreas Steffen <andreas.steffen@strongswan.org>
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
----
- security/integrity/ima/ima_crypto.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Wouldn't be enough to provide a pair of import/export functions as the
+padlock-sha driver does?
 
-diff --git a/security/integrity/ima/ima_crypto.c b/security/integrity/ima/ima_crypto.c
-index 38f2ed8..802d5d2 100644
---- a/security/integrity/ima/ima_crypto.c
-+++ b/security/integrity/ima/ima_crypto.c
-@@ -477,11 +477,13 @@ static int ima_calc_field_array_hash_tfm(struct ima_field_data *field_data,
- 		u8 buffer[IMA_EVENT_NAME_LEN_MAX + 1] = { 0 };
- 		u8 *data_to_hash = field_data[i].data;
- 		u32 datalen = field_data[i].len;
-+		u32 datalen_to_hash =
-+		    !ima_canonical_fmt ? datalen : cpu_to_le32(datalen);
- 
- 		if (strcmp(td->name, IMA_TEMPLATE_IMA_NAME) != 0) {
- 			rc = crypto_shash_update(shash,
--						(const u8 *) &field_data[i].len,
--						sizeof(field_data[i].len));
-+						(const u8 *) &datalen_to_hash,
-+						sizeof(datalen_to_hash));
- 			if (rc)
- 				break;
- 		} else if (strcmp(td->fields[i]->field_id, "n") == 0) {
--- 
-2.1.0
+--=20
+Regards,
+Marcelo
+
+On Mon, Sep 26, 2016 at 10:59:34PM +0800, Herbert Xu wrote:
+> On Fri, Sep 23, 2016 at 08:22:27PM -0400, Jan Stancek wrote:
+> >
+> > This seems to directly correspond with:
+> >   p8_ghash_alg.descsize =3D sizeof(struct p8_ghash_desc_ctx) =3D=3D 56
+> >   shash_tfm->descsize =3D sizeof(struct p8_ghash_desc_ctx) + crypto_sha=
+sh_descsize(fallback) =3D=3D 56 + 20
+> > where 20 is presumably coming from "ghash_alg.descsize".
+> >=20
+> > My gut feeling was that these 2 should match, but I'd love to hear
+> > what crypto people think.
+>=20
+> Indeed.  The vmx driver is broken.  It is allocating a fallback
+> but is not providing any space for the state of the fallback.
+>=20
+> Unfortunately our interface doesn't really provide a way to provide
+> the state size dynamically.  So what I'd suggest is to fix the
+> fallback to the generic ghash implementation and export its state
+> size like we do for md5/sha.
+>=20
+> Cheers,
+> --=20
+> Email: Herbert Xu <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-crypto" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--Dxnq1zWXvFF0Q93v
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJX6V41AAoJEM8aS8c01e1H6mwIAMW9pypR4X11IG2iRz0Mci2S
+irMDyO2x8MWtdlHGB7LVKq/Lo/t1mDCtbSzKO8LnhzyucVzTQtKOsQU3TAxeozZE
+TCInKB6DRpd06pW+nEAN7omvYnHNyJX9ELxKAUTl1nTub1ftimYOY/yfKa0veyHK
+tRd3GSbdQCpoiXNR0PFW9j/9MUW7XC/V1vCxnhBJHYo3OygRPtLDSVeloLbeLQKo
+CBz++OIU6bzKIxH7aIfLCvZEWgQCc4L5XzXShxIIDY0EnLkn6/UjN7zjAHXXFGcl
+HECy+yTuhJJGgPX6RuPnKFUwfru5YZ4K5gQQ6gp0XhOj+v+w4QEb9ZUdqSiok8c=
+=DS2v
+-----END PGP SIGNATURE-----
+
+--Dxnq1zWXvFF0Q93v--
