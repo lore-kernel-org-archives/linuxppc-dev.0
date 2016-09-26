@@ -1,24 +1,23 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
- [IPv6:2a00:1450:4010:c07::241])
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yb0-x234.google.com (mail-yb0-x234.google.com
+ [IPv6:2607:f8b0:4002:c09::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjLNm2TgkzDrPs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 20:51:02 +1000 (AEST)
-Received: by mail-lf0-x241.google.com with SMTP id s29so9327499lfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 03:51:01 -0700 (PDT)
-Date: Mon, 26 Sep 2016 13:50:54 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
-Subject: Re: [RFC PATCH] powerpc/mm: THP page cache support
-Message-ID: <20160926105054.GA16074@node.shutemov.name>
-References: <1474560160-7327-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjLZ966QQzDrPs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 20:59:13 +1000 (AEST)
+Received: by mail-yb0-x234.google.com with SMTP id t5so10304612yba.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2016 03:59:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1474560160-7327-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <CA+7wUsz4a0xsFRRRmvYnPUHLCb81m8bd2DL1+LHB65zrpx=ysA@mail.gmail.com>
+References: <CAOJe8K0p60fmubbhSHCm0096CTjYjnnfoo_JLuwDcg6fo-=pBg@mail.gmail.com>
+ <CA+7wUsz4a0xsFRRRmvYnPUHLCb81m8bd2DL1+LHB65zrpx=ysA@mail.gmail.com>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Mon, 26 Sep 2016 13:59:11 +0300
+Message-ID: <CAOJe8K3NjfoV52ZJrE6spc6kpOTrZUd4ShLiN4M-Ai1Gd5yx-w@mail.gmail.com>
+Subject: Re: ehea crash on boot
+To: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/alternative; boundary=001a1142f2d098d820053d670422
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,127 +27,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 22, 2016 at 09:32:40PM +0530, Aneesh Kumar K.V wrote:
-> Update arch hook in the generic THP page cache code, that will
-> deposit and withdarw preallocated page table. Archs like ppc64 use
-> this preallocated table to store the hash pte slot information.
-> 
-> This is an RFC patch and I am sharing this early to get feedback on the
-> approach taken. I have used stress-ng mmap-file operation and that
-> resulted in some thp_file_mmap as show below.
-> 
-> [/mnt/stress]$ grep thp_file /proc/vmstat
-> thp_file_alloc 25403
-> thp_file_mapped 16967
-> [/mnt/stress]$
-> 
-> I did observe wrong nr_ptes count once. I need to recreate the problem
-> again.
+--001a1142f2d098d820053d670422
+Content-Type: text/plain; charset=UTF-8
 
-I don't see anything that could cause that.
+On Monday, September 26, 2016, Mathieu Malaterre <
+mathieu.malaterre@gmail.com> wrote:
 
-The patch looks good to me (apart from nr_ptes issue). Few minor nitpicks
-below.
+> On Fri, Sep 23, 2016 at 2:50 PM, Denis Kirjanov <kda@linux-powerpc.org
+> <javascript:;>> wrote:
+> > Heh, another thing to debug :)
+> >
+> > mm: Hashing failure ! EA=0xd000080080124040 access=0x800000000000000e
+> > current=NetworkManager
+> > trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2
+> pte=0xc0003bc0300301ae
+> > mm: Hashing failure ! EA=0xd000080080124040 access=0x800000000000000e
+> > current=NetworkManager
+> > trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2
+> pte=0xc0003bc0300301ae
+> > Unable to handle kernel paging request for data at address
+> 0xd000080080124040
+> > Faulting instruction address: 0xc0000000006f21a0
+> > cpu 0x8: Vector: 300 (Data Access) at [c0000005a8b92b50]
+> > pc: c0000000006f21a0: .ehea_create_cq+0x160/0x230
+> > lr: c0000000006f2164: .ehea_create_cq+0x124/0x230
+> > sp: c0000005a8b92dd0
+> > msr: 8000000000009032
+> > dar: d000080080124040
+> > dsisr: 42000000
+> > current = 0xc0000005a8b68200
+> > paca = 0xc00000000ea94000 softe: 0 irq_happened: 0x01
+> > pid = 6787, comm = NetworkManager
+> > Linux version 4.8.0-rc6-00214-g4cea877 (kda@ps700) (gcc version 4.8.5
+> > 20150623 (Red Hat 4.8.5-4) (GCC) ) #1 SMP Fri Sep 23 15:01:08 MSK 2016
+> > enter ? for help
+> > [c0000005a8b92dd0] c0000000006f2140 .ehea_create_cq+0x100/0x230
+> (unreliable)
+> > [c0000005a8b92e70] c0000000006ed448 .ehea_up+0x288/0xed0
+> > [c0000005a8b92fe0] c0000000006ee314 .ehea_open+0x44/0x130
+> > [c0000005a8b93070] c000000000812324 .__dev_open+0x154/0x220
+> > [c0000005a8b93110] c000000000812734 .__dev_change_flags+0xd4/0x1e0
+> > [c0000005a8b931b0] c00000000081286c .dev_change_flags+0x2c/0x80
+> > [c0000005a8b93240] c000000000829f0c .do_setlink+0x37c/0xe50
+> > [c0000005a8b933c0] c00000000082c884 .rtnl_newlink+0x5e4/0x9b0
+> > [c0000005a8b936d0] c00000000082cd08 .rtnetlink_rcv_msg+0xb8/0x2f0
+> > [c0000005a8b937a0] c00000000084e25c .netlink_rcv_skb+0x12c/0x150
+> > [c0000005a8b93830] c000000000829458 .rtnetlink_rcv+0x38/0x60
+> > [c0000005a8b938b0] c00000000084d814 .netlink_unicast+0x1e4/0x350
+> > [c0000005a8b93960] c00000000084def8 .netlink_sendmsg+0x418/0x480
+> > [c0000005a8b93a40] c0000000007defac .sock_sendmsg+0x2c/0x60
+> > [c0000005a8b93ab0] c0000000007e0cbc .___sys_sendmsg+0x30c/0x320
+> > [c0000005a8b93c90] c0000000007e21bc .__sys_sendmsg+0x4c/0xb0
+> > [c0000005a8b93d80] c0000000007e2dec .SyS_socketcall+0x34c/0x3d0
+> > [c0000005a8b93e30] c00000000000946c system_call+0x38/0x108
+>
+> Can you turn UBSAN on for this ?
 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/pgtable.h |  3 ++
->  include/asm-generic/pgtable.h                |  8 +++-
->  mm/Kconfig                                   |  6 +--
->  mm/huge_memory.c                             | 19 +++++++++-
->  mm/khugepaged.c                              | 21 ++++++++++-
->  mm/memory.c                                  | 56 +++++++++++++++++++++++-----
->  6 files changed, 93 insertions(+), 20 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index 263bf39ced40..1f45b06ce78e 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -1017,6 +1017,9 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
->  	 */
->  	return true;
->  }
-> +
-> +#define arch_needs_pgtable_deposit() (true)
-> +
->  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
->  #endif /* __ASSEMBLY__ */
->  #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
-> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-> index d4458b6dbfb4..0d1e400e82a2 100644
-> --- a/include/asm-generic/pgtable.h
-> +++ b/include/asm-generic/pgtable.h
-> @@ -660,11 +660,17 @@ static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
->  	/*
->  	 * With split pmd lock we also need to move preallocated
->  	 * PTE page table if new_pmd is on different PMD page table.
-> +	 *
-> +	 * We also don't deposit and withdraw tables for file pages.
->  	 */
-> -	return new_pmd_ptl != old_pmd_ptl;
-> +	return (new_pmd_ptl != old_pmd_ptl) && vma_is_anonymous(vma);
->  }
->  #endif
->  
-> +#ifndef arch_needs_pgtable_deposit
-> +#define arch_needs_pgtable_deposit() (false)
-> +#endif
-> +
->  /*
->   * This function is meant to be used by sites walking pagetables with
->   * the mmap_sem hold in read mode to protect against MADV_DONTNEED and
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index be0ee11fa0d9..0a279d399722 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -447,13 +447,9 @@ choice
->  	  benefit.
->  endchoice
->  
-> -#
-> -# We don't deposit page tables on file THP mapping,
-> -# but Power makes use of them to address MMU quirk.
-> -#
->  config	TRANSPARENT_HUGE_PAGECACHE
->  	def_bool y
-> -	depends on TRANSPARENT_HUGEPAGE && !PPC
-> +	depends on TRANSPARENT_HUGEPAGE
->  
->  #
->  # UP and nommu archs use km based percpu allocator
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index a6abd76baa72..37176f455d16 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -1320,6 +1320,14 @@ out_unlocked:
->  	return ret;
->  }
->  
-> +void zap_deposited_table(struct mm_struct *mm, pmd_t *pmd)
 
-static?
+I'll get back to the problem and send a fix when I'll finish my trip
 
-> +{
-> +	pgtable_t pgtable;
-> +	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-> +	pte_free(mm, pgtable);
-> +	atomic_long_dec(&mm->nr_ptes);
-> +}
-> +
->  int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
->  		 pmd_t *pmd, unsigned long addr)
->  {
-> @@ -1359,6 +1367,8 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
->  			atomic_long_dec(&tlb->mm->nr_ptes);
->  			add_mm_counter(tlb->mm, MM_ANONPAGES, -HPAGE_PMD_NR);
->  		} else {
-> +			if (arch_needs_pgtable_deposit())
 
-Just hide the arch_needs_pgtable_deposit() check in zap_deposited_table().
+> --
+> Mathieu
+>
 
-> +				zap_deposited_table(tlb->mm, pmd);
->  			add_mm_counter(tlb->mm, MM_FILEPAGES, -HPAGE_PMD_NR);
->  		}
->  		spin_unlock(ptl);
--- 
- Kirill A. Shutemov
+--001a1142f2d098d820053d670422
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<br><br>On Monday, September 26, 2016, Mathieu Malaterre &lt;<a href=3D"mai=
+lto:mathieu.malaterre@gmail.com">mathieu.malaterre@gmail.com</a>&gt; wrote:=
+<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-lef=
+t:1px #ccc solid;padding-left:1ex">On Fri, Sep 23, 2016 at 2:50 PM, Denis K=
+irjanov &lt;<a href=3D"javascript:;" onclick=3D"_e(event, &#39;cvml&#39;, &=
+#39;kda@linux-powerpc.org&#39;)">kda@linux-powerpc.org</a>&gt; wrote:<br>
+&gt; Heh, another thing to debug :)<br>
+&gt;<br>
+&gt; mm: Hashing failure ! EA=3D0xd000080080124040 access=3D0x8000000000000=
+00e<br>
+&gt; current=3DNetworkManager<br>
+&gt; trap=3D0x300 vsid=3D0x13d349c ssize=3D1 base psize=3D2 psize 2 pte=3D0=
+xc0003bc0300301ae<br>
+&gt; mm: Hashing failure ! EA=3D0xd000080080124040 access=3D0x8000000000000=
+00e<br>
+&gt; current=3DNetworkManager<br>
+&gt; trap=3D0x300 vsid=3D0x13d349c ssize=3D1 base psize=3D2 psize 2 pte=3D0=
+xc0003bc0300301ae<br>
+&gt; Unable to handle kernel paging request for data at address 0xd00008008=
+0124040<br>
+&gt; Faulting instruction address: 0xc0000000006f21a0<br>
+&gt; cpu 0x8: Vector: 300 (Data Access) at [c0000005a8b92b50]<br>
+&gt; pc: c0000000006f21a0: .ehea_create_cq+0x160/0x230<br>
+&gt; lr: c0000000006f2164: .ehea_create_cq+0x124/0x230<br>
+&gt; sp: c0000005a8b92dd0<br>
+&gt; msr: 8000000000009032<br>
+&gt; dar: d000080080124040<br>
+&gt; dsisr: 42000000<br>
+&gt; current =3D 0xc0000005a8b68200<br>
+&gt; paca =3D 0xc00000000ea94000 softe: 0 irq_happened: 0x01<br>
+&gt; pid =3D 6787, comm =3D NetworkManager<br>
+&gt; Linux version 4.8.0-rc6-00214-g4cea877 (kda@ps700) (gcc version 4.8.5<=
+br>
+&gt; 20150623 (Red Hat 4.8.5-4) (GCC) ) #1 SMP Fri Sep 23 15:01:08 MSK 2016=
+<br>
+&gt; enter ? for help<br>
+&gt; [c0000005a8b92dd0] c0000000006f2140 .ehea_create_cq+0x100/0x230 (unrel=
+iable)<br>
+&gt; [c0000005a8b92e70] c0000000006ed448 .ehea_up+0x288/0xed0<br>
+&gt; [c0000005a8b92fe0] c0000000006ee314 .ehea_open+0x44/0x130<br>
+&gt; [c0000005a8b93070] c000000000812324 .__dev_open+0x154/0x220<br>
+&gt; [c0000005a8b93110] c000000000812734 .__dev_change_flags+0xd4/0x1e0<br>
+&gt; [c0000005a8b931b0] c00000000081286c .dev_change_flags+0x2c/0x80<br>
+&gt; [c0000005a8b93240] c000000000829f0c .do_setlink+0x37c/0xe50<br>
+&gt; [c0000005a8b933c0] c00000000082c884 .rtnl_newlink+0x5e4/0x9b0<br>
+&gt; [c0000005a8b936d0] c00000000082cd08 .rtnetlink_rcv_msg+0xb8/0x2f0<br>
+&gt; [c0000005a8b937a0] c00000000084e25c .netlink_rcv_skb+0x12c/0x150<br>
+&gt; [c0000005a8b93830] c000000000829458 .rtnetlink_rcv+0x38/0x60<br>
+&gt; [c0000005a8b938b0] c00000000084d814 .netlink_unicast+0x1e4/0x350<br>
+&gt; [c0000005a8b93960] c00000000084def8 .netlink_sendmsg+0x418/0x480<br>
+&gt; [c0000005a8b93a40] c0000000007defac .sock_sendmsg+0x2c/0x60<br>
+&gt; [c0000005a8b93ab0] c0000000007e0cbc .___sys_sendmsg+0x30c/0x320<br>
+&gt; [c0000005a8b93c90] c0000000007e21bc .__sys_sendmsg+0x4c/0xb0<br>
+&gt; [c0000005a8b93d80] c0000000007e2dec .SyS_socketcall+0x34c/0x3d0<br>
+&gt; [c0000005a8b93e30] c00000000000946c system_call+0x38/0x108<br>
+<br>
+Can you turn UBSAN on for this ?</blockquote><div>=C2=A0</div><div>I&#39;ll=
+ get back to the problem and send a fix=C2=A0when I&#39;ll finish=C2=A0my t=
+rip<br></div><div><br></div><blockquote class=3D"gmail_quote" style=3D"marg=
+in:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
+<br>
+--<br>
+Mathieu<br>
+</blockquote>
+
+--001a1142f2d098d820053d670422--
