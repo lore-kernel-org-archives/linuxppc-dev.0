@@ -1,38 +1,21 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0239.hostedemail.com
+ [216.40.44.239])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sk4Vr68R6zDrVT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 01:28:51 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8RFIE8N077404
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 11:28:49 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 25qsq2nwcs-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 11:28:49 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Tue, 27 Sep 2016 09:28:48 -0600
-Subject: Re: [PATCH v7 0/6] perf annotate: Cross arch support + few fixes
-To: linux-kernel@vger.kernel.org, acme@kernel.org
-References: <1474472876-2706-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Cc: kim.phillips@arm.com, linuxppc-dev@lists.ozlabs.org, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- treeze.taeung@gmail.com, naveen.n.rao@linux.vnet.ibm.com,
- markus@trippelsdorf.de, namhyung@kernel.org, pawel.moll@arm.com,
- chris.ryder@arm.com, jolsa@kernel.org, mhiramat@kernel.org,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Tue, 27 Sep 2016 20:58:33 +0530
-MIME-Version: 1.0
-In-Reply-To: <1474472876-2706-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <57EA9021.7070101@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sk5ZZ3lgmzDrVV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 02:17:09 +1000 (AEST)
+From: Joe Perches <joe@perches.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>, Li Yang <leoli@freescale.com>,
+ Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>,
+ Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Felipe Balbi <balbi@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] usb: Convert pr_warning to pr_warn
+Date: Tue, 27 Sep 2016 09:16:59 -0700
+Message-Id: <f86b512272987e0faeaccbe6466665175eaefe9a.1474992979.git.joe@perches.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,64 +25,266 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Use the more common logging mechanism.
 
-Any updates?
+Miscellanea:
 
-Arnaldo, if patches looks good to you, can you please pickup them.
+o Realign multiline statements
+o Coalesce format
 
--Ravi
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/usb/gadget/function/rndis.c     |  9 ++++-----
+ drivers/usb/gadget/function/u_serial.c  |  4 ++--
+ drivers/usb/gadget/udc/at91_udc.h       |  2 +-
+ drivers/usb/gadget/udc/atmel_usba_udc.c |  4 ++--
+ drivers/usb/gadget/udc/fsl_usb2_udc.h   |  2 +-
+ drivers/usb/gadget/udc/m66592-udc.c     |  4 ++--
+ drivers/usb/gadget/udc/omap_udc.h       |  2 +-
+ drivers/usb/gadget/udc/pxa25x_udc.h     |  2 +-
+ drivers/usb/host/isp1362-hcd.c          | 27 ++++++++++++++-------------
+ drivers/usb/isp1760/isp1760-if.c        |  2 +-
+ 10 files changed, 29 insertions(+), 29 deletions(-)
 
-On Wednesday 21 September 2016 09:17 PM, Ravi Bangoria wrote:
-> Currently Perf annotate support code navigation (branches and calls)
-> only when run on the same architecture where perf.data was recorded.
-> But, for example, record on powerpc server and annotate on client's
-> x86 desktop is not supported.
->
-> This patchset adds supports for that.
->
-> Example:
->
->   Record on powerpc:
->   $ ./perf record -a
->
->   Report -> Annotate on x86:
->   $ ./perf report -i perf.data.powerpc --vmlinux vmlinux.powerpc
->
-> Changes in v7:
->   - Using string for normalized arch names instread of macros.(i.e.
->     removed patch 1/7 of v6)
->   - In patch 1/6, make norm_arch as global var instead of passing them
->     to each parser.
->   - In patch 1/6 and 6/6, little bit change in initializing instruction
->     list.
->   - patch 4/7 of v6 is already accepted. Removed that in v7.
->   - Address other review comments.
->   - Added more examples in patch descriptions.
->
-> v6 link:
->   https://lkml.org/lkml/2016/8/19/411
->
-> Kim, I don't have arm test machine. Can you please help me to test
-> this on arm.
->
->
-> Kim Phillips (1):
->   perf annotate: cross arch annotate support fixes for ARM
->
-> Naveen N. Rao (1):
->   perf annotate: Add support for powerpc
->
-> Ravi Bangoria (4):
->   perf annotate: Add cross arch annotate support
->   perf annotate: Show raw form for jump instruction with indirect target
->   perf annotate: Support jump instruction with target as second operand
->   perf annotate: Fix jump target outside of function address range
->
->  tools/perf/builtin-top.c          |   2 +-
->  tools/perf/ui/browsers/annotate.c |   8 +-
->  tools/perf/ui/gtk/annotate.c      |   2 +-
->  tools/perf/util/annotate.c        | 259 ++++++++++++++++++++++++++++++++------
->  tools/perf/util/annotate.h        |   8 +-
->  5 files changed, 232 insertions(+), 47 deletions(-)
->
+diff --git a/drivers/usb/gadget/function/rndis.c b/drivers/usb/gadget/function/rndis.c
+index ab6ac1b74ac0..766c328c15c0 100644
+--- a/drivers/usb/gadget/function/rndis.c
++++ b/drivers/usb/gadget/function/rndis.c
+@@ -474,8 +474,7 @@ static int gen_ndis_query_resp(struct rndis_params *params, u32 OID, u8 *buf,
+ 		break;
+ 
+ 	default:
+-		pr_warning("%s: query unknown OID 0x%08X\n",
+-			 __func__, OID);
++		pr_warn("%s: query unknown OID 0x%08X\n", __func__, OID);
+ 	}
+ 	if (retval < 0)
+ 		length = 0;
+@@ -546,8 +545,8 @@ static int gen_ndis_set_resp(struct rndis_params *params, u32 OID,
+ 		break;
+ 
+ 	default:
+-		pr_warning("%s: set unknown OID 0x%08X, size %d\n",
+-			 __func__, OID, buf_len);
++		pr_warn("%s: set unknown OID 0x%08X, size %d\n",
++			__func__, OID, buf_len);
+ 	}
+ 
+ 	return retval;
+@@ -854,7 +853,7 @@ int rndis_msg_parser(struct rndis_params *params, u8 *buf)
+ 		 * In one case those messages seemed to relate to the host
+ 		 * suspending itself.
+ 		 */
+-		pr_warning("%s: unknown RNDIS message 0x%08X len %d\n",
++		pr_warn("%s: unknown RNDIS message 0x%08X len %d\n",
+ 			__func__, MsgType, MsgLength);
+ 		print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET,
+ 				     buf, MsgLength);
+diff --git a/drivers/usb/gadget/function/u_serial.c b/drivers/usb/gadget/function/u_serial.c
+index e0cd1e4c8892..62ec842874aa 100644
+--- a/drivers/usb/gadget/function/u_serial.c
++++ b/drivers/usb/gadget/function/u_serial.c
+@@ -622,8 +622,8 @@ static void gs_write_complete(struct usb_ep *ep, struct usb_request *req)
+ 	switch (req->status) {
+ 	default:
+ 		/* presumably a transient fault */
+-		pr_warning("%s: unexpected %s status %d\n",
+-				__func__, ep->name, req->status);
++		pr_warn("%s: unexpected %s status %d\n",
++			__func__, ep->name, req->status);
+ 		/* FALL THROUGH */
+ 	case 0:
+ 		/* normal completion */
+diff --git a/drivers/usb/gadget/udc/at91_udc.h b/drivers/usb/gadget/udc/at91_udc.h
+index 0a433e6b346b..9bbe72764f31 100644
+--- a/drivers/usb/gadget/udc/at91_udc.h
++++ b/drivers/usb/gadget/udc/at91_udc.h
+@@ -175,7 +175,7 @@ struct at91_request {
+ #endif
+ 
+ #define ERR(stuff...)		pr_err("udc: " stuff)
+-#define WARNING(stuff...)	pr_warning("udc: " stuff)
++#define WARNING(stuff...)	pr_warn("udc: " stuff)
+ #define INFO(stuff...)		pr_info("udc: " stuff)
+ #define DBG(stuff...)		pr_debug("udc: " stuff)
+ 
+diff --git a/drivers/usb/gadget/udc/atmel_usba_udc.c b/drivers/usb/gadget/udc/atmel_usba_udc.c
+index 45bc997d0711..1ef7a9a9d7f5 100644
+--- a/drivers/usb/gadget/udc/atmel_usba_udc.c
++++ b/drivers/usb/gadget/udc/atmel_usba_udc.c
+@@ -1464,8 +1464,8 @@ static void usba_control_irq(struct usba_udc *udc, struct usba_ep *ep)
+ 		pkt_len = USBA_BFEXT(BYTE_COUNT, usba_ep_readl(ep, STA));
+ 		DBG(DBG_HW, "Packet length: %u\n", pkt_len);
+ 		if (pkt_len != sizeof(crq)) {
+-			pr_warning("udc: Invalid packet length %u "
+-				"(expected %zu)\n", pkt_len, sizeof(crq));
++			pr_warn("udc: Invalid packet length %u (expected %zu)\n",
++				pkt_len, sizeof(crq));
+ 			set_protocol_stall(udc, ep);
+ 			return;
+ 		}
+diff --git a/drivers/usb/gadget/udc/fsl_usb2_udc.h b/drivers/usb/gadget/udc/fsl_usb2_udc.h
+index 84715625b2b3..e92b8408b6f6 100644
+--- a/drivers/usb/gadget/udc/fsl_usb2_udc.h
++++ b/drivers/usb/gadget/udc/fsl_usb2_udc.h
+@@ -554,7 +554,7 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
+ #endif
+ 
+ #define ERR(stuff...)		pr_err("udc: " stuff)
+-#define WARNING(stuff...)		pr_warning("udc: " stuff)
++#define WARNING(stuff...)	pr_warn("udc: " stuff)
+ #define INFO(stuff...)		pr_info("udc: " stuff)
+ 
+ /*-------------------------------------------------------------------------*/
+diff --git a/drivers/usb/gadget/udc/m66592-udc.c b/drivers/usb/gadget/udc/m66592-udc.c
+index 6e977dc22570..de3e03483659 100644
+--- a/drivers/usb/gadget/udc/m66592-udc.c
++++ b/drivers/usb/gadget/udc/m66592-udc.c
+@@ -637,7 +637,7 @@ static void init_controller(struct m66592 *m66592)
+ 			clock = M66592_XTAL48;
+ 			break;
+ 		default:
+-			pr_warning("m66592-udc: xtal configuration error\n");
++			pr_warn("m66592-udc: xtal configuration error\n");
+ 			clock = 0;
+ 		}
+ 
+@@ -649,7 +649,7 @@ static void init_controller(struct m66592 *m66592)
+ 			irq_sense = 0;
+ 			break;
+ 		default:
+-			pr_warning("m66592-udc: irq trigger config error\n");
++			pr_warn("m66592-udc: irq trigger config error\n");
+ 			irq_sense = 0;
+ 		}
+ 
+diff --git a/drivers/usb/gadget/udc/omap_udc.h b/drivers/usb/gadget/udc/omap_udc.h
+index cfadeb5fc5de..26974196cf44 100644
+--- a/drivers/usb/gadget/udc/omap_udc.h
++++ b/drivers/usb/gadget/udc/omap_udc.h
+@@ -187,7 +187,7 @@ struct omap_udc {
+ #endif
+ 
+ #define ERR(stuff...)		pr_err("udc: " stuff)
+-#define WARNING(stuff...)	pr_warning("udc: " stuff)
++#define WARNING(stuff...)	pr_warn("udc: " stuff)
+ #define INFO(stuff...)		pr_info("udc: " stuff)
+ #define DBG(stuff...)		pr_debug("udc: " stuff)
+ 
+diff --git a/drivers/usb/gadget/udc/pxa25x_udc.h b/drivers/usb/gadget/udc/pxa25x_udc.h
+index 4b8b72d7ab37..a458bec2536d 100644
+--- a/drivers/usb/gadget/udc/pxa25x_udc.h
++++ b/drivers/usb/gadget/udc/pxa25x_udc.h
+@@ -248,7 +248,7 @@ dump_state(struct pxa25x_udc *dev)
+ #define DBG(lvl, stuff...) do{if ((lvl) <= UDC_DEBUG) DMSG(stuff);}while(0)
+ 
+ #define ERR(stuff...)		pr_err("udc: " stuff)
+-#define WARNING(stuff...)	pr_warning("udc: " stuff)
++#define WARNING(stuff...)	pr_warn("udc: " stuff)
+ #define INFO(stuff...)		pr_info("udc: " stuff)
+ 
+ 
+diff --git a/drivers/usb/host/isp1362-hcd.c b/drivers/usb/host/isp1362-hcd.c
+index 6cf82ee460a6..0f2b4b358e1a 100644
+--- a/drivers/usb/host/isp1362-hcd.c
++++ b/drivers/usb/host/isp1362-hcd.c
+@@ -147,7 +147,7 @@ static inline struct isp1362_ep_queue *get_ptd_queue(struct isp1362_hcd *isp1362
+ 	if (epq)
+ 		DBG(1, "%s: PTD $%04x is on %s queue\n", __func__, offset, epq->name);
+ 	else
+-		pr_warning("%s: invalid PTD $%04x\n", __func__, offset);
++		pr_warn("%s: invalid PTD $%04x\n", __func__, offset);
+ 
+ 	return epq;
+ }
+@@ -157,8 +157,9 @@ static inline int get_ptd_offset(struct isp1362_ep_queue *epq, u8 index)
+ 	int offset;
+ 
+ 	if (index * epq->blk_size > epq->buf_size) {
+-		pr_warning("%s: Bad %s index %d(%d)\n", __func__, epq->name, index,
+-		     epq->buf_size / epq->blk_size);
++		pr_warn("%s: Bad %s index %d(%d)\n",
++			__func__, epq->name, index,
++			epq->buf_size / epq->blk_size);
+ 		return -EINVAL;
+ 	}
+ 	offset = epq->buf_start + index * epq->blk_size;
+@@ -902,8 +903,8 @@ static void start_iso_transfers(struct isp1362_hcd *isp1362_hcd)
+ 
+ 			ptd_offset = next_ptd(epq, ep);
+ 			if (ptd_offset < 0) {
+-				pr_warning("%s: req %d No more %s PTD buffers available\n", __func__,
+-				     ep->num_req, epq->name);
++				pr_warn("%s: req %d No more %s PTD buffers available\n",
++					__func__, ep->num_req, epq->name);
+ 				break;
+ 			}
+ 		}
+@@ -973,8 +974,8 @@ static void finish_transfers(struct isp1362_hcd *isp1362_hcd, unsigned long done
+ 			break;
+ 	}
+ 	if (done_map)
+-		pr_warning("%s: done_map not clear: %08lx:%08lx\n", __func__, done_map,
+-		     epq->skip_map);
++		pr_warn("%s: done_map not clear: %08lx:%08lx\n",
++			__func__, done_map, epq->skip_map);
+ 	atomic_dec(&epq->finishing);
+ }
+ 
+@@ -1433,7 +1434,7 @@ static int isp1362_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+ 		} else
+ 			DBG(1, "%s: urb %p active; wait4irq\n", __func__, urb);
+ 	} else {
+-		pr_warning("%s: No EP in URB %p\n", __func__, urb);
++		pr_warn("%s: No EP in URB %p\n", __func__, urb);
+ 		retval = -EINVAL;
+ 	}
+ done:
+@@ -1748,10 +1749,10 @@ static int isp1362_bus_suspend(struct usb_hcd *hcd)
+ 		/* FALL THROUGH */
+ 	case OHCI_USB_RESET:
+ 		status = -EBUSY;
+-		pr_warning("%s: needs reinit!\n", __func__);
++		pr_warn("%s: needs reinit!\n", __func__);
+ 		goto done;
+ 	case OHCI_USB_SUSPEND:
+-		pr_warning("%s: already suspended?\n", __func__);
++		pr_warn("%s: already suspended?\n", __func__);
+ 		goto done;
+ 	}
+ 	DBG(0, "%s: suspend root hub\n", __func__);
+@@ -1839,7 +1840,7 @@ static int isp1362_bus_resume(struct usb_hcd *hcd)
+ 	isp1362_hcd->hc_control = isp1362_read_reg32(isp1362_hcd, HCCONTROL);
+ 	pr_info("%s: HCCONTROL: %08x\n", __func__, isp1362_hcd->hc_control);
+ 	if (hcd->state == HC_STATE_RESUMING) {
+-		pr_warning("%s: duplicate resume\n", __func__);
++		pr_warn("%s: duplicate resume\n", __func__);
+ 		status = 0;
+ 	} else
+ 		switch (isp1362_hcd->hc_control & OHCI_CTRL_HCFS) {
+@@ -2474,8 +2475,8 @@ static int isp1362_chip_test(struct isp1362_hcd *isp1362_hcd)
+ 					    __func__, offset);
+ 					break;
+ 				}
+-				pr_warning("%s: memory check with offset %02x ok after second read\n",
+-				     __func__, offset);
++				pr_warn("%s: memory check with offset %02x ok after second read\n",
++					__func__, offset);
+ 			}
+ 		}
+ 		kfree(ref);
+diff --git a/drivers/usb/isp1760/isp1760-if.c b/drivers/usb/isp1760/isp1760-if.c
+index 9535b2872183..79205b31e4a9 100644
+--- a/drivers/usb/isp1760/isp1760-if.c
++++ b/drivers/usb/isp1760/isp1760-if.c
+@@ -197,7 +197,7 @@ static int isp1760_plat_probe(struct platform_device *pdev)
+ 
+ 	irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+ 	if (!irq_res) {
+-		pr_warning("isp1760: IRQ resource not available\n");
++		pr_warn("isp1760: IRQ resource not available\n");
+ 		return -ENODEV;
+ 	}
+ 	irqflags = irq_res->flags & IRQF_TRIGGER_MASK;
+-- 
+2.10.0.rc2.1.g053435c
