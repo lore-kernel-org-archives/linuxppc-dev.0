@@ -1,26 +1,36 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0070.outbound.protection.outlook.com [104.47.2.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjm9w1rZxzDrKW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 13:13:07 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Scott Wood <oss@buserror.net>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "pku.leo@gmail.com" <pku.leo@gmail.com>, "X.B. Xie" <xiaobo.xie@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [v6,2/2] QE: remove PPCisms for QE
-Date: Tue, 27 Sep 2016 03:13:01 +0000
-Message-ID: <AM3PR04MB1185A6CF59684B7B11C8D59A91CC0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1474597232-33397-2-git-send-email-qiang.zhao@nxp.com>
- <20160925041411.GA16092@home.buserror.net>
- <20160925041906.GA16719@home.buserror.net>
- <AM3PR04MB1185D2F7F34FACE514ABE51991CD0@AM3PR04MB1185.eurprd04.prod.outlook.com>
- <1474931495.4283.44.camel@buserror.net>
-In-Reply-To: <1474931495.4283.44.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjpCX6kjTzDrSj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 14:44:40 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8R4gpv1128382
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 00:44:39 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25qh5aj1yq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 00:44:38 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 27 Sep 2016 00:44:37 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Jack Miller <jack@codezen.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: jk@ozlabs.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] powernv: Search for new flash DT node location
+In-Reply-To: <87vazhb4cb.fsf@concordia.ellerman.id.au>
+References: <147020859492.19099.3536038186529840354@concordia>
+ <20160803164412.7039-1-jack@codezen.org>
+ <87vazhb4cb.fsf@concordia.ellerman.id.au>
+Date: Tue, 27 Sep 2016 14:44:25 +1000
 MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <8737kmx87q.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,71 +40,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVHVlLCBTZXAgMjcsIDIwMTYgYXQgNzoxMkFNIC0wNTAwLCBTY290dCBXb29kIHdyb3RlOg0K
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFNjb3R0IFdvb2QgW21haWx0
-bzpvc3NAYnVzZXJyb3IubmV0XQ0KPiBTZW50OiBUdWVzZGF5LCBTZXB0ZW1iZXIgMjcsIDIwMTYg
-NzoxMiBBTQ0KPiBUbzogUWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29tPg0KPiBDYzogbGlu
-dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IHBrdS5sZW9AZ21haWwuY29tOyBYLkIuIFhpZQ0K
-PiA8eGlhb2JvLnhpZUBueHAuY29tPjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBT
-dWJqZWN0OiBSZTogW3Y2LDIvMl0gUUU6IHJlbW92ZSBQUENpc21zIGZvciBRRQ0KPiANCj4gT24g
-TW9uLCAyMDE2LTA5LTI2IGF0IDAxOjQ2ICswMDAwLCBRaWFuZyBaaGFvIHdyb3RlOg0KPiA+IE9u
-IFN1biwgU2VwIDI1LCAyMDE2IGF0IDEyOjE5UE0gLTA1MDAsIFNjb3R0IFdvb2Qgd3JvdGU6DQo+
-ID4NCj4gPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTog
-U2NvdHQgV29vZCBbbWFpbHRvOm9zc0BidXNlcnJvci5uZXRdDQo+ID4gPiBTZW50OiBTdW5kYXks
-IFNlcHRlbWJlciAyNSwgMjAxNiAxMjoxOSBQTQ0KPiA+ID4gVG86IFFpYW5nIFpoYW8gPHFpYW5n
-LnpoYW9AbnhwLmNvbT4NCj4gPiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsg
-cGt1Lmxlb0BnbWFpbC5jb207IFguQi4gWGllDQo+ID4gPiA8eGlhb2JvLnhpZUBueHAuY29tPjsg
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFt2NiwyLzJd
-IFFFOiByZW1vdmUgUFBDaXNtcyBmb3IgUUUNCj4gPiA+DQo+ID4gPiBPbiBTYXQsIFNlcCAyNCwg
-MjAxNiBhdCAxMToxNDoxMVBNIC0wNTAwLCBTY290dCBXb29kIHdyb3RlOg0KPiA+ID4gPg0KPiA+
-ID4gPiBPbiBGcmksIFNlcCAyMywgMjAxNiBhdCAxMDoyMDozMkFNICswODAwLCBaaGFvIFFpYW5n
-IHdyb3RlOg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gUUUgd2FzIHN1cHBvcnRlZCBvbiBQb3dlclBD
-LCBhbmQgZGVwZW5kZW50IG9uIFBQQywgTm93IGl0IGlzDQo+ID4gPiA+ID4gc3VwcG9ydGVkIG9u
-IG90aGVyIHBsYXRmb3Jtcy4gc28gcmVtb3ZlIFBQQ2lzbXMuDQo+ID4gPiA+ID4NCj4gPiA+ID4g
-PiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQG54cC5jb20+DQo+ID4gPiA+
-ID4gLS0tDQo+ID4gPiA+ID4gQ2hhbmdlcyBmb3IgdjI6DQo+ID4gPiA+ID4gCS0gbmENCj4gPiA+
-ID4gPiBDaGFuZ2VzIGZvciB2MzoNCj4gPiA+ID4gPiAJLSBhZGQgTk9fSVJRDQo+ID4gPiA+ID4g
-Q2hhbmdlcyBmb3IgdjQ6DQo+ID4gPiA+ID4gCS0gbW9kaWZ5IHNwaW5fZXZlbnRfdGltZW91dCB0
-byBvcGVuY29kZWQgdGltZW91dCBsb29wDQo+ID4gPiA+ID4gCS0gcmVtb3ZlIE5PX0lSUQ0KPiA+
-ID4gPiA+IAktIG1vZGlmeSB2aXJxX3RvX2h3IHRvIG9wZW5jb2VkIGNvZGUgQ2hhbmdlcyBmb3Ig
-djU6DQo+ID4gPiA+ID4gCS0gbW9kaWZ5IGNvbW1pdCBtc2cNCj4gPiA+ID4gPiAJLSBtb2RpZnkg
-ZGVwZW5kcyBvZiBRVUlDQ19FTkdJTkUNCj4gPiA+ID4gPiAJLSBhZGQga2VybmVsZG9jIGhlYWRl
-ciBmb3IgcWVfaXNzdWVfY21kIENoYW5nZXMgZm9yIHY2Og0KPiA+ID4gPiA+IAktIGFkZCBkZXBl
-bmRlbmN5IG9uIEZTTF9TT0MgYW5kIFBQQzMyIGZvciBkcml2ZXJzDQo+ID4gPiA+ID4gCcKgwqBk
-ZXBlbmRpbmcgb24gUVVJQ0NfRU5HSU5HIGJ1dCBub3QgYXZhaWxhYmxlIG9uIEFSTQ0KPiA+ID4g
-PiA+DQo+ID4gPiA+ID4gwqBkcml2ZXJzL2lycWNoaXAvcWVfaWMuY8KgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgfCAyOCArKysrKysrLS0tLS0NCj4gPiA+ID4gPiDCoGRyaXZlcnMvbmV0
-L2V0aGVybmV0L2ZyZWVzY2FsZS9LY29uZmlnIHwgMTAgKystLS0NCj4gPiA+ID4gPiDCoGRyaXZl
-cnMvc29jL2ZzbC9xZS9LY29uZmlnwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB8wqDCoDIgKy0N
-Cj4gPiA+ID4gPiDCoGRyaXZlcnMvc29jL2ZzbC9xZS9xZS5jwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqB8IDgwDQo+ID4gPiA+ID4gKysrKysrKysrKysrKysrKysrKystLS0tLQ0KPiA+
-ID4gPiA+IC0tLS0tLS0tLQ0KPiA+ID4gPiA+IMKgZHJpdmVycy9zb2MvZnNsL3FlL3FlX2lvLmPC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHwgNDIgKysrKysrKystLS0tLS0tLS0tDQo+ID4gPiA+
-ID4gwqBkcml2ZXJzL3NvYy9mc2wvcWUvcWVfdGRtLmPCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB8
-wqDCoDggKystLQ0KPiA+ID4gPiA+IMKgZHJpdmVycy9zb2MvZnNsL3FlL3VjYy5jwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgfCAxMCArKy0tLQ0KPiA+ID4gPiA+IMKgZHJpdmVycy9zb2Mv
-ZnNsL3FlL3VjY19mYXN0LmPCoMKgwqDCoMKgwqDCoMKgwqDCoHwgNjgNCj4gPiA+ID4gPiArKysr
-KysrKysrKysrKy0tLS0tLS0tLS0tDQo+ID4gPiA+ID4gLS0tLQ0KPiA+ID4gPiA+IMKgZHJpdmVy
-cy90dHkvc2VyaWFsL0tjb25maWfCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHzCoMKgMiArLQ0K
-PiA+ID4gPiA+IMKgZHJpdmVycy91c2IvZ2FkZ2V0L3VkYy9LY29uZmlnwqDCoMKgwqDCoMKgwqDC
-oMKgfMKgwqAyICstDQo+ID4gPiA+ID4gwqBkcml2ZXJzL3VzYi9ob3N0L0tjb25maWfCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB8wqDCoDIgKy0NCj4gPiA+ID4gPiDCoGluY2x1ZGUvc29j
-L2ZzbC9xZS9xZS5owqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB8wqDCoDEgLQ0KPiA+
-ID4gPiA+IMKgaW5jbHVkZS9zb2MvZnNsL3FlL3FlX2ljLmjCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoHwgMTIgKystLS0NCj4gPiA+ID4gPiDCoDEzIGZpbGVzIGNoYW5nZWQsIDE0MSBpbnNlcnRp
-b25zKCspLCAxMjYgZGVsZXRpb25zKC0pDQo+ID4gPiA+IEkgYXNzdW1lIHRoaXMgbWVhbnMgeW91
-J2xsIGJlIHVwZGF0aW5nDQo+ID4gPiA+IGh0dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRj
-aC82NTQ0NzMvDQo+ID4gPiA+IHRvIGJlIGJhc2VkIG9uIHRvcCBvZiB0aGlzLi4uDQo+ID4gPiBB
-cHBhcmVudGx5IHRoYXQgYXNzdW1wdGlvbiB3YXMgd3JvbmcsIHNpbmNlIEkgbm93IHNlZSB0aGF0
-IHlvdSdyZQ0KPiA+ID4gcGF0Y2hpbmcgZHJpdmVycy9pcnFjaGlwL3FlX2ljLmMgcmF0aGVyIHRo
-YW4gZHJpdmVycy9zb2MvZnNsL3FlL3FlX2ljLmMuDQo+ID4gPiBQbGVhc2Uga2VlcCB0aGUgZHJp
-dmVycy9pcnFjaGlwIHN0dWZmIHNlcGFyYXRlIGFuZCBzZW5kIHRvIHRoZQ0KPiA+ID4gYXBwcm9w
-cmlhdGUgbWFpbnRhaW5lcnMuDQo+ID4gPg0KPiA+IFlvdSBtZWFucyBzZXBhcmF0ZSBkcml2ZXJz
-L2lycWNoaXAvcWVfaWMuYyBwYXJ0IGZyb20gdGhpcyBwYXRjaCBhbmQNCj4gPiBzZW5kIGl0IHdp
-dGggdGhlIG90aGVyIHFlX2ljIHBhdGNoZXM/DQo+ID4gSXMgaXQgYWNjZXB0YWJsZSBpZiBJIG1v
-ZGlmeSBxZV9pYy5jIHdpdGggZHJpdmVycy9zb2MvZnNsL3FlL3FlX2ljLmMsDQo+ID4gdGhlbiBz
-ZW5kIHFlX2ljIHBhdGNoZXMgdG8gbW92ZSBxZV9pYyB0byBkcml2ZXJzL2lycWNoaXA/DQo+IA0K
-PiBJJ2QgcmVjb21tZW5kIGFnYWluc3QgaXQuIMKgSXQgd291bGQgY29tcGxpY2F0ZSBnZXR0aW5n
-IHRoZSBkcml2ZXJzL2lycWNoaXANCj4gcGF0Y2hzZXQgbWVyZ2VkLiDCoEluIGFueSBjYXNlLCBp
-dCdzIHRvbyBsYXRlIGZvciA0LjkuDQoNCk9rLCB0aGFuayB5b3UgZm9yIHlvdXIgcmVjb21tZW5k
-Lg0KDQpCUg0KLVpoYW8gUWlhbmcNCg==
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> Jack Miller <jack@codezen.org> writes:
+>
+>> On Wed, Aug 03, 2016 at 05:16:34PM +1000, Michael Ellerman wrote:
+>>> We could instead just search for all nodes that are compatible with
+>>> "ibm,opal-flash". We do that for i2c, see opal_i2c_create_devs().
+>>> 
+>>> Is there a particular reason not to do that?
+>>
+>> I'm actually surprised that this is preferred. Jeremy mentioned something
+>> similar, but I guess I just don't like the idea of finding devices in weird
+>> places in the tree.
+>
+> But where is "weird". Arguably "/opal/flash" is weird. What does it
+> mean? There's a bus called "opal" and a device on it called "flash"? No.
+>
+> Point being the structure is fairly arbitrary, or at least debatable, so
+> tying the code 100% to the structure is inflexible. As we have discovered.
+>
+> Our other option is to tell skiboot to get stuffed, and leave the flash
+> node where it was on P8.
+>
+>> Then again, if we can't trust the DT we're in bigger
+>> trouble than erroneous flash nodes =).
+>
+> Quite :)
+>
+>> If we really just want to find compatible nodes anywhere, let's simplify i2c
+>> and pdev_init into one function and make that behavior consistent with this
+>> new patch.
+>
+> That seems OK to me.
+>
+> We should get an ack from Stewart though for the other node types.
+
+For finding nodes based on compatible no matter where they are in the tree,
+
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+
+(and yes, includes other nodes too)
+
+The exact location then isn't too important, and having a /flash that's
+ibm,opal-flash and allows for some other driver to bind to it I think is
+also something we shouldn't rule out.
+
+-- 
+Stewart Smith
+OPAL Architect, IBM.
