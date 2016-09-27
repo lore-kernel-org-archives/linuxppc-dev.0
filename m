@@ -1,19 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjrjf48qdzDrMX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 16:37:26 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 5/6] powerpc/boot: add xz support to the wrapper script
-In-Reply-To: <1474527274-10897-6-git-send-email-oohall@gmail.com>
-References: <1474527274-10897-1-git-send-email-oohall@gmail.com>
- <1474527274-10897-6-git-send-email-oohall@gmail.com>
-Date: Tue, 27 Sep 2016 16:37:23 +1000
-Message-ID: <87lgyd7srg.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3sjtJb0ZC2zDrSr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 17:49:18 +1000 (AEST)
+Date: Tue, 27 Sep 2016 03:49:10 -0400 (EDT)
+Message-Id: <20160927.034910.2028580268696548096.davem@davemloft.net>
+To: naveen.n.rao@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, mpe@ellerman.id.au, ast@fb.com,
+ daniel@iogearbox.net, ananth@in.ibm.com
+Subject: Re: [PATCH 1/2] bpf samples: fix compiler errors with sockex2 and
+ sockex3
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <7b29fba6073924dc4c9e7d639eefb0b15a98660d.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <7b29fba6073924dc4c9e7d639eefb0b15a98660d.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,46 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Date: Sat, 24 Sep 2016 02:10:04 +0530
 
-> This modifies the script so that the -Z option takes an argument to
-> specify the compression type. It can either be 'gz', 'xz' or 'none'.
-> The legazy --no-gzip and -z options are still supported and will set
-> the compression to none and gzip respectively, but they are not
-> documented.
->
-> Only xz -6 is used for compression rather than xz -9. Using compression
-> levels higher than 6 requires the decompressor to build a large (64MB)
-> dictionary when decompressing and some environments cannot satisfy large
-> allocations (e.g. POWER 6 LPAR partition firmware).
+> These samples fail to compile as 'struct flow_keys' conflicts with
+> definition in net/flow_dissector.h. Fix the same by renaming the
+> structure used in the sample.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-This isn't working for me on machines that use uImage.
-
-That's the "uboot" case in wrapper, where we do:
-
-    ${MKIMAGE} -A ppc -O linux -T kernel -C gzip -a $membase -e $membase \
-	$uboot_version -d "$vmz" "$ofile"
-
-ie. we tell mkimage that we're using gzip compression, regardless of
-whether we actually are.
-
-That leads to something like:
-
-  ## Booting kernel from Legacy Image at 01000000 ...
-     Image Name:   Linux-4.8.0-rc5-compiler_gcc-6.2
-     Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-     Data Size:    3381044 Bytes = 3.2 MiB
-     Load Address: 00000000
-     Entry Point:  00000000
-     Verifying Checksum ... OK
-  ## Flattened Device Tree blob at 0c000000
-     Booting using the fdt blob at 0xc000000
-     Uncompressing Kernel Image ... Error: Bad gzipped data
-  gzip compressed: uncompress error -1
-  Must RESET board to recover
-
-
-So you'll need to do some juggling so you can pass the right argument
-for -C to mkimage.
-
-cheers
+Applied to net-next.
