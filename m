@@ -1,23 +1,27 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3sjtJf11JqzDrSr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 17:49:22 +1000 (AEST)
-Date: Tue, 27 Sep 2016 03:49:18 -0400 (EDT)
-Message-Id: <20160927.034918.1429109762920005486.davem@davemloft.net>
-To: naveen.n.rao@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, mpe@ellerman.id.au, ast@fb.com,
- daniel@iogearbox.net, ananth@in.ibm.com
-Subject: Re: [PATCH 2/2] bpf samples: update tracex5 sample to use
- __seccomp_filter
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <8e5ab9853508240e901260b1af36243c4d744083.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <7b29fba6073924dc4c9e7d639eefb0b15a98660d.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
- <7b29fba6073924dc4c9e7d639eefb0b15a98660d.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
- <8e5ab9853508240e901260b1af36243c4d744083.1474661952.git.naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <jstancek@redhat.com>
+Received: from mx3-phx2.redhat.com (mx3-phx2.redhat.com [209.132.183.24])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjvvn3WBVzDrVJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 19:01:25 +1000 (AEST)
+Date: Tue, 27 Sep 2016 05:01:03 -0400 (EDT)
+From: Jan Stancek <jstancek@redhat.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Marcelo Cerri <marcelo.cerri@canonical.com>,
+ rui y wang <rui.y.wang@intel.com>, mhcerri@linux.vnet.ibm.com,
+ leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Message-ID: <346154437.225735.1474966863173.JavaMail.zimbra@redhat.com>
+In-Reply-To: <20160927030826.GB8579@gondor.apana.org.au>
+References: <450861381.1559123.1474673197124.JavaMail.zimbra@redhat.com>
+ <1655600242.1561022.1474676547316.JavaMail.zimbra@redhat.com>
+ <20160926145934.GA5520@gondor.apana.org.au>
+ <20160926174317.GA21317@gallifrey>
+ <20160927030826.GB8579@gondor.apana.org.au>
+Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,12 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Date: Sat, 24 Sep 2016 02:10:05 +0530
 
-> seccomp_phase1() does not exist anymore. Instead, update sample to use
-> __seccomp_filter(). While at it, set max locked memory to unlimited.
+
+
+
+----- Original Message -----
+> From: "Herbert Xu" <herbert@gondor.apana.org.au>
+> To: "Marcelo Cerri" <marcelo.cerri@canonical.com>
+> Cc: "Jan Stancek" <jstancek@redhat.com>, "rui y wang" <rui.y.wang@intel.com>, mhcerri@linux.vnet.ibm.com,
+> leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com, linux-crypto@vger.kernel.org,
+> linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+> Sent: Tuesday, 27 September, 2016 5:08:26 AM
+> Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
 > 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> On Mon, Sep 26, 2016 at 02:43:17PM -0300, Marcelo Cerri wrote:
+> > 
+> > Wouldn't be enough to provide a pair of import/export functions as the
+> > padlock-sha driver does?
+> 
+> I don't think that will help as ultimately you need to call the
+> export function on the fallback and that's what requires the extra
+> memory.  In fact very operation involving the fallback will need
+> that extra memory too.
 
-Also applied to net-next, thanks.
+So, if we extended p8_ghash_desc_ctx to accommodate fallback_desc's ctx
+and then provided statesize/import/export, would that be acceptable?
+
+struct p8_ghash_desc_ctx {
+        ...
+        struct shash_desc fallback_desc;
++       char fallback_ctx[sizeof(struct ghash_desc_ctx)];
+
+
+Also, does that mean that padlock_sha has similar problem?
+It does not seem to reserve any space for fallback __ctx and it calls
+init()/update()/export() with padlock_sha_desc's fallback:
+
+struct padlock_sha_desc {
+        struct shash_desc fallback;
+};
+
+static struct shash_alg sha1_alg = {
+        .descsize       =       sizeof(struct padlock_sha_desc),
+
+Regards,
+Jan
+
+> 
+> Cheers,
+> --
+> Email: Herbert Xu <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> 
