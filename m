@@ -1,25 +1,21 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sjqc52wJczDrSx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sjqc564KszDrSv
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 15:47:33 +1000 (AEST)
-Date: Tue, 27 Sep 2016 15:46:52 +1000
+Date: Tue, 27 Sep 2016 15:46:07 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Alexander Graf <agraf@suse.com>, Bharat Bhushan <r65777@freescale.com>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [patch] KVM: PPC: fix a sanity check
-Message-ID: <20160927054652.gikspz75ilmluecz@oak.ozlabs.ibm.com>
-References: <20160714101545.GB18175@mwanda>
+ LINUX FOR POWERPC <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2] Remove duplicate setting of the B field in tlbie
+Message-ID: <20160927054607.f7g6vgkupkjuymim@oak.ozlabs.ibm.com>
+References: <f706a4d0-40d5-2eaa-67d9-8fb02475ca4d@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160714101545.GB18175@mwanda>
+In-Reply-To: <f706a4d0-40d5-2eaa-67d9-8fb02475ca4d@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,12 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 14, 2016 at 01:15:46PM +0300, Dan Carpenter wrote:
-> We use logical negate where bitwise negate was intended.  It means that
-> we never return -EINVAL here.
+On Fri, Sep 16, 2016 at 05:25:50PM +1000, Balbir Singh wrote:
 > 
-> Fixes: ce11e48b7fdd ('KVM: PPC: E500: Add userspace debug stub support')
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Remove duplicate setting of the the "B" field when doing a tlbie(l).
+> In compute_tlbie_rb(), the "B" field is set again just before
+> returning the rb value to be used for tlbie(l).
+> 
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
 Thanks, applied to kvm-ppc-next.
 
