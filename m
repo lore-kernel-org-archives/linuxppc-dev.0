@@ -1,33 +1,47 @@
-Return-Path: <marcelo.cerri@canonical.com>
-Received: from mail-qk0-x230.google.com (mail-qk0-x230.google.com
- [IPv6:2607:f8b0:400d:c09::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skBDY4wFmzDrVy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 05:46:53 +1000 (AEST)
-Received: by mail-qk0-x230.google.com with SMTP id z190so27409911qkc.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 12:46:53 -0700 (PDT)
-Date: Tue, 27 Sep 2016 16:46:44 -0300
-From: Marcelo Cerri <marcelo.cerri@canonical.com>
-To: Jan Stancek <jstancek@redhat.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
- rui y wang <rui.y.wang@intel.com>, mhcerri@linux.vnet.ibm.com,
- leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
-Message-ID: <20160927194644.GB15729@gallifrey>
-References: <450861381.1559123.1474673197124.JavaMail.zimbra@redhat.com>
- <1655600242.1561022.1474676547316.JavaMail.zimbra@redhat.com>
- <20160926145934.GA5520@gondor.apana.org.au>
- <20160926174317.GA21317@gallifrey>
- <20160927030826.GB8579@gondor.apana.org.au>
- <346154437.225735.1474966863173.JavaMail.zimbra@redhat.com>
- <20160927120414.GC21317@gallifrey>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="7gGkHNMELEOhSGF6"
-In-Reply-To: <20160927120414.GC21317@gallifrey>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skDsg4g1nzDrWP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 07:45:42 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8RLgx88073536
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 17:45:40 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25qu85fwnm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 17:45:39 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Wed, 28 Sep 2016 07:45:37 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DFFB63578056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 07:45:33 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8RLjXDb4587784
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 07:45:33 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8RLjXW2016854
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 07:45:33 +1000
+Subject: Re: [PATCH] PCI: Add parameter @mmio_force_on to pci_update_resource()
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Bjorn Helgaas <helgaas@kernel.org>, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, clsoto@us.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 28 Sep 2016 07:45:32 +1000
+In-Reply-To: <20160927192003.GA14642@localhost>
+References: <1474242810-11530-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20160927192003.GA14642@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1475012732.2857.293.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,130 +51,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2016-09-27 at 14:20 -0500, Bjorn Helgaas wrote:
+> On Mon, Sep 19, 2016 at 09:53:30AM +1000, Gavin Shan wrote:
+> > In pci_update_resource(), the PCI device's memory decoding (0x2 in
+> > PCI_COMMAND) is disabled when 64-bits memory BAR is updated if the
+> > PCI device's memory space wasn't asked to be always on by @pdev->
+> > mmio_always_on. The PF's memory decoding might be disabled when
+> > updating its IOV BARs in the following path. Actually, the PF's
+> > memory decoding shouldn't be disabled in this scenario as the PF
+> > has been started to provide services:
+> 
+> The reason we disable memory decoding while updating a 64-bit BAR is
+> because we can't do the update atomically, and a half-updated BAR might
+> conflict with other devices.
+> 
+> You need to explain what is special about these SR-IOV BARs that makes it
+> safe to update them non-atomically while decoding is enabled.
 
---7gGkHNMELEOhSGF6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The IOV BAR won't decode until SR-IOV is enabled right ? Gavin, I don't
+think we update it "live", so it should be safe...
 
-Jan,=20
-
-Can you check if the problem occurs with this patch?
-
----
- drivers/crypto/vmx/ghash.c | 28 +++++++++++++++++-----------
- drivers/crypto/vmx/vmx.c   |  9 +++++++++
- 2 files changed, 26 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/crypto/vmx/ghash.c b/drivers/crypto/vmx/ghash.c
-index 6c999cb0..033aba1 100644
---- a/drivers/crypto/vmx/ghash.c
-+++ b/drivers/crypto/vmx/ghash.c
-@@ -36,6 +36,8 @@
- #define GHASH_DIGEST_SIZE (16)
- #define GHASH_KEY_LEN (16)
-=20
-+#define GHASH_FALLBACK_ALG "ghash-generic"
-+
- void gcm_init_p8(u128 htable[16], const u64 Xi[2]);
- void gcm_gmult_p8(u64 Xi[2], const u128 htable[16]);
- void gcm_ghash_p8(u64 Xi[2], const u128 htable[16],
-@@ -53,18 +55,26 @@ struct p8_ghash_desc_ctx {
- 	struct shash_desc fallback_desc;
- };
-=20
-+int p8_ghash_fallback_descsize(void)
-+{
-+	int descsize;
-+	struct crypto_shash *fallback;
-+	fallback =3D crypto_alloc_shash(GHASH_FALLBACK_ALG, 0,
-+				      CRYPTO_ALG_NEED_FALLBACK);
-+	if (IS_ERR(fallback)) {
-+		return PTR_ERR(fallback);
-+	}
-+	descsize =3D crypto_shash_descsize(fallback);
-+	crypto_free_shash(fallback);
-+	return descsize;
-+}
-+
- static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
- {
--	const char *alg;
-+	const char *alg =3D GHASH_FALLBACK_ALG;
- 	struct crypto_shash *fallback;
--	struct crypto_shash *shash_tfm =3D __crypto_shash_cast(tfm);
- 	struct p8_ghash_ctx *ctx =3D crypto_tfm_ctx(tfm);
-=20
--	if (!(alg =3D crypto_tfm_alg_name(tfm))) {
--		printk(KERN_ERR "Failed to get algorithm name.\n");
--		return -ENOENT;
--	}
--
- 	fallback =3D crypto_alloc_shash(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
- 	if (IS_ERR(fallback)) {
- 		printk(KERN_ERR
-@@ -79,10 +89,6 @@ static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
- 			       crypto_shash_get_flags((struct crypto_shash
- 						       *) tfm));
- 	ctx->fallback =3D fallback;
--
--	shash_tfm->descsize =3D sizeof(struct p8_ghash_desc_ctx)
--	    + crypto_shash_descsize(fallback);
--
- 	return 0;
- }
-=20
-diff --git a/drivers/crypto/vmx/vmx.c b/drivers/crypto/vmx/vmx.c
-index 31a98dc..8a51149 100644
---- a/drivers/crypto/vmx/vmx.c
-+++ b/drivers/crypto/vmx/vmx.c
-@@ -28,6 +28,8 @@
- #include <asm/cputable.h>
- #include <crypto/internal/hash.h>
-=20
-+int p8_ghash_fallback_descsize(void);
-+
- extern struct shash_alg p8_ghash_alg;
- extern struct crypto_alg p8_aes_alg;
- extern struct crypto_alg p8_aes_cbc_alg;
-@@ -45,6 +47,7 @@ int __init p8_init(void)
- {
- 	int ret =3D 0;
- 	struct crypto_alg **alg_it;
-+	int ghash_descsize;
-=20
- 	for (alg_it =3D algs; *alg_it; alg_it++) {
- 		ret =3D crypto_register_alg(*alg_it);
-@@ -59,6 +62,12 @@ int __init p8_init(void)
- 	if (ret)
- 		return ret;
-=20
-+	ghash_descsize =3D p8_ghash_fallback_descsize();
-+	if (ghash_descsize < 0) {
-+		printk(KERN_ERR "Cannot get descsize for p8_ghash fallback\n");
-+		return ghash_descsize;
-+	}
-+	p8_ghash_alg.descsize +=3D ghash_descsize;
- 	ret =3D crypto_register_shash(&p8_ghash_alg);
- 	if (ret) {
- 		for (alg_it =3D algs; *alg_it; alg_it++)
---=20
-2.7.4
-
-
---7gGkHNMELEOhSGF6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJX6sykAAoJEM8aS8c01e1Hh6QH/16cT8y9Wxk7FCzdW+GxHCfw
-OEWV7Ze/CsNRtyBW8kNumkQRiusRm2eFH1DdUuHgWwm8D1UYdwlCHQffPM3j12KG
-sDos0HDMFne8tFeDF0S9D+ZL0DKbRaBCuUV3Q3udjyCGK8ySugO/m3a8132Zv3ul
-i4sWNiT/BrRP7ti/pG3PxFIcv/x3+XbJOXQUeyjWCq+b0JzYur53OJuPDr1M3Sqw
-B9GFs1J3fZ0uKlteCev2e4J6TpwJSyA9cdcM90/JzwVbp15NAIZhAhUaLVftUgYr
-aipRnOPzOv01fXCfSu8O/mAHJ8up1p7MjuorvwOD9Mr09tVO/dZcOcMdYwZ+B0s=
-=o5Hy
------END PGP SIGNATURE-----
-
---7gGkHNMELEOhSGF6--
+Cheers,
+Ben.
