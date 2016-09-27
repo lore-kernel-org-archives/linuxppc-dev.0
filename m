@@ -1,36 +1,26 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sk87G1xTqzDrWH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 04:12:09 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8RI8wEi132236
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 14:12:06 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25qr691y4y-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 14:12:06 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 27 Sep 2016 14:12:06 -0400
-Date: Tue, 27 Sep 2016 11:11:16 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: peterz@infradead.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v21 06/19] perf, tools: Support alias descriptions
-References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1473978296-20712-7-git-send-email-sukadev@linux.vnet.ibm.com>
- <20160927174100.GO5588@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sk9GQ5WBMzDrWK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 05:03:26 +1000 (AEST)
+Received: by mail-pa0-x232.google.com with SMTP id oz2so8277849pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 12:03:26 -0700 (PDT)
+Date: Wed, 28 Sep 2016 05:03:16 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ agraf@suse.de, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Align hot loops of memset() and
+ backwards_memcpy()
+Message-ID: <20160928050316.0290e4c5@roar.ozlabs.ibm.com>
+In-Reply-To: <20160925213659.18971b96@kryten>
+References: <1470293602-11121-1-git-send-email-anton@ozlabs.org>
+ <20160805210052.0f9a8c43@roar.ozlabs.ibm.com>
+ <20160925213659.18971b96@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160927174100.GO5588@kernel.org>
-Message-Id: <20160927181116.GA18012@us.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,31 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnaldo Carvalho de Melo [acme@kernel.org] wrote:
-> Em Thu, Sep 15, 2016 at 03:24:43PM -0700, Sukadev Bhattiprolu escreveu:
-> > From: Andi Kleen <ak@linux.intel.com>
-> > 
-> > Add support to print alias descriptions in perf list, which
-> > are taken from the generated event files.
-> > 
-> > The sorting code is changed to put the events with descriptions
-> > at the end. The descriptions are printed as possibly multiple word
-> > wrapped lines.
+On Sun, 25 Sep 2016 21:36:59 +1000
+Anton Blanchard <anton@samba.org> wrote:
+
+> Hi Nick,
 > 
-> So, now I'm trying to reproduce the results below, but I couldn't find a
-> tarball with those .json files for me to use, can you provide me with
-> one?
+> > Hmm. If we execute this loop once, we'll only fetch additional nops.
+> > Twice, and we make up for them by not fetching unused instructions.
+> > More than twice and we may start winning.
+> > 
+> > For large sizes it probably helps, but I'd like to see what sizes
+> > memset sees.  
+> 
+> I noticed this in an nginx web serving test. There are some 1 and 2
+> iteration calls, but quite a few larger ones - get_empty_filp() goes for
+> 4 iterations and sk_prot_alloc() for 26 iterations.
 
-The data files are in my github, in the json-code+data-v21 branch
-starting with 23bb101. They are individual commits rather than a
-tarball though.
+Hi Anton,
 
-	>       https://github.com/sukadev/linux.git
-	>
-	>       Branch                  Description
-	>       ------------------------------------------------------
-	>       json-code-v21           Source Code only
-	>       json-code+data-v21      Both code and data(for build/test/pull)
-	> 
+I didn't have anything against the patch as such, I just wondered if
+it's likely to be an overall win.
 
-Sukadev
+Thanks,
+Nick
