@@ -1,20 +1,33 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <marcelo.cerri@canonical.com>
+Received: from mail-qk0-x230.google.com (mail-qk0-x230.google.com
+ [IPv6:2607:f8b0:400d:c09::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sk9dl3DVdzDrVy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 05:20:10 +1000 (AEST)
-Date: Tue, 27 Sep 2016 14:20:03 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bhelgaas@google.com, mpe@ellerman.id.au, clsoto@us.ibm.com
-Subject: Re: [PATCH] PCI: Add parameter @mmio_force_on to pci_update_resource()
-Message-ID: <20160927192003.GA14642@localhost>
-References: <1474242810-11530-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skBDY4wFmzDrVy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 05:46:53 +1000 (AEST)
+Received: by mail-qk0-x230.google.com with SMTP id z190so27409911qkc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 12:46:53 -0700 (PDT)
+Date: Tue, 27 Sep 2016 16:46:44 -0300
+From: Marcelo Cerri <marcelo.cerri@canonical.com>
+To: Jan Stancek <jstancek@redhat.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ rui y wang <rui.y.wang@intel.com>, mhcerri@linux.vnet.ibm.com,
+ leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
+Message-ID: <20160927194644.GB15729@gallifrey>
+References: <450861381.1559123.1474673197124.JavaMail.zimbra@redhat.com>
+ <1655600242.1561022.1474676547316.JavaMail.zimbra@redhat.com>
+ <20160926145934.GA5520@gondor.apana.org.au>
+ <20160926174317.GA21317@gallifrey>
+ <20160927030826.GB8579@gondor.apana.org.au>
+ <346154437.225735.1474966863173.JavaMail.zimbra@redhat.com>
+ <20160927120414.GC21317@gallifrey>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1474242810-11530-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="7gGkHNMELEOhSGF6"
+In-Reply-To: <20160927120414.GC21317@gallifrey>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,145 +37,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Gavin,
 
-On Mon, Sep 19, 2016 at 09:53:30AM +1000, Gavin Shan wrote:
-> In pci_update_resource(), the PCI device's memory decoding (0x2 in
-> PCI_COMMAND) is disabled when 64-bits memory BAR is updated if the
-> PCI device's memory space wasn't asked to be always on by @pdev->
-> mmio_always_on. The PF's memory decoding might be disabled when
-> updating its IOV BARs in the following path. Actually, the PF's
-> memory decoding shouldn't be disabled in this scenario as the PF
-> has been started to provide services:
+--7gGkHNMELEOhSGF6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The reason we disable memory decoding while updating a 64-bit BAR is
-because we can't do the update atomically, and a half-updated BAR might
-conflict with other devices.
+Jan,=20
 
-You need to explain what is special about these SR-IOV BARs that makes it
-safe to update them non-atomically while decoding is enabled.
+Can you check if the problem occurs with this patch?
 
->    sriov_numvfs_store
->    pdev->driver->sriov_configure
->    mlx5_core_sriov_configure
->    pci_enable_sriov
->    sriov_enable
->    pcibios_sriov_enable
->    pnv_pci_sriov_enable
->    pnv_pci_vf_resource_shift
->    pci_update_resource
-> 
-> This doesn't change the PF's memory decoding in the path by introducing
-> additional parameter (@mmio_force_on) to pci_update_resource().
-> 
-> Reported-by: Carol Soto <clsoto@us.ibm.com>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Tested-by: Carol Soto <clsoto@us.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
->  drivers/pci/iov.c                         | 2 +-
->  drivers/pci/pci.c                         | 2 +-
->  drivers/pci/setup-res.c                   | 9 +++++----
->  include/linux/pci.h                       | 2 +-
->  5 files changed, 9 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index bc0c91e..2d6a2b7 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -999,7 +999,7 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->  		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (%sabling %d VFs shifted by %d)\n",
->  			 i, &res2, res, (offset > 0) ? "En" : "Dis",
->  			 num_vfs, offset);
-> -		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
-> +		pci_update_resource(dev, i + PCI_IOV_RESOURCES, true);
->  	}
->  	return 0;
->  }
-> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-> index 2194b44..117aae6 100644
-> --- a/drivers/pci/iov.c
-> +++ b/drivers/pci/iov.c
-> @@ -511,7 +511,7 @@ static void sriov_restore_state(struct pci_dev *dev)
->  		return;
->  
->  	for (i = PCI_IOV_RESOURCES; i <= PCI_IOV_RESOURCE_END; i++)
-> -		pci_update_resource(dev, i);
-> +		pci_update_resource(dev, i, false);
->  
->  	pci_write_config_dword(dev, iov->pos + PCI_SRIOV_SYS_PGSIZE, iov->pgsz);
->  	pci_iov_set_numvfs(dev, iov->num_VFs);
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index aab9d51..87a33c0 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -545,7 +545,7 @@ static void pci_restore_bars(struct pci_dev *dev)
->  		return;
->  
->  	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++)
-> -		pci_update_resource(dev, i);
-> +		pci_update_resource(dev, i, false);
->  }
->  
->  static const struct pci_platform_pm_ops *pci_platform_pm;
-> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-> index 66c4d8f..e8a50ff 100644
-> --- a/drivers/pci/setup-res.c
-> +++ b/drivers/pci/setup-res.c
-> @@ -26,7 +26,7 @@
->  #include "pci.h"
->  
->  
-> -void pci_update_resource(struct pci_dev *dev, int resno)
-> +void pci_update_resource(struct pci_dev *dev, int resno, bool mmio_force_on)
->  {
->  	struct pci_bus_region region;
->  	bool disable;
-> @@ -81,7 +81,8 @@ void pci_update_resource(struct pci_dev *dev, int resno)
->  	 * disable decoding so that a half-updated BAR won't conflict
->  	 * with another device.
->  	 */
-> -	disable = (res->flags & IORESOURCE_MEM_64) && !dev->mmio_always_on;
-> +	disable = (res->flags & IORESOURCE_MEM_64) &&
-> +		  !mmio_force_on && !dev->mmio_always_on;
->  	if (disable) {
->  		pci_read_config_word(dev, PCI_COMMAND, &cmd);
->  		pci_write_config_word(dev, PCI_COMMAND,
-> @@ -310,7 +311,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
->  	res->flags &= ~IORESOURCE_STARTALIGN;
->  	dev_info(&dev->dev, "BAR %d: assigned %pR\n", resno, res);
->  	if (resno < PCI_BRIDGE_RESOURCES)
-> -		pci_update_resource(dev, resno);
-> +		pci_update_resource(dev, resno, false);
->  
->  	return 0;
->  }
-> @@ -350,7 +351,7 @@ int pci_reassign_resource(struct pci_dev *dev, int resno, resource_size_t addsiz
->  	dev_info(&dev->dev, "BAR %d: reassigned %pR (expanded by %#llx)\n",
->  		 resno, res, (unsigned long long) addsize);
->  	if (resno < PCI_BRIDGE_RESOURCES)
-> -		pci_update_resource(dev, resno);
-> +		pci_update_resource(dev, resno, false);
->  
->  	return 0;
->  }
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 0ab8359..99231d1 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1039,7 +1039,7 @@ int pci_try_reset_bus(struct pci_bus *bus);
->  void pci_reset_secondary_bus(struct pci_dev *dev);
->  void pcibios_reset_secondary_bus(struct pci_dev *dev);
->  void pci_reset_bridge_secondary_bus(struct pci_dev *dev);
-> -void pci_update_resource(struct pci_dev *dev, int resno);
-> +void pci_update_resource(struct pci_dev *dev, int resno, bool mmio_force_on);
->  int __must_check pci_assign_resource(struct pci_dev *dev, int i);
->  int __must_check pci_reassign_resource(struct pci_dev *dev, int i, resource_size_t add_size, resource_size_t align);
->  int pci_select_bars(struct pci_dev *dev, unsigned long flags);
-> -- 
-> 2.1.0
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---
+ drivers/crypto/vmx/ghash.c | 28 +++++++++++++++++-----------
+ drivers/crypto/vmx/vmx.c   |  9 +++++++++
+ 2 files changed, 26 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/crypto/vmx/ghash.c b/drivers/crypto/vmx/ghash.c
+index 6c999cb0..033aba1 100644
+--- a/drivers/crypto/vmx/ghash.c
++++ b/drivers/crypto/vmx/ghash.c
+@@ -36,6 +36,8 @@
+ #define GHASH_DIGEST_SIZE (16)
+ #define GHASH_KEY_LEN (16)
+=20
++#define GHASH_FALLBACK_ALG "ghash-generic"
++
+ void gcm_init_p8(u128 htable[16], const u64 Xi[2]);
+ void gcm_gmult_p8(u64 Xi[2], const u128 htable[16]);
+ void gcm_ghash_p8(u64 Xi[2], const u128 htable[16],
+@@ -53,18 +55,26 @@ struct p8_ghash_desc_ctx {
+ 	struct shash_desc fallback_desc;
+ };
+=20
++int p8_ghash_fallback_descsize(void)
++{
++	int descsize;
++	struct crypto_shash *fallback;
++	fallback =3D crypto_alloc_shash(GHASH_FALLBACK_ALG, 0,
++				      CRYPTO_ALG_NEED_FALLBACK);
++	if (IS_ERR(fallback)) {
++		return PTR_ERR(fallback);
++	}
++	descsize =3D crypto_shash_descsize(fallback);
++	crypto_free_shash(fallback);
++	return descsize;
++}
++
+ static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
+ {
+-	const char *alg;
++	const char *alg =3D GHASH_FALLBACK_ALG;
+ 	struct crypto_shash *fallback;
+-	struct crypto_shash *shash_tfm =3D __crypto_shash_cast(tfm);
+ 	struct p8_ghash_ctx *ctx =3D crypto_tfm_ctx(tfm);
+=20
+-	if (!(alg =3D crypto_tfm_alg_name(tfm))) {
+-		printk(KERN_ERR "Failed to get algorithm name.\n");
+-		return -ENOENT;
+-	}
+-
+ 	fallback =3D crypto_alloc_shash(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
+ 	if (IS_ERR(fallback)) {
+ 		printk(KERN_ERR
+@@ -79,10 +89,6 @@ static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
+ 			       crypto_shash_get_flags((struct crypto_shash
+ 						       *) tfm));
+ 	ctx->fallback =3D fallback;
+-
+-	shash_tfm->descsize =3D sizeof(struct p8_ghash_desc_ctx)
+-	    + crypto_shash_descsize(fallback);
+-
+ 	return 0;
+ }
+=20
+diff --git a/drivers/crypto/vmx/vmx.c b/drivers/crypto/vmx/vmx.c
+index 31a98dc..8a51149 100644
+--- a/drivers/crypto/vmx/vmx.c
++++ b/drivers/crypto/vmx/vmx.c
+@@ -28,6 +28,8 @@
+ #include <asm/cputable.h>
+ #include <crypto/internal/hash.h>
+=20
++int p8_ghash_fallback_descsize(void);
++
+ extern struct shash_alg p8_ghash_alg;
+ extern struct crypto_alg p8_aes_alg;
+ extern struct crypto_alg p8_aes_cbc_alg;
+@@ -45,6 +47,7 @@ int __init p8_init(void)
+ {
+ 	int ret =3D 0;
+ 	struct crypto_alg **alg_it;
++	int ghash_descsize;
+=20
+ 	for (alg_it =3D algs; *alg_it; alg_it++) {
+ 		ret =3D crypto_register_alg(*alg_it);
+@@ -59,6 +62,12 @@ int __init p8_init(void)
+ 	if (ret)
+ 		return ret;
+=20
++	ghash_descsize =3D p8_ghash_fallback_descsize();
++	if (ghash_descsize < 0) {
++		printk(KERN_ERR "Cannot get descsize for p8_ghash fallback\n");
++		return ghash_descsize;
++	}
++	p8_ghash_alg.descsize +=3D ghash_descsize;
+ 	ret =3D crypto_register_shash(&p8_ghash_alg);
+ 	if (ret) {
+ 		for (alg_it =3D algs; *alg_it; alg_it++)
+--=20
+2.7.4
+
+
+--7gGkHNMELEOhSGF6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJX6sykAAoJEM8aS8c01e1Hh6QH/16cT8y9Wxk7FCzdW+GxHCfw
+OEWV7Ze/CsNRtyBW8kNumkQRiusRm2eFH1DdUuHgWwm8D1UYdwlCHQffPM3j12KG
+sDos0HDMFne8tFeDF0S9D+ZL0DKbRaBCuUV3Q3udjyCGK8ySugO/m3a8132Zv3ul
+i4sWNiT/BrRP7ti/pG3PxFIcv/x3+XbJOXQUeyjWCq+b0JzYur53OJuPDr1M3Sqw
+B9GFs1J3fZ0uKlteCev2e4J6TpwJSyA9cdcM90/JzwVbp15NAIZhAhUaLVftUgYr
+aipRnOPzOv01fXCfSu8O/mAHJ8up1p7MjuorvwOD9Mr09tVO/dZcOcMdYwZ+B0s=
+=o5Hy
+-----END PGP SIGNATURE-----
+
+--7gGkHNMELEOhSGF6--
