@@ -1,16 +1,34 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <marcelo.cerri@canonical.com>
+Received: from mail-qk0-x22b.google.com (mail-qk0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c09::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skbGL2FKRzDrXZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 21:34:50 +1000 (AEST)
-In-Reply-To: <1474527274-10897-2-git-send-email-oohall@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [1/6] powerpc/boot: add sed script
-Message-Id: <3skbGL1Z1Bz9sf9@ozlabs.org>
-Date: Wed, 28 Sep 2016 21:34:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skcSj4WJ0zDrXg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 22:28:53 +1000 (AEST)
+Received: by mail-qk0-x22b.google.com with SMTP id z190so44666957qkc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 05:28:53 -0700 (PDT)
+Date: Wed, 28 Sep 2016 09:28:44 -0300
+From: Marcelo Cerri <marcelo.cerri@canonical.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jan Stancek <jstancek@redhat.com>, rui y wang <rui.y.wang@intel.com>,
+ mhcerri@linux.vnet.ibm.com, leosilva@linux.vnet.ibm.com,
+ pfsmorigo@linux.vnet.ibm.com, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
+Message-ID: <20160928122844.GC15729@gallifrey>
+References: <450861381.1559123.1474673197124.JavaMail.zimbra@redhat.com>
+ <1655600242.1561022.1474676547316.JavaMail.zimbra@redhat.com>
+ <20160926145934.GA5520@gondor.apana.org.au>
+ <20160926174317.GA21317@gallifrey>
+ <20160927030826.GB8579@gondor.apana.org.au>
+ <346154437.225735.1474966863173.JavaMail.zimbra@redhat.com>
+ <20160927120414.GC21317@gallifrey>
+ <20160927194644.GB15729@gallifrey>
+ <20160928024549.GB14034@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="bjuZg6miEcdLYP6q"
+In-Reply-To: <20160928024549.GB14034@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +38,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-22-09 at 06:54:29 UTC, Oliver O'Halloran wrote:
-> The powerpc boot wrapper is compiled with a separate "bootcc" toolchain
-> rather than the toolchain used for the rest of the kernel. The main
-> problem with this is that the wrapper does not have access to the kernel
-> headers (without a lot of gross hacks). To get around this the required
-> headers are copied into the build directory via several sed scripts
-> which rewrite problematic includes. This patch moves these fixups out of
-> the makefile into a separate .sed script file to clean up makefile
-> slightly.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
-Series applied to powerpc next, thanks.
+--bjuZg6miEcdLYP6q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-https://git.kernel.org/powerpc/c/1a13de6df9bf998a0b6d9bfa42
+Hi Herbert,
 
-cheers
+On Wed, Sep 28, 2016 at 10:45:49AM +0800, Herbert Xu wrote:
+> On Tue, Sep 27, 2016 at 04:46:44PM -0300, Marcelo Cerri wrote:
+> >
+> > Can you check if the problem occurs with this patch?
+>
+> In light of the fact that padlock-sha is the correct example
+> to follow, you only need to add one line to the init_tfm fucntion
+> to update the descsize based on that of the fallback.
+>
+
+Not sure if I'm missing something here but p8_ghash already does that:
+
+ 56 static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
+ 57 {
+ ...
+ 83         shash_tfm->descsize = sizeof(struct p8_ghash_desc_ctx)
+ 84             + crypto_shash_descsize(fallback);
+ 85
+ 86         return 0;
+ 87 }
+
+I think the problem here is that crypto_ahash_statesize uses the
+statesize value (that is initialized with the descsize value from
+shash_alg) instead of using the value from the tfm that was updated.
+
+For padlock_sha1, it uses the value from alg->statesize since it defines
+import and export functions. It doesn't make much difference if it uses
+the value from descsize or statesize here, what really matter is that
+it uses the value defined in struct shash_alg and not from the tfm.
+
+The big difference between p8_ghash and padlock_sha1 is that
+padlock_sha1 defines alg->statesize as sizeof(struct sha1_state), which
+is the descsize value used by sha1_generic. This probably works but
+it's also wrong because the padlock_sha1 driver does not ensures that
+sha1_generic is always used.
+
+So, one solution is to hardcode ghash-generic as the fallback algorithm
+and update the descsize direct in its shash_alg structure. There's only
+one problem with that. ghash-generic desc type (struct ghash_desc_ctx)
+is not available for vmx_crypto at compile type, the type is defined
+directly in crypto/ghash-generic.c. That's the reason I added a function
+to get the fallback desc size at runtime in the patch I wrote as a prove
+of concept.
+
+--
+Regards,
+Marcelo
+
+--bjuZg6miEcdLYP6q
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEbBAABCAAGBQJX67d7AAoJEM8aS8c01e1HV+wH+NzTqXC585iDbmHPhJTlW8Xr
+S/zQ8ChtBnTothllUIVyFC/VGWYtG9WkP0XFr8EKMSMq2cXs+oBKFCQqLQ7Ym4ky
+yohRdJlN8nTj0T79S46VOaGSIbMgUsFPEzzi9gIcOU3LtjUz3rXYrNgkoOP+E4Ri
+FVysrFMUOrjyRiANXHHkZzeIBbFfu2OoVNq5zJh+/m+L0EMPZoZFOsanzY/F3qsv
+VH6K35hL6ZPsudxtNkG7rnJGmuHEglMCvPaHkLHw1t1GOg+OAJHpwhdQI6gs7qPp
+iEjRR53gNUOA5uxgrhHRuYzRU9OeiH3lHkX4GviDFSZIORt53Gdfd2frt2mEBA==
+=G0Ds
+-----END PGP SIGNATURE-----
+
+--bjuZg6miEcdLYP6q--
