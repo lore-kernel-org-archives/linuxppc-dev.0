@@ -1,31 +1,30 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <marcelo.cerri@canonical.com>
+Received: from mail-qk0-x229.google.com (mail-qk0-x229.google.com
+ [IPv6:2607:f8b0:400d:c09::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skdMv2p94zDrMD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 23:09:47 +1000 (AEST)
-Date: Wed, 28 Sep 2016 21:09:13 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Marcelo Cerri <marcelo.cerri@canonical.com>
-Cc: Jan Stancek <jstancek@redhat.com>, rui y wang <rui.y.wang@intel.com>,
- mhcerri@linux.vnet.ibm.com, leosilva@linux.vnet.ibm.com,
- pfsmorigo@linux.vnet.ibm.com, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
-Message-ID: <20160928130913.GA21123@gondor.apana.org.au>
-References: <20160927030826.GB8579@gondor.apana.org.au>
- <346154437.225735.1474966863173.JavaMail.zimbra@redhat.com>
- <20160927120414.GC21317@gallifrey>
- <20160927194644.GB15729@gallifrey>
- <20160928024549.GB14034@gondor.apana.org.au>
- <1597189480.51836.1475048451846.JavaMail.zimbra@redhat.com>
- <20160928122935.GA20839@gondor.apana.org.au>
- <20160928123841.GD15729@gallifrey>
- <20160928124452.GA21011@gondor.apana.org.au>
- <20160928125558.GE15729@gallifrey>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skdW63WF9zDrPm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 23:16:02 +1000 (AEST)
+Received: by mail-qk0-x229.google.com with SMTP id j129so38169462qkd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 06:16:02 -0700 (PDT)
+Date: Wed, 28 Sep 2016 10:15:51 -0300
+From: Marcelo Cerri <marcelo.cerri@canonical.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ George Wilson <gcwilson@us.ibm.com>,
+ Claudio Carvalho <cclaudio@br.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>,
+ joy.latten@canonical.com, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] crypto: sha1-powerpc: little-endian support
+Message-ID: <20160928131551.GA31082@gallifrey>
+References: <1474659116-4689-1-git-send-email-marcelo.cerri@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160928125558.GE15729@gallifrey>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
+In-Reply-To: <1474659116-4689-1-git-send-email-marcelo.cerri@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +34,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 28, 2016 at 09:55:58AM -0300, Marcelo Cerri wrote:
-> 
-> Great! If we check the descsize every time a fallback tfm is allocated
-> that should be enough to prevent bigger problems such as memory
-> corruptions.
 
-Yes a check wouldn't hurt.
- 
-> Can I move ghash_desc_ctx to a header file under include/crypto/? Or do
-> you do you prefer to do that?
+--pf9I7BMVVzbSWLtt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No you can go ahead and do the move.
+Hi Herbert,
 
-> Maybe include/crypto/internal/hash.h or a new header file
-> include/crypto/internal/ghash.h ?
+Any thoughts on this one?
 
-Let's put it in include/crypto/ghash.h.
+--=20
+Regards,
+Marcelo
 
-Thanks,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+On Fri, Sep 23, 2016 at 04:31:56PM -0300, Marcelo Cerri wrote:
+> The driver does not handle endianness properly when loading the input
+> data.
+>=20
+> Signed-off-by: Marcelo Cerri <marcelo.cerri@canonical.com>
+> ---
+>  arch/powerpc/crypto/sha1-powerpc-asm.S | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/crypto/sha1-powerpc-asm.S b/arch/powerpc/crypto=
+/sha1-powerpc-asm.S
+> index 125e165..82ddc9b 100644
+> --- a/arch/powerpc/crypto/sha1-powerpc-asm.S
+> +++ b/arch/powerpc/crypto/sha1-powerpc-asm.S
+> @@ -7,6 +7,15 @@
+>  #include <asm/ppc_asm.h>
+>  #include <asm/asm-offsets.h>
+> =20
+> +#ifdef __BIG_ENDIAN__
+> +#define LWZ(rt, d, ra)	\
+> +	lwz	rt,d(ra)
+> +#else
+> +#define LWZ(rt, d, ra)	\
+> +	li	rt,d;	\
+> +	lwbrx	rt,rt,ra
+> +#endif
+> +
+>  /*
+>   * We roll the registers for T, A, B, C, D, E around on each
+>   * iteration; T on iteration t is A on iteration t+1, and so on.
+> @@ -23,7 +32,7 @@
+>  #define W(t)	(((t)%16)+16)
+> =20
+>  #define LOADW(t)				\
+> -	lwz	W(t),(t)*4(r4)
+> +	LWZ(W(t),(t)*4,r4)
+> =20
+>  #define STEPD0_LOAD(t)				\
+>  	andc	r0,RD(t),RB(t);		\
+> @@ -33,7 +42,7 @@
+>  	add	r0,RE(t),r15;			\
+>  	add	RT(t),RT(t),r6;		\
+>  	add	r14,r0,W(t);			\
+> -	lwz	W((t)+4),((t)+4)*4(r4);	\
+> +	LWZ(W((t)+4),((t)+4)*4,r4);	\
+>  	rotlwi	RB(t),RB(t),30;			\
+>  	add	RT(t),RT(t),r14
+> =20
+> --=20
+> 2.7.4
+>=20
+
+--pf9I7BMVVzbSWLtt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJX68KHAAoJEM8aS8c01e1HXs0H/0u3vNS7zj7uND7AmnkYB8rb
++HgaY/k1PvtlFRTmq5ahsDY5+cQXyJMydAp+ah+qgmRasMi70w37Spwd6PYu8Bkl
+aI70HabZDkxoCwADkPVvR5YrPdtYhR8ezl/FNWXGEhXPuy9kg7nCnhmcDLo2Agtj
+y9hUKynYqY9G0VrQzd1sSyn4cSPgbBy2YDjPYu9uA26DDcFKXePYrF/Z5CKNuUkk
++Xb+It0fgJNAek4gji6Xr6BUeybohdMQq7glmmY5XJS4cQ58CTjPniCw4OTCpFme
+BqbIIFI0dErJduLh8KKpMK0HicWf5tW1MFCkxqLMKmH1JxP+FIjrW4KKzTrV0+4=
+=U88n
+-----END PGP SIGNATURE-----
+
+--pf9I7BMVVzbSWLtt--
