@@ -1,22 +1,47 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0084.outbound.protection.outlook.com [104.47.38.84])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skNgc4czXzDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 13:37:32 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <oss@buserror.net>, <tglx@linutronix.de>
-CC: <jason@lakedaemon.net>, <marc.zyngier@arm.com>, <xiaobo.xie@nxp.com>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [PATCH v6 4/4] irqchip/qeic: remove PPCisms for QEIC
-Date: Wed, 28 Sep 2016 11:25:03 +0800
-Message-ID: <1475033103-18192-4-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1475033103-18192-1-git-send-email-qiang.zhao@nxp.com>
-References: <1475033103-18192-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skPvy6KshzDrWL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:33:18 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8S4X61d068031
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 00:33:16 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25qxu2aqa5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 00:33:16 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 28 Sep 2016 14:33:14 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 548E22CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:33:11 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8S4XBVL1638870
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:33:11 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8S4XAEV028535
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:33:11 +1000
+Date: Wed, 28 Sep 2016 14:33:40 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, mpe@ellerman.id.au
+Subject: Re: [PATCH v2 5/5] drivers/pci/hotplug: Support surprise hotplug in
+ powernv driver
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1474894567-15229-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1474894567-15229-6-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1474894567-15229-6-git-send-email-gwshan@linux.vnet.ibm.com>
+Message-Id: <20160928043340.GA18600@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,182 +51,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QEIC was supported on PowerPC, and dependent on PPC,
-Now it is supported on other platforms, so remove PPCisms.
+On Mon, Sep 26, 2016 at 10:56:07PM +1000, Gavin Shan wrote:
+>This supports PCI surprise hotplug. The design is highlighted as
+>below:
+>
+>   * The PCI slot's surprise hotplug capability is exposed through
+>     device node property "ibm,slot-surprise-pluggable", meaning
+>     PCI surprise hotplug will be disabled if skiboot doesn't support
+>     it yet.
+>   * The interrupt because of presence or link state change is raised
+>     on surprise hotplug event. One event is allocated and queued to
+>     the PCI slot for workqueue to pick it up and process in serialized
+>     fashion. The code flow for surprise hotplug is same to that for
+>     managed hotplug except: the affected PEs are put into frozen state
+>     to avoid unexpected EEH error reporting in surprise hot remove path.
+>
+>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>---
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
----
-Changes for v6:
-	- new added
+.../...
 
- drivers/irqchip/irq-qeic.c | 28 +++++++++++++++++-----------
- include/soc/fsl/qe/qe_ic.h | 12 ++++++------
- 2 files changed, 23 insertions(+), 17 deletions(-)
+>+static irqreturn_t pnv_php_interrupt(int irq, void *data)
+>+{
+>+	struct pnv_php_slot *php_slot = data;
+>+	struct pci_dev *pchild, *pdev = php_slot->pdev;
+>+	struct eeh_dev *edev;
+>+	struct eeh_pe *pe;
+>+	struct pnv_php_event *event;
+>+	u16 sts, lsts;
+>+	u8 presence;
+>+	bool added;
+>+	unsigned long flags;
+>+	int ret;
+>+
+>+	pcie_capability_read_word(pdev, PCI_EXP_SLTSTA, &sts);
+>+	sts &= (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC);
+>+	pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, sts);
+>+	if (sts & PCI_EXP_SLTSTA_DLLSC) {
+>+		pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lsts);
+>+		added = !!(lsts & PCI_EXP_LNKSTA_DLLLA);
+>+	} else if (sts & PCI_EXP_SLTSTA_PDC) {
+>+		ret = pnv_pci_get_presence_state(php_slot->id, &presence);
+>+		if (!ret)
+>+			return IRQ_HANDLED;
+>+		added = !!(presence == OPAL_PCI_SLOT_PRESENT);
+>+	} else {
+>+		return IRQ_NONE;
+>+	}
+>+
+>+	/* Freeze the removed PE to avoid unexpected error reporting */
+>+	if (!added) {
+>+		pchild = list_first_entry_or_null(&php_slot->bus->devices,
+>+						  struct pci_dev, bus_list);
+>+		edev = pchild ? pci_dev_to_eeh_dev(pchild) : NULL;
+>+		pe = edev ? edev->pe : NULL;
+>+		if (pe) {
+>+			eeh_serialize_lock(&flags);
+>+			eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+>+			eeh_serialize_unlock(flags);
+>+			eeh_pe_set_option(pe, EEH_OPT_FREEZE_PE);
+>+		}
+>+	}
+>+
 
-diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
-index 4f49d4b..98a8b38 100644
---- a/drivers/irqchip/irq-qeic.c
-+++ b/drivers/irqchip/irq-qeic.c
-@@ -18,7 +18,10 @@
- #include <linux/of_address.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/irqdomain.h>
- #include <linux/errno.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
- #include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/stddef.h>
-@@ -266,13 +269,13 @@ static struct qe_ic_info qe_ic_info[] = {
- 
- static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
- {
--	return in_be32(base + (reg >> 2));
-+	return ioread32be(base + (reg >> 2));
- }
- 
- static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
- 			       u32 value)
- {
--	out_be32(base + (reg >> 2), value);
-+	iowrite32be(value, base + (reg >> 2));
- }
- 
- static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
-@@ -374,7 +377,7 @@ static const struct irq_domain_ops qe_ic_host_ops = {
- 	.xlate = irq_domain_xlate_onetwocell,
- };
- 
--/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+/* Return an interrupt vector or 0 if no interrupt is pending. */
- unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
- {
- 	int irq;
-@@ -385,12 +388,12 @@ unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
- 	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
- 
- 	if (irq == 0)
--		return NO_IRQ;
-+		return 0;
- 
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
- }
- 
--/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+/* Return an interrupt vector or 0 if no interrupt is pending. */
- unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
- {
- 	int irq;
-@@ -401,7 +404,7 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
- 	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
- 
- 	if (irq == 0)
--		return NO_IRQ;
-+		return 0;
- 
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
- }
-@@ -447,7 +450,7 @@ static int __init qe_ic_init(unsigned int flags)
- 	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
- 	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
- 
--	if (qe_ic->virq_low == NO_IRQ) {
-+	if (qe_ic->virq_low == 0) {
- 		pr_err("Failed to map QE_IC low IRQ\n");
- 		ret = -ENOMEM;
- 		goto err_domain_remove;
-@@ -479,7 +482,7 @@ static int __init qe_ic_init(unsigned int flags)
- 	irq_set_handler_data(qe_ic->virq_low, qe_ic);
- 	irq_set_chained_handler(qe_ic->virq_low, qe_ic_cascade_low_mpic);
- 
--	if (qe_ic->virq_high != NO_IRQ &&
-+	if (qe_ic->virq_high != 0 &&
- 			qe_ic->virq_high != qe_ic->virq_low) {
- 		irq_set_handler_data(qe_ic->virq_high, qe_ic);
- 		irq_set_chained_handler(qe_ic->virq_high,
-@@ -500,7 +503,8 @@ err_put_node:
- void qe_ic_set_highest_priority(unsigned int virq, int high)
- {
- 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
- 	u32 temp = 0;
- 
- 	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
-@@ -518,7 +522,8 @@ void qe_ic_set_highest_priority(unsigned int virq, int high)
- int qe_ic_set_priority(unsigned int virq, unsigned int priority)
- {
- 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
- 	u32 temp;
- 
- 	if (priority > 8 || priority == 0)
-@@ -548,7 +553,8 @@ int qe_ic_set_priority(unsigned int virq, unsigned int priority)
- int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
- {
- 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
- 	u32 temp, control_reg = QEIC_CICNR, shift = 0;
- 
- 	if (priority > 2 || priority == 0)
-diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
-index 6113699..863cfec 100644
---- a/include/soc/fsl/qe/qe_ic.h
-+++ b/include/soc/fsl/qe/qe_ic.h
-@@ -76,7 +76,7 @@ static inline void qe_ic_cascade_low_ipic(struct irq_desc *desc)
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- }
- 
-@@ -85,7 +85,7 @@ static inline void qe_ic_cascade_high_ipic(struct irq_desc *desc)
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- }
- 
-@@ -95,7 +95,7 @@ static inline void qe_ic_cascade_low_mpic(struct irq_desc *desc)
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- 
- 	chip->irq_eoi(&desc->irq_data);
-@@ -107,7 +107,7 @@ static inline void qe_ic_cascade_high_mpic(struct irq_desc *desc)
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- 
- 	chip->irq_eoi(&desc->irq_data);
-@@ -120,10 +120,10 @@ static inline void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
- 
- 	cascade_irq = qe_ic_get_high_irq(qe_ic);
--	if (cascade_irq == NO_IRQ)
-+	if (cascade_irq == 0)
- 		cascade_irq = qe_ic_get_low_irq(qe_ic);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- 
- 	chip->irq_eoi(&desc->irq_data);
--- 
-2.1.0.27.g96db324
+I still need export @confirm_error_lock. Otherwise, it will be failed to be
+built when having CONFIG_HOTPLUG_PCI_POWERNV=m. I will respin and add one
+patch for that in v3.
+
+Thanks,
+Gavin
