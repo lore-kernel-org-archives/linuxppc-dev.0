@@ -1,25 +1,23 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sknKX4qlDzDrc6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 05:08:15 +1000 (AEST)
-Date: Wed, 28 Sep 2016 16:08:03 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v21 06/19] perf, tools: Support alias descriptions
-Message-ID: <20160928190803.GC7467@kernel.org>
-References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1473978296-20712-7-git-send-email-sukadev@linux.vnet.ibm.com>
- <20160927174100.GO5588@kernel.org>
- <20160927181116.GA18012@us.ibm.com>
- <20160928135747.GB7467@kernel.org>
- <20160928182916.GA17343@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160928182916.GA17343@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skpY95gGzzDrZl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 06:03:25 +1000 (AEST)
+Message-ID: <1475092993.4283.51.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: "C.H. Zhao" <chenhui.zhao@nxp.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "z.chenhui@gmail.com" <z.chenhui@gmail.com>,  Jason Jin <jason.jin@nxp.com>
+Date: Wed, 28 Sep 2016 15:03:13 -0500
+In-Reply-To: <AM4PR0401MB23559F508FC92E0FD670998095CC0@AM4PR0401MB2355.eurprd04.prod.outlook.com>
+References: <1470139172-12699-5-git-send-email-chenhui.zhao@nxp.com>
+ ,<20160925072400.GA17928@home.buserror.net>
+ <AM4PR0401MB23559F508FC92E0FD670998095CC0@AM4PR0401MB2355.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [v3,4/5] powerpc/pm: support deep sleep feature on T104x
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,92 +27,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, Sep 28, 2016 at 11:29:16AM -0700, Sukadev Bhattiprolu escreveu:
-> Arnaldo Carvalho de Melo [acme@kernel.org] wrote:
-> > Em Tue, Sep 27, 2016 at 11:11:16AM -0700, Sukadev Bhattiprolu escreveu:
-> > > Arnaldo Carvalho de Melo [acme@kernel.org] wrote:
-> > > > Em Thu, Sep 15, 2016 at 03:24:43PM -0700, Sukadev Bhattiprolu escreveu:
-> > > > > From: Andi Kleen <ak@linux.intel.com>
-> > > > > Add support to print alias descriptions in perf list, which
-> > > > > are taken from the generated event files.
-> > > > > 
-> > > > > The sorting code is changed to put the events with descriptions
-> > > > > at the end. The descriptions are printed as possibly multiple word
-> > > > > wrapped lines.
-> > > > 
-> > > > So, now I'm trying to reproduce the results below, but I couldn't find a
-> > > > tarball with those .json files for me to use, can you provide me with
-> > > > one?
-> > > 
-> > > The data files are in my github, in the json-code+data-v21 branch
-> > > starting with 23bb101. They are individual commits rather than a
-> > > tarball though.
+On Tue, 2016-09-27 at 11:05 +0000, C.H. Zhao wrote:
+> From: Scott Wood <oss@buserror.net>
+> Sent: Sunday, September 25, 2016 3:24 PM
+> To: C.H. Zhao
+> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; z.chenhui@g
+> mail.com; Jason Jin
+> Subject: Re: [v3,4/5] powerpc/pm: support deep sleep feature on T104x
+>     
+> On Tue, Aug 02, 2016 at 07:59:31PM +0800, Chenhui Zhao wrote:
 > > 
-> > Ok, I'll pick one for powerpc and another for x86_64 so that I can test
-> > it and Jiri's x-compile support.
-> 
-> Please pull all files if possible, specially on x86, _before_ building the
-> perf binary. If you are going to pull only one, you need to make sure that
-> the file you pull matches the CPU model on the system you are testing.(see
-> below). For Power, you need to test on Power8.
-> 
+> > T104x has deep sleep feature, which can switch off most parts of
+> > the SoC when it is in deep sleep mode. This way, it becomes more
+> > energy-efficient.
 > > 
-> > Refresh my mind, what is the plan on these files? Are we just going to
-> > provide pointers to where to get them from vendors, ship it in the
-> > kernel, auto-download them as part of the build process?
+> > The DDR controller will also be powered off in deep sleep. Therefore,
+> > the last stage (the latter part of fsl_dp_enter_low) will run without DDR
+> > access. This piece of code and related TLBs are prefetched in advance.
+> > 
+> > Due to the different initialization code between 32-bit and 64-bit, they
+> > have separate resume entry and precedure.
+> > 
+> > The feature supports 32-bit and 64-bit kernel mode.
+> > 
+> > Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
+> > ---
+> >   arch/powerpc/include/asm/fsl_pm.h             |  24 ++
+> >   arch/powerpc/kernel/asm-offsets.c             |  12 +
+> >   arch/powerpc/kernel/fsl_booke_entry_mapping.S |  10 +
+> >   arch/powerpc/kernel/head_64.S                 |   2 +-
+> >   arch/powerpc/platforms/85xx/Makefile          |   1 +
+> >   arch/powerpc/platforms/85xx/deepsleep.c       | 278 ++++++++++++++
+> >   arch/powerpc/platforms/85xx/qoriq_pm.c        |  25 ++
+> >   arch/powerpc/platforms/85xx/t104x_deepsleep.S | 531
+> > ++++++++++++++++++++++++++
+> >   arch/powerpc/sysdev/fsl_rcpm.c                |   8 +-
+> >   9 files changed, 889 insertions(+), 2 deletions(-)
+> >   create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+> >   create mode 100644 arch/powerpc/platforms/85xx/t104x_deepsleep.S
+> > 
+> > diff --git a/arch/powerpc/include/asm/fsl_pm.h
+> > b/arch/powerpc/include/asm/fsl_pm.h
+> > index e05049b..48c2631 100644
+> > --- a/arch/powerpc/include/asm/fsl_pm.h
+> > +++ b/arch/powerpc/include/asm/fsl_pm.h
+> > @@ -20,6 +20,7 @@
+> >   
+> >   #define PLAT_PM_SLEEP        20
+> >   #define PLAT_PM_LPM20        30
+> > +#define PLAT_PM_LPM35        40
+> >   
+> >   #define FSL_PM_SLEEP         (1 << 0)
+> >   #define FSL_PM_DEEP_SLEEP    (1 << 1)
+> > @@ -48,4 +49,27 @@ extern const struct fsl_pm_ops *qoriq_pm_ops;
+> >   
+> >   int __init fsl_rcpm_init(void);
+> >   
+> > +#ifdef CONFIG_FSL_QORIQ_PM
+> > +int fsl_enter_deepsleep(void);
+> > +int fsl_deepsleep_init(void);
+> > +#else
+> > +static inline int fsl_enter_deepsleep(void) { return -1; }
+> > +static inline int fsl_deepsleep_init(void) { return -1; }
+> > +#endif
+> Please return proper error codes.
 > 
-> They are supposed to be committed into the linux kernel tree as shown
-> in the json-code+data-v21 tree and they will be picked up _during build_
-> of the perf binary. (We are just not mailing those data files as patches
-> since they are large and there is very little value in reviewing them).
+> Where can fsl_deepsleep_init() be called without CONFIG_FSL_QORIQ_PM?
 > 
-> When building perf on on say x86, event tables for all the different
-> x86 CPU models will be included in the perf binary. When perf is then
-> executed on an x86 box, it will detect the CPU model of that box and
-> use the set of events corresponding to that model.
+> [Chenhui] I can get rid of the ifdef here. And add it
+> in arch/powerpc/sysdev/fsl_rcpm.c.
+
+No, this is the right place for the ifdef for functions that are called from
+code that doesn't depend on CONFIG_FSL_QORIQ_PM.  But fsl_deepsleep_init() is
+called from deepsleep.c which is only built with CONFIG_FSL_QORIQ_PM, and it's
+hard to picture a scenario where it would be called from elsewhere.
+
+> > diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+> > b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+> > index 83dd0f6..659b059 100644
+> > --- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+> > +++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+> > @@ -173,6 +173,10 @@ skpinv:  addi    r6,r6,1                         /*
+> > Increment */
+> >         lis     r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@h
+> >         ori     r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M,
+> > M_IF_NEEDED)@l
+> >         mtspr   SPRN_MAS2,r6
+> > +#ifdef ENTRY_DEEPSLEEP_SETUP
+> > +     LOAD_REG_IMMEDIATE(r8, MEMORY_START)
+> > +     ori     r8,r8,(MAS3_SX|MAS3_SW|MAS3_SR)
+> > +#endif
+> >         mtspr   SPRN_MAS3,r8
+> >         tlbwe
+> >   
+> Have you tried this with a relocatable kernel?
 > 
-> If the CPU model does not match the models "known" to the perf binary,
-> then the symbolic names will not work on that system, but there should
-> be no other change in behavior.
+> [Chenhui] Not yet. Not sure whether it has been supported on QorIQ platform.
+
+It is supported, and deep sleep needs to work with it.
+
+> > +static void fsl_dp_set_resume_pointer(void)
+> > +{
+> > +     u32 resume_addr;
+> > +
+> > +     /* the bootloader will finally jump to this address to return kernel
+> > */
+> > +#ifdef CONFIG_PPC32
+> > +     resume_addr = (u32)(__pa(fsl_booke_deep_sleep_resume));
+> > +#else
+> > +     resume_addr = (u32)(__pa(*(u64 *)fsl_booke_deep_sleep_resume)
+> > +                         & 0xffffffff);
+> > +#endif
+> Why are you masking the physical address by 0xffffffff?  Besides the
+> (u32) cast accomplishing the same thing, wouldn't it be a problem if
+> (e.g. due to a relocatable kernel) the address is above 4 GiB?
 > 
-> Patch 15/19 tries to explain the process.
+> [Chenhui] Here, I assumed kernel is below 4 GiB. Maybe I should add a
+> comment here.
 
-I didn't get to that one yet.
- 
-> > At least examples that allows to build and have a new 'perf test' entry
-> > to check them automatically seems to be in order, no?
-> 
-> Well, the hope was that build/usage will be transparent! but we did not
+It needs a fix rather than a comment, unless you can show that the relocatable
+mechanism doesn't support kernels over 4 GiB (I don't remember of the top of
+my head whether it does).
 
-the 'perf test' entry is to test the whole process of going from a json
-file to a the perf binary and then asking for one such event and
-checking if the resulting perf_event_attr is what we expect it to be,
-see, for instance:
-
-[root@jouet c]# perf test roundtrip
-11: roundtrip evsel->name check                              : Ok
-
-tools/perf/tests/evsel-roundtrip-name.c
-
-> test in the cross-compile environment. Will think about a test case.
-> Please let me know if we can update the README in Patch 15/19 in any
-> way.
-
-I'll let you know when I get to that patch, till then I'll follow the
-instructions you gave me here.
-
-I.e. I go on testing patch by patch, trying to use the documentation
-that is available up to that point, trying to reproduce the results
-described in the patch, to fully validate it.
-
-- Arnaldo
- 
-> > > 	>       https://github.com/sukadev/linux.git
-> > > 	>
-> > > 	>       Branch                  Description
-> > > 	>       ------------------------------------------------------
-> > > 	>       json-code-v21           Source Code only
-> > > 	>       json-code+data-v21      Both code and data(for build/test/pull)
-> > > 	> 
-> > > 
-> > > Sukadev
+-Scott
