@@ -1,12 +1,12 @@
 Return-Path: <marcelo.cerri@canonical.com>
-Received: from mail-qt0-x232.google.com (mail-qt0-x232.google.com
- [IPv6:2607:f8b0:400d:c0d::232])
+Received: from mail-qk0-x22d.google.com (mail-qk0-x22d.google.com
+ [IPv6:2607:f8b0:400d:c09::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skk5g4r2dzDrZV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 02:42:47 +1000 (AEST)
-Received: by mail-qt0-x232.google.com with SMTP id t63so22177310qtd.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 09:42:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skk5q0mm3zDrZr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 02:42:55 +1000 (AEST)
+Received: by mail-qk0-x22d.google.com with SMTP id g67so52710990qkd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 09:42:55 -0700 (PDT)
 From: Marcelo Cerri <marcelo.cerri@canonical.com>
 To: linux-crypto@vger.kernel.org,
 	Herbert Xu <herbert@gondor.apana.org.au>
@@ -18,10 +18,9 @@ Cc: "David S. Miller" <davem@davemloft.net>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  George Wilson <gcwilson@us.ibm.com>,
  Marcelo Cerri <marcelo.cerri@canonical.com>
-Subject: [PATCH 1/3] crypto: ghash-generic - move common definitions to a new
- header file
-Date: Wed, 28 Sep 2016 13:42:09 -0300
-Message-Id: <1475080931-7926-2-git-send-email-marcelo.cerri@canonical.com>
+Subject: [PATCH 2/3] crypto: vmx - Fix memory corruption caused by p8_ghash
+Date: Wed, 28 Sep 2016 13:42:10 -0300
+Message-Id: <1475080931-7926-3-git-send-email-marcelo.cerri@canonical.com>
 In-Reply-To: <1475080931-7926-1-git-send-email-marcelo.cerri@canonical.com>
 References: <1475080931-7926-1-git-send-email-marcelo.cerri@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,74 +32,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move common values and types used by ghash-generic to a new header file
-so drivers can directly use ghash-generic as a fallback implementation.
+This patch changes the p8_ghash driver to use ghash-generic as a fixed
+fallback implementation. This allows the correct value of descsize to be
+defined directly in its shash_alg structure and avoids problems with
+incorrect buffer sizes when its state is exported or imported.
 
+Reported-by: Jan Stancek <jstancek@redhat.com>
 Signed-off-by: Marcelo Cerri <marcelo.cerri@canonical.com>
 ---
- crypto/ghash-generic.c | 13 +------------
- include/crypto/ghash.h | 23 +++++++++++++++++++++++
- 2 files changed, 24 insertions(+), 12 deletions(-)
- create mode 100644 include/crypto/ghash.h
+ drivers/crypto/vmx/ghash.c | 31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/crypto/ghash-generic.c b/crypto/ghash-generic.c
-index bac7099..12ad3e3 100644
---- a/crypto/ghash-generic.c
-+++ b/crypto/ghash-generic.c
-@@ -14,24 +14,13 @@
- 
- #include <crypto/algapi.h>
- #include <crypto/gf128mul.h>
+diff --git a/drivers/crypto/vmx/ghash.c b/drivers/crypto/vmx/ghash.c
+index 6c999cb0..27a94a1 100644
+--- a/drivers/crypto/vmx/ghash.c
++++ b/drivers/crypto/vmx/ghash.c
+@@ -26,16 +26,13 @@
+ #include <linux/hardirq.h>
+ #include <asm/switch_to.h>
+ #include <crypto/aes.h>
 +#include <crypto/ghash.h>
+ #include <crypto/scatterwalk.h>
  #include <crypto/internal/hash.h>
- #include <linux/crypto.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
+ #include <crypto/b128ops.h>
  
--#define GHASH_BLOCK_SIZE	16
--#define GHASH_DIGEST_SIZE	16
+ #define IN_INTERRUPT in_interrupt()
+ 
+-#define GHASH_BLOCK_SIZE (16)
+-#define GHASH_DIGEST_SIZE (16)
+-#define GHASH_KEY_LEN (16)
 -
--struct ghash_ctx {
--	struct gf128mul_4k *gf128;
--};
--
--struct ghash_desc_ctx {
--	u8 buffer[GHASH_BLOCK_SIZE];
--	u32 bytes;
--};
--
- static int ghash_init(struct shash_desc *desc)
+ void gcm_init_p8(u128 htable[16], const u64 Xi[2]);
+ void gcm_gmult_p8(u64 Xi[2], const u128 htable[16]);
+ void gcm_ghash_p8(u64 Xi[2], const u128 htable[16],
+@@ -55,16 +52,11 @@ struct p8_ghash_desc_ctx {
+ 
+ static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
  {
- 	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
-diff --git a/include/crypto/ghash.h b/include/crypto/ghash.h
-new file mode 100644
-index 0000000..2a61c9b
---- /dev/null
-+++ b/include/crypto/ghash.h
-@@ -0,0 +1,23 @@
-+/*
-+ * Common values for GHASH algorithms
-+ */
-+
-+#ifndef __CRYPTO_GHASH_H__
-+#define __CRYPTO_GHASH_H__
-+
-+#include <linux/types.h>
-+#include <crypto/gf128mul.h>
-+
-+#define GHASH_BLOCK_SIZE	16
-+#define GHASH_DIGEST_SIZE	16
-+
-+struct ghash_ctx {
-+	struct gf128mul_4k *gf128;
-+};
-+
-+struct ghash_desc_ctx {
-+	u8 buffer[GHASH_BLOCK_SIZE];
-+	u32 bytes;
-+};
-+
-+#endif
+-	const char *alg;
++	const char *alg = "ghash-generic";
+ 	struct crypto_shash *fallback;
+ 	struct crypto_shash *shash_tfm = __crypto_shash_cast(tfm);
+ 	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(tfm);
+ 
+-	if (!(alg = crypto_tfm_alg_name(tfm))) {
+-		printk(KERN_ERR "Failed to get algorithm name.\n");
+-		return -ENOENT;
+-	}
+-
+ 	fallback = crypto_alloc_shash(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
+ 	if (IS_ERR(fallback)) {
+ 		printk(KERN_ERR
+@@ -78,10 +70,18 @@ static int p8_ghash_init_tfm(struct crypto_tfm *tfm)
+ 	crypto_shash_set_flags(fallback,
+ 			       crypto_shash_get_flags((struct crypto_shash
+ 						       *) tfm));
+-	ctx->fallback = fallback;
+ 
+-	shash_tfm->descsize = sizeof(struct p8_ghash_desc_ctx)
+-	    + crypto_shash_descsize(fallback);
++	/* Check if the descsize defined in the algorithm is still enough. */
++	if (shash_tfm->descsize < sizeof(struct p8_ghash_desc_ctx)
++	    + crypto_shash_descsize(fallback)) {
++		printk(KERN_ERR
++		       "Desc size of the fallback implementation (%s) does not match the expected value: %lu vs %u\n",
++		       alg,
++		       shash_tfm->descsize - sizeof(struct p8_ghash_desc_ctx),
++		       crypto_shash_descsize(fallback));
++		return -EINVAL;
++	}
++	ctx->fallback = fallback;
+ 
+ 	return 0;
+ }
+@@ -113,7 +113,7 @@ static int p8_ghash_setkey(struct crypto_shash *tfm, const u8 *key,
+ {
+ 	struct p8_ghash_ctx *ctx = crypto_tfm_ctx(crypto_shash_tfm(tfm));
+ 
+-	if (keylen != GHASH_KEY_LEN)
++	if (keylen != GHASH_BLOCK_SIZE)
+ 		return -EINVAL;
+ 
+ 	preempt_disable();
+@@ -211,7 +211,8 @@ struct shash_alg p8_ghash_alg = {
+ 	.update = p8_ghash_update,
+ 	.final = p8_ghash_final,
+ 	.setkey = p8_ghash_setkey,
+-	.descsize = sizeof(struct p8_ghash_desc_ctx),
++	.descsize = sizeof(struct p8_ghash_desc_ctx)
++		+ sizeof(struct ghash_desc_ctx),
+ 	.base = {
+ 		 .cra_name = "ghash",
+ 		 .cra_driver_name = "p8_ghash",
 -- 
 2.7.4
