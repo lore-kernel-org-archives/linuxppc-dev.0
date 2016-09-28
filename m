@@ -1,44 +1,24 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Nicolas.FERRE@atmel.com>
+Received: from eusmtp01.atmel.com (eusmtp01.atmel.com [212.144.249.243])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skPxW4Q6NzDrXS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:34:39 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8S4WxXA077128
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 00:34:37 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25qu85wte4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 00:34:37 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 28 Sep 2016 14:34:33 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DB8292BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:34:30 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8S4YUOl1638758
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:34:30 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8S4YUj9022503
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 14:34:30 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: bhelgaas@google.com, mpe@ellerman.id.au,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v3 6/6] drivers/pci/hotplug: Support surprise hotplug in
- powernv driver
-Date: Wed, 28 Sep 2016 14:34:58 +1000
-In-Reply-To: <1475037298-19188-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1475037298-19188-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Message-Id: <1475037298-19188-7-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skTXZ0vQczDrWP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 17:16:45 +1000 (AEST)
+Subject: Re: [PATCH] usb: Convert pr_warning to pr_warn
+To: Joe Perches <joe@perches.com>, Li Yang <leoli@freescale.com>, Daniel Mack
+ <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, "Robert
+ Jarzmik" <robert.jarzmik@free.fr>
+References: <f86b512272987e0faeaccbe6466665175eaefe9a.1474992979.git.joe@perches.com>
+CC: Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, <linux-usb@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Message-ID: <8ae6acf4-36a8-6223-4e79-8bbf217f2626@atmel.com>
+Date: Wed, 28 Sep 2016 09:10:46 +0200
+MIME-Version: 1.0
+In-Reply-To: <f86b512272987e0faeaccbe6466665175eaefe9a.1474992979.git.joe@perches.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,288 +28,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This supports PCI surprise hotplug. The design is highlighted as
-below:
+Le 27/09/2016 à 18:16, Joe Perches a écrit :
+> Use the more common logging mechanism.
+> 
+> Miscellanea:
+> 
+> o Realign multiline statements
+> o Coalesce format
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/usb/gadget/function/rndis.c     |  9 ++++-----
+>  drivers/usb/gadget/function/u_serial.c  |  4 ++--
+>  drivers/usb/gadget/udc/at91_udc.h       |  2 +-
+>  drivers/usb/gadget/udc/atmel_usba_udc.c |  4 ++--
 
-   * The PCI slot's surprise hotplug capability is exposed through
-     device node property "ibm,slot-surprise-pluggable", meaning
-     PCI surprise hotplug will be disabled if skiboot doesn't support
-     it yet.
-   * The interrupt because of presence or link state change is raised
-     on surprise hotplug event. One event is allocated and queued to
-     the PCI slot for workqueue to pick it up and process in serialized
-     fashion. The code flow for surprise hotplug is same to that for
-     managed hotplug except: the affected PEs are put into frozen state
-     to avoid unexpected EEH error reporting in surprise hot remove path.
+For AT91 and Atmel parts:
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pnv-pci.h |   2 +
- drivers/pci/hotplug/pnv_php.c      | 212 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 214 insertions(+)
+Thanks
 
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index 0cbd813..17e89dd 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -60,6 +60,8 @@ struct pnv_php_slot {
- #define PNV_PHP_STATE_POPULATED		2
- #define PNV_PHP_STATE_OFFLINE		3
- 	int				state;
-+	int				irq;
-+	struct workqueue_struct		*wq;
- 	struct device_node		*dn;
- 	struct pci_dev			*pdev;
- 	struct pci_bus			*bus;
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 182f218..ea4ec72d 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -22,6 +22,12 @@
- #define DRIVER_AUTHOR	"Gavin Shan, IBM Corporation"
- #define DRIVER_DESC	"PowerPC PowerNV PCI Hotplug Driver"
- 
-+struct pnv_php_event {
-+	bool			added;
-+	struct pnv_php_slot	*php_slot;
-+	struct work_struct	work;
-+};
-+
- static LIST_HEAD(pnv_php_slot_list);
- static DEFINE_SPINLOCK(pnv_php_lock);
- 
-@@ -29,12 +35,40 @@ static void pnv_php_register(struct device_node *dn);
- static void pnv_php_unregister_one(struct device_node *dn);
- static void pnv_php_unregister(struct device_node *dn);
- 
-+static void pnv_php_disable_irq(struct pnv_php_slot *php_slot)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	u16 ctrl;
-+
-+	if (php_slot->irq > 0) {
-+		pcie_capability_read_word(pdev, PCI_EXP_SLTCTL, &ctrl);
-+		ctrl &= ~(PCI_EXP_SLTCTL_HPIE |
-+			  PCI_EXP_SLTCTL_PDCE |
-+			  PCI_EXP_SLTCTL_DLLSCE);
-+		pcie_capability_write_word(pdev, PCI_EXP_SLTCTL, ctrl);
-+
-+		free_irq(php_slot->irq, php_slot);
-+		php_slot->irq = 0;
-+	}
-+
-+	if (php_slot->wq) {
-+		destroy_workqueue(php_slot->wq);
-+		php_slot->wq = NULL;
-+	}
-+
-+	if (pdev->msix_enabled)
-+		pci_disable_msix(pdev);
-+	else if (pdev->msi_enabled)
-+		pci_disable_msi(pdev);
-+}
-+
- static void pnv_php_free_slot(struct kref *kref)
- {
- 	struct pnv_php_slot *php_slot = container_of(kref,
- 					struct pnv_php_slot, kref);
- 
- 	WARN_ON(!list_empty(&php_slot->children));
-+	pnv_php_disable_irq(php_slot);
- 	kfree(php_slot->name);
- 	kfree(php_slot);
- }
-@@ -609,6 +643,179 @@ static int pnv_php_register_slot(struct pnv_php_slot *php_slot)
- 	return 0;
- }
- 
-+static int pnv_php_enable_msix(struct pnv_php_slot *php_slot)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	struct msix_entry entry;
-+	int nr_entries, ret;
-+	u16 pcie_flag;
-+
-+	/* Get total number of MSIx entries */
-+	nr_entries = pci_msix_vec_count(pdev);
-+	if (nr_entries < 0)
-+		return nr_entries;
-+
-+	/* Check hotplug MSIx entry is in range */
-+	pcie_capability_read_word(pdev, PCI_EXP_FLAGS, &pcie_flag);
-+	entry.entry = (pcie_flag & PCI_EXP_FLAGS_IRQ) >> 9;
-+	if (entry.entry >= nr_entries)
-+		return -ERANGE;
-+
-+	/* Enable MSIx */
-+	ret = pci_enable_msix_exact(pdev, &entry, 1);
-+	if (ret) {
-+		dev_warn(&pdev->dev, "Error %d enabling MSIx\n", ret);
-+		return ret;
-+	}
-+
-+	return entry.vector;
-+}
-+
-+static void pnv_php_event_handler(struct work_struct *work)
-+{
-+	struct pnv_php_event *event =
-+		container_of(work, struct pnv_php_event, work);
-+	struct pnv_php_slot *php_slot = event->php_slot;
-+
-+	if (event->added)
-+		pnv_php_enable_slot(&php_slot->slot);
-+	else
-+		pnv_php_disable_slot(&php_slot->slot);
-+
-+	kfree(event);
-+}
-+
-+static irqreturn_t pnv_php_interrupt(int irq, void *data)
-+{
-+	struct pnv_php_slot *php_slot = data;
-+	struct pci_dev *pchild, *pdev = php_slot->pdev;
-+	struct eeh_dev *edev;
-+	struct eeh_pe *pe;
-+	struct pnv_php_event *event;
-+	u16 sts, lsts;
-+	u8 presence;
-+	bool added;
-+	unsigned long flags;
-+	int ret;
-+
-+	pcie_capability_read_word(pdev, PCI_EXP_SLTSTA, &sts);
-+	sts &= (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC);
-+	pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, sts);
-+	if (sts & PCI_EXP_SLTSTA_DLLSC) {
-+		pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lsts);
-+		added = !!(lsts & PCI_EXP_LNKSTA_DLLLA);
-+	} else if (sts & PCI_EXP_SLTSTA_PDC) {
-+		ret = pnv_pci_get_presence_state(php_slot->id, &presence);
-+		if (!ret)
-+			return IRQ_HANDLED;
-+		added = !!(presence == OPAL_PCI_SLOT_PRESENT);
-+	} else {
-+		return IRQ_NONE;
-+	}
-+
-+	/* Freeze the removed PE to avoid unexpected error reporting */
-+	if (!added) {
-+		pchild = list_first_entry_or_null(&php_slot->bus->devices,
-+						  struct pci_dev, bus_list);
-+		edev = pchild ? pci_dev_to_eeh_dev(pchild) : NULL;
-+		pe = edev ? edev->pe : NULL;
-+		if (pe) {
-+			eeh_serialize_lock(&flags);
-+			eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
-+			eeh_serialize_unlock(flags);
-+			eeh_pe_set_option(pe, EEH_OPT_FREEZE_PE);
-+		}
-+	}
-+
-+	/* The PE is left in frozen state if the event is missed. It's
-+	 * fine as the PCI devices (PE) aren't functional any more.
-+	 */
-+	event = kzalloc(sizeof(*event), GFP_ATOMIC);
-+	if (!event) {
-+		dev_warn(&pdev->dev, "PCI slot [%s] missed hotplug event 0x%04x\n",
-+			 php_slot->name, sts);
-+		return IRQ_HANDLED;
-+	}
-+
-+	dev_info(&pdev->dev, "PCI slot [%s] %s (IRQ: %d)\n",
-+		 php_slot->name, added ? "added" : "removed", irq);
-+	INIT_WORK(&event->work, pnv_php_event_handler);
-+	event->added = added;
-+	event->php_slot = php_slot;
-+	queue_work(php_slot->wq, &event->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	u16 sts, ctrl;
-+	int ret;
-+
-+	/* Allocate workqueue */
-+	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
-+	if (!php_slot->wq) {
-+		dev_warn(&pdev->dev, "Cannot alloc workqueue\n");
-+		pnv_php_disable_irq(php_slot);
-+		return;
-+	}
-+
-+	/* Clear pending interrupts */
-+	pcie_capability_read_word(pdev, PCI_EXP_SLTSTA, &sts);
-+	sts |= (PCI_EXP_SLTSTA_PDC | PCI_EXP_SLTSTA_DLLSC);
-+	pcie_capability_write_word(pdev, PCI_EXP_SLTSTA, sts);
-+
-+	/* Request the interrupt */
-+	ret = request_irq(irq, pnv_php_interrupt, IRQF_SHARED,
-+			  php_slot->name, php_slot);
-+	if (ret) {
-+		pnv_php_disable_irq(php_slot);
-+		dev_warn(&pdev->dev, "Error %d enabling IRQ %d\n", ret, irq);
-+		return;
-+	}
-+
-+	/* Enable the interrupts */
-+	pcie_capability_read_word(pdev, PCI_EXP_SLTCTL, &ctrl);
-+	ctrl |= (PCI_EXP_SLTCTL_HPIE |
-+		 PCI_EXP_SLTCTL_PDCE |
-+		 PCI_EXP_SLTCTL_DLLSCE);
-+	pcie_capability_write_word(pdev, PCI_EXP_SLTCTL, ctrl);
-+
-+	/* The interrupt is initialized successfully when @irq is valid */
-+	php_slot->irq = irq;
-+}
-+
-+static void pnv_php_enable_irq(struct pnv_php_slot *php_slot)
-+{
-+	struct pci_dev *pdev = php_slot->pdev;
-+	int irq, ret;
-+
-+	ret = pci_enable_device(pdev);
-+	if (ret) {
-+		dev_warn(&pdev->dev, "Error %d enabling device\n", ret);
-+		return;
-+	}
-+
-+	pci_set_master(pdev);
-+
-+	/* Enable MSIx interrupt */
-+	irq = pnv_php_enable_msix(php_slot);
-+	if (irq > 0) {
-+		pnv_php_init_irq(php_slot, irq);
-+		return;
-+	}
-+
-+	/* Use MSI if MSIx doesn't work. Fail back to legacy INTx
-+	 * if MSI doesn't work either
-+	 */
-+	ret = pci_enable_msi(pdev);
-+	if (!ret || pdev->irq) {
-+		irq = pdev->irq;
-+		pnv_php_init_irq(php_slot, irq);
-+	}
-+}
-+
- static int pnv_php_register_one(struct device_node *dn)
- {
- 	struct pnv_php_slot *php_slot;
-@@ -636,6 +843,11 @@ static int pnv_php_register_one(struct device_node *dn)
- 	if (ret)
- 		goto unregister_slot;
- 
-+	/* Enable interrupt if the slot supports surprise hotplug */
-+	prop32 = of_get_property(dn, "ibm,slot-surprise-pluggable", NULL);
-+	if (prop32 && of_read_number(prop32, 1))
-+		pnv_php_enable_irq(php_slot);
-+
- 	return 0;
- 
- unregister_slot:
+>  drivers/usb/gadget/udc/fsl_usb2_udc.h   |  2 +-
+>  drivers/usb/gadget/udc/m66592-udc.c     |  4 ++--
+>  drivers/usb/gadget/udc/omap_udc.h       |  2 +-
+>  drivers/usb/gadget/udc/pxa25x_udc.h     |  2 +-
+>  drivers/usb/host/isp1362-hcd.c          | 27 ++++++++++++++-------------
+>  drivers/usb/isp1760/isp1760-if.c        |  2 +-
+>  10 files changed, 29 insertions(+), 29 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/function/rndis.c b/drivers/usb/gadget/function/rndis.c
+> index ab6ac1b74ac0..766c328c15c0 100644
+> --- a/drivers/usb/gadget/function/rndis.c
+> +++ b/drivers/usb/gadget/function/rndis.c
+> @@ -474,8 +474,7 @@ static int gen_ndis_query_resp(struct rndis_params *params, u32 OID, u8 *buf,
+>  		break;
+>  
+>  	default:
+> -		pr_warning("%s: query unknown OID 0x%08X\n",
+> -			 __func__, OID);
+> +		pr_warn("%s: query unknown OID 0x%08X\n", __func__, OID);
+>  	}
+>  	if (retval < 0)
+>  		length = 0;
+> @@ -546,8 +545,8 @@ static int gen_ndis_set_resp(struct rndis_params *params, u32 OID,
+>  		break;
+>  
+>  	default:
+> -		pr_warning("%s: set unknown OID 0x%08X, size %d\n",
+> -			 __func__, OID, buf_len);
+> +		pr_warn("%s: set unknown OID 0x%08X, size %d\n",
+> +			__func__, OID, buf_len);
+>  	}
+>  
+>  	return retval;
+> @@ -854,7 +853,7 @@ int rndis_msg_parser(struct rndis_params *params, u8 *buf)
+>  		 * In one case those messages seemed to relate to the host
+>  		 * suspending itself.
+>  		 */
+> -		pr_warning("%s: unknown RNDIS message 0x%08X len %d\n",
+> +		pr_warn("%s: unknown RNDIS message 0x%08X len %d\n",
+>  			__func__, MsgType, MsgLength);
+>  		print_hex_dump_bytes(__func__, DUMP_PREFIX_OFFSET,
+>  				     buf, MsgLength);
+> diff --git a/drivers/usb/gadget/function/u_serial.c b/drivers/usb/gadget/function/u_serial.c
+> index e0cd1e4c8892..62ec842874aa 100644
+> --- a/drivers/usb/gadget/function/u_serial.c
+> +++ b/drivers/usb/gadget/function/u_serial.c
+> @@ -622,8 +622,8 @@ static void gs_write_complete(struct usb_ep *ep, struct usb_request *req)
+>  	switch (req->status) {
+>  	default:
+>  		/* presumably a transient fault */
+> -		pr_warning("%s: unexpected %s status %d\n",
+> -				__func__, ep->name, req->status);
+> +		pr_warn("%s: unexpected %s status %d\n",
+> +			__func__, ep->name, req->status);
+>  		/* FALL THROUGH */
+>  	case 0:
+>  		/* normal completion */
+> diff --git a/drivers/usb/gadget/udc/at91_udc.h b/drivers/usb/gadget/udc/at91_udc.h
+> index 0a433e6b346b..9bbe72764f31 100644
+> --- a/drivers/usb/gadget/udc/at91_udc.h
+> +++ b/drivers/usb/gadget/udc/at91_udc.h
+> @@ -175,7 +175,7 @@ struct at91_request {
+>  #endif
+>  
+>  #define ERR(stuff...)		pr_err("udc: " stuff)
+> -#define WARNING(stuff...)	pr_warning("udc: " stuff)
+> +#define WARNING(stuff...)	pr_warn("udc: " stuff)
+>  #define INFO(stuff...)		pr_info("udc: " stuff)
+>  #define DBG(stuff...)		pr_debug("udc: " stuff)
+>  
+> diff --git a/drivers/usb/gadget/udc/atmel_usba_udc.c b/drivers/usb/gadget/udc/atmel_usba_udc.c
+> index 45bc997d0711..1ef7a9a9d7f5 100644
+> --- a/drivers/usb/gadget/udc/atmel_usba_udc.c
+> +++ b/drivers/usb/gadget/udc/atmel_usba_udc.c
+> @@ -1464,8 +1464,8 @@ static void usba_control_irq(struct usba_udc *udc, struct usba_ep *ep)
+>  		pkt_len = USBA_BFEXT(BYTE_COUNT, usba_ep_readl(ep, STA));
+>  		DBG(DBG_HW, "Packet length: %u\n", pkt_len);
+>  		if (pkt_len != sizeof(crq)) {
+> -			pr_warning("udc: Invalid packet length %u "
+> -				"(expected %zu)\n", pkt_len, sizeof(crq));
+> +			pr_warn("udc: Invalid packet length %u (expected %zu)\n",
+> +				pkt_len, sizeof(crq));
+>  			set_protocol_stall(udc, ep);
+>  			return;
+>  		}
+> diff --git a/drivers/usb/gadget/udc/fsl_usb2_udc.h b/drivers/usb/gadget/udc/fsl_usb2_udc.h
+> index 84715625b2b3..e92b8408b6f6 100644
+> --- a/drivers/usb/gadget/udc/fsl_usb2_udc.h
+> +++ b/drivers/usb/gadget/udc/fsl_usb2_udc.h
+> @@ -554,7 +554,7 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
+>  #endif
+>  
+>  #define ERR(stuff...)		pr_err("udc: " stuff)
+> -#define WARNING(stuff...)		pr_warning("udc: " stuff)
+> +#define WARNING(stuff...)	pr_warn("udc: " stuff)
+>  #define INFO(stuff...)		pr_info("udc: " stuff)
+>  
+>  /*-------------------------------------------------------------------------*/
+> diff --git a/drivers/usb/gadget/udc/m66592-udc.c b/drivers/usb/gadget/udc/m66592-udc.c
+> index 6e977dc22570..de3e03483659 100644
+> --- a/drivers/usb/gadget/udc/m66592-udc.c
+> +++ b/drivers/usb/gadget/udc/m66592-udc.c
+> @@ -637,7 +637,7 @@ static void init_controller(struct m66592 *m66592)
+>  			clock = M66592_XTAL48;
+>  			break;
+>  		default:
+> -			pr_warning("m66592-udc: xtal configuration error\n");
+> +			pr_warn("m66592-udc: xtal configuration error\n");
+>  			clock = 0;
+>  		}
+>  
+> @@ -649,7 +649,7 @@ static void init_controller(struct m66592 *m66592)
+>  			irq_sense = 0;
+>  			break;
+>  		default:
+> -			pr_warning("m66592-udc: irq trigger config error\n");
+> +			pr_warn("m66592-udc: irq trigger config error\n");
+>  			irq_sense = 0;
+>  		}
+>  
+> diff --git a/drivers/usb/gadget/udc/omap_udc.h b/drivers/usb/gadget/udc/omap_udc.h
+> index cfadeb5fc5de..26974196cf44 100644
+> --- a/drivers/usb/gadget/udc/omap_udc.h
+> +++ b/drivers/usb/gadget/udc/omap_udc.h
+> @@ -187,7 +187,7 @@ struct omap_udc {
+>  #endif
+>  
+>  #define ERR(stuff...)		pr_err("udc: " stuff)
+> -#define WARNING(stuff...)	pr_warning("udc: " stuff)
+> +#define WARNING(stuff...)	pr_warn("udc: " stuff)
+>  #define INFO(stuff...)		pr_info("udc: " stuff)
+>  #define DBG(stuff...)		pr_debug("udc: " stuff)
+>  
+> diff --git a/drivers/usb/gadget/udc/pxa25x_udc.h b/drivers/usb/gadget/udc/pxa25x_udc.h
+> index 4b8b72d7ab37..a458bec2536d 100644
+> --- a/drivers/usb/gadget/udc/pxa25x_udc.h
+> +++ b/drivers/usb/gadget/udc/pxa25x_udc.h
+> @@ -248,7 +248,7 @@ dump_state(struct pxa25x_udc *dev)
+>  #define DBG(lvl, stuff...) do{if ((lvl) <= UDC_DEBUG) DMSG(stuff);}while(0)
+>  
+>  #define ERR(stuff...)		pr_err("udc: " stuff)
+> -#define WARNING(stuff...)	pr_warning("udc: " stuff)
+> +#define WARNING(stuff...)	pr_warn("udc: " stuff)
+>  #define INFO(stuff...)		pr_info("udc: " stuff)
+>  
+>  
+> diff --git a/drivers/usb/host/isp1362-hcd.c b/drivers/usb/host/isp1362-hcd.c
+> index 6cf82ee460a6..0f2b4b358e1a 100644
+> --- a/drivers/usb/host/isp1362-hcd.c
+> +++ b/drivers/usb/host/isp1362-hcd.c
+> @@ -147,7 +147,7 @@ static inline struct isp1362_ep_queue *get_ptd_queue(struct isp1362_hcd *isp1362
+>  	if (epq)
+>  		DBG(1, "%s: PTD $%04x is on %s queue\n", __func__, offset, epq->name);
+>  	else
+> -		pr_warning("%s: invalid PTD $%04x\n", __func__, offset);
+> +		pr_warn("%s: invalid PTD $%04x\n", __func__, offset);
+>  
+>  	return epq;
+>  }
+> @@ -157,8 +157,9 @@ static inline int get_ptd_offset(struct isp1362_ep_queue *epq, u8 index)
+>  	int offset;
+>  
+>  	if (index * epq->blk_size > epq->buf_size) {
+> -		pr_warning("%s: Bad %s index %d(%d)\n", __func__, epq->name, index,
+> -		     epq->buf_size / epq->blk_size);
+> +		pr_warn("%s: Bad %s index %d(%d)\n",
+> +			__func__, epq->name, index,
+> +			epq->buf_size / epq->blk_size);
+>  		return -EINVAL;
+>  	}
+>  	offset = epq->buf_start + index * epq->blk_size;
+> @@ -902,8 +903,8 @@ static void start_iso_transfers(struct isp1362_hcd *isp1362_hcd)
+>  
+>  			ptd_offset = next_ptd(epq, ep);
+>  			if (ptd_offset < 0) {
+> -				pr_warning("%s: req %d No more %s PTD buffers available\n", __func__,
+> -				     ep->num_req, epq->name);
+> +				pr_warn("%s: req %d No more %s PTD buffers available\n",
+> +					__func__, ep->num_req, epq->name);
+>  				break;
+>  			}
+>  		}
+> @@ -973,8 +974,8 @@ static void finish_transfers(struct isp1362_hcd *isp1362_hcd, unsigned long done
+>  			break;
+>  	}
+>  	if (done_map)
+> -		pr_warning("%s: done_map not clear: %08lx:%08lx\n", __func__, done_map,
+> -		     epq->skip_map);
+> +		pr_warn("%s: done_map not clear: %08lx:%08lx\n",
+> +			__func__, done_map, epq->skip_map);
+>  	atomic_dec(&epq->finishing);
+>  }
+>  
+> @@ -1433,7 +1434,7 @@ static int isp1362_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+>  		} else
+>  			DBG(1, "%s: urb %p active; wait4irq\n", __func__, urb);
+>  	} else {
+> -		pr_warning("%s: No EP in URB %p\n", __func__, urb);
+> +		pr_warn("%s: No EP in URB %p\n", __func__, urb);
+>  		retval = -EINVAL;
+>  	}
+>  done:
+> @@ -1748,10 +1749,10 @@ static int isp1362_bus_suspend(struct usb_hcd *hcd)
+>  		/* FALL THROUGH */
+>  	case OHCI_USB_RESET:
+>  		status = -EBUSY;
+> -		pr_warning("%s: needs reinit!\n", __func__);
+> +		pr_warn("%s: needs reinit!\n", __func__);
+>  		goto done;
+>  	case OHCI_USB_SUSPEND:
+> -		pr_warning("%s: already suspended?\n", __func__);
+> +		pr_warn("%s: already suspended?\n", __func__);
+>  		goto done;
+>  	}
+>  	DBG(0, "%s: suspend root hub\n", __func__);
+> @@ -1839,7 +1840,7 @@ static int isp1362_bus_resume(struct usb_hcd *hcd)
+>  	isp1362_hcd->hc_control = isp1362_read_reg32(isp1362_hcd, HCCONTROL);
+>  	pr_info("%s: HCCONTROL: %08x\n", __func__, isp1362_hcd->hc_control);
+>  	if (hcd->state == HC_STATE_RESUMING) {
+> -		pr_warning("%s: duplicate resume\n", __func__);
+> +		pr_warn("%s: duplicate resume\n", __func__);
+>  		status = 0;
+>  	} else
+>  		switch (isp1362_hcd->hc_control & OHCI_CTRL_HCFS) {
+> @@ -2474,8 +2475,8 @@ static int isp1362_chip_test(struct isp1362_hcd *isp1362_hcd)
+>  					    __func__, offset);
+>  					break;
+>  				}
+> -				pr_warning("%s: memory check with offset %02x ok after second read\n",
+> -				     __func__, offset);
+> +				pr_warn("%s: memory check with offset %02x ok after second read\n",
+> +					__func__, offset);
+>  			}
+>  		}
+>  		kfree(ref);
+> diff --git a/drivers/usb/isp1760/isp1760-if.c b/drivers/usb/isp1760/isp1760-if.c
+> index 9535b2872183..79205b31e4a9 100644
+> --- a/drivers/usb/isp1760/isp1760-if.c
+> +++ b/drivers/usb/isp1760/isp1760-if.c
+> @@ -197,7 +197,7 @@ static int isp1760_plat_probe(struct platform_device *pdev)
+>  
+>  	irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+>  	if (!irq_res) {
+> -		pr_warning("isp1760: IRQ resource not available\n");
+> +		pr_warn("isp1760: IRQ resource not available\n");
+>  		return -ENODEV;
+>  	}
+>  	irqflags = irq_res->flags & IRQF_TRIGGER_MASK;
+> 
+
+
 -- 
-2.1.0
+Nicolas Ferre
