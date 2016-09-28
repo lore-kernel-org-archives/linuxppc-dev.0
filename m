@@ -1,32 +1,23 @@
-Return-Path: <marcelo.cerri@canonical.com>
-Received: from mail-qk0-x231.google.com (mail-qk0-x231.google.com
- [IPv6:2607:f8b0:400d:c09::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skdmJ0grpzDrLP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 23:27:27 +1000 (AEST)
-Received: by mail-qk0-x231.google.com with SMTP id t7so46438288qkh.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 06:27:27 -0700 (PDT)
-Date: Wed, 28 Sep 2016 10:27:18 -0300
-From: Marcelo Cerri <marcelo.cerri@canonical.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- George Wilson <gcwilson@us.ibm.com>,
- Claudio Carvalho <cclaudio@br.ibm.com>,
- Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>,
- joy.latten@canonical.com, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] crypto: sha1-powerpc: little-endian support
-Message-ID: <20160928132718.GB31082@gallifrey>
-References: <1474659116-4689-1-git-send-email-marcelo.cerri@canonical.com>
- <20160928131551.GA31082@gallifrey>
- <20160928132015.GA21312@gondor.apana.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skfRT61DLzDrXd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 23:57:57 +1000 (AEST)
+Date: Wed, 28 Sep 2016 10:57:47 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v21 06/19] perf, tools: Support alias descriptions
+Message-ID: <20160928135747.GB7467@kernel.org>
+References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1473978296-20712-7-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20160927174100.GO5588@kernel.org>
+ <20160927181116.GA18012@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="+g7M9IMkV8truYOl"
-In-Reply-To: <20160928132015.GA21312@gondor.apana.org.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160927181116.GA18012@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Em Tue, Sep 27, 2016 at 11:11:16AM -0700, Sukadev Bhattiprolu escreveu:
+> Arnaldo Carvalho de Melo [acme@kernel.org] wrote:
+> > Em Thu, Sep 15, 2016 at 03:24:43PM -0700, Sukadev Bhattiprolu escreveu:
+> > > From: Andi Kleen <ak@linux.intel.com>
+> > > Add support to print alias descriptions in perf list, which
+> > > are taken from the generated event files.
+> > > 
+> > > The sorting code is changed to put the events with descriptions
+> > > at the end. The descriptions are printed as possibly multiple word
+> > > wrapped lines.
+> > 
+> > So, now I'm trying to reproduce the results below, but I couldn't find a
+> > tarball with those .json files for me to use, can you provide me with
+> > one?
+> 
+> The data files are in my github, in the json-code+data-v21 branch
+> starting with 23bb101. They are individual commits rather than a
+> tarball though.
 
---+g7M9IMkV8truYOl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok, I'll pick one for powerpc and another for x86_64 so that I can test
+it and Jiri's x-compile support.
 
-On Wed, Sep 28, 2016 at 09:20:15PM +0800, Herbert Xu wrote:
-> On Wed, Sep 28, 2016 at 10:15:51AM -0300, Marcelo Cerri wrote:
-> > Hi Herbert,
-> >=20
-> > Any thoughts on this one?
->=20
-> Can this patch wait until the next merge window? On the broken
-> platforms it should just fail the self-test, right?
+Refresh my mind, what is the plan on these files? Are we just going to
+provide pointers to where to get them from vendors, ship it in the
+kernel, auto-download them as part of the build process?
 
-Yes. It fails on any LE platform (including Ubuntu and RHEL 7.1).
+At least examples that allows to build and have a new 'perf test' entry
+to check them automatically seems to be in order, no?
 
->=20
-> Cheers,
-> --=20
-> Email: Herbert Xu <herbert@gondor.apana.org.au>
-> Home Page: http://gondor.apana.org.au/~herbert/
-> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
-
---=20
-Regards,
-Marcelo
-
---+g7M9IMkV8truYOl
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJX68U2AAoJEM8aS8c01e1H0MUH/2nf3eofIx0lT9mTlX5O6Gzo
-P91inis1p8gNy7EpJDdEZWfV+fQXAZqS9Vt2aT2QLyWla2ZdwV5cF0MGEmWR60Vb
-BtPnVT3bkg0ZAErw5NAMDwIBlX+8jde8l9pk8Gg66dV1k3p6pH0dyAO3dZZnw2ZM
-gpw25O1DrpSKz8rZjdUVgPc7KBDEyDmKvoHrzTVwvaFe7QzkOZtm0mWjXIV2N3vO
-qC5J8IEi0f6v2KfYfEuaAhK2lFhBKq4iz2/g2j9Efo0H9BnIcb/u0bTg4jm1/rWx
-nOQFQbqakfAQRTvGlxh659vpvP/dywwll6D+m2wfZg5Zm4Hz9UNp3SSCaZejalw=
-=oKXY
------END PGP SIGNATURE-----
-
---+g7M9IMkV8truYOl--
+- Arnaldo
+ 
+> 	>       https://github.com/sukadev/linux.git
+> 	>
+> 	>       Branch                  Description
+> 	>       ------------------------------------------------------
+> 	>       json-code-v21           Source Code only
+> 	>       json-code+data-v21      Both code and data(for build/test/pull)
+> 	> 
+> 
+> Sukadev
