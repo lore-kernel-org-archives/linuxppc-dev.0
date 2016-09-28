@@ -1,51 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skKTm21B4zDrWf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 11:13:48 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8S1D49X006890
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 21:13:45 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25qu85p98w-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2016 21:13:44 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 28 Sep 2016 11:13:42 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 992C83578053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 11:13:39 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8S1Dd3659965524
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 11:13:39 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8S1Dcle003864
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 11:13:39 +1000
-Date: Wed, 28 Sep 2016 11:14:08 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, Bjorn Helgaas <helgaas@kernel.org>,
- bhelgaas@google.com, linux-pci@vger.kernel.org, clsoto@us.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] PCI: Add parameter @mmio_force_on to pci_update_resource()
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1474242810-11530-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20160927192003.GA14642@localhost>
- <1475012732.2857.293.camel@au1.ibm.com>
- <20160927233749.GA19797@gwshan>
- <1475021204.2857.302.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skL6Z0MQCzDrWf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 11:42:14 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Al Viro <viro@zeniv.linux.org.uk>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Denys Vlasenko <dvlasenk@redhat.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Oleg Nesterov <oleg@redhat.com>,
+ Florian Weimer <fweimer@redhat.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5] powerpc: Do not make the entire heap executable
+In-Reply-To: <20160822185105.29600-1-dvlasenk@redhat.com>
+References: <20160822185105.29600-1-dvlasenk@redhat.com>
+Date: Wed, 28 Sep 2016 11:42:11 +1000
+Message-ID: <87d1jo7qbw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1475021204.2857.302.camel@au1.ibm.com>
-Message-Id: <20160928011408.GA20356@gwshan>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,57 +31,282 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 28, 2016 at 10:06:44AM +1000, Benjamin Herrenschmidt wrote:
->On Wed, 2016-09-28 at 09:37 +1000, Gavin Shan wrote:
->> 
->> Yeah, it's safe to update it with memory decoding on. As the function call
->> flow I listed in the changelog (as below), nobody should access the IOV BAR
->> when pci_update_resource() is called. However, the PF's memory BARs might
->> be accessed that time and it's not safe to disable PF's memory decoding.
+Denys Vlasenko <dvlasenk@redhat.com> writes:
+
+> On 32-bit powerpc the ELF PLT sections of binaries (built with --bss-plt,
+> or with a toolchain which defaults to it) look like this:
+
+Or (it seems), for all programs built with -pg (profiling).
+
+>   [17] .sbss             NOBITS          0002aff8 01aff8 000014 00  WA  0   0  4
+>   [18] .plt              NOBITS          0002b00c 01aff8 000084 00 WAX  0   0  4
+>   [19] .bss              NOBITS          0002b090 01aff8 0000a4 00  WA  0   0  4
 >
->The problem isn't so much whether anybody accesses the IOV BAR while
->it's updated but whether the IOV BAR will decode at all.
+> Which results in an ELF load header:
 >
->IE. The BAR is updated in two steps, 32-bit each. That means that there
->is a window where it contains a "bogus" value.
+>   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+>   LOAD           0x019c70 0x00029c70 0x00029c70 0x01388 0x014c4 RWE 0x10000
 >
->If that bogus value conflicts with another BAR (another BAR of the  PF
->or another PF of the same device for example) then there is a risk of
->something bad happening if the driver accesses that conflicting
->resource during that window.
+> This is all correct, the load region containing the PLT is marked as
+> executable. Note that the PLT starts at 0002b00c but the file mapping ends at
+> 0002aff8, so the PLT falls in the 0 fill section described by the load header,
+> and after a page boundary.
 >
->On the other hand, if the IOV BAR doesn't decode at all while the
->update is done, which I think is the case as I believe SR-IOV isn't
->enabled during the update (please verify), then we are safe.
+> Unfortunately the generic ELF loader ignores the X bit in the load headers
+> when it creates the 0 filled non-file backed mappings. It assumes all of these
+> mappings are RW BSS sections, which is not the case for PPC.
 >
-
-I assumed the SRIOV and its memory space aren't enabled when updating IOV
-BARs, but unfortunately they have been enabled at that point. I think
-pcibios_sriov_enable() should be moved before SRIOV is enabled. Note
-that pcibios_sriov_enable() is used by PowerNV only.
-
-static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
-{
-		:
-        pci_iov_set_numvfs(dev, nr_virtfn);
-        iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
-        pci_cfg_access_lock(dev);
-        pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);	/* SRIOV and its memory space enabled */
-        msleep(100);
-        pci_cfg_access_unlock(dev);
-
-        iov->initial_VFs = initial;
-        if (nr_virtfn < initial)
-                initial = nr_virtfn;
-
-        rc = pcibios_sriov_enable(dev, initial);				/* IOV BARs are updated inside it */
-
-		:
-}
-
-Thanks,
-Gavin
-
->Cheers,
->Ben.
+> gcc/ld has an option (--secure-plt) to not do this, this is said to incur
+> a small performance penalty.
 >
+> Currently, to support 32-bit binaries with PLT in BSS kernel maps *entire
+> brk area* with executable rights for all binaries, even --secure-plt ones.
+>
+> Stop doing that.
+>
+> Teach the ELF loader to check the X bit in the relevant load header
+> and create 0 filled anonymous mappings that are executable
+> if the load header requests that.
+...
+>
+> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+> Reviewed-by: Kees Cook <keescook@chromium.org>
+> CC: Michael Ellerman <mpe@ellerman.id.au>
+
+This looks OK to me, I've tested it with --bss-plt and --secure-plt and
+also -pg.
+
+So for the powerpc part I'll give you an:
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+But this is not really a powerpc patch, and I'm not an ELF expert. So
+I'm not comfortable merging it via the powerpc tree. It doesn't look
+like we really have a maintainer for binfmt_elf.c, so I'm not sure who
+should be acking that part.
+
+I've added Al Viro to Cc, he maintains fs/ and might be interested.
+
+I've also added Andrew Morton who might be happy to put this in his
+tree, and see if anyone complains?
+
+Also here: https://patchwork.ozlabs.org/patch/661595/
+
+cheers
+
+> ---
+> Changes since v4:
+> * if (current->personality & READ_IMPLIES_EXEC), still use VM_EXEC
+>   for 32-bit executables.
+>
+> Changes since v3:
+> * typo fix in commit message
+> * rebased to current Linus tree
+>
+> Changes since v2:
+> * moved capability to map with VM_EXEC into vm_brk_flags()
+>
+> Changes since v1:
+> * wrapped lines to not exceed 79 chars
+> * improved comment
+> * expanded CC list
+>
+>  arch/powerpc/include/asm/page.h |  3 ++-
+>  fs/binfmt_elf.c                 | 30 ++++++++++++++++++++++--------
+>  include/linux/mm.h              |  1 +
+>  mm/mmap.c                       | 21 ++++++++++++++++-----
+>  4 files changed, 41 insertions(+), 14 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+> index 56398e7..d188f51 100644
+> --- a/arch/powerpc/include/asm/page.h
+> +++ b/arch/powerpc/include/asm/page.h
+> @@ -230,7 +230,9 @@ extern long long virt_phys_offset;
+>   * and needs to be executable.  This means the whole heap ends
+>   * up being executable.
+>   */
+> -#define VM_DATA_DEFAULT_FLAGS32	(VM_READ | VM_WRITE | VM_EXEC | \
+> +#define VM_DATA_DEFAULT_FLAGS32 \
+> +	(((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0) | \
+> +				 VM_READ | VM_WRITE | \
+>  				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+>  
+>  #define VM_DATA_DEFAULT_FLAGS64	(VM_READ | VM_WRITE | \
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index 7f6aff3f..2b57b5a 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -91,12 +91,18 @@ static struct linux_binfmt elf_format = {
+>  
+>  #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
+>  
+> -static int set_brk(unsigned long start, unsigned long end)
+> +static int set_brk(unsigned long start, unsigned long end, int prot)
+>  {
+>  	start = ELF_PAGEALIGN(start);
+>  	end = ELF_PAGEALIGN(end);
+>  	if (end > start) {
+> -		int error = vm_brk(start, end - start);
+> +		/*
+> +		 * Map the last of the bss segment.
+> +		 * If the header is requesting these pages to be
+> +		 * executable, honour that (ppc32 needs this).
+> +		 */
+> +		int error = vm_brk_flags(start, end - start,
+> +				prot & PROT_EXEC ? VM_EXEC : 0);
+>  		if (error)
+>  			return error;
+>  	}
+> @@ -524,6 +530,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>  	unsigned long load_addr = 0;
+>  	int load_addr_set = 0;
+>  	unsigned long last_bss = 0, elf_bss = 0;
+> +	int bss_prot = 0;
+>  	unsigned long error = ~0UL;
+>  	unsigned long total_size;
+>  	int i;
+> @@ -606,8 +613,10 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>  			 * elf_bss and last_bss is the bss section.
+>  			 */
+>  			k = load_addr + eppnt->p_vaddr + eppnt->p_memsz;
+> -			if (k > last_bss)
+> +			if (k > last_bss) {
+>  				last_bss = k;
+> +				bss_prot = elf_prot;
+> +			}
+>  		}
+>  	}
+>  
+> @@ -623,13 +632,14 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>  	/*
+>  	 * Next, align both the file and mem bss up to the page size,
+>  	 * since this is where elf_bss was just zeroed up to, and where
+> -	 * last_bss will end after the vm_brk() below.
+> +	 * last_bss will end after the vm_brk_flags() below.
+>  	 */
+>  	elf_bss = ELF_PAGEALIGN(elf_bss);
+>  	last_bss = ELF_PAGEALIGN(last_bss);
+>  	/* Finally, if there is still more bss to allocate, do it. */
+>  	if (last_bss > elf_bss) {
+> -		error = vm_brk(elf_bss, last_bss - elf_bss);
+> +		error = vm_brk_flags(elf_bss, last_bss - elf_bss,
+> +				bss_prot & PROT_EXEC ? VM_EXEC : 0);
+>  		if (error)
+>  			goto out;
+>  	}
+> @@ -674,6 +684,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>  	unsigned long error;
+>  	struct elf_phdr *elf_ppnt, *elf_phdata, *interp_elf_phdata = NULL;
+>  	unsigned long elf_bss, elf_brk;
+> +	int bss_prot = 0;
+>  	int retval, i;
+>  	unsigned long elf_entry;
+>  	unsigned long interp_load_addr = 0;
+> @@ -881,7 +892,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>  			   before this one. Map anonymous pages, if needed,
+>  			   and clear the area.  */
+>  			retval = set_brk(elf_bss + load_bias,
+> -					 elf_brk + load_bias);
+> +					 elf_brk + load_bias,
+> +					 bss_prot);
+>  			if (retval)
+>  				goto out_free_dentry;
+>  			nbyte = ELF_PAGEOFFSET(elf_bss);
+> @@ -975,8 +987,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>  		if (end_data < k)
+>  			end_data = k;
+>  		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
+> -		if (k > elf_brk)
+> +		if (k > elf_brk) {
+> +			bss_prot = elf_prot;
+>  			elf_brk = k;
+> +		}
+>  	}
+>  
+>  	loc->elf_ex.e_entry += load_bias;
+> @@ -992,7 +1006,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>  	 * mapping in the interpreter, to make sure it doesn't wind
+>  	 * up getting placed where the bss needs to go.
+>  	 */
+> -	retval = set_brk(elf_bss, elf_brk);
+> +	retval = set_brk(elf_bss, elf_brk, bss_prot);
+>  	if (retval)
+>  		goto out_free_dentry;
+>  	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 08ed53e..3ffa76c 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -2058,6 +2058,7 @@ static inline void mm_populate(unsigned long addr, unsigned long len) {}
+>  
+>  /* These take the mm semaphore themselves */
+>  extern int __must_check vm_brk(unsigned long, unsigned long);
+> +extern int __must_check vm_brk_flags(unsigned long, unsigned long, unsigned long);
+>  extern int vm_munmap(unsigned long, size_t);
+>  extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
+>          unsigned long, unsigned long,
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index ca9d91b..4d5b3f3 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -2653,11 +2653,11 @@ static inline void verify_mm_writelocked(struct mm_struct *mm)
+>   *  anonymous maps.  eventually we may be able to do some
+>   *  brk-specific accounting here.
+>   */
+> -static int do_brk(unsigned long addr, unsigned long request)
+> +static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
+>  {
+>  	struct mm_struct *mm = current->mm;
+>  	struct vm_area_struct *vma, *prev;
+> -	unsigned long flags, len;
+> +	unsigned long len;
+>  	struct rb_node **rb_link, *rb_parent;
+>  	pgoff_t pgoff = addr >> PAGE_SHIFT;
+>  	int error;
+> @@ -2668,7 +2668,7 @@ static int do_brk(unsigned long addr, unsigned long request)
+>  	if (!len)
+>  		return 0;
+>  
+> -	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+> +	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+>  
+>  	error = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
+>  	if (offset_in_page(error))
+> @@ -2736,7 +2736,12 @@ out:
+>  	return 0;
+>  }
+>  
+> -int vm_brk(unsigned long addr, unsigned long len)
+> +static int do_brk(unsigned long addr, unsigned long len)
+> +{
+> +	return do_brk_flags(addr, len, 0);
+> +}
+> +
+> +int vm_brk_flags(unsigned long addr, unsigned long len, unsigned long flags)
+>  {
+>  	struct mm_struct *mm = current->mm;
+>  	int ret;
+> @@ -2745,13 +2750,19 @@ int vm_brk(unsigned long addr, unsigned long len)
+>  	if (down_write_killable(&mm->mmap_sem))
+>  		return -EINTR;
+>  
+> -	ret = do_brk(addr, len);
+> +	ret = do_brk_flags(addr, len, flags);
+>  	populate = ((mm->def_flags & VM_LOCKED) != 0);
+>  	up_write(&mm->mmap_sem);
+>  	if (populate && !ret)
+>  		mm_populate(addr, len);
+>  	return ret;
+>  }
+> +EXPORT_SYMBOL(vm_brk_flags);
+> +
+> +int vm_brk(unsigned long addr, unsigned long len)
+> +{
+> +	return vm_brk_flags(addr, len, 0);
+> +}
+>  EXPORT_SYMBOL(vm_brk);
+>  
+>  /* Release all mmaps. */
+> -- 
+> 2.9.2
