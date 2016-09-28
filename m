@@ -1,28 +1,27 @@
-Return-Path: <fw@deneb.enyo.de>
-Received: from albireo.enyo.de (albireo.enyo.de [5.158.152.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skdZn0fmpzDrPm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 23:19:13 +1000 (AEST)
-From: Florian Weimer <fw@deneb.enyo.de>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Florian Weimer <fweimer@redhat.com>,
- Denys Vlasenko <dvlasenk@redhat.com>, Kees Cook <keescook@chromium.org>,
- Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5] powerpc: Do not make the entire heap executable
-References: <20160822185105.29600-1-dvlasenk@redhat.com>
- <87d1jo7qbw.fsf@concordia.ellerman.id.au>
- <20160928025544.GA24199@obsidianresearch.com>
-Date: Wed, 28 Sep 2016 15:12:57 +0200
-In-Reply-To: <20160928025544.GA24199@obsidianresearch.com> (Jason Gunthorpe's
- message of "Tue, 27 Sep 2016 20:55:44 -0600")
-Message-ID: <87k2dwgobq.fsf@mid.deneb.enyo.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skdcY25TgzDrR4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 23:20:45 +1000 (AEST)
+Date: Wed, 28 Sep 2016 21:20:15 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Marcelo Cerri <marcelo.cerri@canonical.com>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ George Wilson <gcwilson@us.ibm.com>,
+ Claudio Carvalho <cclaudio@br.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>,
+ joy.latten@canonical.com, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] crypto: sha1-powerpc: little-endian support
+Message-ID: <20160928132015.GA21312@gondor.apana.org.au>
+References: <1474659116-4689-1-git-send-email-marcelo.cerri@canonical.com>
+ <20160928131551.GA31082@gallifrey>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160928131551.GA31082@gallifrey>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,15 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Jason Gunthorpe:
+On Wed, Sep 28, 2016 at 10:15:51AM -0300, Marcelo Cerri wrote:
+> Hi Herbert,
+> 
+> Any thoughts on this one?
 
-> Eg that 32 bit powerpc currently unconditionally injects writable,
-> executable pages into a user space process.
->
-> This critically undermines all the W^X security work that has been
-> done in the tool chain and user space by the PPC community.
+Can this patch wait until the next merge window? On the broken
+platforms it should just fail the self-test, right?
 
-Exactly, this is how we found it.  I have pretty extensive execmod
-tests, and I'm going to put them into glibc eventually.  It would be
-nice to cut down the number of architectures where it will fail.
-(Even if you don't believe in security hardening.)
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
