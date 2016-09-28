@@ -1,25 +1,29 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jstancek@redhat.com>
+Received: from mx3-phx2.redhat.com (mx3-phx2.redhat.com [209.132.183.24])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skTlB599czDrXS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 17:25:58 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id 6so1781649pfl.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 00:25:58 -0700 (PDT)
-Subject: [PATCH v2] Fix buglet in tlbiel where we set L=1 for ISA 206/7
-To: linuxppc-dev@lists.ozlabs.org
-References: <1473748807-9604-1-git-send-email-bsingharora@gmail.com>
-Cc: Paul Mackerras <paulus@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <michael@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <7c9ac97f-00ef-5597-cbb4-032581856de6@gmail.com>
-Date: Wed, 28 Sep 2016 17:25:52 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skV4b2L4fzDrXS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 17:41:02 +1000 (AEST)
+Date: Wed, 28 Sep 2016 03:40:51 -0400 (EDT)
+From: Jan Stancek <jstancek@redhat.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Marcelo Cerri <marcelo.cerri@canonical.com>,
+ rui y wang <rui.y.wang@intel.com>, mhcerri@linux.vnet.ibm.com,
+ leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Message-ID: <1597189480.51836.1475048451846.JavaMail.zimbra@redhat.com>
+In-Reply-To: <20160928024549.GB14034@gondor.apana.org.au>
+References: <450861381.1559123.1474673197124.JavaMail.zimbra@redhat.com>
+ <20160926145934.GA5520@gondor.apana.org.au>
+ <20160926174317.GA21317@gallifrey>
+ <20160927030826.GB8579@gondor.apana.org.au>
+ <346154437.225735.1474966863173.JavaMail.zimbra@redhat.com>
+ <20160927120414.GC21317@gallifrey> <20160927194644.GB15729@gallifrey>
+ <20160928024549.GB14034@gondor.apana.org.au>
+Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
 MIME-Version: 1.0
-In-Reply-To: <1473748807-9604-1-git-send-email-bsingharora@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +34,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-This patch fixes a bug where we set bit 10 in tlbie via our
-custom .long opcode for tlbiel. These bits are reserved for
-2.06/2.07. In ISA 3.0 bit 10 is a part of the register field
-RS and we could end up corrupting the meaning of the register
-field completely with L=1
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- Changelog v2->v1:
-	Use the compiler to generate tlbiel as suggsted by mpe
-	Drop the rest of the changes to macros
 
- arch/powerpc/mm/hash_native_64.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 0e4e965..0f77edf 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -123,8 +123,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- 		va |= ssize << 8;
- 		sllp = get_sllp_encoding(apsize);
- 		va |= sllp << 5;
--		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
--			     : : "r"(va) : "memory");
-+		asm volatile(ASM_FTR_IFCLR("tlbiel %0,0", "tlbiel %0", %1)
-+			     : : "r" (va), "i" (CPU_FTR_ARCH_206)
-+			     : "memory");
- 		break;
- 	default:
- 		/* We need 14 to 14 + i bits of va */
-@@ -141,8 +142,9 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- 		 */
- 		va |= (vpn & 0xfe);
- 		va |= 1; /* L */
--		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
--			     : : "r"(va) : "memory");
-+		asm volatile(ASM_FTR_IFCLR("tlbiel %0,1", "tlbiel %0", %1)
-+			     : : "r" (va), "i" (CPU_FTR_ARCH_206)
-+			     : "memory");
- 		break;
- 	}
- 
--- 
-2.5.5
+----- Original Message -----
+> From: "Herbert Xu" <herbert@gondor.apana.org.au>
+> To: "Marcelo Cerri" <marcelo.cerri@canonical.com>
+> Cc: "Jan Stancek" <jstancek@redhat.com>, "rui y wang" <rui.y.wang@intel.com>, mhcerri@linux.vnet.ibm.com,
+> leosilva@linux.vnet.ibm.com, pfsmorigo@linux.vnet.ibm.com, linux-crypto@vger.kernel.org,
+> linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+> Sent: Wednesday, 28 September, 2016 4:45:49 AM
+> Subject: Re: [bug] crypto/vmx/p8_ghash memory corruption in 4.8-rc7
+> 
+> On Tue, Sep 27, 2016 at 04:46:44PM -0300, Marcelo Cerri wrote:
+> > 
+> > Can you check if the problem occurs with this patch?
+> 
+> In light of the fact that padlock-sha is the correct example
+> to follow, you only need to add one line to the init_tfm fucntion
+> to update the descsize based on that of the fallback.
+
+Thanks for clearing up how this works in padlock-sha, but
+we are not exactly in same situation with p8_ghash.
+
+p8_ghash_init_tfm() already updates descsize. Problem in original report
+is that without custom export/import/statesize p8_ghash_alg.statesize
+gets initialized by shash_prepare_alg() to alg->descsize:
+
+crash> p p8_ghash_alg.statesize
+$1 = 56
+
+testmgr allocates space for export based on crypto_shash_statesize(),
+but shash_default_export() writes based on crypto_shash_descsize():
+[    8.297902] state: c0000004b873aa80, statesize: 56
+[    8.297932] shash_default_export memcpy c0000004b873aa80 c0000004b8607da0, len: 76
+
+so I think we need either:
+1) make sure p8_ghash_alg.descsize is correct before we register shash,
+   this is what Marcelo's last patch is doing
+2) provide custom export/import/statesize for p8_ghash_alg
+
+Regards,
+Jan
+
+> 
+> Thanks,
+> --
+> Email: Herbert Xu <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> 
