@@ -1,27 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3skL6Z0MQCzDrWf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 11:42:14 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Al Viro <viro@zeniv.linux.org.uk>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: Denys Vlasenko <dvlasenk@redhat.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Kees Cook <keescook@chromium.org>, Oleg Nesterov <oleg@redhat.com>,
- Florian Weimer <fweimer@redhat.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5] powerpc: Do not make the entire heap executable
-In-Reply-To: <20160822185105.29600-1-dvlasenk@redhat.com>
-References: <20160822185105.29600-1-dvlasenk@redhat.com>
-Date: Wed, 28 Sep 2016 11:42:11 +1000
-Message-ID: <87d1jo7qbw.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3skMTq2GGhzDrWh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2016 12:43:59 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3skMTp6BlTz9rxv
+ for <linuxppc-dev@ozlabs.org>; Wed, 28 Sep 2016 12:43:58 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8S2h2kt015608
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Sep 2016 22:43:56 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25qxu26m5c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 Sep 2016 22:43:56 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 27 Sep 2016 20:43:56 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Chris Smart <chris@distroguy.com>
+Subject: Re: [PATCH] Fix "ibm,processor-radix-AP-encodings"
+In-Reply-To: <0612c46e-7e1b-3729-d84f-cefa886abb6d@gmail.com>
+References: <0612c46e-7e1b-3729-d84f-cefa886abb6d@gmail.com>
+Date: Wed, 28 Sep 2016 08:13:48 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <877f9wbv6j.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,282 +42,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Denys Vlasenko <dvlasenk@redhat.com> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> On 32-bit powerpc the ELF PLT sections of binaries (built with --bss-plt,
-> or with a toolchain which defaults to it) look like this:
+> The top 3 bits of the lower order byte should contain the
+> AP encoding, we assume the top 3 bits of the MSB.
 
-Or (it seems), for all programs built with -pg (profiling).
 
->   [17] .sbss             NOBITS          0002aff8 01aff8 000014 00  WA  0   0  4
->   [18] .plt              NOBITS          0002b00c 01aff8 000084 00 WAX  0   0  4
->   [19] .bss              NOBITS          0002b090 01aff8 0000a4 00  WA  0   0  4
+Are you sure, Power architecture documents always confuse about MSB vs
+lowe order bytes. ?
+
 >
-> Which results in an ELF load header:
->
->   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
->   LOAD           0x019c70 0x00029c70 0x00029c70 0x01388 0x014c4 RWE 0x10000
->
-> This is all correct, the load region containing the PLT is marked as
-> executable. Note that the PLT starts at 0002b00c but the file mapping ends at
-> 0002aff8, so the PLT falls in the 0 fill section described by the load header,
-> and after a page boundary.
->
-> Unfortunately the generic ELF loader ignores the X bit in the load headers
-> when it creates the 0 filled non-file backed mappings. It assumes all of these
-> mappings are RW BSS sections, which is not the case for PPC.
->
-> gcc/ld has an option (--secure-plt) to not do this, this is said to incur
-> a small performance penalty.
->
-> Currently, to support 32-bit binaries with PLT in BSS kernel maps *entire
-> brk area* with executable rights for all binaries, even --secure-plt ones.
->
-> Stop doing that.
->
-> Teach the ELF loader to check the X bit in the relevant load header
-> and create 0 filled anonymous mappings that are executable
-> if the load header requests that.
-...
->
-> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
-> Reviewed-by: Kees Cook <keescook@chromium.org>
-> CC: Michael Ellerman <mpe@ellerman.id.au>
-
-This looks OK to me, I've tested it with --bss-plt and --secure-plt and
-also -pg.
-
-So for the powerpc part I'll give you an:
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-But this is not really a powerpc patch, and I'm not an ELF expert. So
-I'm not comfortable merging it via the powerpc tree. It doesn't look
-like we really have a maintainer for binfmt_elf.c, so I'm not sure who
-should be acking that part.
-
-I've added Al Viro to Cc, he maintains fs/ and might be interested.
-
-I've also added Andrew Morton who might be happy to put this in his
-tree, and see if anyone complains?
-
-Also here: https://patchwork.ozlabs.org/patch/661595/
-
-cheers
-
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 > ---
-> Changes since v4:
-> * if (current->personality & READ_IMPLIES_EXEC), still use VM_EXEC
->   for 32-bit executables.
 >
-> Changes since v3:
-> * typo fix in commit message
-> * rebased to current Linus tree
+>  - Detected while reviewing Chris Smart's patch to add radix-AP-encoding
+>    to skiboot
+>  - Also fixed typo (sift/shift)
 >
-> Changes since v2:
-> * moved capability to map with VM_EXEC into vm_brk_flags()
+>  arch/powerpc/mm/pgtable-radix.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >
-> Changes since v1:
-> * wrapped lines to not exceed 79 chars
-> * improved comment
-> * expanded CC list
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> index af897d9..d525b0b 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -245,10 +245,10 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
 >
->  arch/powerpc/include/asm/page.h |  3 ++-
->  fs/binfmt_elf.c                 | 30 ++++++++++++++++++++++--------
->  include/linux/mm.h              |  1 +
->  mm/mmap.c                       | 21 ++++++++++++++++-----
->  4 files changed, 41 insertions(+), 14 deletions(-)
+>  		struct mmu_psize_def *def;
 >
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 56398e7..d188f51 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -230,7 +230,9 @@ extern long long virt_phys_offset;
->   * and needs to be executable.  This means the whole heap ends
->   * up being executable.
->   */
-> -#define VM_DATA_DEFAULT_FLAGS32	(VM_READ | VM_WRITE | VM_EXEC | \
-> +#define VM_DATA_DEFAULT_FLAGS32 \
-> +	(((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0) | \
-> +				 VM_READ | VM_WRITE | \
->  				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
->  
->  #define VM_DATA_DEFAULT_FLAGS64	(VM_READ | VM_WRITE | \
-> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> index 7f6aff3f..2b57b5a 100644
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -91,12 +91,18 @@ static struct linux_binfmt elf_format = {
->  
->  #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
->  
-> -static int set_brk(unsigned long start, unsigned long end)
-> +static int set_brk(unsigned long start, unsigned long end, int prot)
->  {
->  	start = ELF_PAGEALIGN(start);
->  	end = ELF_PAGEALIGN(end);
->  	if (end > start) {
-> -		int error = vm_brk(start, end - start);
-> +		/*
-> +		 * Map the last of the bss segment.
-> +		 * If the header is requesting these pages to be
-> +		 * executable, honour that (ppc32 needs this).
-> +		 */
-> +		int error = vm_brk_flags(start, end - start,
-> +				prot & PROT_EXEC ? VM_EXEC : 0);
->  		if (error)
->  			return error;
->  	}
-> @@ -524,6 +530,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
->  	unsigned long load_addr = 0;
->  	int load_addr_set = 0;
->  	unsigned long last_bss = 0, elf_bss = 0;
-> +	int bss_prot = 0;
->  	unsigned long error = ~0UL;
->  	unsigned long total_size;
->  	int i;
-> @@ -606,8 +613,10 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
->  			 * elf_bss and last_bss is the bss section.
->  			 */
->  			k = load_addr + eppnt->p_vaddr + eppnt->p_memsz;
-> -			if (k > last_bss)
-> +			if (k > last_bss) {
->  				last_bss = k;
-> +				bss_prot = elf_prot;
-> +			}
->  		}
->  	}
->  
-> @@ -623,13 +632,14 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
->  	/*
->  	 * Next, align both the file and mem bss up to the page size,
->  	 * since this is where elf_bss was just zeroed up to, and where
-> -	 * last_bss will end after the vm_brk() below.
-> +	 * last_bss will end after the vm_brk_flags() below.
->  	 */
->  	elf_bss = ELF_PAGEALIGN(elf_bss);
->  	last_bss = ELF_PAGEALIGN(last_bss);
->  	/* Finally, if there is still more bss to allocate, do it. */
->  	if (last_bss > elf_bss) {
-> -		error = vm_brk(elf_bss, last_bss - elf_bss);
-> +		error = vm_brk_flags(elf_bss, last_bss - elf_bss,
-> +				bss_prot & PROT_EXEC ? VM_EXEC : 0);
->  		if (error)
->  			goto out;
->  	}
-> @@ -674,6 +684,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
->  	unsigned long error;
->  	struct elf_phdr *elf_ppnt, *elf_phdata, *interp_elf_phdata = NULL;
->  	unsigned long elf_bss, elf_brk;
-> +	int bss_prot = 0;
->  	int retval, i;
->  	unsigned long elf_entry;
->  	unsigned long interp_load_addr = 0;
-> @@ -881,7 +892,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
->  			   before this one. Map anonymous pages, if needed,
->  			   and clear the area.  */
->  			retval = set_brk(elf_bss + load_bias,
-> -					 elf_brk + load_bias);
-> +					 elf_brk + load_bias,
-> +					 bss_prot);
->  			if (retval)
->  				goto out_free_dentry;
->  			nbyte = ELF_PAGEOFFSET(elf_bss);
-> @@ -975,8 +987,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
->  		if (end_data < k)
->  			end_data = k;
->  		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
-> -		if (k > elf_brk)
-> +		if (k > elf_brk) {
-> +			bss_prot = elf_prot;
->  			elf_brk = k;
-> +		}
->  	}
->  
->  	loc->elf_ex.e_entry += load_bias;
-> @@ -992,7 +1006,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
->  	 * mapping in the interpreter, to make sure it doesn't wind
->  	 * up getting placed where the bss needs to go.
->  	 */
-> -	retval = set_brk(elf_bss, elf_brk);
-> +	retval = set_brk(elf_bss, elf_brk, bss_prot);
->  	if (retval)
->  		goto out_free_dentry;
->  	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 08ed53e..3ffa76c 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -2058,6 +2058,7 @@ static inline void mm_populate(unsigned long addr, unsigned long len) {}
->  
->  /* These take the mm semaphore themselves */
->  extern int __must_check vm_brk(unsigned long, unsigned long);
-> +extern int __must_check vm_brk_flags(unsigned long, unsigned long, unsigned long);
->  extern int vm_munmap(unsigned long, size_t);
->  extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
->          unsigned long, unsigned long,
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index ca9d91b..4d5b3f3 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -2653,11 +2653,11 @@ static inline void verify_mm_writelocked(struct mm_struct *mm)
->   *  anonymous maps.  eventually we may be able to do some
->   *  brk-specific accounting here.
->   */
-> -static int do_brk(unsigned long addr, unsigned long request)
-> +static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
->  {
->  	struct mm_struct *mm = current->mm;
->  	struct vm_area_struct *vma, *prev;
-> -	unsigned long flags, len;
-> +	unsigned long len;
->  	struct rb_node **rb_link, *rb_parent;
->  	pgoff_t pgoff = addr >> PAGE_SHIFT;
->  	int error;
-> @@ -2668,7 +2668,7 @@ static int do_brk(unsigned long addr, unsigned long request)
->  	if (!len)
->  		return 0;
->  
-> -	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
-> +	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
->  
->  	error = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
->  	if (offset_in_page(error))
-> @@ -2736,7 +2736,12 @@ out:
->  	return 0;
->  }
->  
-> -int vm_brk(unsigned long addr, unsigned long len)
-> +static int do_brk(unsigned long addr, unsigned long len)
-> +{
-> +	return do_brk_flags(addr, len, 0);
-> +}
-> +
-> +int vm_brk_flags(unsigned long addr, unsigned long len, unsigned long flags)
->  {
->  	struct mm_struct *mm = current->mm;
->  	int ret;
-> @@ -2745,13 +2750,19 @@ int vm_brk(unsigned long addr, unsigned long len)
->  	if (down_write_killable(&mm->mmap_sem))
->  		return -EINTR;
->  
-> -	ret = do_brk(addr, len);
-> +	ret = do_brk_flags(addr, len, flags);
->  	populate = ((mm->def_flags & VM_LOCKED) != 0);
->  	up_write(&mm->mmap_sem);
->  	if (populate && !ret)
->  		mm_populate(addr, len);
->  	return ret;
->  }
-> +EXPORT_SYMBOL(vm_brk_flags);
-> +
-> +int vm_brk(unsigned long addr, unsigned long len)
-> +{
-> +	return vm_brk_flags(addr, len, 0);
-> +}
->  EXPORT_SYMBOL(vm_brk);
->  
->  /* Release all mmaps. */
-> -- 
-> 2.9.2
+> -		/* top 3 bit is AP encoding */
+> -		shift = be32_to_cpu(prop[0]) & ~(0xe << 28);
+> -		ap = be32_to_cpu(prop[0]) >> 29;
+> -		pr_info("Page size sift = %d AP=0x%x\n", shift, ap);
+> +		/* top 3 bits of the lower order byte is AP encoding */
+> +		shift = be32_to_cpu(prop[0]) & 0x1f;
+> +		ap = (be32_to_cpu(prop[0]) >> 5) & 0x7;
+> +		pr_info("Page size shift = %d AP=0x%x\n", shift, ap);
+>
+>  		idx = get_idx_from_shift(shift);
+>  		if (idx < 0)
+
+-aneesh
