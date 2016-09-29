@@ -3,25 +3,32 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3slHFv0spLzDsjp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 00:36:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3slHG36CpKzDskS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 00:36:59 +1000 (AEST)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org, Linux Weekly News <lwn@lwn.net>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Adrian Hunter <adrian.hunter@intel.com>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
+ Andi Kleen <ak@linux.intel.com>, Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Chong Jiang <chongjiang@chromium.org>,
+ Clark Williams <williams@redhat.com>,
+ Daniel Bristot de Oliveira <bristot@redhat.com>,
+ David Ahern <dsahern@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>,
  Matt Fleming <matt.fleming@intel.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Namhyung Kim <namhyung@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Wang Nan <wangnan0@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 27/27] perf tests: Add dwarf unwind test for powerpc
-Date: Thu, 29 Sep 2016 11:35:56 -0300
-Message-Id: <1475159756-21326-28-git-send-email-acme@kernel.org>
-In-Reply-To: <1475159756-21326-1-git-send-email-acme@kernel.org>
-References: <1475159756-21326-1-git-send-email-acme@kernel.org>
+ Peter Zijlstra <peterz@infradead.org>, pi3orama@163.com,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Simon Que <sque@chromium.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Wang Nan <wangnan0@huawei.com>,
+ Zefan Li <lizefan@huawei.com>, Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [GIT PULL 00/27] perf/core improvements and fixes
+Date: Thu, 29 Sep 2016 11:35:29 -0300
+Message-Id: <1475159756-21326-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,313 +38,297 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Hi Ingo,
 
-The user stack dump feature was recently added for powerpc. But there
-was no test case available to test it.
+	Please consider pulling, more to come soon,
 
-This test works same as on other architectures by preparing a stack
-frame on the perf test thread and comparing each frame by unwinding it.
+- Arnaldo
 
-  $ ./perf test 50
-    50: Test dwarf unwind    : Ok
+Build and test results at the end of this message.
 
-User stack dump for powerpc: https://lkml.org/lkml/2016/4/28/482
+The following changes since commit 6b652de2b27c0a4020ce0e8f277e782b6af76096:
 
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Acked-by: Jiri Olsa <jolsa@kernel.org>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Matt Fleming <matt.fleming@intel.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Wang Nan <wangnan0@huawei.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/1474267100-31079-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com
+  Merge tag 'perf-core-for-mingo-20160922' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2016-09-23 07:21:38 +0200)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-20160929
+
+for you to fetch changes up to d18019a53a07e009899ff6b8dc5ec30f249360d9:
+
+  perf tests: Add dwarf unwind test for powerpc (2016-09-29 11:18:21 -0300)
+
+----------------------------------------------------------------
+perf/core improvements and fixes:
+
+User visible:
+-------------
+
+New features:
+
+- Add support for using symbols in address filters with Intel PT and ARM
+  CoreSight (hardware assisted tracing facilities) (Adrian Hunter, Mathieu Poirier)
+
+Fixes:
+
+- Fix MMAP event synthesis for pre-existing threads when no hugetlbfs
+  mount is in place (Adrian Hunter)
+
+- Don't ignore kernel idle symbols in 'perf script' (Adrian Hunter)
+
+- Assorted Intel PT fixes (Adrian Hunter)
+
+Improvements:
+
+- Fix handling of C++ symbols in 'perf probe' (Masami Hiramatsu)
+
+- Beautify sched_[gs]et_attr return value in 'perf trace' (Arnaldo Carvalho de Melo)
+
+Infrastructure:
+---------------
+
+New features:
+
+- Add dwarf unwind 'perf test' for powerpc (Ravi Bangoria)
+
+Fixes:
+
+- Fix error paths in 'perf record' (Adrian Hunter)
+
+Documentation:
+
+- Update documentation info about quipper, a C++ parser for converting
+  to/from perf.data/chromium profiling format (Simon Que)
+
+Build Fixes:
+
+  Fix building in 32 bit platform with libbabeltrace (Wang Nan)
+
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/arch/powerpc/Build                |  1 +
- tools/perf/arch/powerpc/include/arch-tests.h | 13 ++++
- tools/perf/arch/powerpc/include/perf_regs.h  |  2 +
- tools/perf/arch/powerpc/tests/Build          |  4 ++
- tools/perf/arch/powerpc/tests/arch-tests.c   | 15 +++++
- tools/perf/arch/powerpc/tests/dwarf-unwind.c | 62 ++++++++++++++++++
- tools/perf/arch/powerpc/tests/regs_load.S    | 94 ++++++++++++++++++++++++++++
- tools/perf/tests/Build                       |  2 +-
- tools/perf/tests/dwarf-unwind.c              |  2 +-
- 9 files changed, 193 insertions(+), 2 deletions(-)
+
+----------------------------------------------------------------
+Adrian Hunter (16):
+      perf record: Fix documentation 'event_sources' -> 'event_source'
+      perf tools: Fix MMAP event synthesis broken by MAP_HUGETLB change
+      perf script: Fix vanished idle symbols
+      perf record: Rename label 'out_symbol_exit'
+      perf record: Fix error paths
+      perf symbols: Add dso__last_symbol()
+      perf record: Add support for using symbols in address filters
+      perf probe: Increase debug level of SDT debug messages
+      perf intel-pt: Fix snapshot overlap detection decoder errors
+      perf intel-pt: Add support for recording the max non-turbo ratio
+      perf intel-pt: Fix missing error codes processing auxtrace_info
+      perf intel-pt: Add a helper function for processing AUXTRACE_INFO
+      perf intel-pt: Record address filter in AUXTRACE_INFO event
+      perf intel-pt: Read address filter from AUXTRACE_INFO event
+      perf intel-pt: Enable decoder to handle TIP.PGD with missing IP
+      perf intel-pt: Fix decoding when there are address filters
+
+Arnaldo Carvalho de Melo (1):
+      perf trace: Beautify sched_[gs]et_attr return value
+
+Masami Hiramatsu (4):
+      perf probe: Ignore the error of finding inline instance
+      perf probe: Skip if the function address is 0
+      perf probe: Fix to cut off incompatible chars from group name
+      perf probe: Match linkage name with mangled name
+
+Mathieu Poirier (3):
+      perf tools: Make perf_evsel__append_filter() generic
+      perf evsel: New tracepoint specific function
+      perf evsel: Add support for address filters
+
+Ravi Bangoria (1):
+      perf tests: Add dwarf unwind test for powerpc
+
+Simon Que (1):
+      perf tools: Update documentation info about quipper
+
+Wang Nan (1):
+      perf data: Fix building in 32 bit platform with libbabeltrace
+
+ tools/perf/Documentation/perf-record.txt           |  61 +-
+ tools/perf/Documentation/perf.data-file-format.txt |   6 +-
+ tools/perf/arch/powerpc/Build                      |   1 +
+ tools/perf/arch/powerpc/include/arch-tests.h       |  13 +
+ tools/perf/arch/powerpc/include/perf_regs.h        |   2 +
+ tools/perf/arch/powerpc/tests/Build                |   4 +
+ tools/perf/arch/powerpc/tests/arch-tests.c         |  15 +
+ tools/perf/arch/powerpc/tests/dwarf-unwind.c       |  62 ++
+ tools/perf/arch/powerpc/tests/regs_load.S          |  94 +++
+ tools/perf/arch/x86/util/intel-pt.c                |  57 +-
+ tools/perf/builtin-record.c                        |  32 +-
+ tools/perf/builtin-trace.c                         |  10 +-
+ tools/perf/tests/Build                             |   2 +-
+ tools/perf/tests/dwarf-unwind.c                    |   2 +-
+ tools/perf/util/auxtrace.c                         | 737 +++++++++++++++++++++
+ tools/perf/util/auxtrace.h                         |  54 ++
+ tools/perf/util/build-id.c                         |   4 +-
+ tools/perf/util/data-convert-bt.c                  |   2 +-
+ tools/perf/util/dwarf-aux.c                        |  28 +-
+ tools/perf/util/dwarf-aux.h                        |   3 +
+ tools/perf/util/event.c                            |   3 +-
+ tools/perf/util/evsel.c                            |  16 +-
+ tools/perf/util/evsel.h                            |   5 +-
+ tools/perf/util/evsel_fprintf.c                    |   7 +-
+ .../perf/util/intel-pt-decoder/intel-pt-decoder.c  |  30 +
+ .../perf/util/intel-pt-decoder/intel-pt-decoder.h  |   1 +
+ tools/perf/util/intel-pt.c                         | 172 ++++-
+ tools/perf/util/intel-pt.h                         |   4 +-
+ tools/perf/util/parse-events.c                     |  41 +-
+ tools/perf/util/probe-event.c                      |  10 +-
+ tools/perf/util/probe-file.c                       |   2 +-
+ tools/perf/util/probe-finder.c                     |  17 +-
+ tools/perf/util/symbol.c                           |  15 +
+ tools/perf/util/symbol.h                           |   1 +
+ 34 files changed, 1451 insertions(+), 62 deletions(-)
  create mode 100644 tools/perf/arch/powerpc/include/arch-tests.h
  create mode 100644 tools/perf/arch/powerpc/tests/Build
  create mode 100644 tools/perf/arch/powerpc/tests/arch-tests.c
  create mode 100644 tools/perf/arch/powerpc/tests/dwarf-unwind.c
  create mode 100644 tools/perf/arch/powerpc/tests/regs_load.S
 
-diff --git a/tools/perf/arch/powerpc/Build b/tools/perf/arch/powerpc/Build
-index 54afe4a467e7..db52fa22d3a1 100644
---- a/tools/perf/arch/powerpc/Build
-+++ b/tools/perf/arch/powerpc/Build
-@@ -1 +1,2 @@
- libperf-y += util/
-+libperf-y += tests/
-diff --git a/tools/perf/arch/powerpc/include/arch-tests.h b/tools/perf/arch/powerpc/include/arch-tests.h
-new file mode 100644
-index 000000000000..84d8dedef2ed
---- /dev/null
-+++ b/tools/perf/arch/powerpc/include/arch-tests.h
-@@ -0,0 +1,13 @@
-+#ifndef ARCH_TESTS_H
-+#define ARCH_TESTS_H
-+
-+#ifdef HAVE_DWARF_UNWIND_SUPPORT
-+struct thread;
-+struct perf_sample;
-+int test__arch_unwind_sample(struct perf_sample *sample,
-+			     struct thread *thread);
-+#endif
-+
-+extern struct test arch_tests[];
-+
-+#endif
-diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
-index 75de0e92e71e..c12f4e804f66 100644
---- a/tools/perf/arch/powerpc/include/perf_regs.h
-+++ b/tools/perf/arch/powerpc/include/perf_regs.h
-@@ -5,6 +5,8 @@
- #include <linux/types.h>
- #include <asm/perf_regs.h>
- 
-+void perf_regs_load(u64 *regs);
-+
- #define PERF_REGS_MASK  ((1ULL << PERF_REG_POWERPC_MAX) - 1)
- #define PERF_REGS_MAX   PERF_REG_POWERPC_MAX
- #ifdef __powerpc64__
-diff --git a/tools/perf/arch/powerpc/tests/Build b/tools/perf/arch/powerpc/tests/Build
-new file mode 100644
-index 000000000000..d827ef384b33
---- /dev/null
-+++ b/tools/perf/arch/powerpc/tests/Build
-@@ -0,0 +1,4 @@
-+libperf-$(CONFIG_DWARF_UNWIND) += regs_load.o
-+libperf-$(CONFIG_DWARF_UNWIND) += dwarf-unwind.o
-+
-+libperf-y += arch-tests.o
-diff --git a/tools/perf/arch/powerpc/tests/arch-tests.c b/tools/perf/arch/powerpc/tests/arch-tests.c
-new file mode 100644
-index 000000000000..e24f46241f40
---- /dev/null
-+++ b/tools/perf/arch/powerpc/tests/arch-tests.c
-@@ -0,0 +1,15 @@
-+#include <string.h>
-+#include "tests/tests.h"
-+#include "arch-tests.h"
-+
-+struct test arch_tests[] = {
-+#ifdef HAVE_DWARF_UNWIND_SUPPORT
-+	{
-+		.desc = "Test dwarf unwind",
-+		.func = test__dwarf_unwind,
-+	},
-+#endif
-+	{
-+		.func = NULL,
-+	},
-+};
-diff --git a/tools/perf/arch/powerpc/tests/dwarf-unwind.c b/tools/perf/arch/powerpc/tests/dwarf-unwind.c
-new file mode 100644
-index 000000000000..0bac3137ccbd
---- /dev/null
-+++ b/tools/perf/arch/powerpc/tests/dwarf-unwind.c
-@@ -0,0 +1,62 @@
-+#include <string.h>
-+#include "perf_regs.h"
-+#include "thread.h"
-+#include "map.h"
-+#include "event.h"
-+#include "debug.h"
-+#include "tests/tests.h"
-+#include "arch-tests.h"
-+
-+#define STACK_SIZE 8192
-+
-+static int sample_ustack(struct perf_sample *sample,
-+			 struct thread *thread, u64 *regs)
-+{
-+	struct stack_dump *stack = &sample->user_stack;
-+	struct map *map;
-+	unsigned long sp;
-+	u64 stack_size, *buf;
-+
-+	buf = malloc(STACK_SIZE);
-+	if (!buf) {
-+		pr_debug("failed to allocate sample uregs data\n");
-+		return -1;
-+	}
-+
-+	sp = (unsigned long) regs[PERF_REG_POWERPC_R1];
-+
-+	map = map_groups__find(thread->mg, MAP__VARIABLE, (u64) sp);
-+	if (!map) {
-+		pr_debug("failed to get stack map\n");
-+		free(buf);
-+		return -1;
-+	}
-+
-+	stack_size = map->end - sp;
-+	stack_size = stack_size > STACK_SIZE ? STACK_SIZE : stack_size;
-+
-+	memcpy(buf, (void *) sp, stack_size);
-+	stack->data = (char *) buf;
-+	stack->size = stack_size;
-+	return 0;
-+}
-+
-+int test__arch_unwind_sample(struct perf_sample *sample,
-+			     struct thread *thread)
-+{
-+	struct regs_dump *regs = &sample->user_regs;
-+	u64 *buf;
-+
-+	buf = calloc(1, sizeof(u64) * PERF_REGS_MAX);
-+	if (!buf) {
-+		pr_debug("failed to allocate sample uregs data\n");
-+		return -1;
-+	}
-+
-+	perf_regs_load(buf);
-+	regs->abi  = PERF_SAMPLE_REGS_ABI;
-+	regs->regs = buf;
-+	regs->mask = PERF_REGS_MASK;
-+
-+	return sample_ustack(sample, thread, buf);
-+}
-diff --git a/tools/perf/arch/powerpc/tests/regs_load.S b/tools/perf/arch/powerpc/tests/regs_load.S
-new file mode 100644
-index 000000000000..d76c9a32f327
---- /dev/null
-+++ b/tools/perf/arch/powerpc/tests/regs_load.S
-@@ -0,0 +1,94 @@
-+#include <linux/linkage.h>
-+
-+/* Offset is based on macros from arch/powerpc/include/uapi/asm/ptrace.h. */
-+#define R0	 0
-+#define R1	 1 * 8
-+#define R2	 2 * 8
-+#define R3	 3 * 8
-+#define R4	 4 * 8
-+#define R5	 5 * 8
-+#define R6	 6 * 8
-+#define R7	 7 * 8
-+#define R8	 8 * 8
-+#define R9	 9 * 8
-+#define R10	10 * 8
-+#define R11	11 * 8
-+#define R12	12 * 8
-+#define R13	13 * 8
-+#define R14	14 * 8
-+#define R15	15 * 8
-+#define R16	16 * 8
-+#define R17	17 * 8
-+#define R18	18 * 8
-+#define R19	19 * 8
-+#define R20	20 * 8
-+#define R21	21 * 8
-+#define R22	22 * 8
-+#define R23	23 * 8
-+#define R24	24 * 8
-+#define R25	25 * 8
-+#define R26	26 * 8
-+#define R27	27 * 8
-+#define R28	28 * 8
-+#define R29	29 * 8
-+#define R30	30 * 8
-+#define R31	31 * 8
-+#define NIP	32 * 8
-+#define CTR	35 * 8
-+#define LINK	36 * 8
-+#define XER	37 * 8
-+
-+.globl perf_regs_load
-+perf_regs_load:
-+	std 0, R0(3)
-+	std 1, R1(3)
-+	std 2, R2(3)
-+	std 3, R3(3)
-+	std 4, R4(3)
-+	std 5, R5(3)
-+	std 6, R6(3)
-+	std 7, R7(3)
-+	std 8, R8(3)
-+	std 9, R9(3)
-+	std 10, R10(3)
-+	std 11, R11(3)
-+	std 12, R12(3)
-+	std 13, R13(3)
-+	std 14, R14(3)
-+	std 15, R15(3)
-+	std 16, R16(3)
-+	std 17, R17(3)
-+	std 18, R18(3)
-+	std 19, R19(3)
-+	std 20, R20(3)
-+	std 21, R21(3)
-+	std 22, R22(3)
-+	std 23, R23(3)
-+	std 24, R24(3)
-+	std 25, R25(3)
-+	std 26, R26(3)
-+	std 27, R27(3)
-+	std 28, R28(3)
-+	std 29, R29(3)
-+	std 30, R30(3)
-+	std 31, R31(3)
-+
-+	/* store NIP */
-+	mflr 4
-+	std 4, NIP(3)
-+
-+	/* Store LR */
-+	std 4, LINK(3)
-+
-+	/* Store XER */
-+	mfxer 4
-+	std 4, XER(3)
-+
-+	/* Store CTR */
-+	mfctr 4
-+	std 4, CTR(3)
-+
-+	/* Restore original value of r4 */
-+	ld 4, R4(3)
-+
-+	blr
-diff --git a/tools/perf/tests/Build b/tools/perf/tests/Build
-index dc51bc570e51..8a4ce492f7b2 100644
---- a/tools/perf/tests/Build
-+++ b/tools/perf/tests/Build
-@@ -71,7 +71,7 @@ $(OUTPUT)tests/llvm-src-relocation.c: tests/bpf-script-test-relocation.c tests/B
- 	$(Q)sed -e 's/"/\\"/g' -e 's/\(.*\)/"\1\\n"/g' $< >> $@
- 	$(Q)echo ';' >> $@
- 
--ifeq ($(ARCH),$(filter $(ARCH),x86 arm arm64))
-+ifeq ($(ARCH),$(filter $(ARCH),x86 arm arm64 powerpc))
- perf-$(CONFIG_DWARF_UNWIND) += dwarf-unwind.o
- endif
- 
-diff --git a/tools/perf/tests/dwarf-unwind.c b/tools/perf/tests/dwarf-unwind.c
-index 8f6eb853aaf7..1046491de4b2 100644
---- a/tools/perf/tests/dwarf-unwind.c
-+++ b/tools/perf/tests/dwarf-unwind.c
-@@ -11,7 +11,7 @@
- #include "thread.h"
- #include "callchain.h"
- 
--#if defined (__x86_64__) || defined (__i386__)
-+#if defined (__x86_64__) || defined (__i386__) || defined (__powerpc__)
- #include "arch-tests.h"
- #endif
- 
--- 
-2.7.4
+  # time dm
+   1  alpine:3.4: Ok
+   2 android-ndk:r12b-arm: Ok
+   3 archlinux:latest: Ok
+   4 centos:5: Ok
+   5 centos:6: Ok
+   6 centos:7: Ok
+   7 debian:7: Ok
+   8 debian:8: Ok
+   9 debian:experimental: Ok
+  10 fedora:20: Ok
+  11 fedora:21: Ok
+  12 fedora:22: Ok
+  13 fedora:23: Ok
+  14 fedora:24: Ok
+  15 fedora:24-x-ARC-uClibc: Ok
+  16 fedora:rawhide: Ok
+  17 mageia:5: Ok
+  18 opensuse:13.2: Ok
+  19 opensuse:42.1: Ok
+  20 opensuse:tumbleweed: Ok
+  21 ubuntu:12.04.5: Ok
+  22 ubuntu:14.04: Ok
+  23 ubuntu:14.04.4: Ok
+  24 ubuntu:15.10: Ok
+  25 ubuntu:16.04: Ok
+  26 ubuntu:16.04-x-arm: Ok
+  27 ubuntu:16.04-x-arm64: Ok
+  28 ubuntu:16.04-x-powerpc: Ok
+  29 ubuntu:16.04-x-powerpc64: Ok
+  30 ubuntu:16.04-x-powerpc64el: Ok
+  31 ubuntu:16.04-x-s390: Ok
+  32 ubuntu:16.10: Ok
+  33 2246.21
+
+  real	37m26.862s
+  user	0m2.148s
+  sys	0m2.256s
+  # 
+
+  # perf test
+   1: vmlinux symtab matches kallsyms                          : Ok
+   2: detect openat syscall event                              : Ok
+   3: detect openat syscall event on all cpus                  : Ok
+   4: read samples using the mmap interface                    : Ok
+   5: parse events tests                                       : Ok
+   6: Validate PERF_RECORD_* events & perf_sample fields       : Ok
+   7: Test perf pmu format parsing                             : Ok
+   8: Test dso data read                                       : Ok
+   9: Test dso data cache                                      : Ok
+  10: Test dso data reopen                                     : Ok
+  11: roundtrip evsel->name check                              : Ok
+  12: Check parsing of sched tracepoints fields                : Ok
+  13: Generate and check syscalls:sys_enter_openat event fields: Ok
+  14: struct perf_event_attr setup                             : Ok
+  15: Test matching and linking multiple hists                 : Ok
+  16: Try 'import perf' in python, checking link problems      : Ok
+  17: Test breakpoint overflow signal handler                  : Ok
+  18: Test breakpoint overflow sampling                        : Ok
+  19: Test number of exit event of a simple workload           : Ok
+  20: Test software clock events have valid period values      : Ok
+  21: Test object code reading                                 : Ok
+  22: Test sample parsing                                      : Ok
+  23: Test using a dummy software event to keep tracking       : Ok
+  24: Test parsing with no sample_id_all bit set               : Ok
+  25: Test filtering hist entries                              : Ok
+  26: Test mmap thread lookup                                  : Ok
+  27: Test thread mg sharing                                   : Ok
+  28: Test output sorting of hist entries                      : Ok
+  29: Test cumulation of child hist entries                    : Ok
+  30: Test tracking with sched_switch                          : Ok
+  31: Filter fds with revents mask in a fdarray                : Ok
+  32: Add fd to a fdarray, making it autogrow                  : Ok
+  33: Test kmod_path__parse function                           : Ok
+  34: Test thread map                                          : Ok
+  35: Test LLVM searching and compiling                        :
+  35.1: Basic BPF llvm compiling test                          : Ok
+  35.2: Test kbuild searching                                  : Ok
+  35.3: Compile source for BPF prologue generation test        : Ok
+  35.4: Compile source for BPF relocation test                 : Ok
+  36: Test topology in session                                 : Ok
+  37: Test BPF filter                                          :
+  37.1: Test basic BPF filtering                               : Ok
+  37.2: Test BPF prologue generation                           : Ok
+  37.3: Test BPF relocation checker                            : Ok
+  38: Test thread map synthesize                               : Ok
+  39: Test cpu map synthesize                                  : Ok
+  40: Test stat config synthesize                              : Ok
+  41: Test stat synthesize                                     : Ok
+  42: Test stat round synthesize                               : Ok
+  43: Test attr update synthesize                              : Ok
+  44: Test events times                                        : Ok
+  45: Test backward reading from ring buffer                   : Ok
+  46: Test cpu map print                                       : Ok
+  47: Test SDT event probing                                   : Ok
+  48: Test is_printable_array function                         : Ok
+  49: Test bitmap print                                        : Ok
+  50: x86 rdpmc test                                           : Ok
+  51: Test converting perf time to TSC                         : Ok
+  52: Test dwarf unwind                                        : Ok
+  53: Test x86 instruction decoder - new instructions          : Ok
+  54: Test intel cqm nmi context read                          : Skip
+  #
+
+  $ make -C tools/perf build-test
+  make: Entering directory '/home/acme/git/linux/tools/perf'
+                        tarpkg: ./tests/perf-targz-src-pkg .
+                  make_debug_O: make DEBUG=1
+             make_no_libnuma_O: make NO_LIBNUMA=1
+               make_no_slang_O: make NO_SLANG=1
+            make_no_libaudit_O: make NO_LIBAUDIT=1
+              make_no_libbpf_O: make NO_LIBBPF=1
+   make_install_prefix_slash_O: make install prefix=/tmp/krava/
+                   make_tags_O: make tags
+                    make_doc_O: make doc
+           make_no_libunwind_O: make NO_LIBUNWIND=1
+            make_install_bin_O: make install-bin
+           make_no_libbionic_O: make NO_LIBBIONIC=1
+        make_with_babeltrace_O: make LIBBABELTRACE=1
+            make_no_demangle_O: make NO_DEMANGLE=1
+                 make_perf_o_O: make perf.o
+            make_no_auxtrace_O: make NO_AUXTRACE=1
+             make_no_scripts_O: make NO_LIBPYTHON=1 NO_LIBPERL=1
+                   make_pure_O: make
+             make_util_map_o_O: make util/map.o
+  make_no_libdw_dwarf_unwind_O: make NO_LIBDW_DWARF_UNWIND=1
+                make_no_newt_O: make NO_NEWT=1
+           make_no_libpython_O: make NO_LIBPYTHON=1
+       make_util_pmu_bison_o_O: make util/pmu-bison.o
+                   make_help_O: make help
+         make_install_prefix_O: make install prefix=/tmp/krava
+                 make_static_O: make LDFLAGS=-static
+                  make_no_ui_O: make NO_NEWT=1 NO_SLANG=1 NO_GTK2=1
+           make_no_backtrace_O: make NO_BACKTRACE=1
+              make_clean_all_O: make clean all
+                make_install_O: make install
+              make_no_libelf_O: make NO_LIBELF=1
+             make_no_libperl_O: make NO_LIBPERL=1
+                make_no_gtk2_O: make NO_GTK2=1
+                make_minimal_O: make NO_LIBPERL=1 NO_LIBPYTHON=1 NO_NEWT=1 NO_GTK2=1 NO_DEMANGLE=1 NO_LIBELF=1 NO_LIBUNWIND=1 NO_BACKTRACE=1 NO_LIBNUMA=1 NO_LIBAUDIT=1 NO_LIBBIONIC=1 NO_LIBDW_DWARF_UNWIND=1 NO_AUXTRACE=1 NO_LIBBPF=1 NO_LIBCRYPTO=1 NO_SDT=1
+  OK
+  make: Leaving directory '/home/acme/git/linux/tools/perf'
+  $
