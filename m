@@ -1,31 +1,50 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3slTXG2r3KzDrQx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 08:19:57 +1000 (AEST)
-Date: Thu, 29 Sep 2016 19:19:48 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
- Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- peterz@infradead.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v21 00/20] perf, tools: Add support for PMU events in
- JSON format
-Message-ID: <20160929221948.GB29214@kernel.org>
-References: <20160919233113.GB11991@kernel.org>
- <20160919233753.GC11991@kernel.org>
- <20160920000258.GD11991@kernel.org>
- <20160920002820.GE11991@kernel.org> <20160922150022.GA20134@krava>
- <20160922162713.GA31617@krava> <20160926083533.GA15523@krava>
- <20160926150343.GJ5588@kernel.org>
- <20160926165954.GD5871@two.firstfloor.org>
- <20160927141846.GA6589@krava>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3slTZB2tf0zDskL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 08:21:38 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u8TMHiUu008061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 18:21:36 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 25s8st6d8e-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 18:21:35 -0400
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 29 Sep 2016 19:21:33 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id A5D461DC006F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 18:21:31 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u8TMLVpC4927662
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 19:21:31 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u8TMLU6X013780
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 19:21:31 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linux-security-module <linux-security-module@vger.kernel.org>,
+ linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
+ kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATHC v2 0/9] ima: carry the measurement list across kexec
+Date: Thu, 29 Sep 2016 19:21:29 -0300
+In-Reply-To: <87eg42xtzn.fsf@x220.int.ebiederm.org>
+References: <1472596811-9596-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <1743059.2ZOQaNILxh@hactar> <87eg42xtzn.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160927141846.GA6589@krava>
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <2846678.ltpVeSnPm7@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,174 +54,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Tue, Sep 27, 2016 at 04:18:46PM +0200, Jiri Olsa escreveu:
-> On Mon, Sep 26, 2016 at 09:59:54AM -0700, Andi Kleen wrote:
-> > On Mon, Sep 26, 2016 at 12:03:43PM -0300, Arnaldo Carvalho de Melo wrote:
-> > > Em Mon, Sep 26, 2016 at 10:35:33AM +0200, Jiri Olsa escreveu:
-> > > > ping.. is that working for you? IMO we can include this
-> > > > as additional patch to the set..
-> > > 
-> > > No, it doesn't fails to build on the first cross env I tried, fixing it
-> > > now, resulting patch:
+Am Donnerstag, 29 September 2016, 16:43:08 schrieb Eric W. Biederman:
+> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+> > Hello Eric,
 > > 
-> > Yes it shouldn't be difficult to fix cross building. I don't think
-> > there are any fundamental problems.
+> > Am Dienstag, 20 September 2016, 11:07:29 schrieb Eric W. Biederman:
+> >> A semi-generic concept called a hand-over buffer seems to be a
+> >> construction of infrustructure for no actual reason that will just
+> >> result in confusion.  There are lots of things that are handed over,
+> >> the
+> >> flattend device tree, ramdisks, bootparams on x86, etc, etc.  ima is
+> >> not
+> >> special in this execpt for being perhaps the first addition that we are
+> >> going to want the option of including on most architectures.
+> > 
+> > Ok, I understand. I decided to implement a generic concept because I
+> > thought that proposing a feature that is more useful than what I need
+> > it for would increase its chance of being accepted. It's interesting to
+> > see that it had the opposite effect.
 > 
-> right, how about attached patch
+> Yes.  In this case it was not clear that anyone else could use it, and
+> being less generic you can tweak the needs of the code to ima without
+> anyone having to worry about it.
 > 
-> Arnaldo,
-> could you please try it on cross build.. I still dont have setup for that :-\
-> 
-> thanks,
-> jirka
+> So thank you very much for making the code more specific to the
+> circumstances.
 
-So, this makes it work for me in one of the cross build envs I have (all
-in https://hub.docker.com/r/acmel/) if I apply this patch on top:
+Thank you very much for your feedback and your reviews!
 
-diff --git a/tools/build/Makefile b/tools/build/Makefile
-index 653faee2a055..8332959fbca4 100644
---- a/tools/build/Makefile
-+++ b/tools/build/Makefile
-@@ -42,7 +42,7 @@ $(OUTPUT)fixdep-in.o: FORCE
- 	$(Q)$(MAKE) $(build)=fixdep
- 
- $(OUTPUT)fixdep: $(OUTPUT)fixdep-in.o
--	$(QUIET_LINK)$(CC) $(LDFLAGS) -o $@ $<
-+	$(QUIET_LINK)$(HOSTCC) $(LDFLAGS) -o $@ $<
- 
- FORCE:
- 
--------------------
-
-I've broken up the patch into multiple ones, to get first fixdep
-working, then to move to jevents, I'm putting this on a
-tmp.perf/hostprog branch till I've tested it all.
-
-- Arnaldo
- 
-> 
-> ---
-> diff --git a/tools/build/Build b/tools/build/Build
-> index 63a6c34c0c88..76d1a4960973 100644
-> --- a/tools/build/Build
-> +++ b/tools/build/Build
-> @@ -1 +1,3 @@
-> +hostprogs := fixdep
-> +
->  fixdep-y := fixdep.o
-> diff --git a/tools/build/Makefile b/tools/build/Makefile
-> index 0d5a0e3a8fa9..653faee2a055 100644
-> --- a/tools/build/Makefile
-> +++ b/tools/build/Makefile
-> @@ -14,6 +14,12 @@ endef
->  $(call allow-override,CC,$(CROSS_COMPILE)gcc)
->  $(call allow-override,LD,$(CROSS_COMPILE)ld)
->  
-> +HOSTCC ?= gcc
-> +HOSTLD ?= ld
-> +HOSTAR ?= ar
-> +
-> +export HOSTCC HOSTLD HOSTAR
-> +
->  ifeq ($(V),1)
->    Q =
->  else
-> diff --git a/tools/build/Makefile.build b/tools/build/Makefile.build
-> index 27f3583193e6..031c5631cc21 100644
-> --- a/tools/build/Makefile.build
-> +++ b/tools/build/Makefile.build
-> @@ -58,6 +58,9 @@ quiet_cmd_mkdir = MKDIR    $(dir $@)
->  quiet_cmd_cc_o_c = CC       $@
->        cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
->  
-> +quiet_cmd_host_cc_o_c = HOSTCC   $@
-> +      cmd_host_cc_o_c = $(HOSTCC) $(c_flags) -c -o $@ $<
-> +
->  quiet_cmd_cpp_i_c = CPP      $@
->        cmd_cpp_i_c = $(CC) $(c_flags) -E -o $@ $<
->  
-> @@ -70,16 +73,24 @@ quiet_cmd_gen = GEN      $@
->  # If there's nothing to link, create empty $@ object.
->  quiet_cmd_ld_multi = LD       $@
->        cmd_ld_multi = $(if $(strip $(obj-y)),\
-> -		       $(LD) -r -o $@  $(filter $(obj-y),$^),rm -f $@; $(AR) rcs $@)
-> +                     $(LD) -r -o $@  $(filter $(obj-y),$^),rm -f $@; $(AR) rcs $@)
-> +
-> +quiet_cmd_host_ld_multi = HOSTLD   $@
-> +      cmd_host_ld_multi = $(if $(strip $(obj-y)),\
-> +                          $(HOSTLD) -r -o $@  $(filter $(obj-y),$^),rm -f $@; $(HOSTAR) rcs $@)
-> +
-> +ifneq ($(filter $(obj),$(hostprogs)),)
-> +  host = host_
-> +endif
->  
->  # Build rules
->  $(OUTPUT)%.o: %.c FORCE
->  	$(call rule_mkdir)
-> -	$(call if_changed_dep,cc_o_c)
-> +	$(call if_changed_dep,$(host)cc_o_c)
->  
->  $(OUTPUT)%.o: %.S FORCE
->  	$(call rule_mkdir)
-> -	$(call if_changed_dep,cc_o_c)
-> +	$(call if_changed_dep,$(host)cc_o_c)
->  
->  $(OUTPUT)%.i: %.c FORCE
->  	$(call rule_mkdir)
-> @@ -119,7 +130,7 @@ $(sort $(subdir-obj-y)): $(subdir-y) ;
->  
->  $(in-target): $(obj-y) FORCE
->  	$(call rule_mkdir)
-> -	$(call if_changed,ld_multi)
-> +	$(call if_changed,$(host)ld_multi)
->  
->  __build: $(in-target)
->  	@:
-> diff --git a/tools/build/Makefile.include b/tools/build/Makefile.include
-> index be630bed66d2..ad22e4e7bc59 100644
-> --- a/tools/build/Makefile.include
-> +++ b/tools/build/Makefile.include
-> @@ -1,10 +1,6 @@
->  build := -f $(srctree)/tools/build/Makefile.build dir=. obj
->  
-> -ifdef CROSS_COMPILE
-> -fixdep:
-> -else
->  fixdep:
->  	$(Q)$(MAKE) -C $(srctree)/tools/build CFLAGS= LDFLAGS= $(OUTPUT)fixdep
-> -endif
->  
->  .PHONY: fixdep
-> diff --git a/tools/perf/Makefile.perf b/tools/perf/Makefile.perf
-> index 0abebcba849f..1347b5de3669 100644
-> --- a/tools/perf/Makefile.perf
-> +++ b/tools/perf/Makefile.perf
-> @@ -144,6 +144,10 @@ $(call allow-override,LD,$(CROSS_COMPILE)ld)
->  
->  LD += $(EXTRA_LDFLAGS)
->  
-> +HOSTCC  ?= gcc
-> +HOSTLD  ?= ld
-> +HOSTAR  ?= ar
-> +
->  PKG_CONFIG = $(CROSS_COMPILE)pkg-config
->  
->  RM      = rm -f
-> @@ -345,6 +349,7 @@ strip: $(PROGRAMS) $(OUTPUT)perf
->  PERF_IN := $(OUTPUT)perf-in.o
->  
->  export srctree OUTPUT RM CC LD AR CFLAGS V BISON FLEX AWK
-> +export HOSTCC HOSTLD HOSTAR
->  include $(srctree)/tools/build/Makefile.include
->  
->  JEVENTS       := $(OUTPUT)pmu-events/jevents
-> diff --git a/tools/perf/pmu-events/Build b/tools/perf/pmu-events/Build
-> index d2f34307ae79..9213a1273697 100644
-> --- a/tools/perf/pmu-events/Build
-> +++ b/tools/perf/pmu-events/Build
-> @@ -1,3 +1,5 @@
-> +hostprogs := jevents
-> +
->  jevents-y	+= json.o jsmn.o jevents.o
->  pmu-events-y	+= pmu-events.o
->  JDIR		=  pmu-events/arch/$(ARCH)
+-- 
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
