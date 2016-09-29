@@ -1,56 +1,25 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3slBYz3W9rzDsjB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 21:05:27 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u8TB2p8d136743
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 07:05:24 -0400
-Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25rx8d8at6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 07:05:24 -0400
-Received: from localhost
- by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Thu, 29 Sep 2016 12:05:22 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 552CC17D8062
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 12:07:18 +0100 (BST)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u8TB5FTa12517658
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 11:05:15 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u8TB5EbZ031362
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 05:05:15 -0600
-Subject: Re: [PATCH v3 0/4] implement vcpu preempted check
-To: Peter Zijlstra <peterz@infradead.org>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-References: <1469101514-49475-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160929101040.GV5016@twins.programming.kicks-ass.net>
- <166f3bad-f700-4624-6c1c-996f90ad609c@de.ibm.com>
- <f521d8cb-c38b-a608-eca8-a5c45184bbca@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, paulmck@linux.vnet.ibm.com, will.deacon@arm.com,
- kernellwp@gmail.com, jgross@suse.com, pbonzini@redhat.com,
- bsingharora@gmail.com, Heiko Carstens <heiko.carstens@de.ibm.com>
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Thu, 29 Sep 2016 13:05:13 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3slCfd0N0hzDsjF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 21:54:32 +1000 (AEST)
+Date: Thu, 29 Sep 2016 06:54:23 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: zhong@linux.vnet.ibm.com, aik@ozlabs.ru, linux-pci@vger.kernel.org,
+ gwshan@linux.vnet.ibm.com, alex.williamson@redhat.com,
+ paulus@samba.org, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 3/4] PCI: Add a new option for resource_alignment to
+ reassign alignment
+Message-ID: <20160929115422.GA31048@localhost>
+References: <1473757234-5284-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1473757234-5284-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <20160928224246.GC20897@localhost>
+ <6e4d1079-a3a6-5d3f-7339-ae4d0e1ee828@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <f521d8cb-c38b-a608-eca8-a5c45184bbca@de.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <e0cfa717-0f23-f326-2907-2524ad755f91@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6e4d1079-a3a6-5d3f-7339-ae4d0e1ee828@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,85 +29,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/29/2016 12:40 PM, Christian Borntraeger wrote:
-> On 09/29/2016 12:23 PM, Christian Borntraeger wrote:
->> On 09/29/2016 12:10 PM, Peter Zijlstra wrote:
->>> On Thu, Jul 21, 2016 at 07:45:10AM -0400, Pan Xinhui wrote:
->>>> change from v2:
->>>> 	no code change, fix typos, update some comments
->>>>
->>>> change from v1:
->>>> 	a simplier definition of default vcpu_is_preempted
->>>> 	skip mahcine type check on ppc, and add config. remove dedicated macro.
->>>> 	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner. 
->>>> 	add more comments
->>>> 	thanks boqun and Peter's suggestion.
->>>>
->>>> This patch set aims to fix lock holder preemption issues.
->>>
->>> So I really like the concept, but I would also really like to see
->>> support for more hypervisors included before we can move forward with
->>> this.
->>>
->>> Please consider s390 and (x86/arm) KVM. Once we have a few, more can
->>> follow later, but I think its important to not only have PPC support for
->>> this.
->>
->> Actually the s390 preemted check via sigp sense running  is available for
->> all hypervisors (z/VM, LPAR and KVM) which implies everywhere as you can no
->> longer buy s390 systems without LPAR.
->>
->> As Heiko already pointed out we could simply use a small inline function
->> that calls cpu_is_preempted from arch/s390/lib/spinlock (or smp_vcpu_scheduled from smp.c)
+On Thu, Sep 29, 2016 at 10:38:01AM +0800, Yongji Xie wrote:
+> On 2016/9/29 6:42, Bjorn Helgaas wrote:
 > 
-> Maybe something like
-> (untested and just pasted, so white space damaged)
+> >On Tue, Sep 13, 2016 at 05:00:33PM +0800, Yongji Xie wrote:
+> >>When using resource_alignment kernel parameter, the current
+> >>implement reassigns the alignment by changing resources' size
+> >>which can potentially break some drivers. For example, the driver
+> >>uses the size to locate some register whose length is related
+> >>to the size.
+> >>
+> >>This patch adds a new option "noresize" for the parameter to
+> >>solve this problem.
+> >>
+> >>Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+> >>---
+> >>  Documentation/kernel-parameters.txt |    9 ++++++---
+> >>  drivers/pci/pci.c                   |   37 +++++++++++++++++++++++++----------
+> >>  2 files changed, 33 insertions(+), 13 deletions(-)
+> >>
+> >>diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> >>index a4f4d69..d6a340d 100644
+> >>--- a/Documentation/kernel-parameters.txt
+> >>+++ b/Documentation/kernel-parameters.txt
+> >>@@ -3023,9 +3023,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+> >>  				window. The default value is 64 megabytes.
+> >>  		resource_alignment=
+> >>  				Format:
+> >>-				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
+> >>-				[<order of align>@]pci:<vendor>:<device>\
+> >>-						[:<subvendor>:<subdevice>][; ...]
+> >>+				[<order of align>@][noresize@][<domain>:]
+> >>+				<bus>:<slot>.<func>[; ...]
+> >>+				[<order of align>@][noresize@]pci:<vendor>:<device>
+> >>+				[:<subvendor>:<subdevice>][; ...]
+> >>  				Specifies alignment and device to reassign
+> >>  				aligned memory resources.
+> >>  				If <order of align> is not specified,
+> >>@@ -3036,6 +3037,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+> >>  				instances of a device, the PCI vendor,
+> >>  				device, subvendor, and subdevice may be
+> >>  				specified, e.g., 4096@pci:8086:9c22:103c:198f
+> >>+				noresize: Don't change the resources' sizes when
+> >>+				reassigning alignment.
+> >>  		ecrc=		Enable/disable PCIe ECRC (transaction layer
+> >>  				end-to-end CRC checking).
+> >>  				bios: Use BIOS/firmware settings. This is the
+> >>diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> >>index b8357d7..37f8062 100644
+> >>--- a/drivers/pci/pci.c
+> >>+++ b/drivers/pci/pci.c
+> >>@@ -4946,11 +4946,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
+> >>  /**
+> >>   * pci_specified_resource_alignment - get resource alignment specified by user.
+> >>   * @dev: the PCI device to get
+> >>+ * @resize: whether or not to change resources' size when reassigning alignment
+> >>   *
+> >>   * RETURNS: Resource alignment if it is specified.
+> >>   *          Zero if it is not specified.
+> >>   */
+> >>-static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+> >>+static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+> >>+		bool *resize)
+> >>  {
+> >>  	int seg, bus, slot, func, align_order, count;
+> >>  	unsigned short vendor, device, subsystem_vendor, subsystem_device;
+> >>@@ -4974,6 +4976,13 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+> >>  		} else {
+> >>  			align_order = -1;
+> >>  		}
+> >>+
+> >>+		if (!strncmp(p, "noresize@", 9)) {
+> >>+			*resize = false;
+> >>+			p += 9;
+> >>+		} else
+> >>+			*resize = true;
+> >>+
+> >>  		if (strncmp(p, "pci:", 4) == 0) {
+> >>  			/* PCI vendor/device (subvendor/subdevice) ids are specified */
+> >>  			p += 4;
+> >>@@ -5045,6 +5054,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+> >>  {
+> >>  	int i;
+> >>  	struct resource *r;
+> >>+	bool resize = true;
+> >>  	resource_size_t align, size;
+> >>  	u16 command;
+> >>@@ -5058,7 +5068,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+> >>  		return;
+> >>  	/* check if specified PCI is target device to reassign */
+> >>-	align = pci_specified_resource_alignment(dev);
+> >>+	align = pci_specified_resource_alignment(dev, &resize);
+> >>  	if (!align)
+> >>  		return;
+> >>@@ -5086,15 +5096,22 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+> >>  		}
+> >>  		size = resource_size(r);
+> >>-		if (size < align) {
+> >>-			size = align;
+> >>-			dev_info(&dev->dev,
+> >>-				"Rounding up size of resource #%d to %#llx.\n",
+> >>-				i, (unsigned long long)size);
+> >>+		if (resize) {
+> >>+			if (size < align) {
+> >>+				size = align;
+> >>+				dev_info(&dev->dev,
+> >>+					"Rounding up size of resource #%d to %#llx.\n",
+> >>+					i, (unsigned long long)size);
+> >>+			}
+> >>+			r->flags |= IORESOURCE_UNSET;
+> >>+			r->end = size - 1;
+> >>+			r->start = 0;
+> >Why do you want to keep this code that changes the size of the resource?
+> >Can't we just *always* use IORESOURCE_STARTALIGN as below?  It seems like
+> >that would potentially fix bugs, as you mention.
+> >
+> >I think it'd be better if we didn't change the size, even if the user
+> >didn't specify "noresize@".  We wouldn't even need the "noresize@" option
+> >then.
+> >
+> >Or is there some reason to keep the resize?  If it's just a question of
+> >being afraid to change the existing behavior because of the risk, I'm
+> >willing to take that risk.
+> 
+> Hi Bjorn,
+> 
+> Thanks for your time. The reason is just like what you said.  I'm worried
+> that this may break the existing behavior.  I'll updated this patch as
+> you suggested.
 
-Now tested. With 8 host cpus and 16 guest cpus perf bench sched shows the
-same improvements as in Pan Xinhuis cover letter.
-Also the runtime shrinks a lot.
+I guess one problem is that if we *don't* change the size, there's
+nothing to prevent something else from being allocated right after the
+resource.  For example, if we have a 1K BAR, and the objective is to
+make sure it's on a 4K page by itself, not only do we have to align
+the BAR on 4K, we *also* have to keep anything else from using the
+remaining 3K of that page.
 
+Maybe it's easier to fix the drivers so they don't rely on the size.
+Do you have examples of such drivers?
+
+I'm hesitant to add a new option to the "pci=resource_alignment"
+parameter because it's already very complicated and it exposes more
+kernel internals than I'm really comfortable with.  If we can figure
+out a way to make the existing parameter work for everybody, I would
+prefer that.
+
+Bjorn
+
+> >>+		} else {
+> >>+			r->flags &= ~IORESOURCE_SIZEALIGN;
+> >>+			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
+> >>+			r->start = max(align, size);
+> >>+			r->end = r->start + size - 1;
+> >>  		}
+> >>-		r->flags |= IORESOURCE_UNSET;
+> >>-		r->end = size - 1;
+> >>-		r->start = 0;
+> >>  	}
+> >>  	/* Need to disable bridge's resource window,
+> >>  	 * to enable the kernel to reassign new resource
+> >>-- 
+> >>1.7.9.5
+> >>
+> >>--
+> >>To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> >>the body of a message to majordomo@vger.kernel.org
+> >>More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> diff --git a/arch/s390/include/asm/spinlock.h b/arch/s390/include/asm/spinlock.h
-> index 63ebf37..6e82986 100644
-> --- a/arch/s390/include/asm/spinlock.h
-> +++ b/arch/s390/include/asm/spinlock.h
-> @@ -21,6 +21,13 @@ _raw_compare_and_swap(unsigned int *lock, unsigned int old, unsigned int new)
->         return __sync_bool_compare_and_swap(lock, old, new);
->  }
-> 
-> +int arch_vcpu_is_preempted(int cpu);
-> +#define vcpu_is_preempted cpu_is_preempted
-> +static inline bool cpu_is_preempted(int cpu)
-> +{
-> +       return arch_vcpu_is_preempted(cpu);
-> +}
-> +
->  /*
->   * Simple spin lock operations.  There are two variants, one clears IRQ's
->   * on the local processor, one does not.
-> diff --git a/arch/s390/lib/spinlock.c b/arch/s390/lib/spinlock.c
-> index e5f50a7..260d179 100644
-> --- a/arch/s390/lib/spinlock.c
-> +++ b/arch/s390/lib/spinlock.c
-> @@ -37,7 +37,7 @@ static inline void _raw_compare_and_delay(unsigned int *lock, unsigned int old)
->         asm(".insn rsy,0xeb0000000022,%0,0,%1" : : "d" (old), "Q" (*lock));
->  }
-> 
-> -static inline int cpu_is_preempted(int cpu)
-> +int arch_vcpu_is_preempted(int cpu)
->  {
->         if (test_cpu_flag_of(CIF_ENABLED_WAIT, cpu))
->                 return 0;
-> @@ -45,6 +45,7 @@ static inline int cpu_is_preempted(int cpu)
->                 return 0;
->         return 1;
->  }
-> +EXPORT_SYMBOL(arch_vcpu_is_preempted);
-> 
->  void arch_spin_lock_wait(arch_spinlock_t *lp)
->  {
-> 
-> 
-> 
-> If ok I can respin into a proper patch.
