@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3slFPR3LN4zDsjG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 23:13:15 +1000 (AEST)
-In-Reply-To: <2e840fe0-40cf-abf0-4fe6-a621ce46ae13@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3slFPS2dKvzDsjG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 23:13:16 +1000 (AEST)
+In-Reply-To: <1474787813-22587-1-git-send-email-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [v3] KVM: PPC: Book3S HV: Migrate pinned pages out of CMA
-Message-Id: <3slFPR2kWQz9sC3@ozlabs.org>
-Date: Thu, 29 Sep 2016 23:13:15 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/vdso64: Use double word compare on pointers
+Message-Id: <3slFPS1qsqz9sDG@ozlabs.org>
+Date: Thu, 29 Sep 2016 23:13:16 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-06-09 at 06:27:31 UTC, Balbir Singh wrote:
-> When PCI Device pass-through is enabled via VFIO, KVM-PPC will
-> pin pages using get_user_pages_fast(). One of the downsides of
-> the pinning is that the page could be in CMA region. The CMA
-> region is used for other allocations like the hash page table.
-> Ideally we want the pinned pages to be from non CMA region.
+On Sun, 2016-25-09 at 07:16:53 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> This patch (currently only for KVM PPC with VFIO) forcefully
-> migrates the pages out (huge pages are omitted for the moment).
-> There are more efficient ways of doing this, but that might
-> be elaborate and might impact a larger audience beyond just
-> the kvm ppc implementation.
+> __kernel_get_syscall_map and __kernel_clock_getres use cmpli to
+> check if the passed in pointer is non zero. cmpli maps to a 32 bit
+> compare on binutils, so we ignore the top 32 bits.
 > 
-> The magic is in new_iommu_non_cma_page() which allocates the
-> new page from a non CMA region.
+> A simple test case can be created by passing in a bogus pointer with
+> the bottom 32 bits clear. Using a clk_id that is handled by the VDSO,
+> then one that is handled by the kernel shows the problem:
 > 
-> I've tested the patches lightly at my end. The full solution
-> requires migration of THP pages in the CMA region. That work
-> will be done incrementally on top of this.
+>         printf("%d\n", clock_getres(CLOCK_REALTIME, (void *)0x100000000));
+>         printf("%d\n", clock_getres(CLOCK_BOOTTIME, (void *)0x100000000));
 > 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> And we get:
+> 
+> 0
+> -1
+> 
+> The bigger issue is if we pass a valid pointer with the bottom 32 bits
+> clear, in this case we will return success but won't write any data
+> to the pointer.
+> 
+> I stumbled across this issue because the LLVM integrated assembler
+> doesn't accept cmpli with 3 arguments. Fix this by converting them to
+> cmpldi.
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2e5bbb5461f138cac631fe21b4ad95
+https://git.kernel.org/powerpc/c/5045ea37377ce8cca6890d32b127ad
 
 cheers
