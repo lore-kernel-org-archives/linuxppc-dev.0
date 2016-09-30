@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3slbCf58FczDvLw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 12:35:58 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id oz2so4141832pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 19:35:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3slbCn4gcGzDvKl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 12:36:05 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id r9so3482847paz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 19:36:05 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -17,10 +17,9 @@ Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Simon Guo <wei.guo.simon@gmail.com>, Jack Miller <jack@codezen.org>,
  Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org
-Subject: [PATCH v15 02/15] selftests/powerpc: move shared utility files into
- new utility/ dir
-Date: Fri, 30 Sep 2016 10:32:51 +0800
-Message-Id: <1475202784-5653-3-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v15 03/15] selftests/powerpc: Add ptrace tests for EBB
+Date: Fri, 30 Sep 2016 10:32:52 +0800
+Message-Id: <1475202784-5653-4-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1475202784-5653-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1475202784-5653-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,1073 +31,586 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-There are some functions, especially register related, which can
-be shared across multiple selftests/powerpc test directories.
+This patch adds ptrace interface test for EBB/PMU specific
+registers. This also adds some generic ptrace interface
+based helper functions to be used by other patches later
+on in the series.
 
-This patch creates a new utility directory to store those shared
-functionalities, so that the file layout becomes more neat.
-
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- tools/testing/selftests/powerpc/Makefile           |  2 +-
- tools/testing/selftests/powerpc/alignment/Makefile |  2 +-
- tools/testing/selftests/powerpc/basic_asm.h        | 70 -----------------
- .../testing/selftests/powerpc/benchmarks/Makefile  |  2 +-
- .../selftests/powerpc/benchmarks/context_switch.c  |  2 +-
- .../selftests/powerpc/context_switch/Makefile      |  2 +-
- .../testing/selftests/powerpc/copyloops/validate.c |  2 +-
- tools/testing/selftests/powerpc/instructions.h     | 68 -----------------
- tools/testing/selftests/powerpc/math/fpu_asm.S     |  2 +-
- tools/testing/selftests/powerpc/math/vmx_asm.S     |  2 +-
- tools/testing/selftests/powerpc/mm/Makefile        |  2 +-
- tools/testing/selftests/powerpc/pmu/Makefile       |  4 +-
- tools/testing/selftests/powerpc/pmu/ebb/Makefile   |  2 +-
- tools/testing/selftests/powerpc/reg.h              | 89 ----------------------
- .../testing/selftests/powerpc/stringloops/memcmp.c |  2 +-
- tools/testing/selftests/powerpc/tm/Makefile        |  2 +-
- tools/testing/selftests/powerpc/tm/tm.h            |  2 +-
- .../testing/selftests/powerpc/utility/basic_asm.h  | 73 ++++++++++++++++++
- .../selftests/powerpc/utility/instructions.h       | 68 +++++++++++++++++
- tools/testing/selftests/powerpc/utility/reg.h      | 89 ++++++++++++++++++++++
- tools/testing/selftests/powerpc/utility/utils.c    | 87 +++++++++++++++++++++
- tools/testing/selftests/powerpc/utility/utils.h    | 70 +++++++++++++++++
- tools/testing/selftests/powerpc/utils.c            | 87 ---------------------
- tools/testing/selftests/powerpc/utils.h            | 70 -----------------
- 24 files changed, 402 insertions(+), 399 deletions(-)
- delete mode 100644 tools/testing/selftests/powerpc/basic_asm.h
- delete mode 100644 tools/testing/selftests/powerpc/instructions.h
- delete mode 100644 tools/testing/selftests/powerpc/reg.h
- create mode 100644 tools/testing/selftests/powerpc/utility/basic_asm.h
- create mode 100644 tools/testing/selftests/powerpc/utility/instructions.h
- create mode 100644 tools/testing/selftests/powerpc/utility/reg.h
- create mode 100644 tools/testing/selftests/powerpc/utility/utils.c
- create mode 100644 tools/testing/selftests/powerpc/utility/utils.h
- delete mode 100644 tools/testing/selftests/powerpc/utils.c
- delete mode 100644 tools/testing/selftests/powerpc/utils.h
+ tools/testing/selftests/powerpc/Makefile           |   3 +-
+ tools/testing/selftests/powerpc/ptrace/Makefile    |  11 +
+ .../testing/selftests/powerpc/ptrace/ptrace-ebb.c  | 187 +++++++++++++++++
+ .../testing/selftests/powerpc/ptrace/ptrace-ebb.h  |  99 +++++++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.h    | 225 +++++++++++++++++++++
+ 5 files changed, 524 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.h
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.h
 
 diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 1cc6d64..b6eb817 100644
+index b6eb817..2fe383c 100644
 --- a/tools/testing/selftests/powerpc/Makefile
 +++ b/tools/testing/selftests/powerpc/Makefile
-@@ -8,7 +8,7 @@ ifeq ($(ARCH),powerpc)
+@@ -25,7 +25,8 @@ SUB_DIRS = alignment		\
+ 	   syscalls		\
+ 	   tm			\
+ 	   vphn         \
+-	   math
++	   math		\
++	   ptrace
  
- GIT_VERSION = $(shell git describe --always --long --dirty || echo "unknown")
+ endif
  
--CFLAGS := -std=gnu99 -Wall -O2 -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) $(CFLAGS)
-+CFLAGS := -std=gnu99 -Wall -O2 -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) -I$(CURDIR)/utility $(CFLAGS)
- 
- export CFLAGS
- 
-diff --git a/tools/testing/selftests/powerpc/alignment/Makefile b/tools/testing/selftests/powerpc/alignment/Makefile
-index ad6a4e4..b61e5e7 100644
---- a/tools/testing/selftests/powerpc/alignment/Makefile
-+++ b/tools/testing/selftests/powerpc/alignment/Makefile
-@@ -2,7 +2,7 @@ TEST_PROGS := copy_unaligned copy_first_unaligned paste_unaligned paste_last_una
- 
- all: $(TEST_PROGS)
- 
--$(TEST_PROGS): ../harness.c ../utils.c copy_paste_unaligned_common.c
-+$(TEST_PROGS): ../harness.c ../utility/utils.c copy_paste_unaligned_common.c
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/basic_asm.h b/tools/testing/selftests/powerpc/basic_asm.h
-deleted file mode 100644
-index 3349a07..0000000
---- a/tools/testing/selftests/powerpc/basic_asm.h
-+++ /dev/null
-@@ -1,70 +0,0 @@
--#ifndef _SELFTESTS_POWERPC_BASIC_ASM_H
--#define _SELFTESTS_POWERPC_BASIC_ASM_H
--
--#include <ppc-asm.h>
--#include <asm/unistd.h>
--
--#define LOAD_REG_IMMEDIATE(reg,expr) \
--	lis	reg,(expr)@highest;	\
--	ori	reg,reg,(expr)@higher;	\
--	rldicr	reg,reg,32,31;	\
--	oris	reg,reg,(expr)@high;	\
--	ori	reg,reg,(expr)@l;
--
--/*
-- * Note: These macros assume that variables being stored on the stack are
-- * doublewords, while this is usually the case it may not always be the
-- * case for each use case.
-- */
--#if defined(_CALL_ELF) && _CALL_ELF == 2
--#define STACK_FRAME_MIN_SIZE 32
--#define STACK_FRAME_TOC_POS  24
--#define __STACK_FRAME_PARAM(_param)  (32 + ((_param)*8))
--#define __STACK_FRAME_LOCAL(_num_params,_var_num)  ((STACK_FRAME_PARAM(_num_params)) + ((_var_num)*8))
--#else
--#define STACK_FRAME_MIN_SIZE 112
--#define STACK_FRAME_TOC_POS  40
--#define __STACK_FRAME_PARAM(i)  (48 + ((i)*8))
--
--/*
-- * Caveat: if a function passed more than 8 doublewords, the caller will have
-- * made more space... which would render the 112 incorrect.
-- */
--#define __STACK_FRAME_LOCAL(_num_params,_var_num)  (112 + ((_var_num)*8))
--#endif
--
--/* Parameter x saved to the stack */
--#define STACK_FRAME_PARAM(var)    __STACK_FRAME_PARAM(var)
--
--/* Local variable x saved to the stack after x parameters */
--#define STACK_FRAME_LOCAL(num_params,var)    __STACK_FRAME_LOCAL(num_params,var)
--#define STACK_FRAME_LR_POS   16
--#define STACK_FRAME_CR_POS   8
--
--/*
-- * It is very important to note here that _extra is the extra amount of
-- * stack space needed. This space can be accessed using STACK_FRAME_PARAM()
-- * or STACK_FRAME_LOCAL() macros.
-- *
-- * r1 and r2 are not defined in ppc-asm.h (instead they are defined as sp
-- * and toc). Kernel programmers tend to prefer rX even for r1 and r2, hence
-- * %1 and %r2. r0 is defined in ppc-asm.h and therefore %r0 gets
-- * preprocessed incorrectly, hence r0.
-- */
--#define PUSH_BASIC_STACK(_extra) \
--	mflr	r0; \
--	std	r0,STACK_FRAME_LR_POS(%r1); \
--	stdu	%r1,-(_extra + STACK_FRAME_MIN_SIZE)(%r1); \
--	mfcr	r0; \
--	stw	r0,STACK_FRAME_CR_POS(%r1); \
--	std	%r2,STACK_FRAME_TOC_POS(%r1);
--
--#define POP_BASIC_STACK(_extra) \
--	ld	%r2,STACK_FRAME_TOC_POS(%r1); \
--	lwz	r0,STACK_FRAME_CR_POS(%r1); \
--	mtcr	r0; \
--	addi	%r1,%r1,(_extra + STACK_FRAME_MIN_SIZE); \
--	ld	r0,STACK_FRAME_LR_POS(%r1); \
--	mtlr	r0;
--
--#endif /* _SELFTESTS_POWERPC_BASIC_ASM_H */
-diff --git a/tools/testing/selftests/powerpc/benchmarks/Makefile b/tools/testing/selftests/powerpc/benchmarks/Makefile
-index a9adfb7..fc55d2b 100644
---- a/tools/testing/selftests/powerpc/benchmarks/Makefile
-+++ b/tools/testing/selftests/powerpc/benchmarks/Makefile
-@@ -6,7 +6,7 @@ all: $(TEST_PROGS)
- 
- $(TEST_PROGS): ../harness.c
- 
--context_switch: ../utils.c
-+context_switch: ../utility/utils.c
- context_switch: CFLAGS += -maltivec -mvsx -mabi=altivec
- context_switch: LDLIBS += -lpthread
- 
-diff --git a/tools/testing/selftests/powerpc/benchmarks/context_switch.c b/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-index a36883a..778f5fb 100644
---- a/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-+++ b/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-@@ -28,7 +28,7 @@
- #ifdef __powerpc__
- #include <altivec.h>
- #endif
--#include "../utils.h"
-+#include "utils.h"
- 
- static unsigned int timeout = 30;
- 
-diff --git a/tools/testing/selftests/powerpc/context_switch/Makefile b/tools/testing/selftests/powerpc/context_switch/Makefile
-index e164d14..48b558f 100644
---- a/tools/testing/selftests/powerpc/context_switch/Makefile
-+++ b/tools/testing/selftests/powerpc/context_switch/Makefile
-@@ -2,7 +2,7 @@ TEST_PROGS := cp_abort
- 
- all: $(TEST_PROGS)
- 
--$(TEST_PROGS): ../harness.c ../utils.c
-+$(TEST_PROGS): ../harness.c ../utility/utils.c
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/copyloops/validate.c b/tools/testing/selftests/powerpc/copyloops/validate.c
-index 1750ff5..7fb436f 100644
---- a/tools/testing/selftests/powerpc/copyloops/validate.c
-+++ b/tools/testing/selftests/powerpc/copyloops/validate.c
-@@ -3,7 +3,7 @@
- #include <stdlib.h>
- #include <stdbool.h>
- 
--#include "../utils.h"
-+#include "utils.h"
- 
- #define MAX_LEN 8192
- #define MAX_OFFSET 16
-diff --git a/tools/testing/selftests/powerpc/instructions.h b/tools/testing/selftests/powerpc/instructions.h
-deleted file mode 100644
-index 0fb0bd3..0000000
---- a/tools/testing/selftests/powerpc/instructions.h
-+++ /dev/null
-@@ -1,68 +0,0 @@
--#ifndef _SELFTESTS_POWERPC_INSTRUCTIONS_H
--#define _SELFTESTS_POWERPC_INSTRUCTIONS_H
--
--#include <stdio.h>
--#include <stdlib.h>
--
--/* This defines the "copy" instruction from Power ISA 3.0 Book II, section 4.4. */
--#define __COPY(RA, RB, L) \
--	(0x7c00060c | (RA) << (31-15) | (RB) << (31-20) | (L) << (31-10))
--#define COPY(RA, RB, L) \
--	.long __COPY((RA), (RB), (L))
--
--static inline void copy(void *i)
--{
--	asm volatile(str(COPY(0, %0, 0))";"
--			:
--			: "b" (i)
--			: "memory"
--		    );
--}
--
--static inline void copy_first(void *i)
--{
--	asm volatile(str(COPY(0, %0, 1))";"
--			:
--			: "b" (i)
--			: "memory"
--		    );
--}
--
--/* This defines the "paste" instruction from Power ISA 3.0 Book II, section 4.4. */
--#define __PASTE(RA, RB, L, RC) \
--	(0x7c00070c | (RA) << (31-15) | (RB) << (31-20) | (L) << (31-10) | (RC) << (31-31))
--#define PASTE(RA, RB, L, RC) \
--	.long __PASTE((RA), (RB), (L), (RC))
--
--static inline int paste(void *i)
--{
--	int cr;
--
--	asm volatile(str(PASTE(0, %1, 0, 0))";"
--			"mfcr %0;"
--			: "=r" (cr)
--			: "b" (i)
--			: "memory"
--		    );
--	return cr;
--}
--
--static inline int paste_last(void *i)
--{
--	int cr;
--
--	asm volatile(str(PASTE(0, %1, 1, 1))";"
--			"mfcr %0;"
--			: "=r" (cr)
--			: "b" (i)
--			: "memory"
--		    );
--	return cr;
--}
--
--#define PPC_INST_COPY                  __COPY(0, 0, 0)
--#define PPC_INST_COPY_FIRST            __COPY(0, 0, 1)
--#define PPC_INST_PASTE                 __PASTE(0, 0, 0, 0)
--#define PPC_INST_PASTE_LAST            __PASTE(0, 0, 1, 1)
--
--#endif /* _SELFTESTS_POWERPC_INSTRUCTIONS_H */
-diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
-index f3711d8..8d4eb96 100644
---- a/tools/testing/selftests/powerpc/math/fpu_asm.S
-+++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
-@@ -7,7 +7,7 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
--#include "../basic_asm.h"
-+#include "basic_asm.h"
- 
- #define PUSH_FPU(pos) \
- 	stfd	f14,pos(sp); \
-diff --git a/tools/testing/selftests/powerpc/math/vmx_asm.S b/tools/testing/selftests/powerpc/math/vmx_asm.S
-index 1b8c248..1b6fd53 100644
---- a/tools/testing/selftests/powerpc/math/vmx_asm.S
-+++ b/tools/testing/selftests/powerpc/math/vmx_asm.S
-@@ -7,7 +7,7 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
--#include "../basic_asm.h"
-+#include "basic_asm.h"
- 
- # POS MUST BE 16 ALIGNED!
- #define PUSH_VMX(pos,reg) \
-diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-index 3bdb96e..813797b 100644
---- a/tools/testing/selftests/powerpc/mm/Makefile
-+++ b/tools/testing/selftests/powerpc/mm/Makefile
-@@ -8,7 +8,7 @@ all: $(TEST_PROGS) $(TEST_FILES)
- 
- $(TEST_PROGS): ../harness.c
- 
--prot_sao: ../utils.c
-+prot_sao: ../utility/utils.c
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
-index ac41a71..5ca77af 100644
---- a/tools/testing/selftests/powerpc/pmu/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/Makefile
-@@ -2,7 +2,7 @@ noarg:
- 	$(MAKE) -C ../
- 
- TEST_PROGS := count_instructions l3_bank_test per_event_excludes
--EXTRA_SOURCES := ../harness.c event.c lib.c ../utils.c
-+EXTRA_SOURCES := ../harness.c event.c lib.c ../utility/utils.c
- 
- all: $(TEST_PROGS) ebb
- 
-@@ -12,7 +12,7 @@ $(TEST_PROGS): $(EXTRA_SOURCES)
- count_instructions: loop.S count_instructions.c $(EXTRA_SOURCES)
- 	$(CC) $(CFLAGS) -m64 -o $@ $^
- 
--per_event_excludes: ../utils.c
-+per_event_excludes: ../utility/utils.c
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/Makefile b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-index 6b0453e..db4a64f 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-@@ -18,7 +18,7 @@ TEST_PROGS := reg_access_test event_attributes_test cycles_test	\
- 
- all: $(TEST_PROGS)
- 
--$(TEST_PROGS): ../../harness.c ../../utils.c ../event.c ../lib.c \
-+$(TEST_PROGS): ../../harness.c ../../utility/utils.c ../event.c ../lib.c \
- 	       ebb.c ebb_handler.S trace.c busy_loop.S
- 
- instruction_count_test: ../loop.S
-diff --git a/tools/testing/selftests/powerpc/reg.h b/tools/testing/selftests/powerpc/reg.h
-deleted file mode 100644
-index f5d33db..0000000
---- a/tools/testing/selftests/powerpc/reg.h
-+++ /dev/null
-@@ -1,89 +0,0 @@
--/*
-- * Copyright 2014, Michael Ellerman, IBM Corp.
-- * Licensed under GPLv2.
-- */
--
--#ifndef _SELFTESTS_POWERPC_REG_H
--#define _SELFTESTS_POWERPC_REG_H
--
--#define __stringify_1(x)        #x
--#define __stringify(x)          __stringify_1(x)
--
--#define mfspr(rn)	({unsigned long rval; \
--			 asm volatile("mfspr %0," _str(rn) \
--				    : "=r" (rval)); rval; })
--#define mtspr(rn, v)	asm volatile("mtspr " _str(rn) ",%0" : \
--				    : "r" ((unsigned long)(v)) \
--				    : "memory")
--
--#define mb()		asm volatile("sync" : : : "memory");
--
--#define SPRN_MMCR2     769
--#define SPRN_MMCRA     770
--#define SPRN_MMCR0     779
--#define   MMCR0_PMAO   0x00000080
--#define   MMCR0_PMAE   0x04000000
--#define   MMCR0_FC     0x80000000
--#define SPRN_EBBHR     804
--#define SPRN_EBBRR     805
--#define SPRN_BESCR     806     /* Branch event status & control register */
--#define SPRN_BESCRS    800     /* Branch event status & control set (1 bits set to 1) */
--#define SPRN_BESCRSU   801     /* Branch event status & control set upper */
--#define SPRN_BESCRR    802     /* Branch event status & control REset (1 bits set to 0) */
--#define SPRN_BESCRRU   803     /* Branch event status & control REset upper */
--
--#define BESCR_PMEO     0x1     /* PMU Event-based exception Occurred */
--#define BESCR_PME      (0x1ul << 32) /* PMU Event-based exception Enable */
--#define BESCR_LME      (0x1ul << 34) /* Load Monitor Enable */
--#define BESCR_LMEO     (0x1ul << 2)  /* Load Monitor Exception Occurred */
--
--#define SPRN_LMRR      813     /* Load Monitor Region Register */
--#define SPRN_LMSER     814     /* Load Monitor Section Enable Register */
--
--#define SPRN_PMC1      771
--#define SPRN_PMC2      772
--#define SPRN_PMC3      773
--#define SPRN_PMC4      774
--#define SPRN_PMC5      775
--#define SPRN_PMC6      776
--
--#define SPRN_SIAR      780
--#define SPRN_SDAR      781
--#define SPRN_SIER      768
--
--#define SPRN_TEXASR     0x82    /* Transaction Exception and Status Register */
--#define SPRN_TFIAR      0x81    /* Transaction Failure Inst Addr    */
--#define SPRN_TFHAR      0x80    /* Transaction Failure Handler Addr */
--#define SPRN_TAR        0x32f	/* Target Address Register */
--
--#define SPRN_DSCR_PRIV 0x11	/* Privilege State DSCR */
--#define SPRN_DSCR      0x03	/* Data Stream Control Register */
--#define SPRN_PPR       896	/* Program Priority Register */
--
--/* TEXASR register bits */
--#define TEXASR_FC	0xFE00000000000000
--#define TEXASR_FP	0x0100000000000000
--#define TEXASR_DA	0x0080000000000000
--#define TEXASR_NO	0x0040000000000000
--#define TEXASR_FO	0x0020000000000000
--#define TEXASR_SIC	0x0010000000000000
--#define TEXASR_NTC	0x0008000000000000
--#define TEXASR_TC	0x0004000000000000
--#define TEXASR_TIC	0x0002000000000000
--#define TEXASR_IC	0x0001000000000000
--#define TEXASR_IFC	0x0000800000000000
--#define TEXASR_ABT	0x0000000100000000
--#define TEXASR_SPD	0x0000000080000000
--#define TEXASR_HV	0x0000000020000000
--#define TEXASR_PR	0x0000000010000000
--#define TEXASR_FS	0x0000000008000000
--#define TEXASR_TE	0x0000000004000000
--#define TEXASR_ROT	0x0000000002000000
--
--/* Vector Instructions */
--#define VSX_XX1(xs, ra, rb)	(((xs) & 0x1f) << 21 | ((ra) << 16) |  \
--				 ((rb) << 11) | (((xs) >> 5)))
--#define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra), (rb)))
--#define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra), (rb)))
--
--#endif /* _SELFTESTS_POWERPC_REG_H */
-diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp.c b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-index 17417dd..30b1222 100644
---- a/tools/testing/selftests/powerpc/stringloops/memcmp.c
-+++ b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-@@ -1,7 +1,7 @@
- #include <malloc.h>
- #include <stdlib.h>
- #include <string.h>
--#include "../utils.h"
-+#include "utils.h"
- 
- #define SIZE 256
- #define ITERATIONS 10000
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 9d301d7..8b69f1f 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -3,7 +3,7 @@ TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
- 
- all: $(TEST_PROGS)
- 
--$(TEST_PROGS): ../harness.c ../utils.c
-+$(TEST_PROGS): ../harness.c ../utility/utils.c
- 
- CFLAGS += -mhtm
- 
-diff --git a/tools/testing/selftests/powerpc/tm/tm.h b/tools/testing/selftests/powerpc/tm/tm.h
-index 60318ba..5cafbc3 100644
---- a/tools/testing/selftests/powerpc/tm/tm.h
-+++ b/tools/testing/selftests/powerpc/tm/tm.h
-@@ -10,7 +10,7 @@
- #include <asm/cputable.h>
- #include <stdbool.h>
- 
--#include "../utils.h"
-+#include "utils.h"
- 
- static inline bool have_htm(void)
- {
-diff --git a/tools/testing/selftests/powerpc/utility/basic_asm.h b/tools/testing/selftests/powerpc/utility/basic_asm.h
+diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
 new file mode 100644
-index 0000000..12eaddf
+index 0000000..84c1c01
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/utility/basic_asm.h
-@@ -0,0 +1,73 @@
-+#ifndef _SELFTESTS_POWERPC_BASIC_ASM_H
-+#define _SELFTESTS_POWERPC_BASIC_ASM_H
++++ b/tools/testing/selftests/powerpc/ptrace/Makefile
+@@ -0,0 +1,11 @@
++TEST_PROGS := ptrace-ebb
 +
-+#include <ppc-asm.h>
-+#include <asm/unistd.h>
++include ../../lib.mk
 +
-+#define LOAD_REG_IMMEDIATE(reg, expr) \
-+	lis	reg, (expr)@highest;	\
-+	ori	reg, reg, (expr)@higher;	\
-+	rldicr	reg, reg, 32, 31;	\
-+	oris	reg, reg, (expr)@high;	\
-+	ori	reg, reg, (expr)@l;
-+
++all: $(TEST_PROGS)
++CFLAGS += -m64
++$(TEST_PROGS): ../harness.c ../utility/utils.c ptrace.h
++ptrace-ebb: ../pmu/event.c ../pmu/lib.c ../pmu/ebb/ebb_handler.S ../pmu/ebb/busy_loop.S
++ptrace-ebb: CFLAGS += -I../pmu/ebb
++clean:
++	rm -f $(TEST_PROGS) *.o
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c b/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
+new file mode 100644
+index 0000000..1ec4a6b
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
+@@ -0,0 +1,187 @@
 +/*
-+ * Note: These macros assume that variables being stored on the stack are
-+ * doublewords, while this is usually the case it may not always be the
-+ * case for each use case.
-+ */
-+#if defined(_CALL_ELF) && _CALL_ELF == 2
-+#define STACK_FRAME_MIN_SIZE 32
-+#define STACK_FRAME_TOC_POS  24
-+#define __STACK_FRAME_PARAM(_param)  (32 + ((_param)*8))
-+#define __STACK_FRAME_LOCAL(_num_params, _var_num)  \
-+	((STACK_FRAME_PARAM(_num_params)) + ((_var_num)*8))
-+#else
-+#define STACK_FRAME_MIN_SIZE 112
-+#define STACK_FRAME_TOC_POS  40
-+#define __STACK_FRAME_PARAM(i)  (48 + ((i)*8))
-+
-+/*
-+ * Caveat: if a function passed more than 8 doublewords, the caller will have
-+ * made more space... which would render the 112 incorrect.
-+ */
-+#define __STACK_FRAME_LOCAL(_num_params, _var_num)  \
-+	(112 + ((_var_num)*8))
-+#endif
-+
-+/* Parameter x saved to the stack */
-+#define STACK_FRAME_PARAM(var)    __STACK_FRAME_PARAM(var)
-+
-+/* Local variable x saved to the stack after x parameters */
-+#define STACK_FRAME_LOCAL(num_params, var)    \
-+	__STACK_FRAME_LOCAL(num_params, var)
-+#define STACK_FRAME_LR_POS   16
-+#define STACK_FRAME_CR_POS   8
-+
-+/*
-+ * It is very important to note here that _extra is the extra amount of
-+ * stack space needed. This space can be accessed using STACK_FRAME_PARAM()
-+ * or STACK_FRAME_LOCAL() macros.
++ * Ptrace interface test for EBB
 + *
-+ * r1 and r2 are not defined in ppc-asm.h (instead they are defined as sp
-+ * and toc). Kernel programmers tend to prefer rX even for r1 and r2, hence
-+ * %1 and %r2. r0 is defined in ppc-asm.h and therefore %r0 gets
-+ * preprocessed incorrectly, hence r0.
++ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
-+#define PUSH_BASIC_STACK(_extra) \
-+	mflr	r0; \
-+	std	r0, STACK_FRAME_LR_POS(%r1); \
-+	stdu	%r1, -(_extra + STACK_FRAME_MIN_SIZE)(%r1); \
-+	mfcr	r0; \
-+	stw	r0, STACK_FRAME_CR_POS(%r1); \
-+	std	%r2, STACK_FRAME_TOC_POS(%r1);
++#include "ebb.h"
++#include "ptrace.h"
++#include "ptrace-ebb.h"
 +
-+#define POP_BASIC_STACK(_extra) \
-+	ld	%r2, STACK_FRAME_TOC_POS(%r1); \
-+	lwz	r0, STACK_FRAME_CR_POS(%r1); \
-+	mtcr	r0; \
-+	addi	%r1, %r1, (_extra + STACK_FRAME_MIN_SIZE); \
-+	ld	r0, STACK_FRAME_LR_POS(%r1); \
-+	mtlr	r0;
++/* Tracer and Tracee Shared Data */
++int shm_id;
++int *cptr, *pptr;
 +
-+#endif /* _SELFTESTS_POWERPC_BASIC_ASM_H */
-diff --git a/tools/testing/selftests/powerpc/utility/instructions.h b/tools/testing/selftests/powerpc/utility/instructions.h
-new file mode 100644
-index 0000000..0fb0bd3
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/utility/instructions.h
-@@ -0,0 +1,68 @@
-+#ifndef _SELFTESTS_POWERPC_INSTRUCTIONS_H
-+#define _SELFTESTS_POWERPC_INSTRUCTIONS_H
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+
-+/* This defines the "copy" instruction from Power ISA 3.0 Book II, section 4.4. */
-+#define __COPY(RA, RB, L) \
-+	(0x7c00060c | (RA) << (31-15) | (RB) << (31-20) | (L) << (31-10))
-+#define COPY(RA, RB, L) \
-+	.long __COPY((RA), (RB), (L))
-+
-+static inline void copy(void *i)
++void ebb(void)
 +{
-+	asm volatile(str(COPY(0, %0, 0))";"
-+			:
-+			: "b" (i)
-+			: "memory"
-+		    );
-+}
++	struct event event;
 +
-+static inline void copy_first(void *i)
-+{
-+	asm volatile(str(COPY(0, %0, 1))";"
-+			:
-+			: "b" (i)
-+			: "memory"
-+		    );
-+}
++	cptr = (int *)shmat(shm_id, NULL, 0);
 +
-+/* This defines the "paste" instruction from Power ISA 3.0 Book II, section 4.4. */
-+#define __PASTE(RA, RB, L, RC) \
-+	(0x7c00070c | (RA) << (31-15) | (RB) << (31-20) | (L) << (31-10) | (RC) << (31-31))
-+#define PASTE(RA, RB, L, RC) \
-+	.long __PASTE((RA), (RB), (L), (RC))
++	event_init_named(&event, 0x1001e, "cycles");
++	event.attr.config |= (1ull << 63);
++	event.attr.exclusive = 1;
++	event.attr.pinned = 1;
++	event.attr.exclude_kernel = 1;
++	event.attr.exclude_hv = 1;
++	event.attr.exclude_idle = 1;
 +
-+static inline int paste(void *i)
-+{
-+	int cr;
-+
-+	asm volatile(str(PASTE(0, %1, 0, 0))";"
-+			"mfcr %0;"
-+			: "=r" (cr)
-+			: "b" (i)
-+			: "memory"
-+		    );
-+	return cr;
-+}
-+
-+static inline int paste_last(void *i)
-+{
-+	int cr;
-+
-+	asm volatile(str(PASTE(0, %1, 1, 1))";"
-+			"mfcr %0;"
-+			: "=r" (cr)
-+			: "b" (i)
-+			: "memory"
-+		    );
-+	return cr;
-+}
-+
-+#define PPC_INST_COPY                  __COPY(0, 0, 0)
-+#define PPC_INST_COPY_FIRST            __COPY(0, 0, 1)
-+#define PPC_INST_PASTE                 __PASTE(0, 0, 0, 0)
-+#define PPC_INST_PASTE_LAST            __PASTE(0, 0, 1, 1)
-+
-+#endif /* _SELFTESTS_POWERPC_INSTRUCTIONS_H */
-diff --git a/tools/testing/selftests/powerpc/utility/reg.h b/tools/testing/selftests/powerpc/utility/reg.h
-new file mode 100644
-index 0000000..f5d33db
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/utility/reg.h
-@@ -0,0 +1,89 @@
-+/*
-+ * Copyright 2014, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#ifndef _SELFTESTS_POWERPC_REG_H
-+#define _SELFTESTS_POWERPC_REG_H
-+
-+#define __stringify_1(x)        #x
-+#define __stringify(x)          __stringify_1(x)
-+
-+#define mfspr(rn)	({unsigned long rval; \
-+			 asm volatile("mfspr %0," _str(rn) \
-+				    : "=r" (rval)); rval; })
-+#define mtspr(rn, v)	asm volatile("mtspr " _str(rn) ",%0" : \
-+				    : "r" ((unsigned long)(v)) \
-+				    : "memory")
-+
-+#define mb()		asm volatile("sync" : : : "memory");
-+
-+#define SPRN_MMCR2     769
-+#define SPRN_MMCRA     770
-+#define SPRN_MMCR0     779
-+#define   MMCR0_PMAO   0x00000080
-+#define   MMCR0_PMAE   0x04000000
-+#define   MMCR0_FC     0x80000000
-+#define SPRN_EBBHR     804
-+#define SPRN_EBBRR     805
-+#define SPRN_BESCR     806     /* Branch event status & control register */
-+#define SPRN_BESCRS    800     /* Branch event status & control set (1 bits set to 1) */
-+#define SPRN_BESCRSU   801     /* Branch event status & control set upper */
-+#define SPRN_BESCRR    802     /* Branch event status & control REset (1 bits set to 0) */
-+#define SPRN_BESCRRU   803     /* Branch event status & control REset upper */
-+
-+#define BESCR_PMEO     0x1     /* PMU Event-based exception Occurred */
-+#define BESCR_PME      (0x1ul << 32) /* PMU Event-based exception Enable */
-+#define BESCR_LME      (0x1ul << 34) /* Load Monitor Enable */
-+#define BESCR_LMEO     (0x1ul << 2)  /* Load Monitor Exception Occurred */
-+
-+#define SPRN_LMRR      813     /* Load Monitor Region Register */
-+#define SPRN_LMSER     814     /* Load Monitor Section Enable Register */
-+
-+#define SPRN_PMC1      771
-+#define SPRN_PMC2      772
-+#define SPRN_PMC3      773
-+#define SPRN_PMC4      774
-+#define SPRN_PMC5      775
-+#define SPRN_PMC6      776
-+
-+#define SPRN_SIAR      780
-+#define SPRN_SDAR      781
-+#define SPRN_SIER      768
-+
-+#define SPRN_TEXASR     0x82    /* Transaction Exception and Status Register */
-+#define SPRN_TFIAR      0x81    /* Transaction Failure Inst Addr    */
-+#define SPRN_TFHAR      0x80    /* Transaction Failure Handler Addr */
-+#define SPRN_TAR        0x32f	/* Target Address Register */
-+
-+#define SPRN_DSCR_PRIV 0x11	/* Privilege State DSCR */
-+#define SPRN_DSCR      0x03	/* Data Stream Control Register */
-+#define SPRN_PPR       896	/* Program Priority Register */
-+
-+/* TEXASR register bits */
-+#define TEXASR_FC	0xFE00000000000000
-+#define TEXASR_FP	0x0100000000000000
-+#define TEXASR_DA	0x0080000000000000
-+#define TEXASR_NO	0x0040000000000000
-+#define TEXASR_FO	0x0020000000000000
-+#define TEXASR_SIC	0x0010000000000000
-+#define TEXASR_NTC	0x0008000000000000
-+#define TEXASR_TC	0x0004000000000000
-+#define TEXASR_TIC	0x0002000000000000
-+#define TEXASR_IC	0x0001000000000000
-+#define TEXASR_IFC	0x0000800000000000
-+#define TEXASR_ABT	0x0000000100000000
-+#define TEXASR_SPD	0x0000000080000000
-+#define TEXASR_HV	0x0000000020000000
-+#define TEXASR_PR	0x0000000010000000
-+#define TEXASR_FS	0x0000000008000000
-+#define TEXASR_TE	0x0000000004000000
-+#define TEXASR_ROT	0x0000000002000000
-+
-+/* Vector Instructions */
-+#define VSX_XX1(xs, ra, rb)	(((xs) & 0x1f) << 21 | ((ra) << 16) |  \
-+				 ((rb) << 11) | (((xs) >> 5)))
-+#define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra), (rb)))
-+#define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra), (rb)))
-+
-+#endif /* _SELFTESTS_POWERPC_REG_H */
-diff --git a/tools/testing/selftests/powerpc/utility/utils.c b/tools/testing/selftests/powerpc/utility/utils.c
-new file mode 100644
-index 0000000..dcf7418
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/utility/utils.c
-@@ -0,0 +1,87 @@
-+/*
-+ * Copyright 2013-2015, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#define _GNU_SOURCE	/* For CPU_ZERO etc. */
-+
-+#include <elf.h>
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <link.h>
-+#include <sched.h>
-+#include <stdio.h>
-+#include <sys/stat.h>
-+#include <sys/types.h>
-+#include <unistd.h>
-+
-+#include "utils.h"
-+
-+static char auxv[4096];
-+
-+void *get_auxv_entry(int type)
-+{
-+	ElfW(auxv_t) *p;
-+	void *result;
-+	ssize_t num;
-+	int fd;
-+
-+	fd = open("/proc/self/auxv", O_RDONLY);
-+	if (fd == -1) {
-+		perror("open");
-+		return NULL;
++	if (event_open(&event)) {
++		perror("event_open() failed");
++		exit(1);
 +	}
 +
-+	result = NULL;
++	setup_ebb_handler(standard_ebb_callee);
++	mtspr(SPRN_BESCR, 0x8000000100000000ull);
 +
-+	num = read(fd, auxv, sizeof(auxv));
-+	if (num < 0) {
-+		perror("read");
-+		goto out;
++	/*
++	 * make sure BESCR has been set before continue
++	 */
++	mb();
++
++	if (ebb_event_enable(&event)) {
++		perror("ebb_event_handler() failed");
++		exit(1);
 +	}
 +
-+	if (num > sizeof(auxv)) {
-+		printf("Overflowed auxv buffer\n");
-+		goto out;
++	mtspr(SPRN_PMC1, pmc_sample_period(SAMPLE_PERIOD));
++	core_busy_loop();
++	cptr[0] = 1;
++	while (1)
++		asm volatile("" : : : "memory");
++
++	exit(0);
++}
++
++int validate_ebb(struct ebb_regs *regs)
++{
++	#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
++	struct opd *opd = (struct opd *) ebb_handler;
++	#endif
++
++	printf("EBBRR: %lx\n", regs->ebbrr);
++	#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
++	printf("EBBHR: %lx; expected: %lx\n",
++			regs->ebbhr, (unsigned long)opd->entry);
++	#else
++	printf("EBBHR: %lx; expected: %lx\n",
++			regs->ebbhr, (unsigned long)ebb_handler);
++	#endif
++	printf("BESCR: %lx\n", regs->bescr);
++
++	#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
++	if (regs->ebbhr != opd->entry)
++		return TEST_FAIL;
++	#else
++	if (regs->ebbhr != (unsigned long) ebb_handler)
++		return TEST_FAIL;
++	#endif
++
++	return TEST_PASS;
++}
++
++int validate_pmu(struct pmu_regs *regs)
++{
++	printf("SIAR:  %lx\n", regs->siar);
++	printf("SDAR:  %lx\n", regs->sdar);
++	printf("SIER:  %lx; expected: %lx\n",
++			regs->sier, (unsigned long)SIER_EXP);
++	printf("MMCR2: %lx; expected: %lx\n",
++			regs->mmcr2, (unsigned long)MMCR2_EXP);
++	printf("MMCR0: %lx; expected: %lx\n",
++			regs->mmcr0, (unsigned long)MMCR0_EXP);
++
++	/* Validate SIER */
++	if (regs->sier != SIER_EXP)
++		return TEST_FAIL;
++
++	/* Validate MMCR2 */
++	if (regs->mmcr2 != MMCR2_EXP)
++		return TEST_FAIL;
++
++	/* Validate MMCR0 */
++	if (regs->mmcr0 != MMCR0_EXP)
++		return TEST_FAIL;
++
++	return TEST_PASS;
++}
++
++int trace_ebb_pmu(pid_t child)
++{
++	struct ebb_regs ebb_regs;
++	struct pmu_regs pmu_regs;
++	int ret;
++
++	ret = start_trace(child);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = show_ebb_registers(child, &ebb_regs);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = validate_ebb(&ebb_regs);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = show_pmu_registers(child, &pmu_regs);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = validate_pmu(&pmu_regs);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = stop_trace(child);
++	if (ret)
++		return TEST_FAIL;
++
++	return TEST_PASS;
++}
++
++int ptrace_ebb_pmu(void)
++{
++	pid_t pid;
++	int ret, status;
++
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 1, 0777|IPC_CREAT);
++	pid = fork();
++	if (pid < 0) {
++		perror("fork() failed");
++		return TEST_FAIL;
 +	}
 +
-+	p = (ElfW(auxv_t) *)auxv;
++	if (pid == 0)
++		ebb();
 +
-+	while (p->a_type != AT_NULL) {
-+		if (p->a_type == type) {
-+			result = (void *)p->a_un.a_val;
-+			break;
++	if (pid) {
++		pptr = (int *)shmat(shm_id, NULL, 0);
++		while (!pptr[0])
++			asm volatile("" : : : "memory");
++
++		ret = trace_ebb_pmu(pid);
++		if (ret)
++			return TEST_FAIL;
++
++		shmctl(shm_id, IPC_RMID, NULL);
++		kill(pid, SIGKILL);
++		ret = wait(&status);
++		if (ret != pid) {
++			printf("Child's exit status not captured\n");
++			return TEST_FAIL;
 +		}
 +
-+		p++;
++		return (WIFEXITED(status) && WEXITSTATUS(status)) ? TEST_FAIL :
++			TEST_PASS;
 +	}
-+out:
-+	close(fd);
-+	return result;
++	return TEST_PASS;
 +}
 +
-+int pick_online_cpu(void)
++int main(int argc, char *argv[])
 +{
-+	cpu_set_t mask;
-+	int cpu;
-+
-+	CPU_ZERO(&mask);
-+
-+	if (sched_getaffinity(0, sizeof(mask), &mask)) {
-+		perror("sched_getaffinity");
-+		return -1;
-+	}
-+
-+	/* We prefer a primary thread, but skip 0 */
-+	for (cpu = 8; cpu < CPU_SETSIZE; cpu += 8)
-+		if (CPU_ISSET(cpu, &mask))
-+			return cpu;
-+
-+	/* Search for anything, but in reverse */
-+	for (cpu = CPU_SETSIZE - 1; cpu >= 0; cpu--)
-+		if (CPU_ISSET(cpu, &mask))
-+			return cpu;
-+
-+	printf("No cpus in affinity mask?!\n");
-+	return -1;
++	return test_harness(ptrace_ebb_pmu, "ptrace_ebb_pmu");
 +}
-diff --git a/tools/testing/selftests/powerpc/utility/utils.h b/tools/testing/selftests/powerpc/utility/utils.h
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.h b/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.h
 new file mode 100644
-index 0000000..fbd33e5
+index 0000000..740848a
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/utility/utils.h
-@@ -0,0 +1,70 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-ebb.h
+@@ -0,0 +1,99 @@
 +/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
++ * Inspired mostly from the EBB selftest
++ *
++ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
++#define SAMPLE_PERIOD 100	/* EBB event sample persiod */
 +
-+#ifndef _SELFTESTS_POWERPC_UTILS_H
-+#define _SELFTESTS_POWERPC_UTILS_H
-+
-+#define __cacheline_aligned __attribute__((aligned(128)))
-+
-+#include <stdint.h>
-+#include <stdbool.h>
-+#include <linux/auxvec.h>
-+#include "reg.h"
-+
-+/* Avoid headaches with PRI?64 - just use %ll? always */
-+typedef unsigned long long u64;
-+typedef   signed long long s64;
-+
-+/* Just for familiarity */
-+typedef uint32_t u32;
-+typedef uint16_t u16;
-+typedef uint8_t u8;
-+
-+
-+int test_harness(int (test_function)(void), char *name);
-+extern void *get_auxv_entry(int type);
-+int pick_online_cpu(void);
-+
-+static inline bool have_hwcap(unsigned long ftr)
-+{
-+	return ((unsigned long)get_auxv_entry(AT_HWCAP) & ftr) == ftr;
-+}
-+
-+static inline bool have_hwcap2(unsigned long ftr2)
-+{
-+	return ((unsigned long)get_auxv_entry(AT_HWCAP2) & ftr2) == ftr2;
-+}
-+
-+/* Yes, this is evil */
-+#define FAIL_IF(x)						\
-+do {								\
-+	if ((x)) {						\
-+		fprintf(stderr,					\
-+		"[FAIL] Test FAILED on line %d\n", __LINE__);	\
-+		return 1;					\
-+	}							\
-+} while (0)
-+
-+/* The test harness uses this, yes it's gross */
-+#define MAGIC_SKIP_RETURN_VALUE	99
-+
-+#define SKIP_IF(x)						\
-+do {								\
-+	if ((x)) {						\
-+		fprintf(stderr,					\
-+		"[SKIP] Test skipped on line %d\n", __LINE__);	\
-+		return MAGIC_SKIP_RETURN_VALUE;			\
-+	}							\
-+} while (0)
-+
-+#define _str(s) #s
-+#define str(s) _str(s)
-+
-+/* POWER9 feature */
-+#ifndef PPC_FEATURE2_ARCH_3_00
-+#define PPC_FEATURE2_ARCH_3_00 0x00800000
++/* Standard expected values */
++#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
++#define MMCR0_EXP	0x8000008000000001
++#else
++#define MMCR0_EXP	0x180000080
 +#endif
 +
-+#endif /* _SELFTESTS_POWERPC_UTILS_H */
-diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
-deleted file mode 100644
-index dcf7418..0000000
---- a/tools/testing/selftests/powerpc/utils.c
-+++ /dev/null
-@@ -1,87 +0,0 @@
--/*
-- * Copyright 2013-2015, Michael Ellerman, IBM Corp.
-- * Licensed under GPLv2.
-- */
--
--#define _GNU_SOURCE	/* For CPU_ZERO etc. */
--
--#include <elf.h>
--#include <errno.h>
--#include <fcntl.h>
--#include <link.h>
--#include <sched.h>
--#include <stdio.h>
--#include <sys/stat.h>
--#include <sys/types.h>
--#include <unistd.h>
--
--#include "utils.h"
--
--static char auxv[4096];
--
--void *get_auxv_entry(int type)
--{
--	ElfW(auxv_t) *p;
--	void *result;
--	ssize_t num;
--	int fd;
--
--	fd = open("/proc/self/auxv", O_RDONLY);
--	if (fd == -1) {
--		perror("open");
--		return NULL;
--	}
--
--	result = NULL;
--
--	num = read(fd, auxv, sizeof(auxv));
--	if (num < 0) {
--		perror("read");
--		goto out;
--	}
--
--	if (num > sizeof(auxv)) {
--		printf("Overflowed auxv buffer\n");
--		goto out;
--	}
--
--	p = (ElfW(auxv_t) *)auxv;
--
--	while (p->a_type != AT_NULL) {
--		if (p->a_type == type) {
--			result = (void *)p->a_un.a_val;
--			break;
--		}
--
--		p++;
--	}
--out:
--	close(fd);
--	return result;
--}
--
--int pick_online_cpu(void)
--{
--	cpu_set_t mask;
--	int cpu;
--
--	CPU_ZERO(&mask);
--
--	if (sched_getaffinity(0, sizeof(mask), &mask)) {
--		perror("sched_getaffinity");
--		return -1;
--	}
--
--	/* We prefer a primary thread, but skip 0 */
--	for (cpu = 8; cpu < CPU_SETSIZE; cpu += 8)
--		if (CPU_ISSET(cpu, &mask))
--			return cpu;
--
--	/* Search for anything, but in reverse */
--	for (cpu = CPU_SETSIZE - 1; cpu >= 0; cpu--)
--		if (CPU_ISSET(cpu, &mask))
--			return cpu;
--
--	printf("No cpus in affinity mask?!\n");
--	return -1;
--}
-diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
-deleted file mode 100644
-index fbd33e5..0000000
---- a/tools/testing/selftests/powerpc/utils.h
-+++ /dev/null
-@@ -1,70 +0,0 @@
--/*
-- * Copyright 2013, Michael Ellerman, IBM Corp.
-- * Licensed under GPLv2.
-- */
--
--#ifndef _SELFTESTS_POWERPC_UTILS_H
--#define _SELFTESTS_POWERPC_UTILS_H
--
--#define __cacheline_aligned __attribute__((aligned(128)))
--
--#include <stdint.h>
--#include <stdbool.h>
--#include <linux/auxvec.h>
--#include "reg.h"
--
--/* Avoid headaches with PRI?64 - just use %ll? always */
--typedef unsigned long long u64;
--typedef   signed long long s64;
--
--/* Just for familiarity */
--typedef uint32_t u32;
--typedef uint16_t u16;
--typedef uint8_t u8;
--
--
--int test_harness(int (test_function)(void), char *name);
--extern void *get_auxv_entry(int type);
--int pick_online_cpu(void);
--
--static inline bool have_hwcap(unsigned long ftr)
--{
--	return ((unsigned long)get_auxv_entry(AT_HWCAP) & ftr) == ftr;
--}
--
--static inline bool have_hwcap2(unsigned long ftr2)
--{
--	return ((unsigned long)get_auxv_entry(AT_HWCAP2) & ftr2) == ftr2;
--}
--
--/* Yes, this is evil */
--#define FAIL_IF(x)						\
--do {								\
--	if ((x)) {						\
--		fprintf(stderr,					\
--		"[FAIL] Test FAILED on line %d\n", __LINE__);	\
--		return 1;					\
--	}							\
--} while (0)
--
--/* The test harness uses this, yes it's gross */
--#define MAGIC_SKIP_RETURN_VALUE	99
--
--#define SKIP_IF(x)						\
--do {								\
--	if ((x)) {						\
--		fprintf(stderr,					\
--		"[SKIP] Test skipped on line %d\n", __LINE__);	\
--		return MAGIC_SKIP_RETURN_VALUE;			\
--	}							\
--} while (0)
--
--#define _str(s) #s
--#define str(s) _str(s)
--
--/* POWER9 feature */
--#ifndef PPC_FEATURE2_ARCH_3_00
--#define PPC_FEATURE2_ARCH_3_00 0x00800000
--#endif
--
--#endif /* _SELFTESTS_POWERPC_UTILS_H */
++#define MMCR2_EXP	0
++#define SIER_EXP	0x2000000
++
++struct opd {
++	u64 entry;
++	u64 toc;
++};
++
++void (*ebb_user_func)(void);
++extern void ebb_handler(void);	/* Defined in ebb_handle.S */
++
++void ebb_hook(void)		/* Called by ebb_handler */
++{
++	if (ebb_user_func)
++		ebb_user_func();
++}
++
++void setup_ebb_handler(void (*callee)(void))
++{
++	u64 entry;
++
++#if defined(_CALL_ELF) && _CALL_ELF == 2
++	entry = (u64)ebb_handler;
++#else
++	struct opd *opd;
++
++	opd = (struct opd *)ebb_handler;
++	entry = opd->entry;
++#endif
++	ebb_user_func = callee;
++
++	/* Ensure ebb_user_func is set before we set the handler */
++	mb();
++	mtspr(SPRN_EBBHR, entry);
++
++	/* Make sure the handler is set before we return */
++	mb();
++}
++
++void reset_ebb_with_clear_mask(unsigned long mmcr0_clear_mask)
++{
++	u64 val;
++
++	/* 2) clear MMCR0[PMAO] - docs say BESCR[PMEO] should do this */
++	/* 3) set MMCR0[PMAE]   - docs say BESCR[PME] should do this */
++	val = mfspr(SPRN_MMCR0);
++	mtspr(SPRN_MMCR0, (val & ~mmcr0_clear_mask) | MMCR0_PMAE);
++
++	/* 4) clear BESCR[PMEO] */
++	mtspr(SPRN_BESCRR, BESCR_PMEO);
++
++	/* 5) set BESCR[PME] */
++	mtspr(SPRN_BESCRS, BESCR_PME);
++
++	/* 6) rfebb 1 - done in our caller */
++}
++
++void standard_ebb_callee(void)
++{
++	u64 val;
++
++	val = mfspr(SPRN_BESCR);
++	if (!(val & BESCR_PMEO))
++		printf("Spurious interrupt\n");
++
++	mtspr(SPRN_PMC1, pmc_sample_period(SAMPLE_PERIOD));
++	reset_ebb_with_clear_mask(MMCR0_PMAO | MMCR0_FC);
++}
++
++int ebb_event_enable(struct event *e)
++{
++	int rc;
++
++	rc = ioctl(e->fd, PERF_EVENT_IOC_ENABLE);
++	if (rc)
++		return rc;
++	rc = event_read(e);
++
++	return rc;
++}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+new file mode 100644
+index 0000000..96d2179
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+@@ -0,0 +1,225 @@
++/*
++ * Ptrace interface test helper functions
++ *
++ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <inttypes.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <string.h>
++#include <malloc.h>
++#include <errno.h>
++#include <time.h>
++#include <sys/ptrace.h>
++#include <sys/ioctl.h>
++#include <sys/uio.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <sys/signal.h>
++#include <sys/ipc.h>
++#include <sys/shm.h>
++#include <sys/user.h>
++#include <linux/elf.h>
++#include <linux/types.h>
++#include <linux/auxvec.h>
++#include "reg.h"
++#include "utils.h"
++
++#define TEST_PASS 0
++#define TEST_FAIL 1
++
++struct ebb_regs {
++	unsigned long	ebbrr;
++	unsigned long	ebbhr;
++	unsigned long	bescr;
++};
++
++struct pmu_regs {
++	unsigned long	siar;
++	unsigned long	sdar;
++	unsigned long	sier;
++	unsigned long	mmcr2;
++	unsigned long	mmcr0;
++};
++
++struct fpr_regs {
++	unsigned long fpr[32];
++	unsigned long fpscr;
++};
++
++
++/* Basic ptrace operations */
++int start_trace(pid_t child)
++{
++	int ret;
++
++	ret = ptrace(PTRACE_ATTACH, child, NULL, NULL);
++	if (ret) {
++		perror("ptrace(PTRACE_ATTACH) failed");
++		return TEST_FAIL;
++	}
++	ret = waitpid(child, NULL, 0);
++	if (ret != child) {
++		perror("waitpid() failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++int stop_trace(pid_t child)
++{
++	int ret;
++
++	ret = ptrace(PTRACE_DETACH, child, NULL, NULL);
++	if (ret) {
++		perror("ptrace(PTRACE_DETACH) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++int cont_trace(pid_t child)
++{
++	int ret;
++
++	ret = ptrace(PTRACE_CONT, child, NULL, NULL);
++	if (ret) {
++		perror("ptrace(PTRACE_CONT) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++/* PMU */
++int show_pmu_registers(pid_t child, struct pmu_regs *regs)
++{
++	struct pmu_regs *pmu;
++	struct iovec iov;
++	int ret;
++
++	pmu = malloc(sizeof(struct pmu_regs));
++	if (!pmu) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	iov.iov_base = (struct pmu_regs *) pmu;
++	iov.iov_len = sizeof(struct pmu_regs);
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_PMU, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++
++	if (regs)
++		memcpy(regs, pmu, sizeof(struct pmu_regs));
++
++	free(pmu);
++	return TEST_PASS;
++fail:
++	free(pmu);
++	return TEST_FAIL;
++}
++
++/* EBB */
++int show_ebb_registers(pid_t child, struct ebb_regs *regs)
++{
++	struct ebb_regs *ebb;
++	struct iovec iov;
++	int ret;
++
++	ebb = malloc(sizeof(struct ebb_regs));
++	if (!ebb) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	iov.iov_base = (struct ebb_regs *) ebb;
++	iov.iov_len = sizeof(struct ebb_regs);
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_EBB, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++
++	if (regs)
++		memcpy(regs, ebb, sizeof(struct ebb_regs));
++
++	free(ebb);
++	return TEST_PASS;
++fail:
++	free(ebb);
++	return TEST_FAIL;
++}
++
++/* Analyse TEXASR after TM failure */
++inline unsigned long get_tfiar(void)
++{
++	unsigned long ret;
++
++	asm volatile("mfspr %0,%1" : "=r" (ret) : "i" (SPRN_TFIAR));
++	return ret;
++}
++
++void analyse_texasr(unsigned long texasr)
++{
++	printf("TEXASR: %16lx\t", texasr);
++
++	if (texasr & TEXASR_FP)
++		printf("TEXASR_FP  ");
++
++	if (texasr & TEXASR_DA)
++		printf("TEXASR_DA  ");
++
++	if (texasr & TEXASR_NO)
++		printf("TEXASR_NO  ");
++
++	if (texasr & TEXASR_FO)
++		printf("TEXASR_FO  ");
++
++	if (texasr & TEXASR_SIC)
++		printf("TEXASR_SIC  ");
++
++	if (texasr & TEXASR_NTC)
++		printf("TEXASR_NTC  ");
++
++	if (texasr & TEXASR_TC)
++		printf("TEXASR_TC  ");
++
++	if (texasr & TEXASR_TIC)
++		printf("TEXASR_TIC  ");
++
++	if (texasr & TEXASR_IC)
++		printf("TEXASR_IC  ");
++
++	if (texasr & TEXASR_IFC)
++		printf("TEXASR_IFC  ");
++
++	if (texasr & TEXASR_ABT)
++		printf("TEXASR_ABT  ");
++
++	if (texasr & TEXASR_SPD)
++		printf("TEXASR_SPD  ");
++
++	if (texasr & TEXASR_HV)
++		printf("TEXASR_HV  ");
++
++	if (texasr & TEXASR_PR)
++		printf("TEXASR_PR  ");
++
++	if (texasr & TEXASR_FS)
++		printf("TEXASR_FS  ");
++
++	if (texasr & TEXASR_TE)
++		printf("TEXASR_TE  ");
++
++	if (texasr & TEXASR_ROT)
++		printf("TEXASR_ROT  ");
++
++	printf("TFIAR :%lx\n", get_tfiar());
++}
 -- 
 1.8.3.1
