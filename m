@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3slbDD1tXXzDvLL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 12:36:28 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id n24so4278470pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 19:36:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3slbDJ0lJMzDvLp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2016 12:36:32 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id oz2so4142361pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2016 19:36:32 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -17,10 +17,10 @@ Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Simon Guo <wei.guo.simon@gmail.com>, Jack Miller <jack@codezen.org>,
  Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org
-Subject: [PATCH v15 08/15] selftests/powerpc: Add ptrace tests for TAR, PPR,
- DSCR in TM
-Date: Fri, 30 Sep 2016 10:32:57 +0800
-Message-Id: <1475202784-5653-9-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v15 09/15] selftests/powerpc: Add ptrace tests for TAR, PPR,
+ DSCR in suspended TM
+Date: Fri, 30 Sep 2016 10:32:58 +0800
+Message-Id: <1475202784-5653-10-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1475202784-5653-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1475202784-5653-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,37 +35,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
 This patch adds ptrace interface test for TAR, PPR, DSCR
-registers inside TM context. This also adds ptrace
-interface based helper functions related to checkpointed
-TAR, PPR, DSCR register access.
+registers inside suspended TM context.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
  tools/testing/selftests/powerpc/ptrace/Makefile    |   2 +-
- .../selftests/powerpc/ptrace/ptrace-tm-tar.c       | 160 +++++++++++++++++++++
- 2 files changed, 161 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-tar.c   | 174 +++++++++++++++++++++
+ 2 files changed, 175 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index dfb0847..9af9ad5 100644
+index 9af9ad5..19e4a7c 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
 @@ -1,5 +1,5 @@
  TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
--ptrace-tar
-+ptrace-tar ptrace-tm-tar
+-ptrace-tar ptrace-tm-tar
++ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar
  
  include ../../lib.mk
  
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
 new file mode 100644
-index 0000000..48b462f
+index 0000000..b3c061d
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
-@@ -0,0 +1,160 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
+@@ -0,0 +1,174 @@
 +/*
-+ * Ptrace test for TAR, PPR, DSCR registers in the TM context
++ * Ptrace test for TAR, PPR, DSCR registers in the TM Suspend context
 + *
 + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -79,19 +77,25 @@ index 0000000..48b462f
 +#include "ptrace-tar.h"
 +
 +int shm_id;
-+unsigned long *cptr, *pptr;
++int *cptr, *pptr;
 +
++__attribute__((used)) void wait_parent(void)
++{
++	cptr[2] = 1;
++	while (!cptr[1])
++		asm volatile("" : : : "memory");
++}
 +
-+void tm_tar(void)
++void tm_spd_tar(void)
 +{
 +	unsigned long result, texasr;
 +	unsigned long regs[3];
 +	int ret;
 +
-+	cptr = (unsigned long *)shmat(shm_id, NULL, 0);
++	cptr = (int *)shmat(shm_id, NULL, 0);
 +
 +trans:
-+	cptr[1] = 0;
++	cptr[2] = 0;
 +	asm __volatile__(
 +		"li	4, %[tar_1];"
 +		"mtspr %[sprn_tar],  4;"	/* TAR_1 */
@@ -108,11 +112,15 @@ index 0000000..48b462f
 +		"li	4, %[dscr_2];"
 +		"mtspr %[sprn_dscr], 4;"	/* DSCR_2 */
 +		"or     1,1,1;"			/* PPR_2 */
++
 +		"tsuspend.;"
-+		"li 0, 1;"
-+		"stw 0, 0(%[cptr1]);"
++		"li	4, %[tar_3];"
++		"mtspr %[sprn_tar],  4;"	/* TAR_3 */
++		"li	4, %[dscr_3];"
++		"mtspr %[sprn_dscr], 4;"	/* DSCR_3 */
++		"or     6,6,6;"			/* PPR_3 */
++		"bl wait_parent;"
 +		"tresume.;"
-+		"b .;"
 +
 +		"tend.;"
 +		"li 0, 0;"
@@ -128,10 +136,11 @@ index 0000000..48b462f
 +		"3: ;"
 +
 +		: [res] "=r" (result), [texasr] "=r" (texasr)
-+		: [sprn_dscr]"i"(SPRN_DSCR), [sprn_tar]"i"(SPRN_TAR),
-+		[sprn_ppr]"i"(SPRN_PPR), [sprn_texasr]"i"(SPRN_TEXASR),
-+		[tar_1]"i"(TAR_1), [dscr_1]"i"(DSCR_1), [tar_2]"i"(TAR_2),
-+		[dscr_2]"i"(DSCR_2), [cptr1] "r" (&cptr[1])
++		: [val] "r" (cptr[1]), [sprn_dscr]"i"(SPRN_DSCR),
++		[sprn_tar]"i"(SPRN_TAR), [sprn_ppr]"i"(SPRN_PPR),
++		[sprn_texasr]"i"(SPRN_TEXASR), [tar_1]"i"(TAR_1),
++		[dscr_1]"i"(DSCR_1), [tar_2]"i"(TAR_2), [dscr_2]"i"(DSCR_2),
++		[tar_3]"i"(TAR_3), [dscr_3]"i"(DSCR_3)
 +		: "memory", "r0", "r1", "r3", "r4", "r5", "r6"
 +		);
 +
@@ -157,7 +166,7 @@ index 0000000..48b462f
 +	exit(1);
 +}
 +
-+int trace_tm_tar(pid_t child)
++int trace_tm_spd_tar(pid_t child)
 +{
 +	unsigned long regs[3];
 +
@@ -166,7 +175,7 @@ index 0000000..48b462f
 +	printf("%-30s TAR: %lu PPR: %lx DSCR: %lu\n",
 +			ptrace_read_running, regs[0], regs[1], regs[2]);
 +
-+	FAIL_IF(validate_tar_registers(regs, TAR_2, PPR_2, DSCR_2));
++	FAIL_IF(validate_tar_registers(regs, TAR_3, PPR_3, DSCR_3));
 +	FAIL_IF(show_tm_checkpointed_state(child, regs));
 +	printf("%-30s TAR: %lu PPR: %lx DSCR: %lu\n",
 +			ptrace_read_ckpt, regs[0], regs[1], regs[2]);
@@ -177,34 +186,37 @@ index 0000000..48b462f
 +			ptrace_write_ckpt, TAR_4, PPR_4, DSCR_4);
 +
 +	pptr[0] = 1;
++	pptr[1] = 1;
 +	FAIL_IF(stop_trace(child));
 +	return TEST_PASS;
 +}
 +
-+int ptrace_tm_tar(void)
++int ptrace_tm_spd_tar(void)
 +{
 +	pid_t pid;
 +	int ret, status;
 +
 +	SKIP_IF(!have_htm());
-+	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 2, 0777|IPC_CREAT);
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 3, 0777|IPC_CREAT);
 +	pid = fork();
 +	if (pid == 0)
-+		tm_tar();
++		tm_spd_tar();
 +
-+	pptr = (unsigned long *)shmat(shm_id, NULL, 0);
++	pptr = (int *)shmat(shm_id, NULL, 0);
 +	pptr[0] = 0;
++	pptr[1] = 0;
 +
 +	if (pid) {
-+		while (!pptr[1])
++		while (!pptr[2])
 +			asm volatile("" : : : "memory");
-+		ret = trace_tm_tar(pid);
++		ret = trace_tm_spd_tar(pid);
 +		if (ret) {
 +			kill(pid, SIGTERM);
 +			shmdt(&pptr);
 +			shmctl(shm_id, IPC_RMID, NULL);
 +			return TEST_FAIL;
 +		}
++
 +		shmdt(&pptr);
 +
 +		ret = wait(&status);
@@ -222,7 +234,7 @@ index 0000000..48b462f
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_tm_tar, "ptrace_tm_tar");
++	return test_harness(ptrace_tm_spd_tar, "ptrace_tm_spd_tar");
 +}
 -- 
 1.8.3.1
