@@ -1,25 +1,21 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
- [IPv6:2a00:1450:400c:c09::230])
+Received: from mail-wm0-x22c.google.com (mail-wm0-x22c.google.com
+ [IPv6:2a00:1450:400c:c09::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3smRyL41HczDshg
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Oct 2016 22:12:26 +1000 (AEST)
-Received: by mail-wm0-x230.google.com with SMTP id b80so88421815wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Oct 2016 05:12:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3smV046Q6lzDrZQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Oct 2016 23:44:03 +1000 (AEST)
+Received: by mail-wm0-x22c.google.com with SMTP id p138so72110659wmb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Oct 2016 06:44:02 -0700 (PDT)
 MIME-Version: 1.0
 Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <CA+7wUswqAh+6JLmLy=AmZJb7-mMqX0q-6fMyG_LsRECW4LwA3w@mail.gmail.com>
-References: <CA+7wUsxzwTkWKgRH5yG2rNawcJZYYFLaQP0aun8YUD5eoC1i-g@mail.gmail.com>
- <1465874771.18900.4.camel@ellerman.id.au>
- <1465902911.30200.6.camel@kernel.crashing.org>
- <CA+7wUswqAh+6JLmLy=AmZJb7-mMqX0q-6fMyG_LsRECW4LwA3w@mail.gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
-Date: Sat, 1 Oct 2016 14:12:00 +0200
-Message-ID: <CA+7wUsxU5yOz73YtUJrdjvw_UWDLg7oi5PHPDqbsxEbjiBoU1w@mail.gmail.com>
-Subject: Fwd: Rational for having CONFIG_FB_RADEON=m
+Date: Sat, 1 Oct 2016 15:43:37 +0200
+Message-ID: <CA+7wUszQjtBHWkGSAUKtbv8yFrHLAQ-9aZZSOM-vmgJZw4VOww@mail.gmail.com>
+Subject: UBSAN: Undefined behaviour in
+ /home/mathieu/tmp/linux-4.6.4/drivers/scsi/scsi_devinfo.c:458:21
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/mixed; boundary=047d7ba97a107050c1053dcc9f2d
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,97 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7ba97a107050c1053dcc9f2d
-Content-Type: text/plain; charset=UTF-8
+Hi,
 
-Hi Ben,
+Anyone seen this before (PowerMac G4/MacMini):
 
-On Tue, Jun 14, 2016 at 1:15 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2016-06-14 at 13:26 +1000, Michael Ellerman wrote:
->> On Mon, 2016-06-13 at 17:46 +0200, Mathieu Malaterre wrote:
->>
->> > 2. Try to fix `radeonfb` so that it is able to kick offb out of the
->> > way. Eg: https://lists.freedesktop.org/archives/dri-devel/2010-Augu
->> > st/002907.html
->> >
->> > From my understanding it would make sense to go for (2), since it
->> > would allow for proper support for CONFIG_FB_RADEON=m on PowerMac.
->> > In
->> > this case, would such patch be accepted ?
->>
->> Sounds like the right fix to me. Ben's patch above was merged, so
->> it's supposed
->> to kick out offb AFAICS, the fact that it can't seems like a
->
-> Make sure you have CONFIG_VT_HW_CONSOLE_BINDING=y
-
-Thanks I do have it.
-
-What I was trying to say in my broken fr-english is that I would like
-to patch `drivers/video/fbdev/aty/radeon_base.c` the same way you did
-`drivers/gpu/drm/radeon/radeon_drv.c` a long time ago.
-
-So that there is no possible confusion, I am attaching my WIP. I know
-you must be very busy, but I would really appreciate if you could
-review this patch and give me some clue(s) as to why
-`pci_request_region` still fails even if the call to
-`radeon_kick_out_firmware_fb` succeeds in kicking out `offb` (I am
-left with an empty /proc/fb).
-
-In this case dmesg properly reveals that OFfb was kicked out but still
-the `radeonfb` could not succeed:
-
-[...]
- bus: 'pci': add driver radeonfb
- bus: 'pci': driver_probe_device: matched device 0000:00:10.0 with
-driver radeonfb
- bus: 'pci': really_probe: probing driver radeonfb with device 0000:00:10.0
- devices_kset: Moving 0000:00:10.0 to end of list
- radeonfb_pci_register BEGIN
- checking generic (9c008000 96000) vs hw (98000000 8000000)
- fb: switching to radeonfb from OFfb ATY,RockHo
- Console: switching to colour dummy device 80x25
- device: 'fb0': device_unregister
- PM: Removing info for No Bus:fb0
- device: 'fb0': device_create_release
- radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
- device: 'vtcon1': device_unregister
- PM: Removing info for No Bus:vtcon1
- device: 'vtcon1': device_create_release
- radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
- radeonfb (0000:00:10.0): cannot request region 0.
- radeonfb: probe of 0000:00:10.0 failed with error -16
-[...]
-
-The only way I found to load `radeonfb` is to use offb:off in yaboot.
-
-Regards and thanks for your time,
-
---047d7ba97a107050c1053dcc9f2d
-Content-Type: text/x-patch; charset=US-ASCII; name="radeonfp.patch"
-Content-Disposition: attachment; filename="radeonfp.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ipgm3s1m0
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXR5L3JhZGVvbl9iYXNlLmMgYi9kcml2
-ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9yYWRlb25fYmFzZS5jCmluZGV4IDIxODMzOWEuLjFhOTFmZWIg
-MTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXR5L3JhZGVvbl9iYXNlLmMKKysrIGIv
-ZHJpdmVycy92aWRlby9mYmRldi9hdHkvcmFkZW9uX2Jhc2UuYwpAQCAtMjI1OSw2ICsyMjU5LDIy
-IEBAIHN0YXRpYyBzdHJ1Y3QgYmluX2F0dHJpYnV0ZSBlZGlkMl9hdHRyID0gewogCS5yZWFkCT0g
-cmFkZW9uX3Nob3dfZWRpZDIsCiB9OwogCitzdGF0aWMgaW50IHJhZGVvbl9raWNrX291dF9maXJt
-d2FyZV9mYihzdHJ1Y3QgcGNpX2RldiAqcGRldikKK3sKKwlzdHJ1Y3QgYXBlcnR1cmVzX3N0cnVj
-dCAqYXA7CisKKwlhcCA9IGFsbG9jX2FwZXJ0dXJlcygxKTsKKwlpZiAoIWFwKQorCQlyZXR1cm4g
-LUVOT01FTTsKKworCWFwLT5yYW5nZXNbMF0uYmFzZSA9IHBjaV9yZXNvdXJjZV9zdGFydChwZGV2
-LCAwKTsKKwlhcC0+cmFuZ2VzWzBdLnNpemUgPSBwY2lfcmVzb3VyY2VfbGVuKHBkZXYsIDApOwor
-CisJcmVtb3ZlX2NvbmZsaWN0aW5nX2ZyYW1lYnVmZmVycyhhcCwgS0JVSUxEX01PRE5BTUUsIGZh
-bHNlKTsKKwlrZnJlZShhcCk7CisKKwlyZXR1cm4gMDsKK30KIAogc3RhdGljIGludCByYWRlb25m
-Yl9wY2lfcmVnaXN0ZXIoc3RydWN0IHBjaV9kZXYgKnBkZXYsCiAJCQkJIGNvbnN0IHN0cnVjdCBw
-Y2lfZGV2aWNlX2lkICplbnQpCkBAIC0yMzE0LDYgKzIzMzAsMTAgQEAgc3RhdGljIGludCByYWRl
-b25mYl9wY2lfcmVnaXN0ZXIoc3RydWN0IHBjaV9kZXYgKnBkZXYsCiAJcmluZm8tPmZiX2Jhc2Vf
-cGh5cyA9IHBjaV9yZXNvdXJjZV9zdGFydCAocGRldiwgMCk7CiAJcmluZm8tPm1taW9fYmFzZV9w
-aHlzID0gcGNpX3Jlc291cmNlX3N0YXJ0IChwZGV2LCAyKTsKIAorCXJldCA9IHJhZGVvbl9raWNr
-X291dF9maXJtd2FyZV9mYihwZGV2KTsKKwlpZiAocmV0KQorCQlyZXR1cm4gcmV0OworCiAJLyog
-cmVxdWVzdCB0aGUgbWVtIHJlZ2lvbnMgKi8KIAlyZXQgPSBwY2lfcmVxdWVzdF9yZWdpb24ocGRl
-diwgMCwgInJhZGVvbmZiIGZyYW1lYnVmZmVyIik7CiAJaWYgKHJldCA8IDApIHsK
---047d7ba97a107050c1053dcc9f2d--
+[    1.397164] ata1.00: ATA-8: WDC WD800BEVE-00A0HT0, 11.01A11, max UDMA/100
+[    1.401313] ata1.00: 156301488 sectors, multi 16: LBA48
+[    1.405525] ata1.01: ATAPI: MATSHITADVD-R   UJ-845C, DPP9, max UDMA/66
+[    1.414606] ata1.00: configured for UDMA/100
+[    1.423655] ata1.01: configured for UDMA/66
+[    1.431116] scsi 0:0:0:0: Direct-Access     ATA      WDC
+WD800BEVE-00 1A11 PQ: 0 ANSI: 5
+[    1.435987] device: 'target0:0:0': device_add
+[    1.436030] bus: 'scsi': add device target0:0:0
+[    1.436133] PM: Adding info for scsi:target0:0:0
+[    1.436184] device: '0:0:0:0': device_add
+[    1.436410] bus: 'scsi': add device 0:0:0:0
+[    1.436501] PM: Adding info for scsi:0:0:0:0
+[    1.436526] device: '0:0:0:0': device_add
+[    1.436654] PM: Adding info for No Bus:0:0:0:0
+[    1.436695] device: '0:0:0:0': device_add
+[    1.436819] PM: Adding info for No Bus:0:0:0:0
+[    1.438276] ================================================================================
+[    1.443124] UBSAN: Undefined behaviour in
+/home/mathieu/tmp/linux-4.6.4/drivers/scsi/scsi_devinfo.c:458:21
+[    1.453129] index 8 is out of range for type 'char [8]'
+[    1.458352] CPU: 0 PID: 6 Comm: kworker/u2:0 Not tainted 4.6.0-1-powerpc #5
+[    1.463771] Workqueue: events_unbound async_run_entry_fn
+[    1.469284] Call Trace:
+[    1.474816] [df54bb80] [c071a9f4] ubsan_epilogue+0x18/0x4c (unreliable)
+[    1.480614] [df54bb90] [c071b114] __ubsan_handle_out_of_bounds+0x7c/0x90
+[    1.486313] [df54bbd0] [c09fe084] scsi_dev_info_list_find+0x2e0/0x3a4
+[    1.491880] [df54bc20] [c09fe6a0] scsi_get_device_flags_keyed+0x40/0x11c
+[    1.497397] [df54bc40] [c09f4ec8] scsi_probe_and_add_lun+0x458/0x1ce4
+[    1.502836] [df54bd00] [c09f6b04] __scsi_add_device+0x170/0x1cc
+[    1.508207] [df54bd40] [c0a30064] ata_scsi_scan_host+0x214/0x3f8
+[    1.513578] [df54bda0] [c00d78b4] async_run_entry_fn+0x90/0x3c4
+[    1.518944] [df54be00] [c00c20a0] process_one_work+0x2dc/0xd44
+[    1.524270] [df54be70] [c00c2dc0] worker_thread+0x2b8/0xbf4
+[    1.529596] [df54bee0] [c00d1618] kthread+0x124/0x1b0
+[    1.534914] [df54bf40] [c00244b0] ret_from_kernel_thread+0x5c/0x64
+[    1.540229] ================================================================================
+[    1.546530] scsi 0:0:1:0: CD-ROM            MATSHITA DVD-R
+UJ-845C  DPP9 PQ: 0 ANSI: 5
+[    1.559176] device: 'target0:0:1': device_add
+[    1.559217] bus: 'scsi': add device target0:0:1
+[    1.559307] PM: Adding info for scsi:target0:0:1
+[    1.559356] device: '0:0:1:0': device_add
+[    1.559566] bus: 'scsi': add device 0:0:1:0
