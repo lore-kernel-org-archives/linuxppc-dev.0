@@ -1,16 +1,23 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x22d.google.com (mail-wm0-x22d.google.com
+ [IPv6:2a00:1450:400c:c09::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3smlt074FCzDrSh
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Oct 2016 11:09:44 +1100 (AEDT)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- gwshan@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/eeh: Quieten EEH message when no adapters are found
-Date: Sun,  2 Oct 2016 11:09:38 +1100
-Message-Id: <1475366978-18713-1-git-send-email-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3smzSP2RXXzDrTd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Oct 2016 19:51:47 +1100 (AEDT)
+Received: by mail-wm0-x22d.google.com with SMTP id f193so56622285wmg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Oct 2016 01:51:47 -0700 (PDT)
+MIME-Version: 1.0
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <CA+7wUszQjtBHWkGSAUKtbv8yFrHLAQ-9aZZSOM-vmgJZw4VOww@mail.gmail.com>
+References: <CA+7wUszQjtBHWkGSAUKtbv8yFrHLAQ-9aZZSOM-vmgJZw4VOww@mail.gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Sun, 2 Oct 2016 10:51:20 +0200
+Message-ID: <CA+7wUsxFPKZQOYZ12f7uU7e6eSS6aTx8MfjrNZHPMMDUiys63g@mail.gmail.com>
+Subject: Re: UBSAN: Undefined behaviour in
+ /home/mathieu/tmp/linux-4.6.4/drivers/scsi/scsi_devinfo.c:458:21
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,27 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+On Sat, Oct 1, 2016 at 3:43 PM, Mathieu Malaterre <malat@debian.org> wrote:
+[...]
+> [    1.443124] UBSAN: Undefined behaviour in
+> /home/mathieu/tmp/linux-4.6.4/drivers/scsi/scsi_devinfo.c:458:21
+[...]
 
-No real need for this to be pr_warn(), reduce it to pr_info().
+Fixed by: https://lkml.org/lkml/2016/8/8/665
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/eeh.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index c9bc78e..3f0ca80 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1044,7 +1044,7 @@ int eeh_init(void)
- 	if (eeh_enabled())
- 		pr_info("EEH: PCI Enhanced I/O Error Handling Enabled\n");
- 	else
--		pr_warn("EEH: No capable adapters found\n");
-+		pr_info("EEH: No capable adapters found\n");
- 
- 	return ret;
- }
--- 
-2.7.4
+Sorry for the noise.
