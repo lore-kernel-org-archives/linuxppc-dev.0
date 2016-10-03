@@ -1,25 +1,18 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sn7CH0rRfzDrSg
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Oct 2016 01:40:59 +1100 (AEDT)
-Date: Sun, 2 Oct 2016 22:40:47 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Anton Blanchard <anton@samba.org>
-Cc: Marcelo Cerri <marcelo.cerri@canonical.com>, linux-crypto@vger.kernel.org,
- "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- George Wilson <gcwilson@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 0/3] Fix crypto/vmx/p8_ghash memory corruption
-Message-ID: <20161002144047.GG18268@gondor.apana.org.au>
-References: <1475080931-7926-1-git-send-email-marcelo.cerri@canonical.com>
- <20160929065908.653ec5c2@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160929065908.653ec5c2@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3snWgM09g9zDrDv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Oct 2016 17:03:11 +1100 (AEDT)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Remove static branch prediction in atomic{,
+ 64}_add_unless
+Date: Mon,  3 Oct 2016 17:03:03 +1100
+Message-Id: <1475474583-3085-1-git-send-email-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,18 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 29, 2016 at 06:59:08AM +1000, Anton Blanchard wrote:
-> Hi Marcelo
-> 
-> > This series fixes the memory corruption found by Jan Stancek in
-> > 4.8-rc7. The problem however also affects previous versions of the
-> > driver.
-> 
-> If it affects previous versions, please add the lines in the sign off to
-> get it into the stable kernels.
+From: Anton Blanchard <anton@samba.org>
 
-I have added them to patches 1 and 2.  Thanks.
+I see quite a lot of static branch mispredictions on a simple
+web serving workload. The issue is in __atomic_add_unless(), called
+from _atomic_dec_and_lock(). There is no obvious common case, so it
+is better to let the hardware predict the branch.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/include/asm/atomic.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index f08d567..2b90335 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -233,7 +233,7 @@ static __inline__ int __atomic_add_unless(atomic_t *v, int a, int u)
+ 	PPC_ATOMIC_ENTRY_BARRIER
+ "1:	lwarx	%0,0,%1		# __atomic_add_unless\n\
+ 	cmpw	0,%0,%3 \n\
+-	beq-	2f \n\
++	beq	2f \n\
+ 	add	%0,%2,%0 \n"
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%0,0,%1 \n\
+@@ -539,7 +539,7 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ 	PPC_ATOMIC_ENTRY_BARRIER
+ "1:	ldarx	%0,0,%1		# __atomic_add_unless\n\
+ 	cmpd	0,%0,%3 \n\
+-	beq-	2f \n\
++	beq	2f \n\
+ 	add	%0,%2,%0 \n"
+ "	stdcx.	%0,0,%1 \n\
+ 	bne-	1b \n"
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.7.4
