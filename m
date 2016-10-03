@@ -1,24 +1,45 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robh+dt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3snhwN3y9KzDrDv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 00:00:04 +1100 (AEDT)
-Date: Mon, 3 Oct 2016 14:59:59 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Mel Gorman <mgorman@techsingularity.net>, linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: Crashes in refresh_zone_stat_thresholds when some nodes have no
- memory
-Message-ID: <20161003125959.GD26768@dhcp22.suse.cz>
-References: <20160804064410.GA20509@fergus.ozlabs.ibm.com>
- <20161003124716.GD26759@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3snmDS64qVzDrDv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 02:29:12 +1100 (AEDT)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 6AF22202B8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Oct 2016 15:29:09 +0000 (UTC)
+Received: from mail-yw0-f176.google.com (mail-yw0-f176.google.com
+ [209.85.161.176])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id B8BED20263
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Oct 2016 15:29:06 +0000 (UTC)
+Received: by mail-yw0-f176.google.com with SMTP id t193so30875272ywc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Oct 2016 08:29:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161003124716.GD26759@dhcp22.suse.cz>
+In-Reply-To: <1474828616-16608-2-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1474828616-16608-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1474828616-16608-2-git-send-email-arbab@linux.vnet.ibm.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Mon, 3 Oct 2016 10:28:45 -0500
+Message-ID: <CAL_JsqKkYFeENE226QFsoqEMJEPpXET0-xJOWoA0j_tbOPu0_g@mail.gmail.com>
+Subject: Re: [PATCH v3 1/5] drivers/of: introduce of_fdt_is_available()
+To: Reza Arbab <arbab@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
+ Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +49,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 03-10-16 14:47:16, Michal Hocko wrote:
-> [Sorry I have only now noticed this email]
-> 
-> On Thu 04-08-16 16:44:10, Paul Mackerras wrote:
-[...]
-> > [    1.717648] Call Trace:
-> > [    1.717687] [c000000ff0707b80] [c000000000270d08] refresh_zone_stat_thresholds+0xb8/0x240 (unreliable)
-> > [    1.717818] [c000000ff0707bd0] [c000000000a1e4d4] init_per_zone_wmark_min+0x94/0xb0
-> > [    1.717932] [c000000ff0707c30] [c00000000000b90c] do_one_initcall+0x6c/0x1d0
-> > [    1.718036] [c000000ff0707cf0] [c000000000d04244] kernel_init_freeable+0x294/0x384
-> > [    1.718150] [c000000ff0707dc0] [c00000000000c1a8] kernel_init+0x28/0x160
-> > [    1.718249] [c000000ff0707e30] [c000000000009968] ret_from_kernel_thread+0x5c/0x74
-> > [    1.718358] Instruction dump:
-> > [    1.718408] 3fc20003 3bde4e34 3b800000 60420000 3860ffff 3fbb0001 4800001c 60420000 
-> > [    1.718575] 3d220003 3929f8e0 7d49502a e93d9c00 <7f8a49ae> 38a30001 38800800 7ca507b4 
-> > 
-> > It turns out that we can get a pgdat in the online pgdat list where
-> > pgdat->per_cpu_nodestats is NULL.  On my machine the pgdats for nodes
-> > 1 and 17 are like this.  All the memory is in nodes 0 and 16.
-> 
-> How is this possible? setup_per_cpu_pageset does
-> 
-> 	for_each_online_pgdat(pgdat)
-> 		pgdat->per_cpu_nodestats =
-> 			alloc_percpu(struct per_cpu_nodestat);
-> 
-> so each online node should have the per_cpu_nodestat allocated.
-> refresh_zone_stat_thresholds then does for_each_online_pgdat and
-> for_each_populated_zone also shouldn't give any offline pgdat. Is it
-> possible that this is yet another manifest of 6aa303defb74 ("mm, vmscan:
-> only allocate and reclaim from zones with pages managed by the buddy
-> allocator")? I guess the following should be sufficient?
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 73aab319969d..c170932a0101 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -185,6 +185,9 @@ void refresh_zone_stat_thresholds(void)
->  		struct pglist_data *pgdat = zone->zone_pgdat;
->  		unsigned long max_drift, tolerate_drift;
->  
-> +		if (!managed_zone(zone))
-> +			continue;
-> +
->  		threshold = calculate_normal_threshold(zone);
->  
->  		for_each_online_cpu(cpu) {
+On Sun, Sep 25, 2016 at 1:36 PM, Reza Arbab <arbab@linux.vnet.ibm.com> wrote:
+> In __fdt_scan_reserved_mem(), the availability of a node is determined
+> by testing its "status" property.
+>
+> Move this check into its own function, borrowing logic from the
+> unflattened version, of_device_is_available().
+>
+> Another caller will be added in a subsequent patch.
+>
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> ---
+>  drivers/of/fdt.c       | 26 +++++++++++++++++++++++---
+>  include/linux/of_fdt.h |  2 ++
+>  2 files changed, 25 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 085c638..9241c6e 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -151,6 +151,23 @@ int of_fdt_match(const void *blob, unsigned long node,
+>         return score;
+>  }
+>
+> +bool of_fdt_is_available(const void *blob, unsigned long node)
 
-Hmm, now that I am thinking about this some more I fail to understand
-the crash. Even if a zone was poppulated but not managed it shouldn't
-point to an offline node. So this smells like some race when a node is
-brought up. What does addr2line tells about the instruction which
-failed?
--- 
-Michal Hocko
-SUSE Labs
+of_fdt_device_is_available
+
+[...]
+
+> +bool __init of_flat_dt_is_available(unsigned long node)
+
+And of_flat_dt_device_is_available
+
+With that,
+
+Acked-by: Rob Herring <robh@kernel.org>
