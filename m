@@ -1,18 +1,17 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0063.outbound.protection.outlook.com [104.47.38.63])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0070.outbound.protection.outlook.com [104.47.37.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9Zf5ZnszDrFm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 18:31:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9cj3mB6zDsj3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 18:33:09 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>
 CC: <davem@davemloft.net>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, <linuxdev.baldrick@gmail.com>, Madalin Bucur
- <madalin.bucur@nxp.com>
+ <linux-kernel@vger.kernel.org>, <linuxdev.baldrick@gmail.com>
 Subject: [net-next 00/13] fsl/fman: cleanup and small fixes
-Date: Tue, 4 Oct 2016 10:30:24 +0300
-Message-ID: <1475566237-4948-1-git-send-email-madalin.bucur@nxp.com>
+Date: Tue, 4 Oct 2016 10:32:46 +0300
+Message-ID: <1475566379-5078-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
