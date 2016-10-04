@@ -1,17 +1,19 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0062.outbound.protection.outlook.com [104.47.38.62])
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0606.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe44::606])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9d36n61zDskP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 18:33:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9d63zNFzDskn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 18:33:30 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>
 CC: <davem@davemloft.net>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>, <linuxdev.baldrick@gmail.com>
-Subject: [net-next 11/13] fsl/fman: fix return value checking
-Date: Tue, 4 Oct 2016 10:32:57 +0300
-Message-ID: <1475566379-5078-12-git-send-email-madalin.bucur@nxp.com>
+Subject: [net-next 13/13] MAINTAINERS: net: add entry for Freescale QorIQ DPAA
+ FMan driver
+Date: Tue, 4 Oct 2016 10:32:59 +0300
+Message-ID: <1475566379-5078-14-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1475566379-5078-1-git-send-email-madalin.bucur@nxp.com>
 References: <1475566379-5078-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -26,32 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add record for Freescale QORIQ DPAA FMan driver adding myself as
+maintainer.
+
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- drivers/net/ethernet/freescale/fman/fman.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ MAINTAINERS | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/freescale/fman/fman.c b/drivers/net/ethernet/freescale/fman/fman.c
-index 1fc1049..dafd9e1 100644
---- a/drivers/net/ethernet/freescale/fman/fman.c
-+++ b/drivers/net/ethernet/freescale/fman/fman.c
-@@ -618,7 +618,7 @@ struct fman {
- 	unsigned long cam_offset;
- 	size_t cam_size;
- 	/* Fifo in MURAM */
--	int fifo_offset;
-+	unsigned long fifo_offset;
- 	size_t fifo_size;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 669909e..3460152 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4980,6 +4980,13 @@ F:	drivers/net/ethernet/freescale/fec_ptp.c
+ F:	drivers/net/ethernet/freescale/fec.h
+ F:	Documentation/devicetree/bindings/net/fsl-fec.txt
  
- 	u32 liodn_base[64];
-@@ -2036,7 +2036,7 @@ static int fman_init(struct fman *fman)
- 	/* allocate MURAM for FIFO according to total size */
- 	fman->fifo_offset = fman_muram_alloc(fman->muram,
- 					     fman->state->total_fifo_size);
--	if (IS_ERR_VALUE(fman->cam_offset)) {
-+	if (IS_ERR_VALUE(fman->fifo_offset)) {
- 		free_init_resources(fman);
- 		dev_err(fman->dev, "%s: MURAM alloc for BMI FIFO failed\n",
- 			__func__);
++FREESCALE QORIQ DPAA FMAN DRIVER
++M:	Madalin Bucur <madalin.bucur@nxp.com>
++L:	netdev@vger.kernel.org
++S:	Maintained
++F:	drivers/net/ethernet/freescale/fman
++F:	Documentation/devicetree/bindings/powerpc/fsl/fman.txt
++
+ FREESCALE QUICC ENGINE LIBRARY
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Orphan
 -- 
 2.1.0
