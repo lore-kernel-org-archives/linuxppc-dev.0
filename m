@@ -1,21 +1,21 @@
-Return-Path: <BATV+c3601ec1c81c7bfd3073+4790+infradead.org+acme@merlin.srs.infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
+Return-Path: <BATV+ef2f77d1cbf736fff7a8+4790+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp33t2XfnzDrLs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp33t48WfzDrLg
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 13:37:46 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org, Linux Weekly News <lwn@lwn.net>,
- Andi Kleen <ak@linux.intel.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Andi Kleen <ak@linux.intel.com>,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 17/22] perf list jevents: Add support for event list topics
-Date: Mon,  3 Oct 2016 23:37:16 -0300
-Message-Id: <1475548641-12182-18-git-send-email-acme@kernel.org>
+Subject: [PATCH 15/22] perf jevents: Add support for long descriptions
+Date: Mon,  3 Oct 2016 23:37:14 -0300
+Message-Id: <1475548641-12182-16-git-send-email-acme@kernel.org>
 In-Reply-To: <1475548641-12182-1-git-send-email-acme@kernel.org>
 References: <1475548641-12182-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,198 +27,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andi Kleen <ak@linux.intel.com>
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Add support to group the output of perf list by the Topic field in the
-JSON file.
-
-Example output:
-
-% perf list
-...
-Cache:
-  l1d.replacement
-       [L1D data line replacements]
-  l1d_pend_miss.pending
-       [L1D miss oustandings duration in cycles]
-  l1d_pend_miss.pending_cycles
-       [Cycles with L1D load Misses outstanding]
-  l2_l1d_wb_rqsts.all
-       [Not rejected writebacks from L1D to L2 cache lines in any state]
-  l2_l1d_wb_rqsts.hit_e
-       [Not rejected writebacks from L1D to L2 cache lines in E state]
-  l2_l1d_wb_rqsts.hit_m
-       [Not rejected writebacks from L1D to L2 cache lines in M state]
-
-...
-Pipeline:
-  arith.fpu_div
-       [Divide operations executed]
-  arith.fpu_div_active
-       [Cycles when divider is busy executing divide operations]
-  baclears.any
-       [Counts the total number when the front end is resteered, mainly
-       when the BPU cannot provide a correct prediction and this is
-       corrected by other branch handling mechanisms at the front end]
-  br_inst_exec.all_branches
-       [Speculative and retired branches]
-  br_inst_exec.all_conditional
-       [Speculative and retired macro-conditional branches]
-  br_inst_exec.all_direct_jmp
-       [Speculative and retired macro-unconditional branches excluding
-       calls and indirects]
-  br_inst_exec.all_direct_near_call
-       [Speculative and retired direct near calls]
-  br_inst_exec.all_indirect_jump_non_call_ret
+Implement support in jevents to parse long descriptions for events that
+may have them in the JSON files. A follow on patch will make this long
+description available to user through the 'perf list' command.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Ingo Molnar <mingo@kernel.org>
 Acked-by: Jiri Olsa <jolsa@redhat.com>
-Tested-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/1473978296-20712-14-git-send-email-sukadev@linux.vnet.ibm.com
+Link: http://lkml.kernel.org/r/1473978296-20712-11-git-send-email-sukadev@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/util/pmu.c | 37 +++++++++++++++++++++++++++----------
- tools/perf/util/pmu.h |  1 +
- 2 files changed, 28 insertions(+), 10 deletions(-)
+ tools/perf/pmu-events/jevents.c    | 32 ++++++++++++++++++++++++--------
+ tools/perf/pmu-events/jevents.h    |  3 ++-
+ tools/perf/pmu-events/pmu-events.h |  1 +
+ 3 files changed, 27 insertions(+), 9 deletions(-)
 
-diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index 8ff382cb161d..b1474dcadfa2 100644
---- a/tools/perf/util/pmu.c
-+++ b/tools/perf/util/pmu.c
-@@ -223,7 +223,8 @@ static int perf_pmu__parse_snapshot(struct perf_pmu_alias *alias,
+diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
+index c9bf9a7dc7b2..13f4284721d5 100644
+--- a/tools/perf/pmu-events/jevents.c
++++ b/tools/perf/pmu-events/jevents.c
+@@ -269,7 +269,7 @@ static void print_events_table_prefix(FILE *fp, const char *tblname)
  }
  
- static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
--				 char *desc, char *val, char *long_desc)
-+				 char *desc, char *val, char *long_desc,
-+				 char *topic)
+ static int print_events_table_entry(void *data, char *name, char *event,
+-				    char *desc)
++				    char *desc, char *long_desc)
  {
- 	struct perf_pmu_alias *alias;
- 	int ret;
-@@ -259,6 +260,7 @@ static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
- 	alias->desc = desc ? strdup(desc) : NULL;
- 	alias->long_desc = long_desc ? strdup(long_desc) :
- 				desc ? strdup(desc) : NULL;
-+	alias->topic = topic ? strdup(topic) : NULL;
+ 	struct perf_entry_data *pd = data;
+ 	FILE *outfp = pd->outfp;
+@@ -285,6 +285,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
+ 	fprintf(outfp, "\t.event = \"%s\",\n", event);
+ 	fprintf(outfp, "\t.desc = \"%s\",\n", desc);
+ 	fprintf(outfp, "\t.topic = \"%s\",\n", topic);
++	if (long_desc && long_desc[0])
++		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
  
- 	list_add_tail(&alias->list, list);
+ 	fprintf(outfp, "},\n");
  
-@@ -276,7 +278,7 @@ static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FI
+@@ -306,7 +308,8 @@ static void print_events_table_suffix(FILE *outfp)
  
- 	buf[ret] = 0;
+ /* Call func with each event in the json file */
+ int json_events(const char *fn,
+-	  int (*func)(void *data, char *name, char *event, char *desc),
++	  int (*func)(void *data, char *name, char *event, char *desc,
++		      char *long_desc),
+ 	  void *data)
+ {
+ 	int err = -EIO;
+@@ -325,6 +328,8 @@ int json_events(const char *fn,
+ 	tok = tokens + 1;
+ 	for (i = 0; i < tokens->size; i++) {
+ 		char *event = NULL, *desc = NULL, *name = NULL;
++		char *long_desc = NULL;
++		char *extra_desc = NULL;
+ 		struct msrmap *msr = NULL;
+ 		jsmntok_t *msrval = NULL;
+ 		jsmntok_t *precise = NULL;
+@@ -350,6 +355,10 @@ int json_events(const char *fn,
+ 			} else if (json_streq(map, field, "BriefDescription")) {
+ 				addfield(map, &desc, "", "", val);
+ 				fixdesc(desc);
++			} else if (json_streq(map, field,
++					     "PublicDescription")) {
++				addfield(map, &long_desc, "", "", val);
++				fixdesc(long_desc);
+ 			} else if (json_streq(map, field, "PEBS") && nz) {
+ 				precise = val;
+ 			} else if (json_streq(map, field, "MSRIndex") && nz) {
+@@ -358,10 +367,10 @@ int json_events(const char *fn,
+ 				msrval = val;
+ 			} else if (json_streq(map, field, "Errata") &&
+ 				   !json_streq(map, val, "null")) {
+-				addfield(map, &desc, ". ",
++				addfield(map, &extra_desc, ". ",
+ 					" Spec update: ", val);
+ 			} else if (json_streq(map, field, "Data_LA") && nz) {
+-				addfield(map, &desc, ". ",
++				addfield(map, &extra_desc, ". ",
+ 					" Supports address when precise",
+ 					NULL);
+ 			}
+@@ -369,19 +378,26 @@ int json_events(const char *fn,
+ 		}
+ 		if (precise && desc && !strstr(desc, "(Precise Event)")) {
+ 			if (json_streq(map, precise, "2"))
+-				addfield(map, &desc, " ", "(Must be precise)",
+-						NULL);
++				addfield(map, &extra_desc, " ",
++						"(Must be precise)", NULL);
+ 			else
+-				addfield(map, &desc, " ",
++				addfield(map, &extra_desc, " ",
+ 						"(Precise event)", NULL);
+ 		}
++		if (desc && extra_desc)
++			addfield(map, &desc, " ", extra_desc, NULL);
++		if (long_desc && extra_desc)
++			addfield(map, &long_desc, " ", extra_desc, NULL);
+ 		if (msr != NULL)
+ 			addfield(map, &event, ",", msr->pname, msrval);
+ 		fixname(name);
+-		err = func(data, name, event, desc);
++
++		err = func(data, name, event, desc, long_desc);
+ 		free(event);
+ 		free(desc);
+ 		free(name);
++		free(long_desc);
++		free(extra_desc);
+ 		if (err)
+ 			break;
+ 		tok += j;
+diff --git a/tools/perf/pmu-events/jevents.h b/tools/perf/pmu-events/jevents.h
+index 996601f828b6..b0eb2744b498 100644
+--- a/tools/perf/pmu-events/jevents.h
++++ b/tools/perf/pmu-events/jevents.h
+@@ -2,7 +2,8 @@
+ #define JEVENTS_H 1
  
--	return __perf_pmu__new_alias(list, dir, name, NULL, buf, NULL);
-+	return __perf_pmu__new_alias(list, dir, name, NULL, buf, NULL, NULL);
- }
+ int json_events(const char *fn,
+-		int (*func)(void *data, char *name, char *event, char *desc),
++		int (*func)(void *data, char *name, char *event, char *desc,
++				char *long_desc),
+ 		void *data);
+ char *get_cpu_str(void);
  
- static inline bool pmu_alias_info_file(char *name)
-@@ -535,7 +537,7 @@ static void pmu_add_cpu_aliases(struct list_head *head)
- 		/* need type casts to override 'const' */
- 		__perf_pmu__new_alias(head, NULL, (char *)pe->name,
- 				(char *)pe->desc, (char *)pe->event,
--				(char *)pe->long_desc);
-+				(char *)pe->long_desc, (char *)pe->topic);
- 	}
- 
- out:
-@@ -1055,19 +1057,26 @@ static char *format_alias_or(char *buf, int len, struct perf_pmu *pmu,
- 	return buf;
- }
- 
--struct pair {
-+struct sevent {
- 	char *name;
- 	char *desc;
-+	char *topic;
+diff --git a/tools/perf/pmu-events/pmu-events.h b/tools/perf/pmu-events/pmu-events.h
+index 70d54794e3cb..2eaef595d8a0 100644
+--- a/tools/perf/pmu-events/pmu-events.h
++++ b/tools/perf/pmu-events/pmu-events.h
+@@ -9,6 +9,7 @@ struct pmu_event {
+ 	const char *event;
+ 	const char *desc;
+ 	const char *topic;
++	const char *long_desc;
  };
  
--static int cmp_pair(const void *a, const void *b)
-+static int cmp_sevent(const void *a, const void *b)
- {
--	const struct pair *as = a;
--	const struct pair *bs = b;
-+	const struct sevent *as = a;
-+	const struct sevent *bs = b;
- 
- 	/* Put extra events last */
- 	if (!!as->desc != !!bs->desc)
- 		return !!as->desc - !!bs->desc;
-+	if (as->topic && bs->topic) {
-+		int n = strcmp(as->topic, bs->topic);
-+
-+		if (n)
-+			return n;
-+	}
- 	return strcmp(as->name, bs->name);
- }
- 
-@@ -1101,9 +1110,10 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
- 	char buf[1024];
- 	int printed = 0;
- 	int len, j;
--	struct pair *aliases;
-+	struct sevent *aliases;
- 	int numdesc = 0;
- 	int columns = pager_get_columns();
-+	char *topic = NULL;
- 
- 	pmu = NULL;
- 	len = 0;
-@@ -1113,7 +1123,7 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
- 		if (pmu->selectable)
- 			len++;
- 	}
--	aliases = zalloc(sizeof(struct pair) * len);
-+	aliases = zalloc(sizeof(struct sevent) * len);
- 	if (!aliases)
- 		goto out_enomem;
- 	pmu = NULL;
-@@ -1144,6 +1154,7 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
- 
- 			aliases[j].desc = long_desc ? alias->long_desc :
- 						alias->desc;
-+			aliases[j].topic = alias->topic;
- 			j++;
- 		}
- 		if (pmu->selectable &&
-@@ -1156,7 +1167,7 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
- 		}
- 	}
- 	len = j;
--	qsort(aliases, len, sizeof(struct pair), cmp_pair);
-+	qsort(aliases, len, sizeof(struct sevent), cmp_sevent);
- 	for (j = 0; j < len; j++) {
- 		if (name_only) {
- 			printf("%s ", aliases[j].name);
-@@ -1165,6 +1176,12 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
- 		if (aliases[j].desc && !quiet_flag) {
- 			if (numdesc++ == 0)
- 				printf("\n");
-+			if (aliases[j].topic && (!topic ||
-+					strcmp(topic, aliases[j].topic))) {
-+				printf("%s%s:\n", topic ? "\n" : "",
-+						aliases[j].topic);
-+				topic = aliases[j].topic;
-+			}
- 			printf("  %-50s\n", aliases[j].name);
- 			printf("%*s", 8, "[");
- 			wordwrap(aliases[j].desc, 8, columns, 0);
-diff --git a/tools/perf/util/pmu.h b/tools/perf/util/pmu.h
-index 2fb8aa0fb47f..25712034c815 100644
---- a/tools/perf/util/pmu.h
-+++ b/tools/perf/util/pmu.h
-@@ -42,6 +42,7 @@ struct perf_pmu_alias {
- 	char *name;
- 	char *desc;
- 	char *long_desc;
-+	char *topic;
- 	struct list_head terms; /* HEAD struct parse_events_term -> list */
- 	struct list_head list;  /* ELEM */
- 	char unit[UNIT_MAX_LEN+1];
+ /*
 -- 
 2.7.4
