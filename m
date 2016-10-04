@@ -1,21 +1,21 @@
-Return-Path: <BATV+ef2f77d1cbf736fff7a8+4790+infradead.org+acme@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <BATV+c3601ec1c81c7bfd3073+4790+infradead.org+acme@merlin.srs.infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp33t48WfzDrLg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp33t43j1zDrFm
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 13:37:46 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org, Linux Weekly News <lwn@lwn.net>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Andi Kleen <ak@linux.intel.com>,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 15/22] perf jevents: Add support for long descriptions
-Date: Mon,  3 Oct 2016 23:37:14 -0300
-Message-Id: <1475548641-12182-16-git-send-email-acme@kernel.org>
+Subject: [PATCH 18/22] perf tools: Add README for info on parsing JSON/map
+ files
+Date: Mon,  3 Oct 2016 23:37:17 -0300
+Message-Id: <1475548641-12182-19-git-send-email-acme@kernel.org>
 In-Reply-To: <1475548641-12182-1-git-send-email-acme@kernel.org>
 References: <1475548641-12182-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,146 +29,171 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Implement support in jevents to parse long descriptions for events that
-may have them in the JSON files. A follow on patch will make this long
-description available to user through the 'perf list' command.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Ingo Molnar <mingo@kernel.org>
 Acked-by: Jiri Olsa <jolsa@redhat.com>
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/1473978296-20712-11-git-send-email-sukadev@linux.vnet.ibm.com
+Link: http://lkml.kernel.org/r/1473978296-20712-16-git-send-email-sukadev@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/pmu-events/jevents.c    | 32 ++++++++++++++++++++++++--------
- tools/perf/pmu-events/jevents.h    |  3 ++-
- tools/perf/pmu-events/pmu-events.h |  1 +
- 3 files changed, 27 insertions(+), 9 deletions(-)
+ tools/perf/pmu-events/README | 147 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 147 insertions(+)
+ create mode 100644 tools/perf/pmu-events/README
 
-diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
-index c9bf9a7dc7b2..13f4284721d5 100644
---- a/tools/perf/pmu-events/jevents.c
-+++ b/tools/perf/pmu-events/jevents.c
-@@ -269,7 +269,7 @@ static void print_events_table_prefix(FILE *fp, const char *tblname)
- }
- 
- static int print_events_table_entry(void *data, char *name, char *event,
--				    char *desc)
-+				    char *desc, char *long_desc)
- {
- 	struct perf_entry_data *pd = data;
- 	FILE *outfp = pd->outfp;
-@@ -285,6 +285,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
- 	fprintf(outfp, "\t.event = \"%s\",\n", event);
- 	fprintf(outfp, "\t.desc = \"%s\",\n", desc);
- 	fprintf(outfp, "\t.topic = \"%s\",\n", topic);
-+	if (long_desc && long_desc[0])
-+		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
- 
- 	fprintf(outfp, "},\n");
- 
-@@ -306,7 +308,8 @@ static void print_events_table_suffix(FILE *outfp)
- 
- /* Call func with each event in the json file */
- int json_events(const char *fn,
--	  int (*func)(void *data, char *name, char *event, char *desc),
-+	  int (*func)(void *data, char *name, char *event, char *desc,
-+		      char *long_desc),
- 	  void *data)
- {
- 	int err = -EIO;
-@@ -325,6 +328,8 @@ int json_events(const char *fn,
- 	tok = tokens + 1;
- 	for (i = 0; i < tokens->size; i++) {
- 		char *event = NULL, *desc = NULL, *name = NULL;
-+		char *long_desc = NULL;
-+		char *extra_desc = NULL;
- 		struct msrmap *msr = NULL;
- 		jsmntok_t *msrval = NULL;
- 		jsmntok_t *precise = NULL;
-@@ -350,6 +355,10 @@ int json_events(const char *fn,
- 			} else if (json_streq(map, field, "BriefDescription")) {
- 				addfield(map, &desc, "", "", val);
- 				fixdesc(desc);
-+			} else if (json_streq(map, field,
-+					     "PublicDescription")) {
-+				addfield(map, &long_desc, "", "", val);
-+				fixdesc(long_desc);
- 			} else if (json_streq(map, field, "PEBS") && nz) {
- 				precise = val;
- 			} else if (json_streq(map, field, "MSRIndex") && nz) {
-@@ -358,10 +367,10 @@ int json_events(const char *fn,
- 				msrval = val;
- 			} else if (json_streq(map, field, "Errata") &&
- 				   !json_streq(map, val, "null")) {
--				addfield(map, &desc, ". ",
-+				addfield(map, &extra_desc, ". ",
- 					" Spec update: ", val);
- 			} else if (json_streq(map, field, "Data_LA") && nz) {
--				addfield(map, &desc, ". ",
-+				addfield(map, &extra_desc, ". ",
- 					" Supports address when precise",
- 					NULL);
- 			}
-@@ -369,19 +378,26 @@ int json_events(const char *fn,
- 		}
- 		if (precise && desc && !strstr(desc, "(Precise Event)")) {
- 			if (json_streq(map, precise, "2"))
--				addfield(map, &desc, " ", "(Must be precise)",
--						NULL);
-+				addfield(map, &extra_desc, " ",
-+						"(Must be precise)", NULL);
- 			else
--				addfield(map, &desc, " ",
-+				addfield(map, &extra_desc, " ",
- 						"(Precise event)", NULL);
- 		}
-+		if (desc && extra_desc)
-+			addfield(map, &desc, " ", extra_desc, NULL);
-+		if (long_desc && extra_desc)
-+			addfield(map, &long_desc, " ", extra_desc, NULL);
- 		if (msr != NULL)
- 			addfield(map, &event, ",", msr->pname, msrval);
- 		fixname(name);
--		err = func(data, name, event, desc);
+diff --git a/tools/perf/pmu-events/README b/tools/perf/pmu-events/README
+new file mode 100644
+index 000000000000..1408ade0d773
+--- /dev/null
++++ b/tools/perf/pmu-events/README
+@@ -0,0 +1,147 @@
 +
-+		err = func(data, name, event, desc, long_desc);
- 		free(event);
- 		free(desc);
- 		free(name);
-+		free(long_desc);
-+		free(extra_desc);
- 		if (err)
- 			break;
- 		tok += j;
-diff --git a/tools/perf/pmu-events/jevents.h b/tools/perf/pmu-events/jevents.h
-index 996601f828b6..b0eb2744b498 100644
---- a/tools/perf/pmu-events/jevents.h
-+++ b/tools/perf/pmu-events/jevents.h
-@@ -2,7 +2,8 @@
- #define JEVENTS_H 1
- 
- int json_events(const char *fn,
--		int (*func)(void *data, char *name, char *event, char *desc),
-+		int (*func)(void *data, char *name, char *event, char *desc,
-+				char *long_desc),
- 		void *data);
- char *get_cpu_str(void);
- 
-diff --git a/tools/perf/pmu-events/pmu-events.h b/tools/perf/pmu-events/pmu-events.h
-index 70d54794e3cb..2eaef595d8a0 100644
---- a/tools/perf/pmu-events/pmu-events.h
-+++ b/tools/perf/pmu-events/pmu-events.h
-@@ -9,6 +9,7 @@ struct pmu_event {
- 	const char *event;
- 	const char *desc;
- 	const char *topic;
-+	const char *long_desc;
- };
- 
- /*
++The contents of this directory allow users to specify PMU events in their
++CPUs by their symbolic names rather than raw event codes (see example below).
++
++The main program in this directory, is the 'jevents', which is built and
++executed _BEFORE_ the perf binary itself is built.
++
++The 'jevents' program tries to locate and process JSON files in the directory
++tree tools/perf/pmu-events/arch/foo.
++
++	- Regular files with '.json' extension in the name are assumed to be
++	  JSON files, each of which describes a set of PMU events.
++
++	- Regular files with basename starting with 'mapfile.csv' are assumed
++	  to be a CSV file that maps a specific CPU to its set of PMU events.
++	  (see below for mapfile format)
++
++	- Directories are traversed, but all other files are ignored.
++
++The PMU events supported by a CPU model are expected to grouped into topics
++such as Pipelining, Cache, Memory, Floating-point etc. All events for a topic
++should be placed in a separate JSON file - where the file name identifies
++the topic. Eg: "Floating-point.json".
++
++All the topic JSON files for a CPU model/family should be in a separate
++sub directory. Thus for the Silvermont X86 CPU:
++
++	$ ls tools/perf/pmu-events/arch/x86/Silvermont_core
++	Cache.json 	Memory.json 	Virtual-Memory.json
++	Frontend.json 	Pipeline.json
++
++Using the JSON files and the mapfile, 'jevents' generates the C source file,
++'pmu-events.c', which encodes the two sets of tables:
++
++	- Set of 'PMU events tables' for all known CPUs in the architecture,
++	  (one table like the following, per JSON file; table name 'pme_power8'
++	  is derived from JSON file name, 'power8.json').
++
++		struct pmu_event pme_power8[] = {
++
++			...
++
++			{
++				.name = "pm_1plus_ppc_cmpl",
++				.event = "event=0x100f2",
++				.desc = "1 or more ppc insts finished,",
++			},
++
++			...
++		}
++
++	- A 'mapping table' that maps each CPU of the architecture, to its
++	  'PMU events table'
++
++		struct pmu_events_map pmu_events_map[] = {
++		{
++			.cpuid = "004b0000",
++			.version = "1",
++			.type = "core",
++			.table = pme_power8
++		},
++			...
++
++		};
++
++After the 'pmu-events.c' is generated, it is compiled and the resulting
++'pmu-events.o' is added to 'libperf.a' which is then used to build perf.
++
++NOTES:
++	1. Several CPUs can support same set of events and hence use a common
++	   JSON file. Hence several entries in the pmu_events_map[] could map
++	   to a single 'PMU events table'.
++
++	2. The 'pmu-events.h' has an extern declaration for the mapping table
++	   and the generated 'pmu-events.c' defines this table.
++
++	3. _All_ known CPU tables for architecture are included in the perf
++	   binary.
++
++At run time, perf determines the actual CPU it is running on, finds the
++matching events table and builds aliases for those events. This allows
++users to specify events by their name:
++
++	$ perf stat -e pm_1plus_ppc_cmpl sleep 1
++
++where 'pm_1plus_ppc_cmpl' is a Power8 PMU event.
++
++In case of errors when processing files in the tools/perf/pmu-events/arch
++directory, 'jevents' tries to create an empty mapping file to allow the perf
++build to succeed even if the PMU event aliases cannot be used.
++
++However some errors in processing may cause the perf build to fail.
++
++Mapfile format
++===============
++
++The mapfile enables multiple CPU models to share a single set of PMU events.
++It is required even if such mapping is 1:1.
++
++The mapfile.csv format is expected to be:
++
++	Header line
++	CPUID,Version,Dir/path/name,Type
++
++where:
++
++	Comma:
++		is the required field delimiter (i.e other fields cannot
++		have commas within them).
++
++	Comments:
++		Lines in which the first character is either '\n' or '#'
++		are ignored.
++
++	Header line
++		The header line is the first line in the file, which is
++		always _IGNORED_. It can empty.
++
++	CPUID:
++		CPUID is an arch-specific char string, that can be used
++		to identify CPU (and associate it with a set of PMU events
++		it supports). Multiple CPUIDS can point to the same
++		File/path/name.json.
++
++		Example:
++			CPUID == 'GenuineIntel-6-2E' (on x86).
++			CPUID == '004b0100' (PVR value in Powerpc)
++	Version:
++		is the Version of the mapfile.
++
++	Dir/path/name:
++		is the pathname to the directory containing the CPU's JSON
++		files, relative to the directory containing the mapfile.csv
++
++	Type:
++		indicates whether the events or "core" or "uncore" events.
++
++
++	Eg:
++
++	$ grep Silvermont tools/perf/pmu-events/arch/x86/mapfile.csv
++	GenuineIntel-6-37,V13,Silvermont_core,core
++	GenuineIntel-6-4D,V13,Silvermont_core,core
++	GenuineIntel-6-4C,V13,Silvermont_core,core
++
++	i.e the three CPU models use the JSON files (i.e PMU events) listed
++	in the directory 'tools/perf/pmu-events/arch/x86/Silvermont_core'.
 -- 
 2.7.4
