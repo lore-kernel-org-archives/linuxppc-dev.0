@@ -1,25 +1,23 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <BATV+ef2f77d1cbf736fff7a8+4790+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp0nC5Gv7zDrL8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 11:54:55 +1100 (AEDT)
-Date: Mon, 3 Oct 2016 21:54:48 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp33h17rVzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 13:37:35 +1100 (AEDT)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, peterz@infradead.org,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>,
- Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH v21 16/19] perf, tools: Make alias matching
- case-insensitive
-Message-ID: <20161004005448.GG7143@kernel.org>
-References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1473978296-20712-17-git-send-email-sukadev@linux.vnet.ibm.com>
- <20161004004706.GF7143@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161004004706.GF7143@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Linux Weekly News <lwn@lwn.net>,
+ Jiri Olsa <jolsa@redhat.com>, Jiri Olsa <jolsa@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 03/22] tools build: Add support for host programs format
+Date: Mon,  3 Oct 2016 23:37:02 -0300
+Message-Id: <1475548641-12182-4-git-send-email-acme@kernel.org>
+In-Reply-To: <1475548641-12182-1-git-send-email-acme@kernel.org>
+References: <1475548641-12182-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,143 +27,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Mon, Oct 03, 2016 at 09:47:06PM -0300, Arnaldo Carvalho de Melo escreveu:
-> Em Thu, Sep 15, 2016 at 03:24:53PM -0700, Sukadev Bhattiprolu escreveu:
-> > From: Andi Kleen <ak@linux.intel.com>
-> > 
-> > Make alias matching the events parser case-insensitive. This is useful
-> > with the JSON events. perf uses lower case events, but the CPU manuals
-> > generally use upper case event names. The JSON files use lower
-> > case by default too. But if we search case insensitively then
-> > users can cut-n-paste the upper case event names.
-> > 
-> > So the following works:
-> > 
-> > % perf stat -e BR_INST_EXEC.TAKEN_INDIRECT_NEAR_CALL true
-> > 
-> >  Performance counter stats for 'true':
-> > 
-> >                305      BR_INST_EXEC.TAKEN_INDIRECT_NEAR_CALL
-> > 
-> >        0.000492799 seconds time elapsed
-> 
-> So now trying to figure this out:
+From: Jiri Olsa <jolsa@redhat.com>
 
-Ok, so this is just another case of bad patch ordering: this uses 'perf
-stat' as the example, but it doesn't work at this point, one needs to go
-to the last patch, apply it and then test it again, when it will work.
-So just moved the last patch to before this one, sigh.
+In some cases, like for fixdep and shortly for jevents, we need to build a tool
+to run on the host that will be used in building a tool, such as perf, that is
+being cross compiled, so do like the kernel and provide HOSTCC, HOSTLD and HOSTAR
+to do that.
 
-- Arnaldo
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+Requested-by: Andi Kleen <andi@firstfloor.org>
+Requested-and-Tested-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/20160927141846.GA6589@krava
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/build/Build.include  |  5 +++++
+ tools/build/Makefile       |  6 ++++++
+ tools/build/Makefile.build | 19 +++++++++++++++----
+ 3 files changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/tools/build/Build.include b/tools/build/Build.include
+index 4d000bc959b4..02489380d79b 100644
+--- a/tools/build/Build.include
++++ b/tools/build/Build.include
+@@ -90,3 +90,8 @@ if_changed = $(if $(strip $(any-prereq) $(arg-check)),             \
+ # - per object C flags
+ # - BUILD_STR macro to allow '-D"$(variable)"' constructs
+ c_flags = -Wp,-MD,$(depfile),-MT,$@ $(CFLAGS) -D"BUILD_STR(s)=\#s" $(CFLAGS_$(basetarget).o) $(CFLAGS_$(obj))
++
++###
++## HOSTCC C flags
++
++host_c_flags = -Wp,-MD,$(depfile),-MT,$@ $(CHOSTFLAGS) -D"BUILD_STR(s)=\#s" $(CHOSTFLAGS_$(basetarget).o) $(CHOSTFLAGS_$(obj))
+diff --git a/tools/build/Makefile b/tools/build/Makefile
+index 0d5a0e3a8fa9..653faee2a055 100644
+--- a/tools/build/Makefile
++++ b/tools/build/Makefile
+@@ -14,6 +14,12 @@ endef
+ $(call allow-override,CC,$(CROSS_COMPILE)gcc)
+ $(call allow-override,LD,$(CROSS_COMPILE)ld)
  
-> [acme@jouet linux]$ perf stat -e br_inst_exec.all_direct_near_call true
-> event syntax error: 'br_inst_exec.all_direct_near_call'
->                      \___ 'period' is not usable in 'perf stat'
-> Run 'perf list' for a list of valid events
-> 
->  Usage: perf stat [<options>] [<command>]
-> 
->     -e, --event <event>   event selector. use 'perf list' to list available events
-> [acme@jouet linux]$ 
-> 
-> [acme@jouet linux]$ perf stat -e cycles true
-> 
->  Performance counter stats for 'true':
-> 
->            228,093      cycles:u                                                    
-> 
->        0.002678362 seconds time elapsed
-> 
-> [acme@jouet linux]$
-> 
-> 
-> Who is setting period in that case?
-> 
-> For cycles we get in verbose mode:
-> 
-> [acme@jouet linux]$ perf stat -vv -e cycles true
-> Using CPUID GenuineIntel-6-3D
-> intel_pt default config: tsc
-> ------------------------------------------------------------
-> perf_event_attr:
->   size                             112
->   sample_type                      IDENTIFIER
->   read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
->   disabled                         1
->   inherit                          1
->   enable_on_exec                   1
->   exclude_guest                    1
-> ------------------------------------------------------------
-> sys_perf_event_open: pid 13346  cpu -1  group_fd -1  flags 0x8
-> sys_perf_event_open failed, error -13
-> Warning:
-> kernel.perf_event_paranoid=2, trying to fall back to excluding kernel samples
-> ------------------------------------------------------------
-> perf_event_attr:
->   size                             112
->   sample_type                      IDENTIFIER
->   read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
->   disabled                         1
->   inherit                          1
->   exclude_kernel                   1
->   enable_on_exec                   1
->   exclude_guest                    1
-> ------------------------------------------------------------
-> sys_perf_event_open: pid 13346  cpu -1  group_fd -1  flags 0x8
-> cycles:u: 0: 322539 536424 536424
-> cycles:u: 322539 536424 536424
-> 
->  Performance counter stats for 'true':
-> 
->            322,539      cycles:u                                                    
-> 
->        0.001061349 seconds time elapsed
-> 
-> And for br_inst_exec.all_direct_near_call:
-> 
-> Strange:
-> 
-> [acme@jouet linux]$ perf stat -vvv -e 'br_inst_exec.all_direct_near_call' true
-> Using CPUID GenuineIntel-6-3D
-> event syntax error: 'br_inst_exec.all_direct_near_call'
->                      \___ 'period' is not usable in 'perf stat'
-> Run 'perf list' for a list of valid events
-> 
->  Usage: perf stat [<options>] [<command>]
-> 
->     -e, --event <event>   event selector. use 'perf list' to list available events
-> [acme@jouet linux]$ 
-> [acme@jouet linux]$ perf record -e 'br_inst_exec.all_direct_near_call' true
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.020 MB perf.data ]
-> [acme@jouet linux]$ perf evlist -v
-> br_inst_exec.all_direct_near_call:u: type: 4, size: 112, config: 0xd088, { sample_period, sample_freq }: 200003, sample_type: IP|TID|TIME|PERIOD, disabled: 1, inherit: 1, exclude_kernel: 1, mmap: 1, comm: 1, enable_on_exec: 1, task: 1, sample_id_all: 1, exclude_guest: 1, mmap2: 1, comm_exec: 1
-> [acme@jouet linux]$ 
-> 
-> I've put what I have on a tmp.perf/json branch, will run it thru my tests and
-> continue tomorrow, when I'll try to investigate this problem with 'perf stat' and
-> these events, unless someone does it while I'm asleep. :-)
-> 
-> - Arnaldo
->  
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > Acked-by: Ingo Molnar <mingo@kernel.org>
-> > ---
-> >  tools/perf/util/parse-events.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-> > index 9abd60d..1abda10 100644
-> > --- a/tools/perf/util/parse-events.c
-> > +++ b/tools/perf/util/parse-events.c
-> > @@ -1453,7 +1453,7 @@ comp_pmu(const void *p1, const void *p2)
-> >  	struct perf_pmu_event_symbol *pmu1 = (struct perf_pmu_event_symbol *) p1;
-> >  	struct perf_pmu_event_symbol *pmu2 = (struct perf_pmu_event_symbol *) p2;
-> >  
-> > -	return strcmp(pmu1->symbol, pmu2->symbol);
-> > +	return strcasecmp(pmu1->symbol, pmu2->symbol);
-> >  }
-> >  
-> >  static void perf_pmu__parse_cleanup(void)
-> > -- 
-> > 1.8.3.1
++HOSTCC ?= gcc
++HOSTLD ?= ld
++HOSTAR ?= ar
++
++export HOSTCC HOSTLD HOSTAR
++
+ ifeq ($(V),1)
+   Q =
+ else
+diff --git a/tools/build/Makefile.build b/tools/build/Makefile.build
+index 27f3583193e6..190519a94ce5 100644
+--- a/tools/build/Makefile.build
++++ b/tools/build/Makefile.build
+@@ -58,6 +58,9 @@ quiet_cmd_mkdir = MKDIR    $(dir $@)
+ quiet_cmd_cc_o_c = CC       $@
+       cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
+ 
++quiet_cmd_host_cc_o_c = HOSTCC   $@
++      cmd_host_cc_o_c = $(HOSTCC) $(host_c_flags) -c -o $@ $<
++
+ quiet_cmd_cpp_i_c = CPP      $@
+       cmd_cpp_i_c = $(CC) $(c_flags) -E -o $@ $<
+ 
+@@ -70,16 +73,24 @@ quiet_cmd_gen = GEN      $@
+ # If there's nothing to link, create empty $@ object.
+ quiet_cmd_ld_multi = LD       $@
+       cmd_ld_multi = $(if $(strip $(obj-y)),\
+-		       $(LD) -r -o $@  $(filter $(obj-y),$^),rm -f $@; $(AR) rcs $@)
++                     $(LD) -r -o $@  $(filter $(obj-y),$^),rm -f $@; $(AR) rcs $@)
++
++quiet_cmd_host_ld_multi = HOSTLD   $@
++      cmd_host_ld_multi = $(if $(strip $(obj-y)),\
++                          $(HOSTLD) -r -o $@  $(filter $(obj-y),$^),rm -f $@; $(HOSTAR) rcs $@)
++
++ifneq ($(filter $(obj),$(hostprogs)),)
++  host = host_
++endif
+ 
+ # Build rules
+ $(OUTPUT)%.o: %.c FORCE
+ 	$(call rule_mkdir)
+-	$(call if_changed_dep,cc_o_c)
++	$(call if_changed_dep,$(host)cc_o_c)
+ 
+ $(OUTPUT)%.o: %.S FORCE
+ 	$(call rule_mkdir)
+-	$(call if_changed_dep,cc_o_c)
++	$(call if_changed_dep,$(host)cc_o_c)
+ 
+ $(OUTPUT)%.i: %.c FORCE
+ 	$(call rule_mkdir)
+@@ -119,7 +130,7 @@ $(sort $(subdir-obj-y)): $(subdir-y) ;
+ 
+ $(in-target): $(obj-y) FORCE
+ 	$(call rule_mkdir)
+-	$(call if_changed,ld_multi)
++	$(call if_changed,$(host)ld_multi)
+ 
+ __build: $(in-target)
+ 	@:
+-- 
+2.7.4
