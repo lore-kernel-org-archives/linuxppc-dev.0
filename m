@@ -2,21 +2,22 @@ Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp0Q20HH2zDrFm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 11:38:18 +1100 (AEDT)
-Date: Mon, 3 Oct 2016 21:38:10 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp0cW6RrPzDrL7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 11:47:23 +1100 (AEDT)
+Date: Mon, 3 Oct 2016 21:47:06 -0300
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: peterz@infradead.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v21 15/19] perf, tools: Add README for info on parsing
- JSON/map files
-Message-ID: <20161004003810.GE7143@kernel.org>
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Jiri Olsa <jolsa@kernel.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH v21 16/19] perf, tools: Make alias matching
+ case-insensitive
+Message-ID: <20161004004706.GF7143@kernel.org>
 References: <1473978296-20712-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1473978296-20712-16-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1473978296-20712-17-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1473978296-20712-16-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1473978296-20712-17-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,182 +27,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Thu, Sep 15, 2016 at 03:24:52PM -0700, Sukadev Bhattiprolu escreveu:
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Acked-by: Jiri Olsa <jolsa@redhat.com>
-> Acked-by: Ingo Molnar <mingo@kernel.org>
-> ---
-> Changelog[v21]
-> 	- Update README to reflect the Topics.json directory tree layout.
+Em Thu, Sep 15, 2016 at 03:24:53PM -0700, Sukadev Bhattiprolu escreveu:
+> From: Andi Kleen <ak@linux.intel.com>
+> 
+> Make alias matching the events parser case-insensitive. This is useful
+> with the JSON events. perf uses lower case events, but the CPU manuals
+> generally use upper case event names. The JSON files use lower
+> case by default too. But if we search case insensitively then
+> users can cut-n-paste the upper case event names.
+> 
+> So the following works:
+> 
+> % perf stat -e BR_INST_EXEC.TAKEN_INDIRECT_NEAR_CALL true
+> 
+>  Performance counter stats for 'true':
+> 
+>                305      BR_INST_EXEC.TAKEN_INDIRECT_NEAR_CALL
+> 
+>        0.000492799 seconds time elapsed
 
-Fixed this:
+So now trying to figure this out:
 
-[acme@jouet linux]$ am /wb/1.patch 
-Applying: perf, tools: Add README for info on parsing JSON/map files
-.git/rebase-apply/patch:162: new blank line at EOF.
-+
-warning: 1 line adds whitespace errors.
-tools/perf/pmu-events/README:148: new blank line at EOF.
+[acme@jouet linux]$ perf stat -e br_inst_exec.all_direct_near_call true
+event syntax error: 'br_inst_exec.all_direct_near_call'
+                     \___ 'period' is not usable in 'perf stat'
+Run 'perf list' for a list of valid events
+
+ Usage: perf stat [<options>] [<command>]
+
+    -e, --event <event>   event selector. use 'perf list' to list available events
+[acme@jouet linux]$ 
+
+[acme@jouet linux]$ perf stat -e cycles true
+
+ Performance counter stats for 'true':
+
+           228,093      cycles:u                                                    
+
+       0.002678362 seconds time elapsed
+
 [acme@jouet linux]$
 
+
+Who is setting period in that case?
+
+For cycles we get in verbose mode:
+
+[acme@jouet linux]$ perf stat -vv -e cycles true
+Using CPUID GenuineIntel-6-3D
+intel_pt default config: tsc
+------------------------------------------------------------
+perf_event_attr:
+  size                             112
+  sample_type                      IDENTIFIER
+  read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
+  disabled                         1
+  inherit                          1
+  enable_on_exec                   1
+  exclude_guest                    1
+------------------------------------------------------------
+sys_perf_event_open: pid 13346  cpu -1  group_fd -1  flags 0x8
+sys_perf_event_open failed, error -13
+Warning:
+kernel.perf_event_paranoid=2, trying to fall back to excluding kernel samples
+------------------------------------------------------------
+perf_event_attr:
+  size                             112
+  sample_type                      IDENTIFIER
+  read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
+  disabled                         1
+  inherit                          1
+  exclude_kernel                   1
+  enable_on_exec                   1
+  exclude_guest                    1
+------------------------------------------------------------
+sys_perf_event_open: pid 13346  cpu -1  group_fd -1  flags 0x8
+cycles:u: 0: 322539 536424 536424
+cycles:u: 322539 536424 536424
+
+ Performance counter stats for 'true':
+
+           322,539      cycles:u                                                    
+
+       0.001061349 seconds time elapsed
+
+And for br_inst_exec.all_direct_near_call:
+
+Strange:
+
+[acme@jouet linux]$ perf stat -vvv -e 'br_inst_exec.all_direct_near_call' true
+Using CPUID GenuineIntel-6-3D
+event syntax error: 'br_inst_exec.all_direct_near_call'
+                     \___ 'period' is not usable in 'perf stat'
+Run 'perf list' for a list of valid events
+
+ Usage: perf stat [<options>] [<command>]
+
+    -e, --event <event>   event selector. use 'perf list' to list available events
+[acme@jouet linux]$ 
+[acme@jouet linux]$ perf record -e 'br_inst_exec.all_direct_near_call' true
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.020 MB perf.data ]
+[acme@jouet linux]$ perf evlist -v
+br_inst_exec.all_direct_near_call:u: type: 4, size: 112, config: 0xd088, { sample_period, sample_freq }: 200003, sample_type: IP|TID|TIME|PERIOD, disabled: 1, inherit: 1, exclude_kernel: 1, mmap: 1, comm: 1, enable_on_exec: 1, task: 1, sample_id_all: 1, exclude_guest: 1, mmap2: 1, comm_exec: 1
+[acme@jouet linux]$ 
+
+I've put what I have on a tmp.perf/json branch, will run it thru my tests and
+continue tomorrow, when I'll try to investigate this problem with 'perf stat' and
+these events, unless someone does it while I'm asleep. :-)
+
+- Arnaldo
+ 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> Acked-by: Ingo Molnar <mingo@kernel.org>
 > ---
->  tools/perf/pmu-events/README | 148 +++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 148 insertions(+)
->  create mode 100644 tools/perf/pmu-events/README
+>  tools/perf/util/parse-events.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/tools/perf/pmu-events/README b/tools/perf/pmu-events/README
-> new file mode 100644
-> index 0000000..c5ee208e
-> --- /dev/null
-> +++ b/tools/perf/pmu-events/README
-> @@ -0,0 +1,148 @@
-> +
-> +The contents of this directory allow users to specify PMU events in their
-> +CPUs by their symbolic names rather than raw event codes (see example below).
-> +
-> +The main program in this directory, is the 'jevents', which is built and
-> +executed _BEFORE_ the perf binary itself is built.
-> +
-> +The 'jevents' program tries to locate and process JSON files in the directory
-> +tree tools/perf/pmu-events/arch/foo.
-> +
-> +	- Regular files with '.json' extension in the name are assumed to be
-> +	  JSON files, each of which describes a set of PMU events.
-> +
-> +	- Regular files with basename starting with 'mapfile.csv' are assumed
-> +	  to be a CSV file that maps a specific CPU to its set of PMU events.
-> +	  (see below for mapfile format)
-> +
-> +	- Directories are traversed, but all other files are ignored.
-> +
-> +The PMU events supported by a CPU model are expected to grouped into topics
-> +such as Pipelining, Cache, Memory, Floating-point etc. All events for a topic
-> +should be placed in a separate JSON file - where the file name identifies
-> +the topic. Eg: "Floating-point.json".
-> +
-> +All the topic JSON files for a CPU model/family should be in a separate
-> +sub directory. Thus for the Silvermont X86 CPU:
-> +
-> +	$ ls tools/perf/pmu-events/arch/x86/Silvermont_core
-> +	Cache.json 	Memory.json 	Virtual-Memory.json
-> +	Frontend.json 	Pipeline.json
-> +
-> +Using the JSON files and the mapfile, 'jevents' generates the C source file,
-> +'pmu-events.c', which encodes the two sets of tables:
-> +
-> +	- Set of 'PMU events tables' for all known CPUs in the architecture,
-> +	  (one table like the following, per JSON file; table name 'pme_power8'
-> +	  is derived from JSON file name, 'power8.json').
-> +
-> +		struct pmu_event pme_power8[] = {
-> +
-> +			...
-> +
-> +			{
-> +				.name = "pm_1plus_ppc_cmpl",
-> +				.event = "event=0x100f2",
-> +				.desc = "1 or more ppc insts finished,",
-> +			},
-> +
-> +			...
-> +		}
-> +
-> +	- A 'mapping table' that maps each CPU of the architecture, to its
-> +	  'PMU events table'
-> +
-> +		struct pmu_events_map pmu_events_map[] = {
-> +		{
-> +			.cpuid = "004b0000",
-> +			.version = "1",
-> +			.type = "core",
-> +			.table = pme_power8
-> +		},
-> +			...
-> +
-> +		};
-> +
-> +After the 'pmu-events.c' is generated, it is compiled and the resulting
-> +'pmu-events.o' is added to 'libperf.a' which is then used to build perf.
-> +
-> +NOTES:
-> +	1. Several CPUs can support same set of events and hence use a common
-> +	   JSON file. Hence several entries in the pmu_events_map[] could map
-> +	   to a single 'PMU events table'.
-> +
-> +	2. The 'pmu-events.h' has an extern declaration for the mapping table
-> +	   and the generated 'pmu-events.c' defines this table.
-> +
-> +	3. _All_ known CPU tables for architecture are included in the perf
-> +	   binary.
-> +
-> +At run time, perf determines the actual CPU it is running on, finds the
-> +matching events table and builds aliases for those events. This allows
-> +users to specify events by their name:
-> +
-> +	$ perf stat -e pm_1plus_ppc_cmpl sleep 1
-> +
-> +where 'pm_1plus_ppc_cmpl' is a Power8 PMU event.
-> +
-> +In case of errors when processing files in the tools/perf/pmu-events/arch
-> +directory, 'jevents' tries to create an empty mapping file to allow the perf
-> +build to succeed even if the PMU event aliases cannot be used.
-> +
-> +However some errors in processing may cause the perf build to fail.
-> +
-> +Mapfile format
-> +===============
-> +
-> +The mapfile enables multiple CPU models to share a single set of PMU events.
-> +It is required even if such mapping is 1:1.
-> +
-> +The mapfile.csv format is expected to be:
-> +
-> +	Header line
-> +	CPUID,Version,Dir/path/name,Type
-> +
-> +where:
-> +
-> +	Comma:
-> +		is the required field delimiter (i.e other fields cannot
-> +		have commas within them).
-> +
-> +	Comments:
-> +		Lines in which the first character is either '\n' or '#'
-> +		are ignored.
-> +
-> +	Header line
-> +		The header line is the first line in the file, which is
-> +		always _IGNORED_. It can empty.
-> +
-> +	CPUID:
-> +		CPUID is an arch-specific char string, that can be used
-> +		to identify CPU (and associate it with a set of PMU events
-> +		it supports). Multiple CPUIDS can point to the same
-> +		File/path/name.json.
-> +
-> +		Example:
-> +			CPUID == 'GenuineIntel-6-2E' (on x86).
-> +			CPUID == '004b0100' (PVR value in Powerpc)
-> +	Version:
-> +		is the Version of the mapfile.
-> +
-> +	Dir/path/name:
-> +		is the pathname to the directory containing the CPU's JSON
-> +		files, relative to the directory containing the mapfile.csv
-> +
-> +	Type:
-> +		indicates whether the events or "core" or "uncore" events.
-> +
-> +
-> +	Eg:
-> +
-> +	$ grep Silvermont tools/perf/pmu-events/arch/x86/mapfile.csv
-> +	GenuineIntel-6-37,V13,Silvermont_core,core
-> +	GenuineIntel-6-4D,V13,Silvermont_core,core
-> +	GenuineIntel-6-4C,V13,Silvermont_core,core
-> +
-> +	i.e the three CPU models use the JSON files (i.e PMU events) listed
-> +	in the directory 'tools/perf/pmu-events/arch/x86/Silvermont_core'.
-> +
+> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+> index 9abd60d..1abda10 100644
+> --- a/tools/perf/util/parse-events.c
+> +++ b/tools/perf/util/parse-events.c
+> @@ -1453,7 +1453,7 @@ comp_pmu(const void *p1, const void *p2)
+>  	struct perf_pmu_event_symbol *pmu1 = (struct perf_pmu_event_symbol *) p1;
+>  	struct perf_pmu_event_symbol *pmu2 = (struct perf_pmu_event_symbol *) p2;
+>  
+> -	return strcmp(pmu1->symbol, pmu2->symbol);
+> +	return strcasecmp(pmu1->symbol, pmu2->symbol);
+>  }
+>  
+>  static void perf_pmu__parse_cleanup(void)
 > -- 
 > 1.8.3.1
