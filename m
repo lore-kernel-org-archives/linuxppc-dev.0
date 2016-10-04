@@ -1,34 +1,50 @@
-Return-Path: <keescook@google.com>
-Received: from mail-lf0-x230.google.com (mail-lf0-x230.google.com
- [IPv6:2a00:1450:4010:c07::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spQ490y9xzDrFn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 03:54:16 +1100 (AEDT)
-Received: by mail-lf0-x230.google.com with SMTP id b75so57723074lfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Oct 2016 09:54:16 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <877f9p55lu.fsf@concordia.ellerman.id.au>
-References: <20161003161322.3835-1-dvlasenk@redhat.com>
- <CAGXu5j+haCUW_AEPLPcVGtrnv4ojQ79FDpspUurYJSX_-TXeow@mail.gmail.com>
- <877f9p55lu.fsf@concordia.ellerman.id.au>
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 4 Oct 2016 09:54:12 -0700
-Message-ID: <CAGXu5jJ3PpvNBYyBWa_M8ELLPuJOcJt-KuH0uRK66peJM_CnSg@mail.gmail.com>
-Subject: Re: [PATCH v6] powerpc: Do not make the entire heap executable
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: Denys Vlasenko <dvlasenk@redhat.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spVjw0qbGzDrLv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 07:23:46 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u94KN94m139186
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Oct 2016 16:23:44 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25vfxp10js-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Oct 2016 16:23:44 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Tue, 4 Oct 2016 16:23:43 -0400
+Date: Tue, 4 Oct 2016 15:23:36 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Oleg Nesterov <oleg@redhat.com>,
- Florian Weimer <fweimer@redhat.com>, Linux-MM <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCH v3 4/5] powerpc/mm: restore top-down allocation when
+ using movable_node
+References: <1474828616-16608-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1474828616-16608-5-git-send-email-arbab@linux.vnet.ibm.com>
+ <1474924351.2857.255.camel@kernel.crashing.org>
+ <20160927001413.o72fqpfsnsxpu5qq@arbab-laptop>
+ <e161a34e-4e58-42f5-49ed-3e7913189eb9@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <e161a34e-4e58-42f5-49ed-3e7913189eb9@gmail.com>
+Message-Id: <20161004202336.cp7o3772ygfn4o3k@arbab-laptop.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +54,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 3, 2016 at 5:18 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Kees Cook <keescook@chromium.org> writes:
->
->> On Mon, Oct 3, 2016 at 9:13 AM, Denys Vlasenko <dvlasenk@redhat.com> wrote:
->>> On 32-bit powerpc the ELF PLT sections of binaries (built with --bss-plt,
->>> or with a toolchain which defaults to it) look like this:
-> ...
->>>
->>> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
->>> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
->>> Acked-by: Kees Cook <keescook@chromium.org>
->>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> CC: Paul Mackerras <paulus@samba.org>
->>> CC: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->>> CC: Kees Cook <keescook@chromium.org>
->>> CC: Oleg Nesterov <oleg@redhat.com>
->>> CC: Michael Ellerman <mpe@ellerman.id.au>
->>> CC: Florian Weimer <fweimer@redhat.com>
->>> CC: linux-mm@kvack.org
->>> CC: linuxppc-dev@lists.ozlabs.org
->>> CC: linux-kernel@vger.kernel.org
->>> ---
->>> Changes since v5:
->>> * made do_brk_flags() error out if any bits other than VM_EXEC are set.
->>>   (Kees Cook: "With this, I'd be happy to Ack.")
->>>   See https://patchwork.ozlabs.org/patch/661595/
+On Tue, Oct 04, 2016 at 11:48:30AM +1100, Balbir Singh wrote:
+>On 27/09/16 10:14, Reza Arbab wrote:
+>> Right. To be clear, the background info I put in the commit log 
+>> refers to x86, where the SRAT can describe movable nodes which exist 
+>> at boot.  They're trying to avoid allocations from those nodes before 
+>> they've been identified.
 >>
->> Excellent, thanks for the v6! Should this go via the ppc tree or the -mm tree?
+>> On power, movable nodes can only exist via hotplug, so that scenario 
+>> can't happen. We can immediately go back to top-down allocation. That 
+>> is the missing call being added in the patch.
 >
-> -mm would be best, given the diffstat I think it's less likely to
->  conflict if it goes via -mm.
+>Can we fix cmdline_parse_movable_node() to do the right thing? I 
+>suspect that code is heavily x86 only in the sense that no other arch 
+>needs it.
 
-Okay, excellent. Andrew, do you have this already in email? I think
-you weren't on the explicit CC from the v6...
+Good idea. We could change it so things only go bottom-up on x86 in the 
+first place.
 
--Kees
+A nice consequence is that CONFIG_MOVABLE_NODE would then basically be 
+usable on any platform with memory hotplug, not just PPC64 and X86_64.
+
+I'll see if I can move the relevant code into an arch_*() call or 
+otherwise factor it out.
 
 -- 
-Kees Cook
-Nexus Security
+Reza Arbab
