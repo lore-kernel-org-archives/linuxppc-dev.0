@@ -1,17 +1,17 @@
 Return-Path: <madalin.bucur@nxp.com>
 Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0089.outbound.protection.outlook.com [104.47.38.89])
+ (mail-bl2nam02on0062.outbound.protection.outlook.com [104.47.38.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9d36pZgzDskV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9d36n61zDskP
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 18:33:27 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>
 CC: <davem@davemloft.net>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>, <linuxdev.baldrick@gmail.com>
-Subject: [net-next 08/13] fsl/fman: check pcsphy pointer before use
-Date: Tue, 4 Oct 2016 10:32:54 +0300
-Message-ID: <1475566379-5078-9-git-send-email-madalin.bucur@nxp.com>
+Subject: [net-next 11/13] fsl/fman: fix return value checking
+Date: Tue, 4 Oct 2016 10:32:57 +0300
+Message-ID: <1475566379-5078-12-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1475566379-5078-1-git-send-email-madalin.bucur@nxp.com>
 References: <1475566379-5078-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -28,22 +28,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- drivers/net/ethernet/freescale/fman/fman_memac.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/freescale/fman/fman.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fman/fman_memac.c b/drivers/net/ethernet/freescale/fman/fman_memac.c
-index 96dfe7e..53ef51e 100644
---- a/drivers/net/ethernet/freescale/fman/fman_memac.c
-+++ b/drivers/net/ethernet/freescale/fman/fman_memac.c
-@@ -507,6 +507,9 @@ static void setup_sgmii_internal_phy(struct fman_mac *memac,
- {
- 	u16 tmp_reg16;
+diff --git a/drivers/net/ethernet/freescale/fman/fman.c b/drivers/net/ethernet/freescale/fman/fman.c
+index 1fc1049..dafd9e1 100644
+--- a/drivers/net/ethernet/freescale/fman/fman.c
++++ b/drivers/net/ethernet/freescale/fman/fman.c
+@@ -618,7 +618,7 @@ struct fman {
+ 	unsigned long cam_offset;
+ 	size_t cam_size;
+ 	/* Fifo in MURAM */
+-	int fifo_offset;
++	unsigned long fifo_offset;
+ 	size_t fifo_size;
  
-+	if (WARN_ON(!memac->pcsphy))
-+		return;
-+
- 	/* SGMII mode */
- 	tmp_reg16 = IF_MODE_SGMII_EN;
- 	if (!fixed_link)
+ 	u32 liodn_base[64];
+@@ -2036,7 +2036,7 @@ static int fman_init(struct fman *fman)
+ 	/* allocate MURAM for FIFO according to total size */
+ 	fman->fifo_offset = fman_muram_alloc(fman->muram,
+ 					     fman->state->total_fifo_size);
+-	if (IS_ERR_VALUE(fman->cam_offset)) {
++	if (IS_ERR_VALUE(fman->fifo_offset)) {
+ 		free_init_resources(fman);
+ 		dev_err(fman->dev, "%s: MURAM alloc for BMI FIFO failed\n",
+ 			__func__);
 -- 
 2.1.0
