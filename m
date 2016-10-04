@@ -1,17 +1,17 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0044.outbound.protection.outlook.com [104.47.41.44])
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0089.outbound.protection.outlook.com [104.47.38.89])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9d255tPzDrXT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 18:33:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sp9d36pZgzDskV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Oct 2016 18:33:27 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>
 CC: <davem@davemloft.net>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>, <linuxdev.baldrick@gmail.com>
-Subject: [net-next 12/13] fsl/fman: remove leftover comment
-Date: Tue, 4 Oct 2016 10:32:58 +0300
-Message-ID: <1475566379-5078-13-git-send-email-madalin.bucur@nxp.com>
+Subject: [net-next 08/13] fsl/fman: check pcsphy pointer before use
+Date: Tue, 4 Oct 2016 10:32:54 +0300
+Message-ID: <1475566379-5078-9-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1475566379-5078-1-git-send-email-madalin.bucur@nxp.com>
 References: <1475566379-5078-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -28,23 +28,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- drivers/net/ethernet/freescale/fman/fman_mac.h | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/net/ethernet/freescale/fman/fman_memac.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/freescale/fman/fman_mac.h b/drivers/net/ethernet/freescale/fman/fman_mac.h
-index ddf0260..dd6d052 100644
---- a/drivers/net/ethernet/freescale/fman/fman_mac.h
-+++ b/drivers/net/ethernet/freescale/fman/fman_mac.h
-@@ -191,10 +191,6 @@ struct fman_mac_params {
- 	u16 max_speed;
- 	/* A handle to the FM object this port related to */
- 	void *fm;
--	/* MDIO exceptions interrupt source - not valid for all
--	 * MACs; MUST be set to 0 for MACs that don't have
--	 * mdio-irq, or for polling
--	 */
- 	void *dev_id; /* device cookie used by the exception cbs */
- 	fman_mac_exception_cb *event_cb;    /* MDIO Events Callback Routine */
- 	fman_mac_exception_cb *exception_cb;/* Exception Callback Routine */
+diff --git a/drivers/net/ethernet/freescale/fman/fman_memac.c b/drivers/net/ethernet/freescale/fman/fman_memac.c
+index 96dfe7e..53ef51e 100644
+--- a/drivers/net/ethernet/freescale/fman/fman_memac.c
++++ b/drivers/net/ethernet/freescale/fman/fman_memac.c
+@@ -507,6 +507,9 @@ static void setup_sgmii_internal_phy(struct fman_mac *memac,
+ {
+ 	u16 tmp_reg16;
+ 
++	if (WARN_ON(!memac->pcsphy))
++		return;
++
+ 	/* SGMII mode */
+ 	tmp_reg16 = IF_MODE_SGMII_EN;
+ 	if (!fixed_link)
 -- 
 2.1.0
