@@ -1,47 +1,53 @@
-Return-Path: <jdelvare@suse.de>
+Return-Path: <lurodriguez@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spzss4nY9zDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2016 02:17:21 +1100 (AEDT)
-Date: Wed, 5 Oct 2016 17:17:04 +0200
-From: Jean Delvare <jdelvare@suse.de>
-To: Wolfram Sang <wsa-dev@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Jean Delvare
- <jdelvare@suse.com>, Wolfram Sang <wsa@the-dreams.de>, Ludovic Desroches
- <ludovic.desroches@atmel.com>, Ray Jui <rjui@broadcom.com>, Scott Branden
- <sbranden@broadcom.com>, Jon Mason <jonmason@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com, Florian Fainelli
- <f.fainelli@gmail.com>, Sonic Zhang <sonic.zhang@analog.com>, Brian Norris
- <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>,
- Michal Simek <michal.simek@xilinx.com>, =?UTF-8?B?U8O2cmVu?= Brinkmann
- <soren.brinkmann@xilinx.com>, Jochen Friedrich <jochen@scram.de>, Sekhar
- Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Guenter Roeck
- <linux@roeck-us.net>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?=
- <kernel@pengutronix.de>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski
- <k.kozlowski@samsung.com>, Seth Heasley <seth.heasley@intel.com>, Neil
- Horman <nhorman@tuxdriver.com>, Joachim Eastwood <manabian@gmail.com>,
- Carlo Caione <carlo@caione.org>, Alessandro Rubini <rubini@unipv.it>, Linus
- Walleij <linus.walleij@linaro.org>, Peter Korsgaard <jacmet@sunsite.dk>,
- Tony Lindgren <tony@atomide.com>, Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>, Guan Xuetao
- <gxt@mprc.pku.edu.cn>, Heiko Stuebner <heiko@sntech.de>, Barry Song
- <baohua@kernel.org>, Patrice Chotard <patrice.chotard@st.com>, Laxman
- Dewangan <ldewangan@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>,
- Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot
- <gnurou@gmail.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Tony
- Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- linux-samsung-soc@vger.kernel.org, linux-amlogic@lists.infradead.org,
- linux-omap@vger.kernel.org, linux-rockchip@lists.infradead.org,
- kernel@stlinux.com, linux-tegra@vger.kernel.org
-Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
-Message-ID: <20161005171704.18fe1b9f@endymion>
-In-Reply-To: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
- <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sq30z4KTmzDrPG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2016 04:38:42 +1100 (AEDT)
+Date: Wed, 5 Oct 2016 19:38:35 +0200
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ "Herbert, Marc" <marc.herbert@intel.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Jacek Anaszewski <j.anaszewski@samsung.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ Julia Lawall <Julia.Lawall@lip6.fr>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@amacapital.net>, Richard Purdie <rpurdie@rpsys.net>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Michal Marek <mmarek@suse.com>, Hauke Mehrtens <hauke@hauke-m.de>,
+ Mark Brown <broonie@kernel.org>, Jiri Slaby <jslaby@suse.com>,
+ Ming Lei <ming.lei@canonical.com>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Felix Fietkau <nbd@nbd.name>, Roman Pen <r.peniaev@gmail.com>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Vikram Mulukutla <markivx@codeaurora.org>,
+ Stephen Boyd <stephen.boyd@linaro.org>,
+ Takashi Iwai <tiwai@suse.de>, Jeff Mahoney <jeffm@suse.com>,
+ Hariprasad S <hariprasad@chelsio.com>, Benjamin Poirier <bpoirier@suse.de>,
+ Josh Triplett <josh@joshtriplett.org>, Kees Cook <keescook@chromium.org>
+Subject: Re: [RFC] fs: add userspace critical mounts event support
+Message-ID: <20161005173835.GC3296@wotan.suse.de>
+References: <CA+55aFz4q5peXAeY9h8o3he7R=wXrBSYkOjMM9TehOw=pPoS+Q@mail.gmail.com>
+ <20160903174939.GB32345@dtor-ws>
+ <CA+55aFwLrXRUO9n75Sthu+g73BEjskAgUkguyLwU=JA_PNzdOQ@mail.gmail.com>
+ <CAKdAkRTv5Fv54wetBqkS+EyEuP_k5exJat+QXBLtTkFLO_-maQ@mail.gmail.com>
+ <2deae6da-dd43-7bff-e1fd-ffd26946b928@intel.com>
+ <CAKdAkRQhEdaP+z02DQ9nighSg_N8R+Dnkv7x3EkYc_YmO_jW4g@mail.gmail.com>
+ <20161005000008.GY3296@wotan.suse.de>
+ <CA+55aFx=hzXhrHQO4-0Jnd1ML4dismQ8qggvSp0yccSRW6qH3A@mail.gmail.com>
+ <CAB=NE6UXX+=nnJcOgO7NWudmDR3bESVO-mQrqG26Gpd4z71xqA@mail.gmail.com>
+ <CA+55aFwzVL=gkQ3GnOs+K1OHor7tjwA=9uh-Jfwz8J3KyvJ=8A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA+55aFwzVL=gkQ3GnOs+K1OHor7tjwA=9uh-Jfwz8J3KyvJ=8A@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,76 +57,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  9 Aug 2016 13:36:17 +0200, Wolfram Sang wrote:
-> The core will do this for us now.
+On Tue, Oct 04, 2016 at 05:32:22PM -0700, Linus Torvalds wrote:
+> On Tue, Oct 4, 2016 at 5:24 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> >
+> > Note that the races are beyond firmware, so all
+> > kernel_read_file_from_path() users, as such re-using such old /sys/
+> > interafeces for firmware will not suffice to cover all ground now for
+> > the same race for other possible users.
 > 
-> Signed-off-by: Wolfram Sang <wsa-dev@sang-engineering.com>
-> ---
->  drivers/i2c/busses/i2c-amd756.c         | 5 +----
->  drivers/i2c/busses/i2c-at91.c           | 2 --
->  drivers/i2c/busses/i2c-axxia.c          | 8 +-------
->  drivers/i2c/busses/i2c-bcm-iproc.c      | 8 +-------
->  drivers/i2c/busses/i2c-bcm-kona.c       | 4 +---
->  drivers/i2c/busses/i2c-bfin-twi.c       | 4 +---
->  drivers/i2c/busses/i2c-brcmstb.c        | 4 +---
->  drivers/i2c/busses/i2c-cadence.c        | 4 +---
->  drivers/i2c/busses/i2c-cpm.c            | 4 +---
->  drivers/i2c/busses/i2c-cros-ec-tunnel.c | 4 +---
->  drivers/i2c/busses/i2c-davinci.c        | 4 +---
->  drivers/i2c/busses/i2c-diolan-u2c.c     | 4 +---
->  drivers/i2c/busses/i2c-dln2.c           | 4 +---
->  drivers/i2c/busses/i2c-efm32.c          | 1 -
->  drivers/i2c/busses/i2c-exynos5.c        | 4 +---
->  drivers/i2c/busses/i2c-hix5hd2.c        | 4 +---
->  drivers/i2c/busses/i2c-i801.c           | 1 -
->  drivers/i2c/busses/i2c-ibm_iic.c        | 4 +---
->  drivers/i2c/busses/i2c-img-scb.c        | 4 +---
->  drivers/i2c/busses/i2c-imx.c            | 4 +---
->  drivers/i2c/busses/i2c-isch.c           | 4 +---
->  drivers/i2c/busses/i2c-ismt.c           | 4 +---
->  drivers/i2c/busses/i2c-jz4780.c         | 4 +---
->  drivers/i2c/busses/i2c-lpc2k.c          | 4 +---
->  drivers/i2c/busses/i2c-meson.c          | 1 -
->  drivers/i2c/busses/i2c-mpc.c            | 4 +---
->  drivers/i2c/busses/i2c-mt65xx.c         | 4 +---
->  drivers/i2c/busses/i2c-mxs.c            | 1 -
->  drivers/i2c/busses/i2c-nforce2.c        | 1 -
->  drivers/i2c/busses/i2c-nomadik.c        | 4 +---
->  drivers/i2c/busses/i2c-ocores.c         | 4 +---
->  drivers/i2c/busses/i2c-octeon.c         | 4 +---
->  drivers/i2c/busses/i2c-omap.c           | 4 +---
->  drivers/i2c/busses/i2c-piix4.c          | 1 -
->  drivers/i2c/busses/i2c-pmcmsp.c         | 4 +---
->  drivers/i2c/busses/i2c-pnx.c            | 4 +---
->  drivers/i2c/busses/i2c-puv3.c           | 5 +----
->  drivers/i2c/busses/i2c-pxa.c            | 4 +---
->  drivers/i2c/busses/i2c-rcar.c           | 4 +---
->  drivers/i2c/busses/i2c-riic.c           | 4 +---
->  drivers/i2c/busses/i2c-rk3x.c           | 4 +---
->  drivers/i2c/busses/i2c-s3c2410.c        | 1 -
->  drivers/i2c/busses/i2c-sh7760.c         | 4 +---
->  drivers/i2c/busses/i2c-sh_mobile.c      | 1 -
->  drivers/i2c/busses/i2c-sirf.c           | 4 +---
->  drivers/i2c/busses/i2c-st.c             | 4 +---
->  drivers/i2c/busses/i2c-stu300.c         | 5 +----
->  drivers/i2c/busses/i2c-tegra.c          | 4 +---
->  drivers/i2c/busses/i2c-uniphier-f.c     | 7 +------
->  drivers/i2c/busses/i2c-uniphier.c       | 7 +------
->  drivers/i2c/busses/i2c-wmt.c            | 4 +---
->  drivers/i2c/busses/i2c-xgene-slimpro.c  | 1 -
->  drivers/i2c/busses/i2c-xiic.c           | 1 -
->  drivers/i2c/busses/i2c-xlp9xx.c         | 4 +---
->  drivers/i2c/busses/i2c-xlr.c            | 4 +---
->  55 files changed, 44 insertions(+), 161 deletions(-)
-> (...)
+> Blah blah blah.
+> 
+> The reason I've hated this whole discussion is that it's full of
+> "let's re-architect everything", and then it has these horribly warty
+> interfaces.
 
-I like the idea.
+To be clear, kernel_read_file_from_path() was an agreed upon strategy
+about 1 year ago at the Linux Security summit as we found different
+kernel implementations for the same exact task, reading files from
+the filesystem -- my point here was simply that acknowledging that the
+race on early init and driver's init / probe for firmware is implicating
+that the race is *also* possible for the other kernel-read-from-fs points.
+Its not clear to me what your grudge here is other than the proposal
+for a solution in this patch is not what we want.
 
-For i2c-amd756, i2c-diolan-u2c, i2c-i801, i2c-isch, i2c-ismt,
-i2c-nforce and i2c-piix4:
+> It's classic second-system syndrome.
+> 
+> Just do *one* thing, and do it well. Don't change anything else. Don't
+> force existign drivers to use new interfaces. Don't over-architect,
+> and don't do stupid interfaces.
 
-Reviewed-by: Jean Delvare <jdelvare@suse.de>
+If there is a race for the other users and we want to avoid wrapping
+a solution for it to the other callers without doing any vetting for
+correctness then so be it, but to disregard completely seems error-prone.
+I accept that thinking about such other users may complicate a solution
+for firmware and if you prefer we just separate the race solution for
+both that's fine.
 
--- 
-Jean Delvare
-SUSE L3 Support
+> If user-space mounts a new filesystem (or just unpacks files from a
+> tar-file that has firmware images in it, for chissake), that is not
+> some magical "critical mount event". The whole concept is just stupid.
+> Is it a "mount event" when the user downloads a new firmware image
+> from the internet?
+> 
+> HELL NO.
+
+We've gotten passed that the original implementation proposed is not what we
+want, let's move on.
+
+> But what is equally stupid is to then dismiss simple models because
+> some totally unrelated "beyond firmware" issue.
+
+I have not heard back from the other stakeholders using
+kernel_read_file_from_path() and possible races for them. You seem to suggest
+to ignore those possible theoretical races in the name of a simple solution for
+firmware. Fine.
+
+> Anything that is "beyond firmware" shouldn't even be discussed, for
+> chrissake! It has nothing what-so-ever to do with firmware loading. If
+> there ends up being some common helper functions, and shared code,
+> that *still* doesn't make it so.
+
+My point was to raise the flag of the possible races on the other call sites
+where we read files directly from the kernel, that's all, if we agree we really
+don't care for that fine.
+
+> Basic rules of thumb:
+> 
+>  (a) don't over-design
+> 
+>  (b) don't have stupid illogical interfaces
+> 
+>  (c) don't conflate different issues just because you think they may
+> have shared code.
+> 
+>  (4) be consistent. Don't make up new interfaces, and most certainly
+> do *NOT* dismiss something just because it's what we have done before.
+> 
+> That's it.
+
+OK..
+
+  Luis
