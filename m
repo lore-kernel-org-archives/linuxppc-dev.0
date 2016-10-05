@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spc2P6X2YzDrMD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:23:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spc2Q0scKzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:23:26 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: npiggin@gmail.com
-Subject: [PATCH v3 39/42] powerpc/64s: Consolidate CBE Thermal 0x1800 interrupt
-Date: Wed,  5 Oct 2016 11:23:01 +1100
-Message-Id: <1475626984-18770-40-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 40/42] powerpc/64s: Move __replay_interrupt function below
+ handlers
+Date: Wed,  5 Oct 2016 11:23:02 +1100
+Message-Id: <1475626984-18770-41-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
 References: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,57 +24,113 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
+This is not an exception handler as such, it's called from
+local_irq_enable(), not exception entry.
+
+Also clean up some now redundant comments at the end of the
+consolidation series.
+
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 15 ++-------------
- 1 file changed, 2 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 74 ++++++++++++++++++------------------
+ 1 file changed, 36 insertions(+), 38 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 389032a8e744..307e117b95d3 100644
+index 307e117b95d3..9b26b7b6f74a 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1262,18 +1262,14 @@ EXC_COMMON(altivec_assist_common, 0x1700, unknown_exception)
+@@ -1317,43 +1317,6 @@ USE_FIXED_SECTION(virt_trampolines)
+ 	MASKED_INTERRUPT()
+ 	MASKED_INTERRUPT(H)
  
- #ifdef CONFIG_CBE_RAS
- EXC_REAL_HV(cbe_thermal, 0x1800, 0x1900)
+-/*
+- * Called from arch_local_irq_enable when an interrupt needs
+- * to be resent. r3 contains 0x500, 0x900, 0xa00 or 0xe80 to indicate
+- * which kind of interrupt. MSR:EE is already off. We generate a
+- * stackframe like if a real interrupt had happened.
+- *
+- * Note: While MSR:EE is off, we need to make sure that _MSR
+- * in the generated frame has EE set to 1 or the exception
+- * handler will not properly re-enable them.
+- */
+-USE_TEXT_SECTION()
+-_GLOBAL(__replay_interrupt)
+-	/* We are going to jump to the exception common code which
+-	 * will retrieve various register values from the PACA which
+-	 * we don't give a damn about, so we don't bother storing them.
+-	 */
+-	mfmsr	r12
+-	mflr	r11
+-	mfcr	r9
+-	ori	r12,r12,MSR_EE
+-	cmpwi	r3,0x900
+-	beq	decrementer_common
+-	cmpwi	r3,0x500
+-	beq	hardware_interrupt_common
+-BEGIN_FTR_SECTION
+-	cmpwi	r3,0xe80
+-	beq	h_doorbell_common
+-	cmpwi	r3,0xea0
+-	beq	h_virt_irq_common
+-	cmpwi	r3,0xe60
+-	beq	hmi_exception_common
+-FTR_SECTION_ELSE
+-	cmpwi	r3,0xa00
+-	beq	doorbell_super_common
+-ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+-	blr
 -
-+EXC_VIRT_NONE(0x5800, 0x5900)
- TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1800)
--
-+EXC_COMMON(cbe_thermal_common, 0x1800, cbe_thermal_exception)
- #else /* CONFIG_CBE_RAS */
- EXC_REAL_NONE(0x1800, 0x1900)
- #endif
- 
- 
--/*** Out of line interrupts support ***/
--
--	/* moved from 0x200 */
--
- /*
-  * An interrupt came in while soft-disabled. We set paca->irq_happened, then:
-  * - If it was a decrementer interrupt, we bump the dec to max and and return.
-@@ -1410,8 +1406,6 @@ TRAMP_REAL_BEGIN(kvmppc_skip_Hinterrupt)
- 	 * come here.
- 	 */
- 
--EXC_VIRT_NONE(0x5800, 0x5900)
--
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+ TRAMP_REAL_BEGIN(kvmppc_skip_interrupt)
+ 	/*
+@@ -1409,7 +1372,6 @@ TRAMP_REAL_BEGIN(kvmppc_skip_Hinterrupt)
  EXC_COMMON_BEGIN(ppc64_runlatch_on_trampoline)
  	b	__ppc64_runlatch_on
  
-@@ -1429,11 +1423,6 @@ USE_FIXED_SECTION(virt_trampolines)
- __end_interrupts:
- DEFINE_FIXED_SYMBOL(__end_interrupts)
- 
--#ifdef CONFIG_CBE_RAS
--EXC_COMMON(cbe_thermal_common, 0x1800, cbe_thermal_exception)
--#endif /* CONFIG_CBE_RAS */
--
--
- #ifdef CONFIG_PPC_970_NAP
- TRAMP_REAL_BEGIN(power4_fixup_nap)
- 	andc	r9,r9,r10
+-	/* Equivalents to the above handlers for relocation-on interrupt vectors */
+ USE_FIXED_SECTION(virt_trampolines)
+ 	/*
+ 	 * The __end_interrupts marker must be past the out-of-line (OOL)
+@@ -1584,3 +1546,39 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	kernel_bad_stack
+ 	b	1b
++
++/*
++ * Called from arch_local_irq_enable when an interrupt needs
++ * to be resent. r3 contains 0x500, 0x900, 0xa00 or 0xe80 to indicate
++ * which kind of interrupt. MSR:EE is already off. We generate a
++ * stackframe like if a real interrupt had happened.
++ *
++ * Note: While MSR:EE is off, we need to make sure that _MSR
++ * in the generated frame has EE set to 1 or the exception
++ * handler will not properly re-enable them.
++ */
++_GLOBAL(__replay_interrupt)
++	/* We are going to jump to the exception common code which
++	 * will retrieve various register values from the PACA which
++	 * we don't give a damn about, so we don't bother storing them.
++	 */
++	mfmsr	r12
++	mflr	r11
++	mfcr	r9
++	ori	r12,r12,MSR_EE
++	cmpwi	r3,0x900
++	beq	decrementer_common
++	cmpwi	r3,0x500
++	beq	hardware_interrupt_common
++BEGIN_FTR_SECTION
++	cmpwi	r3,0xe80
++	beq	h_doorbell_common
++	cmpwi	r3,0xea0
++	beq	h_virt_irq_common
++	cmpwi	r3,0xe60
++	beq	hmi_exception_common
++FTR_SECTION_ELSE
++	cmpwi	r3,0xa00
++	beq	doorbell_super_common
++ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
++	blr
 -- 
 2.7.4
