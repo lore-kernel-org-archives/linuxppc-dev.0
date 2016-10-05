@@ -1,20 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzx19sszDrMD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzx3M4ZzDrNK
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 13:36:29 +1100 (AEDT)
-In-Reply-To: <1469764534-26948-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1475476829-6296-1-git-send-email-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, npiggin@gmail.com, cyrilbur@gmail.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: clombard@linux.vnet.ibm.com, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org, fbarrat@linux.vnet.ibm.com, julia.lawall@lip6.fr,
- imunsie@au1.ibm.com, elfring@users.sourceforge.net
-Subject: Re: cxl: replace loop with for_each_child_of_node(),
- remove unneeded of_node_put()
-Message-Id: <3spfzw6LSRz9t0t@ozlabs.org>
-Date: Wed,  5 Oct 2016 13:36:28 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: During context switch, check before setting mm_cpumask
+Message-Id: <3spfzx28DDz9sCg@ozlabs.org>
+Date: Wed,  5 Oct 2016 13:36:29 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-29-07 at 03:55:34 UTC, Andrew Donnellan wrote:
-> Rewrite the cxl_guest_init_afu() loop in cxl_of_probe() to use
-> for_each_child_of_node() rather than a hand-coded for loop.
+On Mon, 2016-03-10 at 06:40:29 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> Remove the useless of_node_put(afu_np) call after the loop, where it's
-> guaranteed that afu_np == NULL.
+> During context switch, switch_mm() sets our current CPU in mm_cpumask.
+> We can avoid this atomic sequence in most cases by checking before
+> setting the bit.
 > 
-> Reported-by: SF Markus Elfring <elfring@users.sourceforge.net>
-> Reported-by: Julia Lawall <julia.lawall@lip6.fr>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Testing on a POWER8 using our context switch microbenchmark:
+> 
+> tools/testing/selftests/powerpc/benchmarks/context_switch \
+> 	--process --no-fp --no-altivec --no-vector
+> 
+> Performance improves 2%.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/735840b44bcc998e2574faf63d1aaa
+https://git.kernel.org/powerpc/c/bb85fb5803270c52863b983596c2a0
 
 cheers
