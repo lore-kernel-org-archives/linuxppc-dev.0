@@ -1,22 +1,15 @@
-Return-Path: <mcgrof@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spc3v4hkHzDrXV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:24:43 +1100 (AEDT)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 98593203B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 00:24:39 +0000 (UTC)
-Received: from mail-ua0-f171.google.com (mail-ua0-f171.google.com
- [209.85.217.171])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id EFBCF2037F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 00:24:35 +0000 (UTC)
-Received: by mail-ua0-f171.google.com with SMTP id p25so75362990uaa.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Oct 2016 17:24:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spcDn490JzDskd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:32:25 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id d132so1357033oib.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Oct 2016 17:32:25 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CA+55aFx=hzXhrHQO4-0Jnd1ML4dismQ8qggvSp0yccSRW6qH3A@mail.gmail.com>
+Sender: linus971@gmail.com
+In-Reply-To: <CAB=NE6UXX+=nnJcOgO7NWudmDR3bESVO-mQrqG26Gpd4z71xqA@mail.gmail.com>
 References: <20160902235916.GO3296@wotan.suse.de>
  <20160903002014.GP3296@wotan.suse.de>
  <CA+55aFy4_QLYiQxtKpq0FJD7eSBRZ8nXS=Ruuz1TYodHdE_dCA@mail.gmail.com>
@@ -29,11 +22,12 @@ References: <20160902235916.GO3296@wotan.suse.de>
  <CAKdAkRQhEdaP+z02DQ9nighSg_N8R+Dnkv7x3EkYc_YmO_jW4g@mail.gmail.com>
  <20161005000008.GY3296@wotan.suse.de>
  <CA+55aFx=hzXhrHQO4-0Jnd1ML4dismQ8qggvSp0yccSRW6qH3A@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Date: Tue, 4 Oct 2016 17:24:14 -0700
-Message-ID: <CAB=NE6UXX+=nnJcOgO7NWudmDR3bESVO-mQrqG26Gpd4z71xqA@mail.gmail.com>
+ <CAB=NE6UXX+=nnJcOgO7NWudmDR3bESVO-mQrqG26Gpd4z71xqA@mail.gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 4 Oct 2016 17:32:22 -0700
+Message-ID: <CA+55aFwzVL=gkQ3GnOs+K1OHor7tjwA=9uh-Jfwz8J3KyvJ=8A@mail.gmail.com>
 Subject: Re: [RFC] fs: add userspace critical mounts event support
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
 Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Herbert,
  Marc" <marc.herbert@intel.com>,
  "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
@@ -69,36 +63,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 4, 2016 at 5:12 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> On Tue, Oct 4, 2016 at 5:00 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
->>
->> I am not sure how/why a firmware loading daemon would be a better
->> idea now. What Marc describes that Josh proposed with signals for
->> userspcae seems more aligned with what we likely need
+On Tue, Oct 4, 2016 at 5:24 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
 >
-> Quite frankly, I doubt you want a signal.
->
-> You will want to have some way to specify where the firmware files
-> are. Right now we have "fw_path[]" which is hardcoded except for the
-> first entry that can be set as a module parameter. But you'd probably
-> want to expand on that, which implies some /sys or /proc interface.
->
-> And once you do that, wouldn't it make more sense to just make the
-> "update the firmware path /proc/sys/kernel/fw_path file" make things
-> re-search for firmware?
+> Note that the races are beyond firmware, so all
+> kernel_read_file_from_path() users, as such re-using such old /sys/
+> interafeces for firmware will not suffice to cover all ground now for
+> the same race for other possible users.
 
-We can, but re-searching for firmware assumes we cache pending
-firmware, we currently don't, we just either process sync or async
-firmware requests.
+Blah blah blah.
 
-> In other words, the interface has to be something *sensible*. Not some
-> idiotic ad-hoc "send a signal" (of which that stupid original patch
-> was just a very odd example).
+The reason I've hated this whole discussion is that it's full of
+"let's re-architect everything", and then it has these horribly warty
+interfaces. It's classic second-system syndrome.
 
-Note that the races are beyond firmware, so all
-kernel_read_file_from_path() users, as such re-using such old /sys/
-interafeces for firmware will not suffice to cover all ground now for
-the same race for other possible users.
+Just do *one* thing, and do it well. Don't change anything else. Don't
+force existign drivers to use new interfaces. Don't over-architect,
+and don't do stupid interfaces.
 
- Luis
+If user-space mounts a new filesystem (or just unpacks files from a
+tar-file that has firmware images in it, for chissake), that is not
+some magical "critical mount event". The whole concept is just stupid.
+Is it a "mount event" when the user downloads a new firmware image
+from the internet?
+
+HELL NO.
+
+But what is equally stupid is to then dismiss simple models because
+some totally unrelated "beyond firmware" issue.
+
+Anything that is "beyond firmware" shouldn't even be discussed, for
+chrissake! It has nothing what-so-ever to do with firmware loading. If
+there ends up being some common helper functions, and shared code,
+that *still* doesn't make it so.
+
+Basic rules of thumb:
+
+ (a) don't over-design
+
+ (b) don't have stupid illogical interfaces
+
+ (c) don't conflate different issues just because you think they may
+have shared code.
+
+ (4) be consistent. Don't make up new interfaces, and most certainly
+do *NOT* dismiss something just because it's what we have done before.
+
+That's it.
+
+                Linus
