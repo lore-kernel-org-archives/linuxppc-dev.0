@@ -1,18 +1,65 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mcgrof@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spc2R6RDFzDrMn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:23:27 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH v3 42/42] powerpc/64s: Remove unused exception code,
- small cleanups
-Date: Wed,  5 Oct 2016 11:23:04 +1100
-Message-Id: <1475626984-18770-43-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
-References: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spc3v4hkHzDrXV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:24:43 +1100 (AEDT)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 98593203B8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 00:24:39 +0000 (UTC)
+Received: from mail-ua0-f171.google.com (mail-ua0-f171.google.com
+ [209.85.217.171])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id EFBCF2037F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 00:24:35 +0000 (UTC)
+Received: by mail-ua0-f171.google.com with SMTP id p25so75362990uaa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Oct 2016 17:24:35 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CA+55aFx=hzXhrHQO4-0Jnd1ML4dismQ8qggvSp0yccSRW6qH3A@mail.gmail.com>
+References: <20160902235916.GO3296@wotan.suse.de>
+ <20160903002014.GP3296@wotan.suse.de>
+ <CA+55aFy4_QLYiQxtKpq0FJD7eSBRZ8nXS=Ruuz1TYodHdE_dCA@mail.gmail.com>
+ <CAKdAkRSQmz3FoP8Z2ONm7-_A9RHF2Ox6snaCpsyS6HA7=+RerQ@mail.gmail.com>
+ <CA+55aFz4q5peXAeY9h8o3he7R=wXrBSYkOjMM9TehOw=pPoS+Q@mail.gmail.com>
+ <20160903174939.GB32345@dtor-ws>
+ <CA+55aFwLrXRUO9n75Sthu+g73BEjskAgUkguyLwU=JA_PNzdOQ@mail.gmail.com>
+ <CAKdAkRTv5Fv54wetBqkS+EyEuP_k5exJat+QXBLtTkFLO_-maQ@mail.gmail.com>
+ <2deae6da-dd43-7bff-e1fd-ffd26946b928@intel.com>
+ <CAKdAkRQhEdaP+z02DQ9nighSg_N8R+Dnkv7x3EkYc_YmO_jW4g@mail.gmail.com>
+ <20161005000008.GY3296@wotan.suse.de>
+ <CA+55aFx=hzXhrHQO4-0Jnd1ML4dismQ8qggvSp0yccSRW6qH3A@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Date: Tue, 4 Oct 2016 17:24:14 -0700
+Message-ID: <CAB=NE6UXX+=nnJcOgO7NWudmDR3bESVO-mQrqG26Gpd4z71xqA@mail.gmail.com>
+Subject: Re: [RFC] fs: add userspace critical mounts event support
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Herbert,
+ Marc" <marc.herbert@intel.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Jacek Anaszewski <j.anaszewski@samsung.com>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ Julia Lawall <Julia.Lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@amacapital.net>, Richard Purdie <rpurdie@rpsys.net>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Michal Marek <mmarek@suse.com>, Hauke Mehrtens <hauke@hauke-m.de>,
+ Mark Brown <broonie@kernel.org>,
+ Jiri Slaby <jslaby@suse.com>, Ming Lei <ming.lei@canonical.com>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Felix Fietkau <nbd@nbd.name>, Roman Pen <r.peniaev@gmail.com>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Vikram Mulukutla <markivx@codeaurora.org>,
+ Stephen Boyd <stephen.boyd@linaro.org>, Takashi Iwai <tiwai@suse.de>,
+ Jeff Mahoney <jeffm@suse.com>,
+ Hariprasad S <hariprasad@chelsio.com>, Benjamin Poirier <bpoirier@suse.de>,
+ Josh Triplett <josh@joshtriplett.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,120 +69,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+On Tue, Oct 4, 2016 at 5:12 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Tue, Oct 4, 2016 at 5:00 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+>>
+>> I am not sure how/why a firmware loading daemon would be a better
+>> idea now. What Marc describes that Josh proposed with signals for
+>> userspcae seems more aligned with what we likely need
+>
+> Quite frankly, I doubt you want a signal.
+>
+> You will want to have some way to specify where the firmware files
+> are. Right now we have "fw_path[]" which is hardcoded except for the
+> first entry that can be set as a module parameter. But you'd probably
+> want to expand on that, which implies some /sys or /proc interface.
+>
+> And once you do that, wouldn't it make more sense to just make the
+> "update the firmware path /proc/sys/kernel/fw_path file" make things
+> re-search for firmware?
 
-This was not done before the big patches because I only noticed
-them afterwards. It has become much easier to see which handlers
-are branched to from which exception vectors now, and to see
-exactly what vector space is being used for what.
+We can, but re-searching for firmware assumes we cache pending
+firmware, we currently don't, we just either process sync or async
+firmware requests.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/exceptions-64s.S | 30 ++++++++++++++++++++----------
- 1 file changed, 20 insertions(+), 10 deletions(-)
+> In other words, the interface has to be something *sensible*. Not some
+> idiotic ad-hoc "send a signal" (of which that stupid original patch
+> was just a very odd example).
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 1e17f8d4365a..08992f8f5036 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -57,6 +57,10 @@
-  * 0x7000 - 0x7fff : FWNMI data area
-  * 0x8000 -   .... : Common interrupt handlers, remaining early
-  *                   setup code, rest of kernel.
-+ *
-+ * We could reclaim 0x4000-0x42ff for real mode trampolines if the space
-+ * is necessary. Until then it's more consistent to explicitly put VIRT_NONE
-+ * vectors there.
-  */
- OPEN_FIXED_SECTION(real_vectors,        0x0100, 0x1900)
- OPEN_FIXED_SECTION(real_trampolines,    0x1900, 0x4000)
-@@ -88,6 +92,9 @@ USE_FIXED_SECTION(real_vectors)
- 	.globl __start_interrupts
- __start_interrupts:
- 
-+/* No virt vectors corresponding with 0x0..0x100 */
-+EXC_VIRT_NONE(0x4000, 0x4100)
-+
- EXC_REAL_BEGIN(system_reset, 0x100, 0x200)
- 	SET_SCRATCH0(r13)
- #ifdef CONFIG_PPC_P7_NAP
-@@ -907,9 +914,7 @@ TRAMP_KVM(PACA_EXGEN, 0xd00)
- EXC_COMMON(single_step_common, 0xd00, single_step_exception)
- 
- EXC_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
--EXC_VIRT_BEGIN(unused, 0x4e00, 0x4e20)
--	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
--EXC_VIRT_END(unused, 0x4e00, 0x4e20)
-+EXC_VIRT_NONE(0x4e00, 0x4e20)
- TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0xe00)
- EXC_COMMON_BEGIN(h_data_storage_common)
- 	mfspr   r10,SPRN_HDAR
-@@ -922,13 +927,10 @@ EXC_COMMON_BEGIN(h_data_storage_common)
- 	addi    r3,r1,STACK_FRAME_OVERHEAD
- 	bl      unknown_exception
- 	b       ret_from_except
--EXC_COMMON(trap_0e_common, 0xe00, unknown_exception)
- 
- 
- EXC_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
--EXC_VIRT_BEGIN(unused, 0x4e20, 0x4e40)
--	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
--EXC_VIRT_END(unused, 0x4e20, 0x4e40)
-+EXC_VIRT_NONE(0x4e20, 0x4e40)
- TRAMP_KVM_HV(PACA_EXGEN, 0xe20)
- EXC_COMMON(h_instr_storage_common, 0xe20, unknown_exception)
- 
-@@ -939,11 +941,14 @@ TRAMP_KVM_HV(PACA_EXGEN, 0xe40)
- EXC_COMMON(emulation_assist_common, 0xe40, emulation_assist_interrupt)
- 
- 
-+/*
-+ * hmi_exception trampoline is a special case. It jumps to hmi_exception_early
-+ * first, and then eventaully from there to the trampoline to get into virtual
-+ * mode.
-+ */
- __EXC_REAL_OOL_HV_DIRECT(hmi_exception, 0xe60, 0xe80, hmi_exception_early)
- __TRAMP_REAL_REAL_OOL_MASKABLE_HV(hmi_exception, 0xe60)
--EXC_VIRT_BEGIN(unused, 0x4e60, 0x4e80)
--	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
--EXC_VIRT_END(unused, 0x4e60, 0x4e80)
-+EXC_VIRT_NONE(0x4e60, 0x4e80)
- TRAMP_KVM_HV(PACA_EXGEN, 0xe60)
- TRAMP_REAL_BEGIN(hmi_exception_early)
- 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, 0xe60)
-@@ -1118,6 +1123,7 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1200)
- EXC_COMMON(cbe_system_error_common, 0x1200, cbe_system_error_exception)
- #else /* CONFIG_CBE_RAS */
- EXC_REAL_NONE(0x1200, 0x1300)
-+EXC_VIRT_NONE(0x5200, 0x5300)
- #endif
- 
- 
-@@ -1126,6 +1132,8 @@ EXC_VIRT(instruction_breakpoint, 0x5300, 0x5400, 0x1300)
- TRAMP_KVM_SKIP(PACA_EXGEN, 0x1300)
- EXC_COMMON(instruction_breakpoint_common, 0x1300, instruction_breakpoint_exception)
- 
-+EXC_REAL_NONE(0x1400, 0x1500)
-+EXC_VIRT_NONE(0x5400, 0x5500)
- 
- EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 0x1600)
- 	mtspr	SPRN_SPRG_HSCRATCH0,r13
-@@ -1228,6 +1236,7 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1600)
- EXC_COMMON(cbe_maintenance_common, 0x1600, cbe_maintenance_exception)
- #else /* CONFIG_CBE_RAS */
- EXC_REAL_NONE(0x1600, 0x1700)
-+EXC_VIRT_NONE(0x5600, 0x5700)
- #endif
- 
- 
-@@ -1248,6 +1257,7 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1800)
- EXC_COMMON(cbe_thermal_common, 0x1800, cbe_thermal_exception)
- #else /* CONFIG_CBE_RAS */
- EXC_REAL_NONE(0x1800, 0x1900)
-+EXC_VIRT_NONE(0x5800, 0x5900)
- #endif
- 
- 
--- 
-2.7.4
+Note that the races are beyond firmware, so all
+kernel_read_file_from_path() users, as such re-using such old /sys/
+interafeces for firmware will not suffice to cover all ground now for
+the same race for other possible users.
+
+ Luis
