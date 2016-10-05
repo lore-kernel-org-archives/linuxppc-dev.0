@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spc2Q5dSPzDrMD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:23:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spc2R6RDFzDrMn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:23:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: npiggin@gmail.com
-Subject: [PATCH v3 41/42] powerpc/64s: Use a single macro for both parts of
- OOL exception
-Date: Wed,  5 Oct 2016 11:23:03 +1100
-Message-Id: <1475626984-18770-42-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 42/42] powerpc/64s: Remove unused exception code,
+ small cleanups
+Date: Wed,  5 Oct 2016 11:23:04 +1100
+Message-Id: <1475626984-18770-43-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
 References: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,137 +24,118 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-Simple substitution. This is possible now that both parts of the OOL
-initial handler get linked into their correct location.
+This was not done before the big patches because I only noticed
+them afterwards. It has become much easier to see which handlers
+are branched to from which exception vectors now, and to see
+exactly what vector space is being used for what.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 55 ++++++++++++------------------------
- 1 file changed, 18 insertions(+), 37 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 30 ++++++++++++++++++++----------
+ 1 file changed, 20 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9b26b7b6f74a..1e17f8d4365a 100644
+index 1e17f8d4365a..08992f8f5036 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -906,9 +906,7 @@ EXC_VIRT(single_step, 0x4d00, 0x4e00, 0xd00)
- TRAMP_KVM(PACA_EXGEN, 0xd00)
+@@ -57,6 +57,10 @@
+  * 0x7000 - 0x7fff : FWNMI data area
+  * 0x8000 -   .... : Common interrupt handlers, remaining early
+  *                   setup code, rest of kernel.
++ *
++ * We could reclaim 0x4000-0x42ff for real mode trampolines if the space
++ * is necessary. Until then it's more consistent to explicitly put VIRT_NONE
++ * vectors there.
+  */
+ OPEN_FIXED_SECTION(real_vectors,        0x0100, 0x1900)
+ OPEN_FIXED_SECTION(real_trampolines,    0x1900, 0x4000)
+@@ -88,6 +92,9 @@ USE_FIXED_SECTION(real_vectors)
+ 	.globl __start_interrupts
+ __start_interrupts:
+ 
++/* No virt vectors corresponding with 0x0..0x100 */
++EXC_VIRT_NONE(0x4000, 0x4100)
++
+ EXC_REAL_BEGIN(system_reset, 0x100, 0x200)
+ 	SET_SCRATCH0(r13)
+ #ifdef CONFIG_PPC_P7_NAP
+@@ -907,9 +914,7 @@ TRAMP_KVM(PACA_EXGEN, 0xd00)
  EXC_COMMON(single_step_common, 0xd00, single_step_exception)
  
--
--__EXC_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
--__TRAMP_REAL_REAL_OOL_HV(h_data_storage, 0xe00)
-+EXC_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
- EXC_VIRT_BEGIN(unused, 0x4e00, 0x4e20)
- 	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
- EXC_VIRT_END(unused, 0x4e00, 0x4e20)
-@@ -927,8 +925,7 @@ EXC_COMMON_BEGIN(h_data_storage_common)
- EXC_COMMON(trap_0e_common, 0xe00, unknown_exception)
+ EXC_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
+-EXC_VIRT_BEGIN(unused, 0x4e00, 0x4e20)
+-	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
+-EXC_VIRT_END(unused, 0x4e00, 0x4e20)
++EXC_VIRT_NONE(0x4e00, 0x4e20)
+ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0xe00)
+ EXC_COMMON_BEGIN(h_data_storage_common)
+ 	mfspr   r10,SPRN_HDAR
+@@ -922,13 +927,10 @@ EXC_COMMON_BEGIN(h_data_storage_common)
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD
+ 	bl      unknown_exception
+ 	b       ret_from_except
+-EXC_COMMON(trap_0e_common, 0xe00, unknown_exception)
  
  
--__EXC_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
--__TRAMP_REAL_REAL_OOL_HV(h_instr_storage, 0xe20)
-+EXC_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
- EXC_VIRT_BEGIN(unused, 0x4e20, 0x4e40)
- 	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
- EXC_VIRT_END(unused, 0x4e20, 0x4e40)
-@@ -936,10 +933,8 @@ TRAMP_KVM_HV(PACA_EXGEN, 0xe20)
+ EXC_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
+-EXC_VIRT_BEGIN(unused, 0x4e20, 0x4e40)
+-	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
+-EXC_VIRT_END(unused, 0x4e20, 0x4e40)
++EXC_VIRT_NONE(0x4e20, 0x4e40)
+ TRAMP_KVM_HV(PACA_EXGEN, 0xe20)
  EXC_COMMON(h_instr_storage_common, 0xe20, unknown_exception)
  
- 
--__EXC_REAL_OOL_HV(emulation_assist, 0xe40, 0xe60)
--__TRAMP_REAL_REAL_OOL_HV(emulation_assist, 0xe40)
--__EXC_VIRT_OOL_HV(emulation_assist, 0x4e40, 0x4e60)
--__TRAMP_REAL_VIRT_OOL_HV(emulation_assist, 0xe40)
-+EXC_REAL_OOL_HV(emulation_assist, 0xe40, 0xe60)
-+EXC_VIRT_OOL_HV(emulation_assist, 0x4e40, 0x4e60, 0xe40)
- TRAMP_KVM_HV(PACA_EXGEN, 0xe40)
+@@ -939,11 +941,14 @@ TRAMP_KVM_HV(PACA_EXGEN, 0xe40)
  EXC_COMMON(emulation_assist_common, 0xe40, emulation_assist_interrupt)
  
-@@ -1002,10 +997,8 @@ hmi_exception_after_realmode:
- EXC_COMMON_ASYNC(hmi_exception_common, 0xe60, handle_hmi_exception)
  
- 
--__EXC_REAL_OOL_MASKABLE_HV(h_doorbell, 0xe80, 0xea0)
--__TRAMP_REAL_REAL_OOL_MASKABLE_HV(h_doorbell, 0xe80)
--__EXC_VIRT_OOL_MASKABLE_HV(h_doorbell, 0x4e80, 0x4ea0)
--__TRAMP_REAL_VIRT_OOL_MASKABLE_HV(h_doorbell, 0xe80)
-+EXC_REAL_OOL_MASKABLE_HV(h_doorbell, 0xe80, 0xea0)
-+EXC_VIRT_OOL_MASKABLE_HV(h_doorbell, 0x4e80, 0x4ea0, 0xe80)
- TRAMP_KVM_HV(PACA_EXGEN, 0xe80)
- #ifdef CONFIG_PPC_DOORBELL
- EXC_COMMON_ASYNC(h_doorbell_common, 0xe80, doorbell_exception)
-@@ -1014,10 +1007,8 @@ EXC_COMMON_ASYNC(h_doorbell_common, 0xe80, unknown_exception)
++/*
++ * hmi_exception trampoline is a special case. It jumps to hmi_exception_early
++ * first, and then eventaully from there to the trampoline to get into virtual
++ * mode.
++ */
+ __EXC_REAL_OOL_HV_DIRECT(hmi_exception, 0xe60, 0xe80, hmi_exception_early)
+ __TRAMP_REAL_REAL_OOL_MASKABLE_HV(hmi_exception, 0xe60)
+-EXC_VIRT_BEGIN(unused, 0x4e60, 0x4e80)
+-	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
+-EXC_VIRT_END(unused, 0x4e60, 0x4e80)
++EXC_VIRT_NONE(0x4e60, 0x4e80)
+ TRAMP_KVM_HV(PACA_EXGEN, 0xe60)
+ TRAMP_REAL_BEGIN(hmi_exception_early)
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, 0xe60)
+@@ -1118,6 +1123,7 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1200)
+ EXC_COMMON(cbe_system_error_common, 0x1200, cbe_system_error_exception)
+ #else /* CONFIG_CBE_RAS */
+ EXC_REAL_NONE(0x1200, 0x1300)
++EXC_VIRT_NONE(0x5200, 0x5300)
  #endif
  
  
--__EXC_REAL_OOL_MASKABLE_HV(h_virt_irq, 0xea0, 0xec0)
--__TRAMP_REAL_REAL_OOL_MASKABLE_HV(h_virt_irq, 0xea0)
--__EXC_VIRT_OOL_MASKABLE_HV(h_virt_irq, 0x4ea0, 0x4ec0)
--__TRAMP_REAL_VIRT_OOL_MASKABLE_HV(h_virt_irq, 0xea0)
-+EXC_REAL_OOL_MASKABLE_HV(h_virt_irq, 0xea0, 0xec0)
-+EXC_VIRT_OOL_MASKABLE_HV(h_virt_irq, 0x4ea0, 0x4ec0, 0xea0)
- TRAMP_KVM_HV(PACA_EXGEN, 0xea0)
- EXC_COMMON_ASYNC(h_virt_irq_common, 0xea0, do_IRQ)
+@@ -1126,6 +1132,8 @@ EXC_VIRT(instruction_breakpoint, 0x5300, 0x5400, 0x1300)
+ TRAMP_KVM_SKIP(PACA_EXGEN, 0x1300)
+ EXC_COMMON(instruction_breakpoint_common, 0x1300, instruction_breakpoint_exception)
  
-@@ -1026,18 +1017,14 @@ EXC_REAL_NONE(0xec0, 0xf00)
- EXC_VIRT_NONE(0x4ec0, 0x4f00)
++EXC_REAL_NONE(0x1400, 0x1500)
++EXC_VIRT_NONE(0x5400, 0x5500)
  
- 
--__EXC_REAL_OOL(performance_monitor, 0xf00, 0xf20)
--__TRAMP_REAL_REAL_OOL(performance_monitor, 0xf00)
--__EXC_VIRT_OOL(performance_monitor, 0x4f00, 0x4f20)
--__TRAMP_REAL_VIRT_OOL(performance_monitor, 0xf00)
-+EXC_REAL_OOL(performance_monitor, 0xf00, 0xf20)
-+EXC_VIRT_OOL(performance_monitor, 0x4f00, 0x4f20, 0xf00)
- TRAMP_KVM(PACA_EXGEN, 0xf00)
- EXC_COMMON_ASYNC(performance_monitor_common, 0xf00, performance_monitor_exception)
+ EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 0x1600)
+ 	mtspr	SPRN_SPRG_HSCRATCH0,r13
+@@ -1228,6 +1236,7 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1600)
+ EXC_COMMON(cbe_maintenance_common, 0x1600, cbe_maintenance_exception)
+ #else /* CONFIG_CBE_RAS */
+ EXC_REAL_NONE(0x1600, 0x1700)
++EXC_VIRT_NONE(0x5600, 0x5700)
+ #endif
  
  
--__EXC_REAL_OOL(altivec_unavailable, 0xf20, 0xf40)
--__TRAMP_REAL_REAL_OOL(altivec_unavailable, 0xf20)
--__EXC_VIRT_OOL(altivec_unavailable, 0x4f20, 0x4f40)
--__TRAMP_REAL_VIRT_OOL(altivec_unavailable, 0xf20)
-+EXC_REAL_OOL(altivec_unavailable, 0xf20, 0xf40)
-+EXC_VIRT_OOL(altivec_unavailable, 0x4f20, 0x4f40, 0xf20)
- TRAMP_KVM(PACA_EXGEN, 0xf20)
- EXC_COMMON_BEGIN(altivec_unavailable_common)
- 	EXCEPTION_PROLOG_COMMON(0xf20, PACA_EXGEN)
-@@ -1073,10 +1060,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	b	ret_from_except
+@@ -1248,6 +1257,7 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1800)
+ EXC_COMMON(cbe_thermal_common, 0x1800, cbe_thermal_exception)
+ #else /* CONFIG_CBE_RAS */
+ EXC_REAL_NONE(0x1800, 0x1900)
++EXC_VIRT_NONE(0x5800, 0x5900)
+ #endif
  
- 
--__EXC_REAL_OOL(vsx_unavailable, 0xf40, 0xf60)
--__TRAMP_REAL_REAL_OOL(vsx_unavailable, 0xf40)
--__EXC_VIRT_OOL(vsx_unavailable, 0x4f40, 0x4f60)
--__TRAMP_REAL_VIRT_OOL(vsx_unavailable, 0xf40)
-+EXC_REAL_OOL(vsx_unavailable, 0xf40, 0xf60)
-+EXC_VIRT_OOL(vsx_unavailable, 0x4f40, 0x4f60, 0xf40)
- TRAMP_KVM(PACA_EXGEN, 0xf40)
- EXC_COMMON_BEGIN(vsx_unavailable_common)
- 	EXCEPTION_PROLOG_COMMON(0xf40, PACA_EXGEN)
-@@ -1111,18 +1096,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	b	ret_from_except
- 
- 
--__EXC_REAL_OOL(facility_unavailable, 0xf60, 0xf80)
--__TRAMP_REAL_REAL_OOL(facility_unavailable, 0xf60)
--__EXC_VIRT_OOL(facility_unavailable, 0x4f60, 0x4f80)
--__TRAMP_REAL_VIRT_OOL(facility_unavailable, 0xf60)
-+EXC_REAL_OOL(facility_unavailable, 0xf60, 0xf80)
-+EXC_VIRT_OOL(facility_unavailable, 0x4f60, 0x4f80, 0xf60)
- TRAMP_KVM(PACA_EXGEN, 0xf60)
- EXC_COMMON(facility_unavailable_common, 0xf60, facility_unavailable_exception)
- 
- 
--__EXC_REAL_OOL_HV(h_facility_unavailable, 0xf80, 0xfa0)
--__TRAMP_REAL_REAL_OOL_HV(h_facility_unavailable, 0xf80)
--__EXC_VIRT_OOL_HV(h_facility_unavailable, 0x4f80, 0x4fa0)
--__TRAMP_REAL_VIRT_OOL_HV(h_facility_unavailable, 0xf80)
-+EXC_REAL_OOL_HV(h_facility_unavailable, 0xf80, 0xfa0)
-+EXC_VIRT_OOL_HV(h_facility_unavailable, 0x4f80, 0x4fa0, 0xf80)
- TRAMP_KVM_HV(PACA_EXGEN, 0xf80)
- EXC_COMMON(h_facility_unavailable_common, 0xf80, facility_unavailable_exception)
  
 -- 
 2.7.4
