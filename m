@@ -2,13 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzx1GJfzDrMF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzx19sszDrMD
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 13:36:29 +1100 (AEDT)
-In-Reply-To: <1475196706-6105-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1469764534-26948-1-git-send-email-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/fadump: Fix build break when CONFIG_PROC_VMCORE=n
-Message-Id: <3spfzw4FwWz9t0q@ozlabs.org>
+Cc: clombard@linux.vnet.ibm.com, kernel-janitors@vger.kernel.org,
+ linux-kernel@vger.kernel.org, fbarrat@linux.vnet.ibm.com, julia.lawall@lip6.fr,
+ imunsie@au1.ibm.com, elfring@users.sourceforge.net
+Subject: Re: cxl: replace loop with for_each_child_of_node(),
+ remove unneeded of_node_put()
+Message-Id: <3spfzw6LSRz9t0t@ozlabs.org>
 Date: Wed,  5 Oct 2016 13:36:28 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,15 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-30-09 at 00:51:46 UTC, Michael Ellerman wrote:
-> The fadump code calls vmcore_cleanup() which only exists if
-> CONFIG_PROC_VMCORE=y. We don't want to depend on CONFIG_PROC_VMCORE,
-> because it's user selectable, so just wrap the call in an #ifdef.
+On Fri, 2016-29-07 at 03:55:34 UTC, Andrew Donnellan wrote:
+> Rewrite the cxl_guest_init_afu() loop in cxl_of_probe() to use
+> for_each_child_of_node() rather than a hand-coded for loop.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Remove the useless of_node_put(afu_np) call after the loop, where it's
+> guaranteed that afu_np == NULL.
+> 
+> Reported-by: SF Markus Elfring <elfring@users.sourceforge.net>
+> Reported-by: Julia Lawall <julia.lawall@lip6.fr>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2685f826e5ffd1ab73b26fd5ac4e1f
+https://git.kernel.org/powerpc/c/735840b44bcc998e2574faf63d1aaa
 
 cheers
