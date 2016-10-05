@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spc284xB6zDrLw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:23:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spc2940LpzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 11:23:13 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: npiggin@gmail.com
-Subject: [PATCH v3 04/42] powerpc: Use gas sections for arranging exception
- vectors
-Date: Wed,  5 Oct 2016 11:22:26 +1100
-Message-Id: <1475626984-18770-5-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 06/42] powerpc/64s: Consolidate Machine Check 0x200
+ interrupt
+Date: Wed,  5 Oct 2016 11:22:28 +1100
+Message-Id: <1475626984-18770-7-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
 References: <1475626984-18770-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,830 +24,712 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-Use assembler sections of fixed size and location to arrange the 64-bit
-Book3S exception vector code (64-bit Book3E also uses it in head_64.S
-for 0x0..0x100).
-
-This allows better flexibility in arranging exception code and hiding
-unimportant details behind macros.
-
-Gas sections can be a bit painful to use this way, mainly because the
-assembler does not know where they will be finally linked. Taking
-absolute addresses requires a bit of trickery for example, but it can
-be hidden behind macros for the most part.
-
-Generated code is mostly the same except locations, offsets, alignments.
-
-The "+ 0x2" is only required for the trap number / kvm exit number,
-which gets loaded as a constant into a register.
-
-Previously, code also used + 0x2 for label names, but we changed to
-using "H" to distinguish HV case for that. Remove the last vestiges
-of that.
-
-__after_prom_start is taking absolute address of a label in another
-fixed section. Newer toolchains seemed to compile this okay, but older
-ones do not. FIXED_SYMBOL_ABS_ADDR is more foolproof, it just takes an
-additional line to define.
-
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/exception-64s.h |   2 +-
- arch/powerpc/include/asm/head-64.h       | 261 +++++++++++++++++++++++++++++--
- arch/powerpc/kernel/exceptions-64s.S     | 111 +++++++++----
- arch/powerpc/kernel/head_64.S            |  44 ++++--
- arch/powerpc/kernel/vmlinux.lds.S        |  53 ++++++-
- 5 files changed, 404 insertions(+), 67 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 659 +++++++++++++++++------------------
+ 1 file changed, 329 insertions(+), 330 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 72f2b1e3f343..2e4e7d878c8e 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -91,7 +91,7 @@
-  */
- #define LOAD_HANDLER(reg, label)					\
- 	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
--	ori	reg,reg,((label)-_stext)@l;	/* virt addr of handler ... */
-+	ori	reg,reg,(FIXED_SYMBOL_ABS_ADDR(label))@l;
- 
- /* Exception register prefixes */
- #define EXC_HV	H
-diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
-index 613f743e91aa..ab90c2fa1ea6 100644
---- a/arch/powerpc/include/asm/head-64.h
-+++ b/arch/powerpc/include/asm/head-64.h
-@@ -3,28 +3,218 @@
- 
- #include <asm/cache.h>
- 
-+/*
-+ * We can't do CPP stringification and concatination directly into the section
-+ * name for some reason, so these macros can do it for us.
-+ */
-+.macro define_ftsec name
-+	.section ".head.text.\name\()","ax",@progbits
-+.endm
-+.macro define_data_ftsec name
-+	.section ".head.data.\name\()","a",@progbits
-+.endm
-+.macro use_ftsec name
-+	.section ".head.text.\name\()"
-+.endm
-+
-+/*
-+ * Fixed (location) sections are used by opening fixed sections and emitting
-+ * fixed section entries into them before closing them. Multiple fixed sections
-+ * can be open at any time.
-+ *
-+ * Each fixed section created in a .S file must have corresponding linkage
-+ * directives including location, added to  arch/powerpc/kernel/vmlinux.lds.S
-+ *
-+ * For each fixed section, code is generated into it in the order which it
-+ * appears in the source.  Fixed section entries can be placed at a fixed
-+ * location within the section using _LOCATION postifx variants. These must
-+ * be ordered according to their relative placements within the section.
-+ *
-+ * OPEN_FIXED_SECTION(section_name, start_address, end_address)
-+ * FIXED_SECTION_ENTRY_BEGIN(section_name, label1)
-+ *
-+ * USE_FIXED_SECTION(section_name)
-+ * label3:
-+ *     li  r10,128
-+ *     mv  r11,r10
-+
-+ * FIXED_SECTION_ENTRY_BEGIN_LOCATION(section_name, label2, start_address)
-+ * FIXED_SECTION_ENTRY_END_LOCATION(section_name, label2, end_address)
-+ * CLOSE_FIXED_SECTION(section_name)
-+ *
-+ * ZERO_FIXED_SECTION can be used to emit zeroed data.
-+ *
-+ * Troubleshooting:
-+ * - If the build dies with "Error: attempt to move .org backwards" at
-+ *   CLOSE_FIXED_SECTION() or elsewhere, there may be something
-+ *   unexpected being added there. Remove the '. = x_len' line, rebuild, and
-+ *   check what is pushing the section down.
-+ * - If the build dies in linking, check arch/powerpc/kernel/vmlinux.lds.S
-+ *   for instructions.
-+ * - If the kernel crashes or hangs in very early boot, it could be linker
-+ *   stubs at the start of the main text.
-+ */
-+
-+#define OPEN_FIXED_SECTION(sname, start, end)			\
-+	sname##_start = (start);				\
-+	sname##_end = (end);					\
-+	sname##_len = (end) - (start);				\
-+	define_ftsec sname;					\
-+	. = 0x0;						\
-+start_##sname:
-+
-+#define OPEN_TEXT_SECTION(start)				\
-+	text_start = (start);					\
-+	.section ".text","ax",@progbits;			\
-+	. = 0x0;						\
-+start_text:
-+
-+#define ZERO_FIXED_SECTION(sname, start, end)			\
-+	sname##_start = (start);				\
-+	sname##_end = (end);					\
-+	sname##_len = (end) - (start);				\
-+	define_data_ftsec sname;				\
-+	. = 0x0;						\
-+	. = sname##_len;
-+
-+#define USE_FIXED_SECTION(sname)				\
-+	fs_label = start_##sname;				\
-+	fs_start = sname##_start;				\
-+	use_ftsec sname;
-+
-+#define USE_TEXT_SECTION()					\
-+	fs_label = start_text;					\
-+	fs_start = text_start;					\
-+	.text
-+
-+#define CLOSE_FIXED_SECTION(sname)				\
-+	USE_FIXED_SECTION(sname);				\
-+	. = sname##_len;					\
-+end_##sname:
-+
-+
-+#define __FIXED_SECTION_ENTRY_BEGIN(sname, name, __align)	\
-+	USE_FIXED_SECTION(sname);				\
-+	.align __align;						\
-+	.global name;						\
-+name:
-+
-+#define FIXED_SECTION_ENTRY_BEGIN(sname, name)			\
-+	__FIXED_SECTION_ENTRY_BEGIN(sname, name, 0)
-+
-+#define FIXED_SECTION_ENTRY_BEGIN_LOCATION(sname, name, start)		\
-+	USE_FIXED_SECTION(sname);				\
-+	name##_start = (start);					\
-+	.if (start) < sname##_start;				\
-+	.error "Fixed section underflow";			\
-+	.abort;							\
-+	.endif;							\
-+	. = (start) - sname##_start;				\
-+	.global name;						\
-+name:
-+
-+#define FIXED_SECTION_ENTRY_END_LOCATION(sname, name, end)		\
-+	.if (end) > sname##_end;				\
-+	.error "Fixed section overflow";			\
-+	.abort;							\
-+	.endif;							\
-+	.if (. - name > end - name##_start);			\
-+	.error "Fixed entry overflow";				\
-+	.abort;							\
-+	.endif;							\
-+	. = ((end) - sname##_start);				\
-+
-+
-+/*
-+ * These macros are used to change symbols in other fixed sections to be
-+ * absolute or related to our current fixed section.
-+ *
-+ * - DEFINE_FIXED_SYMBOL / FIXED_SYMBOL_ABS_ADDR is used to find the
-+ *   absolute address of a symbol within a fixed section, from any section.
-+ *
-+ * - ABS_ADDR is used to find the absolute address of any symbol, from within
-+ *   a fixed section.
-+ */
-+#define DEFINE_FIXED_SYMBOL(label)				\
-+	label##_absolute = (label - fs_label + fs_start)
-+
-+#define FIXED_SYMBOL_ABS_ADDR(label)				\
-+	(label##_absolute)
-+
-+#define ABS_ADDR(label) (label - fs_label + fs_start)
-+
-+/*
-+ * Following are the BOOK3S exception handler helper macros.
-+ * Handlers come in a number of types, and each type has a number of varieties.
-+ *
-+ * EXC_REAL_*        - real, unrelocated exception vectors
-+ * EXC_VIRT_*        - virt (AIL), unrelocated exception vectors
-+ * TRAMP_REAL_*   - real, unrelocated helpers (virt can call these)
-+ * TRAMP_VIRT_*  - virt, unreloc helpers (in practice, real can use)
-+ * TRAMP_KVM         - KVM handlers that get put into real, unrelocated
-+ * EXC_COMMON_*  - virt, relocated common handlers
-+ *
-+ * The EXC handlers are given a name, and branch to name_common, or the
-+ * appropriate KVM or masking function. Vector handler verieties are as
-+ * follows:
-+ *
-+ * EXC_{REAL|VIRT}_BEGIN/END - used to open-code the exception
-+ *
-+ * EXC_{REAL|VIRT}  - standard exception
-+ *
-+ * EXC_{REAL|VIRT}_suffix
-+ *     where _suffix is:
-+ *   - _MASKABLE               - maskable exception
-+ *   - _OOL                    - out of line with trampoline to common handler
-+ *   - _HV                     - HV exception
-+ *
-+ * There can be combinations, e.g., EXC_VIRT_OOL_MASKABLE_HV
-+ *
-+ * The one unusual case is __EXC_REAL_OOL_HV_DIRECT, which is
-+ * an OOL vector that branches to a specified handler rather than the usual
-+ * trampoline that goes to common. It, and other underscore macros, should
-+ * be used with care.
-+ *
-+ * KVM handlers come in the following verieties:
-+ * TRAMP_KVM
-+ * TRAMP_KVM_SKIP
-+ * TRAMP_KVM_HV
-+ * TRAMP_KVM_HV_SKIP
-+ *
-+ * COMMON handlers come in the following verieties:
-+ * EXC_COMMON_BEGIN/END - used to open-code the handler
-+ * EXC_COMMON
-+ * EXC_COMMON_ASYNC
-+ * EXC_COMMON_HV
-+ *
-+ * TRAMP_REAL and TRAMP_VIRT can be used with BEGIN/END. KVM
-+ * and OOL handlers are implemented as types of TRAMP and TRAMP_VIRT handlers.
-+ */
-+
- #define EXC_REAL_BEGIN(name, start, end)			\
--	. = start ;							\
--	.global exc_real_##start##_##name ;				\
--exc_real_##start##_##name:
-+	FIXED_SECTION_ENTRY_BEGIN_LOCATION(real_vectors, exc_real_##start##_##name, start)
- 
--#define EXC_REAL_END(name, start, end)
-+#define EXC_REAL_END(name, start, end)			\
-+	FIXED_SECTION_ENTRY_END_LOCATION(real_vectors, exc_real_##start##_##name, end)
- 
- #define EXC_VIRT_BEGIN(name, start, end)			\
--	. = start ;							\
--	.global exc_virt_##start##_##name ;				\
--exc_virt_##start##_##name:
-+	FIXED_SECTION_ENTRY_BEGIN_LOCATION(virt_vectors, exc_virt_##start##_##name, start)
- 
--#define EXC_VIRT_END(name, start, end)
-+#define EXC_VIRT_END(name, start, end)			\
-+	FIXED_SECTION_ENTRY_END_LOCATION(virt_vectors, exc_virt_##start##_##name, end)
- 
- #define EXC_COMMON_BEGIN(name)					\
-+	USE_TEXT_SECTION();						\
- 	.align	7;							\
- 	.global name;							\
-+	DEFINE_FIXED_SYMBOL(name);					\
- name:
- 
- #define TRAMP_REAL_BEGIN(name)					\
--	.global name ;							\
--name:
-+	FIXED_SECTION_ENTRY_BEGIN(real_trampolines, name)
-+
-+#define TRAMP_VIRT_BEGIN(name)					\
-+	FIXED_SECTION_ENTRY_BEGIN(virt_trampolines, name)
- 
- #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
- #define TRAMP_KVM_BEGIN(name)						\
-@@ -33,9 +223,13 @@ name:
- #define TRAMP_KVM_BEGIN(name)
- #endif
- 
--#define EXC_REAL_NONE(start, end)
-+#define EXC_REAL_NONE(start, end)				\
-+	FIXED_SECTION_ENTRY_BEGIN_LOCATION(real_vectors, exc_real_##start##_##unused, start); \
-+	FIXED_SECTION_ENTRY_END_LOCATION(real_vectors, exc_real_##start##_##unused, end)
- 
--#define EXC_VIRT_NONE(start, end)
-+#define EXC_VIRT_NONE(start, end)				\
-+	FIXED_SECTION_ENTRY_BEGIN_LOCATION(virt_vectors, exc_virt_##start##_##unused, start); \
-+	FIXED_SECTION_ENTRY_END_LOCATION(virt_vectors, exc_virt_##start##_##unused, end);
- 
- 
- #define EXC_REAL(name, start, end)				\
-@@ -77,6 +271,10 @@ name:
- 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
- 	STD_EXCEPTION_PSERIES_OOL(vec, name##_common);			\
- 
-+#define EXC_REAL_OOL(name, start, end)			\
-+	__EXC_REAL_OOL(name, start, end);			\
-+	__TRAMP_REAL_REAL_OOL(name, start);
-+
- #define __EXC_REAL_OOL_MASKABLE(name, start, end)		\
- 	__EXC_REAL_OOL(name, start, end);
- 
-@@ -84,6 +282,10 @@ name:
- 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
- 	MASKABLE_EXCEPTION_PSERIES_OOL(vec, name##_common);		\
- 
-+#define EXC_REAL_OOL_MASKABLE(name, start, end)		\
-+	__EXC_REAL_OOL_MASKABLE(name, start, end);		\
-+	__TRAMP_REAL_REAL_OOL_MASKABLE(name, start);
-+
- #define __EXC_REAL_OOL_HV_DIRECT(name, start, end, handler)	\
- 	EXC_REAL_BEGIN(name, start, end);			\
- 	__OOL_EXCEPTION(start, label, handler);				\
-@@ -96,6 +298,10 @@ name:
- 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
- 	STD_EXCEPTION_HV_OOL(vec, name##_common);			\
- 
-+#define EXC_REAL_OOL_HV(name, start, end)			\
-+	__EXC_REAL_OOL_HV(name, start, end);			\
-+	__TRAMP_REAL_REAL_OOL_HV(name, start);
-+
- #define __EXC_REAL_OOL_MASKABLE_HV(name, start, end)		\
- 	__EXC_REAL_OOL(name, start, end);
- 
-@@ -103,36 +309,56 @@ name:
- 	TRAMP_REAL_BEGIN(tramp_real_##name);				\
- 	MASKABLE_EXCEPTION_HV_OOL(vec, name##_common);			\
- 
-+#define EXC_REAL_OOL_MASKABLE_HV(name, start, end)		\
-+	__EXC_REAL_OOL_MASKABLE_HV(name, start, end);	\
-+	__TRAMP_REAL_REAL_OOL_MASKABLE_HV(name, start);
-+
- #define __EXC_VIRT_OOL(name, start, end)			\
- 	EXC_VIRT_BEGIN(name, start, end);			\
- 	__OOL_EXCEPTION(start, label, tramp_virt_##name);		\
- 	EXC_VIRT_END(name, start, end);
- 
- #define __TRAMP_REAL_VIRT_OOL(name, realvec)				\
--	TRAMP_REAL_BEGIN(tramp_virt_##name);				\
-+	TRAMP_VIRT_BEGIN(tramp_virt_##name);			\
- 	STD_RELON_EXCEPTION_PSERIES_OOL(realvec, name##_common);	\
- 
-+#define EXC_VIRT_OOL(name, start, end, realvec)		\
-+	__EXC_VIRT_OOL(name, start, end);			\
-+	__TRAMP_REAL_VIRT_OOL(name, realvec);
-+
- #define __EXC_VIRT_OOL_MASKABLE(name, start, end)		\
- 	__EXC_VIRT_OOL(name, start, end);
- 
- #define __TRAMP_REAL_VIRT_OOL_MASKABLE(name, realvec)		\
--	TRAMP_REAL_BEGIN(tramp_virt_##name);				\
-+	TRAMP_VIRT_BEGIN(tramp_virt_##name);			\
- 	MASKABLE_RELON_EXCEPTION_PSERIES_OOL(realvec, name##_common);	\
- 
-+#define EXC_VIRT_OOL_MASKABLE(name, start, end, realvec)	\
-+	__EXC_VIRT_OOL_MASKABLE(name, start, end);		\
-+	__TRAMP_REAL_VIRT_OOL_MASKABLE(name, realvec);
-+
- #define __EXC_VIRT_OOL_HV(name, start, end)			\
- 	__EXC_VIRT_OOL(name, start, end);
- 
- #define __TRAMP_REAL_VIRT_OOL_HV(name, realvec)			\
--	TRAMP_REAL_BEGIN(tramp_virt_##name);				\
-+	TRAMP_VIRT_BEGIN(tramp_virt_##name);			\
- 	STD_RELON_EXCEPTION_HV_OOL(realvec, name##_common);		\
- 
-+#define EXC_VIRT_OOL_HV(name, start, end, realvec)		\
-+	__EXC_VIRT_OOL_HV(name, start, end);			\
-+	__TRAMP_REAL_VIRT_OOL_HV(name, realvec);
-+
- #define __EXC_VIRT_OOL_MASKABLE_HV(name, start, end)		\
- 	__EXC_VIRT_OOL(name, start, end);
- 
- #define __TRAMP_REAL_VIRT_OOL_MASKABLE_HV(name, realvec)		\
--	TRAMP_REAL_BEGIN(tramp_virt_##name);				\
-+	TRAMP_VIRT_BEGIN(tramp_virt_##name);			\
- 	MASKABLE_RELON_EXCEPTION_HV_OOL(realvec, name##_common);	\
- 
-+#define EXC_VIRT_OOL_MASKABLE_HV(name, start, end, realvec)	\
-+	__EXC_VIRT_OOL_MASKABLE_HV(name, start, end);	\
-+	__TRAMP_REAL_VIRT_OOL_MASKABLE_HV(name, realvec);
-+
- #define TRAMP_KVM(area, n)						\
- 	TRAMP_KVM_BEGIN(do_kvm_##n);					\
- 	KVM_HANDLER(area, EXC_STD, n);					\
-@@ -141,6 +367,9 @@ name:
- 	TRAMP_KVM_BEGIN(do_kvm_##n);					\
- 	KVM_HANDLER_SKIP(area, EXC_STD, n);				\
- 
-+/*
-+ * HV variant exceptions get the 0x2 bit added to their trap number.
-+ */
- #define TRAMP_KVM_HV(area, n)						\
- 	TRAMP_KVM_BEGIN(do_kvm_H##n);					\
- 	KVM_HANDLER(area, EXC_HV, n + 0x2);				\
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d398e8716ef8..6ea330a3c51a 100644
+index b163e7a62289..afdb2043b1f3 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -19,16 +19,68 @@
- #include <asm/head-64.h>
- 
- /*
-+ * There are a few constraints to be concerned with.
-+ * - Real mode exceptions code/data must be located at their physical location.
-+ * - Virtual mode exceptions must be mapped at their 0xc000... location.
-+ * - Fixed location code must not call directly beyond the __end_interrupts
-+ *   area when built with CONFIG_RELOCATABLE. LOAD_HANDLER / bctr sequence
-+ *   must be used.
-+ * - LOAD_HANDLER targets must be within first 64K of physical 0 /
-+ *   virtual 0xc00...
-+ * - Conditional branch targets must be within +/-32K of caller.
-+ *
-+ * "Virtual exceptions" run with relocation on (MSR_IR=1, MSR_DR=1), and
-+ * therefore don't have to run in physically located code or rfid to
-+ * virtual mode kernel code. However on relocatable kernels they do have
-+ * to branch to KERNELBASE offset because the rest of the kernel (outside
-+ * the exception vectors) may be located elsewhere.
-+ *
-+ * Virtual exceptions correspond with physical, except their entry points
-+ * are offset by 0xc000000000000000 and also tend to get an added 0x4000
-+ * offset applied. Virtual exceptions are enabled with the Alternate
-+ * Interrupt Location (AIL) bit set in the LPCR. However this does not
-+ * guarantee they will be delivered virtually. Some conditions (see the ISA)
-+ * cause exceptions to be delivered in real mode.
-+ *
-+ * It's impossible to receive interrupts below 0x300 via AIL.
-+ *
-+ * KVM: None of the virtual exceptions are from the guest. Anything that
-+ * escalated to HV=1 from HV=0 is delivered via real mode handlers.
-+ *
-+ *
-  * We layout physical memory as follows:
-  * 0x0000 - 0x00ff : Secondary processor spin code
-- * 0x0100 - 0x17ff : pSeries Interrupt prologs
-- * 0x1800 - 0x4000 : interrupt support common interrupt prologs
-- * 0x4000 - 0x5fff : pSeries interrupts with IR=1,DR=1
-- * 0x6000 - 0x6fff : more interrupt support including for IR=1,DR=1
-+ * 0x0100 - 0x18ff : Real mode pSeries interrupt vectors
-+ * 0x1900 - 0x3fff : Real mode trampolines
-+ * 0x4000 - 0x58ff : Relon (IR=1,DR=1) mode pSeries interrupt vectors
-+ * 0x5900 - 0x6fff : Relon mode trampolines
-  * 0x7000 - 0x7fff : FWNMI data area
-- * 0x8000 - 0x8fff : Initial (CPU0) segment table
-- * 0x9000 -        : Early init and support code
-+ * 0x8000 -   .... : Common interrupt handlers, remaining early
-+ *                   setup code, rest of kernel.
-+ */
-+OPEN_FIXED_SECTION(real_vectors,        0x0100, 0x1900)
-+OPEN_FIXED_SECTION(real_trampolines,    0x1900, 0x4000)
-+OPEN_FIXED_SECTION(virt_vectors,        0x4000, 0x5900)
-+OPEN_FIXED_SECTION(virt_trampolines,    0x5900, 0x7000)
-+#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-+/*
-+ * Data area reserved for FWNMI option.
-+ * This address (0x7000) is fixed by the RPA.
-+ * pseries and powernv need to keep the whole page from
-+ * 0x7000 to 0x8000 free for use by the firmware
-  */
-+ZERO_FIXED_SECTION(fwnmi_page,          0x7000, 0x8000)
-+OPEN_TEXT_SECTION(0x8000)
-+#else
-+OPEN_TEXT_SECTION(0x7000)
-+#endif
-+
-+USE_FIXED_SECTION(real_vectors)
-+
-+#define LOAD_SYSCALL_HANDLER(reg)				\
-+	ld	reg,PACAKBASE(r13);				\
-+	ori	reg,reg,(ABS_ADDR(system_call_common))@l;
-+
- 	/* Syscall routine is used twice, in reloc-off and reloc-on paths */
- #define SYSCALL_PSERIES_1 					\
- BEGIN_FTR_SECTION						\
-@@ -42,7 +94,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 
- #define SYSCALL_PSERIES_2_RFID 					\
- 	mfspr	r12,SPRN_SRR1 ;					\
--	LOAD_HANDLER(r10, system_call_common) ; 		\
-+	LOAD_SYSCALL_HANDLER(r10) ; 				\
- 	mtspr	SPRN_SRR0,r10 ; 				\
- 	ld	r10,PACAKMSR(r13) ;				\
- 	mtspr	SPRN_SRR1,r10 ; 				\
-@@ -63,7 +115,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
- 	 * is volatile across system calls.
- 	 */
- #define SYSCALL_PSERIES_2_DIRECT				\
--	LOAD_HANDLER(r12, system_call_common) ;			\
-+	LOAD_SYSCALL_HANDLER(r12) ;				\
- 	mtctr	r12 ;						\
- 	mfspr	r12,SPRN_SRR1 ;					\
- 	li	r10,MSR_RI ;					\
-@@ -86,7 +138,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)				\
-  * Therefore any relative branches in this section must only
-  * branch to labels in this section.
-  */
--	. = 0x100
- 	.globl __start_interrupts
- __start_interrupts:
- 
-@@ -200,9 +251,6 @@ EXC_REAL_BEGIN(instruction_access_slb, 0x480, 0x500)
- #endif
- EXC_REAL_END(instruction_access_slb, 0x480, 0x500)
- 
--	/* We open code these as we can't have a ". = x" (even with
--	 * x = "." within a feature section
--	 */
- EXC_REAL_BEGIN(hardware_interrupt, 0x500, 0x600)
- 	.globl hardware_interrupt_hv;
- hardware_interrupt_hv:
-@@ -306,7 +354,6 @@ __EXC_REAL_OOL_HV(h_facility_unavailable, 0xf80, 0xfa0)
- 
- EXC_REAL_NONE(0xfa0, 0x1200)
- 
--
- #ifdef CONFIG_CBE_RAS
- EXC_REAL_HV(cbe_system_error, 0x1200, 0x1300)
- 
-@@ -359,7 +406,6 @@ TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1800)
- 
- #else /* CONFIG_CBE_RAS */
- EXC_REAL_NONE(0x1800, 0x1900)
--	. = 0x1800
- #endif
- 
- 
-@@ -606,7 +652,13 @@ masked_##_H##interrupt:					\
- 	GET_SCRATCH0(r13);				\
- 	##_H##rfid;					\
- 	b	.
--	
-+
-+/*
-+ * Real mode exceptions actually use this too, but alternate
-+ * instruction code patches (which end up in the common .text area)
-+ * cannot reach these if they are put there.
-+ */
-+USE_FIXED_SECTION(virt_trampolines)
- 	MASKED_INTERRUPT()
- 	MASKED_INTERRUPT(H)
- 
-@@ -620,6 +672,7 @@ masked_##_H##interrupt:					\
-  * in the generated frame has EE set to 1 or the exception
-  * handler will not properly re-enable them.
-  */
-+USE_TEXT_SECTION()
- _GLOBAL(__replay_interrupt)
- 	/* We are going to jump to the exception common code which
- 	 * will retrieve various register values from the PACA which
-@@ -862,7 +915,7 @@ EXC_VIRT(altivec_assist, 0x5700, 0x5800, 0x1700)
- 
- EXC_VIRT_NONE(0x5800, 0x5900)
- 
--TRAMP_REAL_BEGIN(ppc64_runlatch_on_trampoline)
-+EXC_COMMON_BEGIN(ppc64_runlatch_on_trampoline)
- 	b	__ppc64_runlatch_on
- 
- /*
-@@ -1070,6 +1123,7 @@ __TRAMP_REAL_VIRT_OOL(vsx_unavailable, 0xf40)
- __TRAMP_REAL_VIRT_OOL(facility_unavailable, 0xf60)
- __TRAMP_REAL_VIRT_OOL_HV(h_facility_unavailable, 0xf80)
- 
-+USE_FIXED_SECTION(virt_trampolines)
- 	/*
- 	 * The __end_interrupts marker must be past the out-of-line (OOL)
- 	 * handlers, so that they are copied to real address 0x100 when running
-@@ -1080,21 +1134,7 @@ __TRAMP_REAL_VIRT_OOL_HV(h_facility_unavailable, 0xf80)
- 	.align	7
- 	.globl	__end_interrupts
- __end_interrupts:
--
--#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
--/*
-- * Data area reserved for FWNMI option.
-- * This address (0x7000) is fixed by the RPA.
-- */
--	.= 0x7000
--	.globl fwnmi_data_area
--fwnmi_data_area:
--
--	/* pseries and powernv need to keep the whole page from
--	 * 0x7000 to 0x8000 free for use by the firmware
--	 */
--	. = 0x8000
--#endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
-+DEFINE_FIXED_SYMBOL(__end_interrupts)
- 
- EXC_COMMON(facility_unavailable_common, 0xf60, facility_unavailable_exception)
- EXC_COMMON(h_facility_unavailable_common, 0xf80, facility_unavailable_exception)
-@@ -1106,7 +1146,7 @@ EXC_COMMON(cbe_thermal_common, 0x1800, cbe_thermal_exception)
- #endif /* CONFIG_CBE_RAS */
- 
- 
--EXC_COMMON_BEGIN(hmi_exception_early)
-+TRAMP_REAL_BEGIN(hmi_exception_early)
- 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, 0xe60)
- 	mr	r10,r1			/* Save r1			*/
- 	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
-@@ -1430,6 +1470,13 @@ TRAMP_REAL_BEGIN(power4_fixup_nap)
- 	blr
- #endif
- 
-+CLOSE_FIXED_SECTION(real_vectors);
-+CLOSE_FIXED_SECTION(real_trampolines);
-+CLOSE_FIXED_SECTION(virt_vectors);
-+CLOSE_FIXED_SECTION(virt_trampolines);
-+
-+USE_TEXT_SECTION()
-+
- /*
-  * Hash table stuff
-  */
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 6e21812ee672..79da0641bae2 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -28,6 +28,7 @@
- #include <asm/page.h>
- #include <asm/mmu.h>
- #include <asm/ppc_asm.h>
-+#include <asm/head-64.h>
- #include <asm/asm-offsets.h>
- #include <asm/bug.h>
- #include <asm/cputable.h>
-@@ -65,9 +66,14 @@
-  *   2. The kernel is entered at __start
-  */
- 
--	.text
--	.globl  _stext
--_stext:
-+OPEN_FIXED_SECTION(first_256B, 0x0, 0x100)
-+USE_FIXED_SECTION(first_256B)
+@@ -218,6 +218,301 @@ FTR_SECTION_ELSE
+ 	b	machine_check_pSeries_0
+ ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+ EXC_REAL_END(machine_check, 0x200, 0x300)
++EXC_VIRT_NONE(0x4200, 0x4300)
++TRAMP_REAL_BEGIN(machine_check_powernv_early)
++BEGIN_FTR_SECTION
++	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
 +	/*
-+	 * Offsets are relative from the start of fixed section, and
-+	 * first_256B starts at 0. Offsets are a bit easier to use here
-+	 * than the fixed section entry macros.
-+	 */
-+	. = 0x0
- _GLOBAL(__start)
- 	/* NOP this out unconditionally */
- BEGIN_FTR_SECTION
-@@ -104,6 +110,7 @@ __secondary_hold_acknowledge:
- 	. = 0x5c
- 	.globl	__run_at_load
- __run_at_load:
-+DEFINE_FIXED_SYMBOL(__run_at_load)
- 	.long	0x72756e30	/* "run0" -- relocate to 0 by default */
- #endif
- 
-@@ -133,7 +140,7 @@ __secondary_hold:
- 	/* Tell the master cpu we're here */
- 	/* Relocation is off & we are located at an address less */
- 	/* than 0x100, so only need to grab low order offset.    */
--	std	r24,__secondary_hold_acknowledge-_stext(0)
-+	std	r24,(ABS_ADDR(__secondary_hold_acknowledge))(0)
- 	sync
- 
- 	li	r26,0
-@@ -141,7 +148,7 @@ __secondary_hold:
- 	tovirt(r26,r26)
- #endif
- 	/* All secondary cpus wait here until told to start. */
--100:	ld	r12,__secondary_hold_spinloop-_stext(r26)
-+100:	ld	r12,(ABS_ADDR(__secondary_hold_spinloop))(r26)
- 	cmpdi	0,r12,0
- 	beq	100b
- 
-@@ -166,12 +173,13 @@ __secondary_hold:
- #else
- 	BUG_OPCODE
- #endif
-+CLOSE_FIXED_SECTION(first_256B)
- 
- /* This value is used to mark exception frames on the stack. */
- 	.section ".toc","aw"
- exception_marker:
- 	.tc	ID_72656773_68657265[TC],0x7265677368657265
--	.text
-+	.previous
- 
- /*
-  * On server, we include the exception vectors code here as it
-@@ -180,8 +188,12 @@ exception_marker:
-  */
- #ifdef CONFIG_PPC_BOOK3S
- #include "exceptions-64s.S"
-+#else
-+OPEN_TEXT_SECTION(0x100)
- #endif
- 
-+USE_TEXT_SECTION()
-+
- #ifdef CONFIG_PPC_BOOK3E
- /*
-  * The booting_thread_hwid holds the thread id we want to boot in cpu
-@@ -558,7 +570,7 @@ __after_prom_start:
- #if defined(CONFIG_PPC_BOOK3E)
- 	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
- #endif
--	lwz	r7,__run_at_load-_stext(r26)
-+	lwz	r7,(FIXED_SYMBOL_ABS_ADDR(__run_at_load))(r26)
- #if defined(CONFIG_PPC_BOOK3E)
- 	tophys(r26,r26)
- #endif
-@@ -601,7 +613,7 @@ __after_prom_start:
- #if defined(CONFIG_PPC_BOOK3E)
- 	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
- #endif
--	lwz	r7,__run_at_load-_stext(r26)
-+	lwz	r7,(FIXED_SYMBOL_ABS_ADDR(__run_at_load))(r26)
- 	cmplwi	cr0,r7,1
- 	bne	3f
- 
-@@ -611,19 +623,21 @@ __after_prom_start:
- 	sub	r5,r5,r11
- #else
- 	/* just copy interrupts */
--	LOAD_REG_IMMEDIATE(r5, __end_interrupts - _stext)
-+	LOAD_REG_IMMEDIATE(r5, FIXED_SYMBOL_ABS_ADDR(__end_interrupts))
- #endif
- 	b	5f
- 3:
- #endif
--	lis	r5,(copy_to_here - _stext)@ha
--	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
-+	/* # bytes of memory to copy */
-+	lis	r5,(ABS_ADDR(copy_to_here))@ha
-+	addi	r5,r5,(ABS_ADDR(copy_to_here))@l
- 
- 	bl	copy_and_flush		/* copy the first n bytes	 */
- 					/* this includes the code being	 */
- 					/* executed here.		 */
--	addis	r8,r3,(4f - _stext)@ha	/* Jump to the copy of this code */
--	addi	r12,r8,(4f - _stext)@l	/* that we just made */
-+	/* Jump to the copy of this code that we just made */
-+	addis	r8,r3,(ABS_ADDR(4f))@ha
-+	addi	r12,r8,(ABS_ADDR(4f))@l
- 	mtctr	r12
- 	bctr
- 
-@@ -635,8 +649,8 @@ p_end: .llong _end - copy_to_here
- 	 * Now copy the rest of the kernel up to _end, add
- 	 * _end - copy_to_here to the copy limit and run again.
- 	 */
--	addis   r8,r26,(p_end - _stext)@ha
--	ld      r8,(p_end - _stext)@l(r8)
-+	addis   r8,r26,(ABS_ADDR(p_end))@ha
-+	ld      r8,(ABS_ADDR(p_end))@l(r8)
- 	add	r5,r5,r8
- 5:	bl	copy_and_flush		/* copy the rest */
- 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index b59d75e194a5..2d1cfafd1404 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -44,11 +44,58 @@ SECTIONS
-  * Text, read only data and other permanent read-only sections
-  */
- 
--	/* Text and gots */
-+	_text = .;
-+	_stext = .;
-+
-+	/*
-+	 * Head text.
-+	 * This needs to be in its own output section to avoid ld placing
-+	 * branch trampoline stubs randomly throughout the fixed sections,
-+	 * which it will do (even if the branch comes from another section)
-+	 * in order to optimize stub generation.
-+	 */
-+	.head.text : AT(ADDR(.head.text) - LOAD_OFFSET) {
-+#ifdef CONFIG_PPC64
-+		KEEP(*(.head.text.first_256B));
-+#ifdef CONFIG_PPC_BOOK3E
-+# define END_FIXED	0x100
-+#else
-+		KEEP(*(.head.text.real_vectors));
-+		*(.head.text.real_trampolines);
-+		KEEP(*(.head.text.virt_vectors));
-+		*(.head.text.virt_trampolines);
-+# if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-+		KEEP(*(.head.data.fwnmi_page));
-+#  define END_FIXED	0x8000
-+# else
-+#  define END_FIXED	0x7000
-+# endif
-+#endif
-+		ASSERT((. == END_FIXED), "vmlinux.lds.S: fixed section overflow error");
-+#else /* !CONFIG_PPC64 */
-+		HEAD_TEXT
-+#endif
-+	} :kernel
-+
-+	/*
-+	 * If the build dies here, it's likely code in head_64.S is referencing
-+	 * labels it can't reach, and the linker inserting stubs without the
-+	 * assembler's knowledge. To debug, remove the above assert and
-+	 * rebuild. Look for branch stubs in the fixed section region.
++	 * Register contents:
++	 * R13		= PACA
++	 * R9		= CR
++	 * Original R9 to R13 is saved on PACA_EXMC
 +	 *
-+	 * Linker stub generation could be allowed in "trampoline"
-+	 * sections if absolutely necessary, but this would require
-+	 * some rework of the fixed sections. Before resorting to this,
-+	 * consider references that have sufficient addressing range,
-+	 * (e.g., hand coded trampolines) so the linker does not have
-+	 * to add stubs.
++	 * Switch to mc_emergency stack and handle re-entrancy (we limit
++	 * the nested MCE upto level 4 to avoid stack overflow).
++	 * Save MCE registers srr1, srr0, dar and dsisr and then set ME=1
 +	 *
-+	 * Linker stubs at the top of the main text section are currently not
-+	 * detected, and will result in a crash at boot due to offsets being
-+	 * wrong.
++	 * We use paca->in_mce to check whether this is the first entry or
++	 * nested machine check. We increment paca->in_mce to track nested
++	 * machine checks.
++	 *
++	 * If this is the first entry then set stack pointer to
++	 * paca->mc_emergency_sp, otherwise r1 is already pointing to
++	 * stack frame on mc_emergency stack.
++	 *
++	 * NOTE: We are here with MSR_ME=0 (off), which means we risk a
++	 * checkstop if we get another machine check exception before we do
++	 * rfid with MSR_ME=1.
 +	 */
- 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
- 		ALIGN_FUNCTION();
--		HEAD_TEXT
--		_text = .;
- 		/* careful! __ftr_alt_* sections need to be close to .text */
- 		*(.text .fixup __ftr_alt_* .ref.text)
- 		SCHED_TEXT
++	mr	r11,r1			/* Save r1 */
++	lhz	r10,PACA_IN_MCE(r13)
++	cmpwi	r10,0			/* Are we in nested machine check */
++	bne	0f			/* Yes, we are. */
++	/* First machine check entry */
++	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
++0:	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame */
++	addi	r10,r10,1		/* increment paca->in_mce */
++	sth	r10,PACA_IN_MCE(r13)
++	/* Limit nested MCE to level 4 to avoid stack overflow */
++	cmpwi	r10,4
++	bgt	2f			/* Check if we hit limit of 4 */
++	std	r11,GPR1(r1)		/* Save r1 on the stack. */
++	std	r11,0(r1)		/* make stack chain pointer */
++	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
++	std	r11,_NIP(r1)
++	mfspr	r11,SPRN_SRR1		/* Save SRR1 */
++	std	r11,_MSR(r1)
++	mfspr	r11,SPRN_DAR		/* Save DAR */
++	std	r11,_DAR(r1)
++	mfspr	r11,SPRN_DSISR		/* Save DSISR */
++	std	r11,_DSISR(r1)
++	std	r9,_CCR(r1)		/* Save CR in stackframe */
++	/* Save r9 through r13 from EXMC save area to stack frame. */
++	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
++	mfmsr	r11			/* get MSR value */
++	ori	r11,r11,MSR_ME		/* turn on ME bit */
++	ori	r11,r11,MSR_RI		/* turn on RI bit */
++	LOAD_HANDLER(r12, machine_check_handle_early)
++1:	mtspr	SPRN_SRR0,r12
++	mtspr	SPRN_SRR1,r11
++	rfid
++	b	.	/* prevent speculative execution */
++2:
++	/* Stack overflow. Stay on emergency stack and panic.
++	 * Keep the ME bit off while panic-ing, so that if we hit
++	 * another machine check we checkstop.
++	 */
++	addi	r1,r1,INT_FRAME_SIZE	/* go back to previous stack frame */
++	ld	r11,PACAKMSR(r13)
++	LOAD_HANDLER(r12, unrecover_mce)
++	li	r10,MSR_ME
++	andc	r11,r11,r10		/* Turn off MSR_ME */
++	b	1b
++	b	.	/* prevent speculative execution */
++END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
++
++TRAMP_REAL_BEGIN(machine_check_pSeries)
++	.globl machine_check_fwnmi
++machine_check_fwnmi:
++	SET_SCRATCH0(r13)		/* save r13 */
++	EXCEPTION_PROLOG_0(PACA_EXMC)
++machine_check_pSeries_0:
++	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
++	/*
++	 * The following is essentially EXCEPTION_PROLOG_PSERIES_1 with the
++	 * difference that MSR_RI is not enabled, because PACA_EXMC is being
++	 * used, so nested machine check corrupts it. machine_check_common
++	 * enables MSR_RI.
++	 */
++	ld	r10,PACAKMSR(r13)
++	xori	r10,r10,MSR_RI
++	mfspr	r11,SPRN_SRR0
++	LOAD_HANDLER(r12, machine_check_common)
++	mtspr	SPRN_SRR0,r12
++	mfspr	r12,SPRN_SRR1
++	mtspr	SPRN_SRR1,r10
++	rfid
++	b	.	/* prevent speculative execution */
++
++TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
++
++EXC_COMMON_BEGIN(machine_check_common)
++	/*
++	 * Machine check is different because we use a different
++	 * save area: PACA_EXMC instead of PACA_EXGEN.
++	 */
++	mfspr	r10,SPRN_DAR
++	std	r10,PACA_EXMC+EX_DAR(r13)
++	mfspr	r10,SPRN_DSISR
++	stw	r10,PACA_EXMC+EX_DSISR(r13)
++	EXCEPTION_PROLOG_COMMON(0x200, PACA_EXMC)
++	FINISH_NAP
++	RECONCILE_IRQ_STATE(r10, r11)
++	ld	r3,PACA_EXMC+EX_DAR(r13)
++	lwz	r4,PACA_EXMC+EX_DSISR(r13)
++	/* Enable MSR_RI when finished with PACA_EXMC */
++	li	r10,MSR_RI
++	mtmsrd 	r10,1
++	std	r3,_DAR(r1)
++	std	r4,_DSISR(r1)
++	bl	save_nvgprs
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	machine_check_exception
++	b	ret_from_except
++
++#define MACHINE_CHECK_HANDLER_WINDUP			\
++	/* Clear MSR_RI before setting SRR0 and SRR1. */\
++	li	r0,MSR_RI;				\
++	mfmsr	r9;		/* get MSR value */	\
++	andc	r9,r9,r0;				\
++	mtmsrd	r9,1;		/* Clear MSR_RI */	\
++	/* Move original SRR0 and SRR1 into the respective regs */	\
++	ld	r9,_MSR(r1);				\
++	mtspr	SPRN_SRR1,r9;				\
++	ld	r3,_NIP(r1);				\
++	mtspr	SPRN_SRR0,r3;				\
++	ld	r9,_CTR(r1);				\
++	mtctr	r9;					\
++	ld	r9,_XER(r1);				\
++	mtxer	r9;					\
++	ld	r9,_LINK(r1);				\
++	mtlr	r9;					\
++	REST_GPR(0, r1);				\
++	REST_8GPRS(2, r1);				\
++	REST_GPR(10, r1);				\
++	ld	r11,_CCR(r1);				\
++	mtcr	r11;					\
++	/* Decrement paca->in_mce. */			\
++	lhz	r12,PACA_IN_MCE(r13);			\
++	subi	r12,r12,1;				\
++	sth	r12,PACA_IN_MCE(r13);			\
++	REST_GPR(11, r1);				\
++	REST_2GPRS(12, r1);				\
++	/* restore original r1. */			\
++	ld	r1,GPR1(r1)
++
++	/*
++	 * Handle machine check early in real mode. We come here with
++	 * ME=1, MMU (IR=0 and DR=0) off and using MC emergency stack.
++	 */
++EXC_COMMON_BEGIN(machine_check_handle_early)
++	std	r0,GPR0(r1)	/* Save r0 */
++	EXCEPTION_PROLOG_COMMON_3(0x200)
++	bl	save_nvgprs
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	machine_check_early
++	std	r3,RESULT(r1)	/* Save result */
++	ld	r12,_MSR(r1)
++#ifdef	CONFIG_PPC_P7_NAP
++	/*
++	 * Check if thread was in power saving mode. We come here when any
++	 * of the following is true:
++	 * a. thread wasn't in power saving mode
++	 * b. thread was in power saving mode with no state loss,
++	 *    supervisor state loss or hypervisor state loss.
++	 *
++	 * Go back to nap/sleep/winkle mode again if (b) is true.
++	 */
++	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
++	beq	4f			/* No, it wasn;t */
++	/* Thread was in power saving mode. Go back to nap again. */
++	cmpwi	r11,2
++	blt	3f
++	/* Supervisor/Hypervisor state loss */
++	li	r0,1
++	stb	r0,PACA_NAPSTATELOST(r13)
++3:	bl	machine_check_queue_event
++	MACHINE_CHECK_HANDLER_WINDUP
++	GET_PACA(r13)
++	ld	r1,PACAR1(r13)
++	/*
++	 * Check what idle state this CPU was in and go back to same mode
++	 * again.
++	 */
++	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
++	cmpwi	r3,PNV_THREAD_NAP
++	bgt	10f
++	IDLE_STATE_ENTER_SEQ(PPC_NAP)
++	/* No return */
++10:
++	cmpwi	r3,PNV_THREAD_SLEEP
++	bgt	2f
++	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
++	/* No return */
++
++2:
++	/*
++	 * Go back to winkle. Please note that this thread was woken up in
++	 * machine check from winkle and have not restored the per-subcore
++	 * state. Hence before going back to winkle, set last bit of HSPGR0
++	 * to 1. This will make sure that if this thread gets woken up
++	 * again at reset vector 0x100 then it will get chance to restore
++	 * the subcore state.
++	 */
++	ori	r13,r13,1
++	SET_PACA(r13)
++	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
++	/* No return */
++4:
++#endif
++	/*
++	 * Check if we are coming from hypervisor userspace. If yes then we
++	 * continue in host kernel in V mode to deliver the MC event.
++	 */
++	rldicl.	r11,r12,4,63		/* See if MC hit while in HV mode. */
++	beq	5f
++	andi.	r11,r12,MSR_PR		/* See if coming from user. */
++	bne	9f			/* continue in V mode if we are. */
++
++5:
++#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
++	/*
++	 * We are coming from kernel context. Check if we are coming from
++	 * guest. if yes, then we can continue. We will fall through
++	 * do_kvm_200->kvmppc_interrupt to deliver the MC event to guest.
++	 */
++	lbz	r11,HSTATE_IN_GUEST(r13)
++	cmpwi	r11,0			/* Check if coming from guest */
++	bne	9f			/* continue if we are. */
++#endif
++	/*
++	 * At this point we are not sure about what context we come from.
++	 * Queue up the MCE event and return from the interrupt.
++	 * But before that, check if this is an un-recoverable exception.
++	 * If yes, then stay on emergency stack and panic.
++	 */
++	andi.	r11,r12,MSR_RI
++	bne	2f
++1:	mfspr	r11,SPRN_SRR0
++	LOAD_HANDLER(r10,unrecover_mce)
++	mtspr	SPRN_SRR0,r10
++	ld	r10,PACAKMSR(r13)
++	/*
++	 * We are going down. But there are chances that we might get hit by
++	 * another MCE during panic path and we may run into unstable state
++	 * with no way out. Hence, turn ME bit off while going down, so that
++	 * when another MCE is hit during panic path, system will checkstop
++	 * and hypervisor will get restarted cleanly by SP.
++	 */
++	li	r3,MSR_ME
++	andc	r10,r10,r3		/* Turn off MSR_ME */
++	mtspr	SPRN_SRR1,r10
++	rfid
++	b	.
++2:
++	/*
++	 * Check if we have successfully handled/recovered from error, if not
++	 * then stay on emergency stack and panic.
++	 */
++	ld	r3,RESULT(r1)	/* Load result */
++	cmpdi	r3,0		/* see if we handled MCE successfully */
++
++	beq	1b		/* if !handled then panic */
++	/*
++	 * Return from MC interrupt.
++	 * Queue up the MCE event so that we can log it later, while
++	 * returning from kernel or opal call.
++	 */
++	bl	machine_check_queue_event
++	MACHINE_CHECK_HANDLER_WINDUP
++	rfid
++9:
++	/* Deliver the machine check to host kernel in V mode. */
++	MACHINE_CHECK_HANDLER_WINDUP
++	b	machine_check_pSeries
++
++EXC_COMMON_BEGIN(unrecover_mce)
++	/* Invoke machine_check_exception to print MCE event and panic. */
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	machine_check_exception
++	/*
++	 * We will not reach here. Even if we did, there is no way out. Call
++	 * unrecoverable_exception and die.
++	 */
++1:	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	unrecoverable_exception
++	b	1b
++
+ 
+ EXC_REAL(data_access, 0x300, 0x380)
+ 
+@@ -388,140 +683,43 @@ EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 0x1600)
+ #ifdef CONFIG_PPC_DENORMALISATION
+ 	mfspr	r10,SPRN_HSRR1
+ 	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
+-	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
+-	addi	r11,r11,-4		/* HSRR0 is next instruction */
+-	bne+	denorm_assist
+-#endif
+-
+-	KVMTEST_PR(0x1500)
+-	EXCEPTION_PROLOG_PSERIES_1(denorm_common, EXC_HV)
+-EXC_REAL_END(denorm_exception_hv, 0x1500, 0x1600)
+-
+-TRAMP_KVM_SKIP(PACA_EXGEN, 0x1500)
+-
+-#ifdef CONFIG_CBE_RAS
+-EXC_REAL_HV(cbe_maintenance, 0x1600, 0x1700)
+-
+-TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1600)
+-
+-#else /* CONFIG_CBE_RAS */
+-EXC_REAL_NONE(0x1600, 0x1700)
+-#endif
+-
+-EXC_REAL(altivec_assist, 0x1700, 0x1800)
+-
+-TRAMP_KVM(PACA_EXGEN, 0x1700)
+-
+-#ifdef CONFIG_CBE_RAS
+-EXC_REAL_HV(cbe_thermal, 0x1800, 0x1900)
+-
+-TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1800)
+-
+-#else /* CONFIG_CBE_RAS */
+-EXC_REAL_NONE(0x1800, 0x1900)
+-#endif
+-
+-
+-/*** Out of line interrupts support ***/
+-
+-	/* moved from 0x200 */
+-TRAMP_REAL_BEGIN(machine_check_powernv_early)
+-BEGIN_FTR_SECTION
+-	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
+-	/*
+-	 * Register contents:
+-	 * R13		= PACA
+-	 * R9		= CR
+-	 * Original R9 to R13 is saved on PACA_EXMC
+-	 *
+-	 * Switch to mc_emergency stack and handle re-entrancy (we limit
+-	 * the nested MCE upto level 4 to avoid stack overflow).
+-	 * Save MCE registers srr1, srr0, dar and dsisr and then set ME=1
+-	 *
+-	 * We use paca->in_mce to check whether this is the first entry or
+-	 * nested machine check. We increment paca->in_mce to track nested
+-	 * machine checks.
+-	 *
+-	 * If this is the first entry then set stack pointer to
+-	 * paca->mc_emergency_sp, otherwise r1 is already pointing to
+-	 * stack frame on mc_emergency stack.
+-	 *
+-	 * NOTE: We are here with MSR_ME=0 (off), which means we risk a
+-	 * checkstop if we get another machine check exception before we do
+-	 * rfid with MSR_ME=1.
+-	 */
+-	mr	r11,r1			/* Save r1 */
+-	lhz	r10,PACA_IN_MCE(r13)
+-	cmpwi	r10,0			/* Are we in nested machine check */
+-	bne	0f			/* Yes, we are. */
+-	/* First machine check entry */
+-	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
+-0:	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame */
+-	addi	r10,r10,1		/* increment paca->in_mce */
+-	sth	r10,PACA_IN_MCE(r13)
+-	/* Limit nested MCE to level 4 to avoid stack overflow */
+-	cmpwi	r10,4
+-	bgt	2f			/* Check if we hit limit of 4 */
+-	std	r11,GPR1(r1)		/* Save r1 on the stack. */
+-	std	r11,0(r1)		/* make stack chain pointer */
+-	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
+-	std	r11,_NIP(r1)
+-	mfspr	r11,SPRN_SRR1		/* Save SRR1 */
+-	std	r11,_MSR(r1)
+-	mfspr	r11,SPRN_DAR		/* Save DAR */
+-	std	r11,_DAR(r1)
+-	mfspr	r11,SPRN_DSISR		/* Save DSISR */
+-	std	r11,_DSISR(r1)
+-	std	r9,_CCR(r1)		/* Save CR in stackframe */
+-	/* Save r9 through r13 from EXMC save area to stack frame. */
+-	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
+-	mfmsr	r11			/* get MSR value */
+-	ori	r11,r11,MSR_ME		/* turn on ME bit */
+-	ori	r11,r11,MSR_RI		/* turn on RI bit */
+-	LOAD_HANDLER(r12, machine_check_handle_early)
+-1:	mtspr	SPRN_SRR0,r12
+-	mtspr	SPRN_SRR1,r11
+-	rfid
+-	b	.	/* prevent speculative execution */
+-2:
+-	/* Stack overflow. Stay on emergency stack and panic.
+-	 * Keep the ME bit off while panic-ing, so that if we hit
+-	 * another machine check we checkstop.
+-	 */
+-	addi	r1,r1,INT_FRAME_SIZE	/* go back to previous stack frame */
+-	ld	r11,PACAKMSR(r13)
+-	LOAD_HANDLER(r12, unrecover_mce)
+-	li	r10,MSR_ME
+-	andc	r11,r11,r10		/* Turn off MSR_ME */
+-	b	1b
+-	b	.	/* prevent speculative execution */
+-END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
++	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
++	addi	r11,r11,-4		/* HSRR0 is next instruction */
++	bne+	denorm_assist
++#endif
+ 
+-TRAMP_REAL_BEGIN(machine_check_pSeries)
+-	.globl machine_check_fwnmi
+-machine_check_fwnmi:
+-	SET_SCRATCH0(r13)		/* save r13 */
+-	EXCEPTION_PROLOG_0(PACA_EXMC)
+-machine_check_pSeries_0:
+-	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
+-	/*
+-	 * The following is essentially EXCEPTION_PROLOG_PSERIES_1 with the
+-	 * difference that MSR_RI is not enabled, because PACA_EXMC is being
+-	 * used, so nested machine check corrupts it. machine_check_common
+-	 * enables MSR_RI.
+-	 */
+-	ld	r10,PACAKMSR(r13)
+-	xori	r10,r10,MSR_RI
+-	mfspr	r11,SPRN_SRR0
+-	LOAD_HANDLER(r12, machine_check_common)
+-	mtspr	SPRN_SRR0,r12
+-	mfspr	r12,SPRN_SRR1
+-	mtspr	SPRN_SRR1,r10
+-	rfid
+-	b	.	/* prevent speculative execution */
++	KVMTEST_PR(0x1500)
++	EXCEPTION_PROLOG_PSERIES_1(denorm_common, EXC_HV)
++EXC_REAL_END(denorm_exception_hv, 0x1500, 0x1600)
+ 
++TRAMP_KVM_SKIP(PACA_EXGEN, 0x1500)
+ 
+-TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
++#ifdef CONFIG_CBE_RAS
++EXC_REAL_HV(cbe_maintenance, 0x1600, 0x1700)
++
++TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1600)
++
++#else /* CONFIG_CBE_RAS */
++EXC_REAL_NONE(0x1600, 0x1700)
++#endif
++
++EXC_REAL(altivec_assist, 0x1700, 0x1800)
++
++TRAMP_KVM(PACA_EXGEN, 0x1700)
++
++#ifdef CONFIG_CBE_RAS
++EXC_REAL_HV(cbe_thermal, 0x1800, 0x1900)
++
++TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0x1800)
++
++#else /* CONFIG_CBE_RAS */
++EXC_REAL_NONE(0x1800, 0x1900)
++#endif
++
++
++/*** Out of line interrupts support ***/
++
++	/* moved from 0x200 */
+ TRAMP_KVM_SKIP(PACA_EXGEN, 0x300)
+ TRAMP_KVM_SKIP(PACA_EXSLB, 0x380)
+ TRAMP_KVM(PACA_EXGEN, 0x400)
+@@ -791,7 +989,6 @@ EXC_COMMON(altivec_assist_common, 0x1700, unknown_exception)
+ 	 * only has extra guff for STAB-based processors -- which never
+ 	 * come here.
+ 	 */
+-EXC_VIRT_NONE(0x4200, 0x4300)
+ 
+ EXC_VIRT(data_access, 0x4300, 0x4380, 0x300)
+ 
+@@ -971,30 +1168,6 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 
+ EXC_COMMON(h_instr_storage_common, 0xe20, unknown_exception)
+ 
+-	/*
+-	 * Machine check is different because we use a different
+-	 * save area: PACA_EXMC instead of PACA_EXGEN.
+-	 */
+-EXC_COMMON_BEGIN(machine_check_common)
+-	mfspr	r10,SPRN_DAR
+-	std	r10,PACA_EXMC+EX_DAR(r13)
+-	mfspr	r10,SPRN_DSISR
+-	stw	r10,PACA_EXMC+EX_DSISR(r13)
+-	EXCEPTION_PROLOG_COMMON(0x200, PACA_EXMC)
+-	FINISH_NAP
+-	RECONCILE_IRQ_STATE(r10, r11)
+-	ld	r3,PACA_EXMC+EX_DAR(r13)
+-	lwz	r4,PACA_EXMC+EX_DSISR(r13)
+-	/* Enable MSR_RI when finished with PACA_EXMC */
+-	li	r10,MSR_RI
+-	mtmsrd 	r10,1
+-	std	r3,_DAR(r1)
+-	std	r4,_DSISR(r1)
+-	bl	save_nvgprs
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	machine_check_exception
+-	b	ret_from_except
+-
+ EXC_COMMON_BEGIN(alignment_common)
+ 	mfspr	r10,SPRN_DAR
+ 	std	r10,PACA_EXGEN+EX_DAR(r13)
+@@ -1195,180 +1368,6 @@ hmi_exception_after_realmode:
+ 	EXCEPTION_PROLOG_0(PACA_EXGEN)
+ 	b	tramp_real_hmi_exception
+ 
+-
+-#define MACHINE_CHECK_HANDLER_WINDUP			\
+-	/* Clear MSR_RI before setting SRR0 and SRR1. */\
+-	li	r0,MSR_RI;				\
+-	mfmsr	r9;		/* get MSR value */	\
+-	andc	r9,r9,r0;				\
+-	mtmsrd	r9,1;		/* Clear MSR_RI */	\
+-	/* Move original SRR0 and SRR1 into the respective regs */	\
+-	ld	r9,_MSR(r1);				\
+-	mtspr	SPRN_SRR1,r9;				\
+-	ld	r3,_NIP(r1);				\
+-	mtspr	SPRN_SRR0,r3;				\
+-	ld	r9,_CTR(r1);				\
+-	mtctr	r9;					\
+-	ld	r9,_XER(r1);				\
+-	mtxer	r9;					\
+-	ld	r9,_LINK(r1);				\
+-	mtlr	r9;					\
+-	REST_GPR(0, r1);				\
+-	REST_8GPRS(2, r1);				\
+-	REST_GPR(10, r1);				\
+-	ld	r11,_CCR(r1);				\
+-	mtcr	r11;					\
+-	/* Decrement paca->in_mce. */			\
+-	lhz	r12,PACA_IN_MCE(r13);			\
+-	subi	r12,r12,1;				\
+-	sth	r12,PACA_IN_MCE(r13);			\
+-	REST_GPR(11, r1);				\
+-	REST_2GPRS(12, r1);				\
+-	/* restore original r1. */			\
+-	ld	r1,GPR1(r1)
+-
+-	/*
+-	 * Handle machine check early in real mode. We come here with
+-	 * ME=1, MMU (IR=0 and DR=0) off and using MC emergency stack.
+-	 */
+-EXC_COMMON_BEGIN(machine_check_handle_early)
+-	std	r0,GPR0(r1)	/* Save r0 */
+-	EXCEPTION_PROLOG_COMMON_3(0x200)
+-	bl	save_nvgprs
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	machine_check_early
+-	std	r3,RESULT(r1)	/* Save result */
+-	ld	r12,_MSR(r1)
+-#ifdef	CONFIG_PPC_P7_NAP
+-	/*
+-	 * Check if thread was in power saving mode. We come here when any
+-	 * of the following is true:
+-	 * a. thread wasn't in power saving mode
+-	 * b. thread was in power saving mode with no state loss,
+-	 *    supervisor state loss or hypervisor state loss.
+-	 *
+-	 * Go back to nap/sleep/winkle mode again if (b) is true.
+-	 */
+-	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
+-	beq	4f			/* No, it wasn;t */
+-	/* Thread was in power saving mode. Go back to nap again. */
+-	cmpwi	r11,2
+-	blt	3f
+-	/* Supervisor/Hypervisor state loss */
+-	li	r0,1
+-	stb	r0,PACA_NAPSTATELOST(r13)
+-3:	bl	machine_check_queue_event
+-	MACHINE_CHECK_HANDLER_WINDUP
+-	GET_PACA(r13)
+-	ld	r1,PACAR1(r13)
+-	/*
+-	 * Check what idle state this CPU was in and go back to same mode
+-	 * again.
+-	 */
+-	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
+-	cmpwi	r3,PNV_THREAD_NAP
+-	bgt	10f
+-	IDLE_STATE_ENTER_SEQ(PPC_NAP)
+-	/* No return */
+-10:
+-	cmpwi	r3,PNV_THREAD_SLEEP
+-	bgt	2f
+-	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
+-	/* No return */
+-
+-2:
+-	/*
+-	 * Go back to winkle. Please note that this thread was woken up in
+-	 * machine check from winkle and have not restored the per-subcore
+-	 * state. Hence before going back to winkle, set last bit of HSPGR0
+-	 * to 1. This will make sure that if this thread gets woken up
+-	 * again at reset vector 0x100 then it will get chance to restore
+-	 * the subcore state.
+-	 */
+-	ori	r13,r13,1
+-	SET_PACA(r13)
+-	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
+-	/* No return */
+-4:
+-#endif
+-	/*
+-	 * Check if we are coming from hypervisor userspace. If yes then we
+-	 * continue in host kernel in V mode to deliver the MC event.
+-	 */
+-	rldicl.	r11,r12,4,63		/* See if MC hit while in HV mode. */
+-	beq	5f
+-	andi.	r11,r12,MSR_PR		/* See if coming from user. */
+-	bne	9f			/* continue in V mode if we are. */
+-
+-5:
+-#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+-	/*
+-	 * We are coming from kernel context. Check if we are coming from
+-	 * guest. if yes, then we can continue. We will fall through
+-	 * do_kvm_200->kvmppc_interrupt to deliver the MC event to guest.
+-	 */
+-	lbz	r11,HSTATE_IN_GUEST(r13)
+-	cmpwi	r11,0			/* Check if coming from guest */
+-	bne	9f			/* continue if we are. */
+-#endif
+-	/*
+-	 * At this point we are not sure about what context we come from.
+-	 * Queue up the MCE event and return from the interrupt.
+-	 * But before that, check if this is an un-recoverable exception.
+-	 * If yes, then stay on emergency stack and panic.
+-	 */
+-	andi.	r11,r12,MSR_RI
+-	bne	2f
+-1:	mfspr	r11,SPRN_SRR0
+-	LOAD_HANDLER(r10,unrecover_mce)
+-	mtspr	SPRN_SRR0,r10
+-	ld	r10,PACAKMSR(r13)
+-	/*
+-	 * We are going down. But there are chances that we might get hit by
+-	 * another MCE during panic path and we may run into unstable state
+-	 * with no way out. Hence, turn ME bit off while going down, so that
+-	 * when another MCE is hit during panic path, system will checkstop
+-	 * and hypervisor will get restarted cleanly by SP.
+-	 */
+-	li	r3,MSR_ME
+-	andc	r10,r10,r3		/* Turn off MSR_ME */
+-	mtspr	SPRN_SRR1,r10
+-	rfid
+-	b	.
+-2:
+-	/*
+-	 * Check if we have successfully handled/recovered from error, if not
+-	 * then stay on emergency stack and panic.
+-	 */
+-	ld	r3,RESULT(r1)	/* Load result */
+-	cmpdi	r3,0		/* see if we handled MCE successfully */
+-
+-	beq	1b		/* if !handled then panic */
+-	/*
+-	 * Return from MC interrupt.
+-	 * Queue up the MCE event so that we can log it later, while
+-	 * returning from kernel or opal call.
+-	 */
+-	bl	machine_check_queue_event
+-	MACHINE_CHECK_HANDLER_WINDUP
+-	rfid
+-9:
+-	/* Deliver the machine check to host kernel in V mode. */
+-	MACHINE_CHECK_HANDLER_WINDUP
+-	b	machine_check_pSeries
+-
+-EXC_COMMON_BEGIN(unrecover_mce)
+-	/* Invoke machine_check_exception to print MCE event and panic. */
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	machine_check_exception
+-	/*
+-	 * We will not reach here. Even if we did, there is no way out. Call
+-	 * unrecoverable_exception and die.
+-	 */
+-1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	unrecoverable_exception
+-	b	1b
+-
+ /*
+  * r13 points to the PACA, r9 contains the saved CR,
+  * r12 contain the saved SRR1, SRR0 is still ready for return
 -- 
 2.7.4
