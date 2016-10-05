@@ -2,9 +2,9 @@ Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sptsC11RtzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 22:31:26 +1100 (AEDT)
-Date: Wed, 5 Oct 2016 08:31:14 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sptwW34q4zDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 22:34:19 +1100 (AEDT)
+Date: Wed, 5 Oct 2016 08:34:06 -0300
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, kim.phillips@arm.com,
@@ -13,14 +13,14 @@ Cc: linux-kernel@vger.kernel.org, kim.phillips@arm.com,
  treeze.taeung@gmail.com, naveen.n.rao@linux.vnet.ibm.com,
  markus@trippelsdorf.de, namhyung@kernel.org, pawel.moll@arm.com,
  chris.ryder@arm.com, jolsa@kernel.org, mhiramat@kernel.org
-Subject: Re: [PATCH v7 5/6] perf annotate: Fix jump target outside of
- function address range
-Message-ID: <20161005113114.GU7143@kernel.org>
+Subject: Re: [PATCH v7 6/6] perf annotate: cross arch annotate support fixes
+ for ARM
+Message-ID: <20161005113406.GV7143@kernel.org>
 References: <1474472876-2706-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1474472876-2706-6-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1474472876-2706-7-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1474472876-2706-6-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+In-Reply-To: <1474472876-2706-7-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,157 +30,292 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, Sep 21, 2016 at 09:17:55PM +0530, Ravi Bangoria escreveu:
-> If jump target is outside of function range, perf is not handling it
-> correctly. Especially when target address is lesser than function start
-> address, target offset will be negative. But, target address declared
-> to be unsigned, converts negative number into 2's complement. See below
-> example. Here target of 'jumpq' instruction at 34cf8 is 34ac0 which is
-> lesser than function start address(34cf0).
+Em Wed, Sep 21, 2016 at 09:17:56PM +0530, Ravi Bangoria escreveu:
+> From: Kim Phillips <kim.phillips@arm.com>
 > 
->         34ac0 - 34cf0 = -0x230 = 0xfffffffffffffdd0
+> For ARM we remove the list that contains non-arm insns, and
+> instead add more maintainable branch instruction regex logic.
 
-This one looks ok, but isn't applying.
+This one looks ok and actually is in the direction of having facilities
+for all arches, should've come as infrastructure that then gets used by
+ARM and powerpc.
 
 - Arnaldo
  
-> Objdump output:
-> 
->   0000000000034cf0 <__sigaction>:
->   __GI___sigaction():
->     34cf0: lea    -0x20(%rdi),%eax
->     34cf3: cmp    -bashx1,%eax
->     34cf6: jbe    34d00 <__sigaction+0x10>
->     34cf8: jmpq   34ac0 <__GI___libc_sigaction>
->     34cfd: nopl   (%rax)
->     34d00: mov    0x386161(%rip),%rax        # 3bae68 <_DYNAMIC+0x2e8>
->     34d07: movl   -bashx16,%fs:(%rax)
->     34d0e: mov    -bashxffffffff,%eax
->     34d13: retq
-> 
-> perf annotate before applying patch:
-> 
->   __GI___sigaction  /usr/lib64/libc-2.22.so
->            lea    -0x20(%rdi),%eax
->            cmp    -bashx1,%eax
->         v  jbe    10
->         v  jmpq   fffffffffffffdd0
->            nop
->     10:    mov    _DYNAMIC+0x2e8,%rax
->            movl   -bashx16,%fs:(%rax)
->            mov    -bashxffffffff,%eax
->            retq
-> 
-> perf annotate after applying patch:
-> 
->   __GI___sigaction  /usr/lib64/libc-2.22.so
->            lea    -0x20(%rdi),%eax
->            cmp    -bashx1,%eax
->         v  jbe    10
->         ^  jmpq   34ac0 <__GI___libc_sigaction>
->            nop
->     10:    mov    _DYNAMIC+0x2e8,%rax
->            movl   -bashx16,%fs:(%rax)
->            mov    -bashxffffffff,%eax
->            retq
-> 
+> Signed-off-by: Kim Phillips <kim.phillips@arm.com>
 > Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 > ---
 > Changes in v7:
->   - No changes
+>   - Little bit change in initializing instruction list.
 > 
->  tools/perf/ui/browsers/annotate.c |  5 +++--
->  tools/perf/util/annotate.c        | 14 +++++++++-----
->  tools/perf/util/annotate.h        |  5 +++--
->  3 files changed, 15 insertions(+), 9 deletions(-)
+>  tools/perf/util/annotate.c | 177 +++++++++++++++++----------------------------
+>  1 file changed, 65 insertions(+), 112 deletions(-)
 > 
-> diff --git a/tools/perf/ui/browsers/annotate.c b/tools/perf/ui/browsers/annotate.c
-> index 214a14a..2d04bdf 100644
-> --- a/tools/perf/ui/browsers/annotate.c
-> +++ b/tools/perf/ui/browsers/annotate.c
-> @@ -215,7 +215,7 @@ static void annotate_browser__write(struct ui_browser *browser, void *entry, int
->  			ui_browser__set_color(browser, color);
->  		if (dl->ins && dl->ins->ops->scnprintf) {
->  			if (ins__is_jump(dl->ins)) {
-> -				bool fwd = dl->ops.target.offset > (u64)dl->offset;
-> +				bool fwd = dl->ops.target.offset > dl->offset;
->  
->  				ui_browser__write_graph(browser, fwd ? SLSMG_DARROW_CHAR :
->  								    SLSMG_UARROW_CHAR);
-> @@ -245,7 +245,8 @@ static bool disasm_line__is_valid_jump(struct disasm_line *dl, struct symbol *sy
->  {
->  	if (!dl || !dl->ins || !ins__is_jump(dl->ins)
->  	    || !disasm_line__has_offset(dl)
-> -	    || dl->ops.target.offset >= symbol__size(sym))
-> +	    || dl->ops.target.offset < 0
-> +	    || dl->ops.target.offset >= (s64)symbol__size(sym))
->  		return false;
->  
->  	return true;
 > diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
-> index a9dbac1..fc44dd1 100644
+> index fc44dd1..83d5ac8 100644
 > --- a/tools/perf/util/annotate.c
 > +++ b/tools/perf/util/annotate.c
-> @@ -129,10 +129,12 @@ static int jump__parse(struct ins_operands *ops, struct map *map __maybe_unused)
->  	else
->  		ops->target.addr = strtoull(ops->raw, NULL, 16);
+> @@ -28,6 +28,7 @@ const char 	*disassembler_style;
+>  const char	*objdump_path;
+>  static regex_t	 file_lineno;
+>  static char	*norm_arch;
+> +static regex_t	arm_call_insn, arm_jump_insn;
 >  
-> -	if (s++ != NULL)
-> +	if (s++ != NULL) {
->  		ops->target.offset = strtoull(s, NULL, 16);
-> -	else
-> -		ops->target.offset = UINT64_MAX;
-> +		ops->target.offset_avail = true;
+>  static struct ins *ins__find(const char *name);
+>  static int disasm_line__parse(char *line, char **namep, char **rawp);
+> @@ -449,98 +450,7 @@ static struct ins instructions_x86[] = {
+>  	{ .name = "retq",  .ops  = &ret_ops, },
+>  };
+>  
+> -static struct ins instructions_arm[] = {
+> -	{ .name = "add",   .ops  = &mov_ops, },
+> -	{ .name = "addl",  .ops  = &mov_ops, },
+> -	{ .name = "addq",  .ops  = &mov_ops, },
+> -	{ .name = "addw",  .ops  = &mov_ops, },
+> -	{ .name = "and",   .ops  = &mov_ops, },
+> -	{ .name = "b",     .ops  = &jump_ops, }, /* might also be a call */
+> -	{ .name = "bcc",   .ops  = &jump_ops, },
+> -	{ .name = "bcs",   .ops  = &jump_ops, },
+> -	{ .name = "beq",   .ops  = &jump_ops, },
+> -	{ .name = "bge",   .ops  = &jump_ops, },
+> -	{ .name = "bgt",   .ops  = &jump_ops, },
+> -	{ .name = "bhi",   .ops  = &jump_ops, },
+> -	{ .name = "bl",    .ops  = &call_ops, },
+> -	{ .name = "bls",   .ops  = &jump_ops, },
+> -	{ .name = "blt",   .ops  = &jump_ops, },
+> -	{ .name = "blx",   .ops  = &call_ops, },
+> -	{ .name = "bne",   .ops  = &jump_ops, },
+> -	{ .name = "bts",   .ops  = &mov_ops, },
+> -	{ .name = "call",  .ops  = &call_ops, },
+> -	{ .name = "callq", .ops  = &call_ops, },
+> -	{ .name = "cmp",   .ops  = &mov_ops, },
+> -	{ .name = "cmpb",  .ops  = &mov_ops, },
+> -	{ .name = "cmpl",  .ops  = &mov_ops, },
+> -	{ .name = "cmpq",  .ops  = &mov_ops, },
+> -	{ .name = "cmpw",  .ops  = &mov_ops, },
+> -	{ .name = "cmpxch", .ops  = &mov_ops, },
+> -	{ .name = "dec",   .ops  = &dec_ops, },
+> -	{ .name = "decl",  .ops  = &dec_ops, },
+> -	{ .name = "imul",  .ops  = &mov_ops, },
+> -	{ .name = "inc",   .ops  = &dec_ops, },
+> -	{ .name = "incl",  .ops  = &dec_ops, },
+> -	{ .name = "ja",	   .ops  = &jump_ops, },
+> -	{ .name = "jae",   .ops  = &jump_ops, },
+> -	{ .name = "jb",	   .ops  = &jump_ops, },
+> -	{ .name = "jbe",   .ops  = &jump_ops, },
+> -	{ .name = "jc",	   .ops  = &jump_ops, },
+> -	{ .name = "jcxz",  .ops  = &jump_ops, },
+> -	{ .name = "je",	   .ops  = &jump_ops, },
+> -	{ .name = "jecxz", .ops  = &jump_ops, },
+> -	{ .name = "jg",	   .ops  = &jump_ops, },
+> -	{ .name = "jge",   .ops  = &jump_ops, },
+> -	{ .name = "jl",    .ops  = &jump_ops, },
+> -	{ .name = "jle",   .ops  = &jump_ops, },
+> -	{ .name = "jmp",   .ops  = &jump_ops, },
+> -	{ .name = "jmpq",  .ops  = &jump_ops, },
+> -	{ .name = "jna",   .ops  = &jump_ops, },
+> -	{ .name = "jnae",  .ops  = &jump_ops, },
+> -	{ .name = "jnb",   .ops  = &jump_ops, },
+> -	{ .name = "jnbe",  .ops  = &jump_ops, },
+> -	{ .name = "jnc",   .ops  = &jump_ops, },
+> -	{ .name = "jne",   .ops  = &jump_ops, },
+> -	{ .name = "jng",   .ops  = &jump_ops, },
+> -	{ .name = "jnge",  .ops  = &jump_ops, },
+> -	{ .name = "jnl",   .ops  = &jump_ops, },
+> -	{ .name = "jnle",  .ops  = &jump_ops, },
+> -	{ .name = "jno",   .ops  = &jump_ops, },
+> -	{ .name = "jnp",   .ops  = &jump_ops, },
+> -	{ .name = "jns",   .ops  = &jump_ops, },
+> -	{ .name = "jnz",   .ops  = &jump_ops, },
+> -	{ .name = "jo",	   .ops  = &jump_ops, },
+> -	{ .name = "jp",	   .ops  = &jump_ops, },
+> -	{ .name = "jpe",   .ops  = &jump_ops, },
+> -	{ .name = "jpo",   .ops  = &jump_ops, },
+> -	{ .name = "jrcxz", .ops  = &jump_ops, },
+> -	{ .name = "js",	   .ops  = &jump_ops, },
+> -	{ .name = "jz",	   .ops  = &jump_ops, },
+> -	{ .name = "lea",   .ops  = &mov_ops, },
+> -	{ .name = "lock",  .ops  = &lock_ops, },
+> -	{ .name = "mov",   .ops  = &mov_ops, },
+> -	{ .name = "movb",  .ops  = &mov_ops, },
+> -	{ .name = "movdqa",.ops  = &mov_ops, },
+> -	{ .name = "movl",  .ops  = &mov_ops, },
+> -	{ .name = "movq",  .ops  = &mov_ops, },
+> -	{ .name = "movslq", .ops  = &mov_ops, },
+> -	{ .name = "movzbl", .ops  = &mov_ops, },
+> -	{ .name = "movzwl", .ops  = &mov_ops, },
+> -	{ .name = "nop",   .ops  = &nop_ops, },
+> -	{ .name = "nopl",  .ops  = &nop_ops, },
+> -	{ .name = "nopw",  .ops  = &nop_ops, },
+> -	{ .name = "or",    .ops  = &mov_ops, },
+> -	{ .name = "orl",   .ops  = &mov_ops, },
+> -	{ .name = "test",  .ops  = &mov_ops, },
+> -	{ .name = "testb", .ops  = &mov_ops, },
+> -	{ .name = "testl", .ops  = &mov_ops, },
+> -	{ .name = "xadd",  .ops  = &mov_ops, },
+> -	{ .name = "xbeginl", .ops  = &jump_ops, },
+> -	{ .name = "xbeginq", .ops  = &jump_ops, },
+> -	{ .name = "retq",  .ops  = &ret_ops, },
+> -};
+> -
+> -struct instructions_powerpc {
+> +struct instructions_arch {
+>  	struct ins *ins;
+>  	struct list_head list;
+>  };
+> @@ -560,41 +470,41 @@ static int ins__cmp(const void *a, const void *b)
+>  	return strcmp(ia->name, ib->name);
+>  }
+>  
+> -static struct ins *list_add__ins_powerpc(struct instructions_powerpc *head,
+> -					 const char *name, struct ins_ops *ops)
+> +static struct ins *list_add__ins_arch(struct instructions_arch *head,
+> +				      const char *name, struct ins_ops *ops)
+>  {
+> -	struct instructions_powerpc *ins_powerpc;
+> +	struct instructions_arch *ins_arch;
+>  	struct ins *ins;
+>  
+>  	ins = zalloc(sizeof(struct ins));
+>  	if (!ins)
+>  		return NULL;
+>  
+> -	ins_powerpc = zalloc(sizeof(struct instructions_powerpc));
+> -	if (!ins_powerpc)
+> +	ins_arch = zalloc(sizeof(struct instructions_arch));
+> +	if (!ins_arch)
+>  		goto out_free_ins;
+>  
+>  	ins->name = strdup(name);
+>  	if (!ins->name)
+> -		goto out_free_ins_power;
+> +		goto out_free_ins_arch;
+>  
+>  	ins->ops = ops;
+> -	ins_powerpc->ins = ins;
+> -	list_add_tail(&(ins_powerpc->list), &(head->list));
+> +	ins_arch->ins = ins;
+> +	list_add_tail(&(ins_arch->list), &(head->list));
+>  
+>  	return ins;
+>  
+> -out_free_ins_power:
+> -	zfree(&ins_powerpc);
+> +out_free_ins_arch:
+> +	zfree(&ins_arch);
+>  out_free_ins:
+>  	zfree(&ins);
+>  	return NULL;
+>  }
+>  
+> -static struct ins *list_search__ins_powerpc(struct instructions_powerpc *head,
+> -					    const char *name)
+> +static struct ins *list_search__ins_arch(struct instructions_arch *head,
+> +					 const char *name)
+>  {
+> -	struct instructions_powerpc *pos;
+> +	struct instructions_arch *pos;
+>  
+>  	list_for_each_entry(pos, &head->list, list) {
+>  		if (!strcmp(pos->ins->name, name))
+> @@ -608,7 +518,7 @@ static struct ins *ins__find_powerpc(const char *name)
+>  	int i;
+>  	struct ins *ins;
+>  	struct ins_ops *ops;
+> -	static struct instructions_powerpc head = {
+> +	static struct instructions_arch head = {
+>  		.list = LIST_HEAD_INIT(head.list),
+>  	};
+>  
+> @@ -625,7 +535,7 @@ static struct ins *ins__find_powerpc(const char *name)
+>  	/*
+>  	 * Return if we already have object of 'struct ins' for this instruction
+>  	 */
+> -	ins = list_search__ins_powerpc(&head, name);
+> +	ins = list_search__ins_arch(&head, name);
+>  	if (ins)
+>  		return ins;
+>  
+> @@ -662,7 +572,40 @@ static struct ins *ins__find_powerpc(const char *name)
+>  	 * Add instruction to list so next time no need to
+>  	 * allocate memory for it.
+>  	 */
+> -	return list_add__ins_powerpc(&head, name, ops);
+> +	return list_add__ins_arch(&head, name, ops);
+> +}
+> +
+> +static struct ins *ins__find_arm(const char *name)
+> +{
+> +	struct ins *ins;
+> +	struct ins_ops *ops = &mov_ops;
+> +	regmatch_t match[2];
+> +	int ret;
+> +	static struct instructions_arch head = {
+> +		.list = LIST_HEAD_INIT(head.list),
+> +	};
+> +
+> +	/*
+> +	 * Return if we already have object of 'struct ins' for this instruction
+> +	 */
+> +	ins = list_search__ins_arch(&head, name);
+> +	if (ins)
+> +		return ins;
+> +
+> +	ret = regexec(&arm_call_insn, name, 2, match, 0);
+> +	if (!ret) {
+> +		ops = &call_ops;
 > +	} else {
-> +		ops->target.offset_avail = false;
+> +		ret = regexec(&arm_jump_insn, name, 2, match, 0);
+> +		if (!ret)
+> +			ops = &jump_ops;
 > +	}
->  
->  	return 0;
->  }
-> @@ -140,7 +142,7 @@ static int jump__parse(struct ins_operands *ops, struct map *map __maybe_unused)
->  static int jump__scnprintf(struct ins *ins, char *bf, size_t size,
->  			   struct ins_operands *ops)
->  {
-> -	if (!ops->target.addr)
-> +	if (!ops->target.addr || ops->target.offset < 0)
->  		return ins__raw_scnprintf(ins, bf, size, ops);
->  
->  	return scnprintf(bf, size, "%-6.6s %" PRIx64, ins->name, ops->target.offset);
-> @@ -1373,9 +1375,11 @@ static int symbol__parse_objdump_line(struct symbol *sym, struct map *map,
->  	if (dl == NULL)
->  		return -1;
->  
-> -	if (dl->ops.target.offset == UINT64_MAX)
-> +	if (!disasm_line__has_offset(dl)) {
->  		dl->ops.target.offset = dl->ops.target.addr -
->  					map__rip_2objdump(map, sym->start);
-> +		dl->ops.target.offset_avail = true;
-> +	}
->  
->  	/* kcore has no symbols, so add the call target name */
->  	if (dl->ins && ins__is_call(dl->ins) && !dl->ops.target.name) {
-> diff --git a/tools/perf/util/annotate.h b/tools/perf/util/annotate.h
-> index 4400269..7ba3579 100644
-> --- a/tools/perf/util/annotate.h
-> +++ b/tools/perf/util/annotate.h
-> @@ -19,7 +19,8 @@ struct ins_operands {
->  		char	*raw;
->  		char	*name;
->  		u64	addr;
-> -		u64	offset;
-> +		s64	offset;
-> +		bool    offset_avail;
->  	} target;
->  	union {
->  		struct {
-> @@ -67,7 +68,7 @@ struct disasm_line {
->  
->  static inline bool disasm_line__has_offset(const struct disasm_line *dl)
->  {
-> -	return dl->ops.target.offset != UINT64_MAX;
-> +	return dl->ops.target.offset_avail;
+> +
+> +	/*
+> +	 * Add instruction to list so next time no need to
+> +	 * allocate memory for it.
+> +	 */
+> +	return list_add__ins_arch(&head, name, ops);
 >  }
 >  
->  void disasm_line__free(struct disasm_line *dl);
+>  static void ins__sort(struct ins *instructions, int nmemb)
+> @@ -682,15 +625,26 @@ static const char *annotate__norm_arch(char *arch)
+>  	return normalize_arch(arch);
+>  }
+>  
+> +#define ARM_CONDS "(cc|cs|eq|ge|gt|hi|le|ls|lt|mi|ne|pl|vc|vs)"
+> +
+>  static struct ins *ins__find(const char *name)
+>  {
+>  	static bool sorted;
+>  	struct ins *instructions;
+> -	int nmemb;
+> +	int nmemb, ret;
+>  
+>  	if (!sorted) {
+>  		ins__sort(instructions_x86, ARRAY_SIZE(instructions_x86));
+> -		ins__sort(instructions_arm, ARRAY_SIZE(instructions_arm));
+> +		if (!strcmp(norm_arch, "arm")) {
+> +			ret = regcomp(&arm_call_insn,
+> +				      "^blx?" ARM_CONDS "?$", REG_EXTENDED);
+> +			ret |= regcomp(&arm_jump_insn,
+> +				       "^bx?" ARM_CONDS "?$", REG_EXTENDED);
+> +			if (ret) {
+> +				pr_err("regcomp failed\n");
+> +				return NULL;
+> +			}
+> +		}
+>  		sorted = true;
+>  	}
+>  
+> @@ -698,8 +652,7 @@ static struct ins *ins__find(const char *name)
+>  		instructions = instructions_x86;
+>  		nmemb = ARRAY_SIZE(instructions_x86);
+>  	} else if (!strcmp(norm_arch, "arm")) {
+> -		instructions = instructions_arm;
+> -		nmemb = ARRAY_SIZE(instructions_arm);
+> +		return ins__find_arm(name);
+>  	} else if (!strcmp(norm_arch, "powerpc")) {
+>  		return ins__find_powerpc(name);
+>  	} else {
 > -- 
 > 2.5.5
