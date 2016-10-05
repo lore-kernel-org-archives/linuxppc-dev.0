@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzy3tPrzDrMF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzy6KfBzDrM2
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 13:36:30 +1100 (AEDT)
-In-Reply-To: <1475474583-3085-1-git-send-email-anton@ozlabs.org>
+In-Reply-To: <1475366978-18713-1-git-send-email-anton@ozlabs.org>
 To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org
+ paulus@samba.org, gwshan@linux.vnet.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: Remove static branch prediction in atomic{,
- 64}_add_unless
-Message-Id: <3spfzy0Nlxz9sD6@ozlabs.org>
+Subject: Re: powerpc/eeh: Quieten EEH message when no adapters are found
+Message-Id: <3spfzy3X0Mz9t0v@ozlabs.org>
 Date: Wed,  5 Oct 2016 13:36:29 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,18 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-03-10 at 06:03:03 UTC, Anton Blanchard wrote:
+On Sun, 2016-02-10 at 00:09:38 UTC, Anton Blanchard wrote:
 > From: Anton Blanchard <anton@samba.org>
 > 
-> I see quite a lot of static branch mispredictions on a simple
-> web serving workload. The issue is in __atomic_add_unless(), called
-> from _atomic_dec_and_lock(). There is no obvious common case, so it
-> is better to let the hardware predict the branch.
+> No real need for this to be pr_warn(), reduce it to pr_info().
 > 
 > Signed-off-by: Anton Blanchard <anton@samba.org>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/61e98ebff3ba3d3b17e999dc483c26
+https://git.kernel.org/powerpc/c/91ac730b8b1d7c5e71e7ed2d785a61
 
 cheers
