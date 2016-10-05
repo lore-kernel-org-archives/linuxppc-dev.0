@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzv6hvGzDrM1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 13:36:27 +1100 (AEDT)
-In-Reply-To: <1470111037-18531-8-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3spfzw1lSTzDrLx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2016 13:36:28 +1100 (AEDT)
+In-Reply-To: <1475523362-4419-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: paulus@samba.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [7/9] powerpc/powernv: Fix data type for @r in
- pnv_ioda_parse_m64_window()
-Message-Id: <3spfzv5cj9z9syB@ozlabs.org>
+Subject: Re: cxl: Flush PSL cache before resetting the adapter
+Message-Id: <3spfzw0BJTz9sCZ@ozlabs.org>
 Date: Wed,  5 Oct 2016 13:36:27 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,36 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-02-08 at 04:10:35 UTC, Gavin Shan wrote:
-> This fixes warning reported from sparse:
+On Mon, 2016-03-10 at 19:36:02 UTC, Frederic Barrat wrote:
+> If the capi link is going down while the PSL owns a dirty cache line,
+> any access from the host for that data could lead to an Unrecoverable
+> Error.
+> So when resetting the capi adapter through sysfs, make sure the PSL
+> cache is flushed. It won't help if there are any active Process
+> Elements on the card, as the cache would likely get new dirty cache
+> lines immediately, but if resetting an idle adapter, it should avoid
+> any bad surprises from data left over from terminated Process Elements.
 > 
->   gwshan@gwshan:~/sandbox/l$ make C=2 CF=-D__CHECK_ENDIAN__ \
->                              arch/powerpc/platforms/powernv/pci-ioda.o
->         :
->   arch/powerpc/platforms/powernv/pci-ioda.c:451:49: \
->   warning: incorrect type in argument 2 (different base types)
->   arch/powerpc/platforms/powernv/pci-ioda.c:451:49: \
->   expected restricted __be32 const [usertype] *addr
->   arch/powerpc/platforms/powernv/pci-ioda.c:451:49: \
->   got unsigned int const [usertype] *
->   arch/powerpc/platforms/powernv/pci-ioda.c:452:50: \
->   warning: incorrect type in argument 1 (different base types)
->   arch/powerpc/platforms/powernv/pci-ioda.c:452:50: \
->   expected restricted __be32 const [usertype] *cell
->   arch/powerpc/platforms/powernv/pci-ioda.c:452:50: \
->   got unsigned int const [usertype] *
->   arch/powerpc/platforms/powernv/pci-ioda.c:454:35: \
->   warning: incorrect type in argument 1 (different base types)
->   arch/powerpc/platforms/powernv/pci-ioda.c:454:35: \
->   expected restricted __be32 const [usertype] *cell
->   arch/powerpc/platforms/powernv/pci-ioda.c:454:35: \
->   got unsigned int const [usertype] *[assigned] r
-> 
-> Fixes: 262af557dd75 ("powerpc/powernv: Enable M64 aperatus for PHB3")
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0e7736c6b806b24c693367196a076c
+https://git.kernel.org/powerpc/c/aaa2245ed836824f21f8e42e0ab63b
 
 cheers
