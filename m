@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sqhFX0qKTzDrSM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sqhFX0lt6zDrSK
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2016 05:36:47 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u96IXUUE042250
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Oct 2016 14:36:44 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25wu5g2sg9-1
+ u96IXW3V091761
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Oct 2016 14:36:43 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 25wu5h2qwf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2016 14:36:44 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2016 14:36:43 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Thu, 6 Oct 2016 14:36:43 -0400
+ Thu, 6 Oct 2016 12:36:42 -0600
 From: Reza Arbab <arbab@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -33,11 +33,11 @@ Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
  Tang Chen <tangchen@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
  linux-mm@kvack.org
-Subject: [PATCH v4 5/5] mm: enable CONFIG_MOVABLE_NODE on non-x86 arches
-Date: Thu,  6 Oct 2016 13:36:35 -0500
+Subject: [PATCH v4 1/5] drivers/of: introduce of_fdt_device_is_available()
+Date: Thu,  6 Oct 2016 13:36:31 -0500
 In-Reply-To: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
 References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
-Message-Id: <1475778995-1420-6-git-send-email-arbab@linux.vnet.ibm.com>
+Message-Id: <1475778995-1420-2-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,35 +47,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To support movable memory nodes (CONFIG_MOVABLE_NODE), at least one of
-the following must be true:
+In __fdt_scan_reserved_mem(), the availability of a node is determined
+by testing its "status" property.
 
-1. We're on x86. This arch has the capability to identify movable nodes
-   at boot by parsing the ACPI SRAT, if the movable_node option is used.
+Move this check into its own function, borrowing logic from the
+unflattened version, of_device_is_available().
 
-2. Our config supports memory hotplug, which means that a movable node
-   can be created by hotplugging all of its memory into ZONE_MOVABLE.
-
-Fix the Kconfig definition of CONFIG_MOVABLE_NODE, which currently
-recognizes (1), but not (2).
+Another caller will be added in a subsequent patch.
 
 Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- mm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/of/fdt.c       | 26 +++++++++++++++++++++++---
+ include/linux/of_fdt.h |  2 ++
+ 2 files changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index be0ee11..5d0818f 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -153,7 +153,7 @@ config MOVABLE_NODE
- 	bool "Enable to assign a node which has only movable memory"
- 	depends on HAVE_MEMBLOCK
- 	depends on NO_BOOTMEM
--	depends on X86_64
-+	depends on X86_64 || MEMORY_HOTPLUG
- 	depends on NUMA
- 	default n
- 	help
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 085c638..b138efb 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -151,6 +151,23 @@ int of_fdt_match(const void *blob, unsigned long node,
+ 	return score;
+ }
+ 
++bool of_fdt_device_is_available(const void *blob, unsigned long node)
++{
++	const char *status;
++	int statlen;
++
++	status = fdt_getprop(blob, node, "status", &statlen);
++	if (!status)
++		return true;
++
++	if (statlen) {
++		if (!strcmp(status, "okay") || !strcmp(status, "ok"))
++			return true;
++	}
++
++	return false;
++}
++
+ static void *unflatten_dt_alloc(void **mem, unsigned long size,
+ 				       unsigned long align)
+ {
+@@ -647,7 +664,6 @@ static int __init __fdt_scan_reserved_mem(unsigned long node, const char *uname,
+ 					  int depth, void *data)
+ {
+ 	static int found;
+-	const char *status;
+ 	int err;
+ 
+ 	if (!found && depth == 1 && strcmp(uname, "reserved-memory") == 0) {
+@@ -667,8 +683,7 @@ static int __init __fdt_scan_reserved_mem(unsigned long node, const char *uname,
+ 		return 1;
+ 	}
+ 
+-	status = of_get_flat_dt_prop(node, "status", NULL);
+-	if (status && strcmp(status, "okay") != 0 && strcmp(status, "ok") != 0)
++	if (!of_flat_dt_device_is_available(node))
+ 		return 0;
+ 
+ 	err = __reserved_mem_reserve_reg(node, uname);
+@@ -809,6 +824,11 @@ int __init of_flat_dt_match(unsigned long node, const char *const *compat)
+ 	return of_fdt_match(initial_boot_params, node, compat);
+ }
+ 
++bool __init of_flat_dt_device_is_available(unsigned long node)
++{
++	return of_fdt_device_is_available(initial_boot_params, node);
++}
++
+ struct fdt_scan_status {
+ 	const char *name;
+ 	int namelen;
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 26c3302..4ff8c8e 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -37,6 +37,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
+ 				 unsigned long node);
+ extern int of_fdt_match(const void *blob, unsigned long node,
+ 			const char *const *compat);
++extern bool of_fdt_device_is_available(const void *blob, unsigned long node);
+ extern void *of_fdt_unflatten_tree(const unsigned long *blob,
+ 				   struct device_node *dad,
+ 				   struct device_node **mynodes);
+@@ -59,6 +60,7 @@ extern const void *of_get_flat_dt_prop(unsigned long node, const char *name,
+ 				       int *size);
+ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
+ extern int of_flat_dt_match(unsigned long node, const char *const *matches);
++extern bool of_flat_dt_device_is_available(unsigned long node);
+ extern unsigned long of_get_flat_dt_root(void);
+ extern int of_get_flat_dt_size(void);
+ 
 -- 
 1.8.3.1
