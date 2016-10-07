@@ -1,24 +1,21 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yb0-x244.google.com (mail-yb0-x244.google.com
- [IPv6:2607:f8b0:4002:c09::244])
+Return-Path: <hkallweit1@gmail.com>
+Received: from mail-wm0-x22e.google.com (mail-wm0-x22e.google.com
+ [IPv6:2a00:1450:400c:c09::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sr3Wb4jchzDrPL
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2016 20:05:15 +1100 (AEDT)
-Received: by mail-yb0-x244.google.com with SMTP id 184so823278yby.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Oct 2016 02:05:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sqywW5qJGzDrPL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2016 16:38:03 +1100 (AEDT)
+Received: by mail-wm0-x22e.google.com with SMTP id b201so13669988wmb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2016 22:38:03 -0700 (PDT)
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Commit 1b7898ee276b "powerpc/boot: Use the pre-boot decompression
+ API" breaks boot
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Message-ID: <8db8ecac-4022-7df9-4e81-3d490c50821d@gmail.com>
+Date: Fri, 7 Oct 2016 07:37:39 +0200
 MIME-Version: 1.0
-In-Reply-To: <1474457698-3855-1-git-send-email-kda@linux-powerpc.org>
-References: <1474457698-3855-1-git-send-email-kda@linux-powerpc.org>
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Fri, 7 Oct 2016 12:05:10 +0300
-Message-ID: <CAOJe8K2N4bmNSSOjwwGBw9-wSXti1riyNHKs=7g38ph2J2zRgw@mail.gmail.com>
-Subject: Re: [PATCH] i2c_powermac: shut up lockdep warning
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Denis Kirjanov <kda@linux-powerpc.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,189 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/21/16, Denis Kirjanov <kda@linux-powerpc.org> wrote:
-> That's unclear why lockdep shows the following warning but adding a
-> lockdep class to struct pmac_i2c_bus solves it
->
-> [   20.507795] ======================================================
-> [   20.507796] [ INFO: possible circular locking dependency detected ]
-> [   20.507800] 4.8.0-rc7-00037-gd2ffb01 #21 Not tainted
-> [   20.507801] -------------------------------------------------------
-> [   20.507803] swapper/0/1 is trying to acquire lock:
-> [   20.507818]  (&bus->mutex){+.+.+.}, at: [<c000000000052830>]
-> .pmac_i2c_open+0x30/0x100
-> [   20.507819]
-> [   20.507819] but task is already holding lock:
-> [   20.507829]  (&policy->rwsem){+.+.+.}, at: [<c00000000068adcc>]
-> .cpufreq_online+0x1ac/0x9d0
-> [   20.507830]
-> [   20.507830] which lock already depends on the new lock.
-> [   20.507830]
-> [   20.507832]
-> [   20.507832] the existing dependency chain (in reverse order) is:
-> [   20.507837]
-> [   20.507837] -> #4 (&policy->rwsem){+.+.+.}:
-> [   20.507844]        [<c00000000082385c>] .down_write+0x6c/0x110
-> [   20.507849]        [<c00000000068adcc>] .cpufreq_online+0x1ac/0x9d0
-> [   20.507855]        [<c0000000004d76d8>]
-> .subsys_interface_register+0xb8/0x110
-> [   20.507860]        [<c000000000689bb0>]
-> .cpufreq_register_driver+0x1d0/0x250
-> [   20.507866]        [<c000000000b4f8f4>] .g5_cpufreq_init+0x9cc/0xa28
-> [   20.507872]        [<c00000000000a98c>] .do_one_initcall+0x5c/0x1d0
-> [   20.507878]        [<c000000000b0f86c>]
-> .kernel_init_freeable+0x1ac/0x28c
-> [   20.507883]        [<c00000000000b3bc>] .kernel_init+0x1c/0x140
-> [   20.507887]        [<c0000000000098f4>]
-> .ret_from_kernel_thread+0x58/0x64
-> [   20.507894]
-> [   20.507894] -> #3 (subsys mutex#2){+.+.+.}:
-> [   20.507899]        [<c000000000820448>] .mutex_lock_nested+0xa8/0x590
-> [   20.507903]        [<c0000000004d7f24>] .bus_probe_device+0x44/0xe0
-> [   20.507907]        [<c0000000004d5208>] .device_add+0x508/0x730
-> [   20.507911]        [<c0000000004dd528>] .register_cpu+0x118/0x190
-> [   20.507916]        [<c000000000b14450>] .topology_init+0x148/0x248
-> [   20.507921]        [<c00000000000a98c>] .do_one_initcall+0x5c/0x1d0
-> [   20.507925]        [<c000000000b0f86c>]
-> .kernel_init_freeable+0x1ac/0x28c
-> [   20.507929]        [<c00000000000b3bc>] .kernel_init+0x1c/0x140
-> [   20.507934]        [<c0000000000098f4>]
-> .ret_from_kernel_thread+0x58/0x64
-> [   20.507939]
-> [   20.507939] -> #2 (cpu_add_remove_lock){+.+.+.}:
-> [   20.507944]        [<c000000000820448>] .mutex_lock_nested+0xa8/0x590
-> [   20.507950]        [<c000000000087a9c>] .register_cpu_notifier+0x2c/0x70
-> [   20.507955]        [<c000000000b267e0>] .spawn_ksoftirqd+0x18/0x4c
-> [   20.507959]        [<c00000000000a98c>] .do_one_initcall+0x5c/0x1d0
-> [   20.507964]        [<c000000000b0f770>] .kernel_init_freeable+0xb0/0x28c
-> [   20.507968]        [<c00000000000b3bc>] .kernel_init+0x1c/0x140
-> [   20.507972]        [<c0000000000098f4>]
-> .ret_from_kernel_thread+0x58/0x64
-> [   20.507978]
-> [   20.507978] -> #1 (&host->mutex){+.+.+.}:
-> [   20.507982]        [<c000000000820448>] .mutex_lock_nested+0xa8/0x590
-> [   20.507987]        [<c0000000000527e8>] .kw_i2c_open+0x18/0x30
-> [   20.507991]        [<c000000000052894>] .pmac_i2c_open+0x94/0x100
-> [   20.507995]        [<c000000000b220a0>] .smp_core99_probe+0x260/0x410
-> [   20.507999]        [<c000000000b185bc>] .smp_prepare_cpus+0x280/0x2ac
-> [   20.508003]        [<c000000000b0f748>] .kernel_init_freeable+0x88/0x28c
-> [   20.508008]        [<c00000000000b3bc>] .kernel_init+0x1c/0x140
-> [   20.508012]        [<c0000000000098f4>]
-> .ret_from_kernel_thread+0x58/0x64
-> [   20.508018]
-> [   20.508018] -> #0 (&bus->mutex){+.+.+.}:
-> [   20.508023]        [<c0000000000ed5b4>] .lock_acquire+0x84/0x100
-> [   20.508027]        [<c000000000820448>] .mutex_lock_nested+0xa8/0x590
-> [   20.508032]        [<c000000000052830>] .pmac_i2c_open+0x30/0x100
-> [   20.508037]        [<c000000000052e14>] .pmac_i2c_do_begin+0x34/0x120
-> [   20.508040]        [<c000000000056bc0>] .pmf_call_one+0x50/0xd0
-> [   20.508045]        [<c00000000068ff1c>] .g5_pfunc_switch_volt+0x2c/0xc0
-> [   20.508050]        [<c00000000068fecc>]
-> .g5_pfunc_switch_freq+0x1cc/0x1f0
-> [   20.508054]        [<c00000000068fc2c>] .g5_cpufreq_target+0x2c/0x40
-> [   20.508058]        [<c0000000006873ec>]
-> .__cpufreq_driver_target+0x23c/0x840
-> [   20.508062]        [<c00000000068c798>]
-> .cpufreq_gov_performance_limits+0x18/0x30
-> [   20.508067]        [<c00000000068915c>]
-> .cpufreq_start_governor+0xac/0x100
-> [   20.508071]        [<c00000000068a788>] .cpufreq_set_policy+0x208/0x260
-> [   20.508076]        [<c00000000068abdc>] .cpufreq_init_policy+0x6c/0xb0
-> [   20.508081]        [<c00000000068ae70>] .cpufreq_online+0x250/0x9d0
-> [   20.508085]        [<c0000000004d76d8>]
-> .subsys_interface_register+0xb8/0x110
-> [   20.508090]        [<c000000000689bb0>]
-> .cpufreq_register_driver+0x1d0/0x250
-> [   20.508094]        [<c000000000b4f8f4>] .g5_cpufreq_init+0x9cc/0xa28
-> [   20.508099]        [<c00000000000a98c>] .do_one_initcall+0x5c/0x1d0
-> [   20.508103]        [<c000000000b0f86c>]
-> .kernel_init_freeable+0x1ac/0x28c
-> [   20.508107]        [<c00000000000b3bc>] .kernel_init+0x1c/0x140
-> [   20.508112]        [<c0000000000098f4>]
-> .ret_from_kernel_thread+0x58/0x64
-> [   20.508113]
-> [   20.508113] other info that might help us debug this:
-> [   20.508113]
-> [   20.508121] Chain exists of:
-> [   20.508121]   &bus->mutex --> subsys mutex#2 --> &policy->rwsem
-> [   20.508121]
-> [   20.508123]  Possible unsafe locking scenario:
-> [   20.508123]
-> [   20.508124]        CPU0                    CPU1
-> [   20.508125]        ----                    ----
-> [   20.508128]   lock(&policy->rwsem);
-> [   20.508132]                                lock(subsys mutex#2);
-> [   20.508135]                                lock(&policy->rwsem);
-> [   20.508138]   lock(&bus->mutex);
-> [   20.508139]
-> [   20.508139]  *** DEADLOCK ***
-> [   20.508139]
-> [   20.508141] 3 locks held by swapper/0/1:
-> [   20.508150]  #0:  (cpu_hotplug.lock){++++++}, at: [<c000000000087838>]
-> .get_online_cpus+0x48/0xc0
-> [   20.508159]  #1:  (subsys mutex#2){+.+.+.}, at: [<c0000000004d7670>]
-> .subsys_interface_register+0x50/0x110
-> [   20.508168]  #2:  (&policy->rwsem){+.+.+.}, at: [<c00000000068adcc>]
-> .cpufreq_online+0x1ac/0x9d0
-> [   20.508169]
-> [   20.508169] stack backtrace:
-> [   20.508173] CPU: 0 PID: 1 Comm: swapper/0 Not tainted
-> 4.8.0-rc7-00037-gd2ffb01 #21
-> [   20.508175] Call Trace:
-> [   20.508180] [c0000000790c2b90] [c00000000082cc70] .dump_stack+0xe0/0x14c
-> (unreliable)
-> [   20.508184] [c0000000790c2c20] [c000000000828c88]
-> .print_circular_bug+0x350/0x388
-> [   20.508188] [c0000000790c2cd0] [c0000000000ecb0c]
-> .__lock_acquire+0x196c/0x1d30
-> [   20.508192] [c0000000790c2e50] [c0000000000ed5b4]
-> .lock_acquire+0x84/0x100
-> [   20.508196] [c0000000790c2f20] [c000000000820448]
-> .mutex_lock_nested+0xa8/0x590
-> [   20.508201] [c0000000790c3030] [c000000000052830]
-> .pmac_i2c_open+0x30/0x100
-> [   20.508206] [c0000000790c30c0] [c000000000052e14]
-> .pmac_i2c_do_begin+0x34/0x120
-> [   20.508209] [c0000000790c3150] [c000000000056bc0]
-> .pmf_call_one+0x50/0xd0
-> [   20.508213] [c0000000790c31e0] [c00000000068ff1c]
-> .g5_pfunc_switch_volt+0x2c/0xc0
-> [   20.508217] [c0000000790c3250] [c00000000068fecc]
-> .g5_pfunc_switch_freq+0x1cc/0x1f0
-> [   20.508221] [c0000000790c3320] [c00000000068fc2c]
-> .g5_cpufreq_target+0x2c/0x40
-> [   20.508226] [c0000000790c3390] [c0000000006873ec]
-> .__cpufreq_driver_target+0x23c/0x840
-> [   20.508230] [c0000000790c3440] [c00000000068c798]
-> .cpufreq_gov_performance_limits+0x18/0x30
-> [   20.508235] [c0000000790c34b0] [c00000000068915c]
-> .cpufreq_start_governor+0xac/0x100
-> [   20.508239] [c0000000790c3530] [c00000000068a788]
-> .cpufreq_set_policy+0x208/0x260
-> [   20.508244] [c0000000790c35d0] [c00000000068abdc]
-> .cpufreq_init_policy+0x6c/0xb0
-> [   20.508249] [c0000000790c3940] [c00000000068ae70]
-> .cpufreq_online+0x250/0x9d0
-> [   20.508253] [c0000000790c3a30] [c0000000004d76d8]
-> .subsys_interface_register+0xb8/0x110
-> [   20.508258] [c0000000790c3ad0] [c000000000689bb0]
-> .cpufreq_register_driver+0x1d0/0x250
-> [   20.508262] [c0000000790c3b60] [c000000000b4f8f4]
-> .g5_cpufreq_init+0x9cc/0xa28
-> [   20.508267] [c0000000790c3c20] [c00000000000a98c]
-> .do_one_initcall+0x5c/0x1d0
-> [   20.508271] [c0000000790c3d00] [c000000000b0f86c]
-> .kernel_init_freeable+0x1ac/0x28c
-> [   20.508276] [c0000000790c3db0] [c00000000000b3bc]
-> .kernel_init+0x1c/0x140
-> [   20.508280] [c0000000790c3e30] [c0000000000098f4]
-> .ret_from_kernel_thread+0x58/0x64
->
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
-> ---
+This commit results in boot stopping after the following messages.
+Any additional information I could provide?
 
-Hi Michael,
 
-are you going to take this patch? The issue appears to me for a long time
+U-Boot 2010.12-svn19826 (Apr 24 2013 - 20:01:21)
 
-Thanks!
+CPU:   P1014, Version: 1.0, (0x80f10110)
+Core:  E500, Version: 5.1, (0x80212151)
+Clock Configuration:
+       CPU0:800  MHz,
+       CCB:400  MHz,
+       DDR:333.333 MHz (666.667 MT/s data rate) (Asynchronous), IFC:100  MHz
+L1:    D-cache 32 kB enabled
+       I-cache 32 kB enabled
+Board: P1014RDB
+SPI:   ready
+DRAM:  128 MiB
+L2:    256 KB enabled
+Using default environment
+
+PCIe1: Root Complex of mini PCIe Slot, x1, regs @ 0xffe0a000
+  01:00.0     - 168c:abcd - Network controller
+PCIe1: Bus 00 - 01
+PCIe2: Root Complex of PCIe Slot, x1, regs @ 0xffe09000
+  03:00.0     - 168c:0033 - Network controller
+PCIe2: Bus 02 - 03
+In:    serial
+Out:   serial
+Err:   serial
+Net:   initialization for Atheros AR8327/AR8328
+eTSEC1
+auto update firmware: is_auto_upload_firmware = 0!
+Autobooting in 1 seconds
+SF: Detected S25FL128S_64K with page size 256, total 16 MiB
+16384 KiB S25FL128S_64K at 0:0 is now current device
+SPI flash read successful
+SPI flash read successful
+## Booting kernel from Legacy Image at 02000000 ...
+   Image Name:   Linux-4.9.0-rc0
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    2009549 Bytes = 1.9 MiB
+   Load Address: 01000000
+   Entry Point:  01000524
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 03000000
+   Booting using the fdt blob at 0x3000000
+   Uncompressing Kernel Image ... OK
+   Loading Device Tree to 00ffa000, end 00ffffff ... OK
