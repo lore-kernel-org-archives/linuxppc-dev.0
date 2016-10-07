@@ -1,49 +1,24 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <david.engraf@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [176.9.12.79])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sr1CX48DlzDrSJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2016 18:21:12 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u977JOmu090441
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Oct 2016 03:21:09 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 25x57ucugb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Oct 2016 03:21:09 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 7 Oct 2016 01:21:08 -0600
-Date: Fri, 7 Oct 2016 12:50:58 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- "skiboot@lists.ozlabs.org" <skiboot@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/2] powernv: Pass PSSCR value and mask to power9_idle_stop
-Reply-To: ego@linux.vnet.ibm.com
-References: <cover.1475130107.git.ego@linux.vnet.ibm.com>
- <21e080ffa52f432b40750028a624aee1baebbaf7.1475130107.git.ego@linux.vnet.ibm.com>
- <87int84d6w.fsf@concordia.ellerman.id.au>
- <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sr3Pv2dc0zDrPL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2016 20:00:18 +1100 (AEDT)
+Subject: Re: powerpc64: Enable CONFIG_E500 and CONFIG_PPC_E500MC for
+ e5500/e6500
+To: Scott Wood <oss@buserror.net>
+References: <1471877203-29327-1-git-send-email-david.engraf@sysgo.com>
+ <20160925062017.GA10754@home.buserror.net>
+ <87664de8-7aea-96a8-9906-cf2ce8d325a2@sysgo.com>
+ <1474931328.4283.41.camel@buserror.net>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: David Engraf <david.engraf@sysgo.com>
+Message-ID: <992d2bea-019a-3969-e154-10b9b43ab6fc@sysgo.com>
+Date: Fri, 7 Oct 2016 11:00:09 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
-Message-Id: <20161007072058.GC13873@in.ibm.com>
+In-Reply-To: <1474931328.4283.41.camel@buserror.net>
+Content-Type: multipart/mixed; boundary="------------87FF40E6215DD7B6BC059197"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,121 +28,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------87FF40E6215DD7B6BC059197
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Balbir, Michael,
+Am 27.09.2016 um 01:08 schrieb Scott Wood:
+> On Mon, 2016-09-26 at 10:48 +0200, David Engraf wrote:
+>> Am 25.09.2016 um 08:20 schrieb Scott Wood:
+>>>
+>>> On Mon, Aug 22, 2016 at 04:46:43PM +0200, David Engraf wrote:
+>>>>
+>>>> The PowerPC e5500/e6500 architecture is based on the e500mc core. Enable
+>>>> CONFIG_E500 and CONFIG_PPC_E500MC when e5500/e6500 is used.
+>>>>
+>>>> This will also fix using CONFIG_PPC_QEMU_E500 on PPC64.
+>>>>
+>>>> Signed-off-by: David Engraf <david.engraf@sysgo.com>
+>>>> ---
+>>>>  arch/powerpc/platforms/Kconfig.cputype | 6 ++++--
+>>>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/platforms/Kconfig.cputype
+>>>> b/arch/powerpc/platforms/Kconfig.cputype
+>>>> index f32edec..0382da7 100644
+>>>> --- a/arch/powerpc/platforms/Kconfig.cputype
+>>>> +++ b/arch/powerpc/platforms/Kconfig.cputype
+>>>> @@ -125,11 +125,13 @@ config POWER8_CPU
+>>>>
+>>>>  config E5500_CPU
+>>>>  	bool "Freescale e5500"
+>>>> -	depends on E500
+>>>> +	select E500
+>>>> +	select PPC_E500MC
+>>>>
+>>>>  config E6500_CPU
+>>>>  	bool "Freescale e6500"
+>>>> -	depends on E500
+>>>> +	select E500
+>>>> +	select PPC_E500MC
+>>> These config symbols are for setting -mcpu.  Kernels built with
+>>> CONFIG_GENERIC_CPU should also work on e5500/e6500.
+>> I don't think so.
+>
+> I do think so.  It's what you get when you run "make corenet64_smp_defconfig"
+> and that kernel works on e5500/e6500.
+>
+>>  At least on QEMU it is not working because e5500/e6500
+>> is based on the e500mc core and the option CONFIG_PPC_E500MC also
+>> controls the cpu features (check cputable.h).
+>
+> Again, this is only a problem when you have CONFIG_PPC_QEMU_E500 without
+> CONFIG_CORENET_GENERIC, and the fix for that is to have CONFIG_PPC_QEMU_E500
+> select CONFIG_E500 (and you need to manually turn on CONFIG_PPC_E500MC if
+> applicable, since CONFIG_PPC_QEMU_E500 can also be used with e500v2).
+>
+> I wouldn't be opposed to also adding "select PPC_E500MC if PPC64" to
+> CONFIG_PPC_QEMU_E500.
 
-On Tue, Oct 04, 2016 at 10:33:27PM +1100, Balbir Singh wrote:
-> 
-> 
-> On 04/10/16 21:32, Michael Ellerman wrote:
-> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
-> > 
-> >> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >>
-> >> The power9_idle_stop method currently takes only the requested stop
-> >> level as a parameter and picks up the rest of the PSSCR bits from a
-> >> hand-coded macro. This is not a very flexible design, especially when
-> >> the firmware has the capability to communicate the psscr value and the
-> >> mask associated with a particular stop state via device tree.
-> >>
-> >> This patch modifies the power9_idle_stop API to take as parameters the
-> >> PSSCR value and the PSSCR mask corresponding to the stop state that
-> >> needs to be set. These PSSCR value and mask are respectively obtained
-> >> by parsing the "ibm,cpu-idle-state-psscr" and
-> >> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
-> >>
-> >> In addition to this, the patch adds support for handling stop states
-> >> for which ESL and EC bits in the PSSCR are zero. As per the
-> >> architecture, a wakeup from these stop states resumes execution from
-> >> the subsequent instruction as opposed to waking up at the System
-> >> Vector.
-> > 
-> > That looks good.
-> > 
-> >> This patch depends on the following skiboot patch that exports the
-> >> PSSCR values and the mask for all the stop states:
-> >> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-> > 
-> > But we can't depend on a skiboot patch. The kernel has to cope with
-> > running on an old skiboot.
+Please find attached the new version, setting E500 and PPC_E500MC on 64 
+bit for review.
+
+- David
+
+>>>
+>>> The problem is that CONFIG_PPC_QEMU_E500 doesn't select E500 (I didn't
+>>> notice it before because usually CORENET_GENERIC is enabled as well).
+>> I noticed that as well, but I think it makes more sense to select
+>> E500/PPC_E500MC within the cputype menu instead of having a dependency
+>> which might be not clear for the user.
+>
+> Again, that breaks CONFIG_GENERIC_CPU.  Unlike 32-bit, all 64-bit book3e
+> targets are supposed to be supportable with a single kernel image.
+>
+> -Scott
 >
 
-Hmm.. We can still do that. The older skiboot only provides the RL
-field of the PSSCR value for each stop state and the corresponding
-PSSCR mask is set to 0xF in the older skiboot for all the stop states.
 
-We can insist that the future skiboot sets the ESL, EC, PSLL, TR, MTL
-and the the RL fields of the PSSCR for any exported stop state. This
-should be reflected in the psscr_mask of that stop state.  Thus, the
-psscr_mask of any stop state proposed in the future will have:
-(PSSCR_ESL_MASK | PSCCR_EC_MASK | PSCCR_PSLL_MASK | PSSCR_TR_MASK |
-PSSCR_MTL_MASK | PSSCR_RL_MASK) bits set in the skiboot.
+--------------87FF40E6215DD7B6BC059197
+Content-Type: text/x-diff;
+ name="ppc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="ppc.patch"
 
-To handle the older firmware, we can do something like the following
-during the discovery of the stop states to mimic the behaviour present
-in the 4.8 kernel running on older firmware.
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index df25a3e..7e18456 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -253,6 +253,8 @@ endif # PPC32
+ config PPC_QEMU_E500
+ 	bool "QEMU generic e500 platform"
+ 	select DEFAULT_UIMAGE
++	select E500
++	select PPC_E500MC if PPC64
+ 	help
+ 	  This option enables support for running as a QEMU guest using
+ 	  QEMU's generic e500 machine.  This is not required if you're
 
-=============== drivers/cpuidle/cpuidle-powernv.c =======================
-/*
- * By default we set the ESL and EC bits in the PSSCR.
- * The MTL and PSLL are set to the maximum value possible as per the
- * ISA, i.e 15.
- * The Transition Rate is set to the Maximum value 3.
- */
-#define DEFAULT_PSSCR_VAL      PSSCR_ESL_MASK |			\
-			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
-			       PSSCR_TR_MASK | PSSCR_MTL_MASK
-
-#define DEFAULT_PSSCR_MASK     PSSCR_ESL_MASK |			\
-			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
-			       PSSCR_TR_MASK | PSSCR_MTL_MASK | \
-			       PSSCR_RL_MASK
-
-
-static int powernv_add_idle_states(void)
-{
-	.
-	.
-	.
-	for (i = 0; i < dt_idle_states; i++) {
-	    u64 val, mask;
-	    	.	    
-		.
-		.
-		val = (DEFAULT_PSSCR_VAL & ~psscr_mask[i]) | psscr_val[i];
-		mask = DEFAULT_PSSCR_MASK | psscr_mask[i];
-		stop_psscr_table[nr_idle_states].val = val;
-        	stop_psscr_table[nr_idle_states].mask = mask;
-	}
-}		
-============================================================================
-
-
-Is this approach ok ?
-
-
-> Hi, Michael
-> 
-> I think with an older skiboot the flags don't get exported and the
-> new cpuidle (stop state) does not get discovered. I don't think there
-> is any breakage. Gautham am I missing something?
-
-In the second verison of the patch, I am not adding any new flags in
-the skiboot, but explicitly providing the psscr_value and psscr_mask
-for each stop state.  Thus if you see the v2 of the skiboot patch, the
-lite versions of stop0,stop1 and stop2 are defined with no additional
-flags.
-
-The second version of the kernel patch wouldn't then work with the
-older skiboot since the older skiboot exports only the RL field of the
-psscr_val while the new kernel patch expects all the relavant bits of
-the psscr_val be set. This would result in a breakage.
-
-
-> 
-> Balbir Singh.
-> 
-
---
-Thanks and Regards
-gautham.
+--------------87FF40E6215DD7B6BC059197--
