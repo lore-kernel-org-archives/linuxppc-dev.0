@@ -1,23 +1,24 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3srlYf5BbXzDrWK
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2016 23:09:26 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id f193so6753834wmg.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Oct 2016 05:09:26 -0700 (PDT)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: linux-fbdev@vger.kernel.org
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3srp4z0LKnzDrWQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2016 01:03:14 +1100 (AEDT)
+Date: Sat, 8 Oct 2016 16:03:04 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Anton Blanchard <anton@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Mathieu Malaterre <malat@debian.org>
-Subject: [PATCH] Fix loading of module radeonfb on PowerMac
-Date: Sat,  8 Oct 2016 14:09:00 +0200
-Message-Id: <1475928540-19647-1-git-send-email-malat@debian.org>
+ Paul Mackerras <paulus@samba.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: CPU hotplug hits oops in select_idle_sibling()
+Message-ID: <20161008140304.GH3142@twins.programming.kicks-ass.net>
+References: <20161008220733.366e8c6b@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161008220733.366e8c6b@kryten>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,84 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the linux kernel is build with (typical kernel ship with Debian
-installer):
+On Sat, Oct 08, 2016 at 10:07:33PM +1100, Anton Blanchard wrote:
+> Hi,
+> 
+> I updated to mainline as of today and tried CPU hotplug via the ppc64_cpu
+> tool:
 
-CONFIG_FB_OF=y
-CONFIG_VT_HW_CONSOLE_BINDING=y
-CONFIG_FB_RADEON=m
-
-The offb driver takes precedence over module radeonfb. It is then
-impossible to load the module, error reported is:
-
-[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
-[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
-[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
-[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
-
-This patch reproduce the behavior of the module radeon, so as to make it
-possible to load radeonfb when offb is first loaded.
-
-It should be noticed that `offb_destroy` is never called which explain the
-need to skip error detection on the radeon side.
-
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
-Link: https://bugs.debian.org/826629#57
-Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
----
- drivers/video/fbdev/aty/radeon_base.c | 22 ++++++++++++++++++++--
- 1 file changed, 20 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 218339a..6f9bacd 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
- 	.read	= radeon_show_edid2,
- };
- 
-+static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
-+{
-+	struct apertures_struct *ap;
-+
-+	ap = alloc_apertures(1);
-+	if (!ap)
-+		return -ENOMEM;
-+
-+	ap->ranges[0].base = pci_resource_start(pdev, 0);
-+	ap->ranges[0].size = pci_resource_len(pdev, 0);
-+
-+	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
-+	kfree(ap);
-+
-+	return 0;
-+}
- 
- static int radeonfb_pci_register(struct pci_dev *pdev,
- 				 const struct pci_device_id *ent)
-@@ -2314,19 +2330,21 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
- 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
- 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
- 
-+	ret = radeon_kick_out_firmware_fb(pdev);
-+	if (ret)
-+		return ret;
-+
- 	/* request the mem regions */
- 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
- 	if (ret < 0) {
- 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
- 			pci_name(rinfo->pdev));
--		goto err_release_fb;
- 	}
- 
- 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
- 	if (ret < 0) {
- 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
- 			pci_name(rinfo->pdev));
--		goto err_release_pci0;
- 	}
- 
- 	/* map the regions */
--- 
-2.1.4
+http://lkml.kernel.org/r/1475922278-3306-1-git-send-email-wanpeng.li@hotmail.com
