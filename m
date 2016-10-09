@@ -1,20 +1,19 @@
 Return-Path: <hongtao.jia@nxp.com>
 Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0070.outbound.protection.outlook.com [104.47.37.70])
+ (mail-cys01nam02on0045.outbound.protection.outlook.com [104.47.37.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ssDdg46f4zDrWP
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2016 17:59:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ssDdj1X5czDrWP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2016 17:59:36 +1100 (AEDT)
 From: Jia Hongtao <hongtao.jia@nxp.com>
 To: <rui.zhang@intel.com>, <edubezval@gmail.com>, <robh+dt@kernel.org>,
  <scott.wood@nxp.com>, <shawnguo@kernel.org>
 CC: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  <hongtao.jia@nxp.com>
-Subject: [PATCH V2 2/5] powerpc/mpc85xx: Update TMU device tree node for
- T1023/T1024
-Date: Sun, 9 Oct 2016 14:47:03 +0800
-Message-ID: <1475995626-14049-2-git-send-email-hongtao.jia@nxp.com>
+Subject: [PATCH V2 3/5] arm:dt:ls1021a: Add TMU device tree support for LS1021A
+Date: Sun, 9 Oct 2016 14:47:04 +0800
+Message-ID: <1475995626-14049-3-git-send-email-hongtao.jia@nxp.com>
 In-Reply-To: <1475995626-14049-1-git-send-email-hongtao.jia@nxp.com>
 References: <1475995626-14049-1-git-send-email-hongtao.jia@nxp.com>
 MIME-Version: 1.0
@@ -30,38 +29,130 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hongtao Jia <hongtao.jia@nxp.com>
 
-SoC compatible string and endianness property are added according to the
-new bindings.
+Also add nodes and properties for thermal management support.
 
 Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
 ---
 Changes for V2:
 * Rebase on latest linux-next tree (next-20161006).
 
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/ls1021a.dtsi | 84 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 82 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-index 6e0b489..bce762a 100644
---- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-@@ -321,7 +321,7 @@
- 				       0x00030001 0x0000000d
- 				       0x00030002 0x00000019
- 				       0x00030003 0x00000024>;
--		#thermal-sensor-cells = <0>;
-+		#thermal-sensor-cells = <1>;
- 	};
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 368e219..282d854 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -47,6 +47,7 @@
  
- 	thermal-zones {
-@@ -329,7 +329,7 @@
- 			polling-delay-passive = <1000>;
- 			polling-delay = <5000>;
+ #include "skeleton64.dtsi"
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/thermal/thermal.h>
  
--			thermal-sensors = <&tmu>;
-+			thermal-sensors = <&tmu 0>;
+ / {
+ 	compatible = "fsl,ls1021a";
+@@ -70,14 +71,15 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
  
- 			trips {
- 				cpu_alert: cpu-alert {
+-		cpu@f00 {
++		cpu0: cpu@f00 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0xf00>;
+ 			clocks = <&cluster1_clk>;
++			#cooling-cells = <2>;
+ 		};
+ 
+-		cpu@f01 {
++		cpu1: cpu@f01 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0xf01>;
+@@ -251,6 +253,84 @@
+ 			};
+ 		};
+ 
++		tmu: tmu@1f00000 {
++			compatible = "fsl,qoriq-tmu";
++			reg = <0x0 0x1f00000 0x0 0x10000>;
++			interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
++			fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
++			fsl,tmu-calibration = <0x00000000 0x0000000f
++					       0x00000001 0x00000017
++					       0x00000002 0x0000001e
++					       0x00000003 0x00000026
++					       0x00000004 0x0000002e
++					       0x00000005 0x00000035
++					       0x00000006 0x0000003d
++					       0x00000007 0x00000044
++					       0x00000008 0x0000004c
++					       0x00000009 0x00000053
++					       0x0000000a 0x0000005b
++					       0x0000000b 0x00000064
++
++					       0x00010000 0x00000011
++					       0x00010001 0x0000001c
++					       0x00010002 0x00000024
++					       0x00010003 0x0000002b
++					       0x00010004 0x00000034
++					       0x00010005 0x00000039
++					       0x00010006 0x00000042
++					       0x00010007 0x0000004c
++					       0x00010008 0x00000051
++					       0x00010009 0x0000005a
++					       0x0001000a 0x00000063
++
++					       0x00020000 0x00000013
++					       0x00020001 0x00000019
++					       0x00020002 0x00000024
++					       0x00020003 0x0000002c
++					       0x00020004 0x00000035
++					       0x00020005 0x0000003d
++					       0x00020006 0x00000046
++					       0x00020007 0x00000050
++					       0x00020008 0x00000059
++
++					       0x00030000 0x00000002
++					       0x00030001 0x0000000d
++					       0x00030002 0x00000019
++					       0x00030003 0x00000024>;
++			#thermal-sensor-cells = <1>;
++		};
++
++		thermal-zones {
++			cpu_thermal: cpu-thermal {
++				polling-delay-passive = <1000>;
++				polling-delay = <5000>;
++
++				thermal-sensors = <&tmu 0>;
++
++				trips {
++					cpu_alert: cpu-alert {
++						temperature = <85000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++					cpu_crit: cpu-crit {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++					map0 {
++						trip = <&cpu_alert>;
++						cooling-device =
++							<&cpu0 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++					};
++				};
++			};
++		};
++
+ 		dspi0: dspi@2100000 {
+ 			compatible = "fsl,ls1021a-v1.0-dspi";
+ 			#address-cells = <1>;
 -- 
 2.1.0.27.g96db324
