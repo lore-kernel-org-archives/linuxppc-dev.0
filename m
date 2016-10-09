@@ -1,24 +1,29 @@
 Return-Path: <hongtao.jia@nxp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0065.outbound.protection.outlook.com [104.47.38.65])
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30072.outbound.protection.outlook.com [40.107.3.72])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ssDdr55VtzDshg
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2016 17:59:44 +1100 (AEDT)
-From: Jia Hongtao <hongtao.jia@nxp.com>
-To: <rui.zhang@intel.com>, <edubezval@gmail.com>, <robh+dt@kernel.org>,
- <scott.wood@nxp.com>, <shawnguo@kernel.org>
-CC: <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
- <hongtao.jia@nxp.com>
-Subject: [PATCH V2 5/5] arm64:dt:ls2080a: Add TMU device tree support for
- LS2080A
-Date: Sun, 9 Oct 2016 14:47:06 +0800
-Message-ID: <1475995626-14049-5-git-send-email-hongtao.jia@nxp.com>
-In-Reply-To: <1475995626-14049-1-git-send-email-hongtao.jia@nxp.com>
-References: <1475995626-14049-1-git-send-email-hongtao.jia@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ssDx06f42zDrWP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2016 18:12:52 +1100 (AEDT)
+From: Troy Jia <hongtao.jia@nxp.com>
+To: Zhang Rui <rui.zhang@intel.com>, Leo Li <pku.leo@gmail.com>, Rob Herring
+ <robh@kernel.org>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, "Scott
+ Wood" <scott.wood@nxp.com>, Eduardo Valentin <edubezval@gmail.com>, Kumar
+ Gala <galak@codeaurora.org>, Shawn Guo <shawnguo@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH V2 1/7] dt-bindings: Update QorIQ TMU thermal bindings
+Date: Sun, 9 Oct 2016 07:12:46 +0000
+Message-ID: <AM4PR0401MB18433BD56D0441C832B06123EBD80@AM4PR0401MB1843.eurprd04.prod.outlook.com>
+References: <1465270054-31512-1-git-send-email-hongtao.jia@nxp.com>
+ <20160608195241.GA6805@rob-hp-laptop>
+ <CADRPPNQ+hikr1qNK1wPbLnhudUrU1bN_2iuYyRQnqCN4Zwh83Q@mail.gmail.com>
+ <1474253068.23153.2.camel@intel.com>
+In-Reply-To: <1474253068.23153.2.camel@intel.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,249 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongtao Jia <hongtao.jia@nxp.com>
-
-Also add nodes and properties for thermal management support.
-
-Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
----
-Changes for V2:
-* Rebase on latest linux-next tree (next-20161006).
-
- arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts  |   2 +-
- arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts  |   2 +-
- arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts |   2 +-
- arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     | 116 +++++++++++++++++++--
- 4 files changed, 111 insertions(+), 11 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
-index b0dd010..8bc1f8f 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
-@@ -46,7 +46,7 @@
- 
- /dts-v1/;
- 
--/include/ "fsl-ls2080a.dtsi"
-+#include "fsl-ls2080a.dtsi"
- 
- / {
- 	model = "Freescale Layerscape 2080a QDS Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
-index ad0ebb8..265e0a8 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
-@@ -46,7 +46,7 @@
- 
- /dts-v1/;
- 
--/include/ "fsl-ls2080a.dtsi"
-+#include "fsl-ls2080a.dtsi"
- 
- / {
- 	model = "Freescale Layerscape 2080a RDB Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
-index 505d038..290604b 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
-@@ -46,7 +46,7 @@
- 
- /dts-v1/;
- 
--/include/ "fsl-ls2080a.dtsi"
-+#include "fsl-ls2080a.dtsi"
- 
- / {
- 	model = "Freescale Layerscape 2080a software Simulator model";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-index 337da90..723185e 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-@@ -44,6 +44,8 @@
-  *     OTHER DEALINGS IN THE SOFTWARE.
-  */
- 
-+#include <dt-bindings/thermal/thermal.h>
-+
- / {
- 	compatible = "fsl,ls2080a";
- 	interrupt-parent = <&gic>;
-@@ -62,15 +64,16 @@
- 		 */
- 
- 		/* We have 4 clusters having 2 Cortex-A57 cores each */
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0>;
- 			clocks = <&clockgen 1 0>;
- 			next-level-cache = <&cluster0_l2>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@1 {
-+		cpu1: cpu@1 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x1>;
-@@ -78,15 +81,16 @@
- 			next-level-cache = <&cluster0_l2>;
- 		};
- 
--		cpu@100 {
-+		cpu2: cpu@100 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x100>;
- 			clocks = <&clockgen 1 1>;
- 			next-level-cache = <&cluster1_l2>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@101 {
-+		cpu3: cpu@101 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x101>;
-@@ -94,15 +98,16 @@
- 			next-level-cache = <&cluster1_l2>;
- 		};
- 
--		cpu@200 {
-+		cpu4: cpu@200 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x200>;
- 			clocks = <&clockgen 1 2>;
- 			next-level-cache = <&cluster2_l2>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@201 {
-+		cpu5: cpu@201 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x201>;
-@@ -110,15 +115,16 @@
- 			next-level-cache = <&cluster2_l2>;
- 		};
- 
--		cpu@300 {
-+		cpu6: cpu@300 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x300>;
- 			clocks = <&clockgen 1 3>;
- 			next-level-cache = <&cluster3_l2>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@301 {
-+		cpu7: cpu@301 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x301>;
-@@ -215,6 +221,100 @@
- 			clocks = <&sysclk>;
- 		};
- 
-+		tmu: tmu@1f80000 {
-+			compatible = "fsl,qoriq-tmu";
-+			reg = <0x0 0x1f80000 0x0 0x10000>;
-+			interrupts = <0 23 0x4>;
-+			fsl,tmu-range = <0xb0000 0x9002a 0x6004c 0x30062>;
-+			fsl,tmu-calibration = <0x00000000 0x00000026
-+					       0x00000001 0x0000002d
-+					       0x00000002 0x00000032
-+					       0x00000003 0x00000039
-+					       0x00000004 0x0000003f
-+					       0x00000005 0x00000046
-+					       0x00000006 0x0000004d
-+					       0x00000007 0x00000054
-+					       0x00000008 0x0000005a
-+					       0x00000009 0x00000061
-+					       0x0000000a 0x0000006a
-+					       0x0000000b 0x00000071
-+
-+					       0x00010000 0x00000025
-+					       0x00010001 0x0000002c
-+					       0x00010002 0x00000035
-+					       0x00010003 0x0000003d
-+					       0x00010004 0x00000045
-+					       0x00010005 0x0000004e
-+					       0x00010006 0x00000057
-+					       0x00010007 0x00000061
-+					       0x00010008 0x0000006b
-+					       0x00010009 0x00000076
-+
-+					       0x00020000 0x00000029
-+					       0x00020001 0x00000033
-+					       0x00020002 0x0000003d
-+					       0x00020003 0x00000049
-+					       0x00020004 0x00000056
-+					       0x00020005 0x00000061
-+					       0x00020006 0x0000006d
-+
-+					       0x00030000 0x00000021
-+					       0x00030001 0x0000002a
-+					       0x00030002 0x0000003c
-+					       0x00030003 0x0000004e>;
-+			little-endian;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
-+		thermal-zones {
-+			cpu_thermal: cpu-thermal {
-+				polling-delay-passive = <1000>;
-+				polling-delay = <5000>;
-+
-+				thermal-sensors = <&tmu 4>;
-+
-+				trips {
-+					cpu_alert: cpu-alert {
-+						temperature = <75000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
-+					cpu_crit: cpu-crit {
-+						temperature = <85000>;
-+						hysteresis = <2000>;
-+						type = "critical";
-+					};
-+				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu0 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+					map1 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu2 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+					map2 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu4 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+					map3 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu6 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+		};
-+
- 		serial0: serial@21c0500 {
- 			compatible = "fsl,ns16550", "ns16550a";
- 			reg = <0x0 0x21c0500 0x0 0x100>;
--- 
-2.1.0.27.g96db324
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZyBSdWkgW21haWx0bzpy
+dWkuemhhbmdAaW50ZWwuY29tXQ0KPiBTZW50OiBNb25kYXksIFNlcHRlbWJlciAxOSwgMjAxNiAx
+MDo0NCBBTQ0KPiBUbzogTGVvIExpIDxwa3UubGVvQGdtYWlsLmNvbT47IFJvYiBIZXJyaW5nIDxy
+b2JoQGtlcm5lbC5vcmc+DQo+IENjOiBUcm95IEppYSA8aG9uZ3Rhby5qaWFAbnhwLmNvbT47IGRl
+dmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBs
+aW51eHBwYy1kZXYgPGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPjsgbGttbCA8bGludXgt
+DQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBTY290dCBXb29kIDxzY290dC53b29kQG54cC5j
+b20+OyBFZHVhcmRvIFZhbGVudGluDQo+IDxlZHViZXp2YWxAZ21haWwuY29tPjsgS3VtYXIgR2Fs
+YSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBTaGF3biBHdW8NCj4gPHNoYXduZ3VvQGtlcm5lbC5v
+cmc+OyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4gU3ViamVjdDogUmU6
+IFtQQVRDSCBWMiAxLzddIGR0LWJpbmRpbmdzOiBVcGRhdGUgUW9ySVEgVE1VIHRoZXJtYWwgYmlu
+ZGluZ3MNCj4gDQo+IE9uIOS4iSwgMjAxNi0wOS0xNCBhdCAxMTo0MCAtMDUwMCwgTGVvIExpIHdy
+b3RlOg0KPiA+IE9uIFdlZCwgSnVuIDgsIDIwMTYgYXQgMjo1MiBQTSwgUm9iIEhlcnJpbmcgPHJv
+YmhAa2VybmVsLm9yZz4gd3JvdGU6DQo+ID4gPg0KPiA+ID4gT24gVHVlLCBKdW4gMDcsIDIwMTYg
+YXQgMTE6Mjc6MzRBTSArMDgwMCwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+
+IEZvciBkaWZmZXJlbnQgdHlwZXMgb2YgU29DIHRoZSBzZW5zb3IgaWQgYW5kIGVuZGlhbm5lc3Mg
+bWF5IHZhcnkuDQo+ID4gPiA+ICIjdGhlcm1hbC1zZW5zb3ItY2VsbHMiIGlzIHVzZWQgdG8gcHJv
+dmlkZSBzZW5zb3IgaWQgaW5mb3JtYXRpb24uDQo+ID4gPiA+ICJsaXR0bGUtZW5kaWFuIiBwcm9w
+ZXJ0eSBpcyB0byB0ZWxsIHRoZSBlbmRpYW5uZXNzIG9mIFRNVS4NCj4gPiA+ID4NCj4gPiA+ID4g
+U2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlhQG54cC5jb20+DQo+ID4gPiA+
+IC0tLQ0KPiA+ID4gPiBDaGFuZ2VzIGZvciBWMjoNCj4gPiA+ID4gKiBSZW1vdmUgZm9ybWF0dGlu
+ZyBjaG5hZ2VzLg0KPiA+ID4gPg0KPiA+ID4gPiDCoERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy90aGVybWFsL3FvcmlxLXRoZXJtYWwudHh0IHwgNw0KPiA+ID4gPiArKysrKysrDQo+
+ID4gPiA+IMKgMSBmaWxlIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygrKQ0KPiA+ID4gQWNrZWQtYnk6
+IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+DQo+ID4gSGkgWmhhbmcgUnVpLA0KPiA+DQo+
+ID4gU2luY2UgeW91IGhhdmUgYXBwbGllZCB0aGUgZHJpdmVyIHBhdGNoLCBjYW4geW91IGFsc28g
+YXBwbHkgdGhlDQo+ID4gYmluZGluZyBwYXRjaD/CoMKgVGhlIGJpbmRpbmcgaXMgc3VwcG9zZWQg
+dG8gZ28gd2l0aCB0aGUgZHJpdmVyLg0KPiA+DQo+IA0KPiBEbyB5b3UgbWVhbiBJIHNob3VsZCB0
+YWtlIGJvdGggcGF0Y2ggMS83IGFuZCA3Lzc/IEkgY2FuIG5vdCBzZWUgdGhlIG90aGVyIHBhdGNo
+ZXMNCj4gaW4gdGhpcyBwYXRjaCBzZXQuDQoNClllcywgcGxlYXNlIHRha2UgNy83IGFzIHdlbGwu
+DQpJIGFsc28gcmV3b3JrZWQgdGhlIGRldmljZSB0cmVlIHBhdGNoZXMgYW5kIHlvdSBjYW4gZmlu
+ZCB0aGVtIGhlcmU6DQpodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkzNjgzNzcv
+DQpodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkzNjgzODEvDQpodHRwczovL3Bh
+dGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkzNjgzODMvDQpodHRwczovL3BhdGNod29yay5rZXJu
+ZWwub3JnL3BhdGNoLzkzNjgzNzkvDQpodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNo
+LzkzNjgzODUvDQoNCi1Ib25ndGFvLg0KDQo+IA0KPiB0aGFua3MsDQo+IHJ1aQ0KDQo=
