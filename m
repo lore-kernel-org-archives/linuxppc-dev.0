@@ -1,23 +1,30 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3st0Hg3hrPzDrbq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 23:46:38 +1100 (AEDT)
-Subject: Re: ppc64 qemu test failure since commit f9aa67142 ("powerpc/64s:
- Consolidate Alignment 0x600 interrupt")
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-References: <20161009152121.GA13188@roeck-us.net>
- <87wphg68wb.fsf@concordia.ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <d3bd505d-e484-6720-f7a2-1fe66e4dcb68@roeck-us.net>
-Date: Mon, 10 Oct 2016 05:46:34 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3st0RJ3WCFzDrbq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 23:53:15 +1100 (AEDT)
+Received: by mail-io0-x242.google.com with SMTP id p26so7308984ioo.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 05:53:15 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Mon, 10 Oct 2016 08:53:03 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, torvalds@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ kernel-team@fb.com, jiangshanlai@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
+ available early during boot)
+Message-ID: <20161010125303.GA29742@mtj.duckdns.org>
+References: <1473967821-24363-1-git-send-email-tj@kernel.org>
+ <1473967821-24363-2-git-send-email-tj@kernel.org>
+ <20160917172314.GB10771@mtj.duckdns.org>
+ <87twck5wqo.fsf@concordia.ellerman.id.au>
+ <b0622515-61b9-9622-cca3-d475733eb4a6@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <87wphg68wb.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b0622515-61b9-9622-cca3-d475733eb4a6@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +34,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Mon, Oct 10, 2016 at 10:17:16PM +1100, Balbir Singh wrote:
+> rest_init()
+> {
+> 	...
+> 	kernel_thread(kernel_init, NULL, CLONE_FS);
+> 	numa_default_policy();
+> 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+> 	rcu_read_lock();
+> 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
+> 	...
+> 
+> }
+> 
+> create_worker() needs kthreadd, it wakes up kthreadd in kthread_create_on_node,
+> workqueue_init() is called from kernel_init() , but kthreadd is created after
+> the call to kernel_init(), so its touch and go
 
-On 10/09/2016 11:00 PM, Michael Ellerman wrote:
-> Guenter Roeck <linux@roeck-us.net> writes:
->
->> Nicholas,
->>
->> some of my qemu tests for ppc64 started failing on mainline (and -next).
->> You can find a test log at
->> http://kerneltests.org/builders/qemu-ppc64-master/builds/580/steps/qemubuildcommand/logs/stdio
->>
->> The scripts to run the test are available at
->> https://github.com/groeck/linux-build-test/tree/master/rootfs/ppc64
->>
->> Bisect points to commit f9aa67142ef26 ("powerpc/64s: Consolidate Alignment 0x600
->> interrupt"). Bisect log is attached.
->>
->> Since I don't have the means to run the code on a real system, I have no idea
->> if the problem is caused by qemu or by the code. It is interesting, though, that
->> only the 'mac99' tests are affected.
->
-> Thanks for the report.
->
-> I do test qemu mac99 as part of my CI, and it's booting OK, so there
-> must be some config difference?
->
-> I'm using pmac32_defconfig plus:
->
-> CONFIG_LOCALVERSION_AUTO=y
-> CONFIG_SERIAL_PMACZILOG=y
-> CONFIG_SERIAL_PMACZILOG_TTYS=n
-> CONFIG_SERIAL_PMACZILOG_CONSOLE=y
-> CONFIG_DEVTMPFS=y
-> CONFIG_DEVTMPFS_MOUNT=y
->
-> And running with:
->
-> $ qemu-system-ppc -nographic -vga none -M mac99 -m 1G -kernel vmlinux -initrd $HOME/static/ppc32-initrd.gz -append "console=ttyPZ0 init=/bin/sh"
->
+But the first thing kernel_init_freeable() does is
+wait_for_completion(&kthreadd_done).
 
-I am building a 64bit image, and my test runs with qemu-system-ppc64.
-My 32bit tests for mac99 are fine as well.
+Thanks.
 
-Guenter
+-- 
+tejun
