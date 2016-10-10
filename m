@@ -1,29 +1,21 @@
-Return-Path: <oohall@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sshmJ1hNHzDrL1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 12:06:56 +1100 (AEDT)
-Received: from mail-qk0-x22c.google.com (mail-qk0-x22c.google.com
- [IPv6:2607:f8b0:400d:c09::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3sshmH4X7wz9ryk
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Oct 2016 12:06:55 +1100 (AEDT)
-Received: by mail-qk0-x22c.google.com with SMTP id z190so74946695qkc.2
- for <linuxppc-dev@ozlabs.org>; Sun, 09 Oct 2016 18:06:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sskj56ktHzDrL1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 13:34:17 +1100 (AEDT)
+Date: Mon, 10 Oct 2016 13:34:15 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 2/2] KVM: PPC: sparse: prototypes for functions called
+ from assembler
+Message-ID: <20161010023415.GA18173@fergus.ozlabs.ibm.com>
+References: <1476059480-18145-1-git-send-email-dja@axtens.net>
+ <1476059480-18145-2-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
-In-Reply-To: <877f9wbv6j.fsf@linux.vnet.ibm.com>
-References: <0612c46e-7e1b-3729-d84f-cefa886abb6d@gmail.com>
- <877f9wbv6j.fsf@linux.vnet.ibm.com>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Mon, 10 Oct 2016 12:06:52 +1100
-Message-ID: <CAOSf1CE2RJ2X_cB8nZz3UziFURqrqA7aLV+GVySY6k+8KPYTiA@mail.gmail.com>
-Subject: Re: [PATCH] Fix "ibm,processor-radix-AP-encodings"
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@ozlabs.org, Chris Smart <chris@distroguy.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1476059480-18145-2-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,26 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 28, 2016 at 12:43 PM, Aneesh Kumar K.V
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
->
->> The top 3 bits of the lower order byte should contain the
->> AP encoding, we assume the top 3 bits of the MSB.
+On Mon, Oct 10, 2016 at 11:31:20AM +1100, Daniel Axtens wrote:
+> A bunch of KVM functions are only called from assembler.
+> Give them prototypes in asm-prototypes.h
+> This reduces sparse warnings.
+> 
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> ---
+>  arch/powerpc/include/asm/asm-prototypes.h | 44 +++++++++++++++++++++++++++++++
+>  arch/powerpc/kvm/book3s_64_vio_hv.c       |  1 +
+>  arch/powerpc/kvm/book3s_hv_builtin.c      |  1 +
+>  arch/powerpc/kvm/book3s_hv_ras.c          |  1 +
+>  arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  1 +
+>  arch/powerpc/kvm/book3s_hv_rm_xics.c      |  1 +
+>  6 files changed, 49 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+> index d1492736d852..6c853bcd11fa 100644
+> --- a/arch/powerpc/include/asm/asm-prototypes.h
+> +++ b/arch/powerpc/include/asm/asm-prototypes.h
+> @@ -14,6 +14,9 @@
+>  
+>  #include <linux/threads.h>
+>  #include <linux/kprobes.h>
+> +#ifdef CONFIG_KVM
+> +#include <linux/kvm_host.h>
+> +#endif
+>  
+>  #include <uapi/asm/ucontext.h>
+>  
+> @@ -109,4 +112,45 @@ void early_setup_secondary(void);
+>  /* time */
+>  void accumulate_stolen_time(void);
+>  
+> +/* kvm */
+> +#ifdef CONFIG_KVM
 
-Balbir, could you reword this so it says "Currently we wrongly assume
-<blah>" or similar. The current commit message made me think you were
-changing it to look at the top 3 bits of the MSB rather than changing
-it look at the LSB.
+Why do we need this ifdef?  Does the compilation break without it when
+CONFIG_KVM = n?
 
-> Are you sure, Power architecture documents always confuse about MSB vs
-> lowe order bytes. ?
-
-PAPR seems to be pretty consistent about "low order" meaning "least
-significant." Additionally the PAPR that describes
-ibm,processor-radix-AP-encodings says that it is formatted this way so
-it can be used when constructing the register argument to tlbie. The
-modes of tlbie that use the AP field place it in bits 56:59 so I think
-Balbir's fix is correct.
-
-Reviewed-By: Oliver O'Halloran <oohall@gmail.com>
+Paul.
