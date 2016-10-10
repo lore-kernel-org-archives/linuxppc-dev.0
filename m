@@ -1,23 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qk0-x233.google.com (mail-qk0-x233.google.com
+ [IPv6:2607:f8b0:400d:c09::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ssnzg4L7BzDrL1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 16:02:07 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- ravi.bangoria@linux.vnet.ibm.com, acme@redhat.com, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: perf TUI fails with "failed to process type: 64"
-In-Reply-To: <20161009121232.174915eb@kryten>
-References: <20161009121232.174915eb@kryten>
-Date: Mon, 10 Oct 2016 16:02:07 +1100
-Message-ID: <874m4k7q5s.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ssph53NJlzDrL1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 16:33:41 +1100 (AEDT)
+Received: by mail-qk0-x233.google.com with SMTP id o68so90657792qkf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Oct 2016 22:33:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <877f9g7r4l.fsf@concordia.ellerman.id.au>
+References: <8db8ecac-4022-7df9-4e81-3d490c50821d@gmail.com>
+ <CAOSf1CFVX8j+kyp3SRhRz_gyPiQ3R9x=_nJyq9fr31NyGi3hhg@mail.gmail.com>
+ <c19153b9-7554-0280-6d97-750c9e62b3be@gmail.com>
+ <80c9c42c-45d3-9f24-b3e1-5a5042686b1b@gmail.com>
+ <877f9g7r4l.fsf@concordia.ellerman.id.au>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Mon, 10 Oct 2016 16:33:38 +1100
+Message-ID: <CAOSf1CEa-BRMqedOECJFrg3b9Q_mwJE6A5wR4bYZoL6J2HdP7g@mail.gmail.com>
+Subject: Re: Commit 1b7898ee276b "powerpc/boot: Use the pre-boot decompression
+ API" breaks boot
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Heiner Kallweit <hkallweit1@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> writes:
-
-> Hi,
+On Mon, Oct 10, 2016 at 3:41 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Heiner Kallweit <hkallweit1@gmail.com> writes:
 >
-> Updating to mainline as of last night, I started seeing the following
-> error when running the perf report TUI:
+>> Am 07.10.2016 um 21:26 schrieb Heiner Kallweit:
+>>> Am 07.10.2016 um 07:51 schrieb Oliver O'Halloran:
+>>>> Hi, Heiner
+>>>>
+>>>> Could you send me a copy of the kernel .config (or which defconfig)
+>>>> that you're using, the name of the HW platform that you're using and
+>>>> if possible the kernel image itself?
+>>>>
+>>>> Thanks,
+>>>> Oliver
+>>>>
+>>> Thanks for the quick reply. Attached are .config and cuImage.
+>>> HW is a TP-Link TL-WDR4900 WiFi router (P1014-based) running OpenWRT.
+>>>
+>> After further checking I think I found the issue. The old gunzip code
+>> handled uncompressed data transparently whilst the new one bails out
+>> if it doesn't find a proper gzip header.
+>> And in my case the actual kernel image is uncompressed.
+>> With the following patch the system boots fine again (at least for me).
 >
-> 0x46068 [0x8]: failed to process type: 68
+> Thanks for testing and tracking it down.
+
+Yeah thanks for that. I was putting off looking at it until Monday :)
+
 >
-> This event is just PERF_RECORD_FINISHED_ROUND:
->
-> 0x46068 [0x8]: event: 68
-> .
-> . ... raw event: size 8 bytes
-> .  0000:  44 00 00 00 00 00 08 00                          D.......        
->
-> 0x46068 [0x8]: PERF_RECORD_FINISHED_ROUND
->
-> Which of course is not our error. It took me a while to find the real
-> culprit:
->
->  14c00-14c00 g exc_virt_0x4c00_system_call
-   ^
-   What's this? The address? If so it's wrong?
-   
+> I wonder why the actual image is uncompressed? Or alternately why do we
+> tell uboot the image is compressed when it's not?
 
-> A zero length symbol, which __symbol__inc_addr_samples() barfs on:
->
->         if (addr < sym->start || addr >= sym->end) {
-> ...
-> 		return -ERANGE;
->
-> Seems like we have 3 bugs here:
-...
->
-> 3. Why do we have zero length symbols in the first place? Does the recent
->    ppc64 exception clean up have something to do with it?
+The uboot payload (wrapper, kernel, initrd) as a whole is compressed
+as a single blob. Modern uboot can just decompress the payload and
+jump straight into the kernel and I'd assumed that all uboot platforms
+did this. The problem is that the compatible uboot (cuboot) images do
+use the wrapper and the vmlinux baked into the wrapper is
+uncompressed.
 
-Seems likely. But I can't see why.
-
-AFAICS we have never emitted a size for those symbols:
-
-Old:
-$ nm --print-size build/vmlinux | grep -w system_call_relon_pSeries
-c000000000004c00 T system_call_relon_pSeries
-
-New:
-$ nm --print-size build/vmlinux | grep -w exc_virt_0x4c00_system_call
-c000000000004c00 T exc_virt_0x4c00_system_call
-
-
-It also doesn't look like we're emitting another symbol with the same
-address, which has caused confusion in the past:
-
-Old:
-c000000000004c00 T exc_virt_0x4c00_system_call
-c000000000004d00 T exc_virt_0x4d00_single_step
-
-New:
-c000000000004c00 T system_call_relon_pSeries
-c000000000004d00 T single_step_relon_pSeries
-
-
-So more digging required.
-
-cheers
+Oliver
