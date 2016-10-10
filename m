@@ -1,28 +1,19 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jstancek@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ssyJd5VwNzDrbr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 22:17:21 +1100 (AEDT)
-Received: by mail-pa0-x243.google.com with SMTP id r9so7036511paz.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 04:17:21 -0700 (PDT)
-Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
- available early during boot)
-To: Michael Ellerman <mpe@ellerman.id.au>, Tejun Heo <tj@kernel.org>,
- torvalds@linux-foundation.org
-References: <1473967821-24363-1-git-send-email-tj@kernel.org>
- <1473967821-24363-2-git-send-email-tj@kernel.org>
- <20160917172314.GB10771@mtj.duckdns.org>
- <87twck5wqo.fsf@concordia.ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- kernel-team@fb.com, jiangshanlai@gmail.com, linux-kernel@vger.kernel.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <b0622515-61b9-9622-cca3-d475733eb4a6@gmail.com>
-Date: Mon, 10 Oct 2016 22:17:16 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ssz3h2n2czDrbq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 22:51:12 +1100 (AEDT)
+Date: Mon, 10 Oct 2016 13:51:05 +0200
+From: Jan Stancek <jstancek@redhat.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: ehea crash on boot
+Message-ID: <20161010115102.GA501@dustball.brq.redhat.com>
+References: <CAOJe8K0p60fmubbhSHCm0096CTjYjnnfoo_JLuwDcg6fo-=pBg@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <87twck5wqo.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOJe8K0p60fmubbhSHCm0096CTjYjnnfoo_JLuwDcg6fo-=pBg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,144 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Denis / all,
 
+Do you know if there is a patch or lead for this problem? I seem
+to be hitting same Oops with P730 lpar when running 4.8 (see below),
+but 4.7.7 looks OK.
 
-On 10/10/16 21:22, Michael Ellerman wrote:
-> Hi Tejun,
-> 
-> Tejun Heo <tj@kernel.org> writes:
->> From f85002f627f7fdc7b3cda526863f5c9a8d36b997 Mon Sep 17 00:00:00 2001
->> From: Tejun Heo <tj@kernel.org>
->> Date: Fri, 16 Sep 2016 15:49:32 -0400
->> Subject: [PATCH] workqueue: make workqueue available early during boot
->>
->> Workqueue is currently initialized in an early init call; however,
->> there are cases where early boot code has to be split and reordered to
->> come after workqueue initialization or the same code path which makes
->> use of workqueues is used both before workqueue initailization and
->> after.  The latter cases have to gate workqueue usages with
->> keventd_up() tests, which is nasty and easy to get wrong.
->>
->> Workqueue usages have become widespread and it'd be a lot more
->> convenient if it can be used very early from boot.  This patch splits
->> workqueue initialization into two steps.  workqueue_init_early() which
->> sets up the basic data structures so that workqueues can be created
->> and work items queued, and workqueue_init() which actually brings up
->> workqueues online and starts executing queued work items.  The former
->> step can be done very early during boot once memory allocation,
->> cpumasks and idr are initialized.  The latter right after kthreads
->> become available.
->>
->> This allows work item queueing and canceling from very early boot
->> which is what most of these use cases want.
->>
->> * As systemd_wq being initialized doesn't indicate that workqueue is
->>   fully online anymore, update keventd_up() to test wq_online instead.
->>   The follow-up patches will get rid of all its usages and the
->>   function itself.
->>
->> * Flushing doesn't make sense before workqueue is fully initialized.
->>   The flush functions trigger WARN and return immediately before fully
->>   online.
->>
->> * Work items are never in-flight before fully online.  Canceling can
->>   always succeed by skipping the flush step.
->>
->> * Some code paths can no longer assume to be called with irq enabled
->>   as irq is disabled during early boot.  Use irqsave/restore
->>   operations instead.
->>
->> v2: Watchdog init, which requires timer to be running, moved from
->>     workqueue_init_early() to workqueue_init().
->>
->> Signed-off-by: Tejun Heo <tj@kernel.org>
->> Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
->> Link: http://lkml.kernel.org/r/CA+55aFx0vPuMuxn00rBSM192n-Du5uxy+4AvKa0SBSOVJeuCGg@mail.gmail.com
-> 
-> 
-> This patch seems to be causing one of my Power8 boxes not to boot.
-> 
-> Specifically commit 3347fa092821 ("workqueue: make workqueue available
-> early during boot") in linux-next.
-> 
-> If I revert this on top of next-20161005 then the machine boots again.
-> 
-> I've attached the oops below. It looks like the cfs_rq of p->se is NULL?
-> 
-> cheers
-> 
-> 
-> bootconsole [udbg0] disabled
-> bootconsole [udbg0] disabled
-> mempolicy: Enabling automatic NUMA balancing. Configure with numa_balancing= or the kernel.numa_balancing sysctl
-> pid_max: default: 163840 minimum: 1280
-> Dentry cache hash table entries: 16777216 (order: 11, 134217728 bytes)
-> Inode-cache hash table entries: 8388608 (order: 10, 67108864 bytes)
-> Mount-cache hash table entries: 262144 (order: 5, 2097152 bytes)
-> Mountpoint-cache hash table entries: 262144 (order: 5, 2097152 bytes)
-> Unable to handle kernel paging request for data at address 0x00000038
-> Faulting instruction address: 0xc0000000000fc0cc
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=2048 NUMA PowerNV
-> Modules linked in:
-> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.8.0-compiler_gcc-6.2.0-next-20161005 #94
-> task: c0000007f5400000 task.stack: c000001ffc084000
-> NIP: c0000000000fc0cc LR: c0000000000ed928 CTR: c0000000000fbfd0
-> REGS: c000001ffc087780 TRAP: 0300   Not tainted  (4.8.0-compiler_gcc-6.2.0-next-20161005)
-> MSR: 9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 48000424  XER: 00000000
-> CFAR: c0000000000089dc DAR: 0000000000000038 DSISR: 40000000 SOFTE: 0 
-> GPR00: c0000000000ed928 c000001ffc087a00 c000000000e63200 c000000010d6d600 
-> GPR04: c0000007f5409200 0000000000000021 000000000748e08c 000000000000001f 
-> GPR08: 0000000000000000 0000000000000021 000000000748f1f8 0000000000000000 
-> GPR12: 0000000028000422 c00000000fb80000 c00000000000e0c8 0000000000000000 
-> GPR16: 0000000000000000 0000000000000000 0000000000000021 0000000000000001 
-> GPR20: ffffffffafb50401 0000000000000000 c000000010d6d600 000000000000ba7e 
-> GPR24: 000000000000ba7e c000000000d8bc58 afb504000afb5041 0000000000000001 
-> GPR28: 0000000000000000 0000000000000004 c0000007f5409280 0000000000000000 
-> NIP [c0000000000fc0cc] enqueue_task_fair+0xfc/0x18b0
-> LR [c0000000000ed928] activate_task+0x78/0xe0
-> Call Trace:
-> [c000001ffc087a00] [c0000007f5409200] 0xc0000007f5409200 (unreliable)
-> [c000001ffc087b10] [c0000000000ed928] activate_task+0x78/0xe0
-> [c000001ffc087b50] [c0000000000ede58] ttwu_do_activate+0x68/0xc0
-> [c000001ffc087b90] [c0000000000ef1b8] try_to_wake_up+0x208/0x4f0
-> [c000001ffc087c10] [c0000000000d3484] create_worker+0x144/0x250
-> [c000001ffc087cb0] [c000000000cd72d0] workqueue_init+0x124/0x150
-> [c000001ffc087d00] [c000000000cc0e74] kernel_init_freeable+0x158/0x360
-> [c000001ffc087dc0] [c00000000000e0e4] kernel_init+0x24/0x160
-> [c000001ffc087e30] [c00000000000bfa0] ret_from_kernel_thread+0x5c/0xbc
-> Instruction dump:
-> 62940401 3b800000 3aa00000 7f17c378 3a600001 3b600001 60000000 60000000 
-> 60420000 72490021 ebfe0150 2f890001 <ebbf0038> 419e0de0 7fbee840 419e0e58 
-> ---[ end trace 0000000000000000 ]---
-> 
-> 
-> c0000000000fbfd0 <enqueue_task_fair>:
-> r4 = p
-> ...
-> c0000000000fc040:	80 00 c4 3b 	addi    r30,r4,128	r30 = r4 + 128	(&p->se)
-> ...
-> c0000000000fc0c4:	50 01 fe eb 	ld      r31,336(r30)	r31 = *(r30 + 336) = se->cfs_rq
-> c0000000000fc0c8:	01 00 89 2f 	cmpwi   cr7,r9,1
-> c0000000000fc0cc:	38 00 bf eb 	ld      r29,56(r31)	r29 = cfs_rq->curr
-> 
+Regards,
+Jan
 
-I think there is a race
-
-rest_init()
-{
-	...
-	kernel_thread(kernel_init, NULL, CLONE_FS);
-	numa_default_policy();
-	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
-	rcu_read_lock();
-	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
-	...
-
-}
-
-create_worker() needs kthreadd, it wakes up kthreadd in kthread_create_on_node,
-workqueue_init() is called from kernel_init() , but kthreadd is created after
-the call to kernel_init(), so its touch and go
-
-Balbir Singh.
+[    8.698424] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready 
+[    8.713373] IPv6: ADDRCONF(NETDEV_UP): eth1: link is not ready 
+[    8.713940] mm: Hashing failure ! EA=0xd000080080004040 access=0x800000000000000e current=NetworkManager 
+[    8.713949]     trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003cc033e701ae 
+[    8.713958] mm: Hashing failure ! EA=0xd000080080004040 access=0x800000000000000e current=NetworkManager 
+[    8.713966]     trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003cc033e701ae 
+[    8.713979] Unable to handle kernel paging request for data at address 0xd000080080004040 
+[    8.713985] Faulting instruction address: 0xd0000000011cc250 
+[    8.713992] Oops: Kernel access of bad area, sig: 7 [#1] 
+[    8.713996] SMP NR_CPUS=2048 NUMA pSeries 
+[    8.714008] Modules linked in: sg uio_pdrv_genirq uio nfsd auth_rpcgss nfs_acl lockd grace sunrpc ip_tables xfs libcrc32c sd_mod ibmvscsi scsi_transport_srp ibmveth ehea dm_mirror dm_region_hash dm_log dm_mod 
+[    8.714063] CPU: 2 PID: 1148 Comm: NetworkManager Not tainted 4.8.0-1.el7.test.ppc64.debug #1 
+[    8.714072] task: c0000000065e2080 task.stack: c000000006668000 
+[    8.714078] NIP: d0000000011cc250 LR: d0000000011cc118 CTR: 000000000042c120 
+[    8.714086] REGS: c00000000666ab00 TRAP: 0300   Not tainted  (4.8.0-1.el7.test.ppc64.debug) 
+[    8.714092] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 24288442  XER: 00000020 
+[    8.714120] CFAR: c0000000000087d0 DAR: d000080080004040 DSISR: 42000000 SOFTE: 1  
+GPR00: d0000000011cc118 c00000000666ad80 d0000000011dbdd8 c000000006327f80  
+GPR04: 0000000000000000 c0000000b0800000 0000000000029000 0000000000028000  
+GPR08: c0000000b0800000 0000000000000000 d000080080004000 00000000ffffd953  
+GPR12: 0000000080000001 c00000000ea61200 0000000000000000 0000000000000000  
+GPR16: 00000000000007fe 0000000000000000 0000000000000001 0000000000000000  
+GPR20: c0000000b53ecbd0 c0000000b53ecb00 c0000000b53ec1e8 c0000000b53ec1d0  
+GPR24: c0000000b53ec1b8 c0000000b53ec200 0000000000000000 0000000000000015  
+GPR28: 00000000000009fd c0000000bbb59418 0000000000000028 c000000006327f80  
+[    8.714254] NIP [d0000000011cc250] .ehea_create_cq+0x280/0x340 [ehea] 
+[    8.714263] LR [d0000000011cc118] .ehea_create_cq+0x148/0x340 [ehea] 
+[    8.714270] Call Trace: 
+[    8.714278] [c00000000666ad80] [d0000000011cc118] .ehea_create_cq+0x148/0x340 [ehea] (unreliable) 
+[    8.714292] [c00000000666ae30] [d0000000011c5e28] .ehea_up+0x258/0x1200 [ehea] 
+[    8.714304] [c00000000666afa0] [d0000000011c6e14] .ehea_open+0x44/0x1a0 [ehea] 
+[    8.714316] [c00000000666b030] [c0000000009bc4c4] .__dev_open+0x164/0x310 
+[    8.714328] [c00000000666b0d0] [c0000000009c6998] .__dev_change_flags+0x158/0x4f0 
+[    8.714339] [c00000000666b180] [c0000000009c6d5c] .dev_change_flags+0x2c/0x220 
+[    8.714349] [c00000000666b220] [c0000000009e2d3c] .do_setlink+0x38c/0xef0 
+[    8.714359] [c00000000666b3a0] [c0000000009e65cc] .rtnl_newlink+0x97c/0xb10 
+[    8.714369] [c00000000666b6b0] [c0000000009e4ae4] .rtnetlink_rcv_msg+0xc4/0x380 
+[    8.714379] [c00000000666b7a0] [c000000000a1c05c] .netlink_rcv_skb+0x12c/0x150 
+[    8.714388] [c00000000666b830] [c0000000009e1b68] .rtnetlink_rcv+0x38/0x60 
+[    8.714396] [c00000000666b8b0] [c000000000a1bb74] .netlink_unicast+0x554/0x6b0 
+[    8.714405] [c00000000666b990] [c000000000a1cbcc] .netlink_sendmsg+0x41c/0x490 
+[    8.714415] [c00000000666ba70] [c000000000986e18] .___sys_sendmsg+0x278/0x370 
+[    8.714425] [c00000000666bc50] [c0000000009892d4] .SyS_sendmsg+0xc4/0x130 
+[    8.714436] [c00000000666bd50] [c00000000098a180] .SyS_socketcall+0x3d0/0x4e0 
+[    8.714448] [c00000000666be30] [c000000000009590] system_call+0x38/0xec 
+[    8.714455] Instruction dump: 
+[    8.714462] 38a00001 4bffe7fd 60000000 7fe3fb78 48003081 e8410028 38600000 48000030  
+[    8.714484] e95f0038 39200000 7fe3fb78 f93f0010 <f92a0040> 3920ffff 79290004 e95f0038  
+[    8.714506] ---[ end trace fe4fbc224578dd0c ]--- 
