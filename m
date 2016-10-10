@@ -1,23 +1,17 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ssl6Q5DhDzDrL1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 13:52:46 +1100 (AEDT)
-Received: by mail-pa0-x242.google.com with SMTP id rw4so1387047pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Oct 2016 19:52:46 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 2/2] KVM: PPC: sparse: prototypes for functions called
- from assembler
-In-Reply-To: <20161010023415.GA18173@fergus.ozlabs.ibm.com>
-References: <1476059480-18145-1-git-send-email-dja@axtens.net>
- <1476059480-18145-2-git-send-email-dja@axtens.net>
- <20161010023415.GA18173@fergus.ozlabs.ibm.com>
-Date: Mon, 10 Oct 2016 13:52:41 +1100
-Message-ID: <87a8ecykxy.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ssmvs1Rj5zDrL1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 15:13:45 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc: build time sort extable
+In-Reply-To: <20161007112941.20073-1-npiggin@gmail.com>
+References: <20161007112941.20073-1-npiggin@gmail.com>
+Date: Mon, 10 Oct 2016 15:13:44 +1100
+Message-ID: <87eg3o7sef.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,66 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Mon, Oct 10, 2016 at 11:31:20AM +1100, Daniel Axtens wrote:
->> A bunch of KVM functions are only called from assembler.
->> Give them prototypes in asm-prototypes.h
->> This reduces sparse warnings.
->> 
->> Signed-off-by: Daniel Axtens <dja@axtens.net>
->> ---
->>  arch/powerpc/include/asm/asm-prototypes.h | 44 +++++++++++++++++++++++++++++++
->>  arch/powerpc/kvm/book3s_64_vio_hv.c       |  1 +
->>  arch/powerpc/kvm/book3s_hv_builtin.c      |  1 +
->>  arch/powerpc/kvm/book3s_hv_ras.c          |  1 +
->>  arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  1 +
->>  arch/powerpc/kvm/book3s_hv_rm_xics.c      |  1 +
->>  6 files changed, 49 insertions(+)
->> 
->> diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
->> index d1492736d852..6c853bcd11fa 100644
->> --- a/arch/powerpc/include/asm/asm-prototypes.h
->> +++ b/arch/powerpc/include/asm/asm-prototypes.h
->> @@ -14,6 +14,9 @@
->>  
->>  #include <linux/threads.h>
->>  #include <linux/kprobes.h>
->> +#ifdef CONFIG_KVM
->> +#include <linux/kvm_host.h>
->> +#endif
->>  
->>  #include <uapi/asm/ucontext.h>
->>  
->> @@ -109,4 +112,45 @@ void early_setup_secondary(void);
->>  /* time */
->>  void accumulate_stolen_time(void);
->>  
->> +/* kvm */
->> +#ifdef CONFIG_KVM
+> Can we just switch this on? Powerpc does not use relative extables
+> (that's a nice exercise left for the reader), so it should just use
+> the standard sort.
 >
-> Why do we need this ifdef?  Does the compilation break without it when
-> CONFIG_KVM = n?
+> This patch seems to work, famous last words...
 
-Yes it does - the 0day build bot picked it up when I did v1 without the
-ifdef.
+Would be nice but ...
 
-See: https://lists.01.org/pipermail/kbuild-all/2016-September/024742.html
+> Sorting probably only takes a few ms on any real hardware, but on on
+> very large kernel configs, extable sorting can take several seconds in
+> simulators and be a noticable cost to booting.
 
-For example:
+(We even carried a patch for years to speed it up.)
 
-   arch/powerpc/include/asm/asm-prototypes.h:82:7: error: 'struct kvm_vcpu' declared inside parameter list [-Werror]
-          unsigned long tce_list, unsigned long npages);
-          ^
-   arch/powerpc/include/asm/asm-prototypes.h:85:7: error: 'struct kvm_vcpu' declared inside parameter list [-Werror]
-          unsigned long tce_value, unsigned long npages);
-          ^
-   arch/powerpc/include/asm/asm-prototypes.h:87:29: error: 'struct kvm_vcpu' declared inside parameter list [-Werror]
-                                unsigned int yield_count);
-                                ^
-   arch/powerpc/include/asm/asm-prototypes.h:88:29: error: 'struct kvm_vcpu' declared inside parameter list [-Werror]
-    long kvmppc_h_random(struct kvm_vcpu *vcpu);
+Blows up for me at boot:
+
+[  OK  ] Started LSB: Control pmcd (the collection daemon for PCP).
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc000000000062d60
+cpu 0x1: Vector: 300 (Data Access) at [c0000001d6687aa0]
+    pc: c000000000062d60: __copy_tofrom_user_base+0x54/0x5b4
+    lr: c0000000000633d8: copy_from_user+0x78/0xe0
+    sp: c0000001d6687d20
+   msr: 8000000000009033
+   dar: 0
+ dsisr: 40000000
+  current = 0xc0000001d6601880
+  paca    = 0xc000000007e00400	 softe: 0	 irq_happened: 0x01
+    pid   = 7101, comm = docker
+Linux version 4.8.0-compiler_gcc-6.2.0-11418-g4011878e4cd3 (michael@ka3.ozlabs.ibm.com) (gcc version 6.2.0 (GCC) ) #219 SMP Mon Oct 10 14:48:04 AEDT 2016
+enter ? for help
+[link register   ] c0000000000633d8 copy_from_user+0x78/0xe0
+[c0000001d6687d20] c0000001d6687d90 (unreliable)
+[c0000001d6687d60] c0000000001c7358 do_seccomp+0x78/0x6d0
+[c0000001d6687dd0] c0000000000dc08c SyS_prctl+0x27c/0x670
+[c0000001d6687e30] c00000000000bde4 system_call+0x38/0xfc
+--- Exception: c01 (System Call) at 000000001025634c
+SP (c8208d6cd8) is in userspace
 
 
-Regards,
-Daniel
+
+cheers
