@@ -1,27 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ssqFw6jmpzDrL1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 16:59:32 +1100 (AEDT)
-Received: by mail-pa0-x242.google.com with SMTP id qn10so6473800pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Oct 2016 22:59:32 -0700 (PDT)
-Date: Mon, 10 Oct 2016 16:59:24 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- ravi.bangoria@linux.vnet.ibm.com, acme@redhat.com, peterz@infradead.org,
- mingo@redhat.com, alexander.shishkin@linux.intel.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: perf TUI fails with "failed to process type: 64"
-Message-ID: <20161010165924.0a0f3f1d@roar.ozlabs.ibm.com>
-In-Reply-To: <874m4k7q5s.fsf@concordia.ellerman.id.au>
-References: <20161009121232.174915eb@kryten>
- <874m4k7q5s.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ssqGr3bnTzDsfg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 17:00:20 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Guenter Roeck <linux@roeck-us.net>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: ppc64 qemu test failure since commit f9aa67142 ("powerpc/64s:
+ Consolidate Alignment 0x600 interrupt")
+In-Reply-To: <20161009152121.GA13188@roeck-us.net>
+References: <20161009152121.GA13188@roeck-us.net>
+Date: Mon, 10 Oct 2016 17:00:20 +1100
+Message-ID: <87wphg68wb.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,75 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 10 Oct 2016 16:02:07 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Guenter Roeck <linux@roeck-us.net> writes:
 
-> Anton Blanchard <anton@samba.org> writes:
-> 
-> > Hi,
-> >
-> > Updating to mainline as of last night, I started seeing the following
-> > error when running the perf report TUI:
-> >
-> > 0x46068 [0x8]: failed to process type: 68
-> >
-> > This event is just PERF_RECORD_FINISHED_ROUND:
-> >
-> > 0x46068 [0x8]: event: 68
-> > .
-> > . ... raw event: size 8 bytes
-> > .  0000:  44 00 00 00 00 00 08 00                          D.......        
-> >
-> > 0x46068 [0x8]: PERF_RECORD_FINISHED_ROUND
-> >
-> > Which of course is not our error. It took me a while to find the real
-> > culprit:
-> >
-> >  14c00-14c00 g exc_virt_0x4c00_system_call  
->    ^
->    What's this? The address? If so it's wrong?
->    
-> 
-> > A zero length symbol, which __symbol__inc_addr_samples() barfs on:
-> >
-> >         if (addr < sym->start || addr >= sym->end) {
-> > ...
-> > 		return -ERANGE;
-> >
-> > Seems like we have 3 bugs here:  
-> ...
-> >
-> > 3. Why do we have zero length symbols in the first place? Does the recent
-> >    ppc64 exception clean up have something to do with it?  
-> 
-> Seems likely. But I can't see why.
-> 
-> AFAICS we have never emitted a size for those symbols:
-> 
-> Old:
-> $ nm --print-size build/vmlinux | grep -w system_call_relon_pSeries
-> c000000000004c00 T system_call_relon_pSeries
-> 
-> New:
-> $ nm --print-size build/vmlinux | grep -w exc_virt_0x4c00_system_call
-> c000000000004c00 T exc_virt_0x4c00_system_call
-> 
-> 
-> It also doesn't look like we're emitting another symbol with the same
-> address, which has caused confusion in the past:
-> 
-> Old:
-> c000000000004c00 T exc_virt_0x4c00_system_call
-> c000000000004d00 T exc_virt_0x4d00_single_step
-> 
-> New:
-> c000000000004c00 T system_call_relon_pSeries
-> c000000000004d00 T single_step_relon_pSeries
-> 
-> 
-> So more digging required.
+> Nicholas,
+>
+> some of my qemu tests for ppc64 started failing on mainline (and -next).
+> You can find a test log at
+> http://kerneltests.org/builders/qemu-ppc64-master/builds/580/steps/qemubuildcommand/logs/stdio
+>
+> The scripts to run the test are available at
+> https://github.com/groeck/linux-build-test/tree/master/rootfs/ppc64
+>
+> Bisect points to commit f9aa67142ef26 ("powerpc/64s: Consolidate Alignment 0x600
+> interrupt"). Bisect log is attached.
+>
+> Since I don't have the means to run the code on a real system, I have no idea
+> if the problem is caused by qemu or by the code. It is interesting, though, that
+> only the 'mac99' tests are affected.
 
-Yeah, strange. Maybe perf changes?
+Thanks for the report.
 
-We were talking about adding size and type to the exception symbols
-though.
+I do test qemu mac99 as part of my CI, and it's booting OK, so there
+must be some config difference?
+
+I'm using pmac32_defconfig plus:
+
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SERIAL_PMACZILOG=y
+CONFIG_SERIAL_PMACZILOG_TTYS=n
+CONFIG_SERIAL_PMACZILOG_CONSOLE=y
+CONFIG_DEVTMPFS=y
+CONFIG_DEVTMPFS_MOUNT=y
+
+And running with:
+
+$ qemu-system-ppc -nographic -vga none -M mac99 -m 1G -kernel vmlinux -initrd $HOME/static/ppc32-initrd.gz -append "console=ttyPZ0 init=/bin/sh"
+
+cheers
