@@ -1,42 +1,42 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3st1cm0S9NzDrbk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 00:46:31 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3st29R2By6zDrbk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 01:11:23 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9ADha0C049900
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 09:46:30 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2606y568s1-1
+ u9AEB9dl064092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 10:11:20 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 260cc38e7m-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 09:46:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 10:11:15 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Mon, 10 Oct 2016 07:46:29 -0600
-Subject: Re: [PATCH v7 6/6] perf annotate: cross arch annotate support fixes
- for ARM
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-References: <1474472876-2706-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1474472876-2706-7-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <20161005113406.GV7143@kernel.org>
-Cc: linux-kernel@vger.kernel.org, kim.phillips@arm.com,
- linuxppc-dev@lists.ozlabs.org, peterz@infradead.org, mingo@redhat.com,
- alexander.shishkin@linux.intel.com, treeze.taeung@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, markus@trippelsdorf.de,
- namhyung@kernel.org, pawel.moll@arm.com, chris.ryder@arm.com,
- jolsa@kernel.org, mhiramat@kernel.org,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Mon, 10 Oct 2016 19:16:16 +0530
-MIME-Version: 1.0
-In-Reply-To: <20161005113406.GV7143@kernel.org>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <57FB9BA8.2050506@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Tue, 11 Oct 2016 00:10:30 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 224FD2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 01:10:28 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9AEASoi10485814
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 01:10:28 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9AEARpZ015140
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 01:10:27 +1100
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: [PATCH] cxl: Prevent adapter reset if an active context exists
+Date: Mon, 10 Oct 2016 19:39:10 +0530
+Message-Id: <1476108550-31686-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,27 +46,229 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch prevents resetting the cxl adapter via sysfs in presence of
+one or more active cxl_context on it. This protects against an
+unrecoverable error caused by PSL owning a dirty cache line even after
+reset and host tries to touch the same cache line. In case a force reset
+of the card is required irrespective of any active contexts, the int
+value -1 can be stored in the 'reset' sysfs attribute of the card.
 
+The patch introduces a new atomic_t member named contexts_num inside
+struct cxl that holds the number of active context attached to the card
+, which is checked against '0' before proceeding with the reset. To
+prevent against a race condition where a context is activated just after
+reset check is performed, the contexts_num is atomically set to '-1'
+after reset-check to indicate that no more contexts can be activated on
+the card anymore.
 
-On Wednesday 05 October 2016 05:04 PM, Arnaldo Carvalho de Melo wrote:
-> Em Wed, Sep 21, 2016 at 09:17:56PM +0530, Ravi Bangoria escreveu:
->> From: Kim Phillips <kim.phillips@arm.com>
->>
->> For ARM we remove the list that contains non-arm insns, and
->> instead add more maintainable branch instruction regex logic.
-> This one looks ok and actually is in the direction of having facilities
-> for all arches, should've come as infrastructure that then gets used by
-> ARM and powerpc.
+Before activating a context we atomically test if contexts_num is
+non-negative and if so, increment its value by one. In case the value of
+contexts_num is negative then it indicates that the card is about to be
+reset and context activation is error-ed out at that point.
 
-This was authored by Kim and I didn't wanted to change that so I kept it
-at the end.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ Documentation/ABI/testing/sysfs-class-cxl |  7 +++++--
+ drivers/misc/cxl/api.c                    |  9 +++++++++
+ drivers/misc/cxl/context.c                |  3 +++
+ drivers/misc/cxl/cxl.h                    | 21 +++++++++++++++++++++
+ drivers/misc/cxl/file.c                   |  9 +++++++++
+ drivers/misc/cxl/main.c                   | 24 +++++++++++++++++++++++-
+ drivers/misc/cxl/sysfs.c                  | 18 ++++++++++++++----
+ 7 files changed, 84 insertions(+), 7 deletions(-)
 
-I'm sending a cleanup patch that applies on top of this series. That patch
-moves most of arch specific stuff from util/annotate.c to
-util/annotate/<arch>.c. Please review it.
-
-Please pull this series if you are ok with that patch. Otherwise I'll respin
-entire series.
-
-Thanks
--Ravi
+diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+index 4ba0a2a..dae2b38 100644
+--- a/Documentation/ABI/testing/sysfs-class-cxl
++++ b/Documentation/ABI/testing/sysfs-class-cxl
+@@ -220,8 +220,11 @@ What:           /sys/class/cxl/<card>/reset
+ Date:           October 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+ Description:    write only
+-                Writing 1 will issue a PERST to card which may cause the card
+-                to reload the FPGA depending on load_image_on_perst.
++                Writing 1 will issue a PERST to card provided there are no
++		contexts active on any one of the card AFUs. This may cause
++		the card to reload the FPGA depending on load_image_on_perst.
++		Writing -1 will do a force PERST irrespective of any active
++		contexts on the card AFUs.
+ Users:		https://github.com/ibm-capi/libcxl
+ 
+ What:		/sys/class/cxl/<card>/perst_reloads_same_image (not in a guest)
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index f3d34b9..85bb2d9 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -236,10 +236,19 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+ 		ctx->real_mode = false;
+ 	}
+ 
++	/*
++	 * Increment the mapped context count for adapter. This also checks
++	 * if adapter_context_lock is taken.
++	 */
++	rc = cxl_adapter_context_get(ctx->afu->adapter);
++	if (rc)
++		goto out;
++
+ 	cxl_ctx_get();
+ 
+ 	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
+ 		put_pid(ctx->pid);
++		cxl_adapter_context_put(ctx->afu->adapter);
+ 		cxl_ctx_put();
+ 		goto out;
+ 	}
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index c466ee2..5e506c1 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -238,6 +238,9 @@ int __detach_context(struct cxl_context *ctx)
+ 	put_pid(ctx->glpid);
+ 
+ 	cxl_ctx_put();
++
++	/* Decrease the attached context count on the adapter */
++	cxl_adapter_context_put(ctx->afu->adapter);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 01d372a..ed89c57 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -618,6 +618,14 @@ struct cxl {
+ 	bool perst_select_user;
+ 	bool perst_same_image;
+ 	bool psl_timebase_synced;
++
++	/*
++	 * number of contexts mapped on to this card.
++	 * +ve: Number of contexts mapped and new one can be mapped.
++	 *  0 : No active contexts and new ones can be mapped.
++	 * -ve: No contexts mapped and new ones cannot be mapped.
++	 */
++	atomic_t contexts_num;
+ };
+ 
+ int cxl_pci_alloc_one_irq(struct cxl *adapter);
+@@ -944,4 +952,17 @@ bool cxl_pci_is_vphb_device(struct pci_dev *dev);
+ 
+ /* decode AFU error bits in the PSL register PSL_SERR_An */
+ void cxl_afu_decode_psl_serr(struct cxl_afu *afu, u64 serr);
++
++/*
++ * Increments the number of attached contexts on an adapter.
++ * Incase an adapter_context_lock is taken the return -EBUSY.
++ */
++int cxl_adapter_context_get(struct cxl *adapter);
++
++/* Decrements the number of attached contexts on an adapter */
++void cxl_adapter_context_put(struct cxl *adapter);
++
++/* If no active contexts then prevents contexts from being attached */
++int cxl_adapter_context_lock(struct cxl *adapter);
++
+ #endif
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 5fb9894..3b2272a 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -205,11 +205,20 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 	ctx->pid = get_task_pid(current, PIDTYPE_PID);
+ 	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
+ 
++	/*
++	 * Increment the mapped context count for adapter. This also checks
++	 * if adapter_context_lock is taken.
++	 */
++	rc = cxl_adapter_context_get(ctx->afu->adapter);
++	if (rc)
++		goto out;
++
+ 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
+ 
+ 	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
+ 							amr))) {
+ 		afu_release_irqs(ctx, ctx);
++		cxl_adapter_context_put(ctx->afu->adapter);
+ 		goto out;
+ 	}
+ 
+diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+index d9be23b2..5c3c02a 100644
+--- a/drivers/misc/cxl/main.c
++++ b/drivers/misc/cxl/main.c
+@@ -243,8 +243,9 @@ struct cxl *cxl_alloc_adapter(void)
+ 	if (dev_set_name(&adapter->dev, "card%i", adapter->adapter_num))
+ 		goto err2;
+ 
+-	return adapter;
++	atomic_set(&adapter->contexts_num, 0);
+ 
++	return adapter;
+ err2:
+ 	cxl_remove_adapter_nr(adapter);
+ err1:
+@@ -286,6 +287,27 @@ int cxl_afu_select_best_mode(struct cxl_afu *afu)
+ 	return 0;
+ }
+ 
++int cxl_adapter_context_get(struct cxl *adapter)
++{
++	int rc;
++
++	rc = atomic_inc_unless_negative(&adapter->contexts_num);
++	return rc >= 0 ? 0 : -EBUSY;
++}
++
++void cxl_adapter_context_put(struct cxl *adapter)
++{
++	atomic_dec_if_positive(&adapter->contexts_num);
++}
++
++int cxl_adapter_context_lock(struct cxl *adapter)
++{
++	int rc;
++	/* no active contexts -> contexts_num == 0 */
++	rc = atomic_cmpxchg(&adapter->contexts_num, 0, -1);
++	return rc ? -EBUSY : 0;
++}
++
+ static int __init init_cxl(void)
+ {
+ 	int rc = 0;
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index b043c20..592dbf2 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -75,12 +75,22 @@ static ssize_t reset_adapter_store(struct device *device,
+ 	int val;
+ 
+ 	rc = sscanf(buf, "%i", &val);
+-	if ((rc != 1) || (val != 1))
++	if ((rc != 1) || (val != 1 && val != -1))
+ 		return -EINVAL;
+ 
+-	if ((rc = cxl_ops->adapter_reset(adapter)))
+-		return rc;
+-	return count;
++	/*
++	 * See if we can lock the context mapping that's only allowed
++	 * when there are no contexts attached to the adapter. Once
++	 * taken this will also prevent any context being attached.
++	 */
++	if (val == 1)
++		rc = cxl_adapter_context_lock(adapter);
++
++	/* Perform a forced adapter reset */
++	if (rc >= 0)
++		rc = cxl_ops->adapter_reset(adapter);
++
++	return rc ? rc : count;
+ }
+ 
+ static ssize_t load_image_on_perst_show(struct device *device,
+-- 
+2.7.4
