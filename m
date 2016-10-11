@@ -1,25 +1,34 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3stcdr2ltkzDrSF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 00:04:31 +1100 (AEDT)
-Subject: Re: ppc64 qemu test failure since commit f9aa67142 ("powerpc/64s:
- Consolidate Alignment 0x600 interrupt")
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <20161009152121.GA13188@roeck-us.net>
- <20161010164953.5f37e6e4@roar.ozlabs.ibm.com>
- <d55b4014-1265-da65-1698-2860d3acd603@roeck-us.net>
- <20161011184756.5f09aa81@roar.ozlabs.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3stcx05yp2zDrSF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 00:17:40 +1100 (AEDT)
+Received: by mail-pa0-x242.google.com with SMTP id fn2so741800pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 06:17:40 -0700 (PDT)
+Subject: Re: [PATCH v4 5/5] mm: enable CONFIG_MOVABLE_NODE on non-x86 arches
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <17ac659b-928d-ae8f-f8f6-3d374617e71f@roeck-us.net>
-Date: Tue, 11 Oct 2016 06:04:20 -0700
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1475778995-1420-6-git-send-email-arbab@linux.vnet.ibm.com>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-mm@kvack.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <6d781236-3f2a-8fe6-682f-efa2c01bf429@gmail.com>
+Date: Wed, 12 Oct 2016 00:17:31 +1100
 MIME-Version: 1.0
-In-Reply-To: <20161011184756.5f09aa81@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <1475778995-1420-6-git-send-email-arbab@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,102 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/11/2016 12:47 AM, Nicholas Piggin wrote:
-> On Mon, 10 Oct 2016 07:15:11 -0700
-> Guenter Roeck <linux@roeck-us.net> wrote:
->
->> On 10/09/2016 10:49 PM, Nicholas Piggin wrote:
->>> On Sun, 9 Oct 2016 08:21:21 -0700
->>> Guenter Roeck <linux@roeck-us.net> wrote:
->>>
->>>> Nicholas,
->>>>
->>>> some of my qemu tests for ppc64 started failing on mainline (and -next).
->>>> You can find a test log at
->>>> http://kerneltests.org/builders/qemu-ppc64-master/builds/580/steps/qemubuildcommand/logs/stdio
->>>>
->>>> The scripts to run the test are available at
->>>> https://github.com/groeck/linux-build-test/tree/master/rootfs/ppc64
->>>>
->>>> Bisect points to commit f9aa67142ef26 ("powerpc/64s: Consolidate Alignment 0x600
->>>> interrupt"). Bisect log is attached.
->>>>
->>>> Since I don't have the means to run the code on a real system, I have no idea
->>>> if the problem is caused by qemu or by the code. It is interesting, though, that
->>>> only the 'mac99' tests are affected.
->>>>
->>>> Please let me know if there is anything I can do to help tracking down the
->>>> problem.
->>>
->>> Thanks for this. That patch just moves a small amount of code, so it's likely
->>> that it's caused something to get placed out of range of its caller, or the
->>> linker started generating a stub for some reason. I can't immediately see the
->>> problem, but it could be specific to your exact toolchain.
->>>
->>> Something that might help, would you be able to put the compiled vmlinux binaries
->>> from before/after the bad patch somewhere I can grab them?
->>>
->>
->> http://server.roeck-us.net/qemu/ppc64/mac99/
->>
->> 'bad' is at f9aa67142ef26, 'good' is one commit earlier, 'tot' is from top of tree
->> (b66484cd7470, more specifically).
->>
->> Key difference in System.map, from the bad case:
->>
->> c000000000005c00 T __end_interrupts
->> c000000000007000 t end_virt_trampolines
->> c000000000008000 t 00000010.long_branch.power4_fixup_nap+0
->> c000000000008100 t fs_label
->> c000000000008100 t start_text
->>
->> 00000010.long_branch.power4_fixup_nap+0 does not exist in the good case,
->> and fs_label/start_text are at c000000000008000.
->>
->> Toolchain is from poky 1.5.1, which uses gcc 4.8.1 and binutils 2.23.2.
->> I also tried with the toolchain from poky 1.6, using gcc 4.8.2 and binutils 2.24,
->> with the same result.
->
-> Thank you for the quick response, this points to the exact problem.
-> I've attached a patch which should fix the bug. There are some checks
-> I've got planned that will catch this type of thing at build time and
-> be much easier to track down.
->
-> Thanks,
-> Nick
->
-> From: Nicholas Piggin <npiggin@gmail.com>
-> Date: Tue, 11 Oct 2016 18:33:26 +1100
-> Subject: [PATCH] powerpc/64s: fix power4_fixup_nap placement
->
-> power4_fixup_nap is called from the "common" handlers, not the virt/real
-> handlers, therefore it should itself be a common handler. Placing it
-> down in the trampoline space caused it to go out of reach of its
-> callers, requiring a trampoline inserted at the start of the text
-> section, which breaks the fixed section address calculations.
->
-> Reported-by: Guenter Roeck <linux@roeck-us.net>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Yes, that works.
 
-Tested-by: Guenter Roeck <linux@roeck-us.net>
-
+On 07/10/16 05:36, Reza Arbab wrote:
+> To support movable memory nodes (CONFIG_MOVABLE_NODE), at least one of
+> the following must be true:
+> 
+> 1. We're on x86. This arch has the capability to identify movable nodes
+>    at boot by parsing the ACPI SRAT, if the movable_node option is used.
+> 
+> 2. Our config supports memory hotplug, which means that a movable node
+>    can be created by hotplugging all of its memory into ZONE_MOVABLE.
+> 
+> Fix the Kconfig definition of CONFIG_MOVABLE_NODE, which currently
+> recognizes (1), but not (2).
+> 
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/kernel/exceptions-64s.S | 2 +-
+>  mm/Kconfig | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 08992f8..f129408 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1377,7 +1377,7 @@ __end_interrupts:
->  DEFINE_FIXED_SYMBOL(__end_interrupts)
->
->  #ifdef CONFIG_PPC_970_NAP
-> -TRAMP_REAL_BEGIN(power4_fixup_nap)
-> +EXC_COMMON_BEGIN(power4_fixup_nap)
->  	andc	r9,r9,r10
->  	std	r9,TI_LOCAL_FLAGS(r11)
->  	ld	r10,_LINK(r1)		/* make idle task do the */
->
+> 
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index be0ee11..5d0818f 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -153,7 +153,7 @@ config MOVABLE_NODE
+>  	bool "Enable to assign a node which has only movable memory"
+>  	depends on HAVE_MEMBLOCK
+>  	depends on NO_BOOTMEM
+> -	depends on X86_64
+> +	depends on X86_64 || MEMORY_HOTPLUG
+>  	depends on NUMA
+>  	default n
+>  	help
+> 
+
+Acked-by: Balbir Singh <bsingharora@gmail.com>
