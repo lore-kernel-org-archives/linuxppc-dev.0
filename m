@@ -1,34 +1,44 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <robh+dt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3stcx05yp2zDrSF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 00:17:40 +1100 (AEDT)
-Received: by mail-pa0-x242.google.com with SMTP id fn2so741800pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 06:17:40 -0700 (PDT)
-Subject: Re: [PATCH v4 5/5] mm: enable CONFIG_MOVABLE_NODE on non-x86 arches
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3stdrt1m5hzDskg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 00:59:10 +1100 (AEDT)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id EA608202E9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 13:59:07 +0000 (UTC)
+Received: from mail-yw0-f169.google.com (mail-yw0-f169.google.com
+ [209.85.161.169])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9206E20373
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 13:59:04 +0000 (UTC)
+Received: by mail-yw0-f169.google.com with SMTP id t192so13083969ywf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 06:59:04 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1475778995-1420-3-git-send-email-arbab@linux.vnet.ibm.com>
 References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1475778995-1420-6-git-send-email-arbab@linux.vnet.ibm.com>
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ <1475778995-1420-3-git-send-email-arbab@linux.vnet.ibm.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Tue, 11 Oct 2016 08:58:43 -0500
+Message-ID: <CAL_JsqJmqaH8p2fUyZN8EdHNfshfdyUHKsaT8JN_G1AQuua_Qg@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] drivers/of: do not add memory for unavailable nodes
+To: Reza Arbab <arbab@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>, Balbir Singh <bsingharora@gmail.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Tang Chen <tangchen@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-mm@kvack.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <6d781236-3f2a-8fe6-682f-efa2c01bf429@gmail.com>
-Date: Wed, 12 Oct 2016 00:17:31 +1100
-MIME-Version: 1.0
-In-Reply-To: <1475778995-1420-6-git-send-email-arbab@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ Tang Chen <tangchen@cn.fujitsu.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,39 +48,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 07/10/16 05:36, Reza Arbab wrote:
-> To support movable memory nodes (CONFIG_MOVABLE_NODE), at least one of
-> the following must be true:
-> 
-> 1. We're on x86. This arch has the capability to identify movable nodes
->    at boot by parsing the ACPI SRAT, if the movable_node option is used.
-> 
-> 2. Our config supports memory hotplug, which means that a movable node
->    can be created by hotplugging all of its memory into ZONE_MOVABLE.
-> 
-> Fix the Kconfig definition of CONFIG_MOVABLE_NODE, which currently
-> recognizes (1), but not (2).
-> 
+On Thu, Oct 6, 2016 at 1:36 PM, Reza Arbab <arbab@linux.vnet.ibm.com> wrote:
+> Respect the standard dt "status" property when scanning memory nodes in
+> early_init_dt_scan_memory(), so that if the node is unavailable, no
+> memory will be added.
+>
+> The use case at hand is accelerator or device memory, which may be
+> unusable until post-boot initialization of the memory link. Such a node
+> can be described in the dt as any other, given its status is "disabled".
+> Per the device tree specification,
+>
+> "disabled"
+>         Indicates that the device is not presently operational, but it
+>         might become operational in the future (for example, something
+>         is not plugged in, or switched off).
+>
+> Once such memory is made operational, it can then be hotplugged.
+>
 > Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 > ---
->  mm/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index be0ee11..5d0818f 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -153,7 +153,7 @@ config MOVABLE_NODE
->  	bool "Enable to assign a node which has only movable memory"
->  	depends on HAVE_MEMBLOCK
->  	depends on NO_BOOTMEM
-> -	depends on X86_64
-> +	depends on X86_64 || MEMORY_HOTPLUG
->  	depends on NUMA
->  	default n
->  	help
-> 
+>  drivers/of/fdt.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+Acked-by: Rob Herring <robh@kernel.org>
