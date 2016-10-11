@@ -1,46 +1,48 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3stGPP5MrJzDskb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 10:22:33 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3stQdF5s3fzDrSF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 16:33:21 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9ANJZoh143490
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 19:22:31 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 260ggf92a1-1
+ u9B5TLgi065840
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 01:33:19 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 260k02xnt7-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2016 19:22:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 01:33:19 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 11 Oct 2016 09:22:28 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 867112BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 10:22:27 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9ANMRKZ10879150
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 10:22:27 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9ANMRfl027262
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 10:22:27 +1100
-Subject: Re: [PATCH] cxl: Prevent adapter reset if an active context exists
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1476108550-31686-1-git-send-email-vaibhav@linux.vnet.ibm.com>
- <d250fc2f-2c56-1bbd-72fa-fc65ab8754d2@linux.vnet.ibm.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 11 Oct 2016 10:22:26 +1100
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 11 Oct 2016 15:33:14 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DB0B22BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 16:33:11 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9B5XBr265732748
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 16:33:11 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9B5XBDh006553
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 16:33:11 +1100
+Date: Tue, 11 Oct 2016 16:33:53 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, benh@au1.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, clsoto@us.ibm.com
+Subject: Re: [PATCH v2 1/2] pci: Call pcibios_sriov_enable() before IOV BARs
+ are enabled
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1475192870-7763-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <d250fc2f-2c56-1bbd-72fa-fc65ab8754d2@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <11932f92-64f4-2619-03d8-04ce00d5c278@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1475192870-7763-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Message-Id: <20161011053353.GA5123@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,30 +52,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/10/16 02:09, Frederic Barrat wrote:
->> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
->> index 01d372a..ed89c57 100644
->> --- a/drivers/misc/cxl/cxl.h
->> +++ b/drivers/misc/cxl/cxl.h
->> @@ -618,6 +618,14 @@ struct cxl {
->>      bool perst_select_user;
->>      bool perst_same_image;
->>      bool psl_timebase_synced;
->> +
->> +    /*
->> +     * number of contexts mapped on to this card.
->> +     * +ve: Number of contexts mapped and new one can be mapped.
->> +     *  0 : No active contexts and new ones can be mapped.
->> +     * -ve: No contexts mapped and new ones cannot be mapped.
+On Fri, Sep 30, 2016 at 09:47:49AM +1000, Gavin Shan wrote:
+>In current implementation, pcibios_sriov_enable() is used by PPC
+>PowerNV platform only. In PowerNV specific pcibios_sriov_enable(),
+>PF's IOV BARs might be updated (shifted) by pci_update_resource().
+>It means the IOV BARs aren't ready for decoding incoming memory
+>address until pcibios_sriov_enable() returns.
 >
+>This calls pcibios_sriov_enable() earlier before the IOV BARs are
+>enabled. As the result, the IOV BARs have been configured correctly
+>when they are enabled.
 >
-> what does "ve" stand for ?
+>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>Tested-by: Carol Soto <clsoto@us.ibm.com>
 
-"+ve" and "-ve" are common English scientific/engineering abbreviations 
-for "positive" and "negative" respectively. I suppose they may be 
-unfamiliar to those who didn't get an English science education, so it 
-might be clearer to say "positive" and "negative" in full.
+Bjorn, is there any chance to put those two patches to 4.9? :)
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Thanks,
+Gavin
+
+>---
+> drivers/pci/iov.c | 14 +++++++-------
+> 1 file changed, 7 insertions(+), 7 deletions(-)
+>
+>diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>index 2194b44..f1343f0 100644
+>--- a/drivers/pci/iov.c
+>+++ b/drivers/pci/iov.c
+>@@ -303,13 +303,6 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+> 			return rc;
+> 	}
+>
+>-	pci_iov_set_numvfs(dev, nr_virtfn);
+>-	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
+>-	pci_cfg_access_lock(dev);
+>-	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+>-	msleep(100);
+>-	pci_cfg_access_unlock(dev);
+>-
+> 	iov->initial_VFs = initial;
+> 	if (nr_virtfn < initial)
+> 		initial = nr_virtfn;
+>@@ -320,6 +313,13 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+> 		goto err_pcibios;
+> 	}
+>
+>+	pci_iov_set_numvfs(dev, nr_virtfn);
+>+	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
+>+	pci_cfg_access_lock(dev);
+>+	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+>+	msleep(100);
+>+	pci_cfg_access_unlock(dev);
+>+
+> 	for (i = 0; i < initial; i++) {
+> 		rc = pci_iov_add_virtfn(dev, i, 0);
+> 		if (rc)
+>-- 
+>2.1.0
+>
