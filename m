@@ -1,23 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jstancek@redhat.com>
+Received: from mx6-phx2.redhat.com (mx6-phx2.redhat.com [209.132.183.39])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3stQxy5hP6zDsy4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 16:47:50 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org,
- Chris Smart <chris@distroguy.com>
-Subject: Re: [PATCH] Fix "ibm,processor-radix-AP-encodings"
-In-Reply-To: <CAOSf1CE2RJ2X_cB8nZz3UziFURqrqA7aLV+GVySY6k+8KPYTiA@mail.gmail.com>
-References: <0612c46e-7e1b-3729-d84f-cefa886abb6d@gmail.com>
- <877f9wbv6j.fsf@linux.vnet.ibm.com>
- <CAOSf1CE2RJ2X_cB8nZz3UziFURqrqA7aLV+GVySY6k+8KPYTiA@mail.gmail.com>
-Date: Tue, 11 Oct 2016 16:47:50 +1100
-Message-ID: <87fuo35tdl.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3stTZN4XylzDsmG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 18:46:04 +1100 (AEDT)
+Date: Tue, 11 Oct 2016 03:45:56 -0400 (EDT)
+From: Jan Stancek <jstancek@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
+Message-ID: <835114866.189537.1476171956945.JavaMail.zimbra@redhat.com>
+In-Reply-To: <87insz5tfs.fsf@concordia.ellerman.id.au>
+References: <CAOJe8K0p60fmubbhSHCm0096CTjYjnnfoo_JLuwDcg6fo-=pBg@mail.gmail.com>
+ <20161010115102.GA501@dustball.brq.redhat.com>
+ <87insz5tfs.fsf@concordia.ellerman.id.au>
+Subject: Re: ehea crash on boot
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oliver O'Halloran <oohall@gmail.com> writes:
 
-> On Wed, Sep 28, 2016 at 12:43 PM, Aneesh Kumar K.V
-> <aneesh.kumar@linux.vnet.ibm.com> wrote:
->> Balbir Singh <bsingharora@gmail.com> writes:
->>
->>> The top 3 bits of the lower order byte should contain the
->>> AP encoding, we assume the top 3 bits of the MSB.
->
-> Balbir, could you reword this so it says "Currently we wrongly assume
-> <blah>" or similar. The current commit message made me think you were
-> changing it to look at the top 3 bits of the MSB rather than changing
-> it look at the LSB.
 
-Yeah please reword it to describe what the current code does, why it's
-incorrect, and how we are fixing it.
 
-cheers
+
+----- Original Message -----
+> From: "Michael Ellerman" <mpe@ellerman.id.au>
+> To: "Jan Stancek" <jstancek@redhat.com>, "Denis Kirjanov" <kda@linux-powerpc.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Sent: Tuesday, 11 October, 2016 7:46:31 AM
+> Subject: Re: ehea crash on boot
+> 
+> Jan Stancek <jstancek@redhat.com> writes:
+> 
+> > Hi Denis / all,
+> >
+> > Do you know if there is a patch or lead for this problem? I seem
+> > to be hitting same Oops with P730 lpar when running 4.8 (see below),
+> > but 4.7.7 looks OK.
+> 
+> Does this fix it?
+
+Yes, it does. dmesg looks clean and network is up.
+
+Regards,
+Jan
+
+> 
+> cheers
+> 
+> 
+> diff --git a/arch/powerpc/mm/hash_utils_64.c
+> b/arch/powerpc/mm/hash_utils_64.c
+> index 4cebc31e53de..4e83d872872d 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -526,7 +526,7 @@ static bool might_have_hea(void)
+>  	 */
+>  #ifdef CONFIG_IBMEBUS
+>  	return !cpu_has_feature(CPU_FTR_ARCH_207S) &&
+> -		!firmware_has_feature(FW_FEATURE_SPLPAR);
+> +		firmware_has_feature(FW_FEATURE_SPLPAR);
+>  #else
+>  	return false;
+>  #endif
+> 
