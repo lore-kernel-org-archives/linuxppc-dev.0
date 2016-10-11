@@ -1,43 +1,17 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3stTg15wCgzDskf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 18:50:05 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3stTg11Nllz9sC7
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2016 18:50:04 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9B7n85q075853
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2016 03:50:02 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 260k0345qn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2016 03:50:02 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 11 Oct 2016 01:50:02 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Oliver O'Halloran" <oohall@gmail.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org,
- Chris Smart <chris@distroguy.com>
-Subject: Re: [PATCH] Fix "ibm,processor-radix-AP-encodings"
-In-Reply-To: <87fuo35tdl.fsf@concordia.ellerman.id.au>
-References: <0612c46e-7e1b-3729-d84f-cefa886abb6d@gmail.com>
- <877f9wbv6j.fsf@linux.vnet.ibm.com>
- <CAOSf1CE2RJ2X_cB8nZz3UziFURqrqA7aLV+GVySY6k+8KPYTiA@mail.gmail.com>
- <87fuo35tdl.fsf@concordia.ellerman.id.au>
-Date: Tue, 11 Oct 2016 13:19:53 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87lgxvb9zy.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3stXtR45KnzDskm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 21:15:11 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: jstancek@redhat.com,
+	kda@linux-powerpc.org,
+	benh@kernel.crashing.org
+Subject: [PATCH] powerpc/mm/hash64: Fix might_have_hea() check
+Date: Tue, 11 Oct 2016 21:15:04 +1100
+Message-Id: <1476180904-19466-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,28 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+In commit 2b4e3ad8f579 ("powerpc/mm/hash64: Don't test for machine type
+to detect HEA special case") we changed the logic in might_have_hea()
+to check FW_FEATURE_SPLPAR rather than machine_is(pseries).
 
-> Oliver O'Halloran <oohall@gmail.com> writes:
->
->> On Wed, Sep 28, 2016 at 12:43 PM, Aneesh Kumar K.V
->> <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>> Balbir Singh <bsingharora@gmail.com> writes:
->>>
->>>> The top 3 bits of the lower order byte should contain the
->>>> AP encoding, we assume the top 3 bits of the MSB.
->>
->> Balbir, could you reword this so it says "Currently we wrongly assume
->> <blah>" or similar. The current commit message made me think you were
->> changing it to look at the top 3 bits of the MSB rather than changing
->> it look at the LSB.
->
-> Yeah please reword it to describe what the current code does, why it's
-> incorrect, and how we are fixing it.
->
+However the check was incorrectly negated, leading to crashes on
+machines with HEA adapters, such as:
 
-I have an updated patch for this, which redo the AP-encoding parsing
-based on spec update. Wil send it to the list once we finalize the
-details
+  mm: Hashing failure ! EA=0xd000080080004040 access=0x800000000000000e current=NetworkManager
+      trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003cc033e701ae
+  Unable to handle kernel paging request for data at address 0xd000080080004040
+  Call Trace:
+    .ehea_create_cq+0x148/0x340 [ehea] (unreliable)
+    .ehea_up+0x258/0x1200 [ehea]
+    .ehea_open+0x44/0x1a0 [ehea]
+    ...
 
--aneesh
+Fix it by removing the negation.
+
+Fixes: 2b4e3ad8f579 ("powerpc/mm/hash64: Don't test for machine type to detect HEA special case")
+Cc: stable@vger.kernel.org # v4.8+
+Reported-by: Denis Kirjanov <kda@linux-powerpc.org>
+Reported-by: Jan Stancek <jstancek@redhat.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/mm/hash_utils_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 90480e23fd2c..44d3c3a38e3e 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -529,7 +529,7 @@ static bool might_have_hea(void)
+ 	 */
+ #ifdef CONFIG_IBMEBUS
+ 	return !cpu_has_feature(CPU_FTR_ARCH_207S) &&
+-		!firmware_has_feature(FW_FEATURE_SPLPAR);
++		firmware_has_feature(FW_FEATURE_SPLPAR);
+ #else
+ 	return false;
+ #endif
+-- 
+2.7.4
