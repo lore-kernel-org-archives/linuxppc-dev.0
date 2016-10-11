@@ -1,16 +1,28 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3stZSj1kf0zDrSF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 22:26:29 +1100 (AEDT)
-Date: Tue, 11 Oct 2016 22:25:47 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/64: Fix incorrect return value from __copy_tofrom_user
-Message-ID: <20161011112547.GA24222@fergus.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3stZXB39qGzDskc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2016 22:29:30 +1100 (AEDT)
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
+ Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+ Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
+ Johannes Thumshirn <jthumshirn@suse.de>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT))
+Subject: [PATCH 12/44] ibmvfc: Use fc_bsg_jobdone()
+Date: Tue, 11 Oct 2016 13:28:43 +0200
+Message-Id: <fc142544c087dd2d889dcec1246f9f3b71602baa.1476180827.git.jthumshirn@suse.de>
+In-Reply-To: <cover.1476180827.git.jthumshirn@suse.de>
+References: <cover.1476180827.git.jthumshirn@suse.de>
+In-Reply-To: <cover.1476180827.git.jthumshirn@suse.de>
+References: <cover.1476180827.git.jthumshirn@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,54 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Debugging a data corruption issue with virtio-net/vhost-net led to
-the observation that __copy_tofrom_user was occasionally returning
-a value 16 larger than it should.  Since the return value from
-__copy_tofrom_user is the number of bytes not copied, this means
-that __copy_tofrom_user can occasionally return a value larger
-than the number of bytes it was asked to copy.  In turn this can
-cause higher-level copy functions such as copy_page_to_iter_iovec
-to corrupt memory by copying data into the wrong memory locations.
+Use fc_bsg_jobdone() directly instead of the struct bsg_job::job_done()
+callback.
 
-It turns out that the failing case involves a fault on the store
-at label 79, and at that point the first unmodified byte of the
-destination is at R3 + 16.  Consequently the exception handler
-for that store needs to add 16 to R3 before using it to work out
-how many bytes were not copied, but in this one case it was not
-adding the offset to R3.  To fix it, this moves the label 179 to
-the point where we add 16 to R3.  I have checked manually all the
-exception handlers for the loads and stores in this code and the
-rest of them are correct (it would be excellent to have an
-automated test of all the exception cases).
-
-This bug has been present since this code was initially
-committed in May 2002 to Linux version 2.5.20.
-
-Cc: stable@vger.kernel.org
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 ---
- arch/powerpc/lib/copyuser_64.S | 2 +-
+ drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/lib/copyuser_64.S b/arch/powerpc/lib/copyuser_64.S
-index f09899e..7b22624 100644
---- a/arch/powerpc/lib/copyuser_64.S
-+++ b/arch/powerpc/lib/copyuser_64.S
-@@ -359,6 +359,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
- 	addi	r3,r3,8
- 171:
- 177:
-+179:
- 	addi	r3,r3,8
- 370:
- 372:
-@@ -373,7 +374,6 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
- 173:
- 174:
- 175:
--179:
- 181:
- 184:
- 186:
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 8b55279..21c9d28 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -1939,7 +1939,7 @@ static int ibmvfc_bsg_request(struct fc_bsg_job *job)
+ 	ibmvfc_free_event(evt);
+ 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 	bsg_reply->result = rc;
+-	job->job_done(job);
++	fc_bsg_jobdone(job);
+ 	rc = 0;
+ out:
+ 	dma_unmap_sg(vhost->dev, job->request_payload.sg_list,
 -- 
-2.7.4
+1.8.5.6
