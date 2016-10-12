@@ -1,53 +1,30 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hkallweit1@gmail.com>
+Received: from mail-lf0-x232.google.com (mail-lf0-x232.google.com
+ [IPv6:2a00:1450:4010:c07::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svLvJ75Y4zDsxG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 04:48:44 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3svLvJ32kDz9s65
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2016 04:48:44 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9CHhYvO001444
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2016 13:48:42 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 261qwsehfu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2016 13:48:42 -0400
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 12 Oct 2016 23:18:38 +0530
-Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 21BE3E005E
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2016 23:18:16 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9CHmZoV24248394
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2016 23:18:35 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9CHmXTv031085
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2016 23:18:34 +0530
-Subject: Re: [PATCH] powerpc/fadump: Fix the race in crash_fadump().
-To: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-References: <147608098939.18363.6488762843827913560.stgit@jupiter.in.ibm.com>
- <87lgxw5vdx.fsf@concordia.ellerman.id.au>
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Haren Myneni <hbabu@us.ibm.com>, Balbir Singh <bsingharora@gmail.com>,
- Anton Blanchard <anton@samba.org>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Wed, 12 Oct 2016 23:18:31 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svMk43LBGzDsxJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 05:25:48 +1100 (AEDT)
+Received: by mail-lf0-x232.google.com with SMTP id l131so54140816lfl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 11:25:48 -0700 (PDT)
+Subject: Re: Commit 1b7898ee276b "powerpc/boot: Use the pre-boot decompression
+ API" breaks boot
+To: Oliver O'Halloran <oohall@gmail.com>
+References: <8db8ecac-4022-7df9-4e81-3d490c50821d@gmail.com>
+ <CAOSf1CFVX8j+kyp3SRhRz_gyPiQ3R9x=_nJyq9fr31NyGi3hhg@mail.gmail.com>
+ <c19153b9-7554-0280-6d97-750c9e62b3be@gmail.com>
+ <80c9c42c-45d3-9f24-b3e1-5a5042686b1b@gmail.com>
+ <877f9g7r4l.fsf@concordia.ellerman.id.au>
+ <62241a1e-51c0-c1cd-1ecd-fa54a3842da0@gmail.com>
+ <0a0d0909-cee3-f375-4cf4-75f0beb5b8b7@gmail.com>
+ <CAOSf1CHLO1UL+33nLQfF8uK1ysyu1tM=HwRSdLQCB+__Rbc67Q@mail.gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Message-ID: <36223f5f-5b57-19f4-f4d8-3191980d83e6@gmail.com>
+Date: Wed, 12 Oct 2016 20:25:29 +0200
 MIME-Version: 1.0
-In-Reply-To: <87lgxw5vdx.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <8c44acaa-e72a-c66a-4e8e-d3518b8ba571@linux.vnet.ibm.com>
+In-Reply-To: <CAOSf1CHLO1UL+33nLQfF8uK1ysyu1tM=HwRSdLQCB+__Rbc67Q@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,35 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/10/2016 04:22 PM, Michael Ellerman wrote:
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
-> 
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Am 12.10.2016 um 06:26 schrieb Oliver O'Halloran:
+> On Tue, Oct 11, 2016 at 7:06 AM, Heiner Kallweit <hkallweit1@gmail.com> wrote:
+>>> IMHO in case of using cuboot no CONFIG_KERNEL_<COMPR TYPE> config option
+>>> should be set and Makefile + code in arch/powerpc/boot should be able
+>>> to deal with this situation:
+>>> - don't copy and build the decompression stuff
+>>> - use an alternative version of prep_kernel() in main.c which doesn't
+>>>   attempt to decompress the kernel image
+>>>
+>>> This should be a cleaner solution than probing the kernel image whether
+>>> it's compressed or not.
+>>>
 >>
->> There are chances that multiple CPUs can call crash_fadump() simultaneously
->> and would start duplicating same info to vmcoreinfo ELF note section. This
->> causes makedumpfile to fail during kdump capture. One example is,
->> triggering dumprestart from HMC which sends system reset to all the CPUs at
->> once.
-> ...
->> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
->> index b3a6633..2ed9d1c 100644
->> --- a/arch/powerpc/kernel/fadump.c
->> +++ b/arch/powerpc/kernel/fadump.c
->> @@ -402,8 +402,14 @@ void crash_fadump(struct pt_regs *regs, const char *str)
->>  {
->>  	struct fadump_crash_info_header *fdh = NULL;
->>  
->> -	if (!fw_dump.dump_registered || !fw_dump.fadumphdr_addr)
->> +	mutex_lock(&fadump_mutex);
+>> This would be the patch implementing the idea. Advantage is that all
+>> the unnecessary decompression code isn't built. Works fine for me.
 > 
-> What happens when a crashing CPU can't get the mutex and goes to sleep?
+> I don't think this approach is viable. The wrapper code is shared
+> among the various output image formats some of which *will* contain a
+> compressed kernel image so we can't simply remove the decompressor
+> from the wrapper. A random example I found in the makefile was
+> CONFIG_BAMBOO:
+> 
+>> image-$(CONFIG_BAMBOO) += treeImage.bamboo cuImage.bamboo
+> 
+> When building for this platform Kbuild will produce treeboot and a
+> cuboot image. Unlike uboot, Treeboot doesn't do any decompression so
+> the wrapper needs to decompress the kernel itself. The probing
+> solution more or less matches the old behaviour (which we know works)
+> so I think we should just stick with that.
+> 
+> - Oliver
+> 
+Indeed, I also figured that out later. As you say, then let's stick
+with re-introducing the probing. I'll send the patch for this.
 
-Got your point. I think I should use mutex_trylock() here. There is only
-two reason crashing CPU can't get mutex, 1) Another CPU also crashing
-that got the mutex and on its way to trigger fadump. OR 2) We are in
-middle of fadump register/un-register, in which case we can just return
-and go to normal panic.
-
-Thanks,
--Mahesh.
+Heiner
