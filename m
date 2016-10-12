@@ -1,18 +1,26 @@
-Return-Path: <npiggin@gmail.com>
+Return-Path: <bsingharora@gmail.com>
 Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
  [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sv4WL2mZKzDsrf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 18:00:30 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id 128so2095515pfz.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 00:00:30 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sv5Hh5cc2zDsrf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 18:35:27 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id r16so2159910pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 00:35:27 -0700 (PDT)
+Received: from balbir.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id z123sm9264910pfz.60.2016.10.12.00.35.24
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 12 Oct 2016 00:35:25 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/64: option to force run-at-load to test relocation
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc: link error on orphan sections
-Date: Wed, 12 Oct 2016 18:00:20 +1100
-Message-Id: <20161012070020.30170-1-npiggin@gmail.com>
+References: <20161012065719.29833-1-npiggin@gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
+Date: Wed, 12 Oct 2016 18:35:21 +1100
+MIME-Version: 1.0
+In-Reply-To: <20161012065719.29833-1-npiggin@gmail.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,102 +30,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add --orphan-handling=error to final link flags. This ensures we have to
-handle all sections. This would have caught subtle breakage such as
-7de3b27bac47da9de08409df1d69664acbb72197 at build-time.
 
-Also bring some wayward sections into the fold:
-- .text.hot and .text.unlikely are compiler generated sections.
-- .sfpr is a linker generated section for register save functions.
-- .sdata2, .dynsbss, .plt are used by PPC32
-- We previously did not specify DWARF_DEBUG or STABS_DEBUG
-- DWARF_DEBUG did not include DWARF3 .debug_ranges
-- A number of sections are unused.
 
-I don't know if I've exactly got everything right here, particularly
-with ppc32, so would appreciate people casting their eye over it.
+On 12/10/16 17:57, Nicholas Piggin wrote:
+> This adds a config option that can help exercise the case when
+> the kernel is not running at PAGE_OFFSET.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/Kconfig               | 9 +++++++++
+>  arch/powerpc/kernel/head_64.S      | 4 ++++
+>  arch/powerpc/kernel/setup-common.c | 3 +++
+>  3 files changed, 16 insertions(+)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 65fba4c..5d43cb8 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -478,6 +478,15 @@ config RELOCATABLE
+>  	  setting can still be useful to bootwrappers that need to know the
+>  	  load address of the kernel (eg. u-boot/mkimage).
+>  
+> +config RELOCATABLE_TEST
+> +	bool "Test relocatable kernel"
+> +	depends on (PPC64 && RELOCATABLE)
+> +	default n
+> +	help
+> +	  This runs the relocatable kernel at the address it was initially
+> +	  loaded at, which tends to be non-zero and therefore test the
+> +	  relocation code.
+> +
+>  config CRASH_DUMP
+>  	bool "Build a kdump crash kernel"
+>  	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
+> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+> index 79da0641..bc9ceac 100644
+> --- a/arch/powerpc/kernel/head_64.S
+> +++ b/arch/powerpc/kernel/head_64.S
+> @@ -111,8 +111,12 @@ __secondary_hold_acknowledge:
+>  	.globl	__run_at_load
+>  __run_at_load:
+>  DEFINE_FIXED_SYMBOL(__run_at_load)
+> +#ifdef CONFIG_RELOCATABLE_TEST
+> +	.long	0x1		/* Test relocation, do not relocate to 0 */
+> +#else
+>  	.long	0x72756e30	/* "run0" -- relocate to 0 by default */
+>  #endif
+> +#endif
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Makefile             |  2 +-
- arch/powerpc/kernel/vmlinux.lds.S | 16 ++++++++++++++--
- include/asm-generic/vmlinux.lds.h |  3 +++
- 3 files changed, 18 insertions(+), 3 deletions(-)
+Could we do something like
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 50d020a..a3f2784 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -90,7 +90,7 @@ endif
- 
- LDFLAGS_vmlinux-y := -Bstatic
- LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
--LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
-+LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y) --orphan-handling=error
- 
- ifeq ($(CONFIG_PPC64),y)
- ifeq ($(call cc-option-yn,-mcmodel=medium),y)
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 8295f51..9f4d85e 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -97,7 +97,7 @@ SECTIONS
- 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
- 		ALIGN_FUNCTION();
- 		/* careful! __ftr_alt_* sections need to be close to .text */
--		*(.text .fixup __ftr_alt_* .ref.text)
-+		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text .sfpr) \
- 		SCHED_TEXT
- 		CPUIDLE_TEXT
- 		LOCK_TEXT
-@@ -256,7 +256,9 @@ SECTIONS
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
- 		DATA_DATA
- 		*(.sdata)
-+		*(.sdata2)
- 		*(.got.plt) *(.got)
-+		*(.plt)
- 	}
- #else
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-@@ -317,6 +319,16 @@ SECTIONS
- 	_end = . ;
- 	PROVIDE32 (end = .);
- 
--	/* Sections to be discarded. */
-+	STABS_DEBUG
-+
-+	DWARF_DEBUG
-+
- 	DISCARDS
-+	/DISCARD/ : {
-+		*(*.EMB.apuinfo)
-+		*(.glink .iplt .plt .rela* .comment)
-+		*(.gnu.version*)
-+		*(.gnu.attributes)
-+		*(.eh_frame)
-+	}
- }
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 3e42bcd..264ebb3 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -581,6 +581,7 @@
- #define SBSS(sbss_align)						\
- 	. = ALIGN(sbss_align);						\
- 	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
-+		*(.dynsbss)						\
- 		*(.sbss)						\
- 		*(.scommon)						\
- 	}
-@@ -627,6 +628,8 @@
- 		.debug_str      0 : { *(.debug_str) }			\
- 		.debug_loc      0 : { *(.debug_loc) }			\
- 		.debug_macinfo  0 : { *(.debug_macinfo) }		\
-+		/* DWARF 3 */						\
-+		.debug_ranges	0 : { *(.debug_ranges) }		\
- 		/* SGI/MIPS DWARF 2 extensions */			\
- 		.debug_weaknames 0 : { *(.debug_weaknames) }		\
- 		.debug_funcnames 0 : { *(.debug_funcnames) }		\
--- 
-2.9.3
+config RELOCATION_VALUE
+	default 0x72756e30
+	default	1  if CONFIG_RELOCTABLE_TEST
+
+and then get
+
+	.long CONFIG_RELOCATION_VALUE
+
+
+	
+
+>  
+>  	. = 0x60
+>  /*
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index dba265c..18e0f19 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -795,6 +795,9 @@ static __init void print_system_info(void)
+>  	pr_info("mmu_features      = 0x%08x\n", cur_cpu_spec->mmu_features);
+>  #ifdef CONFIG_PPC64
+>  	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
+> +
+> +	if (get_paca()->kernelbase != PAGE_OFFSET)
+> +		pr_info("kernelbase        = 0x%llx\n", get_paca()->kernelbase);
+>  #endif
+>  
+
+Do we need this? We get physical_offset if we are relocated.
+
+>  #ifdef CONFIG_PPC_STD_MMU_64
+> 
+
+Balbir Singh.
