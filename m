@@ -2,8 +2,8 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sv6yW5NN7zDsrf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 19:50:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sv8V82ZLxzDsrf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 20:59:44 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Marcin Nowakowski <marcin.nowakowski@imgtec.com>,
  linux-kernel@vger.kernel.org
@@ -12,12 +12,12 @@ Cc: linux-api@vger.kernel.org, luto@amacapital.net, rostedt@goodmis.org,
  Ingo Molnar <mingo@redhat.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 03/11] tracing/syscalls: add compat syscall metadata
-In-Reply-To: <1476182576-15247-4-git-send-email-marcin.nowakowski@imgtec.com>
+Subject: Re: [PATCH v3 08/11] powerpc/tracing: fix compat syscall handling
+In-Reply-To: <1476182576-15247-9-git-send-email-marcin.nowakowski@imgtec.com>
 References: <1476182576-15247-1-git-send-email-marcin.nowakowski@imgtec.com>
- <1476182576-15247-4-git-send-email-marcin.nowakowski@imgtec.com>
-Date: Wed, 12 Oct 2016 19:50:39 +1100
-Message-ID: <8737k254tc.fsf@concordia.ellerman.id.au>
+ <1476182576-15247-9-git-send-email-marcin.nowakowski@imgtec.com>
+Date: Wed, 12 Oct 2016 20:59:42 +1100
+Message-ID: <87zim951m9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,10 +31,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Marcin Nowakowski <marcin.nowakowski@imgtec.com> writes:
 
-> Now that compat syscalls are properly distinguished from native calls,
-> we can add metadata for compat syscalls as well.
-> All the macros used to generate the metadata are the same as for
-> standard syscalls, but with a compat_ prefix to distinguish them easily.
+> Adapt the code to make use of new syscall handling interface
 >
 > Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
 > Cc: Steven Rostedt <rostedt@goodmis.org>
@@ -44,137 +41,33 @@ Marcin Nowakowski <marcin.nowakowski@imgtec.com> writes:
 > Cc: Michael Ellerman <mpe@ellerman.id.au>
 > Cc: linuxppc-dev@lists.ozlabs.org
 > ---
->  arch/powerpc/include/asm/ftrace.h | 15 +++++---
->  include/linux/compat.h            | 74 +++++++++++++++++++++++++++++++++++++++
->  kernel/trace/trace_syscalls.c     |  8 +++--
->  3 files changed, 90 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-> index 686c5f7..9697a73 100644
-> --- a/arch/powerpc/include/asm/ftrace.h
-> +++ b/arch/powerpc/include/asm/ftrace.h
-> @@ -73,12 +73,17 @@ struct dyn_arch_ftrace {
->  static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
->  {
->  	/*
-> -	 * Compare the symbol name with the system call name. Skip the .sys or .SyS
-> -	 * prefix from the symbol name and the sys prefix from the system call name and
-> -	 * just match the rest. This is only needed on ppc64 since symbol names on
-> -	 * 32bit do not start with a period so the generic function will work.
-> +	 * Compare the symbol name with the system call name. Skip the .sys,
-> +	 * .SyS or .compat_sys prefix from the symbol name and the sys prefix
-> +	 * from the system call name and just match the rest. This is only
-> +	 * needed on ppc64 since symbol names on 32bit do not start with a
-> +	 * period so the generic function will work.
->  	 */
-> -	return !strcmp(sym + 4, name + 3);
-> +	int prefix_len = 3;
-> +
-> +	if (!strncasecmp(name, "compat_", 7))
-> +		prefix_len = 10;
-> +	return !strcmp(sym + prefix_len + 1, name + prefix_len);
->  }
+>  arch/powerpc/include/asm/ftrace.h | 11 +++++++++++
+>  arch/powerpc/kernel/ftrace.c      |  4 ++++
 
-It's annoying that we have to duplicate all that just to do a + 1.
+I went to test this and noticed the exit and enter events appear to be
+reversed in time? (your series on top of 24532f768121)
 
-How about this as a precursor?
+  ls-4221  [003] ....    83.766113: compat_sys_rt_sigprocmask -> 0x2
+  ls-4221  [003] ....    83.766137: compat_sys_rt_sigprocmask(how: 2, nset: 1010db30, oset: 0, sigsetsize: 8)
+  ls-4221  [003] ....    83.766175: compat_sys_rt_sigaction -> 0x14
+  ls-4221  [003] ....    83.766175: compat_sys_rt_sigaction(sig: 14, act: ffbd33c4, oact: ffbd3338, sigsetsize: 8)
+  ls-4221  [003] ....    83.766177: compat_sys_rt_sigaction -> 0x15
+  ls-4221  [003] ....    83.766177: compat_sys_rt_sigaction(sig: 15, act: ffbd33c4, oact: ffbd3338, sigsetsize: 8)
+  ls-4221  [003] ....    83.766178: compat_sys_rt_sigaction -> 0x16
+  ls-4221  [003] ....    83.766178: compat_sys_rt_sigaction(sig: 16, act: ffbd33d4, oact: ffbd3348, sigsetsize: 8)
+  ls-4221  [003] ....    83.766179: sys_setpgid -> 0x107d
+  ls-4221  [003] ....    83.766179: sys_setpgid(pid: 107d, pgid: 107d)
+  ls-4221  [003] ....    83.766180: compat_sys_rt_sigprocmask -> 0x0
+  ls-4221  [003] ....    83.766181: compat_sys_rt_sigprocmask(how: 0, nset: ffbd34b0, oset: ffbd3530, sigsetsize: 8)
+  ls-4221  [003] ....    83.766186: compat_sys_ioctl -> 0xff
+  ls-4221  [003] ....    83.766187: compat_sys_ioctl(fd: ff, cmd: 80047476, arg32: ffbd3488)
+  ls-4221  [003] ....    83.766188: compat_sys_rt_sigprocmask -> 0x2
+  ls-4221  [003] ....    83.766189: compat_sys_rt_sigprocmask(how: 2, nset: ffbd3530, oset: 0, sigsetsize: 8)
+  ls-4221  [003] ....    83.766189: sys_close -> 0x4
+  ls-4221  [003] ....    83.766190: sys_close(fd: 4)
+  ls-4221  [003] ....    83.766191: sys_read -> 0x3
+  ls-4221  [003] ....    83.766191: sys_read(fd: 3, buf: ffbd35dc, count: 1)
+  ls-4221  [003] ....    83.766235: sys_close -> 0x3
+  ls-4221  [003] ....    83.766235: sys_close(fd: 3)
 
 cheers
-
-
-diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
-index dd5f916b351d..bd65f2adeb09 100644
---- a/Documentation/trace/ftrace-design.txt
-+++ b/Documentation/trace/ftrace-design.txt
-@@ -226,10 +226,6 @@ You need very few things to get the syscalls tracing in an arch.
- - If the system call table on this arch is more complicated than a simple array
-   of addresses of the system calls, implement an arch_syscall_addr to return
-   the address of a given system call.
--- If the symbol names of the system calls do not match the function names on
--  this arch, define ARCH_HAS_SYSCALL_MATCH_SYM_NAME in asm/ftrace.h and
--  implement arch_syscall_match_sym_name with the appropriate logic to return
--  true if the function name corresponds with the symbol name.
- - Tag this arch as HAVE_SYSCALL_TRACEPOINTS.
- 
- 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 686c5f70eb84..dc48f5b2878d 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -60,6 +60,12 @@ struct dyn_arch_ftrace {
- 	struct module *mod;
- };
- #endif /*  CONFIG_DYNAMIC_FTRACE */
-+
-+#ifdef PPC64_ELF_ABI_v1
-+/* On ppc64 ABIv1 (BE) we have to skip the leading '.' in the symbol name */
-+#define ARCH_SYM_NAME_SKIP_CHARS 1
-+#endif
-+
- #endif /* __ASSEMBLY__ */
- 
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-@@ -67,20 +73,4 @@ struct dyn_arch_ftrace {
- #endif
- #endif
- 
--#if defined(CONFIG_FTRACE_SYSCALLS) && !defined(__ASSEMBLY__)
--#ifdef PPC64_ELF_ABI_v1
--#define ARCH_HAS_SYSCALL_MATCH_SYM_NAME
--static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
--{
--	/*
--	 * Compare the symbol name with the system call name. Skip the .sys or .SyS
--	 * prefix from the symbol name and the sys prefix from the system call name and
--	 * just match the rest. This is only needed on ppc64 since symbol names on
--	 * 32bit do not start with a period so the generic function will work.
--	 */
--	return !strcmp(sym + 4, name + 3);
--}
--#endif
--#endif /* CONFIG_FTRACE_SYSCALLS && !__ASSEMBLY__ */
--
- #endif /* _ASM_POWERPC_FTRACE */
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index b2b6efc083a4..91a7315dbe43 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -31,8 +31,11 @@ extern struct syscall_metadata *__stop_syscalls_metadata[];
- 
- static struct syscall_metadata **syscalls_metadata;
- 
--#ifndef ARCH_HAS_SYSCALL_MATCH_SYM_NAME
--static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
-+#ifndef ARCH_SYM_NAME_SKIP_CHARS
-+#define ARCH_SYM_NAME_SKIP_CHARS 0
-+#endif
-+
-+static inline bool syscall_match_sym_name(const char *sym, const char *name)
- {
- 	/*
- 	 * Only compare after the "sys" prefix. Archs that use
-@@ -40,9 +43,8 @@ static inline bool arch_syscall_match_sym_name(const char *sym, const char *name
- 	 * with ".SyS" or ".sys" instead of "sys", leading to an unwanted
- 	 * mismatch.
- 	 */
--	return !strcmp(sym + 3, name + 3);
-+	return !strcmp(sym + 3 + ARCH_SYM_NAME_SKIP_CHARS, name + 3);
- }
--#endif
- 
- #ifdef ARCH_TRACE_IGNORE_COMPAT_SYSCALLS
- /*
-@@ -88,11 +90,11 @@ find_syscall_meta(unsigned long syscall)
- 	stop = __stop_syscalls_metadata;
- 	kallsyms_lookup(syscall, NULL, NULL, NULL, str);
- 
--	if (arch_syscall_match_sym_name(str, "sys_ni_syscall"))
-+	if (syscall_match_sym_name(str, "sys_ni_syscall"))
- 		return NULL;
- 
- 	for ( ; start < stop; start++) {
--		if ((*start)->name && arch_syscall_match_sym_name(str, (*start)->name))
-+		if ((*start)->name && syscall_match_sym_name(str, (*start)->name))
- 			return *start;
- 	}
- 	return NULL;
