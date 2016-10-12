@@ -1,26 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sv5Hh5cc2zDsrf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 18:35:27 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id r16so2159910pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 00:35:27 -0700 (PDT)
-Received: from balbir.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id z123sm9264910pfz.60.2016.10.12.00.35.24
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 12 Oct 2016 00:35:25 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/64: option to force run-at-load to test relocation
-To: linuxppc-dev@lists.ozlabs.org
-References: <20161012065719.29833-1-npiggin@gmail.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
-Date: Wed, 12 Oct 2016 18:35:21 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sv6yW5NN7zDsrf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 19:50:43 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Marcin Nowakowski <marcin.nowakowski@imgtec.com>,
+ linux-kernel@vger.kernel.org
+Cc: linux-api@vger.kernel.org, luto@amacapital.net, rostedt@goodmis.org,
+ Marcin Nowakowski <marcin.nowakowski@imgtec.com>,
+ Ingo Molnar <mingo@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 03/11] tracing/syscalls: add compat syscall metadata
+In-Reply-To: <1476182576-15247-4-git-send-email-marcin.nowakowski@imgtec.com>
+References: <1476182576-15247-1-git-send-email-marcin.nowakowski@imgtec.com>
+ <1476182576-15247-4-git-send-email-marcin.nowakowski@imgtec.com>
+Date: Wed, 12 Oct 2016 19:50:39 +1100
+Message-ID: <8737k254tc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20161012065719.29833-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,87 +29,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Marcin Nowakowski <marcin.nowakowski@imgtec.com> writes:
 
-
-On 12/10/16 17:57, Nicholas Piggin wrote:
-> This adds a config option that can help exercise the case when
-> the kernel is not running at PAGE_OFFSET.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Now that compat syscalls are properly distinguished from native calls,
+> we can add metadata for compat syscalls as well.
+> All the macros used to generate the metadata are the same as for
+> standard syscalls, but with a compat_ prefix to distinguish them easily.
+>
+> Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
 > ---
->  arch/powerpc/Kconfig               | 9 +++++++++
->  arch/powerpc/kernel/head_64.S      | 4 ++++
->  arch/powerpc/kernel/setup-common.c | 3 +++
->  3 files changed, 16 insertions(+)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 65fba4c..5d43cb8 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -478,6 +478,15 @@ config RELOCATABLE
->  	  setting can still be useful to bootwrappers that need to know the
->  	  load address of the kernel (eg. u-boot/mkimage).
->  
-> +config RELOCATABLE_TEST
-> +	bool "Test relocatable kernel"
-> +	depends on (PPC64 && RELOCATABLE)
-> +	default n
-> +	help
-> +	  This runs the relocatable kernel at the address it was initially
-> +	  loaded at, which tends to be non-zero and therefore test the
-> +	  relocation code.
+>  arch/powerpc/include/asm/ftrace.h | 15 +++++---
+>  include/linux/compat.h            | 74 +++++++++++++++++++++++++++++++++++++++
+>  kernel/trace/trace_syscalls.c     |  8 +++--
+>  3 files changed, 90 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+> index 686c5f7..9697a73 100644
+> --- a/arch/powerpc/include/asm/ftrace.h
+> +++ b/arch/powerpc/include/asm/ftrace.h
+> @@ -73,12 +73,17 @@ struct dyn_arch_ftrace {
+>  static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
+>  {
+>  	/*
+> -	 * Compare the symbol name with the system call name. Skip the .sys or .SyS
+> -	 * prefix from the symbol name and the sys prefix from the system call name and
+> -	 * just match the rest. This is only needed on ppc64 since symbol names on
+> -	 * 32bit do not start with a period so the generic function will work.
+> +	 * Compare the symbol name with the system call name. Skip the .sys,
+> +	 * .SyS or .compat_sys prefix from the symbol name and the sys prefix
+> +	 * from the system call name and just match the rest. This is only
+> +	 * needed on ppc64 since symbol names on 32bit do not start with a
+> +	 * period so the generic function will work.
+>  	 */
+> -	return !strcmp(sym + 4, name + 3);
+> +	int prefix_len = 3;
 > +
->  config CRASH_DUMP
->  	bool "Build a kdump crash kernel"
->  	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> index 79da0641..bc9ceac 100644
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -111,8 +111,12 @@ __secondary_hold_acknowledge:
->  	.globl	__run_at_load
->  __run_at_load:
->  DEFINE_FIXED_SYMBOL(__run_at_load)
-> +#ifdef CONFIG_RELOCATABLE_TEST
-> +	.long	0x1		/* Test relocation, do not relocate to 0 */
-> +#else
->  	.long	0x72756e30	/* "run0" -- relocate to 0 by default */
->  #endif
-> +#endif
+> +	if (!strncasecmp(name, "compat_", 7))
+> +		prefix_len = 10;
+> +	return !strcmp(sym + prefix_len + 1, name + prefix_len);
+>  }
 
-Could we do something like
+It's annoying that we have to duplicate all that just to do a + 1.
 
-config RELOCATION_VALUE
-	default 0x72756e30
-	default	1  if CONFIG_RELOCTABLE_TEST
+How about this as a precursor?
 
-and then get
-
-	.long CONFIG_RELOCATION_VALUE
+cheers
 
 
-	
-
->  
->  	. = 0x60
->  /*
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index dba265c..18e0f19 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -795,6 +795,9 @@ static __init void print_system_info(void)
->  	pr_info("mmu_features      = 0x%08x\n", cur_cpu_spec->mmu_features);
->  #ifdef CONFIG_PPC64
->  	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
-> +
-> +	if (get_paca()->kernelbase != PAGE_OFFSET)
-> +		pr_info("kernelbase        = 0x%llx\n", get_paca()->kernelbase);
->  #endif
->  
-
-Do we need this? We get physical_offset if we are relocated.
-
->  #ifdef CONFIG_PPC_STD_MMU_64
-> 
-
-Balbir Singh.
+diff --git a/Documentation/trace/ftrace-design.txt b/Documentation/trace/ftrace-design.txt
+index dd5f916b351d..bd65f2adeb09 100644
+--- a/Documentation/trace/ftrace-design.txt
++++ b/Documentation/trace/ftrace-design.txt
+@@ -226,10 +226,6 @@ You need very few things to get the syscalls tracing in an arch.
+ - If the system call table on this arch is more complicated than a simple array
+   of addresses of the system calls, implement an arch_syscall_addr to return
+   the address of a given system call.
+-- If the symbol names of the system calls do not match the function names on
+-  this arch, define ARCH_HAS_SYSCALL_MATCH_SYM_NAME in asm/ftrace.h and
+-  implement arch_syscall_match_sym_name with the appropriate logic to return
+-  true if the function name corresponds with the symbol name.
+ - Tag this arch as HAVE_SYSCALL_TRACEPOINTS.
+ 
+ 
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index 686c5f70eb84..dc48f5b2878d 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -60,6 +60,12 @@ struct dyn_arch_ftrace {
+ 	struct module *mod;
+ };
+ #endif /*  CONFIG_DYNAMIC_FTRACE */
++
++#ifdef PPC64_ELF_ABI_v1
++/* On ppc64 ABIv1 (BE) we have to skip the leading '.' in the symbol name */
++#define ARCH_SYM_NAME_SKIP_CHARS 1
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+@@ -67,20 +73,4 @@ struct dyn_arch_ftrace {
+ #endif
+ #endif
+ 
+-#if defined(CONFIG_FTRACE_SYSCALLS) && !defined(__ASSEMBLY__)
+-#ifdef PPC64_ELF_ABI_v1
+-#define ARCH_HAS_SYSCALL_MATCH_SYM_NAME
+-static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
+-{
+-	/*
+-	 * Compare the symbol name with the system call name. Skip the .sys or .SyS
+-	 * prefix from the symbol name and the sys prefix from the system call name and
+-	 * just match the rest. This is only needed on ppc64 since symbol names on
+-	 * 32bit do not start with a period so the generic function will work.
+-	 */
+-	return !strcmp(sym + 4, name + 3);
+-}
+-#endif
+-#endif /* CONFIG_FTRACE_SYSCALLS && !__ASSEMBLY__ */
+-
+ #endif /* _ASM_POWERPC_FTRACE */
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index b2b6efc083a4..91a7315dbe43 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -31,8 +31,11 @@ extern struct syscall_metadata *__stop_syscalls_metadata[];
+ 
+ static struct syscall_metadata **syscalls_metadata;
+ 
+-#ifndef ARCH_HAS_SYSCALL_MATCH_SYM_NAME
+-static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
++#ifndef ARCH_SYM_NAME_SKIP_CHARS
++#define ARCH_SYM_NAME_SKIP_CHARS 0
++#endif
++
++static inline bool syscall_match_sym_name(const char *sym, const char *name)
+ {
+ 	/*
+ 	 * Only compare after the "sys" prefix. Archs that use
+@@ -40,9 +43,8 @@ static inline bool arch_syscall_match_sym_name(const char *sym, const char *name
+ 	 * with ".SyS" or ".sys" instead of "sys", leading to an unwanted
+ 	 * mismatch.
+ 	 */
+-	return !strcmp(sym + 3, name + 3);
++	return !strcmp(sym + 3 + ARCH_SYM_NAME_SKIP_CHARS, name + 3);
+ }
+-#endif
+ 
+ #ifdef ARCH_TRACE_IGNORE_COMPAT_SYSCALLS
+ /*
+@@ -88,11 +90,11 @@ find_syscall_meta(unsigned long syscall)
+ 	stop = __stop_syscalls_metadata;
+ 	kallsyms_lookup(syscall, NULL, NULL, NULL, str);
+ 
+-	if (arch_syscall_match_sym_name(str, "sys_ni_syscall"))
++	if (syscall_match_sym_name(str, "sys_ni_syscall"))
+ 		return NULL;
+ 
+ 	for ( ; start < stop; start++) {
+-		if ((*start)->name && arch_syscall_match_sym_name(str, (*start)->name))
++		if ((*start)->name && syscall_match_sym_name(str, (*start)->name))
+ 			return *start;
+ 	}
+ 	return NULL;
