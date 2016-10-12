@@ -1,19 +1,49 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3sv1qM3XJCzDswj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 15:59:11 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH kernel v2 2/2] powerpc/mm/iommu,
- vfio/spapr: Put pages on VFIO container shutdown
-Date: Wed, 12 Oct 2016 15:58:28 +1100
-Message-Id: <1476248308-41754-3-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1476248308-41754-1-git-send-email-aik@ozlabs.ru>
-References: <1476248308-41754-1-git-send-email-aik@ozlabs.ru>
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sv2dd2VWNzDsrc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 16:35:49 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9C5XfbN102758
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 01:35:46 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 261efkst72-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 01:35:46 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 11 Oct 2016 23:35:45 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ "skiboot\@lists.ozlabs.org" <skiboot@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/2] powernv: Pass PSSCR value and mask to power9_idle_stop
+In-Reply-To: <20161007072058.GC13873@in.ibm.com>
+References: <cover.1475130107.git.ego@linux.vnet.ibm.com>
+ <21e080ffa52f432b40750028a624aee1baebbaf7.1475130107.git.ego@linux.vnet.ibm.com>
+ <87int84d6w.fsf@concordia.ellerman.id.au>
+ <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
+ <20161007072058.GC13873@in.ibm.com>
+Date: Wed, 12 Oct 2016 16:35:35 +1100
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87lgxuf7tk.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,200 +53,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the userspace tool is expected to request pinning of
-the entire guest RAM when VFIO IOMMU SPAPR v2 driver is present.
-When the userspace process finishes, all the pinned pages need to
-be put; this is done as a part of the userspace memory context (MM)
-destruction which happens on the very last mmdrop().
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
+> On Tue, Oct 04, 2016 at 10:33:27PM +1100, Balbir Singh wrote:
+>> 
+>> 
+>> On 04/10/16 21:32, Michael Ellerman wrote:
+>> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+>> > 
+>> >> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>> >>
+>> >> The power9_idle_stop method currently takes only the requested stop
+>> >> level as a parameter and picks up the rest of the PSSCR bits from a
+>> >> hand-coded macro. This is not a very flexible design, especially when
+>> >> the firmware has the capability to communicate the psscr value and the
+>> >> mask associated with a particular stop state via device tree.
+>> >>
+>> >> This patch modifies the power9_idle_stop API to take as parameters the
+>> >> PSSCR value and the PSSCR mask corresponding to the stop state that
+>> >> needs to be set. These PSSCR value and mask are respectively obtained
+>> >> by parsing the "ibm,cpu-idle-state-psscr" and
+>> >> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
+>> >>
+>> >> In addition to this, the patch adds support for handling stop states
+>> >> for which ESL and EC bits in the PSSCR are zero. As per the
+>> >> architecture, a wakeup from these stop states resumes execution from
+>> >> the subsequent instruction as opposed to waking up at the System
+>> >> Vector.
+>> > 
+>> > That looks good.
+>> > 
+>> >> This patch depends on the following skiboot patch that exports the
+>> >> PSSCR values and the mask for all the stop states:
+>> >> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+>> > 
+>> > But we can't depend on a skiboot patch. The kernel has to cope with
+>> > running on an old skiboot.
+>>
+>
+> Hmm.. We can still do that. The older skiboot only provides the RL
+> field of the PSSCR value for each stop state and the corresponding
+> PSSCR mask is set to 0xF in the older skiboot for all the stop states.
+>
+> We can insist that the future skiboot sets the ESL, EC, PSLL, TR, MTL
+> and the the RL fields of the PSSCR for any exported stop state. This
+> should be reflected in the psscr_mask of that stop state.  Thus, the
+> psscr_mask of any stop state proposed in the future will have:
+> (PSSCR_ESL_MASK | PSCCR_EC_MASK | PSCCR_PSLL_MASK | PSSCR_TR_MASK |
+> PSSCR_MTL_MASK | PSSCR_RL_MASK) bits set in the skiboot.
+>
+> To handle the older firmware, we can do something like the following
+> during the discovery of the stop states to mimic the behaviour present
+> in the 4.8 kernel running on older firmware.
+>
+> =============== drivers/cpuidle/cpuidle-powernv.c =======================
+> /*
+>  * By default we set the ESL and EC bits in the PSSCR.
+>  * The MTL and PSLL are set to the maximum value possible as per the
+>  * ISA, i.e 15.
+>  * The Transition Rate is set to the Maximum value 3.
+>  */
+> #define DEFAULT_PSSCR_VAL      PSSCR_ESL_MASK |			\
+> 			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
+> 			       PSSCR_TR_MASK | PSSCR_MTL_MASK
+>
+> #define DEFAULT_PSSCR_MASK     PSSCR_ESL_MASK |			\
+> 			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
+> 			       PSSCR_TR_MASK | PSSCR_MTL_MASK | \
+> 			       PSSCR_RL_MASK
+>
+>
+> static int powernv_add_idle_states(void)
+> {
+> 	.
+> 	.
+> 	.
+> 	for (i = 0; i < dt_idle_states; i++) {
+> 	    u64 val, mask;
+> 	    	.	    
+> 		.
+> 		.
+> 		val = (DEFAULT_PSSCR_VAL & ~psscr_mask[i]) | psscr_val[i];
+> 		mask = DEFAULT_PSSCR_MASK | psscr_mask[i];
+> 		stop_psscr_table[nr_idle_states].val = val;
+>         	stop_psscr_table[nr_idle_states].mask = mask;
+> 	}
+> }		
+> ============================================================================
+>
+>
+> Is this approach ok ?
 
-This approach has a problem that a MM of the userspace process
-may live longer than the userspace process itself as kernel threads
-use userspace process MMs which was runnning on a CPU where
-the kernel thread was scheduled to. If this happened, the MM remains
-referenced until this exact kernel thread wakes up again
-and releases the very last reference to the MM, on an idle system this
-can take even hours.
+What if we just treat the 0xF state from firmware as special and set it
+to DEFAULT_PSSCR_MASK in that case? That deals with old skiboot, new
+kernel, and sets a pretty small special case that's easy to track into
+the future as something we should watch out for.
 
-This moves preregistered regions tracking from MM to VFIO; insteads of
-using mm_iommu_table_group_mem_t::used, tce_container::prereg_list is
-added so each container releases regions which it has pre-registered.
+Additionally, if we make skiboot set sane values in ~DEFAULT_PSSCR_MASK
+for valid fields in PSSCR on boot/(also kexec?), then
+we should end up in a situation where everything works with everything
+(even if you don't get the best power saving). Specifically, new
+skiboot, old kernel... but it looks like there's nothing currently
+missing there
 
-This changes the userspace interface to return EBUSY if a memory
-region is already registered in a container. However it should not
-have any practical effect as the only userspace tool available now
-does register memory region once per container anyway.
+Should this patch also have Fixes: 3005c597ba4 and CC to stable?
 
-As tce_iommu_register_pages/tce_iommu_unregister_pages are called
-under container->lock, this does not need additional locking.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
----
-Changes:
-v2:
-* updated commit log
----
- arch/powerpc/include/asm/mmu_context.h |  1 -
- arch/powerpc/mm/mmu_context_book3s64.c |  4 ---
- arch/powerpc/mm/mmu_context_iommu.c    | 11 --------
- drivers/vfio/vfio_iommu_spapr_tce.c    | 51 +++++++++++++++++++++++++++++++++-
- 4 files changed, 50 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index b9e3f0a..a6e18b5 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -26,7 +26,6 @@ extern long mm_iommu_get(struct mm_struct *mm,
- extern long mm_iommu_put(struct mm_struct *mm,
- 		struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_init(struct mm_struct *mm);
--extern void mm_iommu_cleanup(struct mm_struct *mm);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
- 		unsigned long ua, unsigned long size);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index ad82735..1a07969 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -159,10 +159,6 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
- 
- void destroy_context(struct mm_struct *mm)
- {
--#ifdef CONFIG_SPAPR_TCE_IOMMU
--	mm_iommu_cleanup(mm);
--#endif
--
- #ifdef CONFIG_PPC_ICSWX
- 	drop_cop(mm->context.acop, mm);
- 	kfree(mm->context.cop_lockp);
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 4c6db09..104bad0 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -365,14 +365,3 @@ void mm_iommu_init(struct mm_struct *mm)
- {
- 	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
- }
--
--void mm_iommu_cleanup(struct mm_struct *mm)
--{
--	struct mm_iommu_table_group_mem_t *mem, *tmp;
--
--	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
--			next) {
--		list_del_rcu(&mem->next);
--		mm_iommu_do_free(mem);
--	}
--}
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 3d2a65c..c8e9796 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -89,6 +89,15 @@ struct tce_iommu_group {
- };
- 
- /*
-+ * A container needs to remember which preregistered region  it has
-+ * referenced to do proper cleanup at the userspace process exit.
-+ */
-+struct tce_iommu_prereg {
-+	struct list_head next;
-+	struct mm_iommu_table_group_mem_t *mem;
-+};
-+
-+/*
-  * The container descriptor supports only a single group per container.
-  * Required by the API as the container is not supplied with the IOMMU group
-  * at the moment of initialization.
-@@ -101,12 +110,26 @@ struct tce_container {
- 	struct mm_struct *mm;
- 	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
- 	struct list_head group_list;
-+	struct list_head prereg_list;
- };
- 
-+static long tce_iommu_prereg_free(struct tce_container *container,
-+		struct tce_iommu_prereg *tcemem)
-+{
-+	long ret;
-+
-+	list_del(&tcemem->next);
-+	ret = mm_iommu_put(container->mm, tcemem->mem);
-+	kfree(tcemem);
-+
-+	return ret;
-+}
-+
- static long tce_iommu_unregister_pages(struct tce_container *container,
- 		__u64 vaddr, __u64 size)
- {
- 	struct mm_iommu_table_group_mem_t *mem;
-+	struct tce_iommu_prereg *tcemem;
- 
- 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
- 		return -EINVAL;
-@@ -115,7 +138,12 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
- 	if (!mem)
- 		return -ENOENT;
- 
--	return mm_iommu_put(container->mm, mem);
-+	list_for_each_entry(tcemem, &container->prereg_list, next) {
-+		if (tcemem->mem == mem)
-+			return tce_iommu_prereg_free(container, tcemem);
-+	}
-+
-+	return -ENOENT;
- }
- 
- static long tce_iommu_register_pages(struct tce_container *container,
-@@ -123,6 +151,7 @@ static long tce_iommu_register_pages(struct tce_container *container,
- {
- 	long ret = 0;
- 	struct mm_iommu_table_group_mem_t *mem = NULL;
-+	struct tce_iommu_prereg *tcemem;
- 	unsigned long entries = size >> PAGE_SHIFT;
- 
- 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
-@@ -142,6 +171,17 @@ static long tce_iommu_register_pages(struct tce_container *container,
- 	if (ret)
- 		return ret;
- 
-+	list_for_each_entry(tcemem, &container->prereg_list, next) {
-+		if (tcemem->mem == mem) {
-+			mm_iommu_put(container->mm, mem);
-+			return -EBUSY;
-+		}
-+	}
-+
-+	tcemem = kzalloc(sizeof(*tcemem), GFP_KERNEL);
-+	tcemem->mem = mem;
-+	list_add(&tcemem->next, &container->prereg_list);
-+
- 	container->enabled = true;
- 
- 	return 0;
-@@ -327,6 +367,7 @@ static void *tce_iommu_open(unsigned long arg)
- 
- 	mutex_init(&container->lock);
- 	INIT_LIST_HEAD_RCU(&container->group_list);
-+	INIT_LIST_HEAD_RCU(&container->prereg_list);
- 
- 	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
- 
-@@ -364,6 +405,14 @@ static void tce_iommu_release(void *iommu_data)
- 		tce_iommu_free_table(tbl);
- 	}
- 
-+	while (!list_empty(&container->prereg_list)) {
-+		struct tce_iommu_prereg *tcemem;
-+
-+		tcemem = list_first_entry(&container->prereg_list,
-+				struct tce_iommu_prereg, next);
-+		tce_iommu_prereg_free(container, tcemem);
-+	}
-+
- 	if (container->mm)
- 		mmdrop(container->mm);
- 	tce_iommu_disable(container);
 -- 
-2.5.0.rc3
+Stewart Smith
+OPAL Architect, IBM.
