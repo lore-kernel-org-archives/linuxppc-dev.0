@@ -1,29 +1,20 @@
 Return-Path: <hkallweit1@gmail.com>
-Received: from mail-lf0-x232.google.com (mail-lf0-x232.google.com
- [IPv6:2a00:1450:4010:c07::232])
+Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
+ [IPv6:2a00:1450:4010:c07::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svMk43LBGzDsxJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 05:25:48 +1100 (AEDT)
-Received: by mail-lf0-x232.google.com with SMTP id l131so54140816lfl.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 11:25:48 -0700 (PDT)
-Subject: Re: Commit 1b7898ee276b "powerpc/boot: Use the pre-boot decompression
- API" breaks boot
-To: Oliver O'Halloran <oohall@gmail.com>
-References: <8db8ecac-4022-7df9-4e81-3d490c50821d@gmail.com>
- <CAOSf1CFVX8j+kyp3SRhRz_gyPiQ3R9x=_nJyq9fr31NyGi3hhg@mail.gmail.com>
- <c19153b9-7554-0280-6d97-750c9e62b3be@gmail.com>
- <80c9c42c-45d3-9f24-b3e1-5a5042686b1b@gmail.com>
- <877f9g7r4l.fsf@concordia.ellerman.id.au>
- <62241a1e-51c0-c1cd-1ecd-fa54a3842da0@gmail.com>
- <0a0d0909-cee3-f375-4cf4-75f0beb5b8b7@gmail.com>
- <CAOSf1CHLO1UL+33nLQfF8uK1ysyu1tM=HwRSdLQCB+__Rbc67Q@mail.gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svNVf6sWqzDsxJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 06:00:58 +1100 (AEDT)
+Received: by mail-lf0-x242.google.com with SMTP id b75so8454796lfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 12:00:58 -0700 (PDT)
 From: Heiner Kallweit <hkallweit1@gmail.com>
-Message-ID: <36223f5f-5b57-19f4-f4d8-3191980d83e6@gmail.com>
-Date: Wed, 12 Oct 2016 20:25:29 +0200
+Subject: [PATCH] powerpc/boot: fix boot on systems with uncompressed kernel
+ image
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Message-ID: <4a99340c-b773-51e4-0466-3d9a72ac83b2@gmail.com>
+Date: Wed, 12 Oct 2016 21:00:43 +0200
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CHLO1UL+33nLQfF8uK1ysyu1tM=HwRSdLQCB+__Rbc67Q@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,39 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 12.10.2016 um 06:26 schrieb Oliver O'Halloran:
-> On Tue, Oct 11, 2016 at 7:06 AM, Heiner Kallweit <hkallweit1@gmail.com> wrote:
->>> IMHO in case of using cuboot no CONFIG_KERNEL_<COMPR TYPE> config option
->>> should be set and Makefile + code in arch/powerpc/boot should be able
->>> to deal with this situation:
->>> - don't copy and build the decompression stuff
->>> - use an alternative version of prep_kernel() in main.c which doesn't
->>>   attempt to decompress the kernel image
->>>
->>> This should be a cleaner solution than probing the kernel image whether
->>> it's compressed or not.
->>>
->>
->> This would be the patch implementing the idea. Advantage is that all
->> the unnecessary decompression code isn't built. Works fine for me.
-> 
-> I don't think this approach is viable. The wrapper code is shared
-> among the various output image formats some of which *will* contain a
-> compressed kernel image so we can't simply remove the decompressor
-> from the wrapper. A random example I found in the makefile was
-> CONFIG_BAMBOO:
-> 
->> image-$(CONFIG_BAMBOO) += treeImage.bamboo cuImage.bamboo
-> 
-> When building for this platform Kbuild will produce treeboot and a
-> cuboot image. Unlike uboot, Treeboot doesn't do any decompression so
-> the wrapper needs to decompress the kernel itself. The probing
-> solution more or less matches the old behaviour (which we know works)
-> so I think we should just stick with that.
-> 
-> - Oliver
-> 
-Indeed, I also figured that out later. As you say, then let's stick
-with re-introducing the probing. I'll send the patch for this.
+This commit broke boot on systems with an uncompressed kernel image,
+namely systems using a cuImage. On such systems the compressed boot
+image (boot wrapper, uncompressed kernel image, ..) is decompressed
+by u-boot already, therefore the boot wrapper code sees an
+uncompressed kernel image.
 
-Heiner
+The old decompression code silently assumed an uncompressed kernel
+image if it found no valid gzip signature, whilst the new code
+bailed out in this case.
+
+Fix this by re-introducing such a fallback if no valid compressed
+image is found.
+
+Fixes: 1b7898ee276b ("Use the pre-boot decompression API")
+Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+---
+ arch/powerpc/boot/main.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
+index f7a184b..57d42d1 100644
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -32,9 +32,16 @@ static struct addr_range prep_kernel(void)
+ 	void *addr = 0;
+ 	struct elf_info ei;
+ 	long len;
++	int uncompressed_image = 0;
+ 
+-	partial_decompress(vmlinuz_addr, vmlinuz_size,
++	len = partial_decompress(vmlinuz_addr, vmlinuz_size,
+ 		elfheader, sizeof(elfheader), 0);
++	/* assume uncompressed data if -1 is returned */
++	if (len == -1) {
++		uncompressed_image = 1;
++		memcpy(elfheader, vmlinuz_addr, sizeof(elfheader));
++		printf("No valid compressed data found, assume uncompressed data\n\r");
++	}
+ 
+ 	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei))
+ 		fatal("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
+@@ -67,6 +74,13 @@ static struct addr_range prep_kernel(void)
+ 					"device tree\n\r");
+ 	}
+ 
++	if (uncompressed_image) {
++		memcpy(addr, vmlinuz_addr + ei.elfoffset, ei.loadsize);
++		printf("0x%lx bytes of uncompressed data copied\n\r",
++		       ei.loadsize);
++		goto out;
++	}
++
+ 	/* Finally, decompress the kernel */
+ 	printf("Decompressing (0x%p <- 0x%p:0x%p)...\n\r", addr,
+ 	       vmlinuz_addr, vmlinuz_addr+vmlinuz_size);
+@@ -82,7 +96,7 @@ static struct addr_range prep_kernel(void)
+ 			 len, ei.loadsize);
+ 
+ 	printf("Done! Decompressed 0x%lx bytes\n\r", len);
+-
++out:
+ 	flush_cache(addr, ei.loadsize);
+ 
+ 	return (struct addr_range){addr, ei.memsize};
+-- 
+2.10.0
