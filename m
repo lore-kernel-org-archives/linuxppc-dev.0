@@ -1,30 +1,46 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svFz43S1czDvh3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 01:06:40 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id 190so2840431pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 07:06:40 -0700 (PDT)
-Date: Wed, 12 Oct 2016 22:06:34 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Shuah Khan <shuah@kernel.org>,
- Cyril Bur <cyrilbur@gmail.com>, Chris Smart <chris@distroguy.com>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Michael Neuling <mikey@neuling.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Jack Miller <jack@codezen.org>, Rashmica Gupta <rashmicy@gmail.com>,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v15 03/15] selftests/powerpc: Add ptrace tests for EBB
-Message-ID: <20161012140633.GA11846@simonLocalRHEL7.x64>
-References: <1475202784-5653-1-git-send-email-wei.guo.simon@gmail.com>
- <1475202784-5653-4-git-send-email-wei.guo.simon@gmail.com>
- <8760p5duen.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svG8S1h1PzDsrd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 01:14:48 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9CEEUj8101178
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 10:14:45 -0400
+Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 261nbq48cm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 10:14:44 -0400
+Received: from localhost
+ by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 12 Oct 2016 15:14:41 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id A6FB21B08023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 15:16:38 +0100 (BST)
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+ [9.149.37.213])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9CEEb6M21299412
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 14:14:37 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9CEEa9G001631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 08:14:37 -0600
+Subject: Re: [PATCH] powerpc/mm: Prevent unlikely crash in
+ copro_calculate_slb()
+To: linuxppc-dev@lists.ozlabs.org
+References: <1466182408-17884-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 12 Oct 2016 16:14:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8760p5duen.fsf@concordia.ellerman.id.au>
+In-Reply-To: <1466182408-17884-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <3e856f04-23a7-b980-a857-27b3342f1548@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,43 +50,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 07, 2016 at 08:44:48AM +1100, Michael Ellerman wrote:
-> wei.guo.simon@gmail.com writes:
-> 
-> > From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> >
-> > This patch adds ptrace interface test for EBB/PMU specific
-> > registers. This also adds some generic ptrace interface
-> > based helper functions to be used by other patches later
-> > on in the series.
-> 
-> This is consistently failing for me on a P8 Tuleta (pvr 004b 0201):
-> 
-> # ./ptrace-ebb 
-> test: ptrace_ebb_pmu
-> tags: git_version:v4.8-rc5-176-g89cf1de0ae90
-> EBBRR: 100059f8
-> EBBHR: 100053cc; expected: 100053cc
-> BESCR: 8000000100000000
-> SIAR:  100012d0
-> SDAR:  3fff7e4cc000
-> SIER:  3000000; expected: 2000000
-> MMCR2: 0; expected: 0
-> MMCR0: 180000080; expected: 180000080
-> failure: ptrace_ebb_pmu
-> 
-> cheers
-Michael,
+ping? The patch still applies cleanly on recent trees.
 
-Yes.. SIER has different value in baremetal and virtual machine
-due to different MSR[HV] value.  I will correct it. Originally I only
-tested in virtual BE/LE machines.
+   Fred
 
-Currently all tests cases (with fix) passed on one baremetal P8 machine 
-with LE OS installed.  And I will try to find another baremetal with BE 
-OS installed to test.
-
-Thanks for indicating it.
-
-BR,
-Simon
+Le 17/06/2016 à 18:53, Frederic Barrat a écrit :
+> If a cxl adapter faults on an invalid address for a kernel context, we
+> may enter copro_calculate_slb() with a NULL mm pointer (kernel
+> context) and an effective address which looks like a user
+> address. Which will cause a crash when dereferencing mm. It is clearly
+> an AFU bug, but there's no reason to crash either. So return an error,
+> so that cxl can ack the interrupt with an address error.
+>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Cc: <stable@vger.kernel.org>
+> ---
+>  arch/powerpc/mm/copro_fault.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+> index 6527882..ddfd274 100644
+> --- a/arch/powerpc/mm/copro_fault.c
+> +++ b/arch/powerpc/mm/copro_fault.c
+> @@ -106,6 +106,8 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+>  	switch (REGION_ID(ea)) {
+>  	case USER_REGION_ID:
+>  		pr_devel("%s: 0x%llx -- USER_REGION_ID\n", __func__, ea);
+> +		if (mm == NULL)
+> +			return 1;
+>  		psize = get_slice_psize(mm, ea);
+>  		ssize = user_segment_size(ea);
+>  		vsid = get_vsid(mm->context.id, ea, ssize);
+>
