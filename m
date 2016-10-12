@@ -1,22 +1,27 @@
-Return-Path: <Marcin.Nowakowski@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp02.imgtec.com [217.156.133.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3svDkP6gpXzDt0Z
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 00:10:37 +1100 (AEDT)
-Subject: Re: [PATCH v3 08/11] powerpc/tracing: fix compat syscall handling
-To: Michael Ellerman <mpe@ellerman.id.au>, <linux-kernel@vger.kernel.org>
-References: <1476182576-15247-1-git-send-email-marcin.nowakowski@imgtec.com>
- <1476182576-15247-9-git-send-email-marcin.nowakowski@imgtec.com>
- <87zim951m9.fsf@concordia.ellerman.id.au>
-CC: <linux-api@vger.kernel.org>, <luto@amacapital.net>, <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- <linuxppc-dev@lists.ozlabs.org>
-From: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
-Message-ID: <f21ef656-6835-5539-c875-931614850555@imgtec.com>
-Date: Wed, 12 Oct 2016 15:10:34 +0200
-MIME-Version: 1.0
-In-Reply-To: <87zim951m9.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Return-Path: <segher@gate.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svF5K67P9zDsrf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 00:27:01 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3svF5K0tNwz9s3T
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Oct 2016 00:27:00 +1100 (AEDT)
+Date: Wed, 12 Oct 2016 08:26:48 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, markus@trippelsdorf.de, amodra@gmail.com
+Subject: Re: [PATCH] powerpc: cmp -> cmpd for 64-bit
+Message-ID: <20161012132647.GA4446@gate.crashing.org>
+References: <551528846e6a2783184ba8a4228348a2fc9786bd.1475761214.git.segher@kernel.crashing.org>
+ <877f9e5ksw.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <877f9e5ksw.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,14 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Oct 12, 2016 at 02:05:19PM +1100, Michael Ellerman wrote:
+> Segher Boessenkool <segher@kernel.crashing.org> writes:
+> 
+> > PowerPC's "cmp" instruction has four operands.  Normally people write
+> > "cmpw" or "cmpd" for the second cmp operand 0 or 1.  But, frequently
+> > people forget, and write "cmp" with just three operands.
+> >
+> > With older binutils this is silently accepted as if this was "cmpw",
+> > while often "cmpd" is wanted.  With newer binutils GAS will complain
+> > about this for 64-bit code.  For 32-bit code it still silently assumes
+> > "cmpw" is what is meant.
+> 
+> Thanks.
+> 
+> Anton already sent a fix for the two vdso ones, which were real bugs,
+> and that's now in Linus' tree.
+
+Ah cool.  You'll just need the one then (and many more for book4e, but
+I cannot really handle that, other people can do that a lot better).
 
 
-On 12.10.2016 11:59, Michael Ellerman wrote:
-> I went to test this and noticed the exit and enter events appear to be
-> reversed in time? (your series on top of 24532f768121)
+> > --- a/arch/powerpc/include/asm/cpuidle.h
+> > +++ b/arch/powerpc/include/asm/cpuidle.h
+> > @@ -26,7 +26,7 @@ extern u64 pnv_first_deep_stop_state;
+> 
+> #define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
+> 	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
+> >  	std	r0,0(r1);					\
+> >  	ptesync;						\
+> >  	ld	r0,0(r1);					\
+> > -1:	cmp	cr0,r0,r0;					\
+> > +1:	cmpd	cr0,r0,r0;					\
+> >  	bne	1b;						\
+> >  	IDLE_INST;						\
+> >  	b	.
+> 
+> What's this one doing, is it a bug? I can't really tell without knowing
+> what the magic sequence is meant to do.
 
-thanks for testing the patch - I've found a bug that has sneaked in 
-while cleaning up the patches before submission ... I'll fix it in the 
-next iteration.
+It looks like it is making sure the ptesync is done.  The ld/cmp/bne
+is the usual to make sure the ld is done, and in std/ptesync/ld the ld
+won't be done before the ptesync is done.
 
-Marcin
+The cmp always compares equal, of course, so both cmpw and cmpd would
+work fine here.  cmpd looks better after ld ;-)
+
+
+Segher
