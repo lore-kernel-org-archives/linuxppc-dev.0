@@ -2,16 +2,16 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svFnC2G0qzDsyK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 00:58:07 +1100 (AEDT)
-Subject: [PATCH v2 5/7] PCI: layerscape: Move struct pcie_port setup to
- probe function
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svFnM4N2mzDsy6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 00:58:15 +1100 (AEDT)
+Subject: [PATCH v2 6/7] PCI: layerscape: Remove unused ls_add_pcie_port()
+ platform_device arg
 To: Minghuan Lian <minghuan.Lian@freescale.com>,
  Mingkai Hu <mingkai.hu@freescale.com>, Roy Zang <tie-fei.zang@freescale.com>
 From: Bjorn Helgaas <bhelgaas@google.com>
 Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 12 Oct 2016 08:58:02 -0500
-Message-ID: <20161012135802.29815.48363.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+Date: Wed, 12 Oct 2016 08:58:10 -0500
+Message-ID: <20161012135809.29815.75264.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 In-Reply-To: <20161012135413.29815.75484.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 References: <20161012135413.29815.75484.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 MIME-Version: 1.0
@@ -25,49 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Do the basic pcie_port setup in the probe function for consistency with
-other drivers.  No functional change intended.
+ls_add_pcie_port() doesn't use the platform_device pointer passed to it, so
+remove it.  No functional change intended.
 
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/host/pci-layerscape.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/pci/host/pci-layerscape.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/pci/host/pci-layerscape.c b/drivers/pci/host/pci-layerscape.c
-index 2b31296..2d77104 100644
+index 2d77104..3a86c1a 100644
 --- a/drivers/pci/host/pci-layerscape.c
 +++ b/drivers/pci/host/pci-layerscape.c
-@@ -216,13 +216,10 @@ static const struct of_device_id ls_pcie_of_match[] = {
- static int __init ls_add_pcie_port(struct ls_pcie *pcie,
- 				   struct platform_device *pdev)
+@@ -213,8 +213,7 @@ static const struct of_device_id ls_pcie_of_match[] = {
+ 	{ },
+ };
+ 
+-static int __init ls_add_pcie_port(struct ls_pcie *pcie,
+-				   struct platform_device *pdev)
++static int __init ls_add_pcie_port(struct ls_pcie *pcie)
  {
--	struct device *dev = &pdev->dev;
  	struct pcie_port *pp = &pcie->pp;
-+	struct device *dev = pp->dev;
- 	int ret;
+ 	struct device *dev = pp->dev;
+@@ -263,7 +262,7 @@ static int __init ls_pcie_probe(struct platform_device *pdev)
+ 	if (!ls_pcie_is_bridge(pcie))
+ 		return -ENODEV;
  
--	pp->dev = dev;
--	pp->ops = pcie->drvdata->ops;
--
- 	ret = dw_pcie_host_init(pp);
- 	if (ret) {
- 		dev_err(dev, "failed to initialize host\n");
-@@ -237,6 +234,7 @@ static int __init ls_pcie_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	const struct of_device_id *match;
- 	struct ls_pcie *pcie;
-+	struct pcie_port *pp;
- 	struct resource *dbi_base;
- 	int ret;
+-	ret = ls_add_pcie_port(pcie, pdev);
++	ret = ls_add_pcie_port(pcie);
+ 	if (ret < 0)
+ 		return ret;
  
-@@ -248,6 +246,10 @@ static int __init ls_pcie_probe(struct platform_device *pdev)
- 	if (!pcie)
- 		return -ENOMEM;
- 
-+	pp = &pcie->pp;
-+	pp->dev = dev;
-+	pp->ops = pcie->drvdata->ops;
-+
- 	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
- 	pcie->pp.dbi_base = devm_ioremap_resource(dev, dbi_base);
- 	if (IS_ERR(pcie->pp.dbi_base)) {
