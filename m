@@ -2,8 +2,8 @@ Return-Path: <jthumshirn@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svv7438cXzDt0J
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 02:00:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svv743Mz1zDt0N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 02:00:48 +1100 (AEDT)
 From: Johannes Thumshirn <jthumshirn@suse.de>
 To: "Martin K . Petersen" <martin.petersen@oracle.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
@@ -13,12 +13,10 @@ Cc: Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
  Steffen Maier <maier@linux.vnet.ibm.com>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
  Johannes Thumshirn <jth@kernel.org>,
  James Smart <james.smart@avagotech.com>,
  Dick Kennedy <dick.kennedy@avagotech.com>,
@@ -27,10 +25,9 @@ Cc: Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
  linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
  64-BIT)),
  fcoe-devel@open-fcoe.org (open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe))
-Subject: [PATCH v3 04/16] scsi: Unify interfaces of fc_bsg_jobdone and
- bsg_job_done
-Date: Thu, 13 Oct 2016 17:00:20 +0200
-Message-Id: <2b02bb8460fa27db4fe971a2161e0cb7c2fca4df.1476369687.git.jthumshirn@suse.de>
+Subject: [PATCH v3 06/16] scsi: fc: provide fc_bsg_to_rport() helper
+Date: Thu, 13 Oct 2016 17:00:22 +0200
+Message-Id: <9b2273fd57def066d9c8b5b45a2ee43752a67cc9.1476369687.git.jthumshirn@suse.de>
 In-Reply-To: <cover.1476369687.git.jthumshirn@suse.de>
 References: <cover.1476369687.git.jthumshirn@suse.de>
 In-Reply-To: <cover.1476369687.git.jthumshirn@suse.de>
@@ -44,622 +41,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unify the interfaces of fc_bsg_jobdone and bsg_job_done. This will reduce the
-diff when moving from 'struct fc_bsg_job' to a plain 'struct bsg_job' later
-on.
+Provide fc_bsg_to_rport() helper that will become handy when we're moving
+from struct fc_bsg_job to a plain struct bsg_job. Also move all LLDDs to use
+the new helper.
 
 Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 Reviewed-by: Hannes Reinecke <hare@suse.com>
 ---
- drivers/s390/scsi/zfcp_fc.c      |  2 +-
- drivers/scsi/bfa/bfad_bsg.c      |  6 ++--
- drivers/scsi/ibmvscsi/ibmvfc.c   |  3 +-
- drivers/scsi/libfc/fc_lport.c    |  6 ++--
- drivers/scsi/lpfc/lpfc_bsg.c     | 68 +++++++++++++++++++++++++++-------------
- drivers/scsi/qla2xxx/qla_bsg.c   | 66 +++++++++++++++++++++++++-------------
- drivers/scsi/scsi_transport_fc.c | 22 +++++++------
- include/scsi/scsi_transport_fc.h |  3 +-
- 8 files changed, 116 insertions(+), 60 deletions(-)
+ drivers/s390/scsi/zfcp_fc.c      | 5 +++--
+ drivers/scsi/ibmvscsi/ibmvfc.c   | 2 +-
+ drivers/scsi/libfc/fc_lport.c    | 4 ++--
+ drivers/scsi/lpfc/lpfc_bsg.c     | 4 ++--
+ drivers/scsi/qla2xxx/qla_bsg.c   | 4 ++--
+ drivers/scsi/scsi_transport_fc.c | 3 ++-
+ include/scsi/scsi_transport_fc.h | 5 +++++
+ 7 files changed, 17 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/s390/scsi/zfcp_fc.c b/drivers/s390/scsi/zfcp_fc.c
-index 40d8f06..87f6330 100644
+index 813c286..1977a66 100644
 --- a/drivers/s390/scsi/zfcp_fc.c
 +++ b/drivers/s390/scsi/zfcp_fc.c
-@@ -892,7 +892,7 @@ static void zfcp_fc_ct_els_job_handler(void *data)
- 	jr->reply_payload_rcv_len = job->reply_payload.payload_len;
- 	jr->reply_data.ctels_reply.status = FC_CTELS_STATUS_OK;
- 	jr->result = zfcp_ct_els->status ? -EIO : 0;
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, jr->result, jr->reply_payload_rcv_len);
- }
+@@ -938,7 +938,7 @@ static int zfcp_fc_exec_els_job(struct fc_bsg_job *job,
+ 				struct zfcp_adapter *adapter)
+ {
+ 	struct zfcp_fsf_ct_els *els = job->dd_data;
+-	struct fc_rport *rport = job->rport;
++	struct fc_rport *rport = fc_bsg_to_rport(job);
+ 	struct fc_bsg_request *bsg_request = job->request;
+ 	struct zfcp_port *port;
+ 	u32 d_id;
+@@ -986,8 +986,9 @@ int zfcp_fc_exec_bsg_job(struct fc_bsg_job *job)
+ 	struct zfcp_adapter *adapter;
+ 	struct zfcp_fsf_ct_els *ct_els = job->dd_data;
+ 	struct fc_bsg_request *bsg_request = job->request;
++	struct fc_rport *rport = fc_bsg_to_rport(job);
  
- static struct zfcp_fc_wka_port *zfcp_fc_job_wka_port(struct fc_bsg_job *job)
-diff --git a/drivers/scsi/bfa/bfad_bsg.c b/drivers/scsi/bfa/bfad_bsg.c
-index 25889b9..e49a6c8 100644
---- a/drivers/scsi/bfa/bfad_bsg.c
-+++ b/drivers/scsi/bfa/bfad_bsg.c
-@@ -3180,7 +3180,8 @@
- 	bsg_reply->reply_payload_rcv_len = job->reply_payload.payload_len;
- 	bsg_reply->result = rc;
+-	shost = job->rport ? rport_to_shost(job->rport) : fc_bsg_to_shost(job);
++	shost = rport ? rport_to_shost(rport) : fc_bsg_to_shost(job);
+ 	adapter = (struct zfcp_adapter *)shost->hostdata[0];
  
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return rc;
- error:
- 	/* free the command buffer */
-@@ -3556,7 +3557,8 @@ struct bfad_buf_info *
- 	bsg_reply->result = rc;
- 
- 	if (rc == BFA_STATUS_OK)
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 
- 	return rc;
- }
+ 	if (!(atomic_read(&adapter->status) & ZFCP_STATUS_COMMON_OPEN))
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index f14e9c1..6070361 100644
+index 02df1f1..4c73fc7 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -1945,7 +1945,8 @@ static int ibmvfc_bsg_request(struct fc_bsg_job *job)
- 	ibmvfc_free_event(evt);
- 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 	bsg_reply->result = rc;
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	rc = 0;
- out:
- 	dma_unmap_sg(vhost->dev, job->request_payload.sg_list,
+@@ -1822,7 +1822,7 @@ static int ibmvfc_bsg_plogi(struct ibmvfc_host *vhost, unsigned int port_id)
+ static int ibmvfc_bsg_request(struct fc_bsg_job *job)
+ {
+ 	struct ibmvfc_host *vhost = shost_priv(fc_bsg_to_shost(job));
+-	struct fc_rport *rport = job->rport;
++	struct fc_rport *rport = fc_bsg_to_rport(job);
+ 	struct ibmvfc_passthru_mad *mad;
+ 	struct ibmvfc_event *evt;
+ 	union ibmvfc_iu rsp_iu;
 diff --git a/drivers/scsi/libfc/fc_lport.c b/drivers/scsi/libfc/fc_lport.c
-index 33e2881..000188f 100644
+index a3fb355..9ba340c 100644
 --- a/drivers/scsi/libfc/fc_lport.c
 +++ b/drivers/scsi/libfc/fc_lport.c
-@@ -1917,7 +1917,8 @@ static void fc_lport_bsg_resp(struct fc_seq *sp, struct fc_frame *fp,
- 			-ECONNABORTED : -ETIMEDOUT;
- 		job->reply_len = sizeof(uint32_t);
- 		job->state_flags |= FC_RQST_STATE_DONE;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 		kfree(info);
- 		return;
- 	}
-@@ -1952,7 +1953,8 @@ static void fc_lport_bsg_resp(struct fc_seq *sp, struct fc_frame *fp,
- 				job->reply_payload.payload_len;
- 		bsg_reply->result = 0;
- 		job->state_flags |= FC_RQST_STATE_DONE;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 		kfree(info);
- 	}
- 	fc_frame_free(fp);
+@@ -2107,7 +2107,7 @@ int fc_lport_bsg_request(struct fc_bsg_job *job)
+ 
+ 	switch (bsg_request->msgcode) {
+ 	case FC_BSG_RPT_ELS:
+-		rport = job->rport;
++		rport = fc_bsg_to_rport(job);
+ 		if (!rport)
+ 			break;
+ 
+@@ -2117,7 +2117,7 @@ int fc_lport_bsg_request(struct fc_bsg_job *job)
+ 		break;
+ 
+ 	case FC_BSG_RPT_CT:
+-		rport = job->rport;
++		rport = fc_bsg_to_rport(job);
+ 		if (!rport)
+ 			break;
+ 
 diff --git a/drivers/scsi/lpfc/lpfc_bsg.c b/drivers/scsi/lpfc/lpfc_bsg.c
-index 1db9cca..447a7af 100644
+index bfcc37d..dae7cc3 100644
 --- a/drivers/scsi/lpfc/lpfc_bsg.c
 +++ b/drivers/scsi/lpfc/lpfc_bsg.c
-@@ -371,7 +371,8 @@ struct lpfc_dmabufext {
- 
- 	if (job) {
- 		bsg_reply->result = rc;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	}
- 	return;
- }
-@@ -644,7 +645,8 @@ struct lpfc_dmabufext {
- 
- 	if (job) {
- 		bsg_reply->result = rc;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	}
- 	return;
- }
-@@ -1136,7 +1138,8 @@ struct lpfc_dmabufext {
- 			job->dd_data = NULL;
- 			/* complete the job back to userspace */
- 			spin_unlock_irqrestore(&phba->ct_ev_lock, flags);
--			fc_bsg_jobdone(job);
-+			fc_bsg_jobdone(job, bsg_reply->result,
-+				       bsg_reply->reply_payload_rcv_len);
- 			spin_lock_irqsave(&phba->ct_ev_lock, flags);
- 		}
- 	}
-@@ -1361,7 +1364,8 @@ struct lpfc_dmabufext {
- 	spin_unlock_irqrestore(&phba->ct_ev_lock, flags);
- 	job->dd_data = NULL;
- 	bsg_reply->result = 0;
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return 0;
- 
- job_error:
-@@ -1458,7 +1462,8 @@ struct lpfc_dmabufext {
- 
- 	if (job) {
- 		bsg_reply->result = rc;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	}
- 	return;
- }
-@@ -1886,7 +1891,8 @@ struct lpfc_dmabufext {
- 	bsg_reply->result = rc;
- 	/* complete the job back to userspace if no error */
- 	if (rc == 0)
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rc;
- }
- 
-@@ -2175,7 +2181,8 @@ struct lpfc_dmabufext {
- 	bsg_reply->result = rc;
- 	/* complete the job back to userspace if no error */
- 	if (rc == 0)
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rc;
- }
- 
-@@ -2289,7 +2296,8 @@ struct lpfc_dmabufext {
- 	bsg_reply->result = rc;
- 	/* complete the job back to userspace if no error */
- 	if (rc == 0)
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rc;
- }
- 
-@@ -2441,7 +2449,8 @@ struct lpfc_dmabufext {
- 	bsg_reply->result = rc;
- 	/* complete the job back to userspace if no error */
- 	if (rc == 0)
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rc;
- }
- 
-@@ -3301,7 +3310,8 @@ static int lpfcdiag_loop_post_rxbufs(struct lpfc_hba *phba, uint16_t rxxri,
- 	job->dd_data = NULL;
- 	/* complete the job back to userspace if no error */
- 	if (rc == IOCB_SUCCESS)
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rc;
- }
- 
-@@ -3344,7 +3354,8 @@ static int lpfcdiag_loop_post_rxbufs(struct lpfc_hba *phba, uint16_t rxxri,
- job_error:
- 	bsg_reply->result = rc;
- 	if (rc == 0)
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rc;
- }
- 
-@@ -3409,7 +3420,8 @@ static int lpfcdiag_loop_post_rxbufs(struct lpfc_hba *phba, uint16_t rxxri,
- 
- 	if (job) {
- 		bsg_reply->result = 0;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	}
- 	return;
- }
-@@ -3635,6 +3647,7 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- lpfc_bsg_issue_read_mbox_ext_cmpl(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmboxq)
+@@ -386,7 +386,7 @@ struct lpfc_dmabufext {
  {
- 	struct fc_bsg_job *job;
-+	struct fc_bsg_reply *bsg_reply;
- 
- 	job = lpfc_bsg_issue_mbox_ext_handle_job(phba, pmboxq);
- 
-@@ -3654,9 +3667,11 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- 	mempool_free(pmboxq, phba->mbox_mem_pool);
- 
- 	/* if the job is still active, call job done */
--	if (job)
--		fc_bsg_jobdone(job);
--
-+	if (job) {
-+		bsg_reply = job->reply;
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
-+	}
- 	return;
- }
- 
-@@ -3672,6 +3687,7 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- lpfc_bsg_issue_write_mbox_ext_cmpl(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmboxq)
+ 	struct lpfc_vport *vport = shost_priv(fc_bsg_to_shost(job));
+ 	struct lpfc_hba *phba = vport->phba;
+-	struct lpfc_rport_data *rdata = job->rport->dd_data;
++	struct lpfc_rport_data *rdata = fc_bsg_to_rport(job)->dd_data;
+ 	struct lpfc_nodelist *ndlp = rdata->pnode;
+ 	struct fc_bsg_reply *bsg_reply = job->reply;
+ 	struct ulp_bde64 *bpl = NULL;
+@@ -660,7 +660,7 @@ struct lpfc_dmabufext {
  {
- 	struct fc_bsg_job *job;
-+	struct fc_bsg_reply *bsg_reply;
- 
- 	job = lpfc_bsg_issue_mbox_ext_handle_job(phba, pmboxq);
- 
-@@ -3689,8 +3705,11 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- 	lpfc_bsg_mbox_ext_session_reset(phba);
- 
- 	/* if the job is still active, call job done */
--	if (job)
--		fc_bsg_jobdone(job);
-+	if (job) {
-+		bsg_reply = job->reply;
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
-+	}
- 
- 	return;
- }
-@@ -4131,7 +4150,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- 	/* wait for additoinal external buffers */
- 
- 	bsg_reply->result = 0;
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return SLI_CONFIG_HANDLED;
- 
- job_error:
-@@ -4357,7 +4377,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- 	}
- 
- 	bsg_reply->result = 0;
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	return SLI_CONFIG_HANDLED;
- }
-@@ -4473,7 +4494,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- 
- 	/* wait for additoinal external buffers */
- 	bsg_reply->result = 0;
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return SLI_CONFIG_HANDLED;
- 
- job_error:
-@@ -4941,7 +4963,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- 		/* job done */
- 		bsg_reply->result = 0;
- 		job->dd_data = NULL;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	} else if (rc == 1)
- 		/* job submitted, will complete later*/
- 		rc = 0; /* return zero, no error */
-@@ -5051,7 +5074,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
- 
- 	if (job) {
- 		bsg_reply->result = rc;
--		fc_bsg_jobdone(job);
-+		fc_bsg_jobdone(job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	}
- 
- 	return;
+ 	struct lpfc_vport *vport = shost_priv(fc_bsg_to_shost(job));
+ 	struct lpfc_hba *phba = vport->phba;
+-	struct lpfc_rport_data *rdata = job->rport->dd_data;
++	struct lpfc_rport_data *rdata = fc_bsg_to_rport(job)->dd_data;
+ 	struct lpfc_nodelist *ndlp = rdata->pnode;
+ 	struct fc_bsg_request *bsg_request = job->request;
+ 	struct fc_bsg_reply *bsg_reply = job->reply;
 diff --git a/drivers/scsi/qla2xxx/qla_bsg.c b/drivers/scsi/qla2xxx/qla_bsg.c
-index 1bca77b..9293d5a 100644
+index 109b852..917eafe 100644
 --- a/drivers/scsi/qla2xxx/qla_bsg.c
 +++ b/drivers/scsi/qla2xxx/qla_bsg.c
-@@ -20,7 +20,8 @@
- 	struct fc_bsg_reply *bsg_reply = bsg_job->reply;
+@@ -264,7 +264,7 @@
+ 	uint16_t nextlid = 0;
  
- 	bsg_reply->result = res;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	sp->free(vha, sp);
- }
- 
-@@ -242,7 +243,8 @@
- 	}
- exit_fcp_prio_cfg:
- 	if (!ret)
--		fc_bsg_jobdone(bsg_job);
-+		fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return ret;
- }
- 
-@@ -939,7 +941,8 @@
- 	    bsg_job->request_payload.sg_list,
- 	    bsg_job->request_payload.sg_cnt, DMA_TO_DEVICE);
- 	if (!rval)
--		fc_bsg_jobdone(bsg_job);
-+		fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rval;
- }
- 
-@@ -972,7 +975,8 @@
- 		ql_dbg(ql_dbg_user, vha, 0x7031,
- 		    "Vendor request 84xx reset completed.\n");
- 		bsg_reply->result = DID_OK;
--		fc_bsg_jobdone(bsg_job);
-+		fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	}
- 
- 	return rval;
-@@ -1085,7 +1089,8 @@
- 		bsg_job->request_payload.sg_cnt, DMA_TO_DEVICE);
- 
- 	if (!rval)
--		fc_bsg_jobdone(bsg_job);
-+		fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rval;
- }
- 
-@@ -1282,7 +1287,8 @@
- 	dma_pool_free(ha->s_dma_pool, mn, mn_dma);
- 
- 	if (!rval)
--		fc_bsg_jobdone(bsg_job);
-+		fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	return rval;
- }
- 
-@@ -1368,7 +1374,8 @@
- 		}
- 
- 		bsg_reply->result = DID_OK;
--		fc_bsg_jobdone(bsg_job);
-+		fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+			       bsg_reply->reply_payload_rcv_len);
- 	}
- 
- 	return rval;
-@@ -1476,7 +1483,8 @@
- 	ha->optrom_buffer = NULL;
- 	ha->optrom_state = QLA_SWAITING;
- 	mutex_unlock(&ha->optrom_mutex);
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return rval;
- }
- 
-@@ -1511,7 +1519,8 @@
- 	ha->optrom_buffer = NULL;
- 	ha->optrom_state = QLA_SWAITING;
- 	mutex_unlock(&ha->optrom_mutex);
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return rval;
- }
- 
-@@ -1561,7 +1570,8 @@
- done:
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	return 0;
- }
-@@ -1610,7 +1620,8 @@
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->reply_payload_rcv_len = sizeof(*sr);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	return 0;
- }
-@@ -1655,7 +1666,8 @@
- done:
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	return 0;
- }
-@@ -1699,7 +1711,8 @@
- done:
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	return 0;
- }
-@@ -1747,7 +1760,8 @@
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->reply_payload_rcv_len = sizeof(*i2c);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	return 0;
- }
-@@ -1925,7 +1939,8 @@
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	if (bsg_request->msgcode == FC_BSG_RPT_ELS) {
+-		rport = bsg_job->rport;
++		rport = fc_bsg_to_rport(bsg_job);
+ 		fcport = *(fc_port_t **) rport->dd_data;
+ 		host = rport_to_shost(rport);
+ 		vha = shost_priv(host);
+@@ -2485,7 +2485,7 @@
  	bsg_reply->reply_payload_rcv_len = 0;
- 	bsg_reply->result = (DID_OK) << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	/* Always return success, vendor rsp carries correct status */
- 	return 0;
- }
-@@ -2090,7 +2105,8 @@
  
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return 0;
- }
- 
-@@ -2131,7 +2147,8 @@
- 
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return 0;
- }
- 
-@@ -2162,7 +2179,8 @@
- 
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return 0;
- }
- 
-@@ -2207,7 +2225,8 @@
- 
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return 0;
- }
- 
-@@ -2265,7 +2284,8 @@
- 
- 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return 0;
- }
- 
-@@ -2321,7 +2341,8 @@
- 
- 	bsg_job->reply_len = sizeof(*bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	dma_free_coherent(&ha->pdev->dev, sizeof(*stats),
- 		stats, stats_dma);
-@@ -2364,7 +2385,8 @@
- 
- 	bsg_job->reply_len = sizeof(*bsg_reply);
- 	bsg_reply->result = DID_OK << 16;
--	fc_bsg_jobdone(bsg_job);
-+	fc_bsg_jobdone(bsg_job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 
- 	kfree(dd);
- 
+ 	if (bsg_request->msgcode == FC_BSG_RPT_ELS) {
+-		rport = bsg_job->rport;
++		rport = fc_bsg_to_rport(bsg_job);
+ 		host = rport_to_shost(rport);
+ 		vha = shost_priv(host);
+ 	} else {
 diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
-index 4149dac..9744476 100644
+index d6d18ce..96b3a2e 100644
 --- a/drivers/scsi/scsi_transport_fc.c
 +++ b/drivers/scsi/scsi_transport_fc.c
-@@ -3582,15 +3582,17 @@ struct fc_vport *
-  * fc_bsg_jobdone - completion routine for bsg requests that the LLD has
-  *                  completed
-  * @job:	fc_bsg_job that is complete
-+ * @result:	job reply result
-+ * @reply_payload_rcv_len: length of payload received
-  */
--void fc_bsg_jobdone(struct fc_bsg_job *job)
-+void fc_bsg_jobdone(struct fc_bsg_job *job, int result,
-+		    unsigned int reply_payload_rcv_len)
+@@ -3640,11 +3640,12 @@ static void fc_bsg_softirq_done(struct request *rq)
  {
- 	struct request *req = job->req;
- 	struct request *rsp = req->next_rq;
--	struct fc_bsg_reply *bsg_reply = job->reply;
- 	int err;
+ 	struct fc_bsg_job *job = (void *) req->special;
+ 	struct Scsi_Host *shost = fc_bsg_to_shost(job);
++	struct fc_rport *rport = fc_bsg_to_rport(job);
+ 	struct fc_internal *i = to_fc_internal(shost->transportt);
+ 	unsigned long flags;
+ 	int err = 0, done = 0;
  
--	err = job->req->errors = bsg_reply->result;
-+	err = job->req->errors = result;
+-	if (job->rport && job->rport->port_state == FC_PORTSTATE_BLOCKED)
++	if (rport && rport->port_state == FC_PORTSTATE_BLOCKED)
+ 		return BLK_EH_RESET_TIMER;
  
- 	if (err < 0)
- 		/* we're only returning the result field in the reply */
-@@ -3602,11 +3604,10 @@ void fc_bsg_jobdone(struct fc_bsg_job *job)
- 	req->resid_len = 0;
- 
- 	if (rsp) {
--		WARN_ON(bsg_reply->reply_payload_rcv_len > rsp->resid_len);
-+		WARN_ON(reply_payload_rcv_len > rsp->resid_len);
- 
- 		/* set reply (bidi) residual */
--		rsp->resid_len -= min(bsg_reply->reply_payload_rcv_len,
--				      rsp->resid_len);
-+		rsp->resid_len -= min(reply_payload_rcv_len, rsp->resid_len);
- 	}
- 	blk_complete_request(req);
- }
-@@ -3847,7 +3848,8 @@ enum fc_dispatch_result {
- 	bsg_reply->reply_payload_rcv_len = 0;
- 	bsg_reply->result = ret;
- 	job->reply_len = sizeof(uint32_t);
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return FC_DISPATCH_UNLOCKED;
- }
- 
-@@ -3924,7 +3926,8 @@ enum fc_dispatch_result {
- 	bsg_reply->reply_payload_rcv_len = 0;
- 	bsg_reply->result = ret;
- 	job->reply_len = sizeof(uint32_t);
--	fc_bsg_jobdone(job);
-+	fc_bsg_jobdone(job, bsg_reply->result,
-+		       bsg_reply->reply_payload_rcv_len);
- 	return FC_DISPATCH_UNLOCKED;
- }
- 
-@@ -3984,7 +3987,8 @@ enum fc_dispatch_result {
- 			bsg_reply->reply_payload_rcv_len = 0;
- 			bsg_reply->result = -ENOMSG;
- 			job->reply_len = sizeof(uint32_t);
--			fc_bsg_jobdone(job);
-+			fc_bsg_jobdone(job, bsg_reply->result,
-+				       bsg_reply->reply_payload_rcv_len);
- 			spin_lock_irq(q->queue_lock);
- 			continue;
- 		}
+ 	spin_lock_irqsave(&job->job_lock, flags);
 diff --git a/include/scsi/scsi_transport_fc.h b/include/scsi/scsi_transport_fc.h
-index 9ef583f..eca8ed7 100644
+index efb9488..9f53fe3 100644
 --- a/include/scsi/scsi_transport_fc.h
 +++ b/include/scsi/scsi_transport_fc.h
-@@ -841,6 +841,7 @@ struct fc_vport *fc_vport_create(struct Scsi_Host *shost, int channel,
- 		struct fc_vport_identifiers *);
- int fc_vport_terminate(struct fc_vport *vport);
- int fc_block_scsi_eh(struct scsi_cmnd *cmnd);
--void fc_bsg_jobdone(struct fc_bsg_job *job);
-+void fc_bsg_jobdone(struct fc_bsg_job *job, int result,
-+		    unsigned int reply_payload_rcv_len);
+@@ -824,6 +824,11 @@ static inline struct Scsi_Host *fc_bsg_to_shost(struct fc_bsg_job *job)
+ 	return job->shost;
+ }
  
- #endif /* SCSI_TRANSPORT_FC_H */
++static inline struct fc_rport *fc_bsg_to_rport(struct fc_bsg_job *job)
++{
++	return job->rport;
++}
++
+ struct scsi_transport_template *fc_attach_transport(
+ 			struct fc_function_template *);
+ void fc_release_transport(struct scsi_transport_template *);
 -- 
 1.8.5.6
