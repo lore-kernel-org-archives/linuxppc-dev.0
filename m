@@ -2,14 +2,14 @@ Return-Path: <hare@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svpMH1NNCzDsyh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 22:26:03 +1100 (AEDT)
-Subject: Re: [PATCH v2 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svpPc1FnyzDsxp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 22:28:04 +1100 (AEDT)
+Subject: Re: [PATCH v2 03/16] scsi: fc: Export fc_bsg_jobdone and use it in FC
+ drivers
 To: Johannes Thumshirn <jthumshirn@suse.de>,
  "Martin K . Petersen" <martin.petersen@oracle.com>
 References: <cover.1476276823.git.jthumshirn@suse.de>
- <b92d12e4f78c4998bc8ad000359c127e673379f3.1476276823.git.jthumshirn@suse.de>
+ <be630735292b05efbefe3835b79f22a8f95f34da.1476276823.git.jthumshirn@suse.de>
 Cc: Christoph Hellwig <hch@infradead.org>,
  Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
  Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
@@ -30,10 +30,10 @@ Cc: Christoph Hellwig <hch@infradead.org>,
  <linuxppc-dev@lists.ozlabs.org>,
  "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
 From: Hannes Reinecke <hare@suse.de>
-Message-ID: <1053c1af-848d-ff60-01a5-13ea29ba23e8@suse.de>
-Date: Thu, 13 Oct 2016 13:25:56 +0200
+Message-ID: <2cfe19b2-dfe3-2fc2-2720-e579f5db5e35@suse.de>
+Date: Thu, 13 Oct 2016 13:27:59 +0200
 MIME-Version: 1.0
-In-Reply-To: <b92d12e4f78c4998bc8ad000359c127e673379f3.1476276823.git.jthumshirn@suse.de>
+In-Reply-To: <be630735292b05efbefe3835b79f22a8f95f34da.1476276823.git.jthumshirn@suse.de>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -45,23 +45,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 10/12/2016 03:06 PM, Johannes Thumshirn wrote:
-> Don't use fc_bsg_job::request and fc_bsg_job::reply directly, but use
-> helper variables bsg_request and bsg_reply. This will be helpfull  when
-> transitioning to bsg-lib.
+> Export fc_bsg_jobdone so drivers can use it directly instead of doing
+> the round-trip via struct fc_bsg_job::job_done() and use it in the LLDDs.
+> 
+> As we've converted all LLDDs over to use fc_bsg_jobdone() directly,
+> we can remove the function pointer from struct fc_bsg_job as well.
 > 
 > Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 > ---
->  drivers/s390/scsi/zfcp_fc.c      |   9 +-
->  drivers/scsi/bfa/bfad_bsg.c      |  40 +++---
->  drivers/scsi/ibmvscsi/ibmvfc.c   |  22 ++--
->  drivers/scsi/libfc/fc_lport.c    |  23 ++--
->  drivers/scsi/lpfc/lpfc_bsg.c     | 194 +++++++++++++++++-----------
->  drivers/scsi/qla2xxx/qla_bsg.c   | 264 ++++++++++++++++++++++-----------------
->  drivers/scsi/qla2xxx/qla_iocb.c  |   5 +-
->  drivers/scsi/qla2xxx/qla_isr.c   |  46 ++++---
->  drivers/scsi/qla2xxx/qla_mr.c    |  10 +-
->  drivers/scsi/scsi_transport_fc.c |  37 +++---
->  10 files changed, 387 insertions(+), 263 deletions(-)
+>  drivers/s390/scsi/zfcp_fc.c      |  2 +-
+>  drivers/scsi/bfa/bfad_bsg.c      |  4 ++--
+>  drivers/scsi/ibmvscsi/ibmvfc.c   |  2 +-
+>  drivers/scsi/libfc/fc_lport.c    |  4 ++--
+>  drivers/scsi/lpfc/lpfc_bsg.c     | 38 +++++++++++++++++-----------------
+>  drivers/scsi/qla2xxx/qla_bsg.c   | 44 ++++++++++++++++++++--------------------
+>  drivers/scsi/scsi_transport_fc.c |  5 ++---
+>  include/scsi/scsi_transport_fc.h |  2 +-
+>  8 files changed, 50 insertions(+), 51 deletions(-)
 > 
 Reviewed-by: Hannes Reinecke <hare@suse.com>
 
