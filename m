@@ -1,15 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svfPg43T5zDsy2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 16:27:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: anton@samba.org
-Subject: [PATCH] powerpc/mm: Drop dump_numa_memory_topology()
-Date: Thu, 13 Oct 2016 16:27:30 +1100
-Message-Id: <1476336450-27862-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svfjy5Q5CzDsy6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 16:41:42 +1100 (AEDT)
+Received: by mail-pa0-x242.google.com with SMTP id qn10so4273642pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 22:41:41 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 0/3][RFC] powerpc: relative exception tables,
+ and build-time sort
+Date: Thu, 13 Oct 2016 16:41:32 +1100
+Message-Id: <20161013054132.7063-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,79 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At boot we dump the NUMA memory topology in dump_numa_memory_topology(),
-at KERN_DEBUG level, resulting in output like:
+This implements relative exception tables for powerpc, and converts it
+to use build-time sorting. I've tested 64s only so far, but 32-bit seems
+to build. Will obviously require some more testing and reviews.
 
-  Node 0 Memory: 0x0-0x100000000
-  Node 1 Memory: 0x100000000-0x200000000
+Thanks,
+Nick
 
-Which is nice enough, but immediately after that we iterate over each
-node and call setup_node_data(), which also prints out the node ranges,
-at KERN_INFO, giving eg:
+Nicholas Piggin (3):
+  powerpc: EX_TABLE macro for exception tables
+  powerpc: relative exception tables
+  powerpc: build-time sort exception table
 
-  numa: Initmem setup node 0 [mem 0x00000000-0xffffffff]
-  numa: Initmem setup node 1 [mem 0x100000000-0x1ffffffff]
+ arch/powerpc/Kconfig                              |   1 +
+ arch/powerpc/include/asm/futex.h                  |  14 +-
+ arch/powerpc/include/asm/io.h                     |  18 +-
+ arch/powerpc/include/asm/linkage.h                |  22 ++
+ arch/powerpc/include/asm/module.h                 |   4 -
+ arch/powerpc/include/asm/uaccess.h                |  51 ++--
+ arch/powerpc/include/asm/word-at-a-time.h         |   5 +-
+ arch/powerpc/kernel/kprobes.c                     |   2 +-
+ arch/powerpc/kernel/traps.c                       |   2 +-
+ arch/powerpc/lib/checksum_32.S                    |  47 ++--
+ arch/powerpc/lib/checksum_64.S                    |  20 +-
+ arch/powerpc/lib/copy_32.S                        |  56 ++---
+ arch/powerpc/lib/copyuser_64.S                    | 271 +++++++++++-----------
+ arch/powerpc/lib/copyuser_power7.S                |  21 +-
+ arch/powerpc/lib/ldstfp.S                         |  25 +-
+ arch/powerpc/lib/sstep.c                          |  15 +-
+ arch/powerpc/lib/string.S                         |  11 +-
+ arch/powerpc/lib/string_64.S                      |  16 +-
+ arch/powerpc/mm/fault.c                           |   2 +-
+ arch/powerpc/platforms/embedded6xx/holly.c        |   2 +-
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   2 +-
+ arch/powerpc/sysdev/fsl_rio.c                     |   7 +-
+ arch/powerpc/sysdev/tsi108_pci.c                  |   5 +-
+ scripts/sortextable.c                             |   2 +
+ 24 files changed, 274 insertions(+), 347 deletions(-)
 
-So drop dump_numa_memory_topology() as superfluous chatter.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/mm/numa.c | 36 ------------------------------------
- 1 file changed, 36 deletions(-)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 75b9cd6150cc..db5fc2b54c5a 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -871,40 +871,6 @@ void __init dump_numa_cpu_topology(void)
- 	}
- }
- 
--static void __init dump_numa_memory_topology(void)
--{
--	unsigned int node;
--	unsigned int count;
--
--	if (min_common_depth == -1 || !numa_enabled)
--		return;
--
--	for_each_online_node(node) {
--		unsigned long i;
--
--		printk(KERN_DEBUG "Node %d Memory:", node);
--
--		count = 0;
--
--		for (i = 0; i < memblock_end_of_DRAM();
--		     i += (1 << SECTION_SIZE_BITS)) {
--			if (early_pfn_to_nid(i >> PAGE_SHIFT) == node) {
--				if (count == 0)
--					printk(" 0x%lx", i);
--				++count;
--			} else {
--				if (count > 0)
--					printk("-0x%lx", i);
--				count = 0;
--			}
--		}
--
--		if (count > 0)
--			printk("-0x%lx", i);
--		printk("\n");
--	}
--}
--
- /* Initialize NODE_DATA for a node on the local memory */
- static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
- {
-@@ -947,8 +913,6 @@ void __init initmem_init(void)
- 
- 	if (parse_numa_properties())
- 		setup_nonnuma();
--	else
--		dump_numa_memory_topology();
- 
- 	memblock_dump_all();
- 
 -- 
-2.7.4
+2.9.3
