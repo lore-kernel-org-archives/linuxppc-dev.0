@@ -1,39 +1,48 @@
-Return-Path: <hare@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svpq45gp4zDt03
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 22:46:40 +1100 (AEDT)
-Subject: Re: [PATCH v2 13/16] scsi: fc: use bsg_job_done
-To: Johannes Thumshirn <jthumshirn@suse.de>,
- "Martin K . Petersen" <martin.petersen@oracle.com>
-References: <cover.1476276823.git.jthumshirn@suse.de>
- <42378ae44b685dfc03f8730017c48701e7187785.1476276823.git.jthumshirn@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Steffen Maier <maier@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>, James Smart
- <james.smart@avagotech.com>, Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-From: Hannes Reinecke <hare@suse.de>
-Message-ID: <f627ae5e-0875-f539-4be0-05cef950abe9@suse.de>
-Date: Thu, 13 Oct 2016 13:46:36 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svpzx5sRfzDsyh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 22:54:21 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9DBrmRk011902
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 07:54:19 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2625dqw8yg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 07:54:19 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Thu, 13 Oct 2016 12:54:17 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id A99F817D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 12:56:23 +0100 (BST)
+Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
+ [9.149.37.249])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9DBsEAI23134226
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 11:54:14 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9DBsEVG008092
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 05:54:14 -0600
+Subject: Re: [PATCH] powerpc/mm: Prevent unlikely crash in
+ copro_calculate_slb()
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <1466182408-17884-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <3e856f04-23a7-b980-a857-27b3342f1548@linux.vnet.ibm.com>
+ <87h98ged3y.fsf@concordia.ellerman.id.au>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Thu, 13 Oct 2016 13:54:14 +0200
 MIME-Version: 1.0
-In-Reply-To: <42378ae44b685dfc03f8730017c48701e7187785.1476276823.git.jthumshirn@suse.de>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <87h98ged3y.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <ee67bc79-b620-162e-811f-dccce02ce7bc@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +52,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/12/2016 03:06 PM, Johannes Thumshirn wrote:
-> fc_bsg_jobdone() and bsg_job_done() are 1:1 copies now so use the bsg-lib one
-> instead of the FC private implementation.
-> 
-> Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
-> ---
->  drivers/s390/scsi/zfcp_fc.c      |  2 +-
->  drivers/scsi/bfa/bfad_bsg.c      |  4 ++--
->  drivers/scsi/ibmvscsi/ibmvfc.c   |  2 +-
->  drivers/scsi/libfc/fc_lport.c    |  4 ++--
->  drivers/scsi/lpfc/lpfc_bsg.c     | 38 +++++++++++++++++-----------------
->  drivers/scsi/qla2xxx/qla_bsg.c   | 44 ++++++++++++++++++++--------------------
->  drivers/scsi/scsi_transport_fc.c | 41 +++----------------------------------
->  include/scsi/scsi_transport_fc.h |  2 --
->  8 files changed, 50 insertions(+), 87 deletions(-)
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.com>
 
-Cheers,
 
-Hannes
--- 
-Dr. Hannes Reinecke		   Teamlead Storage & Networking
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+Le 13/10/2016 à 12:51, Michael Ellerman a écrit :
+> Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+>
+>> ping? The patch still applies cleanly on recent trees.
+>
+> Fell through the cracks :/
+>
+> Fixes: ?
+
+Nothing obvious. Current code was introduced by 
+73d16a6e0e51990cbe13f8d8f43bd5329bbab30a
+but it was apparently moved from cell, where the issue may not have 
+applied, I don't know. I guess we should use that id if really needed:
+
+Fixes: 73d16a6e0e51 ("powerpc/cell: Move data segment faulting code out 
+of cell platform")
+
+   Fred
