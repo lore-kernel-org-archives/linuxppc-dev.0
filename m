@@ -1,23 +1,48 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svZMv1htZzDsxc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 13:25:47 +1100 (AEDT)
-Received: by mail-pa0-x241.google.com with SMTP id hh10so4074125pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 19:25:47 -0700 (PDT)
-Date: Thu, 13 Oct 2016 13:25:34 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64: option to force run-at-load to test relocation
-Message-ID: <20161013132534.695afc12@roar.ozlabs.ibm.com>
-In-Reply-To: <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
-References: <20161012065719.29833-1-npiggin@gmail.com>
- <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svb8M0yMczDsxp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:50 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9D2xJri046551
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 23:00:48 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 261wvxgh7m-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 23:00:47 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 13 Oct 2016 13:00:45 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 892A02CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:41 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9D30fvV64094462
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:41 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9D30eLQ002136
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:41 +1100
+Subject: Re: [PATCH v2] cxl: Prevent adapter reset if an active context exists
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+References: <1476245834-1864-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+Cc: Ian Munsie <imunsie@au1.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ gkurz@linux.vnet.ibm.com
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 13 Oct 2016 14:00:40 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1476245834-1864-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <bc9f5510-27eb-4638-7dd7-ac02ab41ee0c@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,90 +52,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 12 Oct 2016 18:35:21 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
+On 12/10/16 15:17, Vaibhav Jain wrote:
+> This patch prevents resetting the cxl adapter via sysfs in presence of
+> one or more active cxl_context on it. This protects against an
+> unrecoverable error caused by PSL owning a dirty cache line even after
+> reset and host tries to touch the same cache line. In case a force reset
+> of the card is required irrespective of any active contexts, the int
+> value -1 can be stored in the 'reset' sysfs attribute of the card.
+>
+> The patch introduces a new atomic_t member named contexts_num inside
+> struct cxl that holds the number of active context attached to the card
+> , which is checked against '0' before proceeding with the reset. To
+> prevent against a race condition where a context is activated just after
+> reset check is performed, the contexts_num is atomically set to '-1'
+> after reset-check to indicate that no more contexts can be activated on
+> the card anymore.
+>
+> Before activating a context we atomically test if contexts_num is
+> non-negative and if so, increment its value by one. In case the value of
+> contexts_num is negative then it indicates that the card is about to be
+> reset and context activation is error-ed out at that point.
+>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 
-> On 12/10/16 17:57, Nicholas Piggin wrote:
-> > This adds a config option that can help exercise the case when
-> > the kernel is not running at PAGE_OFFSET.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/Kconfig               | 9 +++++++++
-> >  arch/powerpc/kernel/head_64.S      | 4 ++++
-> >  arch/powerpc/kernel/setup-common.c | 3 +++
-> >  3 files changed, 16 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 65fba4c..5d43cb8 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -478,6 +478,15 @@ config RELOCATABLE
-> >  	  setting can still be useful to bootwrappers that need to know the
-> >  	  load address of the kernel (eg. u-boot/mkimage).
-> >  
-> > +config RELOCATABLE_TEST
-> > +	bool "Test relocatable kernel"
-> > +	depends on (PPC64 && RELOCATABLE)
-> > +	default n
-> > +	help
-> > +	  This runs the relocatable kernel at the address it was initially
-> > +	  loaded at, which tends to be non-zero and therefore test the
-> > +	  relocation code.
-> > +
-> >  config CRASH_DUMP
-> >  	bool "Build a kdump crash kernel"
-> >  	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
-> > diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> > index 79da0641..bc9ceac 100644
-> > --- a/arch/powerpc/kernel/head_64.S
-> > +++ b/arch/powerpc/kernel/head_64.S
-> > @@ -111,8 +111,12 @@ __secondary_hold_acknowledge:
-> >  	.globl	__run_at_load
-> >  __run_at_load:
-> >  DEFINE_FIXED_SYMBOL(__run_at_load)
-> > +#ifdef CONFIG_RELOCATABLE_TEST
-> > +	.long	0x1		/* Test relocation, do not relocate to 0 */
-> > +#else
-> >  	.long	0x72756e30	/* "run0" -- relocate to 0 by default */
-> >  #endif
-> > +#endif  
-> 
-> Could we do something like
-> 
-> config RELOCATION_VALUE
-> 	default 0x72756e30
-> 	default	1  if CONFIG_RELOCTABLE_TEST
-> 
-> and then get
-> 
-> 	.long CONFIG_RELOCATION_VALUE
+All the changes look good to me.
 
-Normally I'm up for reducing ifdefs in S and c files, but in this case
-I'm not sure. I like being able to see the two possible values in the
-source. I don't really mind though. If you or Michael feel strongly, I'm
-happy to change it.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
+> diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+> index 4ba0a2a..dae2b38 100644
+> --- a/Documentation/ABI/testing/sysfs-class-cxl
+> +++ b/Documentation/ABI/testing/sysfs-class-cxl
+> @@ -220,8 +220,11 @@ What:           /sys/class/cxl/<card>/reset
+>  Date:           October 2014
+>  Contact:        linuxppc-dev@lists.ozlabs.org
+>  Description:    write only
+> -                Writing 1 will issue a PERST to card which may cause the card
+> -                to reload the FPGA depending on load_image_on_perst.
+> +                Writing 1 will issue a PERST to card provided there are no
+> +		contexts active on any one of the card AFUs. This may cause
+> +		the card to reload the FPGA depending on load_image_on_perst.
+> +		Writing -1 will do a force PERST irrespective of any active
+> +		contexts on the card AFUs.
 
-> >  	. = 0x60
-> >  /*
-> > diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> > index dba265c..18e0f19 100644
-> > --- a/arch/powerpc/kernel/setup-common.c
-> > +++ b/arch/powerpc/kernel/setup-common.c
-> > @@ -795,6 +795,9 @@ static __init void print_system_info(void)
-> >  	pr_info("mmu_features      = 0x%08x\n", cur_cpu_spec->mmu_features);
-> >  #ifdef CONFIG_PPC64
-> >  	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
-> > +
-> > +	if (get_paca()->kernelbase != PAGE_OFFSET)
-> > +		pr_info("kernelbase        = 0x%llx\n", get_paca()->kernelbase);
-> >  #endif
-> >    
-> 
-> Do we need this? We get physical_offset if we are relocated.
+Ugh, spaces vs tabs bites again :(
 
-You're right, that hunk can go.
-
-Thanks,
-Nick
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
