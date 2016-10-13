@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svfl70V4HzDt0l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 16:42:43 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id i85so862242pfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 22:42:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svflf1t7XzDt1W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 16:43:10 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id i85so862951pfa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 22:43:10 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Subject: [PATCH 0/3][RFC] powerpc: relative exception tables,
  and build-time sort
-Date: Thu, 13 Oct 2016 16:42:33 +1100
-Message-Id: <20161013054233.7133-1-npiggin@gmail.com>
+Date: Thu, 13 Oct 2016 16:42:52 +1100
+Message-Id: <20161013054255.7205-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
