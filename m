@@ -1,21 +1,34 @@
-Return-Path: <hkallweit1@gmail.com>
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
+Return-Path: <lstoakes@gmail.com>
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svNVf6sWqzDsxJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 06:00:58 +1100 (AEDT)
-Received: by mail-lf0-x242.google.com with SMTP id b75so8454796lfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 12:00:58 -0700 (PDT)
-From: Heiner Kallweit <hkallweit1@gmail.com>
-Subject: [PATCH] powerpc/boot: fix boot on systems with uncompressed kernel
- image
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Message-ID: <4a99340c-b773-51e4-0466-3d9a72ac83b2@gmail.com>
-Date: Wed, 12 Oct 2016 21:00:43 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svWbL72XyzDsxR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 11:20:30 +1100 (AEDT)
+Received: by mail-lf0-x243.google.com with SMTP id l131so6885552lfl.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 17:20:30 -0700 (PDT)
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+To: linux-mm@kvack.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Jan Kara <jack@suse.cz>,
+ Hugh Dickins <hughd@google.com>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
+ kvm@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com,
+ linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ sparclinux@vger.kernel.org, x86@kernel.org
+Subject: [PATCH 00/10] mm: adjust get_user_pages* functions to explicitly pass
+ FOLL_* flags
+Date: Thu, 13 Oct 2016 01:20:10 +0100
+Message-Id: <20161013002020.3062-1-lstoakes@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +38,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This commit broke boot on systems with an uncompressed kernel image,
-namely systems using a cuImage. On such systems the compressed boot
-image (boot wrapper, uncompressed kernel image, ..) is decompressed
-by u-boot already, therefore the boot wrapper code sees an
-uncompressed kernel image.
+This patch series adjusts functions in the get_user_pages* family such that
+desired FOLL_* flags are passed as an argument rather than implied by flags.
 
-The old decompression code silently assumed an uncompressed kernel
-image if it found no valid gzip signature, whilst the new code
-bailed out in this case.
+The purpose of this change is to make the use of FOLL_FORCE explicit so it is
+easier to grep for and clearer to callers that this flag is being used. The use
+of FOLL_FORCE is an issue as it overrides missing VM_READ/VM_WRITE flags for the
+VMA whose pages we are reading from/writing to, which can result in surprising
+behaviour.
 
-Fix this by re-introducing such a fallback if no valid compressed
-image is found.
+The patch series came out of the discussion around commit 38e0885, which
+addressed a BUG_ON() being triggered when a page was faulted in with PROT_NONE
+set but having been overridden by FOLL_FORCE. do_numa_page() was run on the
+assumption the page _must_ be one marked for NUMA node migration as an actual
+PROT_NONE page would have been dealt with prior to this code path, however
+FOLL_FORCE introduced a situation where this assumption did not hold.
 
-Fixes: 1b7898ee276b ("Use the pre-boot decompression API")
-Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
----
- arch/powerpc/boot/main.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+See https://marc.info/?l=linux-mm&m=147585445805166 for the patch proposal.
 
-diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
-index f7a184b..57d42d1 100644
---- a/arch/powerpc/boot/main.c
-+++ b/arch/powerpc/boot/main.c
-@@ -32,9 +32,16 @@ static struct addr_range prep_kernel(void)
- 	void *addr = 0;
- 	struct elf_info ei;
- 	long len;
-+	int uncompressed_image = 0;
- 
--	partial_decompress(vmlinuz_addr, vmlinuz_size,
-+	len = partial_decompress(vmlinuz_addr, vmlinuz_size,
- 		elfheader, sizeof(elfheader), 0);
-+	/* assume uncompressed data if -1 is returned */
-+	if (len == -1) {
-+		uncompressed_image = 1;
-+		memcpy(elfheader, vmlinuz_addr, sizeof(elfheader));
-+		printf("No valid compressed data found, assume uncompressed data\n\r");
-+	}
- 
- 	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei))
- 		fatal("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
-@@ -67,6 +74,13 @@ static struct addr_range prep_kernel(void)
- 					"device tree\n\r");
- 	}
- 
-+	if (uncompressed_image) {
-+		memcpy(addr, vmlinuz_addr + ei.elfoffset, ei.loadsize);
-+		printf("0x%lx bytes of uncompressed data copied\n\r",
-+		       ei.loadsize);
-+		goto out;
-+	}
-+
- 	/* Finally, decompress the kernel */
- 	printf("Decompressing (0x%p <- 0x%p:0x%p)...\n\r", addr,
- 	       vmlinuz_addr, vmlinuz_addr+vmlinuz_size);
-@@ -82,7 +96,7 @@ static struct addr_range prep_kernel(void)
- 			 len, ei.loadsize);
- 
- 	printf("Done! Decompressed 0x%lx bytes\n\r", len);
--
-+out:
- 	flush_cache(addr, ei.loadsize);
- 
- 	return (struct addr_range){addr, ei.memsize};
--- 
-2.10.0
+Lorenzo Stoakes (10):
+  mm: remove write/force parameters from __get_user_pages_locked()
+  mm: remove write/force parameters from __get_user_pages_unlocked()
+  mm: replace get_user_pages_unlocked() write/force parameters with gup_flags
+  mm: replace get_user_pages_locked() write/force parameters with gup_flags
+  mm: replace get_vaddr_frames() write/force parameters with gup_flags
+  mm: replace get_user_pages() write/force parameters with gup_flags
+  mm: replace get_user_pages_remote() write/force parameters with gup_flags
+  mm: replace __access_remote_vm() write parameter with gup_flags
+  mm: replace access_remote_vm() write parameter with gup_flags
+  mm: replace access_process_vm() write parameter with gup_flags
+
+ arch/alpha/kernel/ptrace.c                         |  9 ++--
+ arch/blackfin/kernel/ptrace.c                      |  5 ++-
+ arch/cris/arch-v32/drivers/cryptocop.c             |  4 +-
+ arch/cris/arch-v32/kernel/ptrace.c                 |  4 +-
+ arch/ia64/kernel/err_inject.c                      |  2 +-
+ arch/ia64/kernel/ptrace.c                          | 14 +++---
+ arch/m32r/kernel/ptrace.c                          | 15 ++++---
+ arch/mips/kernel/ptrace32.c                        |  5 ++-
+ arch/mips/mm/gup.c                                 |  2 +-
+ arch/powerpc/kernel/ptrace32.c                     |  5 ++-
+ arch/s390/mm/gup.c                                 |  3 +-
+ arch/score/kernel/ptrace.c                         | 10 +++--
+ arch/sh/mm/gup.c                                   |  3 +-
+ arch/sparc/kernel/ptrace_64.c                      | 24 +++++++----
+ arch/sparc/mm/gup.c                                |  3 +-
+ arch/x86/kernel/step.c                             |  3 +-
+ arch/x86/mm/gup.c                                  |  2 +-
+ arch/x86/mm/mpx.c                                  |  5 +--
+ arch/x86/um/ptrace_32.c                            |  3 +-
+ arch/x86/um/ptrace_64.c                            |  3 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c            |  7 ++-
+ drivers/gpu/drm/etnaviv/etnaviv_gem.c              |  7 ++-
+ drivers/gpu/drm/exynos/exynos_drm_g2d.c            |  3 +-
+ drivers/gpu/drm/i915/i915_gem_userptr.c            |  6 ++-
+ drivers/gpu/drm/radeon/radeon_ttm.c                |  3 +-
+ drivers/gpu/drm/via/via_dmablit.c                  |  4 +-
+ drivers/infiniband/core/umem.c                     |  6 ++-
+ drivers/infiniband/core/umem_odp.c                 |  7 ++-
+ drivers/infiniband/hw/mthca/mthca_memfree.c        |  2 +-
+ drivers/infiniband/hw/qib/qib_user_pages.c         |  3 +-
+ drivers/infiniband/hw/usnic/usnic_uiom.c           |  5 ++-
+ drivers/media/pci/ivtv/ivtv-udma.c                 |  4 +-
+ drivers/media/pci/ivtv/ivtv-yuv.c                  |  5 ++-
+ drivers/media/platform/omap/omap_vout.c            |  2 +-
+ drivers/media/v4l2-core/videobuf-dma-sg.c          |  7 ++-
+ drivers/media/v4l2-core/videobuf2-memops.c         |  6 ++-
+ drivers/misc/mic/scif/scif_rma.c                   |  3 +-
+ drivers/misc/sgi-gru/grufault.c                    |  2 +-
+ drivers/platform/goldfish/goldfish_pipe.c          |  3 +-
+ drivers/rapidio/devices/rio_mport_cdev.c           |  3 +-
+ drivers/scsi/st.c                                  |  5 +--
+ .../interface/vchiq_arm/vchiq_2835_arm.c           |  3 +-
+ .../vc04_services/interface/vchiq_arm/vchiq_arm.c  |  3 +-
+ drivers/video/fbdev/pvr2fb.c                       |  4 +-
+ drivers/virt/fsl_hypervisor.c                      |  4 +-
+ fs/exec.c                                          |  9 +++-
+ fs/proc/base.c                                     | 19 +++++---
+ include/linux/mm.h                                 | 18 ++++----
+ kernel/events/uprobes.c                            |  6 ++-
+ kernel/ptrace.c                                    | 16 ++++---
+ mm/frame_vector.c                                  |  9 ++--
+ mm/gup.c                                           | 50 ++++++++++------------
+ mm/memory.c                                        | 16 ++++---
+ mm/mempolicy.c                                     |  2 +-
+ mm/nommu.c                                         | 38 +++++++---------
+ mm/process_vm_access.c                             |  7 ++-
+ mm/util.c                                          |  8 ++--
+ net/ceph/pagevec.c                                 |  2 +-
+ security/tomoyo/domain.c                           |  2 +-
+ virt/kvm/async_pf.c                                |  3 +-
+ virt/kvm/kvm_main.c                                | 11 +++--
+ 61 files changed, 260 insertions(+), 187 deletions(-)
