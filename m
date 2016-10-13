@@ -1,48 +1,19 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svb8M0yMczDsxp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:50 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9D2xJri046551
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 23:00:48 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 261wvxgh7m-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 23:00:47 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 13 Oct 2016 13:00:45 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 892A02CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:41 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9D30fvV64094462
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:41 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9D30eLQ002136
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:00:41 +1100
-Subject: Re: [PATCH v2] cxl: Prevent adapter reset if an active context exists
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-References: <1476245834-1864-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- gkurz@linux.vnet.ibm.com
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 13 Oct 2016 14:00:40 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svbKD35Q2zDsy2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 14:08:32 +1100 (AEDT)
+Received: by mail-pa0-x243.google.com with SMTP id os4so37446pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 20:08:32 -0700 (PDT)
+Date: Thu, 13 Oct 2016 14:08:24 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Subject: [RFC][PATCH] kernel relocation for KVM exceptions
+Message-ID: <20161013140824.0e3ef1e2@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1476245834-1864-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <bc9f5510-27eb-4638-7dd7-ac02ab41ee0c@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,51 +23,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/10/16 15:17, Vaibhav Jain wrote:
-> This patch prevents resetting the cxl adapter via sysfs in presence of
-> one or more active cxl_context on it. This protects against an
-> unrecoverable error caused by PSL owning a dirty cache line even after
-> reset and host tries to touch the same cache line. In case a force reset
-> of the card is required irrespective of any active contexts, the int
-> value -1 can be stored in the 'reset' sysfs attribute of the card.
->
-> The patch introduces a new atomic_t member named contexts_num inside
-> struct cxl that holds the number of active context attached to the card
-> , which is checked against '0' before proceeding with the reset. To
-> prevent against a race condition where a context is activated just after
-> reset check is performed, the contexts_num is atomically set to '-1'
-> after reset-check to indicate that no more contexts can be activated on
-> the card anymore.
->
-> Before activating a context we atomically test if contexts_num is
-> non-negative and if so, increment its value by one. In case the value of
-> contexts_num is negative then it indicates that the card is about to be
-> reset and context activation is error-ed out at that point.
->
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Hi Paul,
 
-All the changes look good to me.
+I wonder what you think about this approach for applying relocation to KVM
+exceptions? It's not yet tested and I haven't attempted PR, but I'll keep
+at it if you think it's the right direction.
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+The relocation branch requires ctr, but we can get away without more scratch
+storage by putting trap and cr in one register.
 
-> diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-> index 4ba0a2a..dae2b38 100644
-> --- a/Documentation/ABI/testing/sysfs-class-cxl
-> +++ b/Documentation/ABI/testing/sysfs-class-cxl
-> @@ -220,8 +220,11 @@ What:           /sys/class/cxl/<card>/reset
->  Date:           October 2014
->  Contact:        linuxppc-dev@lists.ozlabs.org
->  Description:    write only
-> -                Writing 1 will issue a PERST to card which may cause the card
-> -                to reload the FPGA depending on load_image_on_perst.
-> +                Writing 1 will issue a PERST to card provided there are no
-> +		contexts active on any one of the card AFUs. This may cause
-> +		the card to reload the FPGA depending on load_image_on_perst.
-> +		Writing -1 will do a force PERST irrespective of any active
-> +		contexts on the card AFUs.
+On the other hand, that's going to make the calling convention diverge even
+more for 32-bit, so perhaps it's being overly complex and you'd rather add
+another scratch save for CONFIG_RELOCATABLE? Other ideas?
 
-Ugh, spaces vs tabs bites again :(
+Thanks,
+Nick
 
+
+---
+ arch/powerpc/include/asm/exception-64s.h | 63 ++++++++++++++++++++++++++------
+ arch/powerpc/kernel/exceptions-64s.S     |  4 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 18 +++++----
+ 3 files changed, 65 insertions(+), 20 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 84d49b1..466870f 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -97,6 +97,11 @@
+ 	ld	reg,PACAKBASE(r13);					\
+ 	ori	reg,reg,(ABS_ADDR(label))@l;
+ 
++#define __LOAD_FAR_HANDLER(reg, label)					\
++	ld	reg,PACAKBASE(r13);					\
++	ori	reg,reg,(ABS_ADDR(label))@l;				\
++	addis	reg,reg,(ABS_ADDR(label))@h;
++
+ /* Exception register prefixes */
+ #define EXC_HV	H
+ #define EXC_STD
+@@ -218,12 +223,43 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	mtctr	reg;							\
+ 	bctr
+ 
++/*
++ * KVM requires a far (>64K) branch, and to set the exit number in r12
++ * when branching from an exception
++ */
++#define BRANCH_TO_KVM_EXIT(reg, label)					\
++	mfctr	reg;							\
++	std	reg,HSTATE_SCRATCH2(r13);				\
++	__LOAD_FAR_HANDLER(reg, label);					\
++	mtctr	reg;							\
++	bctr
++
++#define BRANCH_TO_KVM(reg, label)					\
++	__LOAD_FAR_HANDLER(reg, label);					\
++	mtctr	reg;							\
++	bctr
++
++#define BRANCH_LINK_TO_KVM(reg, label)					\
++	__LOAD_FAR_HANDLER(reg, label);					\
++	mtctr	reg;							\
++	bctrl
++
+ #else
+ #define BRANCH_TO_COMMON(reg, label)					\
+ 	b	label
+ 
++#define BRANCH_TO_KVM(reg, label)					\
++	b	label
++
++#define BRANCH_TO_KVM_EXIT(reg, label)					\
++	b	label
++
++#define BRANCH_LINK_TO_KVM(reg, label)					\
++	b	label
++
+ #endif
+ 
++
+ #define __KVM_HANDLER_PROLOG(area, n)					\
+ 	BEGIN_FTR_SECTION_NESTED(947)					\
+ 	ld	r10,area+EX_CFAR(r13);					\
+@@ -234,30 +270,35 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	std	r10,HSTATE_PPR(r13);					\
+ 	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
+ 	ld	r10,area+EX_R10(r13);					\
+-	stw	r9,HSTATE_SCRATCH1(r13);				\
+-	ld	r9,area+EX_R9(r13);					\
+ 	std	r12,HSTATE_SCRATCH0(r13);				\
++	li	r12,(n);						\
++	sldi	r12,r12,32;						\
++	ori	r12,r12,r9;						\
++	ld	r9,area+EX_R9(r13);					\
++	std	r9,HSTATE_SCRATCH1(r13);				\
+ 
+ #define __KVM_HANDLER(area, h, n)					\
+ 	__KVM_HANDLER_PROLOG(area, n)					\
+-	li	r12,n;							\
+-	b	kvmppc_interrupt
++	BRANCH_TO_KVM_EXIT(r9, kvmppc_interrupt)
+ 
+ #define __KVM_HANDLER_SKIP(area, h, n)					\
+ 	cmpwi	r10,KVM_GUEST_MODE_SKIP;				\
+-	ld	r10,area+EX_R10(r13);					\
+ 	beq	89f;							\
+-	stw	r9,HSTATE_SCRATCH1(r13);				\
+ 	BEGIN_FTR_SECTION_NESTED(948)					\
+-	ld	r9,area+EX_PPR(r13);					\
+-	std	r9,HSTATE_PPR(r13);					\
++	ld	r10,area+EX_PPR(r13);					\
++	std	r0,HSTATE_PPR(r13);					\
+ 	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
+-	ld	r9,area+EX_R9(r13);					\
++	ld	r10,area+EX_R10(r13);					\
+ 	std	r12,HSTATE_SCRATCH0(r13);				\
+-	li	r12,n;							\
+-	b	kvmppc_interrupt;					\
++	li	r12,(n);						\
++	sldi	r12,r12,32;						\
++	ori	r12,r12,r9;						\
++	ld	r9,area+EX_R9(r13);					\
++	std	r9,HSTATE_SCRATCH1(r13);				\
++	BRANCH_TO_KVM_EXIT(r9, kvmppc_interrupt);			\
+ 89:	mtocrf	0x80,r9;						\
+ 	ld	r9,area+EX_R9(r13);					\
++	ld	r10,area+EX_R10(r13);					\
+ 	b	kvmppc_skip_##h##interrupt
+ 
+ #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index e680e84..81c3a63 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -137,7 +137,7 @@ EXC_COMMON_BEGIN(system_reset_idle_common)
+ 	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
+ 	cmpwi	r0,0
+ 	beq	1f
+-	b	kvm_start_guest
++	BRANCH_TO_KVM(r10, kvm_start_guest)
+ 1:
+ #endif
+ 
+@@ -974,7 +974,7 @@ TRAMP_REAL_BEGIN(hmi_exception_early)
+ 	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
+ 	EXCEPTION_PROLOG_COMMON_3(0xe60)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	hmi_exception_realmode
++	BRANCH_LINK_TO_KVM(r4, hmi_exception_realmode)
+ 	/* Windup the stack. */
+ 	/* Move original HSRR0 and HSRR1 into the respective regs */
+ 	ld	r9,_MSR(r1)
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index c3c1d1b..824e87a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1043,19 +1043,23 @@ hdec_soon:
+ kvmppc_interrupt_hv:
+ 	/*
+ 	 * Register contents:
+-	 * R12		= interrupt vector
++	 * R12		= (interrupt vector << 32) | guest CR
+ 	 * R13		= PACA
+-	 * guest CR, R12 saved in shadow VCPU SCRATCH1/0
++	 * guest R12, R9 saved in shadow VCPU SCRATCH0/1 respectively
++	 * guest CTR saved in shadow VCPU SCRATCH2 if RELOCATABLE
+ 	 * guest R13 saved in SPRN_SCRATCH0
+ 	 */
+-	std	r9, HSTATE_SCRATCH2(r13)
++#ifdef CONFIG_RELOCATABLE
++	ld	r9, HSTATE_SCRATCH2(r13)
++	mfctr	r9
++#endif
+ 
+ 	lbz	r9, HSTATE_IN_GUEST(r13)
+ 	cmpwi	r9, KVM_GUEST_MODE_HOST_HV
+ 	beq	kvmppc_bad_host_intr
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+ 	cmpwi	r9, KVM_GUEST_MODE_GUEST
+-	ld	r9, HSTATE_SCRATCH2(r13)
++	ld	r9, HSTATE_SCRATCH1(r13)
+ 	beq	kvmppc_interrupt_pr
+ #endif
+ 	/* We're now back in the host but in guest MMU context */
+@@ -1075,14 +1079,13 @@ kvmppc_interrupt_hv:
+ 	std	r6, VCPU_GPR(R6)(r9)
+ 	std	r7, VCPU_GPR(R7)(r9)
+ 	std	r8, VCPU_GPR(R8)(r9)
+-	ld	r0, HSTATE_SCRATCH2(r13)
++	ld	r0, HSTATE_SCRATCH1(r13)
+ 	std	r0, VCPU_GPR(R9)(r9)
+ 	std	r10, VCPU_GPR(R10)(r9)
+ 	std	r11, VCPU_GPR(R11)(r9)
+ 	ld	r3, HSTATE_SCRATCH0(r13)
+-	lwz	r4, HSTATE_SCRATCH1(r13)
+ 	std	r3, VCPU_GPR(R12)(r9)
+-	stw	r4, VCPU_CR(r9)
++	stw	r12, VCPU_CR(r9)	/* CR is in the low half of r12 */
+ BEGIN_FTR_SECTION
+ 	ld	r3, HSTATE_CFAR(r13)
+ 	std	r3, VCPU_CFAR(r9)
+@@ -1100,6 +1103,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	mfspr	r11, SPRN_SRR1
+ 	std	r10, VCPU_SRR0(r9)
+ 	std	r11, VCPU_SRR1(r9)
++	srdi	r12, r12, 32		/* trap is in the high half of r12 */
+ 	andi.	r0, r12, 2		/* need to read HSRR0/1? */
+ 	beq	1f
+ 	mfspr	r10, SPRN_HSRR0
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.9.3
