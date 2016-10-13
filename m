@@ -1,21 +1,23 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3svZBM037czDt4C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 13:17:31 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id 128so3909032pfz.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 19:17:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3svZMv1htZzDsxc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 13:25:47 +1100 (AEDT)
+Received: by mail-pa0-x241.google.com with SMTP id hh10so4074125pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2016 19:25:47 -0700 (PDT)
+Date: Thu, 13 Oct 2016 13:25:34 +1100
 From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
- "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/64s: relocation,
- register save fixes for system reset interrupt
-Date: Thu, 13 Oct 2016 13:17:14 +1100
-Message-Id: <20161013021714.6624-1-npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/64: option to force run-at-load to test relocation
+Message-ID: <20161013132534.695afc12@roar.ozlabs.ibm.com>
+In-Reply-To: <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
+References: <20161012065719.29833-1-npiggin@gmail.com>
+ <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,144 +27,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch does a couple of things. First of all, powernv immediately
-explodes when running a relocated kernel, because the system reset
-exception for handling sleeps does not do correct relocated branches.
+On Wed, 12 Oct 2016 18:35:21 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-Secondly, the sleep handling code trashes the condition and cfar
-registers, which we would like to preserve for debugging purposes (for
-non-sleep case exception).
+> On 12/10/16 17:57, Nicholas Piggin wrote:
+> > This adds a config option that can help exercise the case when
+> > the kernel is not running at PAGE_OFFSET.
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/Kconfig               | 9 +++++++++
+> >  arch/powerpc/kernel/head_64.S      | 4 ++++
+> >  arch/powerpc/kernel/setup-common.c | 3 +++
+> >  3 files changed, 16 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index 65fba4c..5d43cb8 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -478,6 +478,15 @@ config RELOCATABLE
+> >  	  setting can still be useful to bootwrappers that need to know the
+> >  	  load address of the kernel (eg. u-boot/mkimage).
+> >  
+> > +config RELOCATABLE_TEST
+> > +	bool "Test relocatable kernel"
+> > +	depends on (PPC64 && RELOCATABLE)
+> > +	default n
+> > +	help
+> > +	  This runs the relocatable kernel at the address it was initially
+> > +	  loaded at, which tends to be non-zero and therefore test the
+> > +	  relocation code.
+> > +
+> >  config CRASH_DUMP
+> >  	bool "Build a kdump crash kernel"
+> >  	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
+> > diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+> > index 79da0641..bc9ceac 100644
+> > --- a/arch/powerpc/kernel/head_64.S
+> > +++ b/arch/powerpc/kernel/head_64.S
+> > @@ -111,8 +111,12 @@ __secondary_hold_acknowledge:
+> >  	.globl	__run_at_load
+> >  __run_at_load:
+> >  DEFINE_FIXED_SYMBOL(__run_at_load)
+> > +#ifdef CONFIG_RELOCATABLE_TEST
+> > +	.long	0x1		/* Test relocation, do not relocate to 0 */
+> > +#else
+> >  	.long	0x72756e30	/* "run0" -- relocate to 0 by default */
+> >  #endif
+> > +#endif  
+> 
+> Could we do something like
+> 
+> config RELOCATION_VALUE
+> 	default 0x72756e30
+> 	default	1  if CONFIG_RELOCTABLE_TEST
+> 
+> and then get
+> 
+> 	.long CONFIG_RELOCATION_VALUE
 
-This patch changes the exception to use the standard format that saves
-registers before any tests or branches are made. It adds the test for
-idle-wakeup as an "extra" to break out of the normal exception path.
-Then it branches to a relocated idle handler that calls the various
-idle handling functions.
+Normally I'm up for reducing ifdefs in S and c files, but in this case
+I'm not sure. I like being able to see the two possible values in the
+source. I don't really mind though. If you or Michael feel strongly, I'm
+happy to change it.
 
-After this patch, POWER8 CPU simulator now boots powernv kernel that is
-running at non-zero.
 
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/exception-64s.h | 16 ++++++++++
- arch/powerpc/kernel/exceptions-64s.S     | 50 ++++++++++++++++++--------------
- 2 files changed, 45 insertions(+), 21 deletions(-)
+> >  	. = 0x60
+> >  /*
+> > diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> > index dba265c..18e0f19 100644
+> > --- a/arch/powerpc/kernel/setup-common.c
+> > +++ b/arch/powerpc/kernel/setup-common.c
+> > @@ -795,6 +795,9 @@ static __init void print_system_info(void)
+> >  	pr_info("mmu_features      = 0x%08x\n", cur_cpu_spec->mmu_features);
+> >  #ifdef CONFIG_PPC64
+> >  	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
+> > +
+> > +	if (get_paca()->kernelbase != PAGE_OFFSET)
+> > +		pr_info("kernelbase        = 0x%llx\n", get_paca()->kernelbase);
+> >  #endif
+> >    
+> 
+> Do we need this? We get physical_offset if we are relocated.
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 2e4e7d8..84d49b1 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -93,6 +93,10 @@
- 	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
- 	ori	reg,reg,(FIXED_SYMBOL_ABS_ADDR(label))@l;
- 
-+#define __LOAD_HANDLER(reg, label)					\
-+	ld	reg,PACAKBASE(r13);					\
-+	ori	reg,reg,(ABS_ADDR(label))@l;
-+
- /* Exception register prefixes */
- #define EXC_HV	H
- #define EXC_STD
-@@ -208,6 +212,18 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- #define kvmppc_interrupt kvmppc_interrupt_pr
- #endif
- 
-+#ifdef CONFIG_RELOCATABLE
-+#define BRANCH_TO_COMMON(reg, label)					\
-+	__LOAD_HANDLER(reg, label);					\
-+	mtctr	reg;							\
-+	bctr
-+
-+#else
-+#define BRANCH_TO_COMMON(reg, label)					\
-+	b	label
-+
-+#endif
-+
- #define __KVM_HANDLER_PROLOG(area, n)					\
- 	BEGIN_FTR_SECTION_NESTED(947)					\
- 	ld	r10,area+EX_CFAR(r13);					\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 08992f8..e680e84 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -95,19 +95,35 @@ __start_interrupts:
- /* No virt vectors corresponding with 0x0..0x100 */
- EXC_VIRT_NONE(0x4000, 0x4100)
- 
--EXC_REAL_BEGIN(system_reset, 0x100, 0x200)
--	SET_SCRATCH0(r13)
-+
- #ifdef CONFIG_PPC_P7_NAP
--BEGIN_FTR_SECTION
--	/* Running native on arch 2.06 or later, check if we are
--	 * waking up from nap/sleep/winkle.
-+	/*
-+	 * If running native on arch 2.06 or later, check if we are waking up
-+	 * from nap/sleep/winkle, and branch to idle handler.
- 	 */
--	mfspr	r13,SPRN_SRR1
--	rlwinm.	r13,r13,47-31,30,31
--	beq	9f
-+#define IDLETEST(n)							\
-+	BEGIN_FTR_SECTION ;						\
-+	mfspr	r10,SPRN_SRR1 ;						\
-+	rlwinm.	r10,r10,47-31,30,31 ;					\
-+	beq-	1f ;							\
-+	cmpwi	cr3,r10,2 ;						\
-+	BRANCH_TO_COMMON(r10, system_reset_idle_common) ;		\
-+1:									\
-+	END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-+#else
-+#define IDLETEST NOTEST
-+#endif
- 
--	cmpwi	cr3,r13,2
--	GET_PACA(r13)
-+EXC_REAL_BEGIN(system_reset, 0x100, 0x200)
-+	SET_SCRATCH0(r13)
-+	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common, EXC_STD,
-+				 IDLETEST, 0x100)
-+
-+EXC_REAL_END(system_reset, 0x100, 0x200)
-+EXC_VIRT_NONE(0x4100, 0x4200)
-+
-+#ifdef CONFIG_PPC_P7_NAP
-+EXC_COMMON_BEGIN(system_reset_idle_common)
- 	bl	pnv_restore_hyp_resource
- 
- 	li	r0,PNV_THREAD_RUNNING
-@@ -130,14 +146,8 @@ BEGIN_FTR_SECTION
- 	blt	cr3,2f
- 	b	pnv_wakeup_loss
- 2:	b	pnv_wakeup_noloss
-+#endif
- 
--9:
--END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
--#endif /* CONFIG_PPC_P7_NAP */
--	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common, EXC_STD,
--				 NOTEST, 0x100)
--EXC_REAL_END(system_reset, 0x100, 0x200)
--EXC_VIRT_NONE(0x4100, 0x4200)
- EXC_COMMON(system_reset_common, 0x100, system_reset_exception)
- 
- #ifdef CONFIG_PPC_PSERIES
-@@ -817,10 +827,8 @@ EXC_VIRT(trap_0b, 0x4b00, 0x4c00, 0xb00)
- TRAMP_KVM(PACA_EXGEN, 0xb00)
- EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
- 
--
--#define LOAD_SYSCALL_HANDLER(reg)				\
--	ld	reg,PACAKBASE(r13);				\
--	ori	reg,reg,(ABS_ADDR(system_call_common))@l;
-+#define LOAD_SYSCALL_HANDLER(reg)					\
-+	__LOAD_HANDLER(reg, system_call_common)
- 
- /* Syscall routine is used twice, in reloc-off and reloc-on paths */
- #define SYSCALL_PSERIES_1 					\
--- 
-2.9.3
+You're right, that hunk can go.
+
+Thanks,
+Nick
