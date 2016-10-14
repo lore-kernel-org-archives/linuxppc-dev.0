@@ -1,19 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swHY73LmMzDt2K
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 17:21:15 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/64: option to force run-at-load to test relocation
-In-Reply-To: <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
-References: <20161012065719.29833-1-npiggin@gmail.com>
- <ad8e59d1-57fb-56c9-c2cf-d284835d9288@gmail.com>
-Date: Fri, 14 Oct 2016 17:21:12 +1100
-Message-ID: <87pon3cuxz.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swHhW1xXQzDt2K
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 17:27:39 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id 128so6575339pfz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 23:27:39 -0700 (PDT)
+Date: Fri, 14 Oct 2016 17:27:30 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: pbonzini@redhat.com, rkrcmar@redhat.com, agraf@suse.com, corbet@lwn.net,
+ kvm@vger.kernel.org, linux-doc@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org, sam.bobroff@au1.ibm.com
+Subject: Re: [PATCH 0/6] kvm: powerpc halt polling updates
+Message-ID: <20161014172730.127ed3fb@roar.ozlabs.ibm.com>
+In-Reply-To: <1476406404-32752-1-git-send-email-sjitindarsingh@gmail.com>
+References: <1476406404-32752-1-git-send-email-sjitindarsingh@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
-> On 12/10/16 17:57, Nicholas Piggin wrote:
->> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
->> index 79da0641..bc9ceac 100644
->> --- a/arch/powerpc/kernel/head_64.S
->> +++ b/arch/powerpc/kernel/head_64.S
->> @@ -111,8 +111,12 @@ __secondary_hold_acknowledge:
->>  	.globl	__run_at_load
->>  __run_at_load:
->>  DEFINE_FIXED_SYMBOL(__run_at_load)
->> +#ifdef CONFIG_RELOCATABLE_TEST
->> +	.long	0x1		/* Test relocation, do not relocate to 0 */
->> +#else
->>  	.long	0x72756e30	/* "run0" -- relocate to 0 by default */
->>  #endif
->> +#endif
->
-> Could we do something like
->
-> config RELOCATION_VALUE
-> 	default 0x72756e30
-> 	default	1  if CONFIG_RELOCTABLE_TEST
+On Fri, 14 Oct 2016 11:53:18 +1100
+Suraj Jitindar Singh <sjitindarsingh@gmail.com> wrote:
 
-I'm not a fan of using kconfig logic when plain #defines would achieve
-the same result, eg:
+> This patch series makes some updates and bug fixes to the powerpc kvm-hv
+> halt polling code.
+> 
+> The first two patches are concerned with exporting the generic kvm module
+> parameter variables and accessing these from the powerpc specific code.
+> 
+> The third patch fixes a bug where changing the global max halt polling
+> interval module parameter can sometimes have no effect.
+> 
+> The fourth patch decreases the default global max halt polling interval
+> to something more sensible.
+> 
+> The fifth patch contains generic fixups with no functional effect.
+> 
+> The last patch adds halt polling documentation.
 
-#ifdef CONFIG_RELOCATABLE_TEST
-#define RUN_AT_LOAD_DEFAULT 1		/* Test relocation, do not relocate to 0 */
-#else
-#define RUN_AT_LOAD_DEFAULT 0x72756e30  /* "run0" -- relocate to 0 by default */
-#endif
+I want to enable polling idle in Linux for SPLPAR/KVM as we do for
+dedicated mode. Essentially the guest OS will spin for a small time
+before ceding.
 
-	.globl	__run_at_load
-__run_at_load:
-DEFINE_FIXED_SYMBOL(__run_at_load)
-	.long	RUN_AT_LOAD_DEFAULT
+There will be a lot of interaction between this and halt polling. I
+think guest polling may still be worthwhile if you have halt polling in
+the host, although it might be less effective. We should set up some
+performance testing with various guest/host parameters and see what
+works best. What have you been testing with so far?
 
-
-Which is probably nicer to look at than Nick's version, but not by a
-huge margin. I'd merge either.
-
-cheers
+Thanks,
+Nick
