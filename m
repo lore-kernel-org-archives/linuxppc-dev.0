@@ -1,21 +1,22 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
+Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
+ [IPv6:2607:f8b0:400e:c00::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swPVd4c27zDt3V
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 21:49:29 +1100 (AEDT)
-Received: by mail-pa0-x244.google.com with SMTP id hh10so5987087pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 03:49:29 -0700 (PDT)
-Subject: Re: [PATCH v2] powerpc/64: option to force run-at-load to test
- relocation
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swPXj4KRTzDt3b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 21:51:17 +1100 (AEDT)
+Received: by mail-pf0-x233.google.com with SMTP id e6so48366767pfk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 03:51:17 -0700 (PDT)
+Subject: Re: [PATCH][RFC] powerpc/64s: Use emergency stack for 0x100 system
+ reset interrupt
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20161014073133.24548-1-npiggin@gmail.com>
+References: <20161013065106.5389-1-npiggin@gmail.com>
+Cc: Anton Blanchard <anton@samba.org>
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <6a7af43c-64c8-60c4-bd73-29941d9474b8@gmail.com>
-Date: Fri, 14 Oct 2016 21:49:31 +1100
+Message-ID: <6e4b347e-2c59-ed0a-6012-c8e849f3ff29@gmail.com>
+Date: Fri, 14 Oct 2016 21:51:16 +1100
 MIME-Version: 1.0
-In-Reply-To: <20161014073133.24548-1-npiggin@gmail.com>
+In-Reply-To: <20161013065106.5389-1-npiggin@gmail.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,11 +29,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 14/10/16 18:31, Nicholas Piggin wrote:
-> This adds a config option that can help exercise the case when
-> the kernel is not running at PAGE_OFFSET.
+On 13/10/16 17:51, Nicholas Piggin wrote:
+> Also use EX_NMI save space. This should give cleaner debug data in
+> case kernel stacks have become corrupted.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
+> MSR_RI is kept clear for the 0x100 handler, because we can't mask it,
+> and can't tolerate a reentrant NMI. Technically the 0x100 is not really
+> recoverable yet, because it could trample on another emergency stack
+> user. This will require a bit more work to safely implement, but for
+> now we don't need to recover after a 0x100.
+> 
+> A little bit of the emergency stack / MSR_RI handling differences seem
+> like they can be consolidated with some other handlers. I'll split those
+> into a couple more patches before submitting.
+> 
+> I moved the MC save area in the paca out from between the general and
+> slb save areas, and put it with the nmi area because it shouldn't be used
+> much.
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+I think we should document the limitations as discussed
+
+One of them is that sequential system resets have unpredictable behaviour
+when done in quick successions. I also don't like some of the naming like
+NORI, I would rather prefer NOT_RI, but thats just nit picking
+
+Balbir Singh.
