@@ -1,41 +1,21 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swKGJ17BCzDt2l
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 18:38:32 +1100 (AEDT)
-Date: Fri, 14 Oct 2016 09:38:21 +0200
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Steffen Maier <maier@linux.vnet.ibm.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
- Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>,
- James Smart <james.smart@avagotech.com>,
- Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
-Message-ID: <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
-References: <cover.1476369687.git.jthumshirn@suse.de>
- <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
- <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
+Return-Path: <Marcin.Nowakowski@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp02.imgtec.com [217.156.133.132])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3swLX36wQyzDsyH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 19:35:31 +1100 (AEDT)
+From: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
+To: <linux-kernel@vger.kernel.org>
+CC: <linux-api@vger.kernel.org>, <luto@amacapital.net>, <rostedt@goodmis.org>,
+ Marcin Nowakowski <marcin.nowakowski@imgtec.com>, Ingo Molnar
+ <mingo@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul
+ Mackerras" <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v4 04/12] tracing/syscalls: add compat syscall metadata
+Date: Fri, 14 Oct 2016 10:35:06 +0200
+Message-ID: <1476434115-25428-5-git-send-email-marcin.nowakowski@imgtec.com>
+In-Reply-To: <1476434115-25428-1-git-send-email-marcin.nowakowski@imgtec.com>
+References: <1476434115-25428-1-git-send-email-marcin.nowakowski@imgtec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,73 +25,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
-> Hm, still behaves for me like I reported for v2:
-> http://marc.info/?l=linux-scsi&m=147637177902937&w=2
+Now that compat syscalls are properly distinguished from native calls,
+we can add metadata for compat syscalls as well.
+All the macros used to generate the metadata are the same as for
+standard syscalls, but with a compat_ prefix to distinguish them easily.
 
-Hi Steffen,
+Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ include/linux/compat.h        | 74 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_syscalls.c | 10 ++++--
+ 2 files changed, 82 insertions(+), 2 deletions(-)
 
-Can you please try the following on top of 2/16?
-
-diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
-index 4149dac..baebaab 100644
---- a/drivers/scsi/scsi_transport_fc.c
-+++ b/drivers/scsi/scsi_transport_fc.c
-@@ -3786,6 +3786,12 @@ enum fc_dispatch_result {
- 	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
- 	int ret;
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index 6360939..ef2a70f 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -30,7 +30,80 @@
+ #define __SC_DELOUSE(t,v) ((t)(unsigned long)(v))
+ #endif
  
-+	/* check if we really have all the request data needed */
-+	if (job->request_len < cmdlen) {
-+		ret = -ENOMSG;
-+		goto fail_host_msg;
-+	}
++#ifdef CONFIG_FTRACE_SYSCALLS
++#ifndef __SC_STR_ADECL
++#define __SC_STR_ADECL(t, a)	#a
++#endif
 +
- 	/* Validate the host command */
- 	switch (bsg_request->msgcode) {
- 	case FC_BSG_HST_ADD_RPORT:
-@@ -3831,12 +3837,6 @@ enum fc_dispatch_result {
- 		goto fail_host_msg;
- 	}
- 
--	/* check if we really have all the request data needed */
--	if (job->request_len < cmdlen) {
--		ret = -ENOMSG;
--		goto fail_host_msg;
--	}
--
- 	ret = i->f->bsg_request(job);
- 	if (!ret)
- 		return FC_DISPATCH_UNLOCKED;
-@@ -3887,6 +3887,12 @@ enum fc_dispatch_result {
- 	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
- 	int ret;
- 
-+	/* check if we really have all the request data needed */
-+	if (job->request_len < cmdlen) {
-+		ret = -ENOMSG;
-+		goto fail_rport_msg;
-+	}
++#ifndef __SC_STR_TDECL
++#define __SC_STR_TDECL(t, a)	#t
++#endif
 +
- 	/* Validate the rport command */
- 	switch (bsg_request->msgcode) {
- 	case FC_BSG_RPT_ELS:
-
-
-
-The rational behind this is, in fc_req_to_bsgjob() we're assigning
-job->request as req->cmd and job->request_len = req->cmd_len. But without
-checkinf job->request_len we don't know whether we're save to touch
-job->request (a.k.a. bsg_request).
-
-In the meanwhile I try to reproduce your report here.
-
-Thanks,
-	Johannes
++extern struct trace_event_class event_class_syscall_enter;
++extern struct trace_event_class event_class_syscall_exit;
++extern struct trace_event_functions enter_syscall_print_funcs;
++extern struct trace_event_functions exit_syscall_print_funcs;
++
++#define COMPAT_SYSCALL_TRACE_ENTER_EVENT(sname)				\
++	static struct syscall_metadata __syscall_meta_compat_##sname;		\
++	static struct trace_event_call __used				\
++	  event_enter_compat_##sname = {					\
++		.class			= &event_class_syscall_enter,	\
++		{							\
++			.name                   = "compat_sys_enter"#sname,	\
++		},							\
++		.event.funcs            = &enter_syscall_print_funcs,	\
++		.data			= (void *)&__syscall_meta_compat_##sname,\
++		.flags                  = TRACE_EVENT_FL_CAP_ANY,	\
++	};								\
++	static struct trace_event_call __used				\
++	  __attribute__((section("_ftrace_events")))			\
++	 *__event_enter_compat_##sname = &event_enter_compat_##sname;
++
++#define COMPAT_SYSCALL_TRACE_EXIT_EVENT(sname)					\
++	static struct syscall_metadata __syscall_meta_compat_##sname;		\
++	static struct trace_event_call __used				\
++	  event_exit_compat_##sname = {					\
++		.class			= &event_class_syscall_exit,	\
++		{							\
++			.name                   = "compat_sys_exit"#sname,	\
++		},							\
++		.event.funcs		= &exit_syscall_print_funcs,	\
++		.data			= (void *)&__syscall_meta_compat_##sname,\
++		.flags                  = TRACE_EVENT_FL_CAP_ANY,	\
++	};								\
++	static struct trace_event_call __used				\
++	  __attribute__((section("_ftrace_events")))			\
++	*__event_exit_compat_##sname = &event_exit_compat_##sname;
++
++#define COMPAT_SYSCALL_METADATA(sname, nb, ...)			\
++	static const char *types_compat_##sname[] = {			\
++		__MAP(nb,__SC_STR_TDECL,__VA_ARGS__)		\
++	};							\
++	static const char *args_compat_##sname[] = {			\
++		__MAP(nb,__SC_STR_ADECL,__VA_ARGS__)		\
++	};							\
++	COMPAT_SYSCALL_TRACE_ENTER_EVENT(sname);			\
++	COMPAT_SYSCALL_TRACE_EXIT_EVENT(sname);			\
++	static struct syscall_metadata __used			\
++	  __syscall_meta_compat_##sname = {				\
++		.name 		= "compat_sys"#sname,			\
++		.nb_args 	= nb,				\
++		.types		= nb ? types_compat_##sname : NULL,	\
++		.args		= nb ? args_compat_##sname : NULL,	\
++		.enter_event	= &event_enter_compat_##sname,		\
++		.exit_event	= &event_exit_compat_##sname,		\
++		.enter_fields	= LIST_HEAD_INIT(__syscall_meta_compat_##sname.enter_fields), \
++	};							\
++	static struct syscall_metadata __used			\
++	  __attribute__((section("__syscalls_metadata")))	\
++	 *__p_syscall_meta_compat_##sname = &__syscall_meta_compat_##sname;
++#else
++#define COMPAT_SYSCALL_METADATA(sname, nb, ...)
++#endif
++
+ #define COMPAT_SYSCALL_DEFINE0(name) \
++		COMPAT_SYSCALL_METADATA(_##name, 0);				\
+ 	asmlinkage long compat_sys_##name(void)
+ 
+ #define COMPAT_SYSCALL_DEFINE1(name, ...) \
+@@ -47,6 +120,7 @@
+ 	COMPAT_SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
+ 
+ #define COMPAT_SYSCALL_DEFINEx(x, name, ...)				\
++		COMPAT_SYSCALL_METADATA(name, x, __VA_ARGS__) \
+ 	asmlinkage long compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))\
+ 		__attribute__((alias(__stringify(compat_SyS##name))));  \
+ 	static inline long C_SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__));\
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index 707a57c..10c058f 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -38,12 +38,18 @@ static struct syscall_metadata **syscalls_metadata;
+ static inline bool syscall_match_sym_name(const char *sym, const char *name)
+ {
+ 	/*
+-	 * Only compare after the "sys" prefix. Archs that use
++	 * Only compare after the "sys" or "compat_sys" prefix. Archs that use
+ 	 * syscall wrappers may have syscalls symbols aliases prefixed
+ 	 * with ".SyS" or ".sys" instead of "sys", leading to an unwanted
+ 	 * mismatch.
+ 	 */
+-	return !strcmp(sym + 3 + ARCH_SYM_NAME_SKIP_CHARS, name + 3);
++	int prefix_len = 3;
++
++	if (!strncasecmp(sym, "compat_", 7))
++		prefix_len = 10;
++
++	return !strcmp(sym + prefix_len + ARCH_SYM_NAME_SKIP_CHARS,
++		       name + prefix_len);
+ }
+ 
+ #ifdef ARCH_COMPAT_SYSCALL_NUMBERS_OVERLAP
 -- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+2.7.4
