@@ -1,7 +1,7 @@
 Return-Path: <Marcin.Nowakowski@imgtec.com>
 Received: from mailapp01.imgtec.com (mailapp02.imgtec.com [217.156.133.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3swLX36wQyzDsyH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 19:35:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3swLXC62nMzDt4K
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 19:35:39 +1100 (AEDT)
 From: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
 To: <linux-kernel@vger.kernel.org>
 CC: <linux-api@vger.kernel.org>, <luto@amacapital.net>, <rostedt@goodmis.org>,
@@ -9,9 +9,9 @@ CC: <linux-api@vger.kernel.org>, <luto@amacapital.net>, <rostedt@goodmis.org>,
  <mingo@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul
  Mackerras" <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4 04/12] tracing/syscalls: add compat syscall metadata
-Date: Fri, 14 Oct 2016 10:35:06 +0200
-Message-ID: <1476434115-25428-5-git-send-email-marcin.nowakowski@imgtec.com>
+Subject: [PATCH v4 09/12] powerpc/tracing: fix compat syscall handling
+Date: Fri, 14 Oct 2016 10:35:12 +0200
+Message-ID: <1476434115-25428-11-git-send-email-marcin.nowakowski@imgtec.com>
 In-Reply-To: <1476434115-25428-1-git-send-email-marcin.nowakowski@imgtec.com>
 References: <1476434115-25428-1-git-send-email-marcin.nowakowski@imgtec.com>
 MIME-Version: 1.0
@@ -25,10 +25,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that compat syscalls are properly distinguished from native calls,
-we can add metadata for compat syscalls as well.
-All the macros used to generate the metadata are the same as for
-standard syscalls, but with a compat_ prefix to distinguish them easily.
+Adapt the code to make use of new syscall handling interface
 
 Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
@@ -38,127 +35,46 @@ Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- include/linux/compat.h        | 74 +++++++++++++++++++++++++++++++++++++++++++
- kernel/trace/trace_syscalls.c | 10 ++++--
- 2 files changed, 82 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/ftrace.h | 13 +++++++++++++
+ arch/powerpc/kernel/ftrace.c      |  4 ++++
+ 2 files changed, 17 insertions(+)
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 6360939..ef2a70f 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -30,7 +30,80 @@
- #define __SC_DELOUSE(t,v) ((t)(unsigned long)(v))
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index f266051..c6c660d 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -72,4 +72,17 @@ struct dyn_arch_ftrace {
+ #define ARCH_SYM_NAME_SKIP_CHARS 1
  #endif
  
-+#ifdef CONFIG_FTRACE_SYSCALLS
-+#ifndef __SC_STR_ADECL
-+#define __SC_STR_ADECL(t, a)	#a
-+#endif
++#if defined(CONFIG_FTRACE_SYSCALLS) && !defined(__ASSEMBLY__)
++#if defined(CONFIG_COMPAT)
++#include <linux/compat.h>
++#include <asm/compat.h>
 +
-+#ifndef __SC_STR_TDECL
-+#define __SC_STR_TDECL(t, a)	#t
-+#endif
++#define ARCH_COMPAT_SYSCALL_NUMBERS_OVERLAP 1
++static inline bool arch_trace_is_compat_syscall(struct pt_regs *regs)
++{
++	return in_compat_syscall();
++}
++#endif /* CONFIG_COMPAT */
++#endif /* CONFIG_FTRACE_SYSCALLS && !__ASSEMBLY__ */
 +
-+extern struct trace_event_class event_class_syscall_enter;
-+extern struct trace_event_class event_class_syscall_exit;
-+extern struct trace_event_functions enter_syscall_print_funcs;
-+extern struct trace_event_functions exit_syscall_print_funcs;
-+
-+#define COMPAT_SYSCALL_TRACE_ENTER_EVENT(sname)				\
-+	static struct syscall_metadata __syscall_meta_compat_##sname;		\
-+	static struct trace_event_call __used				\
-+	  event_enter_compat_##sname = {					\
-+		.class			= &event_class_syscall_enter,	\
-+		{							\
-+			.name                   = "compat_sys_enter"#sname,	\
-+		},							\
-+		.event.funcs            = &enter_syscall_print_funcs,	\
-+		.data			= (void *)&__syscall_meta_compat_##sname,\
-+		.flags                  = TRACE_EVENT_FL_CAP_ANY,	\
-+	};								\
-+	static struct trace_event_call __used				\
-+	  __attribute__((section("_ftrace_events")))			\
-+	 *__event_enter_compat_##sname = &event_enter_compat_##sname;
-+
-+#define COMPAT_SYSCALL_TRACE_EXIT_EVENT(sname)					\
-+	static struct syscall_metadata __syscall_meta_compat_##sname;		\
-+	static struct trace_event_call __used				\
-+	  event_exit_compat_##sname = {					\
-+		.class			= &event_class_syscall_exit,	\
-+		{							\
-+			.name                   = "compat_sys_exit"#sname,	\
-+		},							\
-+		.event.funcs		= &exit_syscall_print_funcs,	\
-+		.data			= (void *)&__syscall_meta_compat_##sname,\
-+		.flags                  = TRACE_EVENT_FL_CAP_ANY,	\
-+	};								\
-+	static struct trace_event_call __used				\
-+	  __attribute__((section("_ftrace_events")))			\
-+	*__event_exit_compat_##sname = &event_exit_compat_##sname;
-+
-+#define COMPAT_SYSCALL_METADATA(sname, nb, ...)			\
-+	static const char *types_compat_##sname[] = {			\
-+		__MAP(nb,__SC_STR_TDECL,__VA_ARGS__)		\
-+	};							\
-+	static const char *args_compat_##sname[] = {			\
-+		__MAP(nb,__SC_STR_ADECL,__VA_ARGS__)		\
-+	};							\
-+	COMPAT_SYSCALL_TRACE_ENTER_EVENT(sname);			\
-+	COMPAT_SYSCALL_TRACE_EXIT_EVENT(sname);			\
-+	static struct syscall_metadata __used			\
-+	  __syscall_meta_compat_##sname = {				\
-+		.name 		= "compat_sys"#sname,			\
-+		.nb_args 	= nb,				\
-+		.types		= nb ? types_compat_##sname : NULL,	\
-+		.args		= nb ? args_compat_##sname : NULL,	\
-+		.enter_event	= &event_enter_compat_##sname,		\
-+		.exit_event	= &event_exit_compat_##sname,		\
-+		.enter_fields	= LIST_HEAD_INIT(__syscall_meta_compat_##sname.enter_fields), \
-+	};							\
-+	static struct syscall_metadata __used			\
-+	  __attribute__((section("__syscalls_metadata")))	\
-+	 *__p_syscall_meta_compat_##sname = &__syscall_meta_compat_##sname;
-+#else
-+#define COMPAT_SYSCALL_METADATA(sname, nb, ...)
-+#endif
-+
- #define COMPAT_SYSCALL_DEFINE0(name) \
-+		COMPAT_SYSCALL_METADATA(_##name, 0);				\
- 	asmlinkage long compat_sys_##name(void)
- 
- #define COMPAT_SYSCALL_DEFINE1(name, ...) \
-@@ -47,6 +120,7 @@
- 	COMPAT_SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
- 
- #define COMPAT_SYSCALL_DEFINEx(x, name, ...)				\
-+		COMPAT_SYSCALL_METADATA(name, x, __VA_ARGS__) \
- 	asmlinkage long compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))\
- 		__attribute__((alias(__stringify(compat_SyS##name))));  \
- 	static inline long C_SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__));\
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 707a57c..10c058f 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -38,12 +38,18 @@ static struct syscall_metadata **syscalls_metadata;
- static inline bool syscall_match_sym_name(const char *sym, const char *name)
+ #endif /* _ASM_POWERPC_FTRACE */
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 5bfb35f..12c00f7 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -606,6 +606,10 @@ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
+ #if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64)
+ unsigned long __init arch_syscall_addr(int nr, bool compat)
  {
- 	/*
--	 * Only compare after the "sys" prefix. Archs that use
-+	 * Only compare after the "sys" or "compat_sys" prefix. Archs that use
- 	 * syscall wrappers may have syscalls symbols aliases prefixed
- 	 * with ".SyS" or ".sys" instead of "sys", leading to an unwanted
- 	 * mismatch.
- 	 */
--	return !strcmp(sym + 3 + ARCH_SYM_NAME_SKIP_CHARS, name + 3);
-+	int prefix_len = 3;
-+
-+	if (!strncasecmp(sym, "compat_", 7))
-+		prefix_len = 10;
-+
-+	return !strcmp(sym + prefix_len + ARCH_SYM_NAME_SKIP_CHARS,
-+		       name + prefix_len);
++#ifdef CONFIG_COMPAT
++	if (compat)
++		return sys_call_table[nr*2+1];
++#endif
+ 	return sys_call_table[nr*2];
  }
- 
- #ifdef ARCH_COMPAT_SYSCALL_NUMBERS_OVERLAP
+ #endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 */
 -- 
 2.7.4
