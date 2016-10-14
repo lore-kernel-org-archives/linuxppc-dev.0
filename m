@@ -1,21 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sw7t5665XzDt1m
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 11:35:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sw7w53QqYzDt1r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 11:37:09 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, gkurz@linux.vnet.ibm.com
-Subject: Re: [PATCH v3] cxl: Prevent adapter reset if an active context exists
-In-Reply-To: <1476356908-302-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-References: <1476356908-302-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Date: Fri, 14 Oct 2016 11:35:25 +1100
-Message-ID: <878ttrepiq.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
+Cc: anton@samba.org
+Subject: Re: [PATCH] powerpc/mm: Drop dump_numa_memory_topology()
+In-Reply-To: <f10b9e4e-da30-fea5-5e02-b65b014ad527@gmail.com>
+References: <1476336450-27862-1-git-send-email-mpe@ellerman.id.au>
+ <f10b9e4e-da30-fea5-5e02-b65b014ad527@gmail.com>
+Date: Fri, 14 Oct 2016 11:37:08 +1100
+Message-ID: <8760ovepfv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,18 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> This patch prevents resetting the cxl adapter via sysfs in presence of
-> one or more active cxl_context on it. This protects against an
-> unrecoverable error caused by PSL owning a dirty cache line even after
-> reset and host tries to touch the same cache line. In case a force reset
-> of the card is required irrespective of any active contexts, the int
-> value -1 can be stored in the 'reset' sysfs attribute of the card.
+> On 13/10/16 16:27, Michael Ellerman wrote:
+>> At boot we dump the NUMA memory topology in dump_numa_memory_topology(),
+>> at KERN_DEBUG level, resulting in output like:
+>> 
+>>   Node 0 Memory: 0x0-0x100000000
+>>   Node 1 Memory: 0x100000000-0x200000000
+>> 
+>> Which is nice enough, but immediately after that we iterate over each
+>> node and call setup_node_data(), which also prints out the node ranges,
+>> at KERN_INFO, giving eg:
+>> 
+>>   numa: Initmem setup node 0 [mem 0x00000000-0xffffffff]
+>>   numa: Initmem setup node 1 [mem 0x100000000-0x1ffffffff]
+>> 
+>> So drop dump_numa_memory_topology() as superfluous chatter.
+>> 
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>
+> Actually the ranges for the lower output seem a little better
+> (inclusive), the output on top is not clear
 
-This is arguably a change to the ABI, but I assume we're OK with that as
-it's arguably a bug in the existing implementation?
-
-If so do we have a Fixes: ? and/or should this go to stable?
+I think everyone knows what it means but it's not entirely precise, so
+yeah the inclusive range is better.
 
 cheers
