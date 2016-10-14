@@ -1,23 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
- [IPv6:2607:f8b0:400e:c00::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swPXj4KRTzDt3b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 21:51:17 +1100 (AEDT)
-Received: by mail-pf0-x233.google.com with SMTP id e6so48366767pfk.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 03:51:17 -0700 (PDT)
-Subject: Re: [PATCH][RFC] powerpc/64s: Use emergency stack for 0x100 system
- reset interrupt
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20161013065106.5389-1-npiggin@gmail.com>
-Cc: Anton Blanchard <anton@samba.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <6e4b347e-2c59-ed0a-6012-c8e849f3ff29@gmail.com>
-Date: Fri, 14 Oct 2016 21:51:16 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swPck3gMfzDskZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 21:54:46 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Michael Ellerman' <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+CC: Nicholas Piggin <npiggin@gmail.com>
+Subject: RE: [PATCH] powerpc: link error on orphan sections
+Date: Fri, 14 Oct 2016 10:54:39 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB01E8778@AcuExch.aculab.com>
+References: <20161012070020.30170-1-npiggin@gmail.com>
+ <87zim7dag4.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87zim7dag4.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <20161013065106.5389-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Michael Ellerman
+> Sent: 14 October 2016 01:46
+...
+> > +LDFLAGS_vmlinux	:=3D $(LDFLAGS_vmlinux-y) --orphan-handling=3Derror
+>=20
+> At least some old(er) toolchains don't support that:
+>=20
+>   /opt/cross/kisskb/gcc-4.6.3-nolibc/powerpc-linux/bin/powerpc-linux-ld: =
+unrecognized option '--
+> orphan-handling=3Derror'
+>=20
+> So we'll need an ld-option wrapper around it.
 
+In the past I've caused orphan sections to error by assigning them
+to the same address as something that exists.
+Works with all linkers, even if the error message isn't as useful.
 
-On 13/10/16 17:51, Nicholas Piggin wrote:
-> Also use EX_NMI save space. This should give cleaner debug data in
-> case kernel stacks have become corrupted.
-> 
-> MSR_RI is kept clear for the 0x100 handler, because we can't mask it,
-> and can't tolerate a reentrant NMI. Technically the 0x100 is not really
-> recoverable yet, because it could trample on another emergency stack
-> user. This will require a bit more work to safely implement, but for
-> now we don't need to recover after a 0x100.
-> 
-> A little bit of the emergency stack / MSR_RI handling differences seem
-> like they can be consolidated with some other handlers. I'll split those
-> into a couple more patches before submitting.
-> 
-> I moved the MC save area in the paca out from between the general and
-> slb save areas, and put it with the nmi area because it shouldn't be used
-> much.
-
-I think we should document the limitations as discussed
-
-One of them is that sequential system resets have unpredictable behaviour
-when done in quick successions. I also don't like some of the naming like
-NORI, I would rather prefer NOT_RI, but thats just nit picking
-
-Balbir Singh.
+	David
