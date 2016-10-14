@@ -1,19 +1,41 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swK745TdKzDt3X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 18:32:16 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id r16so6684532pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 00:32:16 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
- Alan Modra <amodra@gmail.com>
-Subject: [PATCH v2] powerpc: link warning for orphan sections
-Date: Fri, 14 Oct 2016 18:32:00 +1100
-Message-Id: <20161014073200.24669-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swKGJ17BCzDt2l
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 18:38:32 +1100 (AEDT)
+Date: Fri, 14 Oct 2016 09:38:21 +0200
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: Steffen Maier <maier@linux.vnet.ibm.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+ Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
+ Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+ Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Johannes Thumshirn <jth@kernel.org>,
+ James Smart <james.smart@avagotech.com>,
+ Dick Kennedy <dick.kennedy@avagotech.com>,
+ "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
+ "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
+Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
+ fc_bsg_job::reply directly
+Message-ID: <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
+References: <cover.1476369687.git.jthumshirn@suse.de>
+ <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
+ <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,120 +45,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add --orphan-handling=warn to final link flags. This ensures we can
-handle all sections explicitly. This would have caught subtle breakage
-such as 7de3b27bac47da9de08409df1d69664acbb72197 at build-time.
+On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
+> Hm, still behaves for me like I reported for v2:
+> http://marc.info/?l=linux-scsi&m=147637177902937&w=2
 
-Also bring some wayward sections into the fold:
-- .text.hot and .text.unlikely are compiler generated sections.
-- .sfpr is a linker generated section for register save functions.
-- .sdata2, .dynsbss, .plt are used by PPC32
-- We previously did not specify DWARF_DEBUG or STABS_DEBUG
-- DWARF_DEBUG did not include all DWARF sections that can be emitted
-- A number of sections are unused.
+Hi Steffen,
 
-I don't know if I've exactly got everything right here, particularly
-with ppc32, so would appreciate people casting their eye over it.
+Can you please try the following on top of 2/16?
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Changes since v1:
-- warn instead of error
-- use ld-option
-- add some more DWARF sections
-- small typo in linker script
-
- arch/powerpc/Makefile             |  1 +
- arch/powerpc/kernel/vmlinux.lds.S | 16 ++++++++++++++--
- include/asm-generic/vmlinux.lds.h | 11 +++++++++++
- 3 files changed, 26 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 50d020a..c39601d 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -91,6 +91,7 @@ endif
- LDFLAGS_vmlinux-y := -Bstatic
- LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
- LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
-+LDFLAGS_vmlinux += $(call ld-option,--orphan-handling=warn)
+diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+index 4149dac..baebaab 100644
+--- a/drivers/scsi/scsi_transport_fc.c
++++ b/drivers/scsi/scsi_transport_fc.c
+@@ -3786,6 +3786,12 @@ enum fc_dispatch_result {
+ 	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
+ 	int ret;
  
- ifeq ($(CONFIG_PPC64),y)
- ifeq ($(call cc-option-yn,-mcmodel=medium),y)
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 8295f51..a0e6452 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -97,7 +97,7 @@ SECTIONS
- 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
- 		ALIGN_FUNCTION();
- 		/* careful! __ftr_alt_* sections need to be close to .text */
--		*(.text .fixup __ftr_alt_* .ref.text)
-+		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text .sfpr)
- 		SCHED_TEXT
- 		CPUIDLE_TEXT
- 		LOCK_TEXT
-@@ -256,7 +256,9 @@ SECTIONS
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
- 		DATA_DATA
- 		*(.sdata)
-+		*(.sdata2)
- 		*(.got.plt) *(.got)
-+		*(.plt)
- 	}
- #else
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-@@ -317,6 +319,16 @@ SECTIONS
- 	_end = . ;
- 	PROVIDE32 (end = .);
- 
--	/* Sections to be discarded. */
-+	STABS_DEBUG
-+
-+	DWARF_DEBUG
-+
- 	DISCARDS
-+	/DISCARD/ : {
-+		*(*.EMB.apuinfo)
-+		*(.glink .iplt .plt .rela* .comment)
-+		*(.gnu.version*)
-+		*(.gnu.attributes)
-+		*(.eh_frame)
++	/* check if we really have all the request data needed */
++	if (job->request_len < cmdlen) {
++		ret = -ENOMSG;
++		goto fail_host_msg;
 +	}
- }
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 3e42bcd..2f825de 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -581,6 +581,7 @@
- #define SBSS(sbss_align)						\
- 	. = ALIGN(sbss_align);						\
- 	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
-+		*(.dynsbss)						\
- 		*(.sbss)						\
- 		*(.scommon)						\
++
+ 	/* Validate the host command */
+ 	switch (bsg_request->msgcode) {
+ 	case FC_BSG_HST_ADD_RPORT:
+@@ -3831,12 +3837,6 @@ enum fc_dispatch_result {
+ 		goto fail_host_msg;
  	}
-@@ -627,11 +628,21 @@
- 		.debug_str      0 : { *(.debug_str) }			\
- 		.debug_loc      0 : { *(.debug_loc) }			\
- 		.debug_macinfo  0 : { *(.debug_macinfo) }		\
-+		.debug_pubtypes 0 : { *(.debug_pubtypes) }		\
-+		/* DWARF 3 */						\
-+		.debug_ranges	0 : { *(.debug_ranges) }		\
- 		/* SGI/MIPS DWARF 2 extensions */			\
- 		.debug_weaknames 0 : { *(.debug_weaknames) }		\
- 		.debug_funcnames 0 : { *(.debug_funcnames) }		\
- 		.debug_typenames 0 : { *(.debug_typenames) }		\
- 		.debug_varnames  0 : { *(.debug_varnames) }		\
-+		/* GNU DWARF 2 extensions */				\
-+		.debug_gnu_pubnames 0 : { *(.debug_gnu_pubnames) }	\
-+		.debug_gnu_pubtypes 0 : { *(.debug_gnu_pubtypes) }	\
-+		/* DWARF 4 */						\
-+		.debug_types	0 : { *(.debug_types) }			\
-+		/* DWARF 5 */						\
-+		.debug_addr	0 : { *(.debug_addr) }
  
- 		/* Stabs debugging sections.  */
- #define STABS_DEBUG							\
+-	/* check if we really have all the request data needed */
+-	if (job->request_len < cmdlen) {
+-		ret = -ENOMSG;
+-		goto fail_host_msg;
+-	}
+-
+ 	ret = i->f->bsg_request(job);
+ 	if (!ret)
+ 		return FC_DISPATCH_UNLOCKED;
+@@ -3887,6 +3887,12 @@ enum fc_dispatch_result {
+ 	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
+ 	int ret;
+ 
++	/* check if we really have all the request data needed */
++	if (job->request_len < cmdlen) {
++		ret = -ENOMSG;
++		goto fail_rport_msg;
++	}
++
+ 	/* Validate the rport command */
+ 	switch (bsg_request->msgcode) {
+ 	case FC_BSG_RPT_ELS:
+
+
+
+The rational behind this is, in fc_req_to_bsgjob() we're assigning
+job->request as req->cmd and job->request_len = req->cmd_len. But without
+checkinf job->request_len we don't know whether we're save to touch
+job->request (a.k.a. bsg_request).
+
+In the meanwhile I try to reproduce your report here.
+
+Thanks,
+	Johannes
 -- 
-2.9.3
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
