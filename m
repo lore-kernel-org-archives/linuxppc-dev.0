@@ -1,21 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swBYD1kWmzDt2L
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 13:36:00 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id s8so6181101pfj.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 19:36:00 -0700 (PDT)
-Subject: Re: [PATCH] powerpc: link error on orphan sections
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20161012070020.30170-1-npiggin@gmail.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <14286beb-d100-5877-7725-37402d7ac38d@gmail.com>
-Date: Fri, 14 Oct 2016 13:35:54 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swCRj30YqzDt2N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 14:16:17 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id 128so6258342pfz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2016 20:16:17 -0700 (PDT)
+Date: Fri, 14 Oct 2016 14:16:10 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
+ <ego@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: relocation, register save fixes for system
+ reset interrupt
+Message-ID: <20161014141610.418d0cc4@roar.ozlabs.ibm.com>
+In-Reply-To: <25f4c10b-c961-6ed4-f2e1-437bcfba5321@gmail.com>
+References: <20161013021714.6624-1-npiggin@gmail.com>
+ <25f4c10b-c961-6ed4-f2e1-437bcfba5321@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20161012070020.30170-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,116 +29,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thanks Balbir and Gautham for testing and reviewing.
 
+On Thu, 13 Oct 2016 22:54:32 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-On 12/10/16 18:00, Nicholas Piggin wrote:
-> Add --orphan-handling=error to final link flags. This ensures we have to
-> handle all sections. This would have caught subtle breakage such as
-> 7de3b27bac47da9de08409df1d69664acbb72197 at build-time.
+> On 13/10/16 13:17, Nicholas Piggin wrote:
+> > This patch does a couple of things. First of all, powernv immediately
+> > explodes when running a relocated kernel, because the system reset
+> > exception for handling sleeps does not do correct relocated branches.
+> > 
+> > Secondly, the sleep handling code trashes the condition and cfar
+> > registers, which we would like to preserve for debugging purposes (for
+> > non-sleep case exception).  
 > 
-> Also bring some wayward sections into the fold:
-> - .text.hot and .text.unlikely are compiler generated sections.
-> - .sfpr is a linker generated section for register save functions.
-> - .sdata2, .dynsbss, .plt are used by PPC32
-> - We previously did not specify DWARF_DEBUG or STABS_DEBUG
-> - DWARF_DEBUG did not include DWARF3 .debug_ranges
-> - A number of sections are unused.
+> Agreed, that is a good side, we also save the PPR in r9 and set the
+> PPR to HMT_MEDIUM
 > 
-> I don't know if I've exactly got everything right here, particularly
-> with ppc32, so would appreciate people casting their eye over it.
+> > 
+> > This patch changes the exception to use the standard format that saves
+> > registers before any tests or branches are made. It adds the test for
+> > idle-wakeup as an "extra" to break out of the normal exception path.
+> > Then it branches to a relocated idle handler that calls the various
+> > idle handling functions.
+> > 
+> > After this patch, POWER8 CPU simulator now boots powernv kernel that is
+> > running at non-zero.
+> >   
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/Makefile             |  2 +-
->  arch/powerpc/kernel/vmlinux.lds.S | 16 ++++++++++++++--
->  include/asm-generic/vmlinux.lds.h |  3 +++
->  3 files changed, 18 insertions(+), 3 deletions(-)
+> Yep, a much required fixup. I had done a version before your changes
+
+Yeah, I didn't mean to push ahead of your patch -- I was halfway through
+writing the register save patch when I realized yours did not get merged
+yet. Credit to you for originally finding and fixing it.
+
 > 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 50d020a..a3f2784 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -90,7 +90,7 @@ endif
->  
->  LDFLAGS_vmlinux-y := -Bstatic
->  LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
-> -LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
-> +LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y) --orphan-handling=error
->  
->  ifeq ($(CONFIG_PPC64),y)
->  ifeq ($(call cc-option-yn,-mcmodel=medium),y)
-> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-> index 8295f51..9f4d85e 100644
-> --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -97,7 +97,7 @@ SECTIONS
->  	.text : AT(ADDR(.text) - LOAD_OFFSET) {
->  		ALIGN_FUNCTION();
->  		/* careful! __ftr_alt_* sections need to be close to .text */
-> -		*(.text .fixup __ftr_alt_* .ref.text)
-> +		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text .sfpr) \
->  		SCHED_TEXT
-
-Is the "\" to pack the sched_text with the rest of .text?
-
->  		CPUIDLE_TEXT
->  		LOCK_TEXT
-> @@ -256,7 +256,9 @@ SECTIONS
->  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
->  		DATA_DATA
->  		*(.sdata)
-> +		*(.sdata2)
->  		*(.got.plt) *(.got)
-> +		*(.plt)
->  	}
->  #else
->  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-> @@ -317,6 +319,16 @@ SECTIONS
->  	_end = . ;
->  	PROVIDE32 (end = .);
->  
-> -	/* Sections to be discarded. */
-> +	STABS_DEBUG
-> +
-> +	DWARF_DEBUG
-> +
-
-Are the debug sections discarded or is the above
-comment misplaced? I guess they are discarded because of them
-being outside of _end at relocation.
-
->  	DISCARDS
-> +	/DISCARD/ : {
-> +		*(*.EMB.apuinfo)
-> +		*(.glink .iplt .plt .rela* .comment)
-> +		*(.gnu.version*)
-> +		*(.gnu.attributes)
-> +		*(.eh_frame)
-> +	}
->  }
-
-
-> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> index 3e42bcd..264ebb3 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -581,6 +581,7 @@
->  #define SBSS(sbss_align)						\
->  	. = ALIGN(sbss_align);						\
->  	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
-> +		*(.dynsbss)						\
->  		*(.sbss)						\
->  		*(.scommon)						\
->  	}
-> @@ -627,6 +628,8 @@
->  		.debug_str      0 : { *(.debug_str) }			\
->  		.debug_loc      0 : { *(.debug_loc) }			\
->  		.debug_macinfo  0 : { *(.debug_macinfo) }		\
-> +		/* DWARF 3 */						\
-> +		.debug_ranges	0 : { *(.debug_ranges) }		\
->  		/* SGI/MIPS DWARF 2 extensions */			\
->  		.debug_weaknames 0 : { *(.debug_weaknames) }		\
->  		.debug_funcnames 0 : { *(.debug_funcnames) }		\
+> > Cc: Balbir Singh <bsingharora@gmail.com>
+> > Cc: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> > Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/include/asm/exception-64s.h | 16 ++++++++++
+> >  arch/powerpc/kernel/exceptions-64s.S     | 50 ++++++++++++++++++--------------
+> >  2 files changed, 45 insertions(+), 21 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+> > index 2e4e7d8..84d49b1 100644
+> > --- a/arch/powerpc/include/asm/exception-64s.h
+> > +++ b/arch/powerpc/include/asm/exception-64s.h
+> > @@ -93,6 +93,10 @@
+> >  	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
+> >  	ori	reg,reg,(FIXED_SYMBOL_ABS_ADDR(label))@l;
+> >  
+> > +#define __LOAD_HANDLER(reg, label)					\  
 > 
+> I wonder if it is a good idea to trap
+> 
+> .if (reg == 13);
+> .error "Don't use r13";
+> .abort;
+> .endif;
 
-Balbir Singh.
+Well... I guess checking is always nice, but r13 is taboo for anything but paca
+for virtually all assembly in the kernel. So I don't know if the benefit is very
+large.
+
+Now a scripted test to check the objdump might be nice. You could whitelist the few
+places that set r13, and then give errors for any other code that sets it.
+ 
+Thanks,
+Nick
