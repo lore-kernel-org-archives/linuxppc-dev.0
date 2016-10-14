@@ -1,31 +1,34 @@
 Return-Path: <htejun@gmail.com>
-Received: from mail-yb0-x243.google.com (mail-yb0-x243.google.com
- [IPv6:2607:f8b0:4002:c09::243])
+Received: from mail-yb0-x234.google.com (mail-yb0-x234.google.com
+ [IPv6:2607:f8b0:4002:c09::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swWF53C8BzDt3H
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2016 02:08:03 +1100 (AEDT)
-Received: by mail-yb0-x243.google.com with SMTP id 184so2363541yby.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 08:08:03 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swWFw4SzdzDt3Q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2016 02:08:52 +1100 (AEDT)
+Received: by mail-yb0-x234.google.com with SMTP id 184so43616013yby.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 08:08:52 -0700 (PDT)
 Sender: Tejun Heo <htejun@gmail.com>
-Date: Fri, 14 Oct 2016 11:07:57 -0400
+Date: Fri, 14 Oct 2016 11:08:48 -0400
 From: Tejun Heo <tj@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
- jiangshanlai@gmail.com, akpm@linux-foundation.org, kernel-team@fb.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ jiangshanlai@gmail.com, linux-kernel@vger.kernel.org,
+ akpm@linux-foundation.org, torvalds@linux-foundation.org,
+ kernel-team@fb.com, Peter Zijlstra <peterz@infradead.org>
 Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
  available early during boot)
-Message-ID: <20161014150757.GA11102@mtj.duckdns.org>
+Message-ID: <20161014150848.GB11102@mtj.duckdns.org>
 References: <1473967821-24363-1-git-send-email-tj@kernel.org>
  <1473967821-24363-2-git-send-email-tj@kernel.org>
  <20160917172314.GB10771@mtj.duckdns.org>
  <87twck5wqo.fsf@concordia.ellerman.id.au>
  <20161010130253.GB29742@mtj.duckdns.org>
  <87a8eb5dwa.fsf@concordia.ellerman.id.au>
+ <3f7ddc83-fcd3-79c4-81b6-ec3c4de53be6@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87a8eb5dwa.fsf@concordia.ellerman.id.au>
+In-Reply-To: <3f7ddc83-fcd3-79c4-81b6-ec3c4de53be6@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +38,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Michael.
+Hello, Balbir.
 
-On Tue, Oct 11, 2016 at 10:22:13PM +1100, Michael Ellerman wrote:
-> The oops happens because we're in enqueue_task_fair() and p->se->cfs_rq
-> is NULL.
-> 
-> The cfs_rq is NULL because we did set_task_rq(p, 2048), where 2048 is
-> NR_CPUS. That causes us to index past the end of the tg->cfs_rq array in
-> set_task_rq() and happen to get NULL.
-> 
-> We never should have done set_task_rq(p, 2048), because 2048 is >=
-> nr_cpu_ids, which means it's not a valid CPU number, and set_task_rq()
-> doesn't cope with that.
+On Tue, Oct 11, 2016 at 11:21:09PM +1100, Balbir Singh wrote:
+> FYI: I see the samething on my cpu as well, its just that I get lucky
+> and cpu_online(cpu) returns false.
 
-Hmm... it doesn't reproduce it here and can't see how the commit would
-affect this given that it doesn't really change when the kworker
-kthreads are being created.
-
-> Presumably we shouldn't be ending up with tsk_cpus_allowed() being
-> empty, but I haven't had time to track down why that's happening.
-
-Can you please add WARN_ON_ONCE(!tsk_nr_cpus_allowed(p)) to
-select_task_rq() and post what that says?
+Are you seeing this on x86 or is your test setup also a power machine?
 
 Thanks.
 
