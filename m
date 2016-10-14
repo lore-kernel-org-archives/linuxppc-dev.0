@@ -1,21 +1,49 @@
-Return-Path: <Marcin.Nowakowski@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp02.imgtec.com [217.156.133.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3swLXC62nMzDt4K
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 19:35:39 +1100 (AEDT)
-From: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
-To: <linux-kernel@vger.kernel.org>
-CC: <linux-api@vger.kernel.org>, <luto@amacapital.net>, <rostedt@goodmis.org>,
- Marcin Nowakowski <marcin.nowakowski@imgtec.com>, Ingo Molnar
- <mingo@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul
- Mackerras" <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4 09/12] powerpc/tracing: fix compat syscall handling
-Date: Fri, 14 Oct 2016 10:35:12 +0200
-Message-ID: <1476434115-25428-11-git-send-email-marcin.nowakowski@imgtec.com>
-In-Reply-To: <1476434115-25428-1-git-send-email-marcin.nowakowski@imgtec.com>
-References: <1476434115-25428-1-git-send-email-marcin.nowakowski@imgtec.com>
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swMNs6KcxzDt2l
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 20:14:21 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9E9DwIW135523
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 05:14:19 -0400
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 262maxk78e-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 05:14:18 -0400
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 14 Oct 2016 14:44:15 +0530
+Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 0F816394006A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 14:44:07 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9E9E6Xs29950192
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 14:44:06 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9E9E2gv010551
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 14:44:05 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, gkurz@linux.vnet.ibm.com
+Subject: Re: [PATCH v3] cxl: Prevent adapter reset if an active context exists
+In-Reply-To: <878ttrepiq.fsf@concordia.ellerman.id.au>
+References: <1476356908-302-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+ <878ttrepiq.fsf@concordia.ellerman.id.au>
+Date: Fri, 14 Oct 2016 14:43:56 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87bmyni97v.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +53,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adapt the code to make use of new syscall handling interface
+Hi Mpe,
 
-Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/ftrace.h | 13 +++++++++++++
- arch/powerpc/kernel/ftrace.c      |  4 ++++
- 2 files changed, 17 insertions(+)
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> This is arguably a change to the ABI, but I assume we're OK with that as
+> it's arguably a bug in the existing implementation?
+Yes cross checked with Fred and he is ok with this.
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index f266051..c6c660d 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -72,4 +72,17 @@ struct dyn_arch_ftrace {
- #define ARCH_SYM_NAME_SKIP_CHARS 1
- #endif
- 
-+#if defined(CONFIG_FTRACE_SYSCALLS) && !defined(__ASSEMBLY__)
-+#if defined(CONFIG_COMPAT)
-+#include <linux/compat.h>
-+#include <asm/compat.h>
-+
-+#define ARCH_COMPAT_SYSCALL_NUMBERS_OVERLAP 1
-+static inline bool arch_trace_is_compat_syscall(struct pt_regs *regs)
-+{
-+	return in_compat_syscall();
-+}
-+#endif /* CONFIG_COMPAT */
-+#endif /* CONFIG_FTRACE_SYSCALLS && !__ASSEMBLY__ */
-+
- #endif /* _ASM_POWERPC_FTRACE */
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 5bfb35f..12c00f7 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -606,6 +606,10 @@ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
- #if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64)
- unsigned long __init arch_syscall_addr(int nr, bool compat)
- {
-+#ifdef CONFIG_COMPAT
-+	if (compat)
-+		return sys_call_table[nr*2+1];
-+#endif
- 	return sys_call_table[nr*2];
- }
- #endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 */
--- 
-2.7.4
+>
+> If so do we have a Fixes: ? and/or should this go to stable?
+Yes and Yes. I will resend the patch marking it for stable and updating
+the 'Fixes:' tag.
+
+Thanks,
+~ Vaibhav
