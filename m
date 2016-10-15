@@ -1,36 +1,31 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3swX1l5J8czDt2y
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2016 02:43:23 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9EFeKrt031156
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 11:43:21 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 262w62fx0n-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 11:43:20 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Fri, 14 Oct 2016 09:43:20 -0600
-Date: Fri, 14 Oct 2016 10:43:15 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: simplify loop control in
- parse_numa_properties()
-References: <1476384330-22654-1-git-send-email-arbab@linux.vnet.ibm.com>
- <87bmynepmf.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3swmxn50J4zDt4W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2016 12:25:49 +1100 (AEDT)
+Received: by mail-pa0-x243.google.com with SMTP id qn10so6648977pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2016 18:25:49 -0700 (PDT)
+Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
+ available early during boot)
+To: Tejun Heo <tj@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <1473967821-24363-1-git-send-email-tj@kernel.org>
+ <1473967821-24363-2-git-send-email-tj@kernel.org>
+ <20160917172314.GB10771@mtj.duckdns.org>
+ <87twck5wqo.fsf@concordia.ellerman.id.au>
+ <20161010130253.GB29742@mtj.duckdns.org>
+ <87a8eb5dwa.fsf@concordia.ellerman.id.au>
+ <20161014150757.GA11102@mtj.duckdns.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ jiangshanlai@gmail.com, linux-kernel@vger.kernel.org,
+ akpm@linux-foundation.org, torvalds@linux-foundation.org, kernel-team@fb.com
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <6b395b55-03a8-38bc-8581-d310e6a0ef65@gmail.com>
+Date: Sat, 15 Oct 2016 12:25:50 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <87bmynepmf.fsf@concordia.ellerman.id.au>
-Message-Id: <20161014154314.yestsvr2dgufdyvt@arbab-laptop.austin.ibm.com>
+In-Reply-To: <20161014150757.GA11102@mtj.duckdns.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,51 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 14, 2016 at 11:33:12AM +1100, Michael Ellerman wrote:
->Reza Arbab <arbab@linux.vnet.ibm.com> writes:
->> The flow of the main loop in parse_numa_properties() is overly
->> complicated. Simplify it to be less confusing and easier to read.
->> No functional change.
->
->I think you're right, but it's not obvious from the diff. Please explain
->in more detail why the old and new code is equivalent.
-
-I'm not sure if being this verbose helps, but...
-
-The end of the main loop in parse_numa_properties() looks like this:
-
-	for_each_node_by_type(...) {
-		...
-
-		if (!condition) {
-			if (--ranges)
-				goto new_range;
-			else
-				continue;
-		}
-
-		statement();
-
-		if (--ranges)
-			goto new_range;
-		/* else
-		 *	continue; <- implicit, this is the end of the loop
-		 */
-	}
 
 
-The only effect of !condition is to skip execution of statement(). This can be
-rewritten in a simpler way:
+On 15/10/16 02:07, Tejun Heo wrote:
+> Hello, Michael.
+> 
+> On Tue, Oct 11, 2016 at 10:22:13PM +1100, Michael Ellerman wrote:
+>> The oops happens because we're in enqueue_task_fair() and p->se->cfs_rq
+>> is NULL.
+>>
+>> The cfs_rq is NULL because we did set_task_rq(p, 2048), where 2048 is
+>> NR_CPUS. That causes us to index past the end of the tg->cfs_rq array in
+>> set_task_rq() and happen to get NULL.
+>>
+>> We never should have done set_task_rq(p, 2048), because 2048 is >=
+>> nr_cpu_ids, which means it's not a valid CPU number, and set_task_rq()
+>> doesn't cope with that.
+> 
+> Hmm... it doesn't reproduce it here and can't see how the commit would
+> affect this given that it doesn't really change when the kworker
+> kthreads are being created.
+> 
+>> Presumably we shouldn't be ending up with tsk_cpus_allowed() being
+>> empty, but I haven't had time to track down why that's happening.
+> 
 
-	for_each_node_by_type(...) {
-		...
+I think the basic analysis shows the change to creation of unbounded
+workqueues from the unbound_hash, but those have a pool cpumask empty.
 
-		if (condition)
-			statement();
+> Can you please add WARN_ON_ONCE(!tsk_nr_cpus_allowed(p)) to
+> select_task_rq() and post what that says?
+> 
+> Thanks.
+> 
 
-		if (--ranges)
-			goto new_range;
-	}
-
--- 
-Reza Arbab
+Balbir Singh.
