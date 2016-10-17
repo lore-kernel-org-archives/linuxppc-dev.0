@@ -1,28 +1,35 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-it0-x22f.google.com (mail-it0-x22f.google.com
- [IPv6:2607:f8b0:4001:c0b::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sy92l6lPkzDvHv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2016 18:34:55 +1100 (AEDT)
-Received: by mail-it0-x22f.google.com with SMTP id 66so729404itl.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2016 00:34:55 -0700 (PDT)
+Return-Path: <jesper.nilsson@axis.com>
+Received: from bes.se.axis.com (bes.se.axis.com [195.60.68.10])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3syCc02kK7zDvJY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2016 20:30:23 +1100 (AEDT)
+Date: Mon, 17 Oct 2016 11:23:52 +0200
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Lorenzo Stoakes <lstoakes@gmail.com>
+Cc: linux-mm@kvack.org, linux-mips@linux-mips.org,
+ linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>,
+ kvm@vger.kernel.org, linux-sh@vger.kernel.org,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ dri-devel@lists.freedesktop.org, netdev@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org,
+ x86@kernel.org, Hugh Dickins <hughd@google.com>,
+ linux-media@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+ intel-gfx@lists.freedesktop.org, adi-buildroot-devel@lists.sourceforge.net,
+ ceph-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-cris-kernel@axis.com, Linus Torvalds <torvalds@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Mel Gorman <mgorman@techsingularity.net>
+Subject: Re: [PATCH 10/10] mm: replace access_process_vm() write parameter
+ with gup_flags
+Message-ID: <20161017092352.GH30704@axis.com>
+References: <20161013002020.3062-1-lstoakes@gmail.com>
+ <20161013002020.3062-11-lstoakes@gmail.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1476688913-15648-1-git-send-email-geert@linux-m68k.org>
-References: <1476688913-15648-1-git-send-email-geert@linux-m68k.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 17 Oct 2016 09:34:53 +0200
-Message-ID: <CAMuHMdVety8LeBgM1ZHfqw=NMjH5_=sQR=LLypQ1-YjxnuvaiQ@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.9-rc1
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Vineet Gupta <vgupta@synopsys.com>,
- arcml <linux-snps-arc@lists.infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Cris <linux-cris-kernel@axis.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161013002020.3062-11-lstoakes@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,76 +39,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 17, 2016 at 9:21 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Below is the list of build error/warning regressions/improvements in
-> v4.9-rc1[1] compared to v4.8[2].
+On Thu, Oct 13, 2016 at 01:20:20AM +0100, Lorenzo Stoakes wrote:
+> This patch removes the write parameter from access_process_vm() and replaces it
+> with a gup_flags parameter as use of this function previously _implied_
+> FOLL_FORCE, whereas after this patch callers explicitly pass this flag.
+> 
+> We make this explicit as use of FOLL_FORCE can result in surprising behaviour
+> (and hence bugs) within the mm subsystem.
+> 
+> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+> ---
+>  arch/cris/arch-v32/kernel/ptrace.c |  4 ++--
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/11053/ (all 262 configs)
-> [2] http://kisskb.ellerman.id.au/kisskb/head/10989/ (all 262 configs)
+For the CRIS part:
 
-> 48 error regressions:
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r2,[r0]':  => 476
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r2,[r13]':  => 475
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r2,[r4]':  => 475
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r2,[r5]':  => 475
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r2,[r6]':  => 475, 476
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r2,[r8]':  => 476, 475, 515
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r4,[r11]':  => 476
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r4,[r13]':  => 493, 475
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r4,[r14]':  => 475
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r4,[r18]':  => 493
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r4,[r21]':  => 493
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r4,[r6]':  => 476, 475, 515
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r4,[r7]':  => 475
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r6,[r12]':  => 493
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r6,[r3]':  => 475
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r6,[r8]':  => 493
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `llockd r6,[r9]':  => 493
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r0,[r6]':  => 516
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r10,[r12]':  => 496
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r14,[r9]':  => 496
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r16,[r8]':  => 496
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r0]':  => 479
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r13]':  => 496, 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r18]':  => 496
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r21]':  => 496
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r4]':  => 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r5]':  => 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r6]':  => 478, 516, 479
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r2,[r8]':  => 479, 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r4,[r11]':  => 479
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r4,[r13]':  => 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r4,[r14]':  => 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r4,[r6]':  => 479, 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r4,[r7]':  => 478
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r4,[r8]':  => 516
->   + /home/kisskb/slave/src/arch/arc/include/asm/atomic.h: Error: bad instruction `scondd r6,[r3]':  => 478
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-arcv2/axs103_smp_defconfig
-
->   + /home/kisskb/slave/src/arch/powerpc/kvm/book3s_hv_rm_xics.c: error: implicit declaration of function 'get_hard_smp_processor_id' [-Werror=implicit-function-declaration]:  => 758:2
-
-powerpc/ppc64_defconfig+UP
-
->   + /home/kisskb/slave/src/drivers/dma/omap-dma.c: error: unrecognizable insn::  => 350:1
-
-cris-allyesconfig
-cris-allmodconfig
-
->   + error: ".irq_set_parent" [drivers/mfd/tps65217.ko] undefined!:  => N/A
->   + error: "irq_set_parent" [drivers/mfd/tps65217.ko] undefined!:  => N/A
-
-ppc64le/allmodconfig+ppc64le
-powerpc/powerpc-allmodconfig
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
