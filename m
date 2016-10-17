@@ -1,6 +1,6 @@
 Return-Path: <Zubair.Kakakhel@imgtec.com>
 Received: from mailapp01.imgtec.com (mailapp02.imgtec.com [217.156.133.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3syPmR5MlnzDvJk
+ by lists.ozlabs.org (Postfix) with ESMTP id 3syPmR4WNNzDvJF
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 04:08:23 +1100 (AEDT)
 From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 To: <monstr@monstr.eu>, <ralf@linux-mips.org>, <tglx@linutronix.de>,
@@ -10,11 +10,9 @@ CC: <soren.brinkmann@xilinx.com>, <linux-kernel@vger.kernel.org>,
  <linux-mips@linux-mips.org>, <michal.simek@xilinx.com>,
  <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>, <paulus@samba.org>,
  <benh@kernel.crashing.org>
-Subject: [Patch v5 04/12] irqchip: xilinx: Add support for parent intc
-Date: Mon, 17 Oct 2016 17:52:48 +0100
-Message-ID: <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
-In-Reply-To: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
-References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+Subject: [Patch v5 00/12] microblaze/MIPS/PowerPC: Xilinx intc
+Date: Mon, 17 Oct 2016 17:52:44 +0100
+Message-ID: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,88 +24,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MIPS based xilfpga platform has the following IRQ structure
+Hi,
 
-Peripherals --> xilinx_intcontroller -> mips_cpu_int controller
+The MIPS based Xilfpga platform uses the axi interrupt controller
+daisy chained to the MIPS microAptiv cpu interrupt controller.
+This patch series moves the axi interrupt controller driver out
+of arch/microblaze to drivers/irqchip and then cleans it up a bit.
+And then remove another implementation of the driver in arch/powerpc.
+This makes one common driver usable by mips,microblaze and powerpc.
+The rest of the series basically enables drivers and adds dt nodes.
 
-Add support for the driver to chain the irq handler
+Would make sense for this to go via the MIPS tree.
+Hence, ACKs from microblaze, powerpc and irqchip welcome.
 
-Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+Compile tested on microblaze-el.
+Tested using qemu-system-ppc using virtix440-ml507
 
----
+Based on v4.9-rc1
+
+Regards,
+ZubairLK
+
 V4 -> V5
-Rebased to v4.9-rc1
-Missing curly braces
+Added a new patch that removes the PPC driver
+Rebase to v4.9-rc1
+Better error handling
 
 V3 -> V4
-Clean up if/else when a parent is found
-Pass irqchip structure to handler as data
+Better error handling
+Some minor fixups
 
 V2 -> V3
-Reused existing parent node instead of finding again.
-Cleanup up handler based on review
+Cleanup the interrupt controller driver a bit based on feedback
+Rebase to v4.8-rc4
 
 V1 -> V2
+Resubmitting without truncating the diff output for file moves
+Removed accidental local mac address entry
+Individual logs have more detail
 
-No change
----
- drivers/irqchip/irq-xilinx-intc.c | 26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
-index 45e5154..dbf8b0c 100644
---- a/drivers/irqchip/irq-xilinx-intc.c
-+++ b/drivers/irqchip/irq-xilinx-intc.c
-@@ -15,6 +15,7 @@
- #include <linux/of_address.h>
- #include <linux/io.h>
- #include <linux/bug.h>
-+#include <linux/of_irq.h>
- 
- /* No one else should require these constants, so define them locally here. */
- #define ISR 0x00			/* Interrupt Status Register */
-@@ -154,11 +155,23 @@ static int xintc_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
- 	.map = xintc_map,
- };
- 
-+static void xil_intc_irq_handler(struct irq_desc *desc)
-+{
-+	u32 pending;
-+
-+	do {
-+		pending = xintc_get_irq();
-+		if (pending == -1U)
-+			break;
-+		generic_handle_irq(pending);
-+	} while (true);
-+}
-+
- static int __init xilinx_intc_of_init(struct device_node *intc,
- 					     struct device_node *parent)
- {
- 	u32 nr_irq;
--	int ret;
-+	int ret, irq;
- 	struct xintc_irq_chip *irqc;
- 
- 	if (xintc_irqc) {
-@@ -221,7 +234,16 @@ static int __init xilinx_intc_of_init(struct device_node *intc,
- 		goto err_alloc;
- 	}
- 
--	irq_set_default_host(root_domain);
-+	if (parent) {
-+		irq = irq_of_parse_and_map(intc, 0);
-+		if (irq)
-+			irq_set_chained_handler_and_data(irq,
-+							 xil_intc_irq_handler,
-+							 irqc);
-+
-+	} else {
-+		irq_set_default_host(root_domain);
-+	}
- 
- 	return 0;
- 
+Zubair Lutfullah Kakakhel (12):
+  microblaze: irqchip: Move intc driver to irqchip
+  irqchip: xilinx: Clean up irqdomain argument and read/write
+  irqchip: xilinx: Rename get_irq to xintc_get_irq
+  irqchip: xilinx: Add support for parent intc
+  irqchip: xilinx: Try to fall back if xlnx,kind-of-intr not provided
+  powerpc/virtex: Use generic xilinx irqchip driver
+  MIPS: xilfpga: Use irqchip instead of the legacy way
+  MIPS: xilfpga: Use Xilinx Interrupt Controller
+  MIPS: xilfpga: Update DT node and specify uart irq
+  MIPS: xilfpga: Add DT node for AXI I2C
+  MIPS: xilfpga: Add DT node for AXI emaclite
+  MIPS: xilfpga: Update defconfig
+
+ arch/microblaze/Kconfig                  |   1 +
+ arch/microblaze/include/asm/irq.h        |   2 +-
+ arch/microblaze/kernel/Makefile          |   2 +-
+ arch/microblaze/kernel/intc.c            | 196 -----------------------
+ arch/microblaze/kernel/irq.c             |   4 +-
+ arch/mips/Kconfig                        |   1 +
+ arch/mips/boot/dts/xilfpga/nexys4ddr.dts |  63 ++++++++
+ arch/mips/configs/xilfpga_defconfig      |  37 ++++-
+ arch/mips/xilfpga/intc.c                 |   7 +-
+ arch/powerpc/include/asm/xilinx_intc.h   |   2 +-
+ arch/powerpc/platforms/40x/Kconfig       |   1 +
+ arch/powerpc/platforms/40x/virtex.c      |   2 +-
+ arch/powerpc/platforms/44x/Kconfig       |   1 +
+ arch/powerpc/platforms/44x/virtex.c      |   2 +-
+ arch/powerpc/sysdev/xilinx_intc.c        | 211 +------------------------
+ drivers/irqchip/Kconfig                  |   4 +
+ drivers/irqchip/Makefile                 |   1 +
+ drivers/irqchip/irq-xilinx-intc.c        | 258 +++++++++++++++++++++++++++++++
+ 18 files changed, 377 insertions(+), 418 deletions(-)
+ delete mode 100644 arch/microblaze/kernel/intc.c
+ create mode 100644 drivers/irqchip/irq-xilinx-intc.c
+
 -- 
 1.9.1
