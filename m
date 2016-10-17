@@ -1,22 +1,23 @@
 Return-Path: <htejun@gmail.com>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
+Received: from mail-yw0-x244.google.com (mail-yw0-x244.google.com
+ [IPv6:2607:f8b0:4002:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3syRCJ0KkjzDvNr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 05:13:16 +1100 (AEDT)
-Received: by mail-yw0-x242.google.com with SMTP id u124so7138448ywg.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2016 11:13:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3syRGR6Y47zDvNr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 05:15:59 +1100 (AEDT)
+Received: by mail-yw0-x244.google.com with SMTP id u124so7140843ywg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2016 11:15:59 -0700 (PDT)
 Sender: Tejun Heo <htejun@gmail.com>
-Date: Mon, 17 Oct 2016 14:13:12 -0400
+Date: Mon, 17 Oct 2016 14:15:56 -0400
 From: Tejun Heo <tj@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
  jiangshanlai@gmail.com, akpm@linux-foundation.org, kernel-team@fb.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Balbir Singh <bsingharora@gmail.com>
 Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
  available early during boot)
-Message-ID: <20161017181312.GA6248@htj.duckdns.org>
+Message-ID: <20161017181556.GB6248@htj.duckdns.org>
 References: <1473967821-24363-1-git-send-email-tj@kernel.org>
  <1473967821-24363-2-git-send-email-tj@kernel.org>
  <20160917172314.GB10771@mtj.duckdns.org>
@@ -24,10 +25,10 @@ References: <1473967821-24363-1-git-send-email-tj@kernel.org>
  <20161010130253.GB29742@mtj.duckdns.org>
  <87a8eb5dwa.fsf@concordia.ellerman.id.au>
  <20161014150757.GA11102@mtj.duckdns.org>
- <87mvi6c59q.fsf@concordia.ellerman.id.au>
+ <87eg3fcge5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87mvi6c59q.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87eg3fcge5.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,57 +38,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Hello, Michael.
 
-On Sat, Oct 15, 2016 at 08:48:01PM +1100, Michael Ellerman wrote:
-> > Hmm... it doesn't reproduce it here and can't see how the commit would
-> > affect this given that it doesn't really change when the kworker
-> > kthreads are being created.
+On Mon, Oct 17, 2016 at 11:24:34PM +1100, Michael Ellerman wrote:
+> The bad case (where we hit the BUG_ON I added above) is where we are
+> creating a wq for node 1.
 > 
-> Try turning on CONFIG_DEBUG_PER_CPU_MAPS=y ?
+> In wq_calc_node_cpumask() we do:
 > 
-> That will warn if you're indexing off the end of a cpu mask and just
-> getting lucky with the result.
-
-That's not happening on x86.  That could mean that powerpc is
-initializing cpu_possible_mask after workqueue_init_early().  Looking
-into it.
-
-> ------------[ cut here ]------------
-> WARNING: CPU: 0 PID: 1 at ../kernel/sched/core.c:1602 try_to_wake_up+0x3f4/0x5c0
-> Modules linked in:
-> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.8.0-compiler_gcc-6.2.0-next-20161014-dirty #116
-> task: c000000ff9200000 task.stack: c000001ffc084000
-> NIP: c0000000000f1ba4 LR: c0000000000f180c CTR: 0000000000000000
-> REGS: c000001ffc0878f0 TRAP: 0700   Not tainted  (4.8.0-compiler_gcc-6.2.0-next-20161014-dirty)
-> MSR: 9000000002029033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE> CR: 28000422  XER: 00000000
-> CFAR: c0000000000f18bc SOFTE: 0 
-> GPR00: c0000000000f180c c000001ffc087b70 c000000000e83400 0000000000000000 
-> GPR04: 0000000000000002 0000000000000000 0000000000000000 0000000000000000 
-> GPR08: c000000000dc3400 0000000000000001 0000000000000002 0000000000000000 
-> GPR12: 0000000000000000 c00000000fb80000 c00000000000e0c8 0000000000000000 
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR20: 0000000000000000 0000000000000000 0000000000000000 c000000000eb8960 
-> GPR24: 0000000000000000 c000000000d8ce00 0000000000000000 0000000000000000 
-> GPR28: c0000007f54050f4 0000000000000000 0000000000000000 c0000007f5404900 
-> NIP [c0000000000f1ba4] try_to_wake_up+0x3f4/0x5c0
-> LR [c0000000000f180c] try_to_wake_up+0x5c/0x5c0
-> Call Trace:
-> [c000001ffc087b70] [c0000000000f180c] try_to_wake_up+0x5c/0x5c0 (unreliable)
-> [c000001ffc087bf0] [c0000000000d53e4] create_worker+0x144/0x250
-> [c000001ffc087c90] [c000000000cf7930] workqueue_init+0x170/0x19c
-> [c000001ffc087d00] [c000000000ce0e74] kernel_init_freeable+0x158/0x360
-> [c000001ffc087dc0] [c00000000000e0e4] kernel_init+0x24/0x160
-> [c000001ffc087e30] [c00000000000bfa0] ret_from_kernel_thread+0x5c/0xbc
-> Instruction dump:
-> e8790890 4bff6ed9 2fa30000 419e00dc 60000000 4bfffe54 3d02fff4 8928d7f9 
-> 2f890000 409e0018 39200001 9928d7f9 <0fe00000> 60000000 60420000 3b5f0368 
-> ---[ end trace 0000000000000000 ]---
+> 	cpumask_and(cpumask, attrs->cpumask, wq_numa_possible_cpumask[node]);
+> 	return !cpumask_equal(cpumask, attrs->cpumask);
 > 
-> But I'm not sure that tells us anything new?
+> Which with the arguments inserted is:
+> 
+> 	cpumask_and(tmp_attrs->cpumask, new_attrs->cpumask, wq_numa_possible_cpumask[1]);
+> 	return !cpumask_equal(tmp_attrs->cpumask, new_attrs->cpumask);
+> 
+> And that results in tmp_attrs->cpumask being empty, because
+> wq_numa_possible_cpumask[1] is an empty cpumask.
 
-Yeah, I should have asked to print out information of the target task
-but it looks like we have enough information now.
+Ah, should have read this before replying to the previous mail, so
+it's the numa mask, not the cpu_possible_mask.
+
+> The reason wq_numa_possible_cpumask[1] is an empty mask is because in
+> wq_numa_init() we did:
+> 
+> 	for_each_possible_cpu(cpu) {
+> 		node = cpu_to_node(cpu);
+> 		if (WARN_ON(node == NUMA_NO_NODE)) {
+> 			pr_warn("workqueue: NUMA node mapping not available for cpu%d, disabling NUMA support\n", cpu);
+> 			/* happens iff arch is bonkers, let's just proceed */
+> 			return;
+> 		}
+> 		cpumask_set_cpu(cpu, tbl[node]);
+> 	}
+> 
+> And cpu_to_node() returned node 0 for every CPU in the system, despite there
+> being multiple nodes.
+> 
+> That happened because we haven't yet called set_cpu_numa_node() for the non-boot
+> cpus, because that happens in smp_prepare_cpus(), and
+> workqueue_init_early() is called much earlier than that.
+> 
+> This doesn't trigger on x86 because it does set_cpu_numa_node() in
+> setup_per_cpu_areas(), which is called prior to workqueue_init_early().
+> 
+> We can (should) probably do the same on powerpc, I'll look at that
+> tomorrow. But other arches may have a similar problem, and at the very
+> least we need to document that workqueue_init_early() relies on
+> cpu_to_node() working.
+
+I should be able to move the numa part of initialization to the later
+init function.  Working on it.
 
 Thanks.
 
