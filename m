@@ -1,22 +1,18 @@
-Return-Path: <Zubair.Kakakhel@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp02.imgtec.com [217.156.133.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3syPtC2rfXzDvHv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 04:13:23 +1100 (AEDT)
-From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
-To: <monstr@monstr.eu>, <ralf@linux-mips.org>, <tglx@linutronix.de>,
- <jason@lakedaemon.net>, <marc.zyngier@arm.com>, <alistair@popple.id.au>,
- <mporter@kernel.crashing.org>
-CC: <soren.brinkmann@xilinx.com>, <linux-kernel@vger.kernel.org>,
- <linux-mips@linux-mips.org>, <michal.simek@xilinx.com>,
- <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>, <paulus@samba.org>,
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3syXzr5ZgFzDvRh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 09:33:44 +1100 (AEDT)
+Date: Tue, 18 Oct 2016 09:33:44 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>
-Subject: [Patch v5 12/12] MIPS: xilfpga: Update defconfig
-Date: Mon, 17 Oct 2016 17:52:56 +0100
-Message-ID: <1476723176-39891-13-git-send-email-Zubair.Kakakhel@imgtec.com>
-In-Reply-To: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
-References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: ignore the pkey system calls for now
+Message-ID: <20161018093344.1f52d1f9@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,91 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update defconfig to enable emaclite, i2c, temp sensor found on the
-xilfpga platform
+Eliminates warning messages:
 
-Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+<stdin>:1316:2: warning: #warning syscall pkey_mprotect not implemented [-Wcpp]
+<stdin>:1319:2: warning: #warning syscall pkey_alloc not implemented [-Wcpp]
+<stdin>:1322:2: warning: #warning syscall pkey_free not implemented [-Wcpp]
 
+Hopefully we will remember to revert this commit if we ever implement
+them.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-V3 -> V4
-No change
+ arch/powerpc/include/asm/unistd.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-V2 -> V3
-No change
-
-V1 -> V2
-No change
----
- arch/mips/configs/xilfpga_defconfig | 37 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
-
-diff --git a/arch/mips/configs/xilfpga_defconfig b/arch/mips/configs/xilfpga_defconfig
-index ed1dce3..829c637 100644
---- a/arch/mips/configs/xilfpga_defconfig
-+++ b/arch/mips/configs/xilfpga_defconfig
-@@ -7,6 +7,12 @@ CONFIG_EMBEDDED=y
- CONFIG_SLAB=y
- # CONFIG_BLOCK is not set
- # CONFIG_SUSPEND is not set
-+CONFIG_NET=y
-+CONFIG_PACKET=y
-+CONFIG_UNIX=y
-+CONFIG_INET=y
-+# CONFIG_IPV6 is not set
-+# CONFIG_WIRELESS is not set
- # CONFIG_UEVENT_HELPER is not set
- CONFIG_DEVTMPFS=y
- CONFIG_DEVTMPFS_MOUNT=y
-@@ -14,6 +20,30 @@ CONFIG_DEVTMPFS_MOUNT=y
- # CONFIG_PREVENT_FIRMWARE_BUILD is not set
- # CONFIG_FW_LOADER is not set
- # CONFIG_ALLOW_DEV_COREDUMP is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_NET_CORE is not set
-+# CONFIG_NET_VENDOR_ARC is not set
-+# CONFIG_NET_CADENCE is not set
-+# CONFIG_NET_VENDOR_BROADCOM is not set
-+# CONFIG_NET_VENDOR_EZCHIP is not set
-+# CONFIG_NET_VENDOR_INTEL is not set
-+# CONFIG_NET_VENDOR_MARVELL is not set
-+# CONFIG_NET_VENDOR_MICREL is not set
-+# CONFIG_NET_VENDOR_NATSEMI is not set
-+# CONFIG_NET_VENDOR_NETRONOME is not set
-+# CONFIG_NET_VENDOR_QUALCOMM is not set
-+# CONFIG_NET_VENDOR_RENESAS is not set
-+# CONFIG_NET_VENDOR_ROCKER is not set
-+# CONFIG_NET_VENDOR_SAMSUNG is not set
-+# CONFIG_NET_VENDOR_SEEQ is not set
-+# CONFIG_NET_VENDOR_SMSC is not set
-+# CONFIG_NET_VENDOR_STMICRO is not set
-+# CONFIG_NET_VENDOR_SYNOPSYS is not set
-+# CONFIG_NET_VENDOR_VIA is not set
-+# CONFIG_NET_VENDOR_WIZNET is not set
-+CONFIG_XILINX_EMACLITE=y
-+CONFIG_SMSC_PHY=y
-+# CONFIG_WLAN is not set
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
-@@ -25,13 +55,18 @@ CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_SERIAL_OF_PLATFORM=y
- # CONFIG_HW_RANDOM is not set
-+CONFIG_I2C=y
-+CONFIG_I2C_CHARDEV=y
-+# CONFIG_I2C_HELPER_AUTO is not set
-+CONFIG_I2C_XILINX=y
- CONFIG_GPIO_SYSFS=y
- CONFIG_GPIO_XILINX=y
--# CONFIG_HWMON is not set
-+CONFIG_SENSORS_ADT7410=y
- # CONFIG_USB_SUPPORT is not set
- # CONFIG_MIPS_PLATFORM_DEVICES is not set
- # CONFIG_IOMMU_SUPPORT is not set
- # CONFIG_PROC_PAGE_MONITOR is not set
-+CONFIG_TMPFS=y
- # CONFIG_MISC_FILESYSTEMS is not set
- CONFIG_PANIC_ON_OOPS=y
- # CONFIG_SCHED_DEBUG is not set
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index cf12c580f6b2..e8cdfec8d512 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -16,6 +16,10 @@
+ 
+ #define __NR__exit __NR_exit
+ 
++#define __IGNORE_pkey_mprotect
++#define __IGNORE_pkey_alloc
++#define __IGNORE_pkey_free
++
+ #ifndef __ASSEMBLY__
+ 
+ #include <linux/types.h>
 -- 
-1.9.1
+2.9.3
+
+-- 
+Cheers,
+Stephen Rothwell
