@@ -1,32 +1,29 @@
-Return-Path: <Paul.Burton@imgtec.com>
-Received: from imgpgp01.kl.imgtec.org (mailapp01.imgtec.com [195.59.15.196])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3syFjz1hPVzDvJn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2016 22:05:43 +1100 (AEDT)
-From: Paul Burton <paul.burton@imgtec.com>
-To: Andreas Schwab <schwab@linux-m68k.org>
-CC: <linux-mips@linux-mips.org>, Ralf Baechle <ralf@linux-mips.org>, Tejun Heo
- <tj@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, "Jiri
- Slaby" <jslaby@suse.cz>, Daniel Vetter <daniel.vetter@ffwll.ch>, "Ivan
- Delalande" <colona@arista.com>, Thierry Reding <treding@nvidia.com>,
- "Borislav Petkov" <bp@suse.de>, Jan Kara <jack@suse.com>, Petr Mladek
- <pmladek@suse.com>, <linux-kernel@vger.kernel.org>, Joe Perches
- <joe@perches.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Andrew Morton
- <akpm@linux-foundation.org>, Frank Rowand <frowand.list@gmail.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2] console: Don't prefer first registered if DT specifies
- stdout-path
-Date: Mon, 17 Oct 2016 11:33:55 +0100
-Message-ID: <4033254.tBrl4yKcsP@np-p-burton>
-In-Reply-To: <87bmyk88x5.fsf@linux-m68k.org>
-References: <20160809125010.14150-1-paul.burton@imgtec.com>
- <20160809151937.26118-1-paul.burton@imgtec.com>
- <87bmyk88x5.fsf@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3syHT25KP8zDt3M
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Oct 2016 23:24:38 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+ jiangshanlai@gmail.com, akpm@linux-foundation.org, kernel-team@fb.com,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Balbir Singh  <bsingharora@gmail.com>
+Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
+ available early during boot)
+In-Reply-To: <20161014150757.GA11102@mtj.duckdns.org>
+References: <1473967821-24363-1-git-send-email-tj@kernel.org>
+ <1473967821-24363-2-git-send-email-tj@kernel.org>
+ <20160917172314.GB10771@mtj.duckdns.org>
+ <87twck5wqo.fsf@concordia.ellerman.id.au>
+ <20161010130253.GB29742@mtj.duckdns.org>
+ <87a8eb5dwa.fsf@concordia.ellerman.id.au>
+ <20161014150757.GA11102@mtj.duckdns.org>
+Date: Mon, 17 Oct 2016 23:24:34 +1100
+Message-ID: <87eg3fcge5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3065225.SPOVmq47Dl";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +33,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart3065225.SPOVmq47Dl
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Tejun Heo <tj@kernel.org> writes:
 
-On Sunday, 16 October 2016 20:07:18 BST Andreas Schwab wrote:
-> On Aug 09 2016, Paul Burton <paul.burton@imgtec.com> wrote:
-> > Fix this by not automatically preferring the first registered console if
-> > one is specified by the device tree. This allows consoles to be
-> > registered but not enabled, and once the driver for the console selected
-> > by stdout-path calls of_console_check() the driver will be added to the
-> > list of preferred consoles before any other console has been enabled.
-> > When that console is then registered via register_console() it will be
-> > enabled as expected.
-> 
-> This breaks the console on PowerMac.  There is no output and it panics
-> eventually.
-> 
-> Andreas.
+> Hello, Michael.
+>
+> On Tue, Oct 11, 2016 at 10:22:13PM +1100, Michael Ellerman wrote:
+>> The oops happens because we're in enqueue_task_fair() and p->se->cfs_rq
+>> is NULL.
+>> 
+>> The cfs_rq is NULL because we did set_task_rq(p, 2048), where 2048 is
+>> NR_CPUS. That causes us to index past the end of the tg->cfs_rq array in
+>> set_task_rq() and happen to get NULL.
+>> 
+>> We never should have done set_task_rq(p, 2048), because 2048 is >=
+>> nr_cpu_ids, which means it's not a valid CPU number, and set_task_rq()
+>> doesn't cope with that.
+>
+> Hmm... it doesn't reproduce it here and can't see how the commit would
+> affect this given that it doesn't really change when the kworker
+> kthreads are being created.
 
-Hi Andreas,
+It changes when the pool attributes are created, which is the source of
+the bug.
 
-Could you share the device tree from your system?
+The original crash happens because we have a task with an empty cpus_allowed
+mask. That mask originally comes from pool->attrs->cpumask.
 
-Thanks,
-    Paul
---nextPart3065225.SPOVmq47Dl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+The attrs for the pool are created early via workqueue_init_early() in
+apply_wqattrs_prepare():
 
------BEGIN PGP SIGNATURE-----
+  start_here_common
+  -> start_kernel
+     -> workqueue_init_early
+        -> __alloc_workqueue_key
+           -> apply_workqueue_attrs
+              -> apply_workqueue_attrs_locked
+                 -> apply_wqattrs_prepare
+	          
+In there we do:
 
-iQIcBAABCAAGBQJYBKkTAAoJEIIg2fppPBxl1oAP/RAIYEhMTK2tf/pX7/5z4Y4m
-x2cl84qdY844A2UNXEP89g3CuqMaEefDBSU/8HKitoCl+Cu+bR2RKQPYBiiVNTnv
-77tgOCK1J4IYwqZi0xT+QcmUwAGvJ69+HdiXorIgzPWzXqgAPBql75mOtQMoTXZy
-XVdpHnW2GVwV5kRdEG0HalLjMvNTh6hLAMK2YDVdyuV0+Ox8XPPTXskmMqHb092m
-ATVfilJ5x8AHQIA7EHuYA72lPLEFE8aokeO317EH3k0GL2cUDTh1/IqXYvrS2g/f
-BMcAzkXujR53jp/8PGztyEWEzjToc7p2dapQ8dmqWId965D3CUdO9y279EdUUUmV
-MvI2HLzX1joW5W6MMBH3ts1QZVrtHkb8cSoudSgbyhY5+TR3GCJ6li5e4FIduLFp
-Ttl5YoNWHZdylSEXA6vY2ZKdzcAONz481tJIwaabEtbktPiTWrl95Vc+X+ejC7up
-3/50FdPlpt31NuGaqNMiu2AOB2NIxRMazxDhrlf7ee3UEve0xsRy9UjJrl3lP1iQ
-6sJhRUhaqBk92cvP/HV5HCWhRUcQmyicUMJB5JTYv0zELxJQSGtq9eXAgv7q+E5J
-3jRTAIZ3chWxUona9nMiu5Q1jgyhDcmBKJatFGilcTzHi0fLijdOTMgq4woC+biW
-Yr7i8EOdJDRYShgWsxKz
-=hh/A
------END PGP SIGNATURE-----
+	copy_workqueue_attrs(new_attrs, attrs);
+	cpumask_and(new_attrs->cpumask, new_attrs->cpumask, wq_unbound_cpumask);
+	if (unlikely(cpumask_empty(new_attrs->cpumask)))
+		cpumask_copy(new_attrs->cpumask, wq_unbound_cpumask);
+	...
+	copy_workqueue_attrs(tmp_attrs, new_attrs);
+	...
+	for_each_node(node) {
+		if (wq_calc_node_cpumask(new_attrs, node, -1, tmp_attrs->cpumask)) {
++			BUG_ON(cpumask_empty(tmp_attrs->cpumask));
+			ctx->pwq_tbl[node] = alloc_unbound_pwq(wq, tmp_attrs);
 
---nextPart3065225.SPOVmq47Dl--
+
+The bad case (where we hit the BUG_ON I added above) is where we are
+creating a wq for node 1.
+
+In wq_calc_node_cpumask() we do:
+
+	cpumask_and(cpumask, attrs->cpumask, wq_numa_possible_cpumask[node]);
+	return !cpumask_equal(cpumask, attrs->cpumask);
+
+Which with the arguments inserted is:
+
+	cpumask_and(tmp_attrs->cpumask, new_attrs->cpumask, wq_numa_possible_cpumask[1]);
+	return !cpumask_equal(tmp_attrs->cpumask, new_attrs->cpumask);
+
+And that results in tmp_attrs->cpumask being empty, because
+wq_numa_possible_cpumask[1] is an empty cpumask.
+
+The reason wq_numa_possible_cpumask[1] is an empty mask is because in
+wq_numa_init() we did:
+
+	for_each_possible_cpu(cpu) {
+		node = cpu_to_node(cpu);
+		if (WARN_ON(node == NUMA_NO_NODE)) {
+			pr_warn("workqueue: NUMA node mapping not available for cpu%d, disabling NUMA support\n", cpu);
+			/* happens iff arch is bonkers, let's just proceed */
+			return;
+		}
+		cpumask_set_cpu(cpu, tbl[node]);
+	}
+
+And cpu_to_node() returned node 0 for every CPU in the system, despite there
+being multiple nodes.
+
+That happened because we haven't yet called set_cpu_numa_node() for the non-boot
+cpus, because that happens in smp_prepare_cpus(), and
+workqueue_init_early() is called much earlier than that.
+
+This doesn't trigger on x86 because it does set_cpu_numa_node() in
+setup_per_cpu_areas(), which is called prior to workqueue_init_early().
+
+We can (should) probably do the same on powerpc, I'll look at that
+tomorrow. But other arches may have a similar problem, and at the very
+least we need to document that workqueue_init_early() relies on
+cpu_to_node() working.
+
+cheers
