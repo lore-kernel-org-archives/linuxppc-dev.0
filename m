@@ -1,38 +1,32 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3syzYW3MGxzDt2Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 02:30:55 +1100 (AEDT)
-Received: by mail-wm0-f67.google.com with SMTP id f193so9487wmg.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 08:30:55 -0700 (PDT)
-Date: Tue, 18 Oct 2016 17:30:50 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: linux-mm@kvack.org, Linus Torvalds <torvalds@linux-foundation.org>,
- Jan Kara <jack@suse.cz>, Hugh Dickins <hughd@google.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Rik van Riel <riel@redhat.com>,
- Mel Gorman <mgorman@techsingularity.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- adi-buildroot-devel@lists.sourceforge.net,
- ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mips@linux-mips.org, linux-rdma@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 00/10] mm: adjust get_user_pages* functions to explicitly
- pass FOLL_* flags
-Message-ID: <20161018153050.GC13117@dhcp22.suse.cz>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161013002020.3062-1-lstoakes@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3syzqb6shDzDt22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 02:43:07 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9IFdJJw063955
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 11:43:05 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 265jm38gyx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 11:43:04 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 18 Oct 2016 11:43:04 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, Jan Stancek <jstancek@redhat.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] mm/hugetlb: Use the right pte val for compare in hugetlb_cow
+Date: Tue, 18 Oct 2016 21:12:45 +0530
+Message-Id: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,54 +36,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 13-10-16 01:20:10, Lorenzo Stoakes wrote:
-> This patch series adjusts functions in the get_user_pages* family such that
-> desired FOLL_* flags are passed as an argument rather than implied by flags.
-> 
-> The purpose of this change is to make the use of FOLL_FORCE explicit so it is
-> easier to grep for and clearer to callers that this flag is being used. The use
-> of FOLL_FORCE is an issue as it overrides missing VM_READ/VM_WRITE flags for the
-> VMA whose pages we are reading from/writing to, which can result in surprising
-> behaviour.
-> 
-> The patch series came out of the discussion around commit 38e0885, which
-> addressed a BUG_ON() being triggered when a page was faulted in with PROT_NONE
-> set but having been overridden by FOLL_FORCE. do_numa_page() was run on the
-> assumption the page _must_ be one marked for NUMA node migration as an actual
-> PROT_NONE page would have been dealt with prior to this code path, however
-> FOLL_FORCE introduced a situation where this assumption did not hold.
-> 
-> See https://marc.info/?l=linux-mm&m=147585445805166 for the patch proposal.
+We cannot use the pte value used in set_pte_at for pte_same comparison,
+because archs like ppc64, filter/add new pte flag in set_pte_at. Instead
+fetch the pte value inside hugetlb_cow. We are comparing pte value to
+make sure the pte didn't change since we dropped the page table lock.
+hugetlb_cow get called with page table lock held, and we can take a copy
+of the pte value before we drop the page table lock.
 
-I like this cleanup. Tracking FOLL_FORCE users was always a nightmare
-and the flag behavior is really subtle so we should better be explicit
-about it. I haven't gone through each patch separately but rather
-applied the whole series and checked the resulting diff. This all seems
-OK to me and feel free to add
-Acked-by: Michal Hocko <mhocko@suse.com>
+With hugetlbfs, we optimize the MAP_PRIVATE write fault path with no
+previous mapping (huge_pte_none entries), by forcing a cow in the fault
+path. This avoid take an addition fault to covert a read-only mapping
+to read/write. Here we were comparing a recently instantiated pte (via
+set_pte_at) to the pte values from linux page table. As explained above
+on ppc64 such pte_same check returned wrong result, resulting in us
+taking an additional fault on ppc64.
 
-I am wondering whether we can go further. E.g. it is not really clear to
-me whether we need an explicit FOLL_REMOTE when we can in fact check
-mm != current->mm and imply that. Maybe there are some contexts which
-wouldn't work, I haven't checked.
+Fixes: 6a119eae942c ("powerpc/mm: Add a _PAGE_PTE bit")
 
-Then I am also wondering about FOLL_TOUCH behavior.
-__get_user_pages_unlocked has only few callers which used to be
-get_user_pages_unlocked before 1e9877902dc7e ("mm/gup: Introduce
-get_user_pages_remote()"). To me a dropped FOLL_TOUCH seems
-unintentional. Now that get_user_pages_unlocked has gup_flags argument I
-guess we might want to get rid of the __g-u-p-u version altogether, no?
+Reported-by: Jan Stancek <jstancek@redhat.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ mm/hugetlb.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-__get_user_pages is quite low level and imho shouldn't be exported. It's
-only user - kvm - should rather pull those two functions to gup instead
-and export them. There is nothing really KVM specific in them.
-
-I also cannot say I would be entirely thrilled about get_user_pages_locked,
-we only have one user which can simply do lock g-u-p unlock AFAICS.
-
-I guess there is more work in that area and I do not want to impose all
-that work on you, but I couldn't resist once I saw you playing in that
-area ;) Definitely a good start!
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index ec49d9ef1eef..da8fbd02b92e 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -3386,15 +3386,17 @@ static void unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
+  * Keep the pte_same checks anyway to make transition from the mutex easier.
+  */
+ static int hugetlb_cow(struct mm_struct *mm, struct vm_area_struct *vma,
+-			unsigned long address, pte_t *ptep, pte_t pte,
+-			struct page *pagecache_page, spinlock_t *ptl)
++		       unsigned long address, pte_t *ptep,
++		       struct page *pagecache_page, spinlock_t *ptl)
+ {
++	pte_t pte;
+ 	struct hstate *h = hstate_vma(vma);
+ 	struct page *old_page, *new_page;
+ 	int ret = 0, outside_reserve = 0;
+ 	unsigned long mmun_start;	/* For mmu_notifiers */
+ 	unsigned long mmun_end;		/* For mmu_notifiers */
+ 
++	pte = huge_ptep_get(ptep);
+ 	old_page = pte_page(pte);
+ 
+ retry_avoidcopy:
+@@ -3668,7 +3670,7 @@ static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	hugetlb_count_add(pages_per_huge_page(h), mm);
+ 	if ((flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED)) {
+ 		/* Optimization, do the COW without a second fault */
+-		ret = hugetlb_cow(mm, vma, address, ptep, new_pte, page, ptl);
++		ret = hugetlb_cow(mm, vma, address, ptep, page, ptl);
+ 	}
+ 
+ 	spin_unlock(ptl);
+@@ -3822,8 +3824,8 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 
+ 	if (flags & FAULT_FLAG_WRITE) {
+ 		if (!huge_pte_write(entry)) {
+-			ret = hugetlb_cow(mm, vma, address, ptep, entry,
+-					pagecache_page, ptl);
++			ret = hugetlb_cow(mm, vma, address, ptep,
++					  pagecache_page, ptl);
+ 			goto out_put_page;
+ 		}
+ 		entry = huge_pte_mkdirty(entry);
 -- 
-Michal Hocko
-SUSE Labs
+2.10.1
