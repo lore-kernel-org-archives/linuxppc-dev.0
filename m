@@ -1,36 +1,26 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sz49h1fvJzDt3C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 05:59:04 +1100 (AEDT)
-Received: by mail-yw0-x242.google.com with SMTP id w3so96748ywg.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 11:59:04 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Tue, 18 Oct 2016 14:58:58 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
- jiangshanlai@gmail.com, akpm@linux-foundation.org, kernel-team@fb.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
- available early during boot)
-Message-ID: <20161018185858.GA2761@htj.duckdns.org>
-References: <1473967821-24363-2-git-send-email-tj@kernel.org>
- <20160917172314.GB10771@mtj.duckdns.org>
- <87twck5wqo.fsf@concordia.ellerman.id.au>
- <20161010130253.GB29742@mtj.duckdns.org>
- <87a8eb5dwa.fsf@concordia.ellerman.id.au>
- <20161014150757.GA11102@mtj.duckdns.org>
- <87eg3fcge5.fsf@concordia.ellerman.id.au>
- <20161017181556.GB6248@htj.duckdns.org>
- <20161017193047.GC6248@htj.duckdns.org>
- <87y41mb7c9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sz4MM6kWCzDt0c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 06:07:27 +1100 (AEDT)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Paul Burton <paul.burton@imgtec.com>
+Cc: <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Petr Mladek <pmladek@suse.com>,
+ "Sergey Senozhatsky" <sergey.senozhatsky@gmail.com>,
+ Borislav Petkov <bp@suse.de>, Tejun Heo <tj@kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] console: use first console if stdout-path device doesn't
+ appear
+References: <87oa2ij2mq.fsf@linux-m68k.org>
+ <20161018091852.14776-1-paul.burton@imgtec.com>
+Date: Tue, 18 Oct 2016 20:58:49 +0200
+In-Reply-To: <20161018091852.14776-1-paul.burton@imgtec.com> (Paul Burton's
+ message of "Tue, 18 Oct 2016 10:18:52 +0100")
+Message-ID: <87mvi1cwly.fsf@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87y41mb7c9.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,27 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Michael.
+On Okt 18 2016, Paul Burton <paul.burton@imgtec.com> wrote:
 
-On Tue, Oct 18, 2016 at 03:37:42PM +1100, Michael Ellerman wrote:
-> That doesn't compile, wq doesn't exist.
-> 
-> I guessed that you meant:
-> 
-> +       wq_numa_init();
-> +       list_for_each_entry(wq, &workqueues, list)
-> +               wq_update_unbound_numa(wq, smp_processor_id(), true);
+> If a device tree specified a preferred device for kernel console output
+> via the stdout-path or linux,stdout-path chosen node properties there's
+> no guarantee that it will have specified a device for which we have a
+> driver. It may also be the case that we do have a driver but it doesn't
+> call of_console_check() to register as a preferred console (eg. offb
+> driver as used on powermac systems). In these cases try to ensure that
+> we provide some console output by enabling the first console in the
+> console_drivers list.
+>
+> As I don't have access to an affected system this has only been build
+> tested - testing would be most appreciated.
 
-Yeap, sorry about that.
+Unfortunately that doesn't work.  The initial console still cannot be
+opened.
 
-> And that does boot.
-> 
-> The sysrq-t output is below, it's rather large.
-
-Didn't expect that many cpus but it looks good.  I'll post proper
-patches soon.
-
-Thanks!
+Andreas.
 
 -- 
-tejun
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
