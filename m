@@ -2,9 +2,9 @@ Return-Path: <jack@suse.cz>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3syvr50jtzzDt1h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 23:43:16 +1100 (AEDT)
-Date: Tue, 18 Oct 2016 14:43:05 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3syvvs1nBQzDt1h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 23:46:33 +1100 (AEDT)
+Date: Tue, 18 Oct 2016 14:46:28 +0200
 From: Jan Kara <jack@suse.cz>
 To: Lorenzo Stoakes <lstoakes@gmail.com>
 Cc: linux-mm@kvack.org, Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,14 +24,14 @@ Cc: linux-mm@kvack.org, Linus Torvalds <torvalds@linux-foundation.org>,
  linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
  linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 01/10] mm: remove write/force parameters from
- __get_user_pages_locked()
-Message-ID: <20161018124305.GA29967@quack2.suse.cz>
+Subject: Re: [PATCH 02/10] mm: remove write/force parameters from
+ __get_user_pages_unlocked()
+Message-ID: <20161018124628.GB29967@quack2.suse.cz>
 References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-2-lstoakes@gmail.com>
+ <20161013002020.3062-3-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161013002020.3062-2-lstoakes@gmail.com>
+In-Reply-To: <20161013002020.3062-3-lstoakes@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,14 +41,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 13-10-16 01:20:11, Lorenzo Stoakes wrote:
-> This patch removes the write and force parameters from __get_user_pages_locked()
-> to make the use of FOLL_FORCE explicit in callers as use of this flag can result
-> in surprising behaviour (and hence bugs) within the mm subsystem.
+On Thu 13-10-16 01:20:12, Lorenzo Stoakes wrote:
+> This patch removes the write and force parameters from
+> __get_user_pages_unlocked() to make the use of FOLL_FORCE explicit in callers as
+> use of this flag can result in surprising behaviour (and hence bugs) within the
+> mm subsystem.
 > 
 > Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 
-Looks good. You can add:
+The patch looks good. You can add:
 
 Reviewed-by: Jan Kara <jack@suse.cz>
 
