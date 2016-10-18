@@ -1,32 +1,31 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <nfont@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3syzqb6shDzDt22
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 02:43:07 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9IFdJJw063955
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 11:43:05 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 265jm38gyx-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sz28f0kDZzDt38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 04:28:01 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9IHOgg5105460
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 13:27:58 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 265j6ve61r-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 11:43:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 13:27:57 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 18 Oct 2016 11:43:04 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, Jan Stancek <jstancek@redhat.com>,
- Mike Kravetz <mike.kravetz@oracle.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] mm/hugetlb: Use the right pte val for compare in hugetlb_cow
-Date: Tue, 18 Oct 2016 21:12:45 +0530
-Message-Id: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 18 Oct 2016 13:27:57 -0400
+Subject: [PATCH v6 0/3] powerpc/pseries: Implement indexed-count memory hotplug
+To: linuxppc-dev@lists.ozlabs.org
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: sahilmehta17@gmail.com
+Date: Tue, 18 Oct 2016 13:20:07 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20161018171803.37287.54834.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,72 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We cannot use the pte value used in set_pte_at for pte_same comparison,
-because archs like ppc64, filter/add new pte flag in set_pte_at. Instead
-fetch the pte value inside hugetlb_cow. We are comparing pte value to
-make sure the pte didn't change since we dropped the page table lock.
-hugetlb_cow get called with page table lock held, and we can take a copy
-of the pte value before we drop the page table lock.
+Indexed-count memory management allows addition and removal of contiguous
+lmb blocks with a single command. When compared to the series of calls
+previously required to manage contiguous blocks, indexed-count decreases
+command frequency and reduces risk of buffer overflow.
 
-With hugetlbfs, we optimize the MAP_PRIVATE write fault path with no
-previous mapping (huge_pte_none entries), by forcing a cow in the fault
-path. This avoid take an addition fault to covert a read-only mapping
-to read/write. Here we were comparing a recently instantiated pte (via
-set_pte_at) to the pte values from linux page table. As explained above
-on ppc64 such pte_same check returned wrong result, resulting in us
-taking an additional fault on ppc64.
-
-Fixes: 6a119eae942c ("powerpc/mm: Add a _PAGE_PTE bit")
-
-Reported-by: Jan Stancek <jstancek@redhat.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+-Nathan
 ---
- mm/hugetlb.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index ec49d9ef1eef..da8fbd02b92e 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -3386,15 +3386,17 @@ static void unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
-  * Keep the pte_same checks anyway to make transition from the mutex easier.
-  */
- static int hugetlb_cow(struct mm_struct *mm, struct vm_area_struct *vma,
--			unsigned long address, pte_t *ptep, pte_t pte,
--			struct page *pagecache_page, spinlock_t *ptl)
-+		       unsigned long address, pte_t *ptep,
-+		       struct page *pagecache_page, spinlock_t *ptl)
- {
-+	pte_t pte;
- 	struct hstate *h = hstate_vma(vma);
- 	struct page *old_page, *new_page;
- 	int ret = 0, outside_reserve = 0;
- 	unsigned long mmun_start;	/* For mmu_notifiers */
- 	unsigned long mmun_end;		/* For mmu_notifiers */
- 
-+	pte = huge_ptep_get(ptep);
- 	old_page = pte_page(pte);
- 
- retry_avoidcopy:
-@@ -3668,7 +3670,7 @@ static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	hugetlb_count_add(pages_per_huge_page(h), mm);
- 	if ((flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED)) {
- 		/* Optimization, do the COW without a second fault */
--		ret = hugetlb_cow(mm, vma, address, ptep, new_pte, page, ptl);
-+		ret = hugetlb_cow(mm, vma, address, ptep, page, ptl);
- 	}
- 
- 	spin_unlock(ptl);
-@@ -3822,8 +3824,8 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 
- 	if (flags & FAULT_FLAG_WRITE) {
- 		if (!huge_pte_write(entry)) {
--			ret = hugetlb_cow(mm, vma, address, ptep, entry,
--					pagecache_page, ptl);
-+			ret = hugetlb_cow(mm, vma, address, ptep,
-+					  pagecache_page, ptl);
- 			goto out_put_page;
- 		}
- 		entry = huge_pte_mkdirty(entry);
--- 
-2.10.1
+Changes in v2:
+--------------
+-[PATCH 1/2]:	-remove potential memory leak when parsing command
+		-use u32s drc_index and count instead of u32 ic[]
+		 in dlpar_memory
+-[PATCH 2/2]:	-use u32s drc_index and count instead of u32 ic[]
+		 in dlpar_memory
+
+Changes in v3:
+--------------
+-[PATCH 1/2]:	-add logic to handle invalid drc_index input
+		-update indexed-count trigger to follow naming convention
+		-update dlpar_memory to follow kernel if-else style
+-[PATCH 2/2]:	-add logic to handle invalid drc_index input
+
+Changes in v4:
+--------------
+-[PATCH 1/2]:	-add logic to handle kstrdup failure
+		-add logic to handle invalid command format
+
+Changes in v5:
+--------------
+-[PATCH 2/2]:   -update for() loop to use start_index
+
+Changes in v6:
+-------------
+-[PATCH 1/3]:	-Added new patch 1 that corrects reading past the end of
+		 the sysfs buffer when parsing sysfs input.
+-[PATCH 2/3]:	-Updated sysfs buffer parsing
+
+Nathan Fontenot (1):
+      powerpc/pseries: Correct possible read beyond dlpar sysfs buffer
+
+Sahil Mehta (2):
+      powerpc/pseries: Implement indexed-count hotplug memory add
+      powerpc/pseries: Implement indexed-count hotplug memory remove
+
+
+ arch/powerpc/include/asm/rtas.h                 |    2 
+ arch/powerpc/platforms/pseries/dlpar.c          |  177 +++++++++++++++-----
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  200 ++++++++++++++++++++++-
+ 3 files changed, 323 insertions(+), 56 deletions(-)
