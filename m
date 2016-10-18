@@ -1,28 +1,38 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3syxwR4N1YzDskb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 01:17:11 +1100 (AEDT)
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <mstsxfx@gmail.com>
+Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3syxwQ4Z8bz9sC7
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Oct 2016 01:17:09 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id i85so11861362pfa.0
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Oct 2016 07:17:09 -0700 (PDT)
-Subject: Re: [RFC PATCH 2/3] powerpc/pseries: Define & use a type for the
- plpar_hcall() retvals
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <1476780032-21643-1-git-send-email-mpe@ellerman.id.au>
- <1476780032-21643-2-git-send-email-mpe@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <b922cd6c-a44d-6950-93d7-6645fd1f7fac@gmail.com>
-Date: Wed, 19 Oct 2016 01:17:11 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3syzYW3MGxzDt2Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 02:30:55 +1100 (AEDT)
+Received: by mail-wm0-f67.google.com with SMTP id f193so9487wmg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 08:30:55 -0700 (PDT)
+Date: Tue, 18 Oct 2016 17:30:50 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Lorenzo Stoakes <lstoakes@gmail.com>
+Cc: linux-mm@kvack.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ Jan Kara <jack@suse.cz>, Hugh Dickins <hughd@google.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Rik van Riel <riel@redhat.com>,
+ Mel Gorman <mgorman@techsingularity.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-rdma@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 00/10] mm: adjust get_user_pages* functions to explicitly
+ pass FOLL_* flags
+Message-ID: <20161018153050.GC13117@dhcp22.suse.cz>
+References: <20161013002020.3062-1-lstoakes@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1476780032-21643-2-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161013002020.3062-1-lstoakes@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +42,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu 13-10-16 01:20:10, Lorenzo Stoakes wrote:
+> This patch series adjusts functions in the get_user_pages* family such that
+> desired FOLL_* flags are passed as an argument rather than implied by flags.
+> 
+> The purpose of this change is to make the use of FOLL_FORCE explicit so it is
+> easier to grep for and clearer to callers that this flag is being used. The use
+> of FOLL_FORCE is an issue as it overrides missing VM_READ/VM_WRITE flags for the
+> VMA whose pages we are reading from/writing to, which can result in surprising
+> behaviour.
+> 
+> The patch series came out of the discussion around commit 38e0885, which
+> addressed a BUG_ON() being triggered when a page was faulted in with PROT_NONE
+> set but having been overridden by FOLL_FORCE. do_numa_page() was run on the
+> assumption the page _must_ be one marked for NUMA node migration as an actual
+> PROT_NONE page would have been dealt with prior to this code path, however
+> FOLL_FORCE introduced a situation where this assumption did not hold.
+> 
+> See https://marc.info/?l=linux-mm&m=147585445805166 for the patch proposal.
 
+I like this cleanup. Tracking FOLL_FORCE users was always a nightmare
+and the flag behavior is really subtle so we should better be explicit
+about it. I haven't gone through each patch separately but rather
+applied the whole series and checked the resulting diff. This all seems
+OK to me and feel free to add
+Acked-by: Michal Hocko <mhocko@suse.com>
 
-On 18/10/16 19:40, Michael Ellerman wrote:
-> We have now had two nasty stack corruption bugs caused by incorrect
-> sizing of the return buffer for plpar_hcall()/plpar_hcall9().
-> 
-> To avoid any more such bugs, define a type which encodes the size of the
-> return buffer, and change the argument of plpar_hcall() to be of that
-> type, meaning the compiler will check for us that we passed the right
-> size buffer.
-> 
-> There isn't an easy way to do this incrementally, without introducing a
-> new function name, eg. plpar_hcall_with_struct(), which is ugly as hell.
-> So just do it in one tree-wide change.
-> 
-Conceptually looks god, but I think we need to abstract the return values
-as well. I'll test and see if I can send you something on top of this
-Balbir
+I am wondering whether we can go further. E.g. it is not really clear to
+me whether we need an explicit FOLL_REMOTE when we can in fact check
+mm != current->mm and imply that. Maybe there are some contexts which
+wouldn't work, I haven't checked.
+
+Then I am also wondering about FOLL_TOUCH behavior.
+__get_user_pages_unlocked has only few callers which used to be
+get_user_pages_unlocked before 1e9877902dc7e ("mm/gup: Introduce
+get_user_pages_remote()"). To me a dropped FOLL_TOUCH seems
+unintentional. Now that get_user_pages_unlocked has gup_flags argument I
+guess we might want to get rid of the __g-u-p-u version altogether, no?
+
+__get_user_pages is quite low level and imho shouldn't be exported. It's
+only user - kvm - should rather pull those two functions to gup instead
+and export them. There is nothing really KVM specific in them.
+
+I also cannot say I would be entirely thrilled about get_user_pages_locked,
+we only have one user which can simply do lock g-u-p unlock AFAICS.
+
+I guess there is more work in that area and I do not want to impose all
+that work on you, but I couldn't resist once I saw you playing in that
+area ;) Definitely a good start!
+-- 
+Michal Hocko
+SUSE Labs
