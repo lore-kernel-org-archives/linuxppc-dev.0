@@ -1,21 +1,38 @@
-Return-Path: <Paul.Burton@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp02.imgtec.com [217.156.133.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3syqgP1Xn9zDt2X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 20:35:29 +1100 (AEDT)
-From: Paul Burton <paul.burton@imgtec.com>
-To: <linux-kernel@vger.kernel.org>, Andreas Schwab <schwab@linux-m68k.org>
-CC: Paul Burton <paul.burton@imgtec.com>, Andrew Morton
- <akpm@linux-foundation.org>, Petr Mladek <pmladek@suse.com>, "Sergey
- Senozhatsky" <sergey.senozhatsky@gmail.com>, Borislav Petkov <bp@suse.de>,
- Tejun Heo <tj@kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] console: use first console if stdout-path device doesn't
- appear
-Date: Tue, 18 Oct 2016 10:18:52 +0100
-Message-ID: <20161018091852.14776-1-paul.burton@imgtec.com>
-In-Reply-To: <87oa2ij2mq.fsf@linux-m68k.org>
-References: <87oa2ij2mq.fsf@linux-m68k.org>
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-lf0-x229.google.com (mail-lf0-x229.google.com
+ [IPv6:2a00:1450:4010:c07::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sysH92gg0zDt3M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 21:48:05 +1100 (AEDT)
+Received: by mail-lf0-x229.google.com with SMTP id b81so337090042lfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 03:48:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
+References: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 18 Oct 2016 12:47:54 +0200
+Message-ID: <CAPDyKFoit0sTPpfi2=AHcdZsDwOJxbBX68O-1jBFL=5JN0m6_w@mail.gmail.com>
+Subject: Re: [v12, 0/8] Fix eSDHC host version register bug
+To: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, Scott Wood <oss@buserror.net>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-clk <linux-clk@vger.kernel.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
+ Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ Leo Li <leoyang.li@nxp.com>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian <minghuan.lian@nxp.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,91 +42,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a device tree specified a preferred device for kernel console output
-via the stdout-path or linux,stdout-path chosen node properties there's
-no guarantee that it will have specified a device for which we have a
-driver. It may also be the case that we do have a driver but it doesn't
-call of_console_check() to register as a preferred console (eg. offb
-driver as used on powermac systems). In these cases try to ensure that
-we provide some console output by enabling the first console in the
-console_drivers list.
+On 21 September 2016 at 08:57, Yangbo Lu <yangbo.lu@nxp.com> wrote:
+> This patchset is used to fix a host version register bug in the T4240-R1.0-R2.0
+> eSDHC controller. To match the SoC version and revision, 10 previous version
+> patchsets had tried many methods but all of them were rejected by reviewers.
+> Such as
+>         - dts compatible method
+>         - syscon method
+>         - ifdef PPC method
+>         - GUTS driver getting SVR method
+> Anrd suggested a soc_device_match method in v10, and this is the only available
+> method left now. This v11 patchset introduces the soc_device_match interface in
+> soc driver.
+>
+> The first six patches of Yangbo are to add the GUTS driver. This is used to
+> register a soc device which contain soc version and revision information.
+> The other two patches introduce the soc_device_match method in soc driver
+> and apply it on esdhc driver to fix this bug.
+>
+> Arnd Bergmann (1):
+>   base: soc: introduce soc_device_match() interface
+>
+> Yangbo Lu (7):
+>   dt: bindings: update Freescale DCFG compatible
+>   ARM64: dts: ls2080a: add device configuration node
+>   dt: bindings: move guts devicetree doc out of powerpc directory
+>   powerpc/fsl: move mpc85xx.h to include/linux/fsl
+>   soc: fsl: add GUTS driver for QorIQ platforms
+>   MAINTAINERS: add entry for Freescale SoC drivers
+>   mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
+>
+>  Documentation/devicetree/bindings/arm/fsl.txt      |   6 +-
+>  .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
+>  MAINTAINERS                                        |  11 +-
+>  arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 +
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
+>  arch/powerpc/sysdev/fsl_pci.c                      |   2 +-
+>  drivers/base/Kconfig                               |   1 +
+>  drivers/base/soc.c                                 |  66 ++++++
+>  drivers/clk/clk-qoriq.c                            |   3 +-
+>  drivers/i2c/busses/i2c-mpc.c                       |   2 +-
+>  drivers/iommu/fsl_pamu.c                           |   3 +-
+>  drivers/mmc/host/Kconfig                           |   1 +
+>  drivers/mmc/host/sdhci-of-esdhc.c                  |  20 ++
+>  drivers/net/ethernet/freescale/gianfar.c           |   2 +-
+>  drivers/soc/Kconfig                                |   2 +-
+>  drivers/soc/fsl/Kconfig                            |  19 ++
+>  drivers/soc/fsl/Makefile                           |   1 +
+>  drivers/soc/fsl/guts.c                             | 257 +++++++++++++++++++++
+>  include/linux/fsl/guts.h                           | 125 ++++++----
+>  .../asm/mpc85xx.h => include/linux/fsl/svr.h       |   4 +-
+>  include/linux/sys_soc.h                            |   3 +
+>  21 files changed, 478 insertions(+), 61 deletions(-)
+>  rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
+>  create mode 100644 drivers/soc/fsl/Kconfig
+>  create mode 100644 drivers/soc/fsl/guts.c
+>  rename arch/powerpc/include/asm/mpc85xx.h => include/linux/fsl/svr.h (97%)
+>
+> --
+> 2.1.0.27.g96db324
+>
 
-As I don't have access to an affected system this has only been build
-tested - testing would be most appreciated.
+This looks good to me! I am not sure which tree you want this to be
+picked up through, but unless no other volunteers I can take it
+through my mmc tree.
 
-Signed-off-by: Paul Burton <paul.burton@imgtec.com>
-Fixes: 05fd007e4629 ("console: don't prefer first registered if DT specifies stdout-path")
-Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
----
-A potential alternative to this might be to have the affected offb
-driver call of_check_console(), and perhaps that should happen anyway,
-but doing so seems non-trivial since the offb driver doesn't know the
-index of the framebuffer console device it may be about to register &
-the fbdev core doesn't know the associated device tree node. This also
-wouldn't catch the case of us not having a driver for the device
-specified by stdout-path, so this fallback seems worthwhile anyway.
----
- kernel/printk/printk.c | 37 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+Although, before considering to apply, I need an ack from Scott/Arnd
+for the guts driver in patch 5/8 and I need an ack from Greg for patch
+7/8, where the soc_device_match() interface is added (seems like you
+didn't add him on cc/to).
 
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index d5e3973..7091e2f 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -2835,10 +2835,45 @@ EXPORT_SYMBOL(unregister_console);
-  * intersects with the init section. Note that code exists elsewhere to get
-  * rid of the boot console as soon as the proper console shows up, so there
-  * won't be side-effects from postponing the removal.
-+ *
-+ * Additionally we may be using a device tree which specifies valid
-+ * stdout-path referencing a device for which we don't have a driver, or for
-+ * which we have a driver that doesn't register itself as preferred console
-+ * using of_console_check(). In these cases we attempt here to enable the
-+ * first registered console.
-  */
- static int __init printk_late_init(void)
- {
--	struct console *con;
-+	struct console *con, *enabled;
-+
-+	if (of_specified_console) {
-+		console_lock();
-+
-+		/* Find the enabled console, if there is one */
-+		enabled = NULL;
-+		for_each_console(con) {
-+			if (!(con->flags & CON_ENABLED))
-+				continue;
-+
-+			enabled = con;
-+			break;
-+		}
-+
-+		/* Enable the first console if none were already enabled */
-+		con = console_drivers;
-+		if (!enabled && con) {
-+			if (con->index < 0)
-+				con->index = 0;
-+			if (con->setup == NULL ||
-+			    con->setup(con, NULL) == 0) {
-+				con->flags |= CON_ENABLED;
-+				if (con->device)
-+					con->flags |= CON_CONSDEV;
-+			}
-+		}
-+
-+		console_unlock();
-+	}
- 
- 	for_each_console(con) {
- 		if (!keep_bootcon && con->flags & CON_BOOT) {
--- 
-2.10.0
+Kind regards
+Uffe
