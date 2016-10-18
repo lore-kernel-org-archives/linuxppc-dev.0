@@ -1,34 +1,23 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3sz29k4XzJzDvHN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 04:28:58 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9IHOeTQ113647
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 13:28:57 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 265p26pfsc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 13:28:56 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 18 Oct 2016 11:28:55 -0600
-Subject: [PATCH v6 3/3] powerpc/pseries: Implement indexed-count hotplug
- memory remove
-To: linuxppc-dev@lists.ozlabs.org
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: sahilmehta17@gmail.com
-Date: Tue, 18 Oct 2016 13:21:06 -0400
-In-Reply-To: <20161018171803.37287.54834.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-References: <20161018171803.37287.54834.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20161018172053.37287.78128.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3sz3cT4SCdzDt39
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 05:33:45 +1100 (AEDT)
+Date: Tue, 18 Oct 2016 11:33:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Jan Stancek <jstancek@redhat.com>, Mike Kravetz
+ <mike.kravetz@oracle.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] mm/hugetlb: Use the right pte val for compare in
+ hugetlb_cow
+Message-Id: <20161018113341.e032f26c052dd63a8dca1f09@linux-foundation.org>
+In-Reply-To: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
+References: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,133 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sahil Mehta <sahilmehta17@gmail.com>
+On Tue, 18 Oct 2016 21:12:45 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-Indexed-count remove for memory hotplug guarantees that a contiguous block
-of <count> lmbs beginning at a specified <index> will be unassigned (NOT
-that <count> lmbs will be removed). Because of Qemu's per-DIMM memory
-management, the removal of a contiguous block of memory currently
-requires a series of individual calls. Indexed-count remove reduces
-this series into a single call.
+> We cannot use the pte value used in set_pte_at for pte_same comparison,
+> because archs like ppc64, filter/add new pte flag in set_pte_at. Instead
+> fetch the pte value inside hugetlb_cow. We are comparing pte value to
+> make sure the pte didn't change since we dropped the page table lock.
+> hugetlb_cow get called with page table lock held, and we can take a copy
+> of the pte value before we drop the page table lock.
+> 
+> With hugetlbfs, we optimize the MAP_PRIVATE write fault path with no
+> previous mapping (huge_pte_none entries), by forcing a cow in the fault
+> path. This avoid take an addition fault to covert a read-only mapping
+> to read/write. Here we were comparing a recently instantiated pte (via
+> set_pte_at) to the pte values from linux page table. As explained above
+> on ppc64 such pte_same check returned wrong result, resulting in us
+> taking an additional fault on ppc64.
 
-Signed-off-by: Sahil Mehta <sahilmehta17@gmail.com>
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
-v2:     -use u32s drc_index and count instead of u32 ic[]
-         in dlpar_memory
-v3:     -add logic to handle invalid drc_index input
-v4:     -none
-v5:     -Update for() loop to start at start_index
-v6:	-none
+>From my reading this is a minor performance improvement and a -stable
+backport isn't needed.  But it is unclear whether the impact warrants a
+4.9 merge.
 
- arch/powerpc/platforms/pseries/hotplug-memory.c |   90 +++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index badc66d..19ad081 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -558,6 +558,92 @@ static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
- 	return rc;
- }
- 
-+static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index,
-+				     struct property *prop)
-+{
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmbs, *p;
-+	int i, rc, start_lmb_found;
-+	int lmbs_available = 0, start_index = 0, end_index;
-+
-+	pr_info("Attempting to hot-remove %u LMB(s) at %x\n",
-+		lmbs_to_remove, drc_index);
-+
-+	if (lmbs_to_remove == 0)
-+		return -EINVAL;
-+
-+	p = prop->value;
-+	num_lmbs = *p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+	start_lmb_found = 0;
-+
-+	/* Navigate to drc_index */
-+	while (start_index < num_lmbs) {
-+		if (lmbs[start_index].drc_index == drc_index) {
-+			start_lmb_found = 1;
-+			break;
-+		}
-+
-+		start_index++;
-+	}
-+
-+	if (!start_lmb_found)
-+		return -EINVAL;
-+
-+	end_index = start_index + lmbs_to_remove;
-+
-+	/* Validate that there are enough LMBs to satisfy the request */
-+	for (i = start_index; i < end_index; i++) {
-+		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
-+			break;
-+
-+		lmbs_available++;
-+	}
-+
-+	if (lmbs_available < lmbs_to_remove)
-+		return -EINVAL;
-+
-+	for (i = start_index; i < end_index; i++) {
-+		if (!(lmbs[i].flags & DRCONF_MEM_ASSIGNED))
-+			continue;
-+
-+		rc = dlpar_remove_lmb(&lmbs[i]);
-+		if (rc)
-+			break;
-+
-+		lmbs[i].reserved = 1;
-+	}
-+
-+	if (rc) {
-+		pr_err("Memory indexed-count-remove failed, adding any removed LMBs\n");
-+
-+		for (i = start_index; i < end_index; i++) {
-+			if (!lmbs[i].reserved)
-+				continue;
-+
-+			rc = dlpar_add_lmb(&lmbs[i]);
-+			if (rc)
-+				pr_err("Failed to add LMB, drc index %x\n",
-+				       be32_to_cpu(lmbs[i].drc_index));
-+
-+			lmbs[i].reserved = 0;
-+		}
-+		rc = -EINVAL;
-+	} else {
-+		for (i = start_index; i < end_index; i++) {
-+			if (!lmbs[i].reserved)
-+				continue;
-+
-+			pr_info("Memory at %llx (drc index %x) was hot-removed\n",
-+				lmbs[i].base_addr, lmbs[i].drc_index);
-+
-+			lmbs[i].reserved = 0;
-+		}
-+	}
-+
-+	return rc;
-+}
-+
- #else
- static inline int pseries_remove_memblock(unsigned long base,
- 					  unsigned int memblock_size)
-@@ -853,6 +939,10 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- 		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
- 			drc_index = hp_elog->_drc_u.drc_index;
- 			rc = dlpar_memory_remove_by_index(drc_index, prop);
-+		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_IC) {
-+			count = hp_elog->_drc_u.indexed_count[0];
-+			drc_index = hp_elog->_drc_u.indexed_count[1];
-+			rc = dlpar_memory_remove_by_ic(count, drc_index, prop);
- 		} else {
- 			rc = -EINVAL;
- 		}
+Please be careful about describing end-user visible impacts when fixing
+bugs, thanks.
