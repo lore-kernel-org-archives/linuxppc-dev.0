@@ -1,40 +1,28 @@
-Return-Path: <lstoakes@gmail.com>
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3syxwR4N1YzDskb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 01:17:11 +1100 (AEDT)
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3syxSH4k7CzDt2P
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 00:56:15 +1100 (AEDT)
-Received: by mail-lf0-x242.google.com with SMTP id x79so32890045lff.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 06:56:15 -0700 (PDT)
-Date: Tue, 18 Oct 2016 14:56:09 +0100
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-mm@kvack.org, Linus Torvalds <torvalds@linux-foundation.org>,
- Hugh Dickins <hughd@google.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- adi-buildroot-devel@lists.sourceforge.net,
- ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mips@linux-mips.org, linux-rdma@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 04/10] mm: replace get_user_pages_locked() write/force
- parameters with gup_flags
-Message-ID: <20161018135609.GA30025@lucifer>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-5-lstoakes@gmail.com>
- <20161018125425.GD29967@quack2.suse.cz>
+ by ozlabs.org (Postfix) with ESMTPS id 3syxwQ4Z8bz9sC7
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Oct 2016 01:17:09 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id i85so11861362pfa.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Oct 2016 07:17:09 -0700 (PDT)
+Subject: Re: [RFC PATCH 2/3] powerpc/pseries: Define & use a type for the
+ plpar_hcall() retvals
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <1476780032-21643-1-git-send-email-mpe@ellerman.id.au>
+ <1476780032-21643-2-git-send-email-mpe@ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <b922cd6c-a44d-6950-93d7-6645fd1f7fac@gmail.com>
+Date: Wed, 19 Oct 2016 01:17:11 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161018125425.GD29967@quack2.suse.cz>
+In-Reply-To: <1476780032-21643-2-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,36 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 18, 2016 at 02:54:25PM +0200, Jan Kara wrote:
-> > @@ -1282,7 +1282,7 @@ long get_user_pages(unsigned long start, unsigned long nr_pages,
-> >  			    int write, int force, struct page **pages,
-> >  			    struct vm_area_struct **vmas);
-> >  long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
-> > -		    int write, int force, struct page **pages, int *locked);
-> > +		    unsigned int gup_flags, struct page **pages, int *locked);
->
-> Hum, the prototype is inconsistent with e.g. __get_user_pages_unlocked()
-> where gup_flags come after **pages argument. Actually it makes more sense
-> to have it before **pages so that input arguments come first and output
-> arguments second but I don't care that much. But it definitely should be
-> consistent...
 
-It was difficult to decide quite how to arrange parameters as there was
-inconsitency with regards to parameter ordering already - for example
-__get_user_pages() places its flags argument before pages whereas, as you note,
-__get_user_pages_unlocked() puts them afterwards.
 
-I ended up compromising by trying to match the existing ordering of the function
-as much as I could by replacing write, force pairs with gup_flags in the same
-location (with the exception of get_user_pages_unlocked() which I felt should
-match __get_user_pages_unlocked() in signature) or if there was already a
-gup_flags parameter as in the case of __get_user_pages_unlocked() I simply
-removed the write, force pair and left the flags as the last parameter.
-
-I am happy to rearrange parameters as needed, however I am not sure if it'd be
-worthwhile for me to do so (I am keen to try to avoid adding too much noise here
-:)
-
-If we were to rearrange parameters for consistency I'd suggest adjusting
-__get_user_pages_unlocked() to put gup_flags before pages and do the same with
-get_user_pages_unlocked(), let me know what you think.
+On 18/10/16 19:40, Michael Ellerman wrote:
+> We have now had two nasty stack corruption bugs caused by incorrect
+> sizing of the return buffer for plpar_hcall()/plpar_hcall9().
+> 
+> To avoid any more such bugs, define a type which encodes the size of the
+> return buffer, and change the argument of plpar_hcall() to be of that
+> type, meaning the compiler will check for us that we passed the right
+> size buffer.
+> 
+> There isn't an easy way to do this incrementally, without introducing a
+> new function name, eg. plpar_hcall_with_struct(), which is ugly as hell.
+> So just do it in one tree-wide change.
+> 
+Conceptually looks god, but I think we need to abstract the return values
+as well. I'll test and see if I can send you something on top of this
+Balbir
