@@ -1,23 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.189])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szWRr2FstzDt3m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 23:27:52 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 3szWRq6k4xz9t0w
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Oct 2016 23:27:51 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] powerpc/hash64: Be more careful when generating tlbiel
-In-Reply-To: <1476856405-4811-1-git-send-email-mpe@ellerman.id.au>
-References: <1476856405-4811-1-git-send-email-mpe@ellerman.id.au>
-Date: Wed, 19 Oct 2016 23:27:51 +1100
-Message-ID: <87a8e04j7c.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szWjG432hzDt3w
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 23:39:30 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Michael Ellerman' <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+CC: Nicholas Piggin <npiggin@gmail.com>
+Subject: RE: [PATCH] powerpc: link error on orphan sections
+Date: Wed, 19 Oct 2016 12:36:09 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0205B19@AcuExch.aculab.com>
+References: <20161012070020.30170-1-npiggin@gmail.com>
+ <87zim7dag4.fsf@concordia.ellerman.id.au>
+ <063D6719AE5E284EB5DD2968C1650D6DB01E8778@AcuExch.aculab.com>
+ <87d1iw4knx.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87d1iw4knx.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+> > In the past I've caused orphan sections to error by assigning them
+> > to the same address as something that exists.
+> > Works with all linkers, even if the error message isn't as useful.
+>=20
+> How do you assign them an address without knowing what they are? With a
+> wild card rule?
 
-> From: Balbir Singh <bsingharora@gmail.com>
-...
->
-> Although there may be very old toolchains which don't understand tlbiel, we have
-> other code in the tree which has been using tlbiel for over five years, and no
-> one has reported any build failures, so just let the assembler generate the
-> instructions.
+Right at the end of the ldscript I have:
 
-Turns out this part is not true, it depends on the -mcpu you pass. So
-we'll have to go back to using the macros for generating the two
-argument form. v3 to come.
+    /* Anything from any unexpected section ends up here and
+     * generates an error because this overlaps another section */
+    unwanted _gp : { *(*) }
+}
 
-cheers
+	David
