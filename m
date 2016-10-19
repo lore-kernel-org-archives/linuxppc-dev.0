@@ -1,24 +1,37 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szJpm2lcWzDt1n
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 15:28:32 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id 128so1259269pfz.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 21:28:32 -0700 (PDT)
-Subject: Re: [PATCH 3/7] powerpc/64s: tool to flag direct branches from
- unrelocated interrupt vectors
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20161019031600.17933-1-npiggin@gmail.com>
- <20161019031600.17933-4-npiggin@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <408e4f35-17a6-8738-c711-8bfb39928628@gmail.com>
-Date: Wed, 19 Oct 2016 15:28:40 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szKmN45XmzDt2v
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 16:11:32 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9J541rD035327
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 01:11:29 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 265yr3nvkx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 01:11:28 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 18 Oct 2016 23:11:28 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Stancek <jstancek@redhat.com>, Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] mm/hugetlb: Use the right pte val for compare in
+ hugetlb_cow
+In-Reply-To: <20161018113341.e032f26c052dd63a8dca1f09@linux-foundation.org>
+References: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20161018113341.e032f26c052dd63a8dca1f09@linux-foundation.org>
+Date: Wed, 19 Oct 2016 10:41:19 +0530
 MIME-Version: 1.0
-In-Reply-To: <20161019031600.17933-4-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
+Message-Id: <871szcsz2g.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Andrew Morton <akpm@linux-foundation.org> writes:
 
+> On Tue, 18 Oct 2016 21:12:45 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> We cannot use the pte value used in set_pte_at for pte_same comparison,
+>> because archs like ppc64, filter/add new pte flag in set_pte_at. Instead
+>> fetch the pte value inside hugetlb_cow. We are comparing pte value to
+>> make sure the pte didn't change since we dropped the page table lock.
+>> hugetlb_cow get called with page table lock held, and we can take a copy
+>> of the pte value before we drop the page table lock.
+>> 
+>> With hugetlbfs, we optimize the MAP_PRIVATE write fault path with no
+>> previous mapping (huge_pte_none entries), by forcing a cow in the fault
+>> path. This avoid take an addition fault to covert a read-only mapping
+>> to read/write. Here we were comparing a recently instantiated pte (via
+>> set_pte_at) to the pte values from linux page table. As explained above
+>> on ppc64 such pte_same check returned wrong result, resulting in us
+>> taking an additional fault on ppc64.
+>
+> From my reading this is a minor performance improvement and a -stable
+> backport isn't needed.  But it is unclear whether the impact warrants a
+> 4.9 merge.
 
-On 19/10/16 14:15, Nicholas Piggin wrote:
-> Direct banches from code below __end_interrupts to code above
-> __end_interrupts when built with CONFIG_RELOCATABLE are disallowed
-> because they will break when the kernel is not located at 0.
-> 
-> Sample output:
-> 
->     WARNING: Unrelocated relative branches
->     c000000000000118 bl-> 0xc000000000038fb8 <pnv_restore_hyp_resource>
->     c00000000000013c b-> 0xc0000000001068a4 <kvm_start_guest>
->     c000000000000148 b-> 0xc00000000003919c <pnv_wakeup_loss>
->     c00000000000014c b-> 0xc00000000003923c <pnv_wakeup_noloss>
->     c0000000000005a4 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
->     c000000000001af0 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
->     c000000000001b24 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
->     c000000000001b58 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
+This patch workaround the issue reported at https://lkml.kernel.org/r/57FF7BB4.1070202@redhat.com
+The reason for that OOM was a reserve count accounting issue which
+happens in the error path of hugetlb_cow. Not this patch avoid us taking
+the error path and hence we don't have the reported OOM.
 
-If this is the same script I gave you, you can add my SOB line as well
+An actual fix for that issue is being worked on by Mike Kravetz.
 
-Balbir
+>
+> Please be careful about describing end-user visible impacts when fixing
+> bugs, thanks.
+
+-aneesh
