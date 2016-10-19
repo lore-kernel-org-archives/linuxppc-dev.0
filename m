@@ -1,20 +1,33 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szTVb3G3MzDt4V
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:00:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szTkv2RyHzDt48
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:10:47 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 6/7] powerpc: switch to using thin archives if
- COMPILE_TEST is set
-In-Reply-To: <20161019031600.17933-7-npiggin@gmail.com>
-References: <20161019031600.17933-1-npiggin@gmail.com>
- <20161019031600.17933-7-npiggin@gmail.com>
-Date: Wed, 19 Oct 2016 22:00:06 +1100
-Message-ID: <87wph44n9l.fsf@concordia.ellerman.id.au>
+To: Lorenzo Stoakes <lstoakes@gmail.com>, linux-mm@kvack.org
+Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, linux-sh@vger.kernel.org,
+ Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
+ netdev@vger.kernel.org, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
+ Hugh Dickins <hughd@google.com>, linux-media@vger.kernel.org,
+ Rik van Riel <riel@redhat.com>, intel-gfx@lists.freedesktop.org,
+ adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Lorenzo Stoakes <lstoakes@gmail.com>,
+ linux-cris-kernel@axis.com, Linus Torvalds <torvalds@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Mel Gorman <mgorman@te chsingularity.net>
+Subject: Re: [PATCH 10/10] mm: replace access_process_vm() write parameter
+ with gup_flags
+In-Reply-To: <20161013002020.3062-11-lstoakes@gmail.com>
+References: <20161013002020.3062-1-lstoakes@gmail.com>
+ <20161013002020.3062-11-lstoakes@gmail.com>
+Date: Wed, 19 Oct 2016 22:10:46 +1100
+Message-ID: <87twc84mrt.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,24 +39,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Lorenzo Stoakes <lstoakes@gmail.com> writes:
 
-> Enable thin archives build for powerpc when COMPILE_TEST is set.
-> Thin archives are explained in this commit:
->
->   a5967db9af51a84f5e181600954714a9e4c69f1f
->
-> This is a gradual way to introduce the option to testers.
+> diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+> index f52b7db3..010b7b3 100644
+> --- a/arch/powerpc/kernel/ptrace32.c
+> +++ b/arch/powerpc/kernel/ptrace32.c
+> @@ -74,7 +74,7 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+>  			break;
+>  
+>  		copied = access_process_vm(child, (u64)addrOthers, &tmp,
+> -				sizeof(tmp), 0);
+> +				sizeof(tmp), FOLL_FORCE);
+>  		if (copied != sizeof(tmp))
+>  			break;
+>  		ret = put_user(tmp, (u32 __user *)data);
 
-I think I'd rather this was actually a user-selectable option, eg.
+LGTM.
 
-config USE_THIN_ARCHIVES
-	bool "Build the kernel using thin archives"
-        default n
-	select THIN_ARCHIVES
-	help
-	  Build the kernel using thin archives.
-	  If you're unsure say N.
+> @@ -179,7 +179,8 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+>  			break;
+>  		ret = 0;
+>  		if (access_process_vm(child, (u64)addrOthers, &tmp,
+> -					sizeof(tmp), 1) == sizeof(tmp))
+> +					sizeof(tmp),
+> +					FOLL_FORCE | FOLL_WRITE) == sizeof(tmp))
+>  			break;
+>  		ret = -EIO;
+>  		break;
+
+If you're respinning this anyway, can you format that as:
+
+		if (access_process_vm(child, (u64)addrOthers, &tmp, sizeof(tmp),
+				      FOLL_FORCE | FOLL_WRITE) == sizeof(tmp))
+  			break;
+
+I realise you probably deliberately didn't do that to make the diff clearer.
+
+Either way:
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 
 cheers
