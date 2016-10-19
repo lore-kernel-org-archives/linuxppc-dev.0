@@ -1,19 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szHCg3Jq7zDt1j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 14:16:31 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id 128so1092851pfz.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 20:16:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szHCk13TgzDt1h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 14:16:34 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id r16so1084980pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 20:16:34 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH 5/7] powerpc/64: handle linker stubs in low .text code
-Date: Wed, 19 Oct 2016 14:15:58 +1100
-Message-Id: <20161019031600.17933-6-npiggin@gmail.com>
+Subject: [PATCH 6/7] powerpc: switch to using thin archives if COMPILE_TEST is
+ set
+Date: Wed, 19 Oct 2016 14:15:59 +1100
+Message-Id: <20161019031600.17933-7-npiggin@gmail.com>
 In-Reply-To: <20161019031600.17933-1-npiggin@gmail.com>
 References: <20161019031600.17933-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,85 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Very large kernels require linker stubs, but the linker tends to place
-them in ways that make it very difficult to detect programatically
-with the assembler when taking absolute real (physical) addresses.
-This breaks the early boot code. Create a small section just before
-the .text section with an empty 256 - 4 bytes, and adjust the start of
-the .text section to match. The linker will tend to put stubs in that
-section and not break our start-of-.text section label.
+Enable thin archives build for powerpc when COMPILE_TEST is set.
+Thin archives are explained in this commit:
 
-This is a tiny waste of space on common kernels, but allows large
-kernels to build and boot, which is convenient enough to outweigh the
-cost.
+  a5967db9af51a84f5e181600954714a9e4c69f1f
 
-This is a sad hack, which I will improve on if I can find out how to
-achieve it a better way. Until then, it seems to work.
+This is a gradual way to introduce the option to testers.
 
+Some change to the way we invoke ar is required so it can be used
+by scripts/link-vmlinux.sh.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/head-64.h | 16 +++++++++++++---
- arch/powerpc/kernel/vmlinux.lds.S  |  2 ++
- arch/powerpc/tools/head_check.sh   |  5 +++++
- 3 files changed, 20 insertions(+), 3 deletions(-)
+ arch/powerpc/Kconfig  | 1 +
+ arch/powerpc/Makefile | 4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
-index 492ebe7..f7131cf 100644
---- a/arch/powerpc/include/asm/head-64.h
-+++ b/arch/powerpc/include/asm/head-64.h
-@@ -63,11 +63,21 @@
- 	. = 0x0;						\
- start_##sname:
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 65fba4c..00d9e31 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -80,6 +80,7 @@ config ARCH_HAS_DMA_SET_COHERENT_MASK
+ config PPC
+ 	bool
+ 	default y
++	select THIN_ARCHIVES if COMPILE_TEST
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+ 	select ARCH_MIGHT_HAVE_PC_SERIO
+ 	select BINFMT_ELF
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 0fcb47c..fe76cfe 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -23,7 +23,7 @@ CROSS32AR		:= $(CROSS32_COMPILE)ar
+ ifeq ($(HAS_BIARCH),y)
+ ifeq ($(CROSS32_COMPILE),)
+ CROSS32CC	:= $(CC) -m32
+-CROSS32AR	:= GNUTARGET=elf32-powerpc $(AR)
++KBUILD_ARFLAGS	+= --target=elf32-powerpc
+ endif
+ endif
  
-+/*
-+ * .linker_stub_catch section is used to catch linker stubs from being
-+ * inserted in our .text section, above the start_text label (which breaks
-+ * the ABS_ADDR calculation). See kernel/vmlinux.lds.S and tools/head_check.sh
-+ * for more details. We would prefer to just keep a cacheline (0x80), but
-+ * 0x100 seems to be how the linker aligns branch stub groups.
-+ */
- #define OPEN_TEXT_SECTION(start)				\
--	text_start = (start);					\
-+	.section ".linker_stub_catch","ax",@progbits;		\
-+linker_stub_catch:						\
-+	. = 0x4;						\
- 	.section ".text","ax",@progbits;			\
--	. = 0x0;						\
--start_text:
-+	text_start = (start) + 0x100;				\
-+	.balign 0x100;						\
-+start_text:							\
+@@ -85,7 +85,7 @@ ifeq ($(HAS_BIARCH),y)
+ override AS	+= -a$(BITS)
+ override LD	+= -m elf$(BITS)$(LDEMULATION)
+ override CC	+= -m$(BITS)
+-override AR	:= GNUTARGET=elf$(BITS)-$(GNUTARGET) $(AR)
++KBUILD_ARFLAGS	+= --target=elf$(BITS)-$(GNUTARGET)
+ endif
  
- #define ZERO_FIXED_SECTION(sname, start, end)			\
- 	sname##_start = (start);				\
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 7de0b05..a09c666 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -73,6 +73,8 @@ SECTIONS
- 	} :kernel
- 
- 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
-+		*(.linker_stub_catch);
-+		. = . ;
- 		/* careful! __ftr_alt_* sections need to be close to .text */
- 		ALIGN_FUNCTION();
- 		*(.text .fixup __ftr_alt_* .ref.text);
-diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
-index 9635fe7..ae9faeb 100755
---- a/arch/powerpc/tools/head_check.sh
-+++ b/arch/powerpc/tools/head_check.sh
-@@ -23,6 +23,11 @@
- # etc) in the fixed section region (0 - 0x8000ish). Check what places are
- # calling those stubs.
- #
-+# A ".linker_stub_catch" section is used to catch some stubs generated by
-+# early .text code, which tend to get placed at the start of the section.
-+# If there are too many such stubs, they can overflow this section. Expanding
-+# it may help (or reducing the number of stub branches).
-+#
- # Linker stubs use the TOC pointer, so even if fixed section code could
- # tolerate them being inserted into head code, they can't be allowed in low
- # level entry code (boot, interrupt vectors, etc) until r2 is set up. This
+ LDFLAGS_vmlinux-y := -Bstatic
 -- 
 2.9.3
