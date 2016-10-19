@@ -1,37 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szKmN45XmzDt2v
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 16:11:32 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9J541rD035327
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 01:11:29 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 265yr3nvkx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 01:11:28 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 18 Oct 2016 23:11:28 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Stancek <jstancek@redhat.com>, Mike Kravetz <mike.kravetz@oracle.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <hillf.zj@alibaba-inc.com>
+Received: from out0-129.mail.aliyun.com (out0-129.mail.aliyun.com
+ [140.205.0.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3szHST4CRvzDvZj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 14:27:37 +1100 (AEDT)
+Reply-To: "Hillf Danton" <hillf.zj@alibaba-inc.com>
+From: "Hillf Danton" <hillf.zj@alibaba-inc.com>
+To: "'Aneesh Kumar K.V'" <aneesh.kumar@linux.vnet.ibm.com>,
+ <akpm@linux-foundation.org>, "'Jan Stancek'" <jstancek@redhat.com>,
+ "'Mike Kravetz'" <mike.kravetz@oracle.com>
+Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+References: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
 Subject: Re: [PATCH] mm/hugetlb: Use the right pte val for compare in
  hugetlb_cow
-In-Reply-To: <20161018113341.e032f26c052dd63a8dca1f09@linux-foundation.org>
-References: <20161018154245.18023-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161018113341.e032f26c052dd63a8dca1f09@linux-foundation.org>
-Date: Wed, 19 Oct 2016 10:41:19 +0530
+Date: Wed, 19 Oct 2016 11:22:01 +0800
+Message-ID: <027301d229b7$f543f030$dfcbd090$@alibaba-inc.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <871szcsz2g.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +28,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Tuesday, October 18, 2016 11:43 PM Aneesh Kumar K.V wrote:
+> 
+> We cannot use the pte value used in set_pte_at for pte_same comparison,
+> because archs like ppc64, filter/add new pte flag in set_pte_at. Instead
+> fetch the pte value inside hugetlb_cow. We are comparing pte value to
+> make sure the pte didn't change since we dropped the page table lock.
+> hugetlb_cow get called with page table lock held, and we can take a copy
+> of the pte value before we drop the page table lock.
+> 
+> With hugetlbfs, we optimize the MAP_PRIVATE write fault path with no
+> previous mapping (huge_pte_none entries), by forcing a cow in the fault
+> path. This avoid take an addition fault to covert a read-only mapping
+> to read/write. Here we were comparing a recently instantiated pte (via
+> set_pte_at) to the pte values from linux page table. As explained above
+> on ppc64 such pte_same check returned wrong result, resulting in us
+> taking an additional fault on ppc64.
+> 
+> Fixes: 6a119eae942c ("powerpc/mm: Add a _PAGE_PTE bit")
+> 
+> Reported-by: Jan Stancek <jstancek@redhat.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
 
-> On Tue, 18 Oct 2016 21:12:45 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
->
->> We cannot use the pte value used in set_pte_at for pte_same comparison,
->> because archs like ppc64, filter/add new pte flag in set_pte_at. Instead
->> fetch the pte value inside hugetlb_cow. We are comparing pte value to
->> make sure the pte didn't change since we dropped the page table lock.
->> hugetlb_cow get called with page table lock held, and we can take a copy
->> of the pte value before we drop the page table lock.
->> 
->> With hugetlbfs, we optimize the MAP_PRIVATE write fault path with no
->> previous mapping (huge_pte_none entries), by forcing a cow in the fault
->> path. This avoid take an addition fault to covert a read-only mapping
->> to read/write. Here we were comparing a recently instantiated pte (via
->> set_pte_at) to the pte values from linux page table. As explained above
->> on ppc64 such pte_same check returned wrong result, resulting in us
->> taking an additional fault on ppc64.
->
-> From my reading this is a minor performance improvement and a -stable
-> backport isn't needed.  But it is unclear whether the impact warrants a
-> 4.9 merge.
+Acked-by: Hillf Danton <hillf.zj@alibaba-inc.com>
 
-This patch workaround the issue reported at https://lkml.kernel.org/r/57FF7BB4.1070202@redhat.com
-The reason for that OOM was a reserve count accounting issue which
-happens in the error path of hugetlb_cow. Not this patch avoid us taking
-the error path and hence we don't have the reported OOM.
-
-An actual fix for that issue is being worked on by Mike Kravetz.
-
->
-> Please be careful about describing end-user visible impacts when fixing
-> bugs, thanks.
-
--aneesh
+>  mm/hugetlb.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
+> 
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index ec49d9ef1eef..da8fbd02b92e 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -3386,15 +3386,17 @@ static void unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
+>   * Keep the pte_same checks anyway to make transition from the mutex easier.
+>   */
+>  static int hugetlb_cow(struct mm_struct *mm, struct vm_area_struct *vma,
+> -			unsigned long address, pte_t *ptep, pte_t pte,
+> -			struct page *pagecache_page, spinlock_t *ptl)
+> +		       unsigned long address, pte_t *ptep,
+> +		       struct page *pagecache_page, spinlock_t *ptl)
+>  {
+> +	pte_t pte;
+>  	struct hstate *h = hstate_vma(vma);
+>  	struct page *old_page, *new_page;
+>  	int ret = 0, outside_reserve = 0;
+>  	unsigned long mmun_start;	/* For mmu_notifiers */
+>  	unsigned long mmun_end;		/* For mmu_notifiers */
+> 
+> +	pte = huge_ptep_get(ptep);
+>  	old_page = pte_page(pte);
+> 
+>  retry_avoidcopy:
+> @@ -3668,7 +3670,7 @@ static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
+>  	hugetlb_count_add(pages_per_huge_page(h), mm);
+>  	if ((flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED)) {
+>  		/* Optimization, do the COW without a second fault */
+> -		ret = hugetlb_cow(mm, vma, address, ptep, new_pte, page, ptl);
+> +		ret = hugetlb_cow(mm, vma, address, ptep, page, ptl);
+>  	}
+> 
+>  	spin_unlock(ptl);
+> @@ -3822,8 +3824,8 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+> 
+>  	if (flags & FAULT_FLAG_WRITE) {
+>  		if (!huge_pte_write(entry)) {
+> -			ret = hugetlb_cow(mm, vma, address, ptep, entry,
+> -					pagecache_page, ptl);
+> +			ret = hugetlb_cow(mm, vma, address, ptep,
+> +					  pagecache_page, ptl);
+>  			goto out_put_page;
+>  		}
+>  		entry = huge_pte_mkdirty(entry);
+> --
+> 2.10.1
