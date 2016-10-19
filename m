@@ -1,19 +1,30 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3szZKL0zfjzDt4f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 01:37:25 +1100 (AEDT)
-Date: Wed, 19 Oct 2016 10:37:19 -0400 (EDT)
-Message-Id: <20161019.103719.1662715158720899418.davem@davemloft.net>
-To: tklauser@distanz.ch
-Cc: pantelis.antoniou@gmail.com, vbordug@ru.mvista.com,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] net: fs_enet: Use net_device_stats from struct net_device
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20161019092457.15006-1-tklauser@distanz.ch>
-References: <20161019092457.15006-1-tklauser@distanz.ch>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szZyQ2nl7zDt5q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 02:06:06 +1100 (AEDT)
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.192])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3szZyP70NDz9vH7
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Oct 2016 02:06:04 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Balbir Singh' <bsingharora@gmail.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: RE: [RFC PATCH 2/3] powerpc/pseries: Define & use a type for the
+ plpar_hcall() retvals
+Date: Wed, 19 Oct 2016 14:38:25 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0205C94@AcuExch.aculab.com>
+References: <1476780032-21643-1-git-send-email-mpe@ellerman.id.au>
+ <1476780032-21643-2-git-send-email-mpe@ellerman.id.au>
+ <b922cd6c-a44d-6950-93d7-6645fd1f7fac@gmail.com>
+ <87lgxk4l2p.fsf@concordia.ellerman.id.au>
+ <360be313-c3ad-495c-82e1-13a8364dc76d@gmail.com>
+In-Reply-To: <360be313-c3ad-495c-82e1-13a8364dc76d@gmail.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,13 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tobias Klauser <tklauser@distanz.ch>
-Date: Wed, 19 Oct 2016 11:24:57 +0200
+From: Balbir Singh
+> Sent: 19 October 2016 15:00
+...
+> Here is an example
+>=20
+> -	*slot =3D retbuf[0];
+> +	*slot =3D retvals.v[0];
+>=20
+> Could we hide retvals.v[0] under a macro like
+>=20
+> *slot =3D hcalls_ret_val(retvals, 0);
 
-> Instead of using a private copy of struct net_device_stats in struct
-> fs_enet_private, use stats from struct net_device. Also remove the now
-> unnecessary .ndo_get_stats function.
-> 
-> Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+Ugg..
 
-Applied to net-next, thanks.
+> Since we could end up with similar issues if
+> someone dereferenced retvals.v[4]
+
+The compiler will detect that these days.
+
+	David
