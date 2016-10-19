@@ -1,40 +1,41 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szPpr1dYjzDt1k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 19:13:56 +1100 (AEDT)
-Received: by mail-wm0-f67.google.com with SMTP id f193so2771084wmg.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 01:13:56 -0700 (PDT)
-Date: Wed, 19 Oct 2016 10:13:52 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Jan Kara <jack@suse.cz>
-Cc: Lorenzo Stoakes <lstoakes@gmail.com>, linux-mm@kvack.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Hugh Dickins <hughd@google.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- adi-buildroot-devel@lists.sourceforge.net,
- ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mips@linux-mips.org, linux-rdma@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 08/10] mm: replace __access_remote_vm() write parameter
- with gup_flags
-Message-ID: <20161019081352.GB7562@dhcp22.suse.cz>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-9-lstoakes@gmail.com>
- <20161019075903.GP29967@quack2.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szQ681YwYzDsrM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 19:27:11 +1100 (AEDT)
+Date: Wed, 19 Oct 2016 10:27:15 +0200
+From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+To: "Y.B. Lu" <yangbo.lu@nxp.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Scott Wood <oss@buserror.net>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-clk <linux-clk@vger.kernel.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Kumar Gala <galak@codeaurora.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ Leo Li <leoyang.li@nxp.com>, "X.B. Xie" <xiaobo.xie@nxp.com>,
+ "M.H. Lian" <minghuan.lian@nxp.com>
+Subject: Re: [v12, 0/8] Fix eSDHC host version register bug
+Message-ID: <20161019082715.GA6140@kroah.com>
+References: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
+ <CAPDyKFoit0sTPpfi2=AHcdZsDwOJxbBX68O-1jBFL=5JN0m6_w@mail.gmail.com>
+ <AM5PR0401MB2529BA70C6E7AF7C71631A47F8D20@AM5PR0401MB2529.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161019075903.GP29967@quack2.suse.cz>
+In-Reply-To: <AM5PR0401MB2529BA70C6E7AF7C71631A47F8D20@AM5PR0401MB2529.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,28 +45,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 19-10-16 09:59:03, Jan Kara wrote:
-> On Thu 13-10-16 01:20:18, Lorenzo Stoakes wrote:
-> > This patch removes the write parameter from __access_remote_vm() and replaces it
-> > with a gup_flags parameter as use of this function previously _implied_
-> > FOLL_FORCE, whereas after this patch callers explicitly pass this flag.
-> > 
-> > We make this explicit as use of FOLL_FORCE can result in surprising behaviour
-> > (and hence bugs) within the mm subsystem.
-> > 
-> > Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+On Wed, Oct 19, 2016 at 02:47:07AM +0000, Y.B. Lu wrote:
+> + Greg
 > 
-> So I'm not convinced this (and the following two patches) is actually
-> helping much. By grepping for FOLL_FORCE we will easily see that any caller
-> of access_remote_vm() gets that semantics and can thus continue search
+> Hi Greg,
+> 
+> I submitted this patchset for a MMC bug fix, and introduce the below patch which needs your ACK.
+> > > Arnd Bergmann (1):
+> > >   base: soc: introduce soc_device_match() interface
+> https://patchwork.kernel.org/patch/9342913/
+> 
+> Could you help to review it and give some comments or ACK.
+> Thank you very much.
 
-I am really wondering. Is there anything inherent that would require
-FOLL_FORCE for access_remote_vm? I mean FOLL_FORCE is a really
-non-trivial thing. It doesn't obey vma permissions so we should really
-minimize its usage. Do all of those users really need FOLL_FORCE?
-
-Anyway I would rather see the flag explicit and used at more places than
-hidden behind a helper function.
--- 
-Michal Hocko
-SUSE Labs
+Now acked.
