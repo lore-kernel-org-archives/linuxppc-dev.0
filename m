@@ -1,44 +1,25 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f68.google.com (mail-wm0-f68.google.com [74.125.82.68])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szRMZ5vR8zDt0w
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 20:23:54 +1100 (AEDT)
-Received: by mail-wm0-f68.google.com with SMTP id g16so3018988wmg.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 02:23:54 -0700 (PDT)
-Date: Wed, 19 Oct 2016 11:23:51 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: Jan Kara <jack@suse.cz>, linux-mm@kvack.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Hugh Dickins <hughd@google.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- adi-buildroot-devel@lists.sourceforge.net,
- ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mips@linux-mips.org, linux-rdma@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 08/10] mm: replace __access_remote_vm() write parameter
- with gup_flags
-Message-ID: <20161019092350.GF7517@dhcp22.suse.cz>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-9-lstoakes@gmail.com>
- <20161019075903.GP29967@quack2.suse.cz>
- <20161019081352.GB7562@dhcp22.suse.cz>
- <20161019084045.GA19441@lucifer>
- <20161019085204.GD7517@dhcp22.suse.cz>
- <20161019090646.GA24243@lucifer>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szRQz6xWjzDt0w
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 20:26:51 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id 128so1985833pfz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 02:26:51 -0700 (PDT)
+Date: Wed, 19 Oct 2016 20:26:44 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 6/7] powerpc: switch to using thin archives if
+ COMPILE_TEST is set
+Message-ID: <20161019202644.572f7eb3@roar.ozlabs.ibm.com>
+In-Reply-To: <20161019165723.7fda6701@canb.auug.org.au>
+References: <20161019031600.17933-1-npiggin@gmail.com>
+ <20161019031600.17933-7-npiggin@gmail.com>
+ <20161019165723.7fda6701@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161019090646.GA24243@lucifer>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,26 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 19-10-16 10:06:46, Lorenzo Stoakes wrote:
-> On Wed, Oct 19, 2016 at 10:52:05AM +0200, Michal Hocko wrote:
-> > yes this is the desirable and expected behavior.
-> >
-> > > wonder if this is desirable behaviour or whether this ought to be limited to
-> > > ptrace system calls. Regardless, by making the flag more visible it makes it
-> > > easier to see that this is happening.
-> >
-> > mem_open already enforces PTRACE_MODE_ATTACH
-> 
-> Ah I missed this, that makes a lot of sense, thanks!
-> 
-> I still wonder whether other invocations of access_remote_vm() in fs/proc/base.c
-> (the principle caller of this function) need FOLL_FORCE, for example the various
-> calls that simply read data from other processes, so I think the point stands
-> about keeping this explicit.
+On Wed, 19 Oct 2016 16:57:23 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-I do agree. Making them explicit will help to clean them up later,
-should there be a need.
+> Hi Nick,
+> 
+> On Wed, 19 Oct 2016 14:15:59 +1100 Nicholas Piggin <npiggin@gmail.com> wrote:
+> >
+> > Enable thin archives build for powerpc when COMPILE_TEST is set.
+> > Thin archives are explained in this commit:
+> > 
+> >   a5967db9af51a84f5e181600954714a9e4c69f1f  
+> 
+> This reference should be like this:
+> 
+>   a5967db9af51 ("kbuild: allow architectures to use thin archives instead of ld -r")
+> 
 
--- 
-Michal Hocko
-SUSE Labs
+Hi Stephen,
+
+Good point, I'll change it.
+
+Thanks,
+Nick
