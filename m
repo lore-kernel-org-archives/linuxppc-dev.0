@@ -2,32 +2,30 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szTkv2RyHzDt48
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:10:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szTsx5QNwzDt24
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:16:53 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Lorenzo Stoakes <lstoakes@gmail.com>, linux-mm@kvack.org
-Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org,
- Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, linux-sh@vger.kernel.org,
- Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
- netdev@vger.kernel.org, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org,
- Hugh Dickins <hughd@google.com>, linux-media@vger.kernel.org,
- Rik van Riel <riel@redhat.com>, intel-gfx@lists.freedesktop.org,
- adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Lorenzo Stoakes <lstoakes@gmail.com>,
- linux-cris-kernel@axis.com, Linus Torvalds <torvalds@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Mel Gorman <mgorman@te chsingularity.net>
-Subject: Re: [PATCH 10/10] mm: replace access_process_vm() write parameter
- with gup_flags
-In-Reply-To: <20161013002020.3062-11-lstoakes@gmail.com>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-11-lstoakes@gmail.com>
-Date: Wed, 19 Oct 2016 22:10:46 +1100
-Message-ID: <87twc84mrt.fsf@concordia.ellerman.id.au>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+ jiangshanlai@gmail.com, akpm@linux-foundation.org, kernel-team@fb.com,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: Oops on Power8 (was Re: [PATCH v2 1/7] workqueue: make workqueue
+ available early during boot)
+In-Reply-To: <20161018185858.GA2761@htj.duckdns.org>
+References: <1473967821-24363-2-git-send-email-tj@kernel.org>
+ <20160917172314.GB10771@mtj.duckdns.org>
+ <87twck5wqo.fsf@concordia.ellerman.id.au>
+ <20161010130253.GB29742@mtj.duckdns.org>
+ <87a8eb5dwa.fsf@concordia.ellerman.id.au>
+ <20161014150757.GA11102@mtj.duckdns.org>
+ <87eg3fcge5.fsf@concordia.ellerman.id.au>
+ <20161017181556.GB6248@htj.duckdns.org>
+ <20161017193047.GC6248@htj.duckdns.org>
+ <87y41mb7c9.fsf@concordia.ellerman.id.au>
+ <20161018185858.GA2761@htj.duckdns.org>
+Date: Wed, 19 Oct 2016 22:16:52 +1100
+Message-ID: <87r37c4mhn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,46 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Lorenzo Stoakes <lstoakes@gmail.com> writes:
+Tejun Heo <tj@kernel.org> writes:
 
-> diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
-> index f52b7db3..010b7b3 100644
-> --- a/arch/powerpc/kernel/ptrace32.c
-> +++ b/arch/powerpc/kernel/ptrace32.c
-> @@ -74,7 +74,7 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
->  			break;
->  
->  		copied = access_process_vm(child, (u64)addrOthers, &tmp,
-> -				sizeof(tmp), 0);
-> +				sizeof(tmp), FOLL_FORCE);
->  		if (copied != sizeof(tmp))
->  			break;
->  		ret = put_user(tmp, (u32 __user *)data);
+> Hello, Michael.
+>
+> On Tue, Oct 18, 2016 at 03:37:42PM +1100, Michael Ellerman wrote:
+>> That doesn't compile, wq doesn't exist.
+>> 
+>> I guessed that you meant:
+>> 
+>> +       wq_numa_init();
+>> +       list_for_each_entry(wq, &workqueues, list)
+>> +               wq_update_unbound_numa(wq, smp_processor_id(), true);
+>
+> Yeap, sorry about that.
 
-LGTM.
+No worries.
 
-> @@ -179,7 +179,8 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
->  			break;
->  		ret = 0;
->  		if (access_process_vm(child, (u64)addrOthers, &tmp,
-> -					sizeof(tmp), 1) == sizeof(tmp))
-> +					sizeof(tmp),
-> +					FOLL_FORCE | FOLL_WRITE) == sizeof(tmp))
->  			break;
->  		ret = -EIO;
->  		break;
+>> And that does boot.
+>> 
+>> The sysrq-t output is below, it's rather large.
+>
+> Didn't expect that many cpus but it looks good.
 
-If you're respinning this anyway, can you format that as:
+I have another system here with twice as many CPUs if that would help ;)
 
-		if (access_process_vm(child, (u64)addrOthers, &tmp, sizeof(tmp),
-				      FOLL_FORCE | FOLL_WRITE) == sizeof(tmp))
-  			break;
+> I'll post proper patches soon.
 
-I realise you probably deliberately didn't do that to make the diff clearer.
-
-Either way:
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
+Thanks. Can you pull the current series out of linux-next for now until
+you merge the new series?
 
 cheers
