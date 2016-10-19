@@ -1,25 +1,15 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szRQz6xWjzDt0w
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 20:26:51 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id 128so1985833pfz.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 02:26:51 -0700 (PDT)
-Date: Wed, 19 Oct 2016 20:26:44 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 6/7] powerpc: switch to using thin archives if
- COMPILE_TEST is set
-Message-ID: <20161019202644.572f7eb3@roar.ozlabs.ibm.com>
-In-Reply-To: <20161019165723.7fda6701@canb.auug.org.au>
-References: <20161019031600.17933-1-npiggin@gmail.com>
- <20161019031600.17933-7-npiggin@gmail.com>
- <20161019165723.7fda6701@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <tklauser@distanz.ch>
+Received: from mail.zhinst.com (mail.zhinst.com [212.126.164.98])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3szRXC5PmJzDrL1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 20:31:13 +1100 (AEDT)
+From: Tobias Klauser <tklauser@distanz.ch>
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] net: fs_enet: Use net_device_stats from struct net_device
+Date: Wed, 19 Oct 2016 11:24:57 +0200
+Message-Id: <20161019092457.15006-1-tklauser@distanz.ch>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +19,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 19 Oct 2016 16:57:23 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Instead of using a private copy of struct net_device_stats in struct
+fs_enet_private, use stats from struct net_device. Also remove the now
+unnecessary .ndo_get_stats function.
 
-> Hi Nick,
-> 
-> On Wed, 19 Oct 2016 14:15:59 +1100 Nicholas Piggin <npiggin@gmail.com> wrote:
-> >
-> > Enable thin archives build for powerpc when COMPILE_TEST is set.
-> > Thin archives are explained in this commit:
-> > 
-> >   a5967db9af51a84f5e181600954714a9e4c69f1f  
-> 
-> This reference should be like this:
-> 
->   a5967db9af51 ("kbuild: allow architectures to use thin archives instead of ld -r")
-> 
+Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+---
+ .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 43 +++++++++-------------
+ drivers/net/ethernet/freescale/fs_enet/fs_enet.h   |  1 -
+ 2 files changed, 18 insertions(+), 26 deletions(-)
 
-Hi Stephen,
-
-Good point, I'll change it.
-
-Thanks,
-Nick
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+index 925d1bca6a26..44f50e168703 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+@@ -118,22 +118,22 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
+ 			  BD_ENET_TX_RL | BD_ENET_TX_UN | BD_ENET_TX_CSL)) {
+ 
+ 			if (sc & BD_ENET_TX_HB)	/* No heartbeat */
+-				fep->stats.tx_heartbeat_errors++;
++				dev->stats.tx_heartbeat_errors++;
+ 			if (sc & BD_ENET_TX_LC)	/* Late collision */
+-				fep->stats.tx_window_errors++;
++				dev->stats.tx_window_errors++;
+ 			if (sc & BD_ENET_TX_RL)	/* Retrans limit */
+-				fep->stats.tx_aborted_errors++;
++				dev->stats.tx_aborted_errors++;
+ 			if (sc & BD_ENET_TX_UN)	/* Underrun */
+-				fep->stats.tx_fifo_errors++;
++				dev->stats.tx_fifo_errors++;
+ 			if (sc & BD_ENET_TX_CSL)	/* Carrier lost */
+-				fep->stats.tx_carrier_errors++;
++				dev->stats.tx_carrier_errors++;
+ 
+ 			if (sc & (BD_ENET_TX_LC | BD_ENET_TX_RL | BD_ENET_TX_UN)) {
+-				fep->stats.tx_errors++;
++				dev->stats.tx_errors++;
+ 				do_restart = 1;
+ 			}
+ 		} else
+-			fep->stats.tx_packets++;
++			dev->stats.tx_packets++;
+ 
+ 		if (sc & BD_ENET_TX_READY) {
+ 			dev_warn(fep->dev,
+@@ -145,7 +145,7 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
+ 		 * but we eventually sent the packet OK.
+ 		 */
+ 		if (sc & BD_ENET_TX_DEF)
+-			fep->stats.collisions++;
++			dev->stats.collisions++;
+ 
+ 		/* unmap */
+ 		if (fep->mapped_as_page[dirtyidx])
+@@ -212,19 +212,19 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
+ 		 */
+ 		if (sc & (BD_ENET_RX_LG | BD_ENET_RX_SH | BD_ENET_RX_CL |
+ 			  BD_ENET_RX_NO | BD_ENET_RX_CR | BD_ENET_RX_OV)) {
+-			fep->stats.rx_errors++;
++			dev->stats.rx_errors++;
+ 			/* Frame too long or too short. */
+ 			if (sc & (BD_ENET_RX_LG | BD_ENET_RX_SH))
+-				fep->stats.rx_length_errors++;
++				dev->stats.rx_length_errors++;
+ 			/* Frame alignment */
+ 			if (sc & (BD_ENET_RX_NO | BD_ENET_RX_CL))
+-				fep->stats.rx_frame_errors++;
++				dev->stats.rx_frame_errors++;
+ 			/* CRC Error */
+ 			if (sc & BD_ENET_RX_CR)
+-				fep->stats.rx_crc_errors++;
++				dev->stats.rx_crc_errors++;
+ 			/* FIFO overrun */
+ 			if (sc & BD_ENET_RX_OV)
+-				fep->stats.rx_crc_errors++;
++				dev->stats.rx_crc_errors++;
+ 
+ 			skbn = fep->rx_skbuff[curidx];
+ 		} else {
+@@ -233,9 +233,9 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
+ 			/*
+ 			 * Process the incoming frame.
+ 			 */
+-			fep->stats.rx_packets++;
++			dev->stats.rx_packets++;
+ 			pkt_len = CBDR_DATLEN(bdp) - 4;	/* remove CRC */
+-			fep->stats.rx_bytes += pkt_len + 4;
++			dev->stats.rx_bytes += pkt_len + 4;
+ 
+ 			if (pkt_len <= fpi->rx_copybreak) {
+ 				/* +2 to make IP header L1 cache aligned */
+@@ -277,7 +277,7 @@ static int fs_enet_napi(struct napi_struct *napi, int budget)
+ 				received++;
+ 				netif_receive_skb(skb);
+ 			} else {
+-				fep->stats.rx_dropped++;
++				dev->stats.rx_dropped++;
+ 				skbn = skb;
+ 			}
+ 		}
+@@ -543,7 +543,7 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	curidx = bdp - fep->tx_bd_base;
+ 
+ 	len = skb->len;
+-	fep->stats.tx_bytes += len;
++	dev->stats.tx_bytes += len;
+ 	if (nr_frags)
+ 		len -= skb->data_len;
+ 	fep->tx_free -= nr_frags + 1;
+@@ -619,7 +619,7 @@ static void fs_timeout(struct net_device *dev)
+ 	unsigned long flags;
+ 	int wake = 0;
+ 
+-	fep->stats.tx_errors++;
++	dev->stats.tx_errors++;
+ 
+ 	spin_lock_irqsave(&fep->lock, flags);
+ 
+@@ -774,12 +774,6 @@ static int fs_enet_close(struct net_device *dev)
+ 	return 0;
+ }
+ 
+-static struct net_device_stats *fs_enet_get_stats(struct net_device *dev)
+-{
+-	struct fs_enet_private *fep = netdev_priv(dev);
+-	return &fep->stats;
+-}
+-
+ /*************************************************************************/
+ 
+ static void fs_get_drvinfo(struct net_device *dev,
+@@ -905,7 +899,6 @@ extern void fs_mii_disconnect(struct net_device *dev);
+ static const struct net_device_ops fs_enet_netdev_ops = {
+ 	.ndo_open		= fs_enet_open,
+ 	.ndo_stop		= fs_enet_close,
+-	.ndo_get_stats		= fs_enet_get_stats,
+ 	.ndo_start_xmit		= fs_enet_start_xmit,
+ 	.ndo_tx_timeout		= fs_timeout,
+ 	.ndo_set_rx_mode	= fs_set_multicast_list,
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+index fee24c822fad..5ce516c8a62a 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+@@ -137,7 +137,6 @@ struct fs_enet_private {
+ 	cbd_t __iomem *cur_rx;
+ 	cbd_t __iomem *cur_tx;
+ 	int tx_free;
+-	struct net_device_stats stats;
+ 	struct timer_list phy_timer_list;
+ 	const struct phy_info *phy;
+ 	u32 msg_enable;
+-- 
+2.9.0
