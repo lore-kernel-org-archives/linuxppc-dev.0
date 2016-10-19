@@ -3,17 +3,19 @@ Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
  [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szHCP5HFZzDt1c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 14:16:17 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id i85so1092341pfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 20:16:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szHCV3Mf7zDt2H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 14:16:22 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id 128so1092541pfz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 20:16:22 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH 0/7] build updates
-Date: Wed, 19 Oct 2016 14:15:53 +1100
-Message-Id: <20161019031600.17933-1-npiggin@gmail.com>
+Subject: [PATCH 1/7] powerpc: use the new post-link pass to check relocations
+Date: Wed, 19 Oct 2016 14:15:54 +1100
+Message-Id: <20161019031600.17933-2-npiggin@gmail.com>
+In-Reply-To: <20161019031600.17933-1-npiggin@gmail.com>
+References: <20161019031600.17933-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Currently powerpc has to introduce a dependency on its default build
+target zImage in order to run a relocation check pass over the linked
+vmlinux. This is deficient because the check is not run if the plain
+vmlinux target is built, or if one of the other boot targets is built.
 
-I was hoping to get these posted earlier, but they had a dependency
-on the kbuild tree which took a while to merge. Hopefully we can get
-at least the first 4 patches in, which are just sanity checks on the
-final binary.
+Switch to using the kbuild post-link pass in order to run this check.
 
-With this series applied, I'm able to build[*] and boot a 64-bit
-book3s allyesconfig kernel, a 200MB vmlinux (although today's tree
-breaks in some random driver initcall in late boot). That's largely
-a culmination of Stephen Rothwell's work (including the kbuild changes
-that were merged earlier in 4.9), I just picked up some of his patches
-so attributions may not be 100% reflective of reality.
-
-[*] Building allyesconfig still requires KALLSYMS_EXTRA_PASS=1, which
-    I'm yet to look into.
-
-Thanks,
-Nick
-
-Nicholas Piggin (7):
-  powerpc: use the new post-link pass to check relocations
-  powerpc: add arch/powerpc/tools directory
-  powerpc/64s: tool to flag direct branches from unrelocated interrupt
-    vectors
-  powerpc/64: tool to check head sections location sanity
-  powerpc/64: handle linker stubs in low .text code
-  powerpc: switch to using thin archives if COMPILE_TEST is set
-  powerpc/64: allow CONFIG_RELOCATABLE if COMPILE_TEST
-
- arch/powerpc/Kconfig                               |  5 +-
- arch/powerpc/Makefile                              | 17 +----
- arch/powerpc/Makefile.postlink                     | 48 ++++++++++++++
- arch/powerpc/include/asm/head-64.h                 | 20 ++++--
- arch/powerpc/kernel/vmlinux.lds.S                  | 28 ++------
- .../gcc-check-mprofile-kernel.sh                   |  0
- arch/powerpc/tools/head_check.sh                   | 74 ++++++++++++++++++++++
- arch/powerpc/{ => tools}/relocs_check.sh           |  0
- arch/powerpc/tools/unrel_branch_check.sh           | 56 ++++++++++++++++
- 9 files changed, 203 insertions(+), 45 deletions(-)
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/Makefile          | 11 -----------
+ arch/powerpc/Makefile.postlink | 34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+), 11 deletions(-)
  create mode 100644 arch/powerpc/Makefile.postlink
- rename arch/powerpc/{scripts => tools}/gcc-check-mprofile-kernel.sh (100%)
- create mode 100755 arch/powerpc/tools/head_check.sh
- rename arch/powerpc/{ => tools}/relocs_check.sh (100%)
- create mode 100755 arch/powerpc/tools/unrel_branch_check.sh
 
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 617dece..314dd77 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -263,17 +263,6 @@ PHONY += $(BOOT_TARGETS1) $(BOOT_TARGETS2)
+ 
+ boot := arch/$(ARCH)/boot
+ 
+-ifeq ($(CONFIG_RELOCATABLE),y)
+-quiet_cmd_relocs_check = CALL    $<
+-      cmd_relocs_check = $(CONFIG_SHELL) $< "$(OBJDUMP)" "$(obj)/vmlinux"
+-
+-PHONY += relocs_check
+-relocs_check: arch/powerpc/relocs_check.sh vmlinux
+-	$(call cmd,relocs_check)
+-
+-zImage: relocs_check
+-endif
+-
+ $(BOOT_TARGETS1): vmlinux
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ $(BOOT_TARGETS2): vmlinux
+diff --git a/arch/powerpc/Makefile.postlink b/arch/powerpc/Makefile.postlink
+new file mode 100644
+index 0000000..f90bdc0
+--- /dev/null
++++ b/arch/powerpc/Makefile.postlink
+@@ -0,0 +1,34 @@
++# ===========================================================================
++# Post-link powerpc pass
++# ===========================================================================
++#
++# 1. Check that vmlinux relocations look sane
++
++PHONY := __archpost
++__archpost:
++
++include include/config/auto.conf
++include scripts/Kbuild.include
++
++quiet_cmd_relocs_check = CHKREL  $@
++      cmd_relocs_check = $(CONFIG_SHELL) $(srctree)/arch/powerpc/relocs_check.sh "$(OBJDUMP)" "$@"
++
++# `@true` prevents complaint when there is nothing to be done
++
++vmlinux: FORCE
++	@true
++ifeq ($(CONFIG_RELOCATABLE),y)
++	$(call if_changed,relocs_check)
++endif
++
++%.ko: FORCE
++	@true
++
++clean:
++	@true
++
++PHONY += FORCE clean
++
++FORCE:
++
++.PHONY: $(PHONY)
 -- 
 2.9.3
