@@ -1,25 +1,35 @@
-Return-Path: <jgross@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-yw0-x241.google.com (mail-yw0-x241.google.com
+ [IPv6:2607:f8b0:4002:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szc7L3dvqzDt37
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 02:58:53 +1100 (AEDT)
-Subject: Re: [PATCH v4 0/5] implement vcpu preempted check
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org,
- linux-s390@vger.kernel.org, xen-devel@lists.xenproject.org,
- kvm@vger.kernel.org
-References: <1476872416-42752-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, pbonzini@redhat.com,
- bsingharora@gmail.com, boqun.feng@gmail.com, borntraeger@de.ibm.com
-From: Juergen Gross <jgross@suse.com>
-Message-ID: <a801cd40-1019-01e2-1013-f04363fc7f31@suse.com>
-Date: Wed, 19 Oct 2016 17:58:46 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szcVj6pGjzDt3P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 03:15:41 +1100 (AEDT)
+Received: by mail-yw0-x241.google.com with SMTP id u124so1000934ywg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 09:15:41 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Wed, 19 Oct 2016 12:15:38 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+ jiangshanlai@gmail.com, akpm@linux-foundation.org, kernel-team@fb.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH wq/for-4.10] workqueue: move wq_numa_init() to workqueue_init()
+Message-ID: <20161019161538.GB18532@htj.duckdns.org>
+References: <87twck5wqo.fsf@concordia.ellerman.id.au>
+ <20161010130253.GB29742@mtj.duckdns.org>
+ <87a8eb5dwa.fsf@concordia.ellerman.id.au>
+ <20161014150757.GA11102@mtj.duckdns.org>
+ <87eg3fcge5.fsf@concordia.ellerman.id.au>
+ <20161017181556.GB6248@htj.duckdns.org>
+ <20161017193047.GC6248@htj.duckdns.org>
+ <87y41mb7c9.fsf@concordia.ellerman.id.au>
+ <20161018185858.GA2761@htj.duckdns.org>
+ <87r37c4mhn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1476872416-42752-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Content-Type: multipart/mixed; boundary="------------0DA18E86B982FAA044921A6E"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87r37c4mhn.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,164 +39,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------0DA18E86B982FAA044921A6E
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Hello, Michael.
 
-On 19/10/16 12:20, Pan Xinhui wrote:
-> change from v3:
-> 	add x86 vcpu preempted check patch
-> change from v2:
-> 	no code change, fix typos, update some comments
-> change from v1:
-> 	a simplier definition of default vcpu_is_preempted
-> 	skip mahcine type check on ppc, and add config. remove dedicated macro.
-> 	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner. 
-> 	add more comments
-> 	thanks boqun and Peter's suggestion.
-> 
-> This patch set aims to fix lock holder preemption issues.
-> 
-> test-case:
-> perf record -a perf bench sched messaging -g 400 -p && perf report
-> 
-> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
-> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
->  5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
->  3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
->  3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
->  3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
->  2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
-> 
-> We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
-> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
-> These spin_on_onwer variant also cause rcu stall before we apply this patch set
-> 
-> We also have observed some performace improvements.
-> 
-> PPC test result:
-> 
-> 1 copy - 0.94%
-> 2 copy - 7.17%
-> 4 copy - 11.9%
-> 8 copy -  3.04%
-> 16 copy - 15.11%
-> 
-> details below:
-> Without patch:
-> 
-> 1 copy - File Write 4096 bufsize 8000 maxblocks      2188223.0 KBps  (30.0 s, 1 samples)
-> 2 copy - File Write 4096 bufsize 8000 maxblocks      1804433.0 KBps  (30.0 s, 1 samples)
-> 4 copy - File Write 4096 bufsize 8000 maxblocks      1237257.0 KBps  (30.0 s, 1 samples)
-> 8 copy - File Write 4096 bufsize 8000 maxblocks      1032658.0 KBps  (30.0 s, 1 samples)
-> 16 copy - File Write 4096 bufsize 8000 maxblocks       768000.0 KBps  (30.1 s, 1 samples)
-> 
-> With patch: 
-> 
-> 1 copy - File Write 4096 bufsize 8000 maxblocks      2209189.0 KBps  (30.0 s, 1 samples)
-> 2 copy - File Write 4096 bufsize 8000 maxblocks      1943816.0 KBps  (30.0 s, 1 samples)
-> 4 copy - File Write 4096 bufsize 8000 maxblocks      1405591.0 KBps  (30.0 s, 1 samples)
-> 8 copy - File Write 4096 bufsize 8000 maxblocks      1065080.0 KBps  (30.0 s, 1 samples)
-> 16 copy - File Write 4096 bufsize 8000 maxblocks       904762.0 KBps  (30.0 s, 1 samples)
-> 
-> X86 test result:
-> 	test-case			after-patch	  before-patch
-> Execl Throughput                       |    18307.9 lps  |    11701.6 lps 
-> File Copy 1024 bufsize 2000 maxblocks  |  1352407.3 KBps |   790418.9 KBps
-> File Copy 256 bufsize 500 maxblocks    |   367555.6 KBps |   222867.7 KBps
-> File Copy 4096 bufsize 8000 maxblocks  |  3675649.7 KBps |  1780614.4 KBps
-> Pipe Throughput                        | 11872208.7 lps  | 11855628.9 lps 
-> Pipe-based Context Switching           |  1495126.5 lps  |  1490533.9 lps 
-> Process Creation                       |    29881.2 lps  |    28572.8 lps 
-> Shell Scripts (1 concurrent)           |    23224.3 lpm  |    22607.4 lpm 
-> Shell Scripts (8 concurrent)           |     3531.4 lpm  |     3211.9 lpm 
-> System Call Overhead                   | 10385653.0 lps  | 10419979.0 lps 
-> 
-> Pan Xinhui (5):
->   kernel/sched: introduce vcpu preempted check interface
->   locking/osq: Drop the overload of osq_lock()
->   kernel/locking: Drop the overload of {mutex,rwsem}_spin_on_owner
->   powerpc/spinlock: support vcpu preempted check
->   x86, kvm: support vcpu preempted check
+I simplified the patch a bit and applied the following to for-4.10 and
+updated for-next accordingly.  The coming next snapshot should be
+fine.
 
-The attached patch adds Xen support for x86. Please tell me whether you
-want to add this patch to your series or if I should post it when your
-series has been accepted.
+Thanks!
 
-You can add my
+------ 8< ------
+>From 2186d9f940b6a04f263a3bacd48f2a7ba96df4cf Mon Sep 17 00:00:00 2001
+From: Tejun Heo <tj@kernel.org>
+Date: Wed, 19 Oct 2016 12:01:27 -0400
 
-Tested-by: Juergen Gross <jgross@suse.com>
+While splitting up workqueue initialization into two parts,
+ac8f73400782 ("workqueue: make workqueue available early during boot")
+put wq_numa_init() into workqueue_init_early().  Unfortunately, on
+some archs including power and arm64, cpu to node mapping isn't yet
+established by the time the early init is called leading to incorrect
+NUMA initialization and subsequently the following oops due to zero
+cpumask on node-specific unbound pools.
 
-for patches 1-3 and 5 (paravirt parts only).
+  Unable to handle kernel paging request for data at address 0x00000038
+  Faulting instruction address: 0xc0000000000fc0cc
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  SMP NR_CPUS=2048 NUMA PowerNV
+  Modules linked in:
+  CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.8.0-compiler_gcc-6.2.0-next-20161005 #94
+  task: c0000007f5400000 task.stack: c000001ffc084000
+  NIP: c0000000000fc0cc LR: c0000000000ed928 CTR: c0000000000fbfd0
+  REGS: c000001ffc087780 TRAP: 0300   Not tainted  (4.8.0-compiler_gcc-6.2.0-next-20161005)
+  MSR: 9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 48000424  XER: 00000000
+  CFAR: c0000000000089dc DAR: 0000000000000038 DSISR: 40000000 SOFTE: 0
+  GPR00: c0000000000ed928 c000001ffc087a00 c000000000e63200 c000000010d6d600
+  GPR04: c0000007f5409200 0000000000000021 000000000748e08c 000000000000001f
+  GPR08: 0000000000000000 0000000000000021 000000000748f1f8 0000000000000000
+  GPR12: 0000000028000422 c00000000fb80000 c00000000000e0c8 0000000000000000
+  GPR16: 0000000000000000 0000000000000000 0000000000000021 0000000000000001
+  GPR20: ffffffffafb50401 0000000000000000 c000000010d6d600 000000000000ba7e
+  GPR24: 000000000000ba7e c000000000d8bc58 afb504000afb5041 0000000000000001
+  GPR28: 0000000000000000 0000000000000004 c0000007f5409280 0000000000000000
+  NIP [c0000000000fc0cc] enqueue_task_fair+0xfc/0x18b0
+  LR [c0000000000ed928] activate_task+0x78/0xe0
+  Call Trace:
+  [c000001ffc087a00] [c0000007f5409200] 0xc0000007f5409200 (unreliable)
+  [c000001ffc087b10] [c0000000000ed928] activate_task+0x78/0xe0
+  [c000001ffc087b50] [c0000000000ede58] ttwu_do_activate+0x68/0xc0
+  [c000001ffc087b90] [c0000000000ef1b8] try_to_wake_up+0x208/0x4f0
+  [c000001ffc087c10] [c0000000000d3484] create_worker+0x144/0x250
+  [c000001ffc087cb0] [c000000000cd72d0] workqueue_init+0x124/0x150
+  [c000001ffc087d00] [c000000000cc0e74] kernel_init_freeable+0x158/0x360
+  [c000001ffc087dc0] [c00000000000e0e4] kernel_init+0x24/0x160
+  [c000001ffc087e30] [c00000000000bfa0] ret_from_kernel_thread+0x5c/0xbc
+  Instruction dump:
+  62940401 3b800000 3aa00000 7f17c378 3a600001 3b600001 60000000 60000000
+  60420000 72490021 ebfe0150 2f890001 <ebbf0038> 419e0de0 7fbee840 419e0e58
+  ---[ end trace 0000000000000000 ]---
 
+Fix it by moving wq_numa_init() to workqueue_init().  As this means
+that the early intialization may not have full NUMA info for per-cpu
+pools and ignores NUMA affinity for unbound pools, fix them up from
+workqueue_init() after wq_numa_init().
 
-Juergen
-
-> 
->  arch/powerpc/include/asm/spinlock.h   |  8 ++++++++
->  arch/x86/include/asm/paravirt_types.h |  6 ++++++
->  arch/x86/include/asm/spinlock.h       |  8 ++++++++
->  arch/x86/include/uapi/asm/kvm_para.h  |  3 ++-
->  arch/x86/kernel/kvm.c                 | 11 +++++++++++
->  arch/x86/kernel/paravirt.c            | 11 +++++++++++
->  arch/x86/kvm/x86.c                    | 12 ++++++++++++
->  include/linux/sched.h                 | 12 ++++++++++++
->  kernel/locking/mutex.c                | 15 +++++++++++++--
->  kernel/locking/osq_lock.c             | 10 +++++++++-
->  kernel/locking/rwsem-xadd.c           | 16 +++++++++++++---
->  11 files changed, 105 insertions(+), 7 deletions(-)
-> 
-
-
---------------0DA18E86B982FAA044921A6E
-Content-Type: text/x-patch;
- name="0001-x86-xen-support-vcpu-preempted-check.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="0001-x86-xen-support-vcpu-preempted-check.patch"
-
->From c79b86d00a812d6207ef788d453e2d0289ef22a0 Mon Sep 17 00:00:00 2001
-From: Juergen Gross <jgross@suse.com>
-Date: Wed, 19 Oct 2016 15:30:59 +0200
-Subject: [PATCH] x86, xen: support vcpu preempted check
-
-Support the vcpu_is_preempted() functionality under Xen. This will
-enhance lock performance on overcommitted hosts (more runnable vcpus
-than physical cpus in the system) as doing busy waits for preempted
-vcpus will hurt system performance far worse than early yielding.
-
-A quick test (4 vcpus on 1 physical cpu doing a parallel build job
-with "make -j 8") reduced system time by about 5% with this patch.
-
-Signed-off-by: Juergen Gross <jgross@suse.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: http://lkml.kernel.org/r/87twck5wqo.fsf@concordia.ellerman.id.au
+Fixes: ac8f73400782 ("workqueue: make workqueue available early during boot")
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/x86/xen/spinlock.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ kernel/workqueue.c | 25 +++++++++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
-index 3d6e006..1d53b1b 100644
---- a/arch/x86/xen/spinlock.c
-+++ b/arch/x86/xen/spinlock.c
-@@ -114,7 +114,6 @@ void xen_uninit_lock_cpu(int cpu)
- 	per_cpu(irq_name, cpu) = NULL;
- }
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index ad0cd43..c56479b 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -5495,8 +5495,6 @@ int __init workqueue_init_early(void)
  
+ 	pwq_cache = KMEM_CACHE(pool_workqueue, SLAB_PANIC);
+ 
+-	wq_numa_init();
 -
- /*
-  * Our init of PV spinlocks is split in two init functions due to us
-  * using paravirt patching and jump labels patching and having to do
-@@ -137,6 +136,8 @@ void __init xen_init_spinlocks(void)
- 	pv_lock_ops.queued_spin_unlock = PV_CALLEE_SAVE(__pv_queued_spin_unlock);
- 	pv_lock_ops.wait = xen_qlock_wait;
- 	pv_lock_ops.kick = xen_qlock_kick;
-+
-+	pv_vcpu_ops.vcpu_is_preempted = xen_vcpu_stolen;
- }
+ 	/* initialize CPU pools */
+ 	for_each_possible_cpu(cpu) {
+ 		struct worker_pool *pool;
+@@ -5566,9 +5564,32 @@ int __init workqueue_init_early(void)
+  */
+ int __init workqueue_init(void)
+ {
++	struct workqueue_struct *wq;
+ 	struct worker_pool *pool;
+ 	int cpu, bkt;
  
- /*
++	/*
++	 * It'd be simpler to initialize NUMA in workqueue_init_early() but
++	 * CPU to node mapping may not be available that early on some
++	 * archs such as power and arm64.  As per-cpu pools created
++	 * previously could be missing node hint and unbound pools NUMA
++	 * affinity, fix them up.
++	 */
++	wq_numa_init();
++
++	mutex_lock(&wq_pool_mutex);
++
++	for_each_possible_cpu(cpu) {
++		for_each_cpu_worker_pool(pool, cpu) {
++			pool->node = cpu_to_node(cpu);
++		}
++	}
++
++	list_for_each_entry(wq, &workqueues, list)
++		wq_update_unbound_numa(wq, smp_processor_id(), true);
++
++	mutex_unlock(&wq_pool_mutex);
++
+ 	/* create the initial workers */
+ 	for_each_online_cpu(cpu) {
+ 		for_each_cpu_worker_pool(pool, cpu) {
 -- 
-2.6.6
-
-
---------------0DA18E86B982FAA044921A6E--
+2.7.4
