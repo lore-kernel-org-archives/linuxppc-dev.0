@@ -1,22 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szVhS0YMdzDt37
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:53:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szVlR2w8XzDt37
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:56:19 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>, monstr@monstr.eu,
- ralf@linux-mips.org, tglx@linutronix.de, jason@lakedaemon.net,
- marc.zyngier@arm.com, alistair@popple.id.au, mporter@kernel.crashing.org
-Cc: soren.brinkmann@xilinx.com, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, michal.simek@xilinx.com,
- linuxppc-dev@lists.ozlabs.org, paulus@samba.org, benh@kernel.crashing.org
-Subject: Re: [Patch v5 06/12] powerpc/virtex: Use generic xilinx irqchip driver
-In-Reply-To: <1476723176-39891-7-git-send-email-Zubair.Kakakhel@imgtec.com>
-References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
- <1476723176-39891-7-git-send-email-Zubair.Kakakhel@imgtec.com>
-Date: Wed, 19 Oct 2016 22:53:43 +1100
-Message-ID: <87funs4ks8.fsf@concordia.ellerman.id.au>
+To: David Laight <David.Laight@ACULAB.COM>, Nicholas Piggin <npiggin@gmail.com>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: RE: [PATCH] powerpc: link error on orphan sections
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB01E8778@AcuExch.aculab.com>
+References: <20161012070020.30170-1-npiggin@gmail.com>
+ <87zim7dag4.fsf@concordia.ellerman.id.au>
+ <063D6719AE5E284EB5DD2968C1650D6DB01E8778@AcuExch.aculab.com>
+Date: Wed, 19 Oct 2016 22:56:18 +1100
+Message-ID: <87d1iw4knx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,21 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com> writes:
+David Laight <David.Laight@ACULAB.COM> writes:
 
-> The Xilinx interrupt controller driver is now available in drivers/irqchip.
-> Switch to using that driver.
+> From: Michael Ellerman
+>> Sent: 14 October 2016 01:46
+> ...
+>> > +LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y) --orphan-handling=error
+>> 
+>> At least some old(er) toolchains don't support that:
+>> 
+>>   /opt/cross/kisskb/gcc-4.6.3-nolibc/powerpc-linux/bin/powerpc-linux-ld: unrecognized option '--
+>> orphan-handling=error'
+>> 
+>> So we'll need an ld-option wrapper around it.
 >
-> Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
->
-> ---
-> V5 New patch
->
-> Tested on virtex440-ml507 using qemu
+> In the past I've caused orphan sections to error by assigning them
+> to the same address as something that exists.
+> Works with all linkers, even if the error message isn't as useful.
 
-I don't have one of these to test on, and the patch looks sane, so
-that's good enough for me.
+How do you assign them an address without knowing what they are? With a
+wild card rule?
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Anyway I think I'm happy for this to only work on newer toolchains.
 
 cheers
