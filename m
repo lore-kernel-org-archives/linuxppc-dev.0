@@ -1,37 +1,19 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0049.outbound.protection.outlook.com [104.47.0.49])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szGYw0WhJzDrbg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 13:47:15 +1100 (AEDT)
-From: "Y.B. Lu" <yangbo.lu@nxp.com>
-To: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-CC: linux-mmc <linux-mmc@vger.kernel.org>, Ulf Hansson
- <ulf.hansson@linaro.org>, Scott Wood <oss@buserror.net>, Arnd Bergmann
- <arnd@arndb.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Mark Rutland
- <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
- <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
- <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, "Bhupesh
- Sharma" <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
- "Kumar Gala" <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- Leo Li <leoyang.li@nxp.com>, "X.B. Xie" <xiaobo.xie@nxp.com>, "M.H. Lian"
- <minghuan.lian@nxp.com>
-Subject: RE: [v12, 0/8] Fix eSDHC host version register bug
-Date: Wed, 19 Oct 2016 02:47:07 +0000
-Message-ID: <AM5PR0401MB2529BA70C6E7AF7C71631A47F8D20@AM5PR0401MB2529.eurprd04.prod.outlook.com>
-References: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
- <CAPDyKFoit0sTPpfi2=AHcdZsDwOJxbBX68O-1jBFL=5JN0m6_w@mail.gmail.com>
-In-Reply-To: <CAPDyKFoit0sTPpfi2=AHcdZsDwOJxbBX68O-1jBFL=5JN0m6_w@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szHCP5HFZzDt1c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 14:16:17 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id i85so1092341pfa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 20:16:17 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH 0/7] build updates
+Date: Wed, 19 Oct 2016 14:15:53 +1100
+Message-Id: <20161019031600.17933-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,87 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KyBHcmVnDQoNCkhpIEdyZWcsDQoNCkkgc3VibWl0dGVkIHRoaXMgcGF0Y2hzZXQgZm9yIGEgTU1D
-IGJ1ZyBmaXgsIGFuZCBpbnRyb2R1Y2UgdGhlIGJlbG93IHBhdGNoIHdoaWNoIG5lZWRzIHlvdXIg
-QUNLLg0KPiA+IEFybmQgQmVyZ21hbm4gKDEpOg0KPiA+ICAgYmFzZTogc29jOiBpbnRyb2R1Y2Ug
-c29jX2RldmljZV9tYXRjaCgpIGludGVyZmFjZQ0KaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9y
-Zy9wYXRjaC85MzQyOTEzLw0KDQpDb3VsZCB5b3UgaGVscCB0byByZXZpZXcgaXQgYW5kIGdpdmUg
-c29tZSBjb21tZW50cyBvciBBQ0suDQpUaGFuayB5b3UgdmVyeSBtdWNoLg0KDQoNCg0KQmVzdCBy
-ZWdhcmRzLA0KWWFuZ2JvIEx1DQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBG
-cm9tOiBVbGYgSGFuc3NvbiBbbWFpbHRvOnVsZi5oYW5zc29uQGxpbmFyby5vcmddDQo+IFNlbnQ6
-IFR1ZXNkYXksIE9jdG9iZXIgMTgsIDIwMTYgNjo0OCBQTQ0KPiBUbzogWS5CLiBMdQ0KPiBDYzog
-bGludXgtbW1jOyBTY290dCBXb29kOyBBcm5kIEJlcmdtYW5uOyBsaW51eHBwYy1kZXZAbGlzdHMu
-b3psYWJzLm9yZzsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJu
-ZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7
-IGxpbnV4LWNsazsgbGludXgtaTJjQHZnZXIua2VybmVsLm9yZzsNCj4gaW9tbXVAbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmc7IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IE1hcmsgUnV0bGFuZDsN
-Cj4gUm9iIEhlcnJpbmc7IFJ1c3NlbGwgS2luZzsgSm9jaGVuIEZyaWVkcmljaDsgSm9lcmcgUm9l
-ZGVsOyBDbGF1ZGl1IE1hbm9pbDsNCj4gQmh1cGVzaCBTaGFybWE7IFFpYW5nIFpoYW87IEt1bWFy
-IEdhbGE7IFNhbnRvc2ggU2hpbGlta2FyOyBMZW8gTGk7IFguQi4NCj4gWGllOyBNLkguIExpYW4N
-Cj4gU3ViamVjdDogUmU6IFt2MTIsIDAvOF0gRml4IGVTREhDIGhvc3QgdmVyc2lvbiByZWdpc3Rl
-ciBidWcNCj4gDQo+IE9uIDIxIFNlcHRlbWJlciAyMDE2IGF0IDA4OjU3LCBZYW5nYm8gTHUgPHlh
-bmdiby5sdUBueHAuY29tPiB3cm90ZToNCj4gPiBUaGlzIHBhdGNoc2V0IGlzIHVzZWQgdG8gZml4
-IGEgaG9zdCB2ZXJzaW9uIHJlZ2lzdGVyIGJ1ZyBpbiB0aGUNCj4gPiBUNDI0MC1SMS4wLVIyLjAg
-ZVNESEMgY29udHJvbGxlci4gVG8gbWF0Y2ggdGhlIFNvQyB2ZXJzaW9uIGFuZA0KPiA+IHJldmlz
-aW9uLCAxMCBwcmV2aW91cyB2ZXJzaW9uIHBhdGNoc2V0cyBoYWQgdHJpZWQgbWFueSBtZXRob2Rz
-IGJ1dCBhbGwNCj4gb2YgdGhlbSB3ZXJlIHJlamVjdGVkIGJ5IHJldmlld2Vycy4NCj4gPiBTdWNo
-IGFzDQo+ID4gICAgICAgICAtIGR0cyBjb21wYXRpYmxlIG1ldGhvZA0KPiA+ICAgICAgICAgLSBz
-eXNjb24gbWV0aG9kDQo+ID4gICAgICAgICAtIGlmZGVmIFBQQyBtZXRob2QNCj4gPiAgICAgICAg
-IC0gR1VUUyBkcml2ZXIgZ2V0dGluZyBTVlIgbWV0aG9kIEFucmQgc3VnZ2VzdGVkIGENCj4gPiBz
-b2NfZGV2aWNlX21hdGNoIG1ldGhvZCBpbiB2MTAsIGFuZCB0aGlzIGlzIHRoZSBvbmx5IGF2YWls
-YWJsZSBtZXRob2QNCj4gPiBsZWZ0IG5vdy4gVGhpcyB2MTEgcGF0Y2hzZXQgaW50cm9kdWNlcyB0
-aGUgc29jX2RldmljZV9tYXRjaCBpbnRlcmZhY2UNCj4gPiBpbiBzb2MgZHJpdmVyLg0KPiA+DQo+
-ID4gVGhlIGZpcnN0IHNpeCBwYXRjaGVzIG9mIFlhbmdibyBhcmUgdG8gYWRkIHRoZSBHVVRTIGRy
-aXZlci4gVGhpcyBpcw0KPiA+IHVzZWQgdG8gcmVnaXN0ZXIgYSBzb2MgZGV2aWNlIHdoaWNoIGNv
-bnRhaW4gc29jIHZlcnNpb24gYW5kIHJldmlzaW9uDQo+IGluZm9ybWF0aW9uLg0KPiA+IFRoZSBv
-dGhlciB0d28gcGF0Y2hlcyBpbnRyb2R1Y2UgdGhlIHNvY19kZXZpY2VfbWF0Y2ggbWV0aG9kIGlu
-IHNvYw0KPiA+IGRyaXZlciBhbmQgYXBwbHkgaXQgb24gZXNkaGMgZHJpdmVyIHRvIGZpeCB0aGlz
-IGJ1Zy4NCj4gPg0KPiA+IEFybmQgQmVyZ21hbm4gKDEpOg0KPiA+ICAgYmFzZTogc29jOiBpbnRy
-b2R1Y2Ugc29jX2RldmljZV9tYXRjaCgpIGludGVyZmFjZQ0KPiA+DQo+ID4gWWFuZ2JvIEx1ICg3
-KToNCj4gPiAgIGR0OiBiaW5kaW5nczogdXBkYXRlIEZyZWVzY2FsZSBEQ0ZHIGNvbXBhdGlibGUN
-Cj4gPiAgIEFSTTY0OiBkdHM6IGxzMjA4MGE6IGFkZCBkZXZpY2UgY29uZmlndXJhdGlvbiBub2Rl
-DQo+ID4gICBkdDogYmluZGluZ3M6IG1vdmUgZ3V0cyBkZXZpY2V0cmVlIGRvYyBvdXQgb2YgcG93
-ZXJwYyBkaXJlY3RvcnkNCj4gPiAgIHBvd2VycGMvZnNsOiBtb3ZlIG1wYzg1eHguaCB0byBpbmNs
-dWRlL2xpbnV4L2ZzbA0KPiA+ICAgc29jOiBmc2w6IGFkZCBHVVRTIGRyaXZlciBmb3IgUW9ySVEg
-cGxhdGZvcm1zDQo+ID4gICBNQUlOVEFJTkVSUzogYWRkIGVudHJ5IGZvciBGcmVlc2NhbGUgU29D
-IGRyaXZlcnMNCj4gPiAgIG1tYzogc2RoY2ktb2YtZXNkaGM6IGZpeCBob3N0IHZlcnNpb24gZm9y
-IFQ0MjQwLVIxLjAtUjIuMA0KPiA+DQo+ID4gIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
-aW5ncy9hcm0vZnNsLnR4dCAgICAgIHwgICA2ICstDQo+ID4gIC4uLi9iaW5kaW5ncy97cG93ZXJw
-YyA9PiBzb2N9L2ZzbC9ndXRzLnR4dCAgICAgICAgIHwgICAzICsNCj4gPiAgTUFJTlRBSU5FUlMg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgMTEgKy0NCj4gPiAgYXJj
-aC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMjA4MGEuZHRzaSAgICAgfCAgIDYgKw0K
-PiA+ICBhcmNoL3Bvd2VycGMva2VybmVsL2NwdV9zZXR1cF9mc2xfYm9va2UuUyAgICAgICAgICB8
-ICAgMiArLQ0KPiA+ICBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9wY2kuYyAgICAgICAgICAgICAg
-ICAgICAgICB8ICAgMiArLQ0KPiA+ICBkcml2ZXJzL2Jhc2UvS2NvbmZpZyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICB8ICAgMSArDQo+ID4gIGRyaXZlcnMvYmFzZS9zb2MuYyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDY2ICsrKysrKw0KPiA+ICBkcml2ZXJzL2Nsay9j
-bGstcW9yaXEuYyAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgMyArLQ0KPiA+ICBkcml2
-ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jICAgICAgICAgICAgICAgICAgICAgICB8ICAgMiArLQ0K
-PiA+ICBkcml2ZXJzL2lvbW11L2ZzbF9wYW11LmMgICAgICAgICAgICAgICAgICAgICAgICAgICB8
-ICAgMyArLQ0KPiA+ICBkcml2ZXJzL21tYy9ob3N0L0tjb25maWcgICAgICAgICAgICAgICAgICAg
-ICAgICAgICB8ICAgMSArDQo+ID4gIGRyaXZlcnMvbW1jL2hvc3Qvc2RoY2ktb2YtZXNkaGMuYyAg
-ICAgICAgICAgICAgICAgIHwgIDIwICsrDQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVz
-Y2FsZS9naWFuZmFyLmMgICAgICAgICAgIHwgICAyICstDQo+ID4gIGRyaXZlcnMvc29jL0tjb25m
-aWcgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAyICstDQo+ID4gIGRyaXZlcnMv
-c29jL2ZzbC9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDE5ICsrDQo+ID4g
-IGRyaXZlcnMvc29jL2ZzbC9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAx
-ICsNCj4gPiAgZHJpdmVycy9zb2MvZnNsL2d1dHMuYyAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgfCAyNTcNCj4gKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIGluY2x1ZGUvbGludXgvZnNs
-L2d1dHMuaCAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMTI1ICsrKysrKy0tLS0NCj4gPiAg
-Li4uL2FzbS9tcGM4NXh4LmggPT4gaW5jbHVkZS9saW51eC9mc2wvc3ZyLmggICAgICAgfCAgIDQg
-Ky0NCj4gPiAgaW5jbHVkZS9saW51eC9zeXNfc29jLmggICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgfCAgIDMgKw0KPiA+ICAyMSBmaWxlcyBjaGFuZ2VkLCA0NzggaW5zZXJ0aW9ucygrKSwgNjEg
-ZGVsZXRpb25zKC0pICByZW5hbWUNCj4gPiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
-Z3Mve3Bvd2VycGMgPT4gc29jfS9mc2wvZ3V0cy50eHQgKDkxJSkNCj4gPiBjcmVhdGUgbW9kZSAx
-MDA2NDQgZHJpdmVycy9zb2MvZnNsL0tjb25maWcgIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IGRy
-aXZlcnMvc29jL2ZzbC9ndXRzLmMgIHJlbmFtZSBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbXBj
-ODV4eC5oID0+DQo+ID4gaW5jbHVkZS9saW51eC9mc2wvc3ZyLmggKDk3JSkNCj4gPg0KPiA+IC0t
-DQo+ID4gMi4xLjAuMjcuZzk2ZGIzMjQNCj4gPg0KPiANCj4gVGhpcyBsb29rcyBnb29kIHRvIG1l
-ISBJIGFtIG5vdCBzdXJlIHdoaWNoIHRyZWUgeW91IHdhbnQgdGhpcyB0byBiZQ0KPiBwaWNrZWQg
-dXAgdGhyb3VnaCwgYnV0IHVubGVzcyBubyBvdGhlciB2b2x1bnRlZXJzIEkgY2FuIHRha2UgaXQg
-dGhyb3VnaA0KPiBteSBtbWMgdHJlZS4NCj4gDQo+IEFsdGhvdWdoLCBiZWZvcmUgY29uc2lkZXJp
-bmcgdG8gYXBwbHksIEkgbmVlZCBhbiBhY2sgZnJvbSBTY290dC9Bcm5kIGZvcg0KPiB0aGUgZ3V0
-cyBkcml2ZXIgaW4gcGF0Y2ggNS84IGFuZCBJIG5lZWQgYW4gYWNrIGZyb20gR3JlZyBmb3IgcGF0
-Y2ggNy84LA0KPiB3aGVyZSB0aGUgc29jX2RldmljZV9tYXRjaCgpIGludGVyZmFjZSBpcyBhZGRl
-ZCAoc2VlbXMgbGlrZSB5b3UgZGlkbid0DQo+IGFkZCBoaW0gb24gY2MvdG8pLg0KPiANCj4gS2lu
-ZCByZWdhcmRzDQo+IFVmZmUNCg==
+Hi,
+
+I was hoping to get these posted earlier, but they had a dependency
+on the kbuild tree which took a while to merge. Hopefully we can get
+at least the first 4 patches in, which are just sanity checks on the
+final binary.
+
+With this series applied, I'm able to build[*] and boot a 64-bit
+book3s allyesconfig kernel, a 200MB vmlinux (although today's tree
+breaks in some random driver initcall in late boot). That's largely
+a culmination of Stephen Rothwell's work (including the kbuild changes
+that were merged earlier in 4.9), I just picked up some of his patches
+so attributions may not be 100% reflective of reality.
+
+[*] Building allyesconfig still requires KALLSYMS_EXTRA_PASS=1, which
+    I'm yet to look into.
+
+Thanks,
+Nick
+
+Nicholas Piggin (7):
+  powerpc: use the new post-link pass to check relocations
+  powerpc: add arch/powerpc/tools directory
+  powerpc/64s: tool to flag direct branches from unrelocated interrupt
+    vectors
+  powerpc/64: tool to check head sections location sanity
+  powerpc/64: handle linker stubs in low .text code
+  powerpc: switch to using thin archives if COMPILE_TEST is set
+  powerpc/64: allow CONFIG_RELOCATABLE if COMPILE_TEST
+
+ arch/powerpc/Kconfig                               |  5 +-
+ arch/powerpc/Makefile                              | 17 +----
+ arch/powerpc/Makefile.postlink                     | 48 ++++++++++++++
+ arch/powerpc/include/asm/head-64.h                 | 20 ++++--
+ arch/powerpc/kernel/vmlinux.lds.S                  | 28 ++------
+ .../gcc-check-mprofile-kernel.sh                   |  0
+ arch/powerpc/tools/head_check.sh                   | 74 ++++++++++++++++++++++
+ arch/powerpc/{ => tools}/relocs_check.sh           |  0
+ arch/powerpc/tools/unrel_branch_check.sh           | 56 ++++++++++++++++
+ 9 files changed, 203 insertions(+), 45 deletions(-)
+ create mode 100644 arch/powerpc/Makefile.postlink
+ rename arch/powerpc/{scripts => tools}/gcc-check-mprofile-kernel.sh (100%)
+ create mode 100755 arch/powerpc/tools/head_check.sh
+ rename arch/powerpc/{ => tools}/relocs_check.sh (100%)
+ create mode 100755 arch/powerpc/tools/unrel_branch_check.sh
+
+-- 
+2.9.3
