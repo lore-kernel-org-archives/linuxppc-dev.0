@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szFvg2SVmzDt1d
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szFvg2YpyzDt1m
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 13:17:35 +1100 (AEDT)
-In-Reply-To: <1476180904-19466-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1475760801-10592-1-git-send-email-ldufour@linux.vnet.ibm.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kda@linux-powerpc.org, jstancek@redhat.com
-Subject: Re: powerpc/mm/hash64: Fix might_have_hea() check
-Message-Id: <3szFvg0GZwz9sBr@ozlabs.org>
-Date: Wed, 19 Oct 2016 13:17:34 +1100 (AEDT)
+Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/pseries: Fix stack corruption in htpe code
+Message-Id: <3szFvg1KN7z9sCZ@ozlabs.org>
+Date: Wed, 19 Oct 2016 13:17:35 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,33 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-11-10 at 10:15:04 UTC, Michael Ellerman wrote:
-> In commit 2b4e3ad8f579 ("powerpc/mm/hash64: Don't test for machine type
-> to detect HEA special case") we changed the logic in might_have_hea()
-> to check FW_FEATURE_SPLPAR rather than machine_is(pseries).
+On Thu, 2016-06-10 at 13:33:21 UTC, Laurent Dufour wrote:
+> This commit fixes a stack corruption in the pseries specific code dealing
+> with the huge pages.
 > 
-> However the check was incorrectly negated, leading to crashes on
-> machines with HEA adapters, such as:
+> In __pSeries_lpar_hugepage_invalidate() the buffer used to pass arguments
+> to the hypervisor is not large enough. This leads to a stack corruption
+> where a previously saved register could be corrupted leading to unexpected
+> result in the caller, like the following panic:
 > 
->   mm: Hashing failure ! EA=0xd000080080004040 access=0x800000000000000e current=NetworkManager
->       trap=0x300 vsid=0x13d349c ssize=1 base psize=2 psize 2 pte=0xc0003cc033e701ae
->   Unable to handle kernel paging request for data at address 0xd000080080004040
->   Call Trace:
->     .ehea_create_cq+0x148/0x340 [ehea] (unreliable)
->     .ehea_up+0x258/0x1200 [ehea]
->     .ehea_open+0x44/0x1a0 [ehea]
->     ...
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=2048 NUMA pSeries
+> Modules linked in: virtio_balloon ip_tables x_tables autofs4
+> virtio_blk 8139too virtio_pci virtio_ring 8139cp virtio
+> CPU: 11 PID: 1916 Comm: mmstress Not tainted 4.8.0 #76
+> task: c000000005394880 task.stack: c000000005570000
+> NIP: c00000000027bf6c LR: c00000000027bf64 CTR: 0000000000000000
+> REGS: c000000005573820 TRAP: 0300   Not tainted  (4.8.0)
+> MSR: 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 84822884  XER:
+> 20000000
+> CFAR: c00000000010a924 DAR: 420000000014e5e0 DSISR: 40000000 SOFTE: 1
+> GPR00: c00000000027bf64 c000000005573aa0 c000000000e02800 c000000004447964
+> GPR04: c00000000404de18 c000000004d38810 00000000042100f5 00000000f5002104
+> GPR08: e0000000f5002104 0000000000000001 042100f5000000e0 00000000042100f5
+> GPR12: 0000000000002200 c00000000fe02c00 c00000000404de18 0000000000000000
+> GPR16: c1ffffffffffe7ff 00003fff62000000 420000000014e5e0 00003fff63000000
+> GPR20: 0008000000000000 c0000000f7014800 0405e600000000e0 0000000000010000
+> GPR24: c000000004d38810 c000000004447c10 c00000000404de18 c000000004447964
+> GPR28: c000000005573b10 c000000004d38810 00003fff62000000 420000000014e5e0
+> NIP [c00000000027bf6c] zap_huge_pmd+0x4c/0x470
+> LR [c00000000027bf64] zap_huge_pmd+0x44/0x470
+> Call Trace:
+> [c000000005573aa0] [c00000000027bf64] zap_huge_pmd+0x44/0x470 (unreliable)
+> [c000000005573af0] [c00000000022bbd8] unmap_page_range+0xcf8/0xed0
+> [c000000005573c30] [c00000000022c2d4] unmap_vmas+0x84/0x120
+> [c000000005573c80] [c000000000235448] unmap_region+0xd8/0x1b0
+> [c000000005573d80] [c0000000002378f0] do_munmap+0x2d0/0x4c0
+> [c000000005573df0] [c000000000237be4] SyS_munmap+0x64/0xb0
+> [c000000005573e30] [c000000000009560] system_call+0x38/0x108
+> Instruction dump:
+> fbe1fff8 fb81ffe0 7c7f1b78 7ca32b78 7cbd2b78 f8010010 7c9a2378 f821ffb1
+> 7cde3378 4bfffea9 7c7b1b79 41820298 <e87f0000> 48000130 7fa5eb78 7fc4f378
 > 
-> Fix it by removing the negation.
+> Most of the time, the bug is surfacing in a caller up in the stack from
+> __pSeries_lpar_hugepage_invalidate() which is quite confusing.
 > 
-> Fixes: 2b4e3ad8f579 ("powerpc/mm/hash64: Don't test for machine type to detect HEA special case")
-> Cc: stable@vger.kernel.org # v4.8+
-> Reported-by: Denis Kirjanov <kda@linux-powerpc.org>
-> Reported-by: Jan Stancek <jstancek@redhat.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> This bug is pending since v3.11 but was hidden if a caller of the
+> caller of __pSeries_lpar_hugepage_invalidate() has pushed the corruped
+> register (r18 in this case) in the stack and is not using it until
+> restoring it. GCC 6.2.0 seems to raise it more frequently.
+> 
+> This commit also change the definition of the parameter buffer in
+> pSeries_lpar_flush_hash_range() to rely on the global define
+> PLPAR_HCALL9_BUFSIZE (no functional change here).
+> 
+> Fixes: 1a5272866f87 ("powerpc: Optimize hugepage invalidate")
+> Cc: <stable@vger.kernel.org>
+> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/08bf75ba852ef8304a84b6a030466b
+https://git.kernel.org/powerpc/c/05af40e885955065aee8bb7425058e
 
 cheers
