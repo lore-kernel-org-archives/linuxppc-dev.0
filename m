@@ -1,19 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szVYC3g1YzDt2W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:47:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szVhS0YMdzDt37
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 22:53:44 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [RFC PATCH 2/3] powerpc/pseries: Define & use a type for the
- plpar_hcall() retvals
-In-Reply-To: <b922cd6c-a44d-6950-93d7-6645fd1f7fac@gmail.com>
-References: <1476780032-21643-1-git-send-email-mpe@ellerman.id.au>
- <1476780032-21643-2-git-send-email-mpe@ellerman.id.au>
- <b922cd6c-a44d-6950-93d7-6645fd1f7fac@gmail.com>
-Date: Wed, 19 Oct 2016 22:47:26 +1100
-Message-ID: <87lgxk4l2p.fsf@concordia.ellerman.id.au>
+To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>, monstr@monstr.eu,
+ ralf@linux-mips.org, tglx@linutronix.de, jason@lakedaemon.net,
+ marc.zyngier@arm.com, alistair@popple.id.au, mporter@kernel.crashing.org
+Cc: soren.brinkmann@xilinx.com, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, michal.simek@xilinx.com,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org, benh@kernel.crashing.org
+Subject: Re: [Patch v5 06/12] powerpc/virtex: Use generic xilinx irqchip driver
+In-Reply-To: <1476723176-39891-7-git-send-email-Zubair.Kakakhel@imgtec.com>
+References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <1476723176-39891-7-git-send-email-Zubair.Kakakhel@imgtec.com>
+Date: Wed, 19 Oct 2016 22:53:43 +1100
+Message-ID: <87funs4ks8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,24 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com> writes:
 
-> On 18/10/16 19:40, Michael Ellerman wrote:
->> We have now had two nasty stack corruption bugs caused by incorrect
->> sizing of the return buffer for plpar_hcall()/plpar_hcall9().
->> 
->> To avoid any more such bugs, define a type which encodes the size of the
->> return buffer, and change the argument of plpar_hcall() to be of that
->> type, meaning the compiler will check for us that we passed the right
->> size buffer.
->> 
->> There isn't an easy way to do this incrementally, without introducing a
->> new function name, eg. plpar_hcall_with_struct(), which is ugly as hell.
->> So just do it in one tree-wide change.
->> 
-> Conceptually looks god, but I think we need to abstract the return values
-> as well. I'll test and see if I can send you something on top of this
+> The Xilinx interrupt controller driver is now available in drivers/irqchip.
+> Switch to using that driver.
+>
+> Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+>
+> ---
+> V5 New patch
+>
+> Tested on virtex440-ml507 using qemu
 
-Not sure I know what you mean.
+I don't have one of these to test on, and the patch looks sane, so
+that's good enough for me.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 cheers
