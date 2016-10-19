@@ -1,21 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szHCm68KfzDt24
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 14:16:36 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id r16so1085075pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 20:16:36 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH 7/7] powerpc/64: allow CONFIG_RELOCATABLE if COMPILE_TEST
-Date: Wed, 19 Oct 2016 14:16:00 +1100
-Message-Id: <20161019031600.17933-8-npiggin@gmail.com>
-In-Reply-To: <20161019031600.17933-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szJpm2lcWzDt1n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 15:28:32 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id 128so1259269pfz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2016 21:28:32 -0700 (PDT)
+Subject: Re: [PATCH 3/7] powerpc/64s: tool to flag direct branches from
+ unrelocated interrupt vectors
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 References: <20161019031600.17933-1-npiggin@gmail.com>
+ <20161019031600.17933-4-npiggin@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <408e4f35-17a6-8738-c711-8bfb39928628@gmail.com>
+Date: Wed, 19 Oct 2016 15:28:40 +1100
+MIME-Version: 1.0
+In-Reply-To: <20161019031600.17933-4-npiggin@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is cruft to work around allmodconfig build breakage.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 00d9e31..f48d2eb 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -458,7 +458,7 @@ config KEXEC
- 
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
--	depends on (PPC64 && !COMPILE_TEST) || (FLATMEM && (44x || FSL_BOOKE))
-+	depends on PPC64 || (FLATMEM && (44x || FSL_BOOKE))
- 	select NONSTATIC_KERNEL
- 	help
- 	  This builds a kernel image that is capable of running at the
-@@ -482,7 +482,7 @@ config RELOCATABLE
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
- 	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
--	select RELOCATABLE if (PPC64 && !COMPILE_TEST) || 44x || FSL_BOOKE
-+	select RELOCATABLE if PPC64 || 44x || FSL_BOOKE
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The same kernel binary can be used as production kernel and dump
--- 
-2.9.3
+On 19/10/16 14:15, Nicholas Piggin wrote:
+> Direct banches from code below __end_interrupts to code above
+> __end_interrupts when built with CONFIG_RELOCATABLE are disallowed
+> because they will break when the kernel is not located at 0.
+> 
+> Sample output:
+> 
+>     WARNING: Unrelocated relative branches
+>     c000000000000118 bl-> 0xc000000000038fb8 <pnv_restore_hyp_resource>
+>     c00000000000013c b-> 0xc0000000001068a4 <kvm_start_guest>
+>     c000000000000148 b-> 0xc00000000003919c <pnv_wakeup_loss>
+>     c00000000000014c b-> 0xc00000000003923c <pnv_wakeup_noloss>
+>     c0000000000005a4 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
+>     c000000000001af0 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
+>     c000000000001b24 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
+>     c000000000001b58 b-> 0xc000000000106ffc <kvmppc_interrupt_hv>
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+
+If this is the same script I gave you, you can add my SOB line as well
+
+Balbir
