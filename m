@@ -1,45 +1,31 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-qk0-f171.google.com (mail-qk0-f171.google.com
- [209.85.220.171])
+Return-Path: <jgunthorpe@obsidianresearch.com>
+Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0Jhq4MWrzDvY1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 06:26:51 +1100 (AEDT)
-Received: by mail-qk0-f171.google.com with SMTP id o68so113936217qkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 12:26:50 -0700 (PDT)
-Date: Thu, 20 Oct 2016 21:26:47 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Lorenzo Stoakes <lstoakes@gmail.com>, linux-mm@kvack.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Jan Kara <jack@suse.cz>, Hugh Dickins <hughd@google.com>,
- Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0P695RslzDvY1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 09:45:37 +1100 (AEDT)
+Date: Thu, 20 Oct 2016 16:45:21 -0600
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Andrew Morton <akpm@linux-foundation.org>,
- adi-buildroot-devel@lists.sourceforge.net,
- ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mips@linux-mips.org, linux-rdma@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 00/10] mm: adjust get_user_pages* functions to explicitly
- pass FOLL_* flags
-Message-ID: <20161020192646.GC27342@dhcp22.suse.cz>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161018153050.GC13117@dhcp22.suse.cz>
- <20161019085815.GA22239@lucifer>
- <20161019090727.GE7517@dhcp22.suse.cz>
- <5807A427.7010200@linux.intel.com>
- <20161019170127.GN24393@dhcp22.suse.cz>
- <5807AC2B.4090208@linux.intel.com>
+ Denys Vlasenko <dvlasenk@redhat.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Oleg Nesterov <oleg@redhat.com>,
+ Florian Weimer <fweimer@redhat.com>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v6] powerpc: Do not make the entire heap executable
+Message-ID: <20161020224521.GA24970@obsidianresearch.com>
+References: <20161003161322.3835-1-dvlasenk@redhat.com>
+ <CAGXu5j+haCUW_AEPLPcVGtrnv4ojQ79FDpspUurYJSX_-TXeow@mail.gmail.com>
+ <877f9p55lu.fsf@concordia.ellerman.id.au>
+ <CAGXu5jJ3PpvNBYyBWa_M8ELLPuJOcJt-KuH0uRK66peJM_CnSg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5807AC2B.4090208@linux.intel.com>
+In-Reply-To: <CAGXu5jJ3PpvNBYyBWa_M8ELLPuJOcJt-KuH0uRK66peJM_CnSg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,20 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 19-10-16 10:23:55, Dave Hansen wrote:
-> On 10/19/2016 10:01 AM, Michal Hocko wrote:
-> > The question I had earlier was whether this has to be an explicit FOLL
-> > flag used by g-u-p users or we can just use it internally when mm !=
-> > current->mm
+On Tue, Oct 04, 2016 at 09:54:12AM -0700, Kees Cook wrote:
+> On Mon, Oct 3, 2016 at 5:18 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > Kees Cook <keescook@chromium.org> writes:
+> >
+> >> On Mon, Oct 3, 2016 at 9:13 AM, Denys Vlasenko <dvlasenk@redhat.com> wrote:
+> >>> On 32-bit powerpc the ELF PLT sections of binaries (built with --bss-plt,
+> >>> or with a toolchain which defaults to it) look like this:
+> > ...
+> >>>
+> >>> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> >>> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+> >>> Acked-by: Kees Cook <keescook@chromium.org>
+> >>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> >>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >>> CC: Paul Mackerras <paulus@samba.org>
+> >>> CC: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> >>> CC: Kees Cook <keescook@chromium.org>
+> >>> CC: Oleg Nesterov <oleg@redhat.com>
+> >>> CC: Michael Ellerman <mpe@ellerman.id.au>
+> >>> CC: Florian Weimer <fweimer@redhat.com>
+> >>> CC: linux-mm@kvack.org
+> >>> CC: linuxppc-dev@lists.ozlabs.org
+> >>> CC: linux-kernel@vger.kernel.org
+> >>> Changes since v5:
+> >>> * made do_brk_flags() error out if any bits other than VM_EXEC are set.
+> >>>   (Kees Cook: "With this, I'd be happy to Ack.")
+> >>>   See https://patchwork.ozlabs.org/patch/661595/
+> >>
+> >> Excellent, thanks for the v6! Should this go via the ppc tree or the -mm tree?
+> >
+> > -mm would be best, given the diffstat I think it's less likely to
+> >  conflict if it goes via -mm.
 > 
-> The reason I chose not to do that was that deferred work gets run under
-> a basically random 'current'.  If we just use 'mm != current->mm', then
-> the deferred work will sometimes have pkeys enforced and sometimes not,
-> basically randomly.
+> Okay, excellent. Andrew, do you have this already in email? I think
+> you weren't on the explicit CC from the v6...
 
-OK, I see (async_pf_execute and ksm ). It makes more sense to me. Thanks
-for the clarification.
+FWIW (and ping),
 
--- 
-Michal Hocko
-SUSE Labs
+Tested-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+
+On ARM32 (kirkwood) and PPC32 (405)
+
+For reference, here is the patchwork URL:
+
+https://patchwork.ozlabs.org/patch/677753/
+
+Jason
