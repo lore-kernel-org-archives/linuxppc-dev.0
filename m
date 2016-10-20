@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0G85226fzDvXm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:49 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9KHSuE5111274
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:47 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 266y50ce0c-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0G896bmCzDvYW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:53 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9KHT38X106920
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:51 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 266xp8e99j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:47 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:51 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Fri, 21 Oct 2016 03:31:44 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CD9FE3578053
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:41 +1100 (EST)
+ Fri, 21 Oct 2016 03:31:48 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 46DD52BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:46 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9KHVfIm52822036
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:41 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9KHVkK52359750
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:46 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9KHVeIT004972
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:41 +1100
+ u9KHVikK005019
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:46 +1100
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
@@ -37,13 +37,12 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
  will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
  pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
- borntraeger@de.ibm.com, rkrcmar@redhat.com,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v5 7/9] x86, xen: support vcpu preempted check
-Date: Thu, 20 Oct 2016 17:27:52 -0400
+ borntraeger@de.ibm.com, rkrcmar@redhat.com
+Subject: [PATCH v5 8/9] s390/spinlock: Provide vcpu_is_preempted
+Date: Thu, 20 Oct 2016 17:27:53 -0400
 In-Reply-To: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 References: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1476998874-2089-8-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Message-Id: <1476998874-2089-9-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,42 +52,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Juergen Gross <jgross@suse.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-Support the vcpu_is_preempted() functionality under Xen. This will
-enhance lock performance on overcommitted hosts (more runnable vcpus
-than physical cpus in the system) as doing busy waits for preempted
-vcpus will hurt system performance far worse than early yielding.
+this implements the s390 backend for commit
+"kernel/sched: introduce vcpu preempted check interface"
+by reworking the existing smp_vcpu_scheduled into
+arch_vcpu_is_preempted. We can then also get rid of the
+local cpu_is_preempted function by moving the
+CIF_ENABLED_WAIT test into arch_vcpu_is_preempted.
 
-A quick test (4 vcpus on 1 physical cpu doing a parallel build job
-with "make -j 8") reduced system time by about 5% with this patch.
-
-Signed-off-by: Juergen Gross <jgross@suse.com>
-Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- arch/x86/xen/spinlock.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/s390/include/asm/spinlock.h |  8 ++++++++
+ arch/s390/kernel/smp.c           |  9 +++++++--
+ arch/s390/lib/spinlock.c         | 25 ++++++++-----------------
+ 3 files changed, 23 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
-index 3d6e006..74756bb 100644
---- a/arch/x86/xen/spinlock.c
-+++ b/arch/x86/xen/spinlock.c
-@@ -114,7 +114,6 @@ void xen_uninit_lock_cpu(int cpu)
- 	per_cpu(irq_name, cpu) = NULL;
+diff --git a/arch/s390/include/asm/spinlock.h b/arch/s390/include/asm/spinlock.h
+index 7e9e09f..7ecd890 100644
+--- a/arch/s390/include/asm/spinlock.h
++++ b/arch/s390/include/asm/spinlock.h
+@@ -23,6 +23,14 @@ _raw_compare_and_swap(unsigned int *lock, unsigned int old, unsigned int new)
+ 	return __sync_bool_compare_and_swap(lock, old, new);
  }
  
--
- /*
-  * Our init of PV spinlocks is split in two init functions due to us
-  * using paravirt patching and jump labels patching and having to do
-@@ -137,6 +136,8 @@ void __init xen_init_spinlocks(void)
- 	pv_lock_ops.queued_spin_unlock = PV_CALLEE_SAVE(__pv_queued_spin_unlock);
- 	pv_lock_ops.wait = xen_qlock_wait;
- 	pv_lock_ops.kick = xen_qlock_kick;
++#ifndef CONFIG_SMP
++static inline bool arch_vcpu_is_preempted(int cpu) { return false; }
++#else
++bool arch_vcpu_is_preempted(int cpu);
++#endif
 +
-+	pv_lock_ops.vcpu_is_preempted = xen_vcpu_stolen;
++#define vcpu_is_preempted arch_vcpu_is_preempted
++
+ /*
+  * Simple spin lock operations.  There are two variants, one clears IRQ's
+  * on the local processor, one does not.
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index 35531fe..b988ed1 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -368,10 +368,15 @@ int smp_find_processor_id(u16 address)
+ 	return -1;
  }
  
- /*
+-int smp_vcpu_scheduled(int cpu)
++bool arch_vcpu_is_preempted(int cpu)
+ {
+-	return pcpu_running(pcpu_devices + cpu);
++	if (test_cpu_flag_of(CIF_ENABLED_WAIT, cpu))
++		return false;
++	if (pcpu_running(pcpu_devices + cpu))
++		return false;
++	return true;
+ }
++EXPORT_SYMBOL(arch_vcpu_is_preempted);
+ 
+ void smp_yield_cpu(int cpu)
+ {
+diff --git a/arch/s390/lib/spinlock.c b/arch/s390/lib/spinlock.c
+index e5f50a7..e48a48e 100644
+--- a/arch/s390/lib/spinlock.c
++++ b/arch/s390/lib/spinlock.c
+@@ -37,15 +37,6 @@ static inline void _raw_compare_and_delay(unsigned int *lock, unsigned int old)
+ 	asm(".insn rsy,0xeb0000000022,%0,0,%1" : : "d" (old), "Q" (*lock));
+ }
+ 
+-static inline int cpu_is_preempted(int cpu)
+-{
+-	if (test_cpu_flag_of(CIF_ENABLED_WAIT, cpu))
+-		return 0;
+-	if (smp_vcpu_scheduled(cpu))
+-		return 0;
+-	return 1;
+-}
+-
+ void arch_spin_lock_wait(arch_spinlock_t *lp)
+ {
+ 	unsigned int cpu = SPINLOCK_LOCKVAL;
+@@ -62,7 +53,7 @@ void arch_spin_lock_wait(arch_spinlock_t *lp)
+ 			continue;
+ 		}
+ 		/* First iteration: check if the lock owner is running. */
+-		if (first_diag && cpu_is_preempted(~owner)) {
++		if (first_diag && arch_vcpu_is_preempted(~owner)) {
+ 			smp_yield_cpu(~owner);
+ 			first_diag = 0;
+ 			continue;
+@@ -81,7 +72,7 @@ void arch_spin_lock_wait(arch_spinlock_t *lp)
+ 		 * yield the CPU unconditionally. For LPAR rely on the
+ 		 * sense running status.
+ 		 */
+-		if (!MACHINE_IS_LPAR || cpu_is_preempted(~owner)) {
++		if (!MACHINE_IS_LPAR || arch_vcpu_is_preempted(~owner)) {
+ 			smp_yield_cpu(~owner);
+ 			first_diag = 0;
+ 		}
+@@ -108,7 +99,7 @@ void arch_spin_lock_wait_flags(arch_spinlock_t *lp, unsigned long flags)
+ 			continue;
+ 		}
+ 		/* Check if the lock owner is running. */
+-		if (first_diag && cpu_is_preempted(~owner)) {
++		if (first_diag && arch_vcpu_is_preempted(~owner)) {
+ 			smp_yield_cpu(~owner);
+ 			first_diag = 0;
+ 			continue;
+@@ -127,7 +118,7 @@ void arch_spin_lock_wait_flags(arch_spinlock_t *lp, unsigned long flags)
+ 		 * yield the CPU unconditionally. For LPAR rely on the
+ 		 * sense running status.
+ 		 */
+-		if (!MACHINE_IS_LPAR || cpu_is_preempted(~owner)) {
++		if (!MACHINE_IS_LPAR || arch_vcpu_is_preempted(~owner)) {
+ 			smp_yield_cpu(~owner);
+ 			first_diag = 0;
+ 		}
+@@ -165,7 +156,7 @@ void _raw_read_lock_wait(arch_rwlock_t *rw)
+ 	owner = 0;
+ 	while (1) {
+ 		if (count-- <= 0) {
+-			if (owner && cpu_is_preempted(~owner))
++			if (owner && arch_vcpu_is_preempted(~owner))
+ 				smp_yield_cpu(~owner);
+ 			count = spin_retry;
+ 		}
+@@ -211,7 +202,7 @@ void _raw_write_lock_wait(arch_rwlock_t *rw, unsigned int prev)
+ 	owner = 0;
+ 	while (1) {
+ 		if (count-- <= 0) {
+-			if (owner && cpu_is_preempted(~owner))
++			if (owner && arch_vcpu_is_preempted(~owner))
+ 				smp_yield_cpu(~owner);
+ 			count = spin_retry;
+ 		}
+@@ -241,7 +232,7 @@ void _raw_write_lock_wait(arch_rwlock_t *rw)
+ 	owner = 0;
+ 	while (1) {
+ 		if (count-- <= 0) {
+-			if (owner && cpu_is_preempted(~owner))
++			if (owner && arch_vcpu_is_preempted(~owner))
+ 				smp_yield_cpu(~owner);
+ 			count = spin_retry;
+ 		}
+@@ -285,7 +276,7 @@ void arch_lock_relax(unsigned int cpu)
+ {
+ 	if (!cpu)
+ 		return;
+-	if (MACHINE_IS_LPAR && !cpu_is_preempted(~cpu))
++	if (MACHINE_IS_LPAR && !arch_vcpu_is_preempted(~cpu))
+ 		return;
+ 	smp_yield_cpu(~cpu);
+ }
 -- 
 2.4.11
