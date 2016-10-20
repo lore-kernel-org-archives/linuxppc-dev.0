@@ -1,48 +1,25 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t00D75JSnzDvWD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 18:04:23 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9K74HTf031790
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 03:04:21 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 266mej2s19-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 03:04:20 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Thu, 20 Oct 2016 17:04:09 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4A00D2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 18:04:07 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9K747JJ19857452
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 18:04:07 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9K7468N000474
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 18:04:07 +1100
-Subject: Re: [PATCH] cpufreq: powernv: Use node ID in init_chip_info
-To: Emily Shaffer <emilyshaffer@google.com>
-References: <CAJoAoZmfxs8wwy1XsfN9qzLyf-ifQK-qPE4jeBhnKKzjoHSXmA@mail.gmail.com>
- <20161020035951.GH11766@vireshk-i7>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, rjw@rjwysocki.net,
- linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org,
- akshay.adiga@linux.vnet.ibm.com, ego@linux.vnet.ibm.com
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Date: Thu, 20 Oct 2016 12:33:56 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t00qP4mQPzDvWc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 18:31:29 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id r16so4748062pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 00:31:29 -0700 (PDT)
+Date: Thu, 20 Oct 2016 18:31:21 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson
+ <alex.williamson@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v3 3/4] vfio/spapr: Cache mm in tce_container
+Message-ID: <20161020183121.073f01ac@roar.ozlabs.ibm.com>
+In-Reply-To: <1476932630-45323-4-git-send-email-aik@ozlabs.ru>
+References: <1476932630-45323-1-git-send-email-aik@ozlabs.ru>
+ <1476932630-45323-4-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20161020035951.GH11766@vireshk-i7>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <c113a5cb-6043-e1d0-ccfd-81871d65a1ab@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,106 +29,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 20 Oct 2016 14:03:49 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-On 10/20/2016 09:29 AM, Viresh Kumar wrote:
-> + few IBM guys who have been working on this.
+> In some situations the userspace memory context may live longer than
+> the userspace process itself so if we need to do proper memory context
+> cleanup, we better cache @mm and use it later when the process is gone
+> (@current or @current->mm is NULL).
 > 
-> On 19-10-16, 15:02, Emily Shaffer wrote:
->> Fixed assumption that node_id==chip_id in powernv-cpufreq.c:init_chip_info;
->> explicitly use node ID where necessary.
+> This references mm and stores the pointer in the container; this is done
+> when a container is just created so checking for !current->mm in other
+> places becomes pointless.
+> 
+> This replaces current->mm with container->mm everywhere except debug
+> prints.
+> 
+> This adds a check that current->mm is the same as the one stored in
+> the container to prevent userspace from registering memory in other
+> processes.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 127 ++++++++++++++++++++----------------
+>  1 file changed, 71 insertions(+), 56 deletions(-)
+> 
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index d0c38b2..6b0b121 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -31,49 +31,46 @@
 
-Thanks for the bug fix. I agree that the node-ids should not be assumed to be
-always be equal to chip-ids. But I think it would be better to get rid of
-cpumask_of_node() as it has problems when the powernv-cpufreq driver is
-initialized with offline cpus, like reported in the post below.
-https://patchwork.kernel.org/patch/8887591/
-(^^ This should also solve the node_id=chip_id problem)
+Does it make sense to move the rest of these hunks into patch 2?
+I think they're similarly just moving the mm reference into callers.
 
-Since throttle stats are common for all cpus in the chip, so we are better of
-not using cpumask_of_node() instead define something like cpumask_of_chip()
-where the driver doesn't have to compute chip cpumask.
 
-Thanks and Regards,
-Shilpa
+>  static void tce_iommu_detach_group(void *iommu_data,
+>  		struct iommu_group *iommu_group);
+>  
+> -static long try_increment_locked_vm(long npages)
+> +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+>  {
+>  	long ret = 0, locked, lock_limit;
+>  
+> -	if (!current || !current->mm)
+> -		return -ESRCH; /* process exited */
+> -
+>  	if (!npages)
+>  		return 0;
+>  
+> -	down_write(&current->mm->mmap_sem);
+> -	locked = current->mm->locked_vm + npages;
+> +	down_write(&mm->mmap_sem);
+> +	locked = mm->locked_vm + npages;
+>  	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+>  		ret = -ENOMEM;
+>  	else
+> -		current->mm->locked_vm += npages;
+> +		mm->locked_vm += npages;
+>  
+>  	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+>  			npages << PAGE_SHIFT,
+> -			current->mm->locked_vm << PAGE_SHIFT,
+> +			mm->locked_vm << PAGE_SHIFT,
+>  			rlimit(RLIMIT_MEMLOCK),
+>  			ret ? " - exceeded" : "");
+>  
+> -	up_write(&current->mm->mmap_sem);
+> +	up_write(&mm->mmap_sem);
+>  
+>  	return ret;
+>  }
+>  
+> -static void decrement_locked_vm(long npages)
+> +static void decrement_locked_vm(struct mm_struct *mm, long npages)
+>  {
+> -	if (!current || !current->mm || !npages)
+> +	if (!mm || !npages)
+>  		return; /* process exited */
 
->>
->> Tested: All CPUs report in /sys/devices/system/cpu*/cpufreq/throttle_stats
->>
->> Effort: platforms/arch-powerpc
->> Google-Bug-Id: 26979978
-> 
-> Is this relevant upstream?
-> 
->>
->> Signed-off-by: Emily Shaffer <emilyshaffer@google.com>
->> Change-Id: I22eb626b32fbb8053b3bbb9c75e677c700d0c2fb
-> 
-> Gerrit id isn't required for upstream..
-> 
->> ---
->>  drivers/cpufreq/powernv-cpufreq.c | 27 +++++++++++++++++++++------
->>  1 file changed, 21 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/cpufreq/powernv-cpufreq.c
->> b/drivers/cpufreq/powernv-cpufreq.c
->> index d3ffde8..3750b58 100644
->> --- a/drivers/cpufreq/powernv-cpufreq.c
->> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -911,32 +911,47 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
->>
->>  static int init_chip_info(void)
->>  {
->> -       unsigned int chip[256];
->> +       int rc = 0;
->>         unsigned int cpu, i;
->>         unsigned int prev_chip_id = UINT_MAX;
->> +       unsigned int *chip, *node;
->> +
->> +       chip = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
->> +       node = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
->> +       if (!chip || !node) {
->> +               rc = -ENOMEM;
->> +               goto out;
->> +       }
->>
->>         for_each_possible_cpu(cpu) {
->>                 unsigned int id = cpu_to_chip_id(cpu);
->>
->>                 if (prev_chip_id != id) {
->>                         prev_chip_id = id;
->> -                       chip[nr_chips++] = id;
->> +                       node[nr_chips] = cpu_to_node(cpu);
->> +                       chip[nr_chips] = id;
->> +                       nr_chips++;
->>                 }
->>         }
->>
->>         chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
->> -       if (!chips)
->> -               return -ENOMEM;
->> +       if (!chips) {
->> +               rc = -ENOMEM;
->> +               goto out;
->> +       }
->>
->>         for (i = 0; i < nr_chips; i++) {
->>                 chips[i].id = chip[i];
->> -               cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
->> +               cpumask_copy(&chips[i].mask, cpumask_of_node(node[i]));
->>                 INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
->>                 for_each_cpu(cpu, &chips[i].mask)
->>                         per_cpu(chip_info, cpu) =  &chips[i];
->>         }
->>
->> -       return 0;
->> +out:
->> +       kfree(node);
->> +       kfree(chip);
->> +       return rc;
->>  }
->>
->>  static inline void clean_chip_info(void)
->> -- 
->> 2.8.0.rc3.226.g39d4020
-> 
+I know you're trying to be defensive and change as little logic as possible,
+but some cases should be an error, and I think some of the "process exited"
+comments were wrong anyway.
+
+Maybe pull the !mm test into the caller and make it WARN_ON?
+
+
+> @@ -317,6 +311,9 @@ static void *tce_iommu_open(unsigned long arg)
+>  		return ERR_PTR(-EINVAL);
+>  	}
+>  
+> +	if (!current->mm)
+> +		return ERR_PTR(-ESRCH); /* process exited */
+
+A userspace thread in the kernel can't have its mm disappear, unless you
+are actually in the exit code. !current->mm is more like a test for a kernel
+thread.
+
+
+> +
+>  	container = kzalloc(sizeof(*container), GFP_KERNEL);
+>  	if (!container)
+>  		return ERR_PTR(-ENOMEM);
+> @@ -326,13 +323,17 @@ static void *tce_iommu_open(unsigned long arg)
+>  
+>  	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
+>  
+> +	container->mm = current->mm;
+> +	atomic_inc(&container->mm->mm_count);
+> +
+>  	return container;
+
+It's a nitpick if you respin the patch, but I guess it would better be
+described as a reference than a cache of the object. "have tce_container
+take a reference to mm_struct".
+
+
+> @@ -515,13 +526,16 @@ static long tce_iommu_build_v2(struct tce_container *container,
+>  	unsigned long hpa;
+>  	enum dma_data_direction dirtmp;
+>  
+> +	if (container->mm != current->mm)
+> +		return -ESRCH;
+
+Good, is this condition now enforced on all entrypoints that use
+container->mm (except the final teardown)? (The mlock/rlimit stuff,
+as we talked about before, doesn't make sense if not).
+
+Thanks,
+Nick
