@@ -1,31 +1,25 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0P695RslzDvY1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 09:45:37 +1100 (AEDT)
-Date: Thu, 20 Oct 2016 16:45:21 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Kees Cook <keescook@chromium.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- Denys Vlasenko <dvlasenk@redhat.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Oleg Nesterov <oleg@redhat.com>,
- Florian Weimer <fweimer@redhat.com>, Linux-MM <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v6] powerpc: Do not make the entire heap executable
-Message-ID: <20161020224521.GA24970@obsidianresearch.com>
-References: <20161003161322.3835-1-dvlasenk@redhat.com>
- <CAGXu5j+haCUW_AEPLPcVGtrnv4ojQ79FDpspUurYJSX_-TXeow@mail.gmail.com>
- <877f9p55lu.fsf@concordia.ellerman.id.au>
- <CAGXu5jJ3PpvNBYyBWa_M8ELLPuJOcJt-KuH0uRK66peJM_CnSg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0QQZ3GxLzDvY9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 10:44:54 +1100 (AEDT)
+Date: Fri, 21 Oct 2016 10:14:02 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v3 1/4] powerpc/iommu: Pass mm_struct to
+ init/cleanup helpers
+Message-ID: <20161020231402.GP11140@umbus.fritz.box>
+References: <1476932630-45323-1-git-send-email-aik@ozlabs.ru>
+ <1476932630-45323-2-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAGXu5jJ3PpvNBYyBWa_M8ELLPuJOcJt-KuH0uRK66peJM_CnSg@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="LpcCHpaCAbC4X43d"
+In-Reply-To: <1476932630-45323-2-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,50 +29,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 04, 2016 at 09:54:12AM -0700, Kees Cook wrote:
-> On Mon, Oct 3, 2016 at 5:18 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > Kees Cook <keescook@chromium.org> writes:
-> >
-> >> On Mon, Oct 3, 2016 at 9:13 AM, Denys Vlasenko <dvlasenk@redhat.com> wrote:
-> >>> On 32-bit powerpc the ELF PLT sections of binaries (built with --bss-plt,
-> >>> or with a toolchain which defaults to it) look like this:
-> > ...
-> >>>
-> >>> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-> >>> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
-> >>> Acked-by: Kees Cook <keescook@chromium.org>
-> >>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> >>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >>> CC: Paul Mackerras <paulus@samba.org>
-> >>> CC: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >>> CC: Kees Cook <keescook@chromium.org>
-> >>> CC: Oleg Nesterov <oleg@redhat.com>
-> >>> CC: Michael Ellerman <mpe@ellerman.id.au>
-> >>> CC: Florian Weimer <fweimer@redhat.com>
-> >>> CC: linux-mm@kvack.org
-> >>> CC: linuxppc-dev@lists.ozlabs.org
-> >>> CC: linux-kernel@vger.kernel.org
-> >>> Changes since v5:
-> >>> * made do_brk_flags() error out if any bits other than VM_EXEC are set.
-> >>>   (Kees Cook: "With this, I'd be happy to Ack.")
-> >>>   See https://patchwork.ozlabs.org/patch/661595/
-> >>
-> >> Excellent, thanks for the v6! Should this go via the ppc tree or the -mm tree?
-> >
-> > -mm would be best, given the diffstat I think it's less likely to
-> >  conflict if it goes via -mm.
-> 
-> Okay, excellent. Andrew, do you have this already in email? I think
-> you weren't on the explicit CC from the v6...
 
-FWIW (and ping),
+--LpcCHpaCAbC4X43d
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Tested-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+On Thu, Oct 20, 2016 at 02:03:47PM +1100, Alexey Kardashevskiy wrote:
+> We are going to get rid of @current references in mmu_context_boos3s64.c
+> and cache mm_struct in the VFIO container. Since mm_context_t does not
+> have reference counting, we will be using mm_struct which does have
+> the reference counter.
+>=20
+> This changes mm_iommu_init/mm_iommu_cleanup to receive mm_struct rather
+> than mm_context_t (which is embedded into mm).
+>=20
+> This should not cause any behavioral change.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-On ARM32 (kirkwood) and PPC32 (405)
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-For reference, here is the patchwork URL:
+> ---
+>  arch/powerpc/include/asm/mmu_context.h | 4 ++--
+>  arch/powerpc/kernel/setup-common.c     | 2 +-
+>  arch/powerpc/mm/mmu_context_book3s64.c | 4 ++--
+>  arch/powerpc/mm/mmu_context_iommu.c    | 9 +++++----
+>  4 files changed, 10 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/includ=
+e/asm/mmu_context.h
+> index 5c45114..424844b 100644
+> --- a/arch/powerpc/include/asm/mmu_context.h
+> +++ b/arch/powerpc/include/asm/mmu_context.h
+> @@ -23,8 +23,8 @@ extern bool mm_iommu_preregistered(void);
+>  extern long mm_iommu_get(unsigned long ua, unsigned long entries,
+>  		struct mm_iommu_table_group_mem_t **pmem);
+>  extern long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem);
+> -extern void mm_iommu_init(mm_context_t *ctx);
+> -extern void mm_iommu_cleanup(mm_context_t *ctx);
+> +extern void mm_iommu_init(struct mm_struct *mm);
+> +extern void mm_iommu_cleanup(struct mm_struct *mm);
+>  extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long =
+ua,
+>  		unsigned long size);
+>  extern struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long ua,
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/set=
+up-common.c
+> index 270ee30..f516ac5 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -915,7 +915,7 @@ void __init setup_arch(char **cmdline_p)
+>  	init_mm.context.pte_frag =3D NULL;
+>  #endif
+>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> -	mm_iommu_init(&init_mm.context);
+> +	mm_iommu_init(&init_mm);
+>  #endif
+>  	irqstack_early_init();
+>  	exc_lvl_early_init();
+> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu=
+_context_book3s64.c
+> index b114f8b..ad82735 100644
+> --- a/arch/powerpc/mm/mmu_context_book3s64.c
+> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
+> @@ -115,7 +115,7 @@ int init_new_context(struct task_struct *tsk, struct =
+mm_struct *mm)
+>  	mm->context.pte_frag =3D NULL;
+>  #endif
+>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> -	mm_iommu_init(&mm->context);
+> +	mm_iommu_init(mm);
+>  #endif
+>  	return 0;
+>  }
+> @@ -160,7 +160,7 @@ static inline void destroy_pagetable_page(struct mm_s=
+truct *mm)
+>  void destroy_context(struct mm_struct *mm)
+>  {
+>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> -	mm_iommu_cleanup(&mm->context);
+> +	mm_iommu_cleanup(mm);
+>  #endif
+> =20
+>  #ifdef CONFIG_PPC_ICSWX
+> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_co=
+ntext_iommu.c
+> index e0f1c33..ad2e575 100644
+> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> @@ -373,16 +373,17 @@ void mm_iommu_mapped_dec(struct mm_iommu_table_grou=
+p_mem_t *mem)
+>  }
+>  EXPORT_SYMBOL_GPL(mm_iommu_mapped_dec);
+> =20
+> -void mm_iommu_init(mm_context_t *ctx)
+> +void mm_iommu_init(struct mm_struct *mm)
+>  {
+> -	INIT_LIST_HEAD_RCU(&ctx->iommu_group_mem_list);
+> +	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
+>  }
+> =20
+> -void mm_iommu_cleanup(mm_context_t *ctx)
+> +void mm_iommu_cleanup(struct mm_struct *mm)
+>  {
+>  	struct mm_iommu_table_group_mem_t *mem, *tmp;
+> =20
+> -	list_for_each_entry_safe(mem, tmp, &ctx->iommu_group_mem_list, next) {
+> +	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
+> +			next) {
+>  		list_del_rcu(&mem->next);
+>  		mm_iommu_do_free(mem);
+>  	}
 
-https://patchwork.ozlabs.org/patch/677753/
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Jason
+--LpcCHpaCAbC4X43d
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYCU+4AAoJEGw4ysog2bOSnowQAJdU61aWwjv//cUYfGT15zDp
+PiHAQy3Qulaib8KWZ7Mx924YUAwgUZeM59voExUjU9+TpWx0Tu8aPD10G+2XtYm/
+w0W3KgyE1SKAqfssRPDw2+/xr8/QmW9k6dDUXmWOlmYMscatNCY7F/wh+Q3s2LxS
+UgI6jWmvEkDamNFaSQVkmzSVoYW2V5H/DQnPhBFGjdKvTNvojy9zxgZIjLhNNyKO
+2+i6sIWF9B45A+VPxbgd+u9zy5l4u5BG1/fsjVyjeuC6YRrQGni4GrMqZa0FEJvV
+8X6ZMs/vNuIX+eThM3tCcSTOXRQLy/d760w17ahuaOt2NMGHwurGqVWb5a6ONXAl
+eDzc3q3iGPl+0o4UuiW0e8ADDFVz7j6bgethNWYvPb9AB9TQKX6Q3xu5BDwZaMLi
+ITsmHcpJhCUj0rZ9c8x7BU18zl51+MWhqZt5nqB4h/Coeu3oRZKHiII+PLGG3fPt
+rV8cFLRtnMSSWXRQRf0WwbuWcYpgDGjDOVo/IXRiMiI9daO9fgHHFX3ERKx0F2Od
+6lbuXzsPcLbI7wS2lX0lQsduOta2F4fujTL8XuxYm06AEaWUePQ9z/KgJg6QYSv1
+6PrK48RRvo0/RiV97pWDcFhiq4AB02FsnrZ2tnDI0RnfFUq9iSa7MmAr0i3SJo3R
+B+4B8/WVmPg10JmHIFjJ
+=jLjA
+-----END PGP SIGNATURE-----
+
+--LpcCHpaCAbC4X43d--
