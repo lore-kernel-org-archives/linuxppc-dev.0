@@ -1,25 +1,15 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3szvtN29Z7zDsxk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 14:48:44 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id r16so4180078pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2016 20:48:44 -0700 (PDT)
-Date: Thu, 20 Oct 2016 14:48:37 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 6/7] powerpc: switch to using thin archives if
- COMPILE_TEST is set
-Message-ID: <20161020144837.42fb443b@roar.ozlabs.ibm.com>
-In-Reply-To: <87wph44n9l.fsf@concordia.ellerman.id.au>
-References: <20161019031600.17933-1-npiggin@gmail.com>
- <20161019031600.17933-7-npiggin@gmail.com>
- <87wph44n9l.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3szw4D0P08zDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 14:57:16 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: paulus@samba.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Fix build error when SMP=n
+Date: Thu, 20 Oct 2016 14:57:12 +1100
+Message-Id: <1476935832-28880-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 19 Oct 2016 22:00:06 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Commit 5d375199ea96 ("KVM: PPC: Book3S HV: Set server for passed-through
+interrupts") broke the SMP=n build:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > Enable thin archives build for powerpc when COMPILE_TEST is set.
-> > Thin archives are explained in this commit:
-> >
-> >   a5967db9af51a84f5e181600954714a9e4c69f1f
-> >
-> > This is a gradual way to introduce the option to testers.  
-> 
-> I think I'd rather this was actually a user-selectable option, eg.
-> 
-> config USE_THIN_ARCHIVES
-> 	bool "Build the kernel using thin archives"
->         default n
-> 	select THIN_ARCHIVES
-> 	help
-> 	  Build the kernel using thin archives.
-> 	  If you're unsure say N.
+  arch/powerpc/kvm/book3s_hv_rm_xics.c:758:2: error: implicit declaration of function 'get_hard_smp_processor_id'
 
-Okay, that should be easy. I'll respin the series.
+That is because we lost the implicit include of asm/smp.h, so include it
+explicitly to get the definition for get_hard_smp_processor_id().
 
-Thanks,
-Nick
+Fixes: 5d375199ea96 ("KVM: PPC: Book3S HV: Set server for passed-through interrupts")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kvm/book3s_hv_rm_xics.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+index 82ff5de8b1e7..a0ea63ac2b52 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+@@ -23,6 +23,7 @@
+ #include <asm/ppc-opcode.h>
+ #include <asm/pnv-pci.h>
+ #include <asm/opal.h>
++#include <asm/smp.h>
+ 
+ #include "book3s_xics.h"
+ 
+-- 
+2.7.4
