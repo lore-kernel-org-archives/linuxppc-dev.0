@@ -1,34 +1,34 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0G7p3QvhzDvXp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:34 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9KHT3Dv099802
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:32 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26703n0mq3-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0G7y0Kl9zDvXr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:41 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9KHSuck122349
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:39 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 266y06vukf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:32 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:39 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Fri, 21 Oct 2016 03:31:29 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1BD2D3578052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:28 +1100 (EST)
+ Fri, 21 Oct 2016 03:31:36 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EA17A3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:32 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9KHVS3R19464338
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:28 +1100
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9KHVWnc63963148
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:32 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9KHVQVq004696
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:27 +1100
+ u9KHVVH6004802
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:32 +1100
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
@@ -39,11 +39,12 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
  borntraeger@de.ibm.com, rkrcmar@redhat.com,
  Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v5 4/9] powerpc/spinlock: support vcpu preempted check
-Date: Thu, 20 Oct 2016 17:27:49 -0400
+Subject: [PATCH v5 5/9] x86,
+ paravirt: Add interface to support kvm/xen vcpu preempted check
+Date: Thu, 20 Oct 2016 17:27:50 -0400
 In-Reply-To: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 References: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1476998874-2089-5-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Message-Id: <1476998874-2089-6-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,41 +57,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 This is to fix some lock holder preemption issues. Some other locks
 implementation do a spin loop before acquiring the lock itself.
 Currently kernel has an interface of bool vcpu_is_preempted(int cpu). It
-takes the cpu as parameter and return true if the cpu is preempted. Then
-kernel can break the spin loops upon on the retval of vcpu_is_preempted.
+takes the cpu as parameter and return true if the cpu is preempted.
+Then kernel can break the spin loops upon on the retval of
+vcpu_is_preempted.
 
 As kernel has used this interface, So lets support it.
 
-Only pSeries need support it. And the fact is powerNV are built into
-same kernel image with pSeries. So we need return false if we are runnig
-as powerNV. The another fact is that lppaca->yiled_count keeps zero on
-powerNV. So we can just skip the machine type check.
+To deal with kernel and kvm/xen, add vcpu_is_preempted into struct
+pv_lock_ops.
 
-Suggested-by: Boqun Feng <boqun.feng@gmail.com>
-Suggested-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Then kvm or xen could provide their own implementation to support
+vcpu_is_preempted.
+
 Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/spinlock.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/x86/include/asm/paravirt_types.h | 2 ++
+ arch/x86/include/asm/spinlock.h       | 8 ++++++++
+ arch/x86/kernel/paravirt-spinlocks.c  | 6 ++++++
+ 3 files changed, 16 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index abb6b0f..f4a9524 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -52,6 +52,14 @@
- #define SYNC_IO
- #endif
+diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
+index 0f400c0..38c3bb7 100644
+--- a/arch/x86/include/asm/paravirt_types.h
++++ b/arch/x86/include/asm/paravirt_types.h
+@@ -310,6 +310,8 @@ struct pv_lock_ops {
  
-+#ifdef CONFIG_PPC_PSERIES
+ 	void (*wait)(u8 *ptr, u8 val);
+ 	void (*kick)(int cpu);
++
++	bool (*vcpu_is_preempted)(int cpu);
+ };
+ 
+ /* This contains all the paravirt structures: we get a convenient
+diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+index 921bea7..0526f59 100644
+--- a/arch/x86/include/asm/spinlock.h
++++ b/arch/x86/include/asm/spinlock.h
+@@ -26,6 +26,14 @@
+ extern struct static_key paravirt_ticketlocks_enabled;
+ static __always_inline bool static_key_false(struct static_key *key);
+ 
++#ifdef CONFIG_PARAVIRT_SPINLOCKS
 +#define vcpu_is_preempted vcpu_is_preempted
 +static inline bool vcpu_is_preempted(int cpu)
 +{
-+	return !!(be32_to_cpu(lppaca_of(cpu).yield_count) & 1);
++	return pv_lock_ops.vcpu_is_preempted(cpu);
 +}
 +#endif
 +
- #if defined(CONFIG_PPC_SPLPAR)
- /* We only yield to the hypervisor if we are in shared processor mode */
- #define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
+ #include <asm/qspinlock.h>
+ 
+ /*
+diff --git a/arch/x86/kernel/paravirt-spinlocks.c b/arch/x86/kernel/paravirt-spinlocks.c
+index 2c55a00..2f204dd 100644
+--- a/arch/x86/kernel/paravirt-spinlocks.c
++++ b/arch/x86/kernel/paravirt-spinlocks.c
+@@ -21,12 +21,18 @@ bool pv_is_native_spin_unlock(void)
+ 		__raw_callee_save___native_queued_spin_unlock;
+ }
+ 
++static bool native_vcpu_is_preempted(int cpu)
++{
++	return 0;
++}
++
+ struct pv_lock_ops pv_lock_ops = {
+ #ifdef CONFIG_SMP
+ 	.queued_spin_lock_slowpath = native_queued_spin_lock_slowpath,
+ 	.queued_spin_unlock = PV_CALLEE_SAVE(__native_queued_spin_unlock),
+ 	.wait = paravirt_nop,
+ 	.kick = paravirt_nop,
++	.vcpu_is_preempted = native_vcpu_is_preempted,
+ #endif /* SMP */
+ };
+ EXPORT_SYMBOL(pv_lock_ops);
 -- 
 2.4.11
