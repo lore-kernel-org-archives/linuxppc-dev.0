@@ -1,50 +1,45 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mstsxfx@gmail.com>
+Received: from mail-qk0-f171.google.com (mail-qk0-f171.google.com
+ [209.85.220.171])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0G8F3BqJzDvYy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:57 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9KHSweI038956
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:55 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 266y2jvs1k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 13:31:55 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Fri, 21 Oct 2016 03:31:52 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 97B823578056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:50 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9KHVomr19202118
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:50 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9KHVn7M005078
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 04:31:50 +1100
-From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
- pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
- borntraeger@de.ibm.com, rkrcmar@redhat.com,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v5 9/9] Documentation: virtual: kvm: Support vcpu preempted
- check
-Date: Thu, 20 Oct 2016 17:27:54 -0400
-In-Reply-To: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-References: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1476998874-2089-10-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0Jhq4MWrzDvY1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 06:26:51 +1100 (AEDT)
+Received: by mail-qk0-f171.google.com with SMTP id o68so113936217qkf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 12:26:50 -0700 (PDT)
+Date: Thu, 20 Oct 2016 21:26:47 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Lorenzo Stoakes <lstoakes@gmail.com>, linux-mm@kvack.org,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Jan Kara <jack@suse.cz>, Hugh Dickins <hughd@google.com>,
+ Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-rdma@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 00/10] mm: adjust get_user_pages* functions to explicitly
+ pass FOLL_* flags
+Message-ID: <20161020192646.GC27342@dhcp22.suse.cz>
+References: <20161013002020.3062-1-lstoakes@gmail.com>
+ <20161018153050.GC13117@dhcp22.suse.cz>
+ <20161019085815.GA22239@lucifer>
+ <20161019090727.GE7517@dhcp22.suse.cz>
+ <5807A427.7010200@linux.intel.com>
+ <20161019170127.GN24393@dhcp22.suse.cz>
+ <5807AC2B.4090208@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5807AC2B.4090208@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,43 +49,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit ("x86, kvm: support vcpu preempted check") add one field "__u8
-preempted" into struct kvm_steal_time. This field tells if one vcpu is
-running or not.
+On Wed 19-10-16 10:23:55, Dave Hansen wrote:
+> On 10/19/2016 10:01 AM, Michal Hocko wrote:
+> > The question I had earlier was whether this has to be an explicit FOLL
+> > flag used by g-u-p users or we can just use it internally when mm !=
+> > current->mm
+> 
+> The reason I chose not to do that was that deferred work gets run under
+> a basically random 'current'.  If we just use 'mm != current->mm', then
+> the deferred work will sometimes have pkeys enforced and sometimes not,
+> basically randomly.
 
-It is zero if 1) some old KVM deos not support this filed. 2) the vcpu is
-preempted. Other values means the vcpu has been preempted.
+OK, I see (async_pf_execute and ksm ). It makes more sense to me. Thanks
+for the clarification.
 
-Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
----
- Documentation/virtual/kvm/msr.txt | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/virtual/kvm/msr.txt b/Documentation/virtual/kvm/msr.txt
-index 2a71c8f..3376f13 100644
---- a/Documentation/virtual/kvm/msr.txt
-+++ b/Documentation/virtual/kvm/msr.txt
-@@ -208,7 +208,8 @@ MSR_KVM_STEAL_TIME: 0x4b564d03
- 		__u64 steal;
- 		__u32 version;
- 		__u32 flags;
--		__u32 pad[12];
-+		__u8  preempted;
-+		__u32 pad[11];
- 	}
- 
- 	whose data will be filled in by the hypervisor periodically. Only one
-@@ -232,6 +233,11 @@ MSR_KVM_STEAL_TIME: 0x4b564d03
- 		nanoseconds. Time during which the vcpu is idle, will not be
- 		reported as steal time.
- 
-+		preempted: indicate the VCPU who owns this struct is running or
-+		not. Non-zero values mean the VCPU has been preempted. Zero
-+		means the VCPU is not preempted. NOTE, it is always zero if the
-+		the hypervisor doesn't support this field.
-+
- MSR_KVM_EOI_EN: 0x4b564d04
- 	data: Bit 0 is 1 when PV end of interrupt is enabled on the vcpu; 0
- 	when disabled.  Bit 1 is reserved and must be zero.  When PV end of
 -- 
-2.4.11
+Michal Hocko
+SUSE Labs
