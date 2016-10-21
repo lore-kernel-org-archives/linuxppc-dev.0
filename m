@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t105z6Q7XzDvcx
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 09:02:31 +1100 (AEDT)
-In-Reply-To: <1476336450-27862-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t10604s0kzDvcx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 09:02:32 +1100 (AEDT)
+In-Reply-To: <4a99340c-b773-51e4-0466-3d9a72ac83b2@gmail.com>
+To: Heiner Kallweit <hkallweit1@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: anton@samba.org
-Subject: Re: powerpc/mm: Drop dump_numa_memory_topology()
-Message-Id: <3t105z5FrWz9t0J@ozlabs.org>
-Date: Sat, 22 Oct 2016 09:02:31 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: powerpc/boot: fix boot on systems with uncompressed kernel image
+Message-Id: <3t10603krCz9t0p@ozlabs.org>
+Date: Sat, 22 Oct 2016 09:02:32 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,27 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-13-10 at 05:27:30 UTC, Michael Ellerman wrote:
-> At boot we dump the NUMA memory topology in dump_numa_memory_topology(),
-> at KERN_DEBUG level, resulting in output like:
+On Wed, 2016-12-10 at 19:00:43 UTC, Heiner Kallweit wrote:
+> This commit broke boot on systems with an uncompressed kernel image,
+> namely systems using a cuImage. On such systems the compressed boot
+> image (boot wrapper, uncompressed kernel image, ..) is decompressed
+> by u-boot already, therefore the boot wrapper code sees an
+> uncompressed kernel image.
 > 
->   Node 0 Memory: 0x0-0x100000000
->   Node 1 Memory: 0x100000000-0x200000000
+> The old decompression code silently assumed an uncompressed kernel
+> image if it found no valid gzip signature, whilst the new code
+> bailed out in this case.
 > 
-> Which is nice enough, but immediately after that we iterate over each
-> node and call setup_node_data(), which also prints out the node ranges,
-> at KERN_INFO, giving eg:
+> Fix this by re-introducing such a fallback if no valid compressed
+> image is found.
 > 
->   numa: Initmem setup node 0 [mem 0x00000000-0xffffffff]
->   numa: Initmem setup node 1 [mem 0x100000000-0x1ffffffff]
-> 
-> So drop dump_numa_memory_topology() as superfluous chatter.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Fixes: 1b7898ee276b ("Use the pre-boot decompression API")
+> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/08b5e79ebdb58868cbb6976ba0e389
+https://git.kernel.org/powerpc/c/65bc3ece84ef6340cbd80eec10ab9b
 
 cheers
