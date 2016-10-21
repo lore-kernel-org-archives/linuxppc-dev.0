@@ -1,29 +1,28 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <geert@linux-m68k.org>
+Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0ddc4ZtGzDvZx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 19:10:12 +1100 (AEDT)
-Date: Fri, 21 Oct 2016 10:07:41 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0fhm2SgMzDvY1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 19:58:00 +1100 (AEDT)
+Received: from andre.telenet-ops.be (andre.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:15])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 3t0fY63b03zMqysr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 10:51:22 +0200 (CEST)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Patrice Chotard <patrice.chotard@st.com>, Chanho Min <chanho.min@lge.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
+ linux-arm-kernel@lists.infradead.org, kernel@stlinux.com,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Marcin Niestroj <m.niestroj@grinn-global.com>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>,
- Mark Brown <broonie@kernel.org>, kernel-build-reports@lists.linaro.org,
- linaro-kernel@lists.linaro.org, linux-next@vger.kernel.org
-Subject: Re: [PATCH] kernel: irq: fix build failure
-In-Reply-To: <20161021120020.52b3fa35@canb.auug.org.au>
-Message-ID: <alpine.DEB.2.20.1610211006370.4797@nanos>
-References: <1475775403-27207-1-git-send-email-sudipm.mukherjee@gmail.com>
- <57FBBA0B.9070500@gmail.com> <alpine.DEB.2.20.1610201454410.5073@nanos>
- <20161021120020.52b3fa35@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 5/6] dt: booting-without-of: DT fix
+ s/#interrupt-cell/#interrupt-cells/
+Date: Fri, 21 Oct 2016 10:51:16 +0200
+Message-Id: <1477039877-20227-6-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
+References: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,18 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 21 Oct 2016, Stephen Rothwell wrote:
-> On Thu, 20 Oct 2016 14:55:45 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:
-> > I know. This is under discussion with the driver folks as we are not going
-> > to blindly export stuff just because someone slapped a irq_set_parent()
-> > into the code w/o knowing why.
-> 
-> Do we have any idea if a resolution is close.  This was first reported
-> in linux-next in September 14/15.  :-(
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+v2:
+  - Add Acked-by.
+---
+ Documentation/devicetree/booting-without-of.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Grr. Yes. As much as I hate it, I'll go and export it for now. Should be
-able to get it into rc2.
-
-Thanks,
-
-	tglx
+diff --git a/Documentation/devicetree/booting-without-of.txt b/Documentation/devicetree/booting-without-of.txt
+index 3f1437fbca6b49f3..5bcea91c0cc65af2 100644
+--- a/Documentation/devicetree/booting-without-of.txt
++++ b/Documentation/devicetree/booting-without-of.txt
+@@ -1302,7 +1302,7 @@ number and level/sense information. All interrupt children in an
+ OpenPIC interrupt domain use 2 cells per interrupt in their interrupts
+ property.
+ 
+-The PCI bus binding specifies a #interrupt-cell value of 1 to encode
++The PCI bus binding specifies a #interrupt-cells value of 1 to encode
+ which interrupt pin (INTA,INTB,INTC,INTD) is used.
+ 
+ 2) interrupt-parent property
+-- 
+1.9.1
