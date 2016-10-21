@@ -1,23 +1,30 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t0gpv4525zDt78
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 20:48:22 +1100 (AEDT)
-Subject: Re: [Patch v5 04/12] irqchip: xilinx: Add support for parent intc
-To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>, monstr@monstr.eu,
- ralf@linux-mips.org, tglx@linutronix.de, jason@lakedaemon.net,
- alistair@popple.id.au, mporter@kernel.crashing.org
-References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
- <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
-Cc: soren.brinkmann@xilinx.com, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, michal.simek@xilinx.com,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org
-From: Marc Zyngier <marc.zyngier@arm.com>
-Message-ID: <32f5f17d-7864-c782-7a6f-03660b7ab055@arm.com>
-Date: Fri, 21 Oct 2016 10:48:15 +0100
+Return-Path: <peter.griffin@linaro.org>
+Received: from mail-qk0-x22a.google.com (mail-qk0-x22a.google.com
+ [IPv6:2607:f8b0:400d:c09::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0hLD1WLQzDvXp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 21:12:02 +1100 (AEDT)
+Received: by mail-qk0-x22a.google.com with SMTP id z190so142132135qkc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 03:12:02 -0700 (PDT)
+Date: Fri, 21 Oct 2016 11:11:56 +0100
+From: Peter Griffin <peter.griffin@linaro.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Patrice Chotard <patrice.chotard@st.com>, Chanho Min <chanho.min@lge.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, kernel@stlinux.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [STLinux Kernel] [PATCH v2 1/6] ARM: dts: STiH407: DT fix
+ s/interrupts-names/interrupt-names/
+Message-ID: <20161021101156.GA32234@griffinp-ThinkPad-X1-Carbon-2nd>
+References: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
+ <1477039877-20227-2-git-send-email-geert+renesas@glider.be>
 MIME-Version: 1.0
-In-Reply-To: <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1477039877-20227-2-git-send-email-geert+renesas@glider.be>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,101 +34,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17/10/16 17:52, Zubair Lutfullah Kakakhel wrote:
-> The MIPS based xilfpga platform has the following IRQ structure
-> 
-> Peripherals --> xilinx_intcontroller -> mips_cpu_int controller
-> 
-> Add support for the driver to chain the irq handler
-> 
-> Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
-> 
+On Fri, 21 Oct 2016, Geert Uytterhoeven wrote:
+
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Rob Herring <robh@kernel.org>
 > ---
-> V4 -> V5
-> Rebased to v4.9-rc1
-> Missing curly braces
-> 
-> V3 -> V4
-> Clean up if/else when a parent is found
-> Pass irqchip structure to handler as data
-> 
-> V2 -> V3
-> Reused existing parent node instead of finding again.
-> Cleanup up handler based on review
-> 
-> V1 -> V2
-> 
-> No change
+> v2:
+>   - Add Acked-by.
 > ---
->  drivers/irqchip/irq-xilinx-intc.c | 26 ++++++++++++++++++++++++--
->  1 file changed, 24 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
-> index 45e5154..dbf8b0c 100644
-> --- a/drivers/irqchip/irq-xilinx-intc.c
-> +++ b/drivers/irqchip/irq-xilinx-intc.c
-> @@ -15,6 +15,7 @@
->  #include <linux/of_address.h>
->  #include <linux/io.h>
->  #include <linux/bug.h>
-> +#include <linux/of_irq.h>
->  
->  /* No one else should require these constants, so define them locally here. */
->  #define ISR 0x00			/* Interrupt Status Register */
-> @@ -154,11 +155,23 @@ static int xintc_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
->  	.map = xintc_map,
->  };
->  
-> +static void xil_intc_irq_handler(struct irq_desc *desc)
-> +{
-> +	u32 pending;
-> +
-> +	do {
-> +		pending = xintc_get_irq();
-> +		if (pending == -1U)
-> +			break;
-> +		generic_handle_irq(pending);
-> +	} while (true);
 
-This is missing the chained_irq_enter()/exit() calls, which will lead to
-races or lockups on the root irqchip.
-
-> +}
-> +
->  static int __init xilinx_intc_of_init(struct device_node *intc,
->  					     struct device_node *parent)
->  {
->  	u32 nr_irq;
-> -	int ret;
-> +	int ret, irq;
->  	struct xintc_irq_chip *irqc;
->  
->  	if (xintc_irqc) {
-> @@ -221,7 +234,16 @@ static int __init xilinx_intc_of_init(struct device_node *intc,
->  		goto err_alloc;
->  	}
->  
-> -	irq_set_default_host(root_domain);
-> +	if (parent) {
-> +		irq = irq_of_parse_and_map(intc, 0);
-> +		if (irq)
-> +			irq_set_chained_handler_and_data(irq,
-> +							 xil_intc_irq_handler,
-> +							 irqc);
-> +
-
-Shouldn't you return an error if irq is zero?
-
-> +	} else {
-> +		irq_set_default_host(root_domain);
-> +	}
->  
->  	return 0;
->  
-> 
-
-Thanks,
-
-	M.
--- 
-Jazz is not dead. It just smells funny...
+Acked-by: Peter Griffin <peter.griffin@linaro.org>
