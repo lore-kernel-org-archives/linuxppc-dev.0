@@ -1,23 +1,30 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <patrice.chotard@st.com>
+Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com
+ [62.209.51.94])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0kss5Xv7zDt20
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 23:06:09 +1100 (AEDT)
-Date: Fri, 21 Oct 2016 14:06:05 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- linux-s390 <linux-s390@vger.kernel.org>, linux-arch@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Noam Camus <noamc@ezchip.com>
-Subject: Re: [PATCH/RFC 0/5] cpu_relax: introduce yield, remove lowlatency
-Message-ID: <20161021120605.GD3142@twins.programming.kicks-ass.net>
-References: <1477051138-1610-1-git-send-email-borntraeger@de.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0l6l0NYczDsrV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 23:17:18 +1100 (AEDT)
+Subject: Re: [STLinux Kernel] [PATCH v2 1/6] ARM: dts: STiH407: DT fix
+ s/interrupts-names/interrupt-names/
+To: Peter Griffin <peter.griffin@linaro.org>, Geert Uytterhoeven
+ <geert+renesas@glider.be>
+References: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
+ <1477039877-20227-2-git-send-email-geert+renesas@glider.be>
+ <20161021101156.GA32234@griffinp-ThinkPad-X1-Carbon-2nd>
+CC: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Chanho Min <chanho.min@lge.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, <devicetree@vger.kernel.org>,
+ <alsa-devel@alsa-project.org>, <kernel@stlinux.com>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@lists.infradead.org>
+From: Patrice Chotard <patrice.chotard@st.com>
+Message-ID: <1f897a1f-5b67-c563-1e04-9ab85a819a62@st.com>
+Date: Fri, 21 Oct 2016 13:37:38 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1477051138-1610-1-git-send-email-borntraeger@de.ibm.com>
+In-Reply-To: <20161021101156.GA32234@griffinp-ThinkPad-X1-Carbon-2nd>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,12 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 21, 2016 at 01:58:53PM +0200, Christian Borntraeger wrote:
-> Christian Borntraeger (5):
->   processor.h: introduce cpu_relax_yield
->   stop_machine: yield CPU during stop machine
->   s390: make cpu_relax a barrier again
->   Remove cpu_relax_lowlatency users
->   remove cpu_relax_lowlatency
+On 10/21/2016 12:11 PM, Peter Griffin wrote:
+> On Fri, 21 Oct 2016, Geert Uytterhoeven wrote:
+> 
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Acked-by: Rob Herring <robh@kernel.org>
+>> ---
+>> v2:
+>>   - Add Acked-by.
+>> ---
+> 
+> Acked-by: Peter Griffin <peter.griffin@linaro.org>
+> 
 
-Yay for killing cpu_relax_lowlatency()...
+applied with Peter Acked-by
+
+Thanks Geert
