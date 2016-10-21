@@ -2,21 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t105z0bTczDvcx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t105z6Q7XzDvcx
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 09:02:31 +1100 (AEDT)
-In-Reply-To: <1476437916-31010-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+In-Reply-To: <1476336450-27862-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, stable@vger.kernel.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, gkurz@linux.vnet.ibm.com
-Subject: Re: [RESEND,
- v3] cxl: Prevent adapter reset if an active context exists
-Message-Id: <3t105y6r6cz9svs@ozlabs.org>
-Date: Sat, 22 Oct 2016 09:02:30 +1100 (AEDT)
+Cc: anton@samba.org
+Subject: Re: powerpc/mm: Drop dump_numa_memory_topology()
+Message-Id: <3t105z5FrWz9t0J@ozlabs.org>
+Date: Sat, 22 Oct 2016 09:02:31 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-14-10 at 09:38:36 UTC, Vaibhav Jain wrote:
-> This patch prevents resetting the cxl adapter via sysfs in presence of
-> one or more active cxl_context on it. This protects against an
-> unrecoverable error caused by PSL owning a dirty cache line even after
-> reset and host tries to touch the same cache line. In case a force reset
-> of the card is required irrespective of any active contexts, the int
-> value -1 can be stored in the 'reset' sysfs attribute of the card.
+On Thu, 2016-13-10 at 05:27:30 UTC, Michael Ellerman wrote:
+> At boot we dump the NUMA memory topology in dump_numa_memory_topology(),
+> at KERN_DEBUG level, resulting in output like:
 > 
-> The patch introduces a new atomic_t member named contexts_num inside
-> struct cxl that holds the number of active context attached to the card
-> , which is checked against '0' before proceeding with the reset. To
-> prevent against a race condition where a context is activated just after
-> reset check is performed, the contexts_num is atomically set to '-1'
-> after reset-check to indicate that no more contexts can be activated on
-> the card anymore.
+>   Node 0 Memory: 0x0-0x100000000
+>   Node 1 Memory: 0x100000000-0x200000000
 > 
-> Before activating a context we atomically test if contexts_num is
-> non-negative and if so, increment its value by one. In case the value of
-> contexts_num is negative then it indicates that the card is about to be
-> reset and context activation is error-ed out at that point.
+> Which is nice enough, but immediately after that we iterate over each
+> node and call setup_node_data(), which also prints out the node ranges,
+> at KERN_INFO, giving eg:
 > 
-> Cc: stable@vger.kernel.org
-> Fixes: 62fa19d4 ("cxl: Add ability to reset the card")
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+>   numa: Initmem setup node 0 [mem 0x00000000-0xffffffff]
+>   numa: Initmem setup node 1 [mem 0x100000000-0x1ffffffff]
+> 
+> So drop dump_numa_memory_topology() as superfluous chatter.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/70b565bbdb911023373e035225ab10
+https://git.kernel.org/powerpc/c/08b5e79ebdb58868cbb6976ba0e389
 
 cheers
