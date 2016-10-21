@@ -1,55 +1,27 @@
-Return-Path: <xinhui@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0T2P0VT9zDt62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 12:42:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9L1ciTx052078
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 21:42:34 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2675yff7ay-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 21:42:34 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
- Fri, 21 Oct 2016 11:42:31 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1092E2BB0059
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 12:42:30 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9L1gTaT20906058
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 12:42:29 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9L1gSU9007271
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 12:42:29 +1100
-Subject: Re: [PATCH v5 9/9] Documentation: virtual: kvm: Support vcpu
- preempted check
-To: Boqun Feng <boqun.feng@gmail.com>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-References: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1476998874-2089-10-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20161021012348.GC8429@tardis.cn.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
- pbonzini@redhat.com, bsingharora@gmail.com, borntraeger@de.ibm.com,
- rkrcmar@redhat.com
-From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
-Date: Fri, 21 Oct 2016 09:42:22 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0T8S6mtczDvH2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 12:47:52 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id s8so7038439pfj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2016 18:47:52 -0700 (PDT)
+Date: Fri, 21 Oct 2016 12:47:37 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>, Paul Mackerras
+ <paulus@samba.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v3 3/4] vfio/spapr: Cache mm in tce_container
+Message-ID: <20161021124737.1b65ae8b@roar.ozlabs.ibm.com>
+In-Reply-To: <20161021002134.GS11140@umbus.fritz.box>
+References: <1476932630-45323-1-git-send-email-aik@ozlabs.ru>
+ <1476932630-45323-4-git-send-email-aik@ozlabs.ru>
+ <20161020183121.073f01ac@roar.ozlabs.ibm.com>
+ <20161021002134.GS11140@umbus.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <20161021012348.GC8429@tardis.cn.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Message-Id: <26e3f487-10e5-3a45-0b8d-e4554d716ae8@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,60 +31,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 21 Oct 2016 11:21:34 +1100
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
+> On Thu, Oct 20, 2016 at 06:31:21PM +1100, Nicholas Piggin wrote:
+> > On Thu, 20 Oct 2016 14:03:49 +1100
+> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> >   
+> > > In some situations the userspace memory context may live longer than
+> > > the userspace process itself so if we need to do proper memory context
+> > > cleanup, we better cache @mm and use it later when the process is gone
+> > > (@current or @current->mm is NULL).
+> > > 
+> > > This references mm and stores the pointer in the container; this is done
+> > > when a container is just created so checking for !current->mm in other
+> > > places becomes pointless.
+> > > 
+> > > This replaces current->mm with container->mm everywhere except debug
+> > > prints.
+> > > 
+> > > This adds a check that current->mm is the same as the one stored in
+> > > the container to prevent userspace from registering memory in other
+> > > processes.
+> > > 
+> > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > > ---
+> > >  drivers/vfio/vfio_iommu_spapr_tce.c | 127 ++++++++++++++++++++----------------
+> > >  1 file changed, 71 insertions(+), 56 deletions(-)
+> > > 
+> > > diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> > > index d0c38b2..6b0b121 100644
+> > > --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> > > +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> > > @@ -31,49 +31,46 @@  
+> > 
+> > Does it make sense to move the rest of these hunks into patch 2?
+> > I think they're similarly just moving the mm reference into callers.
+> > 
+> >   
+> > >  static void tce_iommu_detach_group(void *iommu_data,
+> > >  		struct iommu_group *iommu_group);
+> > >  
+> > > -static long try_increment_locked_vm(long npages)
+> > > +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+> > >  {
+> > >  	long ret = 0, locked, lock_limit;
+> > >  
+> > > -	if (!current || !current->mm)
+> > > -		return -ESRCH; /* process exited */
+> > > -
+> > >  	if (!npages)
+> > >  		return 0;
+> > >  
+> > > -	down_write(&current->mm->mmap_sem);
+> > > -	locked = current->mm->locked_vm + npages;
+> > > +	down_write(&mm->mmap_sem);
+> > > +	locked = mm->locked_vm + npages;
+> > >  	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+> > >  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+> > >  		ret = -ENOMEM;
+> > >  	else
+> > > -		current->mm->locked_vm += npages;
+> > > +		mm->locked_vm += npages;
+> > >  
+> > >  	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+> > >  			npages << PAGE_SHIFT,
+> > > -			current->mm->locked_vm << PAGE_SHIFT,
+> > > +			mm->locked_vm << PAGE_SHIFT,
+> > >  			rlimit(RLIMIT_MEMLOCK),
+> > >  			ret ? " - exceeded" : "");
+> > >  
+> > > -	up_write(&current->mm->mmap_sem);
+> > > +	up_write(&mm->mmap_sem);
+> > >  
+> > >  	return ret;
+> > >  }
+> > >  
+> > > -static void decrement_locked_vm(long npages)
+> > > +static void decrement_locked_vm(struct mm_struct *mm, long npages)
+> > >  {
+> > > -	if (!current || !current->mm || !npages)
+> > > +	if (!mm || !npages)
+> > >  		return; /* process exited */  
+> > 
+> > I know you're trying to be defensive and change as little logic as possible,
+> > but some cases should be an error, and I think some of the "process exited"
+> > comments were wrong anyway.
+> > 
+> > Maybe pull the !mm test into the caller and make it WARN_ON?
+> > 
+> >   
+> > > @@ -317,6 +311,9 @@ static void *tce_iommu_open(unsigned long arg)
+> > >  		return ERR_PTR(-EINVAL);
+> > >  	}
+> > >  
+> > > +	if (!current->mm)
+> > > +		return ERR_PTR(-ESRCH); /* process exited */  
+> > 
+> > A userspace thread in the kernel can't have its mm disappear, unless you
+> > are actually in the exit code. !current->mm is more like a test for a kernel
+> > thread.
+> > 
+> >   
+> > > +
+> > >  	container = kzalloc(sizeof(*container), GFP_KERNEL);
+> > >  	if (!container)
+> > >  		return ERR_PTR(-ENOMEM);
+> > > @@ -326,13 +323,17 @@ static void *tce_iommu_open(unsigned long arg)
+> > >  
+> > >  	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
+> > >  
+> > > +	container->mm = current->mm;
+> > > +	atomic_inc(&container->mm->mm_count);
+> > > +
+> > >  	return container;  
+> > 
+> > It's a nitpick if you respin the patch, but I guess it would better be
+> > described as a reference than a cache of the object. "have tce_container
+> > take a reference to mm_struct".
+> > 
+> >   
+> > > @@ -515,13 +526,16 @@ static long tce_iommu_build_v2(struct tce_container *container,
+> > >  	unsigned long hpa;
+> > >  	enum dma_data_direction dirtmp;
+> > >  
+> > > +	if (container->mm != current->mm)
+> > > +		return -ESRCH;  
+> > 
+> > Good, is this condition now enforced on all entrypoints that use
+> > container->mm (except the final teardown)? (The mlock/rlimit stuff,
+> > as we talked about before, doesn't make sense if not).  
+> 
+> Right.  I don't know that it's actually dangerous, but i think it
+> would be needlessly weird for one process to be able to manipulate
+> another process's mm via the container fd.  So all the entry points
+> that are directly called from userspace (basically, the ioctl()s)
+> should verify that current->mm matches container->mm (except the one
+> which initiallizes container->mm, obviously).
+> 
+> One other concern.  If I follow the logic correctly, if a process
+> created a container, passed the fd to another process then exited, the
+> container fd held by the other process would keep the original
+> process's mm alive indefinitely.  I'm not sure if that's a problem.
+> Nick?
+> 
 
-在 2016/10/21 09:23, Boqun Feng 写道:
-> On Thu, Oct 20, 2016 at 05:27:54PM -0400, Pan Xinhui wrote:
->> Commit ("x86, kvm: support vcpu preempted check") add one field "__u8
->> preempted" into struct kvm_steal_time. This field tells if one vcpu is
->> running or not.
->>
->> It is zero if 1) some old KVM deos not support this filed. 2) the vcpu is
->> preempted. Other values means the vcpu has been preempted.
->   ^^^^^^^^^
-> s/preempted/not preempted
->
-yes. the less of *not* definitely sould be avoided..
-> And better to fix other typos in the commit log ;-)
-> Maybe you can try aspell? That works for me.
->
-I will try it. :)
+Keeping the mm alive indefinitely is okay. When a process exits, it
+will tear down its user mappings, but the mm struct stays around for
+other users. Kernel threads can pick these up and keep them alive for
+example, which is what was causing the problem in the first place.
 
-> Regards,
-> Boqun
->
->>
->> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
->> ---
->>  Documentation/virtual/kvm/msr.txt | 8 +++++++-
->>  1 file changed, 7 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/virtual/kvm/msr.txt b/Documentation/virtual/kvm/msr.txt
->> index 2a71c8f..3376f13 100644
->> --- a/Documentation/virtual/kvm/msr.txt
->> +++ b/Documentation/virtual/kvm/msr.txt
->> @@ -208,7 +208,8 @@ MSR_KVM_STEAL_TIME: 0x4b564d03
->>  		__u64 steal;
->>  		__u32 version;
->>  		__u32 flags;
->> -		__u32 pad[12];
->> +		__u8  preempted;
->> +		__u32 pad[11];
->>  	}
->>
->>  	whose data will be filled in by the hypervisor periodically. Only one
->> @@ -232,6 +233,11 @@ MSR_KVM_STEAL_TIME: 0x4b564d03
->>  		nanoseconds. Time during which the vcpu is idle, will not be
->>  		reported as steal time.
->>
->> +		preempted: indicate the VCPU who owns this struct is running or
->> +		not. Non-zero values mean the VCPU has been preempted. Zero
->> +		means the VCPU is not preempted. NOTE, it is always zero if the
->> +		the hypervisor doesn't support this field.
->> +
->>  MSR_KVM_EOI_EN: 0x4b564d04
->>  	data: Bit 0 is 1 when PV end of interrupt is enabled on the vcpu; 0
->>  	when disabled.  Bit 1 is reserved and must be zero.  When PV end of
->> --
->> 2.4.11
->>
+Thanks,
+Nick
