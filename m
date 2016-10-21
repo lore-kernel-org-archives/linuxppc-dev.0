@@ -1,22 +1,20 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <shreyasbp@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0xvS0FwjzDvd1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 07:23:15 +1100 (AEDT)
-Date: Fri, 21 Oct 2016 15:23:09 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bhelgaas@google.com, benh@au1.ibm.com, benh@kernel.crashing.org,
- mpe@ellerman.id.au, clsoto@us.ibm.com
-Subject: Re: [PATCH v2 1/2] pci: Call pcibios_sriov_enable() before IOV BARs
- are enabled
-Message-ID: <20161021202309.GF9007@localhost>
-References: <1475192870-7763-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0lSR002XzDt0m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 23:32:38 +1100 (AEDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1475192870-7763-1-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <20161021090305.GA3809@fergus.ozlabs.ibm.com>
+References: <20161021090305.GA3809@fergus.ozlabs.ibm.com>
+From: "Shreyas B. Prabhu" <shreyasbp@gmail.com>
+Date: Fri, 21 Oct 2016 08:32:35 -0400
+Message-ID: <CAAVMmb40vaLuWndMnmF6gLcTjmq2LukNnm5NrSt_q7AHGZ2TUA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/64: Re-fix race condition between going idle
+ and entering guest
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=001a113cefcab29124053f5f3c49
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 30, 2016 at 09:47:49AM +1000, Gavin Shan wrote:
-> In current implementation, pcibios_sriov_enable() is used by PPC
-> PowerNV platform only. In PowerNV specific pcibios_sriov_enable(),
-> PF's IOV BARs might be updated (shifted) by pci_update_resource().
-> It means the IOV BARs aren't ready for decoding incoming memory
-> address until pcibios_sriov_enable() returns.
-> 
-> This calls pcibios_sriov_enable() earlier before the IOV BARs are
-> enabled. As the result, the IOV BARs have been configured correctly
-> when they are enabled.
-> 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Tested-by: Carol Soto <clsoto@us.ibm.com>
+--001a113cefcab29124053f5f3c49
+Content-Type: text/plain; charset=UTF-8
+
+On Fri, Oct 21, 2016 at 5:03 AM, Paul Mackerras <paulus@ozlabs.org> wrote:
+
+> Commit 8117ac6a6c2f ("powerpc/powernv: Switch off MMU before entering
+> nap/sleep/rvwinkle mode", 2014-12-10) fixed a race condition where one
+> thread entering a KVM guest could switch the MMU context to the guest
+> while another thread was still in host kernel context with the MMU on.
+> That commit moved the point where a thread entering a power-saving
+> mode set its kvm_hstate.hwthread_state field in its PACA to
+> KVM_HWTHREAD_IN_IDLE from a point where the MMU was on to after the
+> MMU had been switched off.  That commit also added a comment
+> explaining that we have to switch to real mode before setting
+> hwthread_state to avoid this race.
+>
+> Nevertheless, commit 4eae2c9ae54a ("powerpc/powernv: Make
+> pnv_powersave_common more generic", 2016-07-08) subsequently moved
+> the setting of hwthread_state back to a point where the MMU is on,
+> thus reintroducing the race, despite the comment saying that this
+> should not be done being included in full in the context lines of
+> the patch that did it.
+>
+> This fixes the race again and adds a bigger and shoutier comment
+> explaining the potential race condition.
+>
+> Cc: stable@vger.kernel.org # v4.8
+> Fixes: 4eae2c9ae54a
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 > ---
->  drivers/pci/iov.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-> index 2194b44..f1343f0 100644
-> --- a/drivers/pci/iov.c
-> +++ b/drivers/pci/iov.c
-> @@ -303,13 +303,6 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
->  			return rc;
->  	}
->  
-> -	pci_iov_set_numvfs(dev, nr_virtfn);
-> -	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
-> -	pci_cfg_access_lock(dev);
-> -	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
-> -	msleep(100);
-> -	pci_cfg_access_unlock(dev);
-> -
->  	iov->initial_VFs = initial;
->  	if (nr_virtfn < initial)
->  		initial = nr_virtfn;
-> @@ -320,6 +313,13 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
->  		goto err_pcibios;
->  	}
->  
-> +	pci_iov_set_numvfs(dev, nr_virtfn);
-> +	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
-> +	pci_cfg_access_lock(dev);
-> +	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
-> +	msleep(100);
-> +	pci_cfg_access_unlock(dev);
+>
 
-This one looks fine to me.
+Serious oversight on my part. Thanks for fixing this.
 
->  	for (i = 0; i < initial; i++) {
->  		rc = pci_iov_add_virtfn(dev, i, 0);
->  		if (rc)
-> -- 
-> 2.1.0
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Reviewed-by: Shreyas B. Prabhu <shreyasbp@gmail.com>
+
+Thanks,
+Shreyas
+
+--001a113cefcab29124053f5f3c49
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
+te">On Fri, Oct 21, 2016 at 5:03 AM, Paul Mackerras <span dir=3D"ltr">&lt;<=
+a href=3D"mailto:paulus@ozlabs.org" target=3D"_blank">paulus@ozlabs.org</a>=
+&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0=
+ 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">Commit 8117ac6a6c2f (&=
+quot;powerpc/powernv: Switch off MMU before entering<br>
+nap/sleep/rvwinkle mode&quot;, 2014-12-10) fixed a race condition where one=
+<br>
+thread entering a KVM guest could switch the MMU context to the guest<br>
+while another thread was still in host kernel context with the MMU on.<br>
+That commit moved the point where a thread entering a power-saving<br>
+mode set its kvm_hstate.hwthread_state field in its PACA to<br>
+KVM_HWTHREAD_IN_IDLE from a point where the MMU was on to after the<br>
+MMU had been switched off.=C2=A0 That commit also added a comment<br>
+explaining that we have to switch to real mode before setting<br>
+hwthread_state to avoid this race.<br>
+<br>
+Nevertheless, commit 4eae2c9ae54a (&quot;powerpc/powernv: Make<br>
+pnv_powersave_common more generic&quot;, 2016-07-08) subsequently moved<br>
+the setting of hwthread_state back to a point where the MMU is on,<br>
+thus reintroducing the race, despite the comment saying that this<br>
+should not be done being included in full in the context lines of<br>
+the patch that did it.<br>
+<br>
+This fixes the race again and adds a bigger and shoutier comment<br>
+explaining the potential race condition.<br>
+<br>
+Cc: <a href=3D"mailto:stable@vger.kernel.org">stable@vger.kernel.org</a> # =
+v4.8<br>
+Fixes: 4eae2c9ae54a<br>
+Signed-off-by: Paul Mackerras &lt;<a href=3D"mailto:paulus@ozlabs.org">paul=
+us@ozlabs.org</a>&gt;<br>
+---<br></blockquote><div><br></div><div>Serious oversight on my part. Thank=
+s for fixing this.</div><div><br></div><div>Reviewed-by: Shreyas B. Prabhu =
+&lt;<a href=3D"mailto:shreyasbp@gmail.com">shreyasbp@gmail.com</a>&gt;</div=
+><div><br></div><div>Thanks,</div><div>Shreyas</div></div>
+</div></div>
+
+--001a113cefcab29124053f5f3c49--
