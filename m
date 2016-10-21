@@ -1,30 +1,30 @@
-Return-Path: <peter.griffin@linaro.org>
-Received: from mail-qk0-x22a.google.com (mail-qk0-x22a.google.com
- [IPv6:2607:f8b0:400d:c09::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0hLD1WLQzDvXp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 21:12:02 +1100 (AEDT)
-Received: by mail-qk0-x22a.google.com with SMTP id z190so142132135qkc.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 03:12:02 -0700 (PDT)
-Date: Fri, 21 Oct 2016 11:11:56 +0100
-From: Peter Griffin <peter.griffin@linaro.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>, Chanho Min <chanho.min@lge.com>,
- Michael Ellerman <mpe@ellerman.id.au>, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, kernel@stlinux.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [STLinux Kernel] [PATCH v2 1/6] ARM: dts: STiH407: DT fix
- s/interrupts-names/interrupt-names/
-Message-ID: <20161021101156.GA32234@griffinp-ThinkPad-X1-Carbon-2nd>
-References: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
- <1477039877-20227-2-git-send-email-geert+renesas@glider.be>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0hWw0cWVzDvZr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 21:20:28 +1100 (AEDT)
+Date: Fri, 21 Oct 2016 21:20:26 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Marcin Niestroj
+ <m.niestroj@grinn-global.com>, Grygorii Strashko
+ <grygorii.strashko@ti.com>, Tony Lindgren <tony@atomide.com>, Lee Jones
+ <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>,
+ kernel-build-reports@lists.linaro.org, linaro-kernel@lists.linaro.org,
+ linux-next@vger.kernel.org
+Subject: Re: [PATCH] kernel: irq: fix build failure
+Message-ID: <20161021212026.76f4ec1c@canb.auug.org.au>
+In-Reply-To: <alpine.DEB.2.20.1610211006370.4797@nanos>
+References: <1475775403-27207-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <57FBBA0B.9070500@gmail.com>
+ <alpine.DEB.2.20.1610201454410.5073@nanos>
+ <20161021120020.52b3fa35@canb.auug.org.au>
+ <alpine.DEB.2.20.1610211006370.4797@nanos>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1477039877-20227-2-git-send-email-geert+renesas@glider.be>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,13 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 21 Oct 2016, Geert Uytterhoeven wrote:
+Hi Thomas,
 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Acked-by: Rob Herring <robh@kernel.org>
-> ---
-> v2:
->   - Add Acked-by.
-> ---
+On Fri, 21 Oct 2016 10:07:41 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> On Fri, 21 Oct 2016, Stephen Rothwell wrote:
+> > On Thu, 20 Oct 2016 14:55:45 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:  
+> > > I know. This is under discussion with the driver folks as we are not going
+> > > to blindly export stuff just because someone slapped a irq_set_parent()
+> > > into the code w/o knowing why.  
+> > 
+> > Do we have any idea if a resolution is close.  This was first reported
+> > in linux-next in September 14/15.  :-(  
+> 
+> Grr. Yes. As much as I hate it, I'll go and export it for now. Should be
+> able to get it into rc2.
 
-Acked-by: Peter Griffin <peter.griffin@linaro.org>
+Thanks.
+
+-- 
+Cheers,
+Stephen Rothwell
