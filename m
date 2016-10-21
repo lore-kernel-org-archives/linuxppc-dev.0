@@ -1,16 +1,28 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0QpB4swRzDvYB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 11:01:54 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: segher@kernel.crashing.org,
-	anton@samba.org
-Subject: [PATCH] powerpc/book3s64: Always build for power4 or later
-Date: Fri, 21 Oct 2016 11:01:51 +1100
-Message-Id: <1477008111-9160-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0S5d0dWPzDvZh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 12:00:21 +1100 (AEDT)
+Date: Fri, 21 Oct 2016 12:00:20 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Marcin Niestroj
+ <m.niestroj@grinn-global.com>, Grygorii Strashko
+ <grygorii.strashko@ti.com>, Tony Lindgren <tony@atomide.com>, Lee Jones
+ <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>,
+ kernel-build-reports@lists.linaro.org, linaro-kernel@lists.linaro.org,
+ linux-next@vger.kernel.org
+Subject: Re: [PATCH] kernel: irq: fix build failure
+Message-ID: <20161021120020.52b3fa35@canb.auug.org.au>
+In-Reply-To: <alpine.DEB.2.20.1610201454410.5073@nanos>
+References: <1475775403-27207-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <57FBBA0B.9070500@gmail.com>
+ <alpine.DEB.2.20.1610201454410.5073@nanos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,34 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we're not compiling for a specific CPU, ie. none of the
-CONFIG_POWERx_CPU options are set, and CONFIG_GENERIC_CPU *is* set, we
-currently don't pass any -mcpu option to the compiler. This means the
-compiler builds for a "generic" Power CPU.
+Hi Thomas,
 
-But back in 2014 we dropped support for pre power4 CPUs in commit
-468a33028edd ("powerpc: Drop support for pre-POWER4 cpus").
+On Thu, 20 Oct 2016 14:55:45 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> On Mon, 10 Oct 2016, Sudip Mukherjee wrote:
+> 
+> > On Thursday 06 October 2016 11:06 PM, Sudip Mukherjee wrote:  
+> > > The allmodconfig build of powerpc is failing with the error:
+> > > ERROR: ".irq_set_parent" [drivers/mfd/tps65217.ko] undefined!
+> > > 
+> > > export the symbol to fix the failure.  
+> > 
+> > Hi Thomas,
+> > powerpc and arm allmodconfig builds still fails with the same error.
+> > Build logs of next-20161010 are at:
+> > arm at https://travis-ci.org/sudipm-mukherjee/parport/jobs/166321467
+> > powerpc at https://travis-ci.org/sudipm-mukherjee/parport/jobs/166321473  
+> 
+> I know. This is under discussion with the driver folks as we are not going
+> to blindly export stuff just because someone slapped a irq_set_parent()
+> into the code w/o knowing why.
 
-Given that, there's no point in building the kernel to run on pre power4
-cpus. So update the flags we pass to the compiler when
-CONFIG_GENERIC_CPU is set, to specify -mcpu=power4.
+Do we have any idea if a resolution is close.  This was first reported
+in linux-next in September 14/15.  :-(
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Makefile | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 617dece67924..041fda1e2a5d 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -121,6 +121,7 @@ CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
- 
- ifeq ($(CONFIG_PPC_BOOK3S_64),y)
- CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power7,-mtune=power4)
-+CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=power4
- else
- CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
- endif
 -- 
-2.7.4
+Cheers,
+Stephen Rothwell
