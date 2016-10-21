@@ -1,45 +1,23 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0gHX4t5YzDvZw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 20:24:40 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9L9OYHC003745
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 05:24:37 -0400
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0b-001b2d01.pphosted.com with ESMTP id 267dd3qry0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 05:24:37 -0400
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Fri, 21 Oct 2016 14:54:09 +0530
-Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 132961258026
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 14:54:43 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9L9O66w38535276
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 14:54:06 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9L9O453008177
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 14:54:05 +0530
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- gkurz@linux.vnet.ibm.com, stable@vger.kernel.org
-Subject: [RESEND PATCH] cxl: Fix leaking pid refs in some error paths
-Date: Fri, 21 Oct 2016 14:53:53 +0530
-Message-Id: <1477041833-8302-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3t0gpv4525zDt78
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 20:48:22 +1100 (AEDT)
+Subject: Re: [Patch v5 04/12] irqchip: xilinx: Add support for parent intc
+To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>, monstr@monstr.eu,
+ ralf@linux-mips.org, tglx@linutronix.de, jason@lakedaemon.net,
+ alistair@popple.id.au, mporter@kernel.crashing.org
+References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
+Cc: soren.brinkmann@xilinx.com, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, michal.simek@xilinx.com,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org
+From: Marc Zyngier <marc.zyngier@arm.com>
+Message-ID: <32f5f17d-7864-c782-7a6f-03660b7ab055@arm.com>
+Date: Fri, 21 Oct 2016 10:48:15 +0100
+MIME-Version: 1.0
+In-Reply-To: <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,90 +27,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In some error paths in functions cxl_start_context and
-afu_ioctl_start_work pid references to the current & group-leader tasks
-can leak after they are taken. This patch fixes these error paths to
-release these pid references before exiting the error path.
+On 17/10/16 17:52, Zubair Lutfullah Kakakhel wrote:
+> The MIPS based xilfpga platform has the following IRQ structure
+> 
+> Peripherals --> xilinx_intcontroller -> mips_cpu_int controller
+> 
+> Add support for the driver to chain the irq handler
+> 
+> Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+> 
+> ---
+> V4 -> V5
+> Rebased to v4.9-rc1
+> Missing curly braces
+> 
+> V3 -> V4
+> Clean up if/else when a parent is found
+> Pass irqchip structure to handler as data
+> 
+> V2 -> V3
+> Reused existing parent node instead of finding again.
+> Cleanup up handler based on review
+> 
+> V1 -> V2
+> 
+> No change
+> ---
+>  drivers/irqchip/irq-xilinx-intc.c | 26 ++++++++++++++++++++++++--
+>  1 file changed, 24 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
+> index 45e5154..dbf8b0c 100644
+> --- a/drivers/irqchip/irq-xilinx-intc.c
+> +++ b/drivers/irqchip/irq-xilinx-intc.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/of_address.h>
+>  #include <linux/io.h>
+>  #include <linux/bug.h>
+> +#include <linux/of_irq.h>
+>  
+>  /* No one else should require these constants, so define them locally here. */
+>  #define ISR 0x00			/* Interrupt Status Register */
+> @@ -154,11 +155,23 @@ static int xintc_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
+>  	.map = xintc_map,
+>  };
+>  
+> +static void xil_intc_irq_handler(struct irq_desc *desc)
+> +{
+> +	u32 pending;
+> +
+> +	do {
+> +		pending = xintc_get_irq();
+> +		if (pending == -1U)
+> +			break;
+> +		generic_handle_irq(pending);
+> +	} while (true);
 
-Fixes: 7b8ad495("cxl: Fix DSI misses when the context owning task exits")
-Cc: stable@vger.kernel.org
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Reported-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
-This patch is based on earlier patch "cxl: Prevent adapter reset
-if an active context exists" at
-https://patchwork.ozlabs.org/patch/682187/
+This is missing the chained_irq_enter()/exit() calls, which will lead to
+races or lockups on the root irqchip.
 
-Changelog:
-RESEND ->	* Marked the patch for stable tree.
-       		* Moved the patch dependency text under '---' area
-		* Added Andrew Donnellan's review sign-off
----
- drivers/misc/cxl/api.c  |  2 ++
- drivers/misc/cxl/file.c | 22 +++++++++++++---------
- 2 files changed, 15 insertions(+), 9 deletions(-)
+> +}
+> +
+>  static int __init xilinx_intc_of_init(struct device_node *intc,
+>  					     struct device_node *parent)
+>  {
+>  	u32 nr_irq;
+> -	int ret;
+> +	int ret, irq;
+>  	struct xintc_irq_chip *irqc;
+>  
+>  	if (xintc_irqc) {
+> @@ -221,7 +234,16 @@ static int __init xilinx_intc_of_init(struct device_node *intc,
+>  		goto err_alloc;
+>  	}
+>  
+> -	irq_set_default_host(root_domain);
+> +	if (parent) {
+> +		irq = irq_of_parse_and_map(intc, 0);
+> +		if (irq)
+> +			irq_set_chained_handler_and_data(irq,
+> +							 xil_intc_irq_handler,
+> +							 irqc);
+> +
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index af23d7d..2e5233b 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -247,7 +247,9 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 	cxl_ctx_get();
- 
- 	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
-+		put_pid(ctx->glpid);
- 		put_pid(ctx->pid);
-+		ctx->glpid = ctx->pid = NULL;
- 		cxl_adapter_context_put(ctx->afu->adapter);
- 		cxl_ctx_put();
- 		goto out;
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index d0b421f..77080cc 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -194,6 +194,16 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	ctx->mmio_err_ff = !!(work.flags & CXL_START_WORK_ERR_FF);
- 
- 	/*
-+	 * Increment the mapped context count for adapter. This also checks
-+	 * if adapter_context_lock is taken.
-+	 */
-+	rc = cxl_adapter_context_get(ctx->afu->adapter);
-+	if (rc) {
-+		afu_release_irqs(ctx, ctx);
-+		goto out;
-+	}
-+
-+	/*
- 	 * We grab the PID here and not in the file open to allow for the case
- 	 * where a process (master, some daemon, etc) has opened the chardev on
- 	 * behalf of another process, so the AFU's mm gets bound to the process
-@@ -205,15 +215,6 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 	ctx->pid = get_task_pid(current, PIDTYPE_PID);
- 	ctx->glpid = get_task_pid(current->group_leader, PIDTYPE_PID);
- 
--	/*
--	 * Increment the mapped context count for adapter. This also checks
--	 * if adapter_context_lock is taken.
--	 */
--	rc = cxl_adapter_context_get(ctx->afu->adapter);
--	if (rc) {
--		afu_release_irqs(ctx, ctx);
--		goto out;
--	}
- 
- 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
- 
-@@ -221,6 +222,9 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 							amr))) {
- 		afu_release_irqs(ctx, ctx);
- 		cxl_adapter_context_put(ctx->afu->adapter);
-+		put_pid(ctx->glpid);
-+		put_pid(ctx->pid);
-+		ctx->glpid = ctx->pid = NULL;
- 		goto out;
- 	}
- 
+Shouldn't you return an error if irq is zero?
+
+> +	} else {
+> +		irq_set_default_host(root_domain);
+> +	}
+>  
+>  	return 0;
+>  
+> 
+
+Thanks,
+
+	M.
 -- 
-2.7.4
+Jazz is not dead. It just smells funny...
