@@ -1,25 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t0q0l37XGzDsyY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 02:12:22 +1100 (AEDT)
-Date: Fri, 21 Oct 2016 11:12:19 -0400 (EDT)
-Message-Id: <20161021.111219.988688105971081562.davem@davemloft.net>
-To: borntraeger@de.ibm.com
-Cc: peterz@infradead.org, npiggin@gmail.com, linux-kernel@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, heiko.carstens@de.ibm.com,
- schwidefsky@de.ibm.com, noamc@ezchip.com,
- virtualization@lists.linux-foundation.org, xen-devel@lists.xenproject.org,
- kvm@vger.kernel.org
-Subject: Re: [PATCH/RFC 0/5] cpu_relax: introduce yield, remove lowlatency
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <2cf23cb7-05c5-0a2d-2ed5-aa90d582f802@de.ibm.com>
-References: <1477051138-1610-1-git-send-email-borntraeger@de.ibm.com>
- <20161021.105727.140184460493941551.davem@davemloft.net>
- <2cf23cb7-05c5-0a2d-2ed5-aa90d582f802@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0sB93lHQzDvbc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 03:50:41 +1100 (AEDT)
+Date: Fri, 21 Oct 2016 11:50:34 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, benh@au1.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, clsoto@us.ibm.com
+Subject: Re: [PATCH v2 2/2] PCI: Don't disable PF's memory decoding when
+ enabling SRIOV
+Message-ID: <20161021165034.GE9007@localhost>
+References: <1475192870-7763-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1475192870-7763-2-git-send-email-gwshan@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1475192870-7763-2-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +27,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Fri, 21 Oct 2016 17:08:54 +0200
+Hi Gavin,
 
-> On 10/21/2016 04:57 PM, David Miller wrote:
->> From: Christian Borntraeger <borntraeger@de.ibm.com>
->> Date: Fri, 21 Oct 2016 13:58:53 +0200
->> 
->>> For spinning loops people did often use barrier() or cpu_relax().
->>> For most architectures cpu_relax and barrier are the same, but on
->>> some architectures cpu_relax can add some latency. For example on s390
->>> cpu_relax gives up the time slice to the hypervisor. On power cpu_relax
->>> tries to give some of the CPU to the neighbor threads. To reduce the
->>> latency another variant cpu_relax_lowlatency was introduced. Before this
->>> is used in more and more places, lets revert the logic of provide a new
->>> function cpu_relax_yield that can spend some time and for s390 yields
->>> the guest CPU.
->> 
->> Sparc64, fwiw, behaves similarly to powerpc.
-> 
-> As sparc currently defines cpu_relax_lowlatency to cpu_relax, this patch set
-> should be a no-op then for sparc, correct?
-> 
-> My intend was that cpu_relax should not add a huge latency but can certainly
-> push some cpu power to hardware threads of the same core. This seems to be
-> the case for sparc/power and some arc variants. 
+On Fri, Sep 30, 2016 at 09:47:50AM +1000, Gavin Shan wrote:
+> pci_update_resource() might be called to update (shift) IOV BARs
+> in PPC PowerNV specific pcibios_sriov_enable() when enabling PF's
+> SRIOV capability. At that point, the PF have been functional if
+> the SRIOV is enabled through sysfs entry "sriov_numvfs". The PF's
+> memory decoding (0x2 in PCI_COMMAND) shouldn't be disabled when
+> updating its IOV BARs with pci_update_resource(). Otherwise, we
+> receives EEH error caused by MMIO access to PF's memory BARs during
+> the window when PF's memory decoding is disabled.
 
-Agreed.
+The fact that you get EEH errors is irrelevant.  We can't write code
+simply to avoid errors -- we have to write code to make the system
+work correctly.
+
+I do not want to add a "mmio_force_on" parameter to
+pci_update_resource().  That puts the burden on the caller to
+understand this subtle issue.  If the caller passes mmio_force_on=1
+when it shouldn't, things will almost always work, but once in a blue
+moon a half-updated BAR will conflict with some other device in the
+system, and we'll have an unreproducible, undebuggable crash.
+
+What you do need is an explanation of why it's safe to non-atomically
+update a VF BARx in the SR-IOV capability.  I think this probably
+involves the VF MSE bit, and you probably have to either disable VFs
+completely or clear the MSE bit while you're updating the VF BARx.  We
+should be able to do this inside pci_update_resource() without
+changing the interface.
+
+>    sriov_numvfs_store
+>    pdev->driver->sriov_configure
+>    mlx5_core_sriov_configure
+>    pci_enable_sriov
+>    sriov_enable
+>    pcibios_sriov_enable
+>    pnv_pci_sriov_enable
+>    pnv_pci_vf_resource_shift
+>    pci_update_resource
+> 
+> This doesn't change the PF's memory decoding in the path by introducing
+> additional parameter (@mmio_force_on) to pci_update_resource() in
+> the above path.
+
+> 
+> Reported-by: Carol Soto <clsoto@us.ibm.com>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Tested-by: Carol Soto <clsoto@us.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+>  drivers/pci/iov.c                         | 2 +-
+>  drivers/pci/pci.c                         | 2 +-
+>  drivers/pci/setup-res.c                   | 9 +++++----
+>  include/linux/pci.h                       | 2 +-
+>  5 files changed, 9 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 38a5c65..f4ccc5b 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1006,7 +1006,7 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>  		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (%sabling %d VFs shifted by %d)\n",
+>  			 i, &res2, res, (offset > 0) ? "En" : "Dis",
+>  			 num_vfs, offset);
+> -		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
+> +		pci_update_resource(dev, i + PCI_IOV_RESOURCES, true);
+>  	}
+>  	return 0;
+>  }
+> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+> index f1343f0..db31966 100644
+> --- a/drivers/pci/iov.c
+> +++ b/drivers/pci/iov.c
+> @@ -511,7 +511,7 @@ static void sriov_restore_state(struct pci_dev *dev)
+>  		return;
+>  
+>  	for (i = PCI_IOV_RESOURCES; i <= PCI_IOV_RESOURCE_END; i++)
+> -		pci_update_resource(dev, i);
+> +		pci_update_resource(dev, i, false);
+>  
+>  	pci_write_config_dword(dev, iov->pos + PCI_SRIOV_SYS_PGSIZE, iov->pgsz);
+>  	pci_iov_set_numvfs(dev, iov->num_VFs);
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index aab9d51..87a33c0 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -545,7 +545,7 @@ static void pci_restore_bars(struct pci_dev *dev)
+>  		return;
+>  
+>  	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++)
+> -		pci_update_resource(dev, i);
+> +		pci_update_resource(dev, i, false);
+>  }
+>  
+>  static const struct pci_platform_pm_ops *pci_platform_pm;
+> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+> index 66c4d8f..e8a50ff 100644
+> --- a/drivers/pci/setup-res.c
+> +++ b/drivers/pci/setup-res.c
+> @@ -26,7 +26,7 @@
+>  #include "pci.h"
+>  
+>  
+> -void pci_update_resource(struct pci_dev *dev, int resno)
+> +void pci_update_resource(struct pci_dev *dev, int resno, bool mmio_force_on)
+>  {
+>  	struct pci_bus_region region;
+>  	bool disable;
+> @@ -81,7 +81,8 @@ void pci_update_resource(struct pci_dev *dev, int resno)
+>  	 * disable decoding so that a half-updated BAR won't conflict
+>  	 * with another device.
+>  	 */
+> -	disable = (res->flags & IORESOURCE_MEM_64) && !dev->mmio_always_on;
+> +	disable = (res->flags & IORESOURCE_MEM_64) &&
+> +		  !mmio_force_on && !dev->mmio_always_on;
+>  	if (disable) {
+>  		pci_read_config_word(dev, PCI_COMMAND, &cmd);
+>  		pci_write_config_word(dev, PCI_COMMAND,
+> @@ -310,7 +311,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
+>  	res->flags &= ~IORESOURCE_STARTALIGN;
+>  	dev_info(&dev->dev, "BAR %d: assigned %pR\n", resno, res);
+>  	if (resno < PCI_BRIDGE_RESOURCES)
+> -		pci_update_resource(dev, resno);
+> +		pci_update_resource(dev, resno, false);
+>  
+>  	return 0;
+>  }
+> @@ -350,7 +351,7 @@ int pci_reassign_resource(struct pci_dev *dev, int resno, resource_size_t addsiz
+>  	dev_info(&dev->dev, "BAR %d: reassigned %pR (expanded by %#llx)\n",
+>  		 resno, res, (unsigned long long) addsize);
+>  	if (resno < PCI_BRIDGE_RESOURCES)
+> -		pci_update_resource(dev, resno);
+> +		pci_update_resource(dev, resno, false);
+>  
+>  	return 0;
+>  }
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 0ab8359..99231d1 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1039,7 +1039,7 @@ int pci_try_reset_bus(struct pci_bus *bus);
+>  void pci_reset_secondary_bus(struct pci_dev *dev);
+>  void pcibios_reset_secondary_bus(struct pci_dev *dev);
+>  void pci_reset_bridge_secondary_bus(struct pci_dev *dev);
+> -void pci_update_resource(struct pci_dev *dev, int resno);
+> +void pci_update_resource(struct pci_dev *dev, int resno, bool mmio_force_on);
+>  int __must_check pci_assign_resource(struct pci_dev *dev, int i);
+>  int __must_check pci_reassign_resource(struct pci_dev *dev, int i, resource_size_t add_size, resource_size_t align);
+>  int pci_select_bars(struct pci_dev *dev, unsigned long flags);
+> -- 
+> 2.1.0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
