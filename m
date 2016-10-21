@@ -1,18 +1,20 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0frG29l6zDvg6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0frG31KLzDvlv
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 20:04:30 +1100 (AEDT)
-Date: Fri, 21 Oct 2016 20:03:05 +1100
+Date: Fri, 21 Oct 2016 20:04:17 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
 Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] powerpc/64: Re-fix race condition between going idle and
- entering guest
-Message-ID: <20161021090305.GA3809@fergus.ozlabs.ibm.com>
+Subject: [PATCH 2/2] powerpc/64: Fix race condition in setting lock bit in
+ idle/wakeup code
+Message-ID: <20161021090417.GB3809@fergus.ozlabs.ibm.com>
+References: <20161021090305.GA3809@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161021090305.GA3809@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,90 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 8117ac6a6c2f ("powerpc/powernv: Switch off MMU before entering
-nap/sleep/rvwinkle mode", 2014-12-10) fixed a race condition where one
-thread entering a KVM guest could switch the MMU context to the guest
-while another thread was still in host kernel context with the MMU on.
-That commit moved the point where a thread entering a power-saving
-mode set its kvm_hstate.hwthread_state field in its PACA to
-KVM_HWTHREAD_IN_IDLE from a point where the MMU was on to after the
-MMU had been switched off.  That commit also added a comment
-explaining that we have to switch to real mode before setting
-hwthread_state to avoid this race.
+This fixes a race condition where one thread that is entering or
+leaving a power-saving state can inadvertently ignore the lock bit
+that was set by another thread, and potentially also clear it.
+The core_idle_lock_held function is called when the lock bit is
+seen to be set.  It polls the lock bit until it is clear, then
+does a lwarx to load the word containing the lock bit and thread
+idle bits so it can be updated.  However, it is possible that the
+value loaded with the lwarx has the lock bit set, even though an
+immediately preceding lwz loaded a value with the lock bit clear.
+If this happens then we go ahead and update the word despite the
+lock bit being set, and when called from pnv_enter_arch207_idle_mode,
+we will subsequently clear the lock bit.
 
-Nevertheless, commit 4eae2c9ae54a ("powerpc/powernv: Make
-pnv_powersave_common more generic", 2016-07-08) subsequently moved
-the setting of hwthread_state back to a point where the MMU is on,
-thus reintroducing the race, despite the comment saying that this
-should not be done being included in full in the context lines of
-the patch that did it.
+No identifiable misbehaviour has been attributed to this race.
 
-This fixes the race again and adds a bigger and shoutier comment
-explaining the potential race condition.
+This fixes it by checking the lock bit in the value loaded by the
+lwarx.  If it is set then we just go back and keep on polling.
 
-Cc: stable@vger.kernel.org # v4.8
-Fixes: 4eae2c9ae54a
+Fixes: b32aadc1a8ed
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kernel/idle_book3s.S | 32 ++++++++++++++++++++++++++------
- 1 file changed, 26 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/idle_book3s.S | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index bd739fe..0d8712a 100644
+index 0d8712a..72dac0b 100644
 --- a/arch/powerpc/kernel/idle_book3s.S
 +++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -163,12 +163,6 @@ _GLOBAL(pnv_powersave_common)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
- 
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	/* Tell KVM we're entering idle */
--	li	r4,KVM_HWTHREAD_IN_IDLE
--	stb	r4,HSTATE_HWTHREAD_STATE(r13)
--#endif
--
- 	/*
- 	 * Go to real mode to do the nap, as required by the architecture.
- 	 * Also, we need to be in real mode before setting hwthread_state,
-@@ -185,6 +179,26 @@ _GLOBAL(pnv_powersave_common)
- 
- 	.globl pnv_enter_arch207_idle_mode
- pnv_enter_arch207_idle_mode:
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	/* Tell KVM we're entering idle */
-+	li	r4,KVM_HWTHREAD_IN_IDLE
-+	/******************************************************/
-+	/*  N O T E   W E L L    ! ! !    N O T E   W E L L   */
-+	/* The following store to HSTATE_HWTHREAD_STATE(r13)  */
-+	/* MUST occur in real mode, i.e. with the MMU off,    */
-+	/* and the MMU must stay off until we clear this flag */
-+	/* and test HSTATE_HWTHREAD_REQ(r13) in the system    */
-+	/* reset interrupt vector in exceptions-64s.S.        */
-+	/* The reason is that another thread can switch the   */
-+	/* MMU to a guest context whenever this flag is set   */
-+	/* to KVM_HWTHREAD_IN_IDLE, and if the MMU was on,    */
-+	/* that would potentially cause this thread to start  */
-+	/* executing instructions from guest memory in        */
-+	/* hypervisor mode, leading to a host crash or data   */
-+	/* corruption, or worse.                              */
-+	/******************************************************/
-+	stb	r4,HSTATE_HWTHREAD_STATE(r13)
-+#endif
- 	stb	r3,PACA_THREAD_IDLE_STATE(r13)
- 	cmpwi	cr3,r3,PNV_THREAD_SLEEP
- 	bge	cr3,2f
-@@ -250,6 +264,12 @@ enter_winkle:
-  * r3 - requested stop state
+@@ -90,6 +90,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+  * Threads will spin in HMT_LOW until the lock bit is cleared.
+  * r14 - pointer to core_idle_state
+  * r15 - used to load contents of core_idle_state
++ * r9  - used as a temporary variable
   */
- power_enter_stop:
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	/* Tell KVM we're entering idle */
-+	li	r4,KVM_HWTHREAD_IN_IDLE
-+	/* DO THIS IN REAL MODE!  See comment above. */
-+	stb	r4,HSTATE_HWTHREAD_STATE(r13)
-+#endif
+ 
+ core_idle_lock_held:
+@@ -99,6 +100,8 @@ core_idle_lock_held:
+ 	bne	3b
+ 	HMT_MEDIUM
+ 	lwarx	r15,0,r14
++	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
++	bne	core_idle_lock_held
+ 	blr
+ 
  /*
-  * Check if the requested state is a deep idle state.
-  */
 -- 
 2.7.4
