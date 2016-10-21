@@ -1,35 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <runaway@candw.ms>
+Received: from smtp687.redcondor.net (smtp687.redcondor.net [208.80.206.87])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0k4n4qtHzDvZQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 22:30:32 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Pan Xinhui' <xinhui.pan@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "virtualization@lists.linux-foundation.org"
- <virtualization@lists.linux-foundation.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "xen-devel-request@lists.xenproject.org"
- <xen-devel-request@lists.xenproject.org>, "kvm@vger.kernel.org"
- <kvm@vger.kernel.org>
-CC: "kernellwp@gmail.com" <kernellwp@gmail.com>, "jgross@suse.com"
- <jgross@suse.com>, "rkrcmar@redhat.com" <rkrcmar@redhat.com>,
- "peterz@infradead.org" <peterz@infradead.org>, "will.deacon@arm.com"
- <will.deacon@arm.com>, "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
- "mingo@redhat.com" <mingo@redhat.com>, "paulus@samba.org" <paulus@samba.org>,
- "pbonzini@redhat.com" <pbonzini@redhat.com>, "paulmck@linux.vnet.ibm.com"
- <paulmck@linux.vnet.ibm.com>, "boqun.feng@gmail.com" <boqun.feng@gmail.com>
-Subject: RE: [PATCH v5 9/9] Documentation: virtual: kvm: Support vcpu
- preempted check
-Date: Fri, 21 Oct 2016 11:27:55 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0207B44@AcuExch.aculab.com>
-References: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1476998874-2089-10-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-In-Reply-To: <1476998874-2089-10-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0jV52965zDvb4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 22:03:57 +1100 (AEDT)
+Subject: Re: Canyonlands oops at Shutdown
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <572C9109.80804@candw.ms>
+ <dabf6045-7fc5-b28e-6dd0-b8fa9ddf04b3@candw.ms>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Julian Margetson <runaway@candw.ms>
+Message-ID: <311dd8b5-122d-ae3b-fd5a-dee8377ac431@candw.ms>
+Date: Fri, 21 Oct 2016 06:53:11 -0400
 MIME-Version: 1.0
+In-Reply-To: <dabf6045-7fc5-b28e-6dd0-b8fa9ddf04b3@candw.ms>
+Content-Type: multipart/mixed; boundary="------------F5F096E647B22445B76FB5C3"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,34 +24,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Pan Xinhui
-> Sent: 20 October 2016 22:28
-> Commit ("x86, kvm: support vcpu preempted check") add one field "__u8
-> preempted" into struct kvm_steal_time. This field tells if one vcpu is
-> running or not.
->=20
-> It is zero if 1) some old KVM deos not support this filed. 2) the vcpu is
-> preempted. Other values means the vcpu has been preempted.
->=20
-> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-> ---
->  Documentation/virtual/kvm/msr.txt | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/virtual/kvm/msr.txt b/Documentation/virtual/kv=
-m/msr.txt
-> index 2a71c8f..3376f13 100644
-> --- a/Documentation/virtual/kvm/msr.txt
-> +++ b/Documentation/virtual/kvm/msr.txt
-> @@ -208,7 +208,8 @@ MSR_KVM_STEAL_TIME: 0x4b564d03
->  		__u64 steal;
->  		__u32 version;
->  		__u32 flags;
-> -		__u32 pad[12];
-> +		__u8  preempted;
-> +		__u32 pad[11];
->  	}
+This is a multi-part message in MIME format.
+--------------F5F096E647B22445B76FB5C3
+Content-Type: multipart/alternative;
+ boundary="------------44F6DD83FE17EC23F82AB9D3"
 
-I think I'd be explicit about the 3 pad bytes you've left.
 
-	David
+--------------44F6DD83FE17EC23F82AB9D3
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 08-May-16 10:12 AM, Julian Margetson wrote:
+> CONFIG_PPC44x_SIMPLE=y
+>
+> CONFIG_POWER_RESET=y
+> CONFIG_POWER_RESET_GPIO is not set
+> # CONFIG_POWER_RESET_GPIO_RESTART is not set
+> # CONFIG_POWER_RESET_LTC2952 is not set
+> # CONFIG_POWER_RESET_RESTART is not set
+> # CONFIG_POWER_RESET_SYSCON is not set
+> # CONFIG_POWER_RESET_SYSCON_POWEROFF is not set
+>
+> CONFIG_WATCHDOG=y
+> CONFIG_WATCHDOG_CORE=y
+> # CONFIG_WATCHDOG_NOWAYOUT is not set
+> # CONFIG_WATCHDOG_SYSFS is not set
+> #
+> # Watchdog Device Drivers
+> #
+> # CONFIG_SOFT_WATCHDOG is not set
+> # CONFIG_GPIO_WATCHDOG is not set
+> # CONFIG_XILINX_WATCHDOG is not set
+> # CONFIG_ZIIRAVE_WATCHDOG is not set
+> # CONFIG_CADENCE_WATCHDOG is not set
+> CONFIG_DW_WATCHDOG=y
+> # CONFIG_MAX63XX_WATCHDOG is not set
+> # CONFIG_ALIM7101_WDT is not set
+> # CONFIG_I6300ESB_WDT is not set
+> # CONFIG_BOOKE_WDT is not set
+> # CONFIG_MEN_A21_WDT is not set
+
+Issue appears again with kernel 4.9-rc1
+
+
+
+
+--------------44F6DD83FE17EC23F82AB9D3
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <div class="moz-cite-prefix">On 08-May-16 10:12 AM, Julian Margetson
+      wrote:<br>
+    </div>
+    <blockquote cite="mid:dabf6045-7fc5-b28e-6dd0-b8fa9ddf04b3@candw.ms"
+      type="cite">
+      <pre class="western">CONFIG_PPC44x_SIMPLE=y
+
+CONFIG_POWER_RESET=y
+CONFIG_POWER_RESET_GPIO is not set
+# CONFIG_POWER_RESET_GPIO_RESTART is not set
+# CONFIG_POWER_RESET_LTC2952 is not set
+# CONFIG_POWER_RESET_RESTART is not set
+# CONFIG_POWER_RESET_SYSCON is not set
+# CONFIG_POWER_RESET_SYSCON_POWEROFF is not set
+
+CONFIG_WATCHDOG=y
+CONFIG_WATCHDOG_CORE=y
+# CONFIG_WATCHDOG_NOWAYOUT is not set
+# CONFIG_WATCHDOG_SYSFS is not set
+#
+# Watchdog Device Drivers
+#
+# CONFIG_SOFT_WATCHDOG is not set
+# CONFIG_GPIO_WATCHDOG is not set
+# CONFIG_XILINX_WATCHDOG is not set
+# CONFIG_ZIIRAVE_WATCHDOG is not set
+# CONFIG_CADENCE_WATCHDOG is not set
+CONFIG_DW_WATCHDOG=y
+# CONFIG_MAX63XX_WATCHDOG is not set
+# CONFIG_ALIM7101_WDT is not set
+# CONFIG_I6300ESB_WDT is not set
+# CONFIG_BOOKE_WDT is not set
+# CONFIG_MEN_A21_WDT is not set</pre>
+    </blockquote>
+    <p>Issue appears again with kernel 4.9-rc1 <br>
+    </p>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+  </body>
+</html>
+
+--------------44F6DD83FE17EC23F82AB9D3--
+
+--------------F5F096E647B22445B76FB5C3
+Content-Type: text/plain; charset=UTF-8;
+ name="Sam_Shutdown.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="Sam_Shutdown.txt"
+
+WyAgT0sgIF0gU3RvcHBlZCBSZW1vdW50IFJvb3QgYW5kIEtlcm5lbCBGaWxlIFN5c3RlbXMu
+DQpbICBPSyAgXSBSZWFjaGVkIHRhcmdldCBTaHV0ZG93bi4NClsgIDEwMS41ODAwOTNdIFVu
+YWJsZSB0byBoYW5kbGUga2VybmVsIHBhZ2luZyByZXF1ZXN0IGZvciBkYXRhIGF0IGFkZHJl
+c3MgMHhmZmZmZmU4MA0KWyAgMTAxLjU4NzU5OV0gRmF1bHRpbmcgaW5zdHJ1Y3Rpb24gYWRk
+cmVzczogMHhjMDQyMGVhNA0KWyAgMTAzLjU5Mjc0NF0gT29wczogS2VybmVsIGFjY2VzcyBv
+ZiBiYWQgYXJlYSwgc2lnOiAxMSBbIzRdDQpbICAxMDMuNTk4MTUzXSBQUkVFTVBUIFsgIDEw
+My42MDAxNzFdIENhbnlvbmxhbmRzDQpbICAxMDMuNjAyNjIxXSBNb2R1bGVzIGxpbmtlZCBp
+bjoNClsgIDEwMy42MDU2OTddIENQVTogMCBQSUQ6IDEgQ29tbTogc3lzdGVtZC1zaHV0ZG93
+IFRhaW50ZWQ6IEcgICAgICBEICAgICAgICAgNC45LjAtcmMxLXNhbTQ2MGV4LWptICM5DQpb
+ICAxMDMuNjE0NjcyXSB0YXNrOiBlYTg0ODAwMCB0YXNrLnN0YWNrOiBlYTg1MDAwMA0KWyAg
+MTAzLjYxOTIxM10gTklQOiBjMDQyMGVhNCBMUjogYzA0MjBlODggQ1RSOiBjMDRkNTkyOA0K
+WyAgMTAzLjYyNDE4OF0gUkVHUzogZWE4NTFiNDAgVFJBUDogMDMwMCAgIFRhaW50ZWQ6IEcg
+ICAgICBEICAgICAgICAgICg0LjkuMC1yYzEtc2FtNDYwZXgtam0pDQpbICAxMDMuNjMyNDYz
+XSBNU1I6IDAwMDI5MDAwIFsgIDEwMy42MzQ5OTldIDwNCkNFWyAgMTAzLjYzNjc2N10gLEVF
+DQosTUVbICAxMDMuNjM4Nzk4XSA+DQpbICAxMDMuNjQwMzgwXSAgIENSOiAyODQyODIyOCAg
+WEVSOiAwMDAwMDAwMA0KWyAgMTAzLjY0NDM5NF0gREVBUjogZmZmZmZlODAgRVNSOiAwMDAw
+MDAwMCBbICAxMDMuNjQ4MjM5XSANClsgIDEwMy42NDgyMzldIEdQUjAwOiANCmMwNDIwZTg4
+IFsgIDEwMy42NTI2MThdIGVhODUxYmYwIA0KZWE4NDgwMDAgWyAgMTAzLjY1NTY5MV0gZWU4
+MzE3MjAgDQowMDAyOTAwMCBbICAxMDMuNjU4NzYzXSAwMDAwMDAwMyANCmVlODUxOTYwIFsg
+IDEwMy42NjE4MzddIDAwMDAwMDAwIA0KDQpHUFIwODogWyAgMTAzLjY2NDkxMF0gZmZmZjAw
+MDEgDQplZTgzZDRiMCBbICAxMDMuNjY3OTgzXSAwMDAwMDAwMCANCmVhODUxYmMwIFsgIDEw
+My42NzEwNjRdIDI0NDI4MjIyIA0KMjAyMGRlOTQgWyAgMTAzLjY3NDE0Nl0gMjAxZTNlODYg
+DQpiZmIwYmMwYyBbICAxMDMuNjc3MjI3XSANClsgIDEwMy42NzcyMjddIEdQUjE2OiANCmVh
+ODUxZDE4IFsgIDEwMy42ODE2MTFdIDIwOTBlMDE4IA0KYzA5MzZiODQgWyAgMTAzLjY4NDY5
+M10gYmZiMGJiMTAgDQpiZmIwYmIwYyBbICAxMDMuNjg3Nzc1XSAwMDAwMDAwMCANCjAwMDAw
+MDAwIFsgIDEwMy42OTA4NTZdIDQzMjFmZWRjIA0KDQpHUFIyNDogWyAgMTAzLjY5Mzk0M10g
+MDAwMDAwMDMgDQplZTg0YzJhNCBbICAxMDMuNjk3MDI4XSAwMDAwMDAwMCANCmZmZmZmZTY4
+IFsgIDEwMy43MDAxMTBdIGZmZmZmZTE4IA0KMDAwMDAwMDAgWyAgMTAzLjcwMzE5Ml0gZWU4
+MzAwMDAgDQplYTgxNjAwMCBbICAxMDMuNzA2MjcyXSANClsgIDEwMy43MDc3NzhdIE5JUCBb
+YzA0MjBlYTRdIGF0b21iaW9zX2NydGNfZGlzYWJsZSsweDQwLzB4MmIwDQpbICAxMDMuNzEz
+MzYzXSBMUiBbYzA0MjBlODhdIGF0b21iaW9zX2NydGNfZGlzYWJsZSsweDI0LzB4MmIwDQpb
+ICAxMDMuNzE4ODYzXSBDYWxsIFRyYWNlOg0KWyAgMTAzLjcyMTMxOV0gW2VhODUxYmYwXSBb
+YzA0MjBlODhdIGF0b21iaW9zX2NydGNfZGlzYWJsZSsweDI0LzB4MmIwWyAgMTAzLjcyNzMy
+OV0gICh1bnJlbGlhYmxlKQ0KWyAgMTAzLjcyOTk2Nl0gDQpbICAxMDMuNzMxNDc3XSBbZWE4
+NTFjNDBdIFtjMDNkYzhiY10gX19kcm1faGVscGVyX2Rpc2FibGVfdW51c2VkX2Z1bmN0aW9u
+cysweDljLzB4ZDBbICAxMDMuNzM4ODA0XSANClsgIDEwMy43NDAzMTBdIFtlYTg1MWM2MF0g
+W2MwM2RkMjMwXSBkcm1fY3J0Y19oZWxwZXJfc2V0X2NvbmZpZysweDFkNC8weDhjNFsgIDEw
+My43NDY4NDRdIA0KWyAgMTAzLjc0ODM2Nl0gW2VhODUxY2QwXSBbYzA0MzgyNTRdIHJhZGVv
+bl9jcnRjX3NldF9jb25maWcrMHg1MC8weGY4WyAgMTAzLjc1NDM3OF0gDQpbICAxMDMuNzU1
+ODkwXSBbZWE4NTFjZjBdIFtjMDNmN2ZlNF0gZHJtX21vZGVfc2V0X2NvbmZpZ19pbnRlcm5h
+bCsweDVjLzB4ZThbICAxMDMuNzYyNDI1XSANClsgIDEwMy43NjM5MzVdIFtlYTg1MWQxMF0g
+W2MwM2Y4MGEwXSBkcm1fY3J0Y19mb3JjZV9kaXNhYmxlKzB4MzAvMHgzOFsgIDEwMy43Njk5
+NTBdIA0KWyAgMTAzLjc3MTQ2MV0gW2VhODUxZDQwXSBbYzAzZjgwZjRdIGRybV9jcnRjX2Zv
+cmNlX2Rpc2FibGVfYWxsKzB4NGMvMHg3MFsgIDEwMy43Nzc4MjVdIA0KWyAgMTAzLjc3OTMz
+Nl0gW2VhODUxZDYwXSBbYzA0M2E4MzBdIHJhZGVvbl9tb2Rlc2V0X2ZpbmkrMHg3OC8weDkw
+WyAgMTAzLjc4NTA5MF0gDQpbICAxMDMuNzg2NjAxXSBbZWE4NTFkODBdIFtjMDQxN2ZiOF0g
+cmFkZW9uX2RyaXZlcl91bmxvYWRfa21zKzB4NWMvMHg4MFsgIDEwMy43OTI3ODldIA0KWyAg
+MTAzLjc5NDMwOF0gW2VhODUxZDkwXSBbYzAzZjNiZThdIGRybV9kZXZfdW5yZWdpc3Rlcisw
+eDRjLzB4YzhbICAxMDMuNzk5OTc3XSANClsgIDEwMy44MDE0ODJdIFtlYTg1MWRiMF0gW2Mw
+M2YzZTM0XSBkcm1fcHV0X2RldisweDY0LzB4N2NbICAxMDMuODA2NTM4XSANClsgIDEwMy44
+MDgwNDldIFtlYTg1MWRjMF0gW2MwMzg0Yjc4XSBwY2lfZGV2aWNlX3NodXRkb3duKzB4NDQv
+MHg5MFsgIDEwMy44MTM4MDVdIA0KWyAgMTAzLjgxNTMyMF0gW2VhODUxZGUwXSBbYzA1OTc5
+NmNdIGRldmljZV9zaHV0ZG93bisweDE0MC8weDE5NFsgIDEwMy44MjA4OTddIA0KWyAgMTAz
+LjgyMjQxNF0gW2VhODUxZTEwXSBbYzAwNDIxZTBdIGtlcm5lbF9oYWx0KzB4MzgvMHg2NFsg
+IDEwMy44Mjc0NjddIA0KWyAgMTAzLjgyODk3NV0gW2VhODUxZTIwXSBbYzAwNDI0MzhdIFN5
+U19yZWJvb3QrMHgxNGMvMHgxYzhbICAxMDMuODM0MTE3XSANClsgIDEwMy44MzU2MjVdIFtl
+YTg1MWY0MF0gW2MwMDBiMTA4XSByZXRfZnJvbV9zeXNjYWxsKzB4MC8weDNjWyAgMTAzLjg0
+MTAyNl0gDQpbICAxMDMuODQyNTMzXSAtLS0gaW50ZXJydXB0OiBjMDEgYXQgMHgyMDAwZmZi
+Yw0KWyAgMTAzLjg0MjUzM10gICAgIExSID0gMHgyMDFjZDg3OA0KWyAgMTAzLjg0OTk0Nl0g
+SW5zdHJ1Y3Rpb24gZHVtcDpbICAxMDMuODUyNzQyXSANClsgIDEwMy44NTQyNDFdIDkwMDEw
+MDU0IDdjN2YxYjc4IDgxMjMwMDAwIDgzYzkwMDE4IDRiZmZkYWIxIDgxM2YwMDUwIDgxMjkw
+MDYwIDJmODkwMDAwIA0KWyAgMTAzLjg2MjEzNl0gNDE5ZTAwN2MgODNhOTAwOTAgM2I5ZGZl
+MTggM2I3ZGZlNjggPDgxM2RmZTgwPiA3ZDI5MDAzNCA1NTI5ZDk3ZSAwZjA5MDAwMCANClsg
+IDEwMy44NzAyMDVdIC0tLVsgZW5kIHRyYWNlIDI5Yjc5NGFmMjYzMDU4NTcgXS0tLQ0KWyAg
+MTAzLjg3NDgzNF0gDQpbICAxMDQuODc4MDczXSBzeXN0ZW1kLXNodXRkb3c6IDMgb3V0cHV0
+IGxpbmVzIHN1cHByZXNzZWQgZHVlIHRvIHJhdGVsaW1pdGluZw0KWyAgMTA0Ljg4NTE2M10g
+S2VybmVsIHBhbmljIC0gbm90IHN5bmNpbmc6IEF0dGVtcHRlZCB0byBraWxsIGluaXQhIGV4
+aXRjb2RlPTB4MDAwMDAwMGINClsgIDEwNC44ODUxNjNdIA0KWyAgMTA0Ljg5NDMzOV0gUmVi
+b290aW5nIGluIDE4MCBzZWNvbmRzLi4=
+--------------F5F096E647B22445B76FB5C3--
