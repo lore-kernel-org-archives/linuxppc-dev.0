@@ -2,11 +2,11 @@ Return-Path: <geert@linux-m68k.org>
 Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0fhm2SgMzDvY1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t0fhm2N8gzDt4W
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 19:58:00 +1100 (AEDT)
-Received: from andre.telenet-ops.be (andre.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:15])
- by leibniz.telenet-ops.be (Postfix) with ESMTPS id 3t0fY63b03zMqysr
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:14])
+ by leibniz.telenet-ops.be (Postfix) with ESMTPS id 3t0fY63b27zMqytC
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 10:51:22 +0200 (CEST)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
@@ -17,10 +17,10 @@ Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
  linux-arm-kernel@lists.infradead.org, kernel@stlinux.com,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 5/6] dt: booting-without-of: DT fix
- s/#interrupt-cell/#interrupt-cells/
-Date: Fri, 21 Oct 2016 10:51:16 +0200
-Message-Id: <1477039877-20227-6-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v2 6/6] powerpc: dts: acadia: DT fix
+ s/#interrupts-parent/#interrupt-parent/
+Date: Fri, 21 Oct 2016 10:51:17 +0200
+Message-Id: <1477039877-20227-7-git-send-email-geert+renesas@glider.be>
 In-Reply-To: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
 References: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,21 +38,21 @@ Acked-by: Rob Herring <robh@kernel.org>
 v2:
   - Add Acked-by.
 ---
- Documentation/devicetree/booting-without-of.txt | 2 +-
+ arch/powerpc/boot/dts/acadia.dts | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/booting-without-of.txt b/Documentation/devicetree/booting-without-of.txt
-index 3f1437fbca6b49f3..5bcea91c0cc65af2 100644
---- a/Documentation/devicetree/booting-without-of.txt
-+++ b/Documentation/devicetree/booting-without-of.txt
-@@ -1302,7 +1302,7 @@ number and level/sense information. All interrupt children in an
- OpenPIC interrupt domain use 2 cells per interrupt in their interrupts
- property.
+diff --git a/arch/powerpc/boot/dts/acadia.dts b/arch/powerpc/boot/dts/acadia.dts
+index 57291f61ffe7021a..86266159521edac2 100644
+--- a/arch/powerpc/boot/dts/acadia.dts
++++ b/arch/powerpc/boot/dts/acadia.dts
+@@ -183,7 +183,7 @@
+ 			usb@ef603000 {
+ 				compatible = "ohci-be";
+ 				reg = <0xef603000 0x80>;
+-				interrupts-parent = <&UIC0>;
++				interrupt-parent = <&UIC0>;
+ 				interrupts = <0xd 0x4 0xe 0x4>;
+ 			};
  
--The PCI bus binding specifies a #interrupt-cell value of 1 to encode
-+The PCI bus binding specifies a #interrupt-cells value of 1 to encode
- which interrupt pin (INTA,INTB,INTC,INTD) is used.
- 
- 2) interrupt-parent property
 -- 
 1.9.1
