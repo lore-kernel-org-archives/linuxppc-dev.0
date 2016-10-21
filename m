@@ -1,30 +1,21 @@
-Return-Path: <patrice.chotard@st.com>
-Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com
- [62.209.51.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t0l6l0NYczDsrV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2016 23:17:18 +1100 (AEDT)
-Subject: Re: [STLinux Kernel] [PATCH v2 1/6] ARM: dts: STiH407: DT fix
- s/interrupts-names/interrupt-names/
-To: Peter Griffin <peter.griffin@linaro.org>, Geert Uytterhoeven
- <geert+renesas@glider.be>
-References: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
- <1477039877-20227-2-git-send-email-geert+renesas@glider.be>
- <20161021101156.GA32234@griffinp-ThinkPad-X1-Carbon-2nd>
-CC: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Chanho Min <chanho.min@lge.com>,
- Michael Ellerman <mpe@ellerman.id.au>, <devicetree@vger.kernel.org>,
- <alsa-devel@alsa-project.org>, <kernel@stlinux.com>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>
-From: Patrice Chotard <patrice.chotard@st.com>
-Message-ID: <1f897a1f-5b67-c563-1e04-9ab85a819a62@st.com>
-Date: Fri, 21 Oct 2016 13:37:38 +0200
-MIME-Version: 1.0
-In-Reply-To: <20161021101156.GA32234@griffinp-ThinkPad-X1-Carbon-2nd>
-Content-Type: text/plain; charset="windows-1252"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3t0pgZ5rZCzDt14
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 01:57:30 +1100 (AEDT)
+Date: Fri, 21 Oct 2016 10:57:27 -0400 (EDT)
+Message-Id: <20161021.105727.140184460493941551.davem@davemloft.net>
+To: borntraeger@de.ibm.com
+Cc: peterz@infradead.org, npiggin@gmail.com, linux-kernel@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, heiko.carstens@de.ibm.com,
+ schwidefsky@de.ibm.com, noamc@ezchip.com
+Subject: Re: [PATCH/RFC 0/5] cpu_relax: introduce yield, remove lowlatency
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1477051138-1610-1-git-send-email-borntraeger@de.ibm.com>
+References: <1477051138-1610-1-git-send-email-borntraeger@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/21/2016 12:11 PM, Peter Griffin wrote:
-> On Fri, 21 Oct 2016, Geert Uytterhoeven wrote:
-> 
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> Acked-by: Rob Herring <robh@kernel.org>
->> ---
->> v2:
->>   - Add Acked-by.
->> ---
-> 
-> Acked-by: Peter Griffin <peter.griffin@linaro.org>
-> 
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Date: Fri, 21 Oct 2016 13:58:53 +0200
 
-applied with Peter Acked-by
+> For spinning loops people did often use barrier() or cpu_relax().
+> For most architectures cpu_relax and barrier are the same, but on
+> some architectures cpu_relax can add some latency. For example on s390
+> cpu_relax gives up the time slice to the hypervisor. On power cpu_relax
+> tries to give some of the CPU to the neighbor threads. To reduce the
+> latency another variant cpu_relax_lowlatency was introduced. Before this
+> is used in more and more places, lets revert the logic of provide a new
+> function cpu_relax_yield that can spend some time and for s390 yields
+> the guest CPU.
 
-Thanks Geert
+Sparc64, fwiw, behaves similarly to powerpc.
