@@ -1,45 +1,19 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <regressions@leemhuis.info>
+Received: from basicbox7.server-home.net (basicbox7.server-home.net
+ [195.137.212.29])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t1j7V6WvSzDvb2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Oct 2016 12:51:18 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9N1miel104110
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 21:51:16 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26810hhu2h-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2016 21:51:15 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Sat, 22 Oct 2016 21:51:14 -0400
-Date: Sat, 22 Oct 2016 20:51:08 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Alistair Popple <apopple@au1.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Tang Chen <tangchen@cn.fujitsu.com>,
- linux-mm@kvack.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 2/5] drivers/of: do not add memory for unavailable nodes
-References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1475778995-1420-3-git-send-email-arbab@linux.vnet.ibm.com>
- <2344394.NlaWgtFOqB@new-mexico>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t21rP71CszDvWv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 01:24:19 +1100 (AEDT)
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Subject: Linux 4.9: Reported regressions as of Sunday, 2016-10-23
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Message-ID: <369dcbd1-8cfa-3914-3bab-769dc5d794ab@leemhuis.info>
+Date: Sun, 23 Oct 2016 16:24:13 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <2344394.NlaWgtFOqB@new-mexico>
-Message-Id: <20161023015107.527l4fvnh2nrup5u@arbab-vm>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,30 +23,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alistair,
+Hi! Here is my first regression report for Linux 4.9. It lists 14
+regressions I'm aware of. 
+ 
+As always: Are you aware of any other regressions? Then please let me
+know (simply CC regressions@leemhuis.info). And please tell me if there
+is anything in the report that shouldn't be there.
 
-On Fri, Oct 21, 2016 at 05:22:54PM +1100, Alistair Popple wrote:
->From what I can tell it seems that kernels without this patch will try 
->and use this memory even if it is marked in the device-tree as 
->status="disabled" which could lead to problems for older kernels when 
->we start exporting this property from firmware.
->
->Arguably this might not be such a problem in practice as we probably 
->don't have many (if any) existing kernels that will boot on hardware 
->exporting these properties.
+Ciao, Thorsten
 
-Yes, I think you've got it right.
+P.S.: I ran out of time today (I really need to automate some things, 
+but I do not find time for it…; and some of the regression tracking work 
+simply can not be automated :/) and could not make it completely 
+through my backlog. That's why I likely missed lots of regressions 
+that were reported during the merge window and remain unfixed as of now 
+:-/ Let me know about those, please.
 
->However given this patch seems fairly independent perhaps it is worth 
->sending as a separate fix if it is not going to make it into this 
->release?
+== Current regressions ==
 
-Michael,
+Desc: PPC32: fails to boot on my PowerBook G4 Aluminum; bisected to commit 05fd007e4629
+Repo: 2016-10-20 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253391.html
+Stat: 2016-10-22 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255516.html
+Note: no response from responsible developers yet
 
-If this set as a whole is going to miss the release, would it be helpful 
-for me to resend 1/5 and 2/5 as a separate set? They are the minimum 
-needed to prevent the possible forward compatibility issue Alistair 
-describes.
+Desc: "Nokia N900 (omap3-n900) with ""VDD1: ramp_delay not set"" string in printk frequently"
+Repo: 2016-10-19 https://bugzilla.kernel.org/show_bug.cgi?id=178371
+Stat: n/a 
+Note: told reporter whom to contact
 
--- 
-Reza Arbab
+Desc: radeon performance drop from 4.8 to 4.9-rc1 in Shadow of Mordor
+Repo: 2016-10-14 https://bugzilla.kernel.org/show_bug.cgi?id=178221 https://lists.freedesktop.org/archives/dri-devel/2016-October/120693.html
+Stat: 2016-10-20 https://lists.freedesktop.org/archives/dri-devel/2016-October/121427.html
+Note: WIP
+
+Desc: can't boot with root fs on md raid 0; mdadm: no devices listed in conf file were found. 
+Repo: 2016-10-17 https://bugzilla.kernel.org/show_bug.cgi?id=178211
+Stat: 2016-10-18 https://bugzilla.kernel.org/show_bug.cgi?id=178211#c1
+Note: Root cause unknown; might be a controller driver issue
+
+Desc: unable to handle kernel NULL pointer dereference at fuse_setattr
+Repo: 2016-10-17 https://bugzilla.kernel.org/show_bug.cgi?id=177801
+Stat: 2016-10-18 https://bugzilla.kernel.org/show_bug.cgi?id=177801#c5
+Note: Fix heading upstream
+
+Desc: Skylake gen6 suspend/resume video regression
+Repo: 2016-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177731
+Stat: n/a 
+Note: 
+
+Desc: warning in intel_dp_aux_transfer: CPU: 0 PID: 4 at drivers/gpu/drm/i915/intel_dp.c:1062 intel_dp_aux_transfer+0x1ed/0x230#
+Repo: 2016-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177701
+Stat: n/a 
+Note: 
+
+Desc: """Failed to find cpu0 device node"" in dmesg"
+Repo: 2016-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177681 https://bugzilla.kernel.org/show_bug.cgi?id=180031
+Stat: n/a 
+Note: 
+
+Desc: boot failure of Intel Mobile Internet Devices due to a change in the PCI subsystem that appeared in v4.9-rc1.
+Repo: 2016-10-23 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255643.html
+Stat: n/a 
+Note: Fix proposed
+
+Desc: "Regression with 0b9e2988ab22 (""ahci: use pci_alloc_irq_vectors"")"
+Repo: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254825.html
+Stat: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254882.html
+Note: WIP
+
+Desc: 761ed4a94582 tty: serial_core: convert uart_close to use tty_port_close
+Repo: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254753.html
+Stat: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254987.html
+Note: WIP
+
+Desc: [selinux/audit/netlink, regression?] Warning at kernel/softirq.c:161
+Repo: 2016-10-20 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254148.html
+Stat: 2016-10-20 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254151.html https://patchwork.ozlabs.org/patch/684753/
+Note: WIP
+
+Desc: some gpio drivers broken by commit 762c2e46
+Repo: 2016-10-18 https://www.spinics.net/lists/linux-gpio/msg17283.html
+Stat: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253906.html
+Note: WIP
+
+Desc: 4.9-rc1 boot regression, ambiguous bisect result
+Repo: 2016-10-19 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253369.html
+Stat: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255296.html
+Note: WIP
