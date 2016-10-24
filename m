@@ -1,54 +1,51 @@
-Return-Path: <borntraeger@de.ibm.com>
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2T631YshzDt4f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 18:52:42 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2TSw39fnzDt6t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 19:09:04 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9O7nBSS044991
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 03:52:40 -0400
-Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 269cc6pegk-1
+ u9O88Zp8015783
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 04:09:01 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 268921k22k-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 03:52:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 04:09:01 -0400
 Received: from localhost
- by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Mon, 24 Oct 2016 08:52:38 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 883B92190023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 08:51:51 +0100 (BST)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9O7qZDS23199800
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 07:52:35 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9O7qWOK019002
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 01:52:34 -0600
-Subject: Re: [PATCH 2/5] stop_machine: yield CPU during stop machine
-To: Nicholas Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>
-References: <1477051138-1610-1-git-send-email-borntraeger@de.ibm.com>
- <1477051138-1610-3-git-send-email-borntraeger@de.ibm.com>
- <20161021120536.GC3142@twins.programming.kicks-ass.net>
- <20161022110636.410f20bd@roar.ozlabs.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390 <linux-s390@vger.kernel.org>,
- linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Noam Camus <noamc@ezchip.com>,
- virtualization@lists.linux-foundation.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Mon, 24 Oct 2016 09:52:31 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Mon, 24 Oct 2016 18:08:58 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0161D2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 19:08:55 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9O88sSN3867060
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 19:08:54 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9O88r6G019264
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 19:08:54 +1100
+Date: Mon, 24 Oct 2016 16:08:37 +0800
+From: xinhui <xinhui.pan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20161022110636.410f20bd@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <251574ff-13ba-c0df-76c3-cb7df30894cb@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
+ xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org
+CC: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
+ will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
+ pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
+ borntraeger@de.ibm.com, rkrcmar@redhat.com, David.Laight@ACULAB.COM
+Subject: Re: [PATCH v5 6/9] x86, kvm: support vcpu preempted check
+References: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1476998874-2089-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+In-Reply-To: <1476998874-2089-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <580DC185.1060602@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,82 +55,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/22/2016 02:06 AM, Nicholas Piggin wrote:
-> On Fri, 21 Oct 2016 14:05:36 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
->> On Fri, Oct 21, 2016 at 01:58:55PM +0200, Christian Borntraeger wrote:
->>> stop_machine can take a very long time if the hypervisor does
->>> overcommitment for guest CPUs. When waiting for "the one", lets
->>> give up our CPU by using the new cpu_relax_yield.  
->>
->> This seems something that would apply to most other virt stuff. Lets Cc
->> a few more lists for that.
->>
->>> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
->>> ---
->>>  kernel/stop_machine.c | 2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
->>> index ec9ab2f..1eb8266 100644
->>> --- a/kernel/stop_machine.c
->>> +++ b/kernel/stop_machine.c
->>> @@ -194,7 +194,7 @@ static int multi_cpu_stop(void *data)
->>>  	/* Simple state machine */
->>>  	do {
->>>  		/* Chill out and ensure we re-read multi_stop_state. */
->>> -		cpu_relax();
->>> +		cpu_relax_yield();
->>>  		if (msdata->state != curstate) {
->>>  			curstate = msdata->state;
->>>  			switch (curstate) {
->>> -- 
->>> 2.5.5
->>>   
-> 
-> This is the only caller of cpu_relax_yield()?
+This is new version for [PATCH v6 6/9] x86, kvm: support vcpu preempted check
+change:
+	an explicit pad[3] after __u8 preempted.
 
-As of today yes. Right now the yielding (call to hypervisor) in 
-cpu_relax is only done for s390. Some time ago Heiko did remove 
-that also from s390 with commit 57f2ffe14fd125c2 ("s390: remove 
-diag 44 calls from cpu_relax()")
+ From b876ea1a2a724c004b543b2c103a1f8faa5f106e Mon Sep 17 00:00:00 2001
+From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Date: Thu, 20 Oct 2016 08:14:41 -0400
+Subject: [PATCH v6 6/9] x86, kvm: support vcpu preempted check
 
-As it turns out this make stop_machine run really slow on virtualized
-systems. For example the kprobes test during bootup took several seconds 
-instead of just running unnoticed with large guests. Therefore, we 
-reintroduced that with commit 4d92f50249eb ("s390: reintroduce diag 44
-calls for cpu_relax()"), but the only place where we noticed the missing
-yield was in the stop_machine code.
+Support the vcpu_is_preempted() functionality under KVM. This will
+enhance lock performance on overcommitted hosts (more runnable vcpus
+than physical cpus in the system) as doing busy waits for preempted
+vcpus will hurt system performance far worse than early yielding.
 
-I would assume that we might find some other places where this makes
-sense in the future, but I expect that we have much less places for 
-yield than we need for lowlatency.
+Use one field of struct kvm_steal_time to indicate that if one vcpu
+is running or not.
 
-PS: We do something similar for our arch implementation for spinlocks,
-but there  we use the directed yield as we know which CPU holds the lock.
+unix benchmark result:
+host:  kernel 4.8.1, i5-4570, 4 cpus
+guest: kernel 4.8.1, 8 vcpus
 
+         test-case                       after-patch       before-patch
+Execl Throughput                       |    18307.9 lps  |    11701.6 lps
+File Copy 1024 bufsize 2000 maxblocks  |  1352407.3 KBps |   790418.9 KBps
+File Copy 256 bufsize 500 maxblocks    |   367555.6 KBps |   222867.7 KBps
+File Copy 4096 bufsize 8000 maxblocks  |  3675649.7 KBps |  1780614.4 KBps
+Pipe Throughput                        | 11872208.7 lps  | 11855628.9 lps
+Pipe-based Context Switching           |  1495126.5 lps  |  1490533.9 lps
+Process Creation                       |    29881.2 lps  |    28572.8 lps
+Shell Scripts (1 concurrent)           |    23224.3 lpm  |    22607.4 lpm
+Shell Scripts (8 concurrent)           |     3531.4 lpm  |     3211.9 lpm
+System Call Overhead                   | 10385653.0 lps  | 10419979.0 lps
 
-> 
-> As a step to removing cpu_yield_lowlatency this series is nice so I
-> have no objection. But "general" kernel coders still have basically
-> no chance of using this properly.
-> 
-> I wonder what can be done about that. I've got that spin_do/while
-> series I'll rebase on top of this, but a spin_yield variant of them
-> is of no more help to the caller.
-> 
-> What makes this unique? Long latency and not performance critical?
+Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+---
+  arch/x86/include/uapi/asm/kvm_para.h |  4 +++-
+  arch/x86/kernel/kvm.c                | 12 ++++++++++++
+  arch/x86/kvm/x86.c                   | 18 ++++++++++++++++++
+  3 files changed, 33 insertions(+), 1 deletion(-)
 
-I think what makes this unique is that ALL cpus spin and wait for one.
-It was really the only place that I noticed a regression with Heikos
-first patch.
-
-> Most places where we spin and maybe yield have been moved to arch
-> code, but I wonder whether we can make an easier to use architecture
-> independent API?
-
-
-Peter, I will fixup the patch set (I forgot to remove the lowlatency
-in 2 places) and push it on my tree for linux-next. Lets see what happens.
-Would the tip tree be the right place if things work out ok?
+diff --git a/arch/x86/include/uapi/asm/kvm_para.h b/arch/x86/include/uapi/asm/kvm_para.h
+index 94dc8ca..1421a65 100644
+--- a/arch/x86/include/uapi/asm/kvm_para.h
++++ b/arch/x86/include/uapi/asm/kvm_para.h
+@@ -45,7 +45,9 @@ struct kvm_steal_time {
+  	__u64 steal;
+  	__u32 version;
+  	__u32 flags;
+-	__u32 pad[12];
++	__u8  preempted;
++	__u8  u8_pad[3];
++	__u32 pad[11];
+  };
+  
+  #define KVM_STEAL_ALIGNMENT_BITS 5
+diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
+index edbbfc8..0b48dd2 100644
+--- a/arch/x86/kernel/kvm.c
++++ b/arch/x86/kernel/kvm.c
+@@ -415,6 +415,15 @@ void kvm_disable_steal_time(void)
+  	wrmsr(MSR_KVM_STEAL_TIME, 0, 0);
+  }
+  
++static bool kvm_vcpu_is_preempted(int cpu)
++{
++	struct kvm_steal_time *src;
++
++	src = &per_cpu(steal_time, cpu);
++
++	return !!src->preempted;
++}
++
+  #ifdef CONFIG_SMP
+  static void __init kvm_smp_prepare_boot_cpu(void)
+  {
+@@ -471,6 +480,9 @@ void __init kvm_guest_init(void)
+  	if (kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
+  		has_steal_clock = 1;
+  		pv_time_ops.steal_clock = kvm_steal_clock;
++#ifdef CONFIG_PARAVIRT_SPINLOCKS
++		pv_lock_ops.vcpu_is_preempted = kvm_vcpu_is_preempted;
++#endif
+  	}
+  
+  	if (kvm_para_has_feature(KVM_FEATURE_PV_EOI))
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 6c633de..a627537 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2057,6 +2057,8 @@ static void record_steal_time(struct kvm_vcpu *vcpu)
+  		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time))))
+  		return;
+  
++	vcpu->arch.st.steal.preempted = 0;
++
+  	if (vcpu->arch.st.steal.version & 1)
+  		vcpu->arch.st.steal.version += 1;  /* first time write, random junk */
+  
+@@ -2810,8 +2812,24 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+  	kvm_make_request(KVM_REQ_STEAL_UPDATE, vcpu);
+  }
+  
++static void kvm_steal_time_set_preempted(struct kvm_vcpu *vcpu)
++{
++	if (!(vcpu->arch.st.msr_val & KVM_MSR_ENABLED))
++		return;
++
++	if (unlikely(kvm_read_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
++			&vcpu->arch.st.steal, sizeof(struct kvm_steal_time))))
++		return;
++
++	vcpu->arch.st.steal.preempted = 1;
++
++	kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
++			&vcpu->arch.st.steal, sizeof(struct kvm_steal_time));
++}
++
+  void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+  {
++	kvm_steal_time_set_preempted(vcpu);
+  	kvm_x86_ops->vcpu_put(vcpu);
+  	kvm_put_guest_fpu(vcpu);
+  	vcpu->arch.last_host_tsc = rdtsc();
+-- 
+2.4.11
