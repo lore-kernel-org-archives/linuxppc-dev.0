@@ -1,30 +1,46 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2g0n5ZqTzDvRh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 02:18:49 +1100 (AEDT)
-Subject: Re: [PATCH v4 5/5] x86, kvm: support vcpu preempted check
-To: =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
-References: <1476872416-42752-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1476872416-42752-6-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20161019172403.GA9240@potion>
- <c00e636e-ea06-6bbb-6a67-39804ee8ba75@redhat.com>
- <20161024151417.GC2247@potion>
-Cc: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
- bsingharora@gmail.com, boqun.feng@gmail.com, borntraeger@de.ibm.com
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <1a556fcf-e071-8c32-7a4b-ca7a2ffc17e9@redhat.com>
-Date: Mon, 24 Oct 2016 17:18:36 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2l230hvSzDt2h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:20:10 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9OIIgfp057121
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 14:20:09 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 269kshumg0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 14:20:08 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Mon, 24 Oct 2016 12:20:07 -0600
+Date: Mon, 24 Oct 2016 13:20:00 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Alistair Popple <apopple@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Tang Chen <tangchen@cn.fujitsu.com>,
+ linux-mm@kvack.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 2/5] drivers/of: do not add memory for unavailable nodes
+References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1475778995-1420-3-git-send-email-arbab@linux.vnet.ibm.com>
+ <2344394.NlaWgtFOqB@new-mexico>
+ <87vawixcxn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20161024151417.GC2247@potion>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <87vawixcxn.fsf@concordia.ellerman.id.au>
+Message-Id: <20161024182000.5g2f3w3x3oqrohqs@arbab-laptop.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,36 +50,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Oct 24, 2016 at 09:24:04PM +1100, Michael Ellerman wrote:
+>The code already looks for "linux,usable-memory" in preference to 
+>"reg". Can you use that instead?
 
+Yes, we could set the size of "linux,usable-memory" to zero instead of 
+setting status to "disabled".
 
-On 24/10/2016 17:14, Radim Krčmář wrote:
-> 2016-10-24 16:39+0200, Paolo Bonzini:
->> On 19/10/2016 19:24, Radim Krčmář wrote:
->>>>> +	if (vcpu->arch.st.msr_val & KVM_MSR_ENABLED)
->>>>> +		if (kvm_read_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
->>>>> +					&vcpu->arch.st.steal,
->>>>> +					sizeof(struct kvm_steal_time)) == 0) {
->>>>> +			vcpu->arch.st.steal.preempted = 1;
->>>>> +			kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
->>>>> +					&vcpu->arch.st.steal,
->>>>> +					sizeof(struct kvm_steal_time));
->>>>> +		}
->>> Please name this block of code.  Something like
->>>   kvm_steal_time_set_preempted(vcpu);
->>
->> While at it:
->>
->> 1) the kvm_read_guest_cached is not necessary.  You can rig the call to
->> kvm_write_guest_cached so that it only writes vcpu->arch.st.steal.preempted.
-> 
-> I agree.  kvm_write_guest_cached() always writes from offset 0, so we'd
-> want a new function that allows to specify a starting offset.
+I'll send a v5 of this set which drops 1/5 and 2/5. That would be the 
+only difference here.
 
-Yeah, let's leave it for a follow-up then!
+>That would have the advantage that existing kernels already understand
+>it.
+>
+>Another problem with using "status" is we could have device trees out
+>there that have status = disabled and we don't know about it, and by
+>changing the kernel to use that property we break people's systems.
+>Though for memory nodes my guess is that's not true, but you never know ...
 
-Thanks,
-
-Paolo
-
-> Using cached vcpu->arch.st.steal to avoid the read wouldn't be as good.
-> 
+-- 
+Reza Arbab
