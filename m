@@ -2,41 +2,28 @@ Return-Path: <rkrcmar@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2fk73L6gzDvYM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 02:05:48 +1100 (AEDT)
-Date: Mon, 24 Oct 2016 17:05:39 +0200
-From: "rkrcmar@redhat.com" <rkrcmar@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2fvj5N6szDvWM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 02:14:25 +1100 (AEDT)
+Date: Mon, 24 Oct 2016 17:14:18 +0200
+From: Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>
 To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: David Laight <David.Laight@ACULAB.COM>,
- "'Pan Xinhui'" <xinhui.pan@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "virtualization@lists.linux-foundation.org"
- <virtualization@lists.linux-foundation.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "xen-devel-request@lists.xenproject.org"
- <xen-devel-request@lists.xenproject.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kernellwp@gmail.com" <kernellwp@gmail.com>,
- "jgross@suse.com" <jgross@suse.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "paulus@samba.org" <paulus@samba.org>,
- "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
- "boqun.feng@gmail.com" <boqun.feng@gmail.com>
-Subject: Re: [PATCH v5 9/9] Documentation: virtual: kvm: Support vcpu
- preempted check
-Message-ID: <20161024150539.GA3197@potion>
-References: <1476998874-2089-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1476998874-2089-10-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6DB0207B44@AcuExch.aculab.com>
- <20161021183951.GA29131@potion>
- <b2101564-6344-f353-7393-abc07f26c07a@redhat.com>
+Cc: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
+ xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
+ will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
+ bsingharora@gmail.com, boqun.feng@gmail.com, borntraeger@de.ibm.com
+Subject: Re: [PATCH v4 5/5] x86, kvm: support vcpu preempted check
+Message-ID: <20161024151417.GC2247@potion>
+References: <1476872416-42752-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1476872416-42752-6-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20161019172403.GA9240@potion>
+ <c00e636e-ea06-6bbb-6a67-39804ee8ba75@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <b2101564-6344-f353-7393-abc07f26c07a@redhat.com>
+In-Reply-To: <c00e636e-ea06-6bbb-6a67-39804ee8ba75@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,47 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2016-10-24 16:42+0200, Paolo Bonzini:
-> On 21/10/2016 20:39, rkrcmar@redhat.com wrote:
->> 2016-10-21 11:27+0000, David Laight:
->>> From: Pan Xinhui
->>>> Sent: 20 October 2016 22:28
->>>> Commit ("x86, kvm: support vcpu preempted check") add one field "__u8
->>>> preempted" into struct kvm_steal_time. This field tells if one vcpu is
->>>> running or not.
->>>>
->>>> It is zero if 1) some old KVM deos not support this filed. 2) the vcpu is
->>>> preempted. Other values means the vcpu has been preempted.
->>>>
->>>> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
->>>> ---
->>>>  Documentation/virtual/kvm/msr.txt | 8 +++++++-
->>>>  1 file changed, 7 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/Documentation/virtual/kvm/msr.txt b/Documentation/virtual/kvm/msr.txt
->>>> index 2a71c8f..3376f13 100644
->>>> --- a/Documentation/virtual/kvm/msr.txt
->>>> +++ b/Documentation/virtual/kvm/msr.txt
->>>> @@ -208,7 +208,8 @@ MSR_KVM_STEAL_TIME: 0x4b564d03
->>>>  		__u64 steal;
->>>>  		__u32 version;
->>>>  		__u32 flags;
->>>> -		__u32 pad[12];
->>>> +		__u8  preempted;
->>>> +		__u32 pad[11];
->>>>  	}
->>>
->>> I think I'd be explicit about the 3 pad bytes you've left.
->> 
->> Seconded.
->> 
->> With that change are all KVM bits
->> 
->> Acked-by: Radim Krčmář <rkrcmar@redhat.com>
+2016-10-24 16:39+0200, Paolo Bonzini:
+> On 19/10/2016 19:24, Radim Krčmář wrote:
+>>> > +	if (vcpu->arch.st.msr_val & KVM_MSR_ENABLED)
+>>> > +		if (kvm_read_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
+>>> > +					&vcpu->arch.st.steal,
+>>> > +					sizeof(struct kvm_steal_time)) == 0) {
+>>> > +			vcpu->arch.st.steal.preempted = 1;
+>>> > +			kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
+>>> > +					&vcpu->arch.st.steal,
+>>> > +					sizeof(struct kvm_steal_time));
+>>> > +		}
+>> Please name this block of code.  Something like
+>>   kvm_steal_time_set_preempted(vcpu);
 > 
-> Saw this after replying to the previous message.  If you need to post v6
-> of the full series, it would be nice if you removed the
-> kvm_read_guest_cached.  But anyway it wasn't my intention to override Radim.
+> While at it:
+> 
+> 1) the kvm_read_guest_cached is not necessary.  You can rig the call to
+> kvm_write_guest_cached so that it only writes vcpu->arch.st.steal.preempted.
 
-The patch was acceptable to me even now, so I definitely wouldn't mind
-if it were even nicer. :)
+I agree.  kvm_write_guest_cached() always writes from offset 0, so we'd
+want a new function that allows to specify a starting offset.
+
+Using cached vcpu->arch.st.steal to avoid the read wouldn't be as good.
