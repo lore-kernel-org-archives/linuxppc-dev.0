@@ -1,36 +1,24 @@
-Return-Path: <lee.jones@linaro.org>
-Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
- [IPv6:2a00:1450:400c:c09::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2ZkY58XRzDvXs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 23:06:13 +1100 (AEDT)
-Received: by mail-wm0-x230.google.com with SMTP id c78so100621905wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 05:06:13 -0700 (PDT)
-Date: Mon, 24 Oct 2016 13:08:41 +0100
-From: Lee Jones <lee.jones@linaro.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Marcin Niestroj <m.niestroj@grinn-global.com>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Tony Lindgren <tony@atomide.com>, Mark Brown <broonie@kernel.org>,
- kernel-build-reports@lists.linaro.org,
- linaro-kernel@lists.linaro.org, linux-next@vger.kernel.org
-Subject: Re: [PATCH] kernel: irq: fix build failure
-Message-ID: <20161024120840.GC8574@dell>
-References: <1475775403-27207-1-git-send-email-sudipm.mukherjee@gmail.com>
- <57FBBA0B.9070500@gmail.com>
- <alpine.DEB.2.20.1610201454410.5073@nanos>
- <20161021120020.52b3fa35@canb.auug.org.au>
- <alpine.DEB.2.20.1610211006370.4797@nanos>
- <20161024102215.GN14477@dell>
- <20161024223231.5cdbb2ac@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2dKl11lvzDvWm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 01:03:22 +1100 (AEDT)
+Date: Mon, 24 Oct 2016 09:03:16 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, benh@au1.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, clsoto@us.ibm.com
+Subject: Re: [PATCH v2 2/2] PCI: Don't disable PF's memory decoding when
+ enabling SRIOV
+Message-ID: <20161024140316.GA14177@localhost>
+References: <1475192870-7763-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1475192870-7763-2-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20161021165034.GE9007@localhost> <20161023232802.GA7215@gwshan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20161024223231.5cdbb2ac@canb.auug.org.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161023232802.GA7215@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,32 +28,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 24 Oct 2016, Stephen Rothwell wrote:
-> On Mon, 24 Oct 2016 11:22:15 +0100 Lee Jones <lee.jones@linaro.org> wrote:
-> > On Fri, 21 Oct 2016, Thomas Gleixner wrote:
-> > 
-> > > On Fri, 21 Oct 2016, Stephen Rothwell wrote:  
-> > > > On Thu, 20 Oct 2016 14:55:45 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:  
-> > > > > I know. This is under discussion with the driver folks as we are not going
-> > > > > to blindly export stuff just because someone slapped a irq_set_parent()
-> > > > > into the code w/o knowing why.  
-> > > > 
-> > > > Do we have any idea if a resolution is close.  This was first reported
-> > > > in linux-next in September 14/15.  :-(  
-> > > 
-> > > Grr. Yes. As much as I hate it, I'll go and export it for now. Should be
-> > > able to get it into rc2.  
-> > 
-> > Did this get in?  I still have people complaining about it.
+On Mon, Oct 24, 2016 at 10:28:02AM +1100, Gavin Shan wrote:
+> On Fri, Oct 21, 2016 at 11:50:34AM -0500, Bjorn Helgaas wrote:
+> >Hi Gavin,
+> >
+> >On Fri, Sep 30, 2016 at 09:47:50AM +1000, Gavin Shan wrote:
+> >> pci_update_resource() might be called to update (shift) IOV BARs
+> >> in PPC PowerNV specific pcibios_sriov_enable() when enabling PF's
+> >> SRIOV capability. At that point, the PF have been functional if
+> >> the SRIOV is enabled through sysfs entry "sriov_numvfs". The PF's
+> >> memory decoding (0x2 in PCI_COMMAND) shouldn't be disabled when
+> >> updating its IOV BARs with pci_update_resource(). Otherwise, we
+> >> receives EEH error caused by MMIO access to PF's memory BARs during
+> >> the window when PF's memory decoding is disabled.
+> >
+> >The fact that you get EEH errors is irrelevant.  We can't write code
+> >simply to avoid errors -- we have to write code to make the system
+> >work correctly.
+> >
+> >I do not want to add a "mmio_force_on" parameter to
+> >pci_update_resource().  That puts the burden on the caller to
+> >understand this subtle issue.  If the caller passes mmio_force_on=1
+> >when it shouldn't, things will almost always work, but once in a blue
+> >moon a half-updated BAR will conflict with some other device in the
+> >system, and we'll have an unreproducible, undebuggable crash.
+> >
 > 
-> It is in -rc2.  Commit 3118dac501bc.
+> Bjorn, thanks for your comments. Yes, the EEH error was caused by MMIO
+> access to PF's normal BARs, not VF BARs. Yeah, I also had the conern
+> that adding parameter to pci_update_resource() increases the visible
+> complexity to the caller of the function.
+> 
+> >What you do need is an explanation of why it's safe to non-atomically
+> >update a VF BARx in the SR-IOV capability.  I think this probably
+> >involves the VF MSE bit, and you probably have to either disable VFs
+> >completely or clear the MSE bit while you're updating the VF BARx.  We
+> >should be able to do this inside pci_update_resource() without
+> >changing the interface.
+> >
+> 
+> Yes, It's what PATCH[1/2] does: (PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE)
+> are set after VF BARs are updated with pci_update_resource() in this PPC
+> specific scenario. There are other two situations where the IOV BARs are
+> updated: PCI resource resizing and allocation during system booting or hot
+> adding PF. The VF shouldn't be enabled in both cases when updating IOV BARs.
+> 
+> I think you suggest to add check in pci_update_resource(): Don't disable
+> PF's memory decoding when updating VF BARs. I will send updated revision
+> if it's what you want.
+> 
+> 	/*
+> 	 * The PF might be functional when updating its IOV BARs. So PF's
+> 	 * memory decoding shouldn't be disabled when updating its IOV BARs.
+> 	 */
+> 	disable = (res->flags & IORESOURCE_MEM_64) && !dev->mmio_always_on;
+> #ifdef CONFIG_PCI_IOV
+> 	disable &= !(resno >= PCI_IOV_RESOURCES &&
+> 		     resno <= PCI_IOV_RESOURCE_END);
+> #endif
+> 	if (disable) {
+> 		pci_read_config_word(dev, PCI_COMMAND, &cmd);
+> 		pci_write_config_word(dev, PCI_COMMAND,
+> 				      cmd & ~PCI_COMMAND_MEMORY);
+> 	}
 
-Ah, I was searching for patches authored my Thomas.
+Not exactly.  A 64-bit BAR cannot be updated atomically.  The whole
+point of this exercise is to make sure that when we update such a BAR,
+whether it is a normal PCI BAR or an SR-IOV BAR, the transient state
+does not conflict with anything else in the system.
 
-I see it now, thanks.
+For example, consider two devices that do not conflict:
 
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+  device A BAR 0: 0x00000000_20000000
+  device B BAR 0: 0x00000000_40000000
+
+We want to update A's BAR 0 to 0x00000001_40000000.  We can't do the
+update atomically, so we have this sequence:
+
+  before update:            device A BAR 0: 0x00000000_20000000
+  after writing lower half: device A BAR 0: 0x00000000_40000000
+  after writing upper half: device A BAR 0: 0x00000001_40000000
+
+If the driver for device B accesses B between the writes, both A and B
+may respond, which is a fatal error.
+
+Probably the *best* thing would be to make pci_update_resource()
+return an error if it's asked to update a BAR that is enabled, but I
+haven't looked at all the callers to see whether that's practical.
+
+The current strategy in pci_update_resource() is to clear
+PCI_COMMAND_MEMORY when updating a 64-bit memory BAR.  This only
+applies to the regular PCI BARs 0-5.
+
+Extending that strategy to SR-IOV would mean clearing
+PCI_SRIOV_CTRL_MSE when updating a 64-bit VF BAR.  Obviously you
+wouldn't clear PCI_COMMAND_MEMORY in this case because
+PCI_COMMAND_MEMORY doesn't affect the VF BARs.
+
+Bjorn
