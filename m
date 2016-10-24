@@ -1,7 +1,7 @@
 Return-Path: <chanho.min@lge.com>
 Received: from lgeamrelo11.lge.com (LGEAMRELO11.lge.com [156.147.23.51])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t2Kcj5yh9zDt0p
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 13:15:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3t2KdT63Q2zDt0p
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 13:15:57 +1100 (AEDT)
 From: "Chanho Min" <chanho.min@lge.com>
 To: "'Geert Uytterhoeven'" <geert+renesas@glider.be>,
  "'Rob Herring'" <robh+dt@kernel.org>,
@@ -15,12 +15,12 @@ Cc: <devicetree@vger.kernel.org>, <alsa-devel@alsa-project.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  =?ks_c_5601-1987?B?wMywx8ij?= <gunho.lee@lge.com>
 References: <1477039877-20227-1-git-send-email-geert+renesas@glider.be>
- <1477039877-20227-3-git-send-email-geert+renesas@glider.be>
-In-Reply-To: <1477039877-20227-3-git-send-email-geert+renesas@glider.be>
-Subject: RE: [PATCH v2 2/6] arm64: dts: lg1312: DT fix
+ <1477039877-20227-4-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1477039877-20227-4-git-send-email-geert+renesas@glider.be>
+Subject: RE: [PATCH v2 3/6] arm64: dts: lg1313: DT fix
  s/#interrupts-cells/#interrupt-cells/
-Date: Mon, 24 Oct 2016 10:59:56 +0900
-Message-ID: <00b701d22d9a$51c20910$f5461b30$@lge.com>
+Date: Mon, 24 Oct 2016 11:00:31 +0900
+Message-ID: <00b801d22d9a$674c68c0$35e53a40$@lge.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="ks_c_5601-1987"
@@ -35,11 +35,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 > 
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Acked-by: Rob Herring <robh@kernel.org>
 > ---
 > v2:
->   - Add Acked-by,
->   - Rebased.
+>   - New.
 > ---
 
 Acked-by: Chanho Min <chanho.min@lge.com>
