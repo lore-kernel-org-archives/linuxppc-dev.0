@@ -3,22 +3,20 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2l6W0tJYzDsyC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:24:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2lYX3VS5zDvWG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:44:00 +1100 (AEDT)
 From: Mark Brown <broonie@kernel.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Rob Herring <robh@kernel.org>, Mark Brown <broonie@kernel.org>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>, Chanho Min <chanho.min@lge.com>,
- Michael Ellerman <mpe@ellerman.id.au>, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, kernel@stlinux.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-In-Reply-To: <1477039877-20227-5-git-send-email-geert+renesas@glider.be>
-Message-Id: <E1byjbu-0001Tg-U9@debutante>
-Date: Mon, 24 Oct 2016 19:04:34 +0100
-Subject: Applied "ASoC: davinci-mcbsp: DT fix
- s/interrupts-names/interrupt-names/" to the asoc tree
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
+ alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>,
+ linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.com>,
+ kernel-janitors@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Fabio Estevam <fabio.estevam@nxp.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1476543351-17858-7-git-send-email-Julia.Lawall@lip6.fr>
+Message-Id: <E1byjYm-0000o7-JA@debutante>
+Date: Mon, 24 Oct 2016 19:01:20 +0100
+Subject: Applied "ASoC: constify snd_soc_ops structures" to the asoc tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,7 +28,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 The patch
 
-   ASoC: davinci-mcbsp: DT fix s/interrupts-names/interrupt-names/
+   ASoC: constify snd_soc_ops structures
 
 has been applied to the asoc tree at
 
@@ -55,31 +53,96 @@ to this mail.
 Thanks,
 Mark
 
->From a545f5d859c7988ab61850395a4565bfe507dc0a Mon Sep 17 00:00:00 2001
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Fri, 21 Oct 2016 10:51:15 +0200
-Subject: [PATCH] ASoC: davinci-mcbsp: DT fix
- s/interrupts-names/interrupt-names/
+>From ddba7fa4cfd16b10adcbe24fa1d3b7de470af863 Mon Sep 17 00:00:00 2001
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sat, 15 Oct 2016 16:55:50 +0200
+Subject: [PATCH] ASoC: constify snd_soc_ops structures
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Rob Herring <robh@kernel.org>
+Check for snd_soc_ops structures that are only stored in the ops field of a
+snd_soc_dai_link structure.  This field is declared const, so snd_soc_ops
+structures that have this property can be declared as const also.
+
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r disable optional_qualifier@
+identifier i;
+position p;
+@@
+static struct snd_soc_ops i@p = { ... };
+
+@ok1@
+identifier r.i;
+struct snd_soc_dai_link e;
+position p;
+@@
+e.ops = &i@p;
+
+@ok2@
+identifier r.i, e;
+position p;
+@@
+struct snd_soc_dai_link e[] = { ..., { .ops = &i@p, }, ..., };
+
+@bad@
+position p != {r.p,ok1.p,ok2.p};
+identifier r.i;
+struct snd_soc_ops e;
+@@
+e@i@p
+
+@depends on !bad disable optional_qualifier@
+identifier r.i;
+@@
+static
++const
+ struct snd_soc_ops i = { ... };
+// </smpl>
+
+The effect on the layout of the .o files is shown by the following output of
+the size command, first before then after the transformation:
+
+  text    data     bss     dec     hex filename
+   8748    1024       0    9772    262c sound/soc/fsl/fsl-asoc-card.o
+   8812     952       0    9764    2624 sound/soc/fsl/fsl-asoc-card.o
+
+   text    data     bss     dec     hex filename
+   4165     264       8    4437    1155 sound/soc/fsl/imx-wm8962.o
+   4229     200       8    4437    1155 sound/soc/fsl/imx-wm8962.o
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- Documentation/devicetree/bindings/sound/davinci-mcbsp.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/soc/fsl/fsl-asoc-card.c | 2 +-
+ sound/soc/fsl/imx-wm8962.c    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/sound/davinci-mcbsp.txt b/Documentation/devicetree/bindings/sound/davinci-mcbsp.txt
-index 55b53e1fd72c..e0b6165c9cfc 100644
---- a/Documentation/devicetree/bindings/sound/davinci-mcbsp.txt
-+++ b/Documentation/devicetree/bindings/sound/davinci-mcbsp.txt
-@@ -43,7 +43,7 @@ mcbsp0: mcbsp@1d10000 {
- 		<0x00310000 0x1000>;
- 	reg-names = "mpu", "dat";
- 	interrupts = <97 98>;
--	interrupts-names = "rx", "tx";
-+	interrupt-names = "rx", "tx";
- 	dmas = <&edma0 3 1
- 		&edma0 2 1>;
- 	dma-names = "tx", "rx";
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index dffd549a0e2a..9998aea23597 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -183,7 +183,7 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static struct snd_soc_ops fsl_asoc_card_ops = {
++static const struct snd_soc_ops fsl_asoc_card_ops = {
+ 	.hw_params = fsl_asoc_card_hw_params,
+ };
+ 
+diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
+index 201a70d1027a..1b60958e2080 100644
+--- a/sound/soc/fsl/imx-wm8962.c
++++ b/sound/soc/fsl/imx-wm8962.c
+@@ -61,7 +61,7 @@ static int imx_hifi_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
+-static struct snd_soc_ops imx_hifi_ops = {
++static const struct snd_soc_ops imx_hifi_ops = {
+ 	.hw_params = imx_hifi_hw_params,
+ };
+ 
 -- 
 2.8.1
