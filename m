@@ -1,22 +1,37 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2lYX3VS5zDvWG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:44:00 +1100 (AEDT)
-From: Mark Brown <broonie@kernel.org>
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Mark Brown <broonie@kernel.org>, Timur Tabi <timur@tabi.org>,
- alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>,
- linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.com>,
- kernel-janitors@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- Fabio Estevam <fabio.estevam@nxp.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <1476543351-17858-7-git-send-email-Julia.Lawall@lip6.fr>
-Message-Id: <E1byjYm-0000o7-JA@debutante>
-Date: Mon, 24 Oct 2016 19:01:20 +0100
-Subject: Applied "ASoC: constify snd_soc_ops structures" to the asoc tree
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2nBH4bcLzDvXn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 06:57:27 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9OJroZX120093
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 15:57:25 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 269ksj1rwg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 15:57:25 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 24 Oct 2016 13:57:24 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id D7BFC3E40052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 13:57:20 -0600 (MDT)
+Subject: Re: [PATCH V6 5/8] pseries/drc-info: Search new DRC properties for
+ CPU indexes
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <aac1ba74-6e44-3984-a4b3-fa90a6f7fa80@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 24 Oct 2016 14:57:19 -0500
+MIME-Version: 1.0
+In-Reply-To: <aac1ba74-6e44-3984-a4b3-fa90a6f7fa80@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <d129dd93-1466-2ef2-8738-a99c478ef566@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,123 +41,241 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+On 09/21/2016 09:17 AM, Michael Bringmann wrote:
+> pseries/drc-info: Provide parallel routines to convert between
+> drc_index and CPU numbers at runtime, using the older device-tree
+> properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+> and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
+> 
+> [V2: Revise contant names.]
+> [V3: No change.]
+> [V4: No change.]
+> [V5: Resynchronize/resubmit]
+> [V6: No change]
+> 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> ---
+> diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+> index 9276779..10c4200 100644
+> --- a/arch/powerpc/platforms/pseries/pseries_energy.c
+> +++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+> @@ -35,10 +35,68 @@ static int sysfs_entries;
+> 
+>  /* Helper Routines to convert between drc_index to cpu numbers */
+> 
+> +void read_one_drc_info(int **info, char **dtype, char **dname,
+> +			unsigned long int *fdi_p, unsigned long int *nsl_p,
+> +			unsigned long int *si_p, unsigned long int *ldi_p)
+> +{
+> +	char *drc_type, *drc_name, *pc;
+> +	u32 fdi, nsl, si, ldi;
+> +
+> +	fdi = nsl = si = ldi = 0;
+> +
+> +	/* Get drc-type:encode-string */
+> +	pc = (char *)info;
+> +	drc_type = pc;
+> +	pc += (strlen(drc_type) + 1);
+> +
+> +	/* Get drc-name-prefix:encode-string */
+> +	drc_name = (char *)pc;
+> +	pc += (strlen(drc_name) + 1);
+> +
+> +	/* Get drc-index-start:encode-int */
+> +	memcpy(&fdi, pc, 4);
 
-   ASoC: constify snd_soc_ops structures
+This may be a little nit, but could we get the shortened names for the
+elements to match up with the comments, i.e. make the comment state
+'Get first drc-index' to match fdi.
 
-has been applied to the asoc tree at
+> +	fdi = be32_to_cpu(fdi);
+> +	pc += 4;
+> +
+> +	/* Get/skip drc-name-suffix-start:encode-int */
+> +	pc += 4;
+> +
+> +	/* Get number-sequential-elements:encode-int */
+> +	memcpy(&nsl, pc, 4);
+> +	nsl = be32_to_cpu(nsl);
+> +	pc += 4;
+> +
+> +	/* Get sequential-increment:encode-int */
+> +	memcpy(&si, pc, 4);
+> +	si = be32_to_cpu(si);
+> +	pc += 4;
+> +
+> +	/* Get/skip drc-power-domain:encode-int */
+> +	pc += 4;
+> +
+> +	/* Should now know end of current entry */
+> +	ldi = fdi + ((nsl-1)*si);
+> +
+> +	(*info) = (int *)pc;
+> +
+> +	if (dtype)
+> +		*dtype = drc_type;
+> +	if (dname)
+> +		*dname = drc_name;
+> +	if (fdi_p)
+> +		*fdi_p = fdi;
+> +	if (nsl_p)
+> +		*nsl_p = nsl;
+> +	if (si_p)
+> +		*si_p = si;
+> +	if (ldi_p)
+> +		*ldi_p = ldi;
+> +}
+> +EXPORT_SYMBOL(read_one_drc_info);
+> +
+>  static u32 cpu_to_drc_index(int cpu)
+>  {
+>  	struct device_node *dn = NULL;
+> -	const int *indexes;
+>  	int i;
+>  	int rc = 1;
+>  	u32 ret = 0;
+> @@ -46,18 +104,54 @@ static u32 cpu_to_drc_index(int cpu)
+>  	dn = of_find_node_by_path("/cpus");
+>  	if (dn == NULL)
+>  		goto err;
+> -	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+> -	if (indexes == NULL)
+> -		goto err_of_node_put;
+> +
+>  	/* Convert logical cpu number to core number */
+>  	i = cpu_core_index_of_thread(cpu);
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+Given the changes you've made to this routine I think we should re-name
+i to core_index (or some such name), I had to read through a couple of
+times to see where 'i' is used.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
+> -	/*
+> -	 * The first element indexes[0] is the number of drc_indexes
+> -	 * returned in the list.  Hence i+1 will get the drc_index
+> -	 * corresponding to core number i.
+> -	 */
+> -	WARN_ON(i > indexes[0]);
+> -	ret = indexes[i + 1];
+> +
+> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+> +		int *info = (int *)4;
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+Why set info to 4? This doesn't appear necessary.
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+> +		unsigned long int num_set_entries, j, iw = i, fdi = 0;
+> +		unsigned long int ldi = 0, nsl = 0, si = 0;
+> +		char *dtype;
+> +		char *dname;
+> +
+> +		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
+> +		if (info == NULL)
+> +			goto err_of_node_put;
+> +
+> +		num_set_entries = be32_to_cpu(*info++);
+> +
+> +		for (j = 0; j < num_set_entries; j++) {
+> +
+> +			read_one_drc_info(&info, &dtype, &dname, &fdi,
+> +					&nsl, &si, &ldi);
+> +			if (strcmp(dtype, "CPU"))
+> +				goto err;
+> +
+> +			if (iw < ldi)
+> +				break;
+> +
+> +			WARN_ON(((iw-fdi)%si) != 0);
+> +		}
+> +		WARN_ON((nsl == 0) | (si == 0));
+> +
+> +		ret = ldi + (iw*si);
+> +	} else {
+> +		const int *indexes;
+> +
+> +		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+> +		if (indexes == NULL)
+> +			goto err_of_node_put;
+> +
+> +		/*
+> +		 * The first element indexes[0] is the number of drc_indexes
+> +		 * returned in the list.  Hence i+1 will get the drc_index
+> +		 * corresponding to core number i.
+> +		 */
+> +		WARN_ON(i > indexes[0]);
+> +		ret = indexes[i + 1];
+> +	}
+> +
+>  	rc = 0;
+> 
+>  err_of_node_put:
+> @@ -78,21 +172,51 @@ static int drc_index_to_cpu(u32 drc_index)
+>  	dn = of_find_node_by_path("/cpus");
+>  	if (dn == NULL)
+>  		goto err;
+> -	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+> -	if (indexes == NULL)
+> -		goto err_of_node_put;
+> -	/*
+> -	 * First element in the array is the number of drc_indexes
+> -	 * returned.  Search through the list to find the matching
+> -	 * drc_index and get the core number
+> -	 */
+> -	for (i = 0; i < indexes[0]; i++) {
+> -		if (indexes[i + 1] == drc_index)
+> +
+> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+> +		int *info = (int *)dn;
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+Why are you setting info here? This is set in the call to of_get_property()
+below.
 
-Thanks,
-Mark
+-Nathan
 
->From ddba7fa4cfd16b10adcbe24fa1d3b7de470af863 Mon Sep 17 00:00:00 2001
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Sat, 15 Oct 2016 16:55:50 +0200
-Subject: [PATCH] ASoC: constify snd_soc_ops structures
-
-Check for snd_soc_ops structures that are only stored in the ops field of a
-snd_soc_dai_link structure.  This field is declared const, so snd_soc_ops
-structures that have this property can be declared as const also.
-
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@r disable optional_qualifier@
-identifier i;
-position p;
-@@
-static struct snd_soc_ops i@p = { ... };
-
-@ok1@
-identifier r.i;
-struct snd_soc_dai_link e;
-position p;
-@@
-e.ops = &i@p;
-
-@ok2@
-identifier r.i, e;
-position p;
-@@
-struct snd_soc_dai_link e[] = { ..., { .ops = &i@p, }, ..., };
-
-@bad@
-position p != {r.p,ok1.p,ok2.p};
-identifier r.i;
-struct snd_soc_ops e;
-@@
-e@i@p
-
-@depends on !bad disable optional_qualifier@
-identifier r.i;
-@@
-static
-+const
- struct snd_soc_ops i = { ... };
-// </smpl>
-
-The effect on the layout of the .o files is shown by the following output of
-the size command, first before then after the transformation:
-
-  text    data     bss     dec     hex filename
-   8748    1024       0    9772    262c sound/soc/fsl/fsl-asoc-card.o
-   8812     952       0    9764    2624 sound/soc/fsl/fsl-asoc-card.o
-
-   text    data     bss     dec     hex filename
-   4165     264       8    4437    1155 sound/soc/fsl/imx-wm8962.o
-   4229     200       8    4437    1155 sound/soc/fsl/imx-wm8962.o
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl-asoc-card.c | 2 +-
- sound/soc/fsl/imx-wm8962.c    | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index dffd549a0e2a..9998aea23597 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -183,7 +183,7 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--static struct snd_soc_ops fsl_asoc_card_ops = {
-+static const struct snd_soc_ops fsl_asoc_card_ops = {
- 	.hw_params = fsl_asoc_card_hw_params,
- };
- 
-diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
-index 201a70d1027a..1b60958e2080 100644
---- a/sound/soc/fsl/imx-wm8962.c
-+++ b/sound/soc/fsl/imx-wm8962.c
-@@ -61,7 +61,7 @@ static int imx_hifi_hw_params(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--static struct snd_soc_ops imx_hifi_ops = {
-+static const struct snd_soc_ops imx_hifi_ops = {
- 	.hw_params = imx_hifi_hw_params,
- };
- 
--- 
-2.8.1
+> +		unsigned long int num_set_entries, j, ret;
+> +		unsigned long int fdi = 0, ldi = 0, nsl = 0, si = 0;
+> +		char *dtype, *dname;
+> +
+> +		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
+> +		if (info == NULL)
+> +			goto err_of_node_put;
+> +
+> +		num_set_entries = be32_to_cpu(*info++);
+> +
+> +		for (j = 0; j < num_set_entries; j++) {
+> +			read_one_drc_info(&info, &dtype, &dname, &fdi,
+> +					&nsl, &si, &ldi);
+> +			if (strcmp(dtype, "CPU"))
+> +				goto err;
+> +
+> +			WARN_ON(drc_index < fdi);
+> +			if (drc_index > ldi)
+> +				continue;
+> +
+> +			WARN_ON(((drc_index-fdi)%si) != 0);
+> +
+> +			ret = ((drc_index-fdi)/si);
+>  			break;
+> +		}
+> +	} else {
+> +		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+> +		if (indexes == NULL)
+> +			goto err_of_node_put;
+> +		/*
+> +		 * First element in the array is the number of drc_indexes
+> +		 * returned.  Search through the list to find the matching
+> +		 * drc_index and get the core number
+> +		 */
+> +		for (i = 0; i < indexes[0]; i++) {
+> +			if (indexes[i + 1] == drc_index)
+> +				break;
+> +		}
+> +		/* Convert core number to logical cpu number */
+> +		cpu = cpu_first_thread_of_core(i);
+> +		rc = 0;
+>  	}
+> -	/* Convert core number to logical cpu number */
+> -	cpu = cpu_first_thread_of_core(i);
+> -	rc = 0;
+> 
+>  err_of_node_put:
+>  	of_node_put(dn);
+> 
