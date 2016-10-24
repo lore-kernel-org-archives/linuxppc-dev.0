@@ -1,46 +1,49 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2l4C05gVzDvXb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:22:03 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2l230hvSzDt2h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:20:10 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9OIIgfp057121
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 14:20:09 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 269kshumg0-1
+ by ozlabs.org (Postfix) with ESMTPS id 3t2l4B3FVfz9t1d
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2016 05:22:02 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9OIJ1Sf043836
+ for <linuxppc-dev@ozlabs.org>; Mon, 24 Oct 2016 14:22:00 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 269kjvn4v0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 14:20:08 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 24 Oct 2016 14:21:59 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Mon, 24 Oct 2016 12:20:07 -0600
-Date: Mon, 24 Oct 2016 13:20:00 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Alistair Popple <apopple@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Tang Chen <tangchen@cn.fujitsu.com>,
- linux-mm@kvack.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 2/5] drivers/of: do not add memory for unavailable nodes
-References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1475778995-1420-3-git-send-email-arbab@linux.vnet.ibm.com>
- <2344394.NlaWgtFOqB@new-mexico>
- <87vawixcxn.fsf@concordia.ellerman.id.au>
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 25 Oct 2016 04:21:57 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 679B23578053
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2016 05:21:55 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9OILtQA13238506
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2016 05:21:55 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9OILsxW012889
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2016 05:21:55 +1100
+Subject: [PATCH v2] powerpc/fadump: Fix the race in crash_fadump().
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, Anton Blanchard <anton@samba.org>
+Date: Mon, 24 Oct 2016 23:51:51 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <87vawixcxn.fsf@concordia.ellerman.id.au>
-Message-Id: <20161024182000.5g2f3w3x3oqrohqs@arbab-laptop.austin.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <147733331174.26684.12646675491489853468.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,23 +53,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 24, 2016 at 09:24:04PM +1100, Michael Ellerman wrote:
->The code already looks for "linux,usable-memory" in preference to 
->"reg". Can you use that instead?
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Yes, we could set the size of "linux,usable-memory" to zero instead of 
-setting status to "disabled".
+There are chances that multiple CPUs can call crash_fadump() simultaneously
+and would start duplicating same info to vmcoreinfo ELF note section. This
+causes makedumpfile to fail during kdump capture. One example is,
+triggering dumprestart from HMC which sends system reset to all the CPUs at
+once.
 
-I'll send a v5 of this set which drops 1/5 and 2/5. That would be the 
-only difference here.
+makedumpfile --dump-dmesg /proc/vmcore
+read_vmcoreinfo_basic_info: Invalid data in /tmp/vmcoreinfoyjgxlL: CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971
+makedumpfile Failed.
+Running makedumpfile --dump-dmesg /proc/vmcore failed (1).
 
->That would have the advantage that existing kernels already understand
->it.
->
->Another problem with using "status" is we could have device trees out
->there that have status = disabled and we don't know about it, and by
->changing the kernel to use that property we break people's systems.
->Though for memory nodes my guess is that's not true, but you never know ...
+makedumpfile  -d 31 -l /proc/vmcore
+read_vmcoreinfo_basic_info: Invalid data in /tmp/vmcoreinfo1mmVdO: CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971
+makedumpfile Failed.
+Running makedumpfile  -d 31 -l /proc/vmcore failed (1).
 
--- 
-Reza Arbab
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+Changes in V2:
+- Use cmpxchg instead of mutex lock during panic path.
+---
+ arch/powerpc/kernel/fadump.c |   25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index b3a6633..a795956 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -401,12 +401,35 @@ static void register_fw_dump(struct fadump_mem_struct *fdm)
+ void crash_fadump(struct pt_regs *regs, const char *str)
+ {
+ 	struct fadump_crash_info_header *fdh = NULL;
++	int old_cpu, this_cpu;
+ 
+ 	if (!fw_dump.dump_registered || !fw_dump.fadumphdr_addr)
+ 		return;
+ 
++	/*
++	 * old_cpu == -1 means this is the first CPU which has come here,
++	 * go ahead and trigger fadump.
++	 *
++	 * old_cpu != -1 means some other CPU has already on it's way
++	 * to trigger fadump, just keep looping here.
++	 */
++	this_cpu = smp_processor_id();
++	old_cpu = cmpxchg(&crashing_cpu, -1, this_cpu);
++
++	if (old_cpu != -1) {
++		/*
++		 * We can't loop here indefinitely. Wait as long as fadump
++		 * is in force. If we race with fadump un-registration this
++		 * loop will break and then we go down to normal panic path
++		 * and reboot. If fadump is in force the first crashing
++		 * cpu will definitely trigger fadump.
++		 */
++		while (fw_dump.dump_registered)
++			cpu_relax();
++		return;
++	}
++
+ 	fdh = __va(fw_dump.fadumphdr_addr);
+-	crashing_cpu = smp_processor_id();
+ 	fdh->crashing_cpu = crashing_cpu;
+ 	crash_save_vmcoreinfo();
+ 
