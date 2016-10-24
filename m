@@ -1,24 +1,27 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2MW336zkzDvYs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 14:40:31 +1100 (AEDT)
-Received: by mail-pf0-x230.google.com with SMTP id s8so89992209pfj.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Oct 2016 20:40:31 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/mm: Use tlbiel only if we ever ran on the current
- cpu
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <20161024032043.22455-1-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <9b21edc6-061b-ad66-1bbc-07c7d0048e6c@gmail.com>
-Date: Mon, 24 Oct 2016 14:40:24 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2NWC4BYlzDvWk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 15:25:42 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id i85so15303243pfa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Oct 2016 21:25:42 -0700 (PDT)
+Subject: Re: [PATCH kernel v3 3/4] vfio/spapr: Cache mm in tce_container
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <1476932630-45323-1-git-send-email-aik@ozlabs.ru>
+ <1476932630-45323-4-git-send-email-aik@ozlabs.ru>
+ <20161020183121.073f01ac@roar.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <734716b1-6a77-55e1-ed9b-dff635475b0b@ozlabs.ru>
+Date: Mon, 24 Oct 2016 15:25:34 +1100
 MIME-Version: 1.0
-In-Reply-To: <20161024032043.22455-1-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20161020183121.073f01ac@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +31,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 24/10/16 14:20, Aneesh Kumar K.V wrote:
-> Before this patch, we used tlbiel, if we ever ran only on this core.
-> That was mostly derived from the nohash usage of the same. But the
-> ISA 3.0 clarifies tlbiel such that
+On 20/10/16 18:31, Nicholas Piggin wrote:
+> On Thu, 20 Oct 2016 14:03:49 +1100
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 > 
-> "All TLB entries that have all of the following properties are made
-> invalid on the thread executing the tlbiel instruction"
+>> In some situations the userspace memory context may live longer than
+>> the userspace process itself so if we need to do proper memory context
+>> cleanup, we better cache @mm and use it later when the process is gone
+>> (@current or @current->mm is NULL).
+>>
+>> This references mm and stores the pointer in the container; this is done
+>> when a container is just created so checking for !current->mm in other
+>> places becomes pointless.
+>>
+>> This replaces current->mm with container->mm everywhere except debug
+>> prints.
+>>
+>> This adds a check that current->mm is the same as the one stored in
+>> the container to prevent userspace from registering memory in other
+>> processes.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  drivers/vfio/vfio_iommu_spapr_tce.c | 127 ++++++++++++++++++++----------------
+>>  1 file changed, 71 insertions(+), 56 deletions(-)
+>>
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> index d0c38b2..6b0b121 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -31,49 +31,46 @@
 > 
-> Hence use tlbiel, if we only ever ran on just the current cpu.
+> Does it make sense to move the rest of these hunks into patch 2?
+> I think they're similarly just moving the mm reference into callers.
+
+
+Patch #2 is moving chunks between 2 maintainership areas - ppc64 and vfio,
+this one changes only vfio code, usually it is easier to split patches this
+way.
+
 > 
+> 
+>>  static void tce_iommu_detach_group(void *iommu_data,
+>>  		struct iommu_group *iommu_group);
+>>  
+>> -static long try_increment_locked_vm(long npages)
+>> +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+>>  {
+>>  	long ret = 0, locked, lock_limit;
+>>  
+>> -	if (!current || !current->mm)
+>> -		return -ESRCH; /* process exited */
+>> -
+>>  	if (!npages)
+>>  		return 0;
+>>  
+>> -	down_write(&current->mm->mmap_sem);
+>> -	locked = current->mm->locked_vm + npages;
+>> +	down_write(&mm->mmap_sem);
+>> +	locked = mm->locked_vm + npages;
+>>  	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>>  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+>>  		ret = -ENOMEM;
+>>  	else
+>> -		current->mm->locked_vm += npages;
+>> +		mm->locked_vm += npages;
+>>  
+>>  	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+>>  			npages << PAGE_SHIFT,
+>> -			current->mm->locked_vm << PAGE_SHIFT,
+>> +			mm->locked_vm << PAGE_SHIFT,
+>>  			rlimit(RLIMIT_MEMLOCK),
+>>  			ret ? " - exceeded" : "");
+>>  
+>> -	up_write(&current->mm->mmap_sem);
+>> +	up_write(&mm->mmap_sem);
+>>  
+>>  	return ret;
+>>  }
+>>  
+>> -static void decrement_locked_vm(long npages)
+>> +static void decrement_locked_vm(struct mm_struct *mm, long npages)
+>>  {
+>> -	if (!current || !current->mm || !npages)
+>> +	if (!mm || !npages)
+>>  		return; /* process exited */
+> 
+> I know you're trying to be defensive and change as little logic as possible,
+> but some cases should be an error, and I think some of the "process exited"
+> comments were wrong anyway.
+> 
+> Maybe pull the !mm test into the caller and make it WARN_ON?
 
-Could you clarify the impact. The impact I see is that it could
-lead to us thinking we invalidated the TLB across the core whereas
-we did it only on the current thread? This could leave others threads
-in the same core with invalid TLB's, if cpumask reported we ran on
-other threads in the same core?
 
-Balbir Singh.
+No, the next patch should just drop this check as I am going to have a
+valid mm pointer in a container all its lifetime.
+
+
+> 
+> 
+>> @@ -317,6 +311,9 @@ static void *tce_iommu_open(unsigned long arg)
+>>  		return ERR_PTR(-EINVAL);
+>>  	}
+>>  
+>> +	if (!current->mm)
+>> +		return ERR_PTR(-ESRCH); /* process exited */
+> 
+> A userspace thread in the kernel can't have its mm disappear, unless you
+> are actually in the exit code. !current->mm is more like a test for a kernel
+> thread.
+
+Sorry, I am not following you here. I am going to use @mm, I need to check
+if it is not NULL for whatever reason, I do this here, once, but it is
+pointless anyway?
+
+
+> 
+> 
+>> +
+>>  	container = kzalloc(sizeof(*container), GFP_KERNEL);
+>>  	if (!container)
+>>  		return ERR_PTR(-ENOMEM);
+>> @@ -326,13 +323,17 @@ static void *tce_iommu_open(unsigned long arg)
+>>  
+>>  	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
+>>  
+>> +	container->mm = current->mm;
+>> +	atomic_inc(&container->mm->mm_count);
+>> +
+>>  	return container;
+> 
+> It's a nitpick if you respin the patch, but I guess it would better be
+> described as a reference than a cache of the object. "have tce_container
+> take a reference to mm_struct".
+
+Ok, will do!
+
+
+> 
+> 
+>> @@ -515,13 +526,16 @@ static long tce_iommu_build_v2(struct tce_container *container,
+>>  	unsigned long hpa;
+>>  	enum dma_data_direction dirtmp;
+>>  
+>> +	if (container->mm != current->mm)
+>> +		return -ESRCH;
+> 
+> Good, is this condition now enforced on all entrypoints that use
+> container->mm (except the final teardown)? (The mlock/rlimit stuff,
+> as we talked about before, doesn't make sense if not).
+
+After having a chat with Paul, I'll move this check (slightly improved) to
+the beginning of tce_iommu_ioctl().
+
+
+
+-- 
+Alexey
