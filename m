@@ -1,28 +1,36 @@
-Return-Path: <colin.king@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
+ [IPv6:2a00:1450:400c:c09::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2rSF2k6TzDvgk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 09:24:45 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/pseries: fix spelling mistake: "Attemping" ->
- "Attempting"
-To: Joe Perches <joe@perches.com>, Kees Cook <keescook@chromium.org>
-References: <20161024220212.8464-1-colin.king@canonical.com>
- <CAGXu5j+RGsCwZ4SpnZKnoqt3zsyYPW8FdZ8vS7cRwr_L+0q2fA@mail.gmail.com>
- <1477347610.2111.6.camel@perches.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Rashmica Gupta <rashmicy@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-From: Colin Ian King <colin.king@canonical.com>
-Message-ID: <f8a7d7ad-fd20-ffc7-8722-b711b47b2050@canonical.com>
-Date: Mon, 24 Oct 2016 23:24:41 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2sdF4N3bzDvhN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 10:17:36 +1100 (AEDT)
+Received: by mail-wm0-x230.google.com with SMTP id d199so1974296wmd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 16:17:36 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1477347610.2111.6.camel@perches.com>
-Content-Type: text/plain; charset=windows-1252
+Sender: keescook@google.com
+In-Reply-To: <20161020224521.GA24970@obsidianresearch.com>
+References: <20161003161322.3835-1-dvlasenk@redhat.com>
+ <CAGXu5j+haCUW_AEPLPcVGtrnv4ojQ79FDpspUurYJSX_-TXeow@mail.gmail.com>
+ <877f9p55lu.fsf@concordia.ellerman.id.au>
+ <CAGXu5jJ3PpvNBYyBWa_M8ELLPuJOcJt-KuH0uRK66peJM_CnSg@mail.gmail.com>
+ <20161020224521.GA24970@obsidianresearch.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 24 Oct 2016 16:17:33 -0700
+Message-ID: <CAGXu5j+uQqgZSv3fyo+_5z7u9CC=2KjtcAiP6bQkzi9ZK6XLww@mail.gmail.com>
+Subject: Re: [PATCH v6] powerpc: Do not make the entire heap executable
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Denys Vlasenko <dvlasenk@redhat.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Oleg Nesterov <oleg@redhat.com>,
+ Florian Weimer <fweimer@redhat.com>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,48 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24/10/16 23:20, Joe Perches wrote:
-> On Mon, 2016-10-24 at 15:13 -0700, Kees Cook wrote:
->> On Mon, Oct 24, 2016 at 3:02 PM, Colin King <colin.king@canonical.com> wrote:
->>> From: Colin Ian King <colin.king@canonical.com>
->>>
->>> trivial fix to spelling mistake in pr_debug message
->>>
->>> Signed-off-by: Colin Ian King <colin.king@canonical.com>
->>> ---
->>>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->>> index a1b63e0..c8929cb 100644
->>> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
->>> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->>> @@ -553,7 +553,7 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->>>  {
->>>         int rc;
->>>
->>> -       pr_debug("Attemping to remove CPU %s, drc index: %x\n",
->>> +       pr_debug("Attempting to remove CPU %s, drc index: %x\n",
->>>                  dn->name, drc_index);
->>>
->>>         rc = dlpar_offline_cpu(dn);
->>> --
->>> 2.9.3
+On Thu, Oct 20, 2016 at 3:45 PM, Jason Gunthorpe
+<jgunthorpe@obsidianresearch.com> wrote:
+> On Tue, Oct 04, 2016 at 09:54:12AM -0700, Kees Cook wrote:
+>> On Mon, Oct 3, 2016 at 5:18 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> > Kees Cook <keescook@chromium.org> writes:
+>> >
+>> >> On Mon, Oct 3, 2016 at 9:13 AM, Denys Vlasenko <dvlasenk@redhat.com> wrote:
+>> >>> On 32-bit powerpc the ELF PLT sections of binaries (built with --bss-plt,
+>> >>> or with a toolchain which defaults to it) look like this:
+>> > ...
+>> >>>
+>> >>> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+>> >>> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+>> >>> Acked-by: Kees Cook <keescook@chromium.org>
+>> >>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>> >>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> >>> CC: Paul Mackerras <paulus@samba.org>
+>> >>> CC: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> >>> CC: Kees Cook <keescook@chromium.org>
+>> >>> CC: Oleg Nesterov <oleg@redhat.com>
+>> >>> CC: Michael Ellerman <mpe@ellerman.id.au>
+>> >>> CC: Florian Weimer <fweimer@redhat.com>
+>> >>> CC: linux-mm@kvack.org
+>> >>> CC: linuxppc-dev@lists.ozlabs.org
+>> >>> CC: linux-kernel@vger.kernel.org
+>> >>> Changes since v5:
+>> >>> * made do_brk_flags() error out if any bits other than VM_EXEC are set.
+>> >>>   (Kees Cook: "With this, I'd be happy to Ack.")
+>> >>>   See https://patchwork.ozlabs.org/patch/661595/
+>> >>
+>> >> Excellent, thanks for the v6! Should this go via the ppc tree or the -mm tree?
+>> >
+>> > -mm would be best, given the diffstat I think it's less likely to
+>> >  conflict if it goes via -mm.
 >>
->> Reviewed-by: Kees Cook <keescook@chromium.org>
->>
->> scripts/spelling.txt should likely get an addition for "attemping". It
->> already has "attemps"...
-> 
-> There may not be enough of these to be useful and to my
-> knowledge Colin isn't fixing comments
+>> Okay, excellent. Andrew, do you have this already in email? I think
+>> you weren't on the explicit CC from the v6...
+>
+> FWIW (and ping),
+>
+> Tested-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+>
+> On ARM32 (kirkwood) and PPC32 (405)
+>
+> For reference, here is the patchwork URL:
+>
+> https://patchwork.ozlabs.org/patch/677753/
 
-Indeed, I'm just using my kernelscan tool to scrape for errors in kernel
-messages as these are seen by users as opposed to comments. Plus the
-occurrences of the mistakes I'm finding are generally very small.
+Hi Andrew,
 
-> 
-> $ grep -rP --include=*.[ch] -wi "at+emp*t?ing" * | grep -vi attempting
-> arch/x86/platform/uv/uv_nmi.c:/* Ping non-responding cpus attemping to force them into the NMI handler */
-> arch/powerpc/platforms/pseries/hotplug-cpu.c:	pr_debug("Attemping to remove CPU %s, drc index: %x\n",
-> 
+Can you pick this up?
+
+Thanks!
+
+-Kees
+
+-- 
+Kees Cook
+Nexus Security
