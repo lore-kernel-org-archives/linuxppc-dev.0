@@ -1,22 +1,22 @@
-Return-Path: <alexander.h.duyck@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30062.outbound.protection.outlook.com [40.107.3.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2kkN3hVhzDvXY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:06:35 +1100 (AEDT)
-Subject: [net-next PATCH RFC 17/26] arch/powerpc: Add option to skip DMA
- sync as a part of mapping
-From: Alexander Duyck <alexander.h.duyck@intel.com>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- brouer@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
-Date: Mon, 24 Oct 2016 08:05:56 -0400
-Message-ID: <20161024120556.16276.90940.stgit@ahduyck-blue-test.jf.intel.com>
-In-Reply-To: <20161024115737.16276.71059.stgit@ahduyck-blue-test.jf.intel.com>
-References: <20161024115737.16276.71059.stgit@ahduyck-blue-test.jf.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2qXW3DDGzDvXh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 08:43:22 +1100 (AEDT)
+From: Scott Wood <scott.wood@nxp.com>
+To: Andy Fleming <afleming@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "scottwood@freescale.com"
+ <scottwood@freescale.com>
+CC: "aperez@alexperez.com" <aperez@alexperez.com>
+Subject: Re: [PATCH 3/3] corenet: Switch to of_platform_default_populate
+Date: Mon, 24 Oct 2016 21:43:01 +0000
+Message-ID: <DB5PR0401MB19285D41A04AAC2B055E921891A90@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <1477266519-25173-1-git-send-email-afleming@gmail.com>
+ <1477266519-25173-3-git-send-email-afleming@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
-avoid invoking cache line invalidation if the driver will just handle it
-via a sync_for_cpu or sync_for_device call.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- arch/powerpc/kernel/dma.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index e64a601..6877e3f 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -203,6 +203,10 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
- 	for_each_sg(sgl, sg, nents, i) {
- 		sg->dma_address = sg_phys(sg) + get_dma_offset(dev);
- 		sg->dma_length = sg->length;
-+
-+		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
-+			continue;
-+
- 		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- 	}
- 
-@@ -235,7 +239,10 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
- 					     unsigned long attrs)
- {
- 	BUG_ON(dir == DMA_NONE);
--	__dma_sync_page(page, offset, size, dir);
-+
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		__dma_sync_page(page, offset, size, dir);
-+
- 	return page_to_phys(page) + offset + get_dma_offset(dev);
- }
- 
+On 10/23/2016 06:48 PM, Andy Fleming wrote:=0A=
+> Many of the embedded powerpc boards use an array of device names=0A=
+> to register the devices from the device tree. Instead, we can use=0A=
+> of_platform_default_populate(), which will iterate through all the root n=
+odes and register them.=0A=
+> =0A=
+> Signed-off-by: Andy Fleming <afleming@gmail.com>=0A=
+> ---=0A=
+> This is necessary to enable the gpio power/reset pins on the Cyrus board.=
+=0A=
+> =0A=
+> I have confirmed that the PCI devices are registered and that the power/r=
+eset=0A=
+> drivers are registered (and functional). I also tested USB, and saw the=
+=0A=
+> onboard MMC card report in, so some of the SoC devices are definitely the=
+re.=0A=
+> =0A=
+> If this doesn't break the other corenet boards, I'd be happy to make the=
+=0A=
+> same change for the other powerpc boards.=0A=
+> =0A=
+>  arch/powerpc/platforms/85xx/corenet_generic.c | 49 +--------------------=
+------=0A=
+>  1 file changed, 1 insertion(+), 48 deletions(-)=0A=
+> =0A=
+> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc=
+/platforms/85xx/corenet_generic.c=0A=
+> index 1179115..6347f20 100644=0A=
+> --- a/arch/powerpc/platforms/85xx/corenet_generic.c=0A=
+> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c=0A=
+> @@ -83,56 +83,9 @@ void __init corenet_gen_setup_arch(void)=0A=
+>  	mpc85xx_qe_init();=0A=
+>  }=0A=
+>  =0A=
+> -static const struct of_device_id of_device_ids[] =3D {=0A=
+> -	{=0A=
+> -		.compatible	=3D "simple-bus"=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "mdio-mux-gpio"=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,fpga-ngpixis"=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,fpga-qixis"=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,srio",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,p4080-pcie",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,qoriq-pcie-v2.2",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,qoriq-pcie-v2.3",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,qoriq-pcie-v2.4",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,qoriq-pcie-v3.0",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible	=3D "fsl,qe",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.compatible    =3D "fsl,fman",=0A=
+> -	},=0A=
+> -	/* The following two are for the Freescale hypervisor */=0A=
+> -	{=0A=
+> -		.name		=3D "hypervisor",=0A=
+> -	},=0A=
+> -	{=0A=
+> -		.name		=3D "handles",=0A=
+> -	},=0A=
+> -	{}=0A=
+> -};=0A=
+> -=0A=
+>  int __init corenet_gen_publish_devices(void)=0A=
+>  {=0A=
+> -	return of_platform_bus_probe(NULL, of_device_ids, NULL);=0A=
+> +	return of_platform_default_populate(NULL, NULL, NULL);=0A=
+>  }=0A=
+=0A=
+I think we still need to specify some of these nodes.  Switching from=0A=
+probe to populate will take care of probing device nodes under root=0A=
+without listing each one, but it won't treat those nodes as buses unless=0A=
+they have "simple-bus" or otherwise match the probe list.=0A=
+=0A=
+-Scott=0A=
+=0A=
