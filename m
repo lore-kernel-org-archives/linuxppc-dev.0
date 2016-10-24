@@ -1,22 +1,30 @@
-Return-Path: <runaway@candw.ms>
-Received: from smtp475.redcondor.net (smtp475.redcondor.net [208.80.204.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2YjG1s7LzDt3F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 22:20:00 +1100 (AEDT)
-Subject: Re: Canyonlands oops at Shutdown
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <572C9109.80804@candw.ms>
- <dabf6045-7fc5-b28e-6dd0-b8fa9ddf04b3@candw.ms>
- <311dd8b5-122d-ae3b-fd5a-dee8377ac431@candw.ms>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Julian Margetson <runaway@candw.ms>
-Message-ID: <167c4980-fd06-07f4-ab87-f3b10d6343ce@candw.ms>
-Date: Mon, 24 Oct 2016 07:19:52 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2Yzh2Z39zDvK6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 22:32:32 +1100 (AEDT)
+Date: Mon, 24 Oct 2016 22:32:31 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Sudip Mukherjee
+ <sudipm.mukherjee@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Marcin
+ Niestroj <m.niestroj@grinn-global.com>, Grygorii Strashko
+ <grygorii.strashko@ti.com>, Tony Lindgren <tony@atomide.com>, Mark Brown
+ <broonie@kernel.org>, kernel-build-reports@lists.linaro.org,
+ linaro-kernel@lists.linaro.org, linux-next@vger.kernel.org
+Subject: Re: [PATCH] kernel: irq: fix build failure
+Message-ID: <20161024223231.5cdbb2ac@canb.auug.org.au>
+In-Reply-To: <20161024102215.GN14477@dell>
+References: <1475775403-27207-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <57FBBA0B.9070500@gmail.com>
+ <alpine.DEB.2.20.1610201454410.5073@nanos>
+ <20161021120020.52b3fa35@canb.auug.org.au>
+ <alpine.DEB.2.20.1610211006370.4797@nanos>
+ <20161024102215.GN14477@dell>
 MIME-Version: 1.0
-In-Reply-To: <311dd8b5-122d-ae3b-fd5a-dee8377ac431@candw.ms>
-Content-Type: multipart/alternative;
- boundary="------------CB92C2557C218AB41C09A6B5"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,109 +34,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------CB92C2557C218AB41C09A6B5
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Lee,
 
-On 21-Oct-16 6:53 AM, Julian Margetson wrote:
-> On 08-May-16 10:12 AM, Julian Margetson wrote:
->> CONFIG_PPC44x_SIMPLE=y
->>
->> CONFIG_POWER_RESET=y
->> CONFIG_POWER_RESET_GPIO is not set
->> # CONFIG_POWER_RESET_GPIO_RESTART is not set
->> # CONFIG_POWER_RESET_LTC2952 is not set
->> # CONFIG_POWER_RESET_RESTART is not set
->> # CONFIG_POWER_RESET_SYSCON is not set
->> # CONFIG_POWER_RESET_SYSCON_POWEROFF is not set
->>
->> CONFIG_WATCHDOG=y
->> CONFIG_WATCHDOG_CORE=y
->> # CONFIG_WATCHDOG_NOWAYOUT is not set
->> # CONFIG_WATCHDOG_SYSFS is not set
->> #
->> # Watchdog Device Drivers
->> #
->> # CONFIG_SOFT_WATCHDOG is not set
->> # CONFIG_GPIO_WATCHDOG is not set
->> # CONFIG_XILINX_WATCHDOG is not set
->> # CONFIG_ZIIRAVE_WATCHDOG is not set
->> # CONFIG_CADENCE_WATCHDOG is not set
->> CONFIG_DW_WATCHDOG=y
->> # CONFIG_MAX63XX_WATCHDOG is not set
->> # CONFIG_ALIM7101_WDT is not set
->> # CONFIG_I6300ESB_WDT is not set
->> # CONFIG_BOOKE_WDT is not set
->> # CONFIG_MEN_A21_WDT is not set
+On Mon, 24 Oct 2016 11:22:15 +0100 Lee Jones <lee.jones@linaro.org> wrote:
 >
-> Issue appears again with kernel 4.9-rc1
->
->
->
-Working again with 4.9-rc2
+> On Fri, 21 Oct 2016, Thomas Gleixner wrote:
+> 
+> > On Fri, 21 Oct 2016, Stephen Rothwell wrote:  
+> > > On Thu, 20 Oct 2016 14:55:45 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:  
+> > > > I know. This is under discussion with the driver folks as we are not going
+> > > > to blindly export stuff just because someone slapped a irq_set_parent()
+> > > > into the code w/o knowing why.  
+> > > 
+> > > Do we have any idea if a resolution is close.  This was first reported
+> > > in linux-next in September 14/15.  :-(  
+> > 
+> > Grr. Yes. As much as I hate it, I'll go and export it for now. Should be
+> > able to get it into rc2.  
+> 
+> Did this get in?  I still have people complaining about it.
 
+It is in -rc2.  Commit 3118dac501bc.
 
---------------CB92C2557C218AB41C09A6B5
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">On 21-Oct-16 6:53 AM, Julian Margetson
-      wrote:<br>
-    </div>
-    <blockquote cite="mid:311dd8b5-122d-ae3b-fd5a-dee8377ac431@candw.ms"
-      type="cite">
-      <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-      <div class="moz-cite-prefix">On 08-May-16 10:12 AM, Julian
-        Margetson wrote:<br>
-      </div>
-      <blockquote
-        cite="mid:dabf6045-7fc5-b28e-6dd0-b8fa9ddf04b3@candw.ms"
-        type="cite">
-        <pre class="western">CONFIG_PPC44x_SIMPLE=y
-
-CONFIG_POWER_RESET=y
-CONFIG_POWER_RESET_GPIO is not set
-# CONFIG_POWER_RESET_GPIO_RESTART is not set
-# CONFIG_POWER_RESET_LTC2952 is not set
-# CONFIG_POWER_RESET_RESTART is not set
-# CONFIG_POWER_RESET_SYSCON is not set
-# CONFIG_POWER_RESET_SYSCON_POWEROFF is not set
-
-CONFIG_WATCHDOG=y
-CONFIG_WATCHDOG_CORE=y
-# CONFIG_WATCHDOG_NOWAYOUT is not set
-# CONFIG_WATCHDOG_SYSFS is not set
-#
-# Watchdog Device Drivers
-#
-# CONFIG_SOFT_WATCHDOG is not set
-# CONFIG_GPIO_WATCHDOG is not set
-# CONFIG_XILINX_WATCHDOG is not set
-# CONFIG_ZIIRAVE_WATCHDOG is not set
-# CONFIG_CADENCE_WATCHDOG is not set
-CONFIG_DW_WATCHDOG=y
-# CONFIG_MAX63XX_WATCHDOG is not set
-# CONFIG_ALIM7101_WDT is not set
-# CONFIG_I6300ESB_WDT is not set
-# CONFIG_BOOKE_WDT is not set
-# CONFIG_MEN_A21_WDT is not set</pre>
-      </blockquote>
-      <p>Issue appears again with kernel 4.9-rc1 <br>
-      </p>
-      <p><br>
-      </p>
-      <p><br>
-      </p>
-    </blockquote>
-    <p>Working again with 4.9-rc2<br>
-    </p>
-  </body>
-</html>
-
---------------CB92C2557C218AB41C09A6B5--
+-- 
+Cheers,
+Stephen Rothwell
