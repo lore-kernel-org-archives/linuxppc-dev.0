@@ -1,37 +1,48 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Return-Path: <mwb@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4V6s1dtZzDskb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:45:24 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9REjLpo032749
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:45:22 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bkghgj42-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4V7L6mX8zDvv9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:45:50 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9REjIac076026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:45:48 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26bk1njwkt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:45:21 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:45:47 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 10:44:37 -0400
-Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
- gso_type
-To: Jon Maxwell <jmaxwell37@gmail.com>
-References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
-Cc: jmaxwell@redhat.com, hofrat@osadl.org, linux-kernel@vger.kernel.org,
- jarod@redhat.com, netdev@vger.kernel.org, paulus@samba.org,
- tom@herbertland.com, mleitner@redhat.com,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Thu, 27 Oct 2016 09:44:30 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 27 Oct 2016 08:45:40 -0600
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id D2F1619D8045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:45:01 -0600 (MDT)
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9REj6KS30736462
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 14:45:36 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 99055112071
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:45:36 -0400 (EDT)
+Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP id 87B0D112063
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:45:36 -0400 (EDT)
+Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
+ by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 1ADEEC21709C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:46:56 -0500 (CDT)
+Subject: [PATCH V8 0/8] powerpc/devtree: Add support for 2 new DRC properties
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 25 Oct 2016 16:46:56 -0500
 MIME-Version: 1.0
-In-Reply-To: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <10c6ca2b-eb57-2f56-d62c-968dd2d93a9f@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20161025214600.170102.3220.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,71 +52,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/25/2016 07:09 PM, Jon Maxwell wrote:
-> We recently encountered a bug where a few customers using ibmveth on the 
-> same LPAR hit an issue where a TCP session hung when large receive was
-> enabled. Closer analysis revealed that the session was stuck because the 
-> one side was advertising a zero window repeatedly.
->
-> We narrowed this down to the fact the ibmveth driver did not set gso_size 
-> which is translated by TCP into the MSS later up the stack. The MSS is 
-> used to calculate the TCP window size and as that was abnormally large, 
-> it was calculating a zero window, even although the sockets receive buffer 
-> was completely empty. 
->
-> We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
-> and Marcelo for all your help and review on this.
->
-> The patch fixes both our internal reproduction tests and our customers tests.
->
-> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
-Thanks, Jon.
+Several properties in the DRC device tree format are replaced by
+more compact representations to allow, for example, for the encoding
+of vast amounts of memory, and or reduced duplication of information
+in related data structures.
 
-Acked-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+"ibm,drc-info": This property, when present, replaces the following
+four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains".  This property is defined for all
+dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
+are intended to provide a more compact representation, and reduce some
+search overhead.
 
-> ---
->  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
->
-> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 29c05d0..c51717e 100644
-> --- a/drivers/net/ethernet/ibm/ibmveth.c
-> +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->  	int frames_processed = 0;
->  	unsigned long lpar_rc;
->  	struct iphdr *iph;
-> +	bool large_packet = 0;
-> +	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
->
->  restart_poll:
->  	while (frames_processed < budget) {
-> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->  						iph->check = 0;
->  						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
->  						adapter->rx_large_packets++;
-> +						large_packet = 1;
->  					}
->  				}
->  			}
->
-> +			if (skb->len > netdev->mtu) {
-> +				iph = (struct iphdr *)skb->data;
-> +				if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
-> +				    iph->protocol == IPPROTO_TCP) {
-> +					hdr_len += sizeof(struct iphdr);
-> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
-> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-> +				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
-> +					   iph->protocol == IPPROTO_TCP) {
-> +					hdr_len += sizeof(struct ipv6hdr);
-> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
-> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-> +				}
-> +				if (!large_packet)
-> +					adapter->rx_large_packets++;
-> +			}
-> +
->  			napi_gro_receive(napi, skb);	/* send it up */
->
->  			netdev->stats.rx_packets++;
+"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
+node representation within the "ibm,dynamic-reconfiguration-memory"
+property provided by the BMC.  This element format is intended to provide
+a more compact representation of memory, especially, for systems with
+massive amounts of RAM.  To simplify portability, this property is
+converted to the "ibm,dynamic-memory" property during system boot.
+
+"ibm,architecture.vec": Bidirectional communication mechanism between
+the host system and the front end processor indicating what features
+the host system supports and what features the front end processor will
+actually provide.  In this case, we are indicating that the host system
+can support the new device tree structures "ibm,drc-info" and
+"ibm,dynamic-memory-v2".
+
+[V1: Initial presentation of PAPR 2.7 changes to device tree.]
+[V2: Revise constant names.  Fix some syntax errors.  Improve comments.]
+[V3: Revise tests for presence of new properties to always scan devicetree
+     instead of depending upon architecture vec, due to reboot issues.]
+[V4: Rearrange some code changes in patches to better match application,
+     and other code cleanup.]
+[V5: Resynchronize patches.]
+[V6: Resync to latest kernel commit code]
+[V7: Correct mail threading]
+[v8: Insert more useful variable names]
+
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
+---
+
+Michael Bringmann (8):
+  powerpc/firmware: Add definitions for new firmware features.
+  powerpc/memory: Parse new memory property to register blocks.
+  powerpc/memory: Parse new memory property to initialize structures.
+  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
+  pseries/drc-info: Search new DRC properties for CPU indexes
+  hotplug/drc-info: Add code to search new devtree properties
+  powerpc: Check arch.vec earlier during boot for memory features
+  powerpc: Enable support for new DRC devtree properties
+
+
+ arch/powerpc/include/asm/firmware.h             |    5 -
+ arch/powerpc/include/asm/prom.h                 |   38 ++++-
+ arch/powerpc/kernel/prom.c                      |  103 +++++++++++--
+ arch/powerpc/kernel/prom_init.c                 |    3 
+ arch/powerpc/mm/numa.c                          |  168 ++++++++++++++++++--
+ arch/powerpc/platforms/pseries/Makefile         |    4 
+ arch/powerpc/platforms/pseries/firmware.c       |    2 
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   93 +++++++++++
+ arch/powerpc/platforms/pseries/pseries_energy.c |  189 ++++++++++++++++++++---
+ drivers/pci/hotplug/rpadlpar_core.c             |   13 +-
+ drivers/pci/hotplug/rpaphp.h                    |    4 
+ drivers/pci/hotplug/rpaphp_core.c               |  109 ++++++++++---
+ 12 files changed, 628 insertions(+), 103 deletions(-)
+
+--
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+mwb@linux.vnet.ibm.com
