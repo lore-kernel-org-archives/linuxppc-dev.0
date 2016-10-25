@@ -1,45 +1,23 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alexander.h.duyck@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3RF86k7FzDvPr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 08:32:12 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9PLT3rd031158
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:32:10 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26a85gfshv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:32:09 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 25 Oct 2016 17:32:09 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 28549C90041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:31:52 -0400 (EDT)
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9PLW6ki15598032
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 21:32:06 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9A2E3124047
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:32:06 -0400 (EDT)
-Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP id 63D6F12403D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:32:06 -0400 (EDT)
-Subject: [PATCH V8 0/8] powerpc/devtree: Add support for 2 new DRC properties
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 25 Oct 2016 16:32:05 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3RP519XwzDt21
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 08:39:04 +1100 (AEDT)
+Subject: [net-next PATCH 18/27] arch/powerpc: Add option to skip DMA sync as
+ a part of mapping
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+To: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ brouer@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Date: Tue, 25 Oct 2016 11:38:23 -0400
+Message-ID: <20161025153823.4815.81483.stgit@ahduyck-blue-test.jf.intel.com>
+In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
+References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20161025213117.165626.94076.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,75 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Several properties in the DRC device tree format are replaced by
-more compact representations to allow, for example, for the encoding
-of vast amounts of memory, and or reduced duplication of information
-in related data structures.
+This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
+avoid invoking cache line invalidation if the driver will just handle it
+via a sync_for_cpu or sync_for_device call.
 
-"ibm,drc-info": This property, when present, replaces the following
-four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
-and "ibm,drc-power-domains".  This property is defined for all
-dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
-are intended to provide a more compact representation, and reduce some
-search overhead.
-
-"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
-node representation within the "ibm,dynamic-reconfiguration-memory"
-property provided by the BMC.  This element format is intended to provide
-a more compact representation of memory, especially, for systems with
-massive amounts of RAM.  To simplify portability, this property is
-converted to the "ibm,dynamic-memory" property during system boot.
-
-"ibm,architecture.vec": Bidirectional communication mechanism between
-the host system and the front end processor indicating what features
-the host system supports and what features the front end processor will
-actually provide.  In this case, we are indicating that the host system
-can support the new device tree structures "ibm,drc-info" and
-"ibm,dynamic-memory-v2".
-
-[V1: Initial presentation of PAPR 2.7 changes to device tree.]
-[V2: Revise constant names.  Fix some syntax errors.  Improve comments.]
-[V3: Revise tests for presence of new properties to always scan devicetree
-     instead of depending upon architecture vec, due to reboot issues.]
-[V4: Rearrange some code changes in patches to better match application,
-     and other code cleanup.]
-[V5: Resynchronize patches.]
-[V6: Resync to latest kernel commit code]
-[V7: Correct mail threading]
-[v8: Insert more useful variable names]
-
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
+ arch/powerpc/kernel/dma.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-Michael Bringmann (8):
-  powerpc/firmware: Add definitions for new firmware features.
-  powerpc/memory: Parse new memory property to register blocks.
-  powerpc/memory: Parse new memory property to initialize structures.
-  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
-  pseries/drc-info: Search new DRC properties for CPU indexes
-  hotplug/drc-info: Add code to search new devtree properties
-  powerpc: Check arch.vec earlier during boot for memory features
-  powerpc: Enable support for new DRC devtree properties
-
-
-
- arch/powerpc/include/asm/firmware.h             |    5 -
- arch/powerpc/include/asm/prom.h                 |   38 ++++-
- arch/powerpc/kernel/prom.c                      |  103 +++++++++++--
- arch/powerpc/kernel/prom_init.c                 |    3 
- arch/powerpc/mm/numa.c                          |  168 ++++++++++++++++++--
- arch/powerpc/platforms/pseries/Makefile         |    4 
- arch/powerpc/platforms/pseries/firmware.c       |    2 
- arch/powerpc/platforms/pseries/hotplug-memory.c |   93 +++++++++++
- arch/powerpc/platforms/pseries/pseries_energy.c |  189 ++++++++++++++++++++---
- drivers/pci/hotplug/rpadlpar_core.c             |   13 +-
- drivers/pci/hotplug/rpaphp.h                    |    4 
- drivers/pci/hotplug/rpaphp_core.c               |  109 ++++++++++---
- 12 files changed, 628 insertions(+), 103 deletions(-)
-
---
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-mwb@linux.vnet.ibm.com
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index e64a601..6877e3f 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -203,6 +203,10 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
+ 	for_each_sg(sgl, sg, nents, i) {
+ 		sg->dma_address = sg_phys(sg) + get_dma_offset(dev);
+ 		sg->dma_length = sg->length;
++
++		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
++			continue;
++
+ 		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ 	}
+ 
+@@ -235,7 +239,10 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
+ 					     unsigned long attrs)
+ {
+ 	BUG_ON(dir == DMA_NONE);
+-	__dma_sync_page(page, offset, size, dir);
++
++	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++		__dma_sync_page(page, offset, size, dir);
++
+ 	return page_to_phys(page) + offset + get_dma_offset(dev);
+ }
+ 
