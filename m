@@ -1,42 +1,55 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t34rr2Qw0zDvY8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 18:43:24 +1100 (AEDT)
-Date: Tue, 25 Oct 2016 09:43:14 +0200
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Steffen Maier <maier@linux.vnet.ibm.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
- Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t36dC6fmdzDvYX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 20:03:27 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9P8whJE116614
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:25 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 269xbpgavs-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:24 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Tue, 25 Oct 2016 10:03:23 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B89B01B08074
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 10:05:27 +0100 (BST)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9P93L6s29556976
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 09:03:21 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9P93JV0006632
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:21 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-s390 <linux-s390@vger.kernel.org>,
+ linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>,
- James Smart <james.smart@avagotech.com>,
- Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
-Message-ID: <20161025074313.4ma4czgdj46imaei@linux-x5ow.site>
-References: <cover.1476369687.git.jthumshirn@suse.de>
- <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
- <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
- <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Noam Camus <noamc@ezchip.com>, sparclinux@vger.kernel.org,
+ x86@kernel.org, Will Deacon <will.deacon@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Russell King <linux@armlinux.org.uk>,
+ virtualization@lists.linux-foundation.org,
+ xen-devel@lists.xenproject.org, kvm@vger.kernel.org,
+ Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: [GIT PULL v2 4/5] processor.h: Remove cpu_relax_lowlatency users
+Date: Tue, 25 Oct 2016 11:03:14 +0200
+In-Reply-To: <1477386195-32736-1-git-send-email-borntraeger@de.ibm.com>
+References: <1477386195-32736-1-git-send-email-borntraeger@de.ibm.com>
+Message-Id: <1477386195-32736-5-git-send-email-borntraeger@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,81 +59,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 14, 2016 at 09:38:21AM +0200, Johannes Thumshirn wrote:
-> On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
-> > Hm, still behaves for me like I reported for v2:
-> > http://marc.info/?l=linux-scsi&m=147637177902937&w=2
-> 
-> Hi Steffen,
-> 
-> Can you please try the following on top of 2/16?
-> 
-> diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
-> index 4149dac..baebaab 100644
-> --- a/drivers/scsi/scsi_transport_fc.c
-> +++ b/drivers/scsi/scsi_transport_fc.c
-> @@ -3786,6 +3786,12 @@ enum fc_dispatch_result {
->  	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
->  	int ret;
->  
-> +	/* check if we really have all the request data needed */
-> +	if (job->request_len < cmdlen) {
-> +		ret = -ENOMSG;
-> +		goto fail_host_msg;
-> +	}
-> +
->  	/* Validate the host command */
->  	switch (bsg_request->msgcode) {
->  	case FC_BSG_HST_ADD_RPORT:
-> @@ -3831,12 +3837,6 @@ enum fc_dispatch_result {
->  		goto fail_host_msg;
->  	}
->  
-> -	/* check if we really have all the request data needed */
-> -	if (job->request_len < cmdlen) {
-> -		ret = -ENOMSG;
-> -		goto fail_host_msg;
-> -	}
-> -
->  	ret = i->f->bsg_request(job);
->  	if (!ret)
->  		return FC_DISPATCH_UNLOCKED;
-> @@ -3887,6 +3887,12 @@ enum fc_dispatch_result {
->  	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
->  	int ret;
->  
-> +	/* check if we really have all the request data needed */
-> +	if (job->request_len < cmdlen) {
-> +		ret = -ENOMSG;
-> +		goto fail_rport_msg;
-> +	}
-> +
->  	/* Validate the rport command */
->  	switch (bsg_request->msgcode) {
->  	case FC_BSG_RPT_ELS:
-> 
-> 
-> 
-> The rational behind this is, in fc_req_to_bsgjob() we're assigning
-> job->request as req->cmd and job->request_len = req->cmd_len. But without
-> checkinf job->request_len we don't know whether we're save to touch
-> job->request (a.k.a. bsg_request).
+With the s390 special case of a yielding cpu_relax implementation gone,
+we can now remove all users of cpu_relax_lowlatency and replace them
+with cpu_relax.
 
-Hi Steffen,
-Did you have any chance testing this? I hacked fcping to work with non-FCoE
-and rports as well and tested with FCoE and lpfc. No problems seen from my
-side. I've also pused the series (With this change folded in) to my git 
-tree at [1] if this helps you in any way.
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ drivers/gpu/drm/i915/i915_gem_request.c | 2 +-
+ drivers/vhost/net.c                     | 4 ++--
+ kernel/locking/mcs_spinlock.h           | 4 ++--
+ kernel/locking/mutex.c                  | 4 ++--
+ kernel/locking/osq_lock.c               | 6 +++---
+ kernel/locking/qrwlock.c                | 6 +++---
+ kernel/locking/rwsem-xadd.c             | 4 ++--
+ lib/lockref.c                           | 2 +-
+ 8 files changed, 16 insertions(+), 16 deletions(-)
 
-[1] https://git.kernel.org/cgit/linux/kernel/git/jth/linux.git/log/?h=scsi-bsg-rewrite-v4
-
-Thanks a lot,
-	Johannes
-
+diff --git a/drivers/gpu/drm/i915/i915_gem_request.c b/drivers/gpu/drm/i915/i915_gem_request.c
+index 8832f8e..383d134 100644
+--- a/drivers/gpu/drm/i915/i915_gem_request.c
++++ b/drivers/gpu/drm/i915/i915_gem_request.c
+@@ -723,7 +723,7 @@ bool __i915_spin_request(const struct drm_i915_gem_request *req,
+ 		if (busywait_stop(timeout_us, cpu))
+ 			break;
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	} while (!need_resched());
+ 
+ 	return false;
+diff --git a/drivers/vhost/net.c b/drivers/vhost/net.c
+index 5dc128a..5dc3465 100644
+--- a/drivers/vhost/net.c
++++ b/drivers/vhost/net.c
+@@ -342,7 +342,7 @@ static int vhost_net_tx_get_vq_desc(struct vhost_net *net,
+ 		endtime = busy_clock() + vq->busyloop_timeout;
+ 		while (vhost_can_busy_poll(vq->dev, endtime) &&
+ 		       vhost_vq_avail_empty(vq->dev, vq))
+-			cpu_relax_lowlatency();
++			cpu_relax();
+ 		preempt_enable();
+ 		r = vhost_get_vq_desc(vq, vq->iov, ARRAY_SIZE(vq->iov),
+ 				      out_num, in_num, NULL, NULL);
+@@ -533,7 +533,7 @@ static int vhost_net_rx_peek_head_len(struct vhost_net *net, struct sock *sk)
+ 		while (vhost_can_busy_poll(&net->dev, endtime) &&
+ 		       !sk_has_rx_data(sk) &&
+ 		       vhost_vq_avail_empty(&net->dev, vq))
+-			cpu_relax_lowlatency();
++			cpu_relax();
+ 
+ 		preempt_enable();
+ 
+diff --git a/kernel/locking/mcs_spinlock.h b/kernel/locking/mcs_spinlock.h
+index c835270..6a385aa 100644
+--- a/kernel/locking/mcs_spinlock.h
++++ b/kernel/locking/mcs_spinlock.h
+@@ -28,7 +28,7 @@ struct mcs_spinlock {
+ #define arch_mcs_spin_lock_contended(l)					\
+ do {									\
+ 	while (!(smp_load_acquire(l)))					\
+-		cpu_relax_lowlatency();					\
++		cpu_relax();						\
+ } while (0)
+ #endif
+ 
+@@ -108,7 +108,7 @@ void mcs_spin_unlock(struct mcs_spinlock **lock, struct mcs_spinlock *node)
+ 			return;
+ 		/* Wait until the next pointer is set */
+ 		while (!(next = READ_ONCE(node->next)))
+-			cpu_relax_lowlatency();
++			cpu_relax();
+ 	}
+ 
+ 	/* Pass lock to next waiter. */
+diff --git a/kernel/locking/mutex.c b/kernel/locking/mutex.c
+index a70b90d..4463405 100644
+--- a/kernel/locking/mutex.c
++++ b/kernel/locking/mutex.c
+@@ -241,7 +241,7 @@ bool mutex_spin_on_owner(struct mutex *lock, struct task_struct *owner)
+ 			break;
+ 		}
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ 	rcu_read_unlock();
+ 
+@@ -377,7 +377,7 @@ static bool mutex_optimistic_spin(struct mutex *lock,
+ 		 * memory barriers as we'll eventually observe the right
+ 		 * values at the cost of a few extra spins.
+ 		 */
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ 
+ 	osq_unlock(&lock->osq);
+diff --git a/kernel/locking/osq_lock.c b/kernel/locking/osq_lock.c
+index 05a3785..4ea2710 100644
+--- a/kernel/locking/osq_lock.c
++++ b/kernel/locking/osq_lock.c
+@@ -75,7 +75,7 @@ osq_wait_next(struct optimistic_spin_queue *lock,
+ 				break;
+ 		}
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ 
+ 	return next;
+@@ -122,7 +122,7 @@ bool osq_lock(struct optimistic_spin_queue *lock)
+ 		if (need_resched())
+ 			goto unqueue;
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ 	return true;
+ 
+@@ -148,7 +148,7 @@ bool osq_lock(struct optimistic_spin_queue *lock)
+ 		if (smp_load_acquire(&node->locked))
+ 			return true;
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 
+ 		/*
+ 		 * Or we race against a concurrent unqueue()'s step-B, in which
+diff --git a/kernel/locking/qrwlock.c b/kernel/locking/qrwlock.c
+index 19248dd..cc3ed0c 100644
+--- a/kernel/locking/qrwlock.c
++++ b/kernel/locking/qrwlock.c
+@@ -54,7 +54,7 @@ static __always_inline void
+ rspin_until_writer_unlock(struct qrwlock *lock, u32 cnts)
+ {
+ 	while ((cnts & _QW_WMASK) == _QW_LOCKED) {
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 		cnts = atomic_read_acquire(&lock->cnts);
+ 	}
+ }
+@@ -130,7 +130,7 @@ void queued_write_lock_slowpath(struct qrwlock *lock)
+ 		   (cmpxchg_relaxed(&l->wmode, 0, _QW_WAITING) == 0))
+ 			break;
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ 
+ 	/* When no more readers, set the locked flag */
+@@ -141,7 +141,7 @@ void queued_write_lock_slowpath(struct qrwlock *lock)
+ 					    _QW_LOCKED) == _QW_WAITING))
+ 			break;
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ unlock:
+ 	arch_spin_unlock(&lock->wait_lock);
+diff --git a/kernel/locking/rwsem-xadd.c b/kernel/locking/rwsem-xadd.c
+index 2337b4b..2fa2e2e6 100644
+--- a/kernel/locking/rwsem-xadd.c
++++ b/kernel/locking/rwsem-xadd.c
+@@ -368,7 +368,7 @@ static noinline bool rwsem_spin_on_owner(struct rw_semaphore *sem)
+ 			return false;
+ 		}
+ 
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ 	rcu_read_unlock();
+ out:
+@@ -423,7 +423,7 @@ static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
+ 		 * memory barriers as we'll eventually observe the right
+ 		 * values at the cost of a few extra spins.
+ 		 */
+-		cpu_relax_lowlatency();
++		cpu_relax();
+ 	}
+ 	osq_unlock(&sem->osq);
+ done:
+diff --git a/lib/lockref.c b/lib/lockref.c
+index 5a92189..c4bfcb8 100644
+--- a/lib/lockref.c
++++ b/lib/lockref.c
+@@ -20,7 +20,7 @@
+ 		if (likely(old.lock_count == prev.lock_count)) {		\
+ 			SUCCESS;						\
+ 		}								\
+-		cpu_relax_lowlatency();						\
++		cpu_relax();							\
+ 	}									\
+ } while (0)
+ 
 -- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+2.5.5
