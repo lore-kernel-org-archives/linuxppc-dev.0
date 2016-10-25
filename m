@@ -1,23 +1,37 @@
-Return-Path: <alexander.h.duyck@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
+ [IPv6:2607:f8b0:400e:c00::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3RP519XwzDt21
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 08:39:04 +1100 (AEDT)
-Subject: [net-next PATCH 18/27] arch/powerpc: Add option to skip DMA sync as
- a part of mapping
-From: Alexander Duyck <alexander.h.duyck@intel.com>
-To: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- brouer@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
-Date: Tue, 25 Oct 2016 11:38:23 -0400
-Message-ID: <20161025153823.4815.81483.stgit@ahduyck-blue-test.jf.intel.com>
-In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3SdC5d95zDvKQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 09:34:39 +1100 (AEDT)
+Received: by mail-pf0-x235.google.com with SMTP id n85so10065710pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 15:34:39 -0700 (PDT)
+Subject: Re: [PATCH v4 4/5] mm: make processing of movable_node arch-specific
+To: Reza Arbab <arbab@linux.vnet.ibm.com>
+References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1475778995-1420-5-git-send-email-arbab@linux.vnet.ibm.com>
+ <235f2d20-cf84-08df-1fb4-08ee258fdc52@gmail.com>
+ <dcfc8ace-e59e-6b4b-0f2f-4eff9f08f3c1@gmail.com>
+ <20161025155507.37kv5akdlgo6m2be@arbab-laptop.austin.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-mm@kvack.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <112504e9-561d-e0da-7a40-73996c678b56@gmail.com>
+Date: Wed, 26 Oct 2016 09:34:18 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20161025155507.37kv5akdlgo6m2be@arbab-laptop.austin.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +41,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
-avoid invoking cache line invalidation if the driver will just handle it
-via a sync_for_cpu or sync_for_device call.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- arch/powerpc/kernel/dma.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index e64a601..6877e3f 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -203,6 +203,10 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
- 	for_each_sg(sgl, sg, nents, i) {
- 		sg->dma_address = sg_phys(sg) + get_dma_offset(dev);
- 		sg->dma_length = sg->length;
-+
-+		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
-+			continue;
-+
- 		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- 	}
- 
-@@ -235,7 +239,10 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
- 					     unsigned long attrs)
- {
- 	BUG_ON(dir == DMA_NONE);
--	__dma_sync_page(page, offset, size, dir);
-+
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		__dma_sync_page(page, offset, size, dir);
-+
- 	return page_to_phys(page) + offset + get_dma_offset(dev);
- }
- 
+On 26/10/16 02:55, Reza Arbab wrote:
+> On Tue, Oct 25, 2016 at 11:15:40PM +1100, Balbir Singh wrote:
+>> After the ack, I realized there were some more checks needed, IOW
+>> questions for you :)
+> 
+> Hey! No takebacks!
+> 
+
+I still believe we need your changes, I was wondering if we've tested
+it against normal memory nodes and checked if any memblock
+allocations end up there. Michael showed me some memblock
+allocations on node 1 of a two node machine with movable_node
+I'll double check at my end. See my question below
+
+
+> The short answer is that neither of these is a concern.
+> 
+> Longer; if you use "movable_node", x86 can identify these nodes at boot. They call memblock_mark_hotplug() while parsing the SRAT. Then, when the zones are initialized, those markings are used to determine ZONE_MOVABLE.
+> 
+> We have no analog of this SRAT information, so our movable nodes can only be created post boot, by hotplugging and explicitly onlining with online_movable.
+>
+
+Is this true for all of system memory as well or only for nodes
+hotplugged later?
+
+Balbir Singh.
