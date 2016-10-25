@@ -3,34 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t36dD60fkzDvYX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 20:03:28 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t36dC6h5dzDvYh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 20:03:27 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9P8weQE119577
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:26 -0400
+ u9P8wgpM079120
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:25 -0400
 Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 269vdmm6hx-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26a25pf092-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:24 -0400
 Received: from localhost
  by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Tue, 25 Oct 2016 10:03:24 +0100
+ Tue, 25 Oct 2016 10:03:23 +0100
 Received: from b06cxnps3075.portsmouth.uk.ibm.com
  (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5C91E219004D
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6A80F2190056
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 10:02:37 +0100 (BST)
 Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
  [9.149.37.248])
  by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9P93LLg22937706
+ u9P93LFO16711882
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 09:03:21 GMT
 Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9P93Jk4006609
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:20 -0400
+ u9P93JCj006641
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 05:03:21 -0400
 From: Christian Borntraeger <borntraeger@de.ibm.com>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
@@ -45,11 +45,11 @@ Cc: Ingo Molnar <mingo@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
  virtualization@lists.linux-foundation.org,
  xen-devel@lists.xenproject.org, kvm@vger.kernel.org,
  Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [GIT PULL v2 3/5] s390: make cpu_relax a barrier again
-Date: Tue, 25 Oct 2016 11:03:13 +0200
+Subject: [GIT PULL v2 5/5] processor.h: remove cpu_relax_lowlatency
+Date: Tue, 25 Oct 2016 11:03:15 +0200
 In-Reply-To: <1477386195-32736-1-git-send-email-borntraeger@de.ibm.com>
 References: <1477386195-32736-1-git-send-email-borntraeger@de.ibm.com>
-Message-Id: <1477386195-32736-4-git-send-email-borntraeger@de.ibm.com>
+Message-Id: <1477386195-32736-6-git-send-email-borntraeger@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,28 +59,433 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-stop_machine seemed to be the only important place for yielding during
-cpu_relax. This was fixed by using cpu_relax_yield. Therefore, we can
-now redefine cpu_relax to be a barrier instead on s390, making s390
-identical to all other architectures.
+As there are no users left, we can remove cpu_relax_lowlatency.
 
 Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 ---
- arch/s390/include/asm/processor.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/alpha/include/asm/processor.h      | 1 -
+ arch/arc/include/asm/processor.h        | 2 --
+ arch/arm/include/asm/processor.h        | 1 -
+ arch/arm64/include/asm/processor.h      | 1 -
+ arch/avr32/include/asm/processor.h      | 1 -
+ arch/blackfin/include/asm/processor.h   | 1 -
+ arch/c6x/include/asm/processor.h        | 1 -
+ arch/cris/include/asm/processor.h       | 1 -
+ arch/frv/include/asm/processor.h        | 1 -
+ arch/h8300/include/asm/processor.h      | 1 -
+ arch/hexagon/include/asm/processor.h    | 1 -
+ arch/ia64/include/asm/processor.h       | 1 -
+ arch/m32r/include/asm/processor.h       | 1 -
+ arch/m68k/include/asm/processor.h       | 1 -
+ arch/metag/include/asm/processor.h      | 1 -
+ arch/microblaze/include/asm/processor.h | 1 -
+ arch/mips/include/asm/processor.h       | 1 -
+ arch/mn10300/include/asm/processor.h    | 1 -
+ arch/nios2/include/asm/processor.h      | 1 -
+ arch/openrisc/include/asm/processor.h   | 1 -
+ arch/parisc/include/asm/processor.h     | 1 -
+ arch/powerpc/include/asm/processor.h    | 1 -
+ arch/s390/include/asm/processor.h       | 1 -
+ arch/score/include/asm/processor.h      | 1 -
+ arch/sh/include/asm/processor.h         | 1 -
+ arch/sparc/include/asm/processor_32.h   | 1 -
+ arch/sparc/include/asm/processor_64.h   | 1 -
+ arch/tile/include/asm/processor.h       | 1 -
+ arch/unicore32/include/asm/processor.h  | 1 -
+ arch/x86/include/asm/processor.h        | 1 -
+ arch/x86/um/asm/processor.h             | 1 -
+ arch/xtensa/include/asm/processor.h     | 1 -
+ 32 files changed, 33 deletions(-)
 
+diff --git a/arch/alpha/include/asm/processor.h b/arch/alpha/include/asm/processor.h
+index 0556fda..31e8dbe 100644
+--- a/arch/alpha/include/asm/processor.h
++++ b/arch/alpha/include/asm/processor.h
+@@ -59,7 +59,6 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ #define ARCH_HAS_PREFETCH
+ #define ARCH_HAS_PREFETCHW
+diff --git a/arch/arc/include/asm/processor.h b/arch/arc/include/asm/processor.h
+index 6c158d5..d102a49 100644
+--- a/arch/arc/include/asm/processor.h
++++ b/arch/arc/include/asm/processor.h
+@@ -61,7 +61,6 @@ struct task_struct;
+ 
+ #define cpu_relax()		barrier()
+ #define cpu_relax_yield()	cpu_relax()
+-#define cpu_relax_lowlatency()	cpu_relax()
+ 
+ #else
+ 
+@@ -69,7 +68,6 @@ struct task_struct;
+ 	__asm__ __volatile__ (".word %0" : : "i"(CTOP_INST_SCHD_RW) : "memory")
+ 
+ #define cpu_relax_yield()	cpu_relax()
+-#define cpu_relax_lowlatency()	barrier()
+ 
+ #endif
+ 
+diff --git a/arch/arm/include/asm/processor.h b/arch/arm/include/asm/processor.h
+index db660e0..9e71c58b 100644
+--- a/arch/arm/include/asm/processor.h
++++ b/arch/arm/include/asm/processor.h
+@@ -83,7 +83,6 @@ unsigned long get_wchan(struct task_struct *p);
+ #endif
+ 
+ #define cpu_relax_yield()  	              cpu_relax()
+-#define cpu_relax_lowlatency()                cpu_relax()
+ 
+ #define task_pt_regs(p) \
+ 	((struct pt_regs *)(THREAD_START_SP + task_stack_page(p)) - 1)
+diff --git a/arch/arm64/include/asm/processor.h b/arch/arm64/include/asm/processor.h
+index 3f9b0e5..6132f64 100644
+--- a/arch/arm64/include/asm/processor.h
++++ b/arch/arm64/include/asm/processor.h
+@@ -150,7 +150,6 @@ static inline void cpu_relax(void)
+ }
+ 
+ #define cpu_relax_yield()                     cpu_relax()
+-#define cpu_relax_lowlatency()                cpu_relax()
+ 
+ /* Thread switching */
+ extern struct task_struct *cpu_switch_to(struct task_struct *prev,
+diff --git a/arch/avr32/include/asm/processor.h b/arch/avr32/include/asm/processor.h
+index e412e8b..ee62365 100644
+--- a/arch/avr32/include/asm/processor.h
++++ b/arch/avr32/include/asm/processor.h
+@@ -93,7 +93,6 @@ extern struct avr32_cpuinfo boot_cpu_data;
+ 
+ #define cpu_relax()		barrier()
+ #define cpu_relax_yield()	cpu_relax()
+-#define cpu_relax_lowlatency()        cpu_relax()
+ #define cpu_sync_pipeline()	asm volatile("sub pc, -2" : : : "memory")
+ 
+ struct cpu_context {
+diff --git a/arch/blackfin/include/asm/processor.h b/arch/blackfin/include/asm/processor.h
+index 8b8704a..57acfb1 100644
+--- a/arch/blackfin/include/asm/processor.h
++++ b/arch/blackfin/include/asm/processor.h
+@@ -93,7 +93,6 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()    	smp_mb()
+ #define cpu_relax_yield()      cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /* Get the Silicon Revision of the chip */
+ static inline uint32_t __pure bfin_revid(void)
+diff --git a/arch/c6x/include/asm/processor.h b/arch/c6x/include/asm/processor.h
+index 914d730..1fd22e7 100644
+--- a/arch/c6x/include/asm/processor.h
++++ b/arch/c6x/include/asm/processor.h
+@@ -122,7 +122,6 @@ extern unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()		do { } while (0)
+ #define cpu_relax_yield()             cpu_relax()
+-#define cpu_relax_lowlatency()        cpu_relax()
+ 
+ extern const struct seq_operations cpuinfo_op;
+ 
+diff --git a/arch/cris/include/asm/processor.h b/arch/cris/include/asm/processor.h
+index 01dd52e..1a57841 100644
+--- a/arch/cris/include/asm/processor.h
++++ b/arch/cris/include/asm/processor.h
+@@ -64,7 +64,6 @@ static inline void release_thread(struct task_struct *dead_task)
+ 
+ #define cpu_relax()     barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ void default_idle(void);
+ 
+diff --git a/arch/frv/include/asm/processor.h b/arch/frv/include/asm/processor.h
+index 4d00d65..c1e5f2a 100644
+--- a/arch/frv/include/asm/processor.h
++++ b/arch/frv/include/asm/processor.h
+@@ -108,7 +108,6 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax() barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /* data cache prefetch */
+ #define ARCH_HAS_PREFETCH
+diff --git a/arch/h8300/include/asm/processor.h b/arch/h8300/include/asm/processor.h
+index 683a061..42d6053 100644
+--- a/arch/h8300/include/asm/processor.h
++++ b/arch/h8300/include/asm/processor.h
+@@ -128,7 +128,6 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()    barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency()	cpu_relax()
+ 
+ #define HARD_RESET_NOW() ({		\
+ 	local_irq_disable();		\
+diff --git a/arch/hexagon/include/asm/processor.h b/arch/hexagon/include/asm/processor.h
+index 1558ddb..5d694cc 100644
+--- a/arch/hexagon/include/asm/processor.h
++++ b/arch/hexagon/include/asm/processor.h
+@@ -57,7 +57,6 @@ struct thread_struct {
+ 
+ #define cpu_relax() __vmyield()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /*
+  * Decides where the kernel will search for a free chunk of vm space during
+diff --git a/arch/ia64/include/asm/processor.h b/arch/ia64/include/asm/processor.h
+index 4654b71..0c2c3b2 100644
+--- a/arch/ia64/include/asm/processor.h
++++ b/arch/ia64/include/asm/processor.h
+@@ -548,7 +548,6 @@ ia64_eoi (void)
+ 
+ #define cpu_relax()	ia64_hint(ia64_hint_pause)
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ static inline int
+ ia64_get_irr(unsigned int vector)
+diff --git a/arch/m32r/include/asm/processor.h b/arch/m32r/include/asm/processor.h
+index b262037..9b83a13 100644
+--- a/arch/m32r/include/asm/processor.h
++++ b/arch/m32r/include/asm/processor.h
+@@ -134,6 +134,5 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ #endif /* _ASM_M32R_PROCESSOR_H */
+diff --git a/arch/m68k/include/asm/processor.h b/arch/m68k/include/asm/processor.h
+index 13e07ae..b0d0442 100644
+--- a/arch/m68k/include/asm/processor.h
++++ b/arch/m68k/include/asm/processor.h
+@@ -157,6 +157,5 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ #endif
+diff --git a/arch/metag/include/asm/processor.h b/arch/metag/include/asm/processor.h
+index 61d6e27..ee302a6 100644
+--- a/arch/metag/include/asm/processor.h
++++ b/arch/metag/include/asm/processor.h
+@@ -153,7 +153,6 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()     barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency()  cpu_relax()
+ 
+ extern void setup_priv(void);
+ 
+diff --git a/arch/microblaze/include/asm/processor.h b/arch/microblaze/include/asm/processor.h
+index fd7dd11..08ec1f7 100644
+--- a/arch/microblaze/include/asm/processor.h
++++ b/arch/microblaze/include/asm/processor.h
+@@ -23,7 +23,6 @@ extern const struct seq_operations cpuinfo_op;
+ 
+ # define cpu_relax()		barrier()
+ # define cpu_relax_yield() cpu_relax()
+-# define cpu_relax_lowlatency()	cpu_relax()
+ 
+ #define task_pt_regs(tsk) \
+ 		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
+diff --git a/arch/mips/include/asm/processor.h b/arch/mips/include/asm/processor.h
+index 9a656f6..8ea95e7 100644
+--- a/arch/mips/include/asm/processor.h
++++ b/arch/mips/include/asm/processor.h
+@@ -390,7 +390,6 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /*
+  * Return_address is a replacement for __builtin_return_address(count)
+diff --git a/arch/mn10300/include/asm/processor.h b/arch/mn10300/include/asm/processor.h
+index 89f63d1..d11397b 100644
+--- a/arch/mn10300/include/asm/processor.h
++++ b/arch/mn10300/include/asm/processor.h
+@@ -70,7 +70,6 @@ extern void dodgy_tsc(void);
+ 
+ #define cpu_relax() barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /*
+  * User space process size: 1.75GB (default).
+diff --git a/arch/nios2/include/asm/processor.h b/arch/nios2/include/asm/processor.h
+index 303e593..d32c176 100644
+--- a/arch/nios2/include/asm/processor.h
++++ b/arch/nios2/include/asm/processor.h
+@@ -89,7 +89,6 @@ extern unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency()  cpu_relax()
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/arch/openrisc/include/asm/processor.h b/arch/openrisc/include/asm/processor.h
+index 6ecfc2a..7f47fc7 100644
+--- a/arch/openrisc/include/asm/processor.h
++++ b/arch/openrisc/include/asm/processor.h
+@@ -93,7 +93,6 @@ extern unsigned long thread_saved_pc(struct task_struct *t);
+ 
+ #define cpu_relax()     barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ #endif /* __ASSEMBLY__ */
+ #endif /* __ASM_OPENRISC_PROCESSOR_H */
+diff --git a/arch/parisc/include/asm/processor.h b/arch/parisc/include/asm/processor.h
+index ea2ff9f..a4a07f4 100644
+--- a/arch/parisc/include/asm/processor.h
++++ b/arch/parisc/include/asm/processor.h
+@@ -310,7 +310,6 @@ extern unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /*
+  * parisc_requires_coherency() is used to identify the combined VIPT/PIPT
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 908fa7c..5684e68 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -405,7 +405,6 @@ static inline unsigned long __pack_fe01(unsigned int fpmode)
+ #endif
+ 
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /* Check that a certain kernel stack pointer is valid in task_struct p */
+ int validate_sp(unsigned long sp, struct task_struct *p,
 diff --git a/arch/s390/include/asm/processor.h b/arch/s390/include/asm/processor.h
-index d05965b..5d262cf 100644
+index 5d262cf..17c001a 100644
 --- a/arch/s390/include/asm/processor.h
 +++ b/arch/s390/include/asm/processor.h
-@@ -236,7 +236,7 @@ static inline unsigned short stap(void)
-  */
+@@ -237,7 +237,6 @@ static inline unsigned short stap(void)
  void cpu_relax_yield(void);
  
--#define cpu_relax() cpu_relax_yield()
-+#define cpu_relax() barrier()
- #define cpu_relax_lowlatency()  barrier()
+ #define cpu_relax() barrier()
+-#define cpu_relax_lowlatency()  barrier()
  
  #define ECAG_CACHE_ATTRIBUTE	0
+ #define ECAG_CPU_ATTRIBUTE	1
+diff --git a/arch/score/include/asm/processor.h b/arch/score/include/asm/processor.h
+index e8e87b4..a1e97c0 100644
+--- a/arch/score/include/asm/processor.h
++++ b/arch/score/include/asm/processor.h
+@@ -25,7 +25,6 @@ extern unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()		barrier()
+ #define cpu_relax_yield()	cpu_relax()
+-#define cpu_relax_lowlatency()        cpu_relax()
+ #define release_thread(thread)	do {} while (0)
+ 
+ /*
+diff --git a/arch/sh/include/asm/processor.h b/arch/sh/include/asm/processor.h
+index 099a991..9454ff1 100644
+--- a/arch/sh/include/asm/processor.h
++++ b/arch/sh/include/asm/processor.h
+@@ -98,7 +98,6 @@ extern struct sh_cpuinfo cpu_data[];
+ #define cpu_sleep()	__asm__ __volatile__ ("sleep" : : : "memory")
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ void default_idle(void);
+ void stop_this_cpu(void *);
+diff --git a/arch/sparc/include/asm/processor_32.h b/arch/sparc/include/asm/processor_32.h
+index 50e908a3c..fc32b73 100644
+--- a/arch/sparc/include/asm/processor_32.h
++++ b/arch/sparc/include/asm/processor_32.h
+@@ -120,7 +120,6 @@ int do_mathemu(struct pt_regs *regs, struct task_struct *fpt);
+ 
+ #define cpu_relax()	barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ extern void (*sparc_idle)(void);
+ 
+diff --git a/arch/sparc/include/asm/processor_64.h b/arch/sparc/include/asm/processor_64.h
+index 3e8fac7..12787df 100644
+--- a/arch/sparc/include/asm/processor_64.h
++++ b/arch/sparc/include/asm/processor_64.h
+@@ -217,7 +217,6 @@ unsigned long get_wchan(struct task_struct *task);
+ 				     ".previous"			\
+ 				     ::: "memory")
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /* Prefetch support.  This is tuned for UltraSPARC-III and later.
+  * UltraSPARC-I will treat these as nops, and UltraSPARC-II has
+diff --git a/arch/tile/include/asm/processor.h b/arch/tile/include/asm/processor.h
+index 91a39a5..c1c228b 100644
+--- a/arch/tile/include/asm/processor.h
++++ b/arch/tile/include/asm/processor.h
+@@ -265,7 +265,6 @@ static inline void cpu_relax(void)
+ }
+ 
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /* Info on this processor (see fs/proc/cpuinfo.c) */
+ struct seq_operations;
+diff --git a/arch/unicore32/include/asm/processor.h b/arch/unicore32/include/asm/processor.h
+index fc54d5d..eeefe7c 100644
+--- a/arch/unicore32/include/asm/processor.h
++++ b/arch/unicore32/include/asm/processor.h
+@@ -72,7 +72,6 @@ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()			barrier()
+ #define cpu_relax_yield()		cpu_relax()
+-#define cpu_relax_lowlatency()                cpu_relax()
+ 
+ #define task_pt_regs(p) \
+ 	((struct pt_regs *)(THREAD_START_SP + task_stack_page(p)) - 1)
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 44adada..7513c99 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -589,7 +589,6 @@ static __always_inline void cpu_relax(void)
+ }
+ 
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /* Stop speculative execution and prefetching of modified code. */
+ static inline void sync_core(void)
+diff --git a/arch/x86/um/asm/processor.h b/arch/x86/um/asm/processor.h
+index 01597af..b4bd63b 100644
+--- a/arch/x86/um/asm/processor.h
++++ b/arch/x86/um/asm/processor.h
+@@ -27,7 +27,6 @@ static inline void rep_nop(void)
+ 
+ #define cpu_relax()		rep_nop()
+ #define cpu_relax_yield()	cpu_relax()
+-#define cpu_relax_lowlatency()	cpu_relax()
+ 
+ #define task_pt_regs(t) (&(t)->thread.regs)
+ 
+diff --git a/arch/xtensa/include/asm/processor.h b/arch/xtensa/include/asm/processor.h
+index fe14dc2..7d8d6be 100644
+--- a/arch/xtensa/include/asm/processor.h
++++ b/arch/xtensa/include/asm/processor.h
+@@ -207,7 +207,6 @@ extern unsigned long get_wchan(struct task_struct *p);
+ 
+ #define cpu_relax()  barrier()
+ #define cpu_relax_yield() cpu_relax()
+-#define cpu_relax_lowlatency() cpu_relax()
+ 
+ /* Special register access. */
+ 
 -- 
 2.5.5
