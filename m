@@ -1,29 +1,36 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t317r0yNVzDvj7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 15:56:06 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id r16so18384048pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 21:56:06 -0700 (PDT)
-Subject: Re: [PATCH kernel v4 4/4] powerpc/mm/iommu, vfio/spapr: Put pages on
- VFIO container shutdown
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
- <1477291990-2872-5-git-send-email-aik@ozlabs.ru>
- <20161025044414.GW11052@umbus.fritz.box>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <9f5fda35-be4d-12d1-e027-d8576cc8e8fe@ozlabs.ru>
-Date: Tue, 25 Oct 2016 15:55:56 +1100
-MIME-Version: 1.0
-In-Reply-To: <20161025044414.GW11052@umbus.fritz.box>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="KEVVOEQLnSVA73tWheKvVgkjQsArDvh3d"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t31V523rqzDvjL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:11:57 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9P58Vtj060778
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 01:11:54 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 269v7wjcg3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 01:11:54 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Mon, 24 Oct 2016 23:11:53 -0600
+Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 10.0 \(3226\))
+Subject: Re: [RFC PATCH] powerpc/powernv: recheck lock bit in
+ core_idle_lock_held after lwarx
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+In-Reply-To: <20161025041530.GA17852@fergus.ozlabs.ibm.com>
+Date: Tue, 25 Oct 2016 13:09:36 +0800
+Cc: shreyas@linux.vnet.ibm.com,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>, ego@linux.vnet.ibm.com
+References: <1477365874.10026.7.camel@TP420>
+ <20161025041530.GA17852@fergus.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Message-Id: <F2740D40-FD37-4CE5-BCCD-391021DECEDA@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,294 +40,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---KEVVOEQLnSVA73tWheKvVgkjQsArDvh3d
-Content-Type: multipart/mixed; boundary="OLHnswTgaVqH65V1e0Jjm15KR8ESPwCfa";
- protected-headers="v1"
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>
-Message-ID: <9f5fda35-be4d-12d1-e027-d8576cc8e8fe@ozlabs.ru>
-Subject: Re: [PATCH kernel v4 4/4] powerpc/mm/iommu, vfio/spapr: Put pages on
- VFIO container shutdown
-References: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
- <1477291990-2872-5-git-send-email-aik@ozlabs.ru>
- <20161025044414.GW11052@umbus.fritz.box>
-In-Reply-To: <20161025044414.GW11052@umbus.fritz.box>
 
---OLHnswTgaVqH65V1e0Jjm15KR8ESPwCfa
-Content-Type: text/plain; charset=koi8-r
-Content-Transfer-Encoding: quoted-printable
-
-On 25/10/16 15:44, David Gibson wrote:
-> On Mon, Oct 24, 2016 at 05:53:10PM +1100, Alexey Kardashevskiy wrote:
->> At the moment the userspace tool is expected to request pinning of
->> the entire guest RAM when VFIO IOMMU SPAPR v2 driver is present.
->> When the userspace process finishes, all the pinned pages need to
->> be put; this is done as a part of the userspace memory context (MM)
->> destruction which happens on the very last mmdrop().
->>
->> This approach has a problem that a MM of the userspace process
->> may live longer than the userspace process itself as kernel threads
->> use userspace process MMs which was runnning on a CPU where
->> the kernel thread was scheduled to. If this happened, the MM remains
->> referenced until this exact kernel thread wakes up again
->> and releases the very last reference to the MM, on an idle system this=
-
->> can take even hours.
->>
->> This moves preregistered regions tracking from MM to VFIO; insteads of=
-
->> using mm_iommu_table_group_mem_t::used, tce_container::prereg_list is
->> added so each container releases regions which it has pre-registered.
->>
->> This changes the userspace interface to return EBUSY if a memory
->> region is already registered in a container. However it should not
->> have any practical effect as the only userspace tool available now
->> does register memory region once per container anyway.
->>
->> As tce_iommu_register_pages/tce_iommu_unregister_pages are called
->> under container->lock, this does not need additional locking.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> On 25 Oct 2016, at 12:15, Paul Mackerras <paulus@ozlabs.org> wrote:
 >=20
-> On the grounds that this leaves things in a better state than before:
+> On Tue, Oct 25, 2016 at 11:24:34AM +0800, Li Zhong wrote:
+>> The core_idle_lock_held loops when the lock bit is held by others.
+>> However, it is possible that after the lock bit is cleared, some one
+>> else sees it first and sets the lock bit. And lwarx loads a value =
+with
+>> lock bit set, and the lock bit may be cleared in the following stwcx.
+>> It is possible the first one is still executing in the critical =
+section.
+>>=20
+>> This patch rechecks the lock bit after lwarx, and go back to loop if =
+it
+>> is set.
 >=20
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
->=20
-> On the other hand the implementation is kind of clunky, with the way
-> it keeps the mm-level and vfio-level lists of regions in parallel.
-> With this change, does the mm-level list actually serve any purpose at
-> all, or could it all be moved into the vfio-level list?
+> You're quite correct, in fact I posted almost exactly the same patch a
+> few days ago...  See http://patchwork.ozlabs.org/patch/684963/.
 
 
-The mm-level list allows not having gup() called for each container (mino=
-r
-thing, I suppose) and it also tracks a number of active mappings which wi=
-ll
-become useful when we add in-kernel real-mode TCE acceleration as
-vfio-level code cannot run in realmode.
+Forget to check the list before sending =E2=80=A6=20
 
+One minor difference, maybe we can use bne- for the rechecking :)
 
+Thanks, Zhong
 
 >=20
->> ---
->> Changes:
->> v4:
->> * changed tce_iommu_register_pages() to call mm_iommu_find() first and=
-
->> avoid calling mm_iommu_put() if memory is preregistered already
->>
->> v3:
->> * moved tce_iommu_prereg_free() call out of list_for_each_entry()
->>
->> v2:
->> * updated commit log
->> ---
->>  arch/powerpc/mm/mmu_context_book3s64.c |  4 ---
->>  arch/powerpc/mm/mmu_context_iommu.c    | 11 -------
->>  drivers/vfio/vfio_iommu_spapr_tce.c    | 58 +++++++++++++++++++++++++=
-++++++++-
->>  3 files changed, 57 insertions(+), 16 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/=
-mmu_context_book3s64.c
->> index ad82735..1a07969 100644
->> --- a/arch/powerpc/mm/mmu_context_book3s64.c
->> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
->> @@ -159,10 +159,6 @@ static inline void destroy_pagetable_page(struct =
-mm_struct *mm)
->> =20
->>  void destroy_context(struct mm_struct *mm)
->>  {
->> -#ifdef CONFIG_SPAPR_TCE_IOMMU
->> -	mm_iommu_cleanup(mm);
->> -#endif
->> -
->>  #ifdef CONFIG_PPC_ICSWX
->>  	drop_cop(mm->context.acop, mm);
->>  	kfree(mm->context.cop_lockp);
->> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu=
-_context_iommu.c
->> index 4c6db09..104bad0 100644
->> --- a/arch/powerpc/mm/mmu_context_iommu.c
->> +++ b/arch/powerpc/mm/mmu_context_iommu.c
->> @@ -365,14 +365,3 @@ void mm_iommu_init(struct mm_struct *mm)
->>  {
->>  	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
->>  }
->> -
->> -void mm_iommu_cleanup(struct mm_struct *mm)
->> -{
->> -	struct mm_iommu_table_group_mem_t *mem, *tmp;
->> -
->> -	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list=
-,
->> -			next) {
->> -		list_del_rcu(&mem->next);
->> -		mm_iommu_do_free(mem);
->> -	}
->> -}
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_i=
-ommu_spapr_tce.c
->> index 81ab93f..001a488 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -86,6 +86,15 @@ struct tce_iommu_group {
->>  };
->> =20
->>  /*
->> + * A container needs to remember which preregistered region  it has
->> + * referenced to do proper cleanup at the userspace process exit.
->> + */
->> +struct tce_iommu_prereg {
->> +	struct list_head next;
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +};
->> +
->> +/*
->>   * The container descriptor supports only a single group per containe=
-r.
->>   * Required by the API as the container is not supplied with the IOMM=
-U group
->>   * at the moment of initialization.
->> @@ -98,12 +107,27 @@ struct tce_container {
->>  	struct mm_struct *mm;
->>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
->>  	struct list_head group_list;
->> +	struct list_head prereg_list;
->>  };
->> =20
->> +static long tce_iommu_prereg_free(struct tce_container *container,
->> +		struct tce_iommu_prereg *tcemem)
->> +{
->> +	long ret;
->> +
->> +	list_del(&tcemem->next);
->> +	ret =3D mm_iommu_put(container->mm, tcemem->mem);
->> +	kfree(tcemem);
->> +
->> +	return ret;
->> +}
->> +
->>  static long tce_iommu_unregister_pages(struct tce_container *containe=
-r,
->>  		__u64 vaddr, __u64 size)
->>  {
->>  	struct mm_iommu_table_group_mem_t *mem;
->> +	struct tce_iommu_prereg *tcemem;
->> +	bool found =3D false;
->> =20
->>  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
->>  		return -EINVAL;
->> @@ -112,7 +136,17 @@ static long tce_iommu_unregister_pages(struct tce=
-_container *container,
->>  	if (!mem)
->>  		return -ENOENT;
->> =20
->> -	return mm_iommu_put(container->mm, mem);
->> +	list_for_each_entry(tcemem, &container->prereg_list, next) {
->> +		if (tcemem->mem =3D=3D mem) {
->> +			found =3D true;
->> +			break;
->> +		}
->> +	}
->> +
->> +	if (!found)
->> +		return -ENOENT;
->> +
->> +	return tce_iommu_prereg_free(container, tcemem);
->>  }
->> =20
->>  static long tce_iommu_register_pages(struct tce_container *container,=
-
->> @@ -120,16 +154,29 @@ static long tce_iommu_register_pages(struct tce_=
-container *container,
->>  {
->>  	long ret =3D 0;
->>  	struct mm_iommu_table_group_mem_t *mem =3D NULL;
->> +	struct tce_iommu_prereg *tcemem;
->>  	unsigned long entries =3D size >> PAGE_SHIFT;
->> =20
->>  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
->>  			((vaddr + size) < vaddr))
->>  		return -EINVAL;
->> =20
->> +	mem =3D mm_iommu_find(container->mm, vaddr, entries);
->> +	if (mem) {
->> +		list_for_each_entry(tcemem, &container->prereg_list, next) {
->> +			if (tcemem->mem =3D=3D mem)
->> +				return -EBUSY;
->> +		}
->> +	}
->> +
->>  	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
->>  	if (ret)
->>  		return ret;
->> =20
->> +	tcemem =3D kzalloc(sizeof(*tcemem), GFP_KERNEL);
->> +	tcemem->mem =3D mem;
->> +	list_add(&tcemem->next, &container->prereg_list);
->> +
->>  	container->enabled =3D true;
->> =20
->>  	return 0;
->> @@ -311,6 +358,7 @@ static void *tce_iommu_open(unsigned long arg)
->> =20
->>  	mutex_init(&container->lock);
->>  	INIT_LIST_HEAD_RCU(&container->group_list);
->> +	INIT_LIST_HEAD_RCU(&container->prereg_list);
->> =20
->>  	container->v2 =3D arg =3D=3D VFIO_SPAPR_TCE_v2_IOMMU;
->> =20
->> @@ -353,6 +401,14 @@ static void tce_iommu_release(void *iommu_data)
->>  		tce_iommu_free_table(container, tbl);
->>  	}
->> =20
->> +	while (!list_empty(&container->prereg_list)) {
->> +		struct tce_iommu_prereg *tcemem;
->> +
->> +		tcemem =3D list_first_entry(&container->prereg_list,
->> +				struct tce_iommu_prereg, next);
->> +		tce_iommu_prereg_free(container, tcemem);
->> +	}
->> +
->>  	tce_iommu_disable(container);
->>  	mmdrop(container->mm);
->>  	mutex_destroy(&container->lock);
+> Thanks,
+> Paul.
 >=20
-
-
---=20
-Alexey
-
-
---OLHnswTgaVqH65V1e0Jjm15KR8ESPwCfa--
-
---KEVVOEQLnSVA73tWheKvVgkjQsArDvh3d
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIrBAEBCAAVBQJYDuXdDhxhaWtAb3psYWJzLnJ1AAoJEIYTPdgrwSC53hYQAJnt
-l6VvZUX6DuGZ+Z80g//qOlbIenMk9UkU/jFyULNl42G3eItFow8EACsWA1faggWY
-jlnAKdhP8VvC3Dinbq81iofZJf48pxjtb7VaGJDTmHEyKifdoCR4RDbvU07XWlxe
-K/Y0b5Q/N4sKo42HlqVXr6zNnrQYQ05Vx5VMftVLlYFfugd1Q63Sl8SzRm3p5P+s
-thUXijl3RINlMtdAWBN+ty+qtq9s7Cw2EJK9oRvgN4bqH8riDL5/na0SbcyT9fE+
-sO224f2zu+03z3Ose8SE2RVGDurFGpsMttniDKoxEoNEFZZGn3/HItEfjdAQQOQS
-hAuuzFnB3ElOHecSih4+9c6IDP+fHqNV60iqCy3Lc6FDw1lR9HqasGXIM0TY4sXN
-WQs2ys317BMQb9ER/HjUdjuBENlk8oG7xZX9UgzrJsdz45EbnPV6Oyqd5fCt+hjP
-xHI0rBKet8UJMnZAuQOUYFKFFaxia2Gln1YgLlg1u+UhUdb45nU/EvPV+Z4fkO0F
-hhd9XMqUD6mj793ZSVRBjt3y/czDwkZYlMAASKdTNWIoY0ZdAf4PwCD24Ad0NsGX
-64fbUFCUYKFDq4oVtHOrpx7azZGLlGVZZ/MgN9UbSU+FvI9bg++EnpRAPzDeL5PE
-gYEPYtOlsPyB1UCT2jH96xmvrIAbHZ3xBfIVsTcR
-=hjCl
------END PGP SIGNATURE-----
-
---KEVVOEQLnSVA73tWheKvVgkjQsArDvh3d--
