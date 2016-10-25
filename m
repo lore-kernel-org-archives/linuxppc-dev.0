@@ -1,39 +1,30 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <soren.brinkmann@xilinx.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0082.outbound.protection.outlook.com [104.47.37.82])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3FGH5wCMzDvjR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 01:02:31 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9PE08Sf016990
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 10:02:29 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26a75dxnmx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 10:02:28 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 25 Oct 2016 08:02:27 -0600
-Subject: Re: [PATCH] powerpc/pseries: fix spelling mistake: "Attemping" ->
- "Attempting"
-To: Colin King <colin.king@canonical.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Kees Cook
- <keescook@chromium.org>,
- Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20161024220212.8464-1-colin.king@canonical.com>
-Cc: linux-kernel@vger.kernel.org
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 25 Oct 2016 09:02:20 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3GCb6jpTzDvkd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 01:45:15 +1100 (AEDT)
+Date: Tue, 25 Oct 2016 07:44:59 -0700
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>, Marc Zyngier
+ <marc.zyngier@arm.com>, <monstr@monstr.eu>, <ralf@linux-mips.org>,
+ <jason@lakedaemon.net>, <alistair@popple.id.au>,
+ <mporter@kernel.crashing.org>, <linux-kernel@vger.kernel.org>,
+ <linux-mips@linux-mips.org>, <michal.simek@xilinx.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>, <paulus@samba.org>,
+ <benh@kernel.crashing.org>
+Subject: Re: [Patch v5 04/12] irqchip: xilinx: Add support for parent intc
+Message-ID: <20161025144459.GF14444@xsjsorenbubuntu>
+References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <32f5f17d-7864-c782-7a6f-03660b7ab055@arm.com>
+ <581adf44-388c-f8e5-8437-59d7ace2fa8f@imgtec.com>
+ <alpine.DEB.2.20.1610251246020.4990@nanos>
 MIME-Version: 1.0
-In-Reply-To: <20161024220212.8464-1-colin.king@canonical.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <3a78be5a-a913-da9f-7d3c-adce86207702@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <alpine.DEB.2.20.1610251246020.4990@nanos>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/24/2016 05:02 PM, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
+On Tue, 2016-10-25 at 12:49:33 +0200, Thomas Gleixner wrote:
+> On Tue, 25 Oct 2016, Zubair Lutfullah Kakakhel wrote:
+> > On 10/21/2016 10:48 AM, Marc Zyngier wrote:
+> > > Shouldn't you return an error if irq is zero?
+> > > 
+> > 
+> > I'll add the following for the error case
+> > 
+> > 	pr_err("%s: Parent exists but interrupts property not defined\n" ,
+> > __func__);
 > 
-> trivial fix to spelling mistake in pr_debug message
+> Please do not use this silly __func__ stuff. It's not giving any value to
+> the printout.
 > 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Set a proper prefix for your pr_* stuff, so the string is prefixed with
+> 'irq-xilinx:' or whatever you think is appropriate. Then the string itself
+> is good enough to find from which place this printk comes.
 
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Haven't looked at the real code, but is there probably a way to get a
+struct device pointer and use dev_err?
 
-> ---
->  arch/powerpc/platforms/pseries/hotplug-cpu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index a1b63e0..c8929cb 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -553,7 +553,7 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->  {
->  	int rc;
-> 
-> -	pr_debug("Attemping to remove CPU %s, drc index: %x\n",
-> +	pr_debug("Attempting to remove CPU %s, drc index: %x\n",
->  		 dn->name, drc_index);
-> 
->  	rc = dlpar_offline_cpu(dn);
-> 
+	Sören
