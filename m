@@ -1,24 +1,28 @@
-Return-Path: <mleitner@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t38Zt2vS5zDvk4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 21:31:34 +1100 (AEDT)
-Date: Tue, 25 Oct 2016 08:31:26 -0200
-From: Marcelo Ricardo Leitner <mleitner@redhat.com>
-To: Jon Maxwell <jmaxwell37@gmail.com>
-Cc: tlfalcon@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, davem@davemloft.net, tom@herbertland.com,
- jarod@redhat.com, hofrat@osadl.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jmaxwell@redhat.com
-Subject: Re: [PATCH net-next] ibmveth: calculate correct gso_size and set
- gso_type
-Message-ID: <20161025103126.GW2948@localhost.localdomain>
-References: <1477372421-11656-1-git-send-email-jmaxwell37@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t392q63ZpzDvWV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 21:52:19 +1100 (AEDT)
+Date: Tue, 25 Oct 2016 12:49:33 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+cc: Marc Zyngier <marc.zyngier@arm.com>, monstr@monstr.eu, ralf@linux-mips.org,
+ jason@lakedaemon.net, alistair@popple.id.au, mporter@kernel.crashing.org,
+ soren.brinkmann@xilinx.com, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, michal.simek@xilinx.com,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org
+Subject: Re: [Patch v5 04/12] irqchip: xilinx: Add support for parent intc
+In-Reply-To: <581adf44-388c-f8e5-8437-59d7ace2fa8f@imgtec.com>
+Message-ID: <alpine.DEB.2.20.1610251246020.4990@nanos>
+References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <32f5f17d-7864-c782-7a6f-03660b7ab055@arm.com>
+ <581adf44-388c-f8e5-8437-59d7ace2fa8f@imgtec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1477372421-11656-1-git-send-email-jmaxwell37@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,83 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 25, 2016 at 04:13:41PM +1100, Jon Maxwell wrote:
-> We recently encountered a bug where a few customers using ibmveth on the 
-> same LPAR hit an issue where a TCP session hung when large receive was
-> enabled. Closer analysis revealed that the session was stuck because the 
-> one side was advertising a zero window repeatedly.
+On Tue, 25 Oct 2016, Zubair Lutfullah Kakakhel wrote:
+> On 10/21/2016 10:48 AM, Marc Zyngier wrote:
+> > Shouldn't you return an error if irq is zero?
+> > 
 > 
-> We narrowed this down to the fact the ibmveth driver did not set gso_size 
-> which is translated by TCP into the MSS later up the stack. The MSS is 
-> used to calculate the TCP window size and as that was abnormally large, 
-> it was calculating a zero window, even although the sockets receive buffer 
-> was completely empty. 
+> I'll add the following for the error case
 > 
-> We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
-> and Marcelo for all your help and review on this.
-> 
-> The patch fixes both our internal reproduction tests and our customers tests.
-> 
-> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
-> ---
->  drivers/net/ethernet/ibm/ibmveth.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 29c05d0..3028c33 100644
-> --- a/drivers/net/ethernet/ibm/ibmveth.c
-> +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->  	int frames_processed = 0;
->  	unsigned long lpar_rc;
->  	struct iphdr *iph;
-> +	bool large_packet = 0;
-> +	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
+> 	pr_err("%s: Parent exists but interrupts property not defined\n" ,
+> __func__);
 
-Compiler may optmize this, but maybe move hdr_len to [*] ?
+Please do not use this silly __func__ stuff. It's not giving any value to
+the printout.
 
->  
->  restart_poll:
->  	while (frames_processed < budget) {
-> @@ -1236,10 +1238,27 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->  						iph->check = 0;
->  						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
->  						adapter->rx_large_packets++;
-> +						large_packet = 1;
->  					}
->  				}
->  			}
->  
-> +			if (skb->len > netdev->mtu) {
+Set a proper prefix for your pr_* stuff, so the string is prefixed with
+'irq-xilinx:' or whatever you think is appropriate. Then the string itself
+is good enough to find from which place this printk comes.
 
-[*]
+Thanks,
 
-> +				iph = (struct iphdr *)skb->data;
-> +				if (be16_to_cpu(skb->protocol) == ETH_P_IP && iph->protocol == IPPROTO_TCP) {
-
-The if line above is too long, should be broken in two.
-
-> +					hdr_len += sizeof(struct iphdr);
-> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
-> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-> +				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
-> +					iph->protocol == IPPROTO_TCP) {
-                                        ^
-And this one should start 3 spaces later, right below be16_....
-
-  Marcelo
-
-> +					hdr_len += sizeof(struct ipv6hdr);
-> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
-> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-> +				}
-> +				if (!large_packet)
-> +					adapter->rx_large_packets++;
-> +			}
-> +
->  			napi_gro_receive(napi, skb);	/* send it up */
->  
->  			netdev->stats.rx_packets++;
-> -- 
-> 1.8.3.1
-> 
+	tglx
