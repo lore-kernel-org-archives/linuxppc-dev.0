@@ -1,36 +1,22 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jmaxwell37@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t31V523rqzDvjL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:11:57 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9P58Vtj060778
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 01:11:54 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 269v7wjcg3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 01:11:54 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 24 Oct 2016 23:11:53 -0600
-Content-Type: text/plain; charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 10.0 \(3226\))
-Subject: Re: [RFC PATCH] powerpc/powernv: recheck lock bit in
- core_idle_lock_held after lwarx
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-In-Reply-To: <20161025041530.GA17852@fergus.ozlabs.ibm.com>
-Date: Tue, 25 Oct 2016 13:09:36 +0800
-Cc: shreyas@linux.vnet.ibm.com,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>, ego@linux.vnet.ibm.com
-References: <1477365874.10026.7.camel@TP420>
- <20161025041530.GA17852@fergus.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Message-Id: <F2740D40-FD37-4CE5-BCCD-391021DECEDA@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t31XX12F0zDvkc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:14:04 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id i85so18455849pfa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 22:14:04 -0700 (PDT)
+From: Jon Maxwell <jmaxwell37@gmail.com>
+To: tlfalcon@linux.vnet.ibm.com
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ davem@davemloft.net, tom@herbertland.com, jarod@redhat.com,
+ hofrat@osadl.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, mleitner@redhat.com, jmaxwell@redhat.com,
+ Jon Maxwell <jmaxwell37@gmail.com>
+Subject: [PATCH net-next] ibmveth: calculate correct gso_size and set gso_type
+Date: Tue, 25 Oct 2016 16:13:41 +1100
+Message-Id: <1477372421-11656-1-git-send-email-jmaxwell37@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,33 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We recently encountered a bug where a few customers using ibmveth on the 
+same LPAR hit an issue where a TCP session hung when large receive was
+enabled. Closer analysis revealed that the session was stuck because the 
+one side was advertising a zero window repeatedly.
 
-> On 25 Oct 2016, at 12:15, Paul Mackerras <paulus@ozlabs.org> wrote:
->=20
-> On Tue, Oct 25, 2016 at 11:24:34AM +0800, Li Zhong wrote:
->> The core_idle_lock_held loops when the lock bit is held by others.
->> However, it is possible that after the lock bit is cleared, some one
->> else sees it first and sets the lock bit. And lwarx loads a value =
-with
->> lock bit set, and the lock bit may be cleared in the following stwcx.
->> It is possible the first one is still executing in the critical =
-section.
->>=20
->> This patch rechecks the lock bit after lwarx, and go back to loop if =
-it
->> is set.
->=20
-> You're quite correct, in fact I posted almost exactly the same patch a
-> few days ago...  See http://patchwork.ozlabs.org/patch/684963/.
+We narrowed this down to the fact the ibmveth driver did not set gso_size 
+which is translated by TCP into the MSS later up the stack. The MSS is 
+used to calculate the TCP window size and as that was abnormally large, 
+it was calculating a zero window, even although the sockets receive buffer 
+was completely empty. 
 
+We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
+and Marcelo for all your help and review on this.
 
-Forget to check the list before sending =E2=80=A6=20
+The patch fixes both our internal reproduction tests and our customers tests.
 
-One minor difference, maybe we can use bne- for the rechecking :)
+Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-Thanks, Zhong
-
->=20
-> Thanks,
-> Paul.
->=20
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 29c05d0..3028c33 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 	int frames_processed = 0;
+ 	unsigned long lpar_rc;
+ 	struct iphdr *iph;
++	bool large_packet = 0;
++	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
+ 
+ restart_poll:
+ 	while (frames_processed < budget) {
+@@ -1236,10 +1238,27 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 						iph->check = 0;
+ 						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+ 						adapter->rx_large_packets++;
++						large_packet = 1;
+ 					}
+ 				}
+ 			}
+ 
++			if (skb->len > netdev->mtu) {
++				iph = (struct iphdr *)skb->data;
++				if (be16_to_cpu(skb->protocol) == ETH_P_IP && iph->protocol == IPPROTO_TCP) {
++					hdr_len += sizeof(struct iphdr);
++					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
++					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
++				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
++					iph->protocol == IPPROTO_TCP) {
++					hdr_len += sizeof(struct ipv6hdr);
++					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
++					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
++				}
++				if (!large_packet)
++					adapter->rx_large_packets++;
++			}
++
+ 			napi_gro_receive(napi, skb);	/* send it up */
+ 
+ 			netdev->stats.rx_packets++;
+-- 
+1.8.3.1
