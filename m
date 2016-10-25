@@ -3,46 +3,46 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Vnp36stzDsxk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 02:15:42 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4VvZ1cz9zDsyP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 02:20:42 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9RFDktN018800
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:15:40 -0400
+ u9RFIqKd145625
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:40 -0400
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bkyegf33-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bkh1k4pd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:15:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:40 -0400
 Received: from localhost
  by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 09:15:39 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C74573E40048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:15:36 -0600 (MDT)
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9RFFaib16122298
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:15:36 -0700
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9C2A713603A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:15:36 -0600 (MDT)
+ Thu, 27 Oct 2016 09:20:39 -0600
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C94B11FF001F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:20:17 -0600 (MDT)
+Received: from b01ledav03.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9RFKbIY22675672
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 15:20:37 GMT
+Received: from b01ledav03.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 319DAB204E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:37 -0400 (EDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP id 845EE136043
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:15:36 -0600 (MDT)
+ by b01ledav03.gho.pok.ibm.com (Postfix) with ESMTP id 168F2B2050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:37 -0400 (EDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 48C37C0D2EB5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:09:22 -0500 (CDT)
+ by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id DFA2ECC90DED
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:21:42 -0500 (CDT)
 Subject: [PATCH V8 0/8] powerpc/devtree: Add support for 2 new DRC properties
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 25 Oct 2016 16:09:22 -0500
+Date: Tue, 25 Oct 2016 17:21:42 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20161025210725.163179.24945.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <147743401892.193028.4045412241057082553.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -103,7 +103,6 @@ Michael Bringmann (8):
   powerpc: Check arch.vec earlier during boot for memory features
   powerpc: Enable support for new DRC devtree properties
 
-
  arch/powerpc/include/asm/firmware.h             |    5 -
  arch/powerpc/include/asm/prom.h                 |   38 ++++-
  arch/powerpc/kernel/prom.c                      |  103 +++++++++++--
@@ -117,9 +116,3 @@ Michael Bringmann (8):
  drivers/pci/hotplug/rpaphp.h                    |    4 
  drivers/pci/hotplug/rpaphp_core.c               |  109 ++++++++++---
  12 files changed, 628 insertions(+), 103 deletions(-)
-
---
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-mwb@linux.vnet.ibm.com
