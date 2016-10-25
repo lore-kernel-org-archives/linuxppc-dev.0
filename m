@@ -1,28 +1,24 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t3GN23LljzDvkl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 01:52:34 +1100 (AEDT)
-Subject: Re: [Patch v5 04/12] irqchip: xilinx: Add support for parent intc
-To: =?UTF-8?Q?S=c3=b6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
- Thomas Gleixner <tglx@linutronix.de>
-References: <1476723176-39891-1-git-send-email-Zubair.Kakakhel@imgtec.com>
- <1476723176-39891-5-git-send-email-Zubair.Kakakhel@imgtec.com>
- <32f5f17d-7864-c782-7a6f-03660b7ab055@arm.com>
- <581adf44-388c-f8e5-8437-59d7ace2fa8f@imgtec.com>
- <alpine.DEB.2.20.1610251246020.4990@nanos>
- <20161025144459.GF14444@xsjsorenbubuntu>
-Cc: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>, monstr@monstr.eu,
- ralf@linux-mips.org, jason@lakedaemon.net, alistair@popple.id.au,
- mporter@kernel.crashing.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, michal.simek@xilinx.com,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org
-From: Marc Zyngier <marc.zyngier@arm.com>
-Message-ID: <a5c90777-06fb-6f92-0258-463b6eb1ab8d@arm.com>
-Date: Tue, 25 Oct 2016 15:52:26 +0100
+Return-Path: <dsafonov@virtuozzo.com>
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20133.outbound.protection.outlook.com [40.107.2.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3Hk665pVzDvkf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 02:53:16 +1100 (AEDT)
+From: Dmitry Safonov <dsafonov@virtuozzo.com>
+To: <linux-kernel@vger.kernel.org>
+CC: <0x7f454c46@gmail.com>, Dmitry Safonov <dsafonov@virtuozzo.com>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Andy Lutomirski <luto@amacapital.net>,
+ Oleg Nesterov <oleg@redhat.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-mm@kvack.org>, Laurent Dufour <ldufour@linux.vnet.ibm.com>, "Kirill A.
+ Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton
+ <akpm@linux-foundation.org>
+Subject: [PATCH 0/7] powerpc/mm: refactor vDSO mapping code
+Date: Tue, 25 Oct 2016 18:50:59 +0300
+Message-ID: <20161025155106.29946-1-dsafonov@virtuozzo.com>
 MIME-Version: 1.0
-In-Reply-To: <20161025144459.GF14444@xsjsorenbubuntu>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25/10/16 15:44, Sören Brinkmann wrote:
-> On Tue, 2016-10-25 at 12:49:33 +0200, Thomas Gleixner wrote:
->> On Tue, 25 Oct 2016, Zubair Lutfullah Kakakhel wrote:
->>> On 10/21/2016 10:48 AM, Marc Zyngier wrote:
->>>> Shouldn't you return an error if irq is zero?
->>>>
->>>
->>> I'll add the following for the error case
->>>
->>> 	pr_err("%s: Parent exists but interrupts property not defined\n" ,
->>> __func__);
->>
->> Please do not use this silly __func__ stuff. It's not giving any value to
->> the printout.
->>
->> Set a proper prefix for your pr_* stuff, so the string is prefixed with
->> 'irq-xilinx:' or whatever you think is appropriate. Then the string itself
->> is good enough to find from which place this printk comes.
-> 
-> Haven't looked at the real code, but is there probably a way to get a
-> struct device pointer and use dev_err?
+Cleanup patches for vDSO on powerpc.
+Originally, I wanted to add vDSO remapping on arm/aarch64 and
+I decided to cleanup that part on powerpc.
+I've add a hook for vm_ops for vDSO just like I did for x86.
+Other changes - reduce exhaustive code duplication.
+No visible to userspace changes expected.
 
-You wish. Interrupt controllers (and timers) are brought up way before
-the device model is available, hence no struct device.
+Tested on qemu with buildroot rootfs.
 
-I've started untangling that mess a couple of times, and always ran out
-of available time (you start pulling the VFS, then the scheduler, the
-creation of the first thread, and then things lock up because you need
-to context switch and no timer is ready yet).
+Dmitry Safonov (7):
+  powerpc/vdso: unify return paths in setup_additional_pages
+  powerpc/vdso: remove unused params in vdso_do_func_patch{32,64}
+  powerpc/vdso: separate common code in vdso_common
+  powerpc/vdso: introduce init_vdso{32,64}_pagelist
+  powerpc/vdso: split map_vdso from arch_setup_additional_pages
+  powerpc/vdso: switch from legacy_special_mapping_vmops
+  mm: kill arch_mremap
 
-I may try to spend some time on it again while travelling to LPC...
+ arch/alpha/include/asm/Kbuild            |   1 -
+ arch/arc/include/asm/Kbuild              |   1 -
+ arch/arm/include/asm/Kbuild              |   1 -
+ arch/arm64/include/asm/Kbuild            |   1 -
+ arch/avr32/include/asm/Kbuild            |   1 -
+ arch/blackfin/include/asm/Kbuild         |   1 -
+ arch/c6x/include/asm/Kbuild              |   1 -
+ arch/cris/include/asm/Kbuild             |   1 -
+ arch/frv/include/asm/Kbuild              |   1 -
+ arch/h8300/include/asm/Kbuild            |   1 -
+ arch/hexagon/include/asm/Kbuild          |   1 -
+ arch/ia64/include/asm/Kbuild             |   1 -
+ arch/m32r/include/asm/Kbuild             |   1 -
+ arch/m68k/include/asm/Kbuild             |   1 -
+ arch/metag/include/asm/Kbuild            |   1 -
+ arch/microblaze/include/asm/Kbuild       |   1 -
+ arch/mips/include/asm/Kbuild             |   1 -
+ arch/mn10300/include/asm/Kbuild          |   1 -
+ arch/nios2/include/asm/Kbuild            |   1 -
+ arch/openrisc/include/asm/Kbuild         |   1 -
+ arch/parisc/include/asm/Kbuild           |   1 -
+ arch/powerpc/include/asm/mm-arch-hooks.h |  28 --
+ arch/powerpc/kernel/vdso.c               | 492 +++++--------------------------
+ arch/powerpc/kernel/vdso_common.c        | 248 ++++++++++++++++
+ arch/s390/include/asm/Kbuild             |   1 -
+ arch/score/include/asm/Kbuild            |   1 -
+ arch/sh/include/asm/Kbuild               |   1 -
+ arch/sparc/include/asm/Kbuild            |   1 -
+ arch/tile/include/asm/Kbuild             |   1 -
+ arch/um/include/asm/Kbuild               |   1 -
+ arch/unicore32/include/asm/Kbuild        |   1 -
+ arch/x86/include/asm/Kbuild              |   1 -
+ arch/xtensa/include/asm/Kbuild           |   1 -
+ include/asm-generic/mm-arch-hooks.h      |  16 -
+ include/linux/mm-arch-hooks.h            |  25 --
+ mm/mremap.c                              |   4 -
+ 36 files changed, 323 insertions(+), 520 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/powerpc/kernel/vdso_common.c
+ delete mode 100644 include/asm-generic/mm-arch-hooks.h
+ delete mode 100644 include/linux/mm-arch-hooks.h
 
-	M.
 -- 
-Jazz is not dead. It just smells funny...
+2.10.0
