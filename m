@@ -3,14 +3,14 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4VvZ1cz9zDsyP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4VvZ2RvPzDsyY
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 02:20:42 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9RFIqKd145625
+ u9RFIke7130196
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:40 -0400
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bkh1k4pd-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bkgcba2e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:40 -0400
 Received: from localhost
@@ -18,31 +18,28 @@ Received: from localhost
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
  Thu, 27 Oct 2016 09:20:39 -0600
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C94B11FF001F
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6488C1FF001E
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:20:17 -0600 (MDT)
-Received: from b01ledav03.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9RFKbIY22675672
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 15:20:37 GMT
-Received: from b01ledav03.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 319DAB204E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:37 -0400 (EDT)
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9RFKbKD11469264
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:20:37 -0700
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0E437136049
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:20:37 -0600 (MDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b01ledav03.gho.pok.ibm.com (Postfix) with ESMTP id 168F2B2050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:20:37 -0400 (EDT)
-Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id DFA2ECC90DED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:21:42 -0500 (CDT)
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP id EA743136046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:20:36 -0600 (MDT)
 Subject: [PATCH V8 0/8] powerpc/devtree: Add support for 2 new DRC properties
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 25 Oct 2016 17:21:42 -0500
+To: mwb@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 25 Oct 2016 17:26:13 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <147743401892.193028.4045412241057082553.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <147743433705.193137.18391718096153952415.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -102,6 +99,7 @@ Michael Bringmann (8):
   hotplug/drc-info: Add code to search new devtree properties
   powerpc: Check arch.vec earlier during boot for memory features
   powerpc: Enable support for new DRC devtree properties
+
 
  arch/powerpc/include/asm/firmware.h             |    5 -
  arch/powerpc/include/asm/prom.h                 |   38 ++++-
