@@ -1,38 +1,37 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
+ [IPv6:2607:f8b0:400e:c00::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3Sr41w9LzDvRh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 09:44:04 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9PMi0uI058005
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 18:44:02 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26a8bva3xp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 18:44:01 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 25 Oct 2016 16:44:00 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D18521FF0025
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:43:38 -0600 (MDT)
-Subject: Re: [PATCH V6 7/8] powerpc: Check arch.vec earlier during boot for
- memory features
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <d6614f82-0c59-8457-188a-3f6dcaa92bb3@linux.vnet.ibm.com>
- <e26f1b5e-7f14-3915-12fe-2057a25eba77@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Tue, 25 Oct 2016 17:43:58 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3TBT730pzDvWD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 10:00:01 +1100 (AEDT)
+Received: by mail-pf0-x236.google.com with SMTP id e6so126726834pfk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:00:01 -0700 (PDT)
+Subject: Re: [PATCH v4 4/5] mm: make processing of movable_node arch-specific
+To: Reza Arbab <arbab@linux.vnet.ibm.com>
+References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1475778995-1420-5-git-send-email-arbab@linux.vnet.ibm.com>
+ <235f2d20-cf84-08df-1fb4-08ee258fdc52@gmail.com>
+ <dcfc8ace-e59e-6b4b-0f2f-4eff9f08f3c1@gmail.com>
+ <20161025155507.37kv5akdlgo6m2be@arbab-laptop.austin.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-mm@kvack.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <13f4f7fa-77b7-0924-f47c-5e55af8269d0@gmail.com>
+Date: Wed, 26 Oct 2016 09:59:40 +1100
 MIME-Version: 1.0
-In-Reply-To: <e26f1b5e-7f14-3915-12fe-2057a25eba77@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <44260e88-ae05-7ce8-d596-9434479adf6a@linux.vnet.ibm.com>
+In-Reply-To: <20161025155507.37kv5akdlgo6m2be@arbab-laptop.austin.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,61 +41,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-:
-> On 09/21/2016 09:17 AM, Michael Bringmann wrote:
->> architecture.vec5 features: The boot-time memory management needs to
->> know the form of the "ibm,dynamic-memory-v2" property early during
->> scanning of the flattened device tree.  This patch moves execution of
->> the function pseries_probe_fw_features() early enough to be before
->> the scanning of the memory properties in the device tree to allow
->> recognition of the supported properties.
->>
->> [V2: No change]
->> [V3: Updated after commit 3808a88985b4f5f5e947c364debce4441a380fb8.]
->> [V4: Update comments]
->> [V5: Resynchronize/resubmit]
->> [V6: Resync to v4.7 kernel code]
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index 946e34f..2034edc 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -753,6 +753,9 @@ void __init early_init_devtree(void *params)
->>  	 */
->>  	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
->>
->> +	/* Now try to figure out if we are running on LPAR and so on */
->> +	pseries_probe_fw_features();
->> +
+
+
+On 26/10/16 02:55, Reza Arbab wrote:
+> On Tue, Oct 25, 2016 at 11:15:40PM +1100, Balbir Singh wrote:
+>> After the ack, I realized there were some more checks needed, IOW
+>> questions for you :)
 > 
-> I'll have to defer to others on whether calling this earlier in boot
-> is ok.
-
-It is scanning the flattened device tree supplied by the BMC, though this
-is not the first such call to do so.  The relevant content of the device
-tree should not change between the earlier point of the relocated point,
-and the later point of the former location.
-
-> I do notice that you do not remove the call later on, any reason?
-
-Bug in patch.  Corrected in next patch group submission.
-
-> -Nathan
-> 
->>  	/* Scan memory nodes and rebuild MEMBLOCKs */
->>  	of_scan_flat_dt(early_init_dt_scan_root, NULL);
->>  	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
->>
-> 
+> Hey! No takebacks!
 > 
 
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+I still believe we need your changes, I was wondering if we've tested
+it against normal memory nodes and checked if any memblock
+allocations end up there. Michael showed me some memblock
+allocations on node 1 of a two node machine with movable_node
+I'll double check at my end. See my question below
+
+
+> The short answer is that neither of these is a concern.
+> 
+> Longer; if you use "movable_node", x86 can identify these nodes at boot. They call memblock_mark_hotplug() while parsing the SRAT. Then, when the zones are initialized, those markings are used to determine ZONE_MOVABLE.
+> 
+> We have no analog of this SRAT information, so our movable nodes can only be created post boot, by hotplugging and explicitly onlining with online_movable.
+>
+
+Is this true for all of system memory as well or only for nodes
+hotplugged later?
+
+Balbir Singh.
