@@ -1,22 +1,42 @@
-Return-Path: <jmaxwell37@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t31XX12F0zDvkc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 16:14:04 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id i85so18455849pfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 22:14:04 -0700 (PDT)
-From: Jon Maxwell <jmaxwell37@gmail.com>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- davem@davemloft.net, tom@herbertland.com, jarod@redhat.com,
- hofrat@osadl.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, mleitner@redhat.com, jmaxwell@redhat.com,
- Jon Maxwell <jmaxwell37@gmail.com>
-Subject: [PATCH net-next] ibmveth: calculate correct gso_size and set gso_type
-Date: Tue, 25 Oct 2016 16:13:41 +1100
-Message-Id: <1477372421-11656-1-git-send-email-jmaxwell37@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t34rr2Qw0zDvY8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 18:43:24 +1100 (AEDT)
+Date: Tue, 25 Oct 2016 09:43:14 +0200
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: Steffen Maier <maier@linux.vnet.ibm.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+ Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
+ Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+ Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Johannes Thumshirn <jth@kernel.org>,
+ James Smart <james.smart@avagotech.com>,
+ Dick Kennedy <dick.kennedy@avagotech.com>,
+ "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
+ "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
+Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
+ fc_bsg_job::reply directly
+Message-ID: <20161025074313.4ma4czgdj46imaei@linux-x5ow.site>
+References: <cover.1476369687.git.jthumshirn@suse.de>
+ <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
+ <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
+ <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,67 +46,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We recently encountered a bug where a few customers using ibmveth on the 
-same LPAR hit an issue where a TCP session hung when large receive was
-enabled. Closer analysis revealed that the session was stuck because the 
-one side was advertising a zero window repeatedly.
+On Fri, Oct 14, 2016 at 09:38:21AM +0200, Johannes Thumshirn wrote:
+> On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
+> > Hm, still behaves for me like I reported for v2:
+> > http://marc.info/?l=linux-scsi&m=147637177902937&w=2
+> 
+> Hi Steffen,
+> 
+> Can you please try the following on top of 2/16?
+> 
+> diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+> index 4149dac..baebaab 100644
+> --- a/drivers/scsi/scsi_transport_fc.c
+> +++ b/drivers/scsi/scsi_transport_fc.c
+> @@ -3786,6 +3786,12 @@ enum fc_dispatch_result {
+>  	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
+>  	int ret;
+>  
+> +	/* check if we really have all the request data needed */
+> +	if (job->request_len < cmdlen) {
+> +		ret = -ENOMSG;
+> +		goto fail_host_msg;
+> +	}
+> +
+>  	/* Validate the host command */
+>  	switch (bsg_request->msgcode) {
+>  	case FC_BSG_HST_ADD_RPORT:
+> @@ -3831,12 +3837,6 @@ enum fc_dispatch_result {
+>  		goto fail_host_msg;
+>  	}
+>  
+> -	/* check if we really have all the request data needed */
+> -	if (job->request_len < cmdlen) {
+> -		ret = -ENOMSG;
+> -		goto fail_host_msg;
+> -	}
+> -
+>  	ret = i->f->bsg_request(job);
+>  	if (!ret)
+>  		return FC_DISPATCH_UNLOCKED;
+> @@ -3887,6 +3887,12 @@ enum fc_dispatch_result {
+>  	int cmdlen = sizeof(uint32_t);	/* start with length of msgcode */
+>  	int ret;
+>  
+> +	/* check if we really have all the request data needed */
+> +	if (job->request_len < cmdlen) {
+> +		ret = -ENOMSG;
+> +		goto fail_rport_msg;
+> +	}
+> +
+>  	/* Validate the rport command */
+>  	switch (bsg_request->msgcode) {
+>  	case FC_BSG_RPT_ELS:
+> 
+> 
+> 
+> The rational behind this is, in fc_req_to_bsgjob() we're assigning
+> job->request as req->cmd and job->request_len = req->cmd_len. But without
+> checkinf job->request_len we don't know whether we're save to touch
+> job->request (a.k.a. bsg_request).
 
-We narrowed this down to the fact the ibmveth driver did not set gso_size 
-which is translated by TCP into the MSS later up the stack. The MSS is 
-used to calculate the TCP window size and as that was abnormally large, 
-it was calculating a zero window, even although the sockets receive buffer 
-was completely empty. 
+Hi Steffen,
+Did you have any chance testing this? I hacked fcping to work with non-FCoE
+and rports as well and tested with FCoE and lpfc. No problems seen from my
+side. I've also pused the series (With this change folded in) to my git 
+tree at [1] if this helps you in any way.
 
-We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
-and Marcelo for all your help and review on this.
+[1] https://git.kernel.org/cgit/linux/kernel/git/jth/linux.git/log/?h=scsi-bsg-rewrite-v4
 
-The patch fixes both our internal reproduction tests and our customers tests.
+Thanks a lot,
+	Johannes
 
-Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 29c05d0..3028c33 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	int frames_processed = 0;
- 	unsigned long lpar_rc;
- 	struct iphdr *iph;
-+	bool large_packet = 0;
-+	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
- 
- restart_poll:
- 	while (frames_processed < budget) {
-@@ -1236,10 +1238,27 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 						iph->check = 0;
- 						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
- 						adapter->rx_large_packets++;
-+						large_packet = 1;
- 					}
- 				}
- 			}
- 
-+			if (skb->len > netdev->mtu) {
-+				iph = (struct iphdr *)skb->data;
-+				if (be16_to_cpu(skb->protocol) == ETH_P_IP && iph->protocol == IPPROTO_TCP) {
-+					hdr_len += sizeof(struct iphdr);
-+					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
-+					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-+				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
-+					iph->protocol == IPPROTO_TCP) {
-+					hdr_len += sizeof(struct ipv6hdr);
-+					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
-+					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-+				}
-+				if (!large_packet)
-+					adapter->rx_large_packets++;
-+			}
-+
- 			napi_gro_receive(napi, skb);	/* send it up */
- 
- 			netdev->stats.rx_packets++;
 -- 
-1.8.3.1
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
