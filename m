@@ -1,48 +1,25 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t2z6P6PQ7zDvgw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 14:24:45 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9P3O4Qu092766
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 23:24:43 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 269muqhfmj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 23:24:43 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Tue, 25 Oct 2016 04:24:41 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 969981B08023
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 04:26:45 +0100 (BST)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9P3Od3A11665738
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 03:24:39 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9P3Oc6G014150
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2016 23:24:39 -0400
-Subject: [RFC PATCH] powerpc/powernv: recheck lock bit in
- core_idle_lock_held after lwarx
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, shreyas@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com
-Date: Tue, 25 Oct 2016 11:24:34 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1477365874.10026.7.camel@TP420>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t2zj41l6yzDvjs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 14:51:19 +1100 (AEDT)
+Date: Mon, 24 Oct 2016 22:51:13 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, benh@au1.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, clsoto@us.ibm.com
+Subject: Re: [PATCH v2 2/2] PCI: Don't disable PF's memory decoding when
+ enabling SRIOV
+Message-ID: <20161025035113.GA21423@localhost>
+References: <1475192870-7763-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1475192870-7763-2-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20161021165034.GE9007@localhost> <20161023232802.GA7215@gwshan>
+ <20161024140316.GA14177@localhost> <20161025014728.GA32507@gwshan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161025014728.GA32507@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,32 +29,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The core_idle_lock_held loops when the lock bit is held by others.
-However, it is possible that after the lock bit is cleared, some one
-else sees it first and sets the lock bit. And lwarx loads a value with
-lock bit set, and the lock bit may be cleared in the following stwcx.
-It is possible the first one is still executing in the critical section.
+On Tue, Oct 25, 2016 at 12:47:28PM +1100, Gavin Shan wrote:
+> On Mon, Oct 24, 2016 at 09:03:16AM -0500, Bjorn Helgaas wrote:
+> >On Mon, Oct 24, 2016 at 10:28:02AM +1100, Gavin Shan wrote:
+> >> On Fri, Oct 21, 2016 at 11:50:34AM -0500, Bjorn Helgaas wrote:
+> >> >Hi Gavin,
+> >> >
+> >> >On Fri, Sep 30, 2016 at 09:47:50AM +1000, Gavin Shan wrote:
+> >> >> pci_update_resource() might be called to update (shift) IOV BARs
+> >> >> in PPC PowerNV specific pcibios_sriov_enable() when enabling PF's
+> >> >> SRIOV capability. At that point, the PF have been functional if
+> >> >> the SRIOV is enabled through sysfs entry "sriov_numvfs". The PF's
+> >> >> memory decoding (0x2 in PCI_COMMAND) shouldn't be disabled when
+> >> >> updating its IOV BARs with pci_update_resource(). Otherwise, we
+> >> >> receives EEH error caused by MMIO access to PF's memory BARs during
+> >> >> the window when PF's memory decoding is disabled.
+> >> >
+> >> >The fact that you get EEH errors is irrelevant.  We can't write code
+> >> >simply to avoid errors -- we have to write code to make the system
+> >> >work correctly.
+> >> >
+> >> >I do not want to add a "mmio_force_on" parameter to
+> >> >pci_update_resource().  That puts the burden on the caller to
+> >> >understand this subtle issue.  If the caller passes mmio_force_on=1
+> >> >when it shouldn't, things will almost always work, but once in a blue
+> >> >moon a half-updated BAR will conflict with some other device in the
+> >> >system, and we'll have an unreproducible, undebuggable crash.
+> >> >
+> >> 
+> >> Bjorn, thanks for your comments. Yes, the EEH error was caused by MMIO
+> >> access to PF's normal BARs, not VF BARs. Yeah, I also had the conern
+> >> that adding parameter to pci_update_resource() increases the visible
+> >> complexity to the caller of the function.
+> >> 
+> >> >What you do need is an explanation of why it's safe to non-atomically
+> >> >update a VF BARx in the SR-IOV capability.  I think this probably
+> >> >involves the VF MSE bit, and you probably have to either disable VFs
+> >> >completely or clear the MSE bit while you're updating the VF BARx.  We
+> >> >should be able to do this inside pci_update_resource() without
+> >> >changing the interface.
+> >> >
+> >> 
+> >> Yes, It's what PATCH[1/2] does: (PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE)
+> >> are set after VF BARs are updated with pci_update_resource() in this PPC
+> >> specific scenario. There are other two situations where the IOV BARs are
+> >> updated: PCI resource resizing and allocation during system booting or hot
+> >> adding PF. The VF shouldn't be enabled in both cases when updating IOV BARs.
+> >> 
+> >> I think you suggest to add check in pci_update_resource(): Don't disable
+> >> PF's memory decoding when updating VF BARs. I will send updated revision
+> >> if it's what you want.
+> >> 
+> >> 	/*
+> >> 	 * The PF might be functional when updating its IOV BARs. So PF's
+> >> 	 * memory decoding shouldn't be disabled when updating its IOV BARs.
+> >> 	 */
+> >> 	disable = (res->flags & IORESOURCE_MEM_64) && !dev->mmio_always_on;
+> >> #ifdef CONFIG_PCI_IOV
+> >> 	disable &= !(resno >= PCI_IOV_RESOURCES &&
+> >> 		     resno <= PCI_IOV_RESOURCE_END);
+> >> #endif
+> >> 	if (disable) {
+> >> 		pci_read_config_word(dev, PCI_COMMAND, &cmd);
+> >> 		pci_write_config_word(dev, PCI_COMMAND,
+> >> 				      cmd & ~PCI_COMMAND_MEMORY);
+> >> 	}
+> >
+> >Not exactly.  A 64-bit BAR cannot be updated atomically.  The whole
+> >point of this exercise is to make sure that when we update such a BAR,
+> >whether it is a normal PCI BAR or an SR-IOV BAR, the transient state
+> >does not conflict with anything else in the system.
+> >
+> >For example, consider two devices that do not conflict:
+> >
+> >  device A BAR 0: 0x00000000_20000000
+> >  device B BAR 0: 0x00000000_40000000
+> >
+> >We want to update A's BAR 0 to 0x00000001_40000000.  We can't do the
+> >update atomically, so we have this sequence:
+> >
+> >  before update:            device A BAR 0: 0x00000000_20000000
+> >  after writing lower half: device A BAR 0: 0x00000000_40000000
+> >  after writing upper half: device A BAR 0: 0x00000001_40000000
+> >
+> >If the driver for device B accesses B between the writes, both A and B
+> >may respond, which is a fatal error.
+> >
+> 
+> Thanks for the detailed explanation. Apart from pdev->mmio_always_on,
+> the normal BARs are updated with PCI_COMMAND_MEMORY cleared. With
+> PATCH[1/2], The IOV BARs are updated with PCI_SRIOV_CTRL_MSE and
+> PCI_SRIOV_CTRL_VFE cleared in the problematic path the patch tried
+> to address initially. However, I prefer your suggestion at end of
+> the reply.
+> 
+> >Probably the *best* thing would be to make pci_update_resource()
+> >return an error if it's asked to update a BAR that is enabled, but I
+> >haven't looked at all the callers to see whether that's practical.
+> >
+> 
+> It arguably enforces users to tackle the limitation: the memory
+> decoding (PCI_COMMAND_MEMORY or PCI_SRIOV_CTRL_VFE) should be
+> disabled before updating the BARs with pci_update_resource().
+> It means user cannot call APIs in relatively relaxed order
+> as before. For example, pci_enable_device() followed by
+> pci_update_resource(), which is allowed previously, won't
+> work.
 
-This patch rechecks the lock bit after lwarx, and go back to loop if it
-is set.
+That specific case (pci_enable_device() followed by
+pci_update_resource()) should *not* work.  pci_enable_device() is
+normally called by a driver's .probe() method, and after we call a
+.probe() method, the PCI core shouldn't touch the device at all
+because there's no means of mutual exclusion between the driver and
+the PCI core.
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/idle_book3s.S | 2 ++
- 1 file changed, 2 insertions(+)
+I think pci_update_resource() should only be called in situations
+where the caller already knows that nobody is using the device.  For
+regular PCI BARs, that doesn't necessarily mean PCI_COMMAND_MEMORY is
+turned off, because firmware leaves PCI_COMMAND_MEMORY enabled for
+many devices, even though nobody is using them.
 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index bd739fe..ce07b3f 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -99,6 +99,8 @@ core_idle_lock_held:
- 	bne	3b
- 	HMT_MEDIUM
- 	lwarx	r15,0,r14
-+	andi.	r9,r15,PNV_CORE_IDLE_LOCK_BIT
-+	bne-	core_idle_lock_held
- 	blr
- 
- /*
--- 
-1.9.1
+Anyway, I think that's a project for another day.  That's too much to
+tackle for the limited problem you're trying to solve.
+
+> We can hide the limitation inside pci_update_resource() because
+> nobody accesses the device's memory space that is being updated
+> by pci_update_resource(). 
+> 
+> >The current strategy in pci_update_resource() is to clear
+> >PCI_COMMAND_MEMORY when updating a 64-bit memory BAR.  This only
+> >applies to the regular PCI BARs 0-5.
+> >
+> >Extending that strategy to SR-IOV would mean clearing
+> >PCI_SRIOV_CTRL_MSE when updating a 64-bit VF BAR.  Obviously you
+> >wouldn't clear PCI_COMMAND_MEMORY in this case because
+> >PCI_COMMAND_MEMORY doesn't affect the VF BARs.
+> >
+> 
+> Yeah, it would be the solution to have. If you agree, I will post
+> updatd version according to this: Clearing PCI_SRIOV_CTRL_MSE when
+> updating IOV BARs. The bit won't be touched if pdev->mmio_always_on
+> is true.
+
+I think you should ignore pdev->mmio_always_on for IOV BARs.
+mmio_always_on is basically a workaround for devices that either don't
+follow the spec or where we didn't completely understand the problem.
+I don't think there's any reason to set mmio_always_on for SR-IOV
+devices.
+
+Bjorn
