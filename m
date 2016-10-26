@@ -2,34 +2,17 @@ Return-Path: <dan.carpenter@oracle.com>
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3qSX73BjzDt3P
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 23:43:24 +1100 (AEDT)
-Date: Wed, 26 Oct 2016 15:42:45 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3r551xSVzDt8v
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 00:11:36 +1100 (AEDT)
+Date: Wed, 26 Oct 2016 16:03:11 +0300
 From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: SF Markus Elfring <elfring@users.sourceforge.net>,
- Jaroslav Kysela <perex@perex.cz>, Clemens Ladisch <clemens@ladisch.de>,
- Russell King <linux@arm.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
- Thibaut Varene <T-Bone@parisc-linux.org>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-parisc@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH 11/13] ALSA: Deletion of checks before the function call
- "iounmap"
-Message-ID: <20161026124245.GR4418@mwanda>
-References: <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net>
- <54A9355F.4050102@users.sourceforge.net>
- <54A941C1.4020906@users.sourceforge.net>
- <20161026122605.GA3911@mwanda>
- <1477484939.4059.35.camel@sipsolutions.net>
+To: matthias.fuchs@esd-electronics.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] [POWERPC] 4xx: Add 405GPr and 405EP support in boot
+ wrapper
+Message-ID: <20161026130311.GA3080@elgon.mountain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1477484939.4059.35.camel@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,20 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 26, 2016 at 02:28:59PM +0200, Johannes Berg wrote:
-> On Wed, 2016-10-26 at 15:26 +0300, Dan Carpenter wrote:
-> > Someone was just mentioning in another thread that removing the check
-> > from iounmap() is not portable to other arches and then I remembered
-> > that Markus removed a bunch of these.
-> > 
-> > We should consider reverting this, perhaps?
-> 
-> Can't we teach all architectures? Not that reverting it would be a
-> problem.
+Hello Matthias Fuchs,
 
-We probably should.  I just didn't want to suggest it, in case it sounds
-like volunteering...  I'm not going to be able to do it because I'm on
-the road for a bit.
+The patch 2af59f7d5c3e: "[POWERPC] 4xx: Add 405GPr and 405EP support
+in boot wrapper" from Dec 7, 2007, leads to the following static
+checker warning:
+
+	arch/powerpc/boot/4xx.c:567 ibm405gp_fixup_clocks()
+	warn: mask and shift to zero
+
+arch/powerpc/boot/4xx.c
+   552  void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk)
+   553  {
+   554          u32 pllmr = mfdcr(DCRN_CPC0_PLLMR);
+   555          u32 cpc0_cr0 = mfdcr(DCRN_405_CPC0_CR0);
+   556          u32 cpc0_cr1 = mfdcr(DCRN_405_CPC0_CR1);
+   557          u32 psr = mfdcr(DCRN_405_CPC0_PSR);
+   558          u32 cpu, plb, opb, ebc, tb, uart0, uart1, m;
+   559          u32 fwdv, fwdvb, fbdv, cbdv, opdv, epdv, ppdv, udiv;
+   560  
+   561          fwdv = (8 - ((pllmr & 0xe0000000) >> 29));
+   562          fbdv = (pllmr & 0x1e000000) >> 25;
+   563          if (fbdv == 0)
+   564                  fbdv = 16;
+   565          cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
+   566          opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
+   567          ppdv = ((pllmr & 0x00001800) >> 13) + 1; /* PLB:PCI */
+                                 ^^^^^^^^^^^^^^^^^
+This is zero.  It looks like 0x00000600 was probably intended?
+
+   568          epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
+   569          udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
+   570  
+   571          /* check for 405GPr */
 
 regards,
 dan carpenter
