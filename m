@@ -1,24 +1,33 @@
-Return-Path: <valentinrothberg@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3g5F03MhzDv07
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 17:26:09 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id d128so2792437wmf.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 23:26:08 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <878ttby7vh.fsf@concordia.ellerman.id.au>
-References: <20161005055726.5614-1-valentinrothberg@gmail.com>
- <1475708074.735.2.camel@gmail.com> <878ttby7vh.fsf@concordia.ellerman.id.au>
-From: Valentin Rothberg <valentinrothberg@gmail.com>
-Date: Wed, 26 Oct 2016 08:25:35 +0200
-Message-ID: <CAD3Xx4KqNbpjognpyC=NVqFQ0wH+uc+vQU23PP99625ufCLZnA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: process.c: fix Kconfig typo
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Cyril Bur <cyrilbur@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3ghz4JT4zDt2G
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 17:53:39 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9Q6mWdN040276
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 02:53:37 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26apt4ags8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 02:53:36 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Wed, 26 Oct 2016 00:53:36 -0600
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: bhelgaas@google.com
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alex.williamson@redhat.com, paulus@samba.org, aik@ozlabs.ru,
+ gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, zhong@linux.vnet.ibm.com
+Subject: [RFC PATCH v7 0/3] PCI: Introduce a way to enforce all MMIO BARs not
+ to share PAGE_SIZE
+Date: Wed, 26 Oct 2016 14:53:30 +0800
+Message-Id: <1477464813-2499-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +37,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 26, 2016 at 7:52 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Cyril Bur <cyrilbur@gmail.com> writes:
->
->> On Wed, 2016-10-05 at 07:57 +0200, Valentin Rothberg wrote:
->>> s/ALIVEC/ALTIVEC/
->>>
->>
->> Oops, nice catch
->>
->>> Signed-off-by: Valentin Rothberg <valentinrothberg@gmail.com>
->>
->> Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
->
-> How did we not notice? Sounds like we need a new selftest.
->
-> Looks like this should have:
->
-> Fixes: dc16b553c949 ("powerpc: Always restore FPU/VEC/VSX if hardware transactional memory in use")
->
->
-> And I guess I need to start running checkkconfigsymbols.py on every
-> commit.
+This series introduces a way for PCI resource allocator to force
+MMIO BARs not to share PAGE_SIZE. This would make sense to VFIO
+driver. Because current VFIO implementation disallows to mmap
+sub-page(size < PAGE_SIZE) MMIO BARs which may share the same page
+with other BARs for security reasons. Thus, we have to handle mmio
+access to these BARs in QEMU emulation rather than in guest which
+will cause some performance loss.
 
-Happy to find a new user :-)  You can also run the script on a range
-of commits via '--diff commitA..commitB', which can safe some time.
+In our solution, we try to make use of the existing code path of
+resource_alignment kernel parameter and add a macro to set default
+alignment for it. Thus we can define this macro by default on some
+archs which may easily hit the performance issue because of their
+64K page.
 
-Best regards,
- Valentin
+In this series, patch 1,2 fixed bugs of using resource_alignment;
+patch 3 adds a macro to set the default alignment of all MMIO BARs.
 
-> cheers
+Changelog v7:
+- Rebased against v4.9-rc2
+- Drop two merged patches
+- Rework the patch which fix a bug that resources's size is changed when
+  using resource_alignment
+- Add a patch that fix a bug for IOV BARs when using resource_alignment
+
+Changelog v6: 
+- Remove the option "noresize@" of resource_alignment
+
+Changelog v5: 
+- Rebased against v4.8-rc6
+- Drop the patch that forbidding disable memory decoding in
+  pci_reassigndev_resource_alignment()
+
+Changelog v4: 
+- Rebased against v4.8-rc1
+- Drop one irrelevant patch
+- Drop the patch that adding wildcard to resource_alignment to enforce
+  the alignment of all MMIO BARs to be at least PAGE_SIZE
+- Change the format of option "noresize" of resource_alignment
+- Code style improvements
+
+Changelog v3: 
+- Ignore enforced alignment to fixed BARs
+- Fix issue that disabling memory decoding when reassigning the alignment
+- Only enable default alignment on PowerNV platform
+
+Changelog v2:
+- Ignore enforced alignment to VF BARs on pci_reassigndev_resource_alignment()
+
+Yongji Xie (3):
+  PCI: Ignore requested alignment for IOV BARs
+  PCI: Restore resource's size if we expand it by using resource_alignment
+  PCI: Add a macro to set default alignment for all PCI devices
+
+ arch/powerpc/include/asm/pci.h |    4 ++++
+ drivers/pci/pci.c              |    6 +++++-
+ drivers/pci/setup-bus.c        |   19 +++++++++++++++++++
+ include/linux/pci.h            |    1 +
+ 4 files changed, 29 insertions(+), 1 deletion(-)
+
+-- 
+1.7.9.5
