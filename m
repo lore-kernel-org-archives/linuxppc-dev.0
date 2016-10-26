@@ -1,26 +1,35 @@
-Return-Path: <valentinrothberg@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3mpV268fzDt3w
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 21:43:46 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id m83so3270830wmc.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 03:43:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3n150QXrzDt0N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 21:52:57 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH v4 4/5] mm: make processing of movable_node arch-specific
+In-Reply-To: <20161026004929.h6v54dhehk4yvmwm@arbab-vm>
+References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1475778995-1420-5-git-send-email-arbab@linux.vnet.ibm.com>
+ <235f2d20-cf84-08df-1fb4-08ee258fdc52@gmail.com>
+ <dcfc8ace-e59e-6b4b-0f2f-4eff9f08f3c1@gmail.com>
+ <20161025155507.37kv5akdlgo6m2be@arbab-laptop.austin.ibm.com>
+ <112504e9-561d-e0da-7a40-73996c678b56@gmail.com>
+ <20161026004929.h6v54dhehk4yvmwm@arbab-vm>
+Date: Wed, 26 Oct 2016 21:52:53 +1100
+Message-ID: <87vawfwfei.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87y41bwfyy.fsf@concordia.ellerman.id.au>
-References: <20161005055726.5614-1-valentinrothberg@gmail.com>
- <1475708074.735.2.camel@gmail.com> <878ttby7vh.fsf@concordia.ellerman.id.au>
- <CAD3Xx4KqNbpjognpyC=NVqFQ0wH+uc+vQU23PP99625ufCLZnA@mail.gmail.com>
- <87y41bwfyy.fsf@concordia.ellerman.id.au>
-From: Valentin Rothberg <valentinrothberg@gmail.com>
-Date: Wed, 26 Oct 2016 12:43:12 +0200
-Message-ID: <CAD3Xx4JO-BAtLkV3YpRL8rF6-k6qXv5Hx=eyBukN4nz=fnypow@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: process.c: fix Kconfig typo
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Cyril Bur <cyrilbur@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,58 +39,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 26, 2016 at 12:40 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Valentin Rothberg <valentinrothberg@gmail.com> writes:
+Reza Arbab <arbab@linux.vnet.ibm.com> writes:
+
+> On Wed, Oct 26, 2016 at 09:34:18AM +1100, Balbir Singh wrote:
+>>I still believe we need your changes, I was wondering if we've tested
+>>it against normal memory nodes and checked if any memblock
+>>allocations end up there. Michael showed me some memblock
+>>allocations on node 1 of a two node machine with movable_node
 >
->> On Wed, Oct 26, 2016 at 7:52 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> Cyril Bur <cyrilbur@gmail.com> writes:
+> The movable_node option is x86-only. Both of those nodes contain normal 
+> memory, so allocations on both are allowed.
+>
+>>> Longer; if you use "movable_node", x86 can identify these nodes at 
+>>> boot. They call memblock_mark_hotplug() while parsing the SRAT. Then, 
+>>> when the zones are initialized, those markings are used to determine 
+>>> ZONE_MOVABLE.
 >>>
->>>> On Wed, 2016-10-05 at 07:57 +0200, Valentin Rothberg wrote:
->>>>> s/ALIVEC/ALTIVEC/
->>>>>
->>>>
->>>> Oops, nice catch
->>>>
->>>>> Signed-off-by: Valentin Rothberg <valentinrothberg@gmail.com>
->>>>
->>>> Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
->>>
->>> How did we not notice? Sounds like we need a new selftest.
->>>
->>> Looks like this should have:
->>>
->>> Fixes: dc16b553c949 ("powerpc: Always restore FPU/VEC/VSX if hardware transactional memory in use")
->>>
->>>
->>> And I guess I need to start running checkkconfigsymbols.py on every
->>> commit.
+>>> We have no analog of this SRAT information, so our movable nodes can 
+>>> only be created post boot, by hotplugging and explicitly onlining 
+>>> with online_movable.
 >>
->> Happy to find a new user :-)  You can also run the script on a range
->> of commits via '--diff commitA..commitB', which can safe some time.
+>>Is this true for all of system memory as well or only for nodes
+>>hotplugged later?
 >
-> Yeah I just discovered that, very useful.
->
-> But my instinct was to do:
->
-> $ ./scripts/checkkconfigsymbols.py --diff HEAD^^^..HEAD
->
-> Which didn't work, the regexp is a bit tight, fixed by:
->
-> diff --git a/scripts/checkkconfigsymbols.py b/scripts/checkkconfigsymbols.py
-> index a32e4da4c117..3820f00b066a 100755
-> --- a/scripts/checkkconfigsymbols.py
-> +++ b/scripts/checkkconfigsymbols.py
-> @@ -88,7 +88,7 @@ def parse_options():
->      if args.commit and args.diff:
->          sys.exit("Please specify only one option at once.")
->
-> -    if args.diff and not re.match(r"^[\w\-\.]+\.\.[\w\-\.]+$", args.diff):
-> +    if args.diff and not re.match(r"^[\w\-\.\^]+\.\.[\w\-\.\^]+$", args.diff):
->          sys.exit("Please specify valid input in the following format: "
->                   "\'commit1..commit2\'")
+> As far as I know, power has nothing like the SRAT that tells us, at 
+> boot, which memory is hotpluggable.
 
-Looks great.  If you agree, I'll pick this up and send the patch to
-Greg (who takes patches for this script)?
+On pseries we have the ibm,dynamic-memory device tree property, which
+can contain ranges of memory that are not yet "assigned to the
+partition" - ie. can be hotplugged later.
 
-Thanks,
- Valentin
+So in general that statement is not true.
+
+But I think you're focused on bare-metal, in which case you might be
+right. But that doesn't mean we couldn't have a similar property, if
+skiboot/hostboot knew what the ranges of memory were going to be.
+
+cheers
