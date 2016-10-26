@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3nWF19sGzDvHN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 22:15:37 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id n85so3413530pfi.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 04:15:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3nWK4NDHzDt53
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 22:15:41 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id s8so22503542pfj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 04:15:41 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -17,10 +17,10 @@ Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Simon Guo <wei.guo.simon@gmail.com>, Jack Miller <jack@codezen.org>,
  Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org
-Subject: [PATCH v16 05/15] selftests/powerpc: Add ptrace tests for GPR/FPR
- registers in TM
-Date: Wed, 26 Oct 2016 19:13:47 +0800
-Message-Id: <1477480437-12937-6-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v16 06/15] selftests/powerpc: Add ptrace tests for GPR/FPR
+ registers in suspended TM
+Date: Wed, 26 Oct 2016 19:13:48 +0800
+Message-Id: <1477480437-12937-7-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1477480437-12937-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1477480437-12937-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,44 +35,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
 This patch adds ptrace interface test for GPR/FPR registers
-inside TM context. This adds ptrace interface based helper
-functions related to checkpointed GPR/FPR access.
+inside suspended TM context.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- tools/testing/selftests/powerpc/ptrace/Makefile    |   5 +-
- .../selftests/powerpc/ptrace/ptrace-tm-gpr.c       | 158 +++++++++++++++++++++
- 2 files changed, 161 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
+ tools/testing/selftests/powerpc/ptrace/Makefile    |   2 +-
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c   | 169 +++++++++++++++++++++
+ 2 files changed, 170 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index e9b8e7d..bb958a8 100644
+index bb958a8..9f3ed2b 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -1,11 +1,12 @@
--TEST_PROGS := ptrace-ebb ptrace-gpr
-+TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr
+@@ -1,4 +1,4 @@
+-TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr
++TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr
  
  include ../../lib.mk
  
- all: $(TEST_PROGS)
--CFLAGS += -m64
-+CFLAGS += -m64 -I../tm -mhtm
- $(TEST_PROGS): ../harness.c ../utility/reg.S ../utility/utils.c ptrace.h
- ptrace-ebb: ../pmu/event.c ../pmu/lib.c ../pmu/ebb/ebb_handler.S ../pmu/ebb/busy_loop.S
- ptrace-ebb: CFLAGS += -I../pmu/ebb
-+
- clean:
- 	rm -f $(TEST_PROGS) *.o
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
 new file mode 100644
-index 0000000..59206b9
+index 0000000..327fa94
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
-@@ -0,0 +1,158 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
+@@ -0,0 +1,169 @@
 +/*
-+ * Ptrace test for GPR/FPR registers in TM context
++ * Ptrace test for GPR/FPR registers in TM Suspend context
 + *
 + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -87,37 +77,45 @@ index 0000000..59206b9
 +
 +/* Tracer and Tracee Shared Data */
 +int shm_id;
-+unsigned long *cptr, *pptr;
++int *cptr, *pptr;
 +
 +float a = FPR_1;
 +float b = FPR_2;
 +float c = FPR_3;
++float d = FPR_4;
 +
-+void tm_gpr(void)
++__attribute__((used)) void wait_parent(void)
++{
++	cptr[2] = 1;
++	while (!cptr[1])
++		asm volatile("" : : : "memory");
++}
++
++void tm_spd_gpr(void)
 +{
 +	unsigned long gpr_buf[18];
 +	unsigned long result, texasr;
 +	float fpr_buf[32];
 +
-+	printf("Starting the child\n");
-+	cptr = (unsigned long *)shmat(shm_id, NULL, 0);
++	cptr = (int *)shmat(shm_id, NULL, 0);
 +
 +trans:
-+	cptr[1] = 0;
++	cptr[2] = 0;
 +	asm __volatile__(
 +		ASM_LOAD_GPR_IMMED(gpr_1)
 +		ASM_LOAD_FPR_SINGLE_PRECISION(flt_1)
++
 +		"1: ;"
 +		"tbegin.;"
 +		"beq 2f;"
-+		ASM_LOAD_GPR_IMMED(gpr_2)
-+		ASM_LOAD_FPR_SINGLE_PRECISION(flt_2)
-+		"tsuspend.;"
-+		"li 7, 1;"
-+		"stw 7, 0(%[cptr1]);"
-+		"tresume.;"
-+		"b .;"
 +
++		ASM_LOAD_GPR_IMMED(gpr_2)
++		"tsuspend.;"
++		ASM_LOAD_GPR_IMMED(gpr_4)
++		ASM_LOAD_FPR_SINGLE_PRECISION(flt_4)
++
++		"bl wait_parent;"
++		"tresume.;"
 +		"tend.;"
 +		"li 0, 0;"
 +		"ori %[res], 0, 0;"
@@ -131,14 +129,13 @@ index 0000000..59206b9
 +
 +		"3: ;"
 +		: [res] "=r" (result), [texasr] "=r" (texasr)
-+		: [gpr_1]"i"(GPR_1), [gpr_2]"i"(GPR_2),
++		: [gpr_1]"i"(GPR_1), [gpr_2]"i"(GPR_2), [gpr_4]"i"(GPR_4),
 +		[sprn_texasr] "i" (SPRN_TEXASR), [flt_1] "r" (&a),
-+		[flt_2] "r" (&b), [cptr1] "r" (&cptr[1])
-+		: "memory", "r7", "r8", "r9", "r10",
-+		"r11", "r12", "r13", "r14", "r15", "r16",
-+		"r17", "r18", "r19", "r20", "r21", "r22",
-+		"r23", "r24", "r25", "r26", "r27", "r28",
-+		"r29", "r30", "r31"
++		[flt_2] "r" (&b), [flt_4] "r" (&d)
++		: "memory", "r5", "r6", "r7",
++		"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
++		"r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",
++		"r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31"
 +		);
 +
 +	if (result) {
@@ -154,23 +151,22 @@ index 0000000..59206b9
 +
 +		if (validate_fpr_float(fpr_buf, c))
 +			exit(1);
-+
 +		exit(0);
 +	}
 +	shmdt((void *)cptr);
 +	exit(1);
 +}
 +
-+int trace_tm_gpr(pid_t child)
++int trace_tm_spd_gpr(pid_t child)
 +{
 +	unsigned long gpr[18];
 +	unsigned long fpr[32];
 +
 +	FAIL_IF(start_trace(child));
 +	FAIL_IF(show_gpr(child, gpr));
-+	FAIL_IF(validate_gpr(gpr, GPR_2));
++	FAIL_IF(validate_gpr(gpr, GPR_4));
 +	FAIL_IF(show_fpr(child, fpr));
-+	FAIL_IF(validate_fpr(fpr, FPR_2_REP));
++	FAIL_IF(validate_fpr(fpr, FPR_4_REP));
 +	FAIL_IF(show_ckpt_fpr(child, fpr));
 +	FAIL_IF(validate_fpr(fpr, FPR_1_REP));
 +	FAIL_IF(show_ckpt_gpr(child, gpr));
@@ -179,34 +175,39 @@ index 0000000..59206b9
 +	FAIL_IF(write_ckpt_fpr(child, FPR_3_REP));
 +
 +	pptr[0] = 1;
++	pptr[1] = 1;
 +	FAIL_IF(stop_trace(child));
-+
 +	return TEST_PASS;
 +}
 +
-+int ptrace_tm_gpr(void)
++int ptrace_tm_spd_gpr(void)
 +{
 +	pid_t pid;
 +	int ret, status;
 +
 +	SKIP_IF(!have_htm());
-+	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 2, 0777|IPC_CREAT);
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 3, 0777|IPC_CREAT);
 +	pid = fork();
 +	if (pid < 0) {
 +		perror("fork() failed");
 +		return TEST_FAIL;
 +	}
++
 +	if (pid == 0)
-+		tm_gpr();
++		tm_spd_gpr();
 +
 +	if (pid) {
-+		pptr = (unsigned long *)shmat(shm_id, NULL, 0);
++		pptr = (int *)shmat(shm_id, NULL, 0);
++		pptr[0] = 0;
++		pptr[1] = 0;
 +
-+		while (!pptr[1])
++		while (!pptr[2])
 +			asm volatile("" : : : "memory");
-+		ret = trace_tm_gpr(pid);
++		ret = trace_tm_spd_gpr(pid);
 +		if (ret) {
 +			kill(pid, SIGTERM);
++			shmdt((void *)pptr);
++			shmctl(shm_id, IPC_RMID, NULL);
 +			return TEST_FAIL;
 +		}
 +
@@ -227,7 +228,7 @@ index 0000000..59206b9
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_tm_gpr, "ptrace_tm_gpr");
++	return test_harness(ptrace_tm_spd_gpr, "ptrace_tm_spd_gpr");
 +}
 -- 
 1.8.3.1
