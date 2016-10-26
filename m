@@ -1,23 +1,50 @@
-Return-Path: <jmaxwell37@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3W6M5CFZzDvHP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 11:26:35 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id s8so20931838pfj.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 17:26:35 -0700 (PDT)
-From: Jon Maxwell <jmaxwell37@gmail.com>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- davem@davemloft.net, tom@herbertland.com, jarod@redhat.com,
- hofrat@osadl.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, mleitner@redhat.com, jmaxwell@redhat.com,
- Jon Maxwell <jmaxwell37@gmail.com>
-Subject: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
- gso_type
-Date: Wed, 26 Oct 2016 11:09:15 +1100
-Message-Id: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3Wd31dWDzDvJ9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 11:49:43 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9Q0mfq1109888
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 20:49:41 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26a8rwcsjb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2016 20:49:40 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Tue, 25 Oct 2016 18:49:39 -0600
+Date: Tue, 25 Oct 2016 19:49:29 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCH v4 4/5] mm: make processing of movable_node arch-specific
+References: <1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1475778995-1420-5-git-send-email-arbab@linux.vnet.ibm.com>
+ <235f2d20-cf84-08df-1fb4-08ee258fdc52@gmail.com>
+ <dcfc8ace-e59e-6b4b-0f2f-4eff9f08f3c1@gmail.com>
+ <20161025155507.37kv5akdlgo6m2be@arbab-laptop.austin.ibm.com>
+ <112504e9-561d-e0da-7a40-73996c678b56@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <112504e9-561d-e0da-7a40-73996c678b56@gmail.com>
+Message-Id: <20161026004929.h6v54dhehk4yvmwm@arbab-vm>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,68 +54,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We recently encountered a bug where a few customers using ibmveth on the 
-same LPAR hit an issue where a TCP session hung when large receive was
-enabled. Closer analysis revealed that the session was stuck because the 
-one side was advertising a zero window repeatedly.
+On Wed, Oct 26, 2016 at 09:34:18AM +1100, Balbir Singh wrote:
+>I still believe we need your changes, I was wondering if we've tested
+>it against normal memory nodes and checked if any memblock
+>allocations end up there. Michael showed me some memblock
+>allocations on node 1 of a two node machine with movable_node
 
-We narrowed this down to the fact the ibmveth driver did not set gso_size 
-which is translated by TCP into the MSS later up the stack. The MSS is 
-used to calculate the TCP window size and as that was abnormally large, 
-it was calculating a zero window, even although the sockets receive buffer 
-was completely empty. 
+The movable_node option is x86-only. Both of those nodes contain normal 
+memory, so allocations on both are allowed.
 
-We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
-and Marcelo for all your help and review on this.
+>> Longer; if you use "movable_node", x86 can identify these nodes at 
+>> boot. They call memblock_mark_hotplug() while parsing the SRAT. Then, 
+>> when the zones are initialized, those markings are used to determine 
+>> ZONE_MOVABLE.
+>>
+>> We have no analog of this SRAT information, so our movable nodes can 
+>> only be created post boot, by hotplugging and explicitly onlining 
+>> with online_movable.
+>
+>Is this true for all of system memory as well or only for nodes
+>hotplugged later?
 
-The patch fixes both our internal reproduction tests and our customers tests.
+As far as I know, power has nothing like the SRAT that tells us, at 
+boot, which memory is hotpluggable. So there is nothing to wire the 
+movable_node option up to.
 
-Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+Of course, any memory you hotplug afterwards is, by definition, 
+hotpluggable. So we can still create movable nodes that way.
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 29c05d0..c51717e 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	int frames_processed = 0;
- 	unsigned long lpar_rc;
- 	struct iphdr *iph;
-+	bool large_packet = 0;
-+	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
- 
- restart_poll:
- 	while (frames_processed < budget) {
-@@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 						iph->check = 0;
- 						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
- 						adapter->rx_large_packets++;
-+						large_packet = 1;
- 					}
- 				}
- 			}
- 
-+			if (skb->len > netdev->mtu) {
-+				iph = (struct iphdr *)skb->data;
-+				if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
-+				    iph->protocol == IPPROTO_TCP) {
-+					hdr_len += sizeof(struct iphdr);
-+					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
-+					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-+				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
-+					   iph->protocol == IPPROTO_TCP) {
-+					hdr_len += sizeof(struct ipv6hdr);
-+					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
-+					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-+				}
-+				if (!large_packet)
-+					adapter->rx_large_packets++;
-+			}
-+
- 			napi_gro_receive(napi, skb);	/* send it up */
- 
- 			netdev->stats.rx_packets++;
 -- 
-1.8.3.1
+Reza Arbab
