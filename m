@@ -1,21 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3mJP53b6zDt1q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 21:21:09 +1100 (AEDT)
-In-Reply-To: <1477041833-8302-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3mJR1NsQzDt1s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 21:21:11 +1100 (AEDT)
+In-Reply-To: <1476935832-28880-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, stable@vger.kernel.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, gkurz@linux.vnet.ibm.com
-Subject: Re: [RESEND] cxl: Fix leaking pid refs in some error paths
-Message-Id: <3t3mJP36R8z9t0J@ozlabs.org>
-Date: Wed, 26 Oct 2016 21:21:08 +1100 (AEDT)
+Cc: paulus@samba.org
+Subject: Re: KVM: PPC: Book3S HV: Fix build error when SMP=n
+Message-Id: <3t3mJQ5zZXz9sf9@ozlabs.org>
+Date: Wed, 26 Oct 2016 21:21:10 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-21-10 at 09:23:53 UTC, Vaibhav Jain wrote:
-> In some error paths in functions cxl_start_context and
-> afu_ioctl_start_work pid references to the current & group-leader tasks
-> can leak after they are taken. This patch fixes these error paths to
-> release these pid references before exiting the error path.
+On Thu, 2016-20-10 at 03:57:12 UTC, Michael Ellerman wrote:
+> Commit 5d375199ea96 ("KVM: PPC: Book3S HV: Set server for passed-through
+> interrupts") broke the SMP=n build:
 > 
-> Fixes: 7b8ad495("cxl: Fix DSI misses when the context owning task exits")
-> Cc: stable@vger.kernel.org
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Reported-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+>   arch/powerpc/kvm/book3s_hv_rm_xics.c:758:2: error: implicit declaration of function 'get_hard_smp_processor_id'
+> 
+> That is because we lost the implicit include of asm/smp.h, so include it
+> explicitly to get the definition for get_hard_smp_processor_id().
+> 
+> Fixes: 5d375199ea96 ("KVM: PPC: Book3S HV: Set server for passed-through interrupts")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/a05b82d5149dfeef05254a11c3636a
+https://git.kernel.org/powerpc/c/62623d5f918fb1c8ed86b03b9a86cc
 
 cheers
