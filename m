@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3nWK4NDHzDt53
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 22:15:41 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id s8so22503542pfj.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 04:15:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3nWR4sc1zDt4T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 22:15:47 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id u84so2148810pfj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 04:15:47 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -17,10 +17,10 @@ Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Simon Guo <wei.guo.simon@gmail.com>, Jack Miller <jack@codezen.org>,
  Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org
-Subject: [PATCH v16 06/15] selftests/powerpc: Add ptrace tests for GPR/FPR
- registers in suspended TM
-Date: Wed, 26 Oct 2016 19:13:48 +0800
-Message-Id: <1477480437-12937-7-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v16 07/15] selftests/powerpc: Add ptrace tests for TAR, PPR,
+ DSCR registers
+Date: Wed, 26 Oct 2016 19:13:49 +0800
+Message-Id: <1477480437-12937-8-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1477480437-12937-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1477480437-12937-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,35 +34,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-This patch adds ptrace interface test for GPR/FPR registers
-inside suspended TM context.
+This patch adds ptrace interface test for TAR, PPR, DSCR
+registers. This also adds ptrace interface based helper
+functions related to TAR, PPR, DSCR register access.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- tools/testing/selftests/powerpc/ptrace/Makefile    |   2 +-
- .../selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c   | 169 +++++++++++++++++++++
- 2 files changed, 170 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
+ tools/testing/selftests/powerpc/ptrace/Makefile    |   3 +-
+ .../testing/selftests/powerpc/ptrace/ptrace-tar.c  | 135 +++++++++++++++
+ .../testing/selftests/powerpc/ptrace/ptrace-tar.h  |  50 ++++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.h    | 181 +++++++++++++++++++++
+ 4 files changed, 368 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tar.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tar.h
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index bb958a8..9f3ed2b 100644
+index 9f3ed2b..dfb0847 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -1,4 +1,4 @@
--TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr
-+TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr
+@@ -1,4 +1,5 @@
+-TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr
++TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
++ptrace-tar
  
  include ../../lib.mk
  
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tar.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tar.c
 new file mode 100644
-index 0000000..327fa94
+index 0000000..f9b5069
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
-@@ -0,0 +1,169 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tar.c
+@@ -0,0 +1,135 @@
 +/*
-+ * Ptrace test for GPR/FPR registers in TM Suspend context
++ * Ptrace test for TAR, PPR, DSCR registers
 + *
 + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -72,120 +77,79 @@ index 0000000..327fa94
 + * 2 of the License, or (at your option) any later version.
 + */
 +#include "ptrace.h"
-+#include "ptrace-gpr.h"
-+#include "tm.h"
++#include "ptrace-tar.h"
 +
 +/* Tracer and Tracee Shared Data */
 +int shm_id;
-+int *cptr, *pptr;
++int *cptr;
++int *pptr;
 +
-+float a = FPR_1;
-+float b = FPR_2;
-+float c = FPR_3;
-+float d = FPR_4;
-+
-+__attribute__((used)) void wait_parent(void)
++void tar(void)
 +{
-+	cptr[2] = 1;
-+	while (!cptr[1])
-+		asm volatile("" : : : "memory");
-+}
-+
-+void tm_spd_gpr(void)
-+{
-+	unsigned long gpr_buf[18];
-+	unsigned long result, texasr;
-+	float fpr_buf[32];
++	unsigned long reg[3];
++	int ret;
 +
 +	cptr = (int *)shmat(shm_id, NULL, 0);
++	printf("%-30s TAR: %u PPR: %lx DSCR: %u\n",
++			user_write, TAR_1, PPR_1, DSCR_1);
 +
-+trans:
-+	cptr[2] = 0;
-+	asm __volatile__(
-+		ASM_LOAD_GPR_IMMED(gpr_1)
-+		ASM_LOAD_FPR_SINGLE_PRECISION(flt_1)
++	mtspr(SPRN_TAR, TAR_1);
++	mtspr(SPRN_PPR, PPR_1);
++	mtspr(SPRN_DSCR, DSCR_1);
 +
-+		"1: ;"
-+		"tbegin.;"
-+		"beq 2f;"
++	cptr[2] = 1;
 +
-+		ASM_LOAD_GPR_IMMED(gpr_2)
-+		"tsuspend.;"
-+		ASM_LOAD_GPR_IMMED(gpr_4)
-+		ASM_LOAD_FPR_SINGLE_PRECISION(flt_4)
++	/* Wait on parent */
++	while (!cptr[0])
++		asm volatile("" : : : "memory");
 +
-+		"bl wait_parent;"
-+		"tresume.;"
-+		"tend.;"
-+		"li 0, 0;"
-+		"ori %[res], 0, 0;"
-+		"b 3f;"
++	reg[0] = mfspr(SPRN_TAR);
++	reg[1] = mfspr(SPRN_PPR);
++	reg[2] = mfspr(SPRN_DSCR);
 +
-+		/* Transaction abort handler */
-+		"2: ;"
-+		"li 0, 1;"
-+		"ori %[res], 0, 0;"
-+		"mfspr %[texasr], %[sprn_texasr];"
++	printf("%-30s TAR: %lu PPR: %lx DSCR: %lu\n",
++			user_read, reg[0], reg[1], reg[2]);
 +
-+		"3: ;"
-+		: [res] "=r" (result), [texasr] "=r" (texasr)
-+		: [gpr_1]"i"(GPR_1), [gpr_2]"i"(GPR_2), [gpr_4]"i"(GPR_4),
-+		[sprn_texasr] "i" (SPRN_TEXASR), [flt_1] "r" (&a),
-+		[flt_2] "r" (&b), [flt_4] "r" (&d)
-+		: "memory", "r5", "r6", "r7",
-+		"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-+		"r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",
-+		"r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31"
-+		);
++	/* Unblock the parent now */
++	cptr[1] = 1;
++	shmdt((int *)cptr);
 +
-+	if (result) {
-+		if (!cptr[0])
-+			goto trans;
-+
-+		shmdt((void *)cptr);
-+		store_gpr(gpr_buf);
-+		store_fpr_single_precision(fpr_buf);
-+
-+		if (validate_gpr(gpr_buf, GPR_3))
-+			exit(1);
-+
-+		if (validate_fpr_float(fpr_buf, c))
-+			exit(1);
-+		exit(0);
-+	}
-+	shmdt((void *)cptr);
-+	exit(1);
++	ret = validate_tar_registers(reg, TAR_2, PPR_2, DSCR_2);
++	if (ret)
++		exit(1);
++	exit(0);
 +}
 +
-+int trace_tm_spd_gpr(pid_t child)
++int trace_tar(pid_t child)
 +{
-+	unsigned long gpr[18];
-+	unsigned long fpr[32];
++	unsigned long reg[3];
 +
 +	FAIL_IF(start_trace(child));
-+	FAIL_IF(show_gpr(child, gpr));
-+	FAIL_IF(validate_gpr(gpr, GPR_4));
-+	FAIL_IF(show_fpr(child, fpr));
-+	FAIL_IF(validate_fpr(fpr, FPR_4_REP));
-+	FAIL_IF(show_ckpt_fpr(child, fpr));
-+	FAIL_IF(validate_fpr(fpr, FPR_1_REP));
-+	FAIL_IF(show_ckpt_gpr(child, gpr));
-+	FAIL_IF(validate_gpr(gpr, GPR_1));
-+	FAIL_IF(write_ckpt_gpr(child, GPR_3));
-+	FAIL_IF(write_ckpt_fpr(child, FPR_3_REP));
++	FAIL_IF(show_tar_registers(child, reg));
++	printf("%-30s TAR: %lu PPR: %lx DSCR: %lu\n",
++			ptrace_read_running, reg[0], reg[1], reg[2]);
 +
-+	pptr[0] = 1;
-+	pptr[1] = 1;
++	FAIL_IF(validate_tar_registers(reg, TAR_1, PPR_1, DSCR_1));
 +	FAIL_IF(stop_trace(child));
 +	return TEST_PASS;
 +}
 +
-+int ptrace_tm_spd_gpr(void)
++int trace_tar_write(pid_t child)
++{
++	FAIL_IF(start_trace(child));
++	FAIL_IF(write_tar_registers(child, TAR_2, PPR_2, DSCR_2));
++	printf("%-30s TAR: %u PPR: %lx DSCR: %u\n",
++			ptrace_write_running, TAR_2, PPR_2, DSCR_2);
++
++	FAIL_IF(stop_trace(child));
++	return TEST_PASS;
++}
++
++int ptrace_tar(void)
 +{
 +	pid_t pid;
 +	int ret, status;
 +
-+	SKIP_IF(!have_htm());
 +	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 3, 0777|IPC_CREAT);
 +	pid = fork();
 +	if (pid < 0) {
@@ -194,7 +158,7 @@ index 0000000..327fa94
 +	}
 +
 +	if (pid == 0)
-+		tm_spd_gpr();
++		tar();
 +
 +	if (pid) {
 +		pptr = (int *)shmat(shm_id, NULL, 0);
@@ -203,21 +167,28 @@ index 0000000..327fa94
 +
 +		while (!pptr[2])
 +			asm volatile("" : : : "memory");
-+		ret = trace_tm_spd_gpr(pid);
-+		if (ret) {
-+			kill(pid, SIGTERM);
-+			shmdt((void *)pptr);
-+			shmctl(shm_id, IPC_RMID, NULL);
-+			return TEST_FAIL;
-+		}
++		ret = trace_tar(pid);
++		if (ret)
++			return ret;
 +
-+		shmdt((void *)pptr);
++		ret = trace_tar_write(pid);
++		if (ret)
++			return ret;
++
++		/* Unblock the child now */
++		pptr[0] = 1;
++
++		/* Wait on child */
++		while (!pptr[1])
++			asm volatile("" : : : "memory");
++
++		shmdt((int *)pptr);
 +
 +		ret = wait(&status);
 +		shmctl(shm_id, IPC_RMID, NULL);
 +		if (ret != pid) {
 +			printf("Child's exit status not captured\n");
-+			return TEST_FAIL;
++			return TEST_PASS;
 +		}
 +
 +		return (WIFEXITED(status) && WEXITSTATUS(status)) ? TEST_FAIL :
@@ -228,7 +199,255 @@ index 0000000..327fa94
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_tm_spd_gpr, "ptrace_tm_spd_gpr");
++	return test_harness(ptrace_tar, "ptrace_tar");
 +}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tar.h b/tools/testing/selftests/powerpc/ptrace/ptrace-tar.h
+new file mode 100644
+index 0000000..aed0aac
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tar.h
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#define TAR_1   10
++#define TAR_2   20
++#define TAR_3   30
++#define TAR_4   40
++#define TAR_5   50
++
++#define DSCR_1  100
++#define DSCR_2  200
++#define DSCR_3  300
++#define DSCR_4  400
++#define DSCR_5  500
++
++#define PPR_1   0x4000000000000         /* or 31,31,31*/
++#define PPR_2   0x8000000000000         /* or 1,1,1 */
++#define PPR_3   0xc000000000000         /* or 6,6,6 */
++#define PPR_4   0x10000000000000        /* or 2,2,2 */
++
++char *user_read = "[User Read (Running)]";
++char *user_write = "[User Write (Running)]";
++char *ptrace_read_running = "[Ptrace Read (Running)]";
++char *ptrace_write_running = "[Ptrace Write (Running)]";
++char *ptrace_read_ckpt = "[Ptrace Read (Checkpointed)]";
++char *ptrace_write_ckpt = "[Ptrace Write (Checkpointed)]";
++
++int validate_tar_registers(unsigned long *reg, unsigned long tar,
++				unsigned long ppr, unsigned long dscr)
++{
++	int match = 1;
++
++	if (reg[0] != tar)
++		match = 0;
++
++	if (reg[1] != ppr)
++		match = 0;
++
++	if (reg[2] != dscr)
++		match = 0;
++
++	if (!match)
++		return TEST_FAIL;
++	return TEST_PASS;
++}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+index 87fe437..babf8695f2 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace.h
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+@@ -157,6 +157,187 @@ int show_ebb_registers(pid_t child, struct ebb_regs *regs)
+ 	return TEST_FAIL;
+ }
+ 
++/* TAR, PPR, DSCR */
++int show_tar_registers(pid_t child, unsigned long *out)
++{
++	struct iovec iov;
++	unsigned long *reg;
++	int ret;
++
++	reg = malloc(sizeof(unsigned long));
++	if (!reg) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++	iov.iov_base = (u64 *) reg;
++	iov.iov_len = sizeof(unsigned long);
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TAR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++	if (out)
++		out[0] = *reg;
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_PPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++	if (out)
++		out[1] = *reg;
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_DSCR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++	if (out)
++		out[2] = *reg;
++
++	free(reg);
++	return TEST_PASS;
++fail:
++	free(reg);
++	return TEST_FAIL;
++}
++
++int write_tar_registers(pid_t child, unsigned long tar,
++		unsigned long ppr, unsigned long dscr)
++{
++	struct iovec iov;
++	unsigned long *reg;
++	int ret;
++
++	reg = malloc(sizeof(unsigned long));
++	if (!reg) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	iov.iov_base = (u64 *) reg;
++	iov.iov_len = sizeof(unsigned long);
++
++	*reg = tar;
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TAR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_SETREGSET) failed");
++		goto fail;
++	}
++
++	*reg = ppr;
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_PPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_SETREGSET) failed");
++		goto fail;
++	}
++
++	*reg = dscr;
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_DSCR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_SETREGSET) failed");
++		goto fail;
++	}
++
++	free(reg);
++	return TEST_PASS;
++fail:
++	free(reg);
++	return TEST_FAIL;
++}
++
++int show_tm_checkpointed_state(pid_t child, unsigned long *out)
++{
++	struct iovec iov;
++	unsigned long *reg;
++	int ret;
++
++	reg = malloc(sizeof(unsigned long));
++	if (!reg) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	iov.iov_base = (u64 *) reg;
++	iov.iov_len = sizeof(unsigned long);
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CTAR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++	if (out)
++		out[0] = *reg;
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CPPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++	if (out)
++		out[1] = *reg;
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CDSCR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++	if (out)
++		out[2] = *reg;
++
++	free(reg);
++	return TEST_PASS;
++
++fail:
++	free(reg);
++	return TEST_FAIL;
++}
++
++int write_ckpt_tar_registers(pid_t child, unsigned long tar,
++		unsigned long ppr, unsigned long dscr)
++{
++	struct iovec iov;
++	unsigned long *reg;
++	int ret;
++
++	reg = malloc(sizeof(unsigned long));
++	if (!reg) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	iov.iov_base = (u64 *) reg;
++	iov.iov_len = sizeof(unsigned long);
++
++	*reg = tar;
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CTAR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++
++	*reg = ppr;
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CPPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++
++	*reg = dscr;
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CDSCR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		goto fail;
++	}
++
++	free(reg);
++	return TEST_PASS;
++fail:
++	free(reg);
++	return TEST_FAIL;
++}
++
+ /* FPR */
+ int show_fpr(pid_t child, unsigned long *fpr)
+ {
 -- 
 1.8.3.1
