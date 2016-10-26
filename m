@@ -1,35 +1,19 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jun.yang@nxp.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0070.outbound.protection.outlook.com [104.47.41.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3gj506D3zDt2G
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 17:53:44 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9Q6qRs1083651
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 02:53:42 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26aqkt8203-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 02:53:42 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Wed, 26 Oct 2016 02:53:41 -0400
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-To: bhelgaas@google.com
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alex.williamson@redhat.com, paulus@samba.org, aik@ozlabs.ru,
- gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
- mpe@ellerman.id.au, zhong@linux.vnet.ibm.com
-Subject: [RFC PATCH v7 3/3] PCI: Add a macro to set default alignment for all
- PCI devices
-Date: Wed, 26 Oct 2016 14:53:33 +0800
-In-Reply-To: <1477464813-2499-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1477464813-2499-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Message-Id: <1477464813-2499-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3kGv0hM8zDt4D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 19:49:42 +1100 (AEDT)
+From: jun <jun.yang@nxp.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: jun <jun.yang@nxp.com>
+Subject: [PATCH] fsl_pamu: erratum a007907 should be applied on all versions
+ of E6500 chips.
+Date: Thu, 27 Oct 2016 00:50:44 +0800
+Message-ID: <1477500644-31812-1-git-send-email-jun.yang@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,54 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When vfio passthroughs a PCI device of which MMIO BARs are
-smaller than PAGE_SIZE, guest will not handle the mmio
-accesses to the BARs which leads to mmio emulations in host.
-
-This is because vfio will not allow to passthrough one BAR's
-mmio page which may be shared with other BARs. Otherwise,
-there will be a backdoor that guest can use to access BARs
-of other guest.
-
-This patch adds a macro to set default alignment for all
-PCI devices. Then we could solve this issue on some platforms
-which would easily hit this issue because of their 64K page
-such as PowerNV platform by defining this macro as PAGE_SIZE.
-
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Signed-off-by: jun <jun.yang@nxp.com>
 ---
- arch/powerpc/include/asm/pci.h |    4 ++++
- drivers/pci/pci.c              |    3 +++
- 2 files changed, 7 insertions(+)
+ drivers/iommu/fsl_pamu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index e9bd6cf..5e31bc2 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -28,6 +28,10 @@
- #define PCIBIOS_MIN_IO		0x1000
- #define PCIBIOS_MIN_MEM		0x10000000
+diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
+index db3a1cd..a8fe503 100644
+--- a/drivers/iommu/fsl_pamu.c
++++ b/drivers/iommu/fsl_pamu.c
+@@ -668,7 +668,7 @@ static bool has_erratum_a007907(void)
+ {
+ 	u32 pvr = mfspr(SPRN_PVR);
  
-+#ifdef CONFIG_PPC_POWERNV
-+#define PCIBIOS_DEFAULT_ALIGNMENT	PAGE_SIZE
-+#endif
-+
- struct pci_dev;
+-	if (PVR_VER(pvr) == PVR_VER_E6500 && PVR_REV(pvr) <= 0x20)
++	if (PVR_VER(pvr) == PVR_VER_E6500)
+ 		return true;
  
- /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 2933c81..c7d9057 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4999,6 +4999,9 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
- 	resource_size_t align = 0;
- 	char *p;
- 
-+#ifdef PCIBIOS_DEFAULT_ALIGNMENT
-+	align = PCIBIOS_DEFAULT_ALIGNMENT;
-+#endif
- 	spin_lock(&resource_alignment_lock);
- 	p = resource_alignment_param;
- 	if (!*p)
+ 	return false;
 -- 
-1.7.9.5
+2.7.4
