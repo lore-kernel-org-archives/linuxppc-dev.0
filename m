@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3mJR1NsQzDt1s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 21:21:11 +1100 (AEDT)
-In-Reply-To: <1476935832-28880-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3mJS3n4JzDt4N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 21:21:12 +1100 (AEDT)
+In-Reply-To: <551528846e6a2783184ba8a4228348a2fc9786bd.1475761214.git.segher@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: paulus@samba.org
-Subject: Re: KVM: PPC: Book3S HV: Fix build error when SMP=n
-Message-Id: <3t3mJQ5zZXz9sf9@ozlabs.org>
-Date: Wed, 26 Oct 2016 21:21:10 +1100 (AEDT)
+Cc: markus@trippelsdorf.de, amodra@gmail.com
+Subject: Re: powerpc: cmp -> cmpd for 64-bit
+Message-Id: <3t3mJS0hfYz9sxS@ozlabs.org>
+Date: Wed, 26 Oct 2016 21:21:11 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-20-10 at 03:57:12 UTC, Michael Ellerman wrote:
-> Commit 5d375199ea96 ("KVM: PPC: Book3S HV: Set server for passed-through
-> interrupts") broke the SMP=n build:
+On Thu, 2016-06-10 at 13:42:19 UTC, Segher Boessenkool wrote:
+> PowerPC's "cmp" instruction has four operands.  Normally people write
+> "cmpw" or "cmpd" for the second cmp operand 0 or 1.  But, frequently
+> people forget, and write "cmp" with just three operands.
 > 
->   arch/powerpc/kvm/book3s_hv_rm_xics.c:758:2: error: implicit declaration of function 'get_hard_smp_processor_id'
+> With older binutils this is silently accepted as if this was "cmpw",
+> while often "cmpd" is wanted.  With newer binutils GAS will complain
+> about this for 64-bit code.  For 32-bit code it still silently assumes
+> "cmpw" is what is meant.
 > 
-> That is because we lost the implicit include of asm/smp.h, so include it
-> explicitly to get the definition for get_hard_smp_processor_id().
-> 
-> Fixes: 5d375199ea96 ("KVM: PPC: Book3S HV: Set server for passed-through interrupts")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/62623d5f918fb1c8ed86b03b9a86cc
+I added:
+  Fixes: 948cf67c4726 ("powerpc: Add NAP mode support on Power7 in HV mode")
+  Cc: stable@vger.kernel.org # v3.0
+
+https://git.kernel.org/powerpc/c/80f23935cadb1c654e81951f5a8b7c
 
 cheers
