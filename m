@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t3nW834xFzDvHl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 22:15:32 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id i85so22530363pfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 04:15:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t3nWF19sGzDvHN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 22:15:37 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id n85so3413530pfi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 04:15:37 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -17,10 +17,10 @@ Cc: Shuah Khan <shuah@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Simon Guo <wei.guo.simon@gmail.com>, Jack Miller <jack@codezen.org>,
  Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org
-Subject: [PATCH v16 04/15] selftests/powerpc: Add ptrace tests for GPR/FPR
- registers
-Date: Wed, 26 Oct 2016 19:13:46 +0800
-Message-Id: <1477480437-12937-5-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v16 05/15] selftests/powerpc: Add ptrace tests for GPR/FPR
+ registers in TM
+Date: Wed, 26 Oct 2016 19:13:47 +0800
+Message-Id: <1477480437-12937-6-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1477480437-12937-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1477480437-12937-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,50 +34,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-This patch adds ptrace interface test for GPR/FPR registers.
-This adds ptrace interface based helper functions related to
-GPR/FPR access and some assembly helper functions related to
-GPR/FPR registers.
+This patch adds ptrace interface test for GPR/FPR registers
+inside TM context. This adds ptrace interface based helper
+functions related to checkpointed GPR/FPR access.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- tools/testing/selftests/powerpc/ptrace/Makefile    |   4 +-
- .../testing/selftests/powerpc/ptrace/ptrace-gpr.c  | 123 ++++++++++++
- .../testing/selftests/powerpc/ptrace/ptrace-gpr.h  |  74 ++++++++
- tools/testing/selftests/powerpc/ptrace/ptrace.h    | 211 +++++++++++++++++++++
- tools/testing/selftests/powerpc/utility/reg.S      | 132 +++++++++++++
- tools/testing/selftests/powerpc/utility/reg.h      |  61 ++++++
- 6 files changed, 603 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
- create mode 100644 tools/testing/selftests/powerpc/utility/reg.S
+ tools/testing/selftests/powerpc/ptrace/Makefile    |   5 +-
+ .../selftests/powerpc/ptrace/ptrace-tm-gpr.c       | 158 +++++++++++++++++++++
+ 2 files changed, 161 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index 84c1c01..e9b8e7d 100644
+index e9b8e7d..bb958a8 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -1,10 +1,10 @@
--TEST_PROGS := ptrace-ebb
-+TEST_PROGS := ptrace-ebb ptrace-gpr
+@@ -1,11 +1,12 @@
+-TEST_PROGS := ptrace-ebb ptrace-gpr
++TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr
  
  include ../../lib.mk
  
  all: $(TEST_PROGS)
- CFLAGS += -m64
--$(TEST_PROGS): ../harness.c ../utility/utils.c ptrace.h
-+$(TEST_PROGS): ../harness.c ../utility/reg.S ../utility/utils.c ptrace.h
+-CFLAGS += -m64
++CFLAGS += -m64 -I../tm -mhtm
+ $(TEST_PROGS): ../harness.c ../utility/reg.S ../utility/utils.c ptrace.h
  ptrace-ebb: ../pmu/event.c ../pmu/lib.c ../pmu/ebb/ebb_handler.S ../pmu/ebb/busy_loop.S
  ptrace-ebb: CFLAGS += -I../pmu/ebb
++
  clean:
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
+ 	rm -f $(TEST_PROGS) *.o
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
 new file mode 100644
-index 0000000..0b4ebcc
+index 0000000..59206b9
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
-@@ -0,0 +1,123 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
+@@ -0,0 +1,158 @@
 +/*
-+ * Ptrace test for GPR/FPR registers
++ * Ptrace test for GPR/FPR registers in TM context
 + *
 + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -88,74 +83,113 @@ index 0000000..0b4ebcc
 + */
 +#include "ptrace.h"
 +#include "ptrace-gpr.h"
-+#include "reg.h"
++#include "tm.h"
 +
 +/* Tracer and Tracee Shared Data */
 +int shm_id;
-+int *cptr, *pptr;
++unsigned long *cptr, *pptr;
 +
 +float a = FPR_1;
 +float b = FPR_2;
 +float c = FPR_3;
 +
-+void gpr(void)
++void tm_gpr(void)
 +{
 +	unsigned long gpr_buf[18];
++	unsigned long result, texasr;
 +	float fpr_buf[32];
 +
-+	cptr = (int *)shmat(shm_id, NULL, 0);
++	printf("Starting the child\n");
++	cptr = (unsigned long *)shmat(shm_id, NULL, 0);
 +
++trans:
++	cptr[1] = 0;
 +	asm __volatile__(
 +		ASM_LOAD_GPR_IMMED(gpr_1)
 +		ASM_LOAD_FPR_SINGLE_PRECISION(flt_1)
-+		:
-+		: [gpr_1]"i"(GPR_1), [flt_1] "r" (&a)
-+		: "memory", "r6", "r7", "r8", "r9", "r10",
-+		"r11", "r12", "r13", "r14", "r15", "r16", "r17",
-+		"r18", "r19", "r20", "r21", "r22", "r23", "r24",
-+		"r25", "r26", "r27", "r28", "r29", "r30", "r31"
++		"1: ;"
++		"tbegin.;"
++		"beq 2f;"
++		ASM_LOAD_GPR_IMMED(gpr_2)
++		ASM_LOAD_FPR_SINGLE_PRECISION(flt_2)
++		"tsuspend.;"
++		"li 7, 1;"
++		"stw 7, 0(%[cptr1]);"
++		"tresume.;"
++		"b .;"
++
++		"tend.;"
++		"li 0, 0;"
++		"ori %[res], 0, 0;"
++		"b 3f;"
++
++		/* Transaction abort handler */
++		"2: ;"
++		"li 0, 1;"
++		"ori %[res], 0, 0;"
++		"mfspr %[texasr], %[sprn_texasr];"
++
++		"3: ;"
++		: [res] "=r" (result), [texasr] "=r" (texasr)
++		: [gpr_1]"i"(GPR_1), [gpr_2]"i"(GPR_2),
++		[sprn_texasr] "i" (SPRN_TEXASR), [flt_1] "r" (&a),
++		[flt_2] "r" (&b), [cptr1] "r" (&cptr[1])
++		: "memory", "r7", "r8", "r9", "r10",
++		"r11", "r12", "r13", "r14", "r15", "r16",
++		"r17", "r18", "r19", "r20", "r21", "r22",
++		"r23", "r24", "r25", "r26", "r27", "r28",
++		"r29", "r30", "r31"
 +		);
 +
-+	cptr[1] = 1;
++	if (result) {
++		if (!cptr[0])
++			goto trans;
 +
-+	while (!cptr[0])
-+		asm volatile("" : : : "memory");
++		shmdt((void *)cptr);
++		store_gpr(gpr_buf);
++		store_fpr_single_precision(fpr_buf);
 +
++		if (validate_gpr(gpr_buf, GPR_3))
++			exit(1);
++
++		if (validate_fpr_float(fpr_buf, c))
++			exit(1);
++
++		exit(0);
++	}
 +	shmdt((void *)cptr);
-+	store_gpr(gpr_buf);
-+	store_fpr_single_precision(fpr_buf);
-+
-+	if (validate_gpr(gpr_buf, GPR_3))
-+		exit(1);
-+
-+	if (validate_fpr_float(fpr_buf, c))
-+		exit(1);
-+
-+	exit(0);
++	exit(1);
 +}
 +
-+int trace_gpr(pid_t child)
++int trace_tm_gpr(pid_t child)
 +{
 +	unsigned long gpr[18];
 +	unsigned long fpr[32];
 +
 +	FAIL_IF(start_trace(child));
 +	FAIL_IF(show_gpr(child, gpr));
-+	FAIL_IF(validate_gpr(gpr, GPR_1));
++	FAIL_IF(validate_gpr(gpr, GPR_2));
 +	FAIL_IF(show_fpr(child, fpr));
++	FAIL_IF(validate_fpr(fpr, FPR_2_REP));
++	FAIL_IF(show_ckpt_fpr(child, fpr));
 +	FAIL_IF(validate_fpr(fpr, FPR_1_REP));
-+	FAIL_IF(write_gpr(child, GPR_3));
-+	FAIL_IF(write_fpr(child, FPR_3_REP));
++	FAIL_IF(show_ckpt_gpr(child, gpr));
++	FAIL_IF(validate_gpr(gpr, GPR_1));
++	FAIL_IF(write_ckpt_gpr(child, GPR_3));
++	FAIL_IF(write_ckpt_fpr(child, FPR_3_REP));
++
++	pptr[0] = 1;
 +	FAIL_IF(stop_trace(child));
 +
 +	return TEST_PASS;
 +}
 +
-+int ptrace_gpr(void)
++int ptrace_tm_gpr(void)
 +{
 +	pid_t pid;
 +	int ret, status;
 +
++	SKIP_IF(!have_htm());
 +	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 2, 0777|IPC_CREAT);
 +	pid = fork();
 +	if (pid < 0) {
@@ -163,22 +197,19 @@ index 0000000..0b4ebcc
 +		return TEST_FAIL;
 +	}
 +	if (pid == 0)
-+		gpr();
++		tm_gpr();
 +
 +	if (pid) {
-+		pptr = (int *)shmat(shm_id, NULL, 0);
++		pptr = (unsigned long *)shmat(shm_id, NULL, 0);
++
 +		while (!pptr[1])
 +			asm volatile("" : : : "memory");
-+
-+		ret = trace_gpr(pid);
++		ret = trace_tm_gpr(pid);
 +		if (ret) {
 +			kill(pid, SIGTERM);
-+			shmdt((void *)pptr);
-+			shmctl(shm_id, IPC_RMID, NULL);
 +			return TEST_FAIL;
 +		}
 +
-+		pptr[0] = 1;
 +		shmdt((void *)pptr);
 +
 +		ret = wait(&status);
@@ -191,527 +222,12 @@ index 0000000..0b4ebcc
 +		return (WIFEXITED(status) && WEXITSTATUS(status)) ? TEST_FAIL :
 +			TEST_PASS;
 +	}
-+
 +	return TEST_PASS;
 +}
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_gpr, "ptrace_gpr");
++	return test_harness(ptrace_tm_gpr, "ptrace_tm_gpr");
 +}
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
-new file mode 100644
-index 0000000..e30fef6
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
-@@ -0,0 +1,74 @@
-+/*
-+ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#define GPR_1	1
-+#define GPR_2	2
-+#define GPR_3	3
-+#define GPR_4	4
-+
-+#define FPR_1	0.001
-+#define FPR_2	0.002
-+#define FPR_3	0.003
-+#define FPR_4	0.004
-+
-+#define FPR_1_REP 0x3f50624de0000000
-+#define FPR_2_REP 0x3f60624de0000000
-+#define FPR_3_REP 0x3f689374c0000000
-+#define FPR_4_REP 0x3f70624de0000000
-+
-+/* Buffer must have 18 elements */
-+int validate_gpr(unsigned long *gpr, unsigned long val)
-+{
-+	int i, found = 1;
-+
-+	for (i = 0; i < 18; i++) {
-+		if (gpr[i] != val) {
-+			printf("GPR[%d]: %lx Expected: %lx\n",
-+				i+14, gpr[i], val);
-+			found = 0;
-+		}
-+	}
-+
-+	if (!found)
-+		return TEST_FAIL;
-+	return TEST_PASS;
-+}
-+
-+/* Buffer must have 32 elements */
-+int validate_fpr(unsigned long *fpr, unsigned long val)
-+{
-+	int i, found = 1;
-+
-+	for (i = 0; i < 32; i++) {
-+		if (fpr[i] != val) {
-+			printf("FPR[%d]: %lx Expected: %lx\n", i, fpr[i], val);
-+			found = 0;
-+		}
-+	}
-+
-+	if (!found)
-+		return TEST_FAIL;
-+	return TEST_PASS;
-+}
-+
-+/* Buffer must have 32 elements */
-+int validate_fpr_float(float *fpr, float val)
-+{
-+	int i, found = 1;
-+
-+	for (i = 0; i < 32; i++) {
-+		if (fpr[i] != val) {
-+			printf("FPR[%d]: %f Expected: %f\n", i, fpr[i], val);
-+			found = 0;
-+		}
-+	}
-+
-+	if (!found)
-+		return TEST_FAIL;
-+	return TEST_PASS;
-+}
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
-index 96d2179..87fe437 100644
---- a/tools/testing/selftests/powerpc/ptrace/ptrace.h
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
-@@ -157,6 +157,214 @@ int show_ebb_registers(pid_t child, struct ebb_regs *regs)
- 	return TEST_FAIL;
- }
- 
-+/* FPR */
-+int show_fpr(pid_t child, unsigned long *fpr)
-+{
-+	struct fpr_regs *regs;
-+	int ret, i;
-+
-+	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
-+	ret = ptrace(PTRACE_GETFPREGS, child, NULL, regs);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	if (fpr) {
-+		for (i = 0; i < 32; i++)
-+			fpr[i] = regs->fpr[i];
-+	}
-+	return TEST_PASS;
-+}
-+
-+int write_fpr(pid_t child, unsigned long val)
-+{
-+	struct fpr_regs *regs;
-+	int ret, i;
-+
-+	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
-+	ret = ptrace(PTRACE_GETFPREGS, child, NULL, regs);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	for (i = 0; i < 32; i++)
-+		regs->fpr[i] = val;
-+
-+	ret = ptrace(PTRACE_SETFPREGS, child, NULL, regs);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+	return TEST_PASS;
-+}
-+
-+int show_ckpt_fpr(pid_t child, unsigned long *fpr)
-+{
-+	struct fpr_regs *regs;
-+	struct iovec iov;
-+	int ret, i;
-+
-+	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
-+	iov.iov_base = regs;
-+	iov.iov_len = sizeof(struct fpr_regs);
-+
-+	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CFPR, &iov);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	if (fpr) {
-+		for (i = 0; i < 32; i++)
-+			fpr[i] = regs->fpr[i];
-+	}
-+
-+	return TEST_PASS;
-+}
-+
-+int write_ckpt_fpr(pid_t child, unsigned long val)
-+{
-+	struct fpr_regs *regs;
-+	struct iovec iov;
-+	int ret, i;
-+
-+	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
-+	iov.iov_base = regs;
-+	iov.iov_len = sizeof(struct fpr_regs);
-+
-+	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CFPR, &iov);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	for (i = 0; i < 32; i++)
-+		regs->fpr[i] = val;
-+
-+	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CFPR, &iov);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+	return TEST_PASS;
-+}
-+
-+/* GPR */
-+int show_gpr(pid_t child, unsigned long *gpr)
-+{
-+	struct pt_regs *regs;
-+	int ret, i;
-+
-+	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
-+	if (!regs) {
-+		perror("malloc() failed");
-+		return TEST_FAIL;
-+	}
-+
-+	ret = ptrace(PTRACE_GETREGS, child, NULL, regs);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	if (gpr) {
-+		for (i = 14; i < 32; i++)
-+			gpr[i-14] = regs->gpr[i];
-+	}
-+
-+	return TEST_PASS;
-+}
-+
-+int write_gpr(pid_t child, unsigned long val)
-+{
-+	struct pt_regs *regs;
-+	int i, ret;
-+
-+	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
-+	if (!regs) {
-+		perror("malloc() failed");
-+		return TEST_FAIL;
-+	}
-+
-+	ret = ptrace(PTRACE_GETREGS, child, NULL, regs);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	for (i = 14; i < 32; i++)
-+		regs->gpr[i] = val;
-+
-+	ret = ptrace(PTRACE_SETREGS, child, NULL, regs);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+	return TEST_PASS;
-+}
-+
-+int show_ckpt_gpr(pid_t child, unsigned long *gpr)
-+{
-+	struct pt_regs *regs;
-+	struct iovec iov;
-+	int ret, i;
-+
-+	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
-+	if (!regs) {
-+		perror("malloc() failed");
-+		return TEST_FAIL;
-+	}
-+
-+	iov.iov_base = (u64 *) regs;
-+	iov.iov_len = sizeof(struct pt_regs);
-+
-+	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CGPR, &iov);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	if (gpr) {
-+		for (i = 14; i < 32; i++)
-+			gpr[i-14] = regs->gpr[i];
-+	}
-+
-+	return TEST_PASS;
-+}
-+
-+int write_ckpt_gpr(pid_t child, unsigned long val)
-+{
-+	struct pt_regs *regs;
-+	struct iovec iov;
-+	int ret, i;
-+
-+	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
-+	if (!regs) {
-+		perror("malloc() failed\n");
-+		return TEST_FAIL;
-+	}
-+	iov.iov_base = (u64 *) regs;
-+	iov.iov_len = sizeof(struct pt_regs);
-+
-+	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CGPR, &iov);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+
-+	for (i = 14; i < 32; i++)
-+		regs->gpr[i] = val;
-+
-+	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CGPR, &iov);
-+	if (ret) {
-+		perror("ptrace(PTRACE_GETREGSET) failed");
-+		return TEST_FAIL;
-+	}
-+	return TEST_PASS;
-+}
-+
- /* Analyse TEXASR after TM failure */
- inline unsigned long get_tfiar(void)
- {
-@@ -223,3 +431,6 @@ void analyse_texasr(unsigned long texasr)
- 
- 	printf("TFIAR :%lx\n", get_tfiar());
- }
-+
-+void store_gpr(unsigned long *addr);
-+void store_fpr(float *addr);
-diff --git a/tools/testing/selftests/powerpc/utility/reg.S b/tools/testing/selftests/powerpc/utility/reg.S
-new file mode 100644
-index 0000000..b6aee2f
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/utility/reg.S
-@@ -0,0 +1,132 @@
-+/*
-+ * test helper assembly functions
-+ *
-+ * Copyright (C) 2016 Simon Guo, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <ppc-asm.h>
-+#include "reg.h"
-+
-+
-+/* Non volatile GPR - unsigned long buf[18] */
-+FUNC_START(load_gpr)
-+	ld	14, 0*8(3)
-+	ld	15, 1*8(3)
-+	ld	16, 2*8(3)
-+	ld	17, 3*8(3)
-+	ld	18, 4*8(3)
-+	ld	19, 5*8(3)
-+	ld	20, 6*8(3)
-+	ld	21, 7*8(3)
-+	ld	22, 8*8(3)
-+	ld	23, 9*8(3)
-+	ld	24, 10*8(3)
-+	ld	25, 11*8(3)
-+	ld	26, 12*8(3)
-+	ld	27, 13*8(3)
-+	ld	28, 14*8(3)
-+	ld	29, 15*8(3)
-+	ld	30, 16*8(3)
-+	ld	31, 17*8(3)
-+	blr
-+FUNC_END(load_gpr)
-+
-+FUNC_START(store_gpr)
-+	std	14, 0*8(3)
-+	std	15, 1*8(3)
-+	std	16, 2*8(3)
-+	std	17, 3*8(3)
-+	std	18, 4*8(3)
-+	std	19, 5*8(3)
-+	std	20, 6*8(3)
-+	std	21, 7*8(3)
-+	std	22, 8*8(3)
-+	std	23, 9*8(3)
-+	std	24, 10*8(3)
-+	std	25, 11*8(3)
-+	std	26, 12*8(3)
-+	std	27, 13*8(3)
-+	std	28, 14*8(3)
-+	std	29, 15*8(3)
-+	std	30, 16*8(3)
-+	std	31, 17*8(3)
-+	blr
-+FUNC_END(store_gpr)
-+
-+/* Single Precision Float - float buf[32] */
-+FUNC_START(load_fpr_single_precision)
-+	lfs 0, 0*4(3)
-+	lfs 1, 1*4(3)
-+	lfs 2, 2*4(3)
-+	lfs 3, 3*4(3)
-+	lfs 4, 4*4(3)
-+	lfs 5, 5*4(3)
-+	lfs 6, 6*4(3)
-+	lfs 7, 7*4(3)
-+	lfs 8, 8*4(3)
-+	lfs 9, 9*4(3)
-+	lfs 10, 10*4(3)
-+	lfs 11, 11*4(3)
-+	lfs 12, 12*4(3)
-+	lfs 13, 13*4(3)
-+	lfs 14, 14*4(3)
-+	lfs 15, 15*4(3)
-+	lfs 16, 16*4(3)
-+	lfs 17, 17*4(3)
-+	lfs 18, 18*4(3)
-+	lfs 19, 19*4(3)
-+	lfs 20, 20*4(3)
-+	lfs 21, 21*4(3)
-+	lfs 22, 22*4(3)
-+	lfs 23, 23*4(3)
-+	lfs 24, 24*4(3)
-+	lfs 25, 25*4(3)
-+	lfs 26, 26*4(3)
-+	lfs 27, 27*4(3)
-+	lfs 28, 28*4(3)
-+	lfs 29, 29*4(3)
-+	lfs 30, 30*4(3)
-+	lfs 31, 31*4(3)
-+	blr
-+FUNC_END(load_fpr_single_precision)
-+
-+/* Single Precision Float - float buf[32] */
-+FUNC_START(store_fpr_single_precision)
-+	stfs 0, 0*4(3)
-+	stfs 1, 1*4(3)
-+	stfs 2, 2*4(3)
-+	stfs 3, 3*4(3)
-+	stfs 4, 4*4(3)
-+	stfs 5, 5*4(3)
-+	stfs 6, 6*4(3)
-+	stfs 7, 7*4(3)
-+	stfs 8, 8*4(3)
-+	stfs 9, 9*4(3)
-+	stfs 10, 10*4(3)
-+	stfs 11, 11*4(3)
-+	stfs 12, 12*4(3)
-+	stfs 13, 13*4(3)
-+	stfs 14, 14*4(3)
-+	stfs 15, 15*4(3)
-+	stfs 16, 16*4(3)
-+	stfs 17, 17*4(3)
-+	stfs 18, 18*4(3)
-+	stfs 19, 19*4(3)
-+	stfs 20, 20*4(3)
-+	stfs 21, 21*4(3)
-+	stfs 22, 22*4(3)
-+	stfs 23, 23*4(3)
-+	stfs 24, 24*4(3)
-+	stfs 25, 25*4(3)
-+	stfs 26, 26*4(3)
-+	stfs 27, 27*4(3)
-+	stfs 28, 28*4(3)
-+	stfs 29, 29*4(3)
-+	stfs 30, 30*4(3)
-+	stfs 31, 31*4(3)
-+	blr
-+FUNC_END(store_fpr_single_precision)
-diff --git a/tools/testing/selftests/powerpc/utility/reg.h b/tools/testing/selftests/powerpc/utility/reg.h
-index f5d33db..19e4e79 100644
---- a/tools/testing/selftests/powerpc/utility/reg.h
-+++ b/tools/testing/selftests/powerpc/utility/reg.h
-@@ -86,4 +86,65 @@
- #define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra), (rb)))
- #define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra), (rb)))
- 
-+#define ASM_LOAD_GPR_IMMED(_asm_symbol_name_immed) \
-+		"li 14, %[" #_asm_symbol_name_immed "];" \
-+		"li 15, %[" #_asm_symbol_name_immed "];" \
-+		"li 16, %[" #_asm_symbol_name_immed "];" \
-+		"li 17, %[" #_asm_symbol_name_immed "];" \
-+		"li 18, %[" #_asm_symbol_name_immed "];" \
-+		"li 19, %[" #_asm_symbol_name_immed "];" \
-+		"li 20, %[" #_asm_symbol_name_immed "];" \
-+		"li 21, %[" #_asm_symbol_name_immed "];" \
-+		"li 22, %[" #_asm_symbol_name_immed "];" \
-+		"li 23, %[" #_asm_symbol_name_immed "];" \
-+		"li 24, %[" #_asm_symbol_name_immed "];" \
-+		"li 25, %[" #_asm_symbol_name_immed "];" \
-+		"li 26, %[" #_asm_symbol_name_immed "];" \
-+		"li 27, %[" #_asm_symbol_name_immed "];" \
-+		"li 28, %[" #_asm_symbol_name_immed "];" \
-+		"li 29, %[" #_asm_symbol_name_immed "];" \
-+		"li 30, %[" #_asm_symbol_name_immed "];" \
-+		"li 31, %[" #_asm_symbol_name_immed "];"
-+
-+#define ASM_LOAD_FPR_SINGLE_PRECISION(_asm_symbol_name_addr) \
-+		"lfs 0, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 1, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 2, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 3, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 4, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 5, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 6, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 7, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 8, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 9, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 10, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 11, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 12, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 13, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 14, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 15, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 16, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 17, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 18, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 19, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 20, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 21, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 22, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 23, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 24, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 25, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 26, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 27, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 28, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 29, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 30, 0(%[" #_asm_symbol_name_addr "]);" \
-+		"lfs 31, 0(%[" #_asm_symbol_name_addr "]);"
-+
-+#ifndef __ASSEMBLER__
-+void store_gpr(unsigned long *addr);
-+void load_gpr(unsigned long *addr);
-+void load_fpr_single_precision(float *addr);
-+void store_fpr_single_precision(float *addr);
-+#endif /* end of __ASSEMBLER__ */
-+
- #endif /* _SELFTESTS_POWERPC_REG_H */
 -- 
 1.8.3.1
