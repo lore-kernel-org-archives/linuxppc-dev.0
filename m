@@ -1,51 +1,51 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tnv3sB1zDvKj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tnv3qtyzDvKh
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:30:43 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9RESdGJ132242
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9RETGu6129761
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:40 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bjhmuwms-1
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26bjes48a5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:40 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 10:30:39 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8369C38C8054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9REU2QI4391420
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 14:30:37 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7BC8628056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
+ Thu, 27 Oct 2016 08:30:39 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 30D1D3E40060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:37 -0600 (MDT)
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9REUESZ12845548
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 07:30:37 -0700
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 71AA3C603C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:35 -0600 (MDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id 53EAD2803F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP id 54E28C603E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:35 -0600 (MDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 9726AC203E32
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:24:41 -0500 (CDT)
-Subject: [PATCH V8 2/8] powerpc/memory: Parse new memory property to
- register blocks.
+ by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id AD453C203E36
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:25:31 -0500 (CDT)
+Subject: [PATCH V8 6/8] hotplug/drc-info: Add code to search new devtree
+ properties
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Oct 2016 09:24:41 -0500
+Date: Thu, 27 Oct 2016 09:25:31 -0500
 In-Reply-To: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
 References: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <147757827350.2995.7821643955846454507.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <147757832562.2995.11267628542418082452.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,20 +55,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/memory: Add parallel routines to parse the new property
-"ibm,dynamic-memory-v2" property when it is present, and then to
-register the relevant memory blocks with the operating system.
-This property format is intended to provide a more compact
-representation of memory when communicating with the front end
-processor, especially when describing vast amounts of RAM.
+rpadlpar_core.c: Provide parallel routines to search the older device-
+tree properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
+
+The interface to examine the DRC information is changed from a "get"
+function that returns values for local verification elsewhere, to a
+"check" function that validates the 'name' and/or 'type' of a device
+node.  This update hides the format of the underlying device-tree
+properties, and concentrates the value checks into a single function
+without requiring the user to verify whether a search was successful.
 
 [V2: Revise contant names.]
-[V3: Fix error parsing the new memory block sets.]
-[V4: Move a couple of function prototypes from header file
-     a later patch where first used.
-     Amend some comments.
-     Change a firmware architure vec check for scan actual device tree.
-     Compress some common code.]
+[V3: Amend comments.  Simplify code cleanup.]
+[V4: Update comments.]
 [V5: Resynchronize/resubmit]
 [V6: No change]
 [V7: Correct mail threading]
@@ -76,222 +76,217 @@ processor, especially when describing vast amounts of RAM.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/prom.h |   24 ++++++++--
- arch/powerpc/kernel/prom.c      |   97 ++++++++++++++++++++++++++++++++++++---
- arch/powerpc/mm/numa.c          |   22 ++++++++-
- 3 files changed, 129 insertions(+), 14 deletions(-)
+ drivers/pci/hotplug/rpadlpar_core.c |   13 ++--
+ drivers/pci/hotplug/rpaphp.h        |    4 +
+ drivers/pci/hotplug/rpaphp_core.c   |  109 +++++++++++++++++++++++++++--------
+ 3 files changed, 91 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index bc7c4b5..43a002b 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -69,6 +69,8 @@ struct boot_param_header {
-  * OF address retreival & translation
-  */
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index dc67f39..bea9723 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -27,6 +27,7 @@
+ #include <linux/mutex.h>
+ #include <asm/rtas.h>
+ #include <asm/vio.h>
++#include <linux/firmware.h>
  
-+extern int n_mem_addr_cells;
-+
- /* Parse the ibm,dma-window property of an OF node into the busno, phys and
-  * size parameters.
-  */
-@@ -81,8 +83,9 @@ extern void of_instantiate_rtc(void);
- extern int of_get_ibm_chip_id(struct device_node *np);
- 
- /* The of_drconf_cell struct defines the layout of the LMB array
-- * specified in the device tree property
-- * ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
-+ * specified in the device tree properties,
-+ *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
-+ *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory-v2
-  */
- struct of_drconf_cell {
- 	u64	base_addr;
-@@ -92,9 +95,20 @@ struct of_drconf_cell {
- 	u32	flags;
- };
- 
--#define DRCONF_MEM_ASSIGNED	0x00000008
--#define DRCONF_MEM_AI_INVALID	0x00000040
--#define DRCONF_MEM_RESERVED	0x00000080
-+#define DRCONF_MEM_ASSIGNED		0x00000008
-+#define DRCONF_MEM_AI_INVALID		0x00000040
-+#define DRCONF_MEM_RESERVED		0x00000080
-+
-+struct of_drconf_cell_v2 {
-+	u32	num_seq_lmbs;
-+	u64	base_addr;
-+	u32	drc_index;
-+	u32	aa_index;
-+	u32	flags;
-+} __attribute__((packed));
-+
-+extern void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem,
-+				const __be32 **cellp);
- 
- /*
-  * There are two methods for telling firmware what our capabilities are.
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index b0245be..2d49887 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -443,23 +443,34 @@ static int __init early_init_dt_scan_chosen_ppc(unsigned long node,
- 
- #ifdef CONFIG_PPC_PSERIES
- /*
-- * Interpret the ibm,dynamic-memory property in the
-- * /ibm,dynamic-reconfiguration-memory node.
-+ * Retrieve and validate the ibm,lmb-size property for drconf memory
-+ * from the flattened device tree.
-+ */
-+static u64 __init get_lmb_size(unsigned long node)
-+{
-+	const __be32 *ls;
-+	int len;
-+	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
-+	if (!ls || len < dt_root_size_cells * sizeof(__be32))
-+		return 0;
-+	return dt_mem_next_cell(dt_root_size_cells, &ls);
-+}
-+
-+/*
-+ * Interpret the ibm,dynamic-memory property/ibm,dynamic-memory-v2
-+ * in the /ibm,dynamic-reconfiguration-memory node.
-  * This contains a list of memory blocks along with NUMA affinity
-  * information.
-  */
--static int __init early_init_dt_scan_drconf_memory(unsigned long node)
-+static int __init early_init_dt_scan_drconf_memory_v1(unsigned long node)
+ #include "../pci.h"
+ #include "rpaphp.h"
+@@ -44,15 +45,14 @@ static struct device_node *find_vio_slot_node(char *drc_name)
  {
--	const __be32 *dm, *ls, *usm;
-+	const __be32 *dm, *usm;
- 	int l;
- 	unsigned long n, flags;
- 	u64 base, size, memblock_size;
- 	unsigned int is_kexec_kdump = 0, rngs;
+ 	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
+ 	struct device_node *dn = NULL;
+-	char *name;
+ 	int rc;
  
--	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
--	if (ls == NULL || l < dt_root_size_cells * sizeof(__be32))
--		return 0;
--	memblock_size = dt_mem_next_cell(dt_root_size_cells, &ls);
-+	memblock_size = get_lmb_size(node);
+ 	if (!parent)
+ 		return NULL;
  
- 	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &l);
- 	if (dm == NULL || l < sizeof(__be32))
-@@ -518,6 +529,76 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
- 	memblock_dump_all();
+ 	while ((dn = of_get_next_child(parent, dn))) {
+-		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
+-		if ((rc == 0) && (!strcmp(drc_name, name)))
++		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
++		if (rc == 0)
+ 			break;
+ 	}
+ 
+@@ -64,15 +64,12 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
+ 						  char *drc_type)
+ {
+ 	struct device_node *np = NULL;
+-	char *name;
+-	char *type;
+ 	int rc;
+ 
+ 	while ((np = of_find_node_by_name(np, "pci"))) {
+-		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
++		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
+ 		if (rc == 0)
+-			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
+-				break;
++			break;
+ 	}
+ 
+ 	return np;
+diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
+index 7db024e..8db5f2e 100644
+--- a/drivers/pci/hotplug/rpaphp.h
++++ b/drivers/pci/hotplug/rpaphp.h
+@@ -91,8 +91,8 @@ int rpaphp_get_sensor_state(struct slot *slot, int *state);
+ 
+ /* rpaphp_core.c */
+ int rpaphp_add_slot(struct device_node *dn);
+-int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+-		char **drc_name, char **drc_type, int *drc_power_domain);
++int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
++		char *drc_type);
+ 
+ /* rpaphp_slot.c */
+ void dealloc_slot_struct(struct slot *slot);
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 8d13202..85ad2ae 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -30,6 +30,7 @@
+ #include <linux/smp.h>
+ #include <linux/init.h>
+ #include <linux/vmalloc.h>
++#include <asm/firmware.h>
+ #include <asm/eeh.h>       /* for eeh_add_device() */
+ #include <asm/rtas.h>		/* rtas_call */
+ #include <asm/pci-bridge.h>	/* for pci_controller */
+@@ -196,25 +197,21 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
  	return 0;
  }
+ 
+-/* To get the DRC props describing the current node, first obtain it's
+- * my-drc-index property.  Next obtain the DRC list from it's parent.  Use
+- * the my-drc-index for correlation, and obtain the requested properties.
 +
-+static int __init early_init_dt_scan_drconf_memory_v2(unsigned long node)
++/* Verify the existence of 'drc_name' and/or 'drc_type' within the
++ * current node.  First obtain it's my-drc-index property.  Next,
++ * obtain the DRC info from it's parent.  Use the my-drc-index for
++ * correlation, and obtain/validate the requested properties.
+  */
+-int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+-		char **drc_name, char **drc_type, int *drc_power_domain)
++
++static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
++				char *drc_type, unsigned int my_index)
+ {
++	char *name_tmp, *type_tmp;
+ 	const int *indexes, *names;
+ 	const int *types, *domains;
+-	const unsigned int *my_index;
+-	char *name_tmp, *type_tmp;
+ 	int i, rc;
+ 
+-	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
+-	if (!my_index) {
+-		/* Node isn't DLPAR/hotplug capable */
+-		return -EINVAL;
+-	}
+-
+ 	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
+ 	if (rc < 0) {
+ 		return -EINVAL;
+@@ -225,24 +222,86 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+ 
+ 	/* Iterate through parent properties, looking for my-drc-index */
+ 	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
+-		if ((unsigned int) indexes[i + 1] == *my_index) {
+-			if (drc_name)
+-				*drc_name = name_tmp;
+-			if (drc_type)
+-				*drc_type = type_tmp;
+-			if (drc_index)
+-				*drc_index = be32_to_cpu(*my_index);
+-			if (drc_power_domain)
+-				*drc_power_domain = be32_to_cpu(domains[i+1]);
+-			return 0;
+-		}
++		if ((unsigned int) indexes[i + 1] == my_index)
++			break;
++
+ 		name_tmp += (strlen(name_tmp) + 1);
+ 		type_tmp += (strlen(type_tmp) + 1);
+ 	}
+ 
++	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
++	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
++		return 0;
++
+ 	return -EINVAL;
+ }
+-EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
++
++static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
++				char *drc_type, unsigned int my_index)
 +{
-+	const __be32 *dm;
-+	int l;
-+	unsigned long num_sets;
-+	u64 size, base, memblock_size;
++	int *info = (int *)dn;
++	unsigned int entries;
++	unsigned long int drc_index_start = 0, last_drc_index = 0;
++	unsigned long int num_sequential_elems = 0, sequential_inc = 0;
++	char *name_tmp, *type_tmp;
++	int j, ret = -EINVAL;
 +
-+	memblock_size = get_lmb_size(node);
++	info = (int *)of_get_property(dn->parent, "ibm,drc-info", NULL);
++	if (info == NULL)
++		return -EINVAL;
 +
-+	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2", &l);
-+	if (dm == NULL || l < sizeof(__be32))
-+		return 0;
++	entries = be32_to_cpu(*info++);
 +
-+	/* Verify expected length of the array of ibm,dynamic-memory-v2
-+	 * structs fits in the actual size of the property data.
-+	 */
-+	num_sets = of_read_number(dm++, 1);
-+	if (l < (num_sets * (dt_root_addr_cells + 4) + 1) * sizeof(__be32))
-+		return 0;
++	for (j = 0; j < entries; j++) {
++		read_one_drc_info(&info, &type_tmp, &name_tmp,
++				&drc_index_start, &num_sequential_elems,
++				&sequential_inc, &last_drc_index);
 +
-+	if (n_mem_addr_cells == 0)
-+		n_mem_addr_cells = dt_root_addr_cells;
++		/* Should now know end of current entry */
 +
-+	for (; num_sets != 0; --num_sets) {
-+		struct of_drconf_cell_v2 drmem;
-+		unsigned long nsl;
++		last_drc_index = drc_index_start +
++				((num_sequential_elems-1)*sequential_inc);
 +
-+		read_drconf_cell_v2(&drmem, &dm);
-+		base = drmem.base_addr;
-+		nsl = drmem.num_seq_lmbs;
-+		size = memblock_size;
-+
-+		/* SKip this block if the reserved bit is set in flags
-+		 * or if the block is not assigned to this partition
-+		 */
-+		if ((drmem.flags & DRCONF_MEM_RESERVED) ||
-+		    !(drmem.flags & DRCONF_MEM_ASSIGNED))
++		WARN_ON(my_index < drc_index_start);
++		if (my_index > last_drc_index)
 +			continue;
 +
-+		for (; nsl != 0; nsl--) {
-+			size = memblock_size;
++		WARN_ON(((my_index-drc_index_start)%sequential_inc) != 0);
 +
-+			if (iommu_is_off) {
-+				if (base >= 0x80000000ul)
-+					continue;
-+				if ((base + size) > 0x80000000ul)
-+					size = 0x80000000ul - base;
-+			}
-+			memblock_add(base, size);
++		ret = ((my_index-drc_index_start)/sequential_inc);
++		break;
++	}
++	/* Found it */
 +
-+			base += size;
-+		}
++	if (((drc_name == NULL) ||
++	     (drc_name && !strcmp(drc_name, name_tmp))) &&
++	    ((drc_type == NULL) ||
++	     (drc_type && !strcmp(drc_type, type_tmp))))
++		return 0;
++
++	return -EINVAL;
++}
++
++int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
++			char *drc_type)
++{
++	const unsigned int *my_index;
++
++	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
++	if (!my_index) {
++		/* Node isn't DLPAR/hotplug capable */
++		return -EINVAL;
 +	}
 +
-+	memblock_dump_all();
-+	return 0;
-+}
-+
-+static int __init early_init_dt_scan_drconf_memory(unsigned long node)
-+{
-+	const __be32 *dm;
-+	int l;
-+	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2", &l);
-+	if (dm == NULL || l < sizeof(__be32))
-+		return early_init_dt_scan_drconf_memory_v1(node);
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
++		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
++						*my_index);
 +	else
-+		return early_init_dt_scan_drconf_memory_v2(node);
++		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
++						*my_index);
 +}
++EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
 +
- #else
- #define early_init_dt_scan_drconf_memory(node)	0
- #endif /* CONFIG_PPC_PSERIES */
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 75b9cd6..fe8e6e7 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -57,8 +57,10 @@ EXPORT_SYMBOL(node_to_cpumask_map);
- EXPORT_SYMBOL(node_data);
  
- static int min_common_depth;
--static int n_mem_addr_cells, n_mem_size_cells;
-+int n_mem_addr_cells;
-+static int n_mem_size_cells;
- static int form1_affinity;
-+EXPORT_SYMBOL(n_mem_addr_cells);
- 
- #define MAX_DISTANCE_REF_POINTS 4
- static int distance_ref_points_depth;
-@@ -405,6 +407,24 @@ static void read_drconf_cell(struct of_drconf_cell *drmem, const __be32 **cellp)
- 
- 	*cellp = cp + 4;
- }
-+ 
-+ /*
-+ * Retrieve and validate the ibm,dynamic-memory property of the device tree.
-+ * Read the next memory block set entry from the ibm,dynamic-memory-v2 property
-+ * and return the information in the provided of_drconf_cell_v2 structure.
-+ */
-+void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem, const __be32 **cellp)
-+{
-+	const __be32 *cp = (const __be32 *)*cellp;
-+	drmem->num_seq_lmbs = be32_to_cpu(*cp++);
-+	drmem->base_addr = read_n_cells(n_mem_addr_cells, &cp);
-+	drmem->drc_index = be32_to_cpu(*cp++);
-+	drmem->aa_index = be32_to_cpu(*cp++);
-+	drmem->flags = be32_to_cpu(*cp++);
-+
-+	*cellp = cp;
-+}
-+EXPORT_SYMBOL(read_drconf_cell_v2);
- 
- /*
-  * Retrieve and validate the ibm,dynamic-memory property of the device tree.
+ static int is_php_type(char *drc_type)
+ {
