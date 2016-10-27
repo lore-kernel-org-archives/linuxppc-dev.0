@@ -3,46 +3,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tnw1Z2wzDvLT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:30:43 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tvg4FfVzDvYr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:35:43 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9RETv26012286
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:42 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bffs8ss5-1
+ u9REYBD5004901
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:35:41 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bjhmvcw9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:35:41 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 10:30:40 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 85A09C90043
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:22 -0400 (EDT)
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9REUDL320185288
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 14:30:37 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 252E2AE054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
+ Thu, 27 Oct 2016 08:35:39 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1B1BF1FF001F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:35:17 -0600 (MDT)
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9REZaU37012794
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 07:35:36 -0700
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C6AA2136051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:35:36 -0600 (MDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP id 13084AE052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP id B0AE2136048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:35:36 -0600 (MDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 0F08EC203E30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:24:12 -0500 (CDT)
-Subject: [PATCH V8 0/8] powerpc/devtree: Add support for 2 new DRC properties
+ by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id B783CC203E38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:25:55 -0500 (CDT)
+Subject: [PATCH V8 8/8] powerpc: Enable support for new DRC devtree properties
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Oct 2016 09:24:12 -0500
+Date: Thu, 27 Oct 2016 09:25:55 -0500
+In-Reply-To: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
+References: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <147757834905.2995.15253529202142600057.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,68 +54,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Several properties in the DRC device tree format are replaced by
-more compact representations to allow, for example, for the encoding
-of vast amounts of memory, and or reduced duplication of information
-in related data structures.
+prom_init.c: Enable support for new DRC device tree properties
+"ibm,drc-info" and "ibm,dynamic-memory-v2" in initial handshake
+between the Linux kernel and the front end processor.
 
-"ibm,drc-info": This property, when present, replaces the following
-four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
-and "ibm,drc-power-domains".  This property is defined for all
-dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
-are intended to provide a more compact representation, and reduce some
-search overhead.
-
-"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
-node representation within the "ibm,dynamic-reconfiguration-memory"
-property provided by the BMC.  This element format is intended to provide
-a more compact representation of memory, especially, for systems with
-massive amounts of RAM.  To simplify portability, this property is
-converted to the "ibm,dynamic-memory" property during system boot.
-
-"ibm,architecture.vec": Bidirectional communication mechanism between
-the host system and the front end processor indicating what features
-the host system supports and what features the front end processor will
-actually provide.  In this case, we are indicating that the host system
-can support the new device tree structures "ibm,drc-info" and
-"ibm,dynamic-memory-v2".
-
-[V1: Initial presentation of PAPR 2.7 changes to device tree.]
-[V2: Revise constant names.  Fix some syntax errors.  Improve comments.]
-[V3: Revise tests for presence of new properties to always scan devicetree
-     instead of depending upon architecture vec, due to reboot issues.]
-[V4: Rearrange some code changes in patches to better match application,
-     and other code cleanup.]
-[V5: Resynchronize patches.]
-[V6: Resync to latest kernel commit code]
+[V2: Revise constant names.]
+[V3: No change.]
+[V4: Update comments]
+[V5: Resynchronize/resubmit]
+[V6: Resynchronize to latest kernel commit code]
 [V7: Correct mail threading]
 [v8: Insert more useful variable names]
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-
 ---
+ arch/powerpc/kernel/prom_init.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Michael Bringmann (8):
-  powerpc/firmware: Add definitions for new firmware features.
-  powerpc/memory: Parse new memory property to register blocks.
-  powerpc/memory: Parse new memory property to initialize structures.
-  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
-  pseries/drc-info: Search new DRC properties for CPU indexes
-  hotplug/drc-info: Add code to search new devtree properties
-  powerpc: Check arch.vec earlier during boot for memory features
-  powerpc: Enable support for new DRC devtree properties
-
-
- arch/powerpc/include/asm/firmware.h             |    5 -
- arch/powerpc/include/asm/prom.h                 |   38 ++++-
- arch/powerpc/kernel/prom.c                      |  103 +++++++++++--
- arch/powerpc/kernel/prom_init.c                 |    3 
- arch/powerpc/mm/numa.c                          |  168 ++++++++++++++++++--
- arch/powerpc/platforms/pseries/Makefile         |    4 
- arch/powerpc/platforms/pseries/firmware.c       |    2 
- arch/powerpc/platforms/pseries/hotplug-memory.c |   93 +++++++++++
- arch/powerpc/platforms/pseries/pseries_energy.c |  189 ++++++++++++++++++++---
- drivers/pci/hotplug/rpadlpar_core.c             |   13 +-
- drivers/pci/hotplug/rpaphp.h                    |    4 
- drivers/pci/hotplug/rpaphp_core.c               |  109 ++++++++++---
- 12 files changed, 628 insertions(+), 103 deletions(-)
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index d3eff99..28a5ea2 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -695,7 +695,7 @@ unsigned char ibm_architecture_vec[] = {
+ 	OV4_MIN_ENT_CAP,		/* minimum VP entitled capacity */
+ 
+ 	/* option vector 5: PAPR/OF options */
+-	VECTOR_LENGTH(21),		/* length */
++	VECTOR_LENGTH(22),		/* length */
+ 	0,				/* don't ignore, don't halt */
+ 	OV5_FEAT(OV5_LPAR) | OV5_FEAT(OV5_SPLPAR) | OV5_FEAT(OV5_LARGE_PAGES) |
+ 	OV5_FEAT(OV5_DRCONF_MEMORY) | OV5_FEAT(OV5_DONATE_DEDICATE_CPU) |
+@@ -731,6 +731,7 @@ unsigned char ibm_architecture_vec[] = {
+ 	0,							/* Byte 19 */
+ 	0,							/* Byte 20 */
+ 	OV5_FEAT(OV5_SUB_PROCESSORS),				/* Byte 21 */
++	OV5_FEAT(OV5_DYN_MEM_V2) | OV5_FEAT(OV5_DRC_INFO),	/* Byte 22 */
+ 
+ 	/* option vector 6: IBM PAPR hints */
+ 	VECTOR_LENGTH(3),		/* length */
