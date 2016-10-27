@@ -1,28 +1,29 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Return-Path: <0x7f454c46@gmail.com>
+Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
+ [IPv6:2a00:1450:400c:c09::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4ZdN4LhczDvQC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 05:08:40 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id s8so3242131pfj.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:08:40 -0700 (PDT)
-Message-ID: <1477591717.7065.237.camel@edumazet-glaptop3.roam.corp.google.com>
-Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
- gso_type
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Cc: Jon Maxwell <jmaxwell37@gmail.com>, jmaxwell@redhat.com,
- hofrat@osadl.org,  linux-kernel@vger.kernel.org, jarod@redhat.com,
- netdev@vger.kernel.org,  paulus@samba.org, tom@herbertland.com,
- mleitner@redhat.com,  linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
-Date: Thu, 27 Oct 2016 11:08:37 -0700
-In-Reply-To: <7b97bb2a-63ed-7dde-9a2f-e390c67de382@linux.vnet.ibm.com>
-References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
- <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
- <7b97bb2a-63ed-7dde-9a2f-e390c67de382@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4YRn6wx4zDvPJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 04:15:17 +1100 (AEDT)
+Received: by mail-wm0-x22f.google.com with SMTP id n67so60401689wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:15:17 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20161025155106.29946-1-dsafonov@virtuozzo.com>
+References: <20161025155106.29946-1-dsafonov@virtuozzo.com>
+From: Dmitry Safonov <0x7f454c46@gmail.com>
+Date: Thu, 27 Oct 2016 20:14:54 +0300
+Message-ID: <CAJwJo6ZC=Z0RsjRgt8W1USuk0fp5_bJJHeQuKXHH50bBSNbd3g@mail.gmail.com>
+Subject: Re: [PATCH 0/7] powerpc/mm: refactor vDSO mapping code
+To: Dmitry Safonov <dsafonov@virtuozzo.com>
+Cc: open list <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Andy Lutomirski <luto@amacapital.net>,
+ Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,98 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-10-27 at 12:54 -0500, Thomas Falcon wrote:
-> On 10/27/2016 10:26 AM, Eric Dumazet wrote:
-> > On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
-> >> We recently encountered a bug where a few customers using ibmveth on the 
-> >> same LPAR hit an issue where a TCP session hung when large receive was
-> >> enabled. Closer analysis revealed that the session was stuck because the 
-> >> one side was advertising a zero window repeatedly.
-> >>
-> >> We narrowed this down to the fact the ibmveth driver did not set gso_size 
-> >> which is translated by TCP into the MSS later up the stack. The MSS is 
-> >> used to calculate the TCP window size and as that was abnormally large, 
-> >> it was calculating a zero window, even although the sockets receive buffer 
-> >> was completely empty. 
-> >>
-> >> We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
-> >> and Marcelo for all your help and review on this.
-> >>
-> >> The patch fixes both our internal reproduction tests and our customers tests.
-> >>
-> >> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
-> >> ---
-> >>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
-> >>  1 file changed, 20 insertions(+)
-> >>
-> >> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> >> index 29c05d0..c51717e 100644
-> >> --- a/drivers/net/ethernet/ibm/ibmveth.c
-> >> +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> >> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
-> >>  	int frames_processed = 0;
-> >>  	unsigned long lpar_rc;
-> >>  	struct iphdr *iph;
-> >> +	bool large_packet = 0;
-> >> +	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
-> >>  
-> >>  restart_poll:
-> >>  	while (frames_processed < budget) {
-> >> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
-> >>  						iph->check = 0;
-> >>  						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
-> >>  						adapter->rx_large_packets++;
-> >> +						large_packet = 1;
-> >>  					}
-> >>  				}
-> >>  			}
-> >>  
-> >> +			if (skb->len > netdev->mtu) {
-> >> +				iph = (struct iphdr *)skb->data;
-> >> +				if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
-> >> +				    iph->protocol == IPPROTO_TCP) {
-> >> +					hdr_len += sizeof(struct iphdr);
-> >> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
-> >> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-> >> +				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
-> >> +					   iph->protocol == IPPROTO_TCP) {
-> >> +					hdr_len += sizeof(struct ipv6hdr);
-> >> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
-> >> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
-> >> +				}
-> >> +				if (!large_packet)
-> >> +					adapter->rx_large_packets++;
-> >> +			}
-> >> +
-> >>  
-> > This might break forwarding and PMTU discovery.
-> >
-> > You force gso_size to device mtu, regardless of real MSS used by the TCP
-> > sender.
-> >
-> > Don't you have the MSS provided in RX descriptor, instead of guessing
-> > the value ?
-> >
-> >
-> >
-> The MSS is not always available unfortunately, so this is the best solution there is at the moment. 
+2016-10-25 18:50 GMT+03:00 Dmitry Safonov <dsafonov@virtuozzo.com>:
+> Cleanup patches for vDSO on powerpc.
+> Originally, I wanted to add vDSO remapping on arm/aarch64 and
+> I decided to cleanup that part on powerpc.
+> I've add a hook for vm_ops for vDSO just like I did for x86.
+> Other changes - reduce exhaustive code duplication.
+> No visible to userspace changes expected.
+>
+> Tested on qemu with buildroot rootfs.
+>
+> Dmitry Safonov (7):
+>   powerpc/vdso: unify return paths in setup_additional_pages
+>   powerpc/vdso: remove unused params in vdso_do_func_patch{32,64}
+>   powerpc/vdso: separate common code in vdso_common
+>   powerpc/vdso: introduce init_vdso{32,64}_pagelist
+>   powerpc/vdso: split map_vdso from arch_setup_additional_pages
+>   powerpc/vdso: switch from legacy_special_mapping_vmops
+>   mm: kill arch_mremap
 
-Hmm... then what about skb_shinfo(skb)->gso_segs ?
-
-ip_rcv() for example has :
-
-        __IP_ADD_STATS(net,
-                       IPSTATS_MIB_NOECTPKTS + (iph->tos & INET_ECN_MASK),
-                       max_t(unsigned short, 1, skb_shinfo(skb)->gso_segs));
-
-
-
-Also prefer : (skb->protocol == htons(ETH_P_IP)) tests
-
-And the ipv6 test is wrong :
-
-} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
-           iph->protocol == IPPROTO_TCP) {
-
-
-Since iph is a pointer to ipv4 iphdr .
+Ignore this version, please - I've just sent v3 with some new fixes.
