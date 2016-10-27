@@ -1,25 +1,39 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0067.outbound.protection.outlook.com [104.47.0.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t480R52DqzDvHp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 12:08:39 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id i85so916260pfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 18:08:39 -0700 (PDT)
-Message-ID: <1477530511.2313.1.camel@gmail.com>
-Subject: Re: [PATCH] powerpc: process.c: fix Kconfig typo
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Valentin Rothberg
- <valentinrothberg@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Oct 2016 12:08:31 +1100
-In-Reply-To: <878ttby7vh.fsf@concordia.ellerman.id.au>
-References: <20161005055726.5614-1-valentinrothberg@gmail.com>
- <1475708074.735.2.camel@gmail.com>
- <878ttby7vh.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4DYp2v2SzDt4V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 15:34:21 +1100 (AEDT)
+From: "Y.B. Lu" <yangbo.lu@nxp.com>
+To: Scott Wood <oss@buserror.net>, "linux-mmc@vger.kernel.org"
+ <linux-mmc@vger.kernel.org>, "ulf.hansson@linaro.org"
+ <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring
+ <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Jochen Friedrich
+ <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar Gala
+ <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, "X.B. Xie" <xiaobo.xie@nxp.com>, "M.H. Lian"
+ <minghuan.lian@nxp.com>
+Subject: RE: [v12, 5/8] soc: fsl: add GUTS driver for QorIQ platforms
+Date: Thu, 27 Oct 2016 04:34:06 +0000
+Message-ID: <DB6PR0401MB25362658D117DF4D7B92FD48F8AA0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+References: <1474441040-11946-1-git-send-email-yangbo.lu@nxp.com>
+ <1474441040-11946-6-git-send-email-yangbo.lu@nxp.com>
+ <1477501566.6812.9.camel@buserror.net>
+In-Reply-To: <1477501566.6812.9.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +43,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-10-26 at 16:52 +1100, Michael Ellerman wrote:
-> Cyril Bur <cyrilbur@gmail.com> writes:
-> 
-> > On Wed, 2016-10-05 at 07:57 +0200, Valentin Rothberg wrote:
-> > > s/ALIVEC/ALTIVEC/
-> > > 
-> > 
-> > Oops, nice catch
-> > 
-> > > Signed-off-by: Valentin Rothberg <valentinrothberg@gmail.com>
-> > 
-> > Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
-> 
-> How did we not notice? Sounds like we need a new selftest.
-> 
-
-Indeed...
-
-Here is probably a good place to say why we didn't catch it and under
-what circumstances this will have a negative effect.
-
-If a thread performs and transaction with altivec and then gets
-preempted for whatever reason, this bug may cause the kernel to not
-reenable altivec when that thread runs again. This will result in an
-altivec unavailable fault, when these faults happen inside a user
-transaction the kernel has no choice but enable altivec and doom the
-transaction.
-
-The result is that transactions using altivec may get aborted more than
-they should.
-
-The difficulty in catching this with a selftest is my deliberate use of
-the word may above. Optimisations to avoid FPU/altivec/VSX faults mean
-that the kernel will always leave them on for 255 switches, this code
-prevents the kernel turning it off if it got to the 256th switch (and
-userspace was transactional)...
-
-
-Cyril
-
-> Looks like this should have:
-> 
-> Fixes: dc16b553c949 ("powerpc: Always restore FPU/VEC/VSX if hardware
-> transactional memory in use")
-> 
-> 
-> And I guess I need to start running checkkconfigsymbols.py on every
-> commit.
-> 
-> cheers
+SGkgU2NvdHQsDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTY290
+dCBXb29kIFttYWlsdG86b3NzQGJ1c2Vycm9yLm5ldF0NCj4gU2VudDogVGh1cnNkYXksIE9jdG9i
+ZXIgMjcsIDIwMTYgMTowNiBBTQ0KPiBUbzogWS5CLiBMdTsgbGludXgtbW1jQHZnZXIua2VybmVs
+Lm9yZzsgdWxmLmhhbnNzb25AbGluYXJvLm9yZzsgQXJuZA0KPiBCZXJnbWFubg0KPiBDYzogbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBs
+aW51eC1hcm0tDQo+IGtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBsaW51eC1rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnOyBsaW51eC0NCj4gY2xrQHZnZXIua2VybmVsLm9yZzsgbGludXgtaTJjQHZn
+ZXIua2VybmVsLm9yZzsgaW9tbXVAbGlzdHMubGludXgtDQo+IGZvdW5kYXRpb24ub3JnOyBuZXRk
+ZXZAdmdlci5rZXJuZWwub3JnOyBNYXJrIFJ1dGxhbmQ7IFJvYiBIZXJyaW5nOw0KPiBSdXNzZWxs
+IEtpbmc7IEpvY2hlbiBGcmllZHJpY2g7IEpvZXJnIFJvZWRlbDsgQ2xhdWRpdSBNYW5vaWw7IEJo
+dXBlc2gNCj4gU2hhcm1hOyBRaWFuZyBaaGFvOyBLdW1hciBHYWxhOyBTYW50b3NoIFNoaWxpbWth
+cjsgTGVvIExpOyBYLkIuIFhpZTsgTS5ILg0KPiBMaWFuDQo+IFN1YmplY3Q6IFJlOiBbdjEyLCA1
+LzhdIHNvYzogZnNsOiBhZGQgR1VUUyBkcml2ZXIgZm9yIFFvcklRIHBsYXRmb3Jtcw0KPiANCj4g
+T24gV2VkLCAyMDE2LTA5LTIxIGF0IDE0OjU3ICswODAwLCBZYW5nYm8gTHUgd3JvdGU6DQo+ID4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2ZzbC9LY29uZmlnIGIvZHJpdmVycy9zb2MvZnNsL0tj
+b25maWcgbmV3DQo+ID4gZmlsZSBtb2RlIDEwMDY0NCBpbmRleCAwMDAwMDAwLi5iOTk3NjRjDQo+
+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9LY29uZmlnDQo+ID4g
+QEAgLTAsMCArMSwxOSBAQA0KPiA+ICsjDQo+ID4gKyMgRnJlZXNjYWxlIFNPQyBkcml2ZXJzDQo+
+ID4gKyMNCj4gPiArDQo+ID4gK3NvdXJjZSAiZHJpdmVycy9zb2MvZnNsL3FlL0tjb25maWciDQo+
+ID4gKw0KPiA+ICtjb25maWcgRlNMX0dVVFMNCj4gPiArCWJvb2wgIkZyZWVzY2FsZSBRb3JJUSBH
+VVRTIGRyaXZlciINCj4gPiArCXNlbGVjdCBTT0NfQlVTDQo+ID4gKwloZWxwDQo+ID4gKwnCoMKg
+VGhlIGdsb2JhbCB1dGlsaXRpZXMgYmxvY2sgY29udHJvbHMgcG93ZXIgbWFuYWdlbWVudCwgSS9P
+IGRldmljZQ0KPiA+ICsJwqDCoGVuYWJsaW5nLCBwb3dlci1vbnJlc2V0KFBPUikgY29uZmlndXJh
+dGlvbiBtb25pdG9yaW5nLCBhbHRlcm5hdGUNCj4gPiArCcKgwqBmdW5jdGlvbiBzZWxlY3Rpb24g
+Zm9yIG11bHRpcGxleGVkIHNpZ25hbHMsYW5kIGNsb2NrIGNvbnRyb2wuDQo+ID4gKwnCoMKgVGhp
+cyBkcml2ZXIgaXMgdG8gbWFuYWdlIGFuZCBhY2Nlc3MgZ2xvYmFsIHV0aWxpdGllcyBibG9jay4N
+Cj4gPiArCcKgwqBJbml0aWFsbHkgb25seSByZWFkaW5nIFNWUiBhbmQgcmVnaXN0ZXJpbmcgc29j
+IGRldmljZSBhcmUNCj4gPiBzdXBwb3J0ZWQuDQo+ID4gKwnCoMKgT3RoZXIgZ3V0cyBhY2Nlc3Nl
+cywgc3VjaCBhcyByZWFkaW5nIFJDVywgc2hvdWxkIGV2ZW50dWFsbHkgYmUNCj4gPiBtb3ZlZA0K
+PiA+ICsJwqDCoGludG8gdGhpcyBkcml2ZXIgYXMgd2VsbC4NCj4gPiArDQo+ID4gKwnCoMKgSWYg
+eW91IHdhbnQgR1VUUyBkcml2ZXIgc3VwcG9ydCwgeW91IHNob3VsZCBzYXkgWSBoZXJlLg0KPiAN
+Cj4gVGhpcyBpcyB1c2VyLWVuYWJsYWJsZSB3aXRob3V0IGRlcGVuZGVuY2llcywgd2hpY2ggbWVh
+bnMgaXQgd2lsbCBicmVhaw0KPiBzb21lIHJhbmRjb25maWdzLiDCoElmIHRoaXMgaXMgdG8gYmUg
+ZW5hYmxlZCB2aWEgc2VsZWN0IHRoZW4gcmVtb3ZlIHRoZQ0KPiB0ZXh0IGFmdGVyICJib29sIi4N
+Cg0KW0x1IFlhbmdiby1CNDcwOTNdIFdpbGwgZW5hYmxlIGl0IHZpYSBzZWxlY3QgYW5kIHJlbW92
+ZSB0ZXh0IGFmdGVyICdib29sJy4NCiANCj4gDQo+ID4gKy8qIFNvQyBkaWUgYXR0cmlidXRlIGRl
+ZmluaXRpb24gZm9yIFFvcklRIHBsYXRmb3JtICovIHN0YXRpYyBjb25zdA0KPiA+ICtzdHJ1Y3Qg
+ZnNsX3NvY19kaWVfYXR0ciBmc2xfc29jX2RpZVtdID0geyAjaWZkZWYgQ09ORklHX1BQQw0KPiA+
+ICsJLyoNCj4gPiArCcKgKiBQb3dlciBBcmNoaXRlY3R1cmUtYmFzZWQgU29DcyBUIFNlcmllcw0K
+PiA+ICsJwqAqLw0KPiA+ICsNCj4gPiArCS8qIERpZTogVDQyNDAsIFNvQzogVDQyNDAvVDQxNjAv
+VDQwODAgKi8NCj4gPiArCXsgLmRpZQkJPSAiVDQyNDAiLA0KPiA+ICsJwqDCoC5zdnIJCT0gMHg4
+MjQwMDAwMCwNCj4gPiArCcKgwqAubWFzawkJPSAweGZmZjAwMDAwLA0KPiA+ICsJfSwNCj4gPiAr
+CS8qIERpZTogVDEwNDAsIFNvQzogVDEwNDAvVDEwMjAvVDEwNDIvVDEwMjIgKi8NCj4gPiArCXsg
+LmRpZQkJPSAiVDEwNDAiLA0KPiA+ICsJwqDCoC5zdnIJCT0gMHg4NTIwMDAwMCwNCj4gPiArCcKg
+wqAubWFzawkJPSAweGZmZjAwMDAwLA0KPiA+ICsJfSwNCj4gPiArCS8qIERpZTogVDIwODAsIFNv
+QzogVDIwODAvVDIwODEgKi8NCj4gPiArCXsgLmRpZQkJPSAiVDIwODAiLA0KPiA+ICsJwqDCoC5z
+dnIJCT0gMHg4NTMwMDAwMCwNCj4gPiArCcKgwqAubWFzawkJPSAweGZmZjAwMDAwLA0KPiA+ICsJ
+fSwNCj4gPiArCS8qIERpZTogVDEwMjQsIFNvQzogVDEwMjQvVDEwMTQvVDEwMjMvVDEwMTMgKi8N
+Cj4gPiArCXsgLmRpZQkJPSAiVDEwMjQiLA0KPiA+ICsJwqDCoC5zdnIJCT0gMHg4NTQwMDAwMCwN
+Cj4gPiArCcKgwqAubWFzawkJPSAweGZmZjAwMDAwLA0KPiA+ICsJfSwNCj4gPiArI2VuZGlmIC8q
+IENPTkZJR19QUEMgKi8NCj4gPiArI2lmIGRlZmluZWQoQ09ORklHX0FSQ0hfTVhDKSB8fCBkZWZp
+bmVkKENPTkZJR19BUkNIX0xBWUVSU0NBUEUpDQo+IA0KPiBXaWxsIHRoaXMgZHJpdmVyIGV2ZXIg
+YmUgcHJvYmVkIG9uIE1YQz8gwqBXaHkgZG8gd2UgbmVlZCB0aGVzZSBpZmRlZnMgYXQNCj4gYWxs
+Pw0KDQpbTHUgWWFuZ2JvLUI0NzA5M10gV2lsbCByZW1vdmUgdGhlbS4gSW4gdGhlIHByZXZpb3Vz
+IHZlcnNpb24sIHdlIHVzZSB0b28gbWFueSBtZW1iZXJzIGZvciBzb2MgZGVmaW5pdGlvbiwgc28g
+SSBhZGQgI2lmZGVmIGZvciBBUkNILiANCkNPTkZJR19BUkNIX01YQyB3YXMgZm9yIGxzMTAyMWEu
+DQoNCj4gDQo+IA0KPiA+ICsJLyoNCj4gPiArCcKgKiBBUk0tYmFzZWQgU29DcyBMUyBTZXJpZXMN
+Cj4gPiArCcKgKi8NCj4gPiArDQo+ID4gKwkvKiBEaWU6IExTMTA0M0EsIFNvQzogTFMxMDQzQS9M
+UzEwMjNBICovDQo+ID4gKwl7IC5kaWUJCT0gIkxTMTA0M0EiLA0KPiA+ICsJwqDCoC5zdnIJCT0g
+MHg4NzkyMDAwMCwNCj4gPiArCcKgwqAubWFzawkJPSAweGZmZmYwMDAwLA0KPiA+ICsJfSwNCj4g
+PiArCS8qIERpZTogTFMyMDgwQSwgU29DOiBMUzIwODBBL0xTMjA0MEEvTFMyMDg1QSAqLw0KPiA+
+ICsJeyAuZGllCQk9ICJMUzIwODBBIiwNCj4gPiArCcKgwqAuc3ZyCQk9IDB4ODcwMTAwMDAsDQo+
+ID4gKwnCoMKgLm1hc2sJCT0gMHhmZjNmMDAwMCwNCj4gPiArCX0sDQo+ID4gKwkvKiBEaWU6IExT
+MTA4OEEsIFNvQzogTFMxMDg4QS9MUzEwNDhBL0xTMTA4NEEvTFMxMDQ0QSAqLw0KPiA+ICsJeyAu
+ZGllCQk9ICJMUzEwODhBIiwNCj4gPiArCcKgwqAuc3ZyCQk9IDB4ODcwMzAwMDAsDQo+ID4gKwnC
+oMKgLm1hc2sJCT0gMHhmZjNmMDAwMCwNCj4gPiArCX0sDQo+ID4gKwkvKiBEaWU6IExTMTAxMkEs
+IFNvQzogTFMxMDEyQSAqLw0KPiA+ICsJeyAuZGllCQk9ICJMUzEwMTJBIiwNCj4gPiArCcKgwqAu
+c3ZyCQk9IDB4ODcwNDAwMDAsDQo+ID4gKwnCoMKgLm1hc2sJCT0gMHhmZmZmMDAwMCwNCj4gPiAr
+CX0sDQo+ID4gKwkvKiBEaWU6IExTMTA0NkEsIFNvQzogTFMxMDQ2QS9MUzEwMjZBICovDQo+ID4g
+Kwl7IC5kaWUJCT0gIkxTMTA0NkEiLA0KPiA+ICsJwqDCoC5zdnIJCT0gMHg4NzA3MDAwMCwNCj4g
+PiArCcKgwqAubWFzawkJPSAweGZmZmYwMDAwLA0KPiA+ICsJfSwNCj4gPiArCS8qIERpZTogTFMy
+MDg4QSwgU29DOiBMUzIwODhBL0xTMjA0OEEvTFMyMDg0QS9MUzIwNDRBICovDQo+ID4gKwl7IC5k
+aWUJCT0gIkxTMjA4OEEiLA0KPiA+ICsJwqDCoC5zdnIJCT0gMHg4NzA5MDAwMCwNCj4gPiArCcKg
+wqAubWFzawkJPSAweGZmM2YwMDAwLA0KPiA+ICsJfSwNCj4gPiArCS8qIERpZTogTFMxMDIxQSwg
+U29DOiBMUzEwMjFBL0xTMTAyMEEvTFMxMDIyQQ0KPiA+ICsJwqAqIE5vdGU6IFB1dCB0aGlzIGRp
+ZSBhdCB0aGUgZW5kIGluIGNhdXNlIG9mIGluY29ycmVjdA0KPiA+IGlkZW50aWZpY2F0aW9uDQo+
+ID4gKwnCoCovDQo+ID4gKwl7IC5kaWUJCT0gIkxTMTAyMUEiLA0KPiA+ICsJwqDCoC5zdnIJCT0g
+MHg4NzAwMDAwMCwNCj4gPiArCcKgwqAubWFzawkJPSAweGZmZjAwMDAwLA0KPiA+ICsJfSwNCj4g
+PiArI2VuZGlmIC8qIENPTkZJR19BUkNIX01YQyB8fCBDT05GSUdfQVJDSF9MQVlFUlNDQVBFICov
+DQo+IA0KPiBJbnN0ZWFkIG9mIHJlbHlpbmcgb24gb3JkZXJpbmcsIGFkZCBtb3JlIGJpdHMgdG8g
+dGhlIG1hc2sgc28gdGhhdCB0aGVyZSdzDQo+IG5vIG92ZXJsYXAuIMKgSSB0aGluayAweGZmZjcw
+MDAwIHdvdWxkIHdvcmsuDQoNCltMdSBZYW5nYm8tQjQ3MDkzXSBPaywgV2lsbCBkbyB0aGF0LiBU
+aGVuIHdlIGFkZCAzIGJpdHMgb2YgJ1ZhcmlvdXMgUGVyc29uYWxpdGllcycgZmllbGQgZm9yIGxz
+MTAyMWEgZGllIGlkZW50aWZpY2F0aW9uLg0KDQo+IA0KPiA+ICtvdXQ6DQo+ID4gKwlrZnJlZShz
+b2NfZGV2X2F0dHIubWFjaGluZSk7DQo+ID4gKwlrZnJlZShzb2NfZGV2X2F0dHIuZmFtaWx5KTsN
+Cj4gPiArCWtmcmVlKHNvY19kZXZfYXR0ci5zb2NfaWQpOw0KPiA+ICsJa2ZyZWUoc29jX2Rldl9h
+dHRyLnJldmlzaW9uKTsNCj4gPiArCWlvdW5tYXAoZ3V0cy0+cmVncyk7DQo+ID4gK291dF9mcmVl
+Og0KPiA+ICsJa2ZyZWUoZ3V0cyk7DQo+ID4gKwlyZXR1cm4gcmV0Ow0KPiA+ICt9DQo+IA0KPiBQ
+bGVhc2UgdXNlIGRldm0uDQoNCltMdSBZYW5nYm8tQjQ3MDkzXSBTb3JyeSBmb3IgZm9yZ2V0dGlu
+ZyB0aGlzLiBXaWxsIGRvIHRoYXQgYW5kIHNlbmQgb3V0IHRoZSBuZXcgdmVyc2lvbiBzb29uLg0K
+VGhhbmtzIGZvciB5b3VyIGNvbW1lbnRzLg0KDQo+IA0KPiAtU2NvdHQNCg0K
