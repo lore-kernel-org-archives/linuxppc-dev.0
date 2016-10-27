@@ -1,45 +1,25 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dsafonov@virtuozzo.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0117.outbound.protection.outlook.com [104.47.1.117])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4W7D2TP1zDt0C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 02:30:48 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9RFT30Q026138
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:30:45 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26bhexndfv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:30:45 -0400
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 09:30:44 -0600
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 32B7F19D8047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:30:02 -0600 (MDT)
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9RFUToM33095828
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 15:30:37 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F06F42804C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:30:36 -0400 (EDT)
-Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id E01632803D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:30:36 -0400 (EDT)
-Subject: [PATCH V8 0/8] powerpc/devtree: Add support for 2 new DRC properties
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: mwb@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 25 Oct 2016 17:34:07 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4YMv6cRKzDvNm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 04:11:55 +1100 (AEDT)
+From: Dmitry Safonov <dsafonov@virtuozzo.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Dmitry Safonov <dsafonov@virtuozzo.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Andy Lutomirski <luto@amacapital.net>, "Oleg
+ Nesterov" <oleg@redhat.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-mm@kvack.org>
+Subject: [PATCHv3 1/8] powerpc/vdso: unify return paths in
+ setup_additional_pages
+Date: Thu, 27 Oct 2016 20:09:41 +0300
+Message-ID: <20161027170948.8279-2-dsafonov@virtuozzo.com>
+In-Reply-To: <20161027170948.8279-1-dsafonov@virtuozzo.com>
+References: <20161027170948.8279-1-dsafonov@virtuozzo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <147743482714.193283.9695504656749292093.stgit@powerkvm6.aus.stglabs.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,71 +29,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Several properties in the DRC device tree format are replaced by
-more compact representations to allow, for example, for the encoding
-of vast amounts of memory, and or reduced duplication of information
-in related data structures.
+Impact: cleanup
 
-"ibm,drc-info": This property, when present, replaces the following
-four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
-and "ibm,drc-power-domains".  This property is defined for all
-dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
-are intended to provide a more compact representation, and reduce some
-search overhead.
+Rename `rc' variable which doesn't seems to mean anything into
+kernel-known `ret'. Combine two function returns into one as it's
+also easier to read.
 
-"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
-node representation within the "ibm,dynamic-reconfiguration-memory"
-property provided by the BMC.  This element format is intended to provide
-a more compact representation of memory, especially, for systems with
-massive amounts of RAM.  To simplify portability, this property is
-converted to the "ibm,dynamic-memory" property during system boot.
-
-"ibm,architecture.vec": Bidirectional communication mechanism between
-the host system and the front end processor indicating what features
-the host system supports and what features the front end processor will
-actually provide.  In this case, we are indicating that the host system
-can support the new device tree structures "ibm,drc-info" and
-"ibm,dynamic-memory-v2".
-
-[V1: Initial presentation of PAPR 2.7 changes to device tree.]
-[V2: Revise constant names.  Fix some syntax errors.  Improve comments.]
-[V3: Revise tests for presence of new properties to always scan devicetree
-     instead of depending upon architecture vec, due to reboot issues.]
-[V4: Rearrange some code changes in patches to better match application,
-     and other code cleanup.]
-[V5: Resynchronize patches.]
-[V6: Resync to latest kernel commit code]
-[V7: Correct mail threading]
-[v8: Insert more useful variable names]
-
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org
+Signed-off-by: Dmitry Safonov <dsafonov@virtuozzo.com>
 ---
+ arch/powerpc/kernel/vdso.c | 19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
 
-Michael Bringmann (8):
-  powerpc/firmware: Add definitions for new firmware features.
-  powerpc/memory: Parse new memory property to register blocks.
-  powerpc/memory: Parse new memory property to initialize structures.
-  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
-  pseries/drc-info: Search new DRC properties for CPU indexes
-  hotplug/drc-info: Add code to search new devtree properties
-  powerpc: Check arch.vec earlier during boot for memory features
-  powerpc: Enable support for new DRC devtree properties
-
-
- arch/powerpc/include/asm/firmware.h             |    5 -
- arch/powerpc/include/asm/prom.h                 |   38 ++++-
- arch/powerpc/kernel/prom.c                      |  103 +++++++++++--
- arch/powerpc/kernel/prom_init.c                 |    3 
- arch/powerpc/mm/numa.c                          |  168 ++++++++++++++++++--
- arch/powerpc/platforms/pseries/Makefile         |    4 
- arch/powerpc/platforms/pseries/firmware.c       |    2 
- arch/powerpc/platforms/pseries/hotplug-memory.c |   93 +++++++++++
- arch/powerpc/platforms/pseries/pseries_energy.c |  189 ++++++++++++++++++++---
- drivers/pci/hotplug/rpadlpar_core.c             |   13 +-
- drivers/pci/hotplug/rpaphp.h                    |    4 
- drivers/pci/hotplug/rpaphp_core.c               |  109 ++++++++++---
- 12 files changed, 628 insertions(+), 103 deletions(-)
-
---
-Signature
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 4111d30badfa..4ffb82a2d9e9 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -154,7 +154,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	struct page **vdso_pagelist;
+ 	unsigned long vdso_pages;
+ 	unsigned long vdso_base;
+-	int rc;
++	int ret = 0;
+ 
+ 	if (!vdso_ready)
+ 		return 0;
+@@ -203,8 +203,8 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 				      ((VDSO_ALIGNMENT - 1) & PAGE_MASK),
+ 				      0, 0);
+ 	if (IS_ERR_VALUE(vdso_base)) {
+-		rc = vdso_base;
+-		goto fail_mmapsem;
++		ret = vdso_base;
++		goto out_up_mmap_sem;
+ 	}
+ 
+ 	/* Add required alignment. */
+@@ -227,21 +227,16 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	 * It's fine to use that for setting breakpoints in the vDSO code
+ 	 * pages though.
+ 	 */
+-	rc = install_special_mapping(mm, vdso_base, vdso_pages << PAGE_SHIFT,
++	ret = install_special_mapping(mm, vdso_base, vdso_pages << PAGE_SHIFT,
+ 				     VM_READ|VM_EXEC|
+ 				     VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC,
+ 				     vdso_pagelist);
+-	if (rc) {
++	if (ret)
+ 		current->mm->context.vdso_base = 0;
+-		goto fail_mmapsem;
+-	}
+-
+-	up_write(&mm->mmap_sem);
+-	return 0;
+ 
+- fail_mmapsem:
++out_up_mmap_sem:
+ 	up_write(&mm->mmap_sem);
+-	return rc;
++	return ret;
+ }
+ 
+ const char *arch_vma_name(struct vm_area_struct *vma)
+-- 
+2.10.1
