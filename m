@@ -3,20 +3,21 @@ Received: from EUR01-VE1-obe.outbound.protection.outlook.com
  (mail-ve1eur01on0117.outbound.protection.outlook.com [104.47.1.117])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4YMs2CkFzDvNm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 04:11:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4YN05PbZzDvNm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 04:12:00 +1100 (AEDT)
 From: Dmitry Safonov <dsafonov@virtuozzo.com>
 To: <linux-kernel@vger.kernel.org>
 CC: Dmitry Safonov <dsafonov@virtuozzo.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Andy Lutomirski <luto@amacapital.net>, Oleg
- Nesterov <oleg@redhat.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-mm@kvack.org>, Laurent Dufour <ldufour@linux.vnet.ibm.com>, "Kirill A.
- Shutemov" <kirill.shutemov@linux.intel.com>, Andrew Morton
- <akpm@linux-foundation.org>
-Subject: [PATCHv3 0/8] powerpc/mm: refactor vDSO mapping code
-Date: Thu, 27 Oct 2016 20:09:40 +0300
-Message-ID: <20161027170948.8279-1-dsafonov@virtuozzo.com>
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Andy Lutomirski <luto@amacapital.net>, "Oleg
+ Nesterov" <oleg@redhat.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-mm@kvack.org>
+Subject: [PATCHv3 5/8] powerpc/vdso: split map_vdso from
+ arch_setup_additional_pages
+Date: Thu, 27 Oct 2016 20:09:45 +0300
+Message-ID: <20161027170948.8279-6-dsafonov@virtuozzo.com>
+In-Reply-To: <20161027170948.8279-1-dsafonov@virtuozzo.com>
+References: <20161027170948.8279-1-dsafonov@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,73 +29,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes since v1, v2:
-- use vdso64_pages only under CONFIG_PPC64 (32-bit build fix)
-- remove arch_vma_name helper as not needed anymore,
-  simplify vdso_base pointer initializing in map_vdso()
+Impact: cleanup
 
-Cleanup patches for vDSO on powerpc.
-Originally, I wanted to add vDSO remapping on arm/aarch64 and
-I decided to cleanup that part on powerpc.
-I've add a hook for vm_ops for vDSO just like I did for x86,
-which makes cross-arch arch_mremap hook no more needed.
-Other changes - reduce exhaustive code duplication by
-separating the common vdso code.
+I'll be easier to introduce vm_special_mapping struct in
+a smaller map_vdso() function (see the next patches).
+The same way it's handeled on x86.
 
-No visible to userspace changes expected.
-Tested on qemu with buildroot rootfs.
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org
+Signed-off-by: Dmitry Safonov <dsafonov@virtuozzo.com>
+---
+ arch/powerpc/kernel/vdso.c | 67 +++++++++++++++++++++-------------------------
+ 1 file changed, 31 insertions(+), 36 deletions(-)
 
-Dmitry Safonov (8):
-  powerpc/vdso: unify return paths in setup_additional_pages
-  powerpc/vdso: remove unused params in vdso_do_func_patch{32,64}
-  powerpc/vdso: separate common code in vdso_common
-  powerpc/vdso: introduce init_vdso{32,64}_pagelist
-  powerpc/vdso: split map_vdso from arch_setup_additional_pages
-  powerpc/vdso: switch from legacy_special_mapping_vmops
-  mm: kill arch_mremap
-  powerpc/vdso: remove arch_vma_name
-
- arch/alpha/include/asm/Kbuild            |   1 -
- arch/arc/include/asm/Kbuild              |   1 -
- arch/arm/include/asm/Kbuild              |   1 -
- arch/arm64/include/asm/Kbuild            |   1 -
- arch/avr32/include/asm/Kbuild            |   1 -
- arch/blackfin/include/asm/Kbuild         |   1 -
- arch/c6x/include/asm/Kbuild              |   1 -
- arch/cris/include/asm/Kbuild             |   1 -
- arch/frv/include/asm/Kbuild              |   1 -
- arch/h8300/include/asm/Kbuild            |   1 -
- arch/hexagon/include/asm/Kbuild          |   1 -
- arch/ia64/include/asm/Kbuild             |   1 -
- arch/m32r/include/asm/Kbuild             |   1 -
- arch/m68k/include/asm/Kbuild             |   1 -
- arch/metag/include/asm/Kbuild            |   1 -
- arch/microblaze/include/asm/Kbuild       |   1 -
- arch/mips/include/asm/Kbuild             |   1 -
- arch/mn10300/include/asm/Kbuild          |   1 -
- arch/nios2/include/asm/Kbuild            |   1 -
- arch/openrisc/include/asm/Kbuild         |   1 -
- arch/parisc/include/asm/Kbuild           |   1 -
- arch/powerpc/include/asm/mm-arch-hooks.h |  28 --
- arch/powerpc/kernel/vdso.c               | 502 +++++--------------------------
- arch/powerpc/kernel/vdso_common.c        | 248 +++++++++++++++
- arch/s390/include/asm/Kbuild             |   1 -
- arch/score/include/asm/Kbuild            |   1 -
- arch/sh/include/asm/Kbuild               |   1 -
- arch/sparc/include/asm/Kbuild            |   1 -
- arch/tile/include/asm/Kbuild             |   1 -
- arch/um/include/asm/Kbuild               |   1 -
- arch/unicore32/include/asm/Kbuild        |   1 -
- arch/x86/include/asm/Kbuild              |   1 -
- arch/xtensa/include/asm/Kbuild           |   1 -
- include/asm-generic/mm-arch-hooks.h      |  16 -
- include/linux/mm-arch-hooks.h            |  25 --
- mm/mremap.c                              |   4 -
- 36 files changed, 324 insertions(+), 529 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/mm-arch-hooks.h
- create mode 100644 arch/powerpc/kernel/vdso_common.c
- delete mode 100644 include/asm-generic/mm-arch-hooks.h
- delete mode 100644 include/linux/mm-arch-hooks.h
-
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 25d03d773c49..e68601ffc9ad 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -143,52 +143,23 @@ struct lib64_elfinfo
+ 	unsigned long	text;
+ };
+ 
+-
+-/*
+- * This is called from binfmt_elf, we create the special vma for the
+- * vDSO and insert it into the mm struct tree
+- */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
++static int map_vdso(struct page **vdso_pagelist, unsigned long vdso_pages,
++		unsigned long vdso_base)
+ {
+ 	struct mm_struct *mm = current->mm;
+-	struct page **vdso_pagelist;
+-	unsigned long vdso_pages;
+-	unsigned long vdso_base;
+ 	int ret = 0;
+ 
+-	if (!vdso_ready)
+-		return 0;
+-
+-#ifdef CONFIG_PPC64
+-	if (is_32bit_task()) {
+-		vdso_pagelist = vdso32_pagelist;
+-		vdso_pages = vdso32_pages;
+-		vdso_base = VDSO32_MBASE;
+-	} else {
+-		vdso_pagelist = vdso64_pagelist;
+-		vdso_pages = vdso64_pages;
+-		/*
+-		 * On 64bit we don't have a preferred map address. This
+-		 * allows get_unmapped_area to find an area near other mmaps
+-		 * and most likely share a SLB entry.
+-		 */
+-		vdso_base = 0;
+-	}
+-#else
+-	vdso_pagelist = vdso32_pagelist;
+-	vdso_pages = vdso32_pages;
+-	vdso_base = VDSO32_MBASE;
+-#endif
+-
+-	current->mm->context.vdso_base = 0;
++	mm->context.vdso_base = 0;
+ 
+-	/* vDSO has a problem and was disabled, just don't "enable" it for the
++	/*
++	 * vDSO has a problem and was disabled, just don't "enable" it for the
+ 	 * process
+ 	 */
+ 	if (vdso_pages == 0)
+ 		return 0;
++
+ 	/* Add a page to the vdso size for the data page */
+-	vdso_pages ++;
++	vdso_pages++;
+ 
+ 	/*
+ 	 * pick a base address for the vDSO in process space. We try to put it
+@@ -239,6 +210,30 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	return ret;
+ }
+ 
++/*
++ * This is called from binfmt_elf, we create the special vma for the
++ * vDSO and insert it into the mm struct tree
++ */
++int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
++{
++	if (!vdso_ready)
++		return 0;
++
++	if (is_32bit_task())
++		return map_vdso(vdso32_pagelist, vdso32_pages, VDSO32_MBASE);
++#ifdef CONFIG_PPC64
++	else
++		/*
++		 * On 64bit we don't have a preferred map address. This
++		 * allows get_unmapped_area to find an area near other mmaps
++		 * and most likely share a SLB entry.
++		 */
++		return map_vdso(vdso64_pagelist, vdso64_pages, 0);
++#endif
++	WARN_ONCE(1, "task is not 32-bit on non PPC64 kernel");
++	return -1;
++}
++
+ const char *arch_vma_name(struct vm_area_struct *vma)
+ {
+ 	if (vma->vm_mm && vma->vm_start == vma->vm_mm->context.vdso_base)
 -- 
 2.10.1
