@@ -1,23 +1,23 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Kw10MmNzDvKB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 19:35:28 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Kw16n3gzDvKB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 19:35:29 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9R8XsFo073589
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 04:35:26 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bc1heyuv-1
+ u9R8Xr1Y115444
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 04:35:27 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bcpbn6gu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 04:35:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 04:35:27 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 02:35:25 -0600
+ Thu, 27 Oct 2016 02:35:26 -0600
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -32,13 +32,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, skiboot@lists.ozlabs.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v2 1/3] powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
-Date: Thu, 27 Oct 2016 14:05:05 +0530
+Subject: [PATCH v2 2/3] cpuidle:powernv: Add helper function to populate
+ powernv idle states.
+Date: Thu, 27 Oct 2016 14:05:06 +0530
 In-Reply-To: <cover.1477556602.git.ego@linux.vnet.ibm.com>
 References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
 In-Reply-To: <cover.1477556602.git.ego@linux.vnet.ibm.com>
 References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
-Message-Id: <c7c0624829a31929c2920acd8424f8fa7419d581.1477556602.git.ego@linux.vnet.ibm.com>
+Message-Id: <d7298ac18999f842f6eaf826cf21250503e40890.1477556602.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,125 +51,157 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Currently all the low-power idle states are expected to wake up
-at reset vector 0x100. Which is why the macro IDLE_STATE_ENTER_SEQ
-that puts the CPU to an idle state and never returns.
+In the current code for powernv_add_idle_states, there is a lot of code
+duplication while initializing an idle state in powernv_states table.
 
-On ISA_300, when the ESL and EC bits in the PSSCR are zero, the
-CPU is expected to wake up at the next instruction of the idle
-instruction.
-
-This patch adds a new macro named IDLE_STATE_ENTER_SEQ_NORET for the
-no-return variant and reuses the name IDLE_STATE_ENTER_SEQ
-for a variant that allows resuming operation at the instruction next
-to the idle-instruction.
+Add an inline helper function to populate the powernv_states[] table for
+a given idle state. Invoke this for populating the "Nap", "Fastsleep"
+and the stop states in powernv_add_idle_states.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cpuidle.h   |  5 ++++-
- arch/powerpc/kernel/exceptions-64s.S |  6 +++---
- arch/powerpc/kernel/idle_book3s.S    | 10 +++++-----
- 3 files changed, 12 insertions(+), 9 deletions(-)
+ drivers/cpuidle/cpuidle-powernv.c | 82 +++++++++++++++++++++++----------------
+ include/linux/cpuidle.h           |  1 +
+ 2 files changed, 49 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-index 3919332..0a3255b 100644
---- a/arch/powerpc/include/asm/cpuidle.h
-+++ b/arch/powerpc/include/asm/cpuidle.h
-@@ -21,7 +21,7 @@
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 7fe442c..11b22b9 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -167,6 +167,28 @@ static int powernv_cpuidle_driver_init(void)
+ 	return 0;
+ }
  
- /* Idle state entry routines */
- #ifdef	CONFIG_PPC_P7_NAP
--#define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
-+#define IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
- 	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
- 	std	r0,0(r1);					\
- 	ptesync;						\
-@@ -29,6 +29,9 @@
- 1:	cmpd	cr0,r0,r0;					\
- 	bne	1b;						\
- 	IDLE_INST;						\
++static inline void add_powernv_state(int index, const char *name,
++				     unsigned int flags,
++				     int (*idle_fn)(struct cpuidle_device *,
++						    struct cpuidle_driver *,
++						    int),
++				     unsigned int target_residency,
++				     unsigned int exit_latency,
++				     u64 psscr_val)
++{
++	strncpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
++	strncpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
++	powernv_states[index].flags = flags;
++	powernv_states[index].target_residency = target_residency;
++	powernv_states[index].exit_latency = exit_latency;
++	powernv_states[index].enter = idle_fn;
 +
-+#define	IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)			\
-+	IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
- 	b	.
- #endif /* CONFIG_PPC_P7_NAP */
++	if (idle_fn != stop_loop)
++		return;
++
++	stop_psscr_table[index] = psscr_val;
++}
++
+ static int powernv_add_idle_states(void)
+ {
+ 	struct device_node *power_mgt;
+@@ -236,6 +258,7 @@ static int powernv_add_idle_states(void)
+ 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
  
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index f129408..7a71cdf 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -366,12 +366,12 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
- 	cmpwi	r3,PNV_THREAD_NAP
- 	bgt	10f
--	IDLE_STATE_ENTER_SEQ(PPC_NAP)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
- 	/* No return */
- 10:
- 	cmpwi	r3,PNV_THREAD_SLEEP
- 	bgt	2f
--	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
- 	/* No return */
+ 	for (i = 0; i < dt_idle_states; i++) {
++		unsigned int exit_latency, target_residency;
+ 		/*
+ 		 * If an idle state has exit latency beyond
+ 		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+@@ -244,27 +267,30 @@ static int powernv_add_idle_states(void)
+ 		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
+ 			continue;
  
- 2:
-@@ -385,7 +385,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	 */
- 	ori	r13,r13,1
- 	SET_PACA(r13)
--	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
- 	/* No return */
- 4:
++		exit_latency = ((unsigned int)latency_ns[i]) / 1000;
++		target_residency = (!rc) ? ((unsigned int)residency_ns[i]) : 0;
++		/*
++		 * Firmware passes residency values in ns.
++		 * cpuidle expects it in us.
++		 */
++		target_residency /= 1000;
++
+ 		/*
+ 		 * Cpuidle accepts exit_latency and target_residency in us.
+ 		 * Use default target_residency values if f/w does not expose it.
+ 		 */
+ 		if (flags[i] & OPAL_PM_NAP_ENABLED) {
++			target_residency = 100;
+ 			/* Add NAP state */
+-			strcpy(powernv_states[nr_idle_states].name, "Nap");
+-			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+-			powernv_states[nr_idle_states].flags = 0;
+-			powernv_states[nr_idle_states].target_residency = 100;
+-			powernv_states[nr_idle_states].enter = nap_loop;
++			add_powernv_state(nr_idle_states, "Nap",
++					  CPUIDLE_FLAG_NONE, nap_loop,
++					  target_residency, exit_latency, 0);
+ 		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+ 				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+-			strncpy(powernv_states[nr_idle_states].name,
+-				names[i], CPUIDLE_NAME_LEN);
+-			strncpy(powernv_states[nr_idle_states].desc,
+-				names[i], CPUIDLE_NAME_LEN);
+-			powernv_states[nr_idle_states].flags = 0;
+-
+-			powernv_states[nr_idle_states].enter = stop_loop;
+-			stop_psscr_table[nr_idle_states] = psscr_val[i];
++			add_powernv_state(nr_idle_states, names[i],
++					  CPUIDLE_FLAG_NONE, stop_loop,
++					  target_residency, exit_latency,
++					  psscr_val[i]);
+ 		}
+ 
+ 		/*
+@@ -274,32 +300,20 @@ static int powernv_add_idle_states(void)
+ #ifdef CONFIG_TICK_ONESHOT
+ 		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+ 			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
++			target_residency = 300000;
+ 			/* Add FASTSLEEP state */
+-			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+-			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+-			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+-			powernv_states[nr_idle_states].target_residency = 300000;
+-			powernv_states[nr_idle_states].enter = fastsleep_loop;
++			add_powernv_state(nr_idle_states, "FastSleep",
++					  CPUIDLE_FLAG_TIMER_STOP,
++					  fastsleep_loop,
++					  target_residency, exit_latency, 0);
+ 		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
+ 				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+-			strncpy(powernv_states[nr_idle_states].name,
+-				names[i], CPUIDLE_NAME_LEN);
+-			strncpy(powernv_states[nr_idle_states].desc,
+-				names[i], CPUIDLE_NAME_LEN);
+-
+-			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+-			powernv_states[nr_idle_states].enter = stop_loop;
+-			stop_psscr_table[nr_idle_states] = psscr_val[i];
++			add_powernv_state(nr_idle_states, names[i],
++					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
++					  target_residency, exit_latency,
++					  psscr_val[i]);
+ 		}
  #endif
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 72dac0b..be90e2f 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -205,7 +205,7 @@ pnv_enter_arch207_idle_mode:
- 	stb	r3,PACA_THREAD_IDLE_STATE(r13)
- 	cmpwi	cr3,r3,PNV_THREAD_SLEEP
- 	bge	cr3,2f
--	IDLE_STATE_ENTER_SEQ(PPC_NAP)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
- 	/* No return */
- 2:
- 	/* Sleep or winkle */
-@@ -239,7 +239,7 @@ pnv_fastsleep_workaround_at_entry:
+-		powernv_states[nr_idle_states].exit_latency =
+-				((unsigned int)latency_ns[i]) / 1000;
+-
+-		if (!rc) {
+-			powernv_states[nr_idle_states].target_residency =
+-				((unsigned int)residency_ns[i]) / 1000;
+-		}
+-
+ 		nr_idle_states++;
+ 	}
+ out:
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index bb31373..c4e10f8 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -62,6 +62,7 @@ struct cpuidle_state {
+ };
  
- common_enter: /* common code for all the threads entering sleep or winkle */
- 	bgt	cr3,enter_winkle
--	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_SLEEP)
+ /* Idle State Flags */
++#define CPUIDLE_FLAG_NONE       (0x00)
+ #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
+ #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
  
- fastsleep_workaround_at_entry:
- 	ori	r15,r15,PNV_CORE_IDLE_LOCK_BIT
-@@ -261,7 +261,7 @@ fastsleep_workaround_at_entry:
- enter_winkle:
- 	bl	save_sprs_to_stack
- 
--	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
- 
- /*
-  * r3 - requested stop state
-@@ -280,7 +280,7 @@ power_enter_stop:
- 	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
- 	cmpd	r3,r4
- 	bge	2f
--	IDLE_STATE_ENTER_SEQ(PPC_STOP)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_STOP)
- 2:
- /*
-  * Entering deep idle state.
-@@ -302,7 +302,7 @@ lwarx_loop_stop:
- 
- 	bl	save_sprs_to_stack
- 
--	IDLE_STATE_ENTER_SEQ(PPC_STOP)
-+	IDLE_STATE_ENTER_SEQ_NORET(PPC_STOP)
- 
- _GLOBAL(power7_idle)
- 	/* Now check if user or arch enabled NAP mode */
 -- 
 1.9.4
