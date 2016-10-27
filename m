@@ -1,51 +1,51 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tnw0Jp5zDvLS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:30:43 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tnw3qdmzDvKh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:30:44 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9RESiTw047330
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:41 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bj3awptw-1
+ u9RESerI085281
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:42 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bk0vhy09-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:42 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 08:30:39 -0600
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C27D11FF003B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:17 -0600 (MDT)
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9REUbDG15466914
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 14:30:37 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 31BFE124037
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
+ Thu, 27 Oct 2016 08:30:41 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 3C1C219D8065
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:02 -0600 (MDT)
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9REU0OX10551592
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 07:30:37 -0700
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 57EA0BE047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:37 -0600 (MDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP id 13FAA124051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP id 420E8BE038
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:37 -0600 (MDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 76F19C203E31
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:24:28 -0500 (CDT)
-Subject: [PATCH V8 1/8] powerpc/firmware: Add definitions for new firmware
- features.
+ by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 94229C203E35
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:25:20 -0500 (CDT)
+Subject: [PATCH V8 5/8] pseries/drc-info: Search new DRC properties for CPU
+ indexes
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Oct 2016 09:24:28 -0500
+Date: Thu, 27 Oct 2016 09:25:20 -0500
 In-Reply-To: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
 References: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <147757825707.2995.5140446748238845005.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <147757831242.2995.15901624227458436059.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,16 +55,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Firmware Features: Define new bit flags representing the presence of
-new device tree properties "ibm,drc-info", and "ibm,dynamic-memory-v2".
-These flags are used to tell the front end processor when the Linux
-kernel supports the new properties, and by the front end processor to
-tell the Linux kernel that the new properties are present in the devie
-tree.
+pseries/drc-info: Provide parallel routines to convert between
+drc_index and CPU numbers at runtime, using the older device-tree
+properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
 
-[V2: Revise constant names for improved clarity.]
-[V3: Fix comments]
-[V4: Fix some spacing]
+[V2: Revise contant names.]
+[V3: No change.]
+[V4: No change.]
 [V5: Resynchronize/resubmit]
 [V6: No change]
 [V7: Correct mail threading]
@@ -72,57 +70,227 @@ tree.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/firmware.h       |    5 ++++-
- arch/powerpc/include/asm/prom.h           |    2 ++
- arch/powerpc/platforms/pseries/firmware.c |    2 ++
- 3 files changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/pseries_energy.c |  189 ++++++++++++++++++++---
+ 1 file changed, 165 insertions(+), 24 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 1e0b5a5..6b5cf38 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -51,6 +51,8 @@
- #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
- #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
- #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
-+#define FW_FEATURE_DYN_MEM_V2	ASM_CONST(0x0000000400000000)
-+#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
+diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+index 164a13d..05fb5e8 100644
+--- a/arch/powerpc/platforms/pseries/pseries_energy.c
++++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+@@ -35,10 +35,73 @@ static int sysfs_entries;
  
- #ifndef __ASSEMBLY__
+ /* Helper Routines to convert between drc_index to cpu numbers */
  
-@@ -66,7 +68,8 @@ enum {
- 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
- 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
- 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
--		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
-+		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
-+		FW_FEATURE_DYN_MEM_V2 | FW_FEATURE_DRC_INFO,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 7f436ba..bc7c4b5 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -155,6 +155,8 @@ struct of_drconf_cell {
- #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
- #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
- #define OV5_SUB_PROCESSORS	0x0F01	/* 1,2,or 4 Sub-Processors supported */
-+#define OV5_DYN_MEM_V2		0x1680	/* Redef Prop Structures: dyn-mem-v2 */
-+#define OV5_DRC_INFO		0x1640	/* Redef Prop Structures: drc-info   */
++void read_one_drc_info(int **info, char **dtype, char **dname,
++			unsigned long int *drc_index_start_p,
++			unsigned long int *num_sequential_elems_p,
++			unsigned long int *sequential_inc_p,
++			unsigned long int *last_drc_index_p)
++{
++	char *drc_type, *drc_name_prefix, *pc;
++	u32 drc_index_start, num_sequential_elems;
++	u32 sequential_inc, last_drc_index;
++
++	drc_index_start = num_sequential_elems = 0;
++	sequential_inc = last_drc_index = 0;
++
++	/* Get drc-type:encode-string */
++	pc = (char *)info;
++	drc_type = pc;
++	pc += (strlen(drc_type) + 1);
++
++	/* Get drc-name-prefix:encode-string */
++	drc_name_prefix = (char *)pc;
++	pc += (strlen(drc_name_prefix) + 1);
++
++	/* Get drc-index-start:encode-int */
++	memcpy(&drc_index_start, pc, 4);
++	drc_index_start = be32_to_cpu(drc_index_start);
++	pc += 4;
++
++	/* Get/skip drc-name-suffix-start:encode-int */
++	pc += 4;
++
++	/* Get number-sequential-elements:encode-int */
++	memcpy(&num_sequential_elems, pc, 4);
++	num_sequential_elems = be32_to_cpu(num_sequential_elems);
++	pc += 4;
++
++	/* Get sequential-increment:encode-int */
++	memcpy(&sequential_inc, pc, 4);
++	sequential_inc = be32_to_cpu(sequential_inc);
++	pc += 4;
++
++	/* Get/skip drc-power-domain:encode-int */
++	pc += 4;
++
++	/* Should now know end of current entry */
++	last_drc_index = drc_index_start +
++			((num_sequential_elems-1)*sequential_inc);
++
++	(*info) = (int *)pc;
++
++	if (dtype)
++		*dtype = drc_type;
++	if (dname)
++		*dname = drc_name_prefix;
++	if (drc_index_start_p)
++		*drc_index_start_p = drc_index_start;
++	if (num_sequential_elems_p)
++		*num_sequential_elems_p = num_sequential_elems;
++	if (sequential_inc_p)
++		*sequential_inc_p = sequential_inc;
++	if (last_drc_index_p)
++		*last_drc_index_p = last_drc_index;
++}
++EXPORT_SYMBOL(read_one_drc_info);
++
+ static u32 cpu_to_drc_index(int cpu)
+ {
+ 	struct device_node *dn = NULL;
+-	const int *indexes;
+ 	int i;
+ 	int rc = 1;
+ 	u32 ret = 0;
+@@ -46,18 +109,60 @@ static u32 cpu_to_drc_index(int cpu)
+ 	dn = of_find_node_by_path("/cpus");
+ 	if (dn == NULL)
+ 		goto err;
+-	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+-	if (indexes == NULL)
+-		goto err_of_node_put;
++
+ 	/* Convert logical cpu number to core number */
+ 	i = cpu_core_index_of_thread(cpu);
+-	/*
+-	 * The first element indexes[0] is the number of drc_indexes
+-	 * returned in the list.  Hence i+1 will get the drc_index
+-	 * corresponding to core number i.
+-	 */
+-	WARN_ON(i > indexes[0]);
+-	ret = indexes[i + 1];
++
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
++		int *info = (int *)4;
++		unsigned long int num_set_entries, j, check_val = i;
++		unsigned long int drc_index_start = 0;
++		unsigned long int last_drc_index = 0;
++		unsigned long int num_sequential_elems = 0;
++		unsigned long int sequential_inc = 0;
++		char *dtype;
++		char *dname;
++
++		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
++		if (info == NULL)
++			goto err_of_node_put;
++
++		num_set_entries = be32_to_cpu(*info++);
++
++		for (j = 0; j < num_set_entries; j++) {
++
++			read_one_drc_info(&info, &dtype, &dname,
++					&drc_index_start,
++					&num_sequential_elems,
++					&sequential_inc, &last_drc_index);
++			if (strcmp(dtype, "CPU"))
++				goto err;
++
++			if (check_val < last_drc_index)
++				break;
++
++			WARN_ON(((check_val-drc_index_start)%
++					sequential_inc) != 0);
++		}
++		WARN_ON((num_sequential_elems == 0) | (sequential_inc == 0));
++
++		ret = last_drc_index + (check_val*sequential_inc);
++	} else {
++		const int *indexes;
++
++		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
++		if (indexes == NULL)
++			goto err_of_node_put;
++
++		/*
++		 * The first element indexes[0] is the number of drc_indexes
++		 * returned in the list.  Hence i+1 will get the drc_index
++		 * corresponding to core number i.
++		 */
++		WARN_ON(i > indexes[0]);
++		ret = indexes[i + 1];
++	}
++
+ 	rc = 0;
  
- /* Option Vector 6: IBM PAPR hints */
- #define OV6_LINUX		0x02	/* Linux is our OS */
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index ea7f09b..d2d23f5 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -113,6 +113,8 @@ static __initdata struct vec5_fw_feature
- vec5_fw_features_table[] = {
- 	{FW_FEATURE_TYPE1_AFFINITY,	OV5_TYPE1_AFFINITY},
- 	{FW_FEATURE_PRRN,		OV5_PRRN},
-+	{FW_FEATURE_DYN_MEM_V2,		OV5_DYN_MEM_V2},
-+	{FW_FEATURE_DRC_INFO,		OV5_DRC_INFO},
- };
+ err_of_node_put:
+@@ -78,21 +183,57 @@ static int drc_index_to_cpu(u32 drc_index)
+ 	dn = of_find_node_by_path("/cpus");
+ 	if (dn == NULL)
+ 		goto err;
+-	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+-	if (indexes == NULL)
+-		goto err_of_node_put;
+-	/*
+-	 * First element in the array is the number of drc_indexes
+-	 * returned.  Search through the list to find the matching
+-	 * drc_index and get the core number
+-	 */
+-	for (i = 0; i < indexes[0]; i++) {
+-		if (indexes[i + 1] == drc_index)
++
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
++		int *info = (int *)dn;
++		unsigned long int num_set_entries, j, ret;
++		unsigned long int drc_index_start = 0;
++		unsigned long int last_drc_index = 0;
++		unsigned long int num_sequential_elems = 0;
++		unsigned long int sequential_inc = 0;
++		char *dtype, *dname;
++
++		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
++		if (info == NULL)
++			goto err_of_node_put;
++
++		num_set_entries = be32_to_cpu(*info++);
++
++		for (j = 0; j < num_set_entries; j++) {
++			read_one_drc_info(&info, &dtype, &dname,
++					&drc_index_start,
++					&num_sequential_elems,
++					&sequential_inc, &last_drc_index);
++			if (strcmp(dtype, "CPU"))
++				goto err;
++
++			WARN_ON(drc_index < drc_index_start);
++			if (drc_index > last_drc_index)
++				continue;
++
++			WARN_ON(((drc_index-drc_index_start)%
++					sequential_inc) != 0);
++
++			ret = ((drc_index-drc_index_start)/sequential_inc);
+ 			break;
++		}
++	} else {
++		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
++		if (indexes == NULL)
++			goto err_of_node_put;
++		/*
++		 * First element in the array is the number of drc_indexes
++		 * returned.  Search through the list to find the matching
++		 * drc_index and get the core number
++		 */
++		for (i = 0; i < indexes[0]; i++) {
++			if (indexes[i + 1] == drc_index)
++				break;
++		}
++		/* Convert core number to logical cpu number */
++		cpu = cpu_first_thread_of_core(i);
++		rc = 0;
+ 	}
+-	/* Convert core number to logical cpu number */
+-	cpu = cpu_first_thread_of_core(i);
+-	rc = 0;
  
- static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
+ err_of_node_put:
+ 	of_node_put(dn);
