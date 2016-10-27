@@ -1,47 +1,24 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t42Gz0hL4zDt2y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 07:50:50 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9QKmXZn013927
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 16:50:48 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26b3dx94w8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2016 16:50:48 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Thu, 27 Oct 2016 06:50:44 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 40E162CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 07:50:41 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9QKof0O7340336
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 07:50:41 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9QKoe5s012766
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 07:50:41 +1100
-Subject: Re: [bug report] [POWERPC] 4xx: Add 405GPr and 405EP support in
- boot wrapper
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: matthias.fuchs@esd-electronics.com, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 26 Oct 2016 15:50:39 -0500
-In-Reply-To: <20161026190702.GS4418@mwanda>
-References: <20161026130311.GA3080@elgon.mountain>
- <1477508243.2828.70.camel@au1.ibm.com> <20161026190702.GS4418@mwanda>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1477515039.2828.71.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t46k43QPGzDvHl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 11:11:08 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Valentin Rothberg <valentinrothberg@gmail.com>
+Cc: Cyril Bur <cyrilbur@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc: process.c: fix Kconfig typo
+In-Reply-To: <CAD3Xx4JO-BAtLkV3YpRL8rF6-k6qXv5Hx=eyBukN4nz=fnypow@mail.gmail.com>
+References: <20161005055726.5614-1-valentinrothberg@gmail.com>
+ <1475708074.735.2.camel@gmail.com> <878ttby7vh.fsf@concordia.ellerman.id.au>
+ <CAD3Xx4KqNbpjognpyC=NVqFQ0wH+uc+vQU23PP99625ufCLZnA@mail.gmail.com>
+ <87y41bwfyy.fsf@concordia.ellerman.id.au>
+ <CAD3Xx4JO-BAtLkV3YpRL8rF6-k6qXv5Hx=eyBukN4nz=fnypow@mail.gmail.com>
+Date: Thu, 27 Oct 2016 11:11:08 +1100
+Message-ID: <87pommwt0j.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,30 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-10-26 at 22:07 +0300, Dan Carpenter wrote:
-> On Wed, Oct 26, 2016 at 01:57:23PM -0500, Benjamin Herrenschmidt
-> wrote:
-> > 
-> > On Wed, 2016-10-26 at 16:03 +0300, Dan Carpenter wrote:
-> > > 
-> > >    565          cbdv = ((pllmr & 0x00060000) >> 17) + 1; /*
-> > > CPU:PLB */
-> > >    566          opdv = ((pllmr & 0x00018000) >> 15) + 1; /*
-> > > PLB:OPB */
-> > >    567          ppdv = ((pllmr & 0x00001800) >> 13) + 1; /*
-> > > PLB:PCI */
-> > >                                  ^^^^^^^^^^^^^^^^^
-> > > This is zero.  It looks like 0x00000600 was probably intended?
-> > 
-> > I just checked the spec and for the 405gp and it's 0x6000 (bits 17
-> > and
-> > 18 in IBM ordering)
-> > 
-> 
-> I'm on the road and there is no way I'm going to remember to do this
-> when I get back...  Could you send the patch?
+Valentin Rothberg <valentinrothberg@gmail.com> writes:
+> On Wed, Oct 26, 2016 at 12:40 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> diff --git a/scripts/checkkconfigsymbols.py b/scripts/checkkconfigsymbols.py
+>> index a32e4da4c117..3820f00b066a 100755
+>> --- a/scripts/checkkconfigsymbols.py
+>> +++ b/scripts/checkkconfigsymbols.py
+>> @@ -88,7 +88,7 @@ def parse_options():
+>>      if args.commit and args.diff:
+>>          sys.exit("Please specify only one option at once.")
+>>
+>> -    if args.diff and not re.match(r"^[\w\-\.]+\.\.[\w\-\.]+$", args.diff):
+>> +    if args.diff and not re.match(r"^[\w\-\.\^]+\.\.[\w\-\.\^]+$", args.diff):
+>>          sys.exit("Please specify valid input in the following format: "
+>>                   "\'commit1..commit2\'")
+>
+> Looks great.  If you agree, I'll pick this up and send the patch to
+> Greg (who takes patches for this script)?
 
-I'll try to remember when I'm out of meeting frenzy ;-)
+That'd be great, thanks.
 
-Cheers,
-Ben.
+cheers
