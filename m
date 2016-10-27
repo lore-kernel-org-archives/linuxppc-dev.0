@@ -3,49 +3,49 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tnv3pT4zDvKg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4Tnw0Jp5zDvLS
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 01:30:43 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9RETDgu129463
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:40 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26bjes48b6-1
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9RESiTw047330
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:41 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bj3awptw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:41 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 27 Oct 2016 10:30:39 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A03A7C90045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:22 -0400 (EDT)
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9REUbL961472896
+ Thu, 27 Oct 2016 08:30:39 -0600
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C27D11FF003B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 08:30:17 -0600 (MDT)
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9REUbDG15466914
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 14:30:37 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 32D9A2805A
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 31BFE124037
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id 1444F2803F
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP id 13FAA124051
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:30:37 -0400 (EDT)
 Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 648D8C203E34
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:25:07 -0500 (CDT)
-Subject: [PATCH V8 4/8] pseries/hotplug init: Convert new DRC memory
- property for hotplug runtime
+ by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 76F19C203E31
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 09:24:28 -0500 (CDT)
+Subject: [PATCH V8 1/8] powerpc/firmware: Add definitions for new firmware
+ features.
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Oct 2016 09:25:07 -0500
+Date: Thu, 27 Oct 2016 09:24:28 -0500
 In-Reply-To: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
 References: <147757821176.2995.6400281020620333555.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <147757829990.2995.2052762164462508052.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <147757825707.2995.5140446748238845005.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,19 +55,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hotplug_init: Simplify the code needed for runtime memory hotplug and
-maintenance with a conversion routine that transforms the compressed
-property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
-a single set of routines should be required at runtime to parse, edit,
-and manipulate the memory representation in the device tree.  Similarly,
-any userspace applications that need this information will only need
-to recognize the older format to be able to continue to operate.
+Firmware Features: Define new bit flags representing the presence of
+new device tree properties "ibm,drc-info", and "ibm,dynamic-memory-v2".
+These flags are used to tell the front end processor when the Linux
+kernel supports the new properties, and by the front end processor to
+tell the Linux kernel that the new properties are present in the devie
+tree.
 
-[V2: Revise contant names.]
-[V3: Replace use of in-code compile flag encompassing file by Makefile mod.]
-[V4: Remove unneeded code braces.
-     Simplify allocation of a couple of loop index variables.]
+[V2: Revise constant names for improved clarity.]
+[V3: Fix comments]
+[V4: Fix some spacing]
 [V5: Resynchronize/resubmit]
 [V6: No change]
 [V7: Correct mail threading]
@@ -75,144 +72,57 @@ to recognize the older format to be able to continue to operate.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/Makefile         |    4 -
- arch/powerpc/platforms/pseries/hotplug-memory.c |   93 +++++++++++++++++++++++
- 2 files changed, 95 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/firmware.h       |    5 ++++-
+ arch/powerpc/include/asm/prom.h           |    2 ++
+ arch/powerpc/platforms/pseries/firmware.c |    2 ++
+ 3 files changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index fedc2ccf0..e74cf6c 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -5,14 +5,14 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   of_helpers.o \
- 			   setup.o iommu.o event_sources.o ras.o \
- 			   firmware.o power.o dlpar.o mobility.o rng.o \
--			   pci.o pci_dlpar.o eeh_pseries.o msi.o
-+			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
-+			   hotplug-memory.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
- obj-$(CONFIG_KEXEC)	+= kexec.o
- obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 1e0b5a5..6b5cf38 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -51,6 +51,8 @@
+ #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
+ #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
+ #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
++#define FW_FEATURE_DYN_MEM_V2	ASM_CONST(0x0000000400000000)
++#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
  
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
--obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
+ #ifndef __ASSEMBLY__
  
- obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
- obj-$(CONFIG_HVCS)		+= hvcserver.o
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 76ec104..461f883 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -24,6 +24,8 @@
- #include <asm/sparsemem.h>
- #include "pseries.h"
+@@ -66,7 +68,8 @@ enum {
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+-		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
++		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
++		FW_FEATURE_DYN_MEM_V2 | FW_FEATURE_DRC_INFO,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f436ba..bc7c4b5 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -155,6 +155,8 @@ struct of_drconf_cell {
+ #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+ #define OV5_SUB_PROCESSORS	0x0F01	/* 1,2,or 4 Sub-Processors supported */
++#define OV5_DYN_MEM_V2		0x1680	/* Redef Prop Structures: dyn-mem-v2 */
++#define OV5_DRC_INFO		0x1640	/* Redef Prop Structures: drc-info   */
  
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+
- static bool rtas_hp_event;
- 
- unsigned long pseries_memory_block_size(void)
-@@ -887,11 +889,102 @@ static int pseries_memory_notifier(struct notifier_block *nb,
- static struct notifier_block pseries_mem_nb = {
- 	.notifier_call = pseries_memory_notifier,
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index ea7f09b..d2d23f5 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -113,6 +113,8 @@ static __initdata struct vec5_fw_feature
+ vec5_fw_features_table[] = {
+ 	{FW_FEATURE_TYPE1_AFFINITY,	OV5_TYPE1_AFFINITY},
+ 	{FW_FEATURE_PRRN,		OV5_PRRN},
++	{FW_FEATURE_DYN_MEM_V2,		OV5_DYN_MEM_V2},
++	{FW_FEATURE_DRC_INFO,		OV5_DRC_INFO},
  };
-+#endif /* CONFIG_MEMORY_HOTPLUG */
-+
-+static int pseries_rewrite_dynamic_memory_v2(void)
-+{
-+	unsigned long memblock_size;
-+	struct device_node *dn;
-+	struct property *prop, *prop_v2;
-+	__be32 *p;
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmb_desc_sets, num_lmbs;
-+	int i, j, k;
-+
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		return -EINVAL;
-+
-+	prop_v2 = of_find_property(dn, "ibm,dynamic-memory-v2", NULL);
-+	if (!prop_v2)
-+		return -EINVAL;
-+
-+	memblock_size = pseries_memory_block_size();
-+	if (!memblock_size)
-+		return -EINVAL;
-+
-+	/* The first int of the property is the number of lmb sets
-+	 * described by the property.
-+	 */
-+	p = (__be32 *)prop_v2->value;
-+	num_lmb_desc_sets = be32_to_cpu(*p++);
-+
-+	/* Count the number of LMBs for generating the alternate format
-+	 */
-+	for (i = 0, num_lmbs = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
-+
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+		num_lmbs += drmem.num_seq_lmbs;
-+	}
-+
-+	/* Create an empty copy of the new 'ibm,dynamic-memory' property
-+	 */
-+	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-+	if (!prop)
-+		return -ENOMEM;
-+	prop->name = kstrdup("ibm,dynamic-memory", GFP_KERNEL);
-+	prop->length = dyn_mem_v2_len(num_lmbs);
-+	prop->value = kzalloc(prop->length, GFP_KERNEL);
-+
-+	/* Copy/expand the ibm,dynamic-memory-v2 format to produce the
-+	 * ibm,dynamic-memory format.
-+	 */
-+	p = (__be32 *)prop->value;
-+	*p = cpu_to_be32(num_lmbs);
-+	p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+
-+	p = (__be32 *)prop_v2->value;
-+	p++;
-+
-+	for (i = 0, k = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
-+
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+
-+		for (j = 0; j < drmem.num_seq_lmbs; j++) {
-+			lmbs[k+j].base_addr = be64_to_cpu(drmem.base_addr);
-+			lmbs[k+j].drc_index = be32_to_cpu(drmem.drc_index);
-+			lmbs[k+j].reserved  = 0;
-+			lmbs[k+j].aa_index  = be32_to_cpu(drmem.aa_index);
-+			lmbs[k+i].flags     = be32_to_cpu(drmem.flags);
-+
-+			drmem.base_addr += memblock_size;
-+			drmem.drc_index++;
-+		}
-+
-+		k += drmem.num_seq_lmbs;
-+	}
-+
-+	of_remove_property(dn, prop_v2);
-+
-+	of_add_property(dn, prop);
-+
-+	/* And disable feature flag since the property has gone away */
-+	powerpc_firmware_features &= ~FW_FEATURE_DYN_MEM_V2;
-+
-+	return 0;
-+}
  
- static int __init pseries_memory_hotplug_init(void)
- {
-+	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
-+		pseries_rewrite_dynamic_memory_v2();
-+#ifdef CONFIG_MEMORY_HOTPLUG
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		of_reconfig_notifier_register(&pseries_mem_nb);
-+#endif /* CONFIG_MEMORY_HOTPLUG */
- 
- 	return 0;
- }
+ static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
