@@ -1,68 +1,27 @@
-Return-Path: <maier@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pbonzini@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4zdH2tJkzDvSt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 20:54:57 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9S9stOs014429
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 05:54:55 -0400
-Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26c2rfmdm0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 05:54:54 -0400
-Received: from localhost
- by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maier@linux.vnet.ibm.com>;
- Fri, 28 Oct 2016 10:53:51 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 94A862190056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 10:53:05 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9S9roE811403612
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 09:53:50 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9S9rm75026543
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 03:53:49 -0600
-Subject: Re: [PATCH v2 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
-To: Johannes Thumshirn <jthumshirn@suse.de>
-References: <cover.1476276823.git.jthumshirn@suse.de>
- <b92d12e4f78c4998bc8ad000359c127e673379f3.1476276823.git.jthumshirn@suse.de>
- <2ea07f3f-88eb-b795-fa37-a223bf80e581@linux.vnet.ibm.com>
- <20161013162405.aoxy3bdkc4bqtwsk@linux-x5ow.site>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
- Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>, James Smart
- <james.smart@avagotech.com>, Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-From: Steffen Maier <maier@linux.vnet.ibm.com>
-Date: Fri, 28 Oct 2016 11:53:46 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4zgz2DLSzDvSt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 20:57:19 +1100 (AEDT)
+Subject: Re: [PATCH v6 00/11] implement vcpu preempted check
+To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
+ xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
+ xen-devel@lists.xenproject.org, x86@kernel.org
+References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
+ will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
+ bsingharora@gmail.com, boqun.feng@gmail.com, borntraeger@de.ibm.com,
+ rkrcmar@redhat.com, David.Laight@ACULAB.COM
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <0e747fae-dd72-4b51-c6a2-6bdb9b16bf28@redhat.com>
+Date: Fri, 28 Oct 2016 11:57:04 +0200
 MIME-Version: 1.0
-In-Reply-To: <20161013162405.aoxy3bdkc4bqtwsk@linux-x5ow.site>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <4b411836-e76f-b67a-3d49-ad3d51b8f216@linux.vnet.ibm.com>
+In-Reply-To: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -74,86 +33,125 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 10/13/2016 06:24 PM, Johannes Thumshirn wrote:
-> On Thu, Oct 13, 2016 at 05:15:25PM +0200, Steffen Maier wrote:
->> I'm puzzled.
->>
->> $ git bisect start fc_bsg master
+On 28/10/2016 10:11, Pan Xinhui wrote:
+> change from v5:
+> 	spilt x86/kvm patch into guest/host part.
+> 	introduce kvm_write_guest_offset_cached.
+> 	fix some typos.
+> 	rebase patch onto 4.9.2
 
->>> 3087864ce3d7282f59021245d8a5f83ef1caef18 is the first bad commit
->>> commit 3087864ce3d7282f59021245d8a5f83ef1caef18
->>> Author: Johannes Thumshirn <jthumshirn@suse.de>
->>> Date:   Wed Oct 12 15:06:28 2016 +0200
->>>
->>>     scsi: don't use fc_bsg_job::request and fc_bsg_job::reply directl=
-y
->>>
->>>     Don't use fc_bsg_job::request and fc_bsg_job::reply directly, but=
- use
->>>     helper variables bsg_request and bsg_reply. This will be helpfull=
-  when
->>>     transitioning to bsg-lib.
->>>
->>>     Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
->>>
->>> :040000 040000 140c4b6829d5cfaec4079716e0795f63f8bc3bd2 0d9fe22561567=
-9550be91fbd9f84c09ab1e280fc M	drivers
->>
->> From there (on the reverse bisect path) I get the following Oops,
->> except for the full patch set having another stack trace as in my prev=
-ious
->> mail (dying in zfcp code).
->>
->
-> [...]
->
->>
->>> @@ -3937,6 +3944,7 @@ fc_bsg_request_handler(struct request_queue *q,=
- struct Scsi_Host *shost,
->>>  	struct request *req;
->>>  	struct fc_bsg_job *job;
->>>  	enum fc_dispatch_result ret;
->>> +	struct fc_bsg_reply *bsg_reply;
->>>
->>>  	if (!get_device(dev))
->>>  		return;
->>> @@ -3973,8 +3981,9 @@ fc_bsg_request_handler(struct request_queue *q,=
- struct Scsi_Host *shost,
->>>  		/* check if we have the msgcode value at least */
->>>  		if (job->request_len < sizeof(uint32_t)) {
->>>  			BUG_ON(job->reply_len < sizeof(uint32_t));
->>> -			job->reply->reply_payload_rcv_len =3D 0;
->>> -			job->reply->result =3D -ENOMSG;
->>> +			bsg_reply =3D job->reply;
->>> +			bsg_reply->reply_payload_rcv_len =3D 0;
->>> +			bsg_reply->result =3D -ENOMSG;
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 
-Compiler optimization re-ordered above two lines and the first pointer=20
-derefence is bsg_reply->result [field offset 0] where bsg_reply is NULL.
-The assignment tries to write to memory at address NULL causing the=20
-kernel page fault.
+Thanks,
 
-Does your suggested change for [PATCH v3 02/16], shuffling the=20
-job->request_len checks, address above kernel page fault?
+Paolo
 
->>>  			job->reply_len =3D sizeof(uint32_t);
->>>  			fc_bsg_jobdone(job);
->>>  			spin_lock_irq(q->queue_lock);
->>>
->
-> Ahm and what exactly can break here? It's just assigning variables. Now=
-
-> I'm puzzled too.
-
-
---=20
-Mit freundlichen Gr=FC=DFen / Kind regards
-Steffen Maier
-
-Linux on z Systems Development
-
-IBM Deutschland Research & Development GmbH
-Vorsitzende des Aufsichtsrats: Martina Koederitz
-Geschaeftsfuehrung: Dirk Wittkopp
-Sitz der Gesellschaft: Boeblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+> change from v4:
+> 	spilt x86 kvm vcpu preempted check into two patches.
+> 	add documentation patch.
+> 	add x86 vcpu preempted check patch under xen
+> 	add s390 vcpu preempted check patch 
+> change from v3:
+> 	add x86 vcpu preempted check patch
+> change from v2:
+> 	no code change, fix typos, update some comments
+> change from v1:
+> 	a simplier definition of default vcpu_is_preempted
+> 	skip mahcine type check on ppc, and add config. remove dedicated macro.
+> 	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner. 
+> 	add more comments
+> 	thanks boqun and Peter's suggestion.
+> 
+> This patch set aims to fix lock holder preemption issues.
+> 
+> test-case:
+> perf record -a perf bench sched messaging -g 400 -p && perf report
+> 
+> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
+> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
+>  5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
+>  3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
+>  3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
+>  3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
+>  2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
+> 
+> We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
+> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
+> These spin_on_onwer variant also cause rcu stall before we apply this patch set
+> 
+> We also have observed some performace improvements in uninx benchmark tests.
+> 
+> PPC test result:
+> 1 copy - 0.94%
+> 2 copy - 7.17%
+> 4 copy - 11.9%
+> 8 copy -  3.04%
+> 16 copy - 15.11%
+> 
+> details below:
+> Without patch:
+> 
+> 1 copy - File Write 4096 bufsize 8000 maxblocks      2188223.0 KBps  (30.0 s, 1 samples)
+> 2 copy - File Write 4096 bufsize 8000 maxblocks      1804433.0 KBps  (30.0 s, 1 samples)
+> 4 copy - File Write 4096 bufsize 8000 maxblocks      1237257.0 KBps  (30.0 s, 1 samples)
+> 8 copy - File Write 4096 bufsize 8000 maxblocks      1032658.0 KBps  (30.0 s, 1 samples)
+> 16 copy - File Write 4096 bufsize 8000 maxblocks       768000.0 KBps  (30.1 s, 1 samples)
+> 
+> With patch: 
+> 
+> 1 copy - File Write 4096 bufsize 8000 maxblocks      2209189.0 KBps  (30.0 s, 1 samples)
+> 2 copy - File Write 4096 bufsize 8000 maxblocks      1943816.0 KBps  (30.0 s, 1 samples)
+> 4 copy - File Write 4096 bufsize 8000 maxblocks      1405591.0 KBps  (30.0 s, 1 samples)
+> 8 copy - File Write 4096 bufsize 8000 maxblocks      1065080.0 KBps  (30.0 s, 1 samples)
+> 16 copy - File Write 4096 bufsize 8000 maxblocks       904762.0 KBps  (30.0 s, 1 samples)
+> 
+> X86 test result:
+> 	test-case			after-patch	  before-patch
+> Execl Throughput                       |    18307.9 lps  |    11701.6 lps 
+> File Copy 1024 bufsize 2000 maxblocks  |  1352407.3 KBps |   790418.9 KBps
+> File Copy 256 bufsize 500 maxblocks    |   367555.6 KBps |   222867.7 KBps
+> File Copy 4096 bufsize 8000 maxblocks  |  3675649.7 KBps |  1780614.4 KBps
+> Pipe Throughput                        | 11872208.7 lps  | 11855628.9 lps 
+> Pipe-based Context Switching           |  1495126.5 lps  |  1490533.9 lps 
+> Process Creation                       |    29881.2 lps  |    28572.8 lps 
+> Shell Scripts (1 concurrent)           |    23224.3 lpm  |    22607.4 lpm 
+> Shell Scripts (8 concurrent)           |     3531.4 lpm  |     3211.9 lpm 
+> System Call Overhead                   | 10385653.0 lps  | 10419979.0 lps 
+> 
+> Christian Borntraeger (1):
+>   s390/spinlock: Provide vcpu_is_preempted
+> 
+> Juergen Gross (1):
+>   x86, xen: support vcpu preempted check
+> 
+> Pan Xinhui (9):
+>   kernel/sched: introduce vcpu preempted check interface
+>   locking/osq: Drop the overload of osq_lock()
+>   kernel/locking: Drop the overload of {mutex,rwsem}_spin_on_owner
+>   powerpc/spinlock: support vcpu preempted check
+>   x86, paravirt: Add interface to support kvm/xen vcpu preempted check
+>   KVM: Introduce kvm_write_guest_offset_cached
+>   x86, kvm/x86.c: support vcpu preempted check
+>   x86, kernel/kvm.c: support vcpu preempted check
+>   Documentation: virtual: kvm: Support vcpu preempted check
+> 
+>  Documentation/virtual/kvm/msr.txt     |  9 ++++++++-
+>  arch/powerpc/include/asm/spinlock.h   |  8 ++++++++
+>  arch/s390/include/asm/spinlock.h      |  8 ++++++++
+>  arch/s390/kernel/smp.c                |  9 +++++++--
+>  arch/s390/lib/spinlock.c              | 25 ++++++++-----------------
+>  arch/x86/include/asm/paravirt_types.h |  2 ++
+>  arch/x86/include/asm/spinlock.h       |  8 ++++++++
+>  arch/x86/include/uapi/asm/kvm_para.h  |  4 +++-
+>  arch/x86/kernel/kvm.c                 | 12 ++++++++++++
+>  arch/x86/kernel/paravirt-spinlocks.c  |  6 ++++++
+>  arch/x86/kvm/x86.c                    | 16 ++++++++++++++++
+>  arch/x86/xen/spinlock.c               |  3 ++-
+>  include/linux/kvm_host.h              |  2 ++
+>  include/linux/sched.h                 | 12 ++++++++++++
+>  kernel/locking/mutex.c                | 15 +++++++++++++--
+>  kernel/locking/osq_lock.c             | 10 +++++++++-
+>  kernel/locking/rwsem-xadd.c           | 16 +++++++++++++---
+>  virt/kvm/kvm_main.c                   | 20 ++++++++++++++------
+>  18 files changed, 151 insertions(+), 34 deletions(-)
+> 
