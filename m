@@ -1,10 +1,10 @@
 Return-Path: <yangbo.lu@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0061.outbound.protection.outlook.com [104.47.36.61])
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0080.outbound.protection.outlook.com [104.47.40.80])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4qRG18KTzDvPr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 14:45:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4qRL0HbRzDvLr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 14:45:49 +1100 (AEDT)
 From: Yangbo Lu <yangbo.lu@nxp.com>
 To: <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>, Scott Wood
  <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
@@ -20,9 +20,10 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
  Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Leo Li
  <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian
  <minghuan.lian@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v13, 2/8] ARM64: dts: ls2080a: add device configuration node
-Date: Fri, 28 Oct 2016 11:32:28 +0800
-Message-ID: <1477625554-46700-3-git-send-email-yangbo.lu@nxp.com>
+Subject: [v13,
+ 3/8] dt: bindings: move guts devicetree doc out of powerpc directory
+Date: Fri, 28 Oct 2016 11:32:29 +0800
+Message-ID: <1477625554-46700-4-git-send-email-yangbo.lu@nxp.com>
 In-Reply-To: <1477625554-46700-1-git-send-email-yangbo.lu@nxp.com>
 References: <1477625554-46700-1-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
@@ -36,20 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the dts node for device configuration unit that provides
-general purpose configuration and status for the device.
+Move guts devicetree doc to Documentation/devicetree/bindings/soc/fsl/
+since it's used by not only PowerPC but also ARM. And add a specification
+for 'little-endian' property.
 
 Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+Acked-by: Rob Herring <robh@kernel.org>
 Acked-by: Scott Wood <oss@buserror.net>
 ---
-Changes for v5:
+Changes for v4:
 	- Added this patch
+Changes for v5:
+	- Modified the description for little-endian property
 Changes for v6:
 	- None
 Changes for v7:
 	- None
 Changes for v8:
 	- Added 'Acked-by: Scott Wood'
+	- Added 'Acked-by: Rob Herring'
 Changes for v9:
 	- None
 Changes for v10:
@@ -61,25 +67,26 @@ Changes for v12:
 Changes for v13:
 	- None
 ---
- arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-index 337da90..c03b099 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-@@ -215,6 +215,12 @@
- 			clocks = <&sysclk>;
- 		};
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+similarity index 91%
+rename from Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+rename to Documentation/devicetree/bindings/soc/fsl/guts.txt
+index b71b203..07adca9 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+@@ -25,6 +25,9 @@ Recommended properties:
+  - fsl,liodn-bits : Indicates the number of defined bits in the LIODN
+    registers, for those SOCs that have a PAMU device.
  
-+		dcfg: dcfg@1e00000 {
-+			compatible = "fsl,ls2080a-dcfg", "syscon";
-+			reg = <0x0 0x1e00000 0x0 0x10000>;
-+			little-endian;
-+		};
++ - little-endian : Indicates that the global utilities block is little
++   endian. The default is big endian.
 +
- 		serial0: serial@21c0500 {
- 			compatible = "fsl,ns16550", "ns16550a";
- 			reg = <0x0 0x21c0500 0x0 0x100>;
+ Examples:
+ 	global-utilities@e0000 {	/* global utilities block */
+ 		compatible = "fsl,mpc8548-guts";
 -- 
 2.1.0.27.g96db324
