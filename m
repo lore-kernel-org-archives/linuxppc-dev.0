@@ -1,32 +1,30 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0081.outbound.protection.outlook.com [104.47.36.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4rn96CqmzDt24
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:46:21 +1100 (AEDT)
-Message-ID: <1477629956.6812.15.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
- ulf.hansson@linaro.org, Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
- iommu@lists.linux-foundation.org, netdev@vger.kernel.org, Greg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4tN50mVTzDvRg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 16:58:11 +1100 (AEDT)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>, Scott Wood
+ <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
+CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ <linux-clk@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+ <iommu@lists.linux-foundation.org>, <netdev@vger.kernel.org>, Greg
  Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland
  <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
  <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
  <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, Bhupesh
- Sharma <bhupesh.sharma@freescale.com>,  Qiang Zhao <qiang.zhao@nxp.com>,
- Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- Leo Li <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian
- <minghuan.lian@nxp.com>
-Date: Thu, 27 Oct 2016 23:45:56 -0500
-In-Reply-To: <1477625554-46700-6-git-send-email-yangbo.lu@nxp.com>
-References: <1477625554-46700-1-git-send-email-yangbo.lu@nxp.com>
- <1477625554-46700-6-git-send-email-yangbo.lu@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [v13, 5/8] soc: fsl: add GUTS driver for QorIQ platforms
+ Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar
+ Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian
+ <minghuan.lian@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
+Subject: [v14, 0/8] Fix eSDHC host version register bug
+Date: Fri, 28 Oct 2016 13:45:13 +0800
+Message-ID: <1477633521-7391-1-git-send-email-yangbo.lu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +34,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-10-28 at 11:32 +0800, Yangbo Lu wrote:
-> +	guts->regs = of_iomap(np, 0);
-> +	if (!guts->regs)
-> +		return -ENOMEM;
-> +
-> +	/* Register soc device */
-> +	machine = of_flat_dt_get_machine_name();
-> +	if (machine)
-> +		soc_dev_attr.machine = devm_kstrdup(dev, machine,
-> GFP_KERNEL);
-> +
-> +	svr = fsl_guts_get_svr();
-> +	soc_die = fsl_soc_die_match(svr, fsl_soc_die);
-> +	if (soc_die) {
-> +		soc_dev_attr.family = devm_kasprintf(dev, GFP_KERNEL,
-> +						     "QorIQ %s", soc_die-
-> >die);
-> +	} else {
-> +		soc_dev_attr.family = devm_kasprintf(dev, GFP_KERNEL,
-> "QorIQ");
-> +	}
-> +	soc_dev_attr.soc_id = devm_kasprintf(dev, GFP_KERNEL,
-> +					     "svr:0x%08x", svr);
-> +	soc_dev_attr.revision = devm_kasprintf(dev, GFP_KERNEL, "%d.%d",
-> +					       SVR_MAJ(svr), SVR_MIN(svr));
-> +
-> +	soc_dev = soc_device_register(&soc_dev_attr);
-> +	if (IS_ERR(soc_dev))
-> +		return PTR_ERR(soc_dev);
+This patchset is used to fix a host version register bug in the T4240-R1.0-R2.0
+eSDHC controller. To match the SoC version and revision, 10 previous version
+patchsets had tried many methods but all of them were rejected by reviewers.
+Such as
+	- dts compatible method
+	- syscon method
+	- ifdef PPC method
+	- GUTS driver getting SVR method
+Anrd suggested a soc_device_match method in v10, and this is the only available
+method left now. This v11 patchset introduces the soc_device_match interface in
+soc driver.
 
-ioremap leaks on this error path.  Use devm_ioremap_resource().
+The first six patches of Yangbo are to add the GUTS driver. This is used to
+register a soc device which contain soc version and revision information.
+The other two patches introduce the soc_device_match method in soc driver
+and apply it on esdhc driver to fix this bug.
 
--Scott
+Arnd Bergmann (1):
+  base: soc: introduce soc_device_match() interface
+
+Yangbo Lu (7):
+  dt: bindings: update Freescale DCFG compatible
+  ARM64: dts: ls2080a: add device configuration node
+  dt: bindings: move guts devicetree doc out of powerpc directory
+  powerpc/fsl: move mpc85xx.h to include/linux/fsl
+  soc: fsl: add GUTS driver for QorIQ platforms
+  MAINTAINERS: add entry for Freescale SoC drivers
+  mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
+
+ Documentation/devicetree/bindings/arm/fsl.txt      |   6 +-
+ .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
+ MAINTAINERS                                        |  11 +-
+ arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 +
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |   2 +-
+ drivers/base/Kconfig                               |   1 +
+ drivers/base/soc.c                                 |  66 ++++++
+ drivers/clk/clk-qoriq.c                            |   3 +-
+ drivers/i2c/busses/i2c-mpc.c                       |   2 +-
+ drivers/iommu/fsl_pamu.c                           |   3 +-
+ drivers/mmc/host/Kconfig                           |   1 +
+ drivers/mmc/host/sdhci-of-esdhc.c                  |  20 ++
+ drivers/net/ethernet/freescale/gianfar.c           |   2 +-
+ drivers/soc/Kconfig                                |   3 +-
+ drivers/soc/fsl/Kconfig                            |  18 ++
+ drivers/soc/fsl/Makefile                           |   1 +
+ drivers/soc/fsl/guts.c                             | 238 +++++++++++++++++++++
+ include/linux/fsl/guts.h                           | 125 ++++++-----
+ .../asm/mpc85xx.h => include/linux/fsl/svr.h       |   4 +-
+ include/linux/sys_soc.h                            |   3 +
+ 21 files changed, 458 insertions(+), 62 deletions(-)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
+ create mode 100644 drivers/soc/fsl/Kconfig
+ create mode 100644 drivers/soc/fsl/guts.c
+ rename arch/powerpc/include/asm/mpc85xx.h => include/linux/fsl/svr.h (97%)
+
+-- 
+2.1.0.27.g96db324
