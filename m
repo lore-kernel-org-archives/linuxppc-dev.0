@@ -1,34 +1,34 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4rKy6F6yzDvPL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:14 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9S4O1RO076319
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:12 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26bvc21x7m-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4rL26lcKzDvPQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:18 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9S4Nsi8049886
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:16 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bvc220gg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:16 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Fri, 28 Oct 2016 14:26:09 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 27CF62BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:07 +1100 (EST)
+ Fri, 28 Oct 2016 14:26:14 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4BCC72CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:12 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9S4Q7oV15401130
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:07 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9S4QC5P5243232
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:12 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9S4Q5v9022520
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:06 +1100
+ u9S4QAC2022653
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:12 +1100
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
@@ -40,11 +40,11 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
  borntraeger@de.ibm.com, rkrcmar@redhat.com, David.Laight@ACULAB.COM,
  Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v6 09/11] x86, kernel/kvm.c: support vcpu preempted check
-Date: Fri, 28 Oct 2016 04:11:25 -0400
+Subject: [PATCH v6 10/11] x86, xen: support vcpu preempted check
+Date: Fri, 28 Oct 2016 04:11:26 -0400
 In-Reply-To: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1477642287-24104-10-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Message-Id: <1477642287-24104-11-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,64 +54,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Support the vcpu_is_preempted() functionality under KVM. This will
+From: Juergen Gross <jgross@suse.com>
+
+Support the vcpu_is_preempted() functionality under Xen. This will
 enhance lock performance on overcommitted hosts (more runnable vcpus
 than physical cpus in the system) as doing busy waits for preempted
 vcpus will hurt system performance far worse than early yielding.
 
-struct kvm_steal_time::preempted indicate that if one vcpu is running or
-not after commit("x86, kvm/x86.c: support vcpu preempted check").
+A quick test (4 vcpus on 1 physical cpu doing a parallel build job
+with "make -j 8") reduced system time by about 5% with this patch.
 
-unix benchmark result:
-host:  kernel 4.8.1, i5-4570, 4 cpus
-guest: kernel 4.8.1, 8 vcpus
-
-        test-case                       after-patch       before-patch
-Execl Throughput                       |    18307.9 lps  |    11701.6 lps
-File Copy 1024 bufsize 2000 maxblocks  |  1352407.3 KBps |   790418.9 KBps
-File Copy 256 bufsize 500 maxblocks    |   367555.6 KBps |   222867.7 KBps
-File Copy 4096 bufsize 8000 maxblocks  |  3675649.7 KBps |  1780614.4 KBps
-Pipe Throughput                        | 11872208.7 lps  | 11855628.9 lps
-Pipe-based Context Switching           |  1495126.5 lps  |  1490533.9 lps
-Process Creation                       |    29881.2 lps  |    28572.8 lps
-Shell Scripts (1 concurrent)           |    23224.3 lpm  |    22607.4 lpm
-Shell Scripts (8 concurrent)           |     3531.4 lpm  |     3211.9 lpm
-System Call Overhead                   | 10385653.0 lps  | 10419979.0 lps
-
+Signed-off-by: Juergen Gross <jgross@suse.com>
 Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 ---
- arch/x86/kernel/kvm.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ arch/x86/xen/spinlock.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index edbbfc8..0b48dd2 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -415,6 +415,15 @@ void kvm_disable_steal_time(void)
- 	wrmsr(MSR_KVM_STEAL_TIME, 0, 0);
+diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
+index 3d6e006..74756bb 100644
+--- a/arch/x86/xen/spinlock.c
++++ b/arch/x86/xen/spinlock.c
+@@ -114,7 +114,6 @@ void xen_uninit_lock_cpu(int cpu)
+ 	per_cpu(irq_name, cpu) = NULL;
  }
  
-+static bool kvm_vcpu_is_preempted(int cpu)
-+{
-+	struct kvm_steal_time *src;
+-
+ /*
+  * Our init of PV spinlocks is split in two init functions due to us
+  * using paravirt patching and jump labels patching and having to do
+@@ -137,6 +136,8 @@ void __init xen_init_spinlocks(void)
+ 	pv_lock_ops.queued_spin_unlock = PV_CALLEE_SAVE(__pv_queued_spin_unlock);
+ 	pv_lock_ops.wait = xen_qlock_wait;
+ 	pv_lock_ops.kick = xen_qlock_kick;
 +
-+	src = &per_cpu(steal_time, cpu);
-+
-+	return !!src->preempted;
-+}
-+
- #ifdef CONFIG_SMP
- static void __init kvm_smp_prepare_boot_cpu(void)
- {
-@@ -471,6 +480,9 @@ void __init kvm_guest_init(void)
- 	if (kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
- 		has_steal_clock = 1;
- 		pv_time_ops.steal_clock = kvm_steal_clock;
-+#ifdef CONFIG_PARAVIRT_SPINLOCKS
-+		pv_lock_ops.vcpu_is_preempted = kvm_vcpu_is_preempted;
-+#endif
- 	}
++	pv_lock_ops.vcpu_is_preempted = xen_vcpu_stolen;
+ }
  
- 	if (kvm_para_has_feature(KVM_FEATURE_PV_EOI))
+ /*
 -- 
 2.4.11
