@@ -1,34 +1,34 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4rKp664XzDvR7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:06 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4rKt5kbGzDvPD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:10 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9S4PRuu107104
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:04 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26bvc1sv55-1
+ u9S4Nt42044265
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:08 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26bvc1sxyk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 00:26:07 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Fri, 28 Oct 2016 14:26:00 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id BBCE02BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:25:56 +1100 (EST)
+ Fri, 28 Oct 2016 14:26:04 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9E71F2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:01 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9S4PuL310944630
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:25:56 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9S4Q10Y9437252
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:01 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9S4PtXp022213
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:25:56 +1100
+ u9S4Q0ur022337
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 15:26:01 +1100
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
@@ -40,11 +40,11 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
  borntraeger@de.ibm.com, rkrcmar@redhat.com, David.Laight@ACULAB.COM,
  Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v6 07/11] KVM: Introduce kvm_write_guest_offset_cached
-Date: Fri, 28 Oct 2016 04:11:23 -0400
+Subject: [PATCH v6 08/11] x86, kvm/x86.c: support vcpu preempted check
+Date: Fri, 28 Oct 2016 04:11:24 -0400
 In-Reply-To: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1477642287-24104-8-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Message-Id: <1477642287-24104-9-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,78 +54,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It allows us to update some status or field of one struct partially.
+Support the vcpu_is_preempted() functionality under KVM. This will
+enhance lock performance on overcommitted hosts (more runnable vcpus
+than physical cpus in the system) as doing busy waits for preempted
+vcpus will hurt system performance far worse than early yielding.
 
-We can also save one kvm_read_guest_cached if we just update one filed
-of the struct regardless of its current value.
+Use one field of struct kvm_steal_time ::preempted to indicate that if
+one vcpu is running or not.
 
 Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 ---
- include/linux/kvm_host.h |  2 ++
- virt/kvm/kvm_main.c      | 20 ++++++++++++++------
- 2 files changed, 16 insertions(+), 6 deletions(-)
+ arch/x86/include/uapi/asm/kvm_para.h |  4 +++-
+ arch/x86/kvm/x86.c                   | 16 ++++++++++++++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 01c0b9c..6f00237 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -645,6 +645,8 @@ int kvm_write_guest(struct kvm *kvm, gpa_t gpa, const void *data,
- 		    unsigned long len);
- int kvm_write_guest_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
- 			   void *data, unsigned long len);
-+int kvm_write_guest_offset_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
-+			   void *data, int offset, unsigned long len);
- int kvm_gfn_to_hva_cache_init(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
- 			      gpa_t gpa, unsigned long len);
- int kvm_clear_guest_page(struct kvm *kvm, gfn_t gfn, int offset, int len);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 2907b7b..95308ee 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1972,30 +1972,38 @@ int kvm_gfn_to_hva_cache_init(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
- }
- EXPORT_SYMBOL_GPL(kvm_gfn_to_hva_cache_init);
+diff --git a/arch/x86/include/uapi/asm/kvm_para.h b/arch/x86/include/uapi/asm/kvm_para.h
+index 94dc8ca..1421a65 100644
+--- a/arch/x86/include/uapi/asm/kvm_para.h
++++ b/arch/x86/include/uapi/asm/kvm_para.h
+@@ -45,7 +45,9 @@ struct kvm_steal_time {
+ 	__u64 steal;
+ 	__u32 version;
+ 	__u32 flags;
+-	__u32 pad[12];
++	__u8  preempted;
++	__u8  u8_pad[3];
++	__u32 pad[11];
+ };
  
--int kvm_write_guest_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
--			   void *data, unsigned long len)
-+int kvm_write_guest_offset_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
-+			   void *data, int offset, unsigned long len)
- {
- 	struct kvm_memslots *slots = kvm_memslots(kvm);
- 	int r;
-+	gpa_t gpa = ghc->gpa + offset;
+ #define KVM_STEAL_ALIGNMENT_BITS 5
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index e375235..f06e115 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2057,6 +2057,8 @@ static void record_steal_time(struct kvm_vcpu *vcpu)
+ 		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time))))
+ 		return;
  
--	BUG_ON(len > ghc->len);
-+	BUG_ON(len + offset > ghc->len);
- 
- 	if (slots->generation != ghc->generation)
- 		kvm_gfn_to_hva_cache_init(kvm, ghc, ghc->gpa, ghc->len);
- 
- 	if (unlikely(!ghc->memslot))
--		return kvm_write_guest(kvm, ghc->gpa, data, len);
-+		return kvm_write_guest(kvm, gpa, data, len);
- 
- 	if (kvm_is_error_hva(ghc->hva))
- 		return -EFAULT;
- 
--	r = __copy_to_user((void __user *)ghc->hva, data, len);
-+	r = __copy_to_user((void __user *)ghc->hva + offset, data, len);
- 	if (r)
- 		return -EFAULT;
--	mark_page_dirty_in_slot(ghc->memslot, ghc->gpa >> PAGE_SHIFT);
-+	mark_page_dirty_in_slot(ghc->memslot, gpa >> PAGE_SHIFT);
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(kvm_write_guest_offset_cached);
++	vcpu->arch.st.steal.preempted = 0;
 +
-+int kvm_write_guest_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
-+			   void *data, unsigned long len)
-+{
-+	return kvm_write_guest_offset_cached(kvm, ghc, data, 0, len);
-+}
- EXPORT_SYMBOL_GPL(kvm_write_guest_cached);
+ 	if (vcpu->arch.st.steal.version & 1)
+ 		vcpu->arch.st.steal.version += 1;  /* first time write, random junk */
  
- int kvm_read_guest_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
+@@ -2810,8 +2812,22 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 	kvm_make_request(KVM_REQ_STEAL_UPDATE, vcpu);
+ }
+ 
++static void kvm_steal_time_set_preempted(struct kvm_vcpu *vcpu)
++{
++	if (!(vcpu->arch.st.msr_val & KVM_MSR_ENABLED))
++		return;
++
++	vcpu->arch.st.steal.preempted = 1;
++
++	kvm_write_guest_offset_cached(vcpu->kvm, &vcpu->arch.st.stime,
++			&vcpu->arch.st.steal.preempted,
++			offsetof(struct kvm_steal_time, preempted),
++			sizeof(vcpu->arch.st.steal.preempted));
++}
++
+ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ {
++	kvm_steal_time_set_preempted(vcpu);
+ 	kvm_x86_ops->vcpu_put(vcpu);
+ 	kvm_put_guest_fpu(vcpu);
+ 	vcpu->arch.last_host_tsc = rdtsc();
 -- 
 2.4.11
