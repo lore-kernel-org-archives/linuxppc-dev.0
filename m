@@ -1,32 +1,39 @@
 Return-Path: <yangbo.lu@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0066.outbound.protection.outlook.com [104.47.37.66])
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0048.outbound.protection.outlook.com [104.47.0.48])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4vr64GCVzDvS4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 18:04:06 +1100 (AEDT)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>, Scott Wood
- <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
-CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
- <linux-clk@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
- <iommu@lists.linux-foundation.org>, <netdev@vger.kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland
- <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
- <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
- <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, Bhupesh
- Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar
- Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Leo Li
- <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian
- <minghuan.lian@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v15, 7/7] mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
-Date: Fri, 28 Oct 2016 14:50:18 +0800
-Message-ID: <1477637418-38938-8-git-send-email-yangbo.lu@nxp.com>
-In-Reply-To: <1477637418-38938-1-git-send-email-yangbo.lu@nxp.com>
-References: <1477637418-38938-1-git-send-email-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4vxc4GNfzDvXY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 18:08:52 +1100 (AEDT)
+From: "Y.B. Lu" <yangbo.lu@nxp.com>
+To: Scott Wood <oss@buserror.net>, "linux-mmc@vger.kernel.org"
+ <linux-mmc@vger.kernel.org>, "ulf.hansson@linaro.org"
+ <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>,
+ Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar Gala
+ <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, "X.B. Xie" <xiaobo.xie@nxp.com>, "M.H. Lian"
+ <minghuan.lian@nxp.com>
+Subject: RE: [v13, 5/8] soc: fsl: add GUTS driver for QorIQ platforms
+Date: Fri, 28 Oct 2016 07:08:44 +0000
+Message-ID: <DB6PR0401MB2536E6A29246096648EEC890F8AD0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+References: <1477625554-46700-1-git-send-email-yangbo.lu@nxp.com>
+ <1477625554-46700-6-git-send-email-yangbo.lu@nxp.com>
+ <1477629956.6812.15.camel@buserror.net>  
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,127 +43,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The eSDHC of T4240-R1.0-R2.0 has incorrect vender version and spec version.
-Acturally the right version numbers should be VVN=0x13 and SVN = 0x1.
-This patch adds the GUTS driver support for eSDHC driver to match SoC.
-And fix host version to avoid that incorrect version numbers break down
-the ADMA data transfer.
-
-Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Scott Wood <oss@buserror.net>
----
-Changes for v2:
-	- Got SVR through iomap instead of dts
-Changes for v3:
-	- Managed GUTS through syscon instead of iomap in eSDHC driver
-Changes for v4:
-	- Got SVR by GUTS driver instead of SYSCON
-Changes for v5:
-	- Changed to get SVR through API fsl_guts_get_svr()
-	- Combined patch 4, patch 5 and patch 6 into one
-Changes for v6:
-	- Added 'Acked-by: Ulf Hansson'
-Changes for v7:
-	- None
-Changes for v8:
-	- Added 'Acked-by: Scott Wood'
-Changes for v9:
-	- None
-Changes for v10:
-	- None
-Changes for v11:
-	- Changed to use soc_device_match
-Changes for v12:
-	- Matched soc through .family field instead of .soc_id
-Changes for v13:
-	- None
-Changes for v14:
-	- None
-Changes for v15:
-	- None
----
- drivers/mmc/host/Kconfig          |  1 +
- drivers/mmc/host/sdhci-of-esdhc.c | 20 ++++++++++++++++++++
- 2 files changed, 21 insertions(+)
-
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 5274f50..a1135a9 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -144,6 +144,7 @@ config MMC_SDHCI_OF_ESDHC
- 	depends on MMC_SDHCI_PLTFM
- 	depends on PPC || ARCH_MXC || ARCH_LAYERSCAPE
- 	select MMC_SDHCI_IO_ACCESSORS
-+	select FSL_GUTS
- 	help
- 	  This selects the Freescale eSDHC controller support.
- 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index fb71c86..57bdb9e 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -18,6 +18,7 @@
- #include <linux/of.h>
- #include <linux/delay.h>
- #include <linux/module.h>
-+#include <linux/sys_soc.h>
- #include <linux/mmc/host.h>
- #include "sdhci-pltfm.h"
- #include "sdhci-esdhc.h"
-@@ -28,6 +29,7 @@
- struct sdhci_esdhc {
- 	u8 vendor_ver;
- 	u8 spec_ver;
-+	bool quirk_incorrect_hostver;
- };
- 
- /**
-@@ -73,6 +75,8 @@ static u32 esdhc_readl_fixup(struct sdhci_host *host,
- static u16 esdhc_readw_fixup(struct sdhci_host *host,
- 				     int spec_reg, u32 value)
- {
-+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-+	struct sdhci_esdhc *esdhc = sdhci_pltfm_priv(pltfm_host);
- 	u16 ret;
- 	int shift = (spec_reg & 0x2) * 8;
- 
-@@ -80,6 +84,12 @@ static u16 esdhc_readw_fixup(struct sdhci_host *host,
- 		ret = value & 0xffff;
- 	else
- 		ret = (value >> shift) & 0xffff;
-+	/* Workaround for T4240-R1.0-R2.0 eSDHC which has incorrect
-+	 * vendor version and spec version information.
-+	 */
-+	if ((spec_reg == SDHCI_HOST_VERSION) &&
-+	    (esdhc->quirk_incorrect_hostver))
-+		ret = (VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) | SDHCI_SPEC_200;
- 	return ret;
- }
- 
-@@ -558,6 +568,12 @@ static const struct sdhci_pltfm_data sdhci_esdhc_le_pdata = {
- 	.ops = &sdhci_esdhc_le_ops,
- };
- 
-+static struct soc_device_attribute soc_incorrect_hostver[] = {
-+	{ .family = "QorIQ T4240", .revision = "1.0", },
-+	{ .family = "QorIQ T4240", .revision = "2.0", },
-+	{ },
-+};
-+
- static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
- {
- 	struct sdhci_pltfm_host *pltfm_host;
-@@ -571,6 +587,10 @@ static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
- 	esdhc->vendor_ver = (host_ver & SDHCI_VENDOR_VER_MASK) >>
- 			     SDHCI_VENDOR_VER_SHIFT;
- 	esdhc->spec_ver = host_ver & SDHCI_SPEC_VER_MASK;
-+	if (soc_device_match(soc_incorrect_hostver))
-+		esdhc->quirk_incorrect_hostver = true;
-+	else
-+		esdhc->quirk_incorrect_hostver = false;
- }
- 
- static int sdhci_esdhc_probe(struct platform_device *pdev)
--- 
-2.1.0.27.g96db324
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBZLkIuIEx1DQo+IFNlbnQ6IEZy
+aWRheSwgT2N0b2JlciAyOCwgMjAxNiAyOjA2IFBNDQo+IFRvOiBZLkIuIEx1OyAnU2NvdHQgV29v
+ZCc7ICdsaW51eC1tbWNAdmdlci5rZXJuZWwub3JnJzsNCj4gJ3VsZi5oYW5zc29uQGxpbmFyby5v
+cmcnOyAnQXJuZCBCZXJnbWFubicNCj4gQ2M6ICdsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9y
+Zyc7ICdkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZyc7DQo+ICdsaW51eC1hcm0ta2VybmVsQGxp
+c3RzLmluZnJhZGVhZC5vcmcnOyAnbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZyc7DQo+ICds
+aW51eC1jbGtAdmdlci5rZXJuZWwub3JnJzsgJ2xpbnV4LWkyY0B2Z2VyLmtlcm5lbC5vcmcnOw0K
+PiAnaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcnOyAnbmV0ZGV2QHZnZXIua2VybmVs
+Lm9yZyc7ICdHcmVnDQo+IEtyb2FoLUhhcnRtYW4nOyAnTWFyayBSdXRsYW5kJzsgJ1JvYiBIZXJy
+aW5nJzsgJ1J1c3NlbGwgS2luZyc7ICdKb2NoZW4NCj4gRnJpZWRyaWNoJzsgJ0pvZXJnIFJvZWRl
+bCc7ICdDbGF1ZGl1IE1hbm9pbCc7ICdCaHVwZXNoIFNoYXJtYSc7IFFpYW5nDQo+IFpoYW87ICdL
+dW1hciBHYWxhJzsgJ1NhbnRvc2ggU2hpbGlta2FyJzsgTGVvIExpOyBYLkIuIFhpZTsgTS5ILiBM
+aWFuDQo+IFN1YmplY3Q6IFJFOiBbdjEzLCA1LzhdIHNvYzogZnNsOiBhZGQgR1VUUyBkcml2ZXIg
+Zm9yIFFvcklRIHBsYXRmb3Jtcw0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiA+IEZyb206IFkuQi4gTHUNCj4gPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMjgsIDIwMTYgMjow
+MCBQTQ0KPiA+IFRvOiAnU2NvdHQgV29vZCc7IGxpbnV4LW1tY0B2Z2VyLmtlcm5lbC5vcmc7IHVs
+Zi5oYW5zc29uQGxpbmFyby5vcmc7DQo+ID4gQXJuZCBCZXJnbWFubg0KPiA+IENjOiBsaW51eHBw
+Yy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4g
+bGludXgtYXJtLSBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgta2VybmVsQHZnZXIu
+a2VybmVsLm9yZzsNCj4gPiBsaW51eC0gY2xrQHZnZXIua2VybmVsLm9yZzsgbGludXgtaTJjQHZn
+ZXIua2VybmVsLm9yZzsNCj4gPiBpb21tdUBsaXN0cy5saW51eC0gZm91bmRhdGlvbi5vcmc7IG5l
+dGRldkB2Z2VyLmtlcm5lbC5vcmc7IEdyZWcNCj4gPiBLcm9haC1IYXJ0bWFuOyBNYXJrIFJ1dGxh
+bmQ7IFJvYiBIZXJyaW5nOyBSdXNzZWxsIEtpbmc7IEpvY2hlbg0KPiA+IEZyaWVkcmljaDsgSm9l
+cmcgUm9lZGVsOyBDbGF1ZGl1IE1hbm9pbDsgQmh1cGVzaCBTaGFybWE7IFFpYW5nIFpoYW87DQo+
+IEt1bWFyIEdhbGE7IFNhbnRvc2ggU2hpbGlta2FyOyBMZW8gTGk7IFguQi4NCj4gPiBYaWU7IE0u
+SC4gTGlhbg0KPiA+IFN1YmplY3Q6IFJFOiBbdjEzLCA1LzhdIHNvYzogZnNsOiBhZGQgR1VUUyBk
+cml2ZXIgZm9yIFFvcklRIHBsYXRmb3Jtcw0KPiA+DQo+ID4NCj4gPg0KPiA+ID4gLS0tLS1Pcmln
+aW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IGxpbnV4LW1tYy1vd25lckB2Z2VyLmtlcm5l
+bC5vcmcgW21haWx0bzpsaW51eC1tbWMtDQo+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmddIE9u
+IEJlaGFsZiBPZiBTY290dCBXb29kDQo+ID4gPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMjgsIDIw
+MTYgMTI6NDYgUE0NCj4gPiA+IFRvOiBZLkIuIEx1OyBsaW51eC1tbWNAdmdlci5rZXJuZWwub3Jn
+OyB1bGYuaGFuc3NvbkBsaW5hcm8ub3JnOyBBcm5kDQo+ID4gPiBCZXJnbWFubg0KPiA+ID4gQ2M6
+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9y
+ZzsNCj4gPiA+IGxpbnV4LWFybS0ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiBsaW51eC0gY2xrQHZnZXIua2VybmVsLm9yZzsg
+bGludXgtaTJjQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+IGlvbW11QGxpc3RzLmxpbnV4LSBmb3Vu
+ZGF0aW9uLm9yZzsgbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgR3JlZw0KPiA+ID4gS3JvYWgtSGFy
+dG1hbjsgTWFyayBSdXRsYW5kOyBSb2IgSGVycmluZzsgUnVzc2VsbCBLaW5nOyBKb2NoZW4NCj4g
+PiA+IEZyaWVkcmljaDsgSm9lcmcgUm9lZGVsOyBDbGF1ZGl1IE1hbm9pbDsgQmh1cGVzaCBTaGFy
+bWE7IFFpYW5nIFpoYW87DQo+ID4gS3VtYXIgR2FsYTsgU2FudG9zaCBTaGlsaW1rYXI7IExlbyBM
+aTsgWC5CLg0KPiA+ID4gWGllOyBNLkguIExpYW4NCj4gPiA+IFN1YmplY3Q6IFJlOiBbdjEzLCA1
+LzhdIHNvYzogZnNsOiBhZGQgR1VUUyBkcml2ZXIgZm9yIFFvcklRDQo+ID4gPiBwbGF0Zm9ybXMN
+Cj4gPiA+DQo+ID4gPiBPbiBGcmksIDIwMTYtMTAtMjggYXQgMTE6MzIgKzA4MDAsIFlhbmdibyBM
+dSB3cm90ZToNCj4gPiA+ID4gKwlndXRzLT5yZWdzID0gb2ZfaW9tYXAobnAsIDApOw0KPiA+ID4g
+PiArCWlmICghZ3V0cy0+cmVncykNCj4gPiA+ID4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ID4gPiA+
+ICsNCj4gPiA+ID4gKwkvKiBSZWdpc3RlciBzb2MgZGV2aWNlICovDQo+ID4gPiA+ICsJbWFjaGlu
+ZSA9IG9mX2ZsYXRfZHRfZ2V0X21hY2hpbmVfbmFtZSgpOw0KPiA+ID4gPiArCWlmIChtYWNoaW5l
+KQ0KPiA+ID4gPiArCQlzb2NfZGV2X2F0dHIubWFjaGluZSA9IGRldm1fa3N0cmR1cChkZXYsIG1h
+Y2hpbmUsDQo+ID4gPiA+IEdGUF9LRVJORUwpOw0KPiA+ID4gPiArDQo+ID4gPiA+ICsJc3ZyID0g
+ZnNsX2d1dHNfZ2V0X3N2cigpOw0KPiA+ID4gPiArCXNvY19kaWUgPSBmc2xfc29jX2RpZV9tYXRj
+aChzdnIsIGZzbF9zb2NfZGllKTsNCj4gPiA+ID4gKwlpZiAoc29jX2RpZSkgew0KPiA+ID4gPiAr
+CQlzb2NfZGV2X2F0dHIuZmFtaWx5ID0gZGV2bV9rYXNwcmludGYoZGV2LCBHRlBfS0VSTkVMLA0K
+PiA+ID4gPiArCQkJCQkJwqDCoMKgwqDCoCJRb3JJUSAlcyIsIHNvY19kaWUtDQo+ID4gPiA+ID5k
+aWUpOw0KPiA+ID4gPiArCX0gZWxzZSB7DQo+ID4gPiA+ICsJCXNvY19kZXZfYXR0ci5mYW1pbHkg
+PSBkZXZtX2thc3ByaW50ZihkZXYsIEdGUF9LRVJORUwsDQo+ID4gPiA+ICJRb3JJUSIpOw0KPiA+
+ID4gPiArCX0NCj4gPiA+ID4gKwlzb2NfZGV2X2F0dHIuc29jX2lkID0gZGV2bV9rYXNwcmludGYo
+ZGV2LCBHRlBfS0VSTkVMLA0KPiA+ID4gPiArCQkJCQnCoMKgwqDCoMKgInN2cjoweCUwOHgiLCBz
+dnIpOw0KPiA+ID4gPiArCXNvY19kZXZfYXR0ci5yZXZpc2lvbiA9IGRldm1fa2FzcHJpbnRmKGRl
+diwgR0ZQX0tFUk5FTCwNCj4gIiVkLiVkIiwNCj4gPiA+ID4gKwkJCQkJwqDCoMKgwqDCoMKgwqBT
+VlJfTUFKKHN2ciksIFNWUl9NSU4oc3ZyKSk7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlzb2NfZGV2
+ID0gc29jX2RldmljZV9yZWdpc3Rlcigmc29jX2Rldl9hdHRyKTsNCj4gPiA+ID4gKwlpZiAoSVNf
+RVJSKHNvY19kZXYpKQ0KPiA+ID4gPiArCQlyZXR1cm4gUFRSX0VSUihzb2NfZGV2KTsNCj4gPiA+
+DQo+ID4gPiBpb3JlbWFwIGxlYWtzIG9uIHRoaXMgZXJyb3IgcGF0aC4gwqBVc2UgZGV2bV9pb3Jl
+bWFwX3Jlc291cmNlKCkuDQo+ID4gPg0KPiA+DQo+ID4gW0x1IFlhbmdiby1CNDcwOTNdIE9rLiBJ
+IGhhdmUgZml4ZWQgaXQgaW4gdjE0LiBUaGFua3MgOikNCj4gDQo+IFtMdSBZYW5nYm8tQjQ3MDkz
+XSBTb3JyeSwgdXNlZCB0aGUgd3JvbmcgZXJyb3IgY29kZS4uLiBXaWxsIHJlc2VudCBpdA0KDQpb
+THUgWWFuZ2JvLUI0NzA5M10gVGhlIHYxNSBoYWQgYmVlbiBzZW50LiBBbmQgZHJvcHBlZCBwYXRj
+aCAnZHQ6IGJpbmRpbmdzOiB1cGRhdGUgRnJlZXNjYWxlIERDRkcgY29tcGF0aWJsZScsDQpzaW5j
+ZSB0aGF0IHdvcmsgaGFzIGJlZW4gZG9uZSBieSBiZWxvdyBwYXRjaCBvbiBTaGF3bkd1bydzIGxp
+bnV4IHRyZWUuDQonZHQtYmluZGluZ3M6IGZzbDogYWRkIExTMTA0M0EvTFMxMDQ2QS9MUzIwODBB
+IGNvbXBhdGlibGUgZm9yIFNDRkcgYW5kIERDRkcnDQpodHRwczovL2dpdC5rZXJuZWwub3JnL2Nn
+aXQvbGludXgva2VybmVsL2dpdC9zaGF3bmd1by9saW51eC5naXQvY29tbWl0Lz9oPWlteC9kdDY0
+JmlkPTk4MTAzNGEyYmZjYWZmNWM5NWRhZmRlMjRkN2FiZmU3ZjkwMjVjMTkNCg0KVGhhbmtzLg0K
+DQo+IA0KPiA+DQo+ID4gPiAtU2NvdHQNCj4gPiA+DQo+ID4gPiAtLQ0KPiA+ID4gVG8gdW5zdWJz
+Y3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LW1t
+YyINCj4gPiA+IGluIHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJu
+ZWwub3JnIE1vcmUgbWFqb3Jkb21vDQo+ID4gPiBpbmZvIGF0IGh0dHA6Ly92Z2VyLmtlcm5lbC5v
+cmcvbWFqb3Jkb21vLWluZm8uaHRtbA0K
