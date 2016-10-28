@@ -1,27 +1,32 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4zgz2DLSzDvSt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 20:57:19 +1100 (AEDT)
-Subject: Re: [PATCH v6 00/11] implement vcpu preempted check
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
- xen-devel@lists.xenproject.org, x86@kernel.org
-References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
- bsingharora@gmail.com, boqun.feng@gmail.com, borntraeger@de.ibm.com,
- rkrcmar@redhat.com, David.Laight@ACULAB.COM
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <0e747fae-dd72-4b51-c6a2-6bdb9b16bf28@redhat.com>
-Date: Fri, 28 Oct 2016 11:57:04 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t50xC566yzDvSy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 21:53:50 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
+ ulf.hansson@linaro.org, Scott Wood <oss@buserror.net>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian <minghuan.lian@nxp.com>,
+ linux-i2c@vger.kernel.org, linux-clk@vger.kernel.org,
+ Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>, devicetree@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Leo Li <leoyang.li@nxp.com>,
+ iommu@lists.linux-foundation.org, Kumar Gala <galak@codeaurora.org>
+Subject: Re: [v15, 3/7] powerpc/fsl: move mpc85xx.h to include/linux/fsl
+Date: Fri, 28 Oct 2016 12:52:44 +0200
+Message-ID: <2723366.1bJeJ7SKI6@wuerfel>
+In-Reply-To: <1477637418-38938-4-git-send-email-yangbo.lu@nxp.com>
+References: <1477637418-38938-1-git-send-email-yangbo.lu@nxp.com>
+ <1477637418-38938-4-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,127 +36,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Friday, October 28, 2016 2:50:14 PM CEST Yangbo Lu wrote:
+> Move mpc85xx.h to include/linux/fsl and rename it to svr.h as a common
+> header file.  This SVR numberspace is used on some ARM chips as well as
+> PPC, and even to check for a PPC SVR multi-arch drivers would otherwise
+> need to ifdef the header inclusion and all references to the SVR symbols.
+> 
+> 
 
+I don't see any of the contents of this header referenced by the soc driver
+any more. I think you can just drop this patch.
 
-On 28/10/2016 10:11, Pan Xinhui wrote:
-> change from v5:
-> 	spilt x86/kvm patch into guest/host part.
-> 	introduce kvm_write_guest_offset_cached.
-> 	fix some typos.
-> 	rebase patch onto 4.9.2
-
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-
-Thanks,
-
-Paolo
-
-> change from v4:
-> 	spilt x86 kvm vcpu preempted check into two patches.
-> 	add documentation patch.
-> 	add x86 vcpu preempted check patch under xen
-> 	add s390 vcpu preempted check patch 
-> change from v3:
-> 	add x86 vcpu preempted check patch
-> change from v2:
-> 	no code change, fix typos, update some comments
-> change from v1:
-> 	a simplier definition of default vcpu_is_preempted
-> 	skip mahcine type check on ppc, and add config. remove dedicated macro.
-> 	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner. 
-> 	add more comments
-> 	thanks boqun and Peter's suggestion.
-> 
-> This patch set aims to fix lock holder preemption issues.
-> 
-> test-case:
-> perf record -a perf bench sched messaging -g 400 -p && perf report
-> 
-> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
-> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
->  5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
->  3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
->  3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
->  3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
->  2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
-> 
-> We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
-> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
-> These spin_on_onwer variant also cause rcu stall before we apply this patch set
-> 
-> We also have observed some performace improvements in uninx benchmark tests.
-> 
-> PPC test result:
-> 1 copy - 0.94%
-> 2 copy - 7.17%
-> 4 copy - 11.9%
-> 8 copy -  3.04%
-> 16 copy - 15.11%
-> 
-> details below:
-> Without patch:
-> 
-> 1 copy - File Write 4096 bufsize 8000 maxblocks      2188223.0 KBps  (30.0 s, 1 samples)
-> 2 copy - File Write 4096 bufsize 8000 maxblocks      1804433.0 KBps  (30.0 s, 1 samples)
-> 4 copy - File Write 4096 bufsize 8000 maxblocks      1237257.0 KBps  (30.0 s, 1 samples)
-> 8 copy - File Write 4096 bufsize 8000 maxblocks      1032658.0 KBps  (30.0 s, 1 samples)
-> 16 copy - File Write 4096 bufsize 8000 maxblocks       768000.0 KBps  (30.1 s, 1 samples)
-> 
-> With patch: 
-> 
-> 1 copy - File Write 4096 bufsize 8000 maxblocks      2209189.0 KBps  (30.0 s, 1 samples)
-> 2 copy - File Write 4096 bufsize 8000 maxblocks      1943816.0 KBps  (30.0 s, 1 samples)
-> 4 copy - File Write 4096 bufsize 8000 maxblocks      1405591.0 KBps  (30.0 s, 1 samples)
-> 8 copy - File Write 4096 bufsize 8000 maxblocks      1065080.0 KBps  (30.0 s, 1 samples)
-> 16 copy - File Write 4096 bufsize 8000 maxblocks       904762.0 KBps  (30.0 s, 1 samples)
-> 
-> X86 test result:
-> 	test-case			after-patch	  before-patch
-> Execl Throughput                       |    18307.9 lps  |    11701.6 lps 
-> File Copy 1024 bufsize 2000 maxblocks  |  1352407.3 KBps |   790418.9 KBps
-> File Copy 256 bufsize 500 maxblocks    |   367555.6 KBps |   222867.7 KBps
-> File Copy 4096 bufsize 8000 maxblocks  |  3675649.7 KBps |  1780614.4 KBps
-> Pipe Throughput                        | 11872208.7 lps  | 11855628.9 lps 
-> Pipe-based Context Switching           |  1495126.5 lps  |  1490533.9 lps 
-> Process Creation                       |    29881.2 lps  |    28572.8 lps 
-> Shell Scripts (1 concurrent)           |    23224.3 lpm  |    22607.4 lpm 
-> Shell Scripts (8 concurrent)           |     3531.4 lpm  |     3211.9 lpm 
-> System Call Overhead                   | 10385653.0 lps  | 10419979.0 lps 
-> 
-> Christian Borntraeger (1):
->   s390/spinlock: Provide vcpu_is_preempted
-> 
-> Juergen Gross (1):
->   x86, xen: support vcpu preempted check
-> 
-> Pan Xinhui (9):
->   kernel/sched: introduce vcpu preempted check interface
->   locking/osq: Drop the overload of osq_lock()
->   kernel/locking: Drop the overload of {mutex,rwsem}_spin_on_owner
->   powerpc/spinlock: support vcpu preempted check
->   x86, paravirt: Add interface to support kvm/xen vcpu preempted check
->   KVM: Introduce kvm_write_guest_offset_cached
->   x86, kvm/x86.c: support vcpu preempted check
->   x86, kernel/kvm.c: support vcpu preempted check
->   Documentation: virtual: kvm: Support vcpu preempted check
-> 
->  Documentation/virtual/kvm/msr.txt     |  9 ++++++++-
->  arch/powerpc/include/asm/spinlock.h   |  8 ++++++++
->  arch/s390/include/asm/spinlock.h      |  8 ++++++++
->  arch/s390/kernel/smp.c                |  9 +++++++--
->  arch/s390/lib/spinlock.c              | 25 ++++++++-----------------
->  arch/x86/include/asm/paravirt_types.h |  2 ++
->  arch/x86/include/asm/spinlock.h       |  8 ++++++++
->  arch/x86/include/uapi/asm/kvm_para.h  |  4 +++-
->  arch/x86/kernel/kvm.c                 | 12 ++++++++++++
->  arch/x86/kernel/paravirt-spinlocks.c  |  6 ++++++
->  arch/x86/kvm/x86.c                    | 16 ++++++++++++++++
->  arch/x86/xen/spinlock.c               |  3 ++-
->  include/linux/kvm_host.h              |  2 ++
->  include/linux/sched.h                 | 12 ++++++++++++
->  kernel/locking/mutex.c                | 15 +++++++++++++--
->  kernel/locking/osq_lock.c             | 10 +++++++++-
->  kernel/locking/rwsem-xadd.c           | 16 +++++++++++++---
->  virt/kvm/kvm_main.c                   | 20 ++++++++++++++------
->  18 files changed, 151 insertions(+), 34 deletions(-)
-> 
+	Arnd
