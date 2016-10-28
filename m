@@ -1,22 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t5Hn56nkrzDvSW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 09:02:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t5HtR5xLhzDvTC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 09:07:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- ego@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
- paulus@ozlabs.org, segher@kernel.crashing.org, vaibhav@linux.vnet.ibm.com,
- valentinrothberg@gmail.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.9-4 tag
-Date: Sat, 29 Oct 2016 09:02:48 +1100
-Message-ID: <87eg302ktz.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/64: Used named initialisers for ibm_pa_features
+In-Reply-To: <812af4fb-a672-c058-1ab6-0ee77928d42e@gmail.com>
+References: <1477636793-32760-1-git-send-email-mpe@ellerman.id.au>
+ <812af4fb-a672-c058-1ab6-0ee77928d42e@gmail.com>
+Date: Sat, 29 Oct 2016 09:07:26 +1100
+Message-ID: <878tt82km9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,93 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+Balbir Singh <bsingharora@gmail.com> writes:
 
-Hi Linus,
+> On 28/10/16 17:39, Michael Ellerman wrote:
+>> 
+>> I've tested this but I would appreciate if someone can verify I didn't typo
+>> anything when transcribing it.
+>> 
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index b0245bed6f54..a7b87b6b4ef4 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -156,21 +156,22 @@ static struct ibm_pa_feature {
+>>  	unsigned char	pabit;		/* bit number (big-endian) */
+>>  	unsigned char	invert;		/* if 1, pa bit set => clear feature */
+>>  } ibm_pa_features[] __initdata = {
+>> -	{0, 0, PPC_FEATURE_HAS_MMU, 0,		0, 0, 0},
+>> -	{0, 0, PPC_FEATURE_HAS_FPU, 0,		0, 1, 0},
+>> -	{CPU_FTR_CTRL, 0, 0, 0,			0, 3, 0},
+>> -	{CPU_FTR_NOEXECUTE, 0, 0, 0,		0, 6, 0},
+>> -	{CPU_FTR_NODSISRALIGN, 0, 0, 0,		1, 1, 1},
+>> -	{0, MMU_FTR_CI_LARGE_PAGE, 0, 0,		1, 2, 0},
+>> -	{CPU_FTR_REAL_LE, 0, PPC_FEATURE_TRUE_LE, 0, 5, 0, 0},
+>> +	{ .pabyte = 0,  .pabit = 0, .cpu_user_ftrs = PPC_FEATURE_HAS_MMU },
+>> +	{ .pabyte = 0,  .pabit = 1, .cpu_user_ftrs = PPC_FEATURE_HAS_FPU },
+>> +	{ .pabyte = 0,  .pabit = 3, .cpu_features  = CPU_FTR_CTRL },
+>> +	{ .pabyte = 0,  .pabit = 6, .cpu_features  = CPU_FTR_NOEXECUTE },
+>> +	{ .pabyte = 1,  .pabit = 2, .mmu_features  = MMU_FTR_CI_LARGE_PAGE },
+>> +	{ .pabyte = 40, .pabit = 0, .mmu_features  = MMU_FTR_TYPE_RADIX },
+>> +	{ .pabyte = 1,  .pabit = 1, .invert = 1, .cpu_features = CPU_FTR_NODSISRALIGN },
+>> +	{ .pabyte = 5,  .pabit = 0, .cpu_features  = CPU_FTR_REAL_LE,
+>> +				    .cpu_user_ftrs = PPC_FEATURE_TRUE_LE },
+>>  	/*
+>>  	 * If the kernel doesn't support TM (ie CONFIG_PPC_TRANSACTIONAL_MEM=n),
+>>  	 * we don't want to turn on TM here, so we use the *_COMP versions
+>>  	 * which are 0 if the kernel doesn't support TM.
+>>  	 */
+>> -	{CPU_FTR_TM_COMP, 0, 0,
+>> -	 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
+>> -	{0, MMU_FTR_TYPE_RADIX, 0, 0,		40, 0, 0},
+>> +	{ .pabyte = 22, .pabit = 0, .cpu_features = CPU_FTR_TM_COMP,
+>> +	  .cpu_user_ftrs2 = PPC_FEATURE2_HTM_COMP | PPC_FEATURE2_HTM_NOSC_COMP },
+>>  };
+>>  
+>
+> The code looks easier to parse with this
 
-Please pull some more powerpc fixes for 4.9:
+I know, but did you check I didn't make a typo :)
 
-The following changes since commit 78914ff0843623ee6dbeae92fa0bb8761828684e:
-
-  powerpc: Ignore the pkey system calls for now (2016-10-19 20:36:24 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.9-4
-
-for you to fetch changes up to fb479e44a9e240a23c2d208c2ace23542a47f41c:
-
-  powerpc/64s: relocation, register save fixes for system reset interrupt (2016-10-27 21:55:14 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.9 #4
-
-Fixes marked for stable:
- - Convert cmp to cmpd in idle enter sequence (Segher Boessenkool)
- - cxl: Fix leaking pid refs in some error paths (Vaibhav Jain)
- - Re-fix race condition between going idle and entering guest (Paul Mackerras)
- - Fix race condition in setting lock bit in idle/wakeup code (Paul Mackerras)
- - radix: Use tlbiel only if we ever ran on the current cpu (Aneesh Kumar K.V)
- - relocation, register save fixes for system reset interrupt (Nicholas Piggin)
-
-Fixes for code merged this cycle:
- - Fix CONFIG_ALIVEC typo in restore_tm_state() (Valentin Rothberg)
- - KVM: PPC: Book3S HV: Fix build error when SMP=n (Michael Ellerman)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc/mm/radix: Use tlbiel only if we ever ran on the current cpu
-
-Michael Ellerman (1):
-      KVM: PPC: Book3S HV: Fix build error when SMP=n
-
-Nicholas Piggin (1):
-      powerpc/64s: relocation, register save fixes for system reset interrupt
-
-Paul Mackerras (2):
-      powerpc/64: Re-fix race condition between going idle and entering guest
-      powerpc/64: Fix race condition in setting lock bit in idle/wakeup code
-
-Segher Boessenkool (1):
-      powerpc: Convert cmp to cmpd in idle enter sequence
-
-Vaibhav Jain (1):
-      cxl: Fix leaking pid refs in some error paths
-
-Valentin Rothberg (1):
-      powerpc/process: Fix CONFIG_ALIVEC typo in restore_tm_state()
-
- arch/powerpc/include/asm/cpuidle.h       |  2 +-
- arch/powerpc/include/asm/exception-64s.h | 16 ++++++++++
- arch/powerpc/include/asm/tlb.h           | 12 ++++++++
- arch/powerpc/kernel/exceptions-64s.S     | 50 ++++++++++++++++++--------------
- arch/powerpc/kernel/idle_book3s.S        | 35 ++++++++++++++++++----
- arch/powerpc/kernel/process.c            |  2 +-
- arch/powerpc/kvm/book3s_hv_rm_xics.c     |  1 +
- arch/powerpc/mm/tlb-radix.c              |  8 ++---
- drivers/misc/cxl/api.c                   |  2 ++
- drivers/misc/cxl/file.c                  | 22 ++++++++------
- 10 files changed, 108 insertions(+), 42 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJYE8sIAAoJEFHr6jzI4aWAJJgQAKAKK0xQKyzfGISEdtnjg3vc
-myLi5wIGSHHkXvQP9/9FbcaPEjIvtPjaevAV39xKdCreNcDNZxAta32MtQST56AN
-RT8mHjgVzdE1pTY5ts0hBvrfipejNwUzCklh9IY9ysGSzTG7Kjp4F86PvdPUJSXF
-nX9AX9JGllnwMNM0BlFGf5530fsH4W4dlLt2SRBJrRS2trnbDJHWAmvqYkHDls1q
-7b19rdzpRIzZgNQQN8wwOQBLEJ/HIJpU+0K/PXHoGuojMHXzZM8dgmq+2k0UnCnX
-VSG+31Hc7GFSaEozT2s3OllHUxnlOoeCLYJhM5gEPY+aLZxbxjEif6fdi4vSJFsa
-1WsfXtLf7/TXga/1OS1e+rNB2fHfKgMcDT0CzHHt+olHn61c/l1kDOGCgQApibpb
-xagmRY3baXiV23AZGDumKm9bBN991wZ9RY3DVgrDNarVNuiawkOpsGe/RbePRasx
-0KWookq1TsWbqISunnFGLILUzQKDAarDWGxSvdAZfJiS09/6WHJd7y2R7MEHe2ZW
-UxTtEIVsS76LJUBCg98f3odMiEN1kxZOzG6f8EKewQVQZcyv65bSFReJFe4menHW
-u6o2yYrq+hIcGEKXJ4dZ1FZq8na0czNPDvJ9gdGxEu8Zonx6Xk2QVa9yMPckmUqP
-gSNI2pZ4DrItvdzOvki6
-=vzpb
------END PGP SIGNATURE-----
---=-=-=--
+cheers
