@@ -1,25 +1,27 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t52S80NSLzDvSt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 23:02:16 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id n85so1136561pfi.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 05:02:15 -0700 (PDT)
-Subject: Re: powerpc/64s: relocation, register save fixes for system reset
- interrupt
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <3t4Pzf6KdDz9rxw@ozlabs.org>
-Cc: "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <423538a8-421e-8790-4fc7-8740a4e80a86@gmail.com>
-Date: Fri, 28 Oct 2016 23:01:58 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t534L2SRQzDvTJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 23:30:09 +1100 (AEDT)
+Date: Fri, 28 Oct 2016 08:30:16 -0400
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Mauro Carvalho Chehab <mchehab@infradead.org>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Matt Ranostay <mranostay@gmail.com>,
+ Jonathan Cameron <jic23@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] ABI: fix some syntax issues at the ABI database
+Message-ID: <20161028123016.GA28642@kroah.com>
+References: <cover.1477656806.git.mchehab@s-opensource.com>
+ <d7e0af69cf14fe1cb9cf3298ea3fd98485a8de35.1477656806.git.mchehab@s-opensource.com>
 MIME-Version: 1.0
-In-Reply-To: <3t4Pzf6KdDz9rxw@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <d7e0af69cf14fe1cb9cf3298ea3fd98485a8de35.1477656806.git.mchehab@s-opensource.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 27/10/16 22:38, Michael Ellerman wrote:
-> On Thu, 2016-13-10 at 02:17:14 UTC, Nicholas Piggin wrote:
->> This patch does a couple of things. First of all, powernv immediately
->> explodes when running a relocated kernel, because the system reset
->> exception for handling sleeps does not do correct relocated branches.
->>
->> Secondly, the sleep handling code trashes the condition and cfar
->> registers, which we would like to preserve for debugging purposes (for
->> non-sleep case exception).
->>
->> This patch changes the exception to use the standard format that saves
->> registers before any tests or branches are made. It adds the test for
->> idle-wakeup as an "extra" to break out of the normal exception path.
->> Then it branches to a relocated idle handler that calls the various
->> idle handling functions.
->>
->> After this patch, POWER8 CPU simulator now boots powernv kernel that is
->> running at non-zero.
->>
->> Cc: Balbir Singh <bsingharora@gmail.com>
->> Cc: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
->> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> Acked-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->> Acked-by: Balbir Singh <bsingharora@gmail.com>
+On Fri, Oct 28, 2016 at 10:19:45AM -0200, Mauro Carvalho Chehab wrote:
+> On those three files, the ABI representation described at
+> README are violated.
 > 
-> Applied to powerpc fixes, thanks.
+> - at sysfs-bus-iio-proximity-as3935:
+> 	a ':' character is missing after "What"
 > 
-> https://git.kernel.org/powerpc/c/fb479e44a9e240a23c2d208c2ace23
+> - at sysfs-class-devfreq:
+> 	there's a typo at Description
 > 
-BTW, this cannot be directly marked back to stable
-(ref: http://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/?id=fb479e44a9e240a23c2d208c2ace23542a47f41c)
+> - at sysfs-class-cxl, it is using the ":" character at a
+> 	file preamble, causing it to be misinterpreted as a
+> 	tag.
+> 
+> - On the other files, instead of "What", they use "Where".
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
 
-For stable, we might need
-
-https://marc.info/?l=linuxppc-embedded&m=146967183624811&w=4
-
-Balbir Singh
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
