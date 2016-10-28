@@ -1,29 +1,32 @@
-Return-Path: <0x7f454c46@gmail.com>
-Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
- [IPv6:2a00:1450:400c:c09::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0088.outbound.protection.outlook.com [104.47.33.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4YRn6wx4zDvPJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 04:15:17 +1100 (AEDT)
-Received: by mail-wm0-x22f.google.com with SMTP id n67so60401689wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2016 10:15:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4qR36PrWzDvLL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 14:45:34 +1100 (AEDT)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>, Scott Wood
+ <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
+CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ <linux-clk@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+ <iommu@lists.linux-foundation.org>, <netdev@vger.kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland
+ <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
+ <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
+ <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, Bhupesh
+ Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar
+ Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian
+ <minghuan.lian@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
+Subject: [v13, 1/8] dt: bindings: update Freescale DCFG compatible
+Date: Fri, 28 Oct 2016 11:32:27 +0800
+Message-ID: <1477625554-46700-2-git-send-email-yangbo.lu@nxp.com>
+In-Reply-To: <1477625554-46700-1-git-send-email-yangbo.lu@nxp.com>
+References: <1477625554-46700-1-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <20161025155106.29946-1-dsafonov@virtuozzo.com>
-References: <20161025155106.29946-1-dsafonov@virtuozzo.com>
-From: Dmitry Safonov <0x7f454c46@gmail.com>
-Date: Thu, 27 Oct 2016 20:14:54 +0300
-Message-ID: <CAJwJo6ZC=Z0RsjRgt8W1USuk0fp5_bJJHeQuKXHH50bBSNbd3g@mail.gmail.com>
-Subject: Re: [PATCH 0/7] powerpc/mm: refactor vDSO mapping code
-To: Dmitry Safonov <dsafonov@virtuozzo.com>
-Cc: open list <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Andy Lutomirski <luto@amacapital.net>,
- Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,23 +36,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2016-10-25 18:50 GMT+03:00 Dmitry Safonov <dsafonov@virtuozzo.com>:
-> Cleanup patches for vDSO on powerpc.
-> Originally, I wanted to add vDSO remapping on arm/aarch64 and
-> I decided to cleanup that part on powerpc.
-> I've add a hook for vm_ops for vDSO just like I did for x86.
-> Other changes - reduce exhaustive code duplication.
-> No visible to userspace changes expected.
->
-> Tested on qemu with buildroot rootfs.
->
-> Dmitry Safonov (7):
->   powerpc/vdso: unify return paths in setup_additional_pages
->   powerpc/vdso: remove unused params in vdso_do_func_patch{32,64}
->   powerpc/vdso: separate common code in vdso_common
->   powerpc/vdso: introduce init_vdso{32,64}_pagelist
->   powerpc/vdso: split map_vdso from arch_setup_additional_pages
->   powerpc/vdso: switch from legacy_special_mapping_vmops
->   mm: kill arch_mremap
+Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead
+of 'fsl,ls1021a-dcfg' to include more chips such as ls1021a,
+ls1043a, and ls2080a.
 
-Ignore this version, please - I've just sent v3 with some new fixes.
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Scott Wood <oss@buserror.net>
+---
+Changes for v8:
+	- Added this patch
+Changes for v9:
+	- Added a list for the possible compatibles
+Changes for v10:
+	- None
+Changes for v11:
+	- Added 'Acked-by: Rob Herring'
+	- Updated commit message by Scott
+Changes for v12:
+	- None
+Changes for v13:
+	- None
+---
+ Documentation/devicetree/bindings/arm/fsl.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
+index dbbc095..713c1ae 100644
+--- a/Documentation/devicetree/bindings/arm/fsl.txt
++++ b/Documentation/devicetree/bindings/arm/fsl.txt
+@@ -119,7 +119,11 @@ Freescale DCFG
+ configuration and status for the device. Such as setting the secondary
+ core start address and release the secondary core from holdoff and startup.
+   Required properties:
+-  - compatible: should be "fsl,ls1021a-dcfg"
++  - compatible: should be "fsl,<chip>-dcfg"
++    Possible compatibles:
++	"fsl,ls1021a-dcfg"
++	"fsl,ls1043a-dcfg"
++	"fsl,ls2080a-dcfg"
+   - reg : should contain base address and length of DCFG memory-mapped registers
+ 
+ Example:
+-- 
+2.1.0.27.g96db324
