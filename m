@@ -1,28 +1,85 @@
-Return-Path: <mchehab@osg.samsung.com>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Andreas.Krebbel@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t52rd69YqzDvM8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 23:20:00 +1100 (AEDT)
-From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-To: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Mauro Carvalho Chehab <mchehab@s-opensource.com>,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Matt Ranostay <mranostay@gmail.com>, Jonathan Cameron <jic23@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] ABI: fix some syntax issues at the ABI database
-Date: Fri, 28 Oct 2016 10:19:45 -0200
-Message-Id: <d7e0af69cf14fe1cb9cf3298ea3fd98485a8de35.1477656806.git.mchehab@s-opensource.com>
-In-Reply-To: <cover.1477656806.git.mchehab@s-opensource.com>
-References: <cover.1477656806.git.mchehab@s-opensource.com>
-In-Reply-To: <cover.1477656806.git.mchehab@s-opensource.com>
-References: <cover.1477656806.git.mchehab@s-opensource.com>
-Sender: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t58P462ZVzDvRT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 03:30:00 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9SGSgZ6080846
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 12:29:58 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26c9b7css1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 12:29:58 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <Andreas.Krebbel@de.ibm.com>;
+ Fri, 28 Oct 2016 17:29:56 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 8499917D805D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 17:32:08 +0100 (BST)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9SGTqU628836092
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 16:29:52 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9SGTq1o011265
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 10:29:52 -0600
+Received: from d50lp03.ny.us.ibm.com (d50lp03.pok.ibm.com [146.89.104.211])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u9SGTpcj011250
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 10:29:52 -0600
+Received: from localhost
+ by d50lp03.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <Andreas.Krebbel@de.ibm.com>;
+ Fri, 28 Oct 2016 12:29:51 -0400
+Received: from localhost
+ by smtp.notes.na.collabserv.com with smtp.notes.na.collabserv.com ESMTP
+ for <linuxppc-dev@lists.ozlabs.org> from <Andreas.Krebbel@de.ibm.com>;
+ Fri, 28 Oct 2016 16:29:45 -0000
+In-Reply-To: <132d8dc4-e8d0-6eba-9ae2-4a7e2c9a589b@linux.vnet.ibm.com>
+To: Steffen Maier <maier@linux.vnet.ibm.com>
+Cc: Anil Gurumurthy <anil.gurumurthy@qlogic.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Dick Kennedy <dick.kennedy@avagotech.com>,
+ "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)"
+ <fcoe-devel@open-fcoe.org>,
+ Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@infradead.org>,
+ heicars2@linux.vnet.ibm.com, James Smart <james.smart@avagotech.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ Johannes Thumshirn <jth@kernel.org>, Johannes
+ Thumshirn <jthumshirn@suse.de>, Linux Kernel Mailinglist
+ <linux-kernel@vger.kernel.org>, "open list:S390 ZFCP DRIVER"
+ <linux-s390@vger.kernel.org>, Linux SCSI Mailinglist
+ <linux-scsi@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "Martin K . Petersen"
+ <martin.petersen@oracle.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, mschwid2@linux.vnet.ibm.com, Paul Mackerras
+ <paulus@samba.org>, "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER"
+ <qla2xxx-upstream@qlogic.com>, Richard Biener <rguenther@suse.de>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>, Tyrel Datwyler
+ <tyreld@linux.vnet.ibm.com>, "Ulrich Weigand" <Ulrich.Weigand@de.ibm.com>
+Subject: Re: [PATCH v2 02/16] scsi: don't use fc_bsg_job::request and
+ fc_bsg_job::reply directly
+From: "Andreas Krebbel1" <Andreas.Krebbel@de.ibm.com>
+Date: Fri, 28 Oct 2016 18:29:38 +0200
+References: <cover.1476276823.git.jthumshirn@suse.de>
+ <b92d12e4f78c4998bc8ad000359c127e673379f3.1476276823.git.jthumshirn@suse.de>
+ <2ea07f3f-88eb-b795-fa37-a223bf80e581@linux.vnet.ibm.com>
+ <20161013162405.aoxy3bdkc4bqtwsk@linux-x5ow.site>
+ <4b411836-e76f-b67a-3d49-ad3d51b8f216@linux.vnet.ibm.com>
+ <d9a73963-1ade-2b6f-77bd-044e19675fd8@suse.de>
+ <132d8dc4-e8d0-6eba-9ae2-4a7e2c9a589b@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Message-Id: <OF02C91110.A5599383-ONC125805A.00581A77-C125805A.005A9A28@notes.na.collabserv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,259 +89,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On those three files, the ABI representation described at
-README are violated.
+> On 10/28/2016 01:31 PM, Hannes Reinecke wrote:
+> > On 10/28/2016 11:53 AM, Steffen Maier wrote:
+> >> On 10/13/2016 06:24 PM, Johannes Thumshirn wrote:
+> >>> On Thu, Oct 13, 2016 at 05:15:25PM +0200, Steffen Maier wrote:
+...
+> fc=5Fbsg=5Frequest=5Fhandler()
+>                          req->errors =3D -ENXIO;
+>=20
+> > 0x7c8e6e <fc=5Fbsg=5Frequest=5Fhandler+0x86>: mvhi    260(%r12),-6
+>=20
+> crash> struct -od request.errors
+> struct request {
+>    [260] int errors;
+> }
+>=20
+> ********************************************************************
+>=20
+> BUT this seems the first time %r12 is used in fc=5Fbsg=5Frequest=5Fhandle=
+r(),
+> especially I seem to miss %r12 being initalized with anything.
+> But then again I'm not at all well versed in disassembly.
+> Maybe fc=5Fbsg=5Frequest=5Fhandler() is itself in turn inlined and I woul=
+d=20
+> need to start disassembling even earlier to get to %r12 init?
+> s390x ELF ABI says %r12:
+> usage: Local variable, commonly used as GOT pointer;
+> call effect: saved.
+> Even if it wasn't initialized and remained NULL below why did it not=20
+> already page fault at above instruction? Silly me, we did not execute=20
+> this instruction as it's "if" conditional. This makes me wonder even=20
+> more where the content of %r12 comes from.
+>=20
+> Ulli, Andreas, could you please shed some light on this?
+>=20
+> ********************************************************************
 
-- at sysfs-bus-iio-proximity-as3935:
-	a ':' character is missing after "What"
+r12 holds variable req for that access. It is initialized here:
 
-- at sysfs-class-devfreq:
-	there's a typo at Description
+  req =3D blk=5Ffetch=5Frequest(q);   =20
+  if (!req)  =20
+    break;
 
-- at sysfs-class-cxl, it is using the ":" character at a
-	file preamble, causing it to be misinterpreted as a
-	tag.
+The asm code ends up down below in the function and loads the return value =
 
-- On the other files, instead of "What", they use "Where".
+into r12. The code
+invoking blk=5Ffetch=5Frequest got duplicated and there are three jumps bef=
+ore=20
+the r12 access to these
+locations.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
----
- Documentation/ABI/testing/pstore                   |  2 +-
- .../testing/sysfs-bus-event_source-devices-format  |  2 +-
- .../ABI/testing/sysfs-bus-i2c-devices-hm6352       |  6 +++---
- .../ABI/testing/sysfs-bus-iio-proximity-as3935     |  4 ++--
- .../ABI/testing/sysfs-bus-pci-devices-cciss        | 22 +++++++++++-----------
- .../ABI/testing/sysfs-bus-usb-devices-usbsevseg    | 12 ++++++------
- Documentation/ABI/testing/sysfs-class-cxl          |  6 +++---
- Documentation/ABI/testing/sysfs-class-devfreq      |  2 +-
- 8 files changed, 28 insertions(+), 28 deletions(-)
+  7c8e48:       ec a8 02 14 00 7c       cgije   %r10,0,7c9270=20
+<fc=5Fbsg=5Frequest=5Fhandler+0x488>  <--- x
+  7c8e4e:       d5 03 d0 04 a0 28       clc     4(4,%r13),40(%r10)
+  7c8e54:       a7 74 02 02             jne     7c9258=20
+<fc=5Fbsg=5Frequest=5Fhandler+0x470>         <--- y
+  7c8e58:       91 04 a0 48             tm      72(%r10),4
+  7c8e5c:       a7 74 01 fe             jne     7c9258=20
+<fc=5Fbsg=5Frequest=5Fhandler+0x470>         <--- y
+  7c8e60:       a7 f4 01 d5             j       7c920a=20
+<fc=5Fbsg=5Frequest=5Fhandler+0x422>
+  7c8e64:       d5 03 d0 00 a0 28       clc     0(4,%r13),40(%r10)
+  7c8e6a:       a7 84 00 1a             je      7c8e9e=20
+<fc=5Fbsg=5Frequest=5Fhandler+0xb6>
+  7c8e6e:       e5 4c c1 04 ff fa       mvhi    260(%r12),-6
+...
 
-diff --git a/Documentation/ABI/testing/pstore b/Documentation/ABI/testing/pstore
-index 5fca9f5e10a3..8d6e48f4e8ef 100644
---- a/Documentation/ABI/testing/pstore
-+++ b/Documentation/ABI/testing/pstore
-@@ -1,4 +1,4 @@
--Where:		/sys/fs/pstore/... (or /dev/pstore/...)
-+What:		/sys/fs/pstore/... (or /dev/pstore/...)
- Date:		March 2011
- Kernel Version: 2.6.39
- Contact:	tony.luck@intel.com
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-format b/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
-index 77f47ff5ee02..b6f8748e0200 100644
---- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
-@@ -1,4 +1,4 @@
--Where:		/sys/bus/event_source/devices/<dev>/format
-+What:		/sys/bus/event_source/devices/<dev>/format
- Date:		January 2012
- Kernel Version: 3.3
- Contact:	Jiri Olsa <jolsa@redhat.com>
-diff --git a/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352 b/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
-index feb2e4a87075..29bd447e50a0 100644
---- a/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
-+++ b/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
-@@ -1,18 +1,18 @@
--Where:		/sys/bus/i2c/devices/.../heading0_input
-+What:		/sys/bus/i2c/devices/.../heading0_input
- Date:		April 2010
- Kernel Version: 2.6.36?
- Contact:	alan.cox@intel.com
- Description:	Reports the current heading from the compass as a floating
- 		point value in degrees.
- 
--Where:		/sys/bus/i2c/devices/.../power_state
-+What:		/sys/bus/i2c/devices/.../power_state
- Date:		April 2010
- Kernel Version: 2.6.36?
- Contact:	alan.cox@intel.com
- Description:	Sets the power state of the device. 0 sets the device into
- 		sleep mode, 1 wakes it up.
- 
--Where:		/sys/bus/i2c/devices/.../calibration
-+What:		/sys/bus/i2c/devices/.../calibration
- Date:		April 2010
- Kernel Version: 2.6.36?
- Contact:	alan.cox@intel.com
-diff --git a/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935 b/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
-index 33e96f740639..61a3c9fed07d 100644
---- a/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
-+++ b/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
-@@ -1,4 +1,4 @@
--What		/sys/bus/iio/devices/iio:deviceX/in_proximity_input
-+What:		/sys/bus/iio/devices/iio:deviceX/in_proximity_input
- Date:		March 2014
- KernelVersion:	3.15
- Contact:	Matt Ranostay <mranostay@gmail.com>
-@@ -6,7 +6,7 @@ Description:
- 		Get the current distance in meters of storm (1km steps)
- 		1000-40000 = distance in meters
- 
--What		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
-+What:		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
- Date:		March 2014
- KernelVersion:	3.15
- Contact:	Matt Ranostay <mranostay@gmail.com>
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-index 53d99edd1d75..eb449169c30b 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-+++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-@@ -1,66 +1,66 @@
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/model
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/model
- Date:		March 2009
- Kernel Version: 2.6.30
- Contact:	iss_storagedev@hp.com
- Description:	Displays the SCSI INQUIRY page 0 model for logical drive
- 		Y of controller X.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/rev
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/rev
- Date:		March 2009
- Kernel Version: 2.6.30
- Contact:	iss_storagedev@hp.com
- Description:	Displays the SCSI INQUIRY page 0 revision for logical
- 		drive Y of controller X.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/unique_id
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/unique_id
- Date:		March 2009
- Kernel Version: 2.6.30
- Contact:	iss_storagedev@hp.com
- Description:	Displays the SCSI INQUIRY page 83 serial number for logical
- 		drive Y of controller X.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/vendor
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/vendor
- Date:		March 2009
- Kernel Version: 2.6.30
- Contact:	iss_storagedev@hp.com
- Description:	Displays the SCSI INQUIRY page 0 vendor for logical drive
- 		Y of controller X.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY
- Date:		March 2009
- Kernel Version: 2.6.30
- Contact:	iss_storagedev@hp.com
- Description:	A symbolic link to /sys/block/cciss!cXdY
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/rescan
-+What:		/sys/bus/pci/devices/<dev>/ccissX/rescan
- Date:		August 2009
- Kernel Version:	2.6.31
- Contact:	iss_storagedev@hp.com
- Description:	Kicks of a rescan of the controller to discover logical
- 		drive topology changes.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/lunid
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/lunid
- Date:		August 2009
- Kernel Version: 2.6.31
- Contact:	iss_storagedev@hp.com
- Description:	Displays the 8-byte LUN ID used to address logical
- 		drive Y of controller X.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/raid_level
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/raid_level
- Date:		August 2009
- Kernel Version: 2.6.31
- Contact:	iss_storagedev@hp.com
- Description:	Displays the RAID level of logical drive Y of
- 		controller X.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/usage_count
-+What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/usage_count
- Date:		August 2009
- Kernel Version: 2.6.31
- Contact:	iss_storagedev@hp.com
- Description:	Displays the usage count (number of opens) of logical drive Y
- 		of controller X.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/resettable
-+What:		/sys/bus/pci/devices/<dev>/ccissX/resettable
- Date:		February 2011
- Kernel Version:	2.6.38
- Contact:	iss_storagedev@hp.com
-@@ -71,7 +71,7 @@ Description:	Value of 1 indicates the controller can honor the reset_devices
- 		a dump device, as kdump requires resetting the device in order
- 		to work reliably.
- 
--Where:		/sys/bus/pci/devices/<dev>/ccissX/transport_mode
-+What:		/sys/bus/pci/devices/<dev>/ccissX/transport_mode
- Date:		July 2011
- Kernel Version:	3.0
- Contact:	iss_storagedev@hp.com
-diff --git a/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg b/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
-index 70d00dfa443d..f6199b314196 100644
---- a/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
-+++ b/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
-@@ -1,12 +1,12 @@
--Where:		/sys/bus/usb/.../powered
-+What:		/sys/bus/usb/.../powered
- Date:		August 2008
- Kernel Version:	2.6.26
- Contact:	Harrison Metzger <harrisonmetz@gmail.com>
- Description:	Controls whether the device's display will powered.
- 		A value of 0 is off and a non-zero value is on.
- 
--Where:		/sys/bus/usb/.../mode_msb
--Where:		/sys/bus/usb/.../mode_lsb
-+What:		/sys/bus/usb/.../mode_msb
-+What:		/sys/bus/usb/.../mode_lsb
- Date:		August 2008
- Kernel Version:	2.6.26
- Contact:	Harrison Metzger <harrisonmetz@gmail.com>
-@@ -16,7 +16,7 @@ Description:	Controls the devices display mode.
- 		for an 8 character display the values are
- 			MSB 0x08; LSB 0xFF.
- 
--Where:		/sys/bus/usb/.../textmode
-+What:		/sys/bus/usb/.../textmode
- Date:		August 2008
- Kernel Version:	2.6.26
- Contact:	Harrison Metzger <harrisonmetz@gmail.com>
-@@ -25,13 +25,13 @@ Description:	Controls the way the device interprets its text buffer.
- 		hex:	each character is between 0-15
- 		ascii:	each character is between '0'-'9' and 'A'-'F'.
- 
--Where:		/sys/bus/usb/.../text
-+What:		/sys/bus/usb/.../text
- Date:		August 2008
- Kernel Version:	2.6.26
- Contact:	Harrison Metzger <harrisonmetz@gmail.com>
- Description:	The text (or data) for the device to display
- 
--Where:		/sys/bus/usb/.../decimals
-+What:		/sys/bus/usb/.../decimals
- Date:		August 2008
- Kernel Version:	2.6.26
- Contact:	Harrison Metzger <harrisonmetz@gmail.com>
-diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-index 4ba0a2a61926..a61758ce81a1 100644
---- a/Documentation/ABI/testing/sysfs-class-cxl
-+++ b/Documentation/ABI/testing/sysfs-class-cxl
-@@ -1,6 +1,6 @@
--Note: Attributes that are shared between devices are stored in the directory
--pointed to by the symlink device/.
--Example: The real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
-+Please notice that attributes that are shared between devices are stored in
-+the directory pointed to by the symlink device/.
-+For example, the real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
- /sys/class/cxl/afu0.0s/device/irqs_max, i.e. /sys/class/cxl/afu0.0/irqs_max.
- 
- 
-diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
-index ee39acacf6f8..01196e19afca 100644
---- a/Documentation/ABI/testing/sysfs-class-devfreq
-+++ b/Documentation/ABI/testing/sysfs-class-devfreq
-@@ -47,7 +47,7 @@ Description:
- What:		/sys/class/devfreq/.../trans_stat
- Date:		October 2012
- Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
--Descrtiption:
-+Description:
- 		This ABI shows the statistics of devfreq behavior on a
- 		specific device. It shows the time spent in each state and
- 		the number of transitions between states.
--- 
-2.7.4
+  7c9258:       b9 04 00 29             lgr     %r2,%r9
+  7c925c:       c0 e5 ff f7 b3 a6       brasl   %r14,6bf9a8=20
+<blk=5Ffetch=5Frequest>
+  7c9262:       b9 04 00 c2             lgr     %r12,%r2
+  7c9266:       ec 26 fd ff 00 7c       cgijne  %r2,0,7c8e64=20
+<fc=5Fbsg=5Frequest=5Fhandler+0x7c>
+  7c926c:       a7 f4 ff cf             j       7c920a=20
+<fc=5Fbsg=5Frequest=5Fhandler+0x422>
+
+  7c9270:       b9 04 00 29             lgr     %r2,%r9
+  7c9274:       c0 e5 ff f7 b3 9a       brasl   %r14,6bf9a8=20
+<blk=5Ffetch=5Frequest>
+  7c927a:       b9 04 00 c2             lgr     %r12,%r2
+  7c927e:       ec 26 fe 10 00 7c       cgijne  %r2,0,7c8e9e=20
+<fc=5Fbsg=5Frequest=5Fhandler+0xb6>
+
+-Andreas-
