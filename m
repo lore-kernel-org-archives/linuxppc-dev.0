@@ -1,14 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0074.outbound.protection.outlook.com [104.47.42.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t4vJD42jczDvMy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 17:39:56 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/64: Used named initialisers for ibm_pa_features
-Date: Fri, 28 Oct 2016 17:39:53 +1100
-Message-Id: <1477636793-32760-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t4vq66nSSzDvPl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2016 18:03:14 +1100 (AEDT)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>, Scott Wood
+ <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
+CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ <linux-clk@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+ <iommu@lists.linux-foundation.org>, <netdev@vger.kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland
+ <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
+ <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
+ <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, Bhupesh
+ Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar
+ Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>, Minghuan Lian
+ <minghuan.lian@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
+Subject: [v15, 0/7] Fix eSDHC host version register bug
+Date: Fri, 28 Oct 2016 14:50:11 +0800
+Message-ID: <1477637418-38938-1-git-send-email-yangbo.lu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,65 +34,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ibm_pa_features array consists of structures that describe which bit
-and byte in the ibm,pa-features property toggles one or more flags in
-either the CPU, MMU, or user visible feature flags.
+This patchset is used to fix a host version register bug in the T4240-R1.0-R2.0
+eSDHC controller. To match the SoC version and revision, 10 previous version
+patchsets had tried many methods but all of them were rejected by reviewers.
+Such as
+	- dts compatible method
+	- syscon method
+	- ifdef PPC method
+	- GUTS driver getting SVR method
+Anrd suggested a soc_device_match method in v10, and this is the only available
+method left now. This v11 patchset introduces the soc_device_match interface in
+soc driver.
 
-Each one consists of 7 values, which are all unsigned long, int or char,
-meaning the compiler gives us no warning if we assign the wrong values
-to the wrong elements. In fact we have had a bug here in the past, where
-we were setting incorrect bits, see commit 6997e57d693b ("powerpc:
-scan_features() updates incorrect bits for REAL_LE").
+The first five patches of Yangbo are to add the GUTS driver. This is used to
+register a soc device which contain soc version and revision information.
+The other two patches introduce the soc_device_match method in soc driver
+and apply it on esdhc driver to fix this bug.
 
-So switch to using named initialisers for the structure elements, to
-reduce the likelihood of future bugs, and hopefully improve readability
-also.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+Changes for v15:
+	- Dropped patch 'dt: bindings: update Freescale DCFG compatible'
+	  since the work had been done by below patch on ShawnGuo's linux tree.
+	  'dt-bindings: fsl: add LS1043A/LS1046A/LS2080A compatible for SCFG
+	   and DCFG'
+	- Fixed error code issue in guts driver
+---
 
+Arnd Bergmann (1):
+  base: soc: introduce soc_device_match() interface
 
-I've tested this but I would appreciate if someone can verify I didn't typo
-anything when transcribing it.
+Yangbo Lu (6):
+  ARM64: dts: ls2080a: add device configuration node
+  dt: bindings: move guts devicetree doc out of powerpc directory
+  powerpc/fsl: move mpc85xx.h to include/linux/fsl
+  soc: fsl: add GUTS driver for QorIQ platforms
+  MAINTAINERS: add entry for Freescale SoC drivers
+  mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index b0245bed6f54..a7b87b6b4ef4 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -156,21 +156,22 @@ static struct ibm_pa_feature {
- 	unsigned char	pabit;		/* bit number (big-endian) */
- 	unsigned char	invert;		/* if 1, pa bit set => clear feature */
- } ibm_pa_features[] __initdata = {
--	{0, 0, PPC_FEATURE_HAS_MMU, 0,		0, 0, 0},
--	{0, 0, PPC_FEATURE_HAS_FPU, 0,		0, 1, 0},
--	{CPU_FTR_CTRL, 0, 0, 0,			0, 3, 0},
--	{CPU_FTR_NOEXECUTE, 0, 0, 0,		0, 6, 0},
--	{CPU_FTR_NODSISRALIGN, 0, 0, 0,		1, 1, 1},
--	{0, MMU_FTR_CI_LARGE_PAGE, 0, 0,		1, 2, 0},
--	{CPU_FTR_REAL_LE, 0, PPC_FEATURE_TRUE_LE, 0, 5, 0, 0},
-+	{ .pabyte = 0,  .pabit = 0, .cpu_user_ftrs = PPC_FEATURE_HAS_MMU },
-+	{ .pabyte = 0,  .pabit = 1, .cpu_user_ftrs = PPC_FEATURE_HAS_FPU },
-+	{ .pabyte = 0,  .pabit = 3, .cpu_features  = CPU_FTR_CTRL },
-+	{ .pabyte = 0,  .pabit = 6, .cpu_features  = CPU_FTR_NOEXECUTE },
-+	{ .pabyte = 1,  .pabit = 2, .mmu_features  = MMU_FTR_CI_LARGE_PAGE },
-+	{ .pabyte = 40, .pabit = 0, .mmu_features  = MMU_FTR_TYPE_RADIX },
-+	{ .pabyte = 1,  .pabit = 1, .invert = 1, .cpu_features = CPU_FTR_NODSISRALIGN },
-+	{ .pabyte = 5,  .pabit = 0, .cpu_features  = CPU_FTR_REAL_LE,
-+				    .cpu_user_ftrs = PPC_FEATURE_TRUE_LE },
- 	/*
- 	 * If the kernel doesn't support TM (ie CONFIG_PPC_TRANSACTIONAL_MEM=n),
- 	 * we don't want to turn on TM here, so we use the *_COMP versions
- 	 * which are 0 if the kernel doesn't support TM.
- 	 */
--	{CPU_FTR_TM_COMP, 0, 0,
--	 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
--	{0, MMU_FTR_TYPE_RADIX, 0, 0,		40, 0, 0},
-+	{ .pabyte = 22, .pabit = 0, .cpu_features = CPU_FTR_TM_COMP,
-+	  .cpu_user_ftrs2 = PPC_FEATURE2_HTM_COMP | PPC_FEATURE2_HTM_NOSC_COMP },
- };
- 
- static void __init scan_features(unsigned long node, const unsigned char *ftrs,
+ .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
+ MAINTAINERS                                        |  11 +-
+ arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 +
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |   2 +-
+ drivers/base/Kconfig                               |   1 +
+ drivers/base/soc.c                                 |  66 ++++++
+ drivers/clk/clk-qoriq.c                            |   3 +-
+ drivers/i2c/busses/i2c-mpc.c                       |   2 +-
+ drivers/iommu/fsl_pamu.c                           |   3 +-
+ drivers/mmc/host/Kconfig                           |   1 +
+ drivers/mmc/host/sdhci-of-esdhc.c                  |  20 ++
+ drivers/net/ethernet/freescale/gianfar.c           |   2 +-
+ drivers/soc/Kconfig                                |   3 +-
+ drivers/soc/fsl/Kconfig                            |  18 ++
+ drivers/soc/fsl/Makefile                           |   1 +
+ drivers/soc/fsl/guts.c                             | 237 +++++++++++++++++++++
+ include/linux/fsl/guts.h                           | 125 ++++++-----
+ .../asm/mpc85xx.h => include/linux/fsl/svr.h       |   4 +-
+ include/linux/sys_soc.h                            |   3 +
+ 20 files changed, 452 insertions(+), 61 deletions(-)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
+ create mode 100644 drivers/soc/fsl/Kconfig
+ create mode 100644 drivers/soc/fsl/guts.c
+ rename arch/powerpc/include/asm/mpc85xx.h => include/linux/fsl/svr.h (97%)
+
 -- 
-2.7.4
+2.1.0.27.g96db324
