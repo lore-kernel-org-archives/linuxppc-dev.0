@@ -1,18 +1,18 @@
 Return-Path: <hkallweit1@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t5jgM6bHjzDvT1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 01:29:19 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id p190so5222040wmp.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 07:29:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t5jgP55JkzDvT1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 01:29:21 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id 68so4715411wmz.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 07:29:21 -0700 (PDT)
 From: Heiner Kallweit <hkallweit1@gmail.com>
-Subject: [PATCH 1/3] powerpc/fsl_soc: improve and simplify fsl_get_sys_freq
+Subject: [PATCH 2/3] powerpc/fsl_soc: improve and simplify get_brgfreq
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
-Message-ID: <f60d2b4b-4d82-b92f-5fa4-f067feba460d@gmail.com>
-Date: Sat, 29 Oct 2016 16:27:14 +0200
+Message-ID: <ed65e9a4-771b-2825-d94b-1e104d835da6@gmail.com>
+Date: Sat, 29 Oct 2016 16:28:25 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,48 +25,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Use of_property_read_u32 instead of the generic of_get_property to
-simplify the code. In addition move the declaration of sysfreq
-into fsl_get_sys_freq because it's private to this function.
+simplify the code. In addition move the declaration of brgfreq
+into get_brgfreq because it's private to this function.
 
 Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c | 24 +++++++-----------------
+ 1 file changed, 7 insertions(+), 17 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index d93056e..48fc36b 100644
+index 48fc36b..d418424 100644
 --- a/arch/powerpc/sysdev/fsl_soc.c
 +++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -77,13 +77,10 @@ phys_addr_t get_immrbase(void)
+@@ -100,23 +100,17 @@ EXPORT_SYMBOL(fsl_get_sys_freq);
  
- EXPORT_SYMBOL(get_immrbase);
+ #if defined(CONFIG_CPM2) || defined(CONFIG_QUICC_ENGINE) || defined(CONFIG_8xx)
  
--static u32 sysfreq = -1;
+-static u32 brgfreq = -1;
 -
- u32 fsl_get_sys_freq(void)
+ u32 get_brgfreq(void)
  {
-+	static u32 sysfreq = -1;
- 	struct device_node *soc;
--	const u32 *prop;
++	static u32 brgfreq = -1;
+ 	struct device_node *node;
+-	const unsigned int *prop;
 -	int size;
  
- 	if (sysfreq != -1)
- 		return sysfreq;
-@@ -92,12 +89,9 @@ u32 fsl_get_sys_freq(void)
- 	if (!soc)
- 		return -1;
+ 	if (brgfreq != -1)
+ 		return brgfreq;
  
--	prop = of_get_property(soc, "clock-frequency", &size);
--	if (!prop || size != sizeof(*prop) || *prop == 0)
--		prop = of_get_property(soc, "bus-frequency", &size);
+ 	node = of_find_compatible_node(NULL, NULL, "fsl,cpm-brg");
+ 	if (node) {
+-		prop = of_get_property(node, "clock-frequency", &size);
+-		if (prop && size == 4)
+-			brgfreq = *prop;
 -
--	if (prop && size == sizeof(*prop))
--		sysfreq = *prop;
-+	of_property_read_u32(soc, "clock-frequency", &sysfreq);
-+	if (sysfreq == -1 || !sysfreq)
-+		of_property_read_u32(soc, "bus-frequency", &sysfreq);
++		of_property_read_u32(node, "clock-frequency", &brgfreq);
+ 		of_node_put(node);
+ 		return brgfreq;
+ 	}
+@@ -129,15 +123,11 @@ u32 get_brgfreq(void)
+ 		node = of_find_node_by_type(NULL, "qe");
  
- 	of_node_put(soc);
- 	return sysfreq;
+ 	if (node) {
+-		prop = of_get_property(node, "brg-frequency", &size);
+-		if (prop && size == 4)
+-			brgfreq = *prop;
+-
+-		if (brgfreq == -1 || brgfreq == 0) {
+-			prop = of_get_property(node, "bus-frequency", &size);
+-			if (prop && size == 4)
+-				brgfreq = *prop / 2;
+-		}
++		of_property_read_u32(node, "brg-frequency", &brgfreq);
++		if (brgfreq == -1 || !brgfreq)
++			if(!of_property_read_u32(node, "bus-frequency",
++			   &brgfreq))
++				brgfreq /= 2;
+ 		of_node_put(node);
+ 	}
+ 
 -- 
 2.10.1
