@@ -1,19 +1,56 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xinhui@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t5HtR5xLhzDvTC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 09:07:27 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/64: Used named initialisers for ibm_pa_features
-In-Reply-To: <812af4fb-a672-c058-1ab6-0ee77928d42e@gmail.com>
-References: <1477636793-32760-1-git-send-email-mpe@ellerman.id.au>
- <812af4fb-a672-c058-1ab6-0ee77928d42e@gmail.com>
-Date: Sat, 29 Oct 2016 09:07:26 +1100
-Message-ID: <878tt82km9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t5SJF4FYwzDvT7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 15:26:53 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9T4Njx3120710
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 00:26:51 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26ccnu2teb-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 00:26:50 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
+ Sat, 29 Oct 2016 14:26:46 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E83DA357805A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 15:26:43 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9T4QhEL6685166
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 15:26:43 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9T4Qga7018105
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 15:26:43 +1100
+Subject: Re: [Xen-devel] [PATCH v6 10/11] x86, xen: support vcpu preempted
+ check
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1477642287-24104-11-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20161028194325.GE2879@char.us.oracle.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
+ xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
+ xen-devel@lists.xenproject.org, x86@kernel.org, kernellwp@gmail.com,
+ jgross@suse.com, David.Laight@ACULAB.COM, rkrcmar@redhat.com,
+ peterz@infradead.org, benh@kernel.crashing.org, bsingharora@gmail.com,
+ will.deacon@arm.com, borntraeger@de.ibm.com, mingo@redhat.com,
+ paulus@samba.org, mpe@ellerman.id.au, pbonzini@redhat.com,
+ paulmck@linux.vnet.ibm.com, boqun.feng@gmail.com
+From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+Date: Sat, 29 Oct 2016 12:26:30 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20161028194325.GE2879@char.us.oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Message-Id: <4afb98a9-9fb0-28e2-8d42-8bd6e3edeb9c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +60,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
 
-> On 28/10/16 17:39, Michael Ellerman wrote:
->> 
->> I've tested this but I would appreciate if someone can verify I didn't typo
->> anything when transcribing it.
->> 
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index b0245bed6f54..a7b87b6b4ef4 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -156,21 +156,22 @@ static struct ibm_pa_feature {
->>  	unsigned char	pabit;		/* bit number (big-endian) */
->>  	unsigned char	invert;		/* if 1, pa bit set => clear feature */
->>  } ibm_pa_features[] __initdata = {
->> -	{0, 0, PPC_FEATURE_HAS_MMU, 0,		0, 0, 0},
->> -	{0, 0, PPC_FEATURE_HAS_FPU, 0,		0, 1, 0},
->> -	{CPU_FTR_CTRL, 0, 0, 0,			0, 3, 0},
->> -	{CPU_FTR_NOEXECUTE, 0, 0, 0,		0, 6, 0},
->> -	{CPU_FTR_NODSISRALIGN, 0, 0, 0,		1, 1, 1},
->> -	{0, MMU_FTR_CI_LARGE_PAGE, 0, 0,		1, 2, 0},
->> -	{CPU_FTR_REAL_LE, 0, PPC_FEATURE_TRUE_LE, 0, 5, 0, 0},
->> +	{ .pabyte = 0,  .pabit = 0, .cpu_user_ftrs = PPC_FEATURE_HAS_MMU },
->> +	{ .pabyte = 0,  .pabit = 1, .cpu_user_ftrs = PPC_FEATURE_HAS_FPU },
->> +	{ .pabyte = 0,  .pabit = 3, .cpu_features  = CPU_FTR_CTRL },
->> +	{ .pabyte = 0,  .pabit = 6, .cpu_features  = CPU_FTR_NOEXECUTE },
->> +	{ .pabyte = 1,  .pabit = 2, .mmu_features  = MMU_FTR_CI_LARGE_PAGE },
->> +	{ .pabyte = 40, .pabit = 0, .mmu_features  = MMU_FTR_TYPE_RADIX },
->> +	{ .pabyte = 1,  .pabit = 1, .invert = 1, .cpu_features = CPU_FTR_NODSISRALIGN },
->> +	{ .pabyte = 5,  .pabit = 0, .cpu_features  = CPU_FTR_REAL_LE,
->> +				    .cpu_user_ftrs = PPC_FEATURE_TRUE_LE },
->>  	/*
->>  	 * If the kernel doesn't support TM (ie CONFIG_PPC_TRANSACTIONAL_MEM=n),
->>  	 * we don't want to turn on TM here, so we use the *_COMP versions
->>  	 * which are 0 if the kernel doesn't support TM.
->>  	 */
->> -	{CPU_FTR_TM_COMP, 0, 0,
->> -	 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
->> -	{0, MMU_FTR_TYPE_RADIX, 0, 0,		40, 0, 0},
->> +	{ .pabyte = 22, .pabit = 0, .cpu_features = CPU_FTR_TM_COMP,
->> +	  .cpu_user_ftrs2 = PPC_FEATURE2_HTM_COMP | PPC_FEATURE2_HTM_NOSC_COMP },
->>  };
->>  
+
+在 2016/10/29 03:43, Konrad Rzeszutek Wilk 写道:
+> On Fri, Oct 28, 2016 at 04:11:26AM -0400, Pan Xinhui wrote:
+>> From: Juergen Gross <jgross@suse.com>
+>>
+>> Support the vcpu_is_preempted() functionality under Xen. This will
+>> enhance lock performance on overcommitted hosts (more runnable vcpus
+>> than physical cpus in the system) as doing busy waits for preempted
+>> vcpus will hurt system performance far worse than early yielding.
+>>
+>> A quick test (4 vcpus on 1 physical cpu doing a parallel build job
+>> with "make -j 8") reduced system time by about 5% with this patch.
+>>
+>> Signed-off-by: Juergen Gross <jgross@suse.com>
+>> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+>> ---
+>>  arch/x86/xen/spinlock.c | 3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/x86/xen/spinlock.c b/arch/x86/xen/spinlock.c
+>> index 3d6e006..74756bb 100644
+>> --- a/arch/x86/xen/spinlock.c
+>> +++ b/arch/x86/xen/spinlock.c
+>> @@ -114,7 +114,6 @@ void xen_uninit_lock_cpu(int cpu)
+>>  	per_cpu(irq_name, cpu) = NULL;
+>>  }
+>>
+>> -
 >
-> The code looks easier to parse with this
+> Spurious change.
+well, just remove one unnecessary blank line while at it.
 
-I know, but did you check I didn't make a typo :)
-
-cheers
+>>  /*
+>>   * Our init of PV spinlocks is split in two init functions due to us
+>>   * using paravirt patching and jump labels patching and having to do
+>> @@ -137,6 +136,8 @@ void __init xen_init_spinlocks(void)
+>>  	pv_lock_ops.queued_spin_unlock = PV_CALLEE_SAVE(__pv_queued_spin_unlock);
+>>  	pv_lock_ops.wait = xen_qlock_wait;
+>>  	pv_lock_ops.kick = xen_qlock_kick;
+>> +
+>> +	pv_lock_ops.vcpu_is_preempted = xen_vcpu_stolen;
+>>  }
+>>
+>>  /*
+>> --
+>> 2.4.11
+>>
+>>
+>> _______________________________________________
+>> Xen-devel mailing list
+>> Xen-devel@lists.xen.org
+>> https://lists.xen.org/xen-devel
+>
