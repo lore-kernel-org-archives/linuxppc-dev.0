@@ -1,28 +1,22 @@
-Return-Path: <dave@stgolabs.net>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t5mrr6mFQzDvT1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 03:52:42 +1100 (AEDT)
-Date: Sat, 29 Oct 2016 09:52:16 -0700
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org,
- linux-s390@vger.kernel.org, xen-devel-request@lists.xenproject.org,
- kvm@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
- pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
- borntraeger@de.ibm.com, rkrcmar@redhat.com, David.Laight@ACULAB.COM
-Subject: Re: [PATCH v6 02/11] locking/osq: Drop the overload of osq_lock()
-Message-ID: <20161029165216.GA17451@linux-80c1.suse>
-References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1477642287-24104-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <1477642287-24104-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t5rwq56W1zDvSw
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 06:56:23 +1100 (AEDT)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@linux-mips.org, linux-pm@vger.kernel.org,
+ patches@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-atm-general@lists.sourceforge.net
+Subject: [PATCH 00/15] use permission-specific DEVICE_ATTR variants
+Date: Sat, 29 Oct 2016 21:36:54 +0200
+Message-Id: <1477769829-22230-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +26,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 28 Oct 2016, Pan Xinhui wrote:
-> 		/*
-> 		 * If we need to reschedule bail... so we can block.
->+		 * Use vcpu_is_preempted to detech lock holder preemption issue
-                                            ^^ detect
->+		 * and break. 
 
-Could you please remove the rest of this comment? Its just noise to point out
-that vcpu_is_preempted is a macro defined by arch/false. This is standard protocol
-in the kernel.
+Use DEVICE_ATTR_RO etc. for read only attributes etc.  This simplifies the
+source code, improves readbility, and reduces the chance of
+inconsistencies.
 
-Same goes for all locks you change with this.
+The complete semantic patch is as follows:
+(http://coccinelle.lip6.fr/)
 
-Thanks,
-Davidlohr
+// <smpl>
+@ro@
+declarer name DEVICE_ATTR;
+identifier x,x_show;
+@@
 
->                * vcpu_is_preempted is a macro defined by false if
->+		 * arch does not support vcpu preempted check,
-> 		 */
->-		if (need_resched())
->+		if (need_resched() || vcpu_is_preempted(node_cpu(node->prev)))
-> 			goto unqueue;
->
-> 		cpu_relax_lowlatency();
->-- 
->2.4.11
->
+DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
+
+@wo@
+declarer name DEVICE_ATTR;
+identifier x,x_store;
+@@
+
+DEVICE_ATTR(x, \(0200\|S_IWUSR\), NULL, x_store);
+
+@rw@
+declarer name DEVICE_ATTR;
+identifier x,x_show,x_store;
+@@
+
+DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
+
+@script:ocaml@
+x << ro.x;
+x_show << ro.x_show;
+@@
+
+if not (x^"_show" = x_show) then Coccilib.include_match false
+
+@script:ocaml@
+x << wo.x;
+x_store << wo.x_store;
+@@
+
+if not (x^"_store" = x_store) then Coccilib.include_match false
+
+@script:ocaml@
+x << rw.x;
+x_show << rw.x_show;
+x_store << rw.x_store;
+@@
+
+if not (x^"_show" = x_show && x^"_store" = x_store)
+then Coccilib.include_match false
+
+@@
+declarer name DEVICE_ATTR_RO;
+identifier ro.x,ro.x_show;
+@@
+
+- DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
++ DEVICE_ATTR_RO(x);
+
+@@
+declarer name DEVICE_ATTR_WO;
+identifier wo.x,wo.x_store;
+@@
+
+- DEVICE_ATTR(x, \(0200\|S_IWUSR\), NULL, x_store);
++ DEVICE_ATTR_WO(x);
+
+@@
+declarer name DEVICE_ATTR_RW;
+identifier rw.x,rw.x_show,rw.x_store;
+@@
+
+- DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
++ DEVICE_ATTR_RW(x);
+// </smpl>
+
+---
+
+ arch/mips/txx9/generic/7segled.c                  |    4 ++--
+ arch/powerpc/kernel/iommu.c                       |    3 +--
+ arch/tile/kernel/sysfs.c                          |   14 +++++++-------
+ drivers/atm/solos-pci.c                           |    2 +-
+ drivers/pci/pcie/aspm.c                           |    4 ++--
+ drivers/power/supply/wm8350_power.c               |    2 +-
+ drivers/ptp/ptp_sysfs.c                           |    2 +-
+ drivers/thermal/int340x_thermal/int3400_thermal.c |    2 +-
+ drivers/thermal/thermal_hwmon.c                   |    2 +-
+ drivers/tty/nozomi.c                              |    4 ++--
+ drivers/usb/wusbcore/dev-sysfs.c                  |    6 +++---
+ drivers/usb/wusbcore/wusbhc.c                     |   13 +++++--------
+ drivers/video/fbdev/wm8505fb.c                    |    2 +-
+ sound/soc/omap/mcbsp.c                            |    4 ++--
+ sound/soc/soc-dapm.c                              |    2 +-
+ 15 files changed, 31 insertions(+), 35 deletions(-)
