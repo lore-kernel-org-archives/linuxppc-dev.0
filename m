@@ -1,20 +1,28 @@
-Return-Path: <hkallweit1@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dave@stgolabs.net>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t5jgQ06SHzDvT4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 01:29:22 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id 68so4715480wmz.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 07:29:21 -0700 (PDT)
-From: Heiner Kallweit <hkallweit1@gmail.com>
-Subject: [PATCH 3/3] powerpc/fsl_soc: improve and simplify get_baudrate
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Message-ID: <ffb03bdf-91a3-a2f0-b969-7167d3a8b6cd@gmail.com>
-Date: Sat, 29 Oct 2016 16:29:04 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t5mrr6mFQzDvT1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 03:52:42 +1100 (AEDT)
+Date: Sat, 29 Oct 2016 09:52:16 -0700
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org,
+ linux-s390@vger.kernel.org, xen-devel-request@lists.xenproject.org,
+ kvm@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
+ will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
+ pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
+ borntraeger@de.ibm.com, rkrcmar@redhat.com, David.Laight@ACULAB.COM
+Subject: Re: [PATCH v6 02/11] locking/osq: Drop the overload of osq_lock()
+Message-ID: <20161029165216.GA17451@linux-80c1.suse>
+References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1477642287-24104-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1477642287-24104-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use of_property_read_u32 instead of the generic of_get_property to
-simplify the code. In addition move the declaration of fs_baudrate
-into get_baudrate because it's private to this function.
+On Fri, 28 Oct 2016, Pan Xinhui wrote:
+> 		/*
+> 		 * If we need to reschedule bail... so we can block.
+>+		 * Use vcpu_is_preempted to detech lock holder preemption issue
+                                            ^^ detect
+>+		 * and break. 
 
-Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
----
- arch/powerpc/sysdev/fsl_soc.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+Could you please remove the rest of this comment? Its just noise to point out
+that vcpu_is_preempted is a macro defined by arch/false. This is standard protocol
+in the kernel.
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index d418424..0c542f1 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -136,10 +136,9 @@ u32 get_brgfreq(void)
- 
- EXPORT_SYMBOL(get_brgfreq);
- 
--static u32 fs_baudrate = -1;
--
- u32 get_baudrate(void)
- {
-+	static u32 fs_baudrate = -1;
- 	struct device_node *node;
- 
- 	if (fs_baudrate != -1)
-@@ -147,12 +146,7 @@ u32 get_baudrate(void)
- 
- 	node = of_find_node_by_type(NULL, "serial");
- 	if (node) {
--		int size;
--		const unsigned int *prop = of_get_property(node,
--				"current-speed", &size);
--
--		if (prop)
--			fs_baudrate = *prop;
-+		of_property_read_u32(node, "current-speed", &fs_baudrate);
- 		of_node_put(node);
- 	}
- 
--- 
-2.10.1
+Same goes for all locks you change with this.
+
+Thanks,
+Davidlohr
+
+>                * vcpu_is_preempted is a macro defined by false if
+>+		 * arch does not support vcpu preempted check,
+> 		 */
+>-		if (need_resched())
+>+		if (need_resched() || vcpu_is_preempted(node_cpu(node->prev)))
+> 			goto unqueue;
+>
+> 		cpu_relax_lowlatency();
+>-- 
+>2.4.11
+>
