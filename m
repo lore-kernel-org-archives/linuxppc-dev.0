@@ -1,55 +1,43 @@
-Return-Path: <xinhui@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t6Kry6q0rzDvS8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:46 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- u9UEchk1067850
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 10:39:45 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26cqxdfund-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 10:39:44 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
- Mon, 31 Oct 2016 00:39:42 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 677C12BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:39 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u9UEdddD13893886
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:39 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u9UEdbna006361
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:39 +1100
-Subject: Re: [PATCH v6 02/11] locking/osq: Drop the overload of osq_lock()
-To: Davidlohr Bueso <dave@stgolabs.net>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1477642287-24104-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20161029165216.GA17451@linux-80c1.suse>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
- xen-devel@lists.xenproject.org, x86@kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
- pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
- borntraeger@de.ibm.com, rkrcmar@redhat.com, David.Laight@ACULAB.COM
-From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
-Date: Sun, 30 Oct 2016 22:39:29 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t6QF040RZzDvSv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 04:57:23 +1100 (AEDT)
+Date: Sun, 30 Oct 2016 11:56:52 -0600
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: Steffen Maier <maier@linux.vnet.ibm.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+ Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
+ Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+ Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Johannes Thumshirn <jth@kernel.org>,
+ James Smart <james.smart@avagotech.com>,
+ Dick Kennedy <dick.kennedy@avagotech.com>,
+ "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
+ "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
+Subject: Re: [PATCH v2 02/16] scsi: don't use fc_bsg_job::request and
+ fc_bsg_job::reply directly
+Message-ID: <20161030175652.al6viedhd3i67jq5@linux-x5ow.site>
+References: <cover.1476276823.git.jthumshirn@suse.de>
+ <b92d12e4f78c4998bc8ad000359c127e673379f3.1476276823.git.jthumshirn@suse.de>
+ <2ea07f3f-88eb-b795-fa37-a223bf80e581@linux.vnet.ibm.com>
+ <20161013162405.aoxy3bdkc4bqtwsk@linux-x5ow.site>
+ <4b411836-e76f-b67a-3d49-ad3d51b8f216@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20161029165216.GA17451@linux-80c1.suse>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Message-Id: <3b93d48e-a106-01ec-3367-b244bd659d2f@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <4b411836-e76f-b67a-3d49-ad3d51b8f216@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,37 +47,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Oct 28, 2016 at 11:53:46AM +0200, Steffen Maier wrote:
 
+[...]
 
-åœ¨ 2016/10/30 00:52, Davidlohr Bueso å†™é“:
-> On Fri, 28 Oct 2016, Pan Xinhui wrote:
->>         /*
->>          * If we need to reschedule bail... so we can block.
->> +         * Use vcpu_is_preempted to detech lock holder preemption issue
->                                            ^^ detect
-ok. thanks for poingting it out.
->> +         * and break.
->
-> Could you please remove the rest of this comment? Its just noise to point out
-> that vcpu_is_preempted is a macro defined by arch/false. This is standard protocol
-> in the kernel.
->
-fair enough.
+> > > 
+> > > > @@ -3937,6 +3944,7 @@ fc_bsg_request_handler(struct request_queue *q, struct Scsi_Host *shost,
+> > > >  	struct request *req;
+> > > >  	struct fc_bsg_job *job;
+> > > >  	enum fc_dispatch_result ret;
+> > > > +	struct fc_bsg_reply *bsg_reply;
+> > > > 
+> > > >  	if (!get_device(dev))
+> > > >  		return;
+> > > > @@ -3973,8 +3981,9 @@ fc_bsg_request_handler(struct request_queue *q, struct Scsi_Host *shost,
+> > > >  		/* check if we have the msgcode value at least */
+> > > >  		if (job->request_len < sizeof(uint32_t)) {
+> > > >  			BUG_ON(job->reply_len < sizeof(uint32_t));
+> > > > -			job->reply->reply_payload_rcv_len = 0;
+> > > > -			job->reply->result = -ENOMSG;
+> > > > +			bsg_reply = job->reply;
+> > > > +			bsg_reply->reply_payload_rcv_len = 0;
+> > > > +			bsg_reply->result = -ENOMSG;
+> 
+> Compiler optimization re-ordered above two lines and the first pointer
+> derefence is bsg_reply->result [field offset 0] where bsg_reply is NULL.
+> The assignment tries to write to memory at address NULL causing the kernel
+> page fault.
+> 
+> Does your suggested change for [PATCH v3 02/16], shuffling the
+> job->request_len checks, address above kernel page fault?
 
-> Same goes for all locks you change with this.
->
-> Thanks,
-> Davidlohr
->
->>                * vcpu_is_preempted is a macro defined by false if
->> +         * arch does not support vcpu preempted check,
->>          */
->> -        if (need_resched())
->> +        if (need_resched() || vcpu_is_preempted(node_cpu(node->prev)))
->>             goto unqueue;
->>
->>         cpu_relax_lowlatency();
->> --
->> 2.4.11
->>
->
+This is what I hope at least. I'm sorry but I don't have any experience with s390
+and zfcp at all. I still need to get a test environment set up, but all the
+people knowing how to do are rather busy at the moment. All my tests on x86_64
+with FCoE and lpfc haven't had a problem so far.
+
+Thanks,
+	Johannes
+-- 
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
