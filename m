@@ -1,31 +1,27 @@
-Return-Path: <jmaxwell37@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t5yqC16HRzDvSj
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 11:21:59 +1100 (AEDT)
-Received: by mail-it0-x244.google.com with SMTP id e187so2570191itc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Oct 2016 17:21:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t6CM90yDXzDvRf
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 20:47:00 +1100 (AEDT)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Paul Burton <paul.burton@imgtec.com>
+Cc: <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Petr Mladek <pmladek@suse.com>,
+ "Sergey Senozhatsky" <sergey.senozhatsky@gmail.com>,
+ Borislav Petkov <bp@suse.de>, Tejun Heo <tj@kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] console: use first console if stdout-path device doesn't
+ appear
+References: <87oa2ij2mq.fsf@linux-m68k.org>
+ <20161018091852.14776-1-paul.burton@imgtec.com>
+ <87mvi1cwly.fsf@linux-m68k.org>
+Date: Sun, 30 Oct 2016 10:46:50 +0100
+In-Reply-To: <87mvi1cwly.fsf@linux-m68k.org> (Andreas Schwab's message of
+ "Tue, 18 Oct 2016 20:58:49 +0200")
+Message-ID: <878tt6np85.fsf@linux-m68k.org>
 MIME-Version: 1.0
-In-Reply-To: <1477591717.7065.237.camel@edumazet-glaptop3.roam.corp.google.com>
-References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
- <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
- <7b97bb2a-63ed-7dde-9a2f-e390c67de382@linux.vnet.ibm.com>
- <1477591717.7065.237.camel@edumazet-glaptop3.roam.corp.google.com>
-From: Jonathan Maxwell <jmaxwell37@gmail.com>
-Date: Sun, 30 Oct 2016 11:21:56 +1100
-Message-ID: <CAGHK07DdHJKW_YPrTb1r0u2k9SXD2MCZ3Gw_qQTdv-qQdSZN2A@mail.gmail.com>
-Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
- gso_type
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Jon Maxwell <jmaxwell@redhat.com>, hofrat@osadl.org,
- linux-kernel@vger.kernel.org, jarod@redhat.com, netdev@vger.kernel.org,
- paulus@samba.org, Tom Herbert <tom@herbertland.com>,
- Marcelo Ricardo Leitner <mleitner@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,107 +31,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 28, 2016 at 5:08 AM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> On Thu, 2016-10-27 at 12:54 -0500, Thomas Falcon wrote:
->> On 10/27/2016 10:26 AM, Eric Dumazet wrote:
->> > On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
->> >> We recently encountered a bug where a few customers using ibmveth on the
->> >> same LPAR hit an issue where a TCP session hung when large receive was
->> >> enabled. Closer analysis revealed that the session was stuck because the
->> >> one side was advertising a zero window repeatedly.
->> >>
->> >> We narrowed this down to the fact the ibmveth driver did not set gso_size
->> >> which is translated by TCP into the MSS later up the stack. The MSS is
->> >> used to calculate the TCP window size and as that was abnormally large,
->> >> it was calculating a zero window, even although the sockets receive buffer
->> >> was completely empty.
->> >>
->> >> We were able to reproduce this and worked with IBM to fix this. Thanks Tom
->> >> and Marcelo for all your help and review on this.
->> >>
->> >> The patch fixes both our internal reproduction tests and our customers tests.
->> >>
->> >> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
->> >> ---
->> >>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
->> >>  1 file changed, 20 insertions(+)
->> >>
->> >> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> >> index 29c05d0..c51717e 100644
->> >> --- a/drivers/net/ethernet/ibm/ibmveth.c
->> >> +++ b/drivers/net/ethernet/ibm/ibmveth.c
->> >> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->> >>    int frames_processed = 0;
->> >>    unsigned long lpar_rc;
->> >>    struct iphdr *iph;
->> >> +  bool large_packet = 0;
->> >> +  u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
->> >>
->> >>  restart_poll:
->> >>    while (frames_processed < budget) {
->> >> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->> >>                                            iph->check = 0;
->> >>                                            iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
->> >>                                            adapter->rx_large_packets++;
->> >> +                                          large_packet = 1;
->> >>                                    }
->> >>                            }
->> >>                    }
->> >>
->> >> +                  if (skb->len > netdev->mtu) {
->> >> +                          iph = (struct iphdr *)skb->data;
->> >> +                          if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
->> >> +                              iph->protocol == IPPROTO_TCP) {
->> >> +                                  hdr_len += sizeof(struct iphdr);
->> >> +                                  skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
->> >> +                                  skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->> >> +                          } else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
->> >> +                                     iph->protocol == IPPROTO_TCP) {
->> >> +                                  hdr_len += sizeof(struct ipv6hdr);
->> >> +                                  skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
->> >> +                                  skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->> >> +                          }
->> >> +                          if (!large_packet)
->> >> +                                  adapter->rx_large_packets++;
->> >> +                  }
->> >> +
->> >>
->> > This might break forwarding and PMTU discovery.
->> >
->> > You force gso_size to device mtu, regardless of real MSS used by the TCP
->> > sender.
->> >
->> > Don't you have the MSS provided in RX descriptor, instead of guessing
->> > the value ?
->> >
->> >
->> >
->> The MSS is not always available unfortunately, so this is the best solution there is at the moment.
->
-> Hmm... then what about skb_shinfo(skb)->gso_segs ?
->
-> ip_rcv() for example has :
->
->         __IP_ADD_STATS(net,
->                        IPSTATS_MIB_NOECTPKTS + (iph->tos & INET_ECN_MASK),
->                        max_t(unsigned short, 1, skb_shinfo(skb)->gso_segs));
->
->
+Any news?
 
-Okay thanks Eric. As the MSS is the main concern, let me work with the
-team here and see if we find can a better way to do this. Will take care of
-the other points you raised at the same time.
+Andreas.
 
->
-> Also prefer : (skb->protocol == htons(ETH_P_IP)) tests
->
-> And the ipv6 test is wrong :
->
-> } else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
->            iph->protocol == IPPROTO_TCP) {
->
->
-> Since iph is a pointer to ipv4 iphdr .
->
->
->
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
