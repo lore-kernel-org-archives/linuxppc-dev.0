@@ -1,19 +1,26 @@
-Return-Path: <christophe.jaillet@wanadoo.fr>
-Received: from smtp.smtpout.orange.fr (smtp10.smtpout.orange.fr
- [80.12.242.132])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <jic23@kernel.org>
+Received: from saturn.retrosnub.co.uk (saturn.retrosnub.co.uk [178.18.118.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t6WBx5mp9zDvWG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 08:40:57 +1100 (AEDT)
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: imunsie@au1.ibm.com,
-	fbarrat@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH] cxl: Fix error handling
-Date: Sun, 30 Oct 2016 22:40:47 +0100
-Message-Id: <20161030214047.25037-1-christophe.jaillet@wanadoo.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t6Gv50CW3zDvM3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 23:26:24 +1100 (AEDT)
+Subject: Re: [PATCH 1/3] ABI: fix some syntax issues at the ABI database
+To: Mauro Carvalho Chehab <mchehab@s-opensource.com>,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <cover.1477656806.git.mchehab@s-opensource.com>
+ <d7e0af69cf14fe1cb9cf3298ea3fd98485a8de35.1477656806.git.mchehab@s-opensource.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Matt Ranostay <mranostay@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Jonathan Cameron <jic23@kernel.org>
+Message-ID: <385fd5f7-b725-1de9-5af6-81645c10d24d@kernel.org>
+Date: Sun, 30 Oct 2016 12:20:50 +0000
+MIME-Version: 1.0
+In-Reply-To: <d7e0af69cf14fe1cb9cf3298ea3fd98485a8de35.1477656806.git.mchehab@s-opensource.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +30,267 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-'cxl_dev_context_init()' returns an error pointer in case of error, not
-NULL. So test it with IS_ERR.
+On 28/10/16 13:19, Mauro Carvalho Chehab wrote:
+> On those three files, the ABI representation described at
+> README are violated.
+> 
+> - at sysfs-bus-iio-proximity-as3935:
+> 	a ':' character is missing after "What"
+> 
+> - at sysfs-class-devfreq:
+> 	there's a typo at Description
+> 
+> - at sysfs-class-cxl, it is using the ":" character at a
+> 	file preamble, causing it to be misinterpreted as a
+> 	tag.
+> 
+> - On the other files, instead of "What", they use "Where".
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Acked-by: Jonathan Cameron <jic23@kernel.org> for the iio one.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-un-compiled because I don't have the required  cross build environment.
----
- drivers/misc/cxl/pci.c | 2 +-
- drivers/misc/cxl/phb.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+As an aside, I think that hm6352 is probably the docs fo the hmc6352 driver in misc.
+Hence wrong filename perhaps?
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index e96be9ca4e60..80a87ab25b83 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1921,7 +1921,7 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
- 				goto err;
- 
- 			ctx = cxl_dev_context_init(afu_dev);
--			if (!ctx)
-+			if (IS_ERR(ctx))
- 				goto err;
- 
- 			afu_dev->dev.archdata.cxl_ctx = ctx;
-diff --git a/drivers/misc/cxl/phb.c b/drivers/misc/cxl/phb.c
-index 0935d44c1770..6ec69ada19f4 100644
---- a/drivers/misc/cxl/phb.c
-+++ b/drivers/misc/cxl/phb.c
-@@ -20,7 +20,7 @@ bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu
- 	 * in the virtual phb, we'll need a default context to attach them to.
- 	 */
- 	ctx = cxl_dev_context_init(dev);
--	if (!ctx)
-+	if (IS_ERR(ctx))
- 		return false;
- 	dev->dev.archdata.cxl_ctx = ctx;
- 
--- 
-2.9.3
+Thanks,
+Jonathan
+
+> ---
+>  Documentation/ABI/testing/pstore                   |  2 +-
+>  .../testing/sysfs-bus-event_source-devices-format  |  2 +-
+>  .../ABI/testing/sysfs-bus-i2c-devices-hm6352       |  6 +++---
+>  .../ABI/testing/sysfs-bus-iio-proximity-as3935     |  4 ++--
+>  .../ABI/testing/sysfs-bus-pci-devices-cciss        | 22 +++++++++++-----------
+>  .../ABI/testing/sysfs-bus-usb-devices-usbsevseg    | 12 ++++++------
+>  Documentation/ABI/testing/sysfs-class-cxl          |  6 +++---
+>  Documentation/ABI/testing/sysfs-class-devfreq      |  2 +-
+>  8 files changed, 28 insertions(+), 28 deletions(-)
+> 
+> diff --git a/Documentation/ABI/testing/pstore b/Documentation/ABI/testing/pstore
+> index 5fca9f5e10a3..8d6e48f4e8ef 100644
+> --- a/Documentation/ABI/testing/pstore
+> +++ b/Documentation/ABI/testing/pstore
+> @@ -1,4 +1,4 @@
+> -Where:		/sys/fs/pstore/... (or /dev/pstore/...)
+> +What:		/sys/fs/pstore/... (or /dev/pstore/...)
+>  Date:		March 2011
+>  Kernel Version: 2.6.39
+>  Contact:	tony.luck@intel.com
+> diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-format b/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
+> index 77f47ff5ee02..b6f8748e0200 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
+> +++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-format
+> @@ -1,4 +1,4 @@
+> -Where:		/sys/bus/event_source/devices/<dev>/format
+> +What:		/sys/bus/event_source/devices/<dev>/format
+>  Date:		January 2012
+>  Kernel Version: 3.3
+>  Contact:	Jiri Olsa <jolsa@redhat.com>
+> diff --git a/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352 b/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
+> index feb2e4a87075..29bd447e50a0 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
+> +++ b/Documentation/ABI/testing/sysfs-bus-i2c-devices-hm6352
+> @@ -1,18 +1,18 @@
+> -Where:		/sys/bus/i2c/devices/.../heading0_input
+> +What:		/sys/bus/i2c/devices/.../heading0_input
+>  Date:		April 2010
+>  Kernel Version: 2.6.36?
+>  Contact:	alan.cox@intel.com
+>  Description:	Reports the current heading from the compass as a floating
+>  		point value in degrees.
+>  
+> -Where:		/sys/bus/i2c/devices/.../power_state
+> +What:		/sys/bus/i2c/devices/.../power_state
+>  Date:		April 2010
+>  Kernel Version: 2.6.36?
+>  Contact:	alan.cox@intel.com
+>  Description:	Sets the power state of the device. 0 sets the device into
+>  		sleep mode, 1 wakes it up.
+>  
+> -Where:		/sys/bus/i2c/devices/.../calibration
+> +What:		/sys/bus/i2c/devices/.../calibration
+>  Date:		April 2010
+>  Kernel Version: 2.6.36?
+>  Contact:	alan.cox@intel.com
+> diff --git a/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935 b/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
+> index 33e96f740639..61a3c9fed07d 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
+> +++ b/Documentation/ABI/testing/sysfs-bus-iio-proximity-as3935
+> @@ -1,4 +1,4 @@
+> -What		/sys/bus/iio/devices/iio:deviceX/in_proximity_input
+> +What:		/sys/bus/iio/devices/iio:deviceX/in_proximity_input
+>  Date:		March 2014
+>  KernelVersion:	3.15
+>  Contact:	Matt Ranostay <mranostay@gmail.com>
+> @@ -6,7 +6,7 @@ Description:
+>  		Get the current distance in meters of storm (1km steps)
+>  		1000-40000 = distance in meters
+>  
+> -What		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
+> +What:		/sys/bus/iio/devices/iio:deviceX/sensor_sensitivity
+>  Date:		March 2014
+>  KernelVersion:	3.15
+>  Contact:	Matt Ranostay <mranostay@gmail.com>
+> diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+> index 53d99edd1d75..eb449169c30b 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+> +++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+> @@ -1,66 +1,66 @@
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/model
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/model
+>  Date:		March 2009
+>  Kernel Version: 2.6.30
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Displays the SCSI INQUIRY page 0 model for logical drive
+>  		Y of controller X.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/rev
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/rev
+>  Date:		March 2009
+>  Kernel Version: 2.6.30
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Displays the SCSI INQUIRY page 0 revision for logical
+>  		drive Y of controller X.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/unique_id
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/unique_id
+>  Date:		March 2009
+>  Kernel Version: 2.6.30
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Displays the SCSI INQUIRY page 83 serial number for logical
+>  		drive Y of controller X.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/vendor
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/vendor
+>  Date:		March 2009
+>  Kernel Version: 2.6.30
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Displays the SCSI INQUIRY page 0 vendor for logical drive
+>  		Y of controller X.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY
+>  Date:		March 2009
+>  Kernel Version: 2.6.30
+>  Contact:	iss_storagedev@hp.com
+>  Description:	A symbolic link to /sys/block/cciss!cXdY
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/rescan
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/rescan
+>  Date:		August 2009
+>  Kernel Version:	2.6.31
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Kicks of a rescan of the controller to discover logical
+>  		drive topology changes.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/lunid
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/lunid
+>  Date:		August 2009
+>  Kernel Version: 2.6.31
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Displays the 8-byte LUN ID used to address logical
+>  		drive Y of controller X.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/raid_level
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/raid_level
+>  Date:		August 2009
+>  Kernel Version: 2.6.31
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Displays the RAID level of logical drive Y of
+>  		controller X.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/usage_count
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/usage_count
+>  Date:		August 2009
+>  Kernel Version: 2.6.31
+>  Contact:	iss_storagedev@hp.com
+>  Description:	Displays the usage count (number of opens) of logical drive Y
+>  		of controller X.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/resettable
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/resettable
+>  Date:		February 2011
+>  Kernel Version:	2.6.38
+>  Contact:	iss_storagedev@hp.com
+> @@ -71,7 +71,7 @@ Description:	Value of 1 indicates the controller can honor the reset_devices
+>  		a dump device, as kdump requires resetting the device in order
+>  		to work reliably.
+>  
+> -Where:		/sys/bus/pci/devices/<dev>/ccissX/transport_mode
+> +What:		/sys/bus/pci/devices/<dev>/ccissX/transport_mode
+>  Date:		July 2011
+>  Kernel Version:	3.0
+>  Contact:	iss_storagedev@hp.com
+> diff --git a/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg b/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
+> index 70d00dfa443d..f6199b314196 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
+> +++ b/Documentation/ABI/testing/sysfs-bus-usb-devices-usbsevseg
+> @@ -1,12 +1,12 @@
+> -Where:		/sys/bus/usb/.../powered
+> +What:		/sys/bus/usb/.../powered
+>  Date:		August 2008
+>  Kernel Version:	2.6.26
+>  Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+>  Description:	Controls whether the device's display will powered.
+>  		A value of 0 is off and a non-zero value is on.
+>  
+> -Where:		/sys/bus/usb/.../mode_msb
+> -Where:		/sys/bus/usb/.../mode_lsb
+> +What:		/sys/bus/usb/.../mode_msb
+> +What:		/sys/bus/usb/.../mode_lsb
+>  Date:		August 2008
+>  Kernel Version:	2.6.26
+>  Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+> @@ -16,7 +16,7 @@ Description:	Controls the devices display mode.
+>  		for an 8 character display the values are
+>  			MSB 0x08; LSB 0xFF.
+>  
+> -Where:		/sys/bus/usb/.../textmode
+> +What:		/sys/bus/usb/.../textmode
+>  Date:		August 2008
+>  Kernel Version:	2.6.26
+>  Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+> @@ -25,13 +25,13 @@ Description:	Controls the way the device interprets its text buffer.
+>  		hex:	each character is between 0-15
+>  		ascii:	each character is between '0'-'9' and 'A'-'F'.
+>  
+> -Where:		/sys/bus/usb/.../text
+> +What:		/sys/bus/usb/.../text
+>  Date:		August 2008
+>  Kernel Version:	2.6.26
+>  Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+>  Description:	The text (or data) for the device to display
+>  
+> -Where:		/sys/bus/usb/.../decimals
+> +What:		/sys/bus/usb/.../decimals
+>  Date:		August 2008
+>  Kernel Version:	2.6.26
+>  Contact:	Harrison Metzger <harrisonmetz@gmail.com>
+> diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+> index 4ba0a2a61926..a61758ce81a1 100644
+> --- a/Documentation/ABI/testing/sysfs-class-cxl
+> +++ b/Documentation/ABI/testing/sysfs-class-cxl
+> @@ -1,6 +1,6 @@
+> -Note: Attributes that are shared between devices are stored in the directory
+> -pointed to by the symlink device/.
+> -Example: The real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
+> +Please notice that attributes that are shared between devices are stored in
+> +the directory pointed to by the symlink device/.
+> +For example, the real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
+>  /sys/class/cxl/afu0.0s/device/irqs_max, i.e. /sys/class/cxl/afu0.0/irqs_max.
+>  
+>  
+> diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
+> index ee39acacf6f8..01196e19afca 100644
+> --- a/Documentation/ABI/testing/sysfs-class-devfreq
+> +++ b/Documentation/ABI/testing/sysfs-class-devfreq
+> @@ -47,7 +47,7 @@ Description:
+>  What:		/sys/class/devfreq/.../trans_stat
+>  Date:		October 2012
+>  Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
+> -Descrtiption:
+> +Description:
+>  		This ABI shows the statistics of devfreq behavior on a
+>  		specific device. It shows the time spent in each state and
+>  		the number of transitions between states.
+> 
