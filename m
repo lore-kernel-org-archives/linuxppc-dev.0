@@ -1,19 +1,55 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from basicbox7.server-home.net (basicbox7.server-home.net
- [195.137.212.29])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <xinhui@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t6J5Y06yXzDvS8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 00:20:31 +1100 (AEDT)
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.9: Reported regressions as of Sunday, 2016-10-30
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Message-ID: <0eb29167-7908-e049-6927-d9c6b093970d@leemhuis.info>
-Date: Sun, 30 Oct 2016 14:20:25 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t6Kry6q0rzDvS8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:46 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ u9UEchk1067850
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 10:39:45 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26cqxdfund-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2016 10:39:44 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
+ Mon, 31 Oct 2016 00:39:42 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 677C12BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:39 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u9UEdddD13893886
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:39 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u9UEdbna006361
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 01:39:39 +1100
+Subject: Re: [PATCH v6 02/11] locking/osq: Drop the overload of osq_lock()
+To: Davidlohr Bueso <dave@stgolabs.net>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+References: <1477642287-24104-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1477642287-24104-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20161029165216.GA17451@linux-80c1.suse>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
+ xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
+ xen-devel@lists.xenproject.org, x86@kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
+ will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
+ pbonzini@redhat.com, bsingharora@gmail.com, boqun.feng@gmail.com,
+ borntraeger@de.ibm.com, rkrcmar@redhat.com, David.Laight@ACULAB.COM
+From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+Date: Sun, 30 Oct 2016 22:39:29 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20161029165216.GA17451@linux-80c1.suse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Message-Id: <3b93d48e-a106-01ec-3367-b244bd659d2f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,109 +59,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi! Here is my second regression report for Linux 4.9. It lists 14
-regressions I'm aware of. 4 of them are new; 3 got fixed since last weeks report.
-
-As always: Are you aware of any other regressions? Then please let me
-know (simply CC regressions@leemhuis.info). And please tell me if there
-is anything in the report that shouldn't be there.
-
-Ciao, Thorsten
-
-== Current regressions ==
-
-Desc: tpm0: TPM self test failed
-Repo: 2016-10-28 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1259943.html
-Stat: 2016-10-28 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1260452.html https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1256705.html 
-Note: Fix hopefully soon heading upstream
-
-Desc: Radeon Oops on shutdown
-Repo: 2016-10-19 https://bugzilla.kernel.org/show_bug.cgi?id=178421
-Stat: 2016-10-30 https://bugzilla.kernel.org/show_bug.cgi?id=178421#c6
-Note: WIP
-
-Desc: module loadling broken due to kbuild changes
-Repo: 2016-10-15 http://www.gossamer-threads.com/lists/linux/kernel/2544734
-Stat: 2016-10-27 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1259418.html
-Note: Fix available, waiting for Michal to get back from vacation; wondering if those will fix https://bugzilla.kernel.org/show_bug.cgi?id=185581 and https://lkml.org/lkml/2016/10/27/471 and https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1250105.html as well
-
-Desc: pci: artpec-6: imprecise external abort
-Repo: 2016-10-14 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1249646.html
-Stat: 2016-10-14 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1249922.html
-Note: Patch available
-
-Desc: PPC32: fails to boot on my PowerBook G4 Aluminum; bisected to commit 05fd007e4629
-Repo: 2016-10-20 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253391.html
-Stat: 2016-10-22 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255516.html https://www.linux-mips.org/archives/linux-mips/2016-10/msg00176.html https://lkml.org/lkml/2016/10/18/142
-Note: Larry made a hack that works for him.
-
-Desc: "Nokia N900 (omap3-n900) with ""VDD1: ramp_delay not set"" string in printk frequently"
-Repo: 2016-10-19 https://bugzilla.kernel.org/show_bug.cgi?id=178371
-Stat: n/a https://lkml.org/lkml/2016/10/27/527
-Note: discussion on lkml ongoing
-
-Desc: radeon performance drop from 4.8 to 4.9-rc1 in Shadow of Mordor
-Repo: 2016-10-14 https://bugzilla.kernel.org/show_bug.cgi?id=178221 https://lists.freedesktop.org/archives/dri-devel/2016-October/120693.html
-Stat: 2016-10-20 https://lists.freedesktop.org/archives/dri-devel/2016-October/121427.html
-Note: Stuck? Poked bugzilla
-
-Desc: unable to handle kernel NULL pointer dereference at fuse_setattr
-Repo: 2016-10-17 https://bugzilla.kernel.org/show_bug.cgi?id=177801
-Stat: 2016-10-18 https://bugzilla.kernel.org/show_bug.cgi?id=177801#c5
-Note: Fix heading upstream
-
-Desc: Skylake gen6 suspend/resume video regression
-Repo: 2016-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177731
-Stat: 2016-10-25 https://bugzilla.kernel.org/show_bug.cgi?id=177731#c3
-Note: WIP
-
-Desc: warning in intel_dp_aux_transfer: CPU: 0 PID: 4 at drivers/gpu/drm/i915/intel_dp.c:1062 intel_dp_aux_transfer+0x1ed/0x230#
-Repo: 2016-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177701
-Stat: 2016-10-27 https://bugs.freedesktop.org/show_bug.cgi?id=97344
-Note: Poked Janni to give a statement
-
-Desc: """Failed to find cpu0 device node"" in dmesg"
-Repo: 2016-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177681 https://bugzilla.kernel.org/show_bug.cgi?id=180031
-Stat: 2016-10-28 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1260133.html
-Note: Patches afaics in the work
-
-Desc: boot failure of Intel Mobile Internet Devices due to a change in the PCI subsystem that appeared in v4.9-rc1.
-Repo: 2016-10-23 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255643.html
-Stat: 2016-10-26 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1258579.html
-Note: Fix proposed
-
-Desc: 4.9-rc1 boot regression, ambiguous bisect result
-Repo: 2016-10-19 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253369.html
-Stat: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255296.html
-Note: Poked list, as this looks stuck or was is discussed (or even fixed) somewhere else
 
 
-== Stalled, waiting for feedback from reporter ==
+在 2016/10/30 00:52, Davidlohr Bueso 写道:
+> On Fri, 28 Oct 2016, Pan Xinhui wrote:
+>>         /*
+>>          * If we need to reschedule bail... so we can block.
+>> +         * Use vcpu_is_preempted to detech lock holder preemption issue
+>                                            ^^ detect
+ok. thanks for poingting it out.
+>> +         * and break.
+>
+> Could you please remove the rest of this comment? Its just noise to point out
+> that vcpu_is_preempted is a macro defined by arch/false. This is standard protocol
+> in the kernel.
+>
+fair enough.
 
-Desc: can't boot with root fs on md raid 0; mdadm: no devices listed in conf file were found. 
-Repo: 2016-10-17 https://bugzilla.kernel.org/show_bug.cgi?id=178211
-Stat: 2016-10-18 https://bugzilla.kernel.org/show_bug.cgi?id=178211#c1
-Note: Root cause unknown; might be a controller driver issue
-
-
-== Going to be removed from the list ==
-
-Desc: some gpio drivers broken by commit 762c2e46
-Repo: 2016-10-18 https://www.spinics.net/lists/linux-gpio/msg17283.html
-Stat: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253906.html
-Note: Not a 4.9 regression
-
-
-== Fixed since last report ==
-
-Desc: "Regression with 0b9e2988ab22 (""ahci: use pci_alloc_irq_vectors"")"
-Repo: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254825.html
-Fix:  https://git.kernel.org/torvalds/c/17a51f12cfbd2814fd35966a069b242569c53e27 https://git.kernel.org/torvalds/c/0ce57f8af1782fd12d3a81872a4ab97244989802
-
-Desc: 761ed4a94582 tty: serial_core: convert uart_close to use tty_port_close
-Repo: 2016-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254753.html
-Fix:  https://git.kernel.org/torvalds/c/d0f4bce2bce7e998abc906f3590e9032af7a41ba
-
-Desc: [selinux/audit/netlink, regression?] Warning at kernel/softirq.c:161
-Repo: 2016-10-20 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1254148.html
-Fix:  https://git.kernel.org/torvalds/c/2a73306b6096fafd5c2ae06ded1f92bbacb39df2
+> Same goes for all locks you change with this.
+>
+> Thanks,
+> Davidlohr
+>
+>>                * vcpu_is_preempted is a macro defined by false if
+>> +         * arch does not support vcpu preempted check,
+>>          */
+>> -        if (need_resched())
+>> +        if (need_resched() || vcpu_is_preempted(node_cpu(node->prev)))
+>>             goto unqueue;
+>>
+>>         cpu_relax_lowlatency();
+>> --
+>> 2.4.11
+>>
+>
