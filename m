@@ -1,27 +1,22 @@
-Return-Path: <Paul.Burton@imgtec.com>
-Received: from imgpgp01.kl.imgtec.org (mailapp01.imgtec.com [195.59.15.196])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <sgruszka@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t6tnH60h5zDvtt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 23:23:31 +1100 (AEDT)
-From: Paul Burton <paul.burton@imgtec.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Andreas Schwab
- <schwab@linux-m68k.org>, <larry.finger@lwfinger.net>
-CC: Petr Mladek <pmladek@suse.com>, <linux-kernel@vger.kernel.org>, Sergey
- Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Andrew
- Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@suse.de>,
- <linuxppc-dev@lists.ozlabs.org>, Thorsten Leemhuis
- <regressions@leemhuis.info>
-Subject: Re: [PATCH] console: use first console if stdout-path device doesn't
- appear
-Date: Mon, 31 Oct 2016 12:23:21 +0000
-Message-ID: <5219732.Ba7sxnzBSd@np-p-burton>
-In-Reply-To: <87zill13z8.fsf@concordia.ellerman.id.au>
-References: <87oa2ij2mq.fsf@linux-m68k.org> <878tt6np85.fsf@linux-m68k.org>
- <87zill13z8.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2321443.CjjFPbxoKL";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t6v5v4nWpzDt0X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 23:37:55 +1100 (AEDT)
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
+ Stanislaw Gruszka <sgruszka@redhat.com>
+Subject: [PATCH 0/4] cputime: some optimizations and cleanups
+Date: Mon, 31 Oct 2016 13:36:25 +0100
+Message-Id: <1477917389-11341-1-git-send-email-sgruszka@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart2321443.CjjFPbxoKL
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Patches remove accounting of utimescaled/stimescaled on architectures
+that do not provide those values (scaled cputimes are equal to normal
+cputimes) what is every architecture except powerpc and s390.
 
-Hi Michael et al,
+Patches do not change user visible behaviour.
 
-On Monday, 31 October 2016 16:28:59 GMT Michael Ellerman wrote:
-> Andreas Schwab <schwab@linux-m68k.org> writes:
-> > Any news?
-> 
-> We discovered it also breaks VGA on qemu, which presumably is not the
-> type of news you were hoping for.
+There is very little documentation how scaled cputimes should be
+interpreted and what useful information they provide (at least
+I could not find that). Moreover they are exported to user-space
+only via not commonly used taskstats and delayacct interfaces (i.e.
+interfaces that are not used by standard linux tools AFICT). However
+I assume they can not be removed by whole (i.e. replaced by normal
+utimes/stimes on powerpc and s390).
 
-On the contrary, that's wonderful news - I can test that! Huzzah for 
-brokenness!
+Stanislaw Gruszka (4):
+  cputime/powerpc: remove cputime_last_delta global variable
+  cputime/powerpc: remove cputime_to_scaled()
+  cputime/powerpc/s390: make scaled cputime arch specific
+  cputime: simplify task_cputime()
 
-Thanks for your steps to reproduce the issue. Could you try my v2 patch? It 
-works for me in QEMU, at least as far as seeing the kernel console output for 
-a panic due to not having a rootfs. Hopefully it works for you (& Andreas & 
-Larry) too:
-
-https://patchwork.kernel.org/patch/9405415/
-
-Thanks,
-    Paul
---nextPart2321443.CjjFPbxoKL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCAAGBQJYFze5AAoJEIIg2fppPBxl/YMQAJuxU6hgKgqxQolrOH5g47zn
-NqDrVwpoWhN7npuM+pocX3HXRy0eLsJTNwdlYngCPlGk65rHYV/obH90SqA3nOAq
-yRoqs4eCD3Dvd6MVbZzacw2HlIyg2PbjUEqlcgqHz95jnTneBQG+MhaKYHSDgJYI
-CsBeqcsH3TiT3Oh4oe0vAF3Xi39ieG5TsFC2utACQtf2I8RyZx4YPaBD8/rJAJBA
-qwi22PXgQ0BJjfD+K71SYcgZELQqED/mj+CoBbky+qHzFc5E+MZDjRPekY0F3jxO
-rlVyFqNsTgYc5uCtJG+xfZx65LyR0H+tQ5FSUv72nNB1uNaNRDpkutkbtPoTidsW
-eMyNVKDaz7xQ9UQ7M/MK/HAFCtewqM/8BEBwr/6/tYLGapZCmFCRLYv1vLoL1hxN
-QDoCggvXQ/Ju40O/jwFuRbbhodvQfXwhGWt/VOHF2AxpIXzhntnxyX7zYVZrCZN/
-tozZkdn2IMv8vOPO/8g3jeG9ZZcw6UscJ129/LLdX1gMiYUkx1hHSlAUEH18P91n
-RKvl8kUhHzGXoSGu3p8jFfD6jyRr0eJxBxrNNb+tJWImU+WA2wd7vvLGO/CdLs29
-cWk4f9CuXqVZykiNYf+qUrMY+w0jZb3Gk/pFShY3CaIAaUEXZXdH5n9A4YYh1v+a
-InRdYEKz59KQV+K/zDFS
-=R0N4
------END PGP SIGNATURE-----
-
---nextPart2321443.CjjFPbxoKL--
+ arch/ia64/kernel/time.c               |    4 +-
+ arch/powerpc/Kconfig                  |    1 +
+ arch/powerpc/include/asm/cputime.h    |   14 ----
+ arch/powerpc/kernel/time.c            |    8 +-
+ arch/s390/Kconfig                     |    1 +
+ arch/s390/kernel/vtime.c              |    9 ++-
+ arch/x86/kernel/apm_32.c              |    4 +-
+ include/asm-generic/cputime_jiffies.h |    1 -
+ include/asm-generic/cputime_nsecs.h   |    1 -
+ include/linux/kernel_stat.h           |    4 +-
+ include/linux/sched.h                 |   29 +++++---
+ kernel/fork.c                         |    2 +
+ kernel/sched/cputime.c                |  124 +++++++++------------------------
+ kernel/time/posix-cpu-timers.c        |    4 +-
+ 14 files changed, 73 insertions(+), 133 deletions(-)
