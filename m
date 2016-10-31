@@ -1,24 +1,24 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-oi0-x22e.google.com (mail-oi0-x22e.google.com
- [IPv6:2607:f8b0:4003:c06::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t71YK2h7XzDvM3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 04:28:37 +1100 (AEDT)
-Received: by mail-oi0-x22e.google.com with SMTP id i127so240597788oia.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 10:28:37 -0700 (PDT)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <0eb29167-7908-e049-6927-d9c6b093970d@leemhuis.info>
-References: <0eb29167-7908-e049-6927-d9c6b093970d@leemhuis.info>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 31 Oct 2016 10:28:32 -0700
-Message-ID: <CA+55aFxKgWPj6FS+Bi-B=9N+yLka29rh5+Nd55j--mMe_6vJ5g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t72Bm04hGzDvNF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 04:57:35 +1100 (AEDT)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
 Subject: Re: Linux 4.9: Reported regressions as of Sunday, 2016-10-30
-To: Thorsten Leemhuis <regressions@leemhuis.info>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Jonathan Corbet <corbet@lwn.net>
-Content-Type: text/plain; charset=UTF-8
+References: <0eb29167-7908-e049-6927-d9c6b093970d@leemhuis.info>
+ <1477884575.32311.67.camel@kernel.crashing.org>
+Date: Mon, 31 Oct 2016 18:57:27 +0100
+In-Reply-To: <1477884575.32311.67.camel@kernel.crashing.org> (Benjamin
+ Herrenschmidt's message of "Sun, 30 Oct 2016 21:29:35 -0600")
+Message-ID: <87r36wcsfs.fsf@linux-m68k.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Oct 30, 2016 at 6:20 AM, Thorsten Leemhuis
-<regressions@leemhuis.info> wrote:
+On Okt 30 2016, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Sun, 2016-10-30 at 14:20 +0100, Thorsten Leemhuis wrote:
+>> 
+>> Desc: PPC32: fails to boot on my PowerBook G4 Aluminum; bisected to
+>> commit 05fd007e4629
+>> Repo: 2016-10-20 https://www.mail-archive.com/linux-kernel@vger.kerne
+>> l.org/msg1253391.html
+>> Stat: 2016-10-22 https://www.mail-archive.com/linux-kernel@vger.kerne
+>> l.org/msg1255516.html https://www.linux-mips.org/archives/linux-mips/
+>> 2016-10/msg00176.html https://lkml.org/lkml/2016/10/18/142
+>> Note: Larry made a hack that works for him.
 >
-> Desc: tpm0: TPM self test failed
-> Repo: 2016-10-28 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1259943.html
-> Stat: 2016-10-28 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1260452.html https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1256705.html
-> Note: Fix hopefully soon heading upstream
+> This breaks framebuffer console on ppc64 I've been told as well, I
+> heard...
 >
-> Desc: "Nokia N900 (omap3-n900) with ""VDD1: ramp_delay not set"" string in printk frequently"
-> Repo: 2016-10-19 https://bugzilla.kernel.org/show_bug.cgi?id=178371
-> Stat: n/a https://lkml.org/lkml/2016/10/27/527
-> Note: discussion on lkml ongoing
+> I'm at KS now, hard to get you more details, but there's something
+> fishy here either with the commit or with something we do on ppc with
+> fbdev that this commit breaks.
 
-These two should hopefully be fixed as of today in current -git.
+See the thread at <http://marc.info/?t=147678252000003&r=1&w=2>.
 
-> Desc: radeon performance drop from 4.8 to 4.9-rc1 in Shadow of Mordor
-> Repo: 2016-10-14 https://bugzilla.kernel.org/show_bug.cgi?id=178221 https://lists.freedesktop.org/archives/dri-devel/2016-October/120693.html
-> Stat: 2016-10-20 https://lists.freedesktop.org/archives/dri-devel/2016-October/121427.html
-> Note: Stuck? Poked bugzilla
+Andreas.
 
-I think this was fixed Friday by the merge of the PAT regression fixes
-from DaveA (merge commit .bdb520845b57)
-
-               Linus
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
