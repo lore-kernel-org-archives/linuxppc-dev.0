@@ -2,7 +2,7 @@ Return-Path: <sgruszka@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t6v5v4nWpzDt0X
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t6v5v4pvSzDt0c
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 23:37:55 +1100 (AEDT)
 From: Stanislaw Gruszka <sgruszka@redhat.com>
 To: linux-kernel@vger.kernel.org
@@ -14,9 +14,11 @@ Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
  Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: [PATCH 0/4] cputime: some optimizations and cleanups
-Date: Mon, 31 Oct 2016 13:36:25 +0100
-Message-Id: <1477917389-11341-1-git-send-email-sgruszka@redhat.com>
+Subject: [PATCH 1/4] cputime/powerpc: remove cputime_last_delta global variable
+Date: Mon, 31 Oct 2016 13:36:26 +0100
+Message-Id: <1477917389-11341-2-git-send-email-sgruszka@redhat.com>
+In-Reply-To: <1477917389-11341-1-git-send-email-sgruszka@redhat.com>
+References: <1477917389-11341-1-git-send-email-sgruszka@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patches remove accounting of utimescaled/stimescaled on architectures
-that do not provide those values (scaled cputimes are equal to normal
-cputimes) what is every architecture except powerpc and s390.
+Since commit:
 
-Patches do not change user visible behaviour.
+cf9efce0ce313 ("powerpc: Account time using timebase rather than PURR")
 
-There is very little documentation how scaled cputimes should be
-interpreted and what useful information they provide (at least
-I could not find that). Moreover they are exported to user-space
-only via not commonly used taskstats and delayacct interfaces (i.e.
-interfaces that are not used by standard linux tools AFICT). However
-I assume they can not be removed by whole (i.e. replaced by normal
-utimes/stimes on powerpc and s390).
+cputime_last_delta is not initialized to other value than 0, hence it's
+not used except zero check and cputime_to_scaled() just returns
+the argument.
 
-Stanislaw Gruszka (4):
-  cputime/powerpc: remove cputime_last_delta global variable
-  cputime/powerpc: remove cputime_to_scaled()
-  cputime/powerpc/s390: make scaled cputime arch specific
-  cputime: simplify task_cputime()
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+---
+ arch/powerpc/include/asm/cputime.h |    7 -------
+ arch/powerpc/kernel/time.c         |    2 --
+ 2 files changed, 0 insertions(+), 9 deletions(-)
 
- arch/ia64/kernel/time.c               |    4 +-
- arch/powerpc/Kconfig                  |    1 +
- arch/powerpc/include/asm/cputime.h    |   14 ----
- arch/powerpc/kernel/time.c            |    8 +-
- arch/s390/Kconfig                     |    1 +
- arch/s390/kernel/vtime.c              |    9 ++-
- arch/x86/kernel/apm_32.c              |    4 +-
- include/asm-generic/cputime_jiffies.h |    1 -
- include/asm-generic/cputime_nsecs.h   |    1 -
- include/linux/kernel_stat.h           |    4 +-
- include/linux/sched.h                 |   29 +++++---
- kernel/fork.c                         |    2 +
- kernel/sched/cputime.c                |  124 +++++++++------------------------
- kernel/time/posix-cpu-timers.c        |    4 +-
- 14 files changed, 73 insertions(+), 133 deletions(-)
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index 4f60db0..9f5dcf7 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -46,8 +46,6 @@ static inline void setup_cputime_one_jiffy(void) { }
+  * Convert cputime <-> jiffies
+  */
+ extern u64 __cputime_jiffies_factor;
+-DECLARE_PER_CPU(unsigned long, cputime_last_delta);
+-DECLARE_PER_CPU(unsigned long, cputime_scaled_last_delta);
+ 
+ static inline unsigned long cputime_to_jiffies(const cputime_t ct)
+ {
+@@ -58,11 +56,6 @@ static inline unsigned long cputime_to_jiffies(const cputime_t ct)
+  * the last scaled to real ratio */
+ static inline cputime_t cputime_to_scaled(const cputime_t ct)
+ {
+-	if (cpu_has_feature(CPU_FTR_SPURR) &&
+-	    __this_cpu_read(cputime_last_delta))
+-		return (__force u64) ct *
+-			__this_cpu_read(cputime_scaled_last_delta) /
+-			__this_cpu_read(cputime_last_delta);
+ 	return ct;
+ }
+ 
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index bc3f7d0..8105198 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -164,8 +164,6 @@ struct clock_event_device decrementer_clockevent = {
+ EXPORT_SYMBOL(__cputime_sec_factor);
+ u64 __cputime_clockt_factor;
+ EXPORT_SYMBOL(__cputime_clockt_factor);
+-DEFINE_PER_CPU(unsigned long, cputime_last_delta);
+-DEFINE_PER_CPU(unsigned long, cputime_scaled_last_delta);
+ 
+ cputime_t cputime_one_jiffy;
+ 
+-- 
+1.7.1
