@@ -1,21 +1,16 @@
-Return-Path: <Paul.Burton@imgtec.com>
+Return-Path: <Zubair.Kakakhel@imgtec.com>
 Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t6tbx4gMzzDt39
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 23:15:25 +1100 (AEDT)
-From: Paul Burton <paul.burton@imgtec.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: Paul Burton <paul.burton@imgtec.com>, Andreas Schwab
- <schwab@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, Borislav
- Petkov <bp@suse.de>, Larry Finger <Larry.Finger@lwfinger.net>, Petr Mladek
- <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun
- Heo <tj@kernel.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2] console: use first console if stdout-path device doesn't
- appear
-Date: Mon, 31 Oct 2016 12:14:55 +0000
-Message-ID: <20161031121455.23280-1-paul.burton@imgtec.com>
-In-Reply-To: <87zill13z8.fsf@concordia.ellerman.id.au>
-References: <87zill13z8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTP id 3t6tdg3XnkzDvJD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 23:16:55 +1100 (AEDT)
+From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+To: <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
+ <marc.zyngier@arm.com>
+CC: <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>,
+ <Zubair.Kakakhel@imgtec.com>
+Subject: [Patch V6 0/6] microblaze/PowerPC: Move irq-xilinx
+Date: Mon, 31 Oct 2016 12:16:41 +0000
+Message-ID: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,158 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a device tree specified a preferred device for kernel console output
-via the stdout-path or linux,stdout-path chosen node properties there's
-no guarantee that it will have specified a device for which we have a
-driver. It may also be the case that we do have a driver but it doesn't
-call of_console_check() to register as a preferred console (eg. offb
-driver as used on powermac systems). In these cases try to ensure that
-we provide some console output by enabling the first usable registered
-console, which we keep track of with the of_fallback_console variable.
+Hi,
 
-Tested in QEMU with a PowerPC pseries_defconfig kernel.
+The MIPS based Xilfpga platform uses the Xilinx interrupt controller
+daisy chained to the MIPS microAptiv cpu interrupt controller.
 
-Signed-off-by: Paul Burton <paul.burton@imgtec.com>
-Fixes: 05fd007e4629 ("console: don't prefer first registered if DT specifies stdout-path")
-Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-Reported-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
+This patch series moves the Xilinx interrupt controller driver out
+of arch/microblaze to drivers/irqchip and then cleans it up a bit.
+And then removes another implementation of the driver in arch/powerpc.
 
----
+This effort results in one common driver usable by mips,microblaze
+and powerpc.
 
-Changes in v2:
-- Split enable_console() out of register_console() & call in the fallback case.
-- Track the console we would have enabled as of_fallback_console.
+Compile tested on microblaze-el.
+Tested using qemu-system-ppc using virtix440-ml507
+Tested on MIPSfpga platform.
 
- kernel/printk/printk.c | 60 +++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 55 insertions(+), 5 deletions(-)
+Based on v4.9-rc3
 
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index de08fc9..b02c00a 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -264,6 +264,13 @@ void console_set_by_of(void)
- # define of_specified_console false
- #endif
- 
-+/*
-+ * The first usable console, which we'll fall back to using if the system
-+ * uses a device tree which indicates a stdout-path device for which we
-+ * have no driver, or for which our driver doesn't call of_console_check().
-+ */
-+static struct console *of_fallback_console;
-+
- /* Flag: console code may call schedule() */
- static int console_may_schedule;
- 
-@@ -2598,6 +2605,8 @@ static int __init keep_bootcon_setup(char *str)
- 
- early_param("keep_bootcon", keep_bootcon_setup);
- 
-+static void enable_console(struct console *newcon);
-+
- /*
-  * The console driver calls this routine during kernel initialization
-  * to register the console printing procedure with printk() and to
-@@ -2620,7 +2629,6 @@ early_param("keep_bootcon", keep_bootcon_setup);
- void register_console(struct console *newcon)
- {
- 	int i;
--	unsigned long flags;
- 	struct console *bcon = NULL;
- 	struct console_cmdline *c;
- 
-@@ -2657,7 +2665,9 @@ void register_console(struct console *newcon)
- 	 *	didn't select a console we take the first one
- 	 *	that registers here.
- 	 */
--	if (preferred_console < 0 && !of_specified_console) {
-+	if (preferred_console < 0 && of_specified_console) {
-+		of_fallback_console = of_fallback_console ?: newcon;
-+	} else if (preferred_console < 0) {
- 		if (newcon->index < 0)
- 			newcon->index = 0;
- 		if (newcon->setup == NULL ||
-@@ -2705,8 +2715,18 @@ void register_console(struct console *newcon)
- 		break;
- 	}
- 
--	if (!(newcon->flags & CON_ENABLED))
--		return;
-+	if (newcon->flags & CON_ENABLED)
-+		enable_console(newcon);
-+}
-+EXPORT_SYMBOL(register_console);
-+
-+static void enable_console(struct console *newcon)
-+{
-+	struct console *bcon = NULL;
-+	unsigned long flags;
-+
-+	if (console_drivers && console_drivers->flags & CON_BOOT)
-+		bcon = console_drivers;
- 
- 	/*
- 	 * If we have a bootconsole, and are switching to a real console,
-@@ -2777,7 +2797,6 @@ void register_console(struct console *newcon)
- 				unregister_console(bcon);
- 	}
- }
--EXPORT_SYMBOL(register_console);
- 
- int unregister_console(struct console *console)
- {
-@@ -2839,10 +2858,41 @@ EXPORT_SYMBOL(unregister_console);
-  * intersects with the init section. Note that code exists elsewhere to get
-  * rid of the boot console as soon as the proper console shows up, so there
-  * won't be side-effects from postponing the removal.
-+ *
-+ * Additionally we may be using a device tree which specifies valid
-+ * stdout-path referencing a device for which we don't have a driver, or for
-+ * which we have a driver that doesn't register itself as preferred console
-+ * using of_console_check(). In these cases we attempt here to enable the
-+ * first usable registered console, which we assigned to of_fallback_console.
-  */
- static int __init printk_late_init(void)
- {
- 	struct console *con;
-+	bool any_enabled = false;
-+
-+	for_each_console(con) {
-+		if (!(con->flags & CON_ENABLED))
-+			continue;
-+
-+		any_enabled = true;
-+		break;
-+	}
-+
-+	if (!any_enabled && of_fallback_console) {
-+		if (of_fallback_console->index < 0)
-+			of_fallback_console->index = 0;
-+
-+		if (!of_fallback_console->setup ||
-+		    !of_fallback_console->setup(of_fallback_console, NULL)) {
-+			of_fallback_console->flags |= CON_ENABLED;
-+			if (of_fallback_console->device) {
-+				of_fallback_console->flags |= CON_CONSDEV;
-+				preferred_console = 0;
-+			}
-+		}
-+
-+		enable_console(of_fallback_console);
-+	}
- 
- 	for_each_console(con) {
- 		if (!keep_bootcon && con->flags & CON_BOOT) {
+Thanks,
+ZubairLK
+
+V5 -> V6
+Split patch series. Patches for arch/mips can go separately
+Rebase to v4.9-rc3
+Added chained_irq_enter/exit
+Removed __func__ used in pr_err
+
+V4 -> V5
+Added a new patch that removes the PPC driver
+Rebase to v4.9-rc1
+Better error handling
+
+V3 -> V4
+Better error handling
+Some minor fixups
+
+V2 -> V3
+Cleanup the interrupt controller driver a bit based on feedback
+Rebase to v4.8-rc4
+
+V1 -> V2
+Resubmitting without truncating the diff output for file moves
+Removed accidental local mac address entry
+Individual logs have more detail
+
+Zubair Lutfullah Kakakhel (6):
+  microblaze: irqchip: Move intc driver to irqchip
+  irqchip: xilinx: Clean up irqdomain argument and read/write
+  irqchip: xilinx: Rename get_irq to xintc_get_irq
+  irqchip: xilinx: Add support for parent intc
+  irqchip: xilinx: Try to fall back if xlnx,kind-of-intr not provided
+  powerpc/virtex: Use generic xilinx irqchip driver
+
+ arch/microblaze/Kconfig                |   1 +
+ arch/microblaze/include/asm/irq.h      |   2 +-
+ arch/microblaze/kernel/Makefile        |   2 +-
+ arch/microblaze/kernel/intc.c          | 196 ------------------------
+ arch/microblaze/kernel/irq.c           |   4 +-
+ arch/powerpc/include/asm/xilinx_intc.h |   2 +-
+ arch/powerpc/platforms/40x/Kconfig     |   1 +
+ arch/powerpc/platforms/40x/virtex.c    |   2 +-
+ arch/powerpc/platforms/44x/Kconfig     |   1 +
+ arch/powerpc/platforms/44x/virtex.c    |   2 +-
+ arch/powerpc/sysdev/xilinx_intc.c      | 211 +-------------------------
+ drivers/irqchip/Kconfig                |   4 +
+ drivers/irqchip/Makefile               |   1 +
+ drivers/irqchip/irq-xilinx-intc.c      | 267 +++++++++++++++++++++++++++++++++
+ 14 files changed, 284 insertions(+), 412 deletions(-)
+ delete mode 100644 arch/microblaze/kernel/intc.c
+ create mode 100644 drivers/irqchip/irq-xilinx-intc.c
+
 -- 
-2.10.1
+1.9.1
