@@ -1,6 +1,6 @@
 Return-Path: <Zubair.Kakakhel@imgtec.com>
 Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t6tdj2YPyzDvJD
+ by lists.ozlabs.org (Postfix) with ESMTP id 3t6tdj5RprzDvJV
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 23:16:57 +1100 (AEDT)
 From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 To: <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
@@ -8,9 +8,10 @@ To: <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
 CC: <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
  <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>,
  <Zubair.Kakakhel@imgtec.com>
-Subject: [Patch V6 1/6] microblaze: irqchip: Move intc driver to irqchip
-Date: Mon, 31 Oct 2016 12:16:42 +0000
-Message-ID: <1477916207-25157-2-git-send-email-Zubair.Kakakhel@imgtec.com>
+Subject: [Patch V6 2/6] irqchip: xilinx: Clean up irqdomain argument and
+ read/write
+Date: Mon, 31 Oct 2016 12:16:43 +0000
+Message-ID: <1477916207-25157-3-git-send-email-Zubair.Kakakhel@imgtec.com>
 In-Reply-To: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
 References: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
 MIME-Version: 1.0
@@ -24,501 +25,243 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Xilinx AXI Interrupt Controller IP block is used by the MIPS
-based xilfpga platform and a few PowerPC based platforms.
+The drivers read/write function handling is a bit quirky.
+And the irqmask is passed directly to the handler.
 
-Move the interrupt controller code out of arch/microblaze so that
-it can be used by everyone
+Add a new irqchip struct to pass to the handler and
+cleanup read/write handling.
 
 Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 
 ---
 V5 -> V6
+Removed __func__ from printk
 Rebase to v4.9-rc3
 
 V4 -> V5
-Rebase to v4.9-rc1
-Renamed back to irq-xilinx-intc.c
+Rebased to v4.9-rc1
+Better error handling
 
 V3 -> V4
-No change
+Better error handling for kzalloc
+Erroring out if the axi intc is probed twice as that isn't
+supported
 
 V2 -> V3
-No change here. Cleanup patches follow after this patch.
-Its debatable to cleanup before/after move. Decided to place cleanup
-after move to put history in new place.
-
-V1 -> V2
-
-Renamed irq-xilinx to irq-axi-intc
-Renamed CONFIG_XILINX_INTC to CONFIG_XILINX_AXI_INTC
-Patch is now without rename flag so as to facilitate review
+New patch. Cleans up driver structure
 ---
- arch/microblaze/Kconfig           |   1 +
- arch/microblaze/kernel/Makefile   |   2 +-
- arch/microblaze/kernel/intc.c     | 196 --------------------------------------
- drivers/irqchip/Kconfig           |   4 +
- drivers/irqchip/Makefile          |   1 +
- drivers/irqchip/irq-xilinx-intc.c | 196 ++++++++++++++++++++++++++++++++++++++
- 6 files changed, 203 insertions(+), 197 deletions(-)
- delete mode 100644 arch/microblaze/kernel/intc.c
- create mode 100644 drivers/irqchip/irq-xilinx-intc.c
+ drivers/irqchip/irq-xilinx-intc.c | 110 +++++++++++++++++++++++++-------------
+ 1 file changed, 74 insertions(+), 36 deletions(-)
 
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index 86f6572..85885a5 100644
---- a/arch/microblaze/Kconfig
-+++ b/arch/microblaze/Kconfig
-@@ -27,6 +27,7 @@ config MICROBLAZE
- 	select HAVE_MEMBLOCK_NODE_MAP
- 	select HAVE_OPROFILE
- 	select IRQ_DOMAIN
-+	select XILINX_INTC
- 	select MODULES_USE_ELF_RELA
- 	select OF
- 	select OF_EARLY_FLATTREE
-diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
-index f08baca..e098381 100644
---- a/arch/microblaze/kernel/Makefile
-+++ b/arch/microblaze/kernel/Makefile
-@@ -15,7 +15,7 @@ endif
- extra-y := head.o vmlinux.lds
+diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
+index 90bec7d..c2052fb 100644
+--- a/drivers/irqchip/irq-xilinx-intc.c
++++ b/drivers/irqchip/irq-xilinx-intc.c
+@@ -16,8 +16,6 @@
+ #include <linux/io.h>
+ #include <linux/bug.h>
  
- obj-y += dma.o exceptions.o \
--	hw_exception_handler.o intc.o irq.o \
-+	hw_exception_handler.o irq.o \
- 	platform.o process.o prom.o ptrace.o \
- 	reset.o setup.o signal.o sys_microblaze.o timer.o traps.o unwind.o
- 
-diff --git a/arch/microblaze/kernel/intc.c b/arch/microblaze/kernel/intc.c
-deleted file mode 100644
-index 90bec7d..0000000
---- a/arch/microblaze/kernel/intc.c
-+++ /dev/null
-@@ -1,196 +0,0 @@
--/*
-- * Copyright (C) 2007-2013 Michal Simek <monstr@monstr.eu>
-- * Copyright (C) 2012-2013 Xilinx, Inc.
-- * Copyright (C) 2007-2009 PetaLogix
-- * Copyright (C) 2006 Atmark Techno, Inc.
-- *
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License. See the file "COPYING" in the main directory of this archive
-- * for more details.
-- */
--
--#include <linux/irqdomain.h>
--#include <linux/irq.h>
--#include <linux/irqchip.h>
--#include <linux/of_address.h>
--#include <linux/io.h>
--#include <linux/bug.h>
--
 -static void __iomem *intc_baseaddr;
 -
--/* No one else should require these constants, so define them locally here. */
--#define ISR 0x00			/* Interrupt Status Register */
--#define IPR 0x04			/* Interrupt Pending Register */
--#define IER 0x08			/* Interrupt Enable Register */
--#define IAR 0x0c			/* Interrupt Acknowledge Register */
--#define SIE 0x10			/* Set Interrupt Enable bits */
--#define CIE 0x14			/* Clear Interrupt Enable bits */
--#define IVR 0x18			/* Interrupt Vector Register */
--#define MER 0x1c			/* Master Enable Register */
--
--#define MER_ME (1<<0)
--#define MER_HIE (1<<1)
--
+ /* No one else should require these constants, so define them locally here. */
+ #define ISR 0x00			/* Interrupt Status Register */
+ #define IPR 0x04			/* Interrupt Pending Register */
+@@ -31,8 +29,16 @@
+ #define MER_ME (1<<0)
+ #define MER_HIE (1<<1)
+ 
 -static unsigned int (*read_fn)(void __iomem *);
 -static void (*write_fn)(u32, void __iomem *);
--
--static void intc_write32(u32 val, void __iomem *addr)
--{
--	iowrite32(val, addr);
--}
--
--static unsigned int intc_read32(void __iomem *addr)
--{
--	return ioread32(addr);
--}
--
--static void intc_write32_be(u32 val, void __iomem *addr)
--{
--	iowrite32be(val, addr);
--}
--
--static unsigned int intc_read32_be(void __iomem *addr)
--{
--	return ioread32be(addr);
--}
--
--static void intc_enable_or_unmask(struct irq_data *d)
--{
--	unsigned long mask = 1 << d->hwirq;
--
--	pr_debug("enable_or_unmask: %ld\n", d->hwirq);
--
--	/* ack level irqs because they can't be acked during
--	 * ack function since the handle_level_irq function
--	 * acks the irq before calling the interrupt handler
--	 */
--	if (irqd_is_level_type(d))
++struct xintc_irq_chip {
++	void __iomem *base;
++	struct	irq_domain *domain;
++	struct	irq_chip chip;
++	u32	intr_mask;
++	unsigned int (*read)(void __iomem *iomem);
++	void (*write)(u32 data, void __iomem *iomem);
++};
++
++static struct xintc_irq_chip *xintc_irqc;
+ 
+ static void intc_write32(u32 val, void __iomem *addr)
+ {
+@@ -54,6 +60,18 @@ static unsigned int intc_read32_be(void __iomem *addr)
+ 	return ioread32be(addr);
+ }
+ 
++static inline unsigned int xintc_read(struct xintc_irq_chip *xintc_irqc,
++					     int reg)
++{
++	return xintc_irqc->read(xintc_irqc->base + reg);
++}
++
++static inline void xintc_write(struct xintc_irq_chip *xintc_irqc,
++				     int reg, u32 data)
++{
++	xintc_irqc->write(data, xintc_irqc->base + reg);
++}
++
+ static void intc_enable_or_unmask(struct irq_data *d)
+ {
+ 	unsigned long mask = 1 << d->hwirq;
+@@ -65,21 +83,21 @@ static void intc_enable_or_unmask(struct irq_data *d)
+ 	 * acks the irq before calling the interrupt handler
+ 	 */
+ 	if (irqd_is_level_type(d))
 -		write_fn(mask, intc_baseaddr + IAR);
--
++		xintc_write(xintc_irqc, IAR, mask);
+ 
 -	write_fn(mask, intc_baseaddr + SIE);
--}
--
--static void intc_disable_or_mask(struct irq_data *d)
--{
--	pr_debug("disable: %ld\n", d->hwirq);
++	xintc_write(xintc_irqc, SIE, mask);
+ }
+ 
+ static void intc_disable_or_mask(struct irq_data *d)
+ {
+ 	pr_debug("disable: %ld\n", d->hwirq);
 -	write_fn(1 << d->hwirq, intc_baseaddr + CIE);
--}
--
--static void intc_ack(struct irq_data *d)
--{
--	pr_debug("ack: %ld\n", d->hwirq);
++	xintc_write(xintc_irqc, CIE, 1 << d->hwirq);
+ }
+ 
+ static void intc_ack(struct irq_data *d)
+ {
+ 	pr_debug("ack: %ld\n", d->hwirq);
 -	write_fn(1 << d->hwirq, intc_baseaddr + IAR);
--}
--
--static void intc_mask_ack(struct irq_data *d)
--{
--	unsigned long mask = 1 << d->hwirq;
--
--	pr_debug("disable_and_ack: %ld\n", d->hwirq);
++	xintc_write(xintc_irqc, IAR, 1 << d->hwirq);
+ }
+ 
+ static void intc_mask_ack(struct irq_data *d)
+@@ -87,8 +105,8 @@ static void intc_mask_ack(struct irq_data *d)
+ 	unsigned long mask = 1 << d->hwirq;
+ 
+ 	pr_debug("disable_and_ack: %ld\n", d->hwirq);
 -	write_fn(mask, intc_baseaddr + CIE);
 -	write_fn(mask, intc_baseaddr + IAR);
--}
--
--static struct irq_chip intc_dev = {
--	.name = "Xilinx INTC",
--	.irq_unmask = intc_enable_or_unmask,
--	.irq_mask = intc_disable_or_mask,
--	.irq_ack = intc_ack,
--	.irq_mask_ack = intc_mask_ack,
--};
--
--static struct irq_domain *root_domain;
--
--unsigned int get_irq(void)
--{
--	unsigned int hwirq, irq = -1;
--
++	xintc_write(xintc_irqc, CIE, mask);
++	xintc_write(xintc_irqc, IAR, mask);
+ }
+ 
+ static struct irq_chip intc_dev = {
+@@ -105,7 +123,7 @@ unsigned int get_irq(void)
+ {
+ 	unsigned int hwirq, irq = -1;
+ 
 -	hwirq = read_fn(intc_baseaddr + IVR);
--	if (hwirq != -1U)
--		irq = irq_find_mapping(root_domain, hwirq);
--
--	pr_debug("get_irq: hwirq=%d, irq=%d\n", hwirq, irq);
--
--	return irq;
--}
--
--static int xintc_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
--{
++	hwirq = xintc_read(xintc_irqc, IVR);
+ 	if (hwirq != -1U)
+ 		irq = irq_find_mapping(root_domain, hwirq);
+ 
+@@ -116,7 +134,8 @@ unsigned int get_irq(void)
+ 
+ static int xintc_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
+ {
 -	u32 intr_mask = (u32)d->host_data;
--
--	if (intr_mask & (1 << hw)) {
--		irq_set_chip_and_handler_name(irq, &intc_dev,
--						handle_edge_irq, "edge");
--		irq_clear_status_flags(irq, IRQ_LEVEL);
--	} else {
--		irq_set_chip_and_handler_name(irq, &intc_dev,
--						handle_level_irq, "level");
--		irq_set_status_flags(irq, IRQ_LEVEL);
--	}
--	return 0;
--}
--
--static const struct irq_domain_ops xintc_irq_domain_ops = {
--	.xlate = irq_domain_xlate_onetwocell,
--	.map = xintc_map,
--};
--
--static int __init xilinx_intc_of_init(struct device_node *intc,
--					     struct device_node *parent)
--{
++	struct xintc_irq_chip *irqc = d->host_data;
++	u32 intr_mask = irqc->intr_mask;
+ 
+ 	if (intr_mask & (1 << hw)) {
+ 		irq_set_chip_and_handler_name(irq, &intc_dev,
+@@ -138,59 +157,78 @@ static int xintc_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
+ static int __init xilinx_intc_of_init(struct device_node *intc,
+ 					     struct device_node *parent)
+ {
 -	u32 nr_irq, intr_mask;
--	int ret;
--
++	u32 nr_irq;
+ 	int ret;
++	struct xintc_irq_chip *irqc;
++
++	if (xintc_irqc) {
++		pr_err("irq-xilinx: Multiple instances aren't supported\n");
++		return -EINVAL;
++	}
++
++	irqc = kzalloc(sizeof(*irqc), GFP_KERNEL);
++	if (!irqc)
++		return -ENOMEM;
+ 
 -	intc_baseaddr = of_iomap(intc, 0);
 -	BUG_ON(!intc_baseaddr);
--
--	ret = of_property_read_u32(intc, "xlnx,num-intr-inputs", &nr_irq);
--	if (ret < 0) {
++	xintc_irqc = irqc;
++
++	irqc->base = of_iomap(intc, 0);
++	BUG_ON(!irqc->base);
+ 
+ 	ret = of_property_read_u32(intc, "xlnx,num-intr-inputs", &nr_irq);
+ 	if (ret < 0) {
 -		pr_err("%s: unable to read xlnx,num-intr-inputs\n", __func__);
 -		return ret;
--	}
--
++		pr_err("irq-xilinx: unable to read xlnx,num-intr-inputs\n");
++		goto err_alloc;
+ 	}
+ 
 -	ret = of_property_read_u32(intc, "xlnx,kind-of-intr", &intr_mask);
--	if (ret < 0) {
++	ret = of_property_read_u32(intc, "xlnx,kind-of-intr", &irqc->intr_mask);
+ 	if (ret < 0) {
 -		pr_err("%s: unable to read xlnx,kind-of-intr\n", __func__);
 -		return ret;
--	}
--
++		pr_err("irq-xilinx: unable to read xlnx,kind-of-intr\n");
++		goto err_alloc;
+ 	}
+ 
 -	if (intr_mask >> nr_irq)
 -		pr_warn("%s: mismatch in kind-of-intr param\n", __func__);
--
--	pr_info("%s: num_irq=%d, edge=0x%x\n",
++	if (irqc->intr_mask >> nr_irq)
++		pr_warn("irq-xilinx: mismatch in kind-of-intr param\n");
+ 
+ 	pr_info("%s: num_irq=%d, edge=0x%x\n",
 -		intc->full_name, nr_irq, intr_mask);
--
++		intc->full_name, nr_irq, irqc->intr_mask);
+ 
 -	write_fn = intc_write32;
 -	read_fn = intc_read32;
--
--	/*
--	 * Disable all external interrupts until they are
--	 * explicity requested.
--	 */
++	irqc->read = intc_read32;
++	irqc->write = intc_write32;
+ 
+ 	/*
+ 	 * Disable all external interrupts until they are
+ 	 * explicity requested.
+ 	 */
 -	write_fn(0, intc_baseaddr + IER);
--
--	/* Acknowledge any pending interrupts just in case. */
++	xintc_write(irqc, IER, 0);
+ 
+ 	/* Acknowledge any pending interrupts just in case. */
 -	write_fn(0xffffffff, intc_baseaddr + IAR);
--
--	/* Turn on the Master Enable. */
++	xintc_write(irqc, IAR, 0xffffffff);
+ 
+ 	/* Turn on the Master Enable. */
 -	write_fn(MER_HIE | MER_ME, intc_baseaddr + MER);
 -	if (!(read_fn(intc_baseaddr + MER) & (MER_HIE | MER_ME))) {
 -		write_fn = intc_write32_be;
 -		read_fn = intc_read32_be;
 -		write_fn(MER_HIE | MER_ME, intc_baseaddr + MER);
--	}
--
++	xintc_write(irqc, MER, MER_HIE | MER_ME);
++	if (!(xintc_read(irqc, MER) & (MER_HIE | MER_ME))) {
++		irqc->read = intc_read32_be;
++		irqc->write = intc_write32_be;
++		xintc_write(irqc, MER, MER_HIE | MER_ME);
+ 	}
+ 
 -	/* Yeah, okay, casting the intr_mask to a void* is butt-ugly, but I'm
 -	 * lazy and Michal can clean it up to something nicer when he tests
 -	 * and commits this patch.  ~~gcl */
--	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
+ 	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
 -							(void *)intr_mask);
--
--	irq_set_default_host(root_domain);
--
--	return 0;
--}
--
--IRQCHIP_DECLARE(xilinx_intc, "xlnx,xps-intc-1.00.a", xilinx_intc_of_init);
-diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
-index bc0af33..ae96731 100644
---- a/drivers/irqchip/Kconfig
-+++ b/drivers/irqchip/Kconfig
-@@ -211,6 +211,10 @@ config XTENSA_MX
- 	bool
- 	select IRQ_DOMAIN
++					    irqc);
++	if (!root_domain) {
++		pr_err("irq-xilinx: Unable to create IRQ domain\n");
++		goto err_alloc;
++	}
  
-+config XILINX_INTC
-+	bool
-+	select IRQ_DOMAIN
+ 	irq_set_default_host(root_domain);
+ 
+ 	return 0;
 +
- config IRQ_CROSSBAR
- 	bool
- 	help
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index e4dbfc8..0e55d94 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -52,6 +52,7 @@ obj-$(CONFIG_TB10X_IRQC)		+= irq-tb10x.o
- obj-$(CONFIG_TS4800_IRQ)		+= irq-ts4800.o
- obj-$(CONFIG_XTENSA)			+= irq-xtensa-pic.o
- obj-$(CONFIG_XTENSA_MX)			+= irq-xtensa-mx.o
-+obj-$(CONFIG_XILINX_INTC)		+= irq-xilinx-intc.o
- obj-$(CONFIG_IRQ_CROSSBAR)		+= irq-crossbar.o
- obj-$(CONFIG_SOC_VF610)			+= irq-vf610-mscm-ir.o
- obj-$(CONFIG_BCM6345_L1_IRQ)		+= irq-bcm6345-l1.o
-diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
-new file mode 100644
-index 0000000..90bec7d
---- /dev/null
-+++ b/drivers/irqchip/irq-xilinx-intc.c
-@@ -0,0 +1,196 @@
-+/*
-+ * Copyright (C) 2007-2013 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2012-2013 Xilinx, Inc.
-+ * Copyright (C) 2007-2009 PetaLogix
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
++err_alloc:
++	xintc_irqc = NULL;
++	kfree(irqc);
++	return ret;
 +
-+#include <linux/irqdomain.h>
-+#include <linux/irq.h>
-+#include <linux/irqchip.h>
-+#include <linux/of_address.h>
-+#include <linux/io.h>
-+#include <linux/bug.h>
-+
-+static void __iomem *intc_baseaddr;
-+
-+/* No one else should require these constants, so define them locally here. */
-+#define ISR 0x00			/* Interrupt Status Register */
-+#define IPR 0x04			/* Interrupt Pending Register */
-+#define IER 0x08			/* Interrupt Enable Register */
-+#define IAR 0x0c			/* Interrupt Acknowledge Register */
-+#define SIE 0x10			/* Set Interrupt Enable bits */
-+#define CIE 0x14			/* Clear Interrupt Enable bits */
-+#define IVR 0x18			/* Interrupt Vector Register */
-+#define MER 0x1c			/* Master Enable Register */
-+
-+#define MER_ME (1<<0)
-+#define MER_HIE (1<<1)
-+
-+static unsigned int (*read_fn)(void __iomem *);
-+static void (*write_fn)(u32, void __iomem *);
-+
-+static void intc_write32(u32 val, void __iomem *addr)
-+{
-+	iowrite32(val, addr);
-+}
-+
-+static unsigned int intc_read32(void __iomem *addr)
-+{
-+	return ioread32(addr);
-+}
-+
-+static void intc_write32_be(u32 val, void __iomem *addr)
-+{
-+	iowrite32be(val, addr);
-+}
-+
-+static unsigned int intc_read32_be(void __iomem *addr)
-+{
-+	return ioread32be(addr);
-+}
-+
-+static void intc_enable_or_unmask(struct irq_data *d)
-+{
-+	unsigned long mask = 1 << d->hwirq;
-+
-+	pr_debug("enable_or_unmask: %ld\n", d->hwirq);
-+
-+	/* ack level irqs because they can't be acked during
-+	 * ack function since the handle_level_irq function
-+	 * acks the irq before calling the interrupt handler
-+	 */
-+	if (irqd_is_level_type(d))
-+		write_fn(mask, intc_baseaddr + IAR);
-+
-+	write_fn(mask, intc_baseaddr + SIE);
-+}
-+
-+static void intc_disable_or_mask(struct irq_data *d)
-+{
-+	pr_debug("disable: %ld\n", d->hwirq);
-+	write_fn(1 << d->hwirq, intc_baseaddr + CIE);
-+}
-+
-+static void intc_ack(struct irq_data *d)
-+{
-+	pr_debug("ack: %ld\n", d->hwirq);
-+	write_fn(1 << d->hwirq, intc_baseaddr + IAR);
-+}
-+
-+static void intc_mask_ack(struct irq_data *d)
-+{
-+	unsigned long mask = 1 << d->hwirq;
-+
-+	pr_debug("disable_and_ack: %ld\n", d->hwirq);
-+	write_fn(mask, intc_baseaddr + CIE);
-+	write_fn(mask, intc_baseaddr + IAR);
-+}
-+
-+static struct irq_chip intc_dev = {
-+	.name = "Xilinx INTC",
-+	.irq_unmask = intc_enable_or_unmask,
-+	.irq_mask = intc_disable_or_mask,
-+	.irq_ack = intc_ack,
-+	.irq_mask_ack = intc_mask_ack,
-+};
-+
-+static struct irq_domain *root_domain;
-+
-+unsigned int get_irq(void)
-+{
-+	unsigned int hwirq, irq = -1;
-+
-+	hwirq = read_fn(intc_baseaddr + IVR);
-+	if (hwirq != -1U)
-+		irq = irq_find_mapping(root_domain, hwirq);
-+
-+	pr_debug("get_irq: hwirq=%d, irq=%d\n", hwirq, irq);
-+
-+	return irq;
-+}
-+
-+static int xintc_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
-+{
-+	u32 intr_mask = (u32)d->host_data;
-+
-+	if (intr_mask & (1 << hw)) {
-+		irq_set_chip_and_handler_name(irq, &intc_dev,
-+						handle_edge_irq, "edge");
-+		irq_clear_status_flags(irq, IRQ_LEVEL);
-+	} else {
-+		irq_set_chip_and_handler_name(irq, &intc_dev,
-+						handle_level_irq, "level");
-+		irq_set_status_flags(irq, IRQ_LEVEL);
-+	}
-+	return 0;
-+}
-+
-+static const struct irq_domain_ops xintc_irq_domain_ops = {
-+	.xlate = irq_domain_xlate_onetwocell,
-+	.map = xintc_map,
-+};
-+
-+static int __init xilinx_intc_of_init(struct device_node *intc,
-+					     struct device_node *parent)
-+{
-+	u32 nr_irq, intr_mask;
-+	int ret;
-+
-+	intc_baseaddr = of_iomap(intc, 0);
-+	BUG_ON(!intc_baseaddr);
-+
-+	ret = of_property_read_u32(intc, "xlnx,num-intr-inputs", &nr_irq);
-+	if (ret < 0) {
-+		pr_err("%s: unable to read xlnx,num-intr-inputs\n", __func__);
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(intc, "xlnx,kind-of-intr", &intr_mask);
-+	if (ret < 0) {
-+		pr_err("%s: unable to read xlnx,kind-of-intr\n", __func__);
-+		return ret;
-+	}
-+
-+	if (intr_mask >> nr_irq)
-+		pr_warn("%s: mismatch in kind-of-intr param\n", __func__);
-+
-+	pr_info("%s: num_irq=%d, edge=0x%x\n",
-+		intc->full_name, nr_irq, intr_mask);
-+
-+	write_fn = intc_write32;
-+	read_fn = intc_read32;
-+
-+	/*
-+	 * Disable all external interrupts until they are
-+	 * explicity requested.
-+	 */
-+	write_fn(0, intc_baseaddr + IER);
-+
-+	/* Acknowledge any pending interrupts just in case. */
-+	write_fn(0xffffffff, intc_baseaddr + IAR);
-+
-+	/* Turn on the Master Enable. */
-+	write_fn(MER_HIE | MER_ME, intc_baseaddr + MER);
-+	if (!(read_fn(intc_baseaddr + MER) & (MER_HIE | MER_ME))) {
-+		write_fn = intc_write32_be;
-+		read_fn = intc_read32_be;
-+		write_fn(MER_HIE | MER_ME, intc_baseaddr + MER);
-+	}
-+
-+	/* Yeah, okay, casting the intr_mask to a void* is butt-ugly, but I'm
-+	 * lazy and Michal can clean it up to something nicer when he tests
-+	 * and commits this patch.  ~~gcl */
-+	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
-+							(void *)intr_mask);
-+
-+	irq_set_default_host(root_domain);
-+
-+	return 0;
-+}
-+
-+IRQCHIP_DECLARE(xilinx_intc, "xlnx,xps-intc-1.00.a", xilinx_intc_of_init);
+ }
+ 
+ IRQCHIP_DECLARE(xilinx_intc, "xlnx,xps-intc-1.00.a", xilinx_intc_of_init);
 -- 
 1.9.1
