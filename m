@@ -1,27 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t7JR25NvDzDvNg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 15:39:10 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Paul Burton <paul.burton@imgtec.com>
-Cc: Andreas Schwab <schwab@linux-m68k.org>,
- Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@suse.de>,
- Larry Finger <Larry.Finger@lwfinger.net>, Petr Mladek <pmladek@suse.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] console: use first console if stdout-path device
- doesn't appear
-In-Reply-To: <20161031230953.GA425@swordfish>
-References: <87zill13z8.fsf@concordia.ellerman.id.au>
- <20161031121455.23280-1-paul.burton@imgtec.com>
- <1593250.MZpe3pfUW6@np-p-burton> <20161031230953.GA425@swordfish>
-Date: Tue, 01 Nov 2016 15:39:10 +1100
-Message-ID: <8737jbq0ep.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t7JTZ4KBZzDsrd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 15:41:22 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id y68so4676239pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 21:41:22 -0700 (PDT)
+Date: Tue, 1 Nov 2016 15:41:12 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH] powerpc: fpr save/restore function cleanups
+Message-ID: <20161101154112.1516b5cb@roar.ozlabs.ibm.com>
+In-Reply-To: <20161101042219.25587-1-npiggin@gmail.com>
+References: <20161101042219.25587-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,18 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sergey Senozhatsky <sergey.senozhatsky@gmail.com> writes:
-> On (10/31/16 15:50), Paul Burton wrote:
-> [..]
->> Actually whilst this fixes the output in QEMU it has other problems. I'm still 
->> digging...
->
-> I propose a revert of '05fd007e46296', so you guys can find the
-> problem and fix it, not being under 'rc3' pressure.
+On Tue,  1 Nov 2016 15:22:19 +1100
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Yeah I agree. The v2 fix doesn't work for me either.
+> The powerpc64 linker generates fpr save/restore functions on-demand,
+> placing them in the .sfpr section. So remove the explicitly coded ones
+> from the 64 build.
+> 
+> Have 32-bit put save/restore functions into .sfpr section rather than
+> .text, to match 64-bit.
+> 
+> And explicitly have the linker script place the section rather than
+> leaving it as orphan.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> 
+> I tested this with 64-bit optimize-for-size build with modules,
+> and that works okay.
 
-Paul are you OK with that? And if so are you happy to send a revert to
-Linus?
+No I didn't, it's broken. I'll send an update shortly.
 
-cheers
+Thanks,
+Nick
