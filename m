@@ -1,31 +1,25 @@
-Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t798P1mLczDvLb
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 10:11:01 +1100 (AEDT)
-Received: by mail-oi0-x243.google.com with SMTP id v84so7940971oie.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 16:11:01 -0700 (PDT)
-Date: Tue, 1 Nov 2016 08:09:53 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Paul Burton <paul.burton@imgtec.com>
+Return-Path: <rjw@rjwysocki.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Andreas Schwab <schwab@linux-m68k.org>,
- Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@suse.de>,
- Larry Finger <Larry.Finger@lwfinger.net>, Petr Mladek <pmladek@suse.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] console: use first console if stdout-path device
- doesn't appear
-Message-ID: <20161031230953.GA425@swordfish>
-References: <87zill13z8.fsf@concordia.ellerman.id.au>
- <20161031121455.23280-1-paul.burton@imgtec.com>
- <1593250.MZpe3pfUW6@np-p-burton>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ skiboot@lists.ozlabs.org
+Subject: Re: [PATCH v2 0/3] powernv:stop: Use psscr_val,
+ mask provided by firmware
+Date: Tue, 01 Nov 2016 05:21:05 +0100
+Message-ID: <1960765.Hett9UtH8Z@vostro.rjw.lan>
+In-Reply-To: <cover.1477556602.git.ego@linux.vnet.ibm.com>
+References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1593250.MZpe3pfUW6@np-p-burton>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,14 +29,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thursday, October 27, 2016 02:05:04 PM Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> Hi,
+> 
+> This is the second iteration of the patchset to use the psscr_val and
+> psscr_mask provided by the firmware for each of the stop states.
+> 
+> The previous version can be found here: 
+> https://lkml.org/lkml/2016/9/29/45
+> 
+> The main changes in this version are:
+> 
+> 1) Add a helper function in powernv-cpuidle.c to help initialize the
+>    powernv_states cpuidle table.
+> 
+> 2) Handle the older firmware which populates only the Requested Level
+>    (RL) fields of the psscr and psscr_mask in the device tree. This
+>    patchset ensures that in the presence of the older firmware, the
+>    other fields of PSSCR are initalized to sane default values.
+> 
+> 
+> Synopsis
+> ==========
+> In the current implementation, the code for ISA v3.0 stop
+> implementation has a couple of shortcomings.
+> 
+> a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
+>    uses only the RL field from the firmware. While this is not
+>    incorrect, since the hand-coded values are legitimate, it is not a
+>    very flexible design since the firmware has the capability to
+>    communicate these values via the "ibm,cpu-idle-state-psscr" and
+>    "ibm,cpu-idle-state-psscr-mask" properties. In case where the
+>    firmware provides values for these fields that is different from
+>    the hand-coded values, the current code will not work as intended.
+> 
+> b) Due to issue a), the current code assumes that ESL=EC=1 for all the
+>    stop states and hence the wakeup from the stop instruction will
+>    happen at 0x100, the system-reset vector. However, the ISA v3.0
+>    allows the ESL=EC=0 behaviour where the corresponding stop-state
+>    loses no state and wakes up from the subsequent instruction. The
+>    current code doesn't handle this case.
+>    
+> This patch series addresses these issues.
+> 
+> The first patch in the series renames the existing
+> IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
+> the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
+> up at the subsequent instruction.
+> 
+> The second patch adds a helper function in cpuidle-powernv.c for
+> initializing entries of the powernv_states[] table that is passed to
+> the cpu-idle core. This eliminates some of the code duplication in the
+> function that discovers and initializes the stop states.
+> 
+> The third patch in the series fixes issues a) and b) by ensuring that
+> the psscr-value and the psscr-mask provided by the firmware are what
+> will be used to set a particular stop state. It also adds support for
+> handling wake-up from stop states which were entered with ESL=EC=0.
+> 
+> The third patch also handles the older firmware which sets only the
+> Requested Level (RL) field in the psscr and psscr-mask exposed in the
+> device tree. In the presence of such older firmware, this patch will
+> set the default sane values for for remaining PSSCR fields (i.e PSLL,
+> MTL, ESL, EC, and TR).
+> 
+> The skiboot patch populates all the relevant fields in the PSSCR
+> values and the mask for all the stop states can be found here:
+> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+> 
+> The patches are based on top of
+> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+> 
+> Gautham R. Shenoy (3):
+>   powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+>   cpuidle:powernv: Add helper function to populate powernv idle states.
+>   powernv: Pass PSSCR value and mask to power9_idle_stop
 
-On (10/31/16 15:50), Paul Burton wrote:
-[..]
-> Actually whilst this fixes the output in QEMU it has other problems. I'm still 
-> digging...
+OK
 
-I propose a revert of '05fd007e46296', so you guys can find the
-problem and fix it, not being under 'rc3' pressure.
+I need someone to review this for me.
 
-	-ss
+Thanks,
+Rafael
