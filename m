@@ -1,22 +1,25 @@
-Return-Path: <Zubair.Kakakhel@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t7T18481rzDvNH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 22:05:48 +1100 (AEDT)
-Subject: Re: [Patch V6 2/6] irqchip: xilinx: Clean up irqdomain argument and
- read/write
-To: Thomas Gleixner <tglx@linutronix.de>
-References: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
- <1477916207-25157-3-git-send-email-Zubair.Kakakhel@imgtec.com>
- <alpine.DEB.2.20.1610311335380.5011@nanos>
-CC: <monstr@monstr.eu>, <jason@lakedaemon.net>, <marc.zyngier@arm.com>,
- <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
- <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
-From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
-Message-ID: <fea1e962-1af2-d666-2b0d-55a8e230430c@imgtec.com>
-Date: Tue, 1 Nov 2016 11:05:43 +0000
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t7Wdv50B0zDvMr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 00:04:19 +1100 (AEDT)
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3t7Wdt6RRnz9t0q
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2016 00:04:18 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id i127so16919374oia.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 01 Nov 2016 06:04:18 -0700 (PDT)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [TRIVIAL][PATCH] Fixup OOPS output
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <8a7d55d7-e436-4ca1-f5a2-f439e083ad4d@gmail.com>
+Date: Wed, 2 Nov 2016 00:03:51 +1100
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1610311335380.5011@nanos>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,135 +29,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-Thanks for the review.
+With recent update to printk, we get console output like below
 
-On 10/31/2016 07:51 PM, Thomas Gleixner wrote:
-> On Mon, 31 Oct 2016, Zubair Lutfullah Kakakhel wrote:
->> The drivers read/write function handling is a bit quirky.
->
-> Can you please explain in more detail what's quirky and why it should be
-> done differently,
->
->> And the irqmask is passed directly to the handler.
->
-> I can't make any sense out of that sentence.  Which handler? If you talk
-> about the write function, then I don't see a change. So what are you
-> talking about?
+ P           O    4.9.0-rc2-next-20161028-00003-g23bf57759-dirty #125
+ c0000000ef5f4000
+ 0000000000010000
+ P           O     (4.9.0-rc2-next-20161028-00003-g23bf57759-dirty)
+ 9000000010009033
+ <
+ SF
+ ,HV
+ ,EE
+ ,ME
+ ,IR
+ ,DR
+ ,RI
+ ,LE
+ >
 
-Thanks. I'll add more detail in v7 if this patch survives.
+and more output that is not easy to parse
 
->
->> Add a new irqchip struct to pass to the handler and
->> cleanup read/write handling.
->
-> I still don't see what it cleans up. You move the write function pointer
-> into a data structure, which is exposed by another pointer. So you create
-> two levels of indirection in the hotpath. The function prototype is still
-> the same. So all this does is making things slower unless I'm missing
-> something.
+Fix the OOPS output so that it is easier on the eyes again
 
-I wrote this patch/cleanup based on a review of driver by Marc when I moved the
-driver from arch/microblaze to drivers/irqchip
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/kernel/process.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-"Marc Zyngier
-
-...
-
- >  arch/microblaze/kernel/intc.c   | 196 ----------------------------------------
- >  drivers/irqchip/irq-axi-intc.c  | 196 ++++++++++++++++++++++++++++++++++++++++
-
-...
-
- > +	/* Yeah, okay, casting the intr_mask to a void* is butt-ugly, but I'm
- > +	 * lazy and Michal can clean it up to something nicer when he tests
- > +	 * and commits this patch.  ~~gcl */
- > +	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
- > +							(void *)intr_mask);
-
-Since you're now reworking this driver, how about addressing this
-ugliness? You could store the intr_mask together with intc_baseaddr,
-and the read/write functions in a global structure, and pass a
-pointer to it? That would make the code a bit nicer...
-"
-
-https://patchwork.kernel.org/patch/9287933/
-
->
->> -static unsigned int (*read_fn)(void __iomem *);
->> -static void (*write_fn)(u32, void __iomem *);
->> +struct xintc_irq_chip {
->> +	void __iomem *base;
->> +	struct	irq_domain *domain;
->> +	struct	irq_chip chip;
->
-> The tabs between struct and the structure name are bogus.
->
->> +	u32	intr_mask;
->> +	unsigned int (*read)(void __iomem *iomem);
->> +	void (*write)(u32 data, void __iomem *iomem);
->
-> Please structure that like a table:
->
-> 	void			__iomem *base;
-> 	struct irq_domain	*domain;
-> 	struct irq_chip		chip;
-> 	u32			intr_mask;
-> 	unsigned int		(*read)(void __iomem *iomem);
-> 	void			(*write)(u32 data, void __iomem *iomem);
->
-> Can you see how that makes parsing the struct simpler, because the data
-> types are clearly to identify?
-
-That does make it look much better.
-
->
->> +static struct xintc_irq_chip *xintc_irqc;
->>
->>  static void intc_write32(u32 val, void __iomem *addr)
->>  {
->> @@ -54,6 +60,18 @@ static unsigned int intc_read32_be(void __iomem *addr)
->>  	return ioread32be(addr);
->>  }
->>
->> +static inline unsigned int xintc_read(struct xintc_irq_chip *xintc_irqc,
->> +					     int reg)
->> +{
->> +	return xintc_irqc->read(xintc_irqc->base + reg);
->> +}
->> +
->> +static inline void xintc_write(struct xintc_irq_chip *xintc_irqc,
->> +				     int reg, u32 data)
->> +{
->> +	xintc_irqc->write(data, xintc_irqc->base + reg);
->> +}
->> +
->>  static void intc_enable_or_unmask(struct irq_data *d)
->>  {
->>  	unsigned long mask = 1 << d->hwirq;
->> @@ -65,21 +83,21 @@ static void intc_enable_or_unmask(struct irq_data *d)
->>  	 * acks the irq before calling the interrupt handler
->>  	 */
->>  	if (irqd_is_level_type(d))
->> -		write_fn(mask, intc_baseaddr + IAR);
->> +		xintc_write(xintc_irqc, IAR, mask);
->
-> So this whole thing makes only sense, when you want to support multiple
-> instances of that chip and then you need to store the xintc_irqc pointer as
-> irqchip data and retrieve it from there. Unless you do that, this "cleanup"
-> is just churn for nothing with the effect of making things less efficient.
->
-
-Indeed the driver doesn't support multiple instances of the Xilinx Interrupt controller.
-I don't have a use-case or the hardware for that.
-
-So what would be the recommended course of action?
-
-Regards,
-ZubairLK
-
-> Thanks,
->
-> 	tglx
->
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index ce6dc61..a3193c7 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1282,7 +1282,7 @@ static void print_bits(unsigned long val, struct regbit *bits, const char *sep)
+ 
+ 	for (; bits->bit; ++bits)
+ 		if (val & bits->bit) {
+-			printk("%s%s", s, bits->name);
++			pr_cont("%s%s", s, bits->name);
+ 			s = sep;
+ 		}
+ }
+@@ -1305,9 +1305,9 @@ static void print_tm_bits(unsigned long val)
+  *   T: Transactional	(bit 34)
+  */
+ 	if (val & (MSR_TM | MSR_TS_S | MSR_TS_T)) {
+-		printk(",TM[");
++		pr_cont(",TM[");
+ 		print_bits(val, msr_tm_bits, "");
+-		printk("]");
++		pr_cont("]");
+ 	}
+ }
+ #else
+@@ -1316,10 +1316,10 @@ static void print_tm_bits(unsigned long val) {}
+ 
+ static void print_msr_bits(unsigned long val)
+ {
+-	printk("<");
++	pr_cont("<");
+ 	print_bits(val, msr_bits, ",");
+ 	print_tm_bits(val);
+-	printk(">");
++	pr_cont(">");
+ }
+ 
+ #ifdef CONFIG_PPC64
+@@ -1347,15 +1347,15 @@ void show_regs(struct pt_regs * regs)
+ 	printk("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
+ 	trap = TRAP(regs);
+ 	if ((regs->trap != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
+-		printk("CFAR: "REG" ", regs->orig_gpr3);
++		pr_cont("CFAR: "REG" ", regs->orig_gpr3);
+ 	if (trap == 0x200 || trap == 0x300 || trap == 0x600)
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+-		printk("DEAR: "REG" ESR: "REG" ", regs->dar, regs->dsisr);
++		pr_cont("DEAR: "REG" ESR: "REG" ", regs->dar, regs->dsisr);
+ #else
+-		printk("DAR: "REG" DSISR: %08lx ", regs->dar, regs->dsisr);
++		pr_cont("DAR: "REG" DSISR: %08lx ", regs->dar, regs->dsisr);
+ #endif
+ #ifdef CONFIG_PPC64
+-	printk("SOFTE: %ld ", regs->softe);
++	pr_cont("SOFTE: %ld ", regs->softe);
+ #endif
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	if (MSR_TM_ACTIVE(regs->msr))
+@@ -1364,8 +1364,8 @@ void show_regs(struct pt_regs * regs)
+ 
+ 	for (i = 0;  i < 32;  i++) {
+ 		if ((i % REGS_PER_LINE) == 0)
+-			printk("\nGPR%02d: ", i);
+-		printk(REG " ", regs->gpr[i]);
++			pr_cont("\nGPR%02d: ", i);
++		pr_cont(REG " ", regs->gpr[i]);
+ 		if (i == LAST_VOLATILE && !FULL_REGS(regs))
+ 			break;
+ 	}
+@@ -1906,7 +1906,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 			}
+ #endif
+ 			if (firstframe)
+-				printk(" (unreliable)");
++				pr_cont(" (unreliable)");
+ 			printk("\n");
+ 		}
+ 		firstframe = 0;
+-- 
+2.5.5
