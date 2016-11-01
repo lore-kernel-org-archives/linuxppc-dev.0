@@ -1,30 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 2 Nov 2016 08:03:01 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Oliver O'Halloran <oohall@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- skiboot list <skiboot@lists.ozlabs.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] cpuidle:powernv: Add helper function to populate
- powernv idle states.
-Message-ID: <20161101210301.GA15949@fergus.ozlabs.ibm.com>
-References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
- <d7298ac18999f842f6eaf826cf21250503e40890.1477556602.git.ego@linux.vnet.ibm.com>
- <CAOSf1CHZ0_1B28bX9TsaE6vcOaWUwhanQWAN=LKSLoNHK+Jh0A@mail.gmail.com>
+Return-Path: <jim.epost@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t7ngT6mrNzDvNS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 10:36:37 +1100 (AEDT)
+Received: by mail-it0-x242.google.com with SMTP id m138so240207itm.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Nov 2016 16:36:37 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAOSf1CHZ0_1B28bX9TsaE6vcOaWUwhanQWAN=LKSLoNHK+Jh0A@mail.gmail.com>
+In-Reply-To: <87wpgp13ki.fsf@concordia.ellerman.id.au>
+References: <20161030214047.25037-1-christophe.jaillet@wanadoo.fr>
+ <87wpgp13ki.fsf@concordia.ellerman.id.au>
+From: Jim Davis <jim.epost@gmail.com>
+Date: Tue, 1 Nov 2016 16:36:35 -0700
+Message-ID: <CA+r1ZhiJW6xQ1VwgLudFzFBxkKzkURv7MZhWtmSevRHc9aUyxA@mail.gmail.com>
+Subject: Re: [PATCH] cxl: Fix error handling
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, imunsie@au1.ibm.com,
+ fbarrat@linux.vnet.ibm.com, kernel-janitors@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,48 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 01, 2016 at 07:32:58PM +1100, Oliver O'Halloran wrote:
-> On Thu, Oct 27, 2016 at 7:35 PM, Gautham R. Shenoy
-> <ego@linux.vnet.ibm.com> wrote:
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >
-> > In the current code for powernv_add_idle_states, there is a lot of code
-> > duplication while initializing an idle state in powernv_states table.
-> >
-> > Add an inline helper function to populate the powernv_states[] table for
-> > a given idle state. Invoke this for populating the "Nap", "Fastsleep"
-> > and the stop states in powernv_add_idle_states.
-> >
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > ---
-> >  drivers/cpuidle/cpuidle-powernv.c | 82 +++++++++++++++++++++++----------------
-> >  include/linux/cpuidle.h           |  1 +
-> >  2 files changed, 49 insertions(+), 34 deletions(-)
-> >
-> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> > index 7fe442c..11b22b9 100644
-> > --- a/drivers/cpuidle/cpuidle-powernv.c
-> > +++ b/drivers/cpuidle/cpuidle-powernv.c
-> > @@ -167,6 +167,28 @@ static int powernv_cpuidle_driver_init(void)
-> >         return 0;
-> >  }
-> >
-> > +static inline void add_powernv_state(int index, const char *name,
-> > +                                    unsigned int flags,
-> > +                                    int (*idle_fn)(struct cpuidle_device *,
-> > +                                                   struct cpuidle_driver *,
-> > +                                                   int),
-> > +                                    unsigned int target_residency,
-> > +                                    unsigned int exit_latency,
-> > +                                    u64 psscr_val)
-> > +{
-> > +       strncpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
-> > +       strncpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
-> 
-> If the supplied name is equal to CPUIDLE_NAME_LEN then strncpy() won't
-> terminate the string. The least annoying fix is to memset() the whole
-> structure to zero and set n to CPUIDLE_NAME_LEN - 1.
+On Sun, Oct 30, 2016 at 10:37 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Christophe JAILLET <christophe.jaillet@wanadoo.fr> writes:
+>
+>> 'cxl_dev_context_init()' returns an error pointer in case of error, not
+>> NULL. So test it with IS_ERR.
+>>
+>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+>> ---
+>> un-compiled because I don't have the required  cross build environment.
+>
+> Do you run Ubuntu or Fedora? If so it's just a dnf/apt-get away:
+>
+> $ sudo dnf install gcc-c++-powerpc64-linux-gnu binutils-powerpc64-linux-gnu gcc-powerpc64-linux-gnu
+> or
+> $ sudo apt-get install gcc-powerpc64le-linux-gnu gcc-powerpc-linux-gnu libc-dev-powerpc-cross libc-dev-ppc64el-cross
+>
+> More here:
+>
+> https://github.com/linuxppc/linux/wiki/Building-powerpc-kernels
 
-Or he could use strlcpy() instead of strncpy().
+Cool; the little-endian build worked fine, but
 
-Paul.
+jim@krebstar:~/linux-rc$ make ARCH=powerpc
+CROSS_COMPILE=powerpc64-linux-gnu- vmlinux
+make: powerpc64-linux-gnu-gcc: Command not found
+make: powerpc64-linux-gnu-gcc: Command not found
+scripts/kconfig/conf  --silentoldconfig Kconfig
+make: powerpc64-linux-gnu-gcc: Command not found
+
+This is on Ubuntu 16.04; there's a /usr/bin/powerpc64le-linux-gnu-gcc
+from installing gcc-powerpc64le-linux-gnu, and a
+/usr/bin/powerpc-linux-gnu-gcc from installing gcc-powerpc-linux-gnu,
+but no /usr/bin/powerpc64-linux-gnu-gcc.
+
+-- 
+Jim
