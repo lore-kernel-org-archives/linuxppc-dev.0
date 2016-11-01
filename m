@@ -1,23 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t7KJZ74FkzDvHp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 16:18:38 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id s8so10615353pfj.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2016 22:18:38 -0700 (PDT)
-Date: Tue, 1 Nov 2016 16:18:28 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Alan Modra <amodra@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t7LMK3FlZzDvM3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Nov 2016 17:06:04 +1100 (AEDT)
+Date: Tue, 1 Nov 2016 14:04:59 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
 Subject: Re: [PATCH] powerpc: fpr save/restore function cleanups
-Message-ID: <20161101161828.6075f836@roar.ozlabs.ibm.com>
-In-Reply-To: <20161101154112.1516b5cb@roar.ozlabs.ibm.com>
-References: <20161101042219.25587-1-npiggin@gmail.com>
- <20161101154112.1516b5cb@roar.ozlabs.ibm.com>
+Message-ID: <201611011423.6wxxjcmv%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="FCuugMFkClbJLl1L"
+In-Reply-To: <20161101042219.25587-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,404 +24,298 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 1 Nov 2016 15:41:12 +1100
-Nicholas Piggin <npiggin@gmail.com> wrote:
 
-> On Tue,  1 Nov 2016 15:22:19 +1100
-> Nicholas Piggin <npiggin@gmail.com> wrote:
-> 
-> > The powerpc64 linker generates fpr save/restore functions on-demand,
-> > placing them in the .sfpr section. So remove the explicitly coded ones
-> > from the 64 build.
-> > 
-> > Have 32-bit put save/restore functions into .sfpr section rather than
-> > .text, to match 64-bit.
-> > 
-> > And explicitly have the linker script place the section rather than
-> > leaving it as orphan.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> > 
-> > I tested this with 64-bit optimize-for-size build with modules,
-> > and that works okay.  
-> 
-> No I didn't, it's broken. I'll send an update shortly.
+--FCuugMFkClbJLl1L
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Working (hopefully) patch this time. I also removed the 32-bit changes
-which aren't really necessary:
+Hi Nicholas,
 
-The powerpc64 linker generates fpr save/restore functions on-demand,
-placing them in the .sfpr section. Module linking (because it's a
-"non-final" link) requires --save-restore-funcs for this.
+[auto build test ERROR on v4.9-rc3]
+[also build test ERROR on next-20161028]
+[cannot apply to powerpc/next]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+[Suggest to use git(>=2.9.0) format-patch --base=<commit> (or --base=auto for convenience) to record what (public, well-known) commit your patch series was built on]
+[Check https://git-scm.com/docs/git-format-patch for more information]
 
-Remove the explicitly coded save/restore functions from the 64 build.
+url:    https://github.com/0day-ci/linux/commits/Nicholas-Piggin/powerpc-fpr-save-restore-function-cleanups/20161101-122547
+config: powerpc-mvme5100_defconfig (attached as .config)
+compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
 
-And explicitly have the linker script place the section rather than
-leaving it as orphan.
+All errors (new ones prefixed by >>):
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> arch/powerpc/boot/crtsavres.S:232:0: error: #endif without #if
+    #endif
+    
+
+vim +232 arch/powerpc/boot/crtsavres.S
+
+143580ec Kumar Gala 2008-06-13  226  _GLOBAL(_rest32gpr_31_x)
+143580ec Kumar Gala 2008-06-13  227  	lwz	0,4(11)
+143580ec Kumar Gala 2008-06-13  228  	lwz	31,-4(11)
+143580ec Kumar Gala 2008-06-13  229  	mtlr	0
+143580ec Kumar Gala 2008-06-13  230  	mr	1,11
+143580ec Kumar Gala 2008-06-13  231  	blr
+143580ec Kumar Gala 2008-06-13 @232  #endif
+
+:::::: The code at line 232 was first introduced by commit
+:::::: 143580ecfb7999147e546cc3814023e233e95fa5 [POWERPC] Fix bootwrapper builds with newer gcc versions
+
+:::::: TO: Kumar Gala <galak@kernel.crashing.org>
+:::::: CC: Paul Mackerras <paulus@samba.org>
+
 ---
- arch/powerpc/Makefile             |   4 +
- arch/powerpc/boot/Makefile        |   3 +-
- arch/powerpc/boot/crtsavres.S     |   8 +-
- arch/powerpc/kernel/vmlinux.lds.S |   6 +
- arch/powerpc/lib/Makefile         |   5 +-
- arch/powerpc/lib/crtsavres.S      | 238 +-------------------------------------
- 6 files changed, 22 insertions(+), 242 deletions(-)
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index fe76cfe..8ea7c9e 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -179,7 +179,11 @@ else
- CHECKFLAGS	+= -D__LITTLE_ENDIAN__
- endif
- 
-+ifeq ($(CONFIG_PPC32),y)
- KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
-+else
-+KBUILD_LDFLAGS_MODULE += --save-restore-funcs
-+endif
- 
- ifeq ($(CONFIG_476FPE_ERR46),y)
- 	KBUILD_LDFLAGS_MODULE += --ppc476-workaround \
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index eae2dc8..6abee93 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -95,12 +95,13 @@ libfdtheader := fdt.h libfdt.h libfdt_internal.h
- $(addprefix $(obj)/,$(libfdt) libfdt-wrapper.o simpleboot.o epapr.o opal.o): \
- 	$(addprefix $(obj)/,$(libfdtheader))
- 
--src-wlib-y := string.S crt0.S crtsavres.S stdio.c decompress.c main.c \
-+src-wlib-y := string.S crt0.S stdio.c decompress.c main.c \
- 		$(libfdt) libfdt-wrapper.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		elf_util.c $(zlib-y) devtree.c stdlib.c \
- 		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
- 		uartlite.c mpc52xx-psc.c opal.c opal-calls.S
-+src-wlib-$(CONFIG_PPC32) += crtsavres.S
- src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
- src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
- src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
-diff --git a/arch/powerpc/boot/crtsavres.S b/arch/powerpc/boot/crtsavres.S
-index f3d9b35..085fb2b 100644
---- a/arch/powerpc/boot/crtsavres.S
-+++ b/arch/powerpc/boot/crtsavres.S
-@@ -37,12 +37,13 @@
-  *    the executable file might be covered by the GNU General Public License.
-  */
- 
-+#ifdef __powerpc64__
-+#error "On PPC64, FPR save/restore functions are provided by the linker."
-+#endif
-+
- 	.file	"crtsavres.S"
- 	.section ".text"
- 
--/* On PowerPC64 Linux, these functions are provided by the linker.  */
--#ifndef __powerpc64__
--
- #define _GLOBAL(name) \
- 	.type name,@function; \
- 	.globl name; \
-@@ -230,4 +231,3 @@ _GLOBAL(_rest32gpr_31_x)
- 	mtlr	0
- 	mr	1,11
- 	blr
--#endif
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index a09c666..63775d9 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -84,6 +84,12 @@ SECTIONS
- 		KPROBES_TEXT
- 		IRQENTRY_TEXT
- 		SOFTIRQENTRY_TEXT
-+		/*
-+		 * Linker puts .sfpr at the beginning of a group of input
-+		 * sections, which can break start-of-text offset if it is
-+		 * included with the main text sections.
-+		 */
-+		*(.sfpr);
- 		MEM_KEEP(init.text)
- 		MEM_KEEP(exit.text)
- 
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 309361e8..b1304113 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -9,10 +9,9 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
- CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
- CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
- 
--obj-y += string.o alloc.o crtsavres.o code-patching.o \
--	 feature-fixups.o
-+obj-y += string.o alloc.o code-patching.o feature-fixups.o
- 
--obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
-+obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
- 
- obj64-y	+= copypage_64.o copyuser_64.o usercopy_64.o mem_64.o hweight_64.o \
- 	   copyuser_power7.o string_64.o copypage_power7.o memcpy_power7.o \
-diff --git a/arch/powerpc/lib/crtsavres.S b/arch/powerpc/lib/crtsavres.S
-index 18af0b3..b311607 100644
---- a/arch/powerpc/lib/crtsavres.S
-+++ b/arch/powerpc/lib/crtsavres.S
-@@ -40,12 +40,14 @@
- 
- #include <asm/ppc_asm.h>
- 
-+#ifdef __powerpc64__
-+#error "On PPC64, FPR save/restore functions are provided by the linker."
-+#endif
-+
- 	.file	"crtsavres.S"
- 
- #ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
- 
--#ifndef CONFIG_PPC64
--
- 	.section ".text"
- 
- /* Routines for saving integer registers, called by the compiler.  */
-@@ -312,236 +314,4 @@ _GLOBAL(_restvr_31)
- 
- #endif /* CONFIG_ALTIVEC */
- 
--#else /* CONFIG_PPC64 */
--
--	.section ".text.save.restore","ax",@progbits
--
--.globl	_savegpr0_14
--_savegpr0_14:
--	std	r14,-144(r1)
--.globl	_savegpr0_15
--_savegpr0_15:
--	std	r15,-136(r1)
--.globl	_savegpr0_16
--_savegpr0_16:
--	std	r16,-128(r1)
--.globl	_savegpr0_17
--_savegpr0_17:
--	std	r17,-120(r1)
--.globl	_savegpr0_18
--_savegpr0_18:
--	std	r18,-112(r1)
--.globl	_savegpr0_19
--_savegpr0_19:
--	std	r19,-104(r1)
--.globl	_savegpr0_20
--_savegpr0_20:
--	std	r20,-96(r1)
--.globl	_savegpr0_21
--_savegpr0_21:
--	std	r21,-88(r1)
--.globl	_savegpr0_22
--_savegpr0_22:
--	std	r22,-80(r1)
--.globl	_savegpr0_23
--_savegpr0_23:
--	std	r23,-72(r1)
--.globl	_savegpr0_24
--_savegpr0_24:
--	std	r24,-64(r1)
--.globl	_savegpr0_25
--_savegpr0_25:
--	std	r25,-56(r1)
--.globl	_savegpr0_26
--_savegpr0_26:
--	std	r26,-48(r1)
--.globl	_savegpr0_27
--_savegpr0_27:
--	std	r27,-40(r1)
--.globl	_savegpr0_28
--_savegpr0_28:
--	std	r28,-32(r1)
--.globl	_savegpr0_29
--_savegpr0_29:
--	std	r29,-24(r1)
--.globl	_savegpr0_30
--_savegpr0_30:
--	std	r30,-16(r1)
--.globl	_savegpr0_31
--_savegpr0_31:
--	std	r31,-8(r1)
--	std	r0,16(r1)
--	blr
--
--.globl	_restgpr0_14
--_restgpr0_14:
--	ld	r14,-144(r1)
--.globl	_restgpr0_15
--_restgpr0_15:
--	ld	r15,-136(r1)
--.globl	_restgpr0_16
--_restgpr0_16:
--	ld	r16,-128(r1)
--.globl	_restgpr0_17
--_restgpr0_17:
--	ld	r17,-120(r1)
--.globl	_restgpr0_18
--_restgpr0_18:
--	ld	r18,-112(r1)
--.globl	_restgpr0_19
--_restgpr0_19:
--	ld	r19,-104(r1)
--.globl	_restgpr0_20
--_restgpr0_20:
--	ld	r20,-96(r1)
--.globl	_restgpr0_21
--_restgpr0_21:
--	ld	r21,-88(r1)
--.globl	_restgpr0_22
--_restgpr0_22:
--	ld	r22,-80(r1)
--.globl	_restgpr0_23
--_restgpr0_23:
--	ld	r23,-72(r1)
--.globl	_restgpr0_24
--_restgpr0_24:
--	ld	r24,-64(r1)
--.globl	_restgpr0_25
--_restgpr0_25:
--	ld	r25,-56(r1)
--.globl	_restgpr0_26
--_restgpr0_26:
--	ld	r26,-48(r1)
--.globl	_restgpr0_27
--_restgpr0_27:
--	ld	r27,-40(r1)
--.globl	_restgpr0_28
--_restgpr0_28:
--	ld	r28,-32(r1)
--.globl	_restgpr0_29
--_restgpr0_29:
--	ld	r0,16(r1)
--	ld	r29,-24(r1)
--	mtlr	r0
--	ld	r30,-16(r1)
--	ld	r31,-8(r1)
--	blr
--
--.globl	_restgpr0_30
--_restgpr0_30:
--	ld	r30,-16(r1)
--.globl	_restgpr0_31
--_restgpr0_31:
--	ld	r0,16(r1)
--	ld	r31,-8(r1)
--	mtlr	r0
--	blr
--
--#ifdef CONFIG_ALTIVEC
--/* Called with r0 pointing just beyond the end of the vector save area.  */
--
--.globl	_savevr_20
--_savevr_20:
--	li	r12,-192
--	stvx	v20,r12,r0
--.globl	_savevr_21
--_savevr_21:
--	li	r12,-176
--	stvx	v21,r12,r0
--.globl	_savevr_22
--_savevr_22:
--	li	r12,-160
--	stvx	v22,r12,r0
--.globl	_savevr_23
--_savevr_23:
--	li	r12,-144
--	stvx	v23,r12,r0
--.globl	_savevr_24
--_savevr_24:
--	li	r12,-128
--	stvx	v24,r12,r0
--.globl	_savevr_25
--_savevr_25:
--	li	r12,-112
--	stvx	v25,r12,r0
--.globl	_savevr_26
--_savevr_26:
--	li	r12,-96
--	stvx	v26,r12,r0
--.globl	_savevr_27
--_savevr_27:
--	li	r12,-80
--	stvx	v27,r12,r0
--.globl	_savevr_28
--_savevr_28:
--	li	r12,-64
--	stvx	v28,r12,r0
--.globl	_savevr_29
--_savevr_29:
--	li	r12,-48
--	stvx	v29,r12,r0
--.globl	_savevr_30
--_savevr_30:
--	li	r12,-32
--	stvx	v30,r12,r0
--.globl	_savevr_31
--_savevr_31:
--	li	r12,-16
--	stvx	v31,r12,r0
--	blr
--
--.globl	_restvr_20
--_restvr_20:
--	li	r12,-192
--	lvx	v20,r12,r0
--.globl	_restvr_21
--_restvr_21:
--	li	r12,-176
--	lvx	v21,r12,r0
--.globl	_restvr_22
--_restvr_22:
--	li	r12,-160
--	lvx	v22,r12,r0
--.globl	_restvr_23
--_restvr_23:
--	li	r12,-144
--	lvx	v23,r12,r0
--.globl	_restvr_24
--_restvr_24:
--	li	r12,-128
--	lvx	v24,r12,r0
--.globl	_restvr_25
--_restvr_25:
--	li	r12,-112
--	lvx	v25,r12,r0
--.globl	_restvr_26
--_restvr_26:
--	li	r12,-96
--	lvx	v26,r12,r0
--.globl	_restvr_27
--_restvr_27:
--	li	r12,-80
--	lvx	v27,r12,r0
--.globl	_restvr_28
--_restvr_28:
--	li	r12,-64
--	lvx	v28,r12,r0
--.globl	_restvr_29
--_restvr_29:
--	li	r12,-48
--	lvx	v29,r12,r0
--.globl	_restvr_30
--_restvr_30:
--	li	r12,-32
--	lvx	v30,r12,r0
--.globl	_restvr_31
--_restvr_31:
--	li	r12,-16
--	lvx	v31,r12,r0
--	blr
--
--#endif /* CONFIG_ALTIVEC */
--
--#endif /* CONFIG_PPC64 */
--
- #endif
--- 
-2.9.3
+--FCuugMFkClbJLl1L
+Content-Type: application/gzip
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+H4sICLAuGFgAAy5jb25maWcAlDzbcts4su/zFarMedit2p3Y8iX2OeUHCAQljHgLAMp2XliK
+rSSutSWvJM8kf3+6QVICyIai5CUWunFr9B0N/v7b7wP2tl29zLdPD/Pn5x+Dr4vlYj3fLh4H
+X56eF/83iPJBlpuBiKT5A5CTp+Xb9/evq78X69eHwfkf13+c/Hv9cDaYLtbLxfOAr5Zfnr6+
+wQBPq+Vvv0MHnmexHFdFwS/PB0+bwXK1HWwW298ssFivHhabzWo92Ly9vq7WW2jdd6hGeT49
+09XZ8OaHN1J1dfH9uzuYDwzAzk8C7ed0uxienLiA3sJgVU3b5ffv+x+IEBelu2aWGDkTPDCa
+NlGVpqU/QtNIbD5NK51ILnRguAmbiaqArrosilwZt79OiyDdojxXI5EkxLCzSOd2Ic1vXpTV
+CEmURZJl3sJdtLPhSHrTM8UnVTG51xWLIlWZ6vIcMMgVWdQoZUHMBq8m3K6b3bwWpiyqQii7
+UKYEI6fIhIh2WCIdwa9YKm0qPimzKTFXpiqpPuqbi9Nh26QN41OjGBcOuRtY3Qw94oSNdR+e
+5HwaiaIPULdapNUdn4xh88A841xJM0n3CJY4E6YrmeTjYVW6RB+LTCgJbHAr5HhiiE5IVSBR
+xfOJUCIzVcr01DtEl6LteFyXKUETwVRyXxVKZsYdg2XQxchU5KW5Ob066a4umynmbEjzCVA/
+T6WpYgAA/+YwoFCd1afsvmFvELGI+xJTRqNxdXp5cXFCLd+M9H1GSSArQbXZ4fs0HJVjdyxR
+sEKh8NMsG4mYlYmpSpmysaCmsicgR0JlzMg8g11qLUeJ6Ip4xFWFKDMRllZASVOZh6ZpmApO
+W8Au4EDGgiXAcR2K7tDKQuUj4ei0YmwYLK1KxEwk+mbH8bDLln+lNjfv3j8/fX7/snp8e15s
+3v9PmeHpKZEIpsX7Px6sPXjX9gVZqG5zhYxi9f/YGptnXPzb6173j1Q+FVkFBAJ9tV+RzOCg
+RDaDlePkwCw3Z7tlcQW0BJZOCwn0fPduT62mrTJCUwoEaMKSmVAaDgT7Ec3AIybfr8Ny4BQO
+USTV+JN0Vkg2tmwxybVB6ty8+8dytVz8czeVvmUOur7XM1nwXgP+z03iHFCu5V2VfixFKejW
+XpeaSKlIc3VfMQO6y2H6eMKyyOfFUotEjmj9jGJDkNMSx7KWxcAVAN+1Bw4MAKb+8+bHZrt4
+2R94K2/IH3qS3/YlsYXU7OjwBLRHecpk5rfFueKgUcwElH8ks7FDzoIpbdVyfxZUWNWsWXOV
+J1EfhaPWhjVkRhPANEdJipgR7Y7N08tivaE2bSSfAo8L2JajpbO8mnxCnk3zzDNsn9BUyTyS
+lBKre8n6+Nw2h2vBGoBgartJpdv1ge17b+ab/wy2sNDBfPk42Gzn281g/vCweltun5ZfOyu2
+JpXzvMxMTdfdEmdSmQ74kBYbabC+KgdHRmMPWqcaME1gY43u+Y6KlwNNUTW7rwDmLgx+VuIO
+yEcxrO4g2xmxC7keHArWA9xRHxG9aCWExbQeQHAcXBKIiOhZlJZApUwi8LOyoaMN5LT+o99i
+iel6FzhCDFIjYzDB545CHKu8LDS5LrDDfGqNL/KKyRVlx1CLgRhxay72ygKsSEaPiuorAAIV
+o0KwQkYhUAb+SwBU+xKosu0+aZx7HaNpLJTgIKwRfUYiYfc06yZT6DyzFknRnTmv8gJETX4S
+qIxQeOG/lGWcomgXW8MfngXw1DjLwCbJLI9ce10jAVNxUVjnwjLfHj4qYs+XCclDCrZK4qk4
+Q4+FQR+x2mtzj477ZpfAuJoGQkwzhWZ9n3oc1LZVnS4EwkjnSQmiA5sAjXNg/GoEjog9SlRE
+jp3seKy1q9cSJ4lBvpVLPRwlLt29xzD/ndOnyD3KyHHGktixIFbvug3WitiGPWMV8QGa6QmY
+bocNpOOUsGgmtWg7+4IJh2ldkDgiBi24rD6WUk0dXoJpRkwpaZlgzzIYIkWCGqR2ymGaamca
+rZJu0gLFYv1ltX6ZLx8WA/HXYgn2hYGl4WhhwDp6iYL9IFQgmtawyhqY2oy1xEnKUe3sumtG
+548Z8CintB5I2IgiNIzlcTOgQWAiBLq8lQI/KU9DesVA6AYOAKvAeZSx5NbTp9WbymOZgJUM
+ETSvMTyXbFr76eSAf5ZpUcFSBS095YGudj4bY4PwAeuiBuVomkNrEzHsTeJRgMvv9ehEGMB9
+1pKBYQaT77m6diAJcpayAqlhOqBpNyapW5UwJMBOZ7XeJM8d0W69MwgmrIvUeIWd3kpAjA4n
+W4f0zV4qVsgOns1JFHLHaj0JwIGodmvp6sGjMu2SwS5+f4C9sB1QslRWmsUC3MwCkwMdnFsG
+h4GWtnZw25CGmEYLjnJRAW95MXav3bVmduV4SIKDWxBiC8IH7KwgzaNmFYXgKCCO2smjMgEP
+FVkGVTBq7S63gG8v7oBL0QJiTICrInIctruV09qS+ozeok1ob0Uz4Fh79pSpTsBnB3vAp7dM
+Rc5JQ7iAWl+XsLEs6rUzbqTv0iOZwEnfS1IcHxBOu+YZSordc88fHvN89u/P883icfCfWuu+
+rldfnp49D35HH8RuFJCoOrbbTtcKDbJ7mygiNSUDBzV2DBGcf4qW0RVPaz11ivOcdA7bnbhu
+qmM38F8ZZWkanDJDeLBzDSaJCXiNaNDEbsaBsGAX/Qe8kRZTjg+BUaJUR5E6kYJMYbHA8FE1
+RXeFCgMw4nT8+lHEPE+udUZHml6HAw8F83t/1oixkibs9fI0Aoslah2jekxYzNfbJ8z9D8yP
+14Vv2Jky0jqm4KqgG0yero4ggt6hOr5SLKlmXFL6EX2YXYYhH+iHbwtMR1nHopXpvA4Lsjx3
+M0pNawTmALfVh/D4o0vrNpfTdiC20KIEeuICDvRq5r159/Dlv/u0WWZprgswocjZYEG89EUD
+R6PWwA/ByL63CgPRQGcX6Pf2c4jMgLrllUpv3Z2j3/TJ5xUvk3kneSD8A6Dkxc8yoYgymR0A
+QzQPQT2JMAaFUYxZn4+f51v0WJ17KW9QPlHhi5S04Benw/AFFcKHBy6wipTxIJCLgDZqgT8j
+11Vw6o9DFoVP4urs0J3bpQ/sRAz1/diuBzCVTeqEHGPMO3CB/j2tWAv+4fz8alLwYXBBEwjG
+aC1m6TSkrnfSWSouTk/86wOWCl6OaHLeSkm2sxTMfU5qhylEMONSaMfVrW8VQLkxdJ78O42s
+G7VCWx7bhBF6uinEnLXaclItZIIwLaR3q4MD1RNPwA+QNL9hp+pWyECKw4JTPaacQSt5V8OL
+6+6kQVHEy4z6Wig8WXlWTYy9gzskXKcnl0Hw9YcTIGpYdosPXXCbJR3E68V/3xbLhx+DzcO8
+cas8Xw4U3Ueqp3x8Xgwe109/LdbQtBsPm7tDYHgSvg7FC0u9w8MYuEgCuSvD6PxlrJOqTOTp
+xYeLgELM4IhodtAyhfmqceHfOrmB/uoVjb9n9zHvnArq6nDyqepIG7QML07IyQF0dhIEwTjU
+Xf3k0w1Adr6qtegThWlsNxEkRFqgYfYFqW2f5QnEMUwFtEmNRblt4BanBgMRL6/UpJWcBIUS
+Nh7cuQAYukzAXIP3GR5WcyUL7269DhLyks6jN91SqSntgItoYtK9Ismx/GAikiKghvWtzE1C
+pU8ss4rMXh82l02T3BRJ2Q1ZMRK5ZejDWawOtDeCgr9mfjYE4gyaWbmC8M4SNrTAOGEGxm6m
+cfJ6dbvfUGG2FZdSpb0MBmbLfL/Ja2669rq1ERZeBYxLBwoxISr4eg3++TbtFYZcdlwqJCsS
+iI8LY+cGZaFv3Nw/5sN41/K2OlaOFetGqQfLNVruglDfzTXbLIDJMYr2TktTaqDl+xRj21Rm
+drKb85Pryx1B3EKNqUcVngiIJRhINq3uVJ4ZTDrRPJLShSGfijynnaxPo5LWt59sdJuTBQad
+6/hYKJA2cHJUyY29mLf3CJ7soXq3EExnTekUIZqr86lFc0LtOv5N2V31CRRarkCN3Jyedtwf
+TCzaoJzSBU2EB6zm3hzXrRCXgHpfPS9uttsf+uRf15eod19vHr89vA7Wq9X25v3j4q/3yy8b
+9wK+GdEujfIS72CXYLHUWBjtXd07tRK09qX4qcliOVGMZm3Wro0SR28bx1a1Z4iJHUB0T8Ky
+HnZuEi+GvA9DJD22eInIxoYoJWkW4btyMoukEsgFNoD1rHQyIuvFuJOPxNR9ffmt/UbiQgaa
+BXIgiCRNSuiWatqftfNgujMIVXVxSauy8fItiKtNSWchECjzQCQHsEKFl1cwLWnJbCwPYvXD
+PGj7ttpsB8DV2/Xq+Xmxbhw1P3XBOQv4wGjBFDBWJOkNH4KBx2GjIN7UjfSWxx7/wiuTR2yx
+9TF7d7BJodhbw04my+JFiy/zt2fbgHf4mwFEs4N5O96DW6bZCsJgvl4M3jaLx71EJPktWht7
+G3nyHfwv+2/Haaig8jjWwgD0oQNtamFgh4oCo1mRwKQ7hJMOgrEXjvXMu86+P9y/iNkJpFtR
+ISBkyMaqvpqw1MkW279X6/8AYfpaAMzjVHjauG6pIskoNVxm8s67bYPfIdy7WHnWC3/bewGS
+PyxUl6MKozxO+58Wp7bbtAWsB0E20yaUaEEKTcU9sWDpUVIW9e0wZ9o3V8WeIRV4oIKKCAGp
+yApvMPhdRRPeb0Q3p+jMgO2KBdIu9owLeQg4Rj9bpOXdAZzKlFkWuD3DzdvNBS7+MjCr+VQG
+7tfq8WeG1mAILaOD0yNKnNNBHZ5SxQKXGQgTmqaMrJeF5jIMtxx0iDCI1If3hkjRDQZLn2m/
+2rWLYUcKgkdCdPuisHWaDC/aZn+dSOWucPoYCAVGAfcsp0UOx4Y/x4fy2DscXo7cG67W123h
+4E+9fX56eOePnkYXoUsF4CE6uQFLx8pK9H5SFrjtxu0VBmZOmNYyprfXDgQK2pYsgO5IC9oD
+BdT+VeGuse8y9DBaCrZ6ma/ABIFy/vL0vAVT3H1N0Ou/V+vE9PAXJhrDtWV9VFs1eSRukpN7
+w8KRLLNu+82L099pr7oHROFgMVfs78wF9yskaLymBPs4RHvUQVRjr+jzKuKciqldFDgV2DwB
+0Bz0+gs9LogmBK6kf+0ulKVg9Zk//A4Y2+EpyORseBYAScUDkJHKWWStHQ0HXhjJHMvegmet
+MzID4Z910afKfgBGJpJ9HBnatokpgjc8fOCoWy7/Cf/YEnEqTbWXl7saBxZhRfxuO//8vNiA
+C/ry+WkJvmhTOu56t27nnrDQWLjjLqY333a+/rrYhqepw8+6/rHz0uFwh5/o0n4HYqWHO/xM
+e+1RI02LJoE6STy2oDB+aZWYsrAVbkf36CjQg7i/tJQs/pWhs/gYre/g51ayjsZHz7zz8uAg
+PmAfjwua8+541guXI5PYvEgDZQsBdAhGwW2S/euTVghf5tuHbwdl3eDDgShS5r44YqU1/qiI
+j0XlSalD14oUep6mnbqXw+hZNro34RCA6hCu1wt1wJcvv9LhOOHZ4x/J302Hgo5JCNSu43AQ
+V8zC1dsUvj5+bMHpbCKFGgicCFQsJ/ulozlwtUJhH80jB+I5EhsisvHRspYMzdFD16nQo7G7
+tAujpowHjVeLcTzL25QGhqTHdsjiI0KKHXZ+mx1/yv1MzwHcqUEt+RNKfCxzE3r+2kM+2lY1
+6IIlR3hKLTL/BVWKgcLRuPgi60jWsSn8n5Bsly07egFg9LIjPI4a+1i72mCDT3UsbnlGF8TI
+At/7hkCzfvZYFv97RBgeYzpDMZuUOA/FVjXIjRmisrDNoZgCHy4F83w1uNt9D1XiT7xPIabN
+mAn1AyIAgix2kYpLHoA0bkkgweaghCyLi6OK+th+imgMmU+zGE3a5cVvbT1OS4P+Nhqwvs/C
+bmONCbQKTg3h9zgRwdEbD0tScYiHCLQKrB823oUodtttAhbZnVcXQJMHAPTqg44JCk5IEalA
+rRzYElpxMEPryqBJHSkZke/I69cANt7zLitnCcuqq5Ph6UdyvAhIHlADSRKopZMFnS9nhiW0
+hb0bXhBLTlgxcqleTPLQWqQQAjdxEdAQyMJYyUPvkVMFKVGm8Tljjg+6vdJpOBNmC5LJwfJC
+ZDN9K0EaSfistjxBXW4zKMFsc1okgXJ/HfQXqno14B0HMZIz/J5DnX8NY2U8cNerbdWI9b3t
+MybarFbqDos77iv/0dvoo3fnjK/Z/vSdOvf6bbBdbLadOjqbop6asaAV6YSlioXuUzkLaF8V
+0R7QKPDpEdA3dyokxXE15YHHXwYcopQojW/gtxK/i+Cnq3k8Rl4/paVSjnrAmlhtr+Vi8bgZ
+bFeDz4vBYolB9qO96QUP2SLsrXXbgt6NjVVsjUh9v7qf8VZCK63u4qkMVB7jmV0HKmyYpGNz
+Lgp0+elCgCymaZ/cHriGivDDLcFCIKstxayb9dwR594+OmowOoVavOHj9pYiWvz19LAYRLtC
+gf23LJ4emuZB3r1XLuuHi3XUt5/BawbeMZObd+83n5+W77+ttq/Pb1+duyFYnkmLmMq3wqlm
+EUvyzHviWo8dS5XeMlU/w3MeJsW39pGNu5odqsyaC3yneNGW6bQYXp3ObqT6kVuzmZglyaiT
+SmilKEnyW/vkhCo9rD9ZEik5C7hJDYKYqUCupUbAL340w1R17SAtt/e6mkAkpWZS5/SEuw88
+FCVOG/j6kouFJTD2laK3MfzyzoRh+deojGPiAQ0WJj1a/vKyZOhQ997d7S2Joe4gI+NcPObe
+k6E8xjIFE/giCkCx5BG/YuAO0HzqhwRhys57+rlv80uWoN17QAK/vRID+N3Ft2VBnT4wMBwX
+kLFTJAkgOGXVebffMp39hBB+FGn3ESHQ1d1PZDVNRP/mlRT19iorkwR/0GamQYppl6UFY4WW
+1rAl8CDPhne0GrZvsIqPFZdA2ZBZawaMGL++pEumW5SyU5ndQ+Agpv0vXXSQEu9Rldtq6znt
+Q9CbK2JwdV+YPOm8iOrvQ40OUy77CVzfXR1YvfchKqexWfeQAlm7eXV6PXRENFJ5ir4Lj2b0
+cvBROHJnJQJZsXaGyeHt/IwcSh9gHkuvmZ9TsJomfdo8UKpHiwy0osavPZ0ls5NhYG/RxfDi
+roqK0LexyjS9RzEmocWEZSb0pH6MVYGcDgaMjFNrQmjHj+vrs6E+P6HdK5HxJNelwg/GqZ5O
+3/ucBX5mjd51EelrcKtYwJOXOhlen5ycHQAOaQFtqW4A6SLwJKLFGU1OP3w4jGIXen1Cs8Uk
+5ZdnF3T8F+nTyysaVOpRE45UsWbX51eBJYRe9PBhV89athMCzGZKPbyrISBGQyqJ00ATMWb8
+3g01GwA4tpdXgVcvDcr1Gb+jq2v46MPpSY/R6g88Lb7PNwO53GzXby/20xabb/M1+OHb9Xy5
+wT0Mnp+Wi8EjyNfTK/4Zkq5KDnlveIYpuPnAvlL88rR++RurNB9Xfy+fV/P28tyrDMXMB0N/
+sOgXlMrldvE8SCW3fkbkPUnSHFz1fvMMlHO/dT/QBMtnQ0A+Xz9S0wTxV6+7L4Lq7Xy7GKTz
+5fzrAuk6+AfPdfrPrtuN69sNtz9QPgnEiHdJr/DdA7K4bF3GvAh+/UJG/qO7qM8XGiPsWp/2
+v26KQKxncwdRTEb4UTZF6xIdjNhxrCjwlMECD5V7sP9n7EmW29aV3b+vUL1VTtXLiTWaWmQB
+DpIQcTJBSpQ3LMdWElXioWS77s3fv26AlAASTXmRcyx0YyTQaPRIaAciO51fFKJljK8+YRAE
+g+F4Phl8WhyO+y38+8d2hOH1EOAz2N52DaziRNilk/CI5XBRoGOP/ESE5UnNoWuBJbjGUsbS
+CMP0wnKT2KdE+PLqspONm4KFnPJtlnaIAeXOyDyU1tnFSiUFgVqC8HeC3uAvkRD+gwBGUQ05
+UATiKyPP4A+r9AKe3jpVhZ/VRi6ljClIdLuhWJ04pIKnAZfekgyqDYSShDNJfTCpgH8A8nv4
+/o5xi8V/Dm/3vwbseP/r8La/f3s/7jX05tPlK3zeGpw/zgYezH6SVWOPsitvMJjP0jwwfGrr
+ImnRvuD2yGlaA8vA3INBPhwPywuVgLqb7lnMC2JOiKrUVZBb3Xz0RiN2qwdVMEAGiYKfznA4
+JBnYFD+dqYSytJmZq5Z5VdDyeLdUwu+VGKIzlod2xgQAdoYPAYR7LUCoRaQNxpuxFVmSUYJS
+j/mB8o3TT7FNSK21qOwOE+Np607sLLDrRSh3INw+49K+Rh61aXK+TGI7w4qN2RdDhb0idehQ
+kVDPahPGhTLmG1NLWtfx2IYXkXXbeqsgFDI62nnCqqjK7VvjBLZP/QS2f4MzeLO4MGguPGNc
+5On1Y0qn3bTlm+RH3jdFaNW86bVqCee5o3BEBEcrYp+IV6i1F0RFGBgeMG4wujj24NZbcUPo
+p0qqOBWopAPqiJZXVXtnW1oqmaHTESNCPbAprco0ramVMaBVOrQ6lWsVMF6OLiFtubMHbbd0
+E0I8Wpd2oTiUb+yydF5SVQBAdDK5urAWGLyhND7rt+hClYhlm8D0Oow2s8m4LMkLI9pElDYn
+Qu6CVS4hFVgTNktivbtw/0QwRhYnxtyisJxUhM5JwkgZA0CnvVCx7YAtY+JeFhgrtxaOMx1C
+A0QkTHHrOJOy7dVoaXmXGa6l+Ht4RSzeImBhfIEFiRkwFJHRZl1kvyeFM3ZGF84R/JklcRIF
+VmrujOdXJqEbrS9PPN5wnxvqcRUTurUVuxWTNTfZspXVrVtyzcozMIiXrSgsK+CpgJxZV2QX
+oPJjwW0SVW0YN2GyNGO23IQMzpL9Br4JyRv9JqTN+8ogrsh6Vs8mfYTw+kHZsDFGKPgAO4eW
+Y3lgXEMOPB8JMwwE5QnhYOsMZ/NLncWBYMK6tzLfWOJsdjW5sFcz1Pln1sYEi+DONJzOBJLg
+Nvmz1AyCG3uTPGQGvy+8+ehqPLzQHDc4Zfg5Jy4iAA3nBGhx4SOKSBiLF6TcG1L9AO58OCTY
+RwROLhEJkSOVNJgnKIKt9oHlLcxY6ixNdxFsQYrtWRJaEQ99PWKC0HFbGGJ9ELs4SYFTNiZQ
+l1X+Vk6jukkImUbTSh6sitwgUKrkQi2zBq+8FO4lRrza85b8odvexqSs8LPKVq14eAYUGIPE
+awUW7Da75betN7kqqbZTamOdEMaXmLUSY+0at74qkeSq7XnWxglDWGcqLtvC9+17AhjalIhZ
+sNpR1g9pSsQsDy2eFSh+/fx6eNgPCuE2EjeJtd8/1MYgCGlMbtjD3QvadFpkc9vWV1fSeGlU
+Mtge0C7kU9dv/h80Pnnd7wdvvxosSwCFLSXpikoUGNhZVOETZvqbqDNM/vTy/kZKW3mcFqbD
+OhZUiwWqj0MqNqdCQsEYZUilMFRCiXVEBJlRSBHLM162keTYi9f98Q8mXjhgMOwfd0r/ZtZO
+MEKoqXo2IVUqWGHj3FpoAvhMuPPLr8Or0aQfZ/f1eua0+/uW7PpXI9hcgrecgrXv1zGsadVd
+Bzs3oSJxaJPogcP40bLb/uBVKNKqlDBNVAhJ4a3UIvWNpBVq68xjRLz7nlCH+e74IPU7/Esy
+wC3cUsRmdLof06xBouqbBcMYWrVt3q+74909UoSz6re5BXItINdGs9HwlJxZ+fKHMjqP0DEb
+BM2MaquVnU9/rgEwQllbBF/jYUSNuVOl+U7rRun5yMJGeT+dmQvIwjrsSuxTGylObhPqMVMt
+hZ0zqFOAUVoWI9wiuoh5K+sVC2fHCD0Gv9eqQOmU9sfD3Z+uNLuemTTQ8XRRbg2At/yVtVBL
+gdGEkjHYEw1zgcIOmy2XjtT58jrQMOzRAXFWFSzLBRAlGzjDOOJRUONMbChBmcMlH/j29iMW
+o6Vqpqfs0eHSJKu2MbLOHR6N0quAMF8wBitsYktjIUVI9rO93H4+chyCjdannJQ940CrKji4
+mJDkFBLn+ekz1gRsucckH2HhEuoW8FsQ3vo1hpk/Qyu0kYIa/I04XTVYeF5cEsxRgzGccXFN
+PJJrpFov8i1nS5zGB1AvodVMYiouYgKx7gNnqV1cX4NlXLD0Uh/wKygxGYDPl9xLQsJqcLVR
+OfPsd1ga8UolBLPG+t/WwZeMZ1VTqFKd8IQyLqOjvGbj+cwuYocnW8g9wkYoY9s+c9Hcg3/W
+WHFAX9v2f/Atw10rSpriUUaehbU0cjONMDUo3CtmRHwsVnlIWmVAdtpMHRRHdj4OILVdbZ2N
+7jSoE9uAdhrnEdYRzgYiwvIPhDnDLhjGhh3brWRO8BnBsTfwsgce+ddTu41NDUYFIwnnDmHL
+JYGC8NNAYMp5ad9ZCI2lbJBwgQG44GI6ndPLAvDZ2P5ArcHzmZ0mIRgeyH2wNOvG25WbUaY+
+G3xHk2H1NQefHuEz//k72D9+3z/g++9LjfUZyPv9r8PLP+0P7geYqUjafDdXAjkWHdcqfpXb
+10wfikUJkn3ikYWfxmOX+05L1u60tcRRTphGIFhR6O7z9r/A+j7BdQc4X9RBuatfyMQBqc2D
+qxAZbrK7nCUCnjrdh2oC7+Sj1pv28do9kXESJTBkhDW7+lBo/k7bRZ5QMLfsBRQqYKQgJBsi
+JZjnlbAEYEyFPcR+l/xiWZ2c+vnYpXN5Orj/83z/29pcnlbDqeOo5I2UjKMWyeBLPKZiYGnC
+jruHB5npAjaP7Pj1X71LDJJNCXi2dhKWJlsk7hv7ciso2r3bd52CY5hZIu79akumK1wFWUQI
+Q7foiupbQ10J4eoJbNUD5fnpcP86EIc/B7hrBu7d/e+XP3ctk0dhs35wvYh1mnOPz3cP98+P
+g9eX/f3hx+F+wCKX6Y25rRi+ypT5/c/b4cf7070Mb1lLhSynLFr4Paq7BSa0yp35ZEpYyCGC
+GF8T11UDHhFJCjBTBvPT6ZSwAJb18ygAri8MSorzOWOtQs8nwvgDDqzTdH5F8MWykTIdXZVt
+E1RzuD6bX43pJhA8HZFNnFDs12gDntnX6wS28xY1eEiYSiM4KHcxUOUwZYTAD5Eib4g6tt5J
+rPhsMhrKJbGftNyT8Wg9+1BDmZTEzqkgjOJisOtvLL7FLLOk0hxw1kGUhkTGBgA7Tho5hDD9
+DKe/kYTPCFNyuYSsHE6m19d9CNfXs55trxAcO5t4RpjTW0EiOJNeBGd+1TtGZz6iV0HC5xfq
+zx0ans/GfdWDeDEauhG9CbMgtwfeQWDqLaZwUujpZ743HhHaOAnPRce2oIUwvepr35vmU6cH
+vnau6MXJ4mk+G9JwEXj9dFvwyfWsvIATTYm3hISudw7sYpoWoc7S/lB1y+lV11fArJxHRHgr
+Cd0Jj7iqEZxzeCaNx9OyyoXHemh+mI7nPUcgTJ1rh17klIURkaolT8VseDW1bx8ETq+u6b2l
+EHpOt0IgtNInhNGQPj6wRDi7nruqboKevkRwiEfbCWE+7L/vAAlo7di+z/JtOLka92wVQEB7
+hP69tA2Ho+txP04Yjac9pzX3xlNn3jPVqOe62ZROz43OMn6bxKx3kbaRM+m5kAA8HvbfyIgy
+vbqEMp/bBQBZsCzg+Uk51wY+Z03+hg6ruTzevfxCltfy7GBLmynmZslgVVxNYaIKpD/+EtN1
+DDWdhZ9135DMSwef2PvD4XngPaeNw8w/nTg9EnlxvHvcwzPzxw94d/pd974FkRGQeWv5xK2A
+rbTN/oQJw+/kRaiD+cpMEej4BG+AvzUDblsoXAGv67zQLIF0HfTamgWjGP4fFlEsvjpXdniW
+bMXX0VR7hSRF7HfGvOK+bYAr3kWVkjc7upTVcZv1FPrMJSsPyBPPcxhWEMPm0vQ10qdOLbZZ
+eEqXs/IMi/zCfEwphTKU2ZwksDz99ff1cA9v1vDur13Igb3Bu9f6reMklfDSC7hdyYvQJfOX
+xCsVwUWYclKqUGzt+zGiWKEgovW5cbCtwoCI06MS/HKXh1S+Sw7/jbnLYtuXDHzmNQkPhZcV
+2oGWoPNXPLWH5XYCBA8GGUfWCvUjZgk5oNxeIuYWC1vWLbGLPYwSRbg7FKXPRUqlty8oC2pM
+62PxvFKOeIcjjMK2o7AaT0h2sgZHkSWtWHS4Pz6/Pv94G6z+vuyPnzeDn+/71zerYipny5b+
+2FSqi5fDk5QQtY6FJwvF8/vRLiVQz+uUCOwoVIi2DF5lFxCivCCUOw1GHtlZ+qDWqMAcCY6c
+8dBNCAGzzONF3V/Z/vH5bY9el7api1zma4b+M4xH3q398vj6s72eAhA/CSWbTp4GHkqdzwKc
+lvvmScIjnj3rCIq45LQPMfRVEWuSRqjdaefkO69pmZNMtkw4Zl9MKpVLbidbmyggSV26tWmk
+eHZTe0Y02y+LqiUmWgT2IM6+aqmceCpjlBPNS1Eh4dJ3vv2j7kdF4i/evyu9gSHTrMObULcD
+SktRTD9y4gilvYQkSceC+8B+JlwvqtbIOCIG3SMKPT3C8Cryuldjuj9iWlfMgjN4fH46vD1b
+GZKMevisgGkIMjcJuyeJPT0cnw8PBuWI/Swh0hJhDAYqjBShBUFnk8o0dVUsHvqGG8wffL+u
+660tz+3iAAya+tKaOclCINXQE9bBaRlBseFWr4qqEl2WqSM2rqzRigAy6TaHRSgC5iVcznZx
+dIMlAq8g81RLpCCW0UWozGESh0pQ8c31R/rY8DeJDKOJXBl4Sq+SBVwEGcCIlO7fOqAaUEqA
+3hSW0FFcy4trhhgE746gLcvsS4RAOuvXciFG1OTcvGfmMQ97qi5GdE0cD7PpxvUl0Pcs3nhm
+Do2mTCVVJzz8kW2qEM5jLa+MTDuRYybKFlwfn33XneBxkvOFZlXntwu4KpBhtIymmQJY14Xe
+HBLi5fZ9gWYECzEhVxsDohGwOsZSC6yozV07wvtCdMKyKbD/OUuiLxgtB8lQhwpxkcxnsyt1
+Gppjk4RcDxd1C0gLzaqr8BcGPv6Ow1PeLz8RXxYs/xLn9i4BZlRX6ej1kk0bBX+fUr4Dq4RJ
+0b5Oxtc2OE/Q5APTpf3v4fXZcabzz0M9ipqGWuQLu2wqzjsHRN1sr/v3h+fBD9u0kHer9GWS
+BWvTQkuWoegxD1uFMs9blMQcdr8RKQuBwKyEfhbY9jsGkNN7hcb1nzKUneGWgAUXiJnCoe+c
+VQFPz9CVY7YiqP9R1BeNduX5Vh7NxvASGSidJk/M74EtaFggSQYFXdEVAZSGBQl2e8bq9gyH
+BoXJkoB4wKATIHFTMLEigJuS7i3imEmPokBRz7qkNOwmLie90BkNzfo6TTFpPRlfcENVK6id
+2JggmJuxASomwfi9GbV+j9u/zetRlk0Mv0pkrKhcuQq9sjmeZZiNPm4nqxIyomZtke3H1jnW
+SHWqSD82p+TrMcWFr2ak9+DXk6IGDHBbpKiltNVO0UJRMxjGC739Uy2QNlrorCufQ4CKkafR
+uiLOUq/9u1qa0V/rUprLkmFSrfvD4yaXiL9l5HrigCJ4G7A1PDtl+Fcaq0gxdywN7xBfHSin
+YsRdOJUSgSgk/APdioh4KsZeSp0uuJAZTZKpkxfq2zAUzZ1sXNoauLn1K7j1jZjzOux6bNdW
+mUhEeDIDySFMHFpIxFqZSB/q7gMDd4gwky0kuxqshfSRgRNGIC0kIn64ifSRJZgRKRdNpPll
+pPn4Ay3Np1ZHRrOdEbnT5pMPDMS5phcHWGrc5RXBf+rNDEcf2YyARX95JjxudV7VRjJsT7YB
+0HulwaA3SoNxeSHoLdJg0F+1waAPUYNBf7XTMlyezPDybIb0dNYJdyoimFkDJrI9hRi1xUMW
+iXD1bDC8ICQzq5xQ4jwoMkLS2iBlCcv5pc52GQ/DC90tWXARJQsCQsVUY3CYV0tR1MWJCyo7
+lL58lyaVF9maC6vHO2Dgw1E/Li6PWbbD3Onwcuy8GsPD9+Pd8e/g+Pz+dnjSvf9cnmP4cHit
+mp7zm0DpIs9wG4dVS4pFnsHtvKsWGF2zlmlYUMIgJqDovl3kXL+RT1JomS3ekFI2IK45X3gZ
+bAOP51oKTygazoyfVT688vnCrMXzojJrjUcGZ4MFlQjCBRFHu0aAzRW4O8dSVUGIkFIKhWVb
+KrO3wnCJLQXQa8uYQu7KekYCLSixE3tW+DxX31s5sDRLbH8fSeef/jW5hQGgYjVUaZj0UmCz
+zNLytg5xZfyuSmfWKZOKgLSLy9ls0ilkWWQry1dF5HYA6N3dbdf1vhk+Q6qUmHMelLkIcBU1
+4ceprFpHWvJWJkTicaBs8pxlTJMNovZf+lS1i6Q/gnEQsNyPmCZovNFffjKCe/fYKG32zHgT
+eknmE5/b94kcRtlN1Y41ed59C1+P9s7RkHHJgQjsjHcRuhGElMYV9T6JrfmTkYTAkGyM6+8x
+OCdqiSTdW++PT/s/g193979VAhJZ+nI8PL39lh4AD4/71582xbokpOtOWq4aGgVCIMsTJssQ
+qGN4ejtMGpuYx5fDn/3nt8PjfnD/a3//+1V2d6/Kj7YelRsGupRZOgxi9FaXQnzNl1cTgit4
+VIg6t+0ZtMhYpGqqYADnBcYcnrATo0rsIkq5yHzZMCM8NosYgwlgA25CBMeWvCGdHU9N2/pC
+WwWYa0KcJtSqIwIPJfAozJOZtCwttFHUAiZxuOs2J13D6rcz6vlTW5yXiKGOVuyEnqhAKzwJ
+dtUH+Xr13+H/GL2csm0ou4f94zNcy/7++/vPn60UOXLdpMNzOxRva+CIiIk2CD0sNpMmwBbG
+ZORb2UziYjoxQrgXFm6DZh+KxOjIJXR2op6/DMXBLJ+zgfQMEdr31sBCUEJfhbWxe4AiSKn8
+4ZDxXKeip9HJDlDrsQiTrWXH6eC+ca5aLuRKK4FfeRA+3/9+f1HkYHX39NOgASiNwoRM0g89
+sUlfahf1VRHD5cKEds6bnXcCNUm9v460zD9ukuRw1bFIw0tZKzbYJdxqw8LCTCh0Y3Uh0nYh
+VoOTmNh1cQb81HyztzANWFfkpIrbBNME05IyVVvtqCD2FZHp+aa4mOsgSKlD1FjutPpT7Dda
+Hp0O+eDTa22i9Pp/g8f3t/1/9/DH/u3+33///ad7I+ClXwAf0ZsCR8C42k5vLZTLjWy3CgkO
+c7LFFEU9uFKv2kN1MjgmjfKUUDJgQvuc2S//2m2xtrsLYd0vjAW6qVjKTzwppdmATuFg5ZgN
+os3GaRcjbAo6iXZNrhS9JEkN/NugCYn5sKoHzImea4LOL2GIPkIuVcg8IOLL1z6jWeDD85u3
+Mlooay+vIG4k+VERbF01GR8JwXjdxFTqy4urLxsAEtuP8aFm6G+I0OCmz/ChPhI3NV+QdTiC
+FqayNID7Wqbvsr/s6w9TBVkmo8p+U+yJFblWJffi4Dsq9nZ5YjNAl9faoogVBySXImtdeifo
+MmPpyo7j72KGh3Ahoe0GVDycSEbhwdS/8IxooaCqmWFYNcSUG0PXDWcY6X/Z1bWcejuvhzkT
+6kkiksWiD0WR/R6E1RZWtQ+hZrWb61ZhErYVdbggtQSErZmsX4mYpWKV2OiJCw9uzAOdJdIi
+JU7MGKRNOYthf8kIP6oCQepP6JjJqg9RXY09C9GkGcKA2ORBk7nRKpmgjtDiAqWD+ny5pFbx
+vHMqF7b7qp30WxGt9yf52Mq7uSZlejgkqJUgI5c3BF/eHz1ExcWUaDRckj3gXqp+NCBvmDuO
+hDcvdKuExZzXKigxrR6NoJJW1zFFiAVGvDUg5oRtsUToihZNuHp50/CiIEwkJTRDZaUMydYz
+V0qfifn28PKnqbnaA2siqJccHmY09JLUbnulZpj2TL9JmNjTgx9QlvjwLun/zDJXuYeR8YjD
+yqI0tCYrPIty10vf1QkH/u6TrhSuYDG0DI8lfisJhl5bom0ZHOsaMU5kejy7mAAx+vpSAdEq
+LlTKSCPCF2xgLz+HTDsftsSE2Y8a6t25UNITee/aXh+ApIC6SRQSHEUE/SDNV19nmuwElV6Y
+xdNbyeur75jCJQCboyzSfrRI8PoI9eOVVHgH1+dVTxJjfMyVUh5JrpNK/Ng5RHVIuvv34+Ht
+rya5arZRYMa6RTIDxBaj+gMIic//N3a0u4nDsFfpIxxsu9t+hjZQ7mjp+jEO/kwcqwbSQVHL
+dLq3vzgfpSR2dhISku00juu4TuLYRACSiqHkEa3VAvEaxVCfOVfpB3Hd10HCwgzwQgbES63w
+0nqR+GYUzCOZySkVLIO1AGOhlkCsXNpuk9Zsi/z2jMVCoksJ5WRch8hCd8VvsFCr1einLLlo
+tpnC9u/50gS7pq2Dpg329e+zrKN1QwxJYoQRHR6ODMBjF85ZNDw26YEuqfAUwnkWD31LG+M2
+AmuPAl3SPJ05nAgYSthv1Tqsk5z8yDLrREg9rMCjcTU6ImJvFJaHEbZhqbGqMoYrLg3HuKnw
+YtS3DXtTKJfIyFNm09H4MamwXXdNATbekR0AXblBYNtzxSuOdCT/cH/AsPw5CavKWJgRH4lt
+R9Udjo/Lvhb+4m4LhaT4aQfzA+5T/Dlc9gHrumZ3kKhoe9kOXUnDPFEZ3AjRjw5jJn7jL9ly
+sR7dESk4NG3Bn29vYNpaBMcf8xfxQtQ1K3nH7di8DY94TbeTEHsPRIBtj0aD0kzvk9vjRQld
+5Cu6SQZcuG1+UuFsegLy9SpHUirH225PjTZhoaOmsQI6vQumfN2/WAnBdSmyd7HUcPtFTl2v
+CFowAt0fTjv6RAfyaakimmRNpujekUYSPSCdCSg4A55HzYXS8QX8I8PMk0hYEB+zQEHEkV0p
+xkTywCvFHVpHwEybmI0Q5gDsH5ygEF3jTR9GRGhjT0EUldKWaJaPnrxPWGVWF8r0HM77myzA
+/acWM+AsrSZzz5wVfomrCRNZqER8bimEiXtF1JpBnR0isWFPU5ReKwcEX2meI3SkU/nvNRsx
+2zDvB6Rgi4IRGYosa+230mgNlR6bZ8IbRoRXcix5r0Gulug70fDrK+lPnNu661RKCFt+JuLC
+sdUbonyqQj/ee/V1saFiWgw6Ru4Sb09vzTFIP46/6jaYqUx/imtXlwuoYJGj2cLN2PIJLJ/T
+ypGTxEiL7+qOwjE0umpA4jzz+7wsec7hrm22RuQpNxFgJ+Izi90TFtrr/C/inDhLsenAC6dH
+Fq8wiUA98vk0ff32RCT8YcU6STgsreS6rFxnyF2vur3A9W/hPHWyJkV3eD9tZWlOGQVh7cxB
+SgBZWpXZW9z/AHnWeXaxzAAA
+
+--FCuugMFkClbJLl1L--
