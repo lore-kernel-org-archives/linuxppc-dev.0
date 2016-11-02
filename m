@@ -1,49 +1,54 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t82281HXrzDvNs
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 19:53:36 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA28mXna075760
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 04:53:34 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26f8n55rgr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t82Qp58bLzDvHZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 20:11:30 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA29AAVY064298
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 05:11:27 -0400
+Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26fbm76hku-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 04:53:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 05:11:27 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Wed, 2 Nov 2016 18:53:31 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 90AF82CE805C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 19:53:26 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uA28rQwb56688690
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 19:53:26 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uA28rPBe005910
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 19:53:26 +1100
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, paulus@samba.org, lsorense@csclub.uwaterloo.ca,
- oohall@gmail.com, naveen.n.rao@linux.vnet.ibm.com, ast@kernel.org,
- chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, anton@samba.org, paul.gortmaker@windriver.com,
- bauerman@linux.vnet.ibm.com, viro@zeniv.linux.org.uk,
- christophe.leroy@c-s.fr, duwe@lst.de, oss@buserror.net,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: [PATCH 3/3] powerpc: emulate_step test for load/store instructions
-Date: Wed,  2 Nov 2016 14:23:03 +0530
-In-Reply-To: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Message-Id: <1478076783-2872-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Wed, 2 Nov 2016 09:11:25 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5B7211B08072
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 09:13:33 +0000 (GMT)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uA29BN0A41222354
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 09:11:23 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uA29BM1L030505
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 03:11:23 -0600
+Subject: Re: [PATCH 3/4] cputime/powerpc/s390: make scaled cputime arch
+ specific
+To: Stanislaw Gruszka <sgruszka@redhat.com>, linux-kernel@vger.kernel.org
+References: <1477917389-11341-1-git-send-email-sgruszka@redhat.com>
+ <1477917389-11341-4-git-send-email-sgruszka@redhat.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Date: Wed, 2 Nov 2016 10:11:22 +0100
+MIME-Version: 1.0
+In-Reply-To: <1477917389-11341-4-git-send-email-sgruszka@redhat.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <9ad862f2-5665-08d6-4e5d-793637efcb66@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,522 +58,385 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add new selftest that test emulate_step for Normal, Floating Point,
-Vector and Vector Scalar - load/store instructions. Test should run
-at boot time if CONFIG_KPROBES_SANITY_TEST and CONFIG_PPC64 is set.
+On 10/31/2016 01:36 PM, Stanislaw Gruszka wrote:
+> Only s390 and powerpc have hardware facilities allowing to measure
+> cputimes scaled by frequency. On all other architectures
+> utimescaled/stimescaled are equal to utime/stime (however they are
+> accounted separately).
+> 
+> Patch remove {u,s}timescaled accounting on all architectures except
+> powerpc and s390, where those values are explicitly accounted on proper
+> places.
 
-Sample log:
+If we remove it everywhere else (and assuming that there are no users then)
+I aks myself if we should remove this as well from s390.
 
-  [    0.762063] emulate_step smoke test: start.
-  [    0.762219] emulate_step smoke test: ld             : PASS
-  [    0.762434] emulate_step smoke test: lwz            : PASS
-  [    0.762653] emulate_step smoke test: lwzx           : PASS
-  [    0.762867] emulate_step smoke test: std            : PASS
-  [    0.763082] emulate_step smoke test: ldarx / stdcx. : PASS
-  [    0.763302] emulate_step smoke test: lfsx           : PASS
-  [    0.763514] emulate_step smoke test: stfsx          : PASS
-  [    0.763727] emulate_step smoke test: lfdx           : PASS
-  [    0.763942] emulate_step smoke test: stfdx          : PASS
-  [    0.764134] emulate_step smoke test: lvx            : PASS
-  [    0.764349] emulate_step smoke test: stvx           : PASS
-  [    0.764575] emulate_step smoke test: lxvd2x         : PASS
-  [    0.764788] emulate_step smoke test: stxvd2x        : PASS
-  [    0.764997] emulate_step smoke test: complete.
+We already had to optimize this because the initial code caused some
+regressions (commit f341b8dff9 s390/vtime: limit MT scaling value updates).
+The code still adds a multiply and a divide to do_account_vtime (and 2
+multiplies and 2 divides into vtime_account_irq_enter) which is still
+noticeable in perf annotate for switch intense workload.
 
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/sstep.h     |   8 +
- arch/powerpc/kernel/kprobes.c        |   2 +
- arch/powerpc/lib/Makefile            |   4 +
- arch/powerpc/lib/test_emulate_step.c | 439 +++++++++++++++++++++++++++++++++++
- 4 files changed, 453 insertions(+)
- create mode 100644 arch/powerpc/lib/test_emulate_step.c
+Martin are you aware of any user of that values?
 
-diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
-index d3a42cc..d6d3630 100644
---- a/arch/powerpc/include/asm/sstep.h
-+++ b/arch/powerpc/include/asm/sstep.h
-@@ -87,3 +87,11 @@ struct instruction_op {
- 
- extern int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
- 			 unsigned int instr);
-+
-+#if defined(CONFIG_KPROBES_SANITY_TEST) && defined(CONFIG_PPC64)
-+void test_emulate_step(void);
-+#else
-+static inline void test_emulate_step(void)
-+{
-+}
-+#endif
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index e785cc9..01d8002 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -544,6 +544,8 @@ int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
- 
- int __init arch_init_kprobes(void)
- {
-+	test_emulate_step();
-+
- 	return register_kprobe(&trampoline_p);
- }
- 
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 309361e8..7d046ca 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -35,3 +35,7 @@ obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o
- CFLAGS_xor_vmx.o += -maltivec $(call cc-option,-mabi=altivec)
- 
- obj-$(CONFIG_PPC64) += $(obj64-y)
-+
-+ifeq ($(CONFIG_PPC64), y)
-+obj-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
-+endif
-diff --git a/arch/powerpc/lib/test_emulate_step.c b/arch/powerpc/lib/test_emulate_step.c
-new file mode 100644
-index 0000000..887d1db
---- /dev/null
-+++ b/arch/powerpc/lib/test_emulate_step.c
-@@ -0,0 +1,439 @@
-+/*
-+ * test_emulate_step.c - simple sanity test for emulate_step load/store
-+ *			 instructions
-+ *
-+ * Copyright IBM Corp. 2016
-+ *
-+ * This program is free software;  you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it would be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-+ * the GNU General Public License for more details.
-+ */
-+
-+#define pr_fmt(fmt) "emulate_step smoke test: " fmt
-+
-+#include <linux/ptrace.h>
-+#include <asm/sstep.h>
-+#include <asm/ppc-opcode.h>
-+
-+#define IMM_L(i)		((uintptr_t)(i) & 0xffff)
-+
-+/*
-+ * Defined with TEST_ prefix so it does not conflict with other
-+ * definitions.
-+ */
-+#define TEST_LD(r, base, i)	(PPC_INST_LD | ___PPC_RT(r) |		\
-+					___PPC_RA(base) | IMM_L(i))
-+#define TEST_LWZ(r, base, i)	(PPC_INST_LWZ | ___PPC_RT(r) |		\
-+					___PPC_RA(base) | IMM_L(i))
-+#define TEST_LWZX(t, a, b)	(PPC_INST_LWZX | ___PPC_RT(t) |		\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_STD(r, base, i)	(PPC_INST_STD | ___PPC_RS(r) |		\
-+					___PPC_RA(base) | ((i) & 0xfffc))
-+#define TEST_LDARX(t, a, b, eh)	(PPC_INST_LDARX | ___PPC_RT(t) |	\
-+					___PPC_RA(a) | ___PPC_RB(b) |	\
-+					__PPC_EH(eh))
-+#define TEST_STDCX(s, a, b)	(PPC_INST_STDCX | ___PPC_RS(s) |	\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_LFSX(t, a, b)	(PPC_INST_LFSX | ___PPC_RT(t) |		\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_STFSX(s, a, b)	(PPC_INST_STFSX | ___PPC_RS(s) |	\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_LFDX(t, a, b)	(PPC_INST_LFDX | ___PPC_RT(t) |		\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_STFDX(s, a, b)	(PPC_INST_STFDX | ___PPC_RS(s) |	\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_LVX(t, a, b)	(PPC_INST_LVX | ___PPC_RT(t) |		\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_STVX(s, a, b)	(PPC_INST_STVX | ___PPC_RS(s) |		\
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_LXVD2X(s, a, b)	(PPC_INST_LXVD2X | VSX_XX1((s), R##a, R##b))
-+#define TEST_STXVD2X(s, a, b)	(PPC_INST_STXVD2X | VSX_XX1((s), R##a, R##b))
-+
-+
-+static void init_pt_regs(struct pt_regs *regs)
-+{
-+	static unsigned long msr;
-+	static bool msr_cached;
-+
-+	memset(regs, 0, sizeof(struct pt_regs));
-+
-+	if (likely(msr_cached)) {
-+		regs->msr = msr;
-+		return;
-+	}
-+
-+	asm volatile("mfmsr %0" : "=r"(regs->msr));
-+
-+	regs->msr |= MSR_FP;
-+	regs->msr |= MSR_VEC;
-+	regs->msr |= MSR_VSX;
-+
-+	msr = regs->msr;
-+	msr_cached = true;
-+}
-+
-+static void show_result(char *ins, char *result)
-+{
-+	pr_info("%-14s : %s\n", ins, result);
-+}
-+
-+static void test_ld(void)
-+{
-+	struct pt_regs regs;
-+	unsigned long a = 0x23;
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+	regs.gpr[3] = (unsigned long) &a;
-+
-+	/* ld r5, 0(r3) */
-+	stepped = emulate_step(&regs, TEST_LD(5, 3, 0));
-+
-+	if (stepped == 1 && regs.gpr[5] == a)
-+		show_result("ld", "PASS");
-+	else
-+		show_result("ld", "FAIL");
-+}
-+
-+static void test_lwz(void)
-+{
-+	struct pt_regs regs;
-+	unsigned int a = 0x4545;
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+	regs.gpr[3] = (unsigned long) &a;
-+
-+	/* lwz r5, 0(r3) */
-+	stepped = emulate_step(&regs, TEST_LWZ(5, 3, 0));
-+
-+	if (stepped == 1 && regs.gpr[5] == a)
-+		show_result("lwz", "PASS");
-+	else
-+		show_result("lwz", "FAIL");
-+}
-+
-+static void test_lwzx(void)
-+{
-+	struct pt_regs regs;
-+	unsigned int a[3] = {0x0, 0x0, 0x1234};
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+	regs.gpr[3] = (unsigned long) a;
-+	regs.gpr[4] = 8;
-+	regs.gpr[5] = 0x8765;
-+
-+	/* lwzx r5, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_LWZX(5, 3, 4));
-+	if (stepped == 1 && regs.gpr[5] == a[2])
-+		show_result("lwzx", "PASS");
-+	else
-+		show_result("lwzx", "FAIL");
-+}
-+
-+static void test_std(void)
-+{
-+	struct pt_regs regs;
-+	unsigned long a = 0x1234;
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+	regs.gpr[3] = (unsigned long) &a;
-+	regs.gpr[5] = 0x5678;
-+
-+	/* std r5, 0(r3) */
-+	stepped = emulate_step(&regs, TEST_STD(5, 3, 0));
-+	if (stepped == 1 || regs.gpr[5] == a)
-+		show_result("std", "PASS");
-+	else
-+		show_result("std", "FAIL");
-+}
-+
-+static void test_ldarx_stdcx(void)
-+{
-+	struct pt_regs regs;
-+	unsigned long a = 0x1234;
-+	int stepped = -1;
-+	unsigned long cr0_eq = 0x1 << 29; /* eq bit of CR0 */
-+
-+	init_pt_regs(&regs);
-+	asm volatile("mfcr %0" : "=r"(regs.ccr));
-+
-+
-+	/*** ldarx ***/
-+
-+	regs.gpr[3] = (unsigned long) &a;
-+	regs.gpr[4] = 0;
-+	regs.gpr[5] = 0x5678;
-+
-+	/* ldarx r5, r3, r4, 0 */
-+	stepped = emulate_step(&regs, TEST_LDARX(5, 3, 4, 0));
-+
-+	/*
-+	 * Don't touch 'a' here. Touching 'a' can do Load/store
-+	 * of 'a' which result in failure of subsequent stdcx.
-+	 * Instead, use hardcoded value for comparison.
-+	 */
-+	if (stepped <= 0 || regs.gpr[5] != 0x1234) {
-+		show_result("ldarx / stdcx.", "FAIL (ldarx)");
-+		return;
-+	}
-+
-+
-+	/*** stdcx. ***/
-+
-+	regs.gpr[5] = 0x9ABC;
-+
-+	/* stdcx. r5, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_STDCX(5, 3, 4));
-+
-+	/*
-+	 * Two possible scenarios that indicates successful emulation
-+	 * of stdcx. :
-+	 *  1. Reservation is active and store is performed. In this
-+	 *     case cr0.eq bit will be set to 1.
-+	 *  2. Reservation is not active and store is not performed.
-+	 *     In this case cr0.eq bit will be set to 0.
-+	 */
-+	if (stepped == 1 && ((regs.gpr[5] == a && (regs.ccr & cr0_eq))
-+			|| (regs.gpr[5] != a && !(regs.ccr & cr0_eq))))
-+		show_result("ldarx / stdcx.", "PASS");
-+	else
-+		show_result("ldarx / stdcx.", "FAIL (stdcx.)");
-+}
-+
-+#ifdef CONFIG_PPC_FPU
-+static void test_lfsx_stfsx(void)
-+{
-+	struct pt_regs regs;
-+	union {
-+		float a;
-+		int b;
-+	} c;
-+	int cached_b;
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+
-+
-+	/*** lfsx ***/
-+
-+	c.a = 123.45;
-+	cached_b = c.b;
-+
-+	regs.gpr[3] = (unsigned long) &c.a;
-+	regs.gpr[4] = 0;
-+
-+	/* lfsx frt10, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_LFSX(10, 3, 4));
-+
-+	if (stepped == 1)
-+		show_result("lfsx", "PASS");
-+	else
-+		show_result("lfsx", "FAIL");
-+
-+
-+	/*** stfsx ***/
-+
-+	c.a = 678.91;
-+
-+	/* stfsx frs10, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_STFSX(10, 3, 4));
-+
-+	if (stepped == 1 && c.b == cached_b)
-+		show_result("stfsx", "PASS");
-+	else
-+		show_result("stfsx", "FAIL");
-+}
-+
-+static void test_lfdx_stfdx(void)
-+{
-+	struct pt_regs regs;
-+	union {
-+		double a;
-+		long b;
-+	} c;
-+	long cached_b;
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+
-+
-+	/*** lfdx ***/
-+
-+	c.a = 123456.78;
-+	cached_b = c.b;
-+
-+	regs.gpr[3] = (unsigned long) &c.a;
-+	regs.gpr[4] = 0;
-+
-+	/* lfdx frt10, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_LFDX(10, 3, 4));
-+
-+	if (stepped == 1)
-+		show_result("lfdx", "PASS");
-+	else
-+		show_result("lfdx", "FAIL");
-+
-+
-+	/*** stfdx ***/
-+
-+	c.a = 987654.32;
-+
-+	/* stfdx frs10, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_STFDX(10, 3, 4));
-+
-+	if (stepped == 1 && c.b == cached_b)
-+		show_result("stfdx", "PASS");
-+	else
-+		show_result("stfdx", "FAIL");
-+}
-+#else
-+static void test_lfsx_stfsx(void)
-+{
-+	show_result("lfsx", "SKIP (CONFIG_PPC_FPU is not set)");
-+	show_result("stfsx", "SKIP (CONFIG_PPC_FPU is not set)");
-+}
-+
-+static void test_lfdx_stfdx(void)
-+{
-+	show_result("lfdx", "SKIP (CONFIG_PPC_FPU is not set)");
-+	show_result("stfdx", "SKIP (CONFIG_PPC_FPU is not set)");
-+}
-+#endif /* CONFIG_PPC_FPU */
-+
-+#ifdef CONFIG_ALTIVEC
-+static void test_lvx_stvx(void)
-+{
-+	struct pt_regs regs;
-+	union {
-+		vector128 a;
-+		u32 b[4];
-+	} c;
-+	u32 cached_b[4];
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+
-+
-+	/*** lvx ***/
-+
-+	cached_b[0] = c.b[0] = 923745;
-+	cached_b[1] = c.b[1] = 2139478;
-+	cached_b[2] = c.b[2] = 9012;
-+	cached_b[3] = c.b[3] = 982134;
-+
-+	regs.gpr[3] = (unsigned long) &c.a;
-+	regs.gpr[4] = 0;
-+
-+	/* lvx vrt10, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_LVX(10, 3, 4));
-+
-+	if (stepped == 1)
-+		show_result("lvx", "PASS");
-+	else
-+		show_result("lvx", "FAIL");
-+
-+
-+	/*** stvx ***/
-+
-+	c.b[0] = 4987513;
-+	c.b[1] = 84313948;
-+	c.b[2] = 71;
-+	c.b[3] = 498532;
-+
-+	/* stvx vrs10, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_STVX(10, 3, 4));
-+
-+	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
-+	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3])
-+		show_result("stvx", "PASS");
-+	else
-+		show_result("stvx", "FAIL");
-+}
-+#else
-+static void test_lvx_stvx(void)
-+{
-+	show_result("lvx", "SKIP (CONFIG_ALTIVEC is not set)");
-+	show_result("stvx", "SKIP (CONFIG_ALTIVEC is not set)");
-+}
-+#endif /* CONFIG_ALTIVEC */
-+
-+#ifdef CONFIG_VSX
-+static void test_lxvd2x_stxvd2x(void)
-+{
-+	struct pt_regs regs;
-+	union {
-+		vector128 a;
-+		u32 b[4];
-+	} c;
-+	u32 cached_b[4];
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+
-+
-+	/*** lxvd2x ***/
-+
-+	cached_b[0] = c.b[0] = 18233;
-+	cached_b[1] = c.b[1] = 34863571;
-+	cached_b[2] = c.b[2] = 834;
-+	cached_b[3] = c.b[3] = 6138911;
-+
-+	regs.gpr[3] = (unsigned long) &c.a;
-+	regs.gpr[4] = 0;
-+
-+	/* lxvd2x vsr39, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_LXVD2X(39, 3, 4));
-+
-+	if (stepped == 1)
-+		show_result("lxvd2x", "PASS");
-+	else
-+		show_result("lxvd2x", "FAIL");
-+
-+
-+	/*** stxvd2x ***/
-+
-+	c.b[0] = 21379463;
-+	c.b[1] = 87;
-+	c.b[2] = 374234;
-+	c.b[3] = 4;
-+
-+	/* stxvd2x vsr39, r3, r4 */
-+	stepped = emulate_step(&regs, TEST_STXVD2X(39, 3, 4));
-+
-+	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
-+	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3])
-+		show_result("stxvd2x", "PASS");
-+	else
-+		show_result("stxvd2x", "FAIL");
-+}
-+#else
-+static void test_lxvd2x_stxvd2x(void)
-+{
-+	show_result("lxvd2x", "SKIP (CONFIG_VSX is not set)");
-+	show_result("stxvd2x", "SKIP (CONFIG_VSX is not set)");
-+}
-+#endif /* CONFIG_VSX */
-+
-+void test_emulate_step(void)
-+{
-+	pr_info("start.\n");
-+	test_ld();
-+	test_lwz();
-+	test_lwzx();
-+	test_std();
-+	test_ldarx_stdcx();
-+	test_lfsx_stfsx();
-+	test_lfdx_stfdx();
-+	test_lvx_stvx();
-+	test_lxvd2x_stxvd2x();
-+	pr_info("complete.\n");
-+}
--- 
-1.8.3.1
+> 
+> Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+> ---
+>  arch/ia64/kernel/time.c     |    4 +-
+>  arch/powerpc/Kconfig        |    1 +
+>  arch/powerpc/kernel/time.c  |    6 +++-
+>  arch/s390/Kconfig           |    1 +
+>  arch/s390/kernel/vtime.c    |    9 ++++--
+>  include/linux/kernel_stat.h |    4 +-
+>  include/linux/sched.h       |   23 ++++++++++++----
+>  kernel/fork.c               |    2 +
+>  kernel/sched/cputime.c      |   61 ++++++++++--------------------------------
+>  9 files changed, 50 insertions(+), 61 deletions(-)
+> 
+> diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+> index 6f892b9..021f44a 100644
+> --- a/arch/ia64/kernel/time.c
+> +++ b/arch/ia64/kernel/time.c
+> @@ -68,7 +68,7 @@ void vtime_account_user(struct task_struct *tsk)
+> 
+>  	if (ti->ac_utime) {
+>  		delta_utime = cycle_to_cputime(ti->ac_utime);
+> -		account_user_time(tsk, delta_utime, delta_utime);
+> +		account_user_time(tsk, delta_utime);
+>  		ti->ac_utime = 0;
+>  	}
+>  }
+> @@ -112,7 +112,7 @@ void vtime_account_system(struct task_struct *tsk)
+>  {
+>  	cputime_t delta = vtime_delta(tsk);
+> 
+> -	account_system_time(tsk, 0, delta, delta);
+> +	account_system_time(tsk, 0, delta);
+>  }
+>  EXPORT_SYMBOL_GPL(vtime_account_system);
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 65fba4c..c7f120a 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -160,6 +160,7 @@ config PPC
+>  	select HAVE_LIVEPATCH if HAVE_DYNAMIC_FTRACE_WITH_REGS
+>  	select GENERIC_CPU_AUTOPROBE
+>  	select HAVE_VIRT_CPU_ACCOUNTING
+> +	select ARCH_HAS_SCALED_CPUTIME if VIRT_CPU_ACCOUNTING_NATIVE
+>  	select HAVE_ARCH_HARDENED_USERCOPY
+>  	select HAVE_KERNEL_GZIP
+> 
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 8105198..be9751f 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -358,7 +358,8 @@ void vtime_account_system(struct task_struct *tsk)
+>  	unsigned long delta, sys_scaled, stolen;
+> 
+>  	delta = vtime_delta(tsk, &sys_scaled, &stolen);
+> -	account_system_time(tsk, 0, delta, sys_scaled);
+> +	account_system_time(tsk, 0, delta);
+> +	tsk->stimescaled += sys_scaled;
+>  	if (stolen)
+>  		account_steal_time(stolen);
+>  }
+> @@ -391,7 +392,8 @@ void vtime_account_user(struct task_struct *tsk)
+>  	acct->user_time = 0;
+>  	acct->user_time_scaled = 0;
+>  	acct->utime_sspurr = 0;
+> -	account_user_time(tsk, utime, utimescaled);
+> +	account_user_time(tsk, utime);
+> +	tsk->utimescaled += utimescaled;
+>  }
+> 
+>  #ifdef CONFIG_PPC32
+> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> index 426481d..028f97b 100644
+> --- a/arch/s390/Kconfig
+> +++ b/arch/s390/Kconfig
+> @@ -171,6 +171,7 @@ config S390
+>  	select SYSCTL_EXCEPTION_TRACE
+>  	select TTY
+>  	select VIRT_CPU_ACCOUNTING
+> +	select ARCH_HAS_SCALED_CPUTIME
+>  	select VIRT_TO_BUS
+>  	select HAVE_NMI
+> 
+> diff --git a/arch/s390/kernel/vtime.c b/arch/s390/kernel/vtime.c
+> index 856e30d..90eeb7c 100644
+> --- a/arch/s390/kernel/vtime.c
+> +++ b/arch/s390/kernel/vtime.c
+> @@ -137,8 +137,10 @@ static int do_account_vtime(struct task_struct *tsk, int hardirq_offset)
+>  		user_scaled = (user_scaled * mult) / div;
+>  		system_scaled = (system_scaled * mult) / div;
+>  	}
+> -	account_user_time(tsk, user, user_scaled);
+> -	account_system_time(tsk, hardirq_offset, system, system_scaled);
+> +	account_user_time(tsk, user);
+> +	tsk->utimescaled += user_scaled;
+> +	account_system_time(tsk, hardirq_offset, system)
+> +	tsk->stimescaled += system_scaled;
+> 
+>  	steal = S390_lowcore.steal_timer;
+>  	if ((s64) steal > 0) {
+> @@ -202,7 +204,8 @@ void vtime_account_irq_enter(struct task_struct *tsk)
+> 
+>  		system_scaled = (system_scaled * mult) / div;
+>  	}
+> -	account_system_time(tsk, 0, system, system_scaled);
+> +	account_system_time(tsk, 0, system);
+> +	tsk->stimescaled += system_scaled;
+> 
+>  	virt_timer_forward(system);
+>  }
+> diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
+> index 44fda64..00f7768 100644
+> --- a/include/linux/kernel_stat.h
+> +++ b/include/linux/kernel_stat.h
+> @@ -78,8 +78,8 @@ static inline unsigned int kstat_cpu_irqs_sum(unsigned int cpu)
+>  	return kstat_cpu(cpu).irqs_sum;
+>  }
+> 
+> -extern void account_user_time(struct task_struct *, cputime_t, cputime_t);
+> -extern void account_system_time(struct task_struct *, int, cputime_t, cputime_t);
+> +extern void account_user_time(struct task_struct *, cputime_t);
+> +extern void account_system_time(struct task_struct *, int, cputime_t);
+>  extern void account_steal_time(cputime_t);
+>  extern void account_idle_time(cputime_t);
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 348f51b..36a2c2e 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1627,7 +1627,10 @@ struct task_struct {
+>  	int __user *set_child_tid;		/* CLONE_CHILD_SETTID */
+>  	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
+> 
+> -	cputime_t utime, stime, utimescaled, stimescaled;
+> +	cputime_t utime, stime;
+> +#ifdef ARCH_HAS_SCALED_CPUTIME
+> +	cputime_t utimescaled, stimescaled;
+> +#endif
+>  	cputime_t gtime;
+>  	struct prev_cputime prev_cputime;
+>  #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+> @@ -2220,8 +2223,6 @@ static inline void put_task_struct(struct task_struct *t)
+>  #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+>  extern void task_cputime(struct task_struct *t,
+>  			 cputime_t *utime, cputime_t *stime);
+> -extern void task_cputime_scaled(struct task_struct *t,
+> -				cputime_t *utimescaled, cputime_t *stimescaled);
+>  extern cputime_t task_gtime(struct task_struct *t);
+>  #else
+>  static inline void task_cputime(struct task_struct *t,
+> @@ -2233,6 +2234,13 @@ static inline void task_cputime(struct task_struct *t,
+>  		*stime = t->stime;
+>  }
+> 
+> +static inline cputime_t task_gtime(struct task_struct *t)
+> +{
+> +	return t->gtime;
+> +}
+> +#endif
+> +
+> +#ifdef ARCH_HAS_SCALED_CPUTIME
+>  static inline void task_cputime_scaled(struct task_struct *t,
+>  				       cputime_t *utimescaled,
+>  				       cputime_t *stimescaled)
+> @@ -2242,12 +2250,15 @@ static inline void task_cputime_scaled(struct task_struct *t,
+>  	if (stimescaled)
+>  		*stimescaled = t->stimescaled;
+>  }
+> -
+> -static inline cputime_t task_gtime(struct task_struct *t)
+> +#else
+> +static inline void task_cputime_scaled(struct task_struct *t,
+> +				       cputime_t *utimescaled,
+> +				       cputime_t *stimescaled)
+>  {
+> -	return t->gtime;
+> +	task_cputime(t, utimescaled, stimescaled);
+>  }
+>  #endif
+> +
+>  extern void task_cputime_adjusted(struct task_struct *p, cputime_t *ut, cputime_t *st);
+>  extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, cputime_t *st);
+> 
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 623259f..dbc9f60 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -1548,7 +1548,9 @@ static void posix_cpu_timers_init(struct task_struct *tsk)
+>  	init_sigpending(&p->pending);
+> 
+>  	p->utime = p->stime = p->gtime = 0;
+> +#ifdef ARCH_HAS_SCALED_CPUTIME
+>  	p->utimescaled = p->stimescaled = 0;
+> +#endif
+>  	prev_cputime_init(&p->prev_cputime);
+> 
+>  #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+> diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
+> index 3229c72..d427def 100644
+> --- a/kernel/sched/cputime.c
+> +++ b/kernel/sched/cputime.c
+> @@ -128,16 +128,13 @@ static inline void task_group_account_field(struct task_struct *p, int index,
+>   * Account user cpu time to a process.
+>   * @p: the process that the cpu time gets accounted to
+>   * @cputime: the cpu time spent in user space since the last update
+> - * @cputime_scaled: cputime scaled by cpu frequency
+>   */
+> -void account_user_time(struct task_struct *p, cputime_t cputime,
+> -		       cputime_t cputime_scaled)
+> +void account_user_time(struct task_struct *p, cputime_t cputime)
+>  {
+>  	int index;
+> 
+>  	/* Add user time to process. */
+>  	p->utime += cputime;
+> -	p->utimescaled += cputime_scaled;
+>  	account_group_user_time(p, cputime);
+> 
+>  	index = (task_nice(p) > 0) ? CPUTIME_NICE : CPUTIME_USER;
+> @@ -153,16 +150,13 @@ void account_user_time(struct task_struct *p, cputime_t cputime,
+>   * Account guest cpu time to a process.
+>   * @p: the process that the cpu time gets accounted to
+>   * @cputime: the cpu time spent in virtual machine since the last update
+> - * @cputime_scaled: cputime scaled by cpu frequency
+>   */
+> -static void account_guest_time(struct task_struct *p, cputime_t cputime,
+> -			       cputime_t cputime_scaled)
+> +static void account_guest_time(struct task_struct *p, cputime_t cputime)
+>  {
+>  	u64 *cpustat = kcpustat_this_cpu->cpustat;
+> 
+>  	/* Add guest time to process. */
+>  	p->utime += cputime;
+> -	p->utimescaled += cputime_scaled;
+>  	account_group_user_time(p, cputime);
+>  	p->gtime += cputime;
+> 
+> @@ -180,16 +174,13 @@ static void account_guest_time(struct task_struct *p, cputime_t cputime,
+>   * Account system cpu time to a process and desired cpustat field
+>   * @p: the process that the cpu time gets accounted to
+>   * @cputime: the cpu time spent in kernel space since the last update
+> - * @cputime_scaled: cputime scaled by cpu frequency
+> - * @target_cputime64: pointer to cpustat field that has to be updated
+> + * @index: pointer to cpustat field that has to be updated
+>   */
+>  static inline
+> -void __account_system_time(struct task_struct *p, cputime_t cputime,
+> -			cputime_t cputime_scaled, int index)
+> +void __account_system_time(struct task_struct *p, cputime_t cputime, int index)
+>  {
+>  	/* Add system time to process. */
+>  	p->stime += cputime;
+> -	p->stimescaled += cputime_scaled;
+>  	account_group_system_time(p, cputime);
+> 
+>  	/* Add system time to cpustat. */
+> @@ -204,15 +195,14 @@ void __account_system_time(struct task_struct *p, cputime_t cputime,
+>   * @p: the process that the cpu time gets accounted to
+>   * @hardirq_offset: the offset to subtract from hardirq_count()
+>   * @cputime: the cpu time spent in kernel space since the last update
+> - * @cputime_scaled: cputime scaled by cpu frequency
+>   */
+>  void account_system_time(struct task_struct *p, int hardirq_offset,
+> -			 cputime_t cputime, cputime_t cputime_scaled)
+> +			 cputime_t cputime)
+>  {
+>  	int index;
+> 
+>  	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0)) {
+> -		account_guest_time(p, cputime, cputime_scaled);
+> +		account_guest_time(p, cputime);
+>  		return;
+>  	}
+> 
+> @@ -223,7 +213,7 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
+>  	else
+>  		index = CPUTIME_SYSTEM;
+> 
+> -	__account_system_time(p, cputime, cputime_scaled, index);
+> +	__account_system_time(p, cputime, index);
+>  }
+> 
+>  /*
+> @@ -410,15 +400,15 @@ static void irqtime_account_process_tick(struct task_struct *p, int user_tick,
+>  		 * So, we have to handle it separately here.
+>  		 * Also, p->stime needs to be updated for ksoftirqd.
+>  		 */
+> -		__account_system_time(p, cputime, cputime, CPUTIME_SOFTIRQ);
+> +		__account_system_time(p, cputime, CPUTIME_SOFTIRQ);
+>  	} else if (user_tick) {
+> -		account_user_time(p, cputime, cputime);
+> +		account_user_time(p, cputime);
+>  	} else if (p == rq->idle) {
+>  		account_idle_time(cputime);
+>  	} else if (p->flags & PF_VCPU) { /* System time or guest time */
+> -		account_guest_time(p, cputime, cputime);
+> +		account_guest_time(p, cputime);
+>  	} else {
+> -		__account_system_time(p, cputime, cputime, CPUTIME_SYSTEM);
+> +		__account_system_time(p, cputime CPUTIME_SYSTEM);
+>  	}
+>  }
+> 
+> @@ -521,9 +511,9 @@ void account_process_tick(struct task_struct *p, int user_tick)
+>  	cputime -= steal;
+> 
+>  	if (user_tick)
+> -		account_user_time(p, cputime, cputime);
+> +		account_user_time(p, cputime);
+>  	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
+> -		account_system_time(p, HARDIRQ_OFFSET, cputime, cputime);
+> +		account_system_time(p, HARDIRQ_OFFSET, cputime);
+>  	else
+>  		account_idle_time(cputime);
+>  }
+> @@ -744,7 +734,7 @@ static void __vtime_account_system(struct task_struct *tsk)
+>  {
+>  	cputime_t delta_cpu = get_vtime_delta(tsk);
+> 
+> -	account_system_time(tsk, irq_count(), delta_cpu, delta_cpu);
+> +	account_system_time(tsk, irq_count(), delta_cpu);
+>  }
+> 
+>  void vtime_account_system(struct task_struct *tsk)
+> @@ -765,7 +755,7 @@ void vtime_account_user(struct task_struct *tsk)
+>  	tsk->vtime_snap_whence = VTIME_SYS;
+>  	if (vtime_delta(tsk)) {
+>  		delta_cpu = get_vtime_delta(tsk);
+> -		account_user_time(tsk, delta_cpu, delta_cpu);
+> +		account_user_time(tsk, delta_cpu);
+>  	}
+>  	write_seqcount_end(&tsk->vtime_seqcount);
+>  }
+> @@ -921,25 +911,4 @@ void task_cputime(struct task_struct *t, cputime_t *utime, cputime_t *stime)
+>  	if (stime)
+>  		*stime += sdelta;
+>  }
+> -
+> -void task_cputime_scaled(struct task_struct *t,
+> -			 cputime_t *utimescaled, cputime_t *stimescaled)
+> -{
+> -	cputime_t udelta, sdelta;
+> -
+> -	if (!vtime_accounting_enabled()) {
+> -		if (utimescaled)
+> -			*utimescaled = t->utimescaled;
+> -		if (stimescaled)
+> -			*stimescaled = t->stimescaled;
+> -		return;
+> -	}
+> -
+> -	fetch_task_cputime(t, utimescaled, stimescaled,
+> -			   &t->utimescaled, &t->stimescaled, &udelta, &sdelta);
+> -	if (utimescaled)
+> -		*utimescaled += udelta;
+> -	if (stimescaled)
+> -		*stimescaled += sdelta;
+> -}
+>  #endif /* CONFIG_VIRT_CPU_ACCOUNTING_GEN */
+> 
