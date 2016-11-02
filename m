@@ -1,19 +1,23 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yb0-x230.google.com (mail-yb0-x230.google.com
- [IPv6:2607:f8b0:4002:c09::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t84c56HhqzDrJk
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 21:49:41 +1100 (AEDT)
-Received: by mail-yb0-x230.google.com with SMTP id o7so3547176ybb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 03:49:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t856r1cfmzDt26
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 22:12:52 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jim Davis <jim.epost@gmail.com>
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, imunsie@au1.ibm.com,
+ fbarrat@linux.vnet.ibm.com, kernel-janitors@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cxl: Fix error handling
+In-Reply-To: <CA+r1ZhiJW6xQ1VwgLudFzFBxkKzkURv7MZhWtmSevRHc9aUyxA@mail.gmail.com>
+References: <20161030214047.25037-1-christophe.jaillet@wanadoo.fr>
+ <87wpgp13ki.fsf@concordia.ellerman.id.au>
+ <CA+r1ZhiJW6xQ1VwgLudFzFBxkKzkURv7MZhWtmSevRHc9aUyxA@mail.gmail.com>
+Date: Wed, 02 Nov 2016 22:12:50 +1100
+Message-ID: <87eg2unnil.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Wed, 2 Nov 2016 13:49:39 +0300
-Message-ID: <CAOJe8K3eA38JfBDSsT0MHqm9az0awp_veU4=+_KKkPww=wtutg@mail.gmail.com>
-Subject: compiling master.
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,190 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi guys,
+Jim Davis <jim.epost@gmail.com> writes:
 
-compiling ppc head with bunch of asm errors on power8 box (gcc version 4.8.3 )
-checked commit log but found nothing special. Looks like it's asm issue?
-Has anybody seen that?
+> On Sun, Oct 30, 2016 at 10:37 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> More here:
+>>
+>> https://github.com/linuxppc/linux/wiki/Building-powerpc-kernels
+>
+> Cool; the little-endian build worked fine, but
 
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:421: Error: operand out of range
-(0xffffffffffff8680 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:663: Error: operand out of range
-(0xffffffffffff8b00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:671: Error: operand out of range
-(0xffffffffffff8c80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:708: Error: operand out of range
-(0xffffffffffff8e00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:721: Error: operand out of range
-(0xffffffffffff8e00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:137: Error: operand out of range
-(0xffffffffffff8000 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:471: Error: operand out of range
-(0xffffffffffff8700 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:517: Error: operand out of range
-(0xffffffffffff8a00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:548: Error: operand out of range
-(0xffffffffffff8880 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:580: Error: operand out of range
-(0xffffffffffff8a00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:703: Error: operand out of range
-(0xffffffffffff8e00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:728: Error: operand out of range
-(0xffffffffffff8f80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:748: Error: operand out of range
-(0xffffffffffff9100 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:760: Error: operand out of range
-(0xffffffffffff9280 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:793: Error: operand out of range
-(0xffffffffffff9480 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:799: Error: operand out of range
-(0xffffffffffff9600 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:805: Error: operand out of range
-(0xffffffffffff9780 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:815: Error: operand out of range
-(0xffffffffffff9900 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:911: Error: operand out of range
-(0xffffffffffff9a80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1130: Error: operand out of range
-(0xffffffffffffad80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1152: Error: operand out of range
-(0xffffffffffffaf00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1243: Error: operand out of range
-(0xffffffffffffb080 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:149: Error: operand out of range
-(0xffffffffffff8000 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:229: Error: operand out of range
-(0xffffffffffff8380 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:241: Error: operand out of range
-(0xffffffffffff8680 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:264: Error: operand out of range
-(0xffffffffffff8180 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:916: Error: operand out of range
-(0xffffffffffff9c00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:932: Error: operand out of range
-(0xffffffffffff9d80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:938: Error: operand out of range
-(0xffffffffffff9f00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:950: Error: operand out of range
-(0xffffffffffffa080 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1005: Error: operand out of range
-(0xffffffffffffa200 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1015: Error: operand out of range
-(0xffffffffffffa380 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1025: Error: operand out of range
-(0xffffffffffffa500 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1031: Error: operand out of range
-(0xffffffffffffa680 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1068: Error: operand out of range
-(0xffffffffffffa880 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1104: Error: operand out of range
-(0xffffffffffffaa80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1110: Error: operand out of range
-(0xffffffffffffac00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:472: Error: operand out of range
-(0xffffffffffff8700 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:540: Error: operand out of range
-(0xffffffffffff8a00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:549: Error: operand out of range
-(0xffffffffffff8880 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:598: Error: operand out of range
-(0xffffffffffff8a00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:719: Error: operand out of range
-(0xffffffffffff8e00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range
-(0xffffffffffff8f80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:749: Error: operand out of range
-(0xffffffffffff9100 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:761: Error: operand out of range
-(0xffffffffffff9280 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:794: Error: operand out of range
-(0xffffffffffff9480 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:800: Error: operand out of range
-(0xffffffffffff9600 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:806: Error: operand out of range
-(0xffffffffffff9780 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:816: Error: operand out of range
-(0xffffffffffff9900 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:912: Error: operand out of range
-(0xffffffffffff9a80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1131: Error: operand out of range
-(0xffffffffffffad80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1244: Error: operand out of range
-(0xffffffffffffb080 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:939: Error: operand out of range
-(0xffffffffffff9f00 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1006: Error: operand out of range
-(0xffffffffffffa200 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1016: Error: operand out of range
-(0xffffffffffffa380 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1026: Error: operand out of range
-(0xffffffffffffa500 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1032: Error: operand out of range
-(0xffffffffffffa680 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1069: Error: operand out of range
-(0xffffffffffffa880 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1105: Error: operand out of range
-(0xffffffffffffaa80 is not between 0x0000000000000000 and
-0x000000000000ffff)
-arch/powerpc/kernel/exceptions-64s.S:1111: Error: operand out of range
-(0xffffffffffffac00 is not between 0x0000000000000000 and
-0x000000000000ffff)
+Yay, thanks for trying.
+
+> jim@krebstar:~/linux-rc$ make ARCH=powerpc
+> CROSS_COMPILE=powerpc64-linux-gnu- vmlinux
+> make: powerpc64-linux-gnu-gcc: Command not found
+> make: powerpc64-linux-gnu-gcc: Command not found
+> scripts/kconfig/conf  --silentoldconfig Kconfig
+> make: powerpc64-linux-gnu-gcc: Command not found
+
+Ah sorry.
+
+> This is on Ubuntu 16.04; there's a /usr/bin/powerpc64le-linux-gnu-gcc
+> from installing gcc-powerpc64le-linux-gnu, and a
+> /usr/bin/powerpc-linux-gnu-gcc from installing gcc-powerpc-linux-gnu,
+> but no /usr/bin/powerpc64-linux-gnu-gcc.
+
+It's the powerpc-linux-gnu-gcc one.
+
+That is a 32 and 64-bit compiler, it's 32-bit by default, but the kernel
+Makefiles will pass -m64 appropriately.
+
+You can actually build a single compiler that builds 32/64-bit BE, and
+64-bit LE, but the distros don't do that for whatever reason.
+
+cheers
