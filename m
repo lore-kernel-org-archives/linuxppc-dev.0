@@ -1,16 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t83f7421MzDvJB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 21:06:23 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/configs: Turn on PPC crypto implementations in the
- server defconfigs
-Date: Wed,  2 Nov 2016 21:06:17 +1100
-Message-Id: <1478081177-7333-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t848b1JLLzDvHV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 21:29:19 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id c17so2272697wmc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 03:29:19 -0700 (PDT)
+MIME-Version: 1.0
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <fbf3b5a3-efd9-0f85-c4fe-ae34ae1862b7@ti.com>
+References: <1475928540-19647-1-git-send-email-malat@debian.org>
+ <fbf3b5a3-efd9-0f85-c4fe-ae34ae1862b7@ti.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 2 Nov 2016 11:28:54 +0100
+Message-ID: <CA+7wUsy9AW6BvNd=Bmmwra-YfTMAqFwLMg7Z7ZNXpxORq9qtTg@mail.gmail.com>
+Subject: Re: [PATCH] Fix loading of module radeonfb on PowerMac
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,79 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These are the PPC optimised versions of various crypto algorithms, so we
-should turn them on by default to get test coverage.
+Tomi,
 
-Suggested-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/configs/powernv_defconfig | 3 +++
- arch/powerpc/configs/ppc64_defconfig   | 3 +++
- arch/powerpc/configs/pseries_defconfig | 3 +++
- 3 files changed, 9 insertions(+)
+On Wed, Nov 2, 2016 at 9:28 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> On 08/10/16 15:09, Mathieu Malaterre wrote:
+>> When the linux kernel is build with (typical kernel ship with Debian
+>> installer):
+>>
+>> CONFIG_FB_OF=y
+>> CONFIG_VT_HW_CONSOLE_BINDING=y
+>> CONFIG_FB_RADEON=m
+>>
+>> The offb driver takes precedence over module radeonfb. It is then
+>> impossible to load the module, error reported is:
+>>
+>> [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+>> [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+>> [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+>> [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+>>
+>> This patch reproduce the behavior of the module radeon, so as to make it
+>> possible to load radeonfb when offb is first loaded.
+>>
+>> It should be noticed that `offb_destroy` is never called which explain the
+>> need to skip error detection on the radeon side.
+>
+> Why is that? It sounds rather bad if two drivers claim the same resources.
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index d98b6eb3254f..39223dcca60e 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -300,6 +300,8 @@ CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_CCM=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
-+CONFIG_CRYPT_CRC32C_VPMSUM=m
-+CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
-@@ -308,6 +310,7 @@ CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAST6=m
- CONFIG_CRYPTO_KHAZAD=m
- CONFIG_CRYPTO_SALSA20=m
-+CONFIG_CRYPTO_SHA1_PPC=m
- CONFIG_CRYPTO_SERPENT=m
- CONFIG_CRYPTO_TEA=m
- CONFIG_CRYPTO_TWOFISH=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 58a98d40086f..d3f1e2c23d90 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -335,6 +335,8 @@ CONFIG_PPC_EARLY_DEBUG=y
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
-+CONFIG_CRYPT_CRC32C_VPMSUM=m
-+CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
-@@ -343,6 +345,7 @@ CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAST6=m
- CONFIG_CRYPTO_KHAZAD=m
- CONFIG_CRYPTO_SALSA20=m
-+CONFIG_CRYPTO_SHA1_PPC=m
- CONFIG_CRYPTO_SERPENT=m
- CONFIG_CRYPTO_TEA=m
- CONFIG_CRYPTO_TWOFISH=m
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 8a3bc016b732..56069b80e2fb 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -302,6 +302,8 @@ CONFIG_XMON=y
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
-+CONFIG_CRYPT_CRC32C_VPMSUM=m
-+CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
-@@ -310,6 +312,7 @@ CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAST6=m
- CONFIG_CRYPTO_KHAZAD=m
- CONFIG_CRYPTO_SALSA20=m
-+CONFIG_CRYPTO_SHA1_PPC=m
- CONFIG_CRYPTO_SERPENT=m
- CONFIG_CRYPTO_TEA=m
- CONFIG_CRYPTO_TWOFISH=m
--- 
-2.7.4
+This has been working great so far for `radeon.ko`, so I assumed I
+could shamelessly copy the behavior over to `radeonfb.ko`.
+
+The original reference I found was from Benjamin Herrenschmidt here:
+https://lists.freedesktop.org/archives/dri-devel/2010-August/002907.html
+
+I am of course willing to try something else, but I would need some guidance.
+
+Thanks much.
