@@ -1,29 +1,16 @@
-Return-Path: <sgruszka@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t833M0r2fzDsy6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 20:39:42 +1100 (AEDT)
-Date: Wed, 2 Nov 2016 10:38:20 +0100
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
-Subject: Re: [PATCH 3/4] cputime/powerpc/s390: make scaled cputime arch
- specific
-Message-ID: <20161102093820.GC2604@redhat.com>
-References: <1477917389-11341-1-git-send-email-sgruszka@redhat.com>
- <1477917389-11341-4-git-send-email-sgruszka@redhat.com>
- <9ad862f2-5665-08d6-4e5d-793637efcb66@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9ad862f2-5665-08d6-4e5d-793637efcb66@de.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t83f7421MzDvJB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 21:06:23 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH] powerpc/configs: Turn on PPC crypto implementations in the
+ server defconfigs
+Date: Wed,  2 Nov 2016 21:06:17 +1100
+Message-Id: <1478081177-7333-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,25 +20,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 02, 2016 at 10:11:22AM +0100, Christian Borntraeger wrote:
-> On 10/31/2016 01:36 PM, Stanislaw Gruszka wrote:
-> > Only s390 and powerpc have hardware facilities allowing to measure
-> > cputimes scaled by frequency. On all other architectures
-> > utimescaled/stimescaled are equal to utime/stime (however they are
-> > accounted separately).
-> > 
-> > Patch remove {u,s}timescaled accounting on all architectures except
-> > powerpc and s390, where those values are explicitly accounted on proper
-> > places.
-> 
-> If we remove it everywhere else (and assuming that there are no users then)
-> I aks myself if we should remove this as well from s390.
+These are the PPC optimised versions of various crypto algorithms, so we
+should turn them on by default to get test coverage.
 
-There is one user of scaled cputimes values, it is taskstats (to users
-space are exported ac_utimescaled, ac_stimescaled and
-cpu_scaled_run_real_total which is calculated based on scaled times).
-However on other than powerpc and s390 architectures scaled times are
-equal to normal times (this is also true for older powerpc's without
-SPURR/PURR registers).
+Suggested-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/configs/powernv_defconfig | 3 +++
+ arch/powerpc/configs/ppc64_defconfig   | 3 +++
+ arch/powerpc/configs/pseries_defconfig | 3 +++
+ 3 files changed, 9 insertions(+)
 
-Stanislaw
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index d98b6eb3254f..39223dcca60e 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -300,6 +300,8 @@ CONFIG_CRYPTO_TEST=m
+ CONFIG_CRYPTO_CCM=m
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_HMAC=y
++CONFIG_CRYPT_CRC32C_VPMSUM=m
++CONFIG_CRYPTO_MD5_PPC=m
+ CONFIG_CRYPTO_MICHAEL_MIC=m
+ CONFIG_CRYPTO_TGR192=m
+ CONFIG_CRYPTO_WP512=m
+@@ -308,6 +310,7 @@ CONFIG_CRYPTO_BLOWFISH=m
+ CONFIG_CRYPTO_CAST6=m
+ CONFIG_CRYPTO_KHAZAD=m
+ CONFIG_CRYPTO_SALSA20=m
++CONFIG_CRYPTO_SHA1_PPC=m
+ CONFIG_CRYPTO_SERPENT=m
+ CONFIG_CRYPTO_TEA=m
+ CONFIG_CRYPTO_TWOFISH=m
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 58a98d40086f..d3f1e2c23d90 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -335,6 +335,8 @@ CONFIG_PPC_EARLY_DEBUG=y
+ CONFIG_CRYPTO_TEST=m
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_HMAC=y
++CONFIG_CRYPT_CRC32C_VPMSUM=m
++CONFIG_CRYPTO_MD5_PPC=m
+ CONFIG_CRYPTO_MICHAEL_MIC=m
+ CONFIG_CRYPTO_TGR192=m
+ CONFIG_CRYPTO_WP512=m
+@@ -343,6 +345,7 @@ CONFIG_CRYPTO_BLOWFISH=m
+ CONFIG_CRYPTO_CAST6=m
+ CONFIG_CRYPTO_KHAZAD=m
+ CONFIG_CRYPTO_SALSA20=m
++CONFIG_CRYPTO_SHA1_PPC=m
+ CONFIG_CRYPTO_SERPENT=m
+ CONFIG_CRYPTO_TEA=m
+ CONFIG_CRYPTO_TWOFISH=m
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 8a3bc016b732..56069b80e2fb 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -302,6 +302,8 @@ CONFIG_XMON=y
+ CONFIG_CRYPTO_TEST=m
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_HMAC=y
++CONFIG_CRYPT_CRC32C_VPMSUM=m
++CONFIG_CRYPTO_MD5_PPC=m
+ CONFIG_CRYPTO_MICHAEL_MIC=m
+ CONFIG_CRYPTO_TGR192=m
+ CONFIG_CRYPTO_WP512=m
+@@ -310,6 +312,7 @@ CONFIG_CRYPTO_BLOWFISH=m
+ CONFIG_CRYPTO_CAST6=m
+ CONFIG_CRYPTO_KHAZAD=m
+ CONFIG_CRYPTO_SALSA20=m
++CONFIG_CRYPTO_SHA1_PPC=m
+ CONFIG_CRYPTO_SERPENT=m
+ CONFIG_CRYPTO_TEA=m
+ CONFIG_CRYPTO_TWOFISH=m
+-- 
+2.7.4
