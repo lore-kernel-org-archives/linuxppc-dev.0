@@ -1,56 +1,38 @@
-Return-Path: <schwidefsky@de.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8Ldx5LXLzDt31
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 08:22:13 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA2LJ47I027171
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 17:22:11 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26fmraqbr9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8M3K16MCzDvPG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 08:40:44 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA2Lcgtw068857
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 17:40:42 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26fmny6n7p-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 17:22:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 17:40:42 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
- Wed, 2 Nov 2016 21:22:09 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id A53DD1B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 21:24:17 +0000 (GMT)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uA2LM7UE16056676
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 21:22:07 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uA2LM75s001149
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 15:22:07 -0600
-Date: Wed, 2 Nov 2016 22:22:00 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter
- Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
-Subject: Re: [PATCH 3/4] cputime/powerpc/s390: make scaled cputime arch
- specific
-In-Reply-To: <20161102093820.GC2604@redhat.com>
-References: <1477917389-11341-1-git-send-email-sgruszka@redhat.com>
- <1477917389-11341-4-git-send-email-sgruszka@redhat.com>
- <9ad862f2-5665-08d6-4e5d-793637efcb66@de.ibm.com>
- <20161102093820.GC2604@redhat.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Wed, 2 Nov 2016 15:40:40 -0600
+Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
+ gso_type
+To: Eric Dumazet <eric.dumazet@gmail.com>, Jon Maxwell <jmaxwell37@gmail.com>
+References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
+ <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
+Cc: tlfalcon@linux.vnet.ibm.com, jmaxwell@redhat.com, hofrat@osadl.org,
+ linux-kernel@vger.kernel.org, jarod@redhat.com, netdev@vger.kernel.org,
+ paulus@samba.org, tom@herbertland.com, mleitner@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Wed, 2 Nov 2016 16:40:33 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20161102222200.14bc8cb6@mschwide>
+In-Reply-To: <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,38 +42,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2 Nov 2016 10:38:20 +0100
-Stanislaw Gruszka <sgruszka@redhat.com> wrote:
-
-> On Wed, Nov 02, 2016 at 10:11:22AM +0100, Christian Borntraeger wrote:
-> > On 10/31/2016 01:36 PM, Stanislaw Gruszka wrote:
-> > > Only s390 and powerpc have hardware facilities allowing to measure
-> > > cputimes scaled by frequency. On all other architectures
-> > > utimescaled/stimescaled are equal to utime/stime (however they are
-> > > accounted separately).
-> > > 
-> > > Patch remove {u,s}timescaled accounting on all architectures except
-> > > powerpc and s390, where those values are explicitly accounted on proper
-> > > places.
-> > 
-> > If we remove it everywhere else (and assuming that there are no users then)
-> > I aks myself if we should remove this as well from s390.
+On 10/27/2016 10:26 AM, Eric Dumazet wrote:
+> On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
+>> We recently encountered a bug where a few customers using ibmveth on the 
+>> same LPAR hit an issue where a TCP session hung when large receive was
+>> enabled. Closer analysis revealed that the session was stuck because the 
+>> one side was advertising a zero window repeatedly.
+>>
+>> We narrowed this down to the fact the ibmveth driver did not set gso_size 
+>> which is translated by TCP into the MSS later up the stack. The MSS is 
+>> used to calculate the TCP window size and as that was abnormally large, 
+>> it was calculating a zero window, even although the sockets receive buffer 
+>> was completely empty. 
+>>
+>> We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
+>> and Marcelo for all your help and review on this.
+>>
+>> The patch fixes both our internal reproduction tests and our customers tests.
+>>
+>> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
+>> ---
+>>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
+>>  1 file changed, 20 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>> index 29c05d0..c51717e 100644
+>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+>> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>  	int frames_processed = 0;
+>>  	unsigned long lpar_rc;
+>>  	struct iphdr *iph;
+>> +	bool large_packet = 0;
+>> +	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
+>>  
+>>  restart_poll:
+>>  	while (frames_processed < budget) {
+>> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>  						iph->check = 0;
+>>  						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+>>  						adapter->rx_large_packets++;
+>> +						large_packet = 1;
+>>  					}
+>>  				}
+>>  			}
+>>  
+>> +			if (skb->len > netdev->mtu) {
+>> +				iph = (struct iphdr *)skb->data;
+>> +				if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
+>> +				    iph->protocol == IPPROTO_TCP) {
+>> +					hdr_len += sizeof(struct iphdr);
+>> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
+>> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>> +				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
+>> +					   iph->protocol == IPPROTO_TCP) {
+>> +					hdr_len += sizeof(struct ipv6hdr);
+>> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
+>> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>> +				}
+>> +				if (!large_packet)
+>> +					adapter->rx_large_packets++;
+>> +			}
+>> +
+>>  
 > 
-> There is one user of scaled cputimes values, it is taskstats (to users
-> space are exported ac_utimescaled, ac_stimescaled and
-> cpu_scaled_run_real_total which is calculated based on scaled times).
-> However on other than powerpc and s390 architectures scaled times are
-> equal to normal times (this is also true for older powerpc's without
-> SPURR/PURR registers).
+> This might break forwarding and PMTU discovery.
+> 
+> You force gso_size to device mtu, regardless of real MSS used by the TCP
+> sender.
+> 
+> Don't you have the MSS provided in RX descriptor, instead of guessing
+> the value ?
 
-The taskstats interface is the only user of the scaled cputime that
-I am aware of. It is hard to say how valuable the information is.
-Without the scaled number in the taskstats inferface you have no means
-to detect if your workload has been affected by a another SMT thread
-running on the same core.
+We've had some further discussions on this with the Virtual I/O Server (VIOS)
+development team. The large receive aggregation in the VIOS (AIX based) is actually
+being done by software in the VIOS. What they may be able to do is when performing
+this aggregation, they could look at the packet lengths of all the packets being
+aggregated and take the largest packet size within the aggregation unit, minus the
+header length and return that to the virtual ethernet client which we could then stuff
+into gso_size. They are currently assessing how feasible this would be to do and whether
+it would impact other bits of the code. However, assuming this does end up being an option,
+would this address the concerns here or is that going to break something else I'm
+not thinking of?
+
+Unfortunately, I don't think we'd have a good way to get gso_segs set correctly as I don't
+see how that would get passed back up the interface.
+
+Thanks,
+
+Brian
+
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
