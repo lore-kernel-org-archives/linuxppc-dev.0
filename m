@@ -1,23 +1,49 @@
-Return-Path: <tomi.valkeinen@ti.com>
-Received: from bear.ext.ti.com (bear.ext.ti.com [198.47.19.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t81kd1hj1zDt53
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 19:40:08 +1100 (AEDT)
-Subject: Re: [PATCH] Fix loading of module radeonfb on PowerMac
-To: Mathieu Malaterre <malat@debian.org>, <linux-fbdev@vger.kernel.org>
-References: <1475928540-19647-1-git-send-email-malat@debian.org>
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Jean-Christophe
- Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Message-ID: <fbf3b5a3-efd9-0f85-c4fe-ae34ae1862b7@ti.com>
-Date: Wed, 2 Nov 2016 10:28:55 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t81nN2CZjzDt53
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2016 19:42:32 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA28cbbW089637
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 04:42:30 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26f9r5bcj1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 04:42:29 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 2 Nov 2016 02:42:28 -0600
+Date: Wed, 2 Nov 2016 14:12:21 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ skiboot list <skiboot@lists.ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 2/3] cpuidle:powernv: Add helper function to populate
+ powernv idle states.
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
+ <d7298ac18999f842f6eaf826cf21250503e40890.1477556602.git.ego@linux.vnet.ibm.com>
+ <CAOSf1CHZ0_1B28bX9TsaE6vcOaWUwhanQWAN=LKSLoNHK+Jh0A@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1475928540-19647-1-git-send-email-malat@debian.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="RA5rjBMNWoGotpsjdBTS4iHc1R5plmg5p"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOSf1CHZ0_1B28bX9TsaE6vcOaWUwhanQWAN=LKSLoNHK+Jh0A@mail.gmail.com>
+Message-Id: <20161102084221.GC17909@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +53,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---RA5rjBMNWoGotpsjdBTS4iHc1R5plmg5p
-Content-Type: multipart/mixed; boundary="9hOgMH0jSQ2NC1DrCHlgIFxMk8ka3sVeO";
- protected-headers="v1"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Mathieu Malaterre <malat@debian.org>, linux-fbdev@vger.kernel.org
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Message-ID: <fbf3b5a3-efd9-0f85-c4fe-ae34ae1862b7@ti.com>
-Subject: Re: [PATCH] Fix loading of module radeonfb on PowerMac
-References: <1475928540-19647-1-git-send-email-malat@debian.org>
-In-Reply-To: <1475928540-19647-1-git-send-email-malat@debian.org>
+Hi Oliver,
 
---9hOgMH0jSQ2NC1DrCHlgIFxMk8ka3sVeO
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Thanks for reviewing the patch!
 
-On 08/10/16 15:09, Mathieu Malaterre wrote:
-> When the linux kernel is build with (typical kernel ship with Debian
-> installer):
->=20
-> CONFIG_FB_OF=3Dy
-> CONFIG_VT_HW_CONSOLE_BINDING=3Dy
-> CONFIG_FB_RADEON=3Dm
->=20
-> The offb driver takes precedence over module radeonfb. It is then
-> impossible to load the module, error reported is:
->=20
-> [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
-> [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000=
-000-0x9fffffff pref]
-> [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
-> [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
->=20
-> This patch reproduce the behavior of the module radeon, so as to make i=
-t
-> possible to load radeonfb when offb is first loaded.
->=20
-> It should be noticed that `offb_destroy` is never called which explain =
-the
-> need to skip error detection on the radeon side.
+On Tue, Nov 01, 2016 at 07:32:58PM +1100, Oliver O'Halloran wrote:
+> On Thu, Oct 27, 2016 at 7:35 PM, Gautham R. Shenoy
+> <ego@linux.vnet.ibm.com> wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >
+> > In the current code for powernv_add_idle_states, there is a lot of code
+> > duplication while initializing an idle state in powernv_states table.
+> >
+> > Add an inline helper function to populate the powernv_states[] table for
+> > a given idle state. Invoke this for populating the "Nap", "Fastsleep"
+> > and the stop states in powernv_add_idle_states.
+> >
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > ---
+> >  drivers/cpuidle/cpuidle-powernv.c | 82 +++++++++++++++++++++++----------------
+> >  include/linux/cpuidle.h           |  1 +
+> >  2 files changed, 49 insertions(+), 34 deletions(-)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> > index 7fe442c..11b22b9 100644
+> > --- a/drivers/cpuidle/cpuidle-powernv.c
+> > +++ b/drivers/cpuidle/cpuidle-powernv.c
+> > @@ -167,6 +167,28 @@ static int powernv_cpuidle_driver_init(void)
+> >         return 0;
+> >  }
+> >
+> > +static inline void add_powernv_state(int index, const char *name,
+> > +                                    unsigned int flags,
+> > +                                    int (*idle_fn)(struct cpuidle_device *,
+> > +                                                   struct cpuidle_driver *,
+> > +                                                   int),
+> > +                                    unsigned int target_residency,
+> > +                                    unsigned int exit_latency,
+> > +                                    u64 psscr_val)
+> > +{
+> > +       strncpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+> > +       strncpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
+> 
+> If the supplied name is equal to CPUIDLE_NAME_LEN then strncpy() won't
+> terminate the string. The least annoying fix is to memset() the whole
+> structure to zero and set n to CPUIDLE_NAME_LEN - 1.
 
-Why is that? It sounds rather bad if two drivers claim the same resources=
-=2E
+I will change this to use strlcpy as Paul suggested in the reply.
 
- Tomi
+> 
+> > +       powernv_states[index].flags = flags;
+> > +       powernv_states[index].target_residency = target_residency;
+> > +       powernv_states[index].exit_latency = exit_latency;
+> > +       powernv_states[index].enter = idle_fn;
+> > +
+> > +       if (idle_fn != stop_loop)
+> > +               return;
+> 
+> This can probably be deleted. The nap/sleep loops don't look at the
+> psscr setting and you've passed in a dummy value of zero anyway.
+
+The subsequent patch adds the missing bits to the psscr_val if we are
+running on the older firmware. But in any case, as you rightly pointed
+out we don't use psscr_table in nap/sleep loops. So this can go.
+
+> 
+> > +
+> > +       stop_psscr_table[index] = psscr_val;
+> > +}
+> > +
+> >  static int powernv_add_idle_states(void)
+> >  {
+> >         struct device_node *power_mgt;
+> > @@ -236,6 +258,7 @@ static int powernv_add_idle_states(void)
+> >                 "ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
+> >
+> >         for (i = 0; i < dt_idle_states; i++) {
+> > +               unsigned int exit_latency, target_residency;
+> >                 /*
+> >                  * If an idle state has exit latency beyond
+> >                  * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+> > @@ -244,27 +267,30 @@ static int powernv_add_idle_states(void)
+> >                 if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
+> >                         continue;
+> >
+> > +               exit_latency = ((unsigned int)latency_ns[i]) / 1000;
+> > +               target_residency = (!rc) ? ((unsigned int)residency_ns[i]) : 0;
+> > +               /*
+> > +                * Firmware passes residency values in ns.
+> > +                * cpuidle expects it in us.
+> > +                */
+> > +               target_residency /= 1000;
+> > +
+> >                 /*
+> >                  * Cpuidle accepts exit_latency and target_residency in us.
+> 
+> This comment says the same thing as the one above.
+
+Will clean this up to reflect the state of the code.
+
+> 
+> >                  * Use default target_residency values if f/w does not expose it.
+> >                  */
+> >                 if (flags[i] & OPAL_PM_NAP_ENABLED) {
+> > +                       target_residency = 100;
+> 
+> Hmm, the above comment says that we should only use the default value
+> for target_residency if firmware hasn't provided a value. Is there a
+> reason we always use the hard coded value?
+
+Ah, good catch! I should be setting target_residency to the default
+value only if it is not set by the firmware. Will fix this.
 
 
---9hOgMH0jSQ2NC1DrCHlgIFxMk8ka3sVeO--
+> 
+> >                         /* Add NAP state */
+> > -                       strcpy(powernv_states[nr_idle_states].name, "Nap");
+> > -                       strcpy(powernv_states[nr_idle_states].desc, "Nap");
+> > -                       powernv_states[nr_idle_states].flags = 0;
+> > -                       powernv_states[nr_idle_states].target_residency = 100;
+> > -                       powernv_states[nr_idle_states].enter = nap_loop;
+> > +                       add_powernv_state(nr_idle_states, "Nap",
+> > +                                         CPUIDLE_FLAG_NONE, nap_loop,
+> > +                                         target_residency, exit_latency, 0);
+> >                 } else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+> >                                 !(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> > -                       strncpy(powernv_states[nr_idle_states].name,
+> > -                               names[i], CPUIDLE_NAME_LEN);
+> > -                       strncpy(powernv_states[nr_idle_states].desc,
+> > -                               names[i], CPUIDLE_NAME_LEN);
+> > -                       powernv_states[nr_idle_states].flags = 0;
+> > -
+> > -                       powernv_states[nr_idle_states].enter = stop_loop;
+> > -                       stop_psscr_table[nr_idle_states] = psscr_val[i];
+> > +                       add_powernv_state(nr_idle_states, names[i],
+> > +                                         CPUIDLE_FLAG_NONE, stop_loop,
+> > +                                         target_residency, exit_latency,
+> > +                                         psscr_val[i]);
+> >                 }
+> >
+> >                 /*
+> > @@ -274,32 +300,20 @@ static int powernv_add_idle_states(void)
+> >  #ifdef CONFIG_TICK_ONESHOT
+> >                 if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+> >                         flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+> > +                       target_residency = 300000;
+> 
+> Same comment as above.
+> 
+> >                         /* Add FASTSLEEP state */
+> > -                       strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+> > -                       strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+> > -                       powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+> > -                       powernv_states[nr_idle_states].target_residency = 300000;
+> > -                       powernv_states[nr_idle_states].enter = fastsleep_loop;
+> > +                       add_powernv_state(nr_idle_states, "FastSleep",
+> > +                                         CPUIDLE_FLAG_TIMER_STOP,
+> > +                                         fastsleep_loop,
+> > +                                         target_residency, exit_latency, 0);
+> >                 } else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
+> >                                 (flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> > -                       strncpy(powernv_states[nr_idle_states].name,
+> > -                               names[i], CPUIDLE_NAME_LEN);
+> > -                       strncpy(powernv_states[nr_idle_states].desc,
+> > -                               names[i], CPUIDLE_NAME_LEN);
+> > -
+> > -                       powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+> > -                       powernv_states[nr_idle_states].enter = stop_loop;
+> > -                       stop_psscr_table[nr_idle_states] = psscr_val[i];
+> > +                       add_powernv_state(nr_idle_states, names[i],
+> > +                                         CPUIDLE_FLAG_TIMER_STOP, stop_loop,
+> > +                                         target_residency, exit_latency,
+> > +                                         psscr_val[i]);
+> >                 }
+> >  #endif
+> > -               powernv_states[nr_idle_states].exit_latency =
+> > -                               ((unsigned int)latency_ns[i]) / 1000;
+> > -
+> > -               if (!rc) {
+> > -                       powernv_states[nr_idle_states].target_residency =
+> > -                               ((unsigned int)residency_ns[i]) / 1000;
+> > -               }
+> > -
+> >                 nr_idle_states++;
+> >         }
+> >  out:
+> > diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> > index bb31373..c4e10f8 100644
+> > --- a/include/linux/cpuidle.h
+> > +++ b/include/linux/cpuidle.h
+> > @@ -62,6 +62,7 @@ struct cpuidle_state {
+> >  };
+> >
+> >  /* Idle State Flags */
+> > +#define CPUIDLE_FLAG_NONE       (0x00)
+> >  #define CPUIDLE_FLAG_COUPLED   (0x02) /* state applies to multiple cpus */
+> >  #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
+> >
+> > --
+> > 1.9.4
+> >
+> 
+> Looks good otherwise.
+> 
+> Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
 
---RA5rjBMNWoGotpsjdBTS4iHc1R5plmg5p
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Thanks again!
+>
 
-iQIcBAEBCAAGBQJYGaPHAAoJEPo9qoy8lh71VZgP/iB6GTEKdGS8+akZaJ5BsAKB
-7whPZH90q6cAAs0RHHIh3f3LQTCKNhXCwGgI8MeOo/yrp0RorLPz9JZymg8Ltu6a
-c0hd2z5X4ztv9Bu19JfjXBMBAMvV5wxilzxUQiZ7vBaR4315DGj7TfMYO4hhs9Ta
-0SBFXE77coX5FDrPLvKIl4R90pW/2o7tQzrn/8ei47Z+LQMk9wVUsSmuF0qn2chU
-L2L1fYPGmNMy0fVAklZdImGzb2/sKScAcL69C81rDIv2VsJnG9KGGjn8SXS6lDu1
-tvSByh1xnrIA+mtg80zcL8mPwKbbQDw2DJnfpei5chU2DKOWC/ArmPPLswpGyCnT
-FA86uR9zsXlL/+5XdbuM1Zu68ol9ztp8qtPyQ3W0VBRKnGGjgd3Ly43zHccbGjfU
-hV2OkiAswEUEE+GZYWvtAdjaHKr76FT9Fgg1cGLxYrKx5FTM9Sap88J52EzMnESW
-zCkz15Cf/rfR2B6QQBBpXHqVCR0GhGvtkxACfKikcANe9jB9TmlB5VuBWyymZeg8
-CwDSCYyoogpSvgeYDQTfa3sGdFlFEzcGsgBHwQNH3RyaraMMYpnQGqiwq1eWZeHE
-2tphSRzM56O5j9QGteZhSKH1ZktI6UGdwVUSqoji6aQ85vMmghPszLfDlq1eiKWQ
-6rUPfaUiXwBo6ItRTVgl
-=2pJA
------END PGP SIGNATURE-----
-
---RA5rjBMNWoGotpsjdBTS4iHc1R5plmg5p--
+--
+Regards
+gautham.
