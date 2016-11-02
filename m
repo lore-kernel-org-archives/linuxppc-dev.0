@@ -1,27 +1,21 @@
-Return-Path: <jim.epost@gmail.com>
-Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
- [IPv6:2607:f8b0:4003:c06::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0044.outbound.protection.outlook.com [104.47.42.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8HWm4DgKzDvP5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 06:01:40 +1100 (AEDT)
-Received: by mail-oi0-x241.google.com with SMTP id 128so2451102oih.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 12:01:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8KCb5JL9zDt4R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 07:17:46 +1100 (AEDT)
+From: Madalin Bucur <madalin.bucur@nxp.com>
+To: <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <davem@davemloft.net>, <oss@buserror.net>, <ppc@mindchasers.com>,
+ <joe@perches.com>, <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>
+Subject: [PATCH net-next v6 00/10] dpaa_eth: Add the QorIQ DPAA Ethernet driver
+Date: Wed, 2 Nov 2016 22:17:24 +0200
+Message-ID: <1478117854-8952-1-git-send-email-madalin.bucur@nxp.com>
+Reply-To: <madalin.bucur@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <87eg2unnil.fsf@concordia.ellerman.id.au>
-References: <20161030214047.25037-1-christophe.jaillet@wanadoo.fr>
- <87wpgp13ki.fsf@concordia.ellerman.id.au>
- <CA+r1ZhiJW6xQ1VwgLudFzFBxkKzkURv7MZhWtmSevRHc9aUyxA@mail.gmail.com>
- <87eg2unnil.fsf@concordia.ellerman.id.au>
-From: Jim Davis <jim.epost@gmail.com>
-Date: Wed, 2 Nov 2016 12:01:37 -0700
-Message-ID: <CA+r1ZhixdKcgKDR3_No_5=M7BFo25M9mwfyxcVMLjfi=8Dtdmg@mail.gmail.com>
-Subject: Re: [PATCH] cxl: Fix error handling
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, imunsie@au1.ibm.com,
- fbarrat@linux.vnet.ibm.com, kernel-janitors@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,55 +25,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 2, 2016 at 4:12 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Jim Davis <jim.epost@gmail.com> writes:
->
->> On Sun, Oct 30, 2016 at 10:37 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>> More here:
->>>
->>> https://github.com/linuxppc/linux/wiki/Building-powerpc-kernels
->>
->> Cool; the little-endian build worked fine, but
->
-> Yay, thanks for trying.
->
->> jim@krebstar:~/linux-rc$ make ARCH=powerpc
->> CROSS_COMPILE=powerpc64-linux-gnu- vmlinux
->> make: powerpc64-linux-gnu-gcc: Command not found
->> make: powerpc64-linux-gnu-gcc: Command not found
->> scripts/kconfig/conf  --silentoldconfig Kconfig
->> make: powerpc64-linux-gnu-gcc: Command not found
+This patch series adds the Ethernet driver for the Freescale
+QorIQ Data Path Acceleration Architecture (DPAA).
 
-But I cleverly tried to run the Fedora command on Ubuntu... when I run
-the right command for Ubuntu, the build worked just fine.  D'oh!
+This version includes changes following the feedback received
+on previous versions from Eric Dumazet, Bob Cochran, Joe Perches,
+Paul Bolle, Joakim Tjernlund, Scott Wood, David Miller - thank you.
 
-Nit: make distclean missed a few files
+Together with the driver a managed version of alloc_percpu
+is provided that simplifies the release of per-CPU memory.
 
-jim@krebstar:~/linux-rc$ make distclean; git clean -fdx
-  CLEAN   .
-  CLEAN   drivers/tty/vt
-  CLEAN   drivers/video/logo
-  CLEAN   firmware
-  CLEAN   kernel
-  CLEAN   lib
-  CLEAN   usr
-  CLEAN   .tmp_versions
-  CLEAN   scripts/basic
-  CLEAN   scripts/dtc
-  CLEAN   scripts/genksyms
-  CLEAN   scripts/kconfig
-  CLEAN   scripts/mod
-  CLEAN   scripts
-  CLEAN   include/config include/generated arch/powerpc/include/generated
-  CLEAN   .config .version Module.symvers
-Removing arch/powerpc/kernel/systbl_chk.i
-Removing arch/powerpc/kernel/vdso32/vdso32.lds
-Removing arch/powerpc/kernel/vdso32/vdso32.so
-Removing arch/powerpc/kernel/vdso32/vdso32.so.dbg
-Removing arch/powerpc/kernel/vdso64/vdso64.lds
-Removing arch/powerpc/kernel/vdso64/vdso64.so
-Removing arch/powerpc/kernel/vdso64/vdso64.so.dbg
-Removing arch/powerpc/kernel/vmlinux.lds
+The Freescale DPAA architecture consists in a series of hardware
+blocks that support the Ethernet connectivity. The Ethernet driver
+depends upon the following drivers that are currently in the Linux
+kernel:
+ - Peripheral Access Memory Unit (PAMU)
+    drivers/iommu/fsl_*
+ - Frame Manager (FMan) added in v4.4
+    drivers/net/ethernet/freescale/fman
+ - Queue Manager (QMan), Buffer Manager (BMan) added in v4.9-rc1
+    drivers/soc/fsl/qbman
+
+dpaa_eth interfaces mapping to FMan MACs:
+
+  dpaa_eth       /eth0\     ...       /ethN\
+  driver        |      |             |      |
+  -------------   ----   -----------   ----   -------------
+       -Ports  / Tx  Rx \    ...    / Tx  Rx \
+  FMan        |          |         |          |
+       -MACs  |   MAC0   |         |   MACN   |
+             /   dtsec0   \  ...  /   dtsecN   \ (or tgec)
+            /              \     /              \(or memac)
+  ---------  --------------  ---  --------------  ---------
+      FMan, FMan Port, FMan SP, FMan MURAM drivers
+  ---------------------------------------------------------
+      FMan HW blocks: MURAM, MACs, Ports, SP
+  ---------------------------------------------------------
+
+dpaa_eth relation to QMan, FMan:
+              ________________________________
+  dpaa_eth   /            eth0                \
+  driver    /                                  \
+  ---------   -^-   -^-   -^-   ---    ---------
+  QMan driver / \   / \   / \  \   /  | BMan    |
+             |Rx | |Rx | |Tx | |Tx |  | driver  |
+  ---------  |Dfl| |Err| |Cnf| |FQs|  |         |
+  QMan HW    |FQ | |FQ | |FQ | |   |  |         |
+             /   \ /   \ /   \  \ /   |         |
+  ---------   ---   ---   ---   -v-    ---------
+            |        FMan QMI         |         |
+            | FMan HW       FMan BMI  | BMan HW |
+              -----------------------   --------
+
+where the acronyms used above (and in the code) are:
+DPAA = Data Path Acceleration Architecture
+FMan = DPAA Frame Manager
+QMan = DPAA Queue Manager
+BMan = DPAA Buffers Manager
+QMI = QMan interface in FMan
+BMI = BMan interface in FMan
+FMan SP = FMan Storage Profiles
+MURAM = Multi-user RAM in FMan
+FQ = QMan Frame Queue
+Rx Dfl FQ = default reception FQ
+Rx Err FQ = Rx error frames FQ
+Tx Cnf FQ = Tx confirmation FQ
+Tx FQs = transmission frame queues
+dtsec = datapath three speed Ethernet controller (10/100/1000 Mbps)
+tgec = ten gigabit Ethernet controller (10 Gbps)
+memac = multirate Ethernet MAC (10/100/1000/10000)
+
+Changes from v5:
+ - adapt to the latest Q/BMan drivers API
+ - use build_skb() on Rx path instead of buffer pool refill path
+ - proper support for multiple buffer pools
+ - align function, variable names, code cleanup
+ - driver file structure cleanup
+
+Changes from v4:
+ - addressed feedback from Scott Wood and Joe Perches
+ - fixed spelling
+ - fixed leak of uninitialized stack to userspace
+ - fix prints
+ - replace raw_cpu_ptr() with this_cpu_ptr()
+ - remove _s from the end of structure names
+ - remove underscores at start of functions, goto labels
+ - remove likely in error paths
+ - use container_of() instead of open casts
+ - remove priv from the driver name
+ - move return type on same line with function name
+ - drop DPA_READ_SKB_PTR/DPA_WRITE_SKB_PTR
+
+Changes from v3:
+ - removed bogus delay and comment in .ndo_stop implementation
+ - addressed minor issues reported by David Miller
+
+Changes from v2:
+ - removed debugfs, moved exports to ethtool statistics
+ - removed congestion groups Kconfig params
+
+Changes from v1:
+ - bpool level Kconfig options removed
+ - print format using pr_fmt, cleaned up prints
+ - __hot/__cold removed
+ - gratuitous unlikely() removed
+ - code style aligned, consistent spacing for declarations
+ - comment formatting
+
+The changes are also available in the public git repository at
+git://git.freescale.com/ppc/upstream/linux.git on the branch dpaa_eth-next.
+
+Madalin Bucur (10):
+  devres: add devm_alloc_percpu()
+  dpaa_eth: add support for DPAA Ethernet
+  dpaa_eth: add option to use one buffer pool set
+  dpaa_eth: add ethtool functionality
+  dpaa_eth: add ethtool statistics
+  dpaa_eth: add sysfs exports
+  dpaa_eth: add trace points
+  arch/powerpc: Enable FSL_PAMU
+  arch/powerpc: Enable FSL_FMAN
+  arch/powerpc: Enable dpaa_eth
+
+ Documentation/driver-model/devres.txt              |    4 +
+ arch/powerpc/configs/dpaa.config                   |    3 +
+ drivers/base/devres.c                              |   66 +
+ drivers/net/ethernet/freescale/Kconfig             |    2 +
+ drivers/net/ethernet/freescale/Makefile            |    1 +
+ drivers/net/ethernet/freescale/dpaa/Kconfig        |   27 +
+ drivers/net/ethernet/freescale/dpaa/Makefile       |   12 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     | 2833 ++++++++++++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  185 ++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  165 ++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   |  141 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |  417 +++
+ include/linux/device.h                             |   19 +
+ 13 files changed, 3875 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
 
 -- 
-Jim
+2.1.0
