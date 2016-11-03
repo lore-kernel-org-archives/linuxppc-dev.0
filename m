@@ -1,24 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8WL047J4zDt0c
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 14:54:00 +1100 (AEDT)
-Message-ID: <1478145230.6502.3.camel@kernel.crashing.org>
-Subject: Re: [PATCH] Fix loading of module radeonfb on PowerMac
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mathieu Malaterre <malat@debian.org>, Tomi Valkeinen
- <tomi.valkeinen@ti.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Lennart
- Sorensen <lsorense@csclub.uwaterloo.ca>, Jean-Christophe Plagniol-Villard
- <plagnioj@jcrosoft.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 02 Nov 2016 21:53:50 -0600
-In-Reply-To: <CA+7wUsy9AW6BvNd=Bmmwra-YfTMAqFwLMg7Z7ZNXpxORq9qtTg@mail.gmail.com>
-References: <1475928540-19647-1-git-send-email-malat@debian.org>
- <fbf3b5a3-efd9-0f85-c4fe-ae34ae1862b7@ti.com>
- <CA+7wUsy9AW6BvNd=Bmmwra-YfTMAqFwLMg7Z7ZNXpxORq9qtTg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8XLZ0TfCzDvNn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 15:39:34 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH] powerpc/module: Add support for R_PPC64_REL32 relocations
+Date: Thu,  3 Nov 2016 15:39:17 +1100
+Message-Id: <1478147957-4766-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-02 at 11:28 +0100, Mathieu Malaterre wrote:
-> 
-> This has been working great so far for `radeon.ko`, so I assumed I
-> could shamelessly copy the behavior over to `radeonfb.ko`.
-> 
-> The original reference I found was from Benjamin Herrenschmidt here:
-> https://lists.freedesktop.org/archives/dri-devel/2010-August/002907.h
-> tml
-> 
-> I am of course willing to try something else, but I would need some
-> guidance.
+We haven't seen these before, but the soon to be merged relative
+exception tables support causes them to be generated.
 
-I missed your original patch but yes, the basic idea is that we kick
-out offb when the "real" driver loads.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/module_64.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 183368e008cf..bb1807184bad 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -652,6 +652,11 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 			*location = value - (unsigned long)location;
+ 			break;
+ 
++		case R_PPC64_REL32:
++			/* 32 bits relative (used by relative exception tables) */
++			*(u32 *)location = value - (unsigned long)location;
++			break;
++
+ 		case R_PPC64_TOCSAVE:
+ 			/*
+ 			 * Marker reloc indicates we don't have to save r2.
+-- 
+2.7.4
