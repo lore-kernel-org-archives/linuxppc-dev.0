@@ -1,38 +1,29 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8M3K16MCzDvPG
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 08:40:44 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA2Lcgtw068857
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Nov 2016 17:40:42 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26fmny6n7p-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 17:40:42 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Wed, 2 Nov 2016 15:40:40 -0600
-Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
- gso_type
-To: Eric Dumazet <eric.dumazet@gmail.com>, Jon Maxwell <jmaxwell37@gmail.com>
-References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
- <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
-Cc: tlfalcon@linux.vnet.ibm.com, jmaxwell@redhat.com, hofrat@osadl.org,
- linux-kernel@vger.kernel.org, jarod@redhat.com, netdev@vger.kernel.org,
- paulus@samba.org, tom@herbertland.com, mleitner@redhat.com,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Wed, 2 Nov 2016 16:40:33 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8RX82nmVzDvHw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 12:02:32 +1100 (AEDT)
+Date: Thu, 3 Nov 2016 12:02:28 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH kernel v4 4/4] powerpc/mm/iommu, vfio/spapr: Put pages on
+ VFIO container shutdown
+Message-ID: <20161103010228.GD4764@fergus.ozlabs.ibm.com>
+References: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
+ <1477291990-2872-5-git-send-email-aik@ozlabs.ru>
+ <20161025044414.GW11052@umbus.fritz.box>
+ <9f5fda35-be4d-12d1-e027-d8576cc8e8fe@ozlabs.ru>
+ <20161031031318.GM18226@umbus.fritz.box>
+ <baf7960d-dbd2-efc8-5574-6a575f2714c6@ozlabs.ru>
+ <20161031042347.GN18226@umbus.fritz.box>
+ <d03177f8-231e-cef7-d518-e33bea5a1cfb@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <d03177f8-231e-cef7-d518-e33bea5a1cfb@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,98 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/27/2016 10:26 AM, Eric Dumazet wrote:
-> On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
->> We recently encountered a bug where a few customers using ibmveth on the 
->> same LPAR hit an issue where a TCP session hung when large receive was
->> enabled. Closer analysis revealed that the session was stuck because the 
->> one side was advertising a zero window repeatedly.
->>
->> We narrowed this down to the fact the ibmveth driver did not set gso_size 
->> which is translated by TCP into the MSS later up the stack. The MSS is 
->> used to calculate the TCP window size and as that was abnormally large, 
->> it was calculating a zero window, even although the sockets receive buffer 
->> was completely empty. 
->>
->> We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
->> and Marcelo for all your help and review on this.
->>
->> The patch fixes both our internal reproduction tests and our customers tests.
->>
->> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
->> ---
->>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
->>  1 file changed, 20 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> index 29c05d0..c51717e 100644
->> --- a/drivers/net/ethernet/ibm/ibmveth.c
->> +++ b/drivers/net/ethernet/ibm/ibmveth.c
->> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->>  	int frames_processed = 0;
->>  	unsigned long lpar_rc;
->>  	struct iphdr *iph;
->> +	bool large_packet = 0;
->> +	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
->>  
->>  restart_poll:
->>  	while (frames_processed < budget) {
->> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->>  						iph->check = 0;
->>  						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
->>  						adapter->rx_large_packets++;
->> +						large_packet = 1;
->>  					}
->>  				}
->>  			}
->>  
->> +			if (skb->len > netdev->mtu) {
->> +				iph = (struct iphdr *)skb->data;
->> +				if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
->> +				    iph->protocol == IPPROTO_TCP) {
->> +					hdr_len += sizeof(struct iphdr);
->> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
->> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->> +				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
->> +					   iph->protocol == IPPROTO_TCP) {
->> +					hdr_len += sizeof(struct ipv6hdr);
->> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
->> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->> +				}
->> +				if (!large_packet)
->> +					adapter->rx_large_packets++;
->> +			}
->> +
->>  
+On Wed, Nov 02, 2016 at 01:44:03PM +1100, Alexey Kardashevskiy wrote:
+> On 31/10/16 15:23, David Gibson wrote:
+[...]
+> > 
+> > Um.. yeah.. that's not really ok.  Prohibiting overlapping
+> > registrations on the same container is reasonable enough.  Having a
+> > container not be able to register memory because some completely
+> > different container has registered something overlapping is getting
+> > very ugly.
 > 
-> This might break forwarding and PMTU discovery.
+> I am lost here. Does this mean the patches cannot go upstream?
 > 
-> You force gso_size to device mtu, regardless of real MSS used by the TCP
-> sender.
-> 
-> Don't you have the MSS provided in RX descriptor, instead of guessing
-> the value ?
+> Also how would I implement overlapping if we are not teaching KVM about
+> VFIO containers? The mm list has a counter of how many times each memory
+> region was mapped via TCE (and this prevents unregistration), and if we
+> want overlapping regions - a "mapped" counter of which one would I update
+> in real mode (where I only have a user address and a LIOBN)?
 
-We've had some further discussions on this with the Virtual I/O Server (VIOS)
-development team. The large receive aggregation in the VIOS (AIX based) is actually
-being done by software in the VIOS. What they may be able to do is when performing
-this aggregation, they could look at the packet lengths of all the packets being
-aggregated and take the largest packet size within the aggregation unit, minus the
-header length and return that to the virtual ethernet client which we could then stuff
-into gso_size. They are currently assessing how feasible this would be to do and whether
-it would impact other bits of the code. However, assuming this does end up being an option,
-would this address the concerns here or is that going to break something else I'm
-not thinking of?
+The patches fix a real bug, where we run out of memory to run VMs.
 
-Unfortunately, I don't think we'd have a good way to get gso_segs set correctly as I don't
-see how that would get passed back up the interface.
+The patches don't change the interface, and don't introduce the
+constraint that is being discussed here (that the regions being
+registered may not overlap unless they are identical to a previously
+registered region).  That constraint is already present in the
+upstream code.
 
-Thanks,
+They do change the behaviour when you use a container fd from a
+different process from the one which opened the fd, but that is not
+something that worked in any meaningful way before anyway.
 
-Brian
+So David, do you still see any reason why the patches should not be
+accepted?
 
-
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+Regards,
+Paul.
