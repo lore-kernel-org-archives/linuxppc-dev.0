@@ -1,44 +1,21 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8skn1mDHzDvWW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 04:43:12 +1100 (AEDT)
-Date: Thu, 3 Nov 2016 18:42:50 +0100
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Steffen Maier <maier@linux.vnet.ibm.com>,
- "Martin K . Petersen" <martin.petersen@oracle.com>,
- Hannes Reinecke <hare@suse.de>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>,
- James Smart <james.smart@avagotech.com>,
- Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
-Message-ID: <20161103174250.ury2u5zbyi2tfyvt@linux-x5ow.site>
-References: <cover.1476369687.git.jthumshirn@suse.de>
- <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
- <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
- <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
- <20161103151751.GD7404@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20161103151751.GD7404@infradead.org>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3t8wkl3HcHzDvVp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 06:58:22 +1100 (AEDT)
+Date: Thu, 03 Nov 2016 15:58:16 -0400 (EDT)
+Message-Id: <20161103.155816.642712588084106823.davem@davemloft.net>
+To: madalin.bucur@nxp.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, oss@buserror.net, ppc@mindchasers.com,
+ joe@perches.com, pebolle@tiscali.nl, joakim.tjernlund@transmode.se
+Subject: Re: [PATCH net-next v6 02/10] dpaa_eth: add support for DPAA Ethernet
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1478117854-8952-3-git-send-email-madalin.bucur@nxp.com>
+References: <1478117854-8952-1-git-send-email-madalin.bucur@nxp.com>
+ <1478117854-8952-3-git-send-email-madalin.bucur@nxp.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,68 +25,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 03, 2016 at 08:17:51AM -0700, Christoph Hellwig wrote:
-> On Fri, Oct 14, 2016 at 09:38:21AM +0200, Johannes Thumshirn wrote:
-> > On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
-> > > Hm, still behaves for me like I reported for v2:
-> > > http://marc.info/?l=linux-scsi&m=147637177902937&w=2
-> > 
-> > Hi Steffen,
-> > 
-> > Can you please try the following on top of 2/16?
-> 
-> How does this fit into the patch we're replying to?
+From: Madalin Bucur <madalin.bucur@nxp.com>
+Date: Wed, 2 Nov 2016 22:17:26 +0200
 
-Sorry but I don't quite get you.
+> This introduces the Freescale Data Path Acceleration Architecture
+> +static inline size_t bpool_buffer_raw_size(u8 index, u8 cnt)
+> +{
+> +	u8 i;
+> +	size_t res = DPAA_BP_RAW_SIZE / 2;
 
-If you look at a mixed source assembly listing for fc_host_dispatch() [1] we load
-the the offset of 24 from %r12 into %r1 and then the beginning of %r1 into %r2
-and crash. So if we now check if  job->request_len is smaller than uint32_t we
-know we can't have a messagecode in the request and bail out early, instead of
-accessing a possible NULL pointer. At least that's my analysis, feel free to
-correct me if I'm wrong.
+Always order local variable declarations from longest to shortest line,
+also know as Reverse Christmas Tree Format.
 
-[1] Listing:
-static int fc_bsg_host_dispatch(struct Scsi_Host *shost, struct bsg_job *job)
-{
-        struct fc_internal *i = to_fc_internal(shost->transportt);
-        struct fc_bsg_request *bsg_request = job->request;
-    5d54:       e3 10 c0 18 00 04       lg      %r1,24(%r12)
-        struct fc_bsg_reply *bsg_reply = job->reply;
-    5d5a:       e3 b0 c0 20 00 04       lg      %r11,32(%r12)
-        int cmdlen = sizeof(uint32_t);  /* start with length of msgcode */
-        int ret;
+Please audit your entire submission for this problem, it occurs
+everywhere.
 
-        /* check if we really have all the request data needed */
-        if (job->request_len < cmdlen) {
-    5d60:       a7 c4 00 48             jle     5df0 <fc_bsg_dispatch+0x1f0>
-                ret = -ENOMSG;
-                goto fail_host_msg;
-        }
+> +	/* we do not want shared skbs on TX */
+> +	net_dev->priv_flags &= ~IFF_TX_SKB_SHARING;
 
-        /* Validate the host command */
-        switch (bsg_request->msgcode) {
-    5d64:       58 20 10 00             l       %r2,0(%r1)
-    5d68:       c2 2f 80 00 00 03       clfi    %r2,2147483651
-    5d6e:       a7 84 00 1a             je      5da2 <fc_bsg_dispatch+0x1a2>
-    5d72:       a7 24 00 0a             jh      5d86 <fc_bsg_dispatch+0x186>
-    5d76:       c0 19 80 00 00 01       iilf    %r1,2147483649
-    5d7c:       ec 21 00 2b a0 77       clrj    %r2,%r1,10,5dd2 <fc_bsg_dispatch+0x1d2>
-    5d82:       a7 f4 00 3b             j       5df8 <fc_bsg_dispatch+0x1f8>
-    5d86:       c0 59 80 00 00 04       iilf    %r5,2147483652
-    5d8c:       ec 25 00 0b 80 76       crj     %r2,%r5,8,5da2 <fc_bsg_dispatch+0x1a2>
-    5d92:       c0 59 80 00 00 ff       iilf    %r5,2147483903
-    5d98:       ec 25 00 13 80 76       crj     %r2,%r5,8,5dbe <fc_bsg_dispatch+0x1be>
-    5d9e:       a7 f4 00 2d             j       5df8 <fc_bsg_dispatch+0x1f8>
+Why?  By clearing this, you disallow an important fundamental way to do
+performane testing, via pktgen.
 
 
-Thanks,
-	Johannes
+> +	int numstats = sizeof(struct rtnl_link_stats64) / sizeof(u64);
+ ...
+> +		cpustats = (u64 *)&percpu_priv->stats;
+> +
+> +		for (j = 0; j < numstats; j++)
+> +			netstats[j] += cpustats[j];
 
--- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+This is a memcpy() on well-typed datastructures which requires no
+casting or special handling whatsoever, so use memcpy instead of
+needlessly open coding the operation.
+
+> +static int dpaa_change_mtu(struct net_device *net_dev, int new_mtu)
+> +{
+> +	const int max_mtu = dpaa_get_max_mtu();
+> +
+> +	/* Make sure we don't exceed the Ethernet controller's MAXFRM */
+> +	if (new_mtu < 68 || new_mtu > max_mtu) {
+> +		netdev_err(net_dev, "Invalid L3 mtu %d (must be between %d and %d).\n",
+> +			   new_mtu, 68, max_mtu);
+> +		return -EINVAL;
+> +	}
+> +	net_dev->mtu = new_mtu;
+> +
+> +	return 0;
+> +}
+
+MTU restrictions are handled in the net-next tree via net_dev->min_mtu and
+net_dev->max_mtu.  Use that and do not define this NDO operation as you do
+not need it.
+
+> +static int dpaa_set_features(struct net_device *dev, netdev_features_t features)
+> +{
+> +	/* Not much to do here for now */
+> +	dev->features = features;
+> +	return 0;
+> +}
+
+Do not define unnecessary NDO operations, let the defaults do their job.
+
+> +static netdev_features_t dpaa_fix_features(struct net_device *dev,
+> +					   netdev_features_t features)
+> +{
+> +	netdev_features_t unsupported_features = 0;
+> +
+> +	/* In theory we should never be requested to enable features that
+> +	 * we didn't set in netdev->features and netdev->hw_features at probe
+> +	 * time, but double check just to be on the safe side.
+> +	 */
+> +	unsupported_features |= NETIF_F_RXCSUM;
+> +
+> +	features &= ~unsupported_features;
+> +
+> +	return features;
+> +}
+
+Unless you can show that your need this, do not "guess" by implement this
+NDO operation.  You don't need it.
+
+> +#ifdef CONFIG_FSL_DPAA_ETH_FRIENDLY_IF_NAME
+> +static int dpaa_mac_hw_index_get(struct platform_device *pdev)
+> +{
+> +	struct device *dpaa_dev;
+> +	struct dpaa_eth_data *eth_data;
+> +
+> +	dpaa_dev = &pdev->dev;
+> +	eth_data = dpaa_dev->platform_data;
+> +
+> +	return eth_data->mac_hw_id;
+> +}
+> +
+> +static int dpaa_mac_fman_index_get(struct platform_device *pdev)
+> +{
+> +	struct device *dpaa_dev;
+> +	struct dpaa_eth_data *eth_data;
+> +
+> +	dpaa_dev = &pdev->dev;
+> +	eth_data = dpaa_dev->platform_data;
+> +
+> +	return eth_data->fman_hw_id;
+> +}
+> +#endif
+
+Do not play network device naming games like this, use the standard name
+assignment done by the kernel and have userspace entities do geographic or
+device type specific naming.
+
+I want to see this code completely removed.
+
+> +static int dpaa_set_mac_address(struct net_device *net_dev, void *addr)
+> +{
+> +	const struct dpaa_priv	*priv;
+> +	int err;
+> +	struct mac_device *mac_dev;
+> +
+> +	priv = netdev_priv(net_dev);
+> +
+> +	err = eth_mac_addr(net_dev, addr);
+> +	if (err < 0) {
+> +		netif_err(priv, drv, net_dev, "eth_mac_addr() = %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	mac_dev = priv->mac_dev;
+> +
+> +	err = mac_dev->change_addr(mac_dev->fman_mac,
+> +				   (enet_addr_t *)net_dev->dev_addr);
+> +	if (err < 0) {
+> +		netif_err(priv, drv, net_dev, "mac_dev->change_addr() = %d\n",
+> +			  err);
+> +		return err;
+> +	}
+
+You MUST NOT return an error at this point without rewinding the state change
+performed by eth_mac_addr().  Otherwise device will be left in an inconsistent
+state compared to what the software MAC address has recorded.
+
+This driver is enormous, I don't have the time nor the patience to
+review it further for what seems to be many fundamental errors like
+the ones I have pointed out so far.
+
+Sorry.
