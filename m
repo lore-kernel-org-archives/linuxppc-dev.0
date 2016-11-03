@@ -1,19 +1,31 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8Y8Z653JzDvQQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 16:15:58 +1100 (AEDT)
-Date: Thu, 3 Nov 2016 16:15:42 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc/64: Use optimized checksum routines on
- little-endian
-Message-ID: <20161103051542.GB8368@fergus.ozlabs.ibm.com>
-References: <20161103051055.GA8368@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8YGb66F2zDvQQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 16:21:11 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id n85so3682925pfi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Nov 2016 22:21:11 -0700 (PDT)
+Date: Thu, 3 Nov 2016 16:21:00 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, "Shreyas B . Prabhu"
+ <shreyas@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/64s: relocation, register save fixes for system
+ reset interrupt
+Message-ID: <20161103162100.1b50777e@roar.ozlabs.ibm.com>
+In-Reply-To: <20161102084548.GD17909@in.ibm.com>
+References: <20161013021714.6624-1-npiggin@gmail.com>
+ <79d229aa-2b4e-67b7-157b-b839bc390cbf@linux.vnet.ibm.com>
+ <20161102175701.2ae8d1d3@roar.ozlabs.ibm.com>
+ <20161102082433.GA17365@in.ibm.com>
+ <20161102193624.7f0cbfee@roar.ozlabs.ibm.com>
+ <20161102084548.GD17909@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161103051055.GA8368@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,112 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we have optimized hand-coded assembly checksum routines
-for big-endian 64-bit systems, but for little-endian we use the
-generic C routines.  This modifies the optimized routines to work
-for little-endian.  With this, we no longer need to enable
-CONFIG_GENERIC_CSUM.  This also fixes a couple of comments
-in checksum_64.S so they accurately reflect what the associated
-instruction does.
+On Wed, 2 Nov 2016 14:15:48 +0530
+Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/Kconfig                |  2 +-
- arch/powerpc/include/asm/checksum.h |  4 ++++
- arch/powerpc/lib/Makefile           |  2 --
- arch/powerpc/lib/checksum_64.S      | 12 ++++++++++--
- 4 files changed, 15 insertions(+), 5 deletions(-)
+> Hi Nick,
+> 
+> On Wed, Nov 02, 2016 at 07:36:24PM +1100, Nicholas Piggin wrote:
+> > 
+> > Okay, I'll work with that. What's the best way to make a P8 do
+> > winkle sleeps?  
+> 
+> From the userspace, offlining the CPUs of the core will put them to
+> winkle.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 65fba4c..514e6dd 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -164,7 +164,7 @@ config PPC
- 	select HAVE_KERNEL_GZIP
- 
- config GENERIC_CSUM
--	def_bool CPU_LITTLE_ENDIAN
-+	def_bool n
- 
- config EARLY_PRINTK
- 	bool
-diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-index c16c6f8..5f8297b 100644
---- a/arch/powerpc/include/asm/checksum.h
-+++ b/arch/powerpc/include/asm/checksum.h
-@@ -72,7 +72,11 @@ static inline __wsum csum_tcpudp_nofold(__be32 saddr, __be32 daddr,
- 
- 	s += (__force u32)saddr;
- 	s += (__force u32)daddr;
-+#ifdef __BIG_ENDIAN
- 	s += proto + len;
-+#else
-+	s += (proto + len) << 8;
-+#endif
- 	return (__force __wsum) from64to32(s);
- #else
-     __asm__("\n\
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 309361e8..0e649d7 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -21,9 +21,7 @@ obj64-y	+= copypage_64.o copyuser_64.o usercopy_64.o mem_64.o hweight_64.o \
- obj64-$(CONFIG_SMP)	+= locks.o
- obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
- 
--ifeq ($(CONFIG_GENERIC_CSUM),)
- obj-y			+= checksum_$(BITS).o checksum_wrappers.o
--endif
- 
- obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
- 
-diff --git a/arch/powerpc/lib/checksum_64.S b/arch/powerpc/lib/checksum_64.S
-index fd91766..4dd2761 100644
---- a/arch/powerpc/lib/checksum_64.S
-+++ b/arch/powerpc/lib/checksum_64.S
-@@ -36,7 +36,7 @@ _GLOBAL(__csum_partial)
- 	 * work to calculate the correct checksum, we ignore that case
- 	 * and take the potential slowdown of unaligned loads.
- 	 */
--	rldicl. r6,r3,64-1,64-2		/* r6 = (r3 & 0x3) >> 1 */
-+	rldicl. r6,r3,64-1,64-2		/* r6 = (r3 >> 1) & 0x3 */
- 	beq	.Lcsum_aligned
- 
- 	li	r7,4
-@@ -168,8 +168,12 @@ _GLOBAL(__csum_partial)
- 	beq	.Lcsum_finish
- 
- 	lbz	r6,0(r3)
-+#ifdef __BIG_ENDIAN
- 	sldi	r9,r6,8			/* Pad the byte out to 16 bits */
- 	adde	r0,r0,r9
-+#else
-+	adde	r0,r0,r6
-+#endif
- 
- .Lcsum_finish:
- 	addze	r0,r0			/* add in final carry */
-@@ -236,7 +240,7 @@ _GLOBAL(csum_partial_copy_generic)
- 	 * If the source and destination are relatively unaligned we only
- 	 * align the source. This keeps things simple.
- 	 */
--	rldicl. r6,r3,64-1,64-2		/* r6 = (r3 & 0x3) >> 1 */
-+	rldicl. r6,r3,64-1,64-2		/* r6 = (r3 >> 1) & 0x3 */
- 	beq	.Lcopy_aligned
- 
- 	li	r9,4
-@@ -398,8 +402,12 @@ dstnr;	sth	r6,0(r4)
- 	beq	.Lcopy_finish
- 
- srcnr;	lbz	r6,0(r3)
-+#ifdef __BIG_ENDIAN
- 	sldi	r9,r6,8			/* Pad the byte out to 16 bits */
- 	adde	r0,r0,r9
-+#else
-+	adde	r0,r0,r6
-+#endif
- dstnr;	stb	r6,0(r4)
- 
- .Lcopy_finish:
--- 
-2.10.1
+Thanks for this. Hum, that r13 manipulation throughout the idle
+and exception code is a bit interesting. I'll do the minimal patch
+for 4.9, but what's the reason not to just use the winkle state
+in the PACA rather than storing it into HSPRG0 bit, can you (or
+Shreyas) explain?
+
+Thanks,
+Nick
