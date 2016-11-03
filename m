@@ -1,25 +1,19 @@
 Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yw0-x233.google.com (mail-yw0-x233.google.com
- [IPv6:2607:f8b0:4002:c05::233])
+Received: from mail-lf0-x244.google.com (mail-lf0-x244.google.com
+ [IPv6:2a00:1450:4010:c07::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8hdH2bWMzDvQy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 21:52:50 +1100 (AEDT)
-Received: by mail-yw0-x233.google.com with SMTP id l124so38423500ywb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 03:52:50 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20161103103019.GJ6949@naverao1-tp.localdomain>
-References: <20161103065317.8537-1-naveen.n.rao@linux.vnet.ibm.com>
- <87zilgnb6x.fsf@concordia.ellerman.id.au>
- <20161103103019.GJ6949@naverao1-tp.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8jHg5WyYzDvR9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 22:22:38 +1100 (AEDT)
+Received: by mail-lf0-x244.google.com with SMTP id o141so1342110lff.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 04:22:38 -0700 (PDT)
 From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Thu, 3 Nov 2016 13:52:47 +0300
-Message-ID: <CAOJe8K02ZGT3mRTjBvMczV-2wkJmCj+UBiJfMOTr3Apnmjczaw@mail.gmail.com>
-Subject: Re: compiling master.
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH] ppc: cpufreq: Use get_cpu()/put_cpu() instead of
+ smp_processor_id() to avoid the oops
+Date: Thu,  3 Nov 2016 07:20:41 -0400
+Message-Id: <1478172041-9067-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/3/16, Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> On 2016/11/03 08:51PM, Michael Ellerman wrote:
->> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->> > diff --git a/arch/powerpc/include/asm/exception-64s.h
->> > b/arch/powerpc/include/asm/exception-64s.h
->> > index 2e4e7d8..9b7b302 100644
->> > --- a/arch/powerpc/include/asm/exception-64s.h
->> > +++ b/arch/powerpc/include/asm/exception-64s.h
->> > @@ -91,7 +91,7 @@
->> >   */
->> >  #define LOAD_HANDLER(reg, label)					\
->> >  	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
->> > -	ori	reg,reg,(FIXED_SYMBOL_ABS_ADDR(label))@l;
->> > +	ori	reg,reg,((FIXED_SYMBOL_ABS_ADDR(label)) & 0xffff);
->>
->> That's weird. We explicitly added the @l there to make it work with
->> binutils 2.22. Is the Redhat "2.23" not really 2.23 ?
+[   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+[   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+[   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+[   67.701038] Call Trace:
+[   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+[   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+[   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+[   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+[   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+[   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+[   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+[   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+[   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+[   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+[   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+[   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+[   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+[   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
 
-I have the same version: Version     : 2.23.52.0.1
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
->
-> Not sure why @l isn't working. It does seem to be 2.23. Also, it is a
-> bit weird that this only shows up on BE and not on LE...
->
-> [root@rhel71be linux]# rpm -qf /usr/bin/as
-> binutils-2.23.52.0.1-30.el7.ppc64
-> [root@rhel71be linux]# rpm -qi binutils
-> Name        : binutils
-> Version     : 2.23.52.0.1
-> Release     : 30.el7
-> Architecture: ppc64
-> Install Date: Thursday 03 November 2016 03:58:24 PM IST
-> Group       : Development/Tools
-> Size        : 14200512
-> License     : GPLv3+
-> Signature   : RSA/SHA256, Monday 19 January 2015 10:14:51 PM IST, Key ID
-> 199e2f91fd431d51
-> Source RPM  : binutils-2.23.52.0.1-30.el7.src.rpm
-> Build Date  : Thursday 15 January 2015 10:55:42 PM IST
-> Build Host  : ppc-020.build.eng.bos.redhat.com
-> Relocations : (not relocatable)
-> Packager    : Red Hat, Inc. <http://bugzilla.redhat.com/bugzilla>
-> Vendor      : Red Hat, Inc.
-> URL         : http://sources.redhat.com/binutils
-> Summary     : A GNU collection of binary utilities
->
->
-> - Naveen
->
->
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index d3ffde8..4cd91a3 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -475,7 +475,7 @@ static inline unsigned int get_nominal_index(void)
+ static void powernv_cpufreq_throttle_check(void *data)
+ {
+ 	struct chip *chip;
+-	unsigned int cpu = smp_processor_id();
++	int cpu;
+ 	unsigned long pmsr;
+ 	int pmsr_pmax;
+ 	unsigned int pmsr_pmax_idx;
+@@ -491,9 +491,11 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 			goto next;
+ 		chip->throttled = true;
+ 		if (pmsr_pmax_idx > powernv_pstate_info.nominal) {
++			cpu = get_cpu();
+ 			pr_warn_once("CPU %d on Chip %u has Pmax(%d) reduced below nominal frequency(%d)\n",
+ 				     cpu, chip->id, pmsr_pmax,
+ 				     idx_to_pstate(powernv_pstate_info.nominal));
++			put_cpu();
+ 			chip->throttle_sub_turbo++;
+ 		} else {
+ 			chip->throttle_turbo++;
+-- 
+1.8.3.1
