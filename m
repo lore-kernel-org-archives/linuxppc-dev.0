@@ -1,30 +1,28 @@
-Return-Path: <chandan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8fSb6sbQzDvPd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 20:15:11 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA39EDLx110116
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 05:15:09 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26fwjv0djp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 05:15:09 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.vnet.ibm.com>;
- Thu, 3 Nov 2016 03:14:57 -0600
-From: Chandan Rajendra <chandan@linux.vnet.ibm.com>
-To: linux-ext4@vger.kernel.org
-Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>, tytso@mit.edu, jack@suse.cz,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ext4: ext4_mb_mark_free_simple: Fix integer value truncation
-Date: Thu,  3 Nov 2016 14:44:32 +0530
-Message-Id: <1478164472-28376-1-git-send-email-chandan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8gBw5tRTzDvR6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 20:48:24 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, duwe@lst.de,
+ ast@kernel.org, viro@zeniv.linux.org.uk, chris@distroguy.com, oss@buserror.net,
+ paul.gortmaker@windriver.com, oohall@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com, lsorense@csclub.uwaterloo.ca,
+ bauerman@linux.vnet.ibm.com, paulus@samba.org, naveen.n.rao@linux.vnet.ibm.com,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc: Emulation support for load/store
+ instructions on LE
+In-Reply-To: <581ACDF2.1010409@linux.vnet.ibm.com>
+References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1478076783-2872-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20161103080412.68240cda@kryten> <581ACDF2.1010409@linux.vnet.ibm.com>
+Date: Thu, 03 Nov 2016 20:48:20 +1100
+Message-ID: <8737j8opwb.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-'border' variable is set to a value of 2 times the block size of the
-underlying filesystem. With 64k block size, the resulting value won't
-fit into a 16-bit variable. Hence this commit changes the data type of
-'border' to 'unsigned int'.
+Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
----
- fs/ext4/mballoc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> On Thursday 03 November 2016 02:34 AM, Anton Blanchard wrote:
+>> Hi Ravi,
+>>
+>>> emulate_step() uses a number of underlying kernel functions that were
+>>> initially not enabled for LE. This has been rectified since. So, fix
+>>> emulate_step() for LE for the corresponding instructions.
+>> Thanks. Should this be queued up for stable?
+>
+> Thanks Anton. Yes, this should go in stable.
 
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index f418f55..a937ac7 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -669,7 +669,7 @@ static void ext4_mb_mark_free_simple(struct super_block *sb,
- 	ext4_grpblk_t min;
- 	ext4_grpblk_t max;
- 	ext4_grpblk_t chunk;
--	unsigned short border;
-+	unsigned int border;
- 
- 	BUG_ON(len > EXT4_CLUSTERS_PER_GROUP(sb));
- 
--- 
-2.5.5
+It's fairly big for stable. Does it fix an actual bug? If so what, and
+how bad is it, what's the user impact.
+
+Can you also pinpoint which commit it "fixes"?
+
+cheers
