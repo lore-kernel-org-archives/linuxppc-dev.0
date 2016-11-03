@@ -1,19 +1,23 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-lf0-x244.google.com (mail-lf0-x244.google.com
- [IPv6:2a00:1450:4010:c07::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8jHg5WyYzDvR9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 22:22:38 +1100 (AEDT)
-Received: by mail-lf0-x244.google.com with SMTP id o141so1342110lff.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 04:22:38 -0700 (PDT)
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Denis Kirjanov <kda@linux-powerpc.org>
-Subject: [PATCH] ppc: cpufreq: Use get_cpu()/put_cpu() instead of
- smp_processor_id() to avoid the oops
-Date: Thu,  3 Nov 2016 07:20:41 -0400
-Message-Id: <1478172041-9067-1-git-send-email-kda@linux-powerpc.org>
+Return-Path: <Paul.Burton@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3t8lRy4zDzzDvQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 23:59:58 +1100 (AEDT)
+From: Paul Burton <paul.burton@imgtec.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>, Michael Ellerman
+ <mpe@ellerman.id.au>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+CC: Paul Burton <paul.burton@imgtec.com>, Andreas Schwab
+ <schwab@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, Borislav
+ Petkov <bp@suse.de>, Petr Mladek <pmladek@suse.com>, Tejun Heo
+ <tj@kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v3] console: use first console if stdout-path device doesn't
+ appear
+Date: Thu, 3 Nov 2016 12:57:58 +0000
+Message-ID: <20161103125758.3415-1-paul.burton@imgtec.com>
+In-Reply-To: <2c67e39b-fc33-918a-774e-d9238e837c03@lwfinger.net>
+References: <2c67e39b-fc33-918a-774e-d9238e837c03@lwfinger.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,54 +27,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
-[   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
-[   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
-[   67.701038] Call Trace:
-[   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
-[   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
-[   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
-[   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
-[   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
-[   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
-[   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
-[   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
-[   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
-[   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
-[   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
-[   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
-[   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
-[   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
+If a device tree specified a preferred device for kernel console output
+via the stdout-path or linux,stdout-path chosen node properties there's
+no guarantee that it will have specified a device for which we have a
+driver. It may also be the case that we do have a driver but it doesn't
+call of_console_check() to register as a preferred console (eg. offb
+driver as used on powermac systems).
 
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+In these cases try to ensure that we provide some console output by
+enabling the first usable registered console, which we keep track of
+with the of_fallback_console variable. Affected systems will enable
+their console later than they did prior to commit 05fd007e4629
+("console: don't prefer first registered if DT specifies stdout-path")
+but should otherwise produce the same output.
+
+Tested in QEMU with a PowerPC pseries_defconfig kernel.
+
+Signed-off-by: Paul Burton <paul.burton@imgtec.com>
+Fixes: 05fd007e4629 ("console: don't prefer first registered if DT specifies stdout-path")
+Reported-by: Andreas Schwab <schwab@linux-m68k.org>
+Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andreas Schwab <schwab@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+
 ---
- drivers/cpufreq/powernv-cpufreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index d3ffde8..4cd91a3 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -475,7 +475,7 @@ static inline unsigned int get_nominal_index(void)
- static void powernv_cpufreq_throttle_check(void *data)
+Changes in v3:
+- Be less invasive by simply calling register_console() again rather than splitting it.
+- Check for CON_CONSDEV on the first console driver rather than for CON_ENABLED on any.
+- Clean up the tracking of the fallback console.
+
+Changes in v2:
+- Split enable_console() out of register_console() & call in the fallback case.
+- Track the console we would have enabled as of_fallback_console.
+
+ kernel/printk/printk.c | 44 ++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 42 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index de08fc9..c86e6d0 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -260,10 +260,18 @@ void console_set_by_of(void)
  {
- 	struct chip *chip;
--	unsigned int cpu = smp_processor_id();
-+	int cpu;
- 	unsigned long pmsr;
- 	int pmsr_pmax;
- 	unsigned int pmsr_pmax_idx;
-@@ -491,9 +491,11 @@ static void powernv_cpufreq_throttle_check(void *data)
- 			goto next;
- 		chip->throttled = true;
- 		if (pmsr_pmax_idx > powernv_pstate_info.nominal) {
-+			cpu = get_cpu();
- 			pr_warn_once("CPU %d on Chip %u has Pmax(%d) reduced below nominal frequency(%d)\n",
- 				     cpu, chip->id, pmsr_pmax,
- 				     idx_to_pstate(powernv_pstate_info.nominal));
-+			put_cpu();
- 			chip->throttle_sub_turbo++;
- 		} else {
- 			chip->throttle_turbo++;
+ 	of_specified_console = true;
+ }
++
++static void clear_of_specified_console(void)
++{
++	of_specified_console = false;
++}
+ #else
+ # define of_specified_console false
++static void clear_of_specified_console(void) { }
+ #endif
+ 
++struct console *of_fallback_console;
++
+ /* Flag: console code may call schedule() */
+ static int console_may_schedule;
+ 
+@@ -2657,10 +2665,26 @@ void register_console(struct console *newcon)
+ 	 *	didn't select a console we take the first one
+ 	 *	that registers here.
+ 	 */
+-	if (preferred_console < 0 && !of_specified_console) {
++	if (preferred_console < 0) {
+ 		if (newcon->index < 0)
+ 			newcon->index = 0;
+-		if (newcon->setup == NULL ||
++		if (of_specified_console) {
++			/*
++			 * The device tree stdout-path chosen node property was
++			 * specified so we don't want to enable the first
++			 * registered console just now in order to give the
++			 * device indicated by stdout-path a chance to be
++			 * registered first. Do however keep track of the
++			 * first console we see so that we can fall back to
++			 * using it if we don't see the desired device, either
++			 * because stdout-path isn't valid, or because we have
++			 * no driver for the device or our driver doesn't call
++			 * of_console_check(). See printk_late_init() for this
++			 * fallback.
++			 */
++			if (!of_fallback_console)
++				of_fallback_console = newcon;
++		} else if (newcon->setup == NULL ||
+ 		    newcon->setup(newcon, NULL) == 0) {
+ 			newcon->flags |= CON_ENABLED;
+ 			if (newcon->device) {
+@@ -2844,6 +2868,22 @@ static int __init printk_late_init(void)
+ {
+ 	struct console *con;
+ 
++	if (of_specified_console && of_fallback_console &&
++	    (!console_drivers || !(console_drivers->flags & CON_CONSDEV))) {
++		/*
++		 * The system has a device tree which specified stdout-path,
++		 * but we haven't seen a console associated with the device
++		 * specified by the stdout-path chosen node property.
++		 *
++		 * We do however know which console would have been used
++		 * if stdout-path weren't specified at all, so in an attempt
++		 * to provide some output we'll re-register that console
++		 * pretending that we never saw stdout-path.
++		 */
++		clear_of_specified_console();
++		register_console(of_fallback_console);
++	}
++
+ 	for_each_console(con) {
+ 		if (!keep_bootcon && con->flags & CON_BOOT) {
+ 			/*
 -- 
-1.8.3.1
+2.10.2
