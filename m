@@ -1,34 +1,51 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8bX04rKYzDt1x
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 18:02:56 +1100 (AEDT)
-Received: by mail-pf0-x232.google.com with SMTP id i88so26505097pfk.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 00:02:56 -0700 (PDT)
-Date: Thu, 3 Nov 2016 18:02:44 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Shreyas B. Prabhu" <shreyasbp@gmail.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, Mahesh J Salgaonkar
- <mahesh@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, "Shreyas B .
- Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/64s: relocation, register save fixes for system
- reset interrupt
-Message-ID: <20161103180244.4a41796b@roar.ozlabs.ibm.com>
-In-Reply-To: <CAAVMmb7wmgYY6AFLb2kqJsgOJwQK_vYaJtxmeouF9ZXezWtEDA@mail.gmail.com>
-References: <20161013021714.6624-1-npiggin@gmail.com>
- <79d229aa-2b4e-67b7-157b-b839bc390cbf@linux.vnet.ibm.com>
- <20161102175701.2ae8d1d3@roar.ozlabs.ibm.com>
- <20161102082433.GA17365@in.ibm.com>
- <20161102193624.7f0cbfee@roar.ozlabs.ibm.com>
- <20161102084548.GD17909@in.ibm.com>
- <20161103162100.1b50777e@roar.ozlabs.ibm.com>
- <CAAVMmb5Zj4oKVF6f3Ag0mEHOUrAYro65JyuULMO7+abRs4D=OQ@mail.gmail.com>
- <20161103171751.44798270@roar.ozlabs.ibm.com>
- <CAAVMmb7wmgYY6AFLb2kqJsgOJwQK_vYaJtxmeouF9ZXezWtEDA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8bXm585pzDvJX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 18:03:36 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA36wnit124774
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 03:03:34 -0400
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26fx2wy6ev-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 03:03:34 -0400
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 3 Nov 2016 12:33:31 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 84312E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 12:33:28 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uA373SuO25821190
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 12:33:28 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uA373IYv008513
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 12:33:27 +0530
+Date: Thu, 3 Nov 2016 12:33:18 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ lsorense@csclub.uwaterloo.ca, oohall@gmail.com, ast@kernel.org,
+ chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, anton@samba.org, paul.gortmaker@windriver.com,
+ bauerman@linux.vnet.ibm.com, viro@zeniv.linux.org.uk,
+ christophe.leroy@c-s.fr, duwe@lst.de, oss@buserror.net
+Subject: Re: [PATCH 0/3] powerpc: Emulation support for load/store
+ instructions on LE
+References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Message-Id: <20161103070318.GI6949@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,60 +55,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 3 Nov 2016 02:32:39 -0400
-"Shreyas B. Prabhu" <shreyasbp@gmail.com> wrote:
-
-> On Thu, Nov 3, 2016 at 2:17 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > On Thu, 3 Nov 2016 01:56:46 -0400
-> > "Shreyas B. Prabhu" <shreyasbp@gmail.com> wrote:
-> >  
-> >> On Thu, Nov 3, 2016 at 1:21 AM, Nicholas Piggin <npiggin@gmail.com> wrote:  
-> >> > On Wed, 2 Nov 2016 14:15:48 +0530
-> >> > Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> >> >  
-> >> >> Hi Nick,
-> >> >>
-> >> >> On Wed, Nov 02, 2016 at 07:36:24PM +1100, Nicholas Piggin wrote:  
-> >> >> >
-> >> >> > Okay, I'll work with that. What's the best way to make a P8 do
-> >> >> > winkle sleeps?  
-> >> >>
-> >> >> From the userspace, offlining the CPUs of the core will put them to
-> >> >> winkle.  
-> >> >
-> >> > Thanks for this. Hum, that r13 manipulation throughout the idle
-> >> > and exception code is a bit interesting. I'll do the minimal patch
-> >> > for 4.9, but what's the reason not to just use the winkle state
-> >> > in the PACA rather than storing it into HSPRG0 bit, can you (or
-> >> > Shreyas) explain?
-> >> >  
-> >> Hi Nick,
-> >>
-> >> Before deep winkle, checking SRR1's wakeup bits (Bits 46:47) was enough to
-> >> figure out which idle state we are waking up from. But in P8, SRR1's wakeup
-> >> bits aren't enough since bits 46:47 are 0b11 for both fast sleep and
-> >> deep winkle.
-> >> So to distinguish bw fastsleep and deep winkle, we use the current HSPRG0/PORE
-> >> trick. We program the PORE engine (which is used for state restore when waking
-> >> up from deep winkle) to restore HSPRG0 with the last bit set (we do this in
-> >> pnv_save_sprs_for_winkle()). R13 bit manipulation in pnv_restore_hyp_resource
-> >> is related to this.  
-> >
-> > Right, I didn't realize how that exactly worked until I had to go read
-> > the code just now. It's a neat little trick. I'm wondering can we use PACA_THREAD_IDLE_STATE==PNV_THREAD_WINKLE for this instead? It would just
-> > make the early PACA usage in the exception handlers able to use more common
-> > code.
-> >  
+On 2016/11/02 02:23PM, Ravi Bangoria wrote:
+> emulate_step is the basic infrastructure which is used by number of other
+> kernel infrastructures like kprobe, hw-breakpoint(data breakpoint) etc.
+> In case of kprobe, enabling emulation of load/store instructions will
+> speedup the execution of probed instruction. In case of kernel-space
+> breakpoint, causative instruction is first get emulated before executing
+> user registered handler. If emulation fails, hw-breakpoint is disabled
+> with error. As emulate_step does not support load/store instructions on
+> LE, kernel-space hw-breakpoint infrastructure is broken on LE.
 > 
-> PACA_THREAD_IDLE_STATE will have what was 'requested'. It may not be the
-> state we are waking up from. For example, if 7 threads of the core execute
-> winkle instruction while 1 thread of the same core executes sleep. Here
-> the core only enters sleep whereas PACA_THREAD_IDLE_STATE for the 7 threads
-> will have PNV_THREAD_WINKLE.
+> emulate_step() uses a number of underlying kernel functions that were
+> initially not enabled for LE. This has been rectified since. So, fix
+> emulate_step() for LE for the corresponding instructions.
+> 
+> Also add selftest which will run at boot if CONFIG_KPROBES_SANITY_TEST
+> and CONFIG_PPC64 is set.
+> 
+> Changes w.r.t. RFC:
+>   - Enable emulation support for all types of (Normal, Floating Point,
+>     Vector and Vector Scalar) load/store instructions.
+>   - Introduce selftest to test emulate_step for load/store instructions.
+> 
+> Ravi Bangoria (3):
+>   powerpc: Emulation support for load/store instructions on LE
+>   powerpc: Add encoding for couple of load/store instructions
+>   powerpc: emulate_step test for load/store instructions
 
-I see, that makes sense. Would it be possible to keep count of the number of
-threads going into winkle in core_idle_state? Even if that is not a guarantee
-if them requiring a PORE wakeup, would the restore case be harmful?
+> 
+>  arch/powerpc/include/asm/ppc-opcode.h |   7 +
+>  arch/powerpc/include/asm/sstep.h      |   8 +
+>  arch/powerpc/kernel/kprobes.c         |   2 +
+>  arch/powerpc/lib/Makefile             |   4 +
+>  arch/powerpc/lib/sstep.c              |  20 --
+>  arch/powerpc/lib/test_emulate_step.c  | 439 ++++++++++++++++++++++++++++++++++
+>  6 files changed, 460 insertions(+), 20 deletions(-)
+>  create mode 100644 arch/powerpc/lib/test_emulate_step.c
+
+Patch 2 can be folded into the third patch. Apart from that, and the 
+minor nit with patch 3, for this series:
+Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 Thanks,
-Nick
+Naveen
