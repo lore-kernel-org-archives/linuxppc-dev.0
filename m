@@ -1,51 +1,24 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8bXm585pzDvJX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 18:03:36 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA36wnit124774
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 03:03:34 -0400
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26fx2wy6ev-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 03:03:34 -0400
-Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 3 Nov 2016 12:33:31 +0530
-Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 84312E0045
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 12:33:28 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uA373SuO25821190
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 12:33:28 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uA373IYv008513
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 12:33:27 +0530
-Date: Thu, 3 Nov 2016 12:33:18 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- lsorense@csclub.uwaterloo.ca, oohall@gmail.com, ast@kernel.org,
- chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, anton@samba.org, paul.gortmaker@windriver.com,
- bauerman@linux.vnet.ibm.com, viro@zeniv.linux.org.uk,
- christophe.leroy@c-s.fr, duwe@lst.de, oss@buserror.net
-Subject: Re: [PATCH 0/3] powerpc: Emulation support for load/store
- instructions on LE
-References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8bgb67d7zDt0W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 18:09:31 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id y68so3981902pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 00:09:31 -0700 (PDT)
+Date: Thu, 3 Nov 2016 18:09:21 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: compiling master.
+Message-ID: <20161103180921.5506327e@roar.ozlabs.ibm.com>
+In-Reply-To: <20161103065317.8537-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20161103155531.4e86d906@roar.ozlabs.ibm.com>
+ <20161103065317.8537-1-naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Message-Id: <20161103070318.GI6949@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,46 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/11/02 02:23PM, Ravi Bangoria wrote:
-> emulate_step is the basic infrastructure which is used by number of other
-> kernel infrastructures like kprobe, hw-breakpoint(data breakpoint) etc.
-> In case of kprobe, enabling emulation of load/store instructions will
-> speedup the execution of probed instruction. In case of kernel-space
-> breakpoint, causative instruction is first get emulated before executing
-> user registered handler. If emulation fails, hw-breakpoint is disabled
-> with error. As emulate_step does not support load/store instructions on
-> LE, kernel-space hw-breakpoint infrastructure is broken on LE.
-> 
-> emulate_step() uses a number of underlying kernel functions that were
-> initially not enabled for LE. This has been rectified since. So, fix
-> emulate_step() for LE for the corresponding instructions.
-> 
-> Also add selftest which will run at boot if CONFIG_KPROBES_SANITY_TEST
-> and CONFIG_PPC64 is set.
-> 
-> Changes w.r.t. RFC:
->   - Enable emulation support for all types of (Normal, Floating Point,
->     Vector and Vector Scalar) load/store instructions.
->   - Introduce selftest to test emulate_step for load/store instructions.
-> 
-> Ravi Bangoria (3):
->   powerpc: Emulation support for load/store instructions on LE
->   powerpc: Add encoding for couple of load/store instructions
->   powerpc: emulate_step test for load/store instructions
+On Thu,  3 Nov 2016 12:23:17 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
+> On 2016/11/03 03:55PM, Nicholas Piggin wrote:
+> > On Wed, 2 Nov 2016 13:49:39 +0300
+> > Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> >   
+> > > Hi guys,
+> > > 
+> > > compiling ppc head with bunch of asm errors on power8 box (gcc version 4.8.3 )
+> > > checked commit log but found nothing special. Looks like it's asm issue?
+> > > Has anybody seen that?
+> > > 
+> > > arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+> > > arch/powerpc/kernel/exceptions-64s.S:421: Error: operand out of range
+> > > (0xffffffffffff8680 is not between 0x0000000000000000 and
+> > > 0x000000000000ffff)  
+> > 
+> > Hey, thanks for the report. It's likely due to the exception vectors rewrite,
+> > and yes it's an assembler issue (what's your binutils version?). Your errors
+> > look like they're coming from LOAD_HANDLER(). For some reason it seems to be
+> > interpreting the immediate as signed, or the actual calculation ends up being
+> > negative, neither of which should happen.
+> > 
+> > It might take a bit of trial and error, and the assembler doesn't give a lot
+> > of good options to debug it, so if I can reproduce it here with your bintuils
+> > version it will be helpful.  
 > 
->  arch/powerpc/include/asm/ppc-opcode.h |   7 +
->  arch/powerpc/include/asm/sstep.h      |   8 +
->  arch/powerpc/kernel/kprobes.c         |   2 +
->  arch/powerpc/lib/Makefile             |   4 +
->  arch/powerpc/lib/sstep.c              |  20 --
->  arch/powerpc/lib/test_emulate_step.c  | 439 ++++++++++++++++++++++++++++++++++
->  6 files changed, 460 insertions(+), 20 deletions(-)
->  create mode 100644 arch/powerpc/lib/test_emulate_step.c
+> I saw this issue when trying to do a BE build on RHEL 7.1. The below
+> fixes this for me and it indeed looks like an issue with the assembler.
+> Interestingly, the same assembler version on RHEL 7.1 LE does not throw
+> these errors.
+> 
+> [root@rhel71be linux]# gcc --version
+> gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-8)
+> <snip>
+> [root@rhel71be linux]# as --version
+> GNU assembler version 2.23.52.0.1-26.el7 20130226
+> <snip>
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/exception-64s.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+> index 2e4e7d8..9b7b302 100644
+> --- a/arch/powerpc/include/asm/exception-64s.h
+> +++ b/arch/powerpc/include/asm/exception-64s.h
+> @@ -91,7 +91,7 @@
+>   */
+>  #define LOAD_HANDLER(reg, label)					\
+>  	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
+> -	ori	reg,reg,(FIXED_SYMBOL_ABS_ADDR(label))@l;
+> +	ori	reg,reg,((FIXED_SYMBOL_ABS_ADDR(label)) & 0xffff);
+>  
+>  /* Exception register prefixes */
+>  #define EXC_HV	H
 
-Patch 2 can be folded into the third patch. Apart from that, and the 
-minor nit with patch 3, for this series:
-Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Thanks for taking a look. Does this patch fix it, or just hide the build
+error? This would presumably hide real bugs too, so it will be good if we
+can make it conditional on older assemblers, or otherwise do a test for
+out of bounds value (you could try asm directives like .if/.error)
 
 Thanks,
-Naveen
+Nick
