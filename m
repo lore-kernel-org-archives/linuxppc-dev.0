@@ -1,28 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8WD10MgDzDvPl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 14:48:49 +1100 (AEDT)
-Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3t8WD02c3zz9tl4
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2016 14:48:48 +1100 (AEDT)
-Received: by mail-pf0-x232.google.com with SMTP id n85so23449720pfi.1
- for <linuxppc-dev@ozlabs.org>; Wed, 02 Nov 2016 20:48:48 -0700 (PDT)
-Date: Thu, 3 Nov 2016 14:48:39 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/configs: Turn on PPC crypto implementations in
- the server defconfigs
-Message-ID: <20161103144839.39bec5de@roar.ozlabs.ibm.com>
-In-Reply-To: <1478081177-7333-1-git-send-email-mpe@ellerman.id.au>
-References: <1478081177-7333-1-git-send-email-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8WL047J4zDt0c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 14:54:00 +1100 (AEDT)
+Message-ID: <1478145230.6502.3.camel@kernel.crashing.org>
+Subject: Re: [PATCH] Fix loading of module radeonfb on PowerMac
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mathieu Malaterre <malat@debian.org>, Tomi Valkeinen
+ <tomi.valkeinen@ti.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Lennart
+ Sorensen <lsorense@csclub.uwaterloo.ca>, Jean-Christophe Plagniol-Villard
+ <plagnioj@jcrosoft.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 02 Nov 2016 21:53:50 -0600
+In-Reply-To: <CA+7wUsy9AW6BvNd=Bmmwra-YfTMAqFwLMg7Z7ZNXpxORq9qtTg@mail.gmail.com>
+References: <1475928540-19647-1-git-send-email-malat@debian.org>
+ <fbf3b5a3-efd9-0f85-c4fe-ae34ae1862b7@ti.com>
+ <CA+7wUsy9AW6BvNd=Bmmwra-YfTMAqFwLMg7Z7ZNXpxORq9qtTg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,10 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  2 Nov 2016 21:06:17 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Wed, 2016-11-02 at 11:28 +0100, Mathieu Malaterre wrote:
+> 
+> This has been working great so far for `radeon.ko`, so I assumed I
+> could shamelessly copy the behavior over to `radeonfb.ko`.
+> 
+> The original reference I found was from Benjamin Herrenschmidt here:
+> https://lists.freedesktop.org/archives/dri-devel/2010-August/002907.h
+> tml
+> 
+> I am of course willing to try something else, but I would need some
+> guidance.
 
-> These are the PPC optimised versions of various crypto algorithms, so we
-> should turn them on by default to get test coverage.
+I missed your original patch but yes, the basic idea is that we kick
+out offb when the "real" driver loads.
 
-Looks good, thanks for that.
+Cheers,
+Ben.
