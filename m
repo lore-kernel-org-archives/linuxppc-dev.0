@@ -2,25 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8gBw5tRTzDvR6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 20:48:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t8gGH55CdzDvR9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2016 20:51:19 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, duwe@lst.de,
- ast@kernel.org, viro@zeniv.linux.org.uk, chris@distroguy.com, oss@buserror.net,
- paul.gortmaker@windriver.com, oohall@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com, lsorense@csclub.uwaterloo.ca,
- bauerman@linux.vnet.ibm.com, paulus@samba.org, naveen.n.rao@linux.vnet.ibm.com,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc: Emulation support for load/store
- instructions on LE
-In-Reply-To: <581ACDF2.1010409@linux.vnet.ibm.com>
-References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1478076783-2872-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <20161103080412.68240cda@kryten> <581ACDF2.1010409@linux.vnet.ibm.com>
-Date: Thu, 03 Nov 2016 20:48:20 +1100
-Message-ID: <8737j8opwb.fsf@concordia.ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Cc: Denis Kirjanov <kda@linux-powerpc.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: compiling master.
+In-Reply-To: <20161103065317.8537-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20161103065317.8537-1-naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 03 Nov 2016 20:51:18 +1100
+Message-ID: <87zilgnb6x.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,21 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+> index 2e4e7d8..9b7b302 100644
+> --- a/arch/powerpc/include/asm/exception-64s.h
+> +++ b/arch/powerpc/include/asm/exception-64s.h
+> @@ -91,7 +91,7 @@
+>   */
+>  #define LOAD_HANDLER(reg, label)					\
+>  	ld	reg,PACAKBASE(r13);	/* get high part of &label */	\
+> -	ori	reg,reg,(FIXED_SYMBOL_ABS_ADDR(label))@l;
+> +	ori	reg,reg,((FIXED_SYMBOL_ABS_ADDR(label)) & 0xffff);
 
-> On Thursday 03 November 2016 02:34 AM, Anton Blanchard wrote:
->> Hi Ravi,
->>
->>> emulate_step() uses a number of underlying kernel functions that were
->>> initially not enabled for LE. This has been rectified since. So, fix
->>> emulate_step() for LE for the corresponding instructions.
->> Thanks. Should this be queued up for stable?
->
-> Thanks Anton. Yes, this should go in stable.
-
-It's fairly big for stable. Does it fix an actual bug? If so what, and
-how bad is it, what's the user impact.
-
-Can you also pinpoint which commit it "fixes"?
+That's weird. We explicitly added the @l there to make it work with
+binutils 2.22. Is the Redhat "2.23" not really 2.23 ?
 
 cheers
