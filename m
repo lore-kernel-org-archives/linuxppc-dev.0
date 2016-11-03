@@ -1,20 +1,20 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t91fw1ZWWzDvRP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t91fw1NslzDvRC
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 10:40:24 +1100 (AEDT)
-Date: Fri, 4 Nov 2016 10:40:16 +1100
+Date: Fri, 4 Nov 2016 10:39:18 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4 v2] selftests/powerpc/64: Test exception cases in
- copy_tofrom_user
-Message-ID: <20161103234016.GB26433@fergus.ozlabs.ibm.com>
+Subject: [PATCH 2/4 v2] selftests/powerpc/64: Test all paths through copy
+ routines
+Message-ID: <20161103233918.GA26433@fergus.ozlabs.ibm.com>
 References: <20161103051949.GC8368@fergus.ozlabs.ibm.com>
- <20161103052140.GE8368@fergus.ozlabs.ibm.com>
+ <20161103052032.GD8368@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161103052140.GE8368@fergus.ozlabs.ibm.com>
+In-Reply-To: <20161103052032.GD8368@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,291 +24,304 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a set of test cases to test the behaviour of
-copy_tofrom_user when exceptions are encountered accessing the
-source or destination.  Currently, copy_tofrom_user does not always
-copy as many bytes as possible when an exception occurs on a store
-to the destination, and that is reflected in failures in these tests.
-
-Based on a test program from Anton Blanchard.
-
-[paulus@ozlabs.org - test all three paths, wrote commit description]
+The hand-coded assembler 64-bit copy routines include feature sections
+that select one code path or another depending on which CPU we are
+executing on.  The self-tests for these copy routines end up testing
+just one path.  This adds a mechanism for selecting any desired code
+path at compile time, and makes 2 or 3 versions of each test, each
+using a different code path, so as to cover all the possible paths.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
-v2: update .gitignore
+v2: Fix compilation with CONFIG_ALTIVEC=n, update .gitignore
 
- .../testing/selftests/powerpc/copyloops/.gitignore |   3 +
- tools/testing/selftests/powerpc/copyloops/Makefile |  11 +-
- .../selftests/powerpc/copyloops/asm/ppc_asm.h      |  22 +---
- .../powerpc/copyloops/copy_tofrom_user_reference.S |  24 +++++
- .../selftests/powerpc/copyloops/exc_validate.c     | 117 +++++++++++++++++++++
- tools/testing/selftests/powerpc/copyloops/stubs.S  |  19 ++++
- 6 files changed, 176 insertions(+), 20 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/copyloops/copy_tofrom_user_reference.S
- create mode 100644 tools/testing/selftests/powerpc/copyloops/exc_validate.c
- create mode 100644 tools/testing/selftests/powerpc/copyloops/stubs.S
+ arch/powerpc/lib/copyuser_64.S                     |  7 +++++
+ arch/powerpc/lib/copyuser_power7.S                 | 21 +++++++--------
+ arch/powerpc/lib/memcpy_64.S                       |  9 +++++--
+ arch/powerpc/lib/memcpy_power7.S                   | 22 ++++++++--------
+ .../testing/selftests/powerpc/copyloops/.gitignore | 14 +++++++---
+ tools/testing/selftests/powerpc/copyloops/Makefile | 30 +++++++++++++++++-----
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      | 21 ++++++++-------
+ 7 files changed, 80 insertions(+), 44 deletions(-)
 
+diff --git a/arch/powerpc/lib/copyuser_64.S b/arch/powerpc/lib/copyuser_64.S
+index 1c5247c..668d816 100644
+--- a/arch/powerpc/lib/copyuser_64.S
++++ b/arch/powerpc/lib/copyuser_64.S
+@@ -10,6 +10,11 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/export.h>
+ 
++#ifndef SELFTEST_CASE
++/* 0 == most CPUs, 1 == POWER6, 2 == Cell */
++#define SELFTEST_CASE	0
++#endif
++
+ #ifdef __BIG_ENDIAN__
+ #define sLd sld		/* Shift towards low-numbered address. */
+ #define sHd srd		/* Shift towards high-numbered address. */
+@@ -77,6 +82,7 @@ _GLOBAL(__copy_tofrom_user_base)
+  * At the time of writing the only CPU that has this combination of bits
+  * set is Power6.
+  */
++test_feature = (SELFTEST_CASE == 1)
+ BEGIN_FTR_SECTION
+ 	nop
+ FTR_SECTION_ELSE
+@@ -86,6 +92,7 @@ ALT_FTR_SECTION_END(CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_CP_USE_DCBTZ, \
+ .Ldst_aligned:
+ 	addi	r3,r3,-16
+ r3_offset = 16
++test_feature = (SELFTEST_CASE == 0)
+ BEGIN_FTR_SECTION
+ 	andi.	r0,r4,7
+ 	bne	.Lsrc_unaligned
+diff --git a/arch/powerpc/lib/copyuser_power7.S b/arch/powerpc/lib/copyuser_power7.S
+index da0c568..5e16f36 100644
+--- a/arch/powerpc/lib/copyuser_power7.S
++++ b/arch/powerpc/lib/copyuser_power7.S
+@@ -19,6 +19,11 @@
+  */
+ #include <asm/ppc_asm.h>
+ 
++#ifndef SELFTEST_CASE
++/* 0 == don't use VMX, 1 == use VMX */
++#define SELFTEST_CASE	0
++#endif
++
+ #ifdef __BIG_ENDIAN__
+ #define LVS(VRT,RA,RB)		lvsl	VRT,RA,RB
+ #define VPERM(VRT,VRA,VRB,VRC)	vperm	VRT,VRA,VRB,VRC
+@@ -92,7 +97,6 @@
+ 
+ 
+ _GLOBAL(__copy_tofrom_user_power7)
+-#ifdef CONFIG_ALTIVEC
+ 	cmpldi	r5,16
+ 	cmpldi	cr1,r5,4096
+ 
+@@ -101,15 +105,12 @@ _GLOBAL(__copy_tofrom_user_power7)
+ 	std	r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
+ 
+ 	blt	.Lshort_copy
+-	bgt	cr1,.Lvmx_copy
+-#else
+-	cmpldi	r5,16
+ 
+-	std	r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
+-	std	r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
+-	std	r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
+-
+-	blt	.Lshort_copy
++#ifdef CONFIG_ALTIVEC
++test_feature = SELFTEST_CASE
++BEGIN_FTR_SECTION
++	bgt	cr1,.Lvmx_copy
++END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
+ 
+ .Lnonvmx_copy:
+@@ -290,8 +291,8 @@ err1;	stb	r0,0(r3)
+ 	addi	r1,r1,STACKFRAMESIZE
+ 	b	.Lnonvmx_copy
+ 
+-#ifdef CONFIG_ALTIVEC
+ .Lvmx_copy:
++#ifdef CONFIG_ALTIVEC
+ 	mflr	r0
+ 	std	r0,16(r1)
+ 	stdu	r1,-STACKFRAMESIZE(r1)
+diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
+index f4d6088..ea363ad 100644
+--- a/arch/powerpc/lib/memcpy_64.S
++++ b/arch/powerpc/lib/memcpy_64.S
+@@ -10,6 +10,11 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/export.h>
+ 
++#ifndef SELFTEST_CASE
++/* For big-endian, 0 == most CPUs, 1 == POWER6, 2 == Cell */
++#define SELFTEST_CASE	0
++#endif
++
+ 	.align	7
+ _GLOBAL_TOC(memcpy)
+ BEGIN_FTR_SECTION
+@@ -19,9 +24,7 @@ BEGIN_FTR_SECTION
+ 	std	r3,-STACKFRAMESIZE+STK_REG(R31)(r1)	/* save destination pointer for return value */
+ #endif
+ FTR_SECTION_ELSE
+-#ifndef SELFTEST
+ 	b	memcpy_power7
+-#endif
+ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+ #ifdef __LITTLE_ENDIAN__
+ 	/* dumb little-endian memcpy that will get replaced at runtime */
+@@ -45,6 +48,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+    cleared.
+    At the time of writing the only CPU that has this combination of bits
+    set is Power6. */
++test_feature = (SELFTEST_CASE == 1)
+ BEGIN_FTR_SECTION
+ 	nop
+ FTR_SECTION_ELSE
+@@ -53,6 +57,7 @@ ALT_FTR_SECTION_END(CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_CP_USE_DCBTZ, \
+                     CPU_FTR_UNALIGNED_LD_STD)
+ .Ldst_aligned:
+ 	addi	r3,r3,-16
++test_feature = (SELFTEST_CASE == 0)
+ BEGIN_FTR_SECTION
+ 	andi.	r0,r4,7
+ 	bne	.Lsrc_unaligned
+diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
+index 786234f..6d59d3f 100644
+--- a/arch/powerpc/lib/memcpy_power7.S
++++ b/arch/powerpc/lib/memcpy_power7.S
+@@ -19,7 +19,10 @@
+  */
+ #include <asm/ppc_asm.h>
+ 
+-_GLOBAL(memcpy_power7)
++#ifndef SELFTEST_CASE
++/* 0 == don't use VMX, 1 == use VMX */
++#define SELFTEST_CASE	0
++#endif
+ 
+ #ifdef __BIG_ENDIAN__
+ #define LVS(VRT,RA,RB)		lvsl	VRT,RA,RB
+@@ -29,20 +32,17 @@ _GLOBAL(memcpy_power7)
+ #define VPERM(VRT,VRA,VRB,VRC)	vperm	VRT,VRB,VRA,VRC
+ #endif
+ 
+-#ifdef CONFIG_ALTIVEC
++_GLOBAL(memcpy_power7)
+ 	cmpldi	r5,16
+ 	cmpldi	cr1,r5,4096
+-
+ 	std	r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
+-
+ 	blt	.Lshort_copy
+-	bgt	cr1,.Lvmx_copy
+-#else
+-	cmpldi	r5,16
+-
+-	std	r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
+ 
+-	blt	.Lshort_copy
++#ifdef CONFIG_ALTIVEC
++test_feature = SELFTEST_CASE
++BEGIN_FTR_SECTION
++	bgt	cr1, .Lvmx_copy
++END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
+ 
+ .Lnonvmx_copy:
+@@ -223,8 +223,8 @@ _GLOBAL(memcpy_power7)
+ 	addi	r1,r1,STACKFRAMESIZE
+ 	b	.Lnonvmx_copy
+ 
+-#ifdef CONFIG_ALTIVEC
+ .Lvmx_copy:
++#ifdef CONFIG_ALTIVEC
+ 	mflr	r0
+ 	std	r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
+ 	std	r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
 diff --git a/tools/testing/selftests/powerpc/copyloops/.gitignore b/tools/testing/selftests/powerpc/copyloops/.gitignore
-index bc6c4ba..03a354d 100644
+index 25a192f..bc6c4ba 100644
 --- a/tools/testing/selftests/powerpc/copyloops/.gitignore
 +++ b/tools/testing/selftests/powerpc/copyloops/.gitignore
-@@ -8,3 +8,6 @@ memcpy_64_t1
- memcpy_64_t2
- memcpy_power7_t0
- memcpy_power7_t1
-+copyuser_64_exc_t0
-+copyuser_64_exc_t1
-+copyuser_64_exc_t2
-\ No newline at end of file
+@@ -1,4 +1,10 @@
+-copyuser_64
+-copyuser_power7
+-memcpy_64
+-memcpy_power7
++copyuser_64_t0
++copyuser_64_t1
++copyuser_64_t2
++copyuser_power7_t0
++copyuser_power7_t1
++memcpy_64_t0
++memcpy_64_t1
++memcpy_64_t2
++memcpy_power7_t0
++memcpy_power7_t1
 diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
-index 1b351c3..feb7bf1 100644
+index 384843e..1b351c3 100644
 --- a/tools/testing/selftests/powerpc/copyloops/Makefile
 +++ b/tools/testing/selftests/powerpc/copyloops/Makefile
-@@ -10,9 +10,10 @@ ASFLAGS = $(CFLAGS)
- TEST_PROGS :=	copyuser_64_t0 copyuser_64_t1 copyuser_64_t2 \
- 		copyuser_p7_t0 copyuser_p7_t1 \
- 		memcpy_64_t0 memcpy_64_t1 memcpy_64_t2 \
--		memcpy_p7_t0 memcpy_p7_t1
-+		memcpy_p7_t0 memcpy_p7_t1 \
-+		copyuser_64_exc_t0 copyuser_64_exc_t1 copyuser_64_exc_t2
+@@ -7,17 +7,35 @@ CFLAGS += -maltivec
+ # Use our CFLAGS for the implicit .S rule
+ ASFLAGS = $(CFLAGS)
  
--EXTRA_SOURCES := validate.c ../harness.c
-+EXTRA_SOURCES := validate.c ../harness.c stubs.S
+-TEST_PROGS := copyuser_64 copyuser_power7 memcpy_64 memcpy_power7
++TEST_PROGS :=	copyuser_64_t0 copyuser_64_t1 copyuser_64_t2 \
++		copyuser_p7_t0 copyuser_p7_t1 \
++		memcpy_64_t0 memcpy_64_t1 memcpy_64_t2 \
++		memcpy_p7_t0 memcpy_p7_t1
++
+ EXTRA_SOURCES := validate.c ../harness.c
  
  all: $(TEST_PROGS)
  
-@@ -37,6 +38,12 @@ memcpy_p7_t%:	memcpy_power7.S $(EXTRA_SOURCES)
- 		-D COPY_LOOP=test_memcpy_power7 \
- 		-D SELFTEST_CASE=$(subst memcpy_p7_t,,$@) -o $@ $^
- 
-+copyuser_64_exc_t%: copyuser_64.S exc_validate.c ../harness.c \
-+		copy_tofrom_user_reference.S stubs.S
+-copyuser_64:     CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_base
+-copyuser_power7: CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_power7
+-memcpy_64:       CPPFLAGS += -D COPY_LOOP=test_memcpy
+-memcpy_power7:   CPPFLAGS += -D COPY_LOOP=test_memcpy_power7
++copyuser_64_t%:	copyuser_64.S $(EXTRA_SOURCES)
 +	$(CC) $(CPPFLAGS) $(CFLAGS) \
 +		-D COPY_LOOP=test___copy_tofrom_user_base \
-+		-D SELFTEST_CASE=$(subst copyuser_64_exc_t,,$@) -o $@ $^
++		-D SELFTEST_CASE=$(subst copyuser_64_t,,$@) -o $@ $^
 +
++copyuser_p7_t%:	copyuser_power7.S $(EXTRA_SOURCES)
++	$(CC) $(CPPFLAGS) $(CFLAGS) \
++		-D COPY_LOOP=test___copy_tofrom_user_power7 \
++		-D SELFTEST_CASE=$(subst copyuser_p7_t,,$@) -o $@ $^
++
++# Strictly speaking, we only need the memcpy_64 test cases for big-endian
++memcpy_64_t%:	memcpy_64.S $(EXTRA_SOURCES)
++	$(CC) $(CPPFLAGS) $(CFLAGS) \
++		-D COPY_LOOP=test_memcpy \
++		-D SELFTEST_CASE=$(subst memcpy_64_t,,$@) -o $@ $^
+ 
+-$(TEST_PROGS): $(EXTRA_SOURCES)
++memcpy_p7_t%:	memcpy_power7.S $(EXTRA_SOURCES)
++	$(CC) $(CPPFLAGS) $(CFLAGS) \
++		-D COPY_LOOP=test_memcpy_power7 \
++		-D SELFTEST_CASE=$(subst memcpy_p7_t,,$@) -o $@ $^
+ 
  include ../../lib.mk
  
- clean:
 diff --git a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-index 7eb0cd6..03f10f1 100644
+index 50ae7d2..7eb0cd6 100644
 --- a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
 +++ b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-@@ -1,3 +1,5 @@
-+#ifndef __SELFTESTS_POWERPC_PPC_ASM_H
-+#define __SELFTESTS_POWERPC_PPC_ASM_H
- #include <ppc-asm.h>
+@@ -40,17 +40,16 @@ FUNC_START(enter_vmx_copy)
+ FUNC_START(exit_vmx_copy)
+ 	blr
  
- #define CONFIG_ALTIVEC
-@@ -25,24 +27,6 @@
+-FUNC_START(memcpy_power7)
+-	blr
+-
+-FUNC_START(__copy_tofrom_user_power7)
+-	blr
+-
+ FUNC_START(__copy_tofrom_user_base)
+ 	blr
  
- #define PPC_MTOCRF(A, B)	mtocrf A, B
- 
--FUNC_START(enter_vmx_usercopy)
--	li	r3,1
--	blr
--
--FUNC_START(exit_vmx_usercopy)
--	li	r3,0
--	blr
--
--FUNC_START(enter_vmx_copy)
--	li	r3,1
--	blr
--
--FUNC_START(exit_vmx_copy)
--	blr
--
--FUNC_START(__copy_tofrom_user_base)
--	blr
--
- #define BEGIN_FTR_SECTION		.if test_feature
- #define FTR_SECTION_ELSE		.else
- #define ALT_FTR_SECTION_END_IFCLR(x)	.endif
-@@ -53,3 +37,5 @@ FUNC_START(__copy_tofrom_user_base)
- 
- /* Default to taking the first of any alternative feature sections */
- test_feature = 1
+-#define BEGIN_FTR_SECTION
+-#define FTR_SECTION_ELSE
+-#define ALT_FTR_SECTION_END_IFCLR(x)
+-#define ALT_FTR_SECTION_END(x, y)
+-#define END_FTR_SECTION_IFCLR(x)
++#define BEGIN_FTR_SECTION		.if test_feature
++#define FTR_SECTION_ELSE		.else
++#define ALT_FTR_SECTION_END_IFCLR(x)	.endif
++#define ALT_FTR_SECTION_END_IFSET(x)	.endif
++#define ALT_FTR_SECTION_END(x, y)	.endif
++#define END_FTR_SECTION_IFCLR(x)	.endif
++#define END_FTR_SECTION_IFSET(x)	.endif
 +
-+#endif /* __SELFTESTS_POWERPC_PPC_ASM_H */
-diff --git a/tools/testing/selftests/powerpc/copyloops/copy_tofrom_user_reference.S b/tools/testing/selftests/powerpc/copyloops/copy_tofrom_user_reference.S
-new file mode 100644
-index 0000000..3363b86
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/copyloops/copy_tofrom_user_reference.S
-@@ -0,0 +1,24 @@
-+#include <asm/ppc_asm.h>
-+
-+_GLOBAL(copy_tofrom_user_reference)
-+	cmpdi	r5,0
-+	beq	4f
-+
-+	mtctr	r5
-+
-+1:	lbz	r6,0(r4)
-+2:	stb	r6,0(r3)
-+	addi	r3,r3,1
-+	addi	r4,r4,1
-+	bdnz	1b
-+
-+3:	mfctr	r3
-+	blr
-+
-+4:	mr	r3,r5
-+	blr
-+
-+.section __ex_table,"a"
-+	.llong	1b,3b
-+	.llong	2b,3b
-+.text
-diff --git a/tools/testing/selftests/powerpc/copyloops/exc_validate.c b/tools/testing/selftests/powerpc/copyloops/exc_validate.c
-new file mode 100644
-index 0000000..72e7830
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/copyloops/exc_validate.c
-@@ -0,0 +1,117 @@
-+#include <stdlib.h>
-+#include <string.h>
-+#include <stdio.h>
-+#include <signal.h>
-+#include <unistd.h>
-+#include <sys/mman.h>
-+
-+extern char __start___ex_table[];
-+extern char __stop___ex_table[];
-+
-+#if defined(__powerpc64__)
-+#define UCONTEXT_NIA(UC)	(UC)->uc_mcontext.gp_regs[PT_NIP]
-+#elif defined(__powerpc__)
-+#define UCONTEXT_NIA(UC)	(UC)->uc_mcontext.uc_regs->gregs[PT_NIP]
-+#else
-+#error implement UCONTEXT_NIA
-+#endif
-+
-+static void segv_handler(int signr, siginfo_t *info, void *ptr)
-+{
-+	ucontext_t *uc = (ucontext_t *)ptr;
-+	unsigned long addr = (unsigned long)info->si_addr;
-+	unsigned long *ip = &UCONTEXT_NIA(uc);
-+	unsigned long *ex_p = (unsigned long *)__start___ex_table;
-+
-+	while (ex_p < (unsigned long *)__stop___ex_table) {
-+		unsigned long insn, fixup;
-+
-+		insn = *ex_p++;
-+		fixup = *ex_p++;
-+
-+		if (insn == *ip) {
-+			*ip = fixup;
-+			return;
-+		}
-+	}
-+
-+	printf("No exception table match for NIA %lx ADDR %lx\n", *ip, addr);
-+	abort();
-+}
-+
-+static void setup_segv_handler(void)
-+{
-+	struct sigaction action;
-+
-+	memset(&action, 0, sizeof(action));
-+	action.sa_sigaction = segv_handler;
-+	action.sa_flags = SA_SIGINFO;
-+	sigaction(SIGSEGV, &action, NULL);
-+}
-+
-+unsigned long COPY_LOOP(void *to, const void *from, unsigned long size);
-+unsigned long test_copy_tofrom_user_reference(void *to, const void *from, unsigned long size);
-+
-+static int total_passed;
-+static int total_failed;
-+
-+static void do_one_test(char *dstp, char *srcp, unsigned long len)
-+{
-+	unsigned long got, expected;
-+
-+	got = COPY_LOOP(dstp, srcp, len);
-+	expected = test_copy_tofrom_user_reference(dstp, srcp, len);
-+
-+	if (got != expected) {
-+		total_failed++;
-+		printf("FAIL from=%p to=%p len=%ld returned %ld, expected %ld\n",
-+		       srcp, dstp, len, got, expected);
-+		//abort();
-+	} else
-+		total_passed++;
-+}
-+
-+//#define MAX_LEN 512
-+#define MAX_LEN 16
-+
-+int main(void)
-+{
-+	int page_size;
-+	static char *p, *q;
-+	unsigned long src, dst, len;
-+
-+	page_size = getpagesize();
-+	p = mmap(NULL, page_size * 2, PROT_READ|PROT_WRITE,
-+		MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-+
-+	if (p == MAP_FAILED) {
-+		perror("mmap");
-+		exit(1);
-+	}
-+
-+	memset(p, 0, page_size);
-+
-+	setup_segv_handler();
-+
-+	if (mprotect(p + page_size, page_size, PROT_NONE)) {
-+		perror("mprotect");
-+		exit(1);
-+	}
-+
-+	q = p + page_size - MAX_LEN;
-+
-+	for (src = 0; src < MAX_LEN; src++) {
-+		for (dst = 0; dst < MAX_LEN; dst++) {
-+			for (len = 0; len < MAX_LEN+1; len++) {
-+				// printf("from=%p to=%p len=%ld\n", q+dst, q+src, len);
-+				do_one_test(q+dst, q+src, len);
-+			}
-+		}
-+	}
-+
-+	printf("Totals:\n");
-+	printf("  Pass: %d\n", total_passed);
-+	printf("  Fail: %d\n", total_failed);
-+
-+	return 0;
-+}
-diff --git a/tools/testing/selftests/powerpc/copyloops/stubs.S b/tools/testing/selftests/powerpc/copyloops/stubs.S
-new file mode 100644
-index 0000000..830e2a6
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/copyloops/stubs.S
-@@ -0,0 +1,19 @@
-+#include <asm/ppc_asm.h>
-+
-+FUNC_START(enter_vmx_usercopy)
-+	li	r3,1
-+	blr
-+
-+FUNC_START(exit_vmx_usercopy)
-+	li	r3,0
-+	blr
-+
-+FUNC_START(enter_vmx_copy)
-+	li	r3,1
-+	blr
-+
-+FUNC_START(exit_vmx_copy)
-+	blr
-+
-+FUNC_START(__copy_tofrom_user_base)
-+	blr
++/* Default to taking the first of any alternative feature sections */
++test_feature = 1
 -- 
 2.7.4
