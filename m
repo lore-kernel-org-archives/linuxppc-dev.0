@@ -1,16 +1,39 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t99r51h2BzDvQ2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 16:48:53 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: alex.williamson@redhat.com
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- aik@ozlabs.ru, gwshan@linux.vnet.ibm.com
-Subject: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
-Date: Fri,  4 Nov 2016 16:48:41 +1100
-Message-Id: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9BY30D71zDvWl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 17:20:54 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA46ItoI010235
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 02:20:52 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26gff7wfhe-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Nov 2016 02:20:51 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 4 Nov 2016 16:20:49 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id BC8FA3578057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 17:20:46 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uA46Kk2R4653396
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 17:20:46 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uA46KksL026099
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 17:20:46 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/oops: fix pr_cont() issues in instruction dump
+Date: Fri,  4 Nov 2016 17:20:40 +1100
+Message-Id: <20161104062040.25903-1-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,58 +43,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the kconfig logic for VFIO_IOMMU_SPAPR_TCE and VFIO_SPAPR_EEH
-is broken when SPAPR_TCE_IOMMU=n. Leading to:
+Since the KERN_CONT changes, the current code in show_instructions() prints
+out a whole bunch of unnecessary newlines. Change occurrences of
+printk("\n") to pr_cont("\n"). While we're here, change all the other
+cases of printk(KERN_CONT ...) to pr_cont() as well.
 
-    warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
-    warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
-    drivers/vfio/vfio_iommu_spapr_tce.c:113:8: error: implicit declaration of function 'mm_iommu_find'
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-This stems from the fact that VFIO selects VFIO_IOMMU_SPAPR_TCE, and
-although it has an if clause, the condition is not correct.
-
-We could fix it by doing select VFIO_IOMMU_SPAPR_TCE if SPAPR_TCE_IOMMU,
-but the cleaner fix is to drop the selects and tie VFIO_IOMMU_SPAPR_TCE
-to the value of VFIO, and express the dependencies in only once place.
-
-Do the same for VFIO_SPAPR_EEH.
-
-The end result is that the values of VFIO_IOMMU_SPAPR_TCE and
-VFIO_SPAPR_EEH follow the value of VFIO, except when SPAPR_TCE_IOMMU=n
-and/or EEH=n. Which is exactly what we want to happen.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/vfio/Kconfig | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-index da6e2ce77495..6b51a4ebed8a 100644
---- a/drivers/vfio/Kconfig
-+++ b/drivers/vfio/Kconfig
-@@ -6,12 +6,12 @@ config VFIO_IOMMU_TYPE1
- config VFIO_IOMMU_SPAPR_TCE
- 	tristate
- 	depends on VFIO && SPAPR_TCE_IOMMU
--	default n
-+	default VFIO
+Based off mpe's earlier pr_cont() fixes series
+---
+ arch/powerpc/kernel/process.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index ea6fe2e..749fb41 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1215,7 +1215,7 @@ static void show_instructions(struct pt_regs *regs)
+ 		int instr;
  
- config VFIO_SPAPR_EEH
- 	tristate
- 	depends on EEH && VFIO_IOMMU_SPAPR_TCE
--	default n
-+	default VFIO
+ 		if (!(i % 8))
+-			printk("\n");
++			pr_cont("\n");
  
- config VFIO_VIRQFD
- 	tristate
-@@ -22,8 +22,6 @@ menuconfig VFIO
- 	tristate "VFIO Non-Privileged userspace driver framework"
- 	depends on IOMMU_API
- 	select VFIO_IOMMU_TYPE1 if (X86 || S390 || ARM_SMMU || ARM_SMMU_V3)
--	select VFIO_IOMMU_SPAPR_TCE if (PPC_POWERNV || PPC_PSERIES)
--	select VFIO_SPAPR_EEH if (PPC_POWERNV || PPC_PSERIES)
- 	select ANON_INODES
- 	help
- 	  VFIO provides a framework for secure userspace device drivers.
+ #if !defined(CONFIG_BOOKE)
+ 		/* If executing with the IMMU off, adjust pc rather
+@@ -1227,18 +1227,18 @@ static void show_instructions(struct pt_regs *regs)
+ 
+ 		if (!__kernel_text_address(pc) ||
+ 		     probe_kernel_address((unsigned int __user *)pc, instr)) {
+-			printk(KERN_CONT "XXXXXXXX ");
++			pr_cont("XXXXXXXX ");
+ 		} else {
+ 			if (regs->nip == pc)
+-				printk(KERN_CONT "<%08x> ", instr);
++				pr_cont("<%08x> ", instr);
+ 			else
+-				printk(KERN_CONT "%08x ", instr);
++				pr_cont("%08x ", instr);
+ 		}
+ 
+ 		pc += sizeof(int);
+ 	}
+ 
+-	printk("\n");
++	pr_cont("\n");
+ }
+ 
+ struct regbit {
 -- 
-2.7.4
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
