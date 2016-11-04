@@ -1,48 +1,29 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paolo.bonzini@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t9G9Z4tRfzDvYf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 20:04:18 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA494FXj060213
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 05:04:16 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26gexff2x7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Nov 2016 05:04:15 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 4 Nov 2016 03:04:13 -0600
-Date: Fri, 4 Nov 2016 14:34:09 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- "Shreyas B . Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/64s: relocation, register save fixes for system
- reset interrupt
-Reply-To: ego@linux.vnet.ibm.com
-References: <79d229aa-2b4e-67b7-157b-b839bc390cbf@linux.vnet.ibm.com>
- <20161102175701.2ae8d1d3@roar.ozlabs.ibm.com>
- <20161102082433.GA17365@in.ibm.com>
- <20161102193624.7f0cbfee@roar.ozlabs.ibm.com>
- <20161102084548.GD17909@in.ibm.com>
- <20161103162100.1b50777e@roar.ozlabs.ibm.com>
- <CAAVMmb5Zj4oKVF6f3Ag0mEHOUrAYro65JyuULMO7+abRs4D=OQ@mail.gmail.com>
- <20161103171751.44798270@roar.ozlabs.ibm.com>
- <CAAVMmb7wmgYY6AFLb2kqJsgOJwQK_vYaJtxmeouF9ZXezWtEDA@mail.gmail.com>
- <20161103180244.4a41796b@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9HRK0vjqzDvQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 21:01:17 +1100 (AEDT)
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3t9HRJ1V4Gz9vFx
+ for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2016 21:01:16 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id c17so3071175wmc.3
+ for <linuxppc-dev@ozlabs.org>; Fri, 04 Nov 2016 03:01:16 -0700 (PDT)
+Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
+Subject: Re: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
+To: Michael Ellerman <mpe@ellerman.id.au>, alex.williamson@redhat.com
+References: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, aik@ozlabs.ru, gwshan@linux.vnet.ibm.com
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <81900126-f1aa-b480-c2fa-f0fa04d625c1@redhat.com>
+Date: Fri, 4 Nov 2016 11:01:10 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161103180244.4a41796b@roar.ozlabs.ibm.com>
-Message-Id: <20161104090409.GA12645@in.ibm.com>
+In-Reply-To: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,82 +33,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nick,
 
-On Thu, Nov 03, 2016 at 06:02:44PM +1100, Nicholas Piggin wrote:
-> On Thu, 3 Nov 2016 02:32:39 -0400
-> "Shreyas B. Prabhu" <shreyasbp@gmail.com> wrote:
+
+On 04/11/2016 06:48, Michael Ellerman wrote:
+> Currently the kconfig logic for VFIO_IOMMU_SPAPR_TCE and VFIO_SPAPR_EEH
+> is broken when SPAPR_TCE_IOMMU=n. Leading to:
 > 
-> > On Thu, Nov 3, 2016 at 2:17 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > On Thu, 3 Nov 2016 01:56:46 -0400
-> > > "Shreyas B. Prabhu" <shreyasbp@gmail.com> wrote:
-> > >  
-> > >> On Thu, Nov 3, 2016 at 1:21 AM, Nicholas Piggin <npiggin@gmail.com> wrote:  
-> > >> > On Wed, 2 Nov 2016 14:15:48 +0530
-> > >> > Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> > >> >  
-> > >> >> Hi Nick,
-> > >> >>
-> > >> >> On Wed, Nov 02, 2016 at 07:36:24PM +1100, Nicholas Piggin wrote:  
-> > >> >> >
-> > >> >> > Okay, I'll work with that. What's the best way to make a P8 do
-> > >> >> > winkle sleeps?  
-> > >> >>
-> > >> >> From the userspace, offlining the CPUs of the core will put them to
-> > >> >> winkle.  
-> > >> >
-> > >> > Thanks for this. Hum, that r13 manipulation throughout the idle
-> > >> > and exception code is a bit interesting. I'll do the minimal patch
-> > >> > for 4.9, but what's the reason not to just use the winkle state
-> > >> > in the PACA rather than storing it into HSPRG0 bit, can you (or
-> > >> > Shreyas) explain?
-> > >> >  
-> > >> Hi Nick,
-> > >>
-> > >> Before deep winkle, checking SRR1's wakeup bits (Bits 46:47) was enough to
-> > >> figure out which idle state we are waking up from. But in P8, SRR1's wakeup
-> > >> bits aren't enough since bits 46:47 are 0b11 for both fast sleep and
-> > >> deep winkle.
-> > >> So to distinguish bw fastsleep and deep winkle, we use the current HSPRG0/PORE
-> > >> trick. We program the PORE engine (which is used for state restore when waking
-> > >> up from deep winkle) to restore HSPRG0 with the last bit set (we do this in
-> > >> pnv_save_sprs_for_winkle()). R13 bit manipulation in pnv_restore_hyp_resource
-> > >> is related to this.  
-> > >
-> > > Right, I didn't realize how that exactly worked until I had to go read
-> > > the code just now. It's a neat little trick. I'm wondering can we use PACA_THREAD_IDLE_STATE==PNV_THREAD_WINKLE for this instead? It would just
-> > > make the early PACA usage in the exception handlers able to use more common
-> > > code.
-> > >  
-> > 
-> > PACA_THREAD_IDLE_STATE will have what was 'requested'. It may not be the
-> > state we are waking up from. For example, if 7 threads of the core execute
-> > winkle instruction while 1 thread of the same core executes sleep. Here
-> > the core only enters sleep whereas PACA_THREAD_IDLE_STATE for the 7 threads
-> > will have PNV_THREAD_WINKLE.
+>     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
+>     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
+>     drivers/vfio/vfio_iommu_spapr_tce.c:113:8: error: implicit declaration of function 'mm_iommu_find'
 > 
-> I see, that makes sense. Would it be possible to keep count of the number of
-> threads going into winkle in core_idle_state? Even if that is not a guarantee
-> if them requiring a PORE wakeup, would the restore case be harmful?
-
-Doing a full restore on wakeup when the hardware didn't actually go to
-winkle isn't harmful. The first few iterations of the winkle
-enablement patchset based the decision on
-PACA_THREAD_IDLE_STATE==PNV_THREAD_WINKLE upon a wakeup.
-
-The disadvantage was that we would end up restoring a whole bunch of
-Subcore SPRs (SDR1, RPR, AMOR), Core SPRs (TSCR,WORC) and per thread
-SPRs (SLBs, SPURR,PURR,DSCR,WORT) which would waste quite lot of
-cycles if the hardware didn't actually demote the CPU all the way to
-winkle.
-
-Hence Ben suggested piggybacking on PORE engine to set the LSB of the
-HSPRG0 to indicate wakeup from winkle.
-
+> This stems from the fact that VFIO selects VFIO_IOMMU_SPAPR_TCE, and
+> although it has an if clause, the condition is not correct.
 > 
-> Thanks,
-> Nick
+> We could fix it by doing select VFIO_IOMMU_SPAPR_TCE if SPAPR_TCE_IOMMU,
+> but the cleaner fix is to drop the selects and tie VFIO_IOMMU_SPAPR_TCE
+> to the value of VFIO, and express the dependencies in only once place.
 > 
---
-Thanks and Regards
-gautham.
+> Do the same for VFIO_SPAPR_EEH.
+> 
+> The end result is that the values of VFIO_IOMMU_SPAPR_TCE and
+> VFIO_SPAPR_EEH follow the value of VFIO, except when SPAPR_TCE_IOMMU=n
+> and/or EEH=n. Which is exactly what we want to happen.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  drivers/vfio/Kconfig | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
+> index da6e2ce77495..6b51a4ebed8a 100644
+> --- a/drivers/vfio/Kconfig
+> +++ b/drivers/vfio/Kconfig
+> @@ -6,12 +6,12 @@ config VFIO_IOMMU_TYPE1
+>  config VFIO_IOMMU_SPAPR_TCE
+>  	tristate
+>  	depends on VFIO && SPAPR_TCE_IOMMU
+> -	default n
+> +	default VFIO
+
+No need to depend on VFIO since you already have it in "default".  (I
+assume you cannot use "default y" because "depends on" doesn't downgrade
+"y" to "m" when VFIO is a module.
+
+A shorthand is
+
+	def_tristate VFIO && SPAPR_TCE_IOMMU
+
+>  config VFIO_SPAPR_EEH
+>  	tristate
+>  	depends on EEH && VFIO_IOMMU_SPAPR_TCE
+> -	default n
+> +	default VFIO
+
+Likewise:
+
+	def_tristate VFIO_IOMMU_SPAPR_TCE && EEH
+
+Thanks,
+
+Paolo
+
+>  config VFIO_VIRQFD
+>  	tristate
+> @@ -22,8 +22,6 @@ menuconfig VFIO
+>  	tristate "VFIO Non-Privileged userspace driver framework"
+>  	depends on IOMMU_API
+>  	select VFIO_IOMMU_TYPE1 if (X86 || S390 || ARM_SMMU || ARM_SMMU_V3)
+> -	select VFIO_IOMMU_SPAPR_TCE if (PPC_POWERNV || PPC_PSERIES)
+> -	select VFIO_SPAPR_EEH if (PPC_POWERNV || PPC_PSERIES)
+>  	select ANON_INODES
+>  	help
+>  	  VFIO provides a framework for secure userspace device drivers.
+> 
