@@ -1,28 +1,26 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0214.hostedemail.com
+ [216.40.44.214])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t9Srm1NsSzDvZC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 04:05:28 +1100 (AEDT)
-Subject: Re: Coding Style: Reverse XMAS tree declarations ? (was Re: [PATCH
- net-next v6 02/10] dpaa_eth: add support for DPAA Ethernet)
-To: Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
- madalin.bucur@nxp.com, Andrew Morton <akpm@linux-foundation.org>,
- Jonathan Corbet <corbet@lwn.net>
-References: <1478117854-8952-1-git-send-email-madalin.bucur@nxp.com>
- <1478117854-8952-3-git-send-email-madalin.bucur@nxp.com>
- <20161103.155816.642712588084106823.davem@davemloft.net>
- <1478242438.1924.31.camel@perches.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9Tjj1jkCzDt1W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 04:44:23 +1100 (AEDT)
+Message-ID: <1478281455.1924.41.camel@perches.com>
+Subject: Re: Coding Style: Reverse XMAS tree declarations ?
+From: Joe Perches <joe@perches.com>
+To: David Miller <davem@davemloft.net>, lsanfil@marvell.com
+Cc: madalin.bucur@nxp.com, akpm@linux-foundation.org, corbet@lwn.net,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, oss@buserror.net, ppc@mindchasers.com,
- pebolle@tiscali.nl, joakim.tjernlund@transmode.se
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <5d4925c3-e6c1-8780-37bf-6d529f128cd9@infradead.org>
-Date: Fri, 4 Nov 2016 10:05:15 -0700
-MIME-Version: 1.0
-In-Reply-To: <1478242438.1924.31.camel@perches.com>
-Content-Type: text/plain; charset=windows-1252
+ pebolle@tiscali.nl, joakim.tjernlund@transmode.se, Randy Dunlap
+ <rdunlap@infradead.org>
+Date: Fri, 04 Nov 2016 10:44:15 -0700
+In-Reply-To: <20161104.110759.1093635654135143910.davem@davemloft.net>
+References: <20161103.155816.642712588084106823.davem@davemloft.net>
+ <1478242438.1924.31.camel@perches.com> <581C6A7D.8030704@marvell.com>
+ <20161104.110759.1093635654135143910.davem@davemloft.net>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/03/16 23:53, Joe Perches wrote:
-> On Thu, 2016-11-03 at 15:58 -0400, David Miller wrote:
->> From: Madalin Bucur <madalin.bucur@nxp.com>
->> Date: Wed, 2 Nov 2016 22:17:26 +0200
->>
->>> This introduces the Freescale Data Path Acceleration Architecture
->>> +static inline size_t bpool_buffer_raw_size(u8 index, u8 cnt)
->>> +{
->>> +     u8 i;
->>> +     size_t res = DPAA_BP_RAW_SIZE / 2;
->>
->> Always order local variable declarations from longest to shortest line,
->> also know as Reverse Christmas Tree Format.
+On Fri, 2016-11-04 at 11:07 -0400, David Miller wrote:
+> From: Lino Sanfilippo <lsanfil@marvell.com>
+> > On 04.11.2016 07:53, Joe Perches wrote:
+> >> CHECK:REVERSE_XMAS_TREE: Prefer ordering declarations longest to
+> >> shortest
+> >> #446: FILE: drivers/net/ethernet/ethoc.c:446:
+> >> +                    int size = bd.stat >> 16;
+> >> +                    struct sk_buff *skb;
+> > should not this case be valid? Optically the longer line is already
+> > before the shorter.
+> > I think that the whole point in using this reverse xmas tree ordering
+> > is to have
+> > the code optically tidied up and not to enforce ordering between
+> > variable name lengths.
 > 
-> I think this declaration sorting order is misguided but
-> here's a possible change to checkpatch adding a test for it
-> that does this test just for net/ and drivers/net/
+> That's correct.
 
-I agree with the misguided part.
-That's not actually in CodingStyle AFAICT. Where did this come from?
+And also another reason the whole reverse xmas tree
+automatic declaration layout concept is IMO dubious.
 
+Basically, you're looking not at the initial ordering
+of automatics as important, but helping find a specific
+automatic when reversing from reading code is not always
+correct.
 
-thanks.
--- 
-~Randy
+Something like:
+
+static void function{args,...)
+{
+	[longish list of reverse xmas tree identifiers...]
+	struct foo *bar = longish_function(args, ...);
+	struct foobarbaz *qux;
+	[more identifers]
+
+	[multiple screenfuls of code later...)
+
+	new_function(..., bar, ...);
+
+	[more code...]
+}
+
+and the reverse xmas tree helpfulness of looking up the
+type of bar is neither obvious nor easy.
+
+My preference would be for a bar that serves coffee and alcohol.
