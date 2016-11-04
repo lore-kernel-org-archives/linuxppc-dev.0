@@ -1,14 +1,24 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t95dv0JWMzDvXv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 13:39:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t96Rn0dxkzDvWt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 14:16:05 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/asm: Allow including ppc_asm.h in asm files
-Date: Fri,  4 Nov 2016 13:39:43 +1100
-Message-Id: <1478227183-10299-1-git-send-email-mpe@ellerman.id.au>
+To: Alexander Duyck <alexander.h.duyck@intel.com>, linux-mm@kvack.org,
+ akpm@linux-foundation.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [mm PATCH v2 18/26] arch/powerpc: Add option to skip DMA sync as
+ a part of mapping
+In-Reply-To: <20161102111513.79519.65315.stgit@ahduyck-blue-test.jf.intel.com>
+References: <20161102111031.79519.14741.stgit@ahduyck-blue-test.jf.intel.com>
+ <20161102111513.79519.65315.stgit@ahduyck-blue-test.jf.intel.com>
+Date: Fri, 04 Nov 2016 14:16:01 +1100
+Message-ID: <87twbolytq.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,36 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There's no reason to #error if we include ppc_asm.h in asm files, the
-ifdef already prevents any problems.
+Alexander Duyck <alexander.h.duyck@intel.com> writes:
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/ppc_asm.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
+> avoid invoking cache line invalidation if the driver will just handle it
+> via a sync_for_cpu or sync_for_device call.
+>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>  arch/powerpc/kernel/dma.c |    9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index c73750b0d9fa..28ab87e5b739 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -10,9 +10,7 @@
- #include <asm/ppc-opcode.h>
- #include <asm/firmware.h>
- 
--#ifndef __ASSEMBLY__
--#error __FILE__ should only be used in assembler files
--#else
-+#ifdef __ASSEMBLY__
- 
- #define SZL			(BITS_PER_LONG/8)
- 
-@@ -779,5 +777,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- 	.long 0xa6037b7d; /* mtsrr1 r11				*/ \
- 	.long 0x2400004c  /* rfid				*/
- #endif /* !CONFIG_PPC_BOOK3E */
-+
- #endif /*  __ASSEMBLY__ */
-+
- #endif /* _ASM_POWERPC_PPC_ASM_H */
--- 
-2.7.4
+LGTM.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
