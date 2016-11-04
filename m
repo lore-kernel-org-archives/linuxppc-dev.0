@@ -1,35 +1,53 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t9Kpd1S2tzDvXv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 22:48:09 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id y68so7758776pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Nov 2016 04:48:09 -0700 (PDT)
-Date: Fri, 4 Nov 2016 22:47:47 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Mahesh J Salgaonkar
- <mahesh@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, "Shreyas B .
- Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/64s: relocation, register save fixes for system
- reset interrupt
-Message-ID: <20161104224747.3721b755@roar.ozlabs.ibm.com>
-In-Reply-To: <20161104090409.GA12645@in.ibm.com>
-References: <79d229aa-2b4e-67b7-157b-b839bc390cbf@linux.vnet.ibm.com>
- <20161102175701.2ae8d1d3@roar.ozlabs.ibm.com>
- <20161102082433.GA17365@in.ibm.com>
- <20161102193624.7f0cbfee@roar.ozlabs.ibm.com>
- <20161102084548.GD17909@in.ibm.com>
- <20161103162100.1b50777e@roar.ozlabs.ibm.com>
- <CAAVMmb5Zj4oKVF6f3Ag0mEHOUrAYro65JyuULMO7+abRs4D=OQ@mail.gmail.com>
- <20161103171751.44798270@roar.ozlabs.ibm.com>
- <CAAVMmb7wmgYY6AFLb2kqJsgOJwQK_vYaJtxmeouF9ZXezWtEDA@mail.gmail.com>
- <20161103180244.4a41796b@roar.ozlabs.ibm.com>
- <20161104090409.GA12645@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9LDt6CPgzDvXx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 23:07:26 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA4C4FXi099785
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 08:07:24 -0400
+Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26gnryg2fn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Nov 2016 08:07:24 -0400
+Received: from localhost
+ by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Fri, 4 Nov 2016 12:07:22 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2CD3317D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 12:09:23 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uA4C74Pm23658726
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 12:07:04 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uA4C73Ot023797
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 06:07:04 -0600
+Subject: Re: [RESEND] [PATCH v3] cxl: Prevent adapter reset if an active
+ context exists
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+References: <1476437916-31010-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+ <544d8d01-162a-9634-258d-05e6314bddcc@au1.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ stable@vger.kernel.org, Ian Munsie <imunsie@au1.ibm.com>,
+ gkurz@linux.vnet.ibm.com
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Fri, 4 Nov 2016 13:07:01 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <544d8d01-162a-9634-258d-05e6314bddcc@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <f95e641e-3ceb-5f28-ea45-95fce2d9d2e1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,84 +57,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 4 Nov 2016 14:34:09 +0530
-Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+Hi Andrew,
 
-> Hi Nick,
-> 
-> On Thu, Nov 03, 2016 at 06:02:44PM +1100, Nicholas Piggin wrote:
-> > On Thu, 3 Nov 2016 02:32:39 -0400
-> > "Shreyas B. Prabhu" <shreyasbp@gmail.com> wrote:
-> >   
-> > > On Thu, Nov 3, 2016 at 2:17 AM, Nicholas Piggin <npiggin@gmail.com> wrote:  
-> > > > On Thu, 3 Nov 2016 01:56:46 -0400
-> > > > "Shreyas B. Prabhu" <shreyasbp@gmail.com> wrote:
-> > > >    
-> > > >> On Thu, Nov 3, 2016 at 1:21 AM, Nicholas Piggin <npiggin@gmail.com> wrote:    
-> > > >> > On Wed, 2 Nov 2016 14:15:48 +0530
-> > > >> > Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> > > >> >    
-> > > >> >> Hi Nick,
-> > > >> >>
-> > > >> >> On Wed, Nov 02, 2016 at 07:36:24PM +1100, Nicholas Piggin wrote:    
-> > > >> >> >
-> > > >> >> > Okay, I'll work with that. What's the best way to make a P8 do
-> > > >> >> > winkle sleeps?    
-> > > >> >>
-> > > >> >> From the userspace, offlining the CPUs of the core will put them to
-> > > >> >> winkle.    
-> > > >> >
-> > > >> > Thanks for this. Hum, that r13 manipulation throughout the idle
-> > > >> > and exception code is a bit interesting. I'll do the minimal patch
-> > > >> > for 4.9, but what's the reason not to just use the winkle state
-> > > >> > in the PACA rather than storing it into HSPRG0 bit, can you (or
-> > > >> > Shreyas) explain?
-> > > >> >    
-> > > >> Hi Nick,
-> > > >>
-> > > >> Before deep winkle, checking SRR1's wakeup bits (Bits 46:47) was enough to
-> > > >> figure out which idle state we are waking up from. But in P8, SRR1's wakeup
-> > > >> bits aren't enough since bits 46:47 are 0b11 for both fast sleep and
-> > > >> deep winkle.
-> > > >> So to distinguish bw fastsleep and deep winkle, we use the current HSPRG0/PORE
-> > > >> trick. We program the PORE engine (which is used for state restore when waking
-> > > >> up from deep winkle) to restore HSPRG0 with the last bit set (we do this in
-> > > >> pnv_save_sprs_for_winkle()). R13 bit manipulation in pnv_restore_hyp_resource
-> > > >> is related to this.    
-> > > >
-> > > > Right, I didn't realize how that exactly worked until I had to go read
-> > > > the code just now. It's a neat little trick. I'm wondering can we use PACA_THREAD_IDLE_STATE==PNV_THREAD_WINKLE for this instead? It would just
-> > > > make the early PACA usage in the exception handlers able to use more common
-> > > > code.
-> > > >    
-> > > 
-> > > PACA_THREAD_IDLE_STATE will have what was 'requested'. It may not be the
-> > > state we are waking up from. For example, if 7 threads of the core execute
-> > > winkle instruction while 1 thread of the same core executes sleep. Here
-> > > the core only enters sleep whereas PACA_THREAD_IDLE_STATE for the 7 threads
-> > > will have PNV_THREAD_WINKLE.  
-> > 
-> > I see, that makes sense. Would it be possible to keep count of the number of
-> > threads going into winkle in core_idle_state? Even if that is not a guarantee
-> > if them requiring a PORE wakeup, would the restore case be harmful?  
-> 
-> Doing a full restore on wakeup when the hardware didn't actually go to
-> winkle isn't harmful. The first few iterations of the winkle
-> enablement patchset based the decision on
-> PACA_THREAD_IDLE_STATE==PNV_THREAD_WINKLE upon a wakeup.
-> 
-> The disadvantage was that we would end up restoring a whole bunch of
-> Subcore SPRs (SDR1, RPR, AMOR), Core SPRs (TSCR,WORC) and per thread
-> SPRs (SLBs, SPURR,PURR,DSCR,WORT) which would waste quite lot of
-> cycles if the hardware didn't actually demote the CPU all the way to
-> winkle.
-> 
-> Hence Ben suggested piggybacking on PORE engine to set the LSB of the
-> HSPRG0 to indicate wakeup from winkle.
+Le 04/11/2016 à 07:27, Andrew Donnellan a écrit :
+> On 14/10/16 20:38, Vaibhav Jain wrote:
+>> This patch prevents resetting the cxl adapter via sysfs in presence of
+>> one or more active cxl_context on it. This protects against an
+>> unrecoverable error caused by PSL owning a dirty cache line even after
+>> reset and host tries to touch the same cache line. In case a force reset
+>> of the card is required irrespective of any active contexts, the int
+>> value -1 can be stored in the 'reset' sysfs attribute of the card.
+>>
+>> The patch introduces a new atomic_t member named contexts_num inside
+>> struct cxl that holds the number of active context attached to the card
+>> , which is checked against '0' before proceeding with the reset. To
+>> prevent against a race condition where a context is activated just after
+>> reset check is performed, the contexts_num is atomically set to '-1'
+>> after reset-check to indicate that no more contexts can be activated on
+>> the card anymore.
+>>
+>> Before activating a context we atomically test if contexts_num is
+>> non-negative and if so, increment its value by one. In case the value of
+>> contexts_num is negative then it indicates that the card is about to be
+>> reset and context activation is error-ed out at that point.
+>>
+>> Cc: stable@vger.kernel.org
+>> Fixes: 62fa19d4 ("cxl: Add ability to reset the card")
+>> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+>> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+>> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+>
+> When I inject an EEH error, this patch causes the following WARN. Thoughts?
 
-Hi Gautham,
+mmm, hard to see a relation with that patch. I couldn't reproduce 
+either. Could it bear any relation with the patch you're working on 
+(lspci called while the capi device is unconfigured)?
 
-Okay this makes sense, thanks for the clarification.
+   Fred
 
-Thanks,
-Nick
+
+>
+>
+> [   55.965011] EEH: PHB#0 failure detected, location: N/A
+> [   55.965078] CPU: 20 PID: 9933 Comm: lspci Not tainted
+> 4.9.0-rc1-ajd-00006-g6fb17cc #4
+> [   55.965080] Call Trace:
+> [   55.965091] [c00000036818fab0] [c000000000950ec8]
+> dump_stack+0xb0/0xf0 (unreliable)
+> [   55.965100] [c00000036818faf0] [c00000000002eb44]
+> eeh_dev_check_failure+0x1e4/0x540
+> [   55.965107] [c00000036818fb90] [c000000000064090]
+> pnv_pci_read_config+0xc0/0x130
+> [   55.965114] [c00000036818fbd0] [c0000000004bec24]
+> pci_user_read_config_dword+0x84/0x160
+> [   55.965119] [c00000036818fc20] [c0000000004d12f4]
+> pci_read_config+0x164/0x2a0
+> [   55.965125] [c00000036818fca0] [c000000000318e70]
+> sysfs_kf_bin_read+0x70/0xc0
+> [   55.965131] [c00000036818fcc0] [c000000000317ff8]
+> kernfs_fop_read+0xd8/0x260
+> [   55.965136] [c00000036818fd10] [c000000000278b7c] __vfs_read+0x3c/0x180
+> [   55.965141] [c00000036818fda0] [c000000000279e2c] vfs_read+0xac/0x1a0
+> [   55.965146] [c00000036818fde0] [c00000000027bc24] SyS_pread64+0xb4/0xd0
+> [   55.965152] [c00000036818fe30] [c00000000000bd20] system_call+0x38/0xfc
+> [   55.965171] EEH: Detected error on PHB#0
+> [   55.965173] EEH: This PCI device has failed 1 times in the last hour
+> [   55.965174] EEH: Notify device drivers to shutdown
+> [   55.965182] cxl afu0.0: Deactivating AFU directed mode
+> [   55.965261] Harmless Hypervisor Maintenance interrupt [Recovered]
+> [   55.965263]  Error detail: Unknown
+> [   55.965265]  HMER: 8040000000000000
+> [   55.965267] Harmless Hypervisor Maintenance interrupt [Recovered]
+> [   55.965268]  Error detail: Unknown
+> [   55.965270]  HMER: 8040000000000000
+> [   55.965326] cxl afu0.0: PSL Purge called with link down, ignoring
+> [   55.965563] EEH: Collect temporary log
+> [   55.965565] PHB3 PHB#0 Diag-data (Version: 1)
+> [   55.965566] brdgCtl:     0000ffff
+> [   55.965568] UtlSts:      00200000 00000000 00000000
+> [   55.965570] RootSts:     ffffffff ffffffff ffffffff ffffffff 0000ffff
+> [   55.965571] RootErrSts:  ffffffff ffffffff ffffffff
+> [   55.965572] RootErrLog:  ffffffff ffffffff ffffffff ffffffff
+> [   55.965574] RootErrLog1: ffffffff 0000000000000000 0000000000000000
+> [   55.965575] nFir:        0000809000000000 0030006e00000000
+> 0000800000000000
+> [   55.965577] PhbSts:      0000001c00000000 0000001c00000000
+> [   55.965578] Lem:         0000020000100000 40018e2400022482
+> 0000000000100000
+> [   55.965582] OutErr:      0000002000000000 0000002000000000
+> 0000000000000000 0000000000000000
+> [   55.965584] InAErr:      8000000000000000 8000000000000000
+> 0402000000000000 0000000000000000
+> [   55.965586] PE[  0] A/B: 8000000000000000 8000000000000000
+> [   55.965587] EEH: Reset without hotplug activity
+> [   60.592750] EEH: Notify device drivers the completion of reset
+> [   60.592760] cxl-pci 0000:01:00.0: enabling device (0140 -> 0142)
+> [   60.593018] pci 0000:01     : [PE# 000] Switching PHB to CXL
+> [   60.593116] pci 0000:01     : [PE# 000] Switching PHB to CXL
+> [   60.622727] Adapter context unlocked with 0 active contexts
+> [   60.622762] ------------[ cut here ]------------
+> [   60.622771] WARNING: CPU: 12 PID: 627 at
+> ../drivers/misc/cxl/main.c:325 cxl_adapter_context_unlock+0x60/0x80 [cxl]
+> [   60.622772] Modules linked in: fuse powernv_rng rng_core leds_powernv
+> powernv_op_panel led_class vmx_crypto ib_iser rdma_cm iw_cm ib_cm
+> ib_core libiscsi scsi_transport_iscsi autofs4 btrfs raid10 raid456
+> async_raid6_recov async_memcpy async_pq async_xor async_tx xor raid6_pq
+> multipath bnx2x mdio libcrc32c cxl
+> [   60.622794] CPU: 12 PID: 627 Comm: eehd Not tainted
+> 4.9.0-rc1-ajd-00006-g6fb17cc #4
+> [   60.622795] task: c0000003be084900 task.stack: c0000003be108000
+> [   60.622797] NIP: d000000004350be0 LR: d000000004350bdc CTR:
+> c000000000492fd0
+> [   60.622799] REGS: c0000003be10b660 TRAP: 0700   Not tainted
+> (4.9.0-rc1-ajd-00006-g6fb17cc)
+> [   60.622800] MSR: 900000010282b033
+> <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>
+> [   60.622810]   CR: 28000282  XER: 20000000
+> [   60.622811] SOFTE: 1 CFAR: c00000000094fc88
+> [   60.622814] GPR00: d000000004350bdc c0000003be10b8e0 d000000004379ae8
+> 000000000000002f
+> [   60.622818] GPR04: 0000000000000001 0000000000000000 00000000000003b8
+> 0000000000000000
+> [   60.622822] GPR08: 0000000000000000 0000000000000000 0000000000000000
+> 0000000000000001
+> [   60.622826] GPR12: 0000000000000000 c00000000fe03000 c0000000000baac8
+> c0000003c5166500
+> [   60.622830] GPR16: 0000000000000000 0000000000000000 0000000000000000
+> 0000000000000000
+> [   60.622834] GPR20: 0000000000000000 0000000000000000 0000000000000000
+> c000000000b14fe8
+> [   60.622837] GPR24: c000000000b14fc0 c0000003afc10400 c0000003b0c40000
+> 0000000000000000
+> [   60.622841] GPR28: c0000003c505a098 0000000000000000 c0000003afc10400
+> 0000000000000006
+> [   60.622850] NIP [d000000004350be0]
+> cxl_adapter_context_unlock+0x60/0x80 [cxl]
+> [   60.622856] LR [d000000004350bdc]
+> cxl_adapter_context_unlock+0x5c/0x80 [cxl]
+> [   60.622857] Call Trace:
+> [   60.622863] [c0000003be10b8e0] [d000000004350bdc]
+> cxl_adapter_context_unlock+0x5c/0x80 [cxl] (unreliable)
+> [   60.622871] [c0000003be10b940] [d00000000435e810]
+> cxl_configure_adapter+0x930/0x960 [cxl]
+> [   60.622879] [c0000003be10b9f0] [d00000000435e88c]
+> cxl_pci_slot_reset+0x4c/0x230 [cxl]
+> [   60.622883] [c0000003be10baa0] [c000000000032cd4]
+> eeh_report_reset+0x164/0x1a0
+> [   60.622887] [c0000003be10bae0] [c000000000031220]
+> eeh_pe_dev_traverse+0x90/0x170
+> [   60.622890] [c0000003be10bb70] [c000000000033354]
+> eeh_handle_normal_event+0x3d4/0x520
+> [   60.622892] [c0000003be10bc20] [c000000000033624]
+> eeh_handle_event+0x44/0x360
+> [   60.622895] [c0000003be10bcd0] [c000000000033a58]
+> eeh_event_handler+0x118/0x1d0
+> [   60.622898] [c0000003be10bd80] [c0000000000babc8] kthread+0x108/0x130
+> [   60.622902] [c0000003be10be30] [c00000000000c0a0]
+> ret_from_kernel_thread+0x5c/0xbc
+> [   60.622903] Instruction dump:
+> [   60.622905] 2f84ffff 4dfe0020 7c0802a6 7c8407b4 39200000 f8010010
+> f821ffa1 91230348
+> [   60.622911] 3c620000 e8638070 48016639 e8410018 <0fe00000> 38210060
+> e8010010 7c0803a6
+> [   60.622918] ---[ end trace d358551c9a007b4f ]---
+> [   60.622959] cxl afu0.0: Activating AFU directed mode
+> [   60.623097] EEH: Notify device driver to resume
+>
+>
