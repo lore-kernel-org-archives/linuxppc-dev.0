@@ -1,26 +1,56 @@
-Return-Path: <adilger@dilger.ca>
-Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
- [IPv6:2607:f8b0:4003:c06::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t8w970fv2zDvVg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 06:32:40 +1100 (AEDT)
-Received: by mail-oi0-x241.google.com with SMTP id x4so8474012oix.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 12:32:40 -0700 (PDT)
-Subject: Re: [PATCH] ext4: ext4_mb_mark_free_simple: Fix integer value
- truncation
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: multipart/signed;
- boundary="Apple-Mail=_2264933D-DB6D-41EA-B647-76D0486ABEF0";
- protocol="application/pgp-signature"; micalg=pgp-sha256
-From: Andreas Dilger <adilger@dilger.ca>
-In-Reply-To: <1478164472-28376-1-git-send-email-chandan@linux.vnet.ibm.com>
-Date: Thu, 3 Nov 2016 13:32:33 -0600
-Cc: linux-ext4@vger.kernel.org, tytso@mit.edu, jack@suse.cz,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Message-Id: <2AE0DCBF-5AB6-47B2-B9F6-B738AFF2EAF2@dilger.ca>
-References: <1478164472-28376-1-git-send-email-chandan@linux.vnet.ibm.com>
-To: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t94wc4YXkzDvXr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 13:07:28 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA423mEe049948
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 22:07:26 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26gamppu44-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 22:07:25 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 4 Nov 2016 12:07:22 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 40CDD2BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 13:07:19 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uA427IAN15794256
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 13:07:18 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uA427HmW030847
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 13:07:18 +1100
+Subject: Re: [PATCH 1/3] powerpc: Emulation support for load/store
+ instructions on LE
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1478076783-2872-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20161103080412.68240cda@kryten> <581ACDF2.1010409@linux.vnet.ibm.com>
+ <8737j8opwb.fsf@concordia.ellerman.id.au>
+ <581B110F.9050805@linux.vnet.ibm.com>
+Cc: chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com, ast@kernel.org,
+ linux-kernel@vger.kernel.org, oss@buserror.net,
+ paul.gortmaker@windriver.com, duwe@lst.de, Anton Blanchard
+ <anton@samba.org>, lsorense@csclub.uwaterloo.ca,
+ bauerman@linux.vnet.ibm.com, oohall@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org, viro@zeniv.linux.org.uk
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 4 Nov 2016 13:07:15 +1100
+MIME-Version: 1.0
+In-Reply-To: <581B110F.9050805@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <e993dc5c-7a90-e43b-b761-a70a79b3d1d9@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,83 +60,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 03/11/16 21:27, Ravi Bangoria wrote:
+> Yes, kernel-space hw-breakpoint feature is broken on LE without this.
 
---Apple-Mail=_2264933D-DB6D-41EA-B647-76D0486ABEF0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=us-ascii
+Is there any actual user-visible feature that depends on this, or is 
+this solely for debugging and development purposes?
 
-On Nov 3, 2016, at 3:14 AM, Chandan Rajendra =
-<chandan@linux.vnet.ibm.com> wrote:
->=20
-> 'border' variable is set to a value of 2 times the block size of the
-> underlying filesystem. With 64k block size, the resulting value won't
-> fit into a 16-bit variable. Hence this commit changes the data type of
-> 'border' to 'unsigned int'.
->=20
-> Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+It would of course be *nice* to have it in stable trees (particularly so 
+we pick it up in distros) but I'm not convinced that enabling HW 
+breakpoints on a platform where it has *never* worked qualifies as an 
+"actual bug".
 
-Reviewed-by: Andreas Dilger <adilger@dilger.ca>
+(BTW many thanks for fixing this - I had a shot at it late last year but 
+never quite got there!)
 
-> ---
-> fs/ext4/mballoc.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-> index f418f55..a937ac7 100644
-> --- a/fs/ext4/mballoc.c
-> +++ b/fs/ext4/mballoc.c
-> @@ -669,7 +669,7 @@ static void ext4_mb_mark_free_simple(struct =
-super_block *sb,
-> 	ext4_grpblk_t min;
-> 	ext4_grpblk_t max;
-> 	ext4_grpblk_t chunk;
-> -	unsigned short border;
-> +	unsigned int border;
->=20
-> 	BUG_ON(len > EXT4_CLUSTERS_PER_GROUP(sb));
->=20
-> --
-> 2.5.5
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" =
-in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-Cheers, Andreas
-
-
-
-
-
-
---Apple-Mail=_2264933D-DB6D-41EA-B647-76D0486ABEF0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename=signature.asc
-Content-Type: application/pgp-signature;
-	name=signature.asc
-Content-Description: Message signed with OpenPGP using GPGMail
-
------BEGIN PGP SIGNATURE-----
-Comment: GPGTools - http://gpgtools.org
-
-iQIVAwUBWBuQ0XKl2rkXzB/gAQgNCRAApGlZNtWZQfASdJqkdx6QATtnnxR+jml9
-dkt8VR49Efs1+nlptxrBNvcGSc9YF4Z0RzyKSIDHN3ZT8lXc7j5bZxP9YgRLTlmv
-+9+l/3Kou3wUQeY2iChGNUksVNRPljsAD8ecUnNuJCpqU5V3B6n0SfLHhZEomCzE
-0O/QRfROthE7CRAMyJw137+iyrWTyzpweYWyVcoJx0JAsVVTJnH8LXCNzGsnFdUi
-ybv5Rxl9Z20kpUtXNuE9ersFzeIjuLjId/nF3XzWuaVRmNRtlNt72YSZj4rJddS8
-R/9AmHZ0HFtNvHYZiJOd0NuRGMnGGi8vsxMMkHQ1ajD7Q6nvigxUecyJauMQaqKI
-c99RLoUa7XhaPWaN4IB+gD+Ex+Vab0rNPi/p/B4DvnAUWOdwjAMarZkHY8KMGBrh
-5AetJa3B34rB7f3vgaglMC1K58pGkI7f7o14+bD9YvkaXIKw5yWaq1NSfDy5wG0w
-RItinF22T5Hc9R+S0niMikxb8KwSR5YF4sDqWl+KKZDHSdK6ooBfhPxOoRhGy49w
-MP91O9mvaalz8NiM73CnFogNPoOqvwolf91ALQKLIWgmvbrZ0qdSi5Z+6CQD53f0
-XYQR8EwJkur4517RR2J1ZmMybBzRhB6svUdGaiTU44IEqaghjrWL5KpTf+IllAZ8
-X6aBMupYdr8=
-=SwRD
------END PGP SIGNATURE-----
-
---Apple-Mail=_2264933D-DB6D-41EA-B647-76D0486ABEF0--
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
