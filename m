@@ -1,28 +1,27 @@
-Return-Path: <vomlehn@texas.net>
-Received: from milter.aus.datafoundry.com (barracuda2.aus1.datafoundry.com
- [209.99.124.133])
- by lists.ozlabs.org (Postfix) with ESMTP id 3t9XhW4lt0zDvYc
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 06:58:35 +1100 (AEDT)
-Date: Fri, 4 Nov 2016 13:48:24 -0600
-From: David VomLehn <vomlehn@texas.net>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
- madalin.bucur@nxp.com, Andrew Morton <akpm@linux-foundation.org>,
- Jonathan Corbet <corbet@lwn.net>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- oss@buserror.net, ppc@mindchasers.com, pebolle@tiscali.nl,
- joakim.tjernlund@transmode.se
-Subject: Re: Coding Style: Reverse XMAS tree declarations ? (was Re: [PATCH
- net-next v6 02/10] dpaa_eth: add support for DPAA Ethernet)
-Message-ID: <20161104194824.GA5533@gracie>
-References: <1478117854-8952-1-git-send-email-madalin.bucur@nxp.com>
- <1478117854-8952-3-git-send-email-madalin.bucur@nxp.com>
- <20161103.155816.642712588084106823.davem@davemloft.net>
- <1478242438.1924.31.camel@perches.com>
- <5d4925c3-e6c1-8780-37bf-6d529f128cd9@infradead.org>
+Return-Path: <LinoSanfilippo@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9Xvm55dpzDvcp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 07:08:18 +1100 (AEDT)
+Subject: Re: Coding Style: Reverse XMAS tree declarations ?
+To: Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+ lsanfil@marvell.com
+References: <20161103.155816.642712588084106823.davem@davemloft.net>
+ <1478242438.1924.31.camel@perches.com> <581C6A7D.8030704@marvell.com>
+ <20161104.110759.1093635654135143910.davem@davemloft.net>
+ <1478281455.1924.41.camel@perches.com>
+Cc: madalin.bucur@nxp.com, akpm@linux-foundation.org, corbet@lwn.net,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, oss@buserror.net, ppc@mindchasers.com,
+ pebolle@tiscali.nl, joakim.tjernlund@transmode.se,
+ Randy Dunlap <rdunlap@infradead.org>
+From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Message-ID: <31ace8dd-1e42-2762-6367-028068d4d816@gmx.de>
+Date: Fri, 4 Nov 2016 21:06:58 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5d4925c3-e6c1-8780-37bf-6d529f128cd9@infradead.org>
+In-Reply-To: <1478281455.1924.41.camel@perches.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 04, 2016 at 10:05:15AM -0700, Randy Dunlap wrote:
-> On 11/03/16 23:53, Joe Perches wrote:
-> > On Thu, 2016-11-03 at 15:58 -0400, David Miller wrote:
-> >> From: Madalin Bucur <madalin.bucur@nxp.com>
-> >> Date: Wed, 2 Nov 2016 22:17:26 +0200
-> >>
-> >>> This introduces the Freescale Data Path Acceleration Architecture
-> >>> +static inline size_t bpool_buffer_raw_size(u8 index, u8 cnt)
-> >>> +{
-> >>> +     u8 i;
-> >>> +     size_t res = DPAA_BP_RAW_SIZE / 2;
-> >>
-> >> Always order local variable declarations from longest to shortest line,
-> >> also know as Reverse Christmas Tree Format.
-> > 
-> > I think this declaration sorting order is misguided but
-> > here's a possible change to checkpatch adding a test for it
-> > that does this test just for net/ and drivers/net/
+On 04.11.2016 18:44, Joe Perches wrote:
+> On Fri, 2016-11-04 at 11:07 -0400, David Miller wrote:
+>> From: Lino Sanfilippo <lsanfil@marvell.com>
+>> > On 04.11.2016 07:53, Joe Perches wrote:
+>> >> CHECK:REVERSE_XMAS_TREE: Prefer ordering declarations longest to
+>> >> shortest
+>> >> #446: FILE: drivers/net/ethernet/ethoc.c:446:
+>> >> +                    int size = bd.stat >> 16;
+>> >> +                    struct sk_buff *skb;
+>> > should not this case be valid? Optically the longer line is already
+>> > before the shorter.
+>> > I think that the whole point in using this reverse xmas tree ordering
+>> > is to have
+>> > the code optically tidied up and not to enforce ordering between
+>> > variable name lengths.
+>> 
+>> That's correct.
 > 
-> I agree with the misguided part.
-> That's not actually in CodingStyle AFAICT. Where did this come from?
+> And also another reason the whole reverse xmas tree
+> automatic declaration layout concept is IMO dubious.
 > 
+> Basically, you're looking not at the initial ordering
+> of automatics as important, but helping find a specific
+> automatic when reversing from reading code is not always
+> correct.
 > 
-> thanks.
-> -- 
-> ~Randy
+> Something like:
+> 
+> static void function{args,...)
+> {
+> 	[longish list of reverse xmas tree identifiers...]
+> 	struct foo *bar = longish_function(args, ...);
+> 	struct foobarbaz *qux;
+> 	[more identifers]
+> 
+> 	[multiple screenfuls of code later...)
+> 
+> 	new_function(..., bar, ...);
+> 
+> 	[more code...]
+> }
+> 
+> and the reverse xmas tree helpfulness of looking up the
+> type of bar is neither obvious nor easy.
+> 
 
-This puzzles me. The CodingStyle gives some pretty reasonable rationales
-for coding style over above the "it's easier to read if it all looks the
-same". I can see rationales for other approaches (and I am not proposing
-any of these):
+In this case it is IMHO rather the declaration + initialization that makes
+"bar" hard to find at one glance, not the use of RXT. You could do something like
 
-alphabetic order        Easier to search for declarations
-complex to simple       As in, structs and unions, pointers to simple
-                        data (int, char), simple data. It seems like I
-                        can deduce the simple types from usage, but more
-                        complex I need to know things like the
-                        particular structure.
-group by usage          Mirror the ontological locality in the code
+ 	[longish list of reverse xmas tree identifiers...]
+ 	struct foobarbaz *qux;
+ 	struct foo *bar;
 
-Do we have a basis for thinking this is easier or more consistent than
-any other approach?
--- 
-David VL
+ 	bar = longish_function(args, ...);
+
+to increase readability. 
+
+Personally I find it more readable to always use a separate line for initializations
+by means of functions (regardless of whether the RXT scheme is used or not). 
+ 
+> My preference would be for a bar that serves coffee and alcohol.
+> 
+
+At least a bar like this should not be too hard to find :)
+
+Regards,
+Lino
