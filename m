@@ -1,26 +1,47 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0214.hostedemail.com
- [216.40.44.214])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t9Tjj1jkCzDt1W
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 04:44:23 +1100 (AEDT)
-Message-ID: <1478281455.1924.41.camel@perches.com>
-Subject: Re: Coding Style: Reverse XMAS tree declarations ?
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>, lsanfil@marvell.com
-Cc: madalin.bucur@nxp.com, akpm@linux-foundation.org, corbet@lwn.net,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, oss@buserror.net, ppc@mindchasers.com,
- pebolle@tiscali.nl, joakim.tjernlund@transmode.se, Randy Dunlap
- <rdunlap@infradead.org>
-Date: Fri, 04 Nov 2016 10:44:15 -0700
-In-Reply-To: <20161104.110759.1093635654135143910.davem@davemloft.net>
-References: <20161103.155816.642712588084106823.davem@davemloft.net>
- <1478242438.1924.31.camel@perches.com> <581C6A7D.8030704@marvell.com>
- <20161104.110759.1093635654135143910.davem@davemloft.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9X1X6Z8RzDvcs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 06:28:16 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA4JOKdu044807
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 15:28:14 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26gtwyrqtj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Nov 2016 15:28:14 -0400
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Fri, 4 Nov 2016 17:28:11 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id CAC961DC007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 15:19:56 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uA4JJu0529491482
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 17:19:56 -0200
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uA4JJu9u025914
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 17:19:56 -0200
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Baoquan He <bhe@redhat.com>, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [RFC]  kexec_file: Add support for purgatory built as PIE
+Date: Fri, 04 Nov 2016 17:19:53 -0200
+In-Reply-To: <871syrcm70.fsf@xmission.com>
+References: <3476672.cGrsQmUQKg@morokweng> <20161104073840.GD4314@x1>
+ <871syrcm70.fsf@xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <3998943.Ju5lgDeipl@morokweng>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +51,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-11-04 at 11:07 -0400, David Miller wrote:
-> From: Lino Sanfilippo <lsanfil@marvell.com>
-> > On 04.11.2016 07:53, Joe Perches wrote:
-> >> CHECK:REVERSE_XMAS_TREE: Prefer ordering declarations longest to
-> >> shortest
-> >> #446: FILE: drivers/net/ethernet/ethoc.c:446:
-> >> +                    int size = bd.stat >> 16;
-> >> +                    struct sk_buff *skb;
-> > should not this case be valid? Optically the longer line is already
-> > before the shorter.
-> > I think that the whole point in using this reverse xmas tree ordering
-> > is to have
-> > the code optically tidied up and not to enforce ordering between
-> > variable name lengths.
+Hello Eric,
+
+Am Freitag, 4. November 2016, 10:13:39 BRST schrieb Eric W. Biederman:
+> Baoquan He <bhe@redhat.com> writes:
+> > On 11/02/16 at 04:00am, Thiago Jung Bauermann wrote:
+> >> Hello,
+> >> 
+> >> The kexec_file code currently builds the purgatory as a partially linked
+> >> object (using ld -r). Is there a particular reason to use that instead
+> >> of a position independent executable (PIE)?
+> > 
+> > It's taken as "-r", relocatable in user space kexec-tools too originally.
+> > I think Vivek just keeps it the same when moving into kernel.
 > 
-> That's correct.
+> At least on x86 using just -r removed the need for a GOT and all of the
+> other nasty dynamic relocatable bits, that are not needed when the you
+> don't want to share your text bits with the page cache.
+> 
+> I can see reaons for refactoring code but I expect PIE expecutables need
+> a GOT and all of that pain in the neck stuff that can just be avoided by
+> building the code to run at an absolute address.
 
-And also another reason the whole reverse xmas tree
-automatic declaration layout concept is IMO dubious.
+At least on powerpc, building the purgatory as PIE resulted in only the 
+following differences:
 
-Basically, you're looking not at the initial ordering
-of automatics as important, but helping find a specific
-automatic when reversing from reading code is not always
-correct.
+1. A lot less relocation types to deal with.
+2. __kexec_load_purgatory needs to use the program headers rather than the 
+   section headers to figure out how to load the binary.
+3. Symbol values are absolute addresses instead of relative to the start of 
+   the section.
 
-Something like:
+2. is an advantage too because it's actually easier to use the program headers 
+because unlike section headers, the purpose of program headers is to provide 
+the information needed by a program loader. You can see this by comparing the 
+two implementations of __kexec_load_purgatory in the WIP patch I posted. The 
+one using program headers is simpler.
 
-static void function{args,...)
-{
-	[longish list of reverse xmas tree identifiers...]
-	struct foo *bar = longish_function(args, ...);
-	struct foobarbaz *qux;
-	[more identifers]
+3. isn't a problem, it's easy to convert the absolute addresses back into 
+relative ones, as can be seen in my patch.
 
-	[multiple screenfuls of code later...)
+> So far I have not seen ELF relocations that are difficult to process.
 
-	new_function(..., bar, ...);
+The problem is not that it's difficult to process, but that on powerpc it 
+takes a lot of code to implement that processing. In v9 of the kexec_file_load 
+implementation for powerpc, the switch statement implementing all the 
+relocation types (shared by powerpc's module_64.c and machine_kexec_file_64.c) 
+has 200 lines. The switch statement implementing only the relocation types 
+used by the PIE purgatory has 26 lines.
 
-	[more code...]
-}
+This is not a problem in x86, though: the purgatory built as a relocatable 
+object has only two relocation types.
 
-and the reverse xmas tree helpfulness of looking up the
-type of bar is neither obvious nor easy.
-
-My preference would be for a bar that serves coffee and alcohol.
+-- 
+Thiago Jung Bauermann
+IBM Linux Technology Center
