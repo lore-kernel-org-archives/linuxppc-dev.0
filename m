@@ -1,56 +1,14 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t94wc4YXkzDvXr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 13:07:28 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA423mEe049948
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Nov 2016 22:07:26 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26gamppu44-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2016 22:07:25 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 4 Nov 2016 12:07:22 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 40CDD2BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 13:07:19 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uA427IAN15794256
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 13:07:18 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uA427HmW030847
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Nov 2016 13:07:18 +1100
-Subject: Re: [PATCH 1/3] powerpc: Emulation support for load/store
- instructions on LE
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1478076783-2872-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <20161103080412.68240cda@kryten> <581ACDF2.1010409@linux.vnet.ibm.com>
- <8737j8opwb.fsf@concordia.ellerman.id.au>
- <581B110F.9050805@linux.vnet.ibm.com>
-Cc: chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com, ast@kernel.org,
- linux-kernel@vger.kernel.org, oss@buserror.net,
- paul.gortmaker@windriver.com, duwe@lst.de, Anton Blanchard
- <anton@samba.org>, lsorense@csclub.uwaterloo.ca,
- bauerman@linux.vnet.ibm.com, oohall@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org, viro@zeniv.linux.org.uk
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Fri, 4 Nov 2016 13:07:15 +1100
-MIME-Version: 1.0
-In-Reply-To: <581B110F.9050805@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <e993dc5c-7a90-e43b-b761-a70a79b3d1d9@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t95dv0JWMzDvXv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 13:39:47 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/asm: Allow including ppc_asm.h in asm files
+Date: Fri,  4 Nov 2016 13:39:43 +1100
+Message-Id: <1478227183-10299-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,20 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/11/16 21:27, Ravi Bangoria wrote:
-> Yes, kernel-space hw-breakpoint feature is broken on LE without this.
+There's no reason to #error if we include ppc_asm.h in asm files, the
+ifdef already prevents any problems.
 
-Is there any actual user-visible feature that depends on this, or is 
-this solely for debugging and development purposes?
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/ppc_asm.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-It would of course be *nice* to have it in stable trees (particularly so 
-we pick it up in distros) but I'm not convinced that enabling HW 
-breakpoints on a platform where it has *never* worked qualifies as an 
-"actual bug".
-
-(BTW many thanks for fixing this - I had a shot at it late last year but 
-never quite got there!)
-
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index c73750b0d9fa..28ab87e5b739 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -10,9 +10,7 @@
+ #include <asm/ppc-opcode.h>
+ #include <asm/firmware.h>
+ 
+-#ifndef __ASSEMBLY__
+-#error __FILE__ should only be used in assembler files
+-#else
++#ifdef __ASSEMBLY__
+ 
+ #define SZL			(BITS_PER_LONG/8)
+ 
+@@ -779,5 +777,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ 	.long 0xa6037b7d; /* mtsrr1 r11				*/ \
+ 	.long 0x2400004c  /* rfid				*/
+ #endif /* !CONFIG_PPC_BOOK3E */
++
+ #endif /*  __ASSEMBLY__ */
++
+ #endif /* _ASM_POWERPC_PPC_ASM_H */
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.7.4
