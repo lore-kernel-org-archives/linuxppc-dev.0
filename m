@@ -1,29 +1,20 @@
-Return-Path: <paolo.bonzini@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t9HRK0vjqzDvQZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 21:01:17 +1100 (AEDT)
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
+ [IPv6:2a00:1450:4010:c07::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3t9HRJ1V4Gz9vFx
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Nov 2016 21:01:16 +1100 (AEDT)
-Received: by mail-wm0-x243.google.com with SMTP id c17so3071175wmc.3
- for <linuxppc-dev@ozlabs.org>; Fri, 04 Nov 2016 03:01:16 -0700 (PDT)
-Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Subject: Re: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
-To: Michael Ellerman <mpe@ellerman.id.au>, alex.williamson@redhat.com
-References: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, aik@ozlabs.ru, gwshan@linux.vnet.ibm.com
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <81900126-f1aa-b480-c2fa-f0fa04d625c1@redhat.com>
-Date: Fri, 4 Nov 2016 11:01:10 +0100
-MIME-Version: 1.0
-In-Reply-To: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9JzF2rLqzDqMx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2016 22:10:32 +1100 (AEDT)
+Received: by mail-lf0-x241.google.com with SMTP id o141so3163914lff.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Nov 2016 04:10:32 -0700 (PDT)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: ego@linux.vnet.ibm.com,
+	Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH v2] ppc: cpufreq: disable preemption while checking CPU
+ throttling state
+Date: Fri,  4 Nov 2016 07:08:38 -0400
+Message-Id: <1478257718-14923-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,76 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+    [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+    [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+    [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+    [   67.701038] Call Trace:
+    [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+    [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+    [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+    [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+    [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+    [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+    [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+    [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+    [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+    [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+    [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+    [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+    [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+    [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
 
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 
-On 04/11/2016 06:48, Michael Ellerman wrote:
-> Currently the kconfig logic for VFIO_IOMMU_SPAPR_TCE and VFIO_SPAPR_EEH
-> is broken when SPAPR_TCE_IOMMU=n. Leading to:
-> 
->     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
->     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
->     drivers/vfio/vfio_iommu_spapr_tce.c:113:8: error: implicit declaration of function 'mm_iommu_find'
-> 
-> This stems from the fact that VFIO selects VFIO_IOMMU_SPAPR_TCE, and
-> although it has an if clause, the condition is not correct.
-> 
-> We could fix it by doing select VFIO_IOMMU_SPAPR_TCE if SPAPR_TCE_IOMMU,
-> but the cleaner fix is to drop the selects and tie VFIO_IOMMU_SPAPR_TCE
-> to the value of VFIO, and express the dependencies in only once place.
-> 
-> Do the same for VFIO_SPAPR_EEH.
-> 
-> The end result is that the values of VFIO_IOMMU_SPAPR_TCE and
-> VFIO_SPAPR_EEH follow the value of VFIO, except when SPAPR_TCE_IOMMU=n
-> and/or EEH=n. Which is exactly what we want to happen.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  drivers/vfio/Kconfig | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-> index da6e2ce77495..6b51a4ebed8a 100644
-> --- a/drivers/vfio/Kconfig
-> +++ b/drivers/vfio/Kconfig
-> @@ -6,12 +6,12 @@ config VFIO_IOMMU_TYPE1
->  config VFIO_IOMMU_SPAPR_TCE
->  	tristate
->  	depends on VFIO && SPAPR_TCE_IOMMU
-> -	default n
-> +	default VFIO
+v2:  wrap powernv_cpufreq_throttle_check()
+as suggested by Gautham R Shenoy
+---
+ drivers/cpufreq/powernv-cpufreq.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-No need to depend on VFIO since you already have it in "default".  (I
-assume you cannot use "default y" because "depends on" doesn't downgrade
-"y" to "m" when VFIO is a module.
-
-A shorthand is
-
-	def_tristate VFIO && SPAPR_TCE_IOMMU
-
->  config VFIO_SPAPR_EEH
->  	tristate
->  	depends on EEH && VFIO_IOMMU_SPAPR_TCE
-> -	default n
-> +	default VFIO
-
-Likewise:
-
-	def_tristate VFIO_IOMMU_SPAPR_TCE && EEH
-
-Thanks,
-
-Paolo
-
->  config VFIO_VIRQFD
->  	tristate
-> @@ -22,8 +22,6 @@ menuconfig VFIO
->  	tristate "VFIO Non-Privileged userspace driver framework"
->  	depends on IOMMU_API
->  	select VFIO_IOMMU_TYPE1 if (X86 || S390 || ARM_SMMU || ARM_SMMU_V3)
-> -	select VFIO_IOMMU_SPAPR_TCE if (PPC_POWERNV || PPC_PSERIES)
-> -	select VFIO_SPAPR_EEH if (PPC_POWERNV || PPC_PSERIES)
->  	select ANON_INODES
->  	help
->  	  VFIO provides a framework for secure userspace device drivers.
-> 
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index d3ffde8..112e0e2 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -647,8 +647,15 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 	if (unlikely(rebooting) && new_index != get_nominal_index())
+ 		return 0;
+ 
+-	if (!throttled)
++	if (!throttled) {
++		/*
++		 * we don't want to be preempted while
++		 * checking if the CPU frequency has been throttled
++		 */
++		preempt_disable();
+ 		powernv_cpufreq_throttle_check(NULL);
++		preempt_enable();
++    }
+ 
+ 	cur_msec = jiffies_to_msecs(get_jiffies_64());
+ 
+-- 
+1.8.3.1
