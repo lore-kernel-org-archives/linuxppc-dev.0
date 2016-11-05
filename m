@@ -1,35 +1,33 @@
-Return-Path: <marek.vasut@gmail.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t9r9B3nYzzDvX7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 18:35:58 +1100 (AEDT)
-Received: by mail-wm0-x243.google.com with SMTP id p190so7154244wmp.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Nov 2016 00:35:58 -0700 (PDT)
-Subject: Re: [PATCH 00/22] mtd: nand: return error code of nand_scan(_ident,
- _tail) on error
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linux-mtd@lists.infradead.org
-References: <1478256190-7452-1-git-send-email-yamada.masahiro@socionext.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>,
- Richard Weinberger <richard@nod.at>, Kamal Dasu <kdasu.kdev@gmail.com>,
- Josh Wu <rainyfeeling@outlook.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Stefan Agner <stefan@agner.ch>,
- Vladimir Zapolskiy <vz@mleia.com>, Wenyou Yang <wenyou.yang@atmel.com>,
- linux-mediatek@lists.infradead.org,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- bcm-kernel-feedback-list@broadcom.com,
- Brian Norris <computersforpeace@gmail.com>,
- David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
-From: Marek Vasut <marek.vasut@gmail.com>
-Message-ID: <7970b05b-a5d4-4149-ba80-f6d19a145c6d@gmail.com>
-Date: Sat, 5 Nov 2016 08:34:26 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tB83q2FwZzDvXS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Nov 2016 06:32:23 +1100 (AEDT)
+Date: Sun, 6 Nov 2016 06:31:51 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com,
+ ast@kernel.org, linux-kernel@vger.kernel.org, oss@buserror.net,
+ paul.gortmaker@windriver.com, duwe@lst.de, lsorense@csclub.uwaterloo.ca,
+ bauerman@linux.vnet.ibm.com, oohall@gmail.com,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 1/3] powerpc: Emulation support for load/store
+ instructions on LE
+Message-ID: <20161106063151.3ef04e9e@kryten>
+In-Reply-To: <581C1D32.50108@linux.vnet.ibm.com>
+References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1478076783-2872-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <20161103080412.68240cda@kryten>
+ <581ACDF2.1010409@linux.vnet.ibm.com>
+ <8737j8opwb.fsf@concordia.ellerman.id.au>
+ <581B110F.9050805@linux.vnet.ibm.com>
+ <e993dc5c-7a90-e43b-b761-a70a79b3d1d9@au1.ibm.com>
+ <581C1D32.50108@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1478256190-7452-1-git-send-email-yamada.masahiro@socionext.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,22 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/04/2016 11:42 AM, Masahiro Yamada wrote:
-> 
-> nand_scan(), nand_scan_ident(), nand_scan_tail() return
-> an appropriate negative value on error.
-> 
-> Most of drivers return the value from them on error,
-> but some of them return the fixed error code -ENXIO
-> (and a few return -ENODEV).
-> 
-> This series make those drivers return more precise error code.
-> 
+Hi,
 
-Reviewed-by: Marek Vasut <marek.vasut@gmail.com>
+> kprobe, uprobe, hw-breakpoint and xmon are the only user of
+> emulate_step.
+> 
+> Kprobe / uprobe single-steps instruction if they can't emulate it, so
+> there is no problem with them. As I mention, hw-breakpoint is broken.
+> However I'm not sure about xmon, I need to check that.
 
-Nice cleanup, thanks!
+I was mostly concerned that it would impact kprobes. Sounds like we are
+ok there.
 
--- 
-Best regards,
-Marek Vasut
+> So yes, there is no user-visible feature that depends on this.
+
+Aren't hardware breakpoints exposed via perf? I'd call perf
+user-visible.
+
+Anton
