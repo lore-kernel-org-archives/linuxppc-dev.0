@@ -1,27 +1,25 @@
-Return-Path: <LinoSanfilippo@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3t9Xvm55dpzDvcp
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 07:08:18 +1100 (AEDT)
-Subject: Re: Coding Style: Reverse XMAS tree declarations ?
-To: Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
- lsanfil@marvell.com
-References: <20161103.155816.642712588084106823.davem@davemloft.net>
- <1478242438.1924.31.camel@perches.com> <581C6A7D.8030704@marvell.com>
- <20161104.110759.1093635654135143910.davem@davemloft.net>
- <1478281455.1924.41.camel@perches.com>
-Cc: madalin.bucur@nxp.com, akpm@linux-foundation.org, corbet@lwn.net,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, oss@buserror.net, ppc@mindchasers.com,
- pebolle@tiscali.nl, joakim.tjernlund@transmode.se,
- Randy Dunlap <rdunlap@infradead.org>
-From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
-Message-ID: <31ace8dd-1e42-2762-6367-028068d4d816@gmx.de>
-Date: Fri, 4 Nov 2016 21:06:58 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3t9lhd4mHbzDvXd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2016 15:14:25 +1100 (AEDT)
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3t9lhc6bY3z9t26
+ for <linuxppc-dev@ozlabs.org>; Sat,  5 Nov 2016 15:14:24 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id i88so9670859pfk.2
+ for <linuxppc-dev@ozlabs.org>; Fri, 04 Nov 2016 21:14:24 -0700 (PDT)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Fix the message in facility unavailable exception
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <60df3f67-f217-378a-2244-319d265c0f1c@gmail.com>
+Date: Sat, 5 Nov 2016 15:14:15 +1100
 MIME-Version: 1.0
-In-Reply-To: <1478281455.1924.41.camel@perches.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,70 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04.11.2016 18:44, Joe Perches wrote:
-> On Fri, 2016-11-04 at 11:07 -0400, David Miller wrote:
->> From: Lino Sanfilippo <lsanfil@marvell.com>
->> > On 04.11.2016 07:53, Joe Perches wrote:
->> >> CHECK:REVERSE_XMAS_TREE: Prefer ordering declarations longest to
->> >> shortest
->> >> #446: FILE: drivers/net/ethernet/ethoc.c:446:
->> >> +                    int size = bd.stat >> 16;
->> >> +                    struct sk_buff *skb;
->> > should not this case be valid? Optically the longer line is already
->> > before the shorter.
->> > I think that the whole point in using this reverse xmas tree ordering
->> > is to have
->> > the code optically tidied up and not to enforce ordering between
->> > variable name lengths.
->> 
->> That's correct.
-> 
-> And also another reason the whole reverse xmas tree
-> automatic declaration layout concept is IMO dubious.
-> 
-> Basically, you're looking not at the initial ordering
-> of automatics as important, but helping find a specific
-> automatic when reversing from reading code is not always
-> correct.
-> 
-> Something like:
-> 
-> static void function{args,...)
-> {
-> 	[longish list of reverse xmas tree identifiers...]
-> 	struct foo *bar = longish_function(args, ...);
-> 	struct foobarbaz *qux;
-> 	[more identifers]
-> 
-> 	[multiple screenfuls of code later...)
-> 
-> 	new_function(..., bar, ...);
-> 
-> 	[more code...]
-> }
-> 
-> and the reverse xmas tree helpfulness of looking up the
-> type of bar is neither obvious nor easy.
-> 
 
-In this case it is IMHO rather the declaration + initialization that makes
-"bar" hard to find at one glance, not the use of RXT. You could do something like
+I ran into this during some testing on qemu. The current
+facility_strings[] are correct when the trap address is
+0xf80 (hypervisor facility unavailable). When the trap
+address is 0xf60, IC (Interruption Cause) a.k.a status
+in the code is undefined for values 0 and 1. This patch
+adds a check to prevent printing the wrong information
+and helps better direct debugging effort.
 
- 	[longish list of reverse xmas tree identifiers...]
- 	struct foobarbaz *qux;
- 	struct foo *bar;
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ arch/powerpc/kernel/traps.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
- 	bar = longish_function(args, ...);
-
-to increase readability. 
-
-Personally I find it more readable to always use a separate line for initializations
-by means of functions (regardless of whether the RXT scheme is used or not). 
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index d26605d..da0f634 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1520,8 +1520,14 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 	}
  
-> My preference would be for a bar that serves coffee and alcohol.
-> 
-
-At least a bar like this should not be too hard to find :)
-
-Regards,
-Lino
+ 	if ((status < ARRAY_SIZE(facility_strings)) &&
+-	    facility_strings[status])
+-		facility = facility_strings[status];
++	    facility_strings[status]) {
++		if (!hv && status < 2) {
++			pr_warn("Unexpected facility unavailable exception "
++				"interruption cause %d\n", status);
++			facility = "Unknown";
++		} else
++			facility = facility_strings[status];
++	}
+ 
+ 	/* We restore the interrupt state now */
+ 	if (!arch_irq_disabled_regs(regs))
+-- 
+2.5.5
