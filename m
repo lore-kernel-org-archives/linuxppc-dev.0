@@ -1,33 +1,23 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <regressions@leemhuis.info>
+Received: from basicbox7.server-home.net (basicbox7.server-home.net
+ [195.137.212.29])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tB83q2FwZzDvXS
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Nov 2016 06:32:23 +1100 (AEDT)
-Date: Sun, 6 Nov 2016 06:31:51 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, chris@distroguy.com, aneesh.kumar@linux.vnet.ibm.com,
- ast@kernel.org, linux-kernel@vger.kernel.org, oss@buserror.net,
- paul.gortmaker@windriver.com, duwe@lst.de, lsorense@csclub.uwaterloo.ca,
- bauerman@linux.vnet.ibm.com, oohall@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 1/3] powerpc: Emulation support for load/store
- instructions on LE
-Message-ID: <20161106063151.3ef04e9e@kryten>
-In-Reply-To: <581C1D32.50108@linux.vnet.ibm.com>
-References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1478076783-2872-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <20161103080412.68240cda@kryten>
- <581ACDF2.1010409@linux.vnet.ibm.com>
- <8737j8opwb.fsf@concordia.ellerman.id.au>
- <581B110F.9050805@linux.vnet.ibm.com>
- <e993dc5c-7a90-e43b-b761-a70a79b3d1d9@au1.ibm.com>
- <581C1D32.50108@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tBbXK5GCbzDvP0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 00:10:09 +1100 (AEDT)
+Subject: Re: Linux 4.9: Reported regressions as of Sunday, 2016-10-30
+To: Paul Bolle <pebolle@tiscali.nl>
+References: <0eb29167-7908-e049-6927-d9c6b093970d@leemhuis.info>
+ <1477988293.2230.36.camel@tiscali.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Message-ID: <3b39cb73-8cb7-74b4-0a71-6966ac2798d3@leemhuis.info>
+Date: Sun, 6 Nov 2016 14:10:03 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1477988293.2230.36.camel@tiscali.nl>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,21 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Lo! On 01.11.2016 09:18, Paul Bolle wrote:
+> On Sun, 2016-10-30 at 14:20 +0100, Thorsten Leemhuis wrote:
+>> As always: Are you aware of any other regressions? Then please let me
+>> know (simply CC regressions@leemhuis.info).
+> Do build regressions count?
 
-> kprobe, uprobe, hw-breakpoint and xmon are the only user of
-> emulate_step.
-> 
-> Kprobe / uprobe single-steps instruction if they can't emulate it, so
-> there is no problem with them. As I mention, hw-breakpoint is broken.
-> However I'm not sure about xmon, I need to check that.
+That's a good question.
 
-I was mostly concerned that it would impact kprobes. Sounds like we are
-ok there.
+> Because I was trying to fix an obscure build issue in arch/mips, choose
+> a random configuration that should hit that issue, and promptly ran
+> into
+> https://lkml.kernel.org/r/<201610301405.K82KqqW0%25fengguang.wu@intel.com>
+> The same configuration does build under v4.8, I tested that of course.
 
-> So yes, there is no user-visible feature that depends on this.
+I'd say it's a practical problem that users run into and hence it's a
+regression. Sure, in this case it hits only those that compile kernels
+themselves; but those are users, too, and we don't want to scare them
+away with things that suddenly stop working.
 
-Aren't hardware breakpoints exposed via perf? I'd call perf
-user-visible.
+IOW: I'll include it in this weeks report.
 
-Anton
+Ciao, Thorsten
