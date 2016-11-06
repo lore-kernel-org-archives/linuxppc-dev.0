@@ -1,32 +1,27 @@
-Return-Path: <jmaxwell37@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tBpSM3F5JzDvPr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 08:22:27 +1100 (AEDT)
-Received: by mail-it0-x241.google.com with SMTP id e187so5946794itc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Nov 2016 13:22:27 -0800 (PST)
+Return-Path: <boris.brezillon@free-electrons.com>
+Received: from mail.free-electrons.com (up.free-electrons.com [163.172.77.33])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tBrgJ1J1XzDvHY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 10:02:04 +1100 (AEDT)
+Date: Sun, 6 Nov 2016 23:55:08 +0100
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: linux-mtd@lists.infradead.org, Sylvain Lemieux
+ <slemieux.tyco@gmail.com>, Josh Wu <rainyfeeling@outlook.com>, Matthias
+ Brugger <matthias.bgg@gmail.com>, Stefan Agner <stefan@agner.ch>, Vladimir
+ Zapolskiy <vz@mleia.com>, linux-mediatek@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Brian Norris <computersforpeace@gmail.com>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Richard Weinberger
+ <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Kamal Dasu
+ <kdasu.kdev@gmail.com>, bcm-kernel-feedback-list@broadcom.com,
+ linuxppc-dev@lists.ozlabs.org, Wenyou Yang <wenyou.yang@atmel.com>,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 00/22] mtd: nand: return error code of
+ nand_scan(_ident,_tail) on error
+Message-ID: <20161106235508.52374ac3@bbrezillon>
+In-Reply-To: <1478256190-7452-1-git-send-email-yamada.masahiro@socionext.com>
+References: <1478256190-7452-1-git-send-email-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
-In-Reply-To: <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
-References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
- <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
- <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
-From: Jonathan Maxwell <jmaxwell37@gmail.com>
-Date: Mon, 7 Nov 2016 08:22:23 +1100
-Message-ID: <CAGHK07Cvh2QnGrUg5eu_aC=cV7DaL9wJm8adZ0rv4s0DmF-tzw@mail.gmail.com>
-Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
- gso_type
-To: Brian King <brking@linux.vnet.ibm.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Jon Maxwell <jmaxwell@redhat.com>, hofrat@osadl.org,
- linux-kernel@vger.kernel.org,
- jarod@redhat.com, netdev@vger.kernel.org, paulus@samba.org,
- Tom Herbert <tom@herbertland.com>,
- Marcelo Ricardo Leitner <mleitner@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,120 +31,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 3, 2016 at 8:40 AM, Brian King <brking@linux.vnet.ibm.com> wrote:
-> On 10/27/2016 10:26 AM, Eric Dumazet wrote:
->> On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
->>> We recently encountered a bug where a few customers using ibmveth on the
->>> same LPAR hit an issue where a TCP session hung when large receive was
->>> enabled. Closer analysis revealed that the session was stuck because the
->>> one side was advertising a zero window repeatedly.
->>>
->>> We narrowed this down to the fact the ibmveth driver did not set gso_size
->>> which is translated by TCP into the MSS later up the stack. The MSS is
->>> used to calculate the TCP window size and as that was abnormally large,
->>> it was calculating a zero window, even although the sockets receive buffer
->>> was completely empty.
->>>
->>> We were able to reproduce this and worked with IBM to fix this. Thanks Tom
->>> and Marcelo for all your help and review on this.
->>>
->>> The patch fixes both our internal reproduction tests and our customers tests.
->>>
->>> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
->>> ---
->>>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
->>>  1 file changed, 20 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->>> index 29c05d0..c51717e 100644
->>> --- a/drivers/net/ethernet/ibm/ibmveth.c
->>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
->>> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->>>      int frames_processed = 0;
->>>      unsigned long lpar_rc;
->>>      struct iphdr *iph;
->>> +    bool large_packet = 0;
->>> +    u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
->>>
->>>  restart_poll:
->>>      while (frames_processed < budget) {
->>> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->>>                                              iph->check = 0;
->>>                                              iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
->>>                                              adapter->rx_large_packets++;
->>> +                                            large_packet = 1;
->>>                                      }
->>>                              }
->>>                      }
->>>
->>> +                    if (skb->len > netdev->mtu) {
->>> +                            iph = (struct iphdr *)skb->data;
->>> +                            if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
->>> +                                iph->protocol == IPPROTO_TCP) {
->>> +                                    hdr_len += sizeof(struct iphdr);
->>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
->>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->>> +                            } else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
->>> +                                       iph->protocol == IPPROTO_TCP) {
->>> +                                    hdr_len += sizeof(struct ipv6hdr);
->>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
->>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->>> +                            }
->>> +                            if (!large_packet)
->>> +                                    adapter->rx_large_packets++;
->>> +                    }
->>> +
->>>
->>
->> This might break forwarding and PMTU discovery.
->>
->> You force gso_size to device mtu, regardless of real MSS used by the TCP
->> sender.
->>
->> Don't you have the MSS provided in RX descriptor, instead of guessing
->> the value ?
->
-> We've had some further discussions on this with the Virtual I/O Server (VIOS)
-> development team. The large receive aggregation in the VIOS (AIX based) is actually
-> being done by software in the VIOS. What they may be able to do is when performing
-> this aggregation, they could look at the packet lengths of all the packets being
-> aggregated and take the largest packet size within the aggregation unit, minus the
-> header length and return that to the virtual ethernet client which we could then stuff
-> into gso_size. They are currently assessing how feasible this would be to do and whether
-> it would impact other bits of the code. However, assuming this does end up being an option,
-> would this address the concerns here or is that going to break something else I'm
-> not thinking of?
+On Fri,  4 Nov 2016 19:42:48 +0900
+Masahiro Yamada <yamada.masahiro@socionext.com> wrote:
 
-I was discussing this with a colleague and although this is better than
-what we have so far. We wonder if there could be a corner case where
-it ends up with a smaller value than the current MSS. For example if
-the application sent a burst of small TCP packets with the PUSH
-bit set. In that case they may not be coalesced by GRO. The VIOS could
-probably be coded to detect that condition and use the previous MSS.
-But that may not necessarily be the current MSS.
+> nand_scan(), nand_scan_ident(), nand_scan_tail() return
+> an appropriate negative value on error.
+> 
+> Most of drivers return the value from them on error,
+> but some of them return the fixed error code -ENXIO
+> (and a few return -ENODEV).
+> 
+> This series make those drivers return more precise error code.
 
-The ibmveth driver passes the MSS via gso_size to the VIOS. Either as the
-3rd argument of ibmveth_send() or via tcp_hdr(skb)->check which is
-presumably over-written when the VIOS does the TSO. Would it be possible
-to keep a copy of this value on the TX side on the VIOS before it over-written
-and then some how pass that up to the RX side along with frame and set
-gso_size to that which should be the current MSS?
+Applied and fixed the bug I found in patch 13.
 
-Regards
+Thanks,
 
-Jon
+Boris
 
->
-> Unfortunately, I don't think we'd have a good way to get gso_segs set correctly as I don't
-> see how that would get passed back up the interface.
->
-> Thanks,
->
-> Brian
->
->
-> --
-> Brian King
-> Power Linux I/O
-> IBM Linux Technology Center
->
+> 
+> 
+> Masahiro Yamada (22):
+>   mtd: nand: ams-delta: return error code of nand_scan() on error
+>   mtd: nand: cmx270: return error code of nand_scan() on error
+>   mtd: nand: cs553x: return error code of nand_scan() on error
+>   mtd: nand: gpio: return error code of nand_scan() on error
+>   mtd: nand: mpc5121: return error code of nand_scan() on error
+>   mtd: nand: tmio: return error code of nand_scan() on error
+>   mtd: nand: orion: return error code of nand_scan() on error
+>   mtd: nand: pasemi: return error code of nand_scan() on error
+>   mtd: nand: plat_nand: return error code of nand_scan() on error
+>   mtd: nand: atmel: return error code of nand_scan_ident/tail() on error
+>   mtd: nand: brcmnand: return error code of nand_scan_ident/tail() on
+>     error
+>   mtd: nand: fsmc: return error code of nand_scan_ident/tail() on error
+>   mtd: nand: lpc32xx: return error code of nand_scan_ident/tail() on
+>     error
+>   mtd: nand: mediatek: return error code of nand_scan_ident/tail() on
+>     error
+>   mtd: nand: mxc: return error code of nand_scan_ident/tail() on error
+>   mtd: nand: omap2: return error code of nand_scan_ident/tail() on error
+>   mtd: nand: vf610: return error code of nand_scan_ident/tail() on error
+>   mtd: nand: cafe: return error code of nand_scan_ident() on error
+>   mtd: nand: hisi504: return error code of nand_scan_ident() on error
+>   mtd: nand: pxa3xx: return error code of nand_scan_ident() on error
+>   mtd: nand: nandsim: remove unneeded checks for nand_scan_ident/tail()
+>   mtd: nand: socrates: use nand_scan() for nand_scan_ident/tail() combo
+> 
+>  drivers/mtd/nand/ams-delta.c         |  5 ++---
+>  drivers/mtd/nand/atmel_nand.c        | 10 ++++------
+>  drivers/mtd/nand/brcmnand/brcmnand.c | 10 ++++++----
+>  drivers/mtd/nand/cafe_nand.c         |  5 ++---
+>  drivers/mtd/nand/cmx270_nand.c       |  4 ++--
+>  drivers/mtd/nand/cs553x_nand.c       |  5 ++---
+>  drivers/mtd/nand/fsmc_nand.c         |  9 ++++-----
+>  drivers/mtd/nand/gpio.c              |  5 ++---
+>  drivers/mtd/nand/hisi504_nand.c      |  4 +---
+>  drivers/mtd/nand/lpc32xx_mlc.c       | 10 ++++------
+>  drivers/mtd/nand/lpc32xx_slc.c       |  9 +++------
+>  drivers/mtd/nand/mpc5121_nfc.c       |  4 ++--
+>  drivers/mtd/nand/mtk_nand.c          |  4 ++--
+>  drivers/mtd/nand/mxc_nand.c          | 10 ++++------
+>  drivers/mtd/nand/nandsim.c           |  4 ----
+>  drivers/mtd/nand/omap2.c             |  9 ++++-----
+>  drivers/mtd/nand/orion_nand.c        |  5 ++---
+>  drivers/mtd/nand/pasemi_nand.c       |  5 ++---
+>  drivers/mtd/nand/plat_nand.c         |  5 ++---
+>  drivers/mtd/nand/pxa3xx_nand.c       |  5 +++--
+>  drivers/mtd/nand/socrates_nand.c     | 12 ++----------
+>  drivers/mtd/nand/tmio_nand.c         |  6 +++---
+>  drivers/mtd/nand/vf610_nfc.c         | 10 ++++------
+>  23 files changed, 62 insertions(+), 93 deletions(-)
+> 
