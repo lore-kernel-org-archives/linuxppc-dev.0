@@ -1,47 +1,32 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jmaxwell37@gmail.com>
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tBlHG20wvzDvPY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 05:59:20 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA6IwX8V085598
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 6 Nov 2016 13:59:18 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26j7pynaxd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Nov 2016 13:59:18 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Sun, 6 Nov 2016 11:59:17 -0700
-Subject: Re: [PATCH 1/3] powerpc: Emulation support for load/store
- instructions on LE
-To: Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1478076783-2872-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1478076783-2872-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <20161103080412.68240cda@kryten> <581ACDF2.1010409@linux.vnet.ibm.com>
- <8737j8opwb.fsf@concordia.ellerman.id.au>
- <581B110F.9050805@linux.vnet.ibm.com>
- <e993dc5c-7a90-e43b-b761-a70a79b3d1d9@au1.ibm.com>
- <581C1D32.50108@linux.vnet.ibm.com> <20161106063151.3ef04e9e@kryten>
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, chris@distroguy.com,
- aneesh.kumar@linux.vnet.ibm.com, ast@kernel.org,
- linux-kernel@vger.kernel.org, oss@buserror.net,
- paul.gortmaker@windriver.com, duwe@lst.de,
- lsorense@csclub.uwaterloo.ca, bauerman@linux.vnet.ibm.com,
- oohall@gmail.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, paulus@samba.org, viro@zeniv.linux.org.uk,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Mon, 7 Nov 2016 00:29:04 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tBpSM3F5JzDvPr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 08:22:27 +1100 (AEDT)
+Received: by mail-it0-x241.google.com with SMTP id e187so5946794itc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Nov 2016 13:22:27 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20161106063151.3ef04e9e@kryten>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <581F7D78.1040008@linux.vnet.ibm.com>
+In-Reply-To: <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
+References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
+ <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
+ <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
+From: Jonathan Maxwell <jmaxwell37@gmail.com>
+Date: Mon, 7 Nov 2016 08:22:23 +1100
+Message-ID: <CAGHK07Cvh2QnGrUg5eu_aC=cV7DaL9wJm8adZ0rv4s0DmF-tzw@mail.gmail.com>
+Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
+ gso_type
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Jon Maxwell <jmaxwell@redhat.com>, hofrat@osadl.org,
+ linux-kernel@vger.kernel.org,
+ jarod@redhat.com, netdev@vger.kernel.org, paulus@samba.org,
+ Tom Herbert <tom@herbertland.com>,
+ Marcelo Ricardo Leitner <mleitner@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,57 +36,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On Sunday 06 November 2016 01:01 AM, Anton Blanchard wrote:
-> Hi,
->
->> kprobe, uprobe, hw-breakpoint and xmon are the only user of
->> emulate_step.
+On Thu, Nov 3, 2016 at 8:40 AM, Brian King <brking@linux.vnet.ibm.com> wrote:
+> On 10/27/2016 10:26 AM, Eric Dumazet wrote:
+>> On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
+>>> We recently encountered a bug where a few customers using ibmveth on the
+>>> same LPAR hit an issue where a TCP session hung when large receive was
+>>> enabled. Closer analysis revealed that the session was stuck because the
+>>> one side was advertising a zero window repeatedly.
+>>>
+>>> We narrowed this down to the fact the ibmveth driver did not set gso_size
+>>> which is translated by TCP into the MSS later up the stack. The MSS is
+>>> used to calculate the TCP window size and as that was abnormally large,
+>>> it was calculating a zero window, even although the sockets receive buffer
+>>> was completely empty.
+>>>
+>>> We were able to reproduce this and worked with IBM to fix this. Thanks Tom
+>>> and Marcelo for all your help and review on this.
+>>>
+>>> The patch fixes both our internal reproduction tests and our customers tests.
+>>>
+>>> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
+>>> ---
+>>>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
+>>>  1 file changed, 20 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>>> index 29c05d0..c51717e 100644
+>>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+>>> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>>      int frames_processed = 0;
+>>>      unsigned long lpar_rc;
+>>>      struct iphdr *iph;
+>>> +    bool large_packet = 0;
+>>> +    u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
+>>>
+>>>  restart_poll:
+>>>      while (frames_processed < budget) {
+>>> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>>                                              iph->check = 0;
+>>>                                              iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+>>>                                              adapter->rx_large_packets++;
+>>> +                                            large_packet = 1;
+>>>                                      }
+>>>                              }
+>>>                      }
+>>>
+>>> +                    if (skb->len > netdev->mtu) {
+>>> +                            iph = (struct iphdr *)skb->data;
+>>> +                            if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
+>>> +                                iph->protocol == IPPROTO_TCP) {
+>>> +                                    hdr_len += sizeof(struct iphdr);
+>>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
+>>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>>> +                            } else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
+>>> +                                       iph->protocol == IPPROTO_TCP) {
+>>> +                                    hdr_len += sizeof(struct ipv6hdr);
+>>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
+>>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>>> +                            }
+>>> +                            if (!large_packet)
+>>> +                                    adapter->rx_large_packets++;
+>>> +                    }
+>>> +
+>>>
 >>
->> Kprobe / uprobe single-steps instruction if they can't emulate it, so
->> there is no problem with them. As I mention, hw-breakpoint is broken.
->> However I'm not sure about xmon, I need to check that.
-> I was mostly concerned that it would impact kprobes. Sounds like we are
-> ok there.
+>> This might break forwarding and PMTU discovery.
+>>
+>> You force gso_size to device mtu, regardless of real MSS used by the TCP
+>> sender.
+>>
+>> Don't you have the MSS provided in RX descriptor, instead of guessing
+>> the value ?
 >
->> So yes, there is no user-visible feature that depends on this.
-> Aren't hardware breakpoints exposed via perf? I'd call perf
-> user-visible.
+> We've had some further discussions on this with the Virtual I/O Server (VIOS)
+> development team. The large receive aggregation in the VIOS (AIX based) is actually
+> being done by software in the VIOS. What they may be able to do is when performing
+> this aggregation, they could look at the packet lengths of all the packets being
+> aggregated and take the largest packet size within the aggregation unit, minus the
+> header length and return that to the virtual ethernet client which we could then stuff
+> into gso_size. They are currently assessing how feasible this would be to do and whether
+> it would impact other bits of the code. However, assuming this does end up being an option,
+> would this address the concerns here or is that going to break something else I'm
+> not thinking of?
 
+I was discussing this with a colleague and although this is better than
+what we have so far. We wonder if there could be a corner case where
+it ends up with a smaller value than the current MSS. For example if
+the application sent a burst of small TCP packets with the PUSH
+bit set. In that case they may not be coalesced by GRO. The VIOS could
+probably be coded to detect that condition and use the previous MSS.
+But that may not necessarily be the current MSS.
 
-Thanks Anton, That's a good catch. I tried this on ppc64le:
+The ibmveth driver passes the MSS via gso_size to the VIOS. Either as the
+3rd argument of ibmveth_send() or via tcp_hdr(skb)->check which is
+presumably over-written when the VIOS does the TSO. Would it be possible
+to keep a copy of this value on the TX side on the VIOS before it over-written
+and then some how pass that up to the RX side along with frame and set
+gso_size to that which should be the current MSS?
 
-  $ sudo cat /proc/kallsyms  | grep pid_max
-    c00000000116998c D pid_max
+Regards
 
-  $ sudo ./perf record -a --event=mem:0xc00000000116998c sleep 10
+Jon
 
-
-Before patch:
-  It does not record any data and throws below warning.
-
-  $ dmesg
-    [  817.895573] Unable to handle hardware breakpoint. Breakpoint at 0xc00000000116998c will be disabled.
-    [  817.895581] ------------[ cut here ]------------
-    [  817.895588] WARNING: CPU: 24 PID: 2032 at arch/powerpc/kernel/hw_breakpoint.c:277 hw_breakpoint_handler+0x124/0x230
-    ...
-
-After patch:
-  It records data properly.
-
-  $ sudo ./perf report --stdio
-    ...
-    # Samples: 36  of event 'mem:0xc00000000116998c'
-    # Event count (approx.): 36
-    #
-    # Overhead  Command        Shared Object     Symbol      
-    # ........  .............  ................  .............
-    #
-        63.89%  kdumpctl       [kernel.vmlinux]  [k] alloc_pid
-        27.78%  opal_errd      [kernel.vmlinux]  [k] alloc_pid
-         5.56%  kworker/u97:4  [kernel.vmlinux]  [k] alloc_pid
-         2.78%  systemd        [kernel.vmlinux]  [k] alloc_pid
-
-
--Ravi
+>
+> Unfortunately, I don't think we'd have a good way to get gso_segs set correctly as I don't
+> see how that would get passed back up the interface.
+>
+> Thanks,
+>
+> Brian
+>
+>
+> --
+> Brian King
+> Power Linux I/O
+> IBM Linux Technology Center
+>
