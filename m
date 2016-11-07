@@ -3,14 +3,14 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCTZ63HJ9zDt0p
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCTZ645W1zDt24
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 10:44:46 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA7NiI4H099790
+ uA7Nif34076168
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2016 18:44:44 -0500
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26jv0dx7g5-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26jvc4mkk1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 18:44:44 -0500
 Received: from localhost
@@ -34,11 +34,9 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  Balbir Singh <bsingharora@gmail.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v6 3/4] mm: enable CONFIG_MOVABLE_NODE on non-x86 arches
-Date: Mon,  7 Nov 2016 17:44:35 -0600
-In-Reply-To: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
-References: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
-Message-Id: <1478562276-25539-4-git-send-email-arbab@linux.vnet.ibm.com>
+Subject: [PATCH v6 0/4] enable movable nodes on non-x86 configs
+Date: Mon,  7 Nov 2016 17:44:32 -0600
+Message-Id: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,37 +46,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To support movable memory nodes (CONFIG_MOVABLE_NODE), at least one of
-the following must be true:
+This patchset allows more configs to make use of movable nodes. When
+CONFIG_MOVABLE_NODE is selected, there are two ways to introduce such
+nodes into the system:
 
-1. This config has the capability to identify movable nodes at boot.
-   Right now, only x86 can do this.
+1. Discover movable nodes at boot. Currently this is only possible on
+   x86, but we will enable configs supporting fdt to do the same.
 
-2. Our config supports memory hotplug, which means that a movable node
-   can be created by hotplugging all of its memory into ZONE_MOVABLE.
+2. Hotplug and online all of a node's memory using online_movable. This
+   is already possible on any config supporting memory hotplug, not 
+   just x86, but the Kconfig doesn't say so. We will fix that.
 
-Fix the Kconfig definition of CONFIG_MOVABLE_NODE, which currently
-recognizes (1), but not (2).
+We'll also remove some cruft on power which would prevent (2).
 
-Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Acked-by: Balbir Singh <bsingharora@gmail.com>
----
- mm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+/* changelog */
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 86e3e0e..061b46b 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -153,7 +153,7 @@ config MOVABLE_NODE
- 	bool "Enable to assign a node which has only movable memory"
- 	depends on HAVE_MEMBLOCK
- 	depends on NO_BOOTMEM
--	depends on X86_64
-+	depends on X86_64 || MEMORY_HOTPLUG
- 	depends on NUMA
- 	default n
- 	help
+v6:
+* Add a patch enabling the fdt to describe hotpluggable memory.
+
+v5:
+* http://lkml.kernel.org/r/1477339089-5455-1-git-send-email-arbab@linux.vnet.ibm.com
+
+* Drop the patches which recognize the "status" property of dt memory
+  nodes. Firmware can set the size of "linux,usable-memory" to zero instead.
+
+v4:
+* http://lkml.kernel.org/r/1475778995-1420-1-git-send-email-arbab@linux.vnet.ibm.com
+
+* Rename of_fdt_is_available() to of_fdt_device_is_available().
+  Rename of_flat_dt_is_available() to of_flat_dt_device_is_available().
+
+* Instead of restoring top-down allocation, ensure it never goes
+  bottom-up in the first place, by making movable_node arch-specific.
+
+* Use MEMORY_HOTPLUG instead of PPC64 in the mm/Kconfig patch.
+
+v3:
+* http://lkml.kernel.org/r/1474828616-16608-1-git-send-email-arbab@linux.vnet.ibm.com
+
+* Use Rob Herring's suggestions to improve the node availability check.
+
+* More verbose commit log in the patch enabling CONFIG_MOVABLE_NODE.
+
+* Add a patch to restore top-down allocation the way x86 does.
+
+v2:
+* http://lkml.kernel.org/r/1473883618-14998-1-git-send-email-arbab@linux.vnet.ibm.com
+
+* Use the "status" property of standard dt memory nodes instead of
+  introducing a new "ibm,hotplug-aperture" compatible id.
+
+* Remove the patch which explicitly creates a memoryless node. This set
+  no longer has any bearing on whether the pgdat is created at boot or
+  at the time of memory addition.
+
+v1:
+* http://lkml.kernel.org/r/1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com
+
+Reza Arbab (4):
+  powerpc/mm: allow memory hotplug into a memoryless node
+  mm: remove x86-only restriction of movable_node
+  mm: enable CONFIG_MOVABLE_NODE on non-x86 arches
+  of/fdt: mark hotpluggable memory
+
+ Documentation/kernel-parameters.txt |  2 +-
+ arch/powerpc/mm/numa.c              | 13 +------------
+ arch/x86/kernel/setup.c             | 24 ++++++++++++++++++++++++
+ drivers/of/fdt.c                    |  6 ++++++
+ mm/Kconfig                          |  2 +-
+ mm/memory_hotplug.c                 | 20 --------------------
+ 6 files changed, 33 insertions(+), 34 deletions(-)
+
 -- 
 1.8.3.1
