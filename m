@@ -1,43 +1,35 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tBvtH3YRpzDvVx
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 12:26:47 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA71NhQI090518
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 6 Nov 2016 20:26:45 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26jc1b78v1-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tBxKT6fThzDsrT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 13:31:57 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA72SduZ124437
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 6 Nov 2016 21:31:55 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26jb2havxs-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Nov 2016 20:26:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Nov 2016 21:31:55 -0500
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 7 Nov 2016 06:56:41 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 07F0CE0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 06:56:41 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uA71QciF45547752
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2016 06:56:38 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uA71QbXE000608
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2016 06:56:37 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH 4/4] powerpc/perf: macros for PowerISA v3.0 format encoding
-Date: Mon,  7 Nov 2016 06:56:19 +0530
-In-Reply-To: <1478481979-26224-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1478481979-26224-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1478481979-26224-5-git-send-email-maddy@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Sun, 6 Nov 2016 19:31:54 -0700
+Date: Mon, 7 Nov 2016 08:01:47 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] ppc: cpufreq: disable preemption while checking CPU
+ throttling state
+Reply-To: ego@linux.vnet.ibm.com
+References: <1478257718-14923-1-git-send-email-kda@linux-powerpc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1478257718-14923-1-git-send-email-kda@linux-powerpc.org>
+Message-Id: <20161107023147.GA14131@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,205 +39,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patch to add macros and constants to support the PowerISA v3.0 raw
-event encoding format. Couple of new functions added to support
-the new width and location of bit fields like PMCxCOMB and THRESH_CMP
-within MMCR* in PowerISA v3.0.
+Hi Denis,
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/isa207-common.c | 88 ++++++++++++++++++++++++++++++++++++---
- arch/powerpc/perf/isa207-common.h | 27 +++++++++++-
- 2 files changed, 108 insertions(+), 7 deletions(-)
+On Fri, Nov 04, 2016 at 07:08:38AM -0400, Denis Kirjanov wrote:
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 2a2040ea5f99..a3d8a6f31226 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -55,6 +55,81 @@ static inline bool event_is_fab_match(u64 event)
- 	return (event == 0x30056 || event == 0x4f052);
- }
- 
-+static bool is_event_valid(u64 event)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+		(cpu_has_feature(CPU_FTR_POWER9_DD1)) &&
-+		(event & ~EVENT_VALID_MASK))
-+		return false;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+		(event & ~ISA300_EVENT_VALID_MASK))
-+		return false;
-+	else if (event & ~EVENT_VALID_MASK)
-+		return false;
-+
-+	return true;
-+}
-+
-+static u64 mmcra_sdar_mode(u64 event)
-+{
-+	u64 sm;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1))) {
-+		goto sm_tlb;
-+	} else if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		sm = (event >> ISA300_SDAR_MODE_SHIFT) & ISA300_SDAR_MODE_MASK;
-+		if (sm)
-+			return sm<<MMCRA_SDAR_MODE_SHIFT;
-+	} else
-+		goto sm_tlb;
-+
-+sm_tlb:
-+	return MMCRA_SDAR_MODE_TLB;
-+}
-+
-+static u64 thresh_cmp_val(u64 value)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+		goto thr_cmp;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		return value<<ISA300_MMCRA_THR_CMP_SHIFT;
-+	else
-+		goto thr_cmp;
-+thr_cmp:
-+	return value<<MMCRA_THR_CMP_SHIFT;
-+}
-+
-+static unsigned long combine_from_event(u64 event)
-+{
-+	unsigned long combine;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+		combine = (event >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		combine = (event >> ISA300_EVENT_COMBINE_SHIFT) & ISA300_EVENT_COMBINE_MASK;
-+	else
-+		combine = (event >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
-+
-+	return combine;
-+}
-+
-+static unsigned long combine_shift(unsigned long pmc)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+		goto comb_shift;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		return ISA300_MMCR1_COMBINE_SHIFT(pmc);
-+	else
-+		goto comb_shift;
-+
-+comb_shift:
-+	return MMCR1_COMBINE_SHIFT(pmc);
-+}
-+
- int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- {
- 	unsigned int unit, pmc, cache, ebb;
-@@ -62,7 +137,7 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- 
- 	mask = value = 0;
- 
--	if (event & ~EVENT_VALID_MASK)
-+	if (!is_event_valid(event))
- 		return -1;
- 
- 	pmc   = (event >> EVENT_PMC_SHIFT)        & EVENT_PMC_MASK;
-@@ -189,15 +264,13 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 			pmc_inuse |= 1 << pmc;
- 	}
- 
--	/* In continuous sampling mode, update SDAR on TLB miss */
--	mmcra = MMCRA_SDAR_MODE_TLB;
- 	mmcr1 = mmcr2 = 0;
- 
- 	/* Second pass: assign PMCs, set all MMCR1 fields */
- 	for (i = 0; i < n_ev; ++i) {
- 		pmc     = (event[i] >> EVENT_PMC_SHIFT) & EVENT_PMC_MASK;
- 		unit    = (event[i] >> EVENT_UNIT_SHIFT) & EVENT_UNIT_MASK;
--		combine = (event[i] >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
-+		combine = combine_from_event(event[i]);
- 		psel    =  event[i] & EVENT_PSEL_MASK;
- 
- 		if (!pmc) {
-@@ -211,10 +284,13 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 
- 		if (pmc <= 4) {
- 			mmcr1 |= unit << MMCR1_UNIT_SHIFT(pmc);
--			mmcr1 |= combine << MMCR1_COMBINE_SHIFT(pmc);
-+			mmcr1 |= combine << combine_shift(pmc);
- 			mmcr1 |= psel << MMCR1_PMCSEL_SHIFT(pmc);
- 		}
- 
-+		/* In continuous sampling mode, update SDAR on TLB miss */
-+		mmcra |= mmcra_sdar_mode(event[i]);
-+
- 		if (event[i] & EVENT_IS_L1) {
- 			cache = event[i] >> EVENT_CACHE_SEL_SHIFT;
- 			mmcr1 |= (cache & 1) << MMCR1_IC_QUAL_SHIFT;
-@@ -245,7 +321,7 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 			val = (event[i] >> EVENT_THR_SEL_SHIFT) & EVENT_THR_SEL_MASK;
- 			mmcra |= val << MMCRA_THR_SEL_SHIFT;
- 			val = (event[i] >> EVENT_THR_CMP_SHIFT) & EVENT_THR_CMP_MASK;
--			mmcra |= val << MMCRA_THR_CMP_SHIFT;
-+			mmcra |= thresh_cmp_val(val);
- 		}
- 
- 		if (event[i] & EVENT_WANTS_BHRB) {
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 4d0a4e5017c2..0a240635cf48 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -134,6 +134,24 @@
- 	 PERF_SAMPLE_BRANCH_KERNEL      |\
- 	 PERF_SAMPLE_BRANCH_HV)
- 
-+/* Contants to support PowerISA v3.0 encoding format */
-+#define ISA300_EVENT_COMBINE_SHIFT	10	/* Combine bit */
-+#define ISA300_EVENT_COMBINE_MASK	0x3ull
-+#define ISA300_SDAR_MODE_SHIFT		50
-+#define ISA300_SDAR_MODE_MASK		0x3ull
-+
-+#define ISA300_EVENT_VALID_MASK		\
-+	((ISA300_SDAR_MODE_MASK<< ISA300_SDAR_MODE_SHIFT	|	\
-+	(EVENT_THRESH_MASK    << EVENT_THRESH_SHIFT)		|	\
-+	(EVENT_SAMPLE_MASK    << EVENT_SAMPLE_SHIFT)		|	\
-+	(EVENT_CACHE_SEL_MASK << EVENT_CACHE_SEL_SHIFT)		|	\
-+	(EVENT_PMC_MASK       << EVENT_PMC_SHIFT)		|	\
-+	(EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
-+	(ISA300_EVENT_COMBINE_MASK << ISA300_EVENT_COMBINE_SHIFT) |	\
-+	(EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
-+	 EVENT_LINUX_MASK					|	\
-+	 EVENT_PSEL_MASK))
-+
- /*
-  * Layout of constraint bits:
-  *
-@@ -210,15 +228,22 @@
- #define MMCR1_DC_QUAL_SHIFT		47
- #define MMCR1_IC_QUAL_SHIFT		46
- 
-+/* MMCR1 Combine bits macro for PowerISA v3.0 */
-+#define ISA300_MMCR1_COMBINE_SHIFT(pmc)	(38 - ((pmc - 1) * 2))
-+
- /* Bits in MMCRA for PowerISA v2.07 */
- #define MMCRA_SAMP_MODE_SHIFT		1
- #define MMCRA_SAMP_ELIG_SHIFT		4
- #define MMCRA_THR_CTL_SHIFT		8
- #define MMCRA_THR_SEL_SHIFT		16
- #define MMCRA_THR_CMP_SHIFT		32
--#define MMCRA_SDAR_MODE_TLB		(1ull << 42)
-+#define MMCRA_SDAR_MODE_SHIFT		42
-+#define MMCRA_SDAR_MODE_TLB		(1ull << MMCRA_SDAR_MODE_SHIFT)
- #define MMCRA_IFM_SHIFT			30
- 
-+/* MMCR1 Threshold Compare bit constant for PowerISA v3.0 */
-+#define ISA300_MMCRA_THR_CMP_SHIFT	45
-+
- /* Bits in MMCR2 for PowerISA v2.07 */
- #define MMCR2_FCS(pmc)			(1ull << (63 - (((pmc) - 1) * 9)))
- #define MMCR2_FCP(pmc)			(1ull << (62 - (((pmc) - 1) * 9)))
--- 
-2.7.4
+You can provide the config option with which this bug was found in the
+change log. I suppose you had enabled CONFIG_DEBUG_PREEMPT.
+
+>     [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+>     [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+>     [   67.701038] Call Trace:
+>     [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+>     [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+>     [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+>     [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+>     [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+>     [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+>     [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+>     [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+>     [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+>     [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+>     [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+>     [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+>     [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
+> 
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> 
+> v2:  wrap powernv_cpufreq_throttle_check()
+> as suggested by Gautham R Shenoy
+
+Looks good otherwise.
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index d3ffde8..112e0e2 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -647,8 +647,15 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  	if (unlikely(rebooting) && new_index != get_nominal_index())
+>  		return 0;
+> 
+> -	if (!throttled)
+> +	if (!throttled) {
+> +		/*
+> +		 * we don't want to be preempted while
+> +		 * checking if the CPU frequency has been throttled
+> +		 */
+> +		preempt_disable();
+>  		powernv_cpufreq_throttle_check(NULL);
+> +		preempt_enable();
+> +    }
+> 
+>  	cur_msec = jiffies_to_msecs(get_jiffies_64());
+> 
+> -- 
+> 1.8.3.1
+> 
