@@ -1,39 +1,44 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCQNZ1pQ3zDvNT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 08:21:17 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Y.B. Lu" <yangbo.lu@nxp.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
- Scott Wood <oss@buserror.net>, Mark Rutland <mark.rutland@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "X.B. Xie" <xiaobo.xie@nxp.com>, "M.H. Lian" <minghuan.lian@nxp.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Kumar Gala <galak@codeaurora.org>
-Subject: Re: [v15, 3/7] powerpc/fsl: move mpc85xx.h to include/linux/fsl
-Date: Mon, 07 Nov 2016 22:20:18 +0100
-Message-ID: <1543282.vWjeo4ynTa@wuerfel>
-In-Reply-To: <DB6PR0401MB2536B1B2E6AC36BDC8FC540DF8AE0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-References: <1477637418-38938-1-git-send-email-yangbo.lu@nxp.com>
- <2723366.1bJeJ7SKI6@wuerfel>
- <DB6PR0401MB2536B1B2E6AC36BDC8FC540DF8AE0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCTZ63Jm7zDt1h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 10:44:45 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA7NiKuT075836
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2016 18:44:43 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26jvc4mkhm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 18:44:43 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Mon, 7 Nov 2016 16:44:42 -0700
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ devicetree@vger.kernel.org, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v6 4/4] of/fdt: mark hotpluggable memory
+Date: Mon,  7 Nov 2016 17:44:36 -0600
+In-Reply-To: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
+Message-Id: <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,19 +48,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, October 31, 2016 9:35:33 AM CET Y.B. Lu wrote:
-> > 
-> > I don't see any of the contents of this header referenced by the soc
-> > driver any more. I think you can just drop this patch.
-> > 
-> 
-> [Lu Yangbo-B47093] This header file was included by guts.c.
-> The guts driver used macro SVR_MAJ/SVR_MIN for calculation.
-> 
-> This header file was for powerpc arch before. And this patch is to made it as
-> common header file for both ARM and PPC.
-> Sooner or later this is needed.
+When movable nodes are enabled, any node containing only hotpluggable
+memory is made movable at boot time.
 
-Let's discuss it once we actually need the header then, ok?
+On x86, hotpluggable memory is discovered by parsing the ACPI SRAT,
+making corresponding calls to memblock_mark_hotplug().
 
-	Arnd
+If we introduce a dt property to describe memory as hotpluggable,
+configs supporting early fdt may then also do this marking and use
+movable nodes.
+
+Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+---
+ drivers/of/fdt.c | 6 ++++++
+ mm/Kconfig       | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index c89d5d2..2cf1d66 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -1015,6 +1015,7 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+ 	const char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+ 	const __be32 *reg, *endp;
+ 	int l;
++	bool hotpluggable;
+ 
+ 	/* We are scanning "memory" nodes only */
+ 	if (type == NULL) {
+@@ -1034,6 +1035,7 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+ 		return 0;
+ 
+ 	endp = reg + (l / sizeof(__be32));
++	hotpluggable = of_get_flat_dt_prop(node, "linux,hotpluggable", NULL);
+ 
+ 	pr_debug("memory scan node %s, reg size %d,\n", uname, l);
+ 
+@@ -1049,6 +1051,10 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+ 		    (unsigned long long)size);
+ 
+ 		early_init_dt_add_memory_arch(base, size);
++
++		if (hotpluggable && memblock_mark_hotplug(base, size))
++			pr_warn("failed to mark hotplug range 0x%llx - 0x%llx\n",
++				base, base + size);
+ 	}
+ 
+ 	return 0;
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 061b46b..33a9b06 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -153,7 +153,7 @@ config MOVABLE_NODE
+ 	bool "Enable to assign a node which has only movable memory"
+ 	depends on HAVE_MEMBLOCK
+ 	depends on NO_BOOTMEM
+-	depends on X86_64 || MEMORY_HOTPLUG
++	depends on X86_64 || OF_EARLY_FLATTREE || MEMORY_HOTPLUG
+ 	depends on NUMA
+ 	default n
+ 	help
+-- 
+1.8.3.1
