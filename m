@@ -2,16 +2,22 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tC4Sm6qGRzDvNS
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 18:53:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tC4dG3nmPzDt11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 19:01:06 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] Fix the message in facility unavailable exception
-In-Reply-To: <60df3f67-f217-378a-2244-319d265c0f1c@gmail.com>
-References: <60df3f67-f217-378a-2244-319d265c0f1c@gmail.com>
-Date: Mon, 07 Nov 2016 18:53:43 +1100
-Message-ID: <87d1i7n2t4.fsf@concordia.ellerman.id.au>
+To: Will Deacon <will.deacon@arm.com>
+Cc: Christopher Covington <cov@codeaurora.org>, criu@openvz.org,
+ linux-mm@kvack.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [RFC v2 5/7] powerpc: Rename context.vdso_base to context.vdso
+In-Reply-To: <20161104201332.GB22791@arm.com>
+References: <20161101171101.24704-1-cov@codeaurora.org>
+ <20161101171101.24704-5-cov@codeaurora.org>
+ <87r36rn8nl.fsf@concordia.ellerman.id.au> <20161104201332.GB22791@arm.com>
+Date: Mon, 07 Nov 2016 19:01:05 +1100
+Message-ID: <87a8dbn2gu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,57 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
-
-> I ran into this during some testing on qemu. The current
-> facility_strings[] are correct when the trap address is
-> 0xf80 (hypervisor facility unavailable). When the trap
-> address is 0xf60, IC (Interruption Cause) a.k.a status
-> in the code is undefined for values 0 and 1.
-
-OK. But how did you generate an exception with an undefined status code?
-
-> This patch
-> adds a check to prevent printing the wrong information
-> and helps better direct debugging effort.
+Will Deacon <will.deacon@arm.com> writes:
+> On Fri, Nov 04, 2016 at 03:58:22PM +1100, Michael Ellerman wrote:
+>> Christopher Covington <cov@codeaurora.org> writes:
+>> >  arch/powerpc/include/asm/book3s/32/mmu-hash.h |  2 +-
+>> >  arch/powerpc/include/asm/book3s/64/mmu.h      |  2 +-
+>> >  arch/powerpc/include/asm/mm-arch-hooks.h      |  6 +++---
+>> >  arch/powerpc/include/asm/mmu-40x.h            |  2 +-
+>> >  arch/powerpc/include/asm/mmu-44x.h            |  2 +-
+>> >  arch/powerpc/include/asm/mmu-8xx.h            |  2 +-
+>> >  arch/powerpc/include/asm/mmu-book3e.h         |  2 +-
+>> >  arch/powerpc/include/asm/mmu_context.h        |  4 ++--
+>> >  arch/powerpc/include/asm/vdso.h               |  2 +-
+>> >  arch/powerpc/include/uapi/asm/elf.h           |  2 +-
+>> >  arch/powerpc/kernel/signal_32.c               |  8 ++++----
+>> >  arch/powerpc/kernel/signal_64.c               |  4 ++--
+>> >  arch/powerpc/kernel/vdso.c                    |  8 ++++----
+>> >  arch/powerpc/perf/callchain.c                 | 12 ++++++------
+>> >  14 files changed, 29 insertions(+), 29 deletions(-)
+>> 
+>> This is kind of annoying, but I guess it's worth doing.
+>> 
+>> It's going to conflict like hell though. Who were you thinking would
+>> merge this series? I think it should go via Andrew Morton's tree, as
+>> that way if we get bad conflicts we can pull it out and redo it.
 >
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index d26605d..da0f634 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1520,8 +1520,14 @@ void facility_unavailable_exception(struct pt_regs *regs)
->  	}
->  
->  	if ((status < ARRAY_SIZE(facility_strings)) &&
-> -	    facility_strings[status])
-> -		facility = facility_strings[status];
-> +	    facility_strings[status]) {
-> +		if (!hv && status < 2) {
-> +			pr_warn("Unexpected facility unavailable exception "
-> +				"interruption cause %d\n", status);
+> The other thing you can do is generate the patch towards the end of the
+> merge window and send it as a separate pull request. The disadvantage of
+> that is that it can't spend any time in -next, but that might be ok for a
+> mechanical rename.
 
-Please don't add un-ratelimited printks() in this function, otherwise if
-they're user triggerable (which some are) it gives the user a way to
-scrub the kernel log.
+True. Though in this case it's a mechanical rename that then allows us
+to use the generic code, so I'd prefer we had some -next coverage on the
+latter.
 
-> +			facility = "Unknown";
-> +		} else
-> +			facility = facility_strings[status];
-> +	}
+The other other option would be to wrap all uses of the arch value in a
+macro (or actually two probably, one a getter one a setter). That would
+then allow arches to use the generic code regardless of the name and
+type of their mm->context.vdso_whatever.
 
-I think we should instead tighten the condition on that top-level if, and
-have an else clause for all cases that uses "Unknown". eg.
-
-	if ((hv || status >= 2) &&
-            (status < ARRAY_SIZE(facility_strings)) &&
-	    facility_strings[status])
-        {
-		facility = facility_strings[status];
-        } else {
-		facility = "Unknown";
-        }
-
-And then if you want to we can also print the hex status value in the
-existing printk().
+That would allow the basic series to go in, and then each arch could do
+a series later that switches it to the "standard" name and type.
 
 cheers
