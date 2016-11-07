@@ -1,28 +1,29 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <pbonzini@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCHps1R3qzDvMQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 03:25:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCHwx6p3JzDvMQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 03:30:25 +1100 (AEDT)
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tCHpr5FjWz9vFF
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2016 03:25:08 +1100 (AEDT)
-Date: Mon, 7 Nov 2016 09:25:05 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, aik@ozlabs.ru,
- gwshan@linux.vnet.ibm.com
+ by ozlabs.org (Postfix) with ESMTPS id 3tCHwx3YGTz9vFD
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2016 03:30:25 +1100 (AEDT)
 Subject: Re: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
-Message-ID: <20161107092505.429f07d6@t450s.home>
-In-Reply-To: <87zilblmcd.fsf@concordia.ellerman.id.au>
+To: Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
 References: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
  <81900126-f1aa-b480-c2fa-f0fa04d625c1@redhat.com>
  <87zilblmcd.fsf@concordia.ellerman.id.au>
+ <20161107092505.429f07d6@t450s.home>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ aik@ozlabs.ru, gwshan@linux.vnet.ibm.com
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <85b0913f-af6d-12a6-2952-b727f0eb7ca9@redhat.com>
+Date: Mon, 7 Nov 2016 17:30:09 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20161107092505.429f07d6@t450s.home>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +33,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 07 Nov 2016 19:34:42 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> Paolo Bonzini <pbonzini@redhat.com> writes:
-> > On 04/11/2016 06:48, Michael Ellerman wrote:  
-> >> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-> >> index da6e2ce77495..6b51a4ebed8a 100644
-> >> --- a/drivers/vfio/Kconfig
-> >> +++ b/drivers/vfio/Kconfig
-> >> @@ -6,12 +6,12 @@ config VFIO_IOMMU_TYPE1
-> >>  config VFIO_IOMMU_SPAPR_TCE
-> >>  	tristate
-> >>  	depends on VFIO && SPAPR_TCE_IOMMU
-> >> -	default n
-> >> +	default VFIO  
-> >
-> > No need to depend on VFIO since you already have it in "default".  
 
-depends and defaults are different beasts though, if VFIO is not
-enabled and we're not on a powerpc system with SPAPR,
-VFIO_IOMMU_SPAPR_TCE should not be selectable, not just default to 'n'.
+On 07/11/2016 17:25, Alex Williamson wrote:
+> On Mon, 07 Nov 2016 19:34:42 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+> 
+>> Paolo Bonzini <pbonzini@redhat.com> writes:
+>>> On 04/11/2016 06:48, Michael Ellerman wrote:  
+>>>> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
+>>>> index da6e2ce77495..6b51a4ebed8a 100644
+>>>> --- a/drivers/vfio/Kconfig
+>>>> +++ b/drivers/vfio/Kconfig
+>>>> @@ -6,12 +6,12 @@ config VFIO_IOMMU_TYPE1
+>>>>  config VFIO_IOMMU_SPAPR_TCE
+>>>>  	tristate
+>>>>  	depends on VFIO && SPAPR_TCE_IOMMU
+>>>> -	default n
+>>>> +	default VFIO  
+>>>
+>>> No need to depend on VFIO since you already have it in "default".  
+> 
+> depends and defaults are different beasts though, if VFIO is not
+> enabled and we're not on a powerpc system with SPAPR,
+> VFIO_IOMMU_SPAPR_TCE should not be selectable, not just default to 'n'.
 
-> 
-> True, I can take that out.
-> 
-> > (I assume you cannot use "default y" because "depends on" doesn't downgrade
-> > "y" to "m" when VFIO is a module.  
-> 
-> Correct.
-> 
-> > A shorthand is
-> >
-> > 	def_tristate VFIO && SPAPR_TCE_IOMMU  
-> 
-> Yep. My experience though is that a lot of folks don't really know what
-> that means. So I prefer to spell it out with an explicit type, depends
-> and default.
-> 
-> But I'll respin it that way if Alex prefers the shorter style.
+AFAIU without a prompt nothing is selectable anyway (hence my preference
+for a shorthand).
 
-Perhaps I'm one of those people.  Non-powerpc archs should not have an
-option to select this, which is why the depends is there, AIUI.  So
-long as we don't start exposing options that aren't relevant to a
-platform, I'm flexible on what shorthands we use, but you may need to
-teach me about them first.  Thanks,
+Paolo
 
-Alex
+>>
+>> True, I can take that out.
+>>
+>>> (I assume you cannot use "default y" because "depends on" doesn't downgrade
+>>> "y" to "m" when VFIO is a module.  
+>>
+>> Correct.
+>>
+>>> A shorthand is
+>>>
+>>> 	def_tristate VFIO && SPAPR_TCE_IOMMU  
+>>
+>> Yep. My experience though is that a lot of folks don't really know what
+>> that means. So I prefer to spell it out with an explicit type, depends
+>> and default.
+>>
+>> But I'll respin it that way if Alex prefers the shorter style.
+> 
+> Perhaps I'm one of those people.  Non-powerpc archs should not have an
+> option to select this, which is why the depends is there, AIUI.  So
+> long as we don't start exposing options that aren't relevant to a
+> platform, I'm flexible on what shorthands we use, but you may need to
+> teach me about them first.  Thanks,
+> 
+> Alex
+> 
