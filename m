@@ -1,35 +1,30 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <larry.finger@gmail.com>
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCFdY4f8fzDvM8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 01:46:56 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA7EhvWk103148
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2016 09:46:54 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26js2k9nfr-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 09:46:54 -0500
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 7 Nov 2016 07:46:53 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, "Kirill A . Shutemov" <kirill@shutemov.name>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2] mm: move vma_is_anonymous check within
- pmd_move_must_withdraw
-Date: Mon,  7 Nov 2016 20:16:39 +0530
-In-Reply-To: <201611071732.njM40txT%fengguang.wu@intel.com>
-References: <201611071732.njM40txT%fengguang.wu@intel.com>
-Message-Id: <20161107144639.24048-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCGWP0R3ZzDvNG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 02:26:41 +1100 (AEDT)
+Received: by mail-it0-x241.google.com with SMTP id b123so4677318itb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 07:26:40 -0800 (PST)
+Sender: Larry Finger <larry.finger@gmail.com>
+Subject: Re: [PATCH v3] console: use first console if stdout-path device
+ doesn't appear
+To: Paul Burton <paul.burton@imgtec.com>, Michael Ellerman <mpe@ellerman.id.au>
+References: <2c67e39b-fc33-918a-774e-d9238e837c03@lwfinger.net>
+ <20161103125758.3415-1-paul.burton@imgtec.com>
+ <8737j3n18r.fsf@concordia.ellerman.id.au> <13471233.iqSeGS5aQ3@np-p-burton>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andreas Schwab <schwab@linux-m68k.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@suse.de>,
+ Petr Mladek <pmladek@suse.com>, Tejun Heo <tj@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Message-ID: <4f990791-ebff-dbe3-b923-3cac5fd6f97d@lwfinger.net>
+Date: Mon, 7 Nov 2016 09:26:37 -0600
+MIME-Version: 1.0
+In-Reply-To: <13471233.iqSeGS5aQ3@np-p-burton>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,93 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Architectures like ppc64 want to use page table deposit/withraw
-even with huge pmd dax entries. Allow arch to override the
-vma_is_anonymous check by moving that to pmd_move_must_withdraw
-function
+On 11/07/2016 03:18 AM, Paul Burton wrote:
+> On Monday, 7 November 2016 19:27:32 GMT Michael Ellerman wrote:
+>> Paul Burton <paul.burton@imgtec.com> writes:
+>>> If a device tree specified a preferred device for kernel console output
+>>> via the stdout-path or linux,stdout-path chosen node properties there's
+>>> no guarantee that it will have specified a device for which we have a
+>>> driver. It may also be the case that we do have a driver but it doesn't
+>>> call of_console_check() to register as a preferred console (eg. offb
+>>> driver as used on powermac systems).
+>>>
+>>> In these cases try to ensure that we provide some console output by
+>>> enabling the first usable registered console, which we keep track of
+>>> with the of_fallback_console variable. Affected systems will enable
+>>> their console later than they did prior to commit 05fd007e4629
+>>> ("console: don't prefer first registered if DT specifies stdout-path")
+>>> but should otherwise produce the same output.
+>>>
+>>> Tested in QEMU with a PowerPC pseries_defconfig kernel.
+>>
+>> Hi Paul,
+>>
+>> This does "work", as in it boots and I get a console. But the delay in
+>> getting output on the VGA is not workable. I get pretty much no output
+>> until the machine is booted entirely to userspace, meaning any crash
+>> prior to that will be undebuggable.
+>>
+>> I also note Andreas reports it doesn't work at all on PowerMac.
+>>
+>> Please send a revert and we can try again next cycle.
+>>
+>> cheers
+>
+> Hi Michael,
+>
+> A revert was already submitted by Hans de Goede & is being discussed over
+> here:
+>
+> https://marc.info/?l=linux-kernel&m=147826151427455&w=2
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
-* Changes from V1:
-  Fix build error with x86 config
+I am a little surprised that I was not CCd on that thread. To reiterate, my 
+PowerBook G4 with a PPC32 processor CRASHES on boot. That is a lot more serious 
+than the console output disappearing.
 
- arch/powerpc/include/asm/book3s/64/pgtable.h |  3 ++-
- include/asm-generic/pgtable.h                | 12 ------------
- mm/huge_memory.c                             | 18 ++++++++++++++++--
- 3 files changed, 18 insertions(+), 15 deletions(-)
+As it seems unlikely that this regression will be fixed in the current cycle, I 
+recommend that the reversion of commit 05fd007e4629 until a proper fix is available.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 9fd77f8794a0..700301bc5190 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1009,7 +1009,8 @@ static inline void pmdp_huge_split_prepare(struct vm_area_struct *vma,
- #define pmd_move_must_withdraw pmd_move_must_withdraw
- struct spinlock;
- static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
--					 struct spinlock *old_pmd_ptl)
-+					 struct spinlock *old_pmd_ptl,
-+					 struct vm_area_struct *vma)
- {
- 	if (radix_enabled())
- 		return false;
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index c4f8fd2fd384..324990273ad2 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -653,18 +653,6 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
- }
- #endif
- 
--#ifndef pmd_move_must_withdraw
--static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
--					 spinlock_t *old_pmd_ptl)
--{
--	/*
--	 * With split pmd lock we also need to move preallocated
--	 * PTE page table if new_pmd is on different PMD page table.
--	 */
--	return new_pmd_ptl != old_pmd_ptl;
--}
--#endif
--
- /*
-  * This function is meant to be used by sites walking pagetables with
-  * the mmap_sem hold in read mode to protect against MADV_DONTNEED and
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index cdcd25cb30fe..54f265ec902e 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1424,6 +1424,21 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 	return 1;
- }
- 
-+#ifndef pmd_move_must_withdraw
-+static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
-+					 spinlock_t *old_pmd_ptl,
-+					 struct vm_area_struct *vma)
-+{
-+	/*
-+	 * With split pmd lock we also need to move preallocated
-+	 * PTE page table if new_pmd is on different PMD page table.
-+	 *
-+	 * We also don't deposit and withdraw tables for file pages.
-+	 */
-+	return (new_pmd_ptl != old_pmd_ptl) && vma_is_anonymous(vma);
-+}
-+#endif
-+
- bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
- 		  unsigned long new_addr, unsigned long old_end,
- 		  pmd_t *old_pmd, pmd_t *new_pmd)
-@@ -1458,8 +1473,7 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
- 		pmd = pmdp_huge_get_and_clear(mm, old_addr, old_pmd);
- 		VM_BUG_ON(!pmd_none(*new_pmd));
- 
--		if (pmd_move_must_withdraw(new_ptl, old_ptl) &&
--				vma_is_anonymous(vma)) {
-+		if (pmd_move_must_withdraw(new_ptl, old_ptl, vma)) {
- 			pgtable_t pgtable;
- 			pgtable = pgtable_trans_huge_withdraw(mm, old_pmd);
- 			pgtable_trans_huge_deposit(mm, new_pmd, pgtable);
--- 
-2.10.2
+Larry
