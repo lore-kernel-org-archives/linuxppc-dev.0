@@ -1,34 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.181])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <0x7f454c46@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tC8hn2c2lzDt26
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 22:04:24 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Lino Sanfilippo' <LinoSanfilippo@gmx.de>, Joe Perches <joe@perches.com>,
- David Miller <davem@davemloft.net>, "lsanfil@marvell.com"
- <lsanfil@marvell.com>
-CC: "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "corbet@lwn.net"
- <corbet@lwn.net>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "oss@buserror.net" <oss@buserror.net>, "ppc@mindchasers.com"
- <ppc@mindchasers.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
- "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>, Randy Dunlap
- <rdunlap@infradead.org>
-Subject: RE: Coding Style: Reverse XMAS tree declarations ?
-Date: Mon, 7 Nov 2016 11:00:49 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB021646E@AcuExch.aculab.com>
-References: <20161103.155816.642712588084106823.davem@davemloft.net>
- <1478242438.1924.31.camel@perches.com> <581C6A7D.8030704@marvell.com>
- <20161104.110759.1093635654135143910.davem@davemloft.net>
- <1478281455.1924.41.camel@perches.com>
- <31ace8dd-1e42-2762-6367-028068d4d816@gmx.de>
-In-Reply-To: <31ace8dd-1e42-2762-6367-028068d4d816@gmx.de>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tC94S64tszDvHy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 22:21:28 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id c17so15844177wmc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 03:21:28 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <20161027170948.8279-1-dsafonov@virtuozzo.com>
+References: <20161027170948.8279-1-dsafonov@virtuozzo.com>
+From: Dmitry Safonov <0x7f454c46@gmail.com>
+Date: Mon, 7 Nov 2016 14:21:04 +0300
+Message-ID: <CAJwJo6b16mt0N_xJeeQ0EikyPhoo-UvAx-FaXO9hGzwW=o+s5Q@mail.gmail.com>
+Subject: Re: [PATCHv3 0/8] powerpc/mm: refactor vDSO mapping code
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
+Cc: Dmitry Safonov <dsafonov@virtuozzo.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Lino Sanfilippo
-> Sent: 04 November 2016 20:07
-...
-> In this case it is IMHO rather the declaration + initialization that make=
-s
-> "bar" hard to find at one glance, not the use of RXT. You could do someth=
-ing like
->=20
->  	[longish list of reverse xmas tree identifiers...]
->  	struct foobarbaz *qux;
->  	struct foo *bar;
->=20
->  	bar =3D longish_function(args, ...);
->=20
-> to increase readability.
->=20
-> Personally I find it more readable to always use a separate line for init=
-ializations
-> by means of functions (regardless of whether the RXT scheme is used or no=
-t).
+2016-10-27 20:09 GMT+03:00 Dmitry Safonov <dsafonov@virtuozzo.com>:
+> Changes since v1, v2:
+> - use vdso64_pages only under CONFIG_PPC64 (32-bit build fix)
+> - remove arch_vma_name helper as not needed anymore,
+>   simplify vdso_base pointer initializing in map_vdso()
+>
+> Cleanup patches for vDSO on powerpc.
+> Originally, I wanted to add vDSO remapping on arm/aarch64 and
+> I decided to cleanup that part on powerpc.
+> I've add a hook for vm_ops for vDSO just like I did for x86,
+> which makes cross-arch arch_mremap hook no more needed.
+> Other changes - reduce exhaustive code duplication by
+> separating the common vdso code.
+>
+> No visible to userspace changes expected.
+> Tested on qemu with buildroot rootfs.
+>
+> Dmitry Safonov (8):
+>   powerpc/vdso: unify return paths in setup_additional_pages
+>   powerpc/vdso: remove unused params in vdso_do_func_patch{32,64}
+>   powerpc/vdso: separate common code in vdso_common
+>   powerpc/vdso: introduce init_vdso{32,64}_pagelist
+>   powerpc/vdso: split map_vdso from arch_setup_additional_pages
+>   powerpc/vdso: switch from legacy_special_mapping_vmops
+>   mm: kill arch_mremap
+>   powerpc/vdso: remove arch_vma_name
+>
+>  arch/alpha/include/asm/Kbuild            |   1 -
+>  arch/arc/include/asm/Kbuild              |   1 -
+>  arch/arm/include/asm/Kbuild              |   1 -
+>  arch/arm64/include/asm/Kbuild            |   1 -
+>  arch/avr32/include/asm/Kbuild            |   1 -
+>  arch/blackfin/include/asm/Kbuild         |   1 -
+>  arch/c6x/include/asm/Kbuild              |   1 -
+>  arch/cris/include/asm/Kbuild             |   1 -
+>  arch/frv/include/asm/Kbuild              |   1 -
+>  arch/h8300/include/asm/Kbuild            |   1 -
+>  arch/hexagon/include/asm/Kbuild          |   1 -
+>  arch/ia64/include/asm/Kbuild             |   1 -
+>  arch/m32r/include/asm/Kbuild             |   1 -
+>  arch/m68k/include/asm/Kbuild             |   1 -
+>  arch/metag/include/asm/Kbuild            |   1 -
+>  arch/microblaze/include/asm/Kbuild       |   1 -
+>  arch/mips/include/asm/Kbuild             |   1 -
+>  arch/mn10300/include/asm/Kbuild          |   1 -
+>  arch/nios2/include/asm/Kbuild            |   1 -
+>  arch/openrisc/include/asm/Kbuild         |   1 -
+>  arch/parisc/include/asm/Kbuild           |   1 -
+>  arch/powerpc/include/asm/mm-arch-hooks.h |  28 --
+>  arch/powerpc/kernel/vdso.c               | 502 +++++--------------------------
+>  arch/powerpc/kernel/vdso_common.c        | 248 +++++++++++++++
+>  arch/s390/include/asm/Kbuild             |   1 -
+>  arch/score/include/asm/Kbuild            |   1 -
+>  arch/sh/include/asm/Kbuild               |   1 -
+>  arch/sparc/include/asm/Kbuild            |   1 -
+>  arch/tile/include/asm/Kbuild             |   1 -
+>  arch/um/include/asm/Kbuild               |   1 -
+>  arch/unicore32/include/asm/Kbuild        |   1 -
+>  arch/x86/include/asm/Kbuild              |   1 -
+>  arch/xtensa/include/asm/Kbuild           |   1 -
+>  include/asm-generic/mm-arch-hooks.h      |  16 -
+>  include/linux/mm-arch-hooks.h            |  25 --
+>  mm/mremap.c                              |   4 -
+>  36 files changed, 324 insertions(+), 529 deletions(-)
+>  delete mode 100644 arch/powerpc/include/asm/mm-arch-hooks.h
+>  create mode 100644 arch/powerpc/kernel/vdso_common.c
+>  delete mode 100644 include/asm-generic/mm-arch-hooks.h
+>  delete mode 100644 include/linux/mm-arch-hooks.h
 
-I find it best to only use initialisers for 'variables' that are (mostly) c=
-onstant.
-If something need to be set to NULL in case a search fails, set it to NULL
-just before the loop.
-Don't put initialisation on the declaration 'because you can'.
-
-Difficulty in spotting the type of a variable is why (IMHO) you should
-but all declarations at the top of a function
-(except, maybe, temporaries needed for a few lines).
-
-	David
+ping?
