@@ -2,24 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tC5Cn6rY0zDvM8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 19:27:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tC5N3587pzDsrM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 19:34:43 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Burton <paul.burton@imgtec.com>,
- Larry Finger <Larry.Finger@lwfinger.net>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Paul Burton <paul.burton@imgtec.com>,
- Andreas Schwab <schwab@linux-m68k.org>,
- Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@suse.de>,
- Petr Mladek <pmladek@suse.com>, Tejun Heo <tj@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-Subject: Re: [PATCH v3] console: use first console if stdout-path device
- doesn't appear
-In-Reply-To: <20161103125758.3415-1-paul.burton@imgtec.com>
-References: <2c67e39b-fc33-918a-774e-d9238e837c03@lwfinger.net>
- <20161103125758.3415-1-paul.burton@imgtec.com>
-Date: Mon, 07 Nov 2016 19:27:32 +1100
-Message-ID: <8737j3n18r.fsf@concordia.ellerman.id.au>
+To: Paolo Bonzini <pbonzini@redhat.com>, alex.williamson@redhat.com
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ aik@ozlabs.ru, gwshan@linux.vnet.ibm.com
+Subject: Re: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
+In-Reply-To: <81900126-f1aa-b480-c2fa-f0fa04d625c1@redhat.com>
+References: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
+ <81900126-f1aa-b480-c2fa-f0fa04d625c1@redhat.com>
+Date: Mon, 07 Nov 2016 19:34:42 +1100
+Message-ID: <87zilblmcd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,33 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Burton <paul.burton@imgtec.com> writes:
-
-> If a device tree specified a preferred device for kernel console output
-> via the stdout-path or linux,stdout-path chosen node properties there's
-> no guarantee that it will have specified a device for which we have a
-> driver. It may also be the case that we do have a driver but it doesn't
-> call of_console_check() to register as a preferred console (eg. offb
-> driver as used on powermac systems).
+Paolo Bonzini <pbonzini@redhat.com> writes:
+> On 04/11/2016 06:48, Michael Ellerman wrote:
+>> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
+>> index da6e2ce77495..6b51a4ebed8a 100644
+>> --- a/drivers/vfio/Kconfig
+>> +++ b/drivers/vfio/Kconfig
+>> @@ -6,12 +6,12 @@ config VFIO_IOMMU_TYPE1
+>>  config VFIO_IOMMU_SPAPR_TCE
+>>  	tristate
+>>  	depends on VFIO && SPAPR_TCE_IOMMU
+>> -	default n
+>> +	default VFIO
 >
-> In these cases try to ensure that we provide some console output by
-> enabling the first usable registered console, which we keep track of
-> with the of_fallback_console variable. Affected systems will enable
-> their console later than they did prior to commit 05fd007e4629
-> ("console: don't prefer first registered if DT specifies stdout-path")
-> but should otherwise produce the same output.
+> No need to depend on VFIO since you already have it in "default".
+
+True, I can take that out.
+
+> (I assume you cannot use "default y" because "depends on" doesn't downgrade
+> "y" to "m" when VFIO is a module.
+
+Correct.
+
+> A shorthand is
 >
-> Tested in QEMU with a PowerPC pseries_defconfig kernel.
+> 	def_tristate VFIO && SPAPR_TCE_IOMMU
 
-Hi Paul,
+Yep. My experience though is that a lot of folks don't really know what
+that means. So I prefer to spell it out with an explicit type, depends
+and default.
 
-This does "work", as in it boots and I get a console. But the delay in
-getting output on the VGA is not workable. I get pretty much no output
-until the machine is booted entirely to userspace, meaning any crash
-prior to that will be undebuggable.
-
-I also note Andreas reports it doesn't work at all on PowerMac.
-
-Please send a revert and we can try again next cycle.
+But I'll respin it that way if Alex prefers the shorter style.
 
 cheers
