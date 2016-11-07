@@ -1,24 +1,37 @@
-Return-Path: <0x7f454c46@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tC94S64tszDvHy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 22:21:28 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id c17so15844177wmc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 03:21:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tC9Td65zZzDt0g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2016 22:39:49 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA7BdKKj032836
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Nov 2016 06:39:47 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26jngc21n5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 06:39:47 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 7 Nov 2016 04:39:46 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, akpm@linux-foundation.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au,
+ "Kirill A . Shutemov" <kirill@shutemov.name>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] mm: move vma_is_anonymous check within
+ pmd_move_must_withdraw
+In-Reply-To: <201611071732.njM40txT%fengguang.wu@intel.com>
+References: <201611071732.njM40txT%fengguang.wu@intel.com>
+Date: Mon, 07 Nov 2016 17:09:36 +0530
 MIME-Version: 1.0
-In-Reply-To: <20161027170948.8279-1-dsafonov@virtuozzo.com>
-References: <20161027170948.8279-1-dsafonov@virtuozzo.com>
-From: Dmitry Safonov <0x7f454c46@gmail.com>
-Date: Mon, 7 Nov 2016 14:21:04 +0300
-Message-ID: <CAJwJo6b16mt0N_xJeeQ0EikyPhoo-UvAx-FaXO9hGzwW=o+s5Q@mail.gmail.com>
-Subject: Re: [PATCHv3 0/8] powerpc/mm: refactor vDSO mapping code
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Cc: Dmitry Safonov <dsafonov@virtuozzo.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+Message-Id: <8737j3h62v.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2016-10-27 20:09 GMT+03:00 Dmitry Safonov <dsafonov@virtuozzo.com>:
-> Changes since v1, v2:
-> - use vdso64_pages only under CONFIG_PPC64 (32-bit build fix)
-> - remove arch_vma_name helper as not needed anymore,
->   simplify vdso_base pointer initializing in map_vdso()
->
-> Cleanup patches for vDSO on powerpc.
-> Originally, I wanted to add vDSO remapping on arm/aarch64 and
-> I decided to cleanup that part on powerpc.
-> I've add a hook for vm_ops for vDSO just like I did for x86,
-> which makes cross-arch arch_mremap hook no more needed.
-> Other changes - reduce exhaustive code duplication by
-> separating the common vdso code.
->
-> No visible to userspace changes expected.
-> Tested on qemu with buildroot rootfs.
->
-> Dmitry Safonov (8):
->   powerpc/vdso: unify return paths in setup_additional_pages
->   powerpc/vdso: remove unused params in vdso_do_func_patch{32,64}
->   powerpc/vdso: separate common code in vdso_common
->   powerpc/vdso: introduce init_vdso{32,64}_pagelist
->   powerpc/vdso: split map_vdso from arch_setup_additional_pages
->   powerpc/vdso: switch from legacy_special_mapping_vmops
->   mm: kill arch_mremap
->   powerpc/vdso: remove arch_vma_name
->
->  arch/alpha/include/asm/Kbuild            |   1 -
->  arch/arc/include/asm/Kbuild              |   1 -
->  arch/arm/include/asm/Kbuild              |   1 -
->  arch/arm64/include/asm/Kbuild            |   1 -
->  arch/avr32/include/asm/Kbuild            |   1 -
->  arch/blackfin/include/asm/Kbuild         |   1 -
->  arch/c6x/include/asm/Kbuild              |   1 -
->  arch/cris/include/asm/Kbuild             |   1 -
->  arch/frv/include/asm/Kbuild              |   1 -
->  arch/h8300/include/asm/Kbuild            |   1 -
->  arch/hexagon/include/asm/Kbuild          |   1 -
->  arch/ia64/include/asm/Kbuild             |   1 -
->  arch/m32r/include/asm/Kbuild             |   1 -
->  arch/m68k/include/asm/Kbuild             |   1 -
->  arch/metag/include/asm/Kbuild            |   1 -
->  arch/microblaze/include/asm/Kbuild       |   1 -
->  arch/mips/include/asm/Kbuild             |   1 -
->  arch/mn10300/include/asm/Kbuild          |   1 -
->  arch/nios2/include/asm/Kbuild            |   1 -
->  arch/openrisc/include/asm/Kbuild         |   1 -
->  arch/parisc/include/asm/Kbuild           |   1 -
->  arch/powerpc/include/asm/mm-arch-hooks.h |  28 --
->  arch/powerpc/kernel/vdso.c               | 502 +++++--------------------------
->  arch/powerpc/kernel/vdso_common.c        | 248 +++++++++++++++
->  arch/s390/include/asm/Kbuild             |   1 -
->  arch/score/include/asm/Kbuild            |   1 -
->  arch/sh/include/asm/Kbuild               |   1 -
->  arch/sparc/include/asm/Kbuild            |   1 -
->  arch/tile/include/asm/Kbuild             |   1 -
->  arch/um/include/asm/Kbuild               |   1 -
->  arch/unicore32/include/asm/Kbuild        |   1 -
->  arch/x86/include/asm/Kbuild              |   1 -
->  arch/xtensa/include/asm/Kbuild           |   1 -
->  include/asm-generic/mm-arch-hooks.h      |  16 -
->  include/linux/mm-arch-hooks.h            |  25 --
->  mm/mremap.c                              |   4 -
->  36 files changed, 324 insertions(+), 529 deletions(-)
->  delete mode 100644 arch/powerpc/include/asm/mm-arch-hooks.h
->  create mode 100644 arch/powerpc/kernel/vdso_common.c
->  delete mode 100644 include/asm-generic/mm-arch-hooks.h
->  delete mode 100644 include/linux/mm-arch-hooks.h
+kbuild test robot <lkp@intel.com> writes:
 
-ping?
+> Hi Aneesh,
+>
+> [auto build test ERROR on mmotm/master]
+> [also build test ERROR on v4.9-rc4 next-20161028]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Aneesh-Kumar-K-V/mm-move-vma_is_anonymous-check-within-pmd_move_must_withdraw/20161107-164033
+> base:   git://git.cmpxchg.org/linux-mmotm.git master
+> config: i386-randconfig-x006-201645 (attached as .config)
+> compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+> reproduce:
+>         # save the attached .config to linux build tree
+>         make ARCH=i386 
+>
+> All error/warnings (new ones prefixed by >>):
+>
+>    mm/huge_memory.c: In function 'pmd_move_must_withdraw':
+>>> mm/huge_memory.c:1441:58: error: 'vma' undeclared (first use in this function)
+>      return (new_pmd_ptl != old_pmd_ptl) && vma_is_anonymous(vma);
+>                                                              ^~~
+>    mm/huge_memory.c:1441:58: note: each undeclared identifier is reported only once for each function it appears in
+>>> mm/huge_memory.c:1442:1: warning: control reaches end of non-void function [-Wreturn-type]
+>     }
+>     ^
+>
+> vim +/vma +1441 mm/huge_memory.c
+>
+>   1435		/*
+>   1436		 * With split pmd lock we also need to move preallocated
+>   1437		 * PTE page table if new_pmd is on different PMD page table.
+>   1438		 *
+>   1439		 * We also don't deposit and withdraw tables for file pages.
+>   1440		 */
+>> 1441		return (new_pmd_ptl != old_pmd_ptl) && vma_is_anonymous(vma);
+>> 1442	}
+>   1443	#endif
+>   1444	
+>   1445	bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
+>
+
+My bad, I didn't test with hugepage enabled for x86. Will fixup in the
+next update.
+
+-aneesh
