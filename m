@@ -1,30 +1,28 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0067.outbound.protection.outlook.com [104.47.1.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCGWP0R3ZzDvNG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 02:26:41 +1100 (AEDT)
-Received: by mail-it0-x241.google.com with SMTP id b123so4677318itb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2016 07:26:40 -0800 (PST)
-Sender: Larry Finger <larry.finger@gmail.com>
-Subject: Re: [PATCH v3] console: use first console if stdout-path device
- doesn't appear
-To: Paul Burton <paul.burton@imgtec.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <2c67e39b-fc33-918a-774e-d9238e837c03@lwfinger.net>
- <20161103125758.3415-1-paul.burton@imgtec.com>
- <8737j3n18r.fsf@concordia.ellerman.id.au> <13471233.iqSeGS5aQ3@np-p-burton>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andreas Schwab <schwab@linux-m68k.org>,
- Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@suse.de>,
- Petr Mladek <pmladek@suse.com>, Tejun Heo <tj@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Message-ID: <4f990791-ebff-dbe3-b923-3cac5fd6f97d@lwfinger.net>
-Date: Mon, 7 Nov 2016 09:26:37 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCGtv3g75zDvNH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 02:43:34 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+To: David Miller <davem@davemloft.net>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "oss@buserror.net" <oss@buserror.net>, "ppc@mindchasers.com"
+ <ppc@mindchasers.com>, "joe@perches.com" <joe@perches.com>,
+ "pebolle@tiscali.nl" <pebolle@tiscali.nl>, "joakim.tjernlund@transmode.se"
+ <joakim.tjernlund@transmode.se>
+Subject: RE: [PATCH net-next v6 02/10] dpaa_eth: add support for DPAA Ethernet
+Date: Mon, 7 Nov 2016 15:43:26 +0000
+Message-ID: <AM4PR04MB16049FF6E433DA445828A855ECA70@AM4PR04MB1604.eurprd04.prod.outlook.com>
+References: <1478117854-8952-1-git-send-email-madalin.bucur@nxp.com>
+ <1478117854-8952-3-git-send-email-madalin.bucur@nxp.com>
+ <20161103.155816.642712588084106823.davem@davemloft.net>
+In-Reply-To: <20161103.155816.642712588084106823.davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <13471233.iqSeGS5aQ3@np-p-burton>
-Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,50 +32,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/07/2016 03:18 AM, Paul Burton wrote:
-> On Monday, 7 November 2016 19:27:32 GMT Michael Ellerman wrote:
->> Paul Burton <paul.burton@imgtec.com> writes:
->>> If a device tree specified a preferred device for kernel console output
->>> via the stdout-path or linux,stdout-path chosen node properties there's
->>> no guarantee that it will have specified a device for which we have a
->>> driver. It may also be the case that we do have a driver but it doesn't
->>> call of_console_check() to register as a preferred console (eg. offb
->>> driver as used on powermac systems).
->>>
->>> In these cases try to ensure that we provide some console output by
->>> enabling the first usable registered console, which we keep track of
->>> with the of_fallback_console variable. Affected systems will enable
->>> their console later than they did prior to commit 05fd007e4629
->>> ("console: don't prefer first registered if DT specifies stdout-path")
->>> but should otherwise produce the same output.
->>>
->>> Tested in QEMU with a PowerPC pseries_defconfig kernel.
->>
->> Hi Paul,
->>
->> This does "work", as in it boots and I get a console. But the delay in
->> getting output on the VGA is not workable. I get pretty much no output
->> until the machine is booted entirely to userspace, meaning any crash
->> prior to that will be undebuggable.
->>
->> I also note Andreas reports it doesn't work at all on PowerMac.
->>
->> Please send a revert and we can try again next cycle.
->>
->> cheers
->
-> Hi Michael,
->
-> A revert was already submitted by Hans de Goede & is being discussed over
-> here:
->
-> https://marc.info/?l=linux-kernel&m=147826151427455&w=2
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Thursday, November 03, 2016 9:58 PM
+>=20
+> From: Madalin Bucur <madalin.bucur@nxp.com>
+> Date: Wed, 2 Nov 2016 22:17:26 +0200
+>=20
+> > This introduces the Freescale Data Path Acceleration Architecture
+> > +static inline size_t bpool_buffer_raw_size(u8 index, u8 cnt)
+> > +{
+> > +	u8 i;
+> > +	size_t res =3D DPAA_BP_RAW_SIZE / 2;
+>=20
+> Always order local variable declarations from longest to shortest line,
+> also know as Reverse Christmas Tree Format.
+>=20
+> Please audit your entire submission for this problem, it occurs
+> everywhere.
 
-I am a little surprised that I was not CCd on that thread. To reiterate, my 
-PowerBook G4 with a PPC32 processor CRASHES on boot. That is a lot more serious 
-than the console output disappearing.
+Thank you, I'll resolve this.
 
-As it seems unlikely that this regression will be fixed in the current cycle, I 
-recommend that the reversion of commit 05fd007e4629 until a proper fix is available.
+> > +	/* we do not want shared skbs on TX */
+> > +	net_dev->priv_flags &=3D ~IFF_TX_SKB_SHARING;
+>=20
+> Why?  By clearing this, you disallow an important fundamental way to do
+> performane testing, via pktgen.
 
-Larry
+The Tx path in DPAA requires one to insert a back-pointer to the skb into
+the Tx buffer. On the Tx confirmation path the back-pointer in the buffer
+is used to release the skb. If Tx buffer is shared we'd alter the back-poin=
+ter
+and leak/double free skbs. See also=20
+
+	static int dpaa_start_xmit(struct sk_buff *skb, struct net_device *net_dev=
+)
+	{
+	...
+      	  if (!nonlinear) {
+	                /* We're going to store the skb backpointer at the beginni=
+ng
+            	     * of the data buffer, so we need a privately owned skb
+      	           *
+	                 * We've made sure skb is not shared in dev->priv_flags,
+            	     * we need to verify the skb head is not cloned
+      	           */
+	                if (skb_cow_head(skb, priv->tx_headroom))
+            	            goto enomem;
+
+      	          WARN_ON(skb_is_nonlinear(skb));
+	        }
+	...
+
+> > +	int numstats =3D sizeof(struct rtnl_link_stats64) / sizeof(u64);
+>  ...
+> > +		cpustats =3D (u64 *)&percpu_priv->stats;
+> > +
+> > +		for (j =3D 0; j < numstats; j++)
+> > +			netstats[j] +=3D cpustats[j];
+>=20
+> This is a memcpy() on well-typed datastructures which requires no
+> casting or special handling whatsoever, so use memcpy instead of
+> needlessly open coding the operation.
+
+Will fix.
+
+> > +static int dpaa_change_mtu(struct net_device *net_dev, int new_mtu)
+> > +{
+> > +	const int max_mtu =3D dpaa_get_max_mtu();
+> > +
+> > +	/* Make sure we don't exceed the Ethernet controller's MAXFRM */
+> > +	if (new_mtu < 68 || new_mtu > max_mtu) {
+> > +		netdev_err(net_dev, "Invalid L3 mtu %d (must be between %d and
+> %d).\n",
+> > +			   new_mtu, 68, max_mtu);
+> > +		return -EINVAL;
+> > +	}
+> > +	net_dev->mtu =3D new_mtu;
+> > +
+> > +	return 0;
+> > +}
+>=20
+> MTU restrictions are handled in the net-next tree via net_dev->min_mtu an=
+d
+> net_dev->max_mtu.  Use that and do not define this NDO operation as you d=
+o
+> not need it.
+
+OK
+=20
+> > +static int dpaa_set_features(struct net_device *dev, netdev_features_t
+> features)
+> > +{
+> > +	/* Not much to do here for now */
+> > +	dev->features =3D features;
+> > +	return 0;
+> > +}
+>=20
+> Do not define unnecessary NDO operations, let the defaults do their job.
+>=20
+> > +static netdev_features_t dpaa_fix_features(struct net_device *dev,
+> > +					   netdev_features_t features)
+> > +{
+> > +	netdev_features_t unsupported_features =3D 0;
+> > +
+> > +	/* In theory we should never be requested to enable features that
+> > +	 * we didn't set in netdev->features and netdev->hw_features at
+> probe
+> > +	 * time, but double check just to be on the safe side.
+> > +	 */
+> > +	unsupported_features |=3D NETIF_F_RXCSUM;
+> > +
+> > +	features &=3D ~unsupported_features;
+> > +
+> > +	return features;
+> > +}
+>=20
+> Unless you can show that your need this, do not "guess" by implement this
+> NDO operation.  You don't need it.
+
+Will remove it.
+=20
+> > +#ifdef CONFIG_FSL_DPAA_ETH_FRIENDLY_IF_NAME
+> > +static int dpaa_mac_hw_index_get(struct platform_device *pdev)
+> > +{
+> > +	struct device *dpaa_dev;
+> > +	struct dpaa_eth_data *eth_data;
+> > +
+> > +	dpaa_dev =3D &pdev->dev;
+> > +	eth_data =3D dpaa_dev->platform_data;
+> > +
+> > +	return eth_data->mac_hw_id;
+> > +}
+> > +
+> > +static int dpaa_mac_fman_index_get(struct platform_device *pdev)
+> > +{
+> > +	struct device *dpaa_dev;
+> > +	struct dpaa_eth_data *eth_data;
+> > +
+> > +	dpaa_dev =3D &pdev->dev;
+> > +	eth_data =3D dpaa_dev->platform_data;
+> > +
+> > +	return eth_data->fman_hw_id;
+> > +}
+> > +#endif
+>=20
+> Do not play network device naming games like this, use the standard name
+> assignment done by the kernel and have userspace entities do geographic o=
+r
+> device type specific naming.
+>=20
+> I want to see this code completely removed.
+
+I'll remove the option, udev rules like these can achieve the same effect:
+
+SUBSYSTEM=3D=3D"net", DRIVERS=3D=3D"fsl_dpa*", ATTR{device_addr}=3D=3D"ffe4=
+e0000", NAME=3D"fm1-mac1"
+SUBSYSTEM=3D=3D"net", DRIVERS=3D=3D"fsl_dpa*", ATTR{device_addr}=3D=3D"ffe4=
+e2000", NAME=3D"fm1-mac2"
+=20
+> > +static int dpaa_set_mac_address(struct net_device *net_dev, void *addr=
+)
+> > +{
+> > +	const struct dpaa_priv	*priv;
+> > +	int err;
+> > +	struct mac_device *mac_dev;
+> > +
+> > +	priv =3D netdev_priv(net_dev);
+> > +
+> > +	err =3D eth_mac_addr(net_dev, addr);
+> > +	if (err < 0) {
+> > +		netif_err(priv, drv, net_dev, "eth_mac_addr() =3D %d\n", err);
+> > +		return err;
+> > +	}
+> > +
+> > +	mac_dev =3D priv->mac_dev;
+> > +
+> > +	err =3D mac_dev->change_addr(mac_dev->fman_mac,
+> > +				   (enet_addr_t *)net_dev->dev_addr);
+> > +	if (err < 0) {
+> > +		netif_err(priv, drv, net_dev, "mac_dev->change_addr() =3D %d\n",
+> > +			  err);
+> > +		return err;
+> > +	}
+>=20
+> You MUST NOT return an error at this point without rewinding the state
+> change
+> performed by eth_mac_addr().  Otherwise device will be left in an
+> inconsistent
+> state compared to what the software MAC address has recorded.
+
+Will address this.
+
+> This driver is enormous, I don't have the time nor the patience to
+> review it further for what seems to be many fundamental errors like
+> the ones I have pointed out so far.
+>=20
+> Sorry.
+
+Thank you for your time. I know the dpaa_eth is large, about 4K LOC,
+also depends on the in-tree FMan and QMan drivers that are a bit
+larger. We're coming down to this from a set of drivers that amounted
+to more than 100K LOC and stuff like the ndos that here do nothing are
+artifacts of that deep pruning. I'll go through all the code to check
+for such redundancies before the next submission but junk is always
+easier to see for a fresh pair of eyes.
+
+Thank you,
+Madalin
