@@ -1,21 +1,26 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dsafonov@virtuozzo.com>
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur03on0704.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe09::704])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCpCp3wp6zDvRM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 23:15:02 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id 144so10923796pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Nov 2016 04:15:02 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: fix second nested oops hang
-Date: Tue,  8 Nov 2016 23:14:45 +1100
-Message-Id: <20161108121445.15303-3-npiggin@gmail.com>
-In-Reply-To: <20161108121445.15303-1-npiggin@gmail.com>
-References: <20161108121445.15303-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCpbg1wsJzDt1j
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 23:32:15 +1100 (AEDT)
+Subject: Re: [PATCHv3 1/8] powerpc/vdso: unify return paths in
+ setup_additional_pages
+To: Michael Ellerman <mpe@ellerman.id.au>, <linux-kernel@vger.kernel.org>
+References: <20161027170948.8279-1-dsafonov@virtuozzo.com>
+ <20161027170948.8279-2-dsafonov@virtuozzo.com>
+ <87mvhaltl5.fsf@concordia.ellerman.id.au>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Andy Lutomirski <luto@amacapital.net>, Oleg Nesterov
+ <oleg@redhat.com>, <linuxppc-dev@lists.ozlabs.org>, <linux-mm@kvack.org>
+From: Dmitry Safonov <dsafonov@virtuozzo.com>
+Message-ID: <4fac19b7-aeec-f2b7-02fe-85c219151c3b@virtuozzo.com>
+Date: Tue, 8 Nov 2016 15:29:14 +0300
+MIME-Version: 1.0
+In-Reply-To: <87mvhaltl5.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +30,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When ending an oops, don't clear die_owner unless the nest count
-went to zero. This prevents a second nested oops from hanging forever
-on the die_lock.
+On 11/08/2016 03:10 AM, Michael Ellerman wrote:
+> Hi Dmitry,
+>
+> Thanks for the patches.
+>
+> Dmitry Safonov <dsafonov@virtuozzo.com> writes:
+>> Impact: cleanup
+>
+> I'm not a fan of these "Impact" lines, especially when they're not
+> correct, ie. this is not a cleanup, a cleanup doesn't change logic.
+>
+>> Rename `rc' variable which doesn't seems to mean anything into
+>> kernel-known `ret'.
+>
+> 'rc' means "Return Code", it's fairly common. I see at least ~8500
+> "int rc" declarations in the kernel.
+>
+> Please don't rename variables and change logic in one patch.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/traps.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Ok, right - just didn't saw `rc' that freq as `ret'.
+Will leave the name.
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 26c3ba4..ba78e38 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -147,14 +147,15 @@ static void oops_end(unsigned long flags, struct pt_regs *regs,
- 			       int signr)
- {
- 	bust_spinlocks(0);
--	die_owner = -1;
- 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
- 	die_nest_count--;
- 	oops_exit();
- 	printk("\n");
--	if (!die_nest_count)
-+	if (!die_nest_count) {
- 		/* Nest count reaches zero, release the lock. */
-+		die_owner = -1;
- 		arch_spin_unlock(&die_lock);
-+	}
- 	raw_local_irq_restore(flags);
- 
- 	crash_fadump(regs, "die oops");
+>> Combine two function returns into one as it's
+>> also easier to read.
+>>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Andy Lutomirski <luto@amacapital.net>
+>> Cc: Oleg Nesterov <oleg@redhat.com>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: linux-mm@kvack.org
+>> Signed-off-by: Dmitry Safonov <dsafonov@virtuozzo.com>
+>> ---
+>>  arch/powerpc/kernel/vdso.c | 19 +++++++------------
+>>  1 file changed, 7 insertions(+), 12 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+>> index 4111d30badfa..4ffb82a2d9e9 100644
+>> --- a/arch/powerpc/kernel/vdso.c
+>> +++ b/arch/powerpc/kernel/vdso.c
+>> @@ -154,7 +154,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+>>  	struct page **vdso_pagelist;
+>>  	unsigned long vdso_pages;
+>>  	unsigned long vdso_base;
+>> -	int rc;
+>> +	int ret = 0;
+>
+> Please don't initialise return codes in the declaration, it prevents the
+> compiler from warning you if you forget to initialise it in a
+> particular path.
+>
+> AFAICS you never even use the default value either.
+
+Oh, right - I split this patch from converting install_special_mapping()
+to special vma version _install_special_mapping(), 6/8 patch in series.
+Will move initialization to that patch.
+
+>>  	if (!vdso_ready)
+>>  		return 0;
+>> @@ -203,8 +203,8 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+>>  				      ((VDSO_ALIGNMENT - 1) & PAGE_MASK),
+>>  				      0, 0);
+>>  	if (IS_ERR_VALUE(vdso_base)) {
+>> -		rc = vdso_base;
+>> -		goto fail_mmapsem;
+>> +		ret = vdso_base;
+>> +		goto out_up_mmap_sem;
+>>  	}
+>>
+>>  	/* Add required alignment. */
+>> @@ -227,21 +227,16 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+>>  	 * It's fine to use that for setting breakpoints in the vDSO code
+>>  	 * pages though.
+>>  	 */
+>> -	rc = install_special_mapping(mm, vdso_base, vdso_pages << PAGE_SHIFT,
+>> +	ret = install_special_mapping(mm, vdso_base, vdso_pages << PAGE_SHIFT,
+>>  				     VM_READ|VM_EXEC|
+>>  				     VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC,
+>>  				     vdso_pagelist);
+>> -	if (rc) {
+>> +	if (ret)
+>>  		current->mm->context.vdso_base = 0;
+>> -		goto fail_mmapsem;
+>> -	}
+>> -
+>> -	up_write(&mm->mmap_sem);
+>> -	return 0;
+>>
+>> - fail_mmapsem:
+>> +out_up_mmap_sem:
+>>  	up_write(&mm->mmap_sem);
+>> -	return rc;
+>> +	return ret;
+>>  }
+>
+>
+> If you strip out the variable renames then I think that change would be
+> OK.
+>
+> cheers
+>
+
+
 -- 
-2.10.2
+              Dmitry
