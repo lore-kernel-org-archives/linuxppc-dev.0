@@ -1,30 +1,25 @@
-Return-Path: <alex.williamson@redhat.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCV4H4pQnzDt2y
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 11:07:27 +1100 (AEDT)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tCV4H1Bctz9t14
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2016 11:07:26 +1100 (AEDT)
-Date: Mon, 7 Nov 2016 17:07:23 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, aik@ozlabs.ru,
- gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
-Message-ID: <20161107170723.66608632@t450s.home>
-In-Reply-To: <87wpgeluk0.fsf@concordia.ellerman.id.au>
-References: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
- <81900126-f1aa-b480-c2fa-f0fa04d625c1@redhat.com>
- <87zilblmcd.fsf@concordia.ellerman.id.au>
- <20161107092505.429f07d6@t450s.home>
- <87wpgeluk0.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCV7p3v3yzDvHf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 11:10:30 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dmitry Safonov <dsafonov@virtuozzo.com>, linux-kernel@vger.kernel.org
+Cc: Dmitry Safonov <dsafonov@virtuozzo.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@amacapital.net>,
+ Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCHv3 1/8] powerpc/vdso: unify return paths in
+ setup_additional_pages
+In-Reply-To: <20161027170948.8279-2-dsafonov@virtuozzo.com>
+References: <20161027170948.8279-1-dsafonov@virtuozzo.com>
+ <20161027170948.8279-2-dsafonov@virtuozzo.com>
+Date: Tue, 08 Nov 2016 11:10:30 +1100
+Message-ID: <87mvhaltl5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,77 +29,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 08 Nov 2016 10:49:35 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hi Dmitry,
 
-> Alex Williamson <alex.williamson@redhat.com> writes:
-> > On Mon, 07 Nov 2016 19:34:42 +1100
-> > Michael Ellerman <mpe@ellerman.id.au> wrote:  
-> >> Paolo Bonzini <pbonzini@redhat.com> writes:  
-> >> > On 04/11/2016 06:48, Michael Ellerman wrote:    
-> >> >> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-> >> >> index da6e2ce77495..6b51a4ebed8a 100644
-> >> >> --- a/drivers/vfio/Kconfig
-> >> >> +++ b/drivers/vfio/Kconfig
-> >> >> @@ -6,12 +6,12 @@ config VFIO_IOMMU_TYPE1
-> >> >>  config VFIO_IOMMU_SPAPR_TCE
-> >> >>  	tristate
-> >> >>  	depends on VFIO && SPAPR_TCE_IOMMU
-> >> >> -	default n
-> >> >> +	default VFIO    
-> >> >
-> >> > No need to depend on VFIO since you already have it in "default".    
-> >
-> > depends and defaults are different beasts though, if VFIO is not
-> > enabled and we're not on a powerpc system with SPAPR,
-> > VFIO_IOMMU_SPAPR_TCE should not be selectable, not just default to 'n'.  
-> 
-> Right. But dropping VFIO from the depends won't change that. In fact it
-> has no effect because the entire directory is not built if VFIO=n.
-> 
-> See drivers/Makefile:
-> 
-> obj-$(CONFIG_VFIO)		+= vfio/
-> 
-> 
-> So we don't need the depends on VFIO there.
-> 
-> >> > A shorthand is
-> >> >
-> >> > 	def_tristate VFIO && SPAPR_TCE_IOMMU    
-> >> 
-> >> Yep. My experience though is that a lot of folks don't really know what
-> >> that means. So I prefer to spell it out with an explicit type, depends
-> >> and default.
-> >> 
-> >> But I'll respin it that way if Alex prefers the shorter style.  
-> >
-> > Perhaps I'm one of those people.  Non-powerpc archs should not have an
-> > option to select this, which is why the depends is there, AIUI.  So
-> > long as we don't start exposing options that aren't relevant to a
-> > platform, I'm flexible on what shorthands we use, but you may need to
-> > teach me about them first.  Thanks,  
-> 
-> Using the def_tristate trick won't expose the option to users, because
-> it has no description it's not user selectable. But it does make the
-> symbol exist on an x86 build, and it appears in the .config.
-> 
-> eg, using def_tristate you get:
-> 
-> # CONFIG_VFIO_IOMMU_SPAPR_TCE is not set
-> # CONFIG_VFIO is not set
-> 
-> Whereas using depends all you get is:
-> 
-> # CONFIG_VFIO is not set
-> 
-> 
-> So using def_tristate in this case is not entirely equivalent.
+Thanks for the patches.
 
-I get a surprising number of users trying to manually hack on
-their .config file, so I'd prefer it not appear in the .config unless
-CONFIG_VFIO is y/m _and_ the user is actually building to a config
-where SPAPR is relevant.  I'm sure it will save me at least a few
-questions in the future.  Thanks,
+Dmitry Safonov <dsafonov@virtuozzo.com> writes:
+> Impact: cleanup
 
-Alex
+I'm not a fan of these "Impact" lines, especially when they're not
+correct, ie. this is not a cleanup, a cleanup doesn't change logic.
+
+> Rename `rc' variable which doesn't seems to mean anything into
+> kernel-known `ret'.
+
+'rc' means "Return Code", it's fairly common. I see at least ~8500
+"int rc" declarations in the kernel.
+
+Please don't rename variables and change logic in one patch.
+
+> Combine two function returns into one as it's
+> also easier to read.
+>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Andy Lutomirski <luto@amacapital.net>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-mm@kvack.org
+> Signed-off-by: Dmitry Safonov <dsafonov@virtuozzo.com>
+> ---
+>  arch/powerpc/kernel/vdso.c | 19 +++++++------------
+>  1 file changed, 7 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+> index 4111d30badfa..4ffb82a2d9e9 100644
+> --- a/arch/powerpc/kernel/vdso.c
+> +++ b/arch/powerpc/kernel/vdso.c
+> @@ -154,7 +154,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+>  	struct page **vdso_pagelist;
+>  	unsigned long vdso_pages;
+>  	unsigned long vdso_base;
+> -	int rc;
+> +	int ret = 0;
+  
+Please don't initialise return codes in the declaration, it prevents the
+compiler from warning you if you forget to initialise it in a
+particular path.
+
+AFAICS you never even use the default value either.
+
+>  	if (!vdso_ready)
+>  		return 0;
+> @@ -203,8 +203,8 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+>  				      ((VDSO_ALIGNMENT - 1) & PAGE_MASK),
+>  				      0, 0);
+>  	if (IS_ERR_VALUE(vdso_base)) {
+> -		rc = vdso_base;
+> -		goto fail_mmapsem;
+> +		ret = vdso_base;
+> +		goto out_up_mmap_sem;
+>  	}
+>  
+>  	/* Add required alignment. */
+> @@ -227,21 +227,16 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+>  	 * It's fine to use that for setting breakpoints in the vDSO code
+>  	 * pages though.
+>  	 */
+> -	rc = install_special_mapping(mm, vdso_base, vdso_pages << PAGE_SHIFT,
+> +	ret = install_special_mapping(mm, vdso_base, vdso_pages << PAGE_SHIFT,
+>  				     VM_READ|VM_EXEC|
+>  				     VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC,
+>  				     vdso_pagelist);
+> -	if (rc) {
+> +	if (ret)
+>  		current->mm->context.vdso_base = 0;
+> -		goto fail_mmapsem;
+> -	}
+> -
+> -	up_write(&mm->mmap_sem);
+> -	return 0;
+>  
+> - fail_mmapsem:
+> +out_up_mmap_sem:
+>  	up_write(&mm->mmap_sem);
+> -	return rc;
+> +	return ret;
+>  }
+
+
+If you strip out the variable renames then I think that change would be
+OK.
+
+cheers
