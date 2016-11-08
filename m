@@ -1,21 +1,63 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <lurodriguez@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tD3m63x21zDvY2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 09:25:26 +1100 (AEDT)
-Date: Tue, 8 Nov 2016 15:25:19 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel v4 3/4] vfio/spapr: Reference mm in tce_container
-Message-ID: <20161108152519.7bfadf32@t450s.home>
-In-Reply-To: <1477291990-2872-4-git-send-email-aik@ozlabs.ru>
-References: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
- <1477291990-2872-4-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tD4Fm5YXzzDt3R
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 09:47:40 +1100 (AEDT)
+Date: Tue, 8 Nov 2016 23:47:26 +0100
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Jiri Kosina <jkosina@suse.cz>,
+ Johannes Berg <johannes@sipsolutions.net>, Jouni Malinen <j@w1.fi>,
+ Seth Forshee <seth.forshee@canonical.com>,
+ Tom Gundersen <teg@jklm.no>, Kay Sievers <kay@vrfy.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Daniel Wagner <wagi@monom.org>, Daniel Wagner <daniel.wagner@bmw-carit.de>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ "Herbert, Marc" <marc.herbert@intel.com>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>, Rob Landley <rob@landley.net>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>, Felix Fietkau <nbd@nbd.name>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Roman Pen <r.peniaev@gmail.com>, Ming Lei <ming.lei@canonical.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Marek <mmarek@suse.com>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Vikram Mulukutla <markivx@codeaurora.org>,
+ Stephen Boyd <stephen.boyd@linaro.org>,
+ Mark Brown <broonie@kernel.org>, Takashi Iwai <tiwai@suse.de>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ Hauke Mehrtens <hauke@hauke-m.de>, Josh Boyer <jwboyer@fedoraproject.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Jiri Slaby <jslaby@suse.com>, Andy Lutomirski <luto@amacapital.net>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Richard Purdie <rpurdie@rpsys.net>, Jeff Mahoney <jeffm@suse.com>,
+ Jacek Anaszewski <j.anaszewski@samsung.com>, Abhay_Salunke@dell.com,
+ Julia Lawall <Julia.Lawall@lip6.fr>, Gilles.Muller@lip6.fr,
+ nicolas.palix@imag.fr, Tom Gundersen <teg@jklm.no>,
+ David Howells <dhowells@redhat.com>, Alessandro Rubini <rubini@gnudd.com>,
+ Kevin Cernekee <cernekee@gmail.com>,
+ Kees Cook <keescook@chromium.org>, Jonathan Corbet <corbet@lwn.net>,
+ Thierry Martinez <martinez@nsup.org>,
+ linux-serial <linux-serial@vger.kernel.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Josh Triplett <josh@joshtriplett.org>
+Subject: Re: [RFC] fs: add userspace critical mounts event support
+Message-ID: <20161108224726.GD13978@wotan.suse.de>
+References: <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
+ <20160824203901.GT3296@wotan.suse.de>
+ <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
+ <20160825194133.GC3296@wotan.suse.de>
+ <20160902235916.GO3296@wotan.suse.de>
+ <20160903002014.GP3296@wotan.suse.de>
+ <6332a54e-74c6-eafd-368e-71e87a3fa34e@landley.net>
+ <20161005180017.GD3296@wotan.suse.de>
+ <CA+55aFzrRekSrEczdtGb3RuOeJttJ7i7dQJxiTOXz8V+kr=hdA@mail.gmail.com>
+ <20161005194633.GE3296@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161005194633.GE3296@wotan.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,277 +67,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 24 Oct 2016 17:53:09 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> In some situations the userspace memory context may live longer than
-> the userspace process itself so if we need to do proper memory context
-> cleanup, we better have tce_container take a reference to mm_struct and
-> use it later when the process is gone (@current or @current->mm is NULL).
+On Wed, Oct 05, 2016 at 09:46:33PM +0200, Luis R. Rodriguez wrote:
+> On Wed, Oct 05, 2016 at 11:08:06AM -0700, Linus Torvalds wrote:
+> > On Wed, Oct 5, 2016 at 11:00 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> > > On Tue, Sep 13, 2016 at 09:38:17PM -0500, Rob Landley wrote:
+> > >
+> > >> I did some shuffling around of those code to make initmpfs work, does
+> > >> anybody know why initramfs extraction _before_ we initialize drivers
+> > >> would be a bad thing?
+> > >
+> > > No, but it seems sensible to me, if its done before do_initcalls()
+> > > that should resolve the race for initramfs users
+> > 
+> > initramfs should already be set up before drivers are.
 > 
-> This references mm and stores the pointer in the container; this is done
-> when a container is just created so checking for !current->mm in other
-> places becomes pointless.
+> Actually you are right, the issue would only be for old initrd, for initramfs
+> we populate that via rootfs_initcall(populate_rootfs), so as long as drivers
+> in question use an init level beyond rootfs's we're good there.
 > 
-> This replaces current->mm with container->mm everywhere except debug
-> prints.
+> > Exactly what is it that has trouble right now?
 > 
-> This adds a check that current->mm is the same as the one stored in
-> the container to prevent userspace from making changes to a memory
-> context of other processes; in order to add this check,
-> VFIO_CHECK_EXTENSION is moved out of the switch(cmd) as it is
-> quite special anyway - it is the only ioctl() called when neither
-> container nor container->mm is initialized.
+> It would seem then that the only current stated race possible should
+> then be non-initramfs users.
+
+Or:
+
+a) initramfs users that include a driver but do not include the firmware
+into initramfs
+
+b) driver is built-in but firmware is not in initrafms (Johannes reports
+   this causes driver failure on intel wireless for instance, and I guess
+   you need to reload)
+
+> One example if very large firmware for
+> remote-proc, whereby an initramfs is just not practical or desirable.
+
+This issue still stands. At Plumbers Johannes Berg did indicate to me
+he had a simple elegant solution in mind. He suggested that since the
+usermode helper was available, he had added support to be able to
+differentiate async firmware request calls form sync requests, and that
+userspace should not return an error *iff* the request made was async and
+it can determine we're initramfs. The semantics issue is the same though,
+is there a generic way to determine we're initramfs ? What if we move
+multiple levels? Anyway -- provided we could figure this out, userspace
+would simply yield and wait until the real rootfs is met. Upon pivot_root()
+the assumption is all previous udev events pending would be re-triggered
+and finally udev could finally confirm/deny if the firmware was present.
+This would *also* allow you to stuff your firmware whever, however big
+it was. This however relied on the userspace firmware loading support,
+it turns out that (I think because of an incorrect negative backlash
+back in the day over blaming this over booting issues due to the timeout
+whereas the real issue was the kmod timeout was affecting our long
+standing serial init()/probe()) the systemd userspace firmware laoding
+support was removed from systemd udev in 2014 by Kay via commit
+be2ea723b1d023b3d ("udev: remove userspace firmware loading support").
+
+Systemd might *still* be able to provide a solution here, however I will
+note Johannes was asking for *all* async firmware requests to always
+rely on the kernel syfs UMH fallback -- this suggestion is against the
+direction we've been taking to eventually compartamentalize the kernel UMH
+code, so whatever we decide to do, lets please take a breather and seriously
+address this properly *with* systemd folks.
+
+A side race discussed at Plumbers worth mentioning given its related to the
+UMH was inspired by Jiri's talk on the abuse of the freezer for kthreads --
+and his suggestion to use freeze_super(). Currently the UMH lock is used
+for the UMH but as I have noted in Daniel Wagner's recent patches to
+give some love to this code and further compartamentalize the UMH --
+the UMH lock was originally added to help avoid drivers use the firmware
+API on resume, given the races. The firmware cache solution implemented by
+Ming Lei years ago helped address this, whereby devm helpers are used
+based on the requested firmware and prior to suspend we cache all required
+firmware for drivers so that upon resume calls would work without the
+effective race present. This mitigated the actual races / issues with
+drivers, but they must not use the firmware API on suspend/resume. Since
+this solution *kills* all pending UMH caller on suspend obviously this
+means on suspend using request_firmware*() API and expecting it to work
+is brutally dumb as we will eventually kill any pending requests. This
+is a long winded way to say that if you rely on the UMH for firmware
+you must figure out your own proactive firmware cache solution and
+must definitely not request firmware on suspend. Two things then:
+
+1) I've been brainstorming with Daniel how to use freeze_super() to
+   replace the now invalid UMH lock -- its purpose only helps races
+   on boot, for the fallback case to the UMH. But note most distributions
+   disable forcing it always on, so these days we *only* rely on the UMH
+   as a fallback if the driver explicitly requested it
+
+2) Drivers relying on the UMH very likely have a broken cache solution
+   if they are doing this on suspend
+
+Whatever the outcome of this discussion is -- Johannes seemed to *want*
+to further use the UMH by default on *all* async alls... even if the
+driver did not explicitly requested it -- I'm concerned about this given
+all the above and the existing flip/flop on systemd for it. Whatever
+we try to dream up here, please consider all the above as well.
+
+> > The gating issue for initramfs is that technically the filesystem
+> > setup needs to be done, which means that it currently ends up being
+> > populated _fairly_ late in the initcall series, but certainly before
+> > drivers. But since initramfs really only needs very limited filesystem
+> > functionality, I assume Rob had few problems with just moving it
+> > earlier.
+> > 
+> > Still, what kind of ordering issues did people have? What is it that
+> > needs to load files even before driver init? Some crazy subsystem?
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> Changes:
-> v4:
-> * added check for container->mm!=current->mm in tce_iommu_ioctl()
-> for all ioctls and removed other redundand checks
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 131 ++++++++++++++++++------------------
->  1 file changed, 66 insertions(+), 65 deletions(-)
-> 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index d0c38b2..81ab93f 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -31,49 +31,46 @@
->  static void tce_iommu_detach_group(void *iommu_data,
->  		struct iommu_group *iommu_group);
->  
-> -static long try_increment_locked_vm(long npages)
-> +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
->  {
->  	long ret = 0, locked, lock_limit;
->  
-> -	if (!current || !current->mm)
-> -		return -ESRCH; /* process exited */
-> -
->  	if (!npages)
->  		return 0;
->  
-> -	down_write(&current->mm->mmap_sem);
-> -	locked = current->mm->locked_vm + npages;
-> +	down_write(&mm->mmap_sem);
-> +	locked = mm->locked_vm + npages;
->  	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
->  		ret = -ENOMEM;
->  	else
-> -		current->mm->locked_vm += npages;
-> +		mm->locked_vm += npages;
->  
->  	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
->  			npages << PAGE_SHIFT,
-> -			current->mm->locked_vm << PAGE_SHIFT,
-> +			mm->locked_vm << PAGE_SHIFT,
->  			rlimit(RLIMIT_MEMLOCK),
->  			ret ? " - exceeded" : "");
->  
-> -	up_write(&current->mm->mmap_sem);
-> +	up_write(&mm->mmap_sem);
->  
->  	return ret;
->  }
->  
-> -static void decrement_locked_vm(long npages)
-> +static void decrement_locked_vm(struct mm_struct *mm, long npages)
->  {
-> -	if (!current || !current->mm || !npages)
-> -		return; /* process exited */
-> +	if (!npages)
-> +		return;
->  
-> -	down_write(&current->mm->mmap_sem);
-> -	if (WARN_ON_ONCE(npages > current->mm->locked_vm))
-> -		npages = current->mm->locked_vm;
-> -	current->mm->locked_vm -= npages;
-> +	down_write(&mm->mmap_sem);
-> +	if (WARN_ON_ONCE(npages > mm->locked_vm))
-> +		npages = mm->locked_vm;
-> +	mm->locked_vm -= npages;
->  	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
->  			npages << PAGE_SHIFT,
-> -			current->mm->locked_vm << PAGE_SHIFT,
-> +			mm->locked_vm << PAGE_SHIFT,
->  			rlimit(RLIMIT_MEMLOCK));
-> -	up_write(&current->mm->mmap_sem);
-> +	up_write(&mm->mmap_sem);
->  }
->  
->  /*
-> @@ -98,6 +95,7 @@ struct tce_container {
->  	bool enabled;
->  	bool v2;
->  	unsigned long locked_pages;
-> +	struct mm_struct *mm;
->  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
->  	struct list_head group_list;
->  };
-> @@ -107,17 +105,14 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
->  {
->  	struct mm_iommu_table_group_mem_t *mem;
->  
-> -	if (!current || !current->mm)
-> -		return -ESRCH; /* process exited */
-> -
->  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
->  		return -EINVAL;
->  
-> -	mem = mm_iommu_find(current->mm, vaddr, size >> PAGE_SHIFT);
-> +	mem = mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
->  	if (!mem)
->  		return -ENOENT;
->  
-> -	return mm_iommu_put(current->mm, mem);
-> +	return mm_iommu_put(container->mm, mem);
->  }
->  
->  static long tce_iommu_register_pages(struct tce_container *container,
-> @@ -127,14 +122,11 @@ static long tce_iommu_register_pages(struct tce_container *container,
->  	struct mm_iommu_table_group_mem_t *mem = NULL;
->  	unsigned long entries = size >> PAGE_SHIFT;
->  
-> -	if (!current || !current->mm)
-> -		return -ESRCH; /* process exited */
-> -
->  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
->  			((vaddr + size) < vaddr))
->  		return -EINVAL;
->  
-> -	ret = mm_iommu_get(current->mm, vaddr, entries, &mem);
-> +	ret = mm_iommu_get(container->mm, vaddr, entries, &mem);
->  	if (ret)
->  		return ret;
->  
-> @@ -143,7 +135,8 @@ static long tce_iommu_register_pages(struct tce_container *container,
->  	return 0;
->  }
->  
-> -static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl)
-> +static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl,
-> +		struct mm_struct *mm)
->  {
->  	unsigned long cb = _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
->  			tbl->it_size, PAGE_SIZE);
-> @@ -152,13 +145,13 @@ static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl)
->  
->  	BUG_ON(tbl->it_userspace);
->  
-> -	ret = try_increment_locked_vm(cb >> PAGE_SHIFT);
-> +	ret = try_increment_locked_vm(mm, cb >> PAGE_SHIFT);
->  	if (ret)
->  		return ret;
->  
->  	uas = vzalloc(cb);
->  	if (!uas) {
-> -		decrement_locked_vm(cb >> PAGE_SHIFT);
-> +		decrement_locked_vm(mm, cb >> PAGE_SHIFT);
->  		return -ENOMEM;
->  	}
->  	tbl->it_userspace = uas;
-> @@ -166,7 +159,8 @@ static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl)
->  	return 0;
->  }
->  
-> -static void tce_iommu_userspace_view_free(struct iommu_table *tbl)
-> +static void tce_iommu_userspace_view_free(struct iommu_table *tbl,
-> +		struct mm_struct *mm)
->  {
->  	unsigned long cb = _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
->  			tbl->it_size, PAGE_SIZE);
-> @@ -176,7 +170,7 @@ static void tce_iommu_userspace_view_free(struct iommu_table *tbl)
->  
->  	vfree(tbl->it_userspace);
->  	tbl->it_userspace = NULL;
-> -	decrement_locked_vm(cb >> PAGE_SHIFT);
-> +	decrement_locked_vm(mm, cb >> PAGE_SHIFT);
->  }
->  
->  static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-> @@ -236,9 +230,6 @@ static int tce_iommu_enable(struct tce_container *container)
->  	struct iommu_table_group *table_group;
->  	struct tce_iommu_group *tcegrp;
->  
-> -	if (!current->mm)
-> -		return -ESRCH; /* process exited */
-> -
->  	if (container->enabled)
->  		return -EBUSY;
->  
-> @@ -284,7 +275,7 @@ static int tce_iommu_enable(struct tce_container *container)
->  		return -EPERM;
->  
->  	locked = table_group->tce32_size >> PAGE_SHIFT;
-> -	ret = try_increment_locked_vm(locked);
-> +	ret = try_increment_locked_vm(container->mm, locked);
->  	if (ret)
->  		return ret;
->  
-> @@ -302,10 +293,7 @@ static void tce_iommu_disable(struct tce_container *container)
->  
->  	container->enabled = false;
->  
-> -	if (!current->mm)
-> -		return;
-> -
-> -	decrement_locked_vm(container->locked_pages);
-> +	decrement_locked_vm(container->mm, container->locked_pages);
->  }
->  
->  static void *tce_iommu_open(unsigned long arg)
-> @@ -326,13 +314,18 @@ static void *tce_iommu_open(unsigned long arg)
->  
->  	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
->  
-> +	/* current->mm cannot be NULL in this context */
-> +	container->mm = current->mm;
-> +	atomic_inc(&container->mm->mm_count);
+> No, I think this is just about non-initramfs users now,
 
-Are you sure you wouldn't rather do this on the actual
-preregistration?  The advise I gave to Kirti for mdev was that it's
-currently possible to have a configuration where a privileged user
-opens a container, adds a group, sets the iommu, and then passes the
-file descriptors to another user.  We can then set an mm once mappings,
-or preregistration occurs, and from there require that the unmapping mm
-matches the mapping mm, or that both of those match the preregistration
-mm.  I'm not sure I see any reason to impose that current->mm that
-performs this operation is the only one that's allowed to perform those
-later tasks.
+And as Johannes pointed two above to cases.
 
-> +
->  	return container;
->  }
->  
->  static int tce_iommu_clear(struct tce_container *container,
->  		struct iommu_table *tbl,
->  		unsigned long entry, unsigned long pages);
-> -static void tce_iommu_free_table(struct iommu_table *tbl);
-> +static void tce_iommu_free_table(struct tce_container *container,
-> +		struct iommu_table *tbl);
->  
->  static void tce_iommu_release(void *iommu_data)
->  {
-> @@ -357,10 +350,11 @@ static void tce_iommu_release(void *iommu_data)
->  			continue;
->  
->  		tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
-> -		tce_iommu_free_table(tbl);
-> +		tce_iommu_free_table(container, tbl);
->  	}
->  
->  	tce_iommu_disable(container);
-> +	mmdrop(container->mm);
+> if we disregard
+> old initrd users. Bjorn, Marc, correct me if I'm wrong, as I think its
+> so far you both who have seemed to run into race issues and have then
+> ended up trying to look for hacks to address this race or considered using
+> the usermode helper (which we're trying to minimize users for). Daniel
+> seems to note a lot of video drivers use firmware on probe as well so
+> there's a potential issue for those users if they don't use initramfs.
 
-I imagine you'd still do this here, just:
-
-	if (container->mm)
-		mmdrop(container->mm);
-
-Of course you'd need to check how many places you'd need similar
-tests, maybe some of the current->mm tests would be converted to
-container->mm rather than dropped.  Thanks,
-
-Alex
+  Luis
