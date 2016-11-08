@@ -1,21 +1,40 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCrb04376zDt1n
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 01:01:48 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id y68so19673287pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Nov 2016 06:01:48 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH 3/3] powerpc/pseries: implement nmi ipi with H_SIGNAL_SYS_RESET
-Date: Wed,  9 Nov 2016 01:01:25 +1100
-Message-Id: <20161108140125.21455-4-npiggin@gmail.com>
-In-Reply-To: <20161108140125.21455-1-npiggin@gmail.com>
-References: <20161108140125.21455-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCtBD2pyQzDvNk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 02:13:56 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tCtBC6J6Wz9t87
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2016 02:13:55 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA8FDjVE117635
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Nov 2016 10:13:53 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26kgfxaeks-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Nov 2016 10:13:53 -0500
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 8 Nov 2016 10:13:52 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] Setup AMOR in HV mode
+In-Reply-To: <1478007500-23624-2-git-send-email-bsingharora@gmail.com>
+References: <1478007500-23624-1-git-send-email-bsingharora@gmail.com>
+ <1478007500-23624-2-git-send-email-bsingharora@gmail.com>
+Date: Tue, 08 Nov 2016 20:43:45 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87a8da2edy.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,91 +44,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-H_SIGNAL_SYS_RESET can provide a hard NMI (it is not recoverable if
-raised when the target has MSR_RI clear).
+Balbir Singh <bsingharora@gmail.com> writes:
 
-This patch makes a couple of changes to generic system_reset_exception
-handler, which should be split out and platforms defining a handler
-audited.
----
- arch/powerpc/kernel/traps.c          |  7 +++++--
- arch/powerpc/platforms/pseries/ras.c |  4 ++++
- arch/powerpc/platforms/pseries/smp.c | 12 +++++++++++-
- 3 files changed, 20 insertions(+), 3 deletions(-)
+> AMOR should be setup in HV mode, we set it up once
+> and let the generic kernel handle IAMR. This patch is
+> used to enable storage keys in a following patch as
+> defined in ISA 3
+>
+> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  arch/powerpc/mm/pgtable-radix.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> index ed7bddc..0fdd8ed 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -320,6 +320,25 @@ static void update_hid_for_radix(void)
+>  		cpu_relax();
+>  }
+>  
+> +/*
+> + * In HV mode, we init AMOR so that the hypervisor
+> + * and guest can setup IMAR, enable key 0 and set
+> + * it to 1
+> + * AMOR = 1100....00 (Mask for key 0 is 11)
+> + */
+> +static void __init radix_init_amor(void)
+> +{
+> +	unsigned long amor_mask = 0xc000000000000000;
+> +	unsigned long amor = mfspr(SPRN_AMOR);
+> +
+> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+> +		return;
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 023a462..d1d7fd4 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -275,19 +275,22 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
- 
- void system_reset_exception(struct pt_regs *regs)
- {
-+	nmi_enter();
-+
- 	/* See if any machine dependent calls */
- 	if (ppc_md.system_reset_exception) {
- 		if (ppc_md.system_reset_exception(regs))
--			return;
-+			goto done;
- 	}
- 
- 	die("System Reset", regs, SIGABRT);
- 
-+done:
- 	/* Must die if the interrupt is not recoverable */
- 	if (!(regs->msr & MSR_RI))
- 		panic("Unrecoverable System Reset");
- 
--	/* What should we do here? We could issue a shutdown or hard reset. */
-+	nmi_exit();
- }
- 
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 904a677..bb70b26 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -386,6 +386,10 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
- 		}
- 		fwnmi_release_errinfo();
- 	}
-+
-+	if (smp_handle_nmi_ipi(regs))
-+		return 1;
-+
- 	return 0; /* need to perform reset */
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index 0f6522c..4534c5a 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -196,6 +196,16 @@ static void pSeries_cause_ipi_mux(int cpu, unsigned long data)
- 		xics_cause_ipi(cpu, data);
- }
- 
-+static int pseries_cause_nmi_ipi(int cpu, int type)
-+{
-+	if (type == SMP_OP_NMI_TYPE_HARD) {
-+		if (plapr_signal_sys_reset(cpu) == H_SUCCESS)
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
- static __init void pSeries_smp_probe(void)
- {
- 	xics_smp_probe();
-@@ -209,7 +219,7 @@ static __init void pSeries_smp_probe(void)
- static struct smp_ops_t pseries_smp_ops = {
- 	.message_pass	= NULL,	/* Use smp_muxed_ipi_message_pass */
- 	.cause_ipi	= NULL,	/* Filled at runtime by pSeries_smp_probe() */
--	.cause_nmi_ipi	= NULL,
-+	.cause_nmi_ipi	= pseries_cause_nmi_ipi,
- 	.probe		= pSeries_smp_probe,
- 	.kick_cpu	= smp_pSeries_kick_cpu,
- 	.setup_cpu	= smp_setup_cpu,
--- 
-2.10.2
+Why is DD1 excluded ?
+
+> +
+> +	amor |= amor_mask;
+> +
+
+Can't we just init it with the constant 0xc000000000000000;
+I can understand kvm code wanting to do the '|' above, but does the host
+init code need to look at the previous value there ?
+
+
+> +	mtspr(SPRN_AMOR, amor);
+> +}
+> +
+>  void __init radix__early_init_mmu(void)
+>  {
+>  	unsigned long lpcr;
+> @@ -376,6 +395,7 @@ void __init radix__early_init_mmu(void)
+>  		lpcr = mfspr(SPRN_LPCR);
+>  		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
+>  		radix_init_partition_table();
+> +		radix_init_amor();
+>  	}
+>  
+>  	radix_init_pgtable();
+
+What about secondaries ? Don't we need to init AMOR there ?
+
+-aneesh
