@@ -1,20 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tChRB2vfnzDt1D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 18:54:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCj2C18PxzDvJD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2016 19:21:23 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v4 0/4] powerpc/spapr/vfio: Put pages on VFIO
- container shutdown
-In-Reply-To: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
-References: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
-Date: Tue, 08 Nov 2016 18:54:28 +1100
-Message-ID: <871syml83v.fsf@concordia.ellerman.id.au>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
+ agraf@suse.com, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Subject: Re: [PATCH V3 1/2] powerpc: Define new ISA v3.00 logical PVR value
+ and PCR register value
+In-Reply-To: <1477975263-29045-2-git-send-email-sjitindarsingh@gmail.com>
+References: <1477975263-29045-1-git-send-email-sjitindarsingh@gmail.com>
+ <1477975263-29045-2-git-send-email-sjitindarsingh@gmail.com>
+Date: Tue, 08 Nov 2016 19:21:21 +1100
+Message-ID: <87y40ujsam.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,28 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> These patches are to fix a bug when pages stay pinned hours
-> after QEMU which requested pinning exited.
->
-> Please comment. Thanks.
->
-> Alexey Kardashevskiy (4):
->   powerpc/iommu: Pass mm_struct to init/cleanup helpers
->   powerpc/iommu: Stop using @current in mm_iommu_xxx
->   vfio/spapr: Reference mm in tce_container
->   powerpc/mm/iommu, vfio/spapr: Put pages on VFIO container shutdown
->
->  arch/powerpc/include/asm/mmu_context.h |  20 ++--
->  arch/powerpc/kernel/setup-common.c     |   2 +-
->  arch/powerpc/mm/mmu_context_book3s64.c |   6 +-
->  arch/powerpc/mm/mmu_context_iommu.c    |  60 ++++-------
->  drivers/vfio/vfio_iommu_spapr_tce.c    | 181 ++++++++++++++++++++++-----------
->  5 files changed, 154 insertions(+), 115 deletions(-)
+Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
 
+> ISA 3.00 adds the logical PVR value 0x0f000005, so add a definition for
+> this.
+>
+> Define PCR_ARCH_207 to reflect ISA 2.07 compatibility mode in the processor
+> compatibility register (PCR). Also define a dummy ISA 3.00 compatibility
+> mode PCR_ARCH_300 to be used in the next patch to help with determining the
+> PCR value.
 
-Alex, given the diffstat how do you want to merge this? (for 4.10)
+What's "dummy" about the PCR value?
 
-Should I merge it, you merge it, or I can put it in a topic branch?
+AFAICS that value is reserved in the ISA.
+
+Are we assuming/hoping that ISA 4.0 will use 0x10 to mean ISA 3.0 ?
 
 cheers
