@@ -1,39 +1,40 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCty033X3zDt3D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 02:48:23 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Y.B. Lu" <yangbo.lu@nxp.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
- Scott Wood <oss@buserror.net>, Mark Rutland <mark.rutland@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "X.B. Xie" <xiaobo.xie@nxp.com>, "M.H. Lian" <minghuan.lian@nxp.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Kumar Gala <galak@codeaurora.org>
-Subject: Re: [v15, 3/7] powerpc/fsl: move mpc85xx.h to include/linux/fsl
-Date: Tue, 08 Nov 2016 16:47:00 +0100
-Message-ID: <2774358.lRZpWbmlT7@wuerfel>
-In-Reply-To: <DB6PR0401MB25366BC8FF59C68E2823245EF8A60@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-References: <1477637418-38938-1-git-send-email-yangbo.lu@nxp.com>
- <1543282.vWjeo4ynTa@wuerfel>
- <DB6PR0401MB25366BC8FF59C68E2823245EF8A60@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCvQ15ynGzDvLg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 03:09:13 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tCvQ11NbJz9t17
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2016 03:09:12 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA8G8tN4107713
+ for <linuxppc-dev@ozlabs.org>; Tue, 8 Nov 2016 11:09:11 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26kh42tyr6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Nov 2016 11:09:11 -0500
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 8 Nov 2016 11:09:10 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 2/3] Detect instruction fetch denied and report
+In-Reply-To: <1478007500-23624-3-git-send-email-bsingharora@gmail.com>
+References: <1478007500-23624-1-git-send-email-bsingharora@gmail.com>
+ <1478007500-23624-3-git-send-email-bsingharora@gmail.com>
+Date: Tue, 08 Nov 2016 21:39:04 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain
+Message-Id: <877f8e2btr.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,50 +44,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, November 8, 2016 6:49:51 AM CET Y.B. Lu wrote:
-> Hi Arnd,
-> 
-> 
-> > -----Original Message-----
-> > From: Arnd Bergmann [mailto:arnd@arndb.de]
-> > Sent: Tuesday, November 08, 2016 5:20 AM
-> > To: Y.B. Lu
-> > Cc: linuxppc-dev@lists.ozlabs.org; linux-mmc@vger.kernel.org;
-> > ulf.hansson@linaro.org; Scott Wood; Mark Rutland; Greg Kroah-Hartman; X.B.
-> > Xie; M.H. Lian; linux-i2c@vger.kernel.org; linux-clk@vger.kernel.org;
-> > Qiang Zhao; Russell King; Bhupesh Sharma; Joerg Roedel; Claudiu Manoil;
-> > devicetree@vger.kernel.org; Rob Herring; Santosh Shilimkar; linux-arm-
-> > kernel@lists.infradead.org; netdev@vger.kernel.org; linux-
-> > kernel@vger.kernel.org; Leo Li; iommu@lists.linux-foundation.org; Kumar
-> > Gala
-> > Subject: Re: [v15, 3/7] powerpc/fsl: move mpc85xx.h to include/linux/fsl
-> > 
-> > On Monday, October 31, 2016 9:35:33 AM CET Y.B. Lu wrote:
-> > > >
-> > > > I don't see any of the contents of this header referenced by the soc
-> > > > driver any more. I think you can just drop this patch.
-> > > >
-> > >
-> > > [Lu Yangbo-B47093] This header file was included by guts.c.
-> > > The guts driver used macro SVR_MAJ/SVR_MIN for calculation.
-> > >
-> > > This header file was for powerpc arch before. And this patch is to
-> > > made it as common header file for both ARM and PPC.
-> > > Sooner or later this is needed.
-> > 
-> > Let's discuss it once we actually need the header then, ok?
-> 
-> [Lu Yangbo-B47093] As I said, this header file was included by guts.c in patch 4.
+Balbir Singh <bsingharora@gmail.com> writes:
 
-Ah sorry, I misread your earlier reply, thinking you meant a potential
-future patch.
+> ISA 3 allows for prevention of instruction fetch and execution
+> of user mode pages. If such an error occurs, SRR1 bit 35
+> reports the error. We catch and report the error in do_page_fault()
+>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  arch/powerpc/mm/fault.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index d0b137d..835fd03 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -404,6 +404,10 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+>  		    (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
+>  		     !(vma->vm_flags & (VM_READ | VM_WRITE))))
+>  			goto bad_area;
+> +
+> +		if (radix_enabled() && (regs->msr & SRR1_ISI_N_OR_G))
+> +			goto bad_area;
 
-> The guts driver used macro SVR_MAJ/SVR_MIN for calculation which were
-> defined in this header file.
-> Did you suggest we dropped this patch and just calculated them in driver?
+Why is this within radix_enabled() ? Hash can also generate an
+interrupt with that SRR1 value right ?
 
-That is probably nicer here: there is not that much value in sharing
-the two one-line macro definitions, and the driver already hardcodes
-the numeric per-chip IDs that make up most of the header file.
 
-	Arnd
+> +
+>  #ifdef CONFIG_PPC_STD_MMU
+>  		/*
+>  		 * protfault should only happen due to us
+
+
+-aneesh
