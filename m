@@ -1,40 +1,39 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tCtBD2pyQzDvNk
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 02:13:56 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tCtBC6J6Wz9t87
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2016 02:13:55 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA8FDjVE117635
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Nov 2016 10:13:53 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26kgfxaeks-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Nov 2016 10:13:53 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 8 Nov 2016 10:13:52 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/3] Setup AMOR in HV mode
-In-Reply-To: <1478007500-23624-2-git-send-email-bsingharora@gmail.com>
-References: <1478007500-23624-1-git-send-email-bsingharora@gmail.com>
- <1478007500-23624-2-git-send-email-bsingharora@gmail.com>
-Date: Tue, 08 Nov 2016 20:43:45 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tCty033X3zDt3D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 02:48:23 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Y.B. Lu" <yangbo.lu@nxp.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+ Scott Wood <oss@buserror.net>, Mark Rutland <mark.rutland@arm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "X.B. Xie" <xiaobo.xie@nxp.com>, "M.H. Lian" <minghuan.lian@nxp.com>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Kumar Gala <galak@codeaurora.org>
+Subject: Re: [v15, 3/7] powerpc/fsl: move mpc85xx.h to include/linux/fsl
+Date: Tue, 08 Nov 2016 16:47:00 +0100
+Message-ID: <2774358.lRZpWbmlT7@wuerfel>
+In-Reply-To: <DB6PR0401MB25366BC8FF59C68E2823245EF8A60@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+References: <1477637418-38938-1-git-send-email-yangbo.lu@nxp.com>
+ <1543282.vWjeo4ynTa@wuerfel>
+ <DB6PR0401MB25366BC8FF59C68E2823245EF8A60@DB6PR0401MB2536.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87a8da2edy.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,67 +43,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+On Tuesday, November 8, 2016 6:49:51 AM CET Y.B. Lu wrote:
+> Hi Arnd,
+> 
+> 
+> > -----Original Message-----
+> > From: Arnd Bergmann [mailto:arnd@arndb.de]
+> > Sent: Tuesday, November 08, 2016 5:20 AM
+> > To: Y.B. Lu
+> > Cc: linuxppc-dev@lists.ozlabs.org; linux-mmc@vger.kernel.org;
+> > ulf.hansson@linaro.org; Scott Wood; Mark Rutland; Greg Kroah-Hartman; X.B.
+> > Xie; M.H. Lian; linux-i2c@vger.kernel.org; linux-clk@vger.kernel.org;
+> > Qiang Zhao; Russell King; Bhupesh Sharma; Joerg Roedel; Claudiu Manoil;
+> > devicetree@vger.kernel.org; Rob Herring; Santosh Shilimkar; linux-arm-
+> > kernel@lists.infradead.org; netdev@vger.kernel.org; linux-
+> > kernel@vger.kernel.org; Leo Li; iommu@lists.linux-foundation.org; Kumar
+> > Gala
+> > Subject: Re: [v15, 3/7] powerpc/fsl: move mpc85xx.h to include/linux/fsl
+> > 
+> > On Monday, October 31, 2016 9:35:33 AM CET Y.B. Lu wrote:
+> > > >
+> > > > I don't see any of the contents of this header referenced by the soc
+> > > > driver any more. I think you can just drop this patch.
+> > > >
+> > >
+> > > [Lu Yangbo-B47093] This header file was included by guts.c.
+> > > The guts driver used macro SVR_MAJ/SVR_MIN for calculation.
+> > >
+> > > This header file was for powerpc arch before. And this patch is to
+> > > made it as common header file for both ARM and PPC.
+> > > Sooner or later this is needed.
+> > 
+> > Let's discuss it once we actually need the header then, ok?
+> 
+> [Lu Yangbo-B47093] As I said, this header file was included by guts.c in patch 4.
 
-> AMOR should be setup in HV mode, we set it up once
-> and let the generic kernel handle IAMR. This patch is
-> used to enable storage keys in a following patch as
-> defined in ISA 3
->
-> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> ---
->  arch/powerpc/mm/pgtable-radix.c | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
->
-> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-> index ed7bddc..0fdd8ed 100644
-> --- a/arch/powerpc/mm/pgtable-radix.c
-> +++ b/arch/powerpc/mm/pgtable-radix.c
-> @@ -320,6 +320,25 @@ static void update_hid_for_radix(void)
->  		cpu_relax();
->  }
->  
-> +/*
-> + * In HV mode, we init AMOR so that the hypervisor
-> + * and guest can setup IMAR, enable key 0 and set
-> + * it to 1
-> + * AMOR = 1100....00 (Mask for key 0 is 11)
-> + */
-> +static void __init radix_init_amor(void)
-> +{
-> +	unsigned long amor_mask = 0xc000000000000000;
-> +	unsigned long amor = mfspr(SPRN_AMOR);
-> +
-> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-> +		return;
+Ah sorry, I misread your earlier reply, thinking you meant a potential
+future patch.
 
-Why is DD1 excluded ?
+> The guts driver used macro SVR_MAJ/SVR_MIN for calculation which were
+> defined in this header file.
+> Did you suggest we dropped this patch and just calculated them in driver?
 
-> +
-> +	amor |= amor_mask;
-> +
+That is probably nicer here: there is not that much value in sharing
+the two one-line macro definitions, and the driver already hardcodes
+the numeric per-chip IDs that make up most of the header file.
 
-Can't we just init it with the constant 0xc000000000000000;
-I can understand kvm code wanting to do the '|' above, but does the host
-init code need to look at the previous value there ?
-
-
-> +	mtspr(SPRN_AMOR, amor);
-> +}
-> +
->  void __init radix__early_init_mmu(void)
->  {
->  	unsigned long lpcr;
-> @@ -376,6 +395,7 @@ void __init radix__early_init_mmu(void)
->  		lpcr = mfspr(SPRN_LPCR);
->  		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
->  		radix_init_partition_table();
-> +		radix_init_amor();
->  	}
->  
->  	radix_init_pgtable();
-
-What about secondaries ? Don't we need to init AMOR there ?
-
--aneesh
+	Arnd
