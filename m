@@ -1,19 +1,18 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.shadura@collabora.co.uk>
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDFKl3lBmzDvVl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 16:36:43 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id 144so13850214pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Nov 2016 21:36:43 -0800 (PST)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: sjitindarsingh@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com
-Subject: [PATCH] powerpc/mm: Correct process and partition table max size
-Date: Wed,  9 Nov 2016 16:36:33 +1100
-Message-Id: <1478669793-15074-1-git-send-email-sjitindarsingh@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDKsn6r7KzDvWV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 20:01:17 +1100 (AEDT)
+From: Andrew Shadura <andrew.shadura@collabora.co.uk>
+To: linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Shuah Khan <shuah@kernel.org>, Cyril Bur <cyrilbur@gmail.com>
+Subject: [PATCH RESEND] tools-powerpc: Return false instead of -1
+Date: Wed,  9 Nov 2016 09:55:04 +0100
+Message-Id: <20161109085504.10799-1-andrew.shadura@collabora.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Version 3.00 of the ISA states that the PATS (partition table size) field
-of the PTCR (partition table control register) and the PRTS (process table
-size) field of the partition table entry must both be less than or equal
-to 24. However the actual size of the partition and process tables is equal
-to 2 to the power of 12 plus the PATS and PRTS fields, respectively. This
-means that the max allowable size of each of these tables is 2^36 or 64GB
-for both.
+From: Peter Senna Tschudin <peter.senna@gmail.com>
 
-Thus when checking the size shift for each we should be checking for values
-of greater than 36 instead of the current check for shifts larger than 24
-and 23.
+Returning a negative value for a boolean function seem to have the
+undesired effect of returning true. require_paranoia_below() is a
+boolean function, but the variable used to store the return value is an
+integer, receiving -1 or 0. This patch convert rc to bool, replace -1
+by false, and 0 by true.
 
-Fixes: 2bfd65e45e877fb5704730244da67c748d28a1b8
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+This issue was found by the following Coccinelle semantic patch:
+<smpl>
+@@
+identifier f, ret;
+constant C;
+typedef bool;
+@@
+bool f (...){
+<+...
+ret = -C;
+...
+* return ret;
+...+>
+}
+</smpl>
+
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+Signed-off-by: Andrew Shadura <andrew.shadura@collabora.co.uk>
 ---
- arch/powerpc/mm/pgtable-radix.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/testing/selftests/powerpc/pmu/lib.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index ed7bddc..80f3479 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -159,7 +159,7 @@ static void __init radix_init_pgtable(void)
- 	 * Allocate Partition table and process table for the
- 	 * host.
- 	 */
--	BUILD_BUG_ON_MSG((PRTB_SIZE_SHIFT > 23), "Process table size too large.");
-+	BUILD_BUG_ON_MSG((PRTB_SIZE_SHIFT > 36), "Process table size too large.");
- 	process_tb = early_alloc_pgtable(1UL << PRTB_SIZE_SHIFT);
- 	/*
- 	 * Fill in the process table.
-@@ -181,7 +181,7 @@ static void __init radix_init_partition_table(void)
+diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/selftests/powerpc/pmu/lib.c
+index 8b992fa..5bf5dd4 100644
+--- a/tools/testing/selftests/powerpc/pmu/lib.c
++++ b/tools/testing/selftests/powerpc/pmu/lib.c
+@@ -193,9 +193,9 @@ bool require_paranoia_below(int level)
+ 	long current;
+ 	char *end, buf[16];
+ 	FILE *f;
+-	int rc;
++	bool rc;
  
- 	rts_field = radix__get_tree_size();
+-	rc = -1;
++	rc = false;
  
--	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
-+	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
- 	partition_tb = early_alloc_pgtable(1UL << PATB_SIZE_SHIFT);
- 	partition_tb->patb0 = cpu_to_be64(rts_field | __pa(init_mm.pgd) |
- 					  RADIX_PGD_INDEX_SIZE | PATB_HR);
+ 	f = fopen(PARANOID_PATH, "r");
+ 	if (!f) {
+@@ -218,7 +218,7 @@ bool require_paranoia_below(int level)
+ 	if (current >= level)
+ 		goto out_close;
+ 
+-	rc = 0;
++	rc = true;
+ out_close:
+ 	fclose(f);
+ out:
 -- 
-2.5.5
+2.9.3
