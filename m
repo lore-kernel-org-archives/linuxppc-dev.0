@@ -1,41 +1,23 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDScl27xrzDvRc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 01:05:26 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA9E4baS041403
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 09:05:24 -0500
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26m39w1m8d-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 09:05:24 -0500
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 9 Nov 2016 12:05:21 -0200
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.18.232.225])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 56C793520074
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 09:04:50 -0500 (EST)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uA9E5Ikl35520724
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 12:05:18 -0200
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uA9E5HvC010758
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 12:05:18 -0200
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-To: devicetree@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- frowand.list@gmail.com, robh+dt@kernel.org, gpiccoli@linux.vnet.ibm.com
-Subject: [PATCH] of/irq: improve error message on irq discovery process failure
-Date: Wed,  9 Nov 2016 12:05:08 -0200
-Message-Id: <1478700308-25481-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tDW1449DNzDvNL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 02:53:11 +1100 (AEDT)
+Subject: Re: [Patch V6 2/6] irqchip: xilinx: Clean up irqdomain argument and
+ read/write
+To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>,
+ Thomas Gleixner <tglx@linutronix.de>
+References: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <1477916207-25157-3-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <alpine.DEB.2.20.1610311335380.5011@nanos>
+ <fea1e962-1af2-d666-2b0d-55a8e230430c@imgtec.com>
+Cc: monstr@monstr.eu, jason@lakedaemon.net, linux-kernel@vger.kernel.org,
+ michal.simek@xilinx.com, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+From: Marc Zyngier <marc.zyngier@arm.com>
+Message-ID: <30e73e32-3144-3222-c758-dd8affd9b276@arm.com>
+Date: Wed, 9 Nov 2016 15:53:04 +0000
+MIME-Version: 1.0
+In-Reply-To: <fea1e962-1af2-d666-2b0d-55a8e230430c@imgtec.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,68 +27,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PowerPC machines some PCI slots might not have Level-triggered
-interrupts capability (also know as Level Signaled Interrupts - LSI),
-leading of_irq_parse_pci() to complain by presenting error messages
-on the kernel log - in this case, the properties "interrupt-map" and
-"interrupt-map-mask" are not present on the device's node on device
-tree.
+On 01/11/16 11:05, Zubair Lutfullah Kakakhel wrote:
+> Hi,
+> 
+> Thanks for the review.
+> 
+> On 10/31/2016 07:51 PM, Thomas Gleixner wrote:
+>> On Mon, 31 Oct 2016, Zubair Lutfullah Kakakhel wrote:
+>>> The drivers read/write function handling is a bit quirky.
+>>
+>> Can you please explain in more detail what's quirky and why it should be
+>> done differently,
+>>
+>>> And the irqmask is passed directly to the handler.
+>>
+>> I can't make any sense out of that sentence.  Which handler? If you talk
+>> about the write function, then I don't see a change. So what are you
+>> talking about?
+> 
+> Thanks. I'll add more detail in v7 if this patch survives.
+> 
+>>
+>>> Add a new irqchip struct to pass to the handler and
+>>> cleanup read/write handling.
+>>
+>> I still don't see what it cleans up. You move the write function pointer
+>> into a data structure, which is exposed by another pointer. So you create
+>> two levels of indirection in the hotpath. The function prototype is still
+>> the same. So all this does is making things slower unless I'm missing
+>> something.
+> 
+> I wrote this patch/cleanup based on a review of driver by Marc when I moved the
+> driver from arch/microblaze to drivers/irqchip
+> 
+> "Marc Zyngier
+> 
+> ...
+> 
+>  >  arch/microblaze/kernel/intc.c   | 196 ----------------------------------------
+>  >  drivers/irqchip/irq-axi-intc.c  | 196 ++++++++++++++++++++++++++++++++++++++++
+> 
+> ...
+> 
+>  > +	/* Yeah, okay, casting the intr_mask to a void* is butt-ugly, but I'm
+>  > +	 * lazy and Michal can clean it up to something nicer when he tests
+>  > +	 * and commits this patch.  ~~gcl */
+>  > +	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
+>  > +							(void *)intr_mask);
+> 
+> Since you're now reworking this driver, how about addressing this
+> ugliness? You could store the intr_mask together with intc_baseaddr,
+> and the read/write functions in a global structure, and pass a
+> pointer to it? That would make the code a bit nicer...
+> "
+> 
+> https://patchwork.kernel.org/patch/9287933/
+> 
+>>
+>>> -static unsigned int (*read_fn)(void __iomem *);
+>>> -static void (*write_fn)(u32, void __iomem *);
+>>> +struct xintc_irq_chip {
+>>> +	void __iomem *base;
+>>> +	struct	irq_domain *domain;
+>>> +	struct	irq_chip chip;
+>>
+>> The tabs between struct and the structure name are bogus.
+>>
+>>> +	u32	intr_mask;
+>>> +	unsigned int (*read)(void __iomem *iomem);
+>>> +	void (*write)(u32 data, void __iomem *iomem);
+>>
+>> Please structure that like a table:
+>>
+>> 	void			__iomem *base;
+>> 	struct irq_domain	*domain;
+>> 	struct irq_chip		chip;
+>> 	u32			intr_mask;
+>> 	unsigned int		(*read)(void __iomem *iomem);
+>> 	void			(*write)(u32 data, void __iomem *iomem);
+>>
+>> Can you see how that makes parsing the struct simpler, because the data
+>> types are clearly to identify?
+> 
+> That does make it look much better.
+> 
+>>
+>>> +static struct xintc_irq_chip *xintc_irqc;
+>>>
+>>>  static void intc_write32(u32 val, void __iomem *addr)
+>>>  {
+>>> @@ -54,6 +60,18 @@ static unsigned int intc_read32_be(void __iomem *addr)
+>>>  	return ioread32be(addr);
+>>>  }
+>>>
+>>> +static inline unsigned int xintc_read(struct xintc_irq_chip *xintc_irqc,
+>>> +					     int reg)
+>>> +{
+>>> +	return xintc_irqc->read(xintc_irqc->base + reg);
+>>> +}
+>>> +
+>>> +static inline void xintc_write(struct xintc_irq_chip *xintc_irqc,
+>>> +				     int reg, u32 data)
+>>> +{
+>>> +	xintc_irqc->write(data, xintc_irqc->base + reg);
+>>> +}
+>>> +
+>>>  static void intc_enable_or_unmask(struct irq_data *d)
+>>>  {
+>>>  	unsigned long mask = 1 << d->hwirq;
+>>> @@ -65,21 +83,21 @@ static void intc_enable_or_unmask(struct irq_data *d)
+>>>  	 * acks the irq before calling the interrupt handler
+>>>  	 */
+>>>  	if (irqd_is_level_type(d))
+>>> -		write_fn(mask, intc_baseaddr + IAR);
+>>> +		xintc_write(xintc_irqc, IAR, mask);
+>>
+>> So this whole thing makes only sense, when you want to support multiple
+>> instances of that chip and then you need to store the xintc_irqc pointer as
+>> irqchip data and retrieve it from there. Unless you do that, this "cleanup"
+>> is just churn for nothing with the effect of making things less efficient.
+>>
+> 
+> Indeed the driver doesn't support multiple instances of the Xilinx Interrupt controller.
+> I don't have a use-case or the hardware for that.
+> 
+> So what would be the recommended course of action?
 
-This patch introduces a different message for this specific case,
-and it also reduces the level of the message from error to warning.
-Before this patch, when an adapter was plugged in a slot without Level
-interrupts capabilities, we saw generic error messages like this:
+If you really don't want/need to support multi-instance, then this is
+indeed overkill. You're then better off having a simple static key that
+deals with the endianess of the peripheral, and have a global structure
+that contains the relevant data:
 
-    [54.239] pci 002d:70:00.0: of_irq_parse_pci() failed with rc=-22
+static DEFINE_STATIC_KEY_FALSE(xintc_is_be);
 
-Now, with this applied, we see the following specific message:
+static void xintc_write(int reg, u32 data)
+{
+	if (static_branch_unlikely(&xintc_is_be))
+		iowrite32be(data, xint_irqc.base + reg);
+	else
+		iowrite32(data, xint_irqc.base + reg);
+}
 
-    [19.947] pci 0014:60:00.0: of_irq_parse_pci() gave up. The slot of this
-    device has no Level-triggered Interrupts capability.
+and something similar for the write accessor.
 
-No functional changes were introduced.
+Thanks,
 
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
----
- drivers/of/irq.c        | 5 ++++-
- drivers/of/of_pci_irq.c | 8 +++++++-
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/of/irq.c b/drivers/of/irq.c
-index 393fea8..1ad6882 100644
---- a/drivers/of/irq.c
-+++ b/drivers/of/irq.c
-@@ -275,7 +275,10 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
- 	of_node_put(ipar);
- 	of_node_put(newpar);
- 
--	return -EINVAL;
-+	/* Positive non-zero return means no Level-triggered Interrupts
-+	 * capability was found.
-+	 */
-+	return ENOENT;
- }
- EXPORT_SYMBOL_GPL(of_irq_parse_raw);
- 
-diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
-index 2306313..9b6f387 100644
---- a/drivers/of/of_pci_irq.c
-+++ b/drivers/of/of_pci_irq.c
-@@ -89,8 +89,14 @@ int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *out_irq
- 	laddr[0] = cpu_to_be32((pdev->bus->number << 16) | (pdev->devfn << 8));
- 	laddr[1] = laddr[2] = cpu_to_be32(0);
- 	rc = of_irq_parse_raw(laddr, out_irq);
--	if (rc)
-+
-+	if (rc < 0) {
- 		goto err;
-+	} else if (rc > 0) {
-+		dev_warn(&pdev->dev,
-+			"of_irq_parse_pci() gave up. The slot of this device has no Level-triggered Interrupts capability.\n");
-+		return -rc;
-+	}
- 	return 0;
- err:
- 	dev_err(&pdev->dev, "of_irq_parse_pci() failed with rc=%d\n", rc);
+	M.
 -- 
-2.1.0
+Jazz is not dead. It just smells funny...
