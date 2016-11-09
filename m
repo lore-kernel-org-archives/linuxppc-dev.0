@@ -1,21 +1,38 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tDXw23CnQzDvTZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 04:18:57 +1100 (AEDT)
-Date: Wed, 09 Nov 2016 12:18:44 -0500 (EST)
-Message-Id: <20161109.121844.1246735222647356131.davem@davemloft.net>
-To: madalin.bucur@nxp.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, oss@buserror.net, ppc@mindchasers.com,
- joe@perches.com, pebolle@tiscali.nl, joakim.tjernlund@transmode.se
-Subject: Re: [PATCH net-next v6 02/10] dpaa_eth: add support for DPAA Ethernet
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <AM4PR04MB160440B1F671B4C86B238C2DECB90@AM4PR04MB1604.eurprd04.prod.outlook.com>
-References: <1478117854-8952-3-git-send-email-madalin.bucur@nxp.com>
- <20161103.155816.642712588084106823.davem@davemloft.net>
- <AM4PR04MB160440B1F671B4C86B238C2DECB90@AM4PR04MB1604.eurprd04.prod.outlook.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDXwF6GyPzDvPY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 04:19:09 +1100 (AEDT)
+Received: by mail-it0-x242.google.com with SMTP id e187so23064889itc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 09:19:09 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1626072.dpWPnWgGl9@wuerfel>
+References: <1477913455-5314-1-git-send-email-geert+renesas@glider.be>
+ <CAMuHMdV4HG0aOr4Qp_OZXU=3jLeOJ2QaMKp09a3v4489ABbRcA@mail.gmail.com>
+ <CAMuHMdUmpMpizZpq1V-sLA8Cf2q5oOgOVxGOvKXqTHvn+Mj7Tg@mail.gmail.com>
+ <1626072.dpWPnWgGl9@wuerfel>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 9 Nov 2016 18:19:06 +0100
+Message-ID: <CAMuHMdVrdjqWruY=dBjWP=jZuZkc=aTBTMijOyTDfZFcaD_jsA@mail.gmail.com>
+Subject: Re: [PATCH v2 0/7] soc: renesas: Identify SoC and register with the
+ SoC bus
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yangbo Lu <yangbo.lu@nxp.com>,
+ Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Dirk Behme <dirk.behme@de.bosch.com>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Pankaj Dubey <pankaj.dubey@samsung.com>,
+ "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +42,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
-Date: Wed, 9 Nov 2016 17:16:12 +0000
+Hi Arnd,
 
->> From: Madalin-Cristian Bucur
->> Sent: Monday, November 07, 2016 5:43 PM
->> 
->> > From: David Miller [mailto:davem@davemloft.net]
->> > Sent: Thursday, November 03, 2016 9:58 PM
->> >
->> > From: Madalin Bucur <madalin.bucur@nxp.com>
->> > Date: Wed, 2 Nov 2016 22:17:26 +0200
->> >
->> > > This introduces the Freescale Data Path Acceleration Architecture
-> <snip>
-> 
->> > > +	int numstats = sizeof(struct rtnl_link_stats64) / sizeof(u64);
->> >  ...
->> > > +		cpustats = (u64 *)&percpu_priv->stats;
->> > > +
->> > > +		for (j = 0; j < numstats; j++)
->> > > +			netstats[j] += cpustats[j];
->> >
->> > This is a memcpy() on well-typed datastructures which requires no
->> > casting or special handling whatsoever, so use memcpy instead of
->> > needlessly open coding the operation.
->> 
->> Will fix.
-> 
-> Took a second look at this, it's not copying but adding the percpu
-> statistics into consolidated results.
+On Wed, Nov 9, 2016 at 5:56 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Wednesday, November 9, 2016 2:34:33 PM CET Geert Uytterhoeven wrote:
+>> > And Samsung.
+>> > Shall I create the immutable branch now?
+>>
+>> Arnd: are you happy with the new patches and changes?
+>
+> I still had some comments for patch 7, but that shouldn't stop
+> you from creating a branch for the first three so everyone can
+> build on top of that.
 
-Ok, then it looks fine, thanks for clarifying.
+Thanks!
+
+What about patch [4/7]?
+Haven't you received it? Your address was in the To-line for all 7 patches.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
