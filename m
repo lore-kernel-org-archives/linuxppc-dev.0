@@ -1,43 +1,27 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDWCn6ySvzDvVM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 03:02:29 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uA9FxOhN026364
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 11:02:27 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26m2u9uqfx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 11:02:26 -0500
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Wed, 9 Nov 2016 09:02:26 -0700
-Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
- gso_type
-To: Jonathan Maxwell <jmaxwell37@gmail.com>
-References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
- <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
- <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
- <CAGHK07Cvh2QnGrUg5eu_aC=cV7DaL9wJm8adZ0rv4s0DmF-tzw@mail.gmail.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Jon Maxwell <jmaxwell@redhat.com>, hofrat@osadl.org,
- linux-kernel@vger.kernel.org, jarod@redhat.com, netdev@vger.kernel.org,
- paulus@samba.org, Tom Herbert <tom@herbertland.com>,
- Marcelo Ricardo Leitner <mleitner@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Wed, 9 Nov 2016 10:02:19 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDXQ80qyxzDvLb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 03:56:30 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Yangbo Lu <yangbo.lu@nxp.com>,
+ Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ devicetree@vger.kernel.org, Dirk Behme <dirk.behme@de.bosch.com>,
+ linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 7/7] soc: renesas: Identify SoC and register with the
+ SoC bus
+Date: Wed, 09 Nov 2016 17:55:28 +0100
+Message-ID: <3693445.TSdZGaiT9S@wuerfel>
+In-Reply-To: <1477913455-5314-8-git-send-email-geert+renesas@glider.be>
+References: <1477913455-5314-1-git-send-email-geert+renesas@glider.be>
+ <1477913455-5314-8-git-send-email-geert+renesas@glider.be>
 MIME-Version: 1.0
-In-Reply-To: <CAGHK07Cvh2QnGrUg5eu_aC=cV7DaL9wJm8adZ0rv4s0DmF-tzw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <da1aa901-3698-f582-6beb-de94740e91d5@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,148 +31,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/06/2016 03:22 PM, Jonathan Maxwell wrote:
-> On Thu, Nov 3, 2016 at 8:40 AM, Brian King <brking@linux.vnet.ibm.com> wrote:
->> On 10/27/2016 10:26 AM, Eric Dumazet wrote:
->>> On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
->>>> We recently encountered a bug where a few customers using ibmveth on the
->>>> same LPAR hit an issue where a TCP session hung when large receive was
->>>> enabled. Closer analysis revealed that the session was stuck because the
->>>> one side was advertising a zero window repeatedly.
->>>>
->>>> We narrowed this down to the fact the ibmveth driver did not set gso_size
->>>> which is translated by TCP into the MSS later up the stack. The MSS is
->>>> used to calculate the TCP window size and as that was abnormally large,
->>>> it was calculating a zero window, even although the sockets receive buffer
->>>> was completely empty.
->>>>
->>>> We were able to reproduce this and worked with IBM to fix this. Thanks Tom
->>>> and Marcelo for all your help and review on this.
->>>>
->>>> The patch fixes both our internal reproduction tests and our customers tests.
->>>>
->>>> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
->>>> ---
->>>>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
->>>>  1 file changed, 20 insertions(+)
->>>>
->>>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->>>> index 29c05d0..c51717e 100644
->>>> --- a/drivers/net/ethernet/ibm/ibmveth.c
->>>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
->>>> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->>>>      int frames_processed = 0;
->>>>      unsigned long lpar_rc;
->>>>      struct iphdr *iph;
->>>> +    bool large_packet = 0;
->>>> +    u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
->>>>
->>>>  restart_poll:
->>>>      while (frames_processed < budget) {
->>>> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
->>>>                                              iph->check = 0;
->>>>                                              iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
->>>>                                              adapter->rx_large_packets++;
->>>> +                                            large_packet = 1;
->>>>                                      }
->>>>                              }
->>>>                      }
->>>>
->>>> +                    if (skb->len > netdev->mtu) {
->>>> +                            iph = (struct iphdr *)skb->data;
->>>> +                            if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
->>>> +                                iph->protocol == IPPROTO_TCP) {
->>>> +                                    hdr_len += sizeof(struct iphdr);
->>>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
->>>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->>>> +                            } else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
->>>> +                                       iph->protocol == IPPROTO_TCP) {
->>>> +                                    hdr_len += sizeof(struct ipv6hdr);
->>>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
->>>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
->>>> +                            }
->>>> +                            if (!large_packet)
->>>> +                                    adapter->rx_large_packets++;
->>>> +                    }
->>>> +
->>>>
->>>
->>> This might break forwarding and PMTU discovery.
->>>
->>> You force gso_size to device mtu, regardless of real MSS used by the TCP
->>> sender.
->>>
->>> Don't you have the MSS provided in RX descriptor, instead of guessing
->>> the value ?
->>
->> We've had some further discussions on this with the Virtual I/O Server (VIOS)
->> development team. The large receive aggregation in the VIOS (AIX based) is actually
->> being done by software in the VIOS. What they may be able to do is when performing
->> this aggregation, they could look at the packet lengths of all the packets being
->> aggregated and take the largest packet size within the aggregation unit, minus the
->> header length and return that to the virtual ethernet client which we could then stuff
->> into gso_size. They are currently assessing how feasible this would be to do and whether
->> it would impact other bits of the code. However, assuming this does end up being an option,
->> would this address the concerns here or is that going to break something else I'm
->> not thinking of?
-> 
-> I was discussing this with a colleague and although this is better than
-> what we have so far. We wonder if there could be a corner case where
-> it ends up with a smaller value than the current MSS. For example if
-> the application sent a burst of small TCP packets with the PUSH
-> bit set. In that case they may not be coalesced by GRO. The VIOS could
+On Monday, October 31, 2016 12:30:55 PM CET Geert Uytterhoeven wrote:
 
-Would that be a big problem though? Other than a performance degradation
-in this specific case, do you see a functional issue with this approach?
+> v2:
+>   - Drop SoC families and family names; use fixed "Renesas" instead,
 
-> probably be coded to detect that condition and use the previous MSS.
-> But that may not necessarily be the current MSS.
-> 
-> The ibmveth driver passes the MSS via gso_size to the VIOS. Either as the
-> 3rd argument of ibmveth_send() or via tcp_hdr(skb)->check which is
-> presumably over-written when the VIOS does the TSO. Would it be possible
-> to keep a copy of this value on the TX side on the VIOS before it over-written
-> and then some how pass that up to the RX side along with frame and set
-> gso_size to that which should be the current MSS?
+I think I'd rather have seen the family names left in there, but it's
+not important, so up to you.
 
-That seems like it might be more difficult. Wouldn't that require the VIOS
-to track the MSS on a per connection basis, since the MSS might differ
-based on the source / destination? I discussed with VIOS development, and
-they don't do any connection tracking where they'd be able to insert this.
+>   - Use "renesas,prr" and "renesas,cccr" device nodes in DT if
+>     available, else fall back to hardcoded addresses for compatibility
+>     with existing DTBs,
 
-Unless there is a functional issue with the approach to have the VIOS insert
-the MSS based on the size of the packets received off the wire, I think that
-might be our best option...
+I only see patches 2, 3, 5, and 7 in my inbox, so I'm lacking the DT
+binding for these, among other things.
 
-Thanks,
+It does seem wrong to have a device node for a specific register though.
+Shouldn't the node be for the block of registers that these are inside
+of?
 
-Brian
+>   - Don't register the SoC bus if the chip ID register is missing,
 
+Why? My objection was to hardcoding the register, not to registering
+the device? I think I'd rather see the device registered with an
+empty revision string.
 
+> +#define CCCR   0xe600101c      /* Common Chip Code Register */
+> +#define PRR    0xff000044      /* Product Register */
+> +#define PRR3   0xfff00044      /* Product Register on R-Car Gen3 */
+> +
+> +static const struct of_device_id renesas_socs[] __initconst = {
+> +#ifdef CONFIG_ARCH_R8A73A4
+> +       { .compatible = "renesas,r8a73a4",      .data = (void *)PRR, },
+> +#endif
+> +#ifdef CONFIG_ARCH_R8A7740
+> +       { .compatible = "renesas,r8a7740",      .data = (void *)CCCR, },
+> +#endif
 
-> 
-> Regards
-> 
-> Jon
-> 
->>
->> Unfortunately, I don't think we'd have a good way to get gso_segs set correctly as I don't
->> see how that would get passed back up the interface.
->>
->> Thanks,
->>
->> Brian
->>
->>
->> --
->> Brian King
->> Power Linux I/O
->> IBM Linux Technology Center
->>
+My preference here would be to list the register address only for
+SoCs that are known to need them, while also having .dtb files that
+don't have the nodes.
+
+> +static int __init renesas_soc_init(void)
+> +{
+> +       struct soc_device_attribute *soc_dev_attr;
+> +       const struct of_device_id *match;
+> +       void __iomem *chipid = NULL;
+> +       struct soc_device *soc_dev;
+> +       struct device_node *np;
+> +       unsigned int product;
+> +
+> +       np = of_find_matching_node_and_match(NULL, renesas_socs, &match);
+> +       if (!np)
+> +               return -ENODEV;
+> +
+> +       of_node_put(np);
+> +
+> +       /* Try PRR first, then CCCR, then hardcoded fallback */
+> +       np = of_find_compatible_node(NULL, NULL, "renesas,prr");
+> +       if (!np)
+> +               np = of_find_compatible_node(NULL, NULL, "renesas,cccr");
+> +       if (np) {
+> +               chipid = of_iomap(np, 0);
+> +               of_node_put(np);
+> +       } else if (match->data) {
+> +               chipid = ioremap((uintptr_t)match->data, 4);
+> +       }
+> +       if (!chipid)
 > 
 
+Here, I'd turn the order around and look for the DT nodes of the
+devices first. Only if they are not found, look at the compatible
+string of the root node. No need to search for a node though,
+you know which one it is when you look for a compatible =
+"renesas,r8a73a4".
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+	Arnd
