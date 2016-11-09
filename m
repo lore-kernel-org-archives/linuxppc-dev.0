@@ -1,29 +1,23 @@
-Return-Path: <dmitry.kasatkin@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tD5QH31yHzDvhf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 10:40:07 +1100 (AEDT)
-Received: by mail-lf0-x243.google.com with SMTP id p100so12086315lfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Nov 2016 15:40:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tD6tX4PcVzDvPj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 11:46:12 +1100 (AEDT)
+Date: Wed, 9 Nov 2016 11:46:03 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alex Williamson <alex.williamson@redhat.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH kernel v4 3/4] vfio/spapr: Reference mm in tce_container
+Message-ID: <20161109004603.GA28688@umbus.fritz.box>
+References: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
+ <1477291990-2872-4-git-send-email-aik@ozlabs.ru>
+ <20161108152519.7bfadf32@t450s.home>
 MIME-Version: 1.0
-In-Reply-To: <1477017898-10375-8-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1477017898-10375-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1477017898-10375-8-git-send-email-bauerman@linux.vnet.ibm.com>
-From: Dmitry Kasatkin <dmitry.kasatkin@gmail.com>
-Date: Wed, 9 Nov 2016 01:40:02 +0200
-Message-ID: <CACE9dm-gJ72B5fp2KrY6rV=-Ydnu66mU1xQmng7ZvT1WiTa67Q@mail.gmail.com>
-Subject: Re: [Linux-ima-devel] [PATCH v6 07/10] ima: store the builtin/custom
- template definitions in a list
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linux-security-module <linux-security-module@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- linux-ima-devel <linux-ima-devel@lists.sourceforge.net>,
- Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="+9kyDs7IugQ0lHaC"
+In-Reply-To: <20161108152519.7bfadf32@t450s.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,207 +27,333 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 21, 2016 at 5:44 AM, Thiago Jung Bauermann
-<bauerman@linux.vnet.ibm.com> wrote:
-> From: Mimi Zohar <zohar@linux.vnet.ibm.com>
->
-> The builtin and single custom templates are currently stored in an
-> array.  In preparation for being able to restore a measurement list
-> containing multiple builtin/custom templates, this patch stores the
-> builtin and custom templates as a linked list.  This will permit
-> defining more than one custom template per boot.
->
-> Changelog v4:
-> - fix "spinlock bad magic" BUG - reported by Dmitry Vyukov
->
-> Changelog v3:
-> - initialize template format list in ima_template_desc_current(), as it
-> might be called during __setup before normal initialization. (kernel
-> test robot)
-> - remove __init annotation of ima_init_template_list()
->
-> Changelog v2:
-> - fix lookup_template_desc() preemption imbalance (kernel test robot)
->
-> Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-> ---
->  security/integrity/ima/ima.h          |  2 ++
->  security/integrity/ima/ima_main.c     |  1 +
->  security/integrity/ima/ima_template.c | 52 +++++++++++++++++++++++++++--------
->  3 files changed, 44 insertions(+), 11 deletions(-)
->
-> diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-> index 139dec67dcbf..6b0540ad189f 100644
-> --- a/security/integrity/ima/ima.h
-> +++ b/security/integrity/ima/ima.h
-> @@ -85,6 +85,7 @@ struct ima_template_field {
->
->  /* IMA template descriptor definition */
->  struct ima_template_desc {
-> +       struct list_head list;
->         char *name;
->         char *fmt;
->         int num_fields;
-> @@ -146,6 +147,7 @@ int ima_restore_measurement_list(loff_t bufsize, void *buf);
->  int ima_measurements_show(struct seq_file *m, void *v);
->  unsigned long ima_get_binary_runtime_size(void);
->  int ima_init_template(void);
-> +void ima_init_template_list(void);
->
->  /*
->   * used to protect h_table and sha_table
-> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-> index 423d111b3b94..50818c60538b 100644
-> --- a/security/integrity/ima/ima_main.c
-> +++ b/security/integrity/ima/ima_main.c
-> @@ -418,6 +418,7 @@ static int __init init_ima(void)
->  {
->         int error;
->
-> +       ima_init_template_list();
->         hash_setup(CONFIG_IMA_DEFAULT_HASH);
->         error = ima_init();
->         if (!error) {
-> diff --git a/security/integrity/ima/ima_template.c b/security/integrity/ima/ima_template.c
-> index 37f972cb05fe..c0d808c20c40 100644
-> --- a/security/integrity/ima/ima_template.c
-> +++ b/security/integrity/ima/ima_template.c
-> @@ -15,16 +15,20 @@
->
->  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->
-> +#include <linux/rculist.h>
->  #include "ima.h"
->  #include "ima_template_lib.h"
->
-> -static struct ima_template_desc defined_templates[] = {
-> +static struct ima_template_desc builtin_templates[] = {
->         {.name = IMA_TEMPLATE_IMA_NAME, .fmt = IMA_TEMPLATE_IMA_FMT},
->         {.name = "ima-ng", .fmt = "d-ng|n-ng"},
->         {.name = "ima-sig", .fmt = "d-ng|n-ng|sig"},
->         {.name = "", .fmt = ""},        /* placeholder for a custom format */
->  };
->
-> +static LIST_HEAD(defined_templates);
-> +static DEFINE_SPINLOCK(template_list);
-> +
->  static struct ima_template_field supported_fields[] = {
->         {.field_id = "d", .field_init = ima_eventdigest_init,
->          .field_show = ima_show_template_digest},
-> @@ -53,6 +57,8 @@ static int __init ima_template_setup(char *str)
->         if (ima_template)
->                 return 1;
->
-> +       ima_init_template_list();
-> +
->         /*
->          * Verify that a template with the supplied name exists.
->          * If not, use CONFIG_IMA_DEFAULT_TEMPLATE.
-> @@ -81,7 +87,7 @@ __setup("ima_template=", ima_template_setup);
->
->  static int __init ima_template_fmt_setup(char *str)
->  {
-> -       int num_templates = ARRAY_SIZE(defined_templates);
-> +       int num_templates = ARRAY_SIZE(builtin_templates);
->
->         if (ima_template)
->                 return 1;
-> @@ -92,22 +98,28 @@ static int __init ima_template_fmt_setup(char *str)
->                 return 1;
->         }
->
-> -       defined_templates[num_templates - 1].fmt = str;
-> -       ima_template = defined_templates + num_templates - 1;
-> +       builtin_templates[num_templates - 1].fmt = str;
-> +       ima_template = builtin_templates + num_templates - 1;
-> +
->         return 1;
->  }
->  __setup("ima_template_fmt=", ima_template_fmt_setup);
->
->  static struct ima_template_desc *lookup_template_desc(const char *name)
->  {
-> -       int i;
-> +       struct ima_template_desc *template_desc;
-> +       int found = 0;
->
-> -       for (i = 0; i < ARRAY_SIZE(defined_templates); i++) {
-> -               if (strcmp(defined_templates[i].name, name) == 0)
-> -                       return defined_templates + i;
-> +       rcu_read_lock();
-> +       list_for_each_entry_rcu(template_desc, &defined_templates, list) {
-> +               if ((strcmp(template_desc->name, name) == 0) ||
-> +                   (strcmp(template_desc->fmt, name) == 0)) {
-> +                       found = 1;
-> +                       break;
-> +               }
->         }
-> -
-> -       return NULL;
-> +       rcu_read_unlock();
-> +       return found ? template_desc : NULL;
->  }
->
->  static struct ima_template_field *lookup_template_field(const char *field_id)
-> @@ -183,11 +195,29 @@ static int template_desc_init_fields(const char *template_fmt,
->         return 0;
->  }
->
-> +void ima_init_template_list(void)
-> +{
-> +       int i;
-> +
-> +       if (!list_empty(&defined_templates))
-> +               return;
-> +
-> +       spin_lock(&template_list);
-> +       for (i = 0; i < ARRAY_SIZE(builtin_templates); i++) {
-> +               list_add_tail_rcu(&builtin_templates[i].list,
-> +                                 &defined_templates);
-> +       }
-> +       spin_unlock(&template_list);
-> +       synchronize_rcu();
 
-Btw, what is the purpose of synchronize rcu here?
-i think it make sense before deleting the object, like:
---------------------------------
-list_del_rcu(&p->list);
-spin_unlock(&listmutex);
-synchronize_rcu();
-kfree(p);
---------------------------------
+--+9kyDs7IugQ0lHaC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think it is never deleted.
-There is another similar place in the same file...
+On Tue, Nov 08, 2016 at 03:25:19PM -0700, Alex Williamson wrote:
+> On Mon, 24 Oct 2016 17:53:09 +1100
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>=20
+> > In some situations the userspace memory context may live longer than
+> > the userspace process itself so if we need to do proper memory context
+> > cleanup, we better have tce_container take a reference to mm_struct and
+> > use it later when the process is gone (@current or @current->mm is NULL=
+).
+> >=20
+> > This references mm and stores the pointer in the container; this is done
+> > when a container is just created so checking for !current->mm in other
+> > places becomes pointless.
+> >=20
+> > This replaces current->mm with container->mm everywhere except debug
+> > prints.
+> >=20
+> > This adds a check that current->mm is the same as the one stored in
+> > the container to prevent userspace from making changes to a memory
+> > context of other processes; in order to add this check,
+> > VFIO_CHECK_EXTENSION is moved out of the switch(cmd) as it is
+> > quite special anyway - it is the only ioctl() called when neither
+> > container nor container->mm is initialized.
+> >=20
+> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > ---
+> > Changes:
+> > v4:
+> > * added check for container->mm!=3Dcurrent->mm in tce_iommu_ioctl()
+> > for all ioctls and removed other redundand checks
+> > ---
+> >  drivers/vfio/vfio_iommu_spapr_tce.c | 131 ++++++++++++++++++----------=
+--------
+> >  1 file changed, 66 insertions(+), 65 deletions(-)
+> >=20
+> > diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_io=
+mmu_spapr_tce.c
+> > index d0c38b2..81ab93f 100644
+> > --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> > +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> > @@ -31,49 +31,46 @@
+> >  static void tce_iommu_detach_group(void *iommu_data,
+> >  		struct iommu_group *iommu_group);
+> > =20
+> > -static long try_increment_locked_vm(long npages)
+> > +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+> >  {
+> >  	long ret =3D 0, locked, lock_limit;
+> > =20
+> > -	if (!current || !current->mm)
+> > -		return -ESRCH; /* process exited */
+> > -
+> >  	if (!npages)
+> >  		return 0;
+> > =20
+> > -	down_write(&current->mm->mmap_sem);
+> > -	locked =3D current->mm->locked_vm + npages;
+> > +	down_write(&mm->mmap_sem);
+> > +	locked =3D mm->locked_vm + npages;
+> >  	lock_limit =3D rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+> >  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+> >  		ret =3D -ENOMEM;
+> >  	else
+> > -		current->mm->locked_vm +=3D npages;
+> > +		mm->locked_vm +=3D npages;
+> > =20
+> >  	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+> >  			npages << PAGE_SHIFT,
+> > -			current->mm->locked_vm << PAGE_SHIFT,
+> > +			mm->locked_vm << PAGE_SHIFT,
+> >  			rlimit(RLIMIT_MEMLOCK),
+> >  			ret ? " - exceeded" : "");
+> > =20
+> > -	up_write(&current->mm->mmap_sem);
+> > +	up_write(&mm->mmap_sem);
+> > =20
+> >  	return ret;
+> >  }
+> > =20
+> > -static void decrement_locked_vm(long npages)
+> > +static void decrement_locked_vm(struct mm_struct *mm, long npages)
+> >  {
+> > -	if (!current || !current->mm || !npages)
+> > -		return; /* process exited */
+> > +	if (!npages)
+> > +		return;
+> > =20
+> > -	down_write(&current->mm->mmap_sem);
+> > -	if (WARN_ON_ONCE(npages > current->mm->locked_vm))
+> > -		npages =3D current->mm->locked_vm;
+> > -	current->mm->locked_vm -=3D npages;
+> > +	down_write(&mm->mmap_sem);
+> > +	if (WARN_ON_ONCE(npages > mm->locked_vm))
+> > +		npages =3D mm->locked_vm;
+> > +	mm->locked_vm -=3D npages;
+> >  	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
+> >  			npages << PAGE_SHIFT,
+> > -			current->mm->locked_vm << PAGE_SHIFT,
+> > +			mm->locked_vm << PAGE_SHIFT,
+> >  			rlimit(RLIMIT_MEMLOCK));
+> > -	up_write(&current->mm->mmap_sem);
+> > +	up_write(&mm->mmap_sem);
+> >  }
+> > =20
+> >  /*
+> > @@ -98,6 +95,7 @@ struct tce_container {
+> >  	bool enabled;
+> >  	bool v2;
+> >  	unsigned long locked_pages;
+> > +	struct mm_struct *mm;
+> >  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+> >  	struct list_head group_list;
+> >  };
+> > @@ -107,17 +105,14 @@ static long tce_iommu_unregister_pages(struct tce=
+_container *container,
+> >  {
+> >  	struct mm_iommu_table_group_mem_t *mem;
+> > =20
+> > -	if (!current || !current->mm)
+> > -		return -ESRCH; /* process exited */
+> > -
+> >  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+> >  		return -EINVAL;
+> > =20
+> > -	mem =3D mm_iommu_find(current->mm, vaddr, size >> PAGE_SHIFT);
+> > +	mem =3D mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
+> >  	if (!mem)
+> >  		return -ENOENT;
+> > =20
+> > -	return mm_iommu_put(current->mm, mem);
+> > +	return mm_iommu_put(container->mm, mem);
+> >  }
+> > =20
+> >  static long tce_iommu_register_pages(struct tce_container *container,
+> > @@ -127,14 +122,11 @@ static long tce_iommu_register_pages(struct tce_c=
+ontainer *container,
+> >  	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> >  	unsigned long entries =3D size >> PAGE_SHIFT;
+> > =20
+> > -	if (!current || !current->mm)
+> > -		return -ESRCH; /* process exited */
+> > -
+> >  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
+> >  			((vaddr + size) < vaddr))
+> >  		return -EINVAL;
+> > =20
+> > -	ret =3D mm_iommu_get(current->mm, vaddr, entries, &mem);
+> > +	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
+> >  	if (ret)
+> >  		return ret;
+> > =20
+> > @@ -143,7 +135,8 @@ static long tce_iommu_register_pages(struct tce_con=
+tainer *container,
+> >  	return 0;
+> >  }
+> > =20
+> > -static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl)
+> > +static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl,
+> > +		struct mm_struct *mm)
+> >  {
+> >  	unsigned long cb =3D _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
+> >  			tbl->it_size, PAGE_SIZE);
+> > @@ -152,13 +145,13 @@ static long tce_iommu_userspace_view_alloc(struct=
+ iommu_table *tbl)
+> > =20
+> >  	BUG_ON(tbl->it_userspace);
+> > =20
+> > -	ret =3D try_increment_locked_vm(cb >> PAGE_SHIFT);
+> > +	ret =3D try_increment_locked_vm(mm, cb >> PAGE_SHIFT);
+> >  	if (ret)
+> >  		return ret;
+> > =20
+> >  	uas =3D vzalloc(cb);
+> >  	if (!uas) {
+> > -		decrement_locked_vm(cb >> PAGE_SHIFT);
+> > +		decrement_locked_vm(mm, cb >> PAGE_SHIFT);
+> >  		return -ENOMEM;
+> >  	}
+> >  	tbl->it_userspace =3D uas;
+> > @@ -166,7 +159,8 @@ static long tce_iommu_userspace_view_alloc(struct i=
+ommu_table *tbl)
+> >  	return 0;
+> >  }
+> > =20
+> > -static void tce_iommu_userspace_view_free(struct iommu_table *tbl)
+> > +static void tce_iommu_userspace_view_free(struct iommu_table *tbl,
+> > +		struct mm_struct *mm)
+> >  {
+> >  	unsigned long cb =3D _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
+> >  			tbl->it_size, PAGE_SIZE);
+> > @@ -176,7 +170,7 @@ static void tce_iommu_userspace_view_free(struct io=
+mmu_table *tbl)
+> > =20
+> >  	vfree(tbl->it_userspace);
+> >  	tbl->it_userspace =3D NULL;
+> > -	decrement_locked_vm(cb >> PAGE_SHIFT);
+> > +	decrement_locked_vm(mm, cb >> PAGE_SHIFT);
+> >  }
+> > =20
+> >  static bool tce_page_is_contained(struct page *page, unsigned page_shi=
+ft)
+> > @@ -236,9 +230,6 @@ static int tce_iommu_enable(struct tce_container *c=
+ontainer)
+> >  	struct iommu_table_group *table_group;
+> >  	struct tce_iommu_group *tcegrp;
+> > =20
+> > -	if (!current->mm)
+> > -		return -ESRCH; /* process exited */
+> > -
+> >  	if (container->enabled)
+> >  		return -EBUSY;
+> > =20
+> > @@ -284,7 +275,7 @@ static int tce_iommu_enable(struct tce_container *c=
+ontainer)
+> >  		return -EPERM;
+> > =20
+> >  	locked =3D table_group->tce32_size >> PAGE_SHIFT;
+> > -	ret =3D try_increment_locked_vm(locked);
+> > +	ret =3D try_increment_locked_vm(container->mm, locked);
+> >  	if (ret)
+> >  		return ret;
+> > =20
+> > @@ -302,10 +293,7 @@ static void tce_iommu_disable(struct tce_container=
+ *container)
+> > =20
+> >  	container->enabled =3D false;
+> > =20
+> > -	if (!current->mm)
+> > -		return;
+> > -
+> > -	decrement_locked_vm(container->locked_pages);
+> > +	decrement_locked_vm(container->mm, container->locked_pages);
+> >  }
+> > =20
+> >  static void *tce_iommu_open(unsigned long arg)
+> > @@ -326,13 +314,18 @@ static void *tce_iommu_open(unsigned long arg)
+> > =20
+> >  	container->v2 =3D arg =3D=3D VFIO_SPAPR_TCE_v2_IOMMU;
+> > =20
+> > +	/* current->mm cannot be NULL in this context */
+> > +	container->mm =3D current->mm;
+> > +	atomic_inc(&container->mm->mm_count);
+>=20
+> Are you sure you wouldn't rather do this on the actual
+> preregistration?  The advise I gave to Kirti for mdev was that it's
+> currently possible to have a configuration where a privileged user
+> opens a container, adds a group, sets the iommu, and then passes the
+> file descriptors to another user.  We can then set an mm once mappings,
+> or preregistration occurs, and from there require that the unmapping mm
+> matches the mapping mm, or that both of those match the preregistration
+> mm.  I'm not sure I see any reason to impose that current->mm that
+> performs this operation is the only one that's allowed to perform those
+> later tasks.
+>=20
+> > +
+> >  	return container;
+> >  }
+> > =20
+> >  static int tce_iommu_clear(struct tce_container *container,
+> >  		struct iommu_table *tbl,
+> >  		unsigned long entry, unsigned long pages);
+> > -static void tce_iommu_free_table(struct iommu_table *tbl);
+> > +static void tce_iommu_free_table(struct tce_container *container,
+> > +		struct iommu_table *tbl);
+> > =20
+> >  static void tce_iommu_release(void *iommu_data)
+> >  {
+> > @@ -357,10 +350,11 @@ static void tce_iommu_release(void *iommu_data)
+> >  			continue;
+> > =20
+> >  		tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
+> > -		tce_iommu_free_table(tbl);
+> > +		tce_iommu_free_table(container, tbl);
+> >  	}
+> > =20
+> >  	tce_iommu_disable(container);
+> > +	mmdrop(container->mm);
+>=20
+> I imagine you'd still do this here, just:
+>=20
+> 	if (container->mm)
+> 		mmdrop(container->mm);
+>=20
+> Of course you'd need to check how many places you'd need similar
+> tests, maybe some of the current->mm tests would be converted to
+> container->mm rather than dropped.  Thanks,
 
+Right, as you've implied here, the advantage of locking the mm on open
+is simplicity - open always happens, and it always happens before
+anything else, so there's no conditionals about whether we have or
+haven't set the mm yet.
 
-> +}
-> +
->  struct ima_template_desc *ima_template_desc_current(void)
->  {
-> -       if (!ima_template)
-> +       if (!ima_template) {
-> +               ima_init_template_list();
->                 ima_template =
->                     lookup_template_desc(CONFIG_IMA_DEFAULT_TEMPLATE);
-> +       }
->         return ima_template;
->  }
->
-> --
-> 2.7.4
->
->
-> ------------------------------------------------------------------------------
-> Check out the vibrant tech community on one of the world's most
-> engaging tech sites, SlashDot.org! http://sdm.link/slashdot
-> _______________________________________________
-> Linux-ima-devel mailing list
-> Linux-ima-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-ima-devel
+That said, you have just described a plausible use case where it's
+useful to have one mm open the container, then another one use it, so
+it might be worth adding that ability.
 
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
+--+9kyDs7IugQ0lHaC
+Content-Type: application/pgp-signature; name="signature.asc"
 
--- 
-Thanks,
-Dmitry
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYInHLAAoJEGw4ysog2bOSjnMQAM04YokOjrgI+EX1mWu8BzNq
+XC4UZeYkNnhn6svxveektRVvKucyu/KhudnE9iFRfVRu7g14o5EZBsHeHLK1AW06
+wjn4dqbMlfjln79YnwO16hTe1dATpXZD0FvlZkYhB4DNtLunajybSYLkGixJRCUn
+3C3VfvJ6nzOAYELPO/YAq8U04PUUIj++VAoKf6cpmGDhKRJAxINNLr++02o87PHU
+UuN8+0hFHE8EO5p1fAK7+C48hrVwJqnNActrFx6MmQInv58A2ifdFrsi8biXBIhP
+S9O95N4rVwfyniVwgYKrhA3AwlTiYsMJWjtxsSghdM/3ROvLIv/bAX69ZHXKGYGN
+3aKQGPlfo1nM81zDAlkh4phs3CxG0Gwmfs+KnwM7sgYkw64p9HotIh3RMgnSHeak
+XTcZEVQdN1ZV60zvs6JswIHev46czs9IXoV1HG4RscgQOUiOZQJSbCFQwUzvKwAT
+23YA+5ahhOzlWIS6uNn/cnAVVtjHojZuMa8PNF6SVXbJgYl0u/BiwtxcCAYtDUsU
+L3UT7XraHW8os/zddKlgvETkKHfr5oGLhMyZ0/pu8XsVj+lWWWXgL5c0s54DI/mX
+xtrjklS5HSe7jJIKiDU/PYfg4G28BJigU/NGyd0m3vcj13H5+4+HH8tCoZMvJBEo
+OXguzgjfIFa+j3hsqpnv
+=GEfg
+-----END PGP SIGNATURE-----
+
+--+9kyDs7IugQ0lHaC--
