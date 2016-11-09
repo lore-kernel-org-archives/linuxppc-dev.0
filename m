@@ -1,54 +1,34 @@
-Return-Path: <daniel.wagner@bmw-carit.de>
-Received: from cit-hm8-gw01.bmw-carit.de (cit-hm8-mail01.bmw-carit.de
- [212.118.206.84])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDLKn3L02zDvWV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 20:22:05 +1100 (AEDT)
-Subject: Re: [RFC] fs: add userspace critical mounts event support
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Johannes Berg
- <johannes@sipsolutions.net>, Jouni Malinen <j@w1.fi>, Seth Forshee
- <seth.forshee@canonical.com>, Tom Gundersen <teg@jklm.no>, Kay Sievers
- <kay@vrfy.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Daniel Wagner
- <wagi@monom.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-References: <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
- <20160824203901.GT3296@wotan.suse.de>
- <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
- <20160825194133.GC3296@wotan.suse.de> <20160902235916.GO3296@wotan.suse.de>
- <20160903002014.GP3296@wotan.suse.de>
- <6332a54e-74c6-eafd-368e-71e87a3fa34e@landley.net>
- <20161005180017.GD3296@wotan.suse.de>
- <CA+55aFzrRekSrEczdtGb3RuOeJttJ7i7dQJxiTOXz8V+kr=hdA@mail.gmail.com>
- <20161005194633.GE3296@wotan.suse.de> <20161108224726.GD13978@wotan.suse.de>
-CC: "Herbert, Marc" <marc.herbert@intel.com>, Daniel Vetter
- <daniel.vetter@ffwll.ch>, Rob Landley <rob@landley.net>, Mimi Zohar
- <zohar@linux.vnet.ibm.com>, Felix Fietkau <nbd@nbd.name>, David Woodhouse
- <dwmw2@infradead.org>, Roman Pen <r.peniaev@gmail.com>, Ming Lei
- <ming.lei@canonical.com>, Andrew Morton <akpm@linux-foundation.org>, Michal
- Marek <mmarek@suse.com>, Greg KH <gregkh@linuxfoundation.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>, Vikram Mulukutla
- <markivx@codeaurora.org>, Stephen Boyd <stephen.boyd@linaro.org>, Mark Brown
- <broonie@kernel.org>, Takashi Iwai <tiwai@suse.de>, Christian Lamparter
- <chunkeey@googlemail.com>, Hauke Mehrtens <hauke@hauke-m.de>, Josh Boyer
- <jwboyer@fedoraproject.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Jiri Slaby <jslaby@suse.com>, Andy Lutomirski <luto@amacapital.net>, Wu
- Fengguang <fengguang.wu@intel.com>, Richard Purdie <rpurdie@rpsys.net>, Jeff
- Mahoney <jeffm@suse.com>, Jacek Anaszewski <j.anaszewski@samsung.com>,
- <Abhay_Salunke@dell.com>, Julia Lawall <Julia.Lawall@lip6.fr>,
- <Gilles.Muller@lip6.fr>, <nicolas.palix@imag.fr>, David Howells
- <dhowells@redhat.com>, Alessandro Rubini <rubini@gnudd.com>, Kevin Cernekee
- <cernekee@gmail.com>, Kees Cook <keescook@chromium.org>, Jonathan Corbet
- <corbet@lwn.net>, Thierry Martinez <martinez@nsup.org>, linux-serial
- <linux-serial@vger.kernel.org>, "open list:DOCUMENTATION"
- <linux-doc@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Josh Triplett <josh@joshtriplett.org>, Harald Hoyer <harald@redhat.com>
-From: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Message-ID: <cdd43459-346f-c8e9-e8fc-25bd81e9f0ea@bmw-carit.de>
-Date: Wed, 9 Nov 2016 10:13:11 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDMCv1tQtzDvPr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 21:02:03 +1100 (AEDT)
+Date: Wed, 9 Nov 2016 10:18:33 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: linux-mmc@vger.kernel.org, ulf.hansson@linaro.org,
+ Scott Wood <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Kumar Gala <galak@codeaurora.org>,
+ Leo Li <leoyang.li@nxp.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
+ Minghuan Lian <minghuan.lian@nxp.com>
+Subject: Re: [v16, 0/7] Fix eSDHC host version register bug
+Message-ID: <20161109091832.GC1807@katana>
+References: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <20161108224726.GD13978@wotan.suse.de>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="uh9ZiVrAOUUm9fzH"
+In-Reply-To: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,135 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[CC: added Harald]
 
-On 11/08/2016 11:47 PM, Luis R. Rodriguez wrote:
-> On Wed, Oct 05, 2016 at 09:46:33PM +0200, Luis R. Rodriguez wrote:
->> On Wed, Oct 05, 2016 at 11:08:06AM -0700, Linus Torvalds wrote:
->>> On Wed, Oct 5, 2016 at 11:00 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
->>>> On Tue, Sep 13, 2016 at 09:38:17PM -0500, Rob Landley wrote:
->>>>
->>>>> I did some shuffling around of those code to make initmpfs work, does
->>>>> anybody know why initramfs extraction _before_ we initialize drivers
->>>>> would be a bad thing?
->>>>
->>>> No, but it seems sensible to me, if its done before do_initcalls()
->>>> that should resolve the race for initramfs users
->>>
->>> initramfs should already be set up before drivers are.
->>
->> Actually you are right, the issue would only be for old initrd, for initramfs
->> we populate that via rootfs_initcall(populate_rootfs), so as long as drivers
->> in question use an init level beyond rootfs's we're good there.
->>
->>> Exactly what is it that has trouble right now?
->>
->> It would seem then that the only current stated race possible should
->> then be non-initramfs users.
->
-> Or:
->
-> a) initramfs users that include a driver but do not include the firmware
-> into initramfs
->
-> b) driver is built-in but firmware is not in initrafms (Johannes reports
->    this causes driver failure on intel wireless for instance, and I guess
->    you need to reload)
->
->> One example if very large firmware for
->> remote-proc, whereby an initramfs is just not practical or desirable.
->
-> This issue still stands. At Plumbers Johannes Berg did indicate to me
-> he had a simple elegant solution in mind. He suggested that since the
-> usermode helper was available, he had added support to be able to
-> differentiate async firmware request calls form sync requests, and that
-> userspace should not return an error *iff* the request made was async and
-> it can determine we're initramfs. The semantics issue is the same though,
-> is there a generic way to determine we're initramfs ? What if we move
-> multiple levels? Anyway -- provided we could figure this out, userspace
-> would simply yield and wait until the real rootfs is met. Upon pivot_root()
-> the assumption is all previous udev events pending would be re-triggered
-> and finally udev could finally confirm/deny if the firmware was present.
-> This would *also* allow you to stuff your firmware whever, however big
-> it was. This however relied on the userspace firmware loading support,
-> it turns out that (I think because of an incorrect negative backlash
-> back in the day over blaming this over booting issues due to the timeout
-> whereas the real issue was the kmod timeout was affecting our long
-> standing serial init()/probe()) the systemd userspace firmware laoding
-> support was removed from systemd udev in 2014 by Kay via commit
-> be2ea723b1d023b3d ("udev: remove userspace firmware loading support").
->
-> Systemd might *still* be able to provide a solution here, however I will
-> note Johannes was asking for *all* async firmware requests to always
-> rely on the kernel syfs UMH fallback -- this suggestion is against the
-> direction we've been taking to eventually compartamentalize the kernel UMH
-> code, so whatever we decide to do, lets please take a breather and seriously
-> address this properly *with* systemd folks.
->
-> A side race discussed at Plumbers worth mentioning given its related to the
-> UMH was inspired by Jiri's talk on the abuse of the freezer for kthreads --
-> and his suggestion to use freeze_super(). Currently the UMH lock is used
-> for the UMH but as I have noted in Daniel Wagner's recent patches to
-> give some love to this code and further compartamentalize the UMH --
-> the UMH lock was originally added to help avoid drivers use the firmware
-> API on resume, given the races. The firmware cache solution implemented by
-> Ming Lei years ago helped address this, whereby devm helpers are used
-> based on the requested firmware and prior to suspend we cache all required
-> firmware for drivers so that upon resume calls would work without the
-> effective race present. This mitigated the actual races / issues with
-> drivers, but they must not use the firmware API on suspend/resume. Since
-> this solution *kills* all pending UMH caller on suspend obviously this
-> means on suspend using request_firmware*() API and expecting it to work
-> is brutally dumb as we will eventually kill any pending requests. This
-> is a long winded way to say that if you rely on the UMH for firmware
-> you must figure out your own proactive firmware cache solution and
-> must definitely not request firmware on suspend. Two things then:
->
-> 1) I've been brainstorming with Daniel how to use freeze_super() to
->    replace the now invalid UMH lock -- its purpose only helps races
->    on boot, for the fallback case to the UMH. But note most distributions
->    disable forcing it always on, so these days we *only* rely on the UMH
->    as a fallback if the driver explicitly requested it
->
-> 2) Drivers relying on the UMH very likely have a broken cache solution
->    if they are doing this on suspend
->
-> Whatever the outcome of this discussion is -- Johannes seemed to *want*
-> to further use the UMH by default on *all* async alls... even if the
-> driver did not explicitly requested it -- I'm concerned about this given
-> all the above and the existing flip/flop on systemd for it. Whatever
-> we try to dream up here, please consider all the above as well.
+--uh9ZiVrAOUUm9fzH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-As Harald pointed out over a beer yesterday evening, there is at least
-one more reason why UMH isn't obsolete. The ordering of the firmware 
-loading might be of important. Say you want to greet the user with a 
-splash screen really early on, the graphic card firmware should be 
-loaded first. Also the automotive world has this fancy requirement that 
-rear camera must be on the screen within 2 seconds. So controlling the 
-firmware loading order is of importance (e.g. also do not overcommit the 
-I/O bandwith not so important firmwares). A user space helper is able to 
-prioritize the request accordingly the use case.
 
->>> The gating issue for initramfs is that technically the filesystem
->>> setup needs to be done, which means that it currently ends up being
->>> populated _fairly_ late in the initcall series, but certainly before
->>> drivers. But since initramfs really only needs very limited filesystem
->>> functionality, I assume Rob had few problems with just moving it
->>> earlier.
->>>
->>> Still, what kind of ordering issues did people have? What is it that
->>> needs to load files even before driver init? Some crazy subsystem?
->>
->> No, I think this is just about non-initramfs users now,
->
-> And as Johannes pointed two above to cases.
->
->> if we disregard
->> old initrd users. Bjorn, Marc, correct me if I'm wrong, as I think its
->> so far you both who have seemed to run into race issues and have then
->> ended up trying to look for hacks to address this race or considered using
->> the usermode helper (which we're trying to minimize users for). Daniel
->> seems to note a lot of video drivers use firmware on probe as well so
->> there's a potential issue for those users if they don't use initramfs.
+Can you please update your CC list? There is nothing i2c related in this
+patch series, so you could drop the i2c-list.
 
-Daniel
+
+--uh9ZiVrAOUUm9fzH
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJYIunoAAoJEBQN5MwUoCm2JCAP/0clLR2IchSWDZ0rRwfbLcAL
+aKM/ckNIlHdPmOCq/KnJcPpGux4l6J+WkODLGpCJSMJzI0/WwjPIcNGITaapo7Ue
+U0NlY49zQ6scE9OMwsCwW22Ao5sArOi+6PAZSjmXYMN2+a+k+AnnWc+mmVmHZ9Y4
+lWVeksXVm4Lg2xEtq84ceXOpatb/4KE3M3iOKgcg+9T+Fro+/NnTjf+AkuF9Xkay
+jNqGoOdeIzD2WvrjCRD7+ApBfZZyz/Za89cGtkTvK69QqON6HB6xiesDF/YbPoz3
+UYn91ab+/teyAvoN5kDHaRcEQT2L47rQPY2hh26eCV4pyepp+23sAZ9nMakYOZRl
+rV7/ZBUh6GvyUSxDW8ud/G/O52wbdSObyBjj+qUhCQ5LjtHgcaSZwg8/Brml7YsS
+NO205lIMOsjGiB+vs9N1QhApga6Rcamb3RgIeg3un6gHCFsqnG3xEyeEDhYNNzia
+AIa+xhQ/8MAps3yjGQDp3rDJ+kxzn1qHfsEBCkOEloGsDlKt1L8R9t/05/dYwJGd
+7aKyLlhCXMGbdgzKxPcWNCiKm/UP+pZns4ABDJA8Gi9xkkEJrcr87IQ070M8N4if
+gMRmGS8Q4Yr7MXLC44C2+aStjQWk/058IuKXV/oGHvrj3Buh+IKBl4GazD2tECj5
+gmp4R7RKlYgaZUklTDQT
+=Bmj3
+-----END PGP SIGNATURE-----
+
+--uh9ZiVrAOUUm9fzH--
