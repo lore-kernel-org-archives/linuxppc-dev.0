@@ -1,23 +1,43 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tDW1449DNzDvNL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 02:53:11 +1100 (AEDT)
-Subject: Re: [Patch V6 2/6] irqchip: xilinx: Clean up irqdomain argument and
- read/write
-To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>,
- Thomas Gleixner <tglx@linutronix.de>
-References: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
- <1477916207-25157-3-git-send-email-Zubair.Kakakhel@imgtec.com>
- <alpine.DEB.2.20.1610311335380.5011@nanos>
- <fea1e962-1af2-d666-2b0d-55a8e230430c@imgtec.com>
-Cc: monstr@monstr.eu, jason@lakedaemon.net, linux-kernel@vger.kernel.org,
- michal.simek@xilinx.com, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-From: Marc Zyngier <marc.zyngier@arm.com>
-Message-ID: <30e73e32-3144-3222-c758-dd8affd9b276@arm.com>
-Date: Wed, 9 Nov 2016 15:53:04 +0000
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDWCn6ySvzDvVM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 03:02:29 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uA9FxOhN026364
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 11:02:27 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26m2u9uqfx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 11:02:26 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Wed, 9 Nov 2016 09:02:26 -0700
+Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
+ gso_type
+To: Jonathan Maxwell <jmaxwell37@gmail.com>
+References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
+ <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
+ <6b7003ec-6059-c309-dfee-761216f3d058@linux.vnet.ibm.com>
+ <CAGHK07Cvh2QnGrUg5eu_aC=cV7DaL9wJm8adZ0rv4s0DmF-tzw@mail.gmail.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Jon Maxwell <jmaxwell@redhat.com>, hofrat@osadl.org,
+ linux-kernel@vger.kernel.org, jarod@redhat.com, netdev@vger.kernel.org,
+ paulus@samba.org, Tom Herbert <tom@herbertland.com>,
+ Marcelo Ricardo Leitner <mleitner@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Wed, 9 Nov 2016 10:02:19 -0600
 MIME-Version: 1.0
-In-Reply-To: <fea1e962-1af2-d666-2b0d-55a8e230430c@imgtec.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <CAGHK07Cvh2QnGrUg5eu_aC=cV7DaL9wJm8adZ0rv4s0DmF-tzw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <da1aa901-3698-f582-6beb-de94740e91d5@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,151 +47,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/11/16 11:05, Zubair Lutfullah Kakakhel wrote:
-> Hi,
-> 
-> Thanks for the review.
-> 
-> On 10/31/2016 07:51 PM, Thomas Gleixner wrote:
->> On Mon, 31 Oct 2016, Zubair Lutfullah Kakakhel wrote:
->>> The drivers read/write function handling is a bit quirky.
->>
->> Can you please explain in more detail what's quirky and why it should be
->> done differently,
->>
->>> And the irqmask is passed directly to the handler.
->>
->> I can't make any sense out of that sentence.  Which handler? If you talk
->> about the write function, then I don't see a change. So what are you
->> talking about?
-> 
-> Thanks. I'll add more detail in v7 if this patch survives.
-> 
->>
->>> Add a new irqchip struct to pass to the handler and
->>> cleanup read/write handling.
->>
->> I still don't see what it cleans up. You move the write function pointer
->> into a data structure, which is exposed by another pointer. So you create
->> two levels of indirection in the hotpath. The function prototype is still
->> the same. So all this does is making things slower unless I'm missing
->> something.
-> 
-> I wrote this patch/cleanup based on a review of driver by Marc when I moved the
-> driver from arch/microblaze to drivers/irqchip
-> 
-> "Marc Zyngier
-> 
-> ...
-> 
->  >  arch/microblaze/kernel/intc.c   | 196 ----------------------------------------
->  >  drivers/irqchip/irq-axi-intc.c  | 196 ++++++++++++++++++++++++++++++++++++++++
-> 
-> ...
-> 
->  > +	/* Yeah, okay, casting the intr_mask to a void* is butt-ugly, but I'm
->  > +	 * lazy and Michal can clean it up to something nicer when he tests
->  > +	 * and commits this patch.  ~~gcl */
->  > +	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
->  > +							(void *)intr_mask);
-> 
-> Since you're now reworking this driver, how about addressing this
-> ugliness? You could store the intr_mask together with intc_baseaddr,
-> and the read/write functions in a global structure, and pass a
-> pointer to it? That would make the code a bit nicer...
-> "
-> 
-> https://patchwork.kernel.org/patch/9287933/
-> 
->>
->>> -static unsigned int (*read_fn)(void __iomem *);
->>> -static void (*write_fn)(u32, void __iomem *);
->>> +struct xintc_irq_chip {
->>> +	void __iomem *base;
->>> +	struct	irq_domain *domain;
->>> +	struct	irq_chip chip;
->>
->> The tabs between struct and the structure name are bogus.
->>
->>> +	u32	intr_mask;
->>> +	unsigned int (*read)(void __iomem *iomem);
->>> +	void (*write)(u32 data, void __iomem *iomem);
->>
->> Please structure that like a table:
->>
->> 	void			__iomem *base;
->> 	struct irq_domain	*domain;
->> 	struct irq_chip		chip;
->> 	u32			intr_mask;
->> 	unsigned int		(*read)(void __iomem *iomem);
->> 	void			(*write)(u32 data, void __iomem *iomem);
->>
->> Can you see how that makes parsing the struct simpler, because the data
->> types are clearly to identify?
-> 
-> That does make it look much better.
-> 
->>
->>> +static struct xintc_irq_chip *xintc_irqc;
+On 11/06/2016 03:22 PM, Jonathan Maxwell wrote:
+> On Thu, Nov 3, 2016 at 8:40 AM, Brian King <brking@linux.vnet.ibm.com> wrote:
+>> On 10/27/2016 10:26 AM, Eric Dumazet wrote:
+>>> On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
+>>>> We recently encountered a bug where a few customers using ibmveth on the
+>>>> same LPAR hit an issue where a TCP session hung when large receive was
+>>>> enabled. Closer analysis revealed that the session was stuck because the
+>>>> one side was advertising a zero window repeatedly.
+>>>>
+>>>> We narrowed this down to the fact the ibmveth driver did not set gso_size
+>>>> which is translated by TCP into the MSS later up the stack. The MSS is
+>>>> used to calculate the TCP window size and as that was abnormally large,
+>>>> it was calculating a zero window, even although the sockets receive buffer
+>>>> was completely empty.
+>>>>
+>>>> We were able to reproduce this and worked with IBM to fix this. Thanks Tom
+>>>> and Marcelo for all your help and review on this.
+>>>>
+>>>> The patch fixes both our internal reproduction tests and our customers tests.
+>>>>
+>>>> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
+>>>> ---
+>>>>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
+>>>>  1 file changed, 20 insertions(+)
+>>>>
+>>>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>>>> index 29c05d0..c51717e 100644
+>>>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>>>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+>>>> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>>>      int frames_processed = 0;
+>>>>      unsigned long lpar_rc;
+>>>>      struct iphdr *iph;
+>>>> +    bool large_packet = 0;
+>>>> +    u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
+>>>>
+>>>>  restart_poll:
+>>>>      while (frames_processed < budget) {
+>>>> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>>>                                              iph->check = 0;
+>>>>                                              iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+>>>>                                              adapter->rx_large_packets++;
+>>>> +                                            large_packet = 1;
+>>>>                                      }
+>>>>                              }
+>>>>                      }
+>>>>
+>>>> +                    if (skb->len > netdev->mtu) {
+>>>> +                            iph = (struct iphdr *)skb->data;
+>>>> +                            if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
+>>>> +                                iph->protocol == IPPROTO_TCP) {
+>>>> +                                    hdr_len += sizeof(struct iphdr);
+>>>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
+>>>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>>>> +                            } else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
+>>>> +                                       iph->protocol == IPPROTO_TCP) {
+>>>> +                                    hdr_len += sizeof(struct ipv6hdr);
+>>>> +                                    skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
+>>>> +                                    skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>>>> +                            }
+>>>> +                            if (!large_packet)
+>>>> +                                    adapter->rx_large_packets++;
+>>>> +                    }
+>>>> +
+>>>>
 >>>
->>>  static void intc_write32(u32 val, void __iomem *addr)
->>>  {
->>> @@ -54,6 +60,18 @@ static unsigned int intc_read32_be(void __iomem *addr)
->>>  	return ioread32be(addr);
->>>  }
+>>> This might break forwarding and PMTU discovery.
 >>>
->>> +static inline unsigned int xintc_read(struct xintc_irq_chip *xintc_irqc,
->>> +					     int reg)
->>> +{
->>> +	return xintc_irqc->read(xintc_irqc->base + reg);
->>> +}
->>> +
->>> +static inline void xintc_write(struct xintc_irq_chip *xintc_irqc,
->>> +				     int reg, u32 data)
->>> +{
->>> +	xintc_irqc->write(data, xintc_irqc->base + reg);
->>> +}
->>> +
->>>  static void intc_enable_or_unmask(struct irq_data *d)
->>>  {
->>>  	unsigned long mask = 1 << d->hwirq;
->>> @@ -65,21 +83,21 @@ static void intc_enable_or_unmask(struct irq_data *d)
->>>  	 * acks the irq before calling the interrupt handler
->>>  	 */
->>>  	if (irqd_is_level_type(d))
->>> -		write_fn(mask, intc_baseaddr + IAR);
->>> +		xintc_write(xintc_irqc, IAR, mask);
+>>> You force gso_size to device mtu, regardless of real MSS used by the TCP
+>>> sender.
+>>>
+>>> Don't you have the MSS provided in RX descriptor, instead of guessing
+>>> the value ?
 >>
->> So this whole thing makes only sense, when you want to support multiple
->> instances of that chip and then you need to store the xintc_irqc pointer as
->> irqchip data and retrieve it from there. Unless you do that, this "cleanup"
->> is just churn for nothing with the effect of making things less efficient.
->>
+>> We've had some further discussions on this with the Virtual I/O Server (VIOS)
+>> development team. The large receive aggregation in the VIOS (AIX based) is actually
+>> being done by software in the VIOS. What they may be able to do is when performing
+>> this aggregation, they could look at the packet lengths of all the packets being
+>> aggregated and take the largest packet size within the aggregation unit, minus the
+>> header length and return that to the virtual ethernet client which we could then stuff
+>> into gso_size. They are currently assessing how feasible this would be to do and whether
+>> it would impact other bits of the code. However, assuming this does end up being an option,
+>> would this address the concerns here or is that going to break something else I'm
+>> not thinking of?
 > 
-> Indeed the driver doesn't support multiple instances of the Xilinx Interrupt controller.
-> I don't have a use-case or the hardware for that.
+> I was discussing this with a colleague and although this is better than
+> what we have so far. We wonder if there could be a corner case where
+> it ends up with a smaller value than the current MSS. For example if
+> the application sent a burst of small TCP packets with the PUSH
+> bit set. In that case they may not be coalesced by GRO. The VIOS could
+
+Would that be a big problem though? Other than a performance degradation
+in this specific case, do you see a functional issue with this approach?
+
+> probably be coded to detect that condition and use the previous MSS.
+> But that may not necessarily be the current MSS.
 > 
-> So what would be the recommended course of action?
+> The ibmveth driver passes the MSS via gso_size to the VIOS. Either as the
+> 3rd argument of ibmveth_send() or via tcp_hdr(skb)->check which is
+> presumably over-written when the VIOS does the TSO. Would it be possible
+> to keep a copy of this value on the TX side on the VIOS before it over-written
+> and then some how pass that up to the RX side along with frame and set
+> gso_size to that which should be the current MSS?
 
-If you really don't want/need to support multi-instance, then this is
-indeed overkill. You're then better off having a simple static key that
-deals with the endianess of the peripheral, and have a global structure
-that contains the relevant data:
+That seems like it might be more difficult. Wouldn't that require the VIOS
+to track the MSS on a per connection basis, since the MSS might differ
+based on the source / destination? I discussed with VIOS development, and
+they don't do any connection tracking where they'd be able to insert this.
 
-static DEFINE_STATIC_KEY_FALSE(xintc_is_be);
-
-static void xintc_write(int reg, u32 data)
-{
-	if (static_branch_unlikely(&xintc_is_be))
-		iowrite32be(data, xint_irqc.base + reg);
-	else
-		iowrite32(data, xint_irqc.base + reg);
-}
-
-and something similar for the write accessor.
+Unless there is a functional issue with the approach to have the VIOS insert
+the MSS based on the size of the packets received off the wire, I think that
+might be our best option...
 
 Thanks,
 
-	M.
+Brian
+
+
+
+> 
+> Regards
+> 
+> Jon
+> 
+>>
+>> Unfortunately, I don't think we'd have a good way to get gso_segs set correctly as I don't
+>> see how that would get passed back up the interface.
+>>
+>> Thanks,
+>>
+>> Brian
+>>
+>>
+>> --
+>> Brian King
+>> Power Linux I/O
+>> IBM Linux Technology Center
+>>
+> 
+
+
 -- 
-Jazz is not dead. It just smells funny...
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
