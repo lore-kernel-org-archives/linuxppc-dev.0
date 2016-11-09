@@ -1,10 +1,10 @@
 Return-Path: <yangbo.lu@nxp.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0062.outbound.protection.outlook.com [104.47.33.62])
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0079.outbound.protection.outlook.com [104.47.41.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDBTH6XmWzDvhy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 14:28:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDBTR5yBFzDvhS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 14:28:11 +1100 (AEDT)
 From: Yangbo Lu <yangbo.lu@nxp.com>
 To: <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>, Scott Wood
  <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>
@@ -18,11 +18,11 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
  <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, Bhupesh
  Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar
  Gala <galak@codeaurora.org>, Leo Li <leoyang.li@nxp.com>, Xiaobo Xie
- <xiaobo.xie@nxp.com>, Minghuan Lian <minghuan.lian@nxp.com>, Geert
- Uytterhoeven <geert+renesas@glider.be>
-Subject: [v16, 6/7] base: soc: Check for NULL SoC device attributes
-Date: Wed, 9 Nov 2016 11:14:11 +0800
-Message-ID: <1478661252-42439-7-git-send-email-yangbo.lu@nxp.com>
+ <xiaobo.xie@nxp.com>, Minghuan Lian <minghuan.lian@nxp.com>, Yangbo Lu
+ <yangbo.lu@nxp.com>
+Subject: [v16, 7/7] mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
+Date: Wed, 9 Nov 2016 11:14:12 +0800
+Message-ID: <1478661252-42439-8-git-send-email-yangbo.lu@nxp.com>
 In-Reply-To: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
 References: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
@@ -36,55 +36,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
+The eSDHC of T4240-R1.0-R2.0 has incorrect vender version and spec version.
+Acturally the right version numbers should be VVN=0x13 and SVN = 0x1.
+This patch adds the GUTS driver support for eSDHC driver to match SoC.
+And fix host version to avoid that incorrect version numbers break down
+the ADMA data transfer.
 
-If soc_device_match() is used to check the value of a specific
-attribute that is not present for the current SoC, the kernel crashes
-with a NULL pointer dereference.
-
-Fix this by explicitly checking for the absence of a needed property,
-and considering this a non-match.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Acked-by: Scott Wood <oss@buserror.net>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
+Changes for v2:
+	- Got SVR through iomap instead of dts
+Changes for v3:
+	- Managed GUTS through syscon instead of iomap in eSDHC driver
+Changes for v4:
+	- Got SVR by GUTS driver instead of SYSCON
+Changes for v5:
+	- Changed to get SVR through API fsl_guts_get_svr()
+	- Combined patch 4, patch 5 and patch 6 into one
+Changes for v6:
+	- Added 'Acked-by: Ulf Hansson'
+Changes for v7:
+	- None
+Changes for v8:
+	- Added 'Acked-by: Scott Wood'
+Changes for v9:
+	- None
+Changes for v10:
+	- None
+Changes for v11:
+	- Changed to use soc_device_match
+Changes for v12:
+	- Matched soc through .family field instead of .soc_id
+Changes for v13:
+	- None
+Changes for v14:
+	- None
+Changes for v15:
+	- None
 Changes for v16:
-	- Added this patch
+	- Added 'Acked-by: Arnd'
 ---
- drivers/base/soc.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/mmc/host/Kconfig          |  1 +
+ drivers/mmc/host/sdhci-of-esdhc.c | 20 ++++++++++++++++++++
+ 2 files changed, 21 insertions(+)
 
-diff --git a/drivers/base/soc.c b/drivers/base/soc.c
-index 0c5cf87..0e701e2 100644
---- a/drivers/base/soc.c
-+++ b/drivers/base/soc.c
-@@ -167,19 +167,23 @@ static int soc_device_match_one(struct device *dev, void *arg)
- 	const struct soc_device_attribute *match = arg;
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index 5cf7eba..4128a3c 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -144,6 +144,7 @@ config MMC_SDHCI_OF_ESDHC
+ 	depends on MMC_SDHCI_PLTFM
+ 	depends on PPC || ARCH_MXC || ARCH_LAYERSCAPE
+ 	select MMC_SDHCI_IO_ACCESSORS
++	select FSL_GUTS
+ 	help
+ 	  This selects the Freescale eSDHC controller support.
  
- 	if (match->machine &&
--	    !glob_match(match->machine, soc_dev->attr->machine))
-+	    (!soc_dev->attr->machine ||
-+	     !glob_match(match->machine, soc_dev->attr->machine)))
- 		return 0;
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index fb71c86..57bdb9e 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -18,6 +18,7 @@
+ #include <linux/of.h>
+ #include <linux/delay.h>
+ #include <linux/module.h>
++#include <linux/sys_soc.h>
+ #include <linux/mmc/host.h>
+ #include "sdhci-pltfm.h"
+ #include "sdhci-esdhc.h"
+@@ -28,6 +29,7 @@
+ struct sdhci_esdhc {
+ 	u8 vendor_ver;
+ 	u8 spec_ver;
++	bool quirk_incorrect_hostver;
+ };
  
- 	if (match->family &&
--	    !glob_match(match->family, soc_dev->attr->family))
-+	    (!soc_dev->attr->family ||
-+	     !glob_match(match->family, soc_dev->attr->family)))
- 		return 0;
+ /**
+@@ -73,6 +75,8 @@ static u32 esdhc_readl_fixup(struct sdhci_host *host,
+ static u16 esdhc_readw_fixup(struct sdhci_host *host,
+ 				     int spec_reg, u32 value)
+ {
++	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
++	struct sdhci_esdhc *esdhc = sdhci_pltfm_priv(pltfm_host);
+ 	u16 ret;
+ 	int shift = (spec_reg & 0x2) * 8;
  
- 	if (match->revision &&
--	    !glob_match(match->revision, soc_dev->attr->revision))
-+	    (!soc_dev->attr->revision ||
-+	     !glob_match(match->revision, soc_dev->attr->revision)))
- 		return 0;
+@@ -80,6 +84,12 @@ static u16 esdhc_readw_fixup(struct sdhci_host *host,
+ 		ret = value & 0xffff;
+ 	else
+ 		ret = (value >> shift) & 0xffff;
++	/* Workaround for T4240-R1.0-R2.0 eSDHC which has incorrect
++	 * vendor version and spec version information.
++	 */
++	if ((spec_reg == SDHCI_HOST_VERSION) &&
++	    (esdhc->quirk_incorrect_hostver))
++		ret = (VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) | SDHCI_SPEC_200;
+ 	return ret;
+ }
  
- 	if (match->soc_id &&
--	    !glob_match(match->soc_id, soc_dev->attr->soc_id))
-+	    (!soc_dev->attr->soc_id ||
-+	     !glob_match(match->soc_id, soc_dev->attr->soc_id)))
- 		return 0;
+@@ -558,6 +568,12 @@ static const struct sdhci_pltfm_data sdhci_esdhc_le_pdata = {
+ 	.ops = &sdhci_esdhc_le_ops,
+ };
  
- 	return 1;
++static struct soc_device_attribute soc_incorrect_hostver[] = {
++	{ .family = "QorIQ T4240", .revision = "1.0", },
++	{ .family = "QorIQ T4240", .revision = "2.0", },
++	{ },
++};
++
+ static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
+ {
+ 	struct sdhci_pltfm_host *pltfm_host;
+@@ -571,6 +587,10 @@ static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
+ 	esdhc->vendor_ver = (host_ver & SDHCI_VENDOR_VER_MASK) >>
+ 			     SDHCI_VENDOR_VER_SHIFT;
+ 	esdhc->spec_ver = host_ver & SDHCI_SPEC_VER_MASK;
++	if (soc_device_match(soc_incorrect_hostver))
++		esdhc->quirk_incorrect_hostver = true;
++	else
++		esdhc->quirk_incorrect_hostver = false;
+ }
+ 
+ static int sdhci_esdhc_probe(struct platform_device *pdev)
 -- 
 2.1.0.27.g96db324
