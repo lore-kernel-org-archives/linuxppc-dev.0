@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDpSW2G0czDvjG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 14:29:31 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDpSn6HyPzDvhT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 14:29:45 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAA3STNE096288
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 22:29:29 -0500
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26me9r0nwg-1
+ uAA3SUqp018988
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 22:29:44 -0500
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26mcwfmfth-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 22:29:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 22:29:43 -0500
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 10 Nov 2016 01:29:26 -0200
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.18.232.225])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id D574F1DC0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 22:29:23 -0500 (EST)
+ Thu, 10 Nov 2016 01:29:41 -0200
+Received: from d24relay04.br.ibm.com (d24relay04.br.ibm.com [9.18.232.146])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 2E105352006C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 22:29:09 -0500 (EST)
 Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAA3TNF034144270
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 01:29:23 -0200
+ by d24relay04.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAA3TbQW39256146
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 01:29:37 -0200
 Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
  by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAA3TMRo020687
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 01:29:23 -0200
+ uAA3TZcJ020804
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 01:29:37 -0200
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -44,12 +44,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Andrew Morton <akpm@linux-foundation.org>,
  Stephen Rothwell <sfr@canb.auug.org.au>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v10 07/10] powerpc: Add functions to read ELF files of any
- endianness.
-Date: Thu, 10 Nov 2016 01:27:26 -0200
+Subject: [PATCH v10 08/10] powerpc: Add support for loading ELF kernels with
+ kexec_file_load.
+Date: Thu, 10 Nov 2016 01:27:27 -0200
 In-Reply-To: <1478748449-3894-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1478748449-3894-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1478748449-3894-8-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1478748449-3894-9-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,97 +59,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A little endian kernel might need to kexec a big endian kernel (the
-opposite is less likely but could happen as well), so we can't just cast
-the buffer with the binary to ELF structs and use them as is done
-elsewhere.
+This uses all the infrastructure built up by the previous patches
+in the series to load an ELF vmlinux file and an initrd. It uses the
+flattened device tree at initial_boot_params as a base and adjusts memory
+reservations and its /chosen node for the next kernel.
 
-This patch adds functions which do byte-swapping as necessary when
-populating the ELF structs. These functions will be used in the next
-patch in the series.
-
+[akpm@linux-foundation.org: coding-style fixes]
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/powerpc/include/asm/elf_util.h |  43 ++++
- arch/powerpc/kernel/Makefile        |   2 +-
- arch/powerpc/kernel/elf_util.c      | 437 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 481 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/kexec.h            |  12 ++
+ arch/powerpc/kernel/Makefile                |   3 +-
+ arch/powerpc/kernel/kexec_elf_64.c          | 279 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/machine_kexec_file_64.c | 281 +++++++++++++++++++++++++++-
+ 4 files changed, 572 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/elf_util.h b/arch/powerpc/include/asm/elf_util.h
-new file mode 100644
-index 000000000000..944b3a2d8b73
---- /dev/null
-+++ b/arch/powerpc/include/asm/elf_util.h
-@@ -0,0 +1,43 @@
-+/*
-+ * Utility functions to work with ELF files.
-+ *
-+ * Copyright (C) 2016, IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index eca2f975bf44..6b8cbcf42466 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -91,6 +91,18 @@ static inline bool kdump_in_progress(void)
+ 	return crashing_cpu >= 0;
+ }
+ 
++#ifdef CONFIG_KEXEC_FILE
++#define PURGATORY_ELF_TYPE ET_EXEC
 +
-+#ifndef _ASM_POWERPC_ELF_UTIL_H
-+#define _ASM_POWERPC_ELF_UTIL_H
++extern struct kexec_file_ops kexec_elf64_ops;
 +
-+#include <linux/elf.h>
++int setup_purgatory(struct kimage *image, const void *slave_code,
++		    const void *fdt, unsigned long kernel_load_addr,
++		    unsigned long fdt_load_addr, unsigned long stack_top);
++int setup_new_fdt(void *fdt, unsigned long initrd_load_addr,
++		  unsigned long initrd_len, const char *cmdline);
++#endif /* CONFIG_KEXEC_FILE */
 +
-+struct elf_info {
-+	/*
-+	 * Where the ELF binary contents are kept.
-+	 * Memory managed by the user of the struct.
-+	 */
-+	const char *buffer;
-+
-+	const struct elfhdr *ehdr;
-+	const struct elf_phdr *proghdrs;
-+	struct elf_shdr *sechdrs;
-+};
-+
-+static inline bool elf_is_elf_file(const struct elfhdr *ehdr)
-+{
-+	return memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0;
-+}
-+
-+int elf_read_from_buffer(const char *buf, size_t len, struct elfhdr *ehdr,
-+			 struct elf_info *elf_info);
-+void elf_free_info(struct elf_info *elf_info);
-+
-+#endif /* _ASM_POWERPC_ELF_UTIL_H */
+ #else /* !CONFIG_KEXEC_CORE */
+ static inline void crash_kexec_secondary(struct pt_regs *regs) { }
+ 
 diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 6de731d90bff..de14b7eb11bb 100644
+index de14b7eb11bb..424b13b1b2b0 100644
 --- a/arch/powerpc/kernel/Makefile
 +++ b/arch/powerpc/kernel/Makefile
-@@ -109,7 +109,7 @@ obj-$(CONFIG_PCI)		+= pci_$(BITS).o $(pci64-y) \
+@@ -109,7 +109,8 @@ obj-$(CONFIG_PCI)		+= pci_$(BITS).o $(pci64-y) \
  obj-$(CONFIG_PCI_MSI)		+= msi.o
  obj-$(CONFIG_KEXEC_CORE)	+= machine_kexec.o crash.o \
  				   machine_kexec_$(BITS).o
--obj-$(CONFIG_KEXEC_FILE)	+= machine_kexec_file_$(BITS).o
-+obj-$(CONFIG_KEXEC_FILE)	+= machine_kexec_file_$(BITS).o elf_util.o
+-obj-$(CONFIG_KEXEC_FILE)	+= machine_kexec_file_$(BITS).o elf_util.o
++obj-$(CONFIG_KEXEC_FILE)	+= machine_kexec_file_$(BITS).o elf_util.o \
++				   kexec_elf_$(BITS).o
  obj-$(CONFIG_AUDIT)		+= audit.o
  obj64-$(CONFIG_AUDIT)		+= compat_audit.o
  
-diff --git a/arch/powerpc/kernel/elf_util.c b/arch/powerpc/kernel/elf_util.c
+diff --git a/arch/powerpc/kernel/kexec_elf_64.c b/arch/powerpc/kernel/kexec_elf_64.c
 new file mode 100644
-index 000000000000..8572fc84a802
+index 000000000000..f58b77d80d59
 --- /dev/null
-+++ b/arch/powerpc/kernel/elf_util.c
-@@ -0,0 +1,437 @@
++++ b/arch/powerpc/kernel/kexec_elf_64.c
+@@ -0,0 +1,279 @@
 +/*
-+ * Utility functions to work with ELF files.
++ * Load ELF vmlinux file for the kexec_file_load syscall.
 + *
-+ * Copyright (C) 2016, IBM Corporation
++ * Copyright (C) 2004  Adam Litke (agl@us.ibm.com)
++ * Copyright (C) 2004  IBM Corp.
++ * Copyright (C) 2005  R Sharada (sharada@in.ibm.com)
++ * Copyright (C) 2006  Mohan Kumar M (mohan@in.ibm.com)
++ * Copyright (C) 2016  IBM Corporation
 + *
-+ * Based on kexec-tools' kexec-elf.c. Heavily modified for the
-+ * kernel by Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>.
++ * Based on kexec-tools' kexec-elf-exec.c and kexec-elf-ppc64.c.
++ * Heavily modified for the kernel by
++ * Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -161,424 +140,572 @@ index 000000000000..8572fc84a802
 + * GNU General Public License for more details.
 + */
 +
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++#define pr_fmt(fmt)	"kexec_elf: " fmt
 +
++#include <linux/types.h>
 +#include <linux/slab.h>
++#include <linux/elf.h>
++#include <linux/kexec.h>
++#include <linux/of_fdt.h>
++#include <linux/libfdt.h>
 +#include <asm/elf_util.h>
-+#include <asm-generic/module.h>
 +
-+#if ELF_CLASS == ELFCLASS32
-+#define elf_addr_to_cpu	elf32_to_cpu
-+
-+#ifndef Elf_Rel
-+#define Elf_Rel		Elf32_Rel
-+#endif /* Elf_Rel */
-+#else /* ELF_CLASS == ELFCLASS32 */
-+#define elf_addr_to_cpu	elf64_to_cpu
-+
-+#ifndef Elf_Rel
-+#define Elf_Rel		Elf64_Rel
-+#endif /* Elf_Rel */
-+
-+static uint64_t elf64_to_cpu(const struct elfhdr *ehdr, uint64_t value)
-+{
-+	if (ehdr->e_ident[EI_DATA] == ELFDATA2LSB)
-+		value = le64_to_cpu(value);
-+	else if (ehdr->e_ident[EI_DATA] == ELFDATA2MSB)
-+		value = be64_to_cpu(value);
-+
-+	return value;
-+}
-+#endif /* ELF_CLASS == ELFCLASS32 */
-+
-+static uint16_t elf16_to_cpu(const struct elfhdr *ehdr, uint16_t value)
-+{
-+	if (ehdr->e_ident[EI_DATA] == ELFDATA2LSB)
-+		value = le16_to_cpu(value);
-+	else if (ehdr->e_ident[EI_DATA] == ELFDATA2MSB)
-+		value = be16_to_cpu(value);
-+
-+	return value;
-+}
-+
-+static uint32_t elf32_to_cpu(const struct elfhdr *ehdr, uint32_t value)
-+{
-+	if (ehdr->e_ident[EI_DATA] == ELFDATA2LSB)
-+		value = le32_to_cpu(value);
-+	else if (ehdr->e_ident[EI_DATA] == ELFDATA2MSB)
-+		value = be32_to_cpu(value);
-+
-+	return value;
-+}
++#define PURGATORY_STACK_SIZE	(16 * 1024)
 +
 +/**
-+ * elf_is_ehdr_sane - check that it is safe to use the ELF header
-+ * @buf_len:	size of the buffer in which the ELF file is loaded.
++ * build_elf_exec_info - read ELF executable and check that we can use it
 + */
-+static bool elf_is_ehdr_sane(const struct elfhdr *ehdr, size_t buf_len)
++static int build_elf_exec_info(const char *buf, size_t len, struct elfhdr *ehdr,
++			       struct elf_info *elf_info)
 +{
-+	if (ehdr->e_phnum > 0 && ehdr->e_phentsize != sizeof(struct elf_phdr)) {
-+		pr_debug("Bad program header size.\n");
-+		return false;
-+	} else if (ehdr->e_shnum > 0 &&
-+		   ehdr->e_shentsize != sizeof(struct elf_shdr)) {
-+		pr_debug("Bad section header size.\n");
-+		return false;
-+	} else if (ehdr->e_ident[EI_VERSION] != EV_CURRENT ||
-+		   ehdr->e_version != EV_CURRENT) {
-+		pr_debug("Unknown ELF version.\n");
-+		return false;
-+	}
-+
-+	if (ehdr->e_phoff > 0 && ehdr->e_phnum > 0) {
-+		size_t phdr_size;
-+
-+		/*
-+		 * e_phnum is at most 65535 so calculating the size of the
-+		 * program header cannot overflow.
-+		 */
-+		phdr_size = sizeof(struct elf_phdr) * ehdr->e_phnum;
-+
-+		/* Sanity check the program header table location. */
-+		if (ehdr->e_phoff + phdr_size < ehdr->e_phoff) {
-+			pr_debug("Program headers at invalid location.\n");
-+			return false;
-+		} else if (ehdr->e_phoff + phdr_size > buf_len) {
-+			pr_debug("Program headers truncated.\n");
-+			return false;
-+		}
-+	}
-+
-+	if (ehdr->e_shoff > 0 && ehdr->e_shnum > 0) {
-+		size_t shdr_size;
-+
-+		/*
-+		 * e_shnum is at most 65536 so calculating
-+		 * the size of the section header cannot overflow.
-+		 */
-+		shdr_size = sizeof(struct elf_shdr) * ehdr->e_shnum;
-+
-+		/* Sanity check the section header table location. */
-+		if (ehdr->e_shoff + shdr_size < ehdr->e_shoff) {
-+			pr_debug("Section headers at invalid location.\n");
-+			return false;
-+		} else if (ehdr->e_shoff + shdr_size > buf_len) {
-+			pr_debug("Section headers truncated.\n");
-+			return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+
-+static int elf_read_ehdr(const char *buf, size_t len, struct elfhdr *ehdr)
-+{
-+	struct elfhdr *buf_ehdr;
-+
-+	if (len < sizeof(*buf_ehdr)) {
-+		pr_debug("Buffer is too small to hold ELF header.\n");
-+		return -ENOEXEC;
-+	}
-+
-+	memset(ehdr, 0, sizeof(*ehdr));
-+	memcpy(ehdr->e_ident, buf, sizeof(ehdr->e_ident));
-+	if (!elf_is_elf_file(ehdr)) {
-+		pr_debug("No ELF header magic.\n");
-+		return -ENOEXEC;
-+	}
-+
-+	if (ehdr->e_ident[EI_CLASS] != ELF_CLASS) {
-+		pr_debug("Not a supported ELF class.\n");
-+		return -1;
-+	} else  if (ehdr->e_ident[EI_DATA] != ELFDATA2LSB &&
-+		ehdr->e_ident[EI_DATA] != ELFDATA2MSB) {
-+		pr_debug("Not a supported ELF data format.\n");
-+		return -ENOEXEC;
-+	}
-+
-+	buf_ehdr = (struct elfhdr *) buf;
-+	if (elf16_to_cpu(ehdr, buf_ehdr->e_ehsize) != sizeof(*buf_ehdr)) {
-+		pr_debug("Bad ELF header size.\n");
-+		return -ENOEXEC;
-+	}
-+
-+	ehdr->e_type      = elf16_to_cpu(ehdr, buf_ehdr->e_type);
-+	ehdr->e_machine   = elf16_to_cpu(ehdr, buf_ehdr->e_machine);
-+	ehdr->e_version   = elf32_to_cpu(ehdr, buf_ehdr->e_version);
-+	ehdr->e_entry     = elf_addr_to_cpu(ehdr, buf_ehdr->e_entry);
-+	ehdr->e_phoff     = elf_addr_to_cpu(ehdr, buf_ehdr->e_phoff);
-+	ehdr->e_shoff     = elf_addr_to_cpu(ehdr, buf_ehdr->e_shoff);
-+	ehdr->e_flags     = elf32_to_cpu(ehdr, buf_ehdr->e_flags);
-+	ehdr->e_phentsize = elf16_to_cpu(ehdr, buf_ehdr->e_phentsize);
-+	ehdr->e_phnum     = elf16_to_cpu(ehdr, buf_ehdr->e_phnum);
-+	ehdr->e_shentsize = elf16_to_cpu(ehdr, buf_ehdr->e_shentsize);
-+	ehdr->e_shnum     = elf16_to_cpu(ehdr, buf_ehdr->e_shnum);
-+	ehdr->e_shstrndx  = elf16_to_cpu(ehdr, buf_ehdr->e_shstrndx);
-+
-+	return elf_is_ehdr_sane(ehdr, len) ? 0 : -ENOEXEC;
-+}
-+
-+/**
-+ * elf_is_phdr_sane - check that it is safe to use the program header
-+ * @buf_len:	size of the buffer in which the ELF file is loaded.
-+ */
-+static bool elf_is_phdr_sane(const struct elf_phdr *phdr, size_t buf_len)
-+{
-+
-+	if (phdr->p_offset + phdr->p_filesz < phdr->p_offset) {
-+		pr_debug("ELF segment location wraps around.\n");
-+		return false;
-+	} else if (phdr->p_offset + phdr->p_filesz > buf_len) {
-+		pr_debug("ELF segment not in file.\n");
-+		return false;
-+	} else if (phdr->p_paddr + phdr->p_memsz < phdr->p_paddr) {
-+		pr_debug("ELF segment address wraps around.\n");
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
-+static int elf_read_phdr(const char *buf, size_t len, struct elf_info *elf_info,
-+			 int idx)
-+{
-+	/* Override the const in proghdrs, we are the ones doing the loading. */
-+	struct elf_phdr *phdr = (struct elf_phdr *) &elf_info->proghdrs[idx];
-+	const char *pbuf;
-+	struct elf_phdr *buf_phdr;
-+
-+	pbuf = buf + elf_info->ehdr->e_phoff + (idx * sizeof(*buf_phdr));
-+	buf_phdr = (struct elf_phdr *) pbuf;
-+
-+	phdr->p_type   = elf32_to_cpu(elf_info->ehdr, buf_phdr->p_type);
-+	phdr->p_offset = elf_addr_to_cpu(elf_info->ehdr, buf_phdr->p_offset);
-+	phdr->p_paddr  = elf_addr_to_cpu(elf_info->ehdr, buf_phdr->p_paddr);
-+	phdr->p_vaddr  = elf_addr_to_cpu(elf_info->ehdr, buf_phdr->p_vaddr);
-+	phdr->p_flags  = elf32_to_cpu(elf_info->ehdr, buf_phdr->p_flags);
-+
-+	/*
-+	 * The following fields have a type equivalent to Elf_Addr
-+	 * both in 32 bit and 64 bit ELF.
-+	 */
-+	phdr->p_filesz = elf_addr_to_cpu(elf_info->ehdr, buf_phdr->p_filesz);
-+	phdr->p_memsz  = elf_addr_to_cpu(elf_info->ehdr, buf_phdr->p_memsz);
-+	phdr->p_align  = elf_addr_to_cpu(elf_info->ehdr, buf_phdr->p_align);
-+
-+	return elf_is_phdr_sane(phdr, len) ? 0 : -ENOEXEC;
-+}
-+
-+/**
-+ * elf_read_phdrs - read the program headers from the buffer
-+ *
-+ * This function assumes that the program header table was checked for sanity.
-+ * Use elf_is_ehdr_sane() if it wasn't.
-+ */
-+static int elf_read_phdrs(const char *buf, size_t len,
-+			  struct elf_info *elf_info)
-+{
-+	size_t phdr_size, i;
-+	const struct elfhdr *ehdr = elf_info->ehdr;
-+
-+	/*
-+	 * e_phnum is at most 65535 so calculating the size of the
-+	 * program header cannot overflow.
-+	 */
-+	phdr_size = sizeof(struct elf_phdr) * ehdr->e_phnum;
-+
-+	elf_info->proghdrs = kzalloc(phdr_size, GFP_KERNEL);
-+	if (!elf_info->proghdrs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < ehdr->e_phnum; i++) {
-+		int ret;
-+
-+		ret = elf_read_phdr(buf, len, elf_info, i);
-+		if (ret) {
-+			kfree(elf_info->proghdrs);
-+			elf_info->proghdrs = NULL;
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * elf_is_shdr_sane - check that it is safe to use the section header
-+ * @buf_len:	size of the buffer in which the ELF file is loaded.
-+ */
-+static bool elf_is_shdr_sane(const struct elf_shdr *shdr, size_t buf_len)
-+{
-+	bool size_ok;
-+
-+	/* SHT_NULL headers have undefined values, so we can't check them. */
-+	if (shdr->sh_type == SHT_NULL)
-+		return true;
-+
-+	/* Now verify sh_entsize */
-+	switch (shdr->sh_type) {
-+	case SHT_SYMTAB:
-+		size_ok = shdr->sh_entsize == sizeof(Elf_Sym);
-+		break;
-+	case SHT_RELA:
-+		size_ok = shdr->sh_entsize == sizeof(Elf_Rela);
-+		break;
-+	case SHT_DYNAMIC:
-+		size_ok = shdr->sh_entsize == sizeof(Elf_Dyn);
-+		break;
-+	case SHT_REL:
-+		size_ok = shdr->sh_entsize == sizeof(Elf_Rel);
-+		break;
-+	case SHT_NOTE:
-+	case SHT_PROGBITS:
-+	case SHT_HASH:
-+	case SHT_NOBITS:
-+	default:
-+		/*
-+		 * This is a section whose entsize requirements
-+		 * I don't care about.  If I don't know about
-+		 * the section I can't care about it's entsize
-+		 * requirements.
-+		 */
-+		size_ok = true;
-+		break;
-+	}
-+
-+	if (!size_ok) {
-+		pr_debug("ELF section with wrong entry size.\n");
-+		return false;
-+	} else if (shdr->sh_addr + shdr->sh_size < shdr->sh_addr) {
-+		pr_debug("ELF section address wraps around.\n");
-+		return false;
-+	}
-+
-+	if (shdr->sh_type != SHT_NOBITS) {
-+		if (shdr->sh_offset + shdr->sh_size < shdr->sh_offset) {
-+			pr_debug("ELF section location wraps around.\n");
-+			return false;
-+		} else if (shdr->sh_offset + shdr->sh_size > buf_len) {
-+			pr_debug("ELF section not in file.\n");
-+			return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+
-+static int elf_read_shdr(const char *buf, size_t len, struct elf_info *elf_info,
-+			 int idx)
-+{
-+	struct elf_shdr *shdr = &elf_info->sechdrs[idx];
-+	const struct elfhdr *ehdr = elf_info->ehdr;
-+	const char *sbuf;
-+	struct elf_shdr *buf_shdr;
-+
-+	sbuf = buf + ehdr->e_shoff + idx * sizeof(*buf_shdr);
-+	buf_shdr = (struct elf_shdr *) sbuf;
-+
-+	shdr->sh_name      = elf32_to_cpu(ehdr, buf_shdr->sh_name);
-+	shdr->sh_type      = elf32_to_cpu(ehdr, buf_shdr->sh_type);
-+	shdr->sh_addr      = elf_addr_to_cpu(ehdr, buf_shdr->sh_addr);
-+	shdr->sh_offset    = elf_addr_to_cpu(ehdr, buf_shdr->sh_offset);
-+	shdr->sh_link      = elf32_to_cpu(ehdr, buf_shdr->sh_link);
-+	shdr->sh_info      = elf32_to_cpu(ehdr, buf_shdr->sh_info);
-+
-+	/*
-+	 * The following fields have a type equivalent to Elf_Addr
-+	 * both in 32 bit and 64 bit ELF.
-+	 */
-+	shdr->sh_flags     = elf_addr_to_cpu(ehdr, buf_shdr->sh_flags);
-+	shdr->sh_size      = elf_addr_to_cpu(ehdr, buf_shdr->sh_size);
-+	shdr->sh_addralign = elf_addr_to_cpu(ehdr, buf_shdr->sh_addralign);
-+	shdr->sh_entsize   = elf_addr_to_cpu(ehdr, buf_shdr->sh_entsize);
-+
-+	return elf_is_shdr_sane(shdr, len) ? 0 : -ENOEXEC;
-+}
-+
-+/**
-+ * elf_read_shdrs - read the section headers from the buffer
-+ *
-+ * This function assumes that the section header table was checked for sanity.
-+ * Use elf_is_ehdr_sane() if it wasn't.
-+ */
-+static int elf_read_shdrs(const char *buf, size_t len,
-+			  struct elf_info *elf_info)
-+{
-+	size_t shdr_size, i;
-+
-+	/*
-+	 * e_shnum is at most 65536 so calculating
-+	 * the size of the section header cannot overflow.
-+	 */
-+	shdr_size = sizeof(struct elf_shdr) * elf_info->ehdr->e_shnum;
-+
-+	elf_info->sechdrs = kzalloc(shdr_size, GFP_KERNEL);
-+	if (!elf_info->sechdrs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < elf_info->ehdr->e_shnum; i++) {
-+		int ret;
-+
-+		ret = elf_read_shdr(buf, len, elf_info, i);
-+		if (ret) {
-+			kfree(elf_info->sechdrs);
-+			elf_info->sechdrs = NULL;
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * elf_read_from_buffer - read ELF file and sets up ELF header and ELF info
-+ * @buf:	Buffer to read ELF file from.
-+ * @len:	Size of @buf.
-+ * @ehdr:	Pointer to existing struct which will be populated.
-+ * @elf_info:	Pointer to existing struct which will be populated.
-+ *
-+ * This function allows reading ELF files with different byte order than
-+ * the kernel, byte-swapping the fields as needed.
-+ *
-+ * Return:
-+ * On success returns 0, and the caller should call elf_free_info(elf_info) to
-+ * free the memory allocated for the section and program headers.
-+ */
-+int elf_read_from_buffer(const char *buf, size_t len, struct elfhdr *ehdr,
-+			 struct elf_info *elf_info)
-+{
++	int i;
 +	int ret;
 +
-+	ret = elf_read_ehdr(buf, len, ehdr);
++	ret = elf_read_from_buffer(buf, len, ehdr, elf_info);
 +	if (ret)
 +		return ret;
 +
-+	elf_info->buffer = buf;
-+	elf_info->ehdr = ehdr;
-+	if (ehdr->e_phoff > 0 && ehdr->e_phnum > 0) {
-+		ret = elf_read_phdrs(buf, len, elf_info);
++	/* Big endian vmlinux has type ET_DYN. */
++	if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
++		pr_err("Not an ELF executable.\n");
++		goto error;
++	} else if (!elf_info->proghdrs) {
++		pr_err("No ELF program header.\n");
++		goto error;
++	}
++
++	for (i = 0; i < ehdr->e_phnum; i++) {
++		/*
++		 * Kexec does not support loading interpreters.
++		 * In addition this check keeps us from attempting
++		 * to kexec ordinay executables.
++		 */
++		if (elf_info->proghdrs[i].p_type == PT_INTERP) {
++			pr_err("Requires an ELF interpreter.\n");
++			goto error;
++		}
++	}
++
++	return 0;
++error:
++	elf_free_info(elf_info);
++	return -ENOEXEC;
++}
++
++static int elf64_probe(const char *buf, unsigned long len)
++{
++	struct elfhdr ehdr;
++	struct elf_info elf_info;
++	int ret;
++
++	ret = build_elf_exec_info(buf, len, &ehdr, &elf_info);
++	if (ret)
++		return ret;
++
++	elf_free_info(&elf_info);
++
++	return elf_check_arch(&ehdr) ? 0 : -ENOEXEC;
++}
++
++/**
++ * elf_exec_load - load ELF executable image
++ * @lowest_load_addr:	On return, will be the address where the first PT_LOAD
++ *			section will be loaded in memory.
++ *
++ * Return:
++ * 0 on success, negative value on failure.
++ */
++static int elf_exec_load(struct kimage *image, struct elfhdr *ehdr,
++			 struct elf_info *elf_info,
++			 unsigned long *lowest_load_addr)
++{
++	unsigned long base = 0, lowest_addr = UINT_MAX;
++	int ret;
++	size_t i;
++	struct kexec_buf kbuf = { .image = image, .buf_max = ppc64_rma_size,
++				  .top_down = false };
++
++	/* Read in the PT_LOAD segments. */
++	for (i = 0; i < ehdr->e_phnum; i++) {
++		unsigned long load_addr;
++		size_t size;
++		const struct elf_phdr *phdr;
++
++		phdr = &elf_info->proghdrs[i];
++		if (phdr->p_type != PT_LOAD)
++			continue;
++
++		size = phdr->p_filesz;
++		if (size > phdr->p_memsz)
++			size = phdr->p_memsz;
++
++		kbuf.buffer = (void *) elf_info->buffer + phdr->p_offset;
++		kbuf.bufsz = size;
++		kbuf.memsz = phdr->p_memsz;
++		kbuf.buf_align = phdr->p_align;
++		kbuf.buf_min = phdr->p_paddr + base;
++		ret = kexec_add_buffer(&kbuf);
++		if (ret)
++			goto out;
++		load_addr = kbuf.mem;
++
++		if (load_addr < lowest_addr)
++			lowest_addr = load_addr;
++	}
++
++	/* Update entry point to reflect new load address. */
++	ehdr->e_entry += base;
++
++	*lowest_load_addr = lowest_addr;
++	ret = 0;
++ out:
++	return ret;
++}
++
++static void *elf64_load(struct kimage *image, char *kernel_buf,
++			unsigned long kernel_len, char *initrd,
++			unsigned long initrd_len, char *cmdline,
++			unsigned long cmdline_len)
++{
++	int i, ret;
++	unsigned int fdt_size;
++	unsigned long kernel_load_addr, purgatory_load_addr;
++	unsigned long initrd_load_addr = 0, fdt_load_addr, stack_top;
++	void *fdt;
++	const void *slave_code;
++	struct elfhdr ehdr;
++	struct elf_info elf_info;
++	struct fdt_reserve_entry *rsvmap;
++	struct kexec_buf kbuf = { .image = image, .buf_min = 0,
++				  .buf_max = ppc64_rma_size };
++
++	ret = build_elf_exec_info(kernel_buf, kernel_len, &ehdr, &elf_info);
++	if (ret)
++		goto out;
++
++	ret = elf_exec_load(image, &ehdr, &elf_info, &kernel_load_addr);
++	if (ret)
++		goto out;
++
++	pr_debug("Loaded the kernel at 0x%lx\n", kernel_load_addr);
++
++	ret = kexec_load_purgatory(image, 0, ppc64_rma_size, true,
++				   &purgatory_load_addr);
++	if (ret) {
++		pr_err("Loading purgatory failed.\n");
++		goto out;
++	}
++
++	pr_debug("Loaded purgatory at 0x%lx\n", purgatory_load_addr);
++
++	if (initrd != NULL) {
++		kbuf.buffer = initrd;
++		kbuf.bufsz = kbuf.memsz = initrd_len;
++		kbuf.buf_align = PAGE_SIZE;
++		kbuf.top_down = false;
++		ret = kexec_add_buffer(&kbuf);
++		if (ret)
++			goto out;
++		initrd_load_addr = kbuf.mem;
++
++		pr_debug("Loaded initrd at 0x%lx\n", initrd_load_addr);
++	}
++
++	fdt_size = fdt_totalsize(initial_boot_params) * 2;
++	fdt = kmalloc(fdt_size, GFP_KERNEL);
++	if (!fdt) {
++		pr_err("Not enough memory for the device tree.\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++	ret = fdt_open_into(initial_boot_params, fdt, fdt_size);
++	if (ret < 0) {
++		pr_err("Error setting up the new device tree.\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	ret = setup_new_fdt(fdt, initrd_load_addr, initrd_len, cmdline);
++	if (ret)
++		goto out;
++
++	/*
++	 * Documentation/devicetree/booting-without-of.txt says we need to
++	 * add a reservation entry for the device tree block, but
++	 * early_init_fdt_reserve_self reserves the memory even if there's no
++	 * such entry. We'll add a reservation entry anyway, to be safe and
++	 * compliant.
++	 *
++	 * Use dummy values, we will correct them in a moment.
++	 */
++	ret = fdt_add_mem_rsv(fdt, 1, 1);
++	if (ret) {
++		pr_err("Error reserving device tree memory: %s\n",
++		       fdt_strerror(ret));
++		ret = -EINVAL;
++		goto out;
++	}
++	fdt_pack(fdt);
++
++	kbuf.buffer = fdt;
++	kbuf.bufsz = kbuf.memsz = fdt_size;
++	kbuf.buf_align = PAGE_SIZE;
++	kbuf.top_down = true;
++	ret = kexec_add_buffer(&kbuf);
++	if (ret)
++		goto out;
++	fdt_load_addr = kbuf.mem;
++
++	/*
++	 * Fix fdt reservation, now that we now where it will be loaded
++	 * and how big it is.
++	 */
++	rsvmap = fdt + fdt_off_mem_rsvmap(fdt);
++	i = fdt_num_mem_rsv(fdt) - 1;
++	rsvmap[i].address = cpu_to_fdt64(fdt_load_addr);
++	rsvmap[i].size = cpu_to_fdt64(fdt_totalsize(fdt));
++
++	pr_debug("Loaded device tree at 0x%lx\n", fdt_load_addr);
++
++	kbuf.memsz = PURGATORY_STACK_SIZE;
++	kbuf.buf_align = PAGE_SIZE;
++	kbuf.top_down = true;
++	ret = kexec_locate_mem_hole(&kbuf);
++	if (ret) {
++		pr_err("Couldn't find free memory for the purgatory stack.\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++	stack_top = kbuf.mem + PURGATORY_STACK_SIZE - 1;
++	pr_debug("Purgatory stack is at 0x%lx\n", stack_top);
++
++	slave_code = elf_info.buffer + elf_info.proghdrs[0].p_offset;
++	ret = setup_purgatory(image, slave_code, fdt, kernel_load_addr,
++			      fdt_load_addr, stack_top);
++	if (ret)
++		pr_err("Error setting up the purgatory.\n");
++
++out:
++	elf_free_info(&elf_info);
++
++	/* Make kimage_file_post_load_cleanup free the fdt buffer for us. */
++	return ret ? ERR_PTR(ret) : fdt;
++}
++
++struct kexec_file_ops kexec_elf64_ops = {
++	.probe = elf64_probe,
++	.load = elf64_load,
++};
+diff --git a/arch/powerpc/kernel/machine_kexec_file_64.c b/arch/powerpc/kernel/machine_kexec_file_64.c
+index 172f6f736987..c181314efa47 100644
+--- a/arch/powerpc/kernel/machine_kexec_file_64.c
++++ b/arch/powerpc/kernel/machine_kexec_file_64.c
+@@ -3,11 +3,12 @@
+  *
+  * Copyright (C) 2004  Adam Litke (agl@us.ibm.com)
+  * Copyright (C) 2004  IBM Corp.
++ * Copyright (C) 2004,2005  Milton D Miller II, IBM Corporation
+  * Copyright (C) 2005  R Sharada (sharada@in.ibm.com)
+  * Copyright (C) 2006  Mohan Kumar M (mohan@in.ibm.com)
+  * Copyright (C) 2016  IBM Corporation
+  *
+- * Based on kexec-tools' kexec-elf-ppc64.c.
++ * Based on kexec-tools' kexec-elf-ppc64.c, fs2dt.c.
+  * Heavily modified for the kernel by
+  * Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>.
+  *
+@@ -24,11 +25,15 @@
+ #include <linux/slab.h>
+ #include <linux/kexec.h>
+ #include <linux/memblock.h>
++#include <linux/of_fdt.h>
+ #include <linux/libfdt.h>
++#include <asm/elf_util.h>
+ 
+ #define SLAVE_CODE_SIZE		256
+ 
+-static struct kexec_file_ops *kexec_file_loaders[] = { };
++static struct kexec_file_ops *kexec_file_loaders[] = {
++	&kexec_elf64_ops,
++};
+ 
+ int arch_kexec_kernel_image_probe(struct kimage *image, void *buf,
+ 				  unsigned long buf_len)
+@@ -299,3 +304,275 @@ int arch_kexec_apply_relocations_add(const Elf64_Ehdr *ehdr,
+ 
+ 	return 0;
+ }
++
++/**
++ * setup_purgatory - initialize the purgatory's global variables
++ * @image:		kexec image.
++ * @slave_code:		Slave code for the purgatory.
++ * @fdt:		Flattened device tree for the next kernel.
++ * @kernel_load_addr:	Address where the kernel is loaded.
++ * @fdt_load_addr:	Address where the flattened device tree is loaded.
++ * @stack_top:		Address where the purgatory can place its stack.
++ *
++ * Return: 0 on success, or negative errno on error.
++ */
++int setup_purgatory(struct kimage *image, const void *slave_code,
++		    const void *fdt, unsigned long kernel_load_addr,
++		    unsigned long fdt_load_addr, unsigned long stack_top)
++{
++	int i, ret, tree_node;
++	const void *prop;
++	unsigned long opal_base, opal_entry, toc;
++	unsigned int *slave_code_buf, master_entry;
++	const struct purgatory_info *pi = &image->purgatory_info;
++	const Elf_Shdr *sechdrs = pi->sechdrs;
++	const char *shstrtab;
++
++	slave_code_buf = kmalloc(SLAVE_CODE_SIZE, GFP_KERNEL);
++	if (!slave_code_buf)
++		return -ENOMEM;
++
++	/* Get the slave code from the new kernel and put it in purgatory. */
++	ret = kexec_purgatory_get_set_symbol(image, "purgatory_start",
++					     slave_code_buf, SLAVE_CODE_SIZE,
++					     true);
++	if (ret) {
++		kfree(slave_code_buf);
++		return ret;
++	}
++
++	master_entry = slave_code_buf[0];
++	memcpy(slave_code_buf, slave_code, SLAVE_CODE_SIZE);
++	slave_code_buf[0] = master_entry;
++	ret = kexec_purgatory_get_set_symbol(image, "purgatory_start",
++					     slave_code_buf, SLAVE_CODE_SIZE,
++					     false);
++	kfree(slave_code_buf);
++
++	ret = kexec_purgatory_get_set_symbol(image, "kernel", &kernel_load_addr,
++					     sizeof(kernel_load_addr), false);
++	if (ret)
++		return ret;
++	ret = kexec_purgatory_get_set_symbol(image, "dt_offset", &fdt_load_addr,
++					     sizeof(fdt_load_addr), false);
++	if (ret)
++		return ret;
++
++	tree_node = fdt_path_offset(fdt, "/ibm,opal");
++	if (tree_node >= 0) {
++		prop = fdt_getprop(fdt, tree_node, "opal-base-address", NULL);
++		if (!prop) {
++			pr_err("OPAL address not found in the device tree.\n");
++			return -EINVAL;
++		}
++		opal_base = fdt64_to_cpu((const fdt64_t *) prop);
++
++		prop = fdt_getprop(fdt, tree_node, "opal-entry-address", NULL);
++		if (!prop) {
++			pr_err("OPAL address not found in the device tree.\n");
++			return -EINVAL;
++		}
++		opal_entry = fdt64_to_cpu((const fdt64_t *) prop);
++
++		ret = kexec_purgatory_get_set_symbol(image, "opal_base",
++						     &opal_base,
++						     sizeof(opal_base), false);
++		if (ret)
++			return ret;
++		ret = kexec_purgatory_get_set_symbol(image, "opal_entry",
++						     &opal_entry,
++						     sizeof(opal_entry), false);
 +		if (ret)
 +			return ret;
 +	}
-+	if (ehdr->e_shoff > 0 && ehdr->e_shnum > 0) {
-+		ret = elf_read_shdrs(buf, len, elf_info);
-+		if (ret) {
-+			kfree(elf_info->proghdrs);
-+			return ret;
++
++	ret = kexec_purgatory_get_set_symbol(image, "stack", &stack_top,
++					     sizeof(stack_top), false);
++	if (ret)
++		return ret;
++
++	/* Section header string table. */
++	shstrtab = (const char *) sechdrs[pi->ehdr->e_shstrndx].sh_offset;
++
++	/* Find the TOC address by looking for the .got section. */
++	for (i = 0; i < pi->ehdr->e_shnum; i++)
++		if (!strcmp(&shstrtab[sechdrs[i].sh_name], ".got")) {
++			toc = sechdrs[i].sh_addr + 0x8000;
++
++			break;
 +		}
-+	}
++
++	if (i == pi->ehdr->e_shnum)
++		return -EINVAL;
++
++	ret = kexec_purgatory_get_set_symbol(image, "my_toc", &toc, sizeof(toc),
++					     false);
++	if (ret)
++		return ret;
++
++	pr_debug("Purgatory TOC is at 0x%lx\n", toc);
 +
 +	return 0;
 +}
 +
 +/**
-+ * elf_free_info - free memory allocated by elf_read_from_buffer
++ * delete_fdt_mem_rsv - delete memory reservation with given address and size
++ *
++ * Return: 0 on success, or negative errno on error.
 + */
-+void elf_free_info(struct elf_info *elf_info)
++static int delete_fdt_mem_rsv(void *fdt, unsigned long start, unsigned long size)
 +{
-+	kfree(elf_info->proghdrs);
-+	kfree(elf_info->sechdrs);
-+	memset(elf_info, 0, sizeof(*elf_info));
++	int i, ret, num_rsvs = fdt_num_mem_rsv(fdt);
++
++	for (i = 0; i < num_rsvs; i++) {
++		uint64_t rsv_start, rsv_size;
++
++		ret = fdt_get_mem_rsv(fdt, i, &rsv_start, &rsv_size);
++		if (ret) {
++			pr_err("Malformed device tree.\n");
++			return -EINVAL;
++		}
++
++		if (rsv_start == start && rsv_size == size) {
++			ret = fdt_del_mem_rsv(fdt, i);
++			if (ret) {
++				pr_err("Error deleting device tree reservation.\n");
++				return -EINVAL;
++			}
++
++			return 0;
++		}
++	}
++
++	return -ENOENT;
++}
++
++/*
++ * setup_new_fdt - modify /chosen and memory reservation for the next kernel
++ * @fdt:		Flattened device tree for the next kernel.
++ * @initrd_load_addr:	Address where the next initrd will be loaded.
++ * @initrd_len:		Size of the next initrd, or 0 if there will be none.
++ * @cmdline:		Command line for the next kernel, or NULL if there will
++ *			be none.
++ *
++ * Return: 0 on success, or negative errno on error.
++ */
++int setup_new_fdt(void *fdt, unsigned long initrd_load_addr,
++		  unsigned long initrd_len, const char *cmdline)
++{
++	int ret, chosen_node;
++	const void *prop;
++
++	/* Remove memory reservation for the current device tree. */
++	ret = delete_fdt_mem_rsv(fdt, __pa(initial_boot_params),
++				 fdt_totalsize(initial_boot_params));
++	if (ret == 0)
++		pr_debug("Removed old device tree reservation.\n");
++	else if (ret != -ENOENT)
++		return ret;
++
++	chosen_node = fdt_path_offset(fdt, "/chosen");
++	if (chosen_node == -FDT_ERR_NOTFOUND) {
++		chosen_node = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"),
++					      "chosen");
++		if (chosen_node < 0) {
++			pr_err("Error creating /chosen.\n");
++			return -EINVAL;
++		}
++	} else if (chosen_node < 0) {
++		pr_err("Malformed device tree: error reading /chosen.\n");
++		return -EINVAL;
++	}
++
++	/* Did we boot using an initrd? */
++	prop = fdt_getprop(fdt, chosen_node, "linux,initrd-start", NULL);
++	if (prop) {
++		uint64_t tmp_start, tmp_end, tmp_size;
++
++		tmp_start = fdt64_to_cpu(*((const fdt64_t *) prop));
++
++		prop = fdt_getprop(fdt, chosen_node, "linux,initrd-end", NULL);
++		if (!prop) {
++			pr_err("Malformed device tree.\n");
++			return -EINVAL;
++		}
++		tmp_end = fdt64_to_cpu(*((const fdt64_t *) prop));
++
++		/*
++		 * kexec reserves exact initrd size, while firmware may
++		 * reserve a multiple of PAGE_SIZE, so check for both.
++		 */
++		tmp_size = tmp_end - tmp_start;
++		ret = delete_fdt_mem_rsv(fdt, tmp_start, tmp_size);
++		if (ret == -ENOENT)
++			ret = delete_fdt_mem_rsv(fdt, tmp_start,
++						 round_up(tmp_size, PAGE_SIZE));
++		if (ret == 0)
++			pr_debug("Removed old initrd reservation.\n");
++		else if (ret != -ENOENT)
++			return ret;
++
++		/* If there's no new initrd, delete the old initrd's info. */
++		if (initrd_len == 0) {
++			ret = fdt_delprop(fdt, chosen_node,
++					  "linux,initrd-start");
++			if (ret) {
++				pr_err("Error deleting linux,initrd-start.\n");
++				return -EINVAL;
++			}
++
++			ret = fdt_delprop(fdt, chosen_node, "linux,initrd-end");
++			if (ret) {
++				pr_err("Error deleting linux,initrd-end.\n");
++				return -EINVAL;
++			}
++		}
++	}
++
++	if (initrd_len) {
++		ret = fdt_setprop_u64(fdt, chosen_node,
++				      "linux,initrd-start",
++				      initrd_load_addr);
++		if (ret < 0) {
++			pr_err("Error setting up the new device tree.\n");
++			return -EINVAL;
++		}
++
++		/* initrd-end is the first address after the initrd image. */
++		ret = fdt_setprop_u64(fdt, chosen_node, "linux,initrd-end",
++				      initrd_load_addr + initrd_len);
++		if (ret < 0) {
++			pr_err("Error setting up the new device tree.\n");
++			return -EINVAL;
++		}
++
++		ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
++		if (ret) {
++			pr_err("Error reserving initrd memory: %s\n",
++			       fdt_strerror(ret));
++			return -EINVAL;
++		}
++	}
++
++	if (cmdline != NULL) {
++		ret = fdt_setprop_string(fdt, chosen_node, "bootargs", cmdline);
++		if (ret < 0) {
++			pr_err("Error setting up the new device tree.\n");
++			return -EINVAL;
++		}
++	} else {
++		ret = fdt_delprop(fdt, chosen_node, "bootargs");
++		if (ret && ret != -FDT_ERR_NOTFOUND) {
++			pr_err("Error deleting bootargs.\n");
++			return -EINVAL;
++		}
++	}
++
++	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
++	if (ret) {
++		pr_err("Error setting up the new device tree.\n");
++		return -EINVAL;
++	}
++
++	return 0;
 +}
 -- 
 2.7.4
