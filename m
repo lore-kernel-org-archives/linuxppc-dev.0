@@ -1,36 +1,24 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on062b.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe1e::62b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c00::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDqNv0cD8zDvNW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 15:11:26 +1100 (AEDT)
-From: "Y.B. Lu" <yangbo.lu@nxp.com>
-To: Scott Wood <oss@buserror.net>, Ulf Hansson <ulf.hansson@linaro.org>
-CC: linux-mmc <linux-mmc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, "Rob
- Herring" <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, "Jochen
- Friedrich" <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
- <claudiu.manoil@freescale.com>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar Gala
- <galak@codeaurora.org>, Leo Li <leoyang.li@nxp.com>, "X.B. Xie"
- <xiaobo.xie@nxp.com>, "M.H. Lian" <minghuan.lian@nxp.com>
-Subject: RE: [v16, 0/7] Fix eSDHC host version register bug
-Date: Thu, 10 Nov 2016 04:11:10 +0000
-Message-ID: <DB6PR0401MB25369DEFDDDED2A96851259EF8B80@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-References: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
- <CAPDyKFrcAN_pqgtGaUanfB2zh97zGcL23m5VDtJ3g==NJeRrfA@mail.gmail.com>
- <1478750114.21746.4.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDqhj4yrbzDvWv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 15:25:09 +1100 (AEDT)
+Received: by mail-pf0-x22a.google.com with SMTP id n85so138786660pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 20:25:09 -0800 (PST)
+Date: Thu, 10 Nov 2016 15:24:59 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc: fix graceful debugger recovery
+Message-ID: <20161110152459.7ab453f5@roar.ozlabs.ibm.com>
+In-Reply-To: <87mvh8jev4.fsf@concordia.ellerman.id.au>
+References: <20161108121445.15303-1-npiggin@gmail.com>
+ <20161108121445.15303-2-npiggin@gmail.com>
+ <87mvh8jev4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,123 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBZLkIuIEx1DQo+IFNlbnQ6IFRo
-dXJzZGF5LCBOb3ZlbWJlciAxMCwgMjAxNiAxMjowNiBQTQ0KPiBUbzogJ1Njb3R0IFdvb2QnOyBV
-bGYgSGFuc3Nvbg0KPiBDYzogbGludXgtbW1jOyBBcm5kIEJlcmdtYW5uOyBsaW51eHBwYy1kZXZA
-bGlzdHMub3psYWJzLm9yZzsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFy
-bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5l
-bC5vcmc7IGxpbnV4LWNsazsgaW9tbXVAbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmc7DQo+IG5l
-dGRldkB2Z2VyLmtlcm5lbC5vcmc7IEdyZWcgS3JvYWgtSGFydG1hbjsgTWFyayBSdXRsYW5kOyBS
-b2IgSGVycmluZzsNCj4gUnVzc2VsbCBLaW5nOyBKb2NoZW4gRnJpZWRyaWNoOyBKb2VyZyBSb2Vk
-ZWw7IENsYXVkaXUgTWFub2lsOyBCaHVwZXNoDQo+IFNoYXJtYTsgUWlhbmcgWmhhbzsgS3VtYXIg
-R2FsYTsgTGVvIExpOyBYLkIuIFhpZTsgTS5ILiBMaWFuDQo+IFN1YmplY3Q6IFJFOiBbdjE2LCAw
-LzddIEZpeCBlU0RIQyBob3N0IHZlcnNpb24gcmVnaXN0ZXIgYnVnDQo+IA0KPiA+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTogbGludXgtbW1jLW93bmVyQHZnZXIua2VybmVs
-Lm9yZyBbbWFpbHRvOmxpbnV4LW1tYy0NCj4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJl
-aGFsZiBPZiBTY290dCBXb29kDQo+ID4gU2VudDogVGh1cnNkYXksIE5vdmVtYmVyIDEwLCAyMDE2
-IDExOjU1IEFNDQo+ID4gVG86IFVsZiBIYW5zc29uOyBZLkIuIEx1DQo+ID4gQ2M6IGxpbnV4LW1t
-YzsgQXJuZCBCZXJnbWFubjsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gZGV2
-aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFk
-Lm9yZzsNCj4gPiBsaW51eC0ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtY2xrOw0KPiA+
-IGlvbW11QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnOyBuZXRkZXZAdmdlci5rZXJuZWwub3Jn
-OyBHcmVnDQo+ID4gS3JvYWgtSGFydG1hbjsgTWFyayBSdXRsYW5kOyBSb2IgSGVycmluZzsgUnVz
-c2VsbCBLaW5nOyBKb2NoZW4NCj4gPiBGcmllZHJpY2g7IEpvZXJnIFJvZWRlbDsgQ2xhdWRpdSBN
-YW5vaWw7IEJodXBlc2ggU2hhcm1hOyBRaWFuZyBaaGFvOw0KPiA+IEt1bWFyIEdhbGE7IExlbyBM
-aTsgWC5CLiBYaWU7IE0uSC4gTGlhbg0KPiA+IFN1YmplY3Q6IFJlOiBbdjE2LCAwLzddIEZpeCBl
-U0RIQyBob3N0IHZlcnNpb24gcmVnaXN0ZXIgYnVnDQo+ID4NCj4gPiBPbiBXZWQsIDIwMTYtMTEt
-MDkgYXQgMTk6MjcgKzAxMDAsIFVsZiBIYW5zc29uIHdyb3RlOg0KPiA+ID4gLSBpMmMtbGlzdA0K
-PiA+ID4NCj4gPiA+IE9uIDkgTm92ZW1iZXIgMjAxNiBhdCAwNDoxNCwgWWFuZ2JvIEx1IDx5YW5n
-Ym8ubHVAbnhwLmNvbT4gd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+IFRoaXMgcGF0Y2hzZXQgaXMg
-dXNlZCB0byBmaXggYSBob3N0IHZlcnNpb24gcmVnaXN0ZXIgYnVnIGluIHRoZQ0KPiA+ID4gPiBU
-NDI0MC0NCj4gPiA+ID4gUjEuMC1SMi4wDQo+ID4gPiA+IGVTREhDIGNvbnRyb2xsZXIuIFRvIG1h
-dGNoIHRoZSBTb0MgdmVyc2lvbiBhbmQgcmV2aXNpb24sIDE1DQo+ID4gPiA+IHByZXZpb3VzIHZl
-cnNpb24gcGF0Y2hzZXRzIGhhZCB0cmllZCBtYW55IG1ldGhvZHMgYnV0IGFsbCBvZiB0aGVtDQo+
-ID4gPiA+IHdlcmUgcmVqZWN0ZWQgYnkgcmV2aWV3ZXJzLg0KPiA+ID4gPiBTdWNoIGFzDQo+ID4g
-PiA+IMKgwqDCoMKgwqDCoMKgwqAtIGR0cyBjb21wYXRpYmxlIG1ldGhvZA0KPiA+ID4gPiDCoMKg
-wqDCoMKgwqDCoMKgLSBzeXNjb24gbWV0aG9kDQo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqAtIGlm
-ZGVmIFBQQyBtZXRob2QNCj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoC0gR1VUUyBkcml2ZXIgZ2V0
-dGluZyBTVlIgbWV0aG9kIEFucmQgc3VnZ2VzdGVkIGENCj4gPiA+ID4gc29jX2RldmljZV9tYXRj
-aCBtZXRob2QgaW4gdjEwLCBhbmQgdGhpcyBpcyB0aGUgb25seSBhdmFpbGFibGUNCj4gPiA+ID4g
-bWV0aG9kIGxlZnQgbm93LiBUaGlzIHYxMSBwYXRjaHNldCBpbnRyb2R1Y2VzIHRoZSBzb2NfZGV2
-aWNlX21hdGNoDQo+ID4gPiA+IGludGVyZmFjZSBpbiBzb2MgZHJpdmVyLg0KPiA+ID4gPg0KPiA+
-ID4gPiBUaGUgZmlyc3QgZm91ciBwYXRjaGVzIG9mIFlhbmdibyBhcmUgdG8gYWRkIHRoZSBHVVRT
-IGRyaXZlci4gVGhpcw0KPiA+ID4gPiBpcyB1c2VkIHRvIHJlZ2lzdGVyIGEgc29jIGRldmljZSB3
-aGljaCBjb250YWluIHNvYyB2ZXJzaW9uIGFuZA0KPiA+ID4gPiByZXZpc2lvbiBpbmZvcm1hdGlv
-bi4NCj4gPiA+ID4gVGhlIG90aGVyIHRocmVlIHBhdGNoZXMgaW50cm9kdWNlIHRoZSBzb2NfZGV2
-aWNlX21hdGNoIG1ldGhvZCBpbg0KPiA+ID4gPiBzb2MgZHJpdmVyIGFuZCBhcHBseSBpdCBvbiBl
-c2RoYyBkcml2ZXIgdG8gZml4IHRoaXMgYnVnLg0KPiA+ID4gPg0KPiA+ID4gPiAtLS0NCj4gPiA+
-ID4gQ2hhbmdlcyBmb3IgdjE1Og0KPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgLSBEcm9wcGVkIHBh
-dGNoICdkdDogYmluZGluZ3M6IHVwZGF0ZSBGcmVlc2NhbGUgRENGRw0KPiA+IGNvbXBhdGlibGUn
-DQo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgc2luY2UgdGhlIHdvcmsgaGFkIGJlZW4gZG9u
-ZSBieSBiZWxvdyBwYXRjaCBvbg0KPiA+ID4gPiBTaGF3bkd1bydzIGxpbnV4IHRyZWUuDQo+ID4g
-PiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgJ2R0LWJpbmRpbmdzOiBmc2w6IGFkZCBMUzEwNDNBL0xT
-MTA0NkEvTFMyMDgwQQ0KPiA+ID4gPiBjb21wYXRpYmxlIGZvciBTQ0ZHDQo+ID4gPiA+IMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqBhbmQgRENGRycNCj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoC0gRml4
-ZWQgZXJyb3IgY29kZSBpc3N1ZSBpbiBndXRzIGRyaXZlciBDaGFuZ2VzIGZvciB2MTY6DQo+ID4g
-PiA+IMKgwqDCoMKgwqDCoMKgwqAtIERyb3BwZWQgcGF0Y2ggJ3Bvd2VycGMvZnNsOiBtb3ZlIG1w
-Yzg1eHguaCB0bw0KPiA+IGluY2x1ZGUvbGludXgvZnNsJw0KPiA+ID4gPiDCoMKgwqDCoMKgwqDC
-oMKgLSBBZGRlZCBhIGJ1Zy1maXggcGF0Y2ggZnJvbSBHZWVydA0KPiA+ID4gPiAtLS0NCj4gPiA+
-ID4NCj4gPiA+ID4gQXJuZCBCZXJnbWFubiAoMSk6DQo+ID4gPiA+IMKgIGJhc2U6IHNvYzogaW50
-cm9kdWNlIHNvY19kZXZpY2VfbWF0Y2goKSBpbnRlcmZhY2UNCj4gPiA+ID4NCj4gPiA+ID4gR2Vl
-cnQgVXl0dGVyaG9ldmVuICgxKToNCj4gPiA+ID4gwqAgYmFzZTogc29jOiBDaGVjayBmb3IgTlVM
-TCBTb0MgZGV2aWNlIGF0dHJpYnV0ZXMNCj4gPiA+ID4NCj4gPiA+ID4gWWFuZ2JvIEx1ICg1KToN
-Cj4gPiA+ID4gwqAgQVJNNjQ6IGR0czogbHMyMDgwYTogYWRkIGRldmljZSBjb25maWd1cmF0aW9u
-IG5vZGUNCj4gPiA+ID4gwqAgZHQ6IGJpbmRpbmdzOiBtb3ZlIGd1dHMgZGV2aWNldHJlZSBkb2Mg
-b3V0IG9mIHBvd2VycGMgZGlyZWN0b3J5DQo+ID4gPiA+IMKgIHNvYzogZnNsOiBhZGQgR1VUUyBk
-cml2ZXIgZm9yIFFvcklRIHBsYXRmb3Jtcw0KPiA+ID4gPiDCoCBNQUlOVEFJTkVSUzogYWRkIGVu
-dHJ5IGZvciBGcmVlc2NhbGUgU29DIGRyaXZlcnMNCj4gPiA+ID4gwqAgbW1jOiBzZGhjaS1vZi1l
-c2RoYzogZml4IGhvc3QgdmVyc2lvbiBmb3IgVDQyNDAtUjEuMC1SMi4wDQo+ID4gPiA+DQo+ID4g
-PiA+IMKgLi4uL2JpbmRpbmdzL3twb3dlcnBjID0+IHNvY30vZnNsL2d1dHMudHh0wqDCoMKgwqDC
-oMKgwqDCoMKgfMKgwqDCoDMgKw0KPiA+ID4gPiDCoE1BSU5UQUlORVJTwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqB8wqDCoDExICstDQo+ID4gPiA+IMKgYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2Nh
-bGUvZnNsLWxzMjA4MGEuZHRzacKgwqDCoMKgwqB8wqDCoMKgNiArDQo+ID4gPiA+IMKgZHJpdmVy
-cy9iYXNlL0tjb25maWfCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoHzCoMKgwqAxICsNCj4gPiA+ID4gwqBkcml2ZXJzL2Jhc2Uvc29j
-LmPCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqB8wqDCoDcwICsrKysrKw0KPiA+ID4gPiDCoGRyaXZlcnMvbW1jL2hvc3QvS2Nv
-bmZpZ8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oHzCoMKgwqAxICsNCj4gPiA+ID4gwqBkcml2ZXJzL21tYy9ob3N0L3NkaGNpLW9mLWVzZGhjLmPC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB8wqDCoDIwICsrDQo+ID4gPiA+IMKg
-ZHJpdmVycy9zb2MvS2NvbmZpZ8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB8wqDCoMKgMyArLQ0KPiA+ID4gPiDCoGRyaXZlcnMv
-c29jL2ZzbC9LY29uZmlnwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqB8wqDCoDE4ICsrDQo+ID4gPiA+IMKgZHJpdmVycy9zb2MvZnNsL01ha2Vm
-aWxlwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-fMKgwqDCoDEgKw0KPiA+ID4gPiDCoGRyaXZlcnMvc29jL2ZzbC9ndXRzLmPCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgfCAyMzYNCj4gPiA+
-ID4gKysrKysrKysrKysrKysrKysrKysrDQo+ID4gPiA+IMKgaW5jbHVkZS9saW51eC9mc2wvZ3V0
-cy5owqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-fCAxMjUNCj4gPiA+ID4gKysrKysrLS0tLS0NCj4gPiA+ID4gwqBpbmNsdWRlL2xpbnV4L3N5c19z
-b2MuaMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgfMKgwqDCoDMgKw0KPiA+ID4gPiDCoDEzIGZpbGVzIGNoYW5nZWQsIDQ0NyBpbnNlcnRpb25z
-KCspLCA1MSBkZWxldGlvbnMoLSkNCj4gPiA+ID4gwqByZW5hbWUgRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL3twb3dlcnBjID0+DQo+ID4gPiA+IHNvY30vZnNsL2d1dHMudHh0DQo+
-ID4gPiA+ICg5MSUpDQo+ID4gPiA+IMKgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvc29jL2Zz
-bC9LY29uZmlnDQo+ID4gPiA+IMKgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvc29jL2ZzbC9n
-dXRzLmMNCj4gPiA+ID4NCj4gPiA+ID4gLS0NCj4gPiA+ID4gMi4xLjAuMjcuZzk2ZGIzMjQNCj4g
-PiA+ID4NCj4gPiA+IFRoYW5rcywgYXBwbGllZCBvbiBteSBtbWMgdHJlZSBmb3IgbmV4dCENCj4g
-PiA+DQo+ID4gPiBJIG5vdGljZWQgdGhhdCBzb21lIERUIGNvbXBhdGlibGVzIHdlcmVuJ3QgZG9j
-dW1lbnRlZCwgYWNjb3JkaW5nIHRvDQo+ID4gPiBjaGVja3BhdGNoLiBQbGVhc2UgZml4IHRoYXQg
-YXNhcCENCj4gPg0KPiA+IFRoZXkgYXJlIGRvY3VtZW50ZWQsIGluIGZzbC9ndXRzLnR4dCAodGhl
-IGZpbGUgbW92ZWQgaW4gcGF0Y2ggMi83KToNCj4gPiA+IMKgLSBjb21wYXRpYmxlIDogU2hvdWxk
-IGRlZmluZSB0aGUgY29tcGF0aWJsZSBkZXZpY2UgdHlwZSBmb3INCj4gPiA+IMKgwqDCoGdsb2Jh
-bC11dGlsaXRpZXMuDQo+ID4gPiDCoMKgwqBQb3NzaWJsZSBjb21wYXRpYmxlczoNCj4gPiA+IMKg
-wqDCoMKgwqDCoMKgwqAiZnNsLHFvcmlxLWRldmljZS1jb25maWctMS4wIg0KPiA+ID4gwqDCoMKg
-wqDCoMKgwqDCoCJmc2wscW9yaXEtZGV2aWNlLWNvbmZpZy0yLjAiDQo+ID4gPiDCoMKgwqDCoMKg
-wqDCoMKgImZzbCw8Y2hpcD4tZGV2aWNlLWNvbmZpZyINCj4gPiA+IMKgwqDCoMKgwqDCoMKgwqAi
-ZnNsLDxjaGlwPi1ndXRzIg0KPiA+DQo+ID4gQ2hlY2twYXRjaCBkb2Vzbid0IHVuZGVyc3RhbmQg
-Y29tcGF0aWJsZXMgZGVmaW5lZCBpbiBzdWNoIGEgd2F5Lg0KPiANCj4gW0x1IFlhbmdiby1CNDcw
-OTNdIFlvdSdyZSByaWdodCwgU2NvdHQuIEkgZHJvcHBlZCBEVCBwYXRjaCAnZHQ6IGJpbmRpbmdz
-Og0KPiB1cGRhdGUgRnJlZXNjYWxlIERDRkcgY29tcGF0aWJsZSAnDQo+IHdoaWNoIGZpeGVkIHVu
-LWRvYyBpc3N1ZSBzaW5jZSBTaGFvaHVpIGhhZCBkb25lIHRoaXMgb24gU2hhd24gR3VvJ3MgdHJl
-ZS4NCj4gaHR0cHM6Ly9naXQua2VybmVsLm9yZy9jZ2l0L2xpbnV4L2tlcm5lbC9naXQvc2hhd25n
-dW8vbGludXguZ2l0L2NvbW1pdC8/aA0KPiA9aW14L2R0NjQmaWQ9OTgxMDM0YTJiZmNhZmY1Yzk1
-ZGFmZGUyNGQ3YWJmZTdmOTAyNWMxOQ0KPiANCj4gVGhhbmtzLg0KDQpbTHUgWWFuZ2JvLUI0NzA5
-M10gQm90aCAnZnNsLDxjaGlwPi1ndXRzJyBhbmQgJ2ZzbCw8Y2hpcD4tZGNmZycgd291bGQgaGF2
-ZSBubyB1bi1kb2MgaXNzdWUgYWZ0ZXIgU2hhb2h1aSdzIHBhdGNoIGFyZSBwdWxsZWQgOikNCg0K
-PiANCj4gPg0KPiA+IC1TY290dA0KPiA+DQo+ID4gLS0NCj4gPiBUbyB1bnN1YnNjcmliZSBmcm9t
-IHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtbW1jIg0KPiA+IGlu
-IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnIE1vcmUg
-bWFqb3Jkb21vDQo+ID4gaW5mbyBhdCBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1p
-bmZvLmh0bWwNCg==
+On Thu, 10 Nov 2016 12:35:59 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+> > When exiting xmon with 'x' (exit and recover), oops_begin bails
+> > out immediately, but die then calls __die() and oops_end(), which
+> > cause a lot of bad things to happen.  
+> 
+> In fact oops_begin() returns 1, which oops_end() then passes directly to
+> raw_local_irq_restore() as flags. On 64-bit that actually works because
+> arch_local_irq_restore() takes just "en" (enable), not real flags. But
+> on 32-bit it's supposed to be the MSR value. So that's impressively
+> broken.
+
+Yeah, I guess most of the time you either go to debugger with
+sysrq, or in case of a crash don't try to graceful recover.
+
+When sending debug NMIs down via system reset it becomes a problem!
+
+> 
+> > If the debugger was attached then went to graceful recovery, exit
+> > from die() immediately.  
+> 
+> Right. Crucially it doesn't change anything in terms of the actual logic
+> of oops_begin(), ie. previously oops_begin() did nothing prior to
+> calling debugger(), and after this patch that remains the same (which
+> you did mention above but just spelling it out for myself).
+
+Right.
+
+Thanks,
+Nick
