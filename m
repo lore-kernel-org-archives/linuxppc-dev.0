@@ -3,21 +3,32 @@ Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
  [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDkVq2dLczDvNk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 11:31:15 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id 144so1926838pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 16:31:15 -0800 (PST)
-Subject: Re: [PATCH] powerpc/mm: Correct process and partition table max size
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1478669793-15074-1-git-send-email-sjitindarsingh@gmail.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- aneesh.kumar@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDl3t0wWQzDvbQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 11:56:26 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id 144so1988789pfv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 16:56:26 -0800 (PST)
+Subject: Re: [PATCH v6 4/4] of/fdt: mark hotpluggable memory
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton
+ <akpm@linux-foundation.org>, Rob Herring <robh+dt@kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+References: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ devicetree@vger.kernel.org, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <dc8556fa-c8f1-d2e7-6321-f0d9c56fa422@gmail.com>
-Date: Thu, 10 Nov 2016 11:30:56 +1100
+Message-ID: <aea94234-b3d8-1484-d3ab-39e562d7901d@gmail.com>
+Date: Thu, 10 Nov 2016 11:56:02 +1100
 MIME-Version: 1.0
-In-Reply-To: <1478669793-15074-1-git-send-email-sjitindarsingh@gmail.com>
+In-Reply-To: <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,21 +41,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 09/11/16 16:36, Suraj Jitindar Singh wrote:
-> Version 3.00 of the ISA states that the PATS (partition table size) field
-> of the PTCR (partition table control register) and the PRTS (process table
-> size) field of the partition table entry must both be less than or equal
-> to 24. However the actual size of the partition and process tables is equal
-> to 2 to the power of 12 plus the PATS and PRTS fields, respectively. This
-> means that the max allowable size of each of these tables is 2^36 or 64GB
-> for both.
+On 08/11/16 10:44, Reza Arbab wrote:
+> When movable nodes are enabled, any node containing only hotpluggable
+> memory is made movable at boot time.
 > 
-> Thus when checking the size shift for each we should be checking for values
-> of greater than 36 instead of the current check for shifts larger than 24
-> and 23.
+> On x86, hotpluggable memory is discovered by parsing the ACPI SRAT,
+> making corresponding calls to memblock_mark_hotplug().
 > 
+> If we introduce a dt property to describe memory as hotpluggable,
+> configs supporting early fdt may then also do this marking and use
+> movable nodes.
 
-I looked at the ISA and the patch seems reasonable to me. It has no functional
-impact other than when we decide to increase the size of PA(R)TB_SIZE_SHIFT
+This looks much better, like the other comments pointed out
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+We need documentation around the changes. One quick question
+
+Have you tested this across all combinations of skiboot/kexec/SLOF boots?
+
+Balbir Singh.
