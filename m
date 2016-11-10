@@ -1,55 +1,33 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDpT82PVJzDvhf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 14:30:04 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAA3TADR130847
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Nov 2016 22:30:02 -0500
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26mee80c94-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 22:30:02 -0500
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 10 Nov 2016 01:30:00 -0200
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 5E64F1DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2016 22:29:57 -0500 (EST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAA3Tv9Y4305018
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 01:29:57 -0200
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAA3TuNZ021095
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 01:29:57 -0200
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: kexec@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, Eric Biederman <ebiederm@xmission.com>,
- Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
- Baoquan He <bhe@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v10 10/10] powerpc: Enable CONFIG_KEXEC_FILE in powerpc server
- defconfigs.
-Date: Thu, 10 Nov 2016 01:27:29 -0200
-In-Reply-To: <1478748449-3894-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1478748449-3894-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1478748449-3894-11-git-send-email-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDq2Z2kGNzDvLZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 14:55:34 +1100 (AEDT)
+Message-ID: <1478750114.21746.4.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Ulf Hansson <ulf.hansson@linaro.org>, Yangbo Lu <yangbo.lu@nxp.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland
+ <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
+ <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
+ <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, Bhupesh
+ Sharma <bhupesh.sharma@freescale.com>,  Qiang Zhao <qiang.zhao@nxp.com>,
+ Kumar Gala <galak@codeaurora.org>, Leo Li <leoyang.li@nxp.com>,  Xiaobo Xie
+ <xiaobo.xie@nxp.com>, Minghuan Lian <minghuan.lian@nxp.com>
+Date: Wed, 09 Nov 2016 21:55:14 -0600
+In-Reply-To: <CAPDyKFrcAN_pqgtGaUanfB2zh97zGcL23m5VDtJ3g==NJeRrfA@mail.gmail.com>
+References: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
+ <CAPDyKFrcAN_pqgtGaUanfB2zh97zGcL23m5VDtJ3g==NJeRrfA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [v16, 0/7] Fix eSDHC host version register bug
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,77 +37,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable CONFIG_KEXEC_FILE in powernv_defconfig, ppc64_defconfig and
-pseries_defconfig.
+On Wed, 2016-11-09 at 19:27 +0100, Ulf Hansson wrote:
+> - i2c-list
+> 
+> On 9 November 2016 at 04:14, Yangbo Lu <yangbo.lu@nxp.com> wrote:
+> > 
+> > This patchset is used to fix a host version register bug in the T4240-
+> > R1.0-R2.0
+> > eSDHC controller. To match the SoC version and revision, 15 previous
+> > version
+> > patchsets had tried many methods but all of them were rejected by
+> > reviewers.
+> > Such as
+> >         - dts compatible method
+> >         - syscon method
+> >         - ifdef PPC method
+> >         - GUTS driver getting SVR method
+> > Anrd suggested a soc_device_match method in v10, and this is the only
+> > available
+> > method left now. This v11 patchset introduces the soc_device_match
+> > interface in
+> > soc driver.
+> > 
+> > The first four patches of Yangbo are to add the GUTS driver. This is used
+> > to
+> > register a soc device which contain soc version and revision information.
+> > The other three patches introduce the soc_device_match method in soc
+> > driver
+> > and apply it on esdhc driver to fix this bug.
+> > 
+> > ---
+> > Changes for v15:
+> >         - Dropped patch 'dt: bindings: update Freescale DCFG compatible'
+> >           since the work had been done by below patch on ShawnGuo's linux
+> > tree.
+> >           'dt-bindings: fsl: add LS1043A/LS1046A/LS2080A compatible for
+> > SCFG
+> >            and DCFG'
+> >         - Fixed error code issue in guts driver
+> > Changes for v16:
+> >         - Dropped patch 'powerpc/fsl: move mpc85xx.h to include/linux/fsl'
+> >         - Added a bug-fix patch from Geert
+> > ---
+> > 
+> > Arnd Bergmann (1):
+> >   base: soc: introduce soc_device_match() interface
+> > 
+> > Geert Uytterhoeven (1):
+> >   base: soc: Check for NULL SoC device attributes
+> > 
+> > Yangbo Lu (5):
+> >   ARM64: dts: ls2080a: add device configuration node
+> >   dt: bindings: move guts devicetree doc out of powerpc directory
+> >   soc: fsl: add GUTS driver for QorIQ platforms
+> >   MAINTAINERS: add entry for Freescale SoC drivers
+> >   mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
+> > 
+> >  .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
+> >  MAINTAINERS                                        |  11 +-
+> >  arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 +
+> >  drivers/base/Kconfig                               |   1 +
+> >  drivers/base/soc.c                                 |  70 ++++++
+> >  drivers/mmc/host/Kconfig                           |   1 +
+> >  drivers/mmc/host/sdhci-of-esdhc.c                  |  20 ++
+> >  drivers/soc/Kconfig                                |   3 +-
+> >  drivers/soc/fsl/Kconfig                            |  18 ++
+> >  drivers/soc/fsl/Makefile                           |   1 +
+> >  drivers/soc/fsl/guts.c                             | 236
+> > +++++++++++++++++++++
+> >  include/linux/fsl/guts.h                           | 125 ++++++-----
+> >  include/linux/sys_soc.h                            |   3 +
+> >  13 files changed, 447 insertions(+), 51 deletions(-)
+> >  rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt
+> > (91%)
+> >  create mode 100644 drivers/soc/fsl/Kconfig
+> >  create mode 100644 drivers/soc/fsl/guts.c
+> > 
+> > --
+> > 2.1.0.27.g96db324
+> > 
+> Thanks, applied on my mmc tree for next!
+> 
+> I noticed that some DT compatibles weren't documented, according to
+> checkpatch. Please fix that asap!
 
-It depends on CONFIG_CRYPTO_SHA256=y, so add that as well.
+They are documented, in fsl/guts.txt (the file moved in patch 2/7):
+>  - compatible : Should define the compatible device type for
+>    global-utilities.
+>    Possible compatibles:
+>         "fsl,qoriq-device-config-1.0"
+>         "fsl,qoriq-device-config-2.0"
+>         "fsl,<chip>-device-config"
+>         "fsl,<chip>-guts"
 
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
----
- arch/powerpc/configs/powernv_defconfig | 2 ++
- arch/powerpc/configs/ppc64_defconfig   | 2 ++
- arch/powerpc/configs/pseries_defconfig | 2 ++
- 3 files changed, 6 insertions(+)
+Checkpatch doesn't understand compatibles defined in such a way.
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index d98b6eb3254f..5a190aa5534b 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -49,6 +49,7 @@ CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_HOTPLUG_CPU=y
- CONFIG_KEXEC=y
-+CONFIG_KEXEC_FILE=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_NUMA=y
- CONFIG_MEMORY_HOTPLUG=y
-@@ -301,6 +302,7 @@ CONFIG_CRYPTO_CCM=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
- CONFIG_CRYPTO_MICHAEL_MIC=m
-+CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 58a98d40086f..0059d2088b9c 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -46,6 +46,7 @@ CONFIG_HZ_100=y
- CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_KEXEC=y
-+CONFIG_KEXEC_FILE=y
- CONFIG_CRASH_DUMP=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_MEMORY_HOTREMOVE=y
-@@ -336,6 +337,7 @@ CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
- CONFIG_CRYPTO_MICHAEL_MIC=m
-+CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 8a3bc016b732..f022f657a984 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -52,6 +52,7 @@ CONFIG_HZ_100=y
- CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_KEXEC=y
-+CONFIG_KEXEC_FILE=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_MEMORY_HOTPLUG=y
- CONFIG_MEMORY_HOTREMOVE=y
-@@ -303,6 +304,7 @@ CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
- CONFIG_CRYPTO_MICHAEL_MIC=m
-+CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
--- 
-2.7.4
+-Scott
