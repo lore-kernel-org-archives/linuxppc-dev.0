@@ -1,35 +1,20 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDl3t0wWQzDvbQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 11:56:26 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id 144so1988789pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 16:56:26 -0800 (PST)
-Subject: Re: [PATCH v6 4/4] of/fdt: mark hotpluggable memory
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Andrew Morton
- <akpm@linux-foundation.org>, Rob Herring <robh+dt@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-References: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- devicetree@vger.kernel.org, Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <aea94234-b3d8-1484-d3ab-39e562d7901d@gmail.com>
-Date: Thu, 10 Nov 2016 11:56:02 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDlxc1zwvzDvbn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 12:36:04 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc: fix graceful debugger recovery
+In-Reply-To: <20161108121445.15303-2-npiggin@gmail.com>
+References: <20161108121445.15303-1-npiggin@gmail.com>
+ <20161108121445.15303-2-npiggin@gmail.com>
+Date: Thu, 10 Nov 2016 12:35:59 +1100
+Message-ID: <87mvh8jev4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,23 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Nicholas Piggin <npiggin@gmail.com> writes:
 
+> When exiting xmon with 'x' (exit and recover), oops_begin bails
+> out immediately, but die then calls __die() and oops_end(), which
+> cause a lot of bad things to happen.
 
-On 08/11/16 10:44, Reza Arbab wrote:
-> When movable nodes are enabled, any node containing only hotpluggable
-> memory is made movable at boot time.
-> 
-> On x86, hotpluggable memory is discovered by parsing the ACPI SRAT,
-> making corresponding calls to memblock_mark_hotplug().
-> 
-> If we introduce a dt property to describe memory as hotpluggable,
-> configs supporting early fdt may then also do this marking and use
-> movable nodes.
+In fact oops_begin() returns 1, which oops_end() then passes directly to
+raw_local_irq_restore() as flags. On 64-bit that actually works because
+arch_local_irq_restore() takes just "en" (enable), not real flags. But
+on 32-bit it's supposed to be the MSR value. So that's impressively
+broken.
 
-This looks much better, like the other comments pointed out
+> If the debugger was attached then went to graceful recovery, exit
+> from die() immediately.
 
-We need documentation around the changes. One quick question
+Right. Crucially it doesn't change anything in terms of the actual logic
+of oops_begin(), ie. previously oops_begin() did nothing prior to
+calling debugger(), and after this patch that remains the same (which
+you did mention above but just spelling it out for myself).
 
-Have you tested this across all combinations of skiboot/kexec/SLOF boots?
-
-Balbir Singh.
+cheers
