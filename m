@@ -1,31 +1,47 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tF1QW3lcSzDvgk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 22:43:31 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Yangbo Lu <yangbo.lu@nxp.com>,
- Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Dirk Behme <dirk.behme@de.bosch.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH v2 7/7] soc: renesas: Identify SoC and register with the
- SoC bus
-Date: Thu, 10 Nov 2016 12:37:01 +0100
-Message-ID: <25057157.YlGi2v6RrE@wuerfel>
-In-Reply-To: <CAMuHMdX+T=Y--F6KXZwFmZwWFdfP5mL5Tar-wKwRM2p6Hh2-sg@mail.gmail.com>
-References: <1477913455-5314-1-git-send-email-geert+renesas@glider.be>
- <3693445.TSdZGaiT9S@wuerfel>
- <CAMuHMdX+T=Y--F6KXZwFmZwWFdfP5mL5Tar-wKwRM2p6Hh2-sg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tF1kd5fmczDvgx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 22:57:29 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAABsqZU115944
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 06:57:27 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26mptgfwj1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 06:57:26 -0500
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Thu, 10 Nov 2016 21:57:24 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C6A873578052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 22:57:21 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAABvLOk6160704
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 22:57:21 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAABvLxY003017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 22:57:21 +1100
+Subject: [PATCH 0/3] kexec/fadump: remove dependency with CONFIG_KEXEC and
+ reuse crashkernel parameter for fadump
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+ dyoung@redhat.com, kexec@lists.infradead.org,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, ebiederm@xmission.com,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ vgoyal@redhat.com
+Date: Thu, 10 Nov 2016 17:27:10 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <147877899077.31483.3740501843050856595.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,156 +51,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, November 10, 2016 11:19:20 AM CET Geert Uytterhoeven wrote:
-> Hi Arnd,
-> 
-> Thanks for your comments!
-> 
-> On Wed, Nov 9, 2016 at 5:55 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Monday, October 31, 2016 12:30:55 PM CET Geert Uytterhoeven wrote:
-> >> v2:
-> >>   - Drop SoC families and family names; use fixed "Renesas" instead,
-> >
-> > I think I'd rather have seen the family names left in there, but it's
-> > not important, so up to you.
-> 
-> They're not useful for matching, as family names may change anytime, and don't
-> always say much about the hardware capabilities.
-> E.g. SH-Mobile -> R-Mobile -> R-Car | RZ/A | RZ/G
-> Some SH-Mobile (even some R-Car) parts are SuperH only, others have ARM and
-> SuperH.
-> 
-> At least the SoC part numbers are stable (hmm, sh73a0 == r8a73a0).
+Traditionally, kdump is used to save vmcore in case of a crash. Some
+architectures like powerpc can save vmcore using architecture specific
+support instead of kexec/kdump mechanism. Such architecture specific
+support also needs to reserve memory, to be used by dump capture kernel.
+crashkernel parameter can be a reused, for memory reservation, by such
+architecture specific infrastructure.
 
-I think the marketing names are much more useful for humans looking
-at the sysfs files than the kernel doing matching on, but both use
-cases are important.
+This patchset removes dependency with CONFIG_KEXEC for crashkernel parameter
+and vmcoreinfo related code as it can be reused without kexec support. Also,
+crashkernel parameter is reused instead of fadump_reserve_mem to reserve
+memory for fadump.
 
-> >>   - Use "renesas,prr" and "renesas,cccr" device nodes in DT if
-> >>     available, else fall back to hardcoded addresses for compatibility
-> >>     with existing DTBs,
-> >
-> > I only see patches 2, 3, 5, and 7 in my inbox, so I'm lacking the DT
-> > binding for these, among other things.
-> 
-> I understand you've received them in the mean time?
+The first patch moves crashkernel parameter parsing and vmcoreinfo related
+code under CONFIG_CRASH_CORE instead of CONFIG_KEXEC_CORE to reuse without
+depending on it. The second patch reuses crashkernel for reserving memory
+for fadump instead of fadump_reserve_mem. This has the advantage of using
+all the syntaxes crashkernel supports, for fadump as well. The third patch
+updates fadump kernel documentation about use of crashkernel parameter.
 
-Yes, I found them in my inbox later, not sure why I didn't see them
-at first.
+---
 
-> > It does seem wrong to have a device node for a specific register though.
-> > Shouldn't the node be for the block of registers that these are inside
-> > of?
-> 
-> On R-Mobile APE6, R-Car Gen2 and Gen3, PRR is a lone register.
-> On R-Car Gen1, it's not even documented (and doesn't exist on all parts).
-
-It just seems odd to have it at address 0xff000044 when all the other
-devices are at page-aligned addresses. Do you mean that accessing
-0xff000040 or 0xff000048 will result in a bus-level exception for a
-missing register and just 0xff000044 is actually valid for access,
-or is it just the only thing that is documented?
-
-> On SH-Mobile/R-Mobile, CCCR may be part of the HPB/APB register block, which
-> we further don't touch at all.
-> On R-Car Gen2, it's not documented, but does exist.
-
-This is where the family names would come in handy ;-) I now have
-no idea which chip(s) you are referring to.
-
-If you know the name of the register block, just put it into DT with
-that name. The driver can trivially add the right offset.
-
-> >>   - Don't register the SoC bus if the chip ID register is missing,
-> >
-> > Why? My objection was to hardcoding the register, not to registering
-> > the device? I think I'd rather see the device registered with an
-> > empty revision string.
-> 
-> If there's no chip ID register, there's no reason to use soc_device_match(),
-> as we can always look at a compatible value. All SoCs listed in this driver
-> have a chip ID register.
-
-But you may still have user space tools looking into sysfs, e.g. to
-figure out how to install a kernel that the boot loader can find,
-or which hardware specific distro packages to install.
-
-> if you want me to register the soc_bus for  those SoCs regardless, I want to
-> re-add r7s72100 (RZ/A) and r8a7778 (R-Car M1A), who don't have chip ID
-> registers ;-)
-
-Right. Just don't encode too much knowledge about the SoCs into the
-driver, so we are prepared for adding new ones: We should still look
-for the registers in DT on all chips.
-
-> >> +#define CCCR   0xe600101c      /* Common Chip Code Register */
-> >> +#define PRR    0xff000044      /* Product Register */
-> >> +#define PRR3   0xfff00044      /* Product Register on R-Car Gen3 */
-> >> +
-> >> +static const struct of_device_id renesas_socs[] __initconst = {
-> >> +#ifdef CONFIG_ARCH_R8A73A4
-> >> +       { .compatible = "renesas,r8a73a4",      .data = (void *)PRR, },
-> >> +#endif
-> >> +#ifdef CONFIG_ARCH_R8A7740
-> >> +       { .compatible = "renesas,r8a7740",      .data = (void *)CCCR, },
-> >> +#endif
-> >
-> > My preference here would be to list the register address only for
-> > SoCs that are known to need them, while also having .dtb files that
-> > don't have the nodes.
-> 
-> Even if drivers don't have to handle differences, there's been a long
-> outstanding request to print SoC revision information during bootup
-> (E.g. "Does it still work on ES1.0?"). Hence that covers all SoCs.
-
-Ok, fair enough.
-
-> >> +static int __init renesas_soc_init(void)
-> >> +{
-> >> +       struct soc_device_attribute *soc_dev_attr;
-> >> +       const struct of_device_id *match;
-> >> +       void __iomem *chipid = NULL;
-> >> +       struct soc_device *soc_dev;
-> >> +       struct device_node *np;
-> >> +       unsigned int product;
-> >> +
-> >> +       np = of_find_matching_node_and_match(NULL, renesas_socs, &match);
-> >> +       if (!np)
-> >> +               return -ENODEV;
-> >> +
-> >> +       of_node_put(np);
-> >> +
-> >> +       /* Try PRR first, then CCCR, then hardcoded fallback */
-> >> +       np = of_find_compatible_node(NULL, NULL, "renesas,prr");
-> >> +       if (!np)
-> >> +               np = of_find_compatible_node(NULL, NULL, "renesas,cccr");
-> >> +       if (np) {
-> >> +               chipid = of_iomap(np, 0);
-> >> +               of_node_put(np);
-> >> +       } else if (match->data) {
-> >> +               chipid = ioremap((uintptr_t)match->data, 4);
-> >> +       }
-> >> +       if (!chipid)
-> >>
-> >
-> > Here, I'd turn the order around and look for the DT nodes of the
-> > devices first. Only if they are not found, look at the compatible
-> > string of the root node. No need to search for a node though,
-> > you know which one it is when you look for a compatible =
-> > "renesas,r8a73a4".
-> 
-> "renesas,r8a73a4" is the root node, not the device, so it does not have the
-> "reg" property for reading the chip ID?
-
-I mean replace of_find_matching_node_and_match() with
-of_match_node(renesas_socs, of_root).
-
-It does the same thing, just more efficiently.
- 
-> There is no SoC part number in the "renesas,prr" and "renesas,cccr" nodes.
-> Hence I always need to look at the root nodes.
-
-Not sure what that would protect you from. Could you have a renesas,cccr
+Hari Bathini (3):
+      crash: move crashkernel parsing and vmcore related code under CONFIG_CRASH_CORE
+      powerpc/fadump: reuse crashkernel parameter for fadump memory reservation
+      powerpc/fadump: update documentation about crashkernel parameter reuse
 
 
-	Arnd
+ Documentation/powerpc/firmware-assisted-dump.txt |   23 +
+ arch/Kconfig                                     |    4 
+ arch/ia64/kernel/crash.c                         |   22 -
+ arch/powerpc/Kconfig                             |   10 
+ arch/powerpc/include/asm/fadump.h                |    2 
+ arch/powerpc/kernel/crash.c                      |    2 
+ arch/powerpc/kernel/fadump.c                     |   57 +--
+ arch/powerpc/kernel/setup-common.c               |    5 
+ include/linux/crash_core.h                       |   75 ++++
+ include/linux/kexec.h                            |   63 ---
+ kernel/Makefile                                  |    1 
+ kernel/crash_core.c                              |  450 ++++++++++++++++++++++
+ kernel/kexec_core.c                              |  435 ---------------------
+ 13 files changed, 575 insertions(+), 574 deletions(-)
+ create mode 100644 include/linux/crash_core.h
+ create mode 100644 kernel/crash_core.c
