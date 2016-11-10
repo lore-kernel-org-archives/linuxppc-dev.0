@@ -2,29 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDlyv0ycnzDvkR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 12:37:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDlz91BPqzDvkg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 12:37:25 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- devicetree@vger.kernel.org, Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>, Balbir Singh <bsingharora@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 1/4] powerpc/mm: allow memory hotplug into a memoryless
- node
-In-Reply-To: <1478562276-25539-2-git-send-email-arbab@linux.vnet.ibm.com>
-References: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1478562276-25539-2-git-send-email-arbab@linux.vnet.ibm.com>
-Date: Thu, 10 Nov 2016 12:37:10 +1100
-Message-ID: <87k2ccjet5.fsf@concordia.ellerman.id.au>
+To: Alex Williamson <alex.williamson@redhat.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v4 0/4] powerpc/spapr/vfio: Put pages on VFIO
+ container shutdown
+In-Reply-To: <20161108160620.54591201@t450s.home>
+References: <1477291990-2872-1-git-send-email-aik@ozlabs.ru>
+ <871syml83v.fsf@concordia.ellerman.id.au>
+ <20161108160620.54591201@t450s.home>
+Date: Thu, 10 Nov 2016 12:37:24 +1100
+Message-ID: <87inrwjesr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,25 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reza Arbab <arbab@linux.vnet.ibm.com> writes:
-
-> Remove the check which prevents us from hotplugging into an empty node.
+Alex Williamson <alex.williamson@redhat.com> writes:
+> On Tue, 08 Nov 2016 18:54:28 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+>> >  arch/powerpc/include/asm/mmu_context.h |  20 ++--
+>> >  arch/powerpc/kernel/setup-common.c     |   2 +-
+>> >  arch/powerpc/mm/mmu_context_book3s64.c |   6 +-
+>> >  arch/powerpc/mm/mmu_context_iommu.c    |  60 ++++-------
+>> >  drivers/vfio/vfio_iommu_spapr_tce.c    | 181 ++++++++++++++++++++++-----------
+>> >  5 files changed, 154 insertions(+), 115 deletions(-)  
+>> 
+>> Alex, given the diffstat how do you want to merge this? (for 4.10)
+>> 
+>> Should I merge it, you merge it, or I can put it in a topic branch?
 >
-> The original commit b226e4621245 ("[PATCH] powerpc: don't add memory to
-> empty node/zone"), states that this was intended to be a temporary measure.
-> It is a workaround for an oops which no longer occurs.
->
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
+> I have an outstanding question on one patch, but otherwise I'd prefer
+> you merge it, I'm not expecting to have anything that would conflict
+> with vfio_iommu_spapr_tce.c and this code is tied pretty tightly with
+> arch code.  I'll provide acks depending on how we resolve my question.
 
-This seems OK from a powerpc perspective.
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Great, thanks.
 
 cheers
