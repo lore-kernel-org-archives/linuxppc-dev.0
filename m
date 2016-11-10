@@ -1,36 +1,41 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDrsQ2vCbzDvc8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 16:17:45 +1100 (AEDT)
-Message-ID: <1478755050.21746.8.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: "Y.B. Lu" <yangbo.lu@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>,  Mark Rutland <mark.rutland@arm.com>, Rob
- Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
- Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu
- Manoil <claudiu.manoil@freescale.com>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>,  Qiang Zhao <qiang.zhao@nxp.com>, Kumar
- Gala <galak@codeaurora.org>, Leo Li <leoyang.li@nxp.com>, "X.B. Xie"
- <xiaobo.xie@nxp.com>, "M.H. Lian" <minghuan.lian@nxp.com>
-Date: Wed, 09 Nov 2016 23:17:30 -0600
-In-Reply-To: <DB6PR0401MB25369DEFDDDED2A96851259EF8B80@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-References: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
- <CAPDyKFrcAN_pqgtGaUanfB2zh97zGcL23m5VDtJ3g==NJeRrfA@mail.gmail.com>
- <1478750114.21746.4.camel@buserror.net>
- <DB6PR0401MB25369DEFDDDED2A96851259EF8B80@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [v16, 0/7] Fix eSDHC host version register bug
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDwLV6lhbzDrPG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 18:54:42 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAA7sNPL050875
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 02:54:40 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26mj08amkj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 02:54:39 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 10 Nov 2016 00:54:39 -0700
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org>,
+ linux-pm@vger.kernel.org>, skiboot"@lists.ozlabs.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/3] powernv:stop: Use psscr_val,mask provided by firmware
+Date: Thu, 10 Nov 2016 13:24:19 +0530
+Message-Id: <cover.1478760806.git.ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,149 +45,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-11-10 at 04:11 +0000, Y.B. Lu wrote:
-> > 
-> > -----Original Message-----
-> > From: Y.B. Lu
-> > Sent: Thursday, November 10, 2016 12:06 PM
-> > To: 'Scott Wood'; Ulf Hansson
-> > Cc: linux-mmc; Arnd Bergmann; linuxppc-dev@lists.ozlabs.org;
-> > devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
-> > kernel@vger.kernel.org; linux-clk; iommu@lists.linux-foundation.org;
-> > netdev@vger.kernel.org; Greg Kroah-Hartman; Mark Rutland; Rob Herring;
-> > Russell King; Jochen Friedrich; Joerg Roedel; Claudiu Manoil; Bhupesh
-> > Sharma; Qiang Zhao; Kumar Gala; Leo Li; X.B. Xie; M.H. Lian
-> > Subject: RE: [v16, 0/7] Fix eSDHC host version register bug
-> > 
-> > > 
-> > > -----Original Message-----
-> > > From: linux-mmc-owner@vger.kernel.org [mailto:linux-mmc-
-> > > owner@vger.kernel.org] On Behalf Of Scott Wood
-> > > Sent: Thursday, November 10, 2016 11:55 AM
-> > > To: Ulf Hansson; Y.B. Lu
-> > > Cc: linux-mmc; Arnd Bergmann; linuxppc-dev@lists.ozlabs.org;
-> > > devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
-> > > linux- kernel@vger.kernel.org; linux-clk;
-> > > iommu@lists.linux-foundation.org; netdev@vger.kernel.org; Greg
-> > > Kroah-Hartman; Mark Rutland; Rob Herring; Russell King; Jochen
-> > > Friedrich; Joerg Roedel; Claudiu Manoil; Bhupesh Sharma; Qiang Zhao;
-> > > Kumar Gala; Leo Li; X.B. Xie; M.H. Lian
-> > > Subject: Re: [v16, 0/7] Fix eSDHC host version register bug
-> > > 
-> > > On Wed, 2016-11-09 at 19:27 +0100, Ulf Hansson wrote:
-> > > > 
-> > > > - i2c-list
-> > > > 
-> > > > On 9 November 2016 at 04:14, Yangbo Lu <yangbo.lu@nxp.com> wrote:
-> > > > > 
-> > > > > 
-> > > > > This patchset is used to fix a host version register bug in the
-> > > > > T4240-
-> > > > > R1.0-R2.0
-> > > > > eSDHC controller. To match the SoC version and revision, 15
-> > > > > previous version patchsets had tried many methods but all of them
-> > > > > were rejected by reviewers.
-> > > > > Such as
-> > > > >         - dts compatible method
-> > > > >         - syscon method
-> > > > >         - ifdef PPC method
-> > > > >         - GUTS driver getting SVR method Anrd suggested a
-> > > > > soc_device_match method in v10, and this is the only available
-> > > > > method left now. This v11 patchset introduces the soc_device_match
-> > > > > interface in soc driver.
-> > > > > 
-> > > > > The first four patches of Yangbo are to add the GUTS driver. This
-> > > > > is used to register a soc device which contain soc version and
-> > > > > revision information.
-> > > > > The other three patches introduce the soc_device_match method in
-> > > > > soc driver and apply it on esdhc driver to fix this bug.
-> > > > > 
-> > > > > ---
-> > > > > Changes for v15:
-> > > > >         - Dropped patch 'dt: bindings: update Freescale DCFG
-> > > compatible'
-> > > > 
-> > > > > 
-> > > > >           since the work had been done by below patch on
-> > > > > ShawnGuo's linux tree.
-> > > > >           'dt-bindings: fsl: add LS1043A/LS1046A/LS2080A
-> > > > > compatible for SCFG
-> > > > >            and DCFG'
-> > > > >         - Fixed error code issue in guts driver Changes for v16:
-> > > > >         - Dropped patch 'powerpc/fsl: move mpc85xx.h to
-> > > include/linux/fsl'
-> > > > 
-> > > > > 
-> > > > >         - Added a bug-fix patch from Geert
-> > > > > ---
-> > > > > 
-> > > > > Arnd Bergmann (1):
-> > > > >   base: soc: introduce soc_device_match() interface
-> > > > > 
-> > > > > Geert Uytterhoeven (1):
-> > > > >   base: soc: Check for NULL SoC device attributes
-> > > > > 
-> > > > > Yangbo Lu (5):
-> > > > >   ARM64: dts: ls2080a: add device configuration node
-> > > > >   dt: bindings: move guts devicetree doc out of powerpc directory
-> > > > >   soc: fsl: add GUTS driver for QorIQ platforms
-> > > > >   MAINTAINERS: add entry for Freescale SoC drivers
-> > > > >   mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
-> > > > > 
-> > > > >  .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
-> > > > >  MAINTAINERS                                        |  11 +-
-> > > > >  arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 +
-> > > > >  drivers/base/Kconfig                               |   1 +
-> > > > >  drivers/base/soc.c                                 |  70 ++++++
-> > > > >  drivers/mmc/host/Kconfig                           |   1 +
-> > > > >  drivers/mmc/host/sdhci-of-esdhc.c                  |  20 ++
-> > > > >  drivers/soc/Kconfig                                |   3 +-
-> > > > >  drivers/soc/fsl/Kconfig                            |  18 ++
-> > > > >  drivers/soc/fsl/Makefile                           |   1 +
-> > > > >  drivers/soc/fsl/guts.c                             | 236
-> > > > > +++++++++++++++++++++
-> > > > >  include/linux/fsl/guts.h                           | 125
-> > > > > ++++++-----
-> > > > >  include/linux/sys_soc.h                            |   3 +
-> > > > >  13 files changed, 447 insertions(+), 51 deletions(-)
-> > > > >  rename Documentation/devicetree/bindings/{powerpc =>
-> > > > > soc}/fsl/guts.txt
-> > > > > (91%)
-> > > > >  create mode 100644 drivers/soc/fsl/Kconfig
-> > > > >  create mode 100644 drivers/soc/fsl/guts.c
-> > > > > 
-> > > > > --
-> > > > > 2.1.0.27.g96db324
-> > > > > 
-> > > > Thanks, applied on my mmc tree for next!
-> > > > 
-> > > > I noticed that some DT compatibles weren't documented, according to
-> > > > checkpatch. Please fix that asap!
-> > > They are documented, in fsl/guts.txt (the file moved in patch 2/7):
-> > > > 
-> > > >  - compatible : Should define the compatible device type for
-> > > >    global-utilities.
-> > > >    Possible compatibles:
-> > > >         "fsl,qoriq-device-config-1.0"
-> > > >         "fsl,qoriq-device-config-2.0"
-> > > >         "fsl,<chip>-device-config"
-> > > >         "fsl,<chip>-guts"
-> > > Checkpatch doesn't understand compatibles defined in such a way.
-> > [Lu Yangbo-B47093] You're right, Scott. I dropped DT patch 'dt: bindings:
-> > update Freescale DCFG compatible '
-> > which fixed un-doc issue since Shaohui had done this on Shawn Guo's tree.
-> > https://git.kernel.org/cgit/linux/kernel/git/shawnguo/linux.git/commit/?h
-> > =imx/dt64&id=981034a2bfcaff5c95dafde24d7abfe7f9025c19
-> > 
-> > Thanks.
-> [Lu Yangbo-B47093] Both 'fsl,<chip>-guts' and 'fsl,<chip>-dcfg' would have
-> no un-doc issue after Shaohui's patch are pulled :)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-I don't follow.  The link above points to a patch that addresses -dcfg and
--scfg, not -device-config or -guts -- and it also doesn't do it in a manner
-that checkpatch will understand.
+This is the third iteration of the patchset to use the psscr_val and
+psscr_mask provided by the firmware for each of the stop states.
 
-In any case, I wouldn't call this an "un-doc issue" -- it is documented -- but
-rather a checkpatch-friendliness issue.
+The previous version can be found here:
 
--Scott
+[v2]: https://lkml.org/lkml/2016/10/27/143
+[v1]: https://lkml.org/lkml/2016/9/29/45
+
+This version fixes a couple of bugs pertaining to strncpy and
+initialization of the target-residency values of nap and sleep
+which were pointed out by Paul and Oliver in the earlier version.
+
+Synopsis
+==========
+In the current implementation, the code for ISA
+v3.0 stop implementation has a couple of shortcomings.
+
+a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
+   uses only the RL field from the firmware. While this is not
+   incorrect, since the hand-coded values are legitimate, it is not a
+   very flexible design since the firmware has the capability to
+   communicate these values via the "ibm,cpu-idle-state-psscr" and
+   "ibm,cpu-idle-state-psscr-mask" properties. In case where the
+   firmware provides values for these fields that is different from
+   the hand-coded values, the current code will not work as intended.
+
+b) Due to issue a), the current code assumes that ESL=EC=1 for all the
+   stop states and hence the wakeup from the stop instruction will
+   happen at 0x100, the system-reset vector. However, the ISA v3.0
+   allows the ESL=EC=0 behaviour where the corresponding stop-state
+   loses no state and wakes up from the subsequent instruction. The
+   current code doesn't handle this case.
+   
+This patch series addresses these issues.
+
+The first patch in the series renames the existing
+IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
+the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
+up at the subsequent instruction.
+
+The second patch adds a helper function in cpuidle-powernv.c for
+initializing entries of the powernv_states[] table that is passed to
+the cpu-idle core. This eliminates some of the code duplication in the
+function that discovers and initializes the stop states.
+
+The third patch in the series fixes issues a) and b) by ensuring that
+the psscr-value and the psscr-mask provided by the firmware are what
+will be used to set a particular stop state. It also adds support for
+handling wake-up from stop states which were entered with ESL=EC=0.
+
+The third patch also handles the older firmware which sets only the
+Requested Level (RL) field in the psscr and psscr-mask exposed in the
+device tree. In the presence of such older firmware, this patch will
+set the default sane values for for remaining PSSCR fields (i.e PSLL,
+MTL, ESL, EC, and TR).
+
+The skiboot patch populates all the relevant fields in the PSSCR
+values and the mask for all the stop states can be found here:
+https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+
+The patches are based on top of
+git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+
+Gautham R. Shenoy (3):
+  powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+  cpuidle:powernv: Add helper function to populate powernv idle states.
+  powernv: Pass PSSCR value and mask to power9_idle_stop
+
+ arch/powerpc/include/asm/cpuidle.h       |  42 +++++++++++-
+ arch/powerpc/include/asm/processor.h     |   3 +-
+ arch/powerpc/kernel/exceptions-64s.S     |   6 +-
+ arch/powerpc/kernel/idle_book3s.S        |  41 +++++++-----
+ arch/powerpc/platforms/powernv/idle.c    |  81 ++++++++++++++++++----
+ arch/powerpc/platforms/powernv/powernv.h |   3 +-
+ arch/powerpc/platforms/powernv/smp.c     |  14 ++--
+ drivers/cpuidle/cpuidle-powernv.c        | 111 +++++++++++++++++++------------
+ include/linux/cpuidle.h                  |   1 +
+ 9 files changed, 219 insertions(+), 83 deletions(-)
+
+-- 
+1.9.4
