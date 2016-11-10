@@ -1,24 +1,36 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tDqhj4yrbzDvWv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 15:25:09 +1100 (AEDT)
-Received: by mail-pf0-x22a.google.com with SMTP id n85so138786660pfi.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Nov 2016 20:25:09 -0800 (PST)
-Date: Thu, 10 Nov 2016 15:24:59 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc: fix graceful debugger recovery
-Message-ID: <20161110152459.7ab453f5@roar.ozlabs.ibm.com>
-In-Reply-To: <87mvh8jev4.fsf@concordia.ellerman.id.au>
-References: <20161108121445.15303-1-npiggin@gmail.com>
- <20161108121445.15303-2-npiggin@gmail.com>
- <87mvh8jev4.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tDrsQ2vCbzDvc8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 16:17:45 +1100 (AEDT)
+Message-ID: <1478755050.21746.8.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: "Y.B. Lu" <yangbo.lu@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>,  Mark Rutland <mark.rutland@arm.com>, Rob
+ Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu
+ Manoil <claudiu.manoil@freescale.com>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>,  Qiang Zhao <qiang.zhao@nxp.com>, Kumar
+ Gala <galak@codeaurora.org>, Leo Li <leoyang.li@nxp.com>, "X.B. Xie"
+ <xiaobo.xie@nxp.com>, "M.H. Lian" <minghuan.lian@nxp.com>
+Date: Wed, 09 Nov 2016 23:17:30 -0600
+In-Reply-To: <DB6PR0401MB25369DEFDDDED2A96851259EF8B80@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+References: <1478661252-42439-1-git-send-email-yangbo.lu@nxp.com>
+ <CAPDyKFrcAN_pqgtGaUanfB2zh97zGcL23m5VDtJ3g==NJeRrfA@mail.gmail.com>
+ <1478750114.21746.4.camel@buserror.net>
+ <DB6PR0401MB25369DEFDDDED2A96851259EF8B80@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [v16, 0/7] Fix eSDHC host version register bug
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +40,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 10 Nov 2016 12:35:59 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Thu, 2016-11-10 at 04:11 +0000, Y.B. Lu wrote:
+> > 
+> > -----Original Message-----
+> > From: Y.B. Lu
+> > Sent: Thursday, November 10, 2016 12:06 PM
+> > To: 'Scott Wood'; Ulf Hansson
+> > Cc: linux-mmc; Arnd Bergmann; linuxppc-dev@lists.ozlabs.org;
+> > devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
+> > kernel@vger.kernel.org; linux-clk; iommu@lists.linux-foundation.org;
+> > netdev@vger.kernel.org; Greg Kroah-Hartman; Mark Rutland; Rob Herring;
+> > Russell King; Jochen Friedrich; Joerg Roedel; Claudiu Manoil; Bhupesh
+> > Sharma; Qiang Zhao; Kumar Gala; Leo Li; X.B. Xie; M.H. Lian
+> > Subject: RE: [v16, 0/7] Fix eSDHC host version register bug
+> > 
+> > > 
+> > > -----Original Message-----
+> > > From: linux-mmc-owner@vger.kernel.org [mailto:linux-mmc-
+> > > owner@vger.kernel.org] On Behalf Of Scott Wood
+> > > Sent: Thursday, November 10, 2016 11:55 AM
+> > > To: Ulf Hansson; Y.B. Lu
+> > > Cc: linux-mmc; Arnd Bergmann; linuxppc-dev@lists.ozlabs.org;
+> > > devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
+> > > linux- kernel@vger.kernel.org; linux-clk;
+> > > iommu@lists.linux-foundation.org; netdev@vger.kernel.org; Greg
+> > > Kroah-Hartman; Mark Rutland; Rob Herring; Russell King; Jochen
+> > > Friedrich; Joerg Roedel; Claudiu Manoil; Bhupesh Sharma; Qiang Zhao;
+> > > Kumar Gala; Leo Li; X.B. Xie; M.H. Lian
+> > > Subject: Re: [v16, 0/7] Fix eSDHC host version register bug
+> > > 
+> > > On Wed, 2016-11-09 at 19:27 +0100, Ulf Hansson wrote:
+> > > > 
+> > > > - i2c-list
+> > > > 
+> > > > On 9 November 2016 at 04:14, Yangbo Lu <yangbo.lu@nxp.com> wrote:
+> > > > > 
+> > > > > 
+> > > > > This patchset is used to fix a host version register bug in the
+> > > > > T4240-
+> > > > > R1.0-R2.0
+> > > > > eSDHC controller. To match the SoC version and revision, 15
+> > > > > previous version patchsets had tried many methods but all of them
+> > > > > were rejected by reviewers.
+> > > > > Such as
+> > > > >         - dts compatible method
+> > > > >         - syscon method
+> > > > >         - ifdef PPC method
+> > > > >         - GUTS driver getting SVR method Anrd suggested a
+> > > > > soc_device_match method in v10, and this is the only available
+> > > > > method left now. This v11 patchset introduces the soc_device_match
+> > > > > interface in soc driver.
+> > > > > 
+> > > > > The first four patches of Yangbo are to add the GUTS driver. This
+> > > > > is used to register a soc device which contain soc version and
+> > > > > revision information.
+> > > > > The other three patches introduce the soc_device_match method in
+> > > > > soc driver and apply it on esdhc driver to fix this bug.
+> > > > > 
+> > > > > ---
+> > > > > Changes for v15:
+> > > > >         - Dropped patch 'dt: bindings: update Freescale DCFG
+> > > compatible'
+> > > > 
+> > > > > 
+> > > > >           since the work had been done by below patch on
+> > > > > ShawnGuo's linux tree.
+> > > > >           'dt-bindings: fsl: add LS1043A/LS1046A/LS2080A
+> > > > > compatible for SCFG
+> > > > >            and DCFG'
+> > > > >         - Fixed error code issue in guts driver Changes for v16:
+> > > > >         - Dropped patch 'powerpc/fsl: move mpc85xx.h to
+> > > include/linux/fsl'
+> > > > 
+> > > > > 
+> > > > >         - Added a bug-fix patch from Geert
+> > > > > ---
+> > > > > 
+> > > > > Arnd Bergmann (1):
+> > > > >   base: soc: introduce soc_device_match() interface
+> > > > > 
+> > > > > Geert Uytterhoeven (1):
+> > > > >   base: soc: Check for NULL SoC device attributes
+> > > > > 
+> > > > > Yangbo Lu (5):
+> > > > >   ARM64: dts: ls2080a: add device configuration node
+> > > > >   dt: bindings: move guts devicetree doc out of powerpc directory
+> > > > >   soc: fsl: add GUTS driver for QorIQ platforms
+> > > > >   MAINTAINERS: add entry for Freescale SoC drivers
+> > > > >   mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
+> > > > > 
+> > > > >  .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
+> > > > >  MAINTAINERS                                        |  11 +-
+> > > > >  arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 +
+> > > > >  drivers/base/Kconfig                               |   1 +
+> > > > >  drivers/base/soc.c                                 |  70 ++++++
+> > > > >  drivers/mmc/host/Kconfig                           |   1 +
+> > > > >  drivers/mmc/host/sdhci-of-esdhc.c                  |  20 ++
+> > > > >  drivers/soc/Kconfig                                |   3 +-
+> > > > >  drivers/soc/fsl/Kconfig                            |  18 ++
+> > > > >  drivers/soc/fsl/Makefile                           |   1 +
+> > > > >  drivers/soc/fsl/guts.c                             | 236
+> > > > > +++++++++++++++++++++
+> > > > >  include/linux/fsl/guts.h                           | 125
+> > > > > ++++++-----
+> > > > >  include/linux/sys_soc.h                            |   3 +
+> > > > >  13 files changed, 447 insertions(+), 51 deletions(-)
+> > > > >  rename Documentation/devicetree/bindings/{powerpc =>
+> > > > > soc}/fsl/guts.txt
+> > > > > (91%)
+> > > > >  create mode 100644 drivers/soc/fsl/Kconfig
+> > > > >  create mode 100644 drivers/soc/fsl/guts.c
+> > > > > 
+> > > > > --
+> > > > > 2.1.0.27.g96db324
+> > > > > 
+> > > > Thanks, applied on my mmc tree for next!
+> > > > 
+> > > > I noticed that some DT compatibles weren't documented, according to
+> > > > checkpatch. Please fix that asap!
+> > > They are documented, in fsl/guts.txt (the file moved in patch 2/7):
+> > > > 
+> > > >  - compatible : Should define the compatible device type for
+> > > >    global-utilities.
+> > > >    Possible compatibles:
+> > > >         "fsl,qoriq-device-config-1.0"
+> > > >         "fsl,qoriq-device-config-2.0"
+> > > >         "fsl,<chip>-device-config"
+> > > >         "fsl,<chip>-guts"
+> > > Checkpatch doesn't understand compatibles defined in such a way.
+> > [Lu Yangbo-B47093] You're right, Scott. I dropped DT patch 'dt: bindings:
+> > update Freescale DCFG compatible '
+> > which fixed un-doc issue since Shaohui had done this on Shawn Guo's tree.
+> > https://git.kernel.org/cgit/linux/kernel/git/shawnguo/linux.git/commit/?h
+> > =imx/dt64&id=981034a2bfcaff5c95dafde24d7abfe7f9025c19
+> > 
+> > Thanks.
+> [Lu Yangbo-B47093] Both 'fsl,<chip>-guts' and 'fsl,<chip>-dcfg' would have
+> no un-doc issue after Shaohui's patch are pulled :)
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > When exiting xmon with 'x' (exit and recover), oops_begin bails
-> > out immediately, but die then calls __die() and oops_end(), which
-> > cause a lot of bad things to happen.  
-> 
-> In fact oops_begin() returns 1, which oops_end() then passes directly to
-> raw_local_irq_restore() as flags. On 64-bit that actually works because
-> arch_local_irq_restore() takes just "en" (enable), not real flags. But
-> on 32-bit it's supposed to be the MSR value. So that's impressively
-> broken.
+I don't follow.  The link above points to a patch that addresses -dcfg and
+-scfg, not -device-config or -guts -- and it also doesn't do it in a manner
+that checkpatch will understand.
 
-Yeah, I guess most of the time you either go to debugger with
-sysrq, or in case of a crash don't try to graceful recover.
+In any case, I wouldn't call this an "un-doc issue" -- it is documented -- but
+rather a checkpatch-friendliness issue.
 
-When sending debug NMIs down via system reset it becomes a problem!
-
-> 
-> > If the debugger was attached then went to graceful recovery, exit
-> > from die() immediately.  
-> 
-> Right. Crucially it doesn't change anything in terms of the actual logic
-> of oops_begin(), ie. previously oops_begin() did nothing prior to
-> calling debugger(), and after this patch that remains the same (which
-> you did mention above but just spelling it out for myself).
-
-Right.
-
-Thanks,
-Nick
+-Scott
