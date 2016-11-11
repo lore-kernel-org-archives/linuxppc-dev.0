@@ -1,25 +1,23 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFbPc6y6DzDsqn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 21:14:43 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id m203so6695326wma.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 02:14:43 -0800 (PST)
-Date: Fri, 11 Nov 2016 13:14:39 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] mm: THP page cache support for ppc64
-Message-ID: <20161111101439.GB19382@node.shutemov.name>
-References: <20161107083441.21901-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161107083441.21901-2-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161107083441.21901-2-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFcX80pFFzDvjZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 22:05:27 +1100 (AEDT)
+Message-ID: <1478862296.2592.10.camel@kernel.crashing.org>
+Subject: Re: [PATCH 13/38] powerpc: Put exception configuration in a common
+ place
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+Date: Fri, 11 Nov 2016 22:04:56 +1100
+In-Reply-To: <20161111210602.6128fc3f@kryten>
+References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
+ <1467026976-7974-14-git-send-email-benh@kernel.crashing.org>
+ <20161111210602.6128fc3f@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 07, 2016 at 02:04:41PM +0530, Aneesh Kumar K.V wrote:
-> @@ -2953,6 +2966,13 @@ static int do_set_pmd(struct fault_env *fe, struct page *page)
->  	ret = VM_FAULT_FALLBACK;
->  	page = compound_head(page);
->  
-> +	/*
-> +	 * Archs like ppc64 need additonal space to store information
-> +	 * related to pte entry. Use the preallocated table for that.
-> +	 */
-> +	if (arch_needs_pgtable_deposit() && !fe->prealloc_pte)
-> +		fe->prealloc_pte = pte_alloc_one(vma->vm_mm, fe->address);
-> +
+On Fri, 2016-11-11 at 21:06 +1100, Anton Blanchard wrote:
+> It looks like we only set LPCR_AIL_3 on the boot CPU after this change,
+> is that expected? Before that we did it in cpu_ready_for_interrupts()
+> which is called for the primary and all secondary CPUs.
 
--ENOMEM handling?
+That would be a mistake... I suppose I didn't realize we had to call
+these things for every CPU.
 
-I think we should do this way before this point. Maybe in do_fault() or
-something.
+I'll try to cook up a fix next week.
 
--- 
- Kirill A. Shutemov
+Cheers,
+Ben.
