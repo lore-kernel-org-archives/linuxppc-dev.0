@@ -1,38 +1,38 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFmTL2gwmzDvjR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFmTL6HBGzDvjR
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 04:03:34 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tFmTK3NtHz9t2D
- for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2016 04:03:33 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3tFmTL2Ygpz9t2D
+ for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2016 04:03:34 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uABGx6ac130357
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:31 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26nfda3n5b-1
+ uABGx86Q002277
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:32 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26nbwngv9x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:31 -0500
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:32 -0500
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 11 Nov 2016 10:03:30 -0700
+ Fri, 11 Nov 2016 10:03:31 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
  hbabu@us.ibm.com, linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 08/11] VAS: Define vas_copy_crb() and vas_paste_crb()
-Date: Fri, 11 Nov 2016 09:02:53 -0800
+Subject: [RFC PATCH 09/11] VAS: Define/use vas_print_regs()
+Date: Fri, 11 Nov 2016 09:02:54 -0800
 In-Reply-To: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1478883776-11121-9-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1478883776-11121-10-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,208 +42,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define interfaces (wrappers) to the 'copy' and 'paste' instructions
-(which are new in PowerISA 3.0). These are intended to be used to
-by NX driver(s) to submit Coprocessor Request Blocks (CRBs) to the
-NX hardware engines.
+Define an interface to read and print the VAS error/debug registers.
+
+Currently this interface only prints the Fault Isolation Registers
+(FIR). It needs to make OPAL call(s) to read the registers since
+they are only available via the SCOM interface.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/vas.h  | 13 +++++++
- drivers/misc/vas/copy-paste.h   | 78 +++++++++++++++++++++++++++++++++++++++++
- drivers/misc/vas/vas-internal.h | 14 ++++++++
- drivers/misc/vas/vas-window.c   | 42 ++++++++++++++++++++++
- 4 files changed, 147 insertions(+)
- create mode 100644 drivers/misc/vas/copy-paste.h
+ arch/powerpc/include/asm/opal-api.h            |  3 +-
+ arch/powerpc/include/asm/opal.h                |  1 +
+ arch/powerpc/include/asm/vas.h                 |  5 ++++
+ arch/powerpc/kernel/process.c                  |  3 ++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ drivers/misc/vas/vas.c                         | 38 ++++++++++++++++++++++++++
+ 6 files changed, 50 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0e2e57b..eabe07e 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -167,7 +167,8 @@
+ #define OPAL_INT_EOI				124
+ #define OPAL_INT_SET_MFRR			125
+ #define OPAL_PCI_TCE_KILL			126
+-#define OPAL_LAST				126
++#define OPAL_VAS_READ_FIR			128
++#define OPAL_LAST				128
+ 
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index ee05bd2..b20ec10 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -228,6 +228,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ 			     uint32_t pe_num, uint32_t tce_size,
+ 			     uint64_t dma_addr, uint32_t npages);
++int64_t opal_vas_read_fir(uint32_t chip_id, int32_t idx, __be64 *fir);
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
 diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index 431692d..5ed3357 100644
+index 5ed3357..ca5a3b0 100644
 --- a/arch/powerpc/include/asm/vas.h
 +++ b/arch/powerpc/include/asm/vas.h
-@@ -118,4 +118,17 @@ struct vas_window *vas_tx_win_open(int node, int chip, enum vas_cop_type cop,
+@@ -131,4 +131,9 @@ extern int vas_copy_crb(void *crb, int offset, bool first);
   */
- int vas_win_close(struct vas_window *win);
+ extern int vas_paste_crb(struct vas_window *win, int off, bool last, bool re);
  
 +/*
-+ * Copy the co-processor request block (CRB) @crb into the local L2 cache.
-+ * For now, @offset must be 0 and @first must be false.
++ * Print the VAS Fault Isolation Registers (FIR) for the chip @chip.
++ * Used when we encounter an error/exception in VAS.
 + */
-+extern int vas_copy_crb(void *crb, int offset, bool first);
-+
-+/*
-+ * Paste a previously copied CRB (see vas_copy_crb()) from the L2 cache to
-+ * the hardware address associated with the window @win. For now, @off must
-+ * 0 and @last must be false. @re is expected/assumed to be true for NX windows.
-+ */
-+extern int vas_paste_crb(struct vas_window *win, int off, bool last, bool re);
-+
++void vas_print_regs(int chip);
  #endif
-diff --git a/drivers/misc/vas/copy-paste.h b/drivers/misc/vas/copy-paste.h
-new file mode 100644
-index 0000000..977074b
---- /dev/null
-+++ b/drivers/misc/vas/copy-paste.h
-@@ -0,0 +1,78 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+/*
-+ * Macros taken from tools/testing/selftests/powerpc/context_switch/cp_abort.c
-+ */
-+#define PASTE(RA, RB, L, RC) \
-+	.long (0x7c00070c | (RA) << (31-15) | (RB) << (31-20) \
-+			  | (L) << (31-10) | (RC) << (31-31))
-+
-+#define COPY(RA, RB, L) \
-+	.long (0x7c00060c | (RA) << (31-15) | (RB) << (31-20) \
-+			  | (L) << (31-10))
-+
-+#define CR0_FXM		"0x80"
-+#define CR0_SHIFT	28
-+#define CR0_MASK	0xF
-+/*
-+ * Copy instruction:
-+ *
-+ *	copy RA,RB,L
-+ *		Copy contents of address
-+ *
-+ *			(RA) + effective_address(RB)
-+ *
-+ *		to internal copy-buffer.
-+ *
-+ *		L == 1 indicates this is the first copy. 0 indicates its
-+ *		a continuation of a prior first copy.
-+ *
-+ *	paste RA,RB,L
-+ *		Paste contents of internal copy-buffer to the address:
-+ *
-+ *			(RA) + effective_address(RB)
-+ *
-+ *		L == 0 indicates its a continuation of a prior paste.
-+ *			i.e paste won't wait for the completion/status.
-+ *
-+ *		L == 1 indicates this is the last paste. In this case,
-+ *			paste waits for the entire group to complete and
-+ *			updates the status in CR0.
-+ *
-+ *	For Power9, the L bit must be 'true' in both copy and paste.
-+ */
-+
-+static inline int vas_copy(void *crb, int offset, int first)
-+{
-+	WARN_ON_ONCE(!first);
-+
-+	__asm__ __volatile(stringify_in_c(COPY(%0, %1, %2))";"
-+		:
-+		: "b" (offset), "b" (crb), "i" (1)
-+		: "memory");
-+
-+	return 0;
-+}
-+
-+static inline int vas_paste(void *paste_address, int offset, int last)
-+{
-+	unsigned long long cr;
-+
-+	WARN_ON_ONCE(!last);
-+
-+	cr = 0;
-+	__asm__ __volatile(stringify_in_c(PASTE(%1, %2, 1, 1))";"
-+		"mfocrf %0," CR0_FXM ";"
-+		: "=r" (cr)
-+		: "b" (paste_address), "b" (offset)
-+		: "memory");
-+
-+	return cr;
-+}
-diff --git a/drivers/misc/vas/vas-internal.h b/drivers/misc/vas/vas-internal.h
-index 7234ff6..a58ffb2 100644
---- a/drivers/misc/vas/vas-internal.h
-+++ b/drivers/misc/vas/vas-internal.h
-@@ -433,4 +433,18 @@ static inline uint64_t read_hvwc_reg(struct vas_window *win,
- 	return in_be64(win->hvwc_map+reg);
- }
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 9ee2623..1dbc8a8 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -62,6 +62,7 @@
  
-+#ifdef vas_debug
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
++#include <asm/vas.h>
+ 
+ /* Transactional Memory debug */
+ #ifdef TM_DEBUG_SW
+@@ -1339,6 +1340,8 @@ void show_regs(struct pt_regs * regs)
+ 			break;
+ 	}
+ 	printk("\n");
 +
-+static void print_fifo_msg_count(struct vas_window *txwin)
-+{
-+	uint64_t read_hvwc_reg(struct vas_window *w, char *n, uint64_t o);
-+	pr_devel("Winid %d, Msg count %llu\n", txwin->winid,
-+			(uint64_t)read_hvwc_reg(txwin, VREG(LRFIFO_PUSH)));
-+}
-+#else	/* vas_debug */
-+
-+#define print_fifo_msg_count(window)
-+
-+#endif	/* vas_debug */
-+
- #endif
-diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.c
-index 140ce80..f6610de 100644
---- a/drivers/misc/vas/vas-window.c
-+++ b/drivers/misc/vas/vas-window.c
-@@ -13,6 +13,7 @@
++	vas_print_regs(0);
+ #ifdef CONFIG_KALLSYMS
+ 	/*
+ 	 * Lookup NIP late so we have the best change of getting the
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 3d29d40..acb6396 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -308,3 +308,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+ OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+ OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
+ OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
++OPAL_CALL(opal_vas_read_fir,			OPAL_VAS_READ_FIR);
+diff --git a/drivers/misc/vas/vas.c b/drivers/misc/vas/vas.c
+index 51f9c70..785e7a1 100644
+--- a/drivers/misc/vas/vas.c
++++ b/drivers/misc/vas/vas.c
+@@ -15,10 +15,48 @@
  #include <linux/io.h>
  #include <asm/vas.h>
  #include "vas-internal.h"
-+#include "copy-paste.h"
++#include <asm/opal-api.h>
++#include <asm/opal.h>
  
- static int fault_winid;
+ int vas_initialized;
+ struct vas_instance *vas_instances;
  
-@@ -927,6 +928,47 @@ put_rxwin:
- 
- }
- 
-+int vas_copy_crb(void *crb, int offset, bool first)
++/*
++ * Read the Fault Isolation Registers (FIR) from skiboot into @fir.
++ */
++static void read_fault_regs(int chip, uint64_t *fir)
 +{
-+	if (!vas_initialized)
-+		return -1;
++	int i;
++	int64_t rc;
 +
-+	return vas_copy(crb, offset, first);
++	for (i = 0; i < 8; i++)
++		rc = opal_vas_read_fir(chip, i, &fir[i]);
 +}
 +
-+int vas_paste_crb(struct vas_window *txwin, int offset, bool last, bool re)
++/*
++ * Print the VAS Fault Isolation Registers (FIR) for the chip @chip.
++ * Used when we encounter an error/exception in VAS.
++ *
++ * TODO: Find the chip id where the exception occurred. Hard coding to
++ *	 chip 0 for now.
++ */
++void vas_print_regs(int chip)
 +{
-+	int rc;
-+	uint64_t val;
-+	void *addr;
++	int i;
++	uint64_t firs[8];
 +
-+	if (!vas_initialized)
-+		return -1;
-+	/*
-+	 * Only NX windows are supported for now and hardware assumes
-+	 * report-enable flag is set for NX windows. Ensure software
-+	 * complies too.
-+	 */
-+	WARN_ON_ONCE(!re);
++	/* TODO: Only dump FIRs for first chip for now */
++	if (chip == -1)
++		chip = 0;
 +
-+	addr = txwin->paste_kaddr;
-+	if (re) {
-+		/*
-+		 * Set the REPORT_ENABLE bit (equivalent to writing
-+		 * to 1K offset of the paste address)
-+		 */
-+		val = SET_FIELD(RMA_LSMP_REPORT_ENABLE, 0ULL, 1);
-+		addr += val;
++	read_fault_regs(chip, firs);
++	for (i = 0; i < 8; i += 4) {
++		pr_err("FIR%d: 0x%llx    0x%llx    0x%llx    0x%llx\n", i,
++				firs[i], firs[i+1], firs[i+2], firs[i+3]);
 +	}
-+
-+	rc = vas_paste(addr, offset, last);
-+
-+	print_fifo_msg_count(txwin);
-+
-+	return rc;
 +}
 +
 +
- int vas_win_close(struct vas_window *window)
+ static void init_vas_chip(struct vas_instance *vinst)
  {
- 	uint64_t val;
+ 	int i;
 -- 
 1.8.3.1
