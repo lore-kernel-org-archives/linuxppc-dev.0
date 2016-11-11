@@ -1,28 +1,29 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFV4M0hCGzDvgG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 17:14:27 +1100 (AEDT)
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFV1Y1VrZzDvgG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 17:12:01 +1100 (AEDT)
-Received: by mail-pf0-x230.google.com with SMTP id n85so6314770pfi.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 22:12:01 -0800 (PST)
-Message-ID: <1478844713.2189.1.camel@gmail.com>
-Subject: Re: [PATCH V3 1/2] powerpc: Define new ISA v3.00 logical PVR value
- and PCR register value
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
- agraf@suse.com
-Date: Fri, 11 Nov 2016 17:11:53 +1100
-In-Reply-To: <874m3fk4e7.fsf@concordia.ellerman.id.au>
-References: <1477975263-29045-1-git-send-email-sjitindarsingh@gmail.com>
- <1477975263-29045-2-git-send-email-sjitindarsingh@gmail.com>
- <87y40ujsam.fsf@concordia.ellerman.id.au>
- <1478647124.2415.6.camel@gmail.com>
- <874m3fk4e7.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id 3tFV4L3j65z9t1P
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 17:14:26 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id y68so1287878pfb.1
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2016 22:14:26 -0800 (PST)
+Subject: Re: [PATCH 2/3] Detect instruction fetch denied and report
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <1478007500-23624-1-git-send-email-bsingharora@gmail.com>
+ <1478007500-23624-3-git-send-email-bsingharora@gmail.com>
+ <877f8e2btr.fsf@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <6e780c3c-af62-4c5c-efb8-d75e15104d68@gmail.com>
+Date: Fri, 11 Nov 2016 17:14:10 +1100
+MIME-Version: 1.0
+In-Reply-To: <877f8e2btr.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,86 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-11-10 at 21:36 +1100, Michael Ellerman wrote:
-> Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+
+
+On 09/11/16 03:09, Aneesh Kumar K.V wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
 > 
-> > 
-> > On Tue, 2016-11-08 at 19:21 +1100, Michael Ellerman wrote:
-> > > 
-> > > Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
-> > > 
-> > > > 
-> > > > 
-> > > > ISA 3.00 adds the logical PVR value 0x0f000005, so add a
-> > > > definition
-> > > > for
-> > > > this.
-> > > > 
-> > > > Define PCR_ARCH_207 to reflect ISA 2.07 compatibility mode in
-> > > > the
-> > > > processor
-> > > > compatibility register (PCR). Also define a dummy ISA 3.00
-> > > > compatibility
-> > > > mode PCR_ARCH_300 to be used in the next patch to help with
-> > > > determining the
-> > > > PCR value.
-> > > What's "dummy" about the PCR value?
-> > 
-> > Then next patch needs some PCR bit to specify that we want to
-> > emulate
-> > v3.00 and/or that the host can emulate v3.00 to follow the pattern
-> > used
-> > to determine that the host is capable of emulating the given compat
-> > level and for determining which PCR bits to set. But no such bit is
-> > defined for V3.00 compat mode yet so a "dummy" one is used to
-> > represent
-> > this even though it's never defined in the ISA.
-> > > 
-> > > 
-> > > AFAICS that value is reserved in the ISA.
-> > 
-> > Yes it is a reserved bit in the PCR register but it will never
-> > actually
-> > be set, it will always be cleared by "host_pcr_bit -
-> > guest_pcr_bit;"
-> > 
-> > > 
-> > > 
-> > > Are we assuming/hoping that ISA 4.0 will use 0x10 to mean ISA 3.0
-> > > ?
-> > 
-> > Basically yes, and although I know nothing's given, it would follow
-> > the
-> > current pattern for whatever the next ISA version is to use 0x10 to
-> > mean V3.00 compat mode. Otherwise this will need to be updated at
-> > some
-> > point when that's released... In fact if the compat bits are no
-> > longer
-> > sequential this will need rewriting.
+>> ISA 3 allows for prevention of instruction fetch and execution
+>> of user mode pages. If such an error occurs, SRR1 bit 35
+>> reports the error. We catch and report the error in do_page_fault()
+>>
+>> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+>> ---
+>>  arch/powerpc/mm/fault.c | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index d0b137d..835fd03 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -404,6 +404,10 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+>>  		    (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
+>>  		     !(vma->vm_flags & (VM_READ | VM_WRITE))))
+>>  			goto bad_area;
+>> +
+>> +		if (radix_enabled() && (regs->msr & SRR1_ISI_N_OR_G))
+>> +			goto bad_area;
 > 
-> OK thanks.
+> Why is this within radix_enabled() ? Hash can also generate an
+> interrupt with that SRR1 value right ?
 > 
-> Please send a v4 with that detail in a comment and a better
-> explanation
-> in the change log.
-> 
-> I think a block comment before the #define would be best, ie.
-> something
-Will do and send a V4
-> like:
-> 
-> #define   PCR_ARCH_207	0x8		/* Architecture 2.07
-> */
-> 
-> /*
->  * All that helpful detail from above ...
->  */
-> #define   PCR_ARCH_300	0x10
-> 
-> 
-> We should also ask if we can get 0x10 reserved in the ISA to mean
-> 3.00.
-Probably a good idea, might ask you about the process for this on
-Monday...
-> 
-> cheers
+
+Yes the bits are not specific to radix. I suspect the check above took
+care of instruction exceptions, so we've never needed it before. I'll
+remove the check
+
+Balbir
