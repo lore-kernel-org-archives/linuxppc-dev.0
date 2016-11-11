@@ -1,38 +1,38 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFmTL6HBGzDvjR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 04:03:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFmTN4SVNzDvjf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 04:03:36 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tFmTL2Ygpz9t2D
- for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2016 04:03:34 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3tFmTM72ZDz9tB1
+ for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2016 04:03:35 +1100 (AEDT)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uABGx86Q002277
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:32 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26nbwngv9x-1
+ uABGx5b1001955
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:34 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26nbwngvbh-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:32 -0500
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:34 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 11 Nov 2016 10:03:31 -0700
+ Fri, 11 Nov 2016 10:03:33 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
  hbabu@us.ibm.com, linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 09/11] VAS: Define/use vas_print_regs()
-Date: Fri, 11 Nov 2016 09:02:54 -0800
+Subject: [RFC PATCH 10/11] VAS: Create a thread to monitor fault-window
+Date: Fri, 11 Nov 2016 09:02:55 -0800
 In-Reply-To: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1478883776-11121-10-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1478883776-11121-11-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,144 +42,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define an interface to read and print the VAS error/debug registers.
+The VAS hardware requires kernel to setup a "fault window" to which
+the hardware will paste a CRB in case of address translation faults.
 
-Currently this interface only prints the Fault Isolation Registers
-(FIR). It needs to make OPAL call(s) to read the registers since
-they are only available via the SCOM interface.
+Create a fault window (which is basically a special receive window)
+and a kernel thread that processes the CRBs that arrive at the fault
+window.  A follow-on patch will implement IRQ handling and the
+interrupt handler will wake up the fault thread.
+
+The fault window and thread will be used when we support user-space
+access to the VAS/NX hardware. For now the fault window thread simply
+dumps/logs the CRB and the fault isolation registers. Including these
+in this RFC patchset for review/comments.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal-api.h            |  3 +-
- arch/powerpc/include/asm/opal.h                |  1 +
- arch/powerpc/include/asm/vas.h                 |  5 ++++
- arch/powerpc/kernel/process.c                  |  3 ++
- arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
- drivers/misc/vas/vas.c                         | 38 ++++++++++++++++++++++++++
- 6 files changed, 50 insertions(+), 1 deletion(-)
+ drivers/misc/vas/vas-internal.h |   1 +
+ drivers/misc/vas/vas.c          | 157 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 157 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0e2e57b..eabe07e 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -167,7 +167,8 @@
- #define OPAL_INT_EOI				124
- #define OPAL_INT_SET_MFRR			125
- #define OPAL_PCI_TCE_KILL			126
--#define OPAL_LAST				126
-+#define OPAL_VAS_READ_FIR			128
-+#define OPAL_LAST				128
+diff --git a/drivers/misc/vas/vas-internal.h b/drivers/misc/vas/vas-internal.h
+index a58ffb2..e3ceb74 100644
+--- a/drivers/misc/vas/vas-internal.h
++++ b/drivers/misc/vas/vas-internal.h
+@@ -366,6 +366,7 @@ extern int vas_initialized;
  
- /* Device tree flags */
+ extern int vas_window_reset(struct vas_instance *vinst, int winid);
+ extern struct vas_instance *find_vas_instance(int node, int chip);
++extern void vas_wakeup_fault_win_thread(void);
  
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index ee05bd2..b20ec10 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -228,6 +228,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- 			     uint32_t pe_num, uint32_t tce_size,
- 			     uint64_t dma_addr, uint32_t npages);
-+int64_t opal_vas_read_fir(uint32_t chip_id, int32_t idx, __be64 *fir);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index 5ed3357..ca5a3b0 100644
---- a/arch/powerpc/include/asm/vas.h
-+++ b/arch/powerpc/include/asm/vas.h
-@@ -131,4 +131,9 @@ extern int vas_copy_crb(void *crb, int offset, bool first);
-  */
- extern int vas_paste_crb(struct vas_window *win, int off, bool last, bool re);
- 
-+/*
-+ * Print the VAS Fault Isolation Registers (FIR) for the chip @chip.
-+ * Used when we encounter an error/exception in VAS.
-+ */
-+void vas_print_regs(int chip);
- #endif
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 9ee2623..1dbc8a8 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -62,6 +62,7 @@
- 
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-+#include <asm/vas.h>
- 
- /* Transactional Memory debug */
- #ifdef TM_DEBUG_SW
-@@ -1339,6 +1340,8 @@ void show_regs(struct pt_regs * regs)
- 			break;
- 	}
- 	printk("\n");
-+
-+	vas_print_regs(0);
- #ifdef CONFIG_KALLSYMS
- 	/*
- 	 * Lookup NIP late so we have the best change of getting the
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 3d29d40..acb6396 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -308,3 +308,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
- OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
- OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
- OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
-+OPAL_CALL(opal_vas_read_fir,			OPAL_VAS_READ_FIR);
+ /*
+  * VREG(x):
 diff --git a/drivers/misc/vas/vas.c b/drivers/misc/vas/vas.c
-index 51f9c70..785e7a1 100644
+index 785e7a1..448d7f9 100644
 --- a/drivers/misc/vas/vas.c
 +++ b/drivers/misc/vas/vas.c
-@@ -15,10 +15,48 @@
+@@ -12,15 +12,29 @@
+ #include <linux/export.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
++#include <linux/kthread.h>
  #include <linux/io.h>
  #include <asm/vas.h>
  #include "vas-internal.h"
-+#include <asm/opal-api.h>
-+#include <asm/opal.h>
+ #include <asm/opal-api.h>
+ #include <asm/opal.h>
  
++#define VAS_FAULT_WIN_FIFO_SIZE		(64 << 10)
++#define VAS_FAULT_WIN_WCREDS		64
++
  int vas_initialized;
  struct vas_instance *vas_instances;
  
-+/*
-+ * Read the Fault Isolation Registers (FIR) from skiboot into @fir.
-+ */
-+static void read_fault_regs(int chip, uint64_t *fir)
-+{
-+	int i;
-+	int64_t rc;
++struct fault_win_thread_arg {
++	int notified;
++	wait_queue_head_t wq;
++	void *rx_fifo;
++	int rx_fifo_size;
++} fwta;
 +
-+	for (i = 0; i < 8; i++)
-+		rc = opal_vas_read_fir(chip, i, &fir[i]);
++struct task_struct *fwt_thr;		/* Fault window thread */
++struct vas_window *fault_win;
++
+ /*
+  * Read the Fault Isolation Registers (FIR) from skiboot into @fir.
+  */
+@@ -56,6 +70,135 @@ void vas_print_regs(int chip)
+ 	}
+ }
+ 
++void vas_wakeup_fault_win_thread(void)
++{
++	fwta.notified = 1;
++	wake_up(&fwta.wq);
 +}
 +
 +/*
-+ * Print the VAS Fault Isolation Registers (FIR) for the chip @chip.
-+ * Used when we encounter an error/exception in VAS.
++ * Process a CRB that we receive on the fault window.
 + *
-+ * TODO: Find the chip id where the exception occurred. Hard coding to
-+ *	 chip 0 for now.
++ * TODO: Since we only support in-kernel compression requests for now,
++ *	 we should not get a fault. If we do, dump the CRB and the FIR
++ *	 and return - VAS may enter a checkstop :-(
 + */
-+void vas_print_regs(int chip)
++static void process_fault_crb(struct fault_win_thread_arg *fwt)
 +{
-+	int i;
-+	uint64_t firs[8];
++	u64 buf[16];
 +
-+	/* TODO: Only dump FIRs for first chip for now */
-+	if (chip == -1)
-+		chip = 0;
++	/* TODO: Dump FIRs for all chips for now. We should detect the
++	 *	 current chip id and dump only for that chip?
++	 */
++	vas_print_regs(-1);
 +
-+	read_fault_regs(chip, firs);
-+	for (i = 0; i < 8; i += 4) {
-+		pr_err("FIR%d: 0x%llx    0x%llx    0x%llx    0x%llx\n", i,
-+				firs[i], firs[i+1], firs[i+2], firs[i+3]);
-+	}
++	memcpy(buf, fwt->rx_fifo, sizeof(buf));
++	memset(fwt->rx_fifo, 0, sizeof(buf));
++	pr_debug("VAS: FaultWin Rx-fifo: 0x%llx 0x%llx 0x%llx 0x%llx\n",
++				buf[0], buf[1], buf[2], buf[3]);
 +}
 +
++static int fault_win_thread(void *arg)
++{
++	struct fault_win_thread_arg *fwta = arg;
 +
++	do {
++		if (signal_pending(current))
++			flush_signals(current);
++
++		fwta->notified = 0;
++		wait_event_interruptible(fwta->wq, fwta->notified ||
++				kthread_should_stop());
++
++		process_fault_crb(fwta);
++
++	} while (!kthread_should_stop());
++
++	return 0;
++}
++
++static int create_fault_win(void)
++{
++	char *name = "VAS-FaultWin-Thread";
++	struct vas_rx_win_attr attr;
++
++	init_waitqueue_head(&fwta.wq);
++	fwta.notified = 0;
++	fwta.rx_fifo_size = VAS_FAULT_WIN_FIFO_SIZE;
++	fwta.rx_fifo = kmalloc(fwta.rx_fifo_size, GFP_KERNEL);
++	if (!fwta.rx_fifo) {
++		pr_err("VAS: Unable to alloc %d bytes for rx_fifo\n",
++				fwta.rx_fifo_size);
++		return -1;
++	}
++
++	/*
++	 * Create a worker thread that processes the fault CRBs.
++	 */
++	fwt_thr = kthread_create_on_node(fault_win_thread, &fwta, 0, name, 0);
++	if (IS_ERR(fwt_thr))
++		goto free_mem;
++
++	memset(&attr, 0, sizeof(attr));
++	attr.rx_fifo_size = fwta.rx_fifo_size;
++	attr.rx_fifo = fwta.rx_fifo;
++
++	attr.wcreds_max = VAS_FAULT_WIN_WCREDS;
++	attr.tc_mode = VAS_THRESH_DISABLED;
++	attr.pin_win = true;
++	attr.tx_win_ord_mode = true;
++	attr.rx_win_ord_mode = true;
++	attr.fault_win = true;
++
++	/*
++	 * 3.1.4.32: Local Notification Control Register. notify_disable is
++	 * true and interrupt disable is false for Fault windows
++	 */
++	attr.notify_disable = true;
++
++	attr.lnotify_lpid = 0;
++	attr.lnotify_pid = task_pid_nr(fwt_thr);
++	attr.lnotify_tid = task_pid_nr(fwt_thr);
++
++	fault_win = vas_rx_win_open(0, 0, VAS_COP_TYPE_FAULT, &attr);
++	if (IS_ERR(fault_win)) {
++		pr_err("VAS: Error %ld opening fault window\n",
++					PTR_ERR(fault_win));
++		goto stop_thread;
++	}
++
++	/*
++	 * Wakeup fault thread after fault rx window is opened.
++	 */
++	wake_up_process(fwt_thr);
++
++	pr_err("VAS: Created fault window, %d, LPID/PID/TID [%d/%d/%d]\n",
++			fault_win->winid, attr.lnotify_lpid, attr.lnotify_pid,
++			attr.lnotify_tid);
++
++	return 0;
++
++stop_thread:
++	kthread_stop(fwt_thr);
++
++free_mem:
++	kfree(attr.rx_fifo);
++	return -1;
++}
++
++static void destroy_fault_win(void)
++{
++	if (vas_win_close(fault_win) < 0)
++		pr_err("VAS: error closing fault window\n");
++
++	/*
++	 * TODO: fault_win_thread() does not exit unless stopped
++	 *	 but check if there can be any race here.
++	 */
++	kthread_stop(fwt_thr);
++	kfree(fwta.rx_fifo);
++	pr_err("VAS: Fault thread stopped\n");
++}
+ 
  static void init_vas_chip(struct vas_instance *vinst)
  {
- 	int i;
+@@ -93,7 +236,7 @@ static void init_vas_instance(int node, int chip)
+ 
+ int vas_init(void)
+ {
+-	int n, c;
++	int n, c, rc;
+ 
+ 	vas_instances = kmalloc_array(VAS_MAX_NODES * VAS_MAX_CHIPS_PER_NODE,
+ 				sizeof(struct vas_instance), GFP_KERNEL);
+@@ -110,12 +253,24 @@ int vas_init(void)
+ 
+ 	vas_initialized = 1;
+ 
++	/*
++	 * Create fault handler thread and window.
++	 */
++	rc = create_fault_win();
++	if (rc < 0)
++		goto cleanup;
++
+ 	return 0;
++
++cleanup:
++	kfree(vas_instances);
++	return rc;
+ }
+ 
+ void vas_exit(void)
+ {
+ 	vas_initialized = 0;
++	destroy_fault_win();
+ 	kfree(vas_instances);
+ }
+ 
 -- 
 1.8.3.1
