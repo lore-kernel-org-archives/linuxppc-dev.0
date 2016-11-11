@@ -1,26 +1,22 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wm0-x22a.google.com (mail-wm0-x22a.google.com
- [IPv6:2a00:1450:400c:c09::22a])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFbCy63d5zDvjM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 21:06:20 +1100 (AEDT)
-Received: by mail-wm0-x22a.google.com with SMTP id a197so416558137wmd.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 02:06:20 -0800 (PST)
-Date: Fri, 11 Nov 2016 13:06:10 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2] mm: move vma_is_anonymous check within
- pmd_move_must_withdraw
-Message-ID: <20161111100610.GA19382@node.shutemov.name>
-References: <201611071732.njM40txT%fengguang.wu@intel.com>
- <20161107144639.24048-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFbDT0pv5zDvnT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 21:06:46 +1100 (AEDT)
+Date: Fri, 11 Nov 2016 21:06:02 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 13/38] powerpc: Put exception configuration in a common
+ place
+Message-ID: <20161111210602.6128fc3f@kryten>
+In-Reply-To: <1467026976-7974-14-git-send-email-benh@kernel.crashing.org>
+References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
+ <1467026976-7974-14-git-send-email-benh@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161107144639.24048-1-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 07, 2016 at 08:16:39PM +0530, Aneesh Kumar K.V wrote:
-> Architectures like ppc64 want to use page table deposit/withraw
-> even with huge pmd dax entries. Allow arch to override the
-> vma_is_anonymous check by moving that to pmd_move_must_withdraw
-> function
+Hi Ben,
+
+> The various calls to establish exception endianness and AIL are
+> now done from a single point using already established CPU and FW
+> feature bits to decide what to do.
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+...
 
--- 
- Kirill A. Shutemov
++static void configure_exceptions(void)
++{
++	/* Setup the trampolines from the lowmem exception vectors
++	 * to the kdump kernel when not using a relocatable kernel.
++	 */
++	setup_kdump_trampoline();
++
++	/* Under a PAPR hypervisor, we need hypercalls */
++	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
++		long rc;
++
++		/* Enable AIL */
++		rc = pSeries_enable_reloc_on_exc();
++		if (rc == H_P2) {
++			pr_info("Relocation on exceptions not supported\n");
++		} else if (rc != H_SUCCESS) {
++			pr_warn("Unable to enable relocation on exceptions: "
++				"%ld\n", rc);
++		}
++
++		/*
++		 * Tell the hypervisor that we want our exceptions to
++		 * be taken in little endian mode. If this fails we don't
++		 * want to use BUG() because it will trigger an exception.
++		 *
++		 * We don't call this for big endian as our calling convention
++		 * makes us always enter in BE, and the call may fail under
++		 * some circumstances with kdump.
++		 */
++#ifdef __LITTLE_ENDIAN__
++		rc = pseries_little_endian_exceptions();
++		if (rc) {
++			ppc_md.progress("H_SET_MODE LE exception fail", 0);
++			panic("Could not enable little endian exceptions");
++		}
++#endif
++	} else {
++		/* Set endian mode using OPAL */
++		if (firmware_has_feature(FW_FEATURE_OPAL))
++			opal_configure_cores();
++
++		/* Enable AIL if supported, and we are in hypervisor mode */
++		if (cpu_has_feature(CPU_FTR_HVMODE) &&
++		    cpu_has_feature(CPU_FTR_ARCH_207S)) {
++			unsigned long lpcr = mfspr(SPRN_LPCR);
++			mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
++		}
++	}
++}
+
+It looks like we only set LPCR_AIL_3 on the boot CPU after this change,
+is that expected? Before that we did it in cpu_ready_for_interrupts()
+which is called for the primary and all secondary CPUs.
+
+Anton
