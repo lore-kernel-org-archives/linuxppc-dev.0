@@ -1,51 +1,26 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <chunkeey@googlemail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFqLF4tyhzDvj2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 06:12:36 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uABJ9DI5056796
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 14:12:34 -0500
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26nk8b302k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 14:12:34 -0500
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Sat, 12 Nov 2016 05:12:32 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id AE7E43578057
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 06:12:29 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uABJCTTA23986370
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 06:12:29 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uABJCSWA025571
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 06:12:29 +1100
-Subject: Re: [PATCH] of/irq: improve error message on irq discovery process
- failure
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: devicetree@vger.kernel.org, "Guilherme G. Piccoli"
- <gpiccoli@linux.vnet.ibm.com>,
- marc.zyngier@arm.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org, frowand.list@gmail.com
-Date: Sat, 12 Nov 2016 06:12:27 +1100
-In-Reply-To: <20161111163241.GL11945@leverpostej>
-References: <1478700308-25481-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20161109190457.GC837@leverpostej> <1478813443.2592.2.camel@au1.ibm.com>
- <20161111163241.GL11945@leverpostej>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1478891547.2592.13.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFsjP12kqzDvrM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 07:59:20 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id u144so8029wmu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 12:59:20 -0800 (PST)
+From: Christian Lamparter <chunkeey@googlemail.com>
+To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: John Youn <johnyoun@synopsys.com>, Mark Rutland <mark.rutland@arm.com>,
+ Rob Herring <robh+dt@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Felipe Balbi <felipe.balbi@linux.intel.com>
+Subject: [PATCH 2/2] usb: dwc2: fixes host_dma logic
+Date: Fri, 11 Nov 2016 21:59:14 +0100
+Message-Id: <4043f817106c8dffdc9a3f411d965465168b263d.1478897792.git.chunkeey@gmail.com>
+In-Reply-To: <b1ec4a4425388cdee36be081971484db2a7d048a.1478897792.git.chunkeey@gmail.com>
+References: <b1ec4a4425388cdee36be081971484db2a7d048a.1478897792.git.chunkeey@gmail.com>
+In-Reply-To: <b1ec4a4425388cdee36be081971484db2a7d048a.1478897792.git.chunkeey@gmail.com>
+References: <b1ec4a4425388cdee36be081971484db2a7d048a.1478897792.git.chunkeey@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,30 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-11-11 at 16:32 +0000, Mark Rutland wrote:
-> On Fri, Nov 11, 2016 at 08:30:43AM +1100, Benjamin Herrenschmidt
-> wrote:
-> > 
-> > On Wed, 2016-11-09 at 19:04 +0000, Mark Rutland wrote:
-> > > 
-> > > 
-> > > If we don't have an interrupt-map on a PCI controller, why don't
-> > > we
-> > > instead log a message regarding that being missing, and give up
-> > > early?
-> > 
-> > Why ? It's legit to not support LSIs.
-> 
-> Sure; I had envisioned a message like:
-> 
-> 	pr_info("%s: no interrupt-map, INTx interrupts not possible\n",
-> 		pci_controller_name);
-> 
-> ... Which tells the user exaclty what we know, and doesn't imply
-> either
-> an error or the actual absence of HW support.
+This patch moves the the host_dma initialization
+before dwc2_set_param_dma_desc_enable and
+dwc2_set_param_dma_desc_fs_enable. The reason being
+that both function need it.
 
-Works for me.
+Fixes: 1205489cee75bf39 ("usb: dwc2: Get host DMA device properties")
 
-Cheers,
-Ben.
+Cc: John Youn <johnyoun@synopsys.com>
+Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
+Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+---
+ drivers/usb/dwc2/params.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/dwc2/params.c b/drivers/usb/dwc2/params.c
+index 5d822c5..222a83c 100644
+--- a/drivers/usb/dwc2/params.c
++++ b/drivers/usb/dwc2/params.c
+@@ -1157,9 +1157,6 @@ static void dwc2_set_parameters(struct dwc2_hsotg *hsotg,
+ 	bool dma_capable = !(hw->arch == GHWCFG2_SLAVE_ONLY_ARCH);
+ 
+ 	dwc2_set_param_otg_cap(hsotg, params->otg_cap);
+-	dwc2_set_param_dma_desc_enable(hsotg, params->dma_desc_enable);
+-	dwc2_set_param_dma_desc_fs_enable(hsotg, params->dma_desc_fs_enable);
+-
+ 	if ((hsotg->dr_mode == USB_DR_MODE_HOST) ||
+ 	    (hsotg->dr_mode == USB_DR_MODE_OTG)) {
+ 		bool disable;
+@@ -1174,6 +1171,8 @@ static void dwc2_set_parameters(struct dwc2_hsotg *hsotg,
+ 				    !disable, false,
+ 				    dma_capable);
+ 	}
++	dwc2_set_param_dma_desc_enable(hsotg, params->dma_desc_enable);
++	dwc2_set_param_dma_desc_fs_enable(hsotg, params->dma_desc_fs_enable);
+ 
+ 	dwc2_set_param_host_support_fs_ls_low_power(hsotg,
+ 			params->host_support_fs_ls_low_power);
+-- 
+2.10.2
