@@ -1,22 +1,25 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFbDT0pv5zDvnT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 21:06:46 +1100 (AEDT)
-Date: Fri, 11 Nov 2016 21:06:02 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 13/38] powerpc: Put exception configuration in a common
- place
-Message-ID: <20161111210602.6128fc3f@kryten>
-In-Reply-To: <1467026976-7974-14-git-send-email-benh@kernel.crashing.org>
-References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
- <1467026976-7974-14-git-send-email-benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFbPc6y6DzDsqn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 21:14:43 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id m203so6695326wma.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 02:14:43 -0800 (PST)
+Date: Fri, 11 Nov 2016 13:14:39 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] mm: THP page cache support for ppc64
+Message-ID: <20161111101439.GB19382@node.shutemov.name>
+References: <20161107083441.21901-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20161107083441.21901-2-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161107083441.21901-2-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Mon, Nov 07, 2016 at 02:04:41PM +0530, Aneesh Kumar K.V wrote:
+> @@ -2953,6 +2966,13 @@ static int do_set_pmd(struct fault_env *fe, struct page *page)
+>  	ret = VM_FAULT_FALLBACK;
+>  	page = compound_head(page);
+>  
+> +	/*
+> +	 * Archs like ppc64 need additonal space to store information
+> +	 * related to pte entry. Use the preallocated table for that.
+> +	 */
+> +	if (arch_needs_pgtable_deposit() && !fe->prealloc_pte)
+> +		fe->prealloc_pte = pte_alloc_one(vma->vm_mm, fe->address);
+> +
 
-> The various calls to establish exception endianness and AIL are
-> now done from a single point using already established CPU and FW
-> feature bits to decide what to do.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+-ENOMEM handling?
 
-...
+I think we should do this way before this point. Maybe in do_fault() or
+something.
 
-+static void configure_exceptions(void)
-+{
-+	/* Setup the trampolines from the lowmem exception vectors
-+	 * to the kdump kernel when not using a relocatable kernel.
-+	 */
-+	setup_kdump_trampoline();
-+
-+	/* Under a PAPR hypervisor, we need hypercalls */
-+	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
-+		long rc;
-+
-+		/* Enable AIL */
-+		rc = pSeries_enable_reloc_on_exc();
-+		if (rc == H_P2) {
-+			pr_info("Relocation on exceptions not supported\n");
-+		} else if (rc != H_SUCCESS) {
-+			pr_warn("Unable to enable relocation on exceptions: "
-+				"%ld\n", rc);
-+		}
-+
-+		/*
-+		 * Tell the hypervisor that we want our exceptions to
-+		 * be taken in little endian mode. If this fails we don't
-+		 * want to use BUG() because it will trigger an exception.
-+		 *
-+		 * We don't call this for big endian as our calling convention
-+		 * makes us always enter in BE, and the call may fail under
-+		 * some circumstances with kdump.
-+		 */
-+#ifdef __LITTLE_ENDIAN__
-+		rc = pseries_little_endian_exceptions();
-+		if (rc) {
-+			ppc_md.progress("H_SET_MODE LE exception fail", 0);
-+			panic("Could not enable little endian exceptions");
-+		}
-+#endif
-+	} else {
-+		/* Set endian mode using OPAL */
-+		if (firmware_has_feature(FW_FEATURE_OPAL))
-+			opal_configure_cores();
-+
-+		/* Enable AIL if supported, and we are in hypervisor mode */
-+		if (cpu_has_feature(CPU_FTR_HVMODE) &&
-+		    cpu_has_feature(CPU_FTR_ARCH_207S)) {
-+			unsigned long lpcr = mfspr(SPRN_LPCR);
-+			mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
-+		}
-+	}
-+}
-
-It looks like we only set LPCR_AIL_3 on the boot CPU after this change,
-is that expected? Before that we did it in cpu_ready_for_interrupts()
-which is called for the primary and all secondary CPUs.
-
-Anton
+-- 
+ Kirill A. Shutemov
