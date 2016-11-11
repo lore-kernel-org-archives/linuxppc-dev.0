@@ -1,29 +1,28 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFTqN5xcyzDvfn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 17:03:12 +1100 (AEDT)
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tFTqN12LPz9t1P
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 17:03:12 +1100 (AEDT)
-Received: by mail-pf0-x241.google.com with SMTP id i88so1240688pfk.2
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2016 22:03:12 -0800 (PST)
-Subject: Re: [PATCH 3/3] Enable storage keys for radix - user mode execution
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1478007500-23624-1-git-send-email-bsingharora@gmail.com>
- <1478007500-23624-4-git-send-email-bsingharora@gmail.com>
- <874m3i2biv.fsf@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <84a7f1a7-5514-4345-7df8-383ca5eb84df@gmail.com>
-Date: Fri, 11 Nov 2016 17:02:56 +1100
-MIME-Version: 1.0
-In-Reply-To: <874m3i2biv.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFV1Y1VrZzDvgG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 17:12:01 +1100 (AEDT)
+Received: by mail-pf0-x230.google.com with SMTP id n85so6314770pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2016 22:12:01 -0800 (PST)
+Message-ID: <1478844713.2189.1.camel@gmail.com>
+Subject: Re: [PATCH V3 1/2] powerpc: Define new ISA v3.00 logical PVR value
+ and PCR register value
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
+ agraf@suse.com
+Date: Fri, 11 Nov 2016 17:11:53 +1100
+In-Reply-To: <874m3fk4e7.fsf@concordia.ellerman.id.au>
+References: <1477975263-29045-1-git-send-email-sjitindarsingh@gmail.com>
+ <1477975263-29045-2-git-send-email-sjitindarsingh@gmail.com>
+ <87y40ujsam.fsf@concordia.ellerman.id.au>
+ <1478647124.2415.6.camel@gmail.com>
+ <874m3fk4e7.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,80 +32,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 09/11/16 03:15, Aneesh Kumar K.V wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
+On Thu, 2016-11-10 at 21:36 +1100, Michael Ellerman wrote:
+> Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
 > 
->> ISA 3 defines new encoded access authority that allows instruction
->> access prevention in privileged mode and allows normal access
->> to problem state. This patch just enables IAMR (Instruction Authority
->> Mask Register), enabling AMR would require more work.
+> > 
+> > On Tue, 2016-11-08 at 19:21 +1100, Michael Ellerman wrote:
+> > > 
+> > > Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+> > > 
+> > > > 
+> > > > 
+> > > > ISA 3.00 adds the logical PVR value 0x0f000005, so add a
+> > > > definition
+> > > > for
+> > > > this.
+> > > > 
+> > > > Define PCR_ARCH_207 to reflect ISA 2.07 compatibility mode in
+> > > > the
+> > > > processor
+> > > > compatibility register (PCR). Also define a dummy ISA 3.00
+> > > > compatibility
+> > > > mode PCR_ARCH_300 to be used in the next patch to help with
+> > > > determining the
+> > > > PCR value.
+> > > What's "dummy" about the PCR value?
+> > 
+> > Then next patch needs some PCR bit to specify that we want to
+> > emulate
+> > v3.00 and/or that the host can emulate v3.00 to follow the pattern
+> > used
+> > to determine that the host is capable of emulating the given compat
+> > level and for determining which PCR bits to set. But no such bit is
+> > defined for V3.00 compat mode yet so a "dummy" one is used to
+> > represent
+> > this even though it's never defined in the ISA.
+> > > 
+> > > 
+> > > AFAICS that value is reserved in the ISA.
+> > 
+> > Yes it is a reserved bit in the PCR register but it will never
+> > actually
+> > be set, it will always be cleared by "host_pcr_bit -
+> > guest_pcr_bit;"
+> > 
+> > > 
+> > > 
+> > > Are we assuming/hoping that ISA 4.0 will use 0x10 to mean ISA 3.0
+> > > ?
+> > 
+> > Basically yes, and although I know nothing's given, it would follow
+> > the
+> > current pattern for whatever the next ISA version is to use 0x10 to
+> > mean V3.00 compat mode. Otherwise this will need to be updated at
+> > some
+> > point when that's released... In fact if the compat bits are no
+> > longer
+> > sequential this will need rewriting.
+> 
+> OK thanks.
+> 
+> Please send a v4 with that detail in a comment and a better
+> explanation
+> in the change log.
+> 
+> I think a block comment before the #define would be best, ie.
+> something
+Will do and send a V4
+> like:
+> 
+> #define   PCR_ARCH_207	0x8		/* Architecture 2.07
+> */
+> 
+> /*
+>  * All that helpful detail from above ...
+>  */
+> #define   PCR_ARCH_300	0x10
 > 
 > 
-> We may want to explain what the rules are with details like IAMR class 0
-> bit 1 controls the instruction access etc. Also we can metion that we
-> now setup user pages such that EAA[0] is set to 0
+> We should also ask if we can get 0x10 reserved in the ISA to mean
+> 3.00.
+Probably a good idea, might ask you about the process for this on
+Monday...
 > 
->>
->> I've tested this with a buggy driver and a simple payload. The payload
->> is specific to the build I've tested.
->>
->> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
->> ---
->>  arch/powerpc/mm/pgtable-radix.c | 19 +++++++++++++++++++
->>  1 file changed, 19 insertions(+)
->>
->> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
->> index 0fdd8ed..cd3d400 100644
->> --- a/arch/powerpc/mm/pgtable-radix.c
->> +++ b/arch/powerpc/mm/pgtable-radix.c
->> @@ -339,6 +339,24 @@ static void __init radix_init_amor(void)
->>  	mtspr(SPRN_AMOR, amor);
->>  }
->>  
->> +/*
->> + * For radix page tables we setup, the IAMR values as follows
->> + * IMAR = 0100...00 (key 0 is set to 1)
->> + * AMR, UAMR, UAMOR are not affected
->> + */
->> +static void __init radix_init_iamr(void)
->> +{
->> +	unsigned long iamr_mask = 0x4000000000000000;
->> +	unsigned long iamr = mfspr(SPRN_IAMR);
->> +
->> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
->> +		return;
-> 
-> is this needed ?
-> 
-
-Yes, IAMR support is DD1+
-
->> +
->> +	iamr |= iamr_mask;
->> +
->> +	mtspr(SPRN_IAMR, iamr);
->> +}
-> 
-> Why do '|'. Who else can set this ?
-> 
->> +
->>  void __init radix__early_init_mmu(void)
->>  {
->>  	unsigned long lpcr;
->> @@ -398,6 +416,7 @@ void __init radix__early_init_mmu(void)
->>  		radix_init_amor();
->>  	}
->>  
->> +	radix_init_iamr();
->>  	radix_init_pgtable();
->>  }
-> 
-> What about secondary cpus ?
-> 
-
-Oops..Yes, will do a v3. 
-
-> -aneesh
-> 
+> cheers
