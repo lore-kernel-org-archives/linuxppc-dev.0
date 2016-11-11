@@ -1,23 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFcX80pFFzDvjZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 22:05:27 +1100 (AEDT)
-Message-ID: <1478862296.2592.10.camel@kernel.crashing.org>
-Subject: Re: [PATCH 13/38] powerpc: Put exception configuration in a common
- place
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-Date: Fri, 11 Nov 2016 22:04:56 +1100
-In-Reply-To: <20161111210602.6128fc3f@kryten>
-References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
- <1467026976-7974-14-git-send-email-benh@kernel.crashing.org>
- <20161111210602.6128fc3f@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFf1S5h1gzDvnq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 23:12:28 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uABC8t8M113090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 07:12:26 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26nc3t62cd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 07:12:26 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 11 Nov 2016 05:12:25 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] mm: THP page cache support for ppc64
+In-Reply-To: <20161111101439.GB19382@node.shutemov.name>
+References: <20161107083441.21901-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20161107083441.21901-2-aneesh.kumar@linux.vnet.ibm.com>
+ <20161111101439.GB19382@node.shutemov.name>
+Date: Fri, 11 Nov 2016 17:42:11 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <8737iy1ahw.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +41,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-11-11 at 21:06 +1100, Anton Blanchard wrote:
-> It looks like we only set LPCR_AIL_3 on the boot CPU after this change,
-> is that expected? Before that we did it in cpu_ready_for_interrupts()
-> which is called for the primary and all secondary CPUs.
+"Kirill A. Shutemov" <kirill@shutemov.name> writes:
 
-That would be a mistake... I suppose I didn't realize we had to call
-these things for every CPU.
+> On Mon, Nov 07, 2016 at 02:04:41PM +0530, Aneesh Kumar K.V wrote:
+>> @@ -2953,6 +2966,13 @@ static int do_set_pmd(struct fault_env *fe, struct page *page)
+>>  	ret = VM_FAULT_FALLBACK;
+>>  	page = compound_head(page);
+>>  
+>> +	/*
+>> +	 * Archs like ppc64 need additonal space to store information
+>> +	 * related to pte entry. Use the preallocated table for that.
+>> +	 */
+>> +	if (arch_needs_pgtable_deposit() && !fe->prealloc_pte)
+>> +		fe->prealloc_pte = pte_alloc_one(vma->vm_mm, fe->address);
+>> +
+>
+> -ENOMEM handling?
 
-I'll try to cook up a fix next week.
+How about
 
-Cheers,
-Ben.
+	if (arch_needs_pgtable_deposit() && !fe->prealloc_pte) {
+		fe->prealloc_pte = pte_alloc_one(vma->vm_mm, fe->address);
+		if (!fe->prealloc_pte)
+			return VM_FAULT_OOM;
+	}
+
+
+
+>
+> I think we should do this way before this point. Maybe in do_fault() or
+> something.
+
+doing this in do_set_pmd keeps this closer to where we set the pmd. Any
+reason you thing we should move it higher up the stack. We already do
+pte_alloc() at the same level for a non transhuge case in
+alloc_set_pte().
+
+-aneesh
