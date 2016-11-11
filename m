@@ -1,17 +1,16 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tFfT91WJwzDvnV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 23:33:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tFfTH4syVzDvpJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 23:33:07 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Alex Williamson <alex.williamson@redhat.com>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
-Subject: [PATCH kernel v5 2/6] powerpc/iommu: Stop using @current in
- mm_iommu_xxx
-Date: Fri, 11 Nov 2016 23:32:13 +1100
-Message-Id: <1478867537-27893-3-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v5 4/6] vfio/spapr: Postpone default window creation
+Date: Fri, 11 Nov 2016 23:32:15 +1100
+Message-Id: <1478867537-27893-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
 References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,243 +22,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This changes mm_iommu_xxx helpers to take mm_struct as a parameter
-instead of getting it from @current which in some situations may
-not have a valid reference to mm.
+As mentioned in the previous patch, we are going to allow the userspace
+to configure container in one memory context and pass container fd to
+another so we are postponing memory allocations accounted against
+the locked memory limit. The previous patch took care of it_userspace.
 
-This changes helpers to receive @mm and moves all references to @current
-to the caller, including checks for !current and !current->mm;
-checks in mm_iommu_preregistered() are removed as there is no caller
-yet.
+At the moment we create the default DMA window when the first group is
+attached to a container; this is done for the userspace which is not
+DDW-aware but familiar with the SPAPR TCE IOMMU v2 in the part of memory
+pre-registration - such client expects the default DMA window to exist.
 
-This moves the mm_iommu_adjust_locked_vm() call to the caller as
-it receives mm_iommu_table_group_mem_t but it needs mm.
-
-This should cause no behavioral change.
+This postpones the default DMA window allocation till first map/unmap
+request happens.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/mmu_context.h | 16 ++++++------
- arch/powerpc/mm/mmu_context_iommu.c    | 46 +++++++++++++---------------------
- drivers/vfio/vfio_iommu_spapr_tce.c    | 14 ++++++++---
- 3 files changed, 36 insertions(+), 40 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 98 ++++++++++++++++++-------------------
+ 1 file changed, 47 insertions(+), 51 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 424844b..b9e3f0a 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -19,16 +19,18 @@ extern void destroy_context(struct mm_struct *mm);
- struct mm_iommu_table_group_mem_t;
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 442baac..1c02498 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -97,6 +97,7 @@ struct tce_container {
+ 	struct mutex lock;
+ 	bool enabled;
+ 	bool v2;
++	bool def_window_pending;
+ 	unsigned long locked_pages;
+ 	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+ 	struct list_head group_list;
+@@ -594,15 +595,6 @@ static long tce_iommu_create_table(struct tce_container *container,
+ 	WARN_ON(!ret && !(*ptbl)->it_ops->free);
+ 	WARN_ON(!ret && ((*ptbl)->it_allocated_size != table_size));
  
- extern int isolate_lru_page(struct page *page);	/* from internal.h */
--extern bool mm_iommu_preregistered(void);
--extern long mm_iommu_get(unsigned long ua, unsigned long entries,
-+extern bool mm_iommu_preregistered(struct mm_struct *mm);
-+extern long mm_iommu_get(struct mm_struct *mm,
-+		unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem);
--extern long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem);
-+extern long mm_iommu_put(struct mm_struct *mm,
-+		struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_init(struct mm_struct *mm);
- extern void mm_iommu_cleanup(struct mm_struct *mm);
--extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
--		unsigned long size);
--extern struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long ua,
--		unsigned long entries);
-+extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
-+		unsigned long ua, unsigned long size);
-+extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
-+		unsigned long ua, unsigned long entries);
- extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned long *hpa);
- extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index ad2e575..4c6db09 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -56,7 +56,7 @@ static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
- 	}
- 
- 	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%ld %ld/%ld\n",
--			current->pid,
-+			current ? current->pid : 0,
- 			incr ? '+' : '-',
- 			npages << PAGE_SHIFT,
- 			mm->locked_vm << PAGE_SHIFT,
-@@ -66,12 +66,9 @@ static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
+-	if (!ret && container->v2) {
+-		ret = tce_iommu_userspace_view_alloc(*ptbl);
+-		if (ret)
+-			(*ptbl)->it_ops->free(*ptbl);
+-	}
+-
+-	if (ret)
+-		decrement_locked_vm(table_size >> PAGE_SHIFT);
+-
  	return ret;
  }
  
--bool mm_iommu_preregistered(void)
-+bool mm_iommu_preregistered(struct mm_struct *mm)
- {
--	if (!current || !current->mm)
--		return false;
--
--	return !list_empty(&current->mm->context.iommu_group_mem_list);
-+	return !list_empty(&mm->context.iommu_group_mem_list);
- }
- EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
- 
-@@ -124,19 +121,16 @@ static int mm_iommu_move_page_from_cma(struct page *page)
+@@ -719,6 +711,29 @@ static long tce_iommu_remove_window(struct tce_container *container,
  	return 0;
  }
  
--long mm_iommu_get(unsigned long ua, unsigned long entries,
-+long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem)
++static long tce_iommu_create_default_window(struct tce_container *container)
++{
++	long ret;
++	__u64 start_addr = 0;
++	struct tce_iommu_group *tcegrp;
++	struct iommu_table_group *table_group;
++
++	if (!tce_groups_attached(container))
++		return -ENODEV;
++
++	tcegrp = list_first_entry(&container->group_list,
++			struct tce_iommu_group, next);
++	table_group = iommu_group_get_iommudata(tcegrp->grp);
++	if (!table_group)
++		return -ENODEV;
++
++	ret = tce_iommu_create_window(container, IOMMU_PAGE_SHIFT_4K,
++			table_group->tce32_size, 1, &start_addr);
++	WARN_ON_ONCE(!ret && start_addr);
++
++	return ret;
++}
++
+ static long tce_iommu_ioctl(void *iommu_data,
+ 				 unsigned int cmd, unsigned long arg)
  {
- 	struct mm_iommu_table_group_mem_t *mem;
- 	long i, j, ret = 0, locked_entries = 0;
- 	struct page *page = NULL;
+@@ -809,6 +824,13 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 				VFIO_DMA_MAP_FLAG_WRITE))
+ 			return -EINVAL;
  
--	if (!current || !current->mm)
--		return -ESRCH; /* process exited */
++		if (container->def_window_pending) {
++			ret = tce_iommu_create_default_window(container);
++			if (ret)
++				return ret;
++			container->def_window_pending = false;
++		}
++
+ 		num = tce_iommu_find_table(container, param.iova, &tbl);
+ 		if (num < 0)
+ 			return -ENXIO;
+@@ -872,6 +894,13 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.flags)
+ 			return -EINVAL;
+ 
++		if (container->def_window_pending) {
++			ret = tce_iommu_create_default_window(container);
++			if (ret)
++				return ret;
++			container->def_window_pending = false;
++		}
++
+ 		num = tce_iommu_find_table(container, param.iova, &tbl);
+ 		if (num < 0)
+ 			return -ENXIO;
+@@ -998,6 +1027,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 
+ 		mutex_lock(&container->lock);
+ 
++		container->def_window_pending = false;
++
+ 		ret = tce_iommu_create_window(container, create.page_shift,
+ 				create.window_size, create.levels,
+ 				&create.start_addr);
+@@ -1030,6 +1061,12 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (remove.flags)
+ 			return -EINVAL;
+ 
++		if (container->def_window_pending && !remove.start_addr) {
++			container->def_window_pending = false;
++			return 0;
++		}
++		container->def_window_pending = false;
++
+ 		mutex_lock(&container->lock);
+ 
+ 		ret = tce_iommu_remove_window(container, remove.start_addr);
+@@ -1109,9 +1146,6 @@ static void tce_iommu_release_ownership_ddw(struct tce_container *container,
+ static long tce_iommu_take_ownership_ddw(struct tce_container *container,
+ 		struct iommu_table_group *table_group)
+ {
+-	long i, ret = 0;
+-	struct iommu_table *tbl = NULL;
 -
- 	mutex_lock(&mem_list_mutex);
+ 	if (!table_group->ops->create_table || !table_group->ops->set_window ||
+ 			!table_group->ops->release_ownership) {
+ 		WARN_ON_ONCE(1);
+@@ -1120,47 +1154,9 @@ static long tce_iommu_take_ownership_ddw(struct tce_container *container,
  
--	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
-+	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
- 			next) {
- 		if ((mem->ua == ua) && (mem->entries == entries)) {
- 			++mem->used;
-@@ -154,7 +148,7 @@ long mm_iommu_get(unsigned long ua, unsigned long entries,
+ 	table_group->ops->take_ownership(table_group);
  
- 	}
- 
--	ret = mm_iommu_adjust_locked_vm(current->mm, entries, true);
-+	ret = mm_iommu_adjust_locked_vm(mm, entries, true);
- 	if (ret)
- 		goto unlock_exit;
- 
-@@ -215,11 +209,11 @@ long mm_iommu_get(unsigned long ua, unsigned long entries,
- 	mem->entries = entries;
- 	*pmem = mem;
- 
--	list_add_rcu(&mem->next, &current->mm->context.iommu_group_mem_list);
-+	list_add_rcu(&mem->next, &mm->context.iommu_group_mem_list);
- 
- unlock_exit:
- 	if (locked_entries && ret)
--		mm_iommu_adjust_locked_vm(current->mm, locked_entries, false);
-+		mm_iommu_adjust_locked_vm(mm, locked_entries, false);
- 
- 	mutex_unlock(&mem_list_mutex);
- 
-@@ -264,17 +258,13 @@ static void mm_iommu_free(struct rcu_head *head)
- static void mm_iommu_release(struct mm_iommu_table_group_mem_t *mem)
- {
- 	list_del_rcu(&mem->next);
--	mm_iommu_adjust_locked_vm(current->mm, mem->entries, false);
- 	call_rcu(&mem->rcu, mm_iommu_free);
- }
- 
--long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
-+long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
- {
- 	long ret = 0;
- 
--	if (!current || !current->mm)
--		return -ESRCH; /* process exited */
+-	/*
+-	 * If it the first group attached, check if there is
+-	 * a default DMA window and create one if none as
+-	 * the userspace expects it to exist.
+-	 */
+-	if (!tce_groups_attached(container) && !container->tables[0]) {
+-		ret = tce_iommu_create_table(container,
+-				table_group,
+-				0, /* window number */
+-				IOMMU_PAGE_SHIFT_4K,
+-				table_group->tce32_size,
+-				1, /* default levels */
+-				&tbl);
+-		if (ret)
+-			goto release_exit;
+-		else
+-			container->tables[0] = tbl;
+-	}
 -
- 	mutex_lock(&mem_list_mutex);
+-	/* Set all windows to the new group */
+-	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+-		tbl = container->tables[i];
+-
+-		if (!tbl)
+-			continue;
+-
+-		/* Set the default window to a new group */
+-		ret = table_group->ops->set_window(table_group, i, tbl);
+-		if (ret)
+-			goto release_exit;
+-	}
++	container->def_window_pending = true;
  
- 	if (mem->used == 0) {
-@@ -297,6 +287,8 @@ long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
- 	/* @mapped became 0 so now mappings are disabled, release the region */
- 	mm_iommu_release(mem);
- 
-+	mm_iommu_adjust_locked_vm(mm, mem->entries, false);
-+
- unlock_exit:
- 	mutex_unlock(&mem_list_mutex);
- 
-@@ -304,14 +296,12 @@ long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
- }
- EXPORT_SYMBOL_GPL(mm_iommu_put);
- 
--struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
--		unsigned long size)
-+struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
-+		unsigned long ua, unsigned long size)
- {
- 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
- 
--	list_for_each_entry_rcu(mem,
--			&current->mm->context.iommu_group_mem_list,
--			next) {
-+	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
- 		if ((mem->ua <= ua) &&
- 				(ua + size <= mem->ua +
- 				 (mem->entries << PAGE_SHIFT))) {
-@@ -324,14 +314,12 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
- }
- EXPORT_SYMBOL_GPL(mm_iommu_lookup);
- 
--struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long ua,
--		unsigned long entries)
-+struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
-+		unsigned long ua, unsigned long entries)
- {
- 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
- 
--	list_for_each_entry_rcu(mem,
--			&current->mm->context.iommu_group_mem_list,
--			next) {
-+	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
- 		if ((mem->ua == ua) && (mem->entries == entries)) {
- 			ret = mem;
- 			break;
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 80378dd..d0c38b2 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -107,14 +107,17 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
- {
- 	struct mm_iommu_table_group_mem_t *mem;
- 
-+	if (!current || !current->mm)
-+		return -ESRCH; /* process exited */
-+
- 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
- 		return -EINVAL;
- 
--	mem = mm_iommu_find(vaddr, size >> PAGE_SHIFT);
-+	mem = mm_iommu_find(current->mm, vaddr, size >> PAGE_SHIFT);
- 	if (!mem)
- 		return -ENOENT;
- 
--	return mm_iommu_put(mem);
-+	return mm_iommu_put(current->mm, mem);
+ 	return 0;
+-
+-release_exit:
+-	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
+-		table_group->ops->unset_window(table_group, i);
+-
+-	table_group->ops->release_ownership(table_group);
+-
+-	return ret;
  }
  
- static long tce_iommu_register_pages(struct tce_container *container,
-@@ -124,11 +127,14 @@ static long tce_iommu_register_pages(struct tce_container *container,
- 	struct mm_iommu_table_group_mem_t *mem = NULL;
- 	unsigned long entries = size >> PAGE_SHIFT;
- 
-+	if (!current || !current->mm)
-+		return -ESRCH; /* process exited */
-+
- 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
- 			((vaddr + size) < vaddr))
- 		return -EINVAL;
- 
--	ret = mm_iommu_get(vaddr, entries, &mem);
-+	ret = mm_iommu_get(current->mm, vaddr, entries, &mem);
- 	if (ret)
- 		return ret;
- 
-@@ -375,7 +381,7 @@ static int tce_iommu_prereg_ua_to_hpa(unsigned long tce, unsigned long size,
- 	long ret = 0;
- 	struct mm_iommu_table_group_mem_t *mem;
- 
--	mem = mm_iommu_lookup(tce, size);
-+	mem = mm_iommu_lookup(current->mm, tce, size);
- 	if (!mem)
- 		return -EINVAL;
- 
+ static int tce_iommu_attach_group(void *iommu_data,
 -- 
 2.5.0.rc3
