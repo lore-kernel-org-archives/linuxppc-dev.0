@@ -1,18 +1,29 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <bsingharora@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFTf34dpgzDt0B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 16:55:07 +1100 (AEDT)
-Date: Fri, 11 Nov 2016 16:55:03 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/64: Simplify adaptation to new ISA v3.00 HPTE format
-Message-ID: <20161111055503.z4b6urq7xkgworrw@oak.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFTqN5xcyzDvfn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 17:03:12 +1100 (AEDT)
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tFTqN12LPz9t1P
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 17:03:12 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id i88so1240688pfk.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2016 22:03:12 -0800 (PST)
+Subject: Re: [PATCH 3/3] Enable storage keys for radix - user mode execution
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <1478007500-23624-1-git-send-email-bsingharora@gmail.com>
+ <1478007500-23624-4-git-send-email-bsingharora@gmail.com>
+ <874m3i2biv.fsf@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <84a7f1a7-5514-4345-7df8-383ca5eb84df@gmail.com>
+Date: Fri, 11 Nov 2016 17:02:56 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <874m3i2biv.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,253 +33,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This changes the way that we support the new ISA v3.00 HPTE format.
-Instead of adapting everything that uses HPTE values to handle either
-the old format or the new format, depending on which CPU we are on,
-we now convert explicitly between old and new formats if necessary
-in the low-level routines that actually access HPTEs in memory.
-This limits the amount of code that needs to know about the new
-format and makes the conversions explicit.  This is OK because the
-old format contains all the information that is in the new format.
 
-This also fixes operation under a hypervisor, because the H_ENTER
-hypercall (and other hypercalls that deal with HPTEs) will continue
-to require the HPTE value to be supplied in the old format.  At
-present the kernel will not boot in HPT mode on POWER9 under a
-hypervisor.
 
-This fixes and partially reverts commit 50de596de8be
-("powerpc/mm/hash: Add support for Power9 Hash", 2016-04-29).
+On 09/11/16 03:15, Aneesh Kumar K.V wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
+> 
+>> ISA 3 defines new encoded access authority that allows instruction
+>> access prevention in privileged mode and allows normal access
+>> to problem state. This patch just enables IAMR (Instruction Authority
+>> Mask Register), enabling AMR would require more work.
+> 
+> 
+> We may want to explain what the rules are with details like IAMR class 0
+> bit 1 controls the instruction access etc. Also we can metion that we
+> now setup user pages such that EAA[0] is set to 0
+> 
+>>
+>> I've tested this with a buggy driver and a simple payload. The payload
+>> is specific to the build I've tested.
+>>
+>> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+>> ---
+>>  arch/powerpc/mm/pgtable-radix.c | 19 +++++++++++++++++++
+>>  1 file changed, 19 insertions(+)
+>>
+>> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+>> index 0fdd8ed..cd3d400 100644
+>> --- a/arch/powerpc/mm/pgtable-radix.c
+>> +++ b/arch/powerpc/mm/pgtable-radix.c
+>> @@ -339,6 +339,24 @@ static void __init radix_init_amor(void)
+>>  	mtspr(SPRN_AMOR, amor);
+>>  }
+>>  
+>> +/*
+>> + * For radix page tables we setup, the IAMR values as follows
+>> + * IMAR = 0100...00 (key 0 is set to 1)
+>> + * AMR, UAMR, UAMOR are not affected
+>> + */
+>> +static void __init radix_init_iamr(void)
+>> +{
+>> +	unsigned long iamr_mask = 0x4000000000000000;
+>> +	unsigned long iamr = mfspr(SPRN_IAMR);
+>> +
+>> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+>> +		return;
+> 
+> is this needed ?
+> 
 
-Fixes: 50de596de8be
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 47 ++++++++++++++++++++++-----
- arch/powerpc/mm/hash_native_64.c              | 30 +++++++++++++----
- arch/powerpc/platforms/ps3/htab.c             |  2 +-
- arch/powerpc/platforms/pseries/lpar.c         |  2 +-
- 4 files changed, 65 insertions(+), 16 deletions(-)
+Yes, IAMR support is DD1+
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index e407af2..2e6a823 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -70,7 +70,9 @@
- 
- #define HPTE_V_SSIZE_SHIFT	62
- #define HPTE_V_AVPN_SHIFT	7
-+#define HPTE_V_COMMON_BITS	ASM_CONST(0x000fffffffffffff)
- #define HPTE_V_AVPN		ASM_CONST(0x3fffffffffffff80)
-+#define HPTE_V_AVPN_3_0		ASM_CONST(0x000fffffffffff80)
- #define HPTE_V_AVPN_VAL(x)	(((x) & HPTE_V_AVPN) >> HPTE_V_AVPN_SHIFT)
- #define HPTE_V_COMPARE(x,y)	(!(((x) ^ (y)) & 0xffffffffffffff80UL))
- #define HPTE_V_BOLTED		ASM_CONST(0x0000000000000010)
-@@ -80,14 +82,16 @@
- #define HPTE_V_VALID		ASM_CONST(0x0000000000000001)
- 
- /*
-- * ISA 3.0 have a different HPTE format.
-+ * ISA 3.0 has a different HPTE format.
-  */
- #define HPTE_R_3_0_SSIZE_SHIFT	58
-+#define HPTE_R_3_0_SSIZE_MASK	(3ull << HPTE_R_3_0_SSIZE_SHIFT)
- #define HPTE_R_PP0		ASM_CONST(0x8000000000000000)
- #define HPTE_R_TS		ASM_CONST(0x4000000000000000)
- #define HPTE_R_KEY_HI		ASM_CONST(0x3000000000000000)
- #define HPTE_R_RPN_SHIFT	12
- #define HPTE_R_RPN		ASM_CONST(0x0ffffffffffff000)
-+#define HPTE_R_RPN_3_0		ASM_CONST(0x01fffffffffff000)
- #define HPTE_R_PP		ASM_CONST(0x0000000000000003)
- #define HPTE_R_PPP		ASM_CONST(0x8000000000000003)
- #define HPTE_R_N		ASM_CONST(0x0000000000000004)
-@@ -316,12 +320,43 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
- 	 */
- 	v = (vpn >> (23 - VPN_SHIFT)) & ~(mmu_psize_defs[psize].avpnm);
- 	v <<= HPTE_V_AVPN_SHIFT;
--	if (!cpu_has_feature(CPU_FTR_ARCH_300))
--		v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
-+	v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
- 	return v;
- }
- 
- /*
-+ * ISA v3.0 defines a new HPTE format, which differs from the old
-+ * format in having smaller AVPN and ARPN fields, and the B field
-+ * in the second dword instead of the first.
-+ */
-+static inline unsigned long hpte_old_to_new_v(unsigned long v)
-+{
-+	/* trim AVPN, drop B */
-+	return v & HPTE_V_COMMON_BITS;
-+}
-+
-+static inline unsigned long hpte_old_to_new_r(unsigned long v, unsigned long r)
-+{
-+	/* move B field from 1st to 2nd dword, trim ARPN */
-+	return (r & ~HPTE_R_3_0_SSIZE_MASK) |
-+		(((v) >> HPTE_V_SSIZE_SHIFT) << HPTE_R_3_0_SSIZE_SHIFT);
-+}
-+
-+static inline unsigned long hpte_new_to_old_v(unsigned long v, unsigned long r)
-+{
-+	/* insert B field */
-+	return (v & HPTE_V_COMMON_BITS) |
-+		((r & HPTE_R_3_0_SSIZE_MASK) <<
-+		 (HPTE_V_SSIZE_SHIFT - HPTE_R_3_0_SSIZE_SHIFT));
-+}
-+
-+static inline unsigned long hpte_new_to_old_r(unsigned long r)
-+{
-+	/* clear out B field */
-+	return r & ~HPTE_R_3_0_SSIZE_MASK;
-+}
-+
-+/*
-  * This function sets the AVPN and L fields of the HPTE  appropriately
-  * using the base page size and actual page size.
-  */
-@@ -341,12 +376,8 @@ static inline unsigned long hpte_encode_v(unsigned long vpn, int base_psize,
-  * aligned for the requested page size
-  */
- static inline unsigned long hpte_encode_r(unsigned long pa, int base_psize,
--					  int actual_psize, int ssize)
-+					  int actual_psize)
- {
--
--	if (cpu_has_feature(CPU_FTR_ARCH_300))
--		pa |= ((unsigned long) ssize) << HPTE_R_3_0_SSIZE_SHIFT;
--
- 	/* A 4K page needs no special encoding */
- 	if (actual_psize == MMU_PAGE_4K)
- 		return pa & HPTE_R_RPN;
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 83ddc0e..ad9fd52 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -221,13 +221,18 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 		return -1;
- 
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
-+	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED)) {
- 		DBG_LOW(" i=%x hpte_v=%016lx, hpte_r=%016lx\n",
- 			i, hpte_v, hpte_r);
- 	}
- 
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		hpte_r = hpte_old_to_new_r(hpte_v, hpte_r);
-+		hpte_v = hpte_old_to_new_v(hpte_v);
-+	}
-+
- 	hptep->r = cpu_to_be64(hpte_r);
- 	/* Guarantee the second dword is visible before the valid bit */
- 	eieio();
-@@ -295,6 +300,8 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 		vpn, want_v & HPTE_V_AVPN, slot, newpp);
- 
- 	hpte_v = be64_to_cpu(hptep->v);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
- 	/*
- 	 * We need to invalidate the TLB always because hpte_remove doesn't do
- 	 * a tlb invalidate. If a hash bucket gets full, we "evict" a more/less
-@@ -309,6 +316,8 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 		native_lock_hpte(hptep);
- 		/* recheck with locks held */
- 		hpte_v = be64_to_cpu(hptep->v);
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
- 		if (unlikely(!HPTE_V_COMPARE(hpte_v, want_v) ||
- 			     !(hpte_v & HPTE_V_VALID))) {
- 			ret = -1;
-@@ -350,6 +359,8 @@ static long native_hpte_find(unsigned long vpn, int psize, int ssize)
- 	for (i = 0; i < HPTES_PER_GROUP; i++) {
- 		hptep = htab_address + slot;
- 		hpte_v = be64_to_cpu(hptep->v);
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
- 
- 		if (HPTE_V_COMPARE(hpte_v, want_v) && (hpte_v & HPTE_V_VALID))
- 			/* HPTE matches */
-@@ -409,6 +420,8 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 	want_v = hpte_encode_avpn(vpn, bpsize, ssize);
- 	native_lock_hpte(hptep);
- 	hpte_v = be64_to_cpu(hptep->v);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
- 
- 	/*
- 	 * We need to invalidate the TLB always because hpte_remove doesn't do
-@@ -467,6 +480,8 @@ static void native_hugepage_invalidate(unsigned long vsid,
- 		want_v = hpte_encode_avpn(vpn, psize, ssize);
- 		native_lock_hpte(hptep);
- 		hpte_v = be64_to_cpu(hptep->v);
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			hpte_v = hpte_new_to_old_v(hpte_v, be64_to_cpu(hptep->r));
- 
- 		/* Even if we miss, we need to invalidate the TLB */
- 		if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID))
-@@ -504,6 +519,10 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 	/* Look at the 8 bit LP value */
- 	unsigned int lp = (hpte_r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
- 
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		hpte_v = hpte_new_to_old_v(hpte_v, hpte_r);
-+		hpte_r = hpte_new_to_old_r(hpte_r);
-+	}
- 	if (!(hpte_v & HPTE_V_LARGE)) {
- 		size   = MMU_PAGE_4K;
- 		a_size = MMU_PAGE_4K;
-@@ -512,11 +531,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 		a_size = hpte_page_sizes[lp] >> 4;
- 	}
- 	/* This works for all page sizes, and for 256M and 1T segments */
--	if (cpu_has_feature(CPU_FTR_ARCH_300))
--		*ssize = hpte_r >> HPTE_R_3_0_SSIZE_SHIFT;
--	else
--		*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
--
-+	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
- 	shift = mmu_psize_defs[size].shift;
- 
- 	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm);
-@@ -639,6 +654,9 @@ static void native_flush_hash_range(unsigned long number, int local)
- 			want_v = hpte_encode_avpn(vpn, psize, ssize);
- 			native_lock_hpte(hptep);
- 			hpte_v = be64_to_cpu(hptep->v);
-+			if (cpu_has_feature(CPU_FTR_ARCH_300))
-+				hpte_v = hpte_new_to_old_v(hpte_v,
-+						be64_to_cpu(hptep->r));
- 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
- 			    !(hpte_v & HPTE_V_VALID))
- 				native_unlock_hpte(hptep);
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index cb3c503..cc2b281 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -63,7 +63,7 @@ static long ps3_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 	vflags &= ~HPTE_V_SECONDARY;
- 
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize, ssize) | rflags;
-+	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize) | rflags;
- 
- 	spin_lock_irqsave(&ps3_htab_lock, flags);
- 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index aa35245..f2c98f6 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -145,7 +145,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 			 hpte_group, vpn,  pa, rflags, vflags, psize);
- 
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
-+	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED))
- 		pr_devel(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
--- 
-2.10.1
+>> +
+>> +	iamr |= iamr_mask;
+>> +
+>> +	mtspr(SPRN_IAMR, iamr);
+>> +}
+> 
+> Why do '|'. Who else can set this ?
+> 
+>> +
+>>  void __init radix__early_init_mmu(void)
+>>  {
+>>  	unsigned long lpcr;
+>> @@ -398,6 +416,7 @@ void __init radix__early_init_mmu(void)
+>>  		radix_init_amor();
+>>  	}
+>>  
+>> +	radix_init_iamr();
+>>  	radix_init_pgtable();
+>>  }
+> 
+> What about secondary cpus ?
+> 
+
+Oops..Yes, will do a v3. 
+
+> -aneesh
+> 
