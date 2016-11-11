@@ -2,37 +2,37 @@ Return-Path: <sukadev@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFmT95fcczDvjM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFmT95mf6zDvjP
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 04:03:25 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tFmT91XCcz9tl4
+ by ozlabs.org (Postfix) with ESMTPS id 3tFmT91XKRz9vDS
  for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2016 04:03:24 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uABGwqp4120663
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:23 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26neaa0rgj-1
+ uABGx5ar001962
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:22 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26nbwnguxc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:23 -0500
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:22 -0500
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 11 Nov 2016 10:03:22 -0700
+ Fri, 11 Nov 2016 10:03:21 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
  hbabu@us.ibm.com, linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 02/11] VAS: Define vas_dev_init() and vas_dev_exit()
-Date: Fri, 11 Nov 2016 09:02:47 -0800
+Subject: [RFC PATCH 03/11] VAS: Define helpers for access MMIO regions
+Date: Fri, 11 Nov 2016 09:02:48 -0800
 In-Reply-To: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1478883776-11121-3-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1478883776-11121-4-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,237 +42,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define functions to initialize/terminate the VAS device driver.
-These functions will configure the hardware in a follow on patch.
+Define some helper functions to access the MMIO regions. We use these
+in a follow-on patches to read/write VAS hardware registers. These
+helpers are also used to later issue 'paste' instructions to submit
+requests to the NX hardware engines.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- drivers/misc/Kconfig            |   1 +
- drivers/misc/Makefile           |   1 +
- drivers/misc/vas/Kconfig        |  19 +++++++
- drivers/misc/vas/Makefile       |   3 ++
- drivers/misc/vas/vas-internal.h |   5 ++
- drivers/misc/vas/vas-window.c   |  19 +++++++
- drivers/misc/vas/vas.c          | 113 ++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 161 insertions(+)
- create mode 100644 drivers/misc/vas/Kconfig
- create mode 100644 drivers/misc/vas/Makefile
- create mode 100644 drivers/misc/vas/vas-window.c
- create mode 100644 drivers/misc/vas/vas.c
+ drivers/misc/vas/vas-window.c | 182 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 182 insertions(+)
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index d002528..d9a8cf0 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -806,4 +806,5 @@ source "drivers/misc/mic/Kconfig"
- source "drivers/misc/genwqe/Kconfig"
- source "drivers/misc/echo/Kconfig"
- source "drivers/misc/cxl/Kconfig"
-+source "drivers/misc/vas/Kconfig"
- endmenu
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index fb32516..aa5947b 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_GENWQE)		+= genwqe/
- obj-$(CONFIG_ECHO)		+= echo/
- obj-$(CONFIG_VEXPRESS_SYSCFG)	+= vexpress-syscfg.o
- obj-$(CONFIG_CXL_BASE)		+= cxl/
-+obj-$(CONFIG_VAS)		+= vas/
- obj-$(CONFIG_PANEL)             += panel.o
- 
- lkdtm-$(CONFIG_LKDTM)		+= lkdtm_core.o
-diff --git a/drivers/misc/vas/Kconfig b/drivers/misc/vas/Kconfig
-new file mode 100644
-index 0000000..f02b887
---- /dev/null
-+++ b/drivers/misc/vas/Kconfig
-@@ -0,0 +1,19 @@
-+#
-+# IBM Virtual Accelarator Switchboard (VAS) compatible devices
-+#depends on PPC_POWERNV && PCI_MSI && EEH
-+#
-+
-+config VAS
-+	tristate "Support for IBM Virtual Accelerator Switchboard (VAS)"
-+	default n
-+	help
-+	  Select this option to enable driver support for IBM Virtual
-+	  Accelerator Switchboard (VAS).
-+	  VAS allows accelerators in co processors like NX-842 to be
-+	  directly available to a user process.  This driver enables
-+	  userspace programs to access these accelerators via
-+	  /dev/vas/vas-nxM.N devices.
-+
-+	  VAS adapters are found in POWER9 based systems.
-+
-+	  If unsure, say N.
-diff --git a/drivers/misc/vas/Makefile b/drivers/misc/vas/Makefile
-new file mode 100644
-index 0000000..7dd7139
---- /dev/null
-+++ b/drivers/misc/vas/Makefile
-@@ -0,0 +1,3 @@
-+ccflags-y			:= $(call cc-disable-warning, unused-const-variable)
-+ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
-+obj-$(CONFIG_VAS)		+= vas.o vas-window.o
-diff --git a/drivers/misc/vas/vas-internal.h b/drivers/misc/vas/vas-internal.h
-index f91fd66..282513b 100644
---- a/drivers/misc/vas/vas-internal.h
-+++ b/drivers/misc/vas/vas-internal.h
-@@ -362,4 +362,9 @@ struct vas_winctx {
- 	enum vas_notify_after_count notify_after_count;
- };
- 
-+extern int vas_initialized;
-+
-+extern int vas_window_reset(struct vas_instance *vinst, int winid);
-+extern struct vas_instance *find_vas_instance(int node, int chip);
-+
- #endif
 diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.c
-new file mode 100644
-index 0000000..468f3bf
---- /dev/null
+index 468f3bf..2c220a3 100644
+--- a/drivers/misc/vas/vas-window.c
 +++ b/drivers/misc/vas/vas-window.c
-@@ -0,0 +1,19 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/mutex.h>
-+#include <asm/vas.h>
-+#include "vas-internal.h"
-+
-+/* stub for now */
-+int vas_window_reset(struct vas_instance *vinst, int winid)
-+{
-+	return 0;
-+}
-diff --git a/drivers/misc/vas/vas.c b/drivers/misc/vas/vas.c
-new file mode 100644
-index 0000000..51f9c70
---- /dev/null
-+++ b/drivers/misc/vas/vas.c
-@@ -0,0 +1,113 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/export.h>
-+#include <linux/types.h>
+@@ -9,9 +9,191 @@
+ 
+ #include <linux/types.h>
+ #include <linux/mutex.h>
 +#include <linux/slab.h>
 +#include <linux/io.h>
-+#include <asm/vas.h>
-+#include "vas-internal.h"
-+
-+int vas_initialized;
-+struct vas_instance *vas_instances;
-+
-+static void init_vas_chip(struct vas_instance *vinst)
-+{
-+	int i;
-+
-+	for (i = 0; i < VAS_MAX_WINDOWS_PER_CHIP; i++)
-+		vas_window_reset(vinst, i);
-+}
-+
+ #include <asm/vas.h>
+ #include "vas-internal.h"
+ 
 +/*
-+ * Although this is read/used multiple times, it is written to only
-+ * during initialization.
++ * Using the node, chip and window id for the send winow identified by
++ * @window, compute and return the Power Bus address to which a sender
++ * could issue a paste instruction for this window.
++ *
++ * Refer to Tables 1.1 through 1.4 in Section 1.3.3.1 (Send Message w/Paste
++ * Commands (cl_rma_w)) of VAS P9 Workbook for the PowerBus Address usage
++ * in VAS.
++ *
++ * With 64K mode and Large SMP Mode the bits are used as follows:
++ *
++ *	Bits	Values		Comments
++ *	--------------------------------------
++ *	0:7     0b 0000_0000    Reserved
++ *	8:12    0b 0000_1       System id/Foreign Index 0:4
++ *	13:14   0b 00           Foreign Index 5:6
++ *
++ *	15:18   0 throuh 15     Node id (0 through 15)
++ *	19:21   0 through 7     Chip id (0 throuh 7)
++ *	22:23   0b 00           Unused, Foreign index 7:8
++ *
++ *	24:31   0b 0000_0000    RPN 0:7, Reserved
++ *	32:47   0 through 64K   Send Window Id
++ *	48:51   0b 0000         Spare
++ *
++ *	52      0b 0            Reserved
++ *	53      0b 1            Report Enable (Set to 1 for NX).
++ *	54      0b 0            Reserved
++ *
++ *	55:56   0b 00           Snoop Bus
++ *	57:63   0b 0000_000     Reserved
++ *
++ * Except for a few bits, the small SMP mode computation is similar.
++ *
++ * TODO: Detect and compute address for small SMP mode.
++ *
++ * Example: For Node 0, Chip 0, Window id 4, Report Enable 1:
++ *
++ *     Byte0    Byte1    Byte2    Byte3    Byte4    Byte5    Byte6    Byte7
++ *     00000000 00001000 00000000 00000000 00000000 00000100 00000100 00000000
++ *                                         |               |      |
++ *                                         +-------+-------+      v
++ *                                                 |          Report Enable
++ *                                                 v
++ *                                             Window id 4
++ *
++ *     Thus, the paste address is 0x00080000_00040400.
 + */
-+struct vas_instance *find_vas_instance(int node, int chip)
-+{
-+	int i = node * VAS_MAX_CHIPS_PER_NODE + chip;
++#define RMA_LSMP_64K_SYS_ID	PPC_BITMASK(8, 12)
++#define RMA_LSMP_64K_NODE_ID	PPC_BITMASK(15, 18)
++#define RMA_LSMP_64K_CHIP_ID	PPC_BITMASK(19, 21)
++#define RMA_LSMP_64K_TX_WIN_ID	PPC_BITMASK(32, 47)
++#define RMA_LSMP_REPORT_ENABLE	PPC_BIT(53)
 +
-+	return &vas_instances[i];
++uint64_t compute_paste_address(struct vas_window *window, int *size)
++{
++	int node, chip, winid;
++	uint64_t val = 0ULL;
++
++	node = window->vinst->node;
++	chip = window->vinst->chip;
++	winid = window->winid;
++
++	*size = PAGE_SIZE;
++
++	val = SET_FIELD(RMA_LSMP_64K_SYS_ID, val, 1);
++	val = SET_FIELD(RMA_LSMP_64K_NODE_ID, val, node);
++	val = SET_FIELD(RMA_LSMP_64K_CHIP_ID, val, chip);
++	val = SET_FIELD(RMA_LSMP_64K_TX_WIN_ID, val, winid);
++	val = SET_FIELD(RMA_LSMP_REPORT_ENABLE, val, 1);
++	pr_debug("%swin #%d: Paste address 0x%llx\n",
++			window->txwin ? "Tx" : "Rx",  winid, val);
++	return val;
 +}
 +
-+static void init_vas_instance(int node, int chip)
++static void get_hvwc_mmio_bar(struct vas_window *window,
++			uint64_t *start, int *len)
 +{
-+	struct vas_instance *vinst;
++	uint64_t pbaddr;
++	int instance;
 +
-+	vinst = find_vas_instance(node, chip);
++	instance = window->vinst->node * 8 + window->vinst->chip;
++	pbaddr = VAS_HVWC_MMIO_BAR_BASE + instance * VAS_HVWC_MMIO_BAR_SIZE;
 +
-+	ida_init(&vinst->ida);
-+
-+	vinst->node = node;
-+	vinst->chip = chip;
-+	mutex_init(&vinst->mutex);
-+
-+	init_vas_chip(vinst);
++	*start = pbaddr + window->winid * VAS_HVWC_SIZE;
++	*len = VAS_HVWC_SIZE;
 +}
 +
-+int vas_init(void)
++static void get_uwc_mmio_bar(struct vas_window *window,
++			uint64_t *start, int *len)
 +{
-+	int n, c;
++	uint64_t pbaddr;
++	int instance;
 +
-+	vas_instances = kmalloc_array(VAS_MAX_NODES * VAS_MAX_CHIPS_PER_NODE,
-+				sizeof(struct vas_instance), GFP_KERNEL);
-+	if (!vas_instances)
-+		return -ENOMEM;
++	instance = window->vinst->node * 8 + window->vinst->chip;
++	pbaddr = VAS_UWC_MMIO_BAR_BASE + instance * VAS_UWC_MMIO_BAR_SIZE;
 +
-+	/*
-+	 * TODO: Get node-id and chip id from device tree?
-+	 */
-+	for (n = 0; n < VAS_MAX_NODES; n++) {
-+		for (c = 0; c < VAS_MAX_CHIPS_PER_NODE; c++)
-+			init_vas_instance(n, c);
++	*start = pbaddr + window->winid * VAS_UWC_SIZE;
++	*len = VAS_UWC_SIZE;
++}
++
++static void *map_mmio_region(char *name, uint64_t start, int len)
++{
++	void *map;
++
++	if (!request_mem_region(start, len, name)) {
++		pr_devel("%s(): request_mem_region(0x%llx, %d) failed\n",
++				__func__, start, len);
++		return NULL;
 +	}
 +
-+	vas_initialized = 1;
++	map = __ioremap(start, len, pgprot_val(pgprot_cached(__pgprot(0))));
++	if (!map) {
++		pr_devel("%s(): ioremap(0x%llx, %d) failed\n", __func__, start,
++				len);
++		return NULL;
++	}
 +
-+	return 0;
-+}
-+
-+void vas_exit(void)
-+{
-+	vas_initialized = 0;
-+	kfree(vas_instances);
++	return map;
 +}
 +
 +/*
-+ * We will have a device driver for user space access to VAS.
-+ * But for now this is just a wrapper to vas_init()
++ * Unmap the MMIO regions for a window.
 + */
-+int __init vas_dev_init(void)
++void unmap_wc_mmio_bars(struct vas_window *window)
 +{
-+	int rc;
++	int len;
++	uint64_t busaddr_start;
 +
-+	rc = vas_init();
-+	if (rc)
-+		return rc;
++	if (window->paste_kaddr) {
++		iounmap(window->paste_kaddr);
++		busaddr_start = compute_paste_address(window, &len);
++		pr_debug("Releasing pbaddr region [0x%llx, %d]\n",
++				busaddr_start, len);
++		release_mem_region((phys_addr_t)busaddr_start, len);
++	}
 +
-+	vas_initialized = 1;
++	if (window->hvwc_map) {
++		iounmap(window->hvwc_map);
++		get_hvwc_mmio_bar(window, &busaddr_start, &len);
++		release_mem_region((phys_addr_t)busaddr_start, len);
++	}
 +
-+	pr_err("VAS: initialized\n");
++	if (window->uwc_map) {
++		iounmap(window->uwc_map);
++		get_uwc_mmio_bar(window, &busaddr_start, &len);
++		release_mem_region((phys_addr_t)busaddr_start, len);
++	}
++}
++
++/*
++ * Find the Hypervisor Window Context (HVWC) MMIO Base Address Region and the
++ * OS/User Window Context (UWC) MMIO Base Address Region for the given window.
++ * Map these bus addresses and save the mapped kernel addresses in @window.
++ */
++int map_wc_mmio_bars(struct vas_window *window)
++{
++	int len;
++	uint64_t start;
++
++	window->hvwc_map = window->uwc_map = NULL;
++
++	get_hvwc_mmio_bar(window, &start, &len);
++	window->hvwc_map = map_mmio_region("HVWCM_Window", start, len);
++
++	pr_debug("Win #%d: Map hvwc 0x%p -> [0x%llx,%d]\n", window->winid,
++			window->hvwc_map, start, len);
++
++	get_uwc_mmio_bar(window, &start, &len);
++	window->uwc_map = map_mmio_region("UWCM_Window", start, len);
++
++	pr_debug("Win #%d: Map uvwc 0x%p -> [0x%llx,%d]\n", window->winid,
++			window->uwc_map, start, len);
++
++	if (!window->hvwc_map || !window->uwc_map)
++		return -1;
 +
 +	return 0;
 +}
 +
-+void __init vas_dev_exit(void)
-+{
-+	pr_err("VAS: exiting\n");
-+	vas_exit();
-+}
-+
-+module_init(vas_dev_init);
-+module_exit(vas_dev_exit);
-+MODULE_DESCRIPTION("IBM Virtual Accelerator Switchboard");
-+MODULE_AUTHOR("Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>");
-+MODULE_LICENSE("GPL");
+ /* stub for now */
+ int vas_window_reset(struct vas_instance *vinst, int winid)
+ {
 -- 
 1.8.3.1
