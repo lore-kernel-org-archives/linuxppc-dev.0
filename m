@@ -1,23 +1,26 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0089.outbound.protection.outlook.com [104.47.37.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kirill@shutemov.name>
+Received: from mail-wm0-x22a.google.com (mail-wm0-x22a.google.com
+ [IPv6:2a00:1450:400c:c09::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFXt36LxTzDvpR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 19:20:43 +1100 (AEDT)
-From: Madalin Bucur <madalin.bucur@nxp.com>
-To: <netdev@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <davem@davemloft.net>, <oss@buserror.net>, <ppc@mindchasers.com>,
- <joe@perches.com>, <pebolle@tiscali.nl>, <joakim.tjernlund@infinera.com>
-Subject: [PATCH net-next v7 10/10] arch/powerpc: Enable dpaa_eth
-Date: Fri, 11 Nov 2016 10:20:07 +0200
-Message-ID: <1478852407-27420-11-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1478852407-27420-1-git-send-email-madalin.bucur@nxp.com>
-References: <1478852407-27420-1-git-send-email-madalin.bucur@nxp.com>
-Reply-To: <madalin.bucur@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFbCy63d5zDvjM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 21:06:20 +1100 (AEDT)
+Received: by mail-wm0-x22a.google.com with SMTP id a197so416558137wmd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 02:06:20 -0800 (PST)
+Date: Fri, 11 Nov 2016 13:06:10 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2] mm: move vma_is_anonymous check within
+ pmd_move_must_withdraw
+Message-ID: <20161111100610.GA19382@node.shutemov.name>
+References: <201611071732.njM40txT%fengguang.wu@intel.com>
+ <20161107144639.24048-1-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161107144639.24048-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
----
- arch/powerpc/configs/dpaa.config | 1 +
- 1 file changed, 1 insertion(+)
+On Mon, Nov 07, 2016 at 08:16:39PM +0530, Aneesh Kumar K.V wrote:
+> Architectures like ppc64 want to use page table deposit/withraw
+> even with huge pmd dax entries. Allow arch to override the
+> vma_is_anonymous check by moving that to pmd_move_must_withdraw
+> function
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/configs/dpaa.config b/arch/powerpc/configs/dpaa.config
-index 9ad9bc0..2fe76f5 100644
---- a/arch/powerpc/configs/dpaa.config
-+++ b/arch/powerpc/configs/dpaa.config
-@@ -1,3 +1,4 @@
- CONFIG_FSL_DPAA=y
- CONFIG_FSL_PAMU=y
- CONFIG_FSL_FMAN=y
-+CONFIG_FSL_DPAA_ETH=y
+Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+
 -- 
-2.1.0
+ Kirill A. Shutemov
