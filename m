@@ -1,16 +1,16 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0061.outbound.protection.outlook.com [104.47.32.61])
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0052.outbound.protection.outlook.com [104.47.40.52])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFhPP405szDt26
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 00:59:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFhPR68sBzDt26
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 00:59:55 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <devicetree@vger.kernel.org>
 CC: <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>, <oss@buserror.net>
-Subject: [PATCH 2/3] powerpc/fsl/dts: add QMan and BMan portal nodes on t1024
-Date: Fri, 11 Nov 2016 15:59:43 +0200
-Message-ID: <1478872784-630-2-git-send-email-madalin.bucur@nxp.com>
+Subject: [PATCH 3/3] powerpc/fsl/dts: add FMan node for t1042d4rdb
+Date: Fri, 11 Nov 2016 15:59:44 +0200
+Message-ID: <1478872784-630-3-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1478872784-630-1-git-send-email-madalin.bucur@nxp.com>
 References: <1478872784-630-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -27,103 +27,66 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- arch/powerpc/boot/dts/fsl/t1024qds.dts | 27 +++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t1024rdb.dts | 31 +++++++++++++++++++++++++++++++
- 2 files changed, 58 insertions(+)
+ arch/powerpc/boot/dts/fsl/t1042d4rdb.dts | 47 ++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1024qds.dts b/arch/powerpc/boot/dts/fsl/t1024qds.dts
-index 772143d..339517e 100644
---- a/arch/powerpc/boot/dts/fsl/t1024qds.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1024qds.dts
-@@ -41,6 +41,25 @@
- 	#size-cells = <2>;
- 	interrupt-parent = <&mpic>;
- 
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		bman_fbpr: bman-fbpr {
-+			size = <0 0x1000000>;
-+			alignment = <0 0x1000000>;
-+		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
-+	};
-+
- 	ifc: localbus@ffe124000 {
- 		reg = <0xf 0xfe124000 0 0x2000>;
- 		ranges = <0 0 0xf 0xe8000000 0x08000000
-@@ -80,6 +99,14 @@
- 		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts b/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
+index 2a5a90d..8c0c318 100644
+--- a/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
+@@ -48,6 +48,53 @@
+ 					"fsl,deepsleep-cpld";
+ 		};
  	};
- 
-+	bportals: bman-portals@ff4000000 {
-+		ranges = <0x0 0xf 0xf4000000 0x2000000>;
-+	};
++	soc: soc@ffe000000 {
++		fman0: fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_0>;
++				phy-connection-type = "sgmii";
++			};
 +
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_1>;
++				phy-connection-type = "sgmii";
++			};
 +
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-index 302cdd2..2656095 100644
---- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-@@ -41,6 +41,29 @@
- 	#size-cells = <2>;
- 	interrupt-parent = <&mpic>;
- 
-+	aliases {
-+		sg_2500_aqr105_phy4 = &sg_2500_aqr105_phy4;
-+	};
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_2>;
++				phy-connection-type = "sgmii";
++			};
 +
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
++			ethernet@e6000 {
++				phy-handle = <&phy_rgmii_0>;
++				phy-connection-type = "rgmii";
++			};
 +
-+		bman_fbpr: bman-fbpr {
-+			size = <0 0x1000000>;
-+			alignment = <0 0x1000000>;
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			mdio0: mdio@fc000 {
++				phy_sgmii_0: ethernet-phy@02 {
++					reg = <0x02>;
++				};
++				phy_sgmii_1: ethernet-phy@03 {
++					reg = <0x03>;
++				};
++				phy_sgmii_2: ethernet-phy@01 {
++					reg = <0x01>;
++				};
++				phy_rgmii_0: ethernet-phy@04 {
++					reg = <0x04>;
++				};
++				phy_rgmii_1: ethernet-phy@05 {
++					reg = <0x05>;
++				};
++			};
 +		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
 +	};
 +
- 	ifc: localbus@ffe124000 {
- 		reg = <0xf 0xfe124000 0 0x2000>;
- 		ranges = <0 0 0xf 0xe8000000 0x08000000
-@@ -82,6 +105,14 @@
- 		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
- 	};
+ };
  
-+	bportals: bman-portals@ff4000000 {
-+		ranges = <0x0 0xf 0xf4000000 0x2000000>;
-+	};
-+
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
+ #include "t1042si-post.dtsi"
 -- 
 2.1.0
