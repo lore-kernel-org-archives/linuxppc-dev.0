@@ -1,38 +1,38 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tFmTP0JT8zDvjf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 04:03:37 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tFmTN2NTLz9tl4
- for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2016 04:03:36 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tFp632sd4zDvnj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2016 05:16:58 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uABGwpvf088985
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:34 -0500
+ uABIEisa037747
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 13:16:56 -0500
 Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26nhv78xac-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26nfda8mnv-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2016 12:03:34 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2016 13:16:56 -0500
 Received: from localhost
  by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 11 Nov 2016 10:03:33 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
- hbabu@us.ibm.com, linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 11/11] VAS: Define/use interface to setup irq handling.
-Date: Fri, 11 Nov 2016 09:02:56 -0800
-In-Reply-To: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1478883776-11121-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1478883776-11121-12-git-send-email-sukadev@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Fri, 11 Nov 2016 11:16:55 -0700
+Subject: Re: [PATCH net-next] ibmveth: v1 calculate correct gso_size and set
+ gso_type
+To: Eric Dumazet <eric.dumazet@gmail.com>, Jon Maxwell <jmaxwell37@gmail.com>
+References: <1477440555-21133-1-git-send-email-jmaxwell37@gmail.com>
+ <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
+Cc: tlfalcon@linux.vnet.ibm.com, jmaxwell@redhat.com, hofrat@osadl.org,
+ linux-kernel@vger.kernel.org, jarod@redhat.com, netdev@vger.kernel.org,
+ paulus@samba.org, tom@herbertland.com, mleitner@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Fri, 11 Nov 2016 12:16:49 -0600
+MIME-Version: 1.0
+In-Reply-To: <1477582016.7065.212.camel@edumazet-glaptop3.roam.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <639034ef-530f-2ce1-4739-c3ea8f6a61df@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,179 +42,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When VAS hardware encounters an address translation error it will
-post the failing CRB to a fault window and issue an interrupt to
-the kernel.
+On 10/27/2016 10:26 AM, Eric Dumazet wrote:
+> On Wed, 2016-10-26 at 11:09 +1100, Jon Maxwell wrote:
+>> We recently encountered a bug where a few customers using ibmveth on the 
+>> same LPAR hit an issue where a TCP session hung when large receive was
+>> enabled. Closer analysis revealed that the session was stuck because the 
+>> one side was advertising a zero window repeatedly.
+>>
+>> We narrowed this down to the fact the ibmveth driver did not set gso_size 
+>> which is translated by TCP into the MSS later up the stack. The MSS is 
+>> used to calculate the TCP window size and as that was abnormally large, 
+>> it was calculating a zero window, even although the sockets receive buffer 
+>> was completely empty. 
+>>
+>> We were able to reproduce this and worked with IBM to fix this. Thanks Tom 
+>> and Marcelo for all your help and review on this.
+>>
+>> The patch fixes both our internal reproduction tests and our customers tests.
+>>
+>> Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
+>> ---
+>>  drivers/net/ethernet/ibm/ibmveth.c | 20 ++++++++++++++++++++
+>>  1 file changed, 20 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>> index 29c05d0..c51717e 100644
+>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+>> @@ -1182,6 +1182,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>  	int frames_processed = 0;
+>>  	unsigned long lpar_rc;
+>>  	struct iphdr *iph;
+>> +	bool large_packet = 0;
+>> +	u16 hdr_len = ETH_HLEN + sizeof(struct tcphdr);
+>>  
+>>  restart_poll:
+>>  	while (frames_processed < budget) {
+>> @@ -1236,10 +1238,28 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>>  						iph->check = 0;
+>>  						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+>>  						adapter->rx_large_packets++;
+>> +						large_packet = 1;
+>>  					}
+>>  				}
+>>  			}
+>>  
+>> +			if (skb->len > netdev->mtu) {
+>> +				iph = (struct iphdr *)skb->data;
+>> +				if (be16_to_cpu(skb->protocol) == ETH_P_IP &&
+>> +				    iph->protocol == IPPROTO_TCP) {
+>> +					hdr_len += sizeof(struct iphdr);
+>> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
+>> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>> +				} else if (be16_to_cpu(skb->protocol) == ETH_P_IPV6 &&
+>> +					   iph->protocol == IPPROTO_TCP) {
+>> +					hdr_len += sizeof(struct ipv6hdr);
+>> +					skb_shinfo(skb)->gso_type = SKB_GSO_TCPV6;
+>> +					skb_shinfo(skb)->gso_size = netdev->mtu - hdr_len;
+>> +				}
+>> +				if (!large_packet)
+>> +					adapter->rx_large_packets++;
+>> +			}
+>> +
+>>  
+> 
+> This might break forwarding and PMTU discovery.
+> 
+> You force gso_size to device mtu, regardless of real MSS used by the TCP
+> sender.
+> 
+> Don't you have the MSS provided in RX descriptor, instead of guessing
+> the value ?
 
-Use OPAL/XIVE to register a IRQ trigger port for each send window
-and setup IRQ handling in the kernel for this IRQ. (The existing
-init_winctx_regs() call configures the trigger port in the VAS
-registers.
+Eric,
 
-When the VAS hardware generates an interrupt, the kernel interrupt
-handler wakes up the fault thread (from previous patch) to process
-the fault CRB. As mentioned in that patch, this interrupt handling
-is needed when we support user space access to VAS/NX. But including
-this patch of routing VAS interrupt to kernel handler for review.
+We are currently pursuing making changes to the Power Virtual I/O Server to provide
+the MSS to the ibmveth driver. However, this will take time to go through test
+and ultimately get released. Although imperfect, this patch does help a real customer
+hitting this issue right now. Would you object to this patch getting merged as is,
+with the understanding that when we get the change in the Virtual I/O Server released,
+we will revert this interim change and apply the new method?
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h            |  3 +-
- arch/powerpc/include/asm/opal.h                |  2 +
- arch/powerpc/platforms/powernv/opal-wrappers.S |  2 +
- drivers/misc/vas/vas-window.c                  | 81 ++++++++++++++++++++++++++
- 4 files changed, 87 insertions(+), 1 deletion(-)
+Thanks,
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index eabe07e..192d430 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -168,7 +168,8 @@
- #define OPAL_INT_SET_MFRR			125
- #define OPAL_PCI_TCE_KILL			126
- #define OPAL_VAS_READ_FIR			128
--#define OPAL_LAST				128
-+#define OPAL_VAS_GET_TRIGGER_PORT		129
-+#define OPAL_LAST				129
- 
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index b20ec10..30042f9 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -229,6 +229,8 @@ int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- 			     uint32_t pe_num, uint32_t tce_size,
- 			     uint64_t dma_addr, uint32_t npages);
- int64_t opal_vas_read_fir(uint32_t chip_id, int32_t idx, __be64 *fir);
-+int64_t opal_vas_get_trigger_port(uint32_t chip_id, int32_t idx, __be32 *girq,
-+				 __be64 *port);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index acb6396..9b88e22 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -309,3 +309,5 @@ OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
- OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
- OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
- OPAL_CALL(opal_vas_read_fir,			OPAL_VAS_READ_FIR);
-+OPAL_CALL(opal_vas_get_trigger_port,		OPAL_VAS_GET_TRIGGER_PORT);
-+
-diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.c
-index f6610de..ba10922 100644
---- a/drivers/misc/vas/vas-window.c
-+++ b/drivers/misc/vas/vas-window.c
-@@ -10,7 +10,11 @@
- #include <linux/types.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/irqdomain.h>
-+#include <linux/interrupt.h>
- #include <linux/io.h>
-+#include <asm/opal.h>
-+#include <asm/opal-api.h>
- #include <asm/vas.h>
- #include "vas-internal.h"
- #include "copy-paste.h"
-@@ -603,6 +607,72 @@ int vas_window_reset(struct vas_instance *vinst, int winid)
- 	return 0;
- }
- 
-+static irqreturn_t vas_irq_handler(int virq, void *data)
-+{
-+	struct vas_window *win = data;
-+
-+	pr_devel("VAS: virq %d, window %d\n", virq, win->winid);
-+	vas_wakeup_fault_win_thread();
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int setup_irq_mapping(struct vas_window *win)
-+{
-+	int rc;
-+	int winid;
-+	uint32_t virq;
-+	int32_t girq;
-+	uint64_t port;
-+	char devname[64];
-+
-+	winid = win->winid;
-+	snprintf(devname, sizeof(devname), "vas-window-%d", winid);
-+
-+	girq = 0;
-+	port = 0ULL;
-+	rc = opal_vas_get_trigger_port(win->vinst->chip, winid, &girq, &port);
-+
-+	pr_devel("VAS: %swin #%d: IRQ trigger %d, port 0x%llx, rc %d\n",
-+			win->txwin ? "Tx" : "Rx", winid, girq, port, rc);
-+	if (rc)
-+		return -EINVAL;
-+
-+	virq = irq_create_mapping(NULL, girq);
-+	if (!virq) {
-+		pr_devel("VAS: %swin #%d: Unable to map global irq %d\n",
-+				win->txwin ? "Tx" : "Rx", winid, girq);
-+		return -EINVAL;
-+	}
-+
-+	rc = request_irq(virq, vas_irq_handler, 0, devname, win);
-+	if (rc) {
-+		pr_devel("VAS: %swin #%d: request_irq() returns %d\n",
-+				win->txwin ? "Tx" : "Rx", winid, rc);
-+		return rc;
-+	}
-+
-+	win->hwirq = girq;
-+	win->irq_port = port;
-+
-+	return 0;
-+}
-+
-+static void free_irq_mapping(struct vas_window *win)
-+{
-+	unsigned int irq;
-+
-+	irq = irq_find_mapping(NULL, win->hwirq);
-+	if (!irq) {
-+		pr_devel("VAS: Receieved unknown hwirq %d\n", win->hwirq);
-+		WARN_ON_ONCE(true);
-+		return;
-+	}
-+
-+	free_irq(irq, win);
-+}
-+
-+
- static void put_rx_win(struct vas_window *rxwin)
- {
- 	/* Better not be a send window! */
-@@ -897,6 +967,15 @@ struct vas_window *vas_tx_win_open(int node, int chip, enum vas_cop_type cop,
- 	txwin->rxwin = rxwin;
- 	txwin->nx_win = txwin->rxwin->nx_win;
- 
-+	if (setup_irq_mapping(txwin)) {
-+		/*
-+		 * TODO: IRQ mapping is essential for user space send windows.
-+		 *	 We only support in-kernel initially, so ignore errors
-+		 *	 in setting up IRQ mappings for now.
-+		 */
-+		WARN_ON_ONCE(1);
-+	}
-+
- 	init_winctx_for_txwin(txwin, attr, &winctx);
- 
- 	init_winctx_regs(txwin, &winctx);
-@@ -1014,6 +1093,8 @@ retry:
- 	if (window->txwin)
- 		put_rx_win(window->rxwin);
- 
-+	free_irq_mapping(window);
-+
- 	vas_release_window_id(&window->vinst->ida, window->winid);
- 
- 	vas_window_free(window);
+Brian
+
+
 -- 
-1.8.3.1
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
