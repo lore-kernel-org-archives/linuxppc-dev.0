@@ -3,42 +3,43 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdj548C6zDvXK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:05:13 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAEI4Bkp123495
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:11 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26qfswrdd5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdj93P1SzDvhL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:05:16 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAEI48cd079235
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:14 -0500
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26qdcnfruy-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:10 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:14 -0500
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 14 Nov 2016 23:35:07 +0530
-Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 765371258026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:58 +0530 (IST)
+ Mon, 14 Nov 2016 23:35:08 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 95836E005B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:16 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAEI552i27787362
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:05 +0530
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAEI4dLs21430276
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:34:39 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAEI52HK010851
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:04 +0530
+ uAEI54I2010965
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:06 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v3 02/11] powerpc: move set_soft_enabled() and rename
-Date: Mon, 14 Nov 2016 23:34:43 +0530
+Subject: [PATCH v3 03/11] powerpc: Use soft_enabled_set api to update
+ paca->soft_enabled
+Date: Mon, 14 Nov 2016 23:34:44 +0530
 In-Reply-To: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1479146692-15726-3-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1479146692-15726-4-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,92 +49,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move set_soft_enabled() from powerpc/kernel/irq.c to
-asm/hw_irq.c, to force updates to paca-soft_enabled
-done via these access function. Add "memory" clobber
-to hint compiler since paca->soft_enabled memory is the target
-here
+Force use of soft_enabled_set() wrapper to update paca-soft_enabled
+wherever possisble. Also add a new wrapper function, soft_enabled_set_return(),
+added to force the paca->soft_enabled updates.
 
-Renaming it as soft_enabled_set() will make
-namespaces works better as prefix than a postfix
-when new soft_enabled manipulation functions introduced.
-
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/hw_irq.h | 15 +++++++++++++++
- arch/powerpc/kernel/irq.c         | 12 +++---------
- 2 files changed, 18 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h  | 14 ++++++++++++++
+ arch/powerpc/include/asm/kvm_ppc.h |  2 +-
+ arch/powerpc/kernel/irq.c          |  2 +-
+ arch/powerpc/kernel/setup_64.c     |  4 ++--
+ arch/powerpc/kernel/time.c         |  6 +++---
+ 5 files changed, 21 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 05b81bca15e9..ab1e6da7825c 100644
+index ab1e6da7825c..88f6a8e2b5e3 100644
 --- a/arch/powerpc/include/asm/hw_irq.h
 +++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -47,6 +47,21 @@ extern void unknown_exception(struct pt_regs *regs);
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
+@@ -62,6 +62,20 @@ static inline notrace void soft_enabled_set(unsigned long enable)
+ 	: "memory");
+ }
  
-+/*
-+ *TODO:
-+ * Currently none of the soft_eanbled modification helpers have clobbers
-+ * for modifying the r13->soft_enabled memory itself. Secondly they only
-+ * include "memory" clobber as a hint. Ideally, if all the accesses to
-+ * soft_enabled go via these helpers, we could avoid the "memory" clobber.
-+ * Former could be taken care by having location in the constraints.
-+ */
-+static inline notrace void soft_enabled_set(unsigned long enable)
++static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
 +{
-+	__asm__ __volatile__("stb %0,%1(13)"
-+	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled))
-+	: "memory");
++	unsigned long flags;
++
++	asm volatile(
++		"lbz %0,%1(13); stb %2,%1(13)"
++		: "=r" (flags)
++		: "i" (offsetof(struct paca_struct, soft_enabled)),\
++		  "r" (enable)
++		: "memory");
++
++	return flags;
 +}
 +
  static inline unsigned long arch_local_save_flags(void)
  {
  	unsigned long flags;
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index c6f1e13ff441..204fa51cdc9e 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -108,12 +108,6 @@ static inline notrace unsigned long get_irq_happened(void)
- 	return happened;
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 7d8d2b40c6a8..2263d2443d94 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -735,7 +735,7 @@ static inline void kvmppc_fix_ee_before_entry(void)
+ 
+ 	/* Only need to enable IRQs by hard enabling them after this */
+ 	local_paca->irq_happened = 0;
+-	local_paca->soft_enabled = IRQ_DISABLE_MASK_NONE;
++	soft_enabled_set(IRQ_DISABLE_MASK_NONE);
+ #endif
  }
  
--static inline notrace void set_soft_enabled(unsigned long enable)
--{
--	__asm__ __volatile__("stb %0,%1(13)"
--	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
--}
--
- static inline notrace int decrementer_check_overflow(void)
- {
-  	u64 now = get_tb_or_rtc();
-@@ -213,7 +207,7 @@ notrace void arch_local_irq_restore(unsigned long en)
- 	unsigned int replay;
- 
- 	/* Write the new soft-enabled value */
--	set_soft_enabled(en);
-+	soft_enabled_set(en);
- 	if (en == IRQ_DISABLE_MASK_LINUX)
- 		return;
- 	/*
-@@ -259,7 +253,7 @@ notrace void arch_local_irq_restore(unsigned long en)
- 	}
- #endif /* CONFIG_TRACE_IRQFLAGS */
- 
--	set_soft_enabled(IRQ_DISABLE_MASK_LINUX);
-+	soft_enabled_set(IRQ_DISABLE_MASK_LINUX);
- 
- 	/*
- 	 * Check if anything needs to be re-emitted. We haven't
-@@ -269,7 +263,7 @@ notrace void arch_local_irq_restore(unsigned long en)
- 	replay = __check_irq_replay();
- 
- 	/* We can soft-enable now */
--	set_soft_enabled(IRQ_DISABLE_MASK_NONE);
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 204fa51cdc9e..5a995183dafb 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -337,7 +337,7 @@ bool prep_irq_for_idle(void)
+ 	 * of entering the low power state.
+ 	 */
+ 	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
+-	local_paca->soft_enabled = IRQ_DISABLE_MASK_NONE;
 +	soft_enabled_set(IRQ_DISABLE_MASK_NONE);
  
- 	/*
- 	 * And replay if we have to. This will return with interrupts
+ 	/* Tell the caller to enter the low power state */
+ 	return true;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index f31930b9bfc1..f0f882166dcc 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -197,7 +197,7 @@ static void __init fixup_boot_paca(void)
+ 	/* Allow percpu accesses to work until we setup percpu data */
+ 	get_paca()->data_offset = 0;
+ 	/* Mark interrupts disabled in PACA */
+-	get_paca()->soft_enabled = IRQ_DISABLE_MASK_LINUX;
++	soft_enabled_set(IRQ_DISABLE_MASK_LINUX);
+ }
+ 
+ static void __init configure_exceptions(void)
+@@ -334,7 +334,7 @@ void __init early_setup(unsigned long dt_ptr)
+ void early_setup_secondary(void)
+ {
+ 	/* Mark interrupts disabled in PACA */
+-	get_paca()->soft_enabled = 0;
++	soft_enabled_set(IRQ_DISABLE_MASK_LINUX);
+ 
+ 	/* Initialize the hash table or TLB handling */
+ 	early_init_mmu_secondary();
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 334144e300ca..42a39a2cea0a 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -260,7 +260,7 @@ static u64 scan_dispatch_log(u64 stop_tb)
+ void accumulate_stolen_time(void)
+ {
+ 	u64 sst, ust;
+-	u8 save_soft_enabled = local_paca->soft_enabled;
++	unsigned long save_soft_enabled;
+ 	struct cpu_accounting_data *acct = &local_paca->accounting;
+ 
+ 	/* We are called early in the exception entry, before
+@@ -269,7 +269,7 @@ void accumulate_stolen_time(void)
+ 	 * needs to reflect that so various debug stuff doesn't
+ 	 * complain
+ 	 */
+-	local_paca->soft_enabled = IRQ_DISABLE_MASK_LINUX;
++	save_soft_enabled = soft_enabled_set_return(IRQ_DISABLE_MASK_LINUX);
+ 
+ 	sst = scan_dispatch_log(acct->starttime_user);
+ 	ust = scan_dispatch_log(acct->starttime);
+@@ -277,7 +277,7 @@ void accumulate_stolen_time(void)
+ 	acct->user_time -= ust;
+ 	local_paca->stolen_time += ust + sst;
+ 
+-	local_paca->soft_enabled = save_soft_enabled;
++	soft_enabled_set(save_soft_enabled);
+ }
+ 
+ static inline u64 calculate_stolen_time(u64 stop_tb)
 -- 
 2.7.4
