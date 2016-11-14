@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzh0YBBzDvk4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:20 +1100 (AEDT)
-In-Reply-To: <20160811003240.19748-1-jack@codezen.org>
-To: Jack Miller <jack@codezen.org>, stewart@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzj2ZrxzDvms
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:21 +1100 (AEDT)
+In-Reply-To: <1478151792-13500-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v2] powernv: Simplify searching for compatible device nodes
-Message-Id: <3tHTzg6HPTz9t2N@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:19 +1100 (AEDT)
+Cc: npiggin@gmail.com
+Subject: Re: [v2] powerpc: EX_TABLE macro for exception tables
+Message-Id: <3tHTzh6VcVz9t5m@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:20 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,15 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-11-08 at 00:32:40 UTC, Jack Miller wrote:
-> This condenses the opal node searching into a single function that finds
-> all compatible nodes, instead of just searching the ibm,opal children,
-> for ipmi, flash, and prd similar to how opal-i2c nodes are found.
+On Thu, 2016-03-11 at 05:43:12 UTC, Michael Ellerman wrote:
+> From: Nicholas Piggin <npiggin@gmail.com>
 > 
-> Signed-off-by: Jack Miller <jack@codezen.org>
+> This macro is taken from s390, and allows more flexibility in
+> changing exception table format.
+> 
+> mpe: Put it in ppc_asm.h and only define one version using stringinfy_in_c().
+> Add some empty definitions and headers to keep the selftests happy.
+> Add some missing .previouses in fsl_rio.c and tsi108_pci.c.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/9e4f51bdaf880208869aa001ee94a4
+https://git.kernel.org/powerpc/c/24bfa6a9e0d4fe414dfc4ad06c93e1
 
 cheers
