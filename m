@@ -3,42 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdjR5FbmzDvZ2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:05:31 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdjf0dnTzDsxn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:05:41 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAEI4COj070781
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:29 -0500
+ uAEI5Ywe140582
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:40 -0500
 Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26qegymvm4-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26qfda9w4j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:38 -0500
 Received: from localhost
  by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 14 Nov 2016 23:35:26 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id E7A4B125805F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:36:16 +0530 (IST)
+ Mon, 14 Nov 2016 23:35:12 +0530
+Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 61B75E005A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:18 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAEI5NX720644000
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:23 +0530
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAEI4e5a22216824
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:34:40 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAEI5Ljw012020
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:23 +0530
+ uAEI56h3011046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:07 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v3 11/11] powerpc: rewrite local_t using soft_irq
-Date: Mon, 14 Nov 2016 23:34:52 +0530
+Subject: [PATCH v3 04/11] powerpc: Add soft_enabled manipulation functions
+Date: Mon, 14 Nov 2016 23:34:45 +0530
 In-Reply-To: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1479146692-15726-12-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1479146692-15726-5-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,292 +48,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Local atomic operations are fast and highly reentrant per CPU counters.
-Used for percpu variable updates. Local atomic operations only guarantee
-variable modification atomicity wrt the CPU which owns the data and
-these needs to be executed in a preemption safe way.
-
-Here is the design of this patch. Since local_* operations
-are only need to be atomic to interrupts (IIUC), we have two options.
-Either replay the "op" if interrupted or replay the interrupt after
-the "op". Initial patchset posted was based on implementing local_* operation
-based on CR5 which replay's the "op". Patchset had issues in case of
-rewinding the address pointor from an array. This make the slow patch
-really slow. Since CR5 based implementation proposed using __ex_table to find
-the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
-
-But this patch uses, powerpc_local_irq_pmu_save to soft_disable
-interrupts (including PMIs). After finishing the "op", powerpc_local_irq_pmu_restore()
-called and correspondingly interrupts are replayed if any occured.
-
-patch re-write the current local_* functions to use arch_local_irq_disbale.
-Base flow for each function is
-
-{
-	powerpc_local_irq_pmu_save(flags)
-	load
-	..
-	store
-	powerpc_local_irq_pmu_restore(flags)
-}
-
-Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
-instruction pair is used for local_* operations, which are heavy
-on cycle count and they dont support a local variant. So to
-see whether the new implementation helps, used a modified
-version of Rusty's benchmark code on local_t.
-
-https://lkml.org/lkml/2008/12/16/450
-
-Modifications to Rusty's benchmark code:
-- Executed only local_t test
-
-Here are the values with the patch.
-
-Time in ns per iteration
-
-Local_t             Without Patch           With Patch
-
-_inc                        28              8
-_add                        28              8
-_read                       3               3
-_add_return	            28              7
-
-Currently only asm/local.h has been rewrite, and also
-the entire change is tested only in PPC64 (pseries guest)
-and PPC64 host (LE)
+Add new soft_enabled_* manipulation function and implement
+arch_local_* using the soft_enabled_* wrappers.
 
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/local.h | 201 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 201 insertions(+)
+ arch/powerpc/include/asm/hw_irq.h | 32 ++++++++++++++------------------
+ 1 file changed, 14 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-index b8da91363864..7d117c07b0b1 100644
---- a/arch/powerpc/include/asm/local.h
-+++ b/arch/powerpc/include/asm/local.h
-@@ -3,6 +3,9 @@
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 88f6a8e2b5e3..c292ef4b4bc5 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -62,21 +62,7 @@ static inline notrace void soft_enabled_set(unsigned long enable)
+ 	: "memory");
+ }
  
- #include <linux/percpu.h>
- #include <linux/atomic.h>
-+#include <linux/irqflags.h>
-+
-+#include <asm/hw_irq.h>
- 
- typedef struct
+-static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
+-{
+-	unsigned long flags;
+-
+-	asm volatile(
+-		"lbz %0,%1(13); stb %2,%1(13)"
+-		: "=r" (flags)
+-		: "i" (offsetof(struct paca_struct, soft_enabled)),\
+-		  "r" (enable)
+-		: "memory");
+-
+-	return flags;
+-}
+-
+-static inline unsigned long arch_local_save_flags(void)
++static inline notrace unsigned long soft_enabled_return(void)
  {
-@@ -14,6 +17,202 @@ typedef struct
- #define local_read(l)	atomic_long_read(&(l)->a)
- #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
+ 	unsigned long flags;
  
-+#ifdef CONFIG_PPC64
-+
-+static __inline__ void local_add(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	add	%0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	powerpc_local_irq_pmu_restore(flags);
-+}
-+
-+static __inline__ void local_sub(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	subf	%0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	powerpc_local_irq_pmu_restore(flags);
-+}
-+
-+static __inline__ long local_add_return(long a, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	add	%0,%1,%0\n"
-+	PPC_STL "%0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+#define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
-+
-+static __inline__ long local_sub_return(long a, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	subf	%0,%1,%0\n"
-+	PPC_STL "%0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+static __inline__ long local_inc_return(local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%1)\n\
-+	addic	%0,%0,1\n"
-+	PPC_STL "%0,0(%1)\n"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "xer", "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+/*
-+ * local_inc_and_test - increment and test
-+ * @l: pointer of type local_t
-+ *
-+ * Atomically increments @l by 1
-+ * and returns true if the result is zero, or false for all
-+ * other cases.
-+ */
-+#define local_inc_and_test(l) (local_inc_return(l) == 0)
-+
-+static __inline__ long local_dec_return(local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%1)\n\
-+	addic	%0,%0,-1\n"
-+	PPC_STL "%0,0(%1)\n"
-+	: "=&r" (t)
-+	: "r" (&(l->a.counter))
-+	: "xer", "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+#define local_inc(l)	local_inc_return(l)
-+#define local_dec(l)	local_dec_return(l)
-+
-+#define local_cmpxchg(l, o, n) \
-+	(cmpxchg_local(&((l)->a.counter), (o), (n)))
-+#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
-+
-+/**
-+ * local_add_unless - add unless the number is a given value
-+ * @l: pointer of type local_t
-+ * @a: the amount to add to v...
-+ * @u: ...unless v is equal to u.
-+ *
-+ * Atomically adds @a to @l, so long as it was not @u.
-+ * Returns non-zero if @l was not @u, and zero otherwise.
-+ */
-+static __inline__ int local_add_unless(local_t *l, long a, long u)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__ (
-+	PPC_LL" %0,0(%1)\n\
-+	cmpw	0,%0,%3 \n\
-+	beq-	2f \n\
-+	add	%0,%2,%0 \n"
-+	PPC_STL" %0,0(%1) \n"
-+"       subf	%0,%2,%0 \n\
-+2:"
-+        : "=&r" (t)
-+        : "r" (&(l->a.counter)), "r" (a), "r" (u)
-+        : "cc", "memory");
-+        powerpc_local_irq_pmu_restore(flags);
-+
-+	return t != u;
-+}
-+
-+#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
-+
-+#define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
-+#define local_dec_and_test(l)		(local_dec_return((l)) == 0)
-+
-+/*
-+ * Atomically test *l and decrement if it is greater than 0.
-+ * The function returns the old value of *l minus 1.
-+ */
-+static __inline__ long local_dec_if_positive(local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	powerpc_local_irq_pmu_save(flags);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%1)\n\
-+	cmpwi	%0,1\n\
-+	addi	%0,%0,-1\n\
-+	blt-	2f\n"
-+	PPC_STL "%0,0(%1)\n"
-+	"\n\
-+2:"	: "=&b" (t)
-+	: "r" (&(l->a.counter))
-+	: "cc", "memory");
-+	powerpc_local_irq_pmu_restore(flags);
-+
-+	return t;
-+}
-+
-+/* Use these for per-cpu local_t variables: on some archs they are
-+ * much more efficient than these naive implementations.  Note they take
-+ * a variable, not an address.
-+ */
-+
-+#define __local_inc(l)		((l)->a.counter++)
-+#define __local_dec(l)		((l)->a.counter++)
-+#define __local_add(i,l)	((l)->a.counter+=(i))
-+#define __local_sub(i,l)	((l)->a.counter-=(i))
-+
-+#else
-+
- #define local_add(i,l)	atomic_long_add((i),(&(l)->a))
- #define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
- #define local_inc(l)	atomic_long_inc(&(l)->a)
-@@ -172,4 +371,6 @@ static __inline__ long local_dec_if_positive(local_t *l)
- #define __local_add(i,l)	((l)->a.counter+=(i))
- #define __local_sub(i,l)	((l)->a.counter-=(i))
+@@ -88,20 +74,30 @@ static inline unsigned long arch_local_save_flags(void)
+ 	return flags;
+ }
  
-+#endif /* CONFIG_PPC64 */
+-static inline unsigned long arch_local_irq_disable(void)
++static inline notrace unsigned long soft_enabled_set_return(unsigned long enable)
+ {
+ 	unsigned long flags, zero;
+ 
+ 	asm volatile(
+-		"li %1,%3; lbz %0,%2(13); stb %1,%2(13)"
++		"mr %1,%3; lbz %0,%2(13); stb %1,%2(13)"
+ 		: "=r" (flags), "=&r" (zero)
+ 		: "i" (offsetof(struct paca_struct, soft_enabled)),\
+-		  "i" (IRQ_DISABLE_MASK_LINUX)
++		  "r" (enable)
+ 		: "memory");
+ 
+ 	return flags;
+ }
+ 
++static inline unsigned long arch_local_save_flags(void)
++{
++	return soft_enabled_return();
++}
 +
- #endif /* _ARCH_POWERPC_LOCAL_H */
++static inline unsigned long arch_local_irq_disable(void)
++{
++	return soft_enabled_set_return(IRQ_DISABLE_MASK_LINUX);
++}
++
+ extern void arch_local_irq_restore(unsigned long);
+ 
+ static inline void arch_local_irq_enable(void)
 -- 
 2.7.4
