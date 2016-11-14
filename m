@@ -1,15 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzn096FzDvjR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzn5JJWzDvjq
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:25 +1100 (AEDT)
-In-Reply-To: <20160918110845.akvr46gdpuubo2q2@aragorn.home.lxtec.de>
-To: Elimar Riesebieter <riesebie@lxtec.de>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20161109085504.10799-1-andrew.shadura@collabora.co.uk>
+To: Andrew Shadura <andrew.shadura@collabora.co.uk>,
+ linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: Removed dependency on IDE_GD_ATA if ADB_PMU_LED_DISK is selected.
-Message-Id: <3tHTzm5cpnz9t3K@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:24 +1100 (AEDT)
+Cc: Shuah Khan <shuah@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Cyril Bur <cyrilbur@gmail.com>
+Subject: Re: [RESEND] tools-powerpc: Return false instead of -1
+Message-Id: <3tHTzn42Z9z9s5w@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:25 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,14 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-18-09 at 11:08:45 UTC, Elimar Riesebieter wrote:
-> We can use the front led of powerbooks/ibooks as a disk activitiy imagination
-> without the deprecated IDE_GD_ATA.
+On Wed, 2016-09-11 at 08:55:04 UTC, Andrew Shadura wrote:
+> From: Peter Senna Tschudin <peter.senna@gmail.com>
 > 
-> Signed-off-by: Elimar Riesebieter <riesebie@lxtec.de>
+> Returning a negative value for a boolean function seem to have the
+> undesired effect of returning true. require_paranoia_below() is a
+> boolean function, but the variable used to store the return value is an
+> integer, receiving -1 or 0. This patch convert rc to bool, replace -1
+> by false, and 0 by true.
+> 
+> This issue was found by the following Coccinelle semantic patch:
+> <smpl>
+> @@
+> identifier f, ret;
+> constant C;
+> typedef bool;
+> @@
+> bool f (...){
+> <+...
+> ret = -C;
+> ...
+> * return ret;
+> ...+>
+> }
+> </smpl>
+> 
+> Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+> Signed-off-by: Andrew Shadura <andrew.shadura@collabora.co.uk>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0e865a80c1358db9311c411c4763b9
+https://git.kernel.org/powerpc/c/0e27d27e0d6d92342797e0d37738c2
 
 cheers
