@@ -1,20 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzp3NHpzDvll
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:26 +1100 (AEDT)
-In-Reply-To: <20160927141016.6027-1-rui.teng@linux.vnet.ibm.com>
-To: Rui Teng <rui.teng@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzr4744zDrBx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:28 +1100 (AEDT)
+In-Reply-To: <1475318516-8447-1-git-send-email-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mahesh@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
+ hbathini@linux.vnet.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>, Anton Blanchard <anton@au1.ibm.com>,
- Rui Teng <rui.teng@linux.vnet.ibm.com>, Shuah Khan <shuah@kernel.org>,
- Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: tools/testing/selftests/powerpc: Add Anton's null_syscall
- benchmark to the selftests
-Message-Id: <3tHTzp2PWzz9t1h@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:26 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/pseries: Use H_CLEAR_HPT to clear MMU hash table during
+ kexec
+Message-Id: <3tHTzq6cHlz9t2C@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:27 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-27-09 at 14:10:16 UTC, Rui Teng wrote:
-> From: Anton Blanchard <anton@au.ibm.com>
+On Sat, 2016-01-10 at 10:41:56 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> Pull in a version of Anton's null_syscall benchmark:
-> http://ozlabs.org/~anton/junkcode/null_syscall.c
-> Into tools/testing/selftests/powerpc/benchmarks.
+> An hcall was recently added that does exactly what we need
+> during kexec - it clears the entire MMU hash table, ignoring any
+> VRMA mappings.
 > 
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Anton Blanchard <anton@au.ibm.com>
-> Signed-off-by: Rui Teng <rui.teng@linux.vnet.ibm.com>
+> Try it and fall back to the old method if we get a failure.
+> 
+> On a POWER8 box with 5TB of memory, this reduces the time it takes to
+> kexec a new kernel from from 4 minutes to 1 minute.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/d8db9bc55a316d97d0acdf6ccc9f43
+https://git.kernel.org/powerpc/c/5246adec59458b5d325b8e1462ea9e
 
 cheers
