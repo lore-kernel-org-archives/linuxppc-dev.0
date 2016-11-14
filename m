@@ -2,18 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzn5JJWzDvjq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:25 +1100 (AEDT)
-In-Reply-To: <20161109085504.10799-1-andrew.shadura@collabora.co.uk>
-To: Andrew Shadura <andrew.shadura@collabora.co.uk>,
- linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzp3NHpzDvll
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:26 +1100 (AEDT)
+In-Reply-To: <20160927141016.6027-1-rui.teng@linux.vnet.ibm.com>
+To: Rui Teng <rui.teng@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Shuah Khan <shuah@kernel.org>, Paul Mackerras <paulus@samba.org>,
+Cc: Michael Neuling <mikey@neuling.org>, Anton Blanchard <anton@au1.ibm.com>,
+ Rui Teng <rui.teng@linux.vnet.ibm.com>, Shuah Khan <shuah@kernel.org>,
  Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [RESEND] tools-powerpc: Return false instead of -1
-Message-Id: <3tHTzn42Z9z9s5w@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:25 +1100 (AEDT)
+Subject: Re: tools/testing/selftests/powerpc: Add Anton's null_syscall
+ benchmark to the selftests
+Message-Id: <3tHTzp2PWzz9t1h@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:26 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-09-11 at 08:55:04 UTC, Andrew Shadura wrote:
-> From: Peter Senna Tschudin <peter.senna@gmail.com>
+On Tue, 2016-27-09 at 14:10:16 UTC, Rui Teng wrote:
+> From: Anton Blanchard <anton@au.ibm.com>
 > 
-> Returning a negative value for a boolean function seem to have the
-> undesired effect of returning true. require_paranoia_below() is a
-> boolean function, but the variable used to store the return value is an
-> integer, receiving -1 or 0. This patch convert rc to bool, replace -1
-> by false, and 0 by true.
+> Pull in a version of Anton's null_syscall benchmark:
+> http://ozlabs.org/~anton/junkcode/null_syscall.c
+> Into tools/testing/selftests/powerpc/benchmarks.
 > 
-> This issue was found by the following Coccinelle semantic patch:
-> <smpl>
-> @@
-> identifier f, ret;
-> constant C;
-> typedef bool;
-> @@
-> bool f (...){
-> <+...
-> ret = -C;
-> ...
-> * return ret;
-> ...+>
-> }
-> </smpl>
-> 
-> Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
-> Signed-off-by: Andrew Shadura <andrew.shadura@collabora.co.uk>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Anton Blanchard <anton@au.ibm.com>
+> Signed-off-by: Rui Teng <rui.teng@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0e27d27e0d6d92342797e0d37738c2
+https://git.kernel.org/powerpc/c/d8db9bc55a316d97d0acdf6ccc9f43
 
 cheers
