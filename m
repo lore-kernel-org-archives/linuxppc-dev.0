@@ -1,33 +1,38 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <mrochs@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHb704H6kzDvdJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 03:09:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHbXR2zjqzDvdb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 03:27:35 +1100 (AEDT)
 Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAEG8wwZ137792
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:08:58 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26qfda3xbj-1
+ uAEGNsDt033637
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:27:33 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26qfda4u1v-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:08:58 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:27:32 -0500
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 14 Nov 2016 09:08:49 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Batch tlb flush when invalidating pte entries
-In-Reply-To: <20161114155857.25046-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20161114155857.25046-1-aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 14 Nov 2016 21:38:38 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87r36eavsp.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Mon, 14 Nov 2016 11:27:31 -0500
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C8AF66E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:27:03 -0500 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 10.1 \(3251\))
+Subject: Re: [RESEND PATCH] cxl: Fix coredump generation when cxl_get_fd() is
+ used
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <20161114085854.19667-1-fbarrat@linux.vnet.ibm.com>
+Date: Mon, 14 Nov 2016 10:27:25 -0600
+Cc: imunsie@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+References: <20161114085854.19667-1-fbarrat@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-Id: <987F854F-1F6F-4879-ACC1-04975A11589D@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,61 +42,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+> On Nov 14, 2016, at 2:58 AM, Frederic Barrat =
+<fbarrat@linux.vnet.ibm.com> wrote:
+>=20
+> If a process dumps core while owning a cxl file descriptor obtained
+> from an AFU driver (e.g. cxlflash) through the cxl_get_fd() API, the
+> following error occurs:
+>=20
+> [  868.027591] Unable to handle kernel paging request for data at =
+address ...
+> [  868.027778] Faulting instruction address: 0xc00000000035edb0
+> cpu 0x8c: Vector: 300 (Data Access) at [c000003c688275e0]
+>    pc: c00000000035edb0: elf_core_dump+0xd60/0x1300
+>    lr: c00000000035ed80: elf_core_dump+0xd30/0x1300
+>    sp: c000003c68827860
+>   msr: 9000000100009033
+>   dar: c
+> dsisr: 40000000
+> current =3D 0xc000003c68780000
+> paca    =3D 0xc000000001b73200   softe: 0        irq_happened: 0x01
+>    pid   =3D 46725, comm =3D hxesurelock
+> enter ? for help
+> [c000003c68827a60] c00000000036948c do_coredump+0xcec/0x11e0
+> [c000003c68827c20] c0000000000ce9e0 get_signal+0x540/0x7b0
+> [c000003c68827d10] c000000000017354 do_signal+0x54/0x2b0
+> [c000003c68827e00] c00000000001777c do_notify_resume+0xbc/0xd0
+> [c000003c68827e30] c000000000009838 ret_from_except_lite+0x64/0x68
+> --- Exception: 300 (Data Access) at 00003fff98ad2918
+>=20
+> The root cause is that the address_space structure for the file
+> doesn't define a 'host' member.
+>=20
+> When cxl allocates a file descriptor, it's using the anonymous inode
+> to back the file, but allocates a private address_space for each
+> context. The private address_space allows to track memory allocation
+> for each context. cxl doesn't define the 'host' member of the address
+> space, i.e. the inode. We don't want to define it as the anonymous
+> inode, since there's no longer a 1-to-1 relation between address_space
+> and inode.
+>=20
+> To fix it, instead of using the anonymous inode, we introduce a simple
+> pseudo filesystem so that cxl can allocate its own inodes. So we now
+> have one inode for each file and address_space. The pseudo filesystem
+> is only mounted on the first allocation of a file descriptor by
+> cxl_get_fd().
+>=20
+> Tested with cxlflash.
+>=20
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
-> This will improve the task exit case, by batching tlb invalidates.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/radix.h | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-> index aec6e8ee6e27..e8b4f39e9fab 100644
-> --- a/arch/powerpc/include/asm/book3s/64/radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
-> @@ -147,10 +147,16 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
->  		 * new value of pte
->  		 */
->  		new_pte = (old_pte | set) & ~clr;
-> -		psize = radix_get_mmu_psize(pg_sz);
-> -		radix__flush_tlb_page_psize(mm, addr, psize);
-> -
-> -		__radix_pte_update(ptep, 0, new_pte);
-> +		/*
-> +		 * If we are trying to clear the pte, we can skip
-> +		 * the below sequence and batch the tlb flush. The
-> +		 * tlb flush batching is done by mmu gather code
-> +		 */
-> +		if (new_pte) {
-> +			psize = radix_get_mmu_psize(pg_sz);
-> +			radix__flush_tlb_page_psize(mm, addr, psize);
-> +			__radix_pte_update(ptep, 0, new_pte);
-> +		}
->  	} else
->  		old_pte = __radix_pte_update(ptep, clr, set);
->  	asm volatile("ptesync" : : : "memory");
-
-We can also avoid the ptesync I guess. BTW for transition from V=0 to
-a valid pte, we are good without this patch because that is done via set_pte_at()
-
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index e8b4f39e9fab..83c77323a769 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -142,7 +142,6 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
- 		unsigned long new_pte;
- 
- 		old_pte = __radix_pte_update(ptep, ~0, 0);
--		asm volatile("ptesync" : : : "memory");
- 		/*
- 		 * new value of pte
- 		 */
-@@ -153,6 +152,7 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
- 		 * tlb flush batching is done by mmu gather code
- 		 */
- 		if (new_pte) {
-+			asm volatile("ptesync" : : : "memory");
- 			psize = radix_get_mmu_psize(pg_sz);
- 			radix__flush_tlb_page_psize(mm, addr, psize);
- 			__radix_pte_update(ptep, 0, new_pte);
+Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
