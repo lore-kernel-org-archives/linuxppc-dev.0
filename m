@@ -1,16 +1,16 @@
 Return-Path: <Zubair.Kakakhel@imgtec.com>
 Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tHTvs48FwzDvLb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:14:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tHTvt6G7XzDvJQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:14:02 +1100 (AEDT)
 From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 To: <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
  <marc.zyngier@arm.com>
 CC: <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
  <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>,
  <Zubair.Kakakhel@imgtec.com>
-Subject: [Patch v7 2/7] irqchip: xilinx: clean up print messages
-Date: Mon, 14 Nov 2016 12:13:46 +0000
-Message-ID: <20161114121351.10924-3-Zubair.Kakakhel@imgtec.com>
+Subject: [Patch v7 4/7] irqchip: xilinx: Rename get_irq to xintc_get_irq
+Date: Mon, 14 Nov 2016 12:13:48 +0000
+Message-ID: <20161114121351.10924-5-Zubair.Kakakhel@imgtec.com>
 In-Reply-To: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
 References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
 MIME-Version: 1.0
@@ -24,89 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove __func__ and prefix irq-xilinx in various debug prints
+Now that the driver is generic and used by multiple archs,
+get_irq is too generic.
+
+Rename get_irq to xintc_get_irq to avoid any conflicts
 
 Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 
 ---
 V6 -> V7
-New patch
-This diff was squashed into another patch. Split it up for cleanliness
----
- drivers/irqchip/irq-xilinx-intc.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+Rebase to v4.9-rc5
 
+V5 -> V6
+Removed __func__ in printk
+Rebase to v4.9-rc3
+
+V4 -> V5
+Rebased to v4.9-rc1
+Use __func__ in pr_err
+
+V3 -> V4
+New patch.
+---
+ arch/microblaze/include/asm/irq.h | 2 +-
+ arch/microblaze/kernel/irq.c      | 4 ++--
+ drivers/irqchip/irq-xilinx-intc.c | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/microblaze/include/asm/irq.h b/arch/microblaze/include/asm/irq.h
+index bab3b13..d785def 100644
+--- a/arch/microblaze/include/asm/irq.h
++++ b/arch/microblaze/include/asm/irq.h
+@@ -16,6 +16,6 @@ struct pt_regs;
+ extern void do_IRQ(struct pt_regs *regs);
+ 
+ /* should be defined in each interrupt controller driver */
+-extern unsigned int get_irq(void);
++extern unsigned int xintc_get_irq(void);
+ 
+ #endif /* _ASM_MICROBLAZE_IRQ_H */
+diff --git a/arch/microblaze/kernel/irq.c b/arch/microblaze/kernel/irq.c
+index 11e24de..903dad8 100644
+--- a/arch/microblaze/kernel/irq.c
++++ b/arch/microblaze/kernel/irq.c
+@@ -29,12 +29,12 @@ void __irq_entry do_IRQ(struct pt_regs *regs)
+ 	trace_hardirqs_off();
+ 
+ 	irq_enter();
+-	irq = get_irq();
++	irq = xintc_get_irq();
+ next_irq:
+ 	BUG_ON(!irq);
+ 	generic_handle_irq(irq);
+ 
+-	irq = get_irq();
++	irq = xintc_get_irq();
+ 	if (irq != -1U) {
+ 		pr_debug("next irq: %d\n", irq);
+ 		++concurrent_irq;
 diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
-index 90bec7d..096c1ed 100644
+index 7331d8c..34ec609 100644
 --- a/drivers/irqchip/irq-xilinx-intc.c
 +++ b/drivers/irqchip/irq-xilinx-intc.c
-@@ -58,7 +58,7 @@ static void intc_enable_or_unmask(struct irq_data *d)
+@@ -101,7 +101,7 @@ static struct irq_chip intc_dev = {
+ 	.irq_mask_ack = intc_mask_ack,
+ };
+ 
+-unsigned int get_irq(void)
++unsigned int xintc_get_irq(void)
  {
- 	unsigned long mask = 1 << d->hwirq;
+ 	unsigned int hwirq, irq = -1;
  
--	pr_debug("enable_or_unmask: %ld\n", d->hwirq);
-+	pr_debug("irq-xilinx: enable_or_unmask: %ld\n", d->hwirq);
- 
- 	/* ack level irqs because they can't be acked during
- 	 * ack function since the handle_level_irq function
-@@ -72,13 +72,13 @@ static void intc_enable_or_unmask(struct irq_data *d)
- 
- static void intc_disable_or_mask(struct irq_data *d)
- {
--	pr_debug("disable: %ld\n", d->hwirq);
-+	pr_debug("irq-xilinx: disable: %ld\n", d->hwirq);
- 	write_fn(1 << d->hwirq, intc_baseaddr + CIE);
- }
- 
- static void intc_ack(struct irq_data *d)
- {
--	pr_debug("ack: %ld\n", d->hwirq);
-+	pr_debug("irq-xilinx: ack: %ld\n", d->hwirq);
- 	write_fn(1 << d->hwirq, intc_baseaddr + IAR);
- }
- 
-@@ -86,7 +86,7 @@ static void intc_mask_ack(struct irq_data *d)
- {
- 	unsigned long mask = 1 << d->hwirq;
- 
--	pr_debug("disable_and_ack: %ld\n", d->hwirq);
-+	pr_debug("irq-xilinx: disable_and_ack: %ld\n", d->hwirq);
- 	write_fn(mask, intc_baseaddr + CIE);
- 	write_fn(mask, intc_baseaddr + IAR);
- }
-@@ -109,7 +109,7 @@ unsigned int get_irq(void)
- 	if (hwirq != -1U)
- 		irq = irq_find_mapping(root_domain, hwirq);
- 
--	pr_debug("get_irq: hwirq=%d, irq=%d\n", hwirq, irq);
-+	pr_debug("irq-xilinx: hwirq=%d, irq=%d\n", hwirq, irq);
- 
- 	return irq;
- }
-@@ -146,20 +146,20 @@ static int __init xilinx_intc_of_init(struct device_node *intc,
- 
- 	ret = of_property_read_u32(intc, "xlnx,num-intr-inputs", &nr_irq);
- 	if (ret < 0) {
--		pr_err("%s: unable to read xlnx,num-intr-inputs\n", __func__);
-+		pr_err("irq-xilinx: unable to read xlnx,num-intr-inputs\n");
- 		return ret;
- 	}
- 
- 	ret = of_property_read_u32(intc, "xlnx,kind-of-intr", &intr_mask);
- 	if (ret < 0) {
--		pr_err("%s: unable to read xlnx,kind-of-intr\n", __func__);
-+		pr_err("irq-xilinx: unable to read xlnx,kind-of-intr\n");
- 		return ret;
- 	}
- 
- 	if (intr_mask >> nr_irq)
--		pr_warn("%s: mismatch in kind-of-intr param\n", __func__);
-+		pr_warn("irq-xilinx: mismatch in kind-of-intr param\n");
- 
--	pr_info("%s: num_irq=%d, edge=0x%x\n",
-+	pr_info("irq-xilinx: %s: num_irq=%d, edge=0x%x\n",
- 		intc->full_name, nr_irq, intr_mask);
- 
- 	write_fn = intc_write32;
 -- 
 2.10.2
