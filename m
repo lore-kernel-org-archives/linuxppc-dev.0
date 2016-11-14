@@ -3,43 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdjL2DZszDvhM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:05:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdjN6lbpzDvhK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:05:28 +1100 (AEDT)
 Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAEI45C8017178
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:23 -0500
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26qdekqtd4-1
+ uAEI4437017091
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:26 -0500
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26qdekqtg6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:23 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:05:26 -0500
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 14 Nov 2016 23:35:20 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id AF106125805C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:36:11 +0530 (IST)
+ Mon, 14 Nov 2016 23:35:23 +0530
+Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id CFAB2E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:31 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAEI5IJ218546856
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:18 +0530
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAEI4sRa22675626
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:34:54 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAEI5Fib011614
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:17 +0530
+ uAEI5JFM011914
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:35:21 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v3 08/11] powerpc: Add support to mask perf interrupts and
- replay them
-Date: Mon, 14 Nov 2016 23:34:49 +0530
+Subject: [PATCH v3 10/11] powerpc: Add new set of soft_enabled_ functions
+Date: Mon, 14 Nov 2016 23:34:51 +0530
 In-Reply-To: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1479146692-15726-9-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1479146692-15726-11-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,150 +48,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-New bit mask field "IRQ_DISABLE_MASK_PMU" is introduced to support
-the masking of PMI.
+To support disabling and enabling of irq with PMI, set of
+new powerpc_local_irq_pmu_save() and powerpc_local_irq_restore()
+functions are added. And powerpc_local_irq_save() implemented,
+by adding a new soft_enabled manipulation function soft_enabled_or_return().
+Local_irq_pmu_* macros are provided to access these powerpc_local_irq_pmu*
+functions which includes trace_hardirqs_on|off() to match what we
+have in include/linux/irqflags.h.
 
-Couple of new irq #defs "PACA_IRQ_PMI" and "SOFTEN_VALUE_0xf0*" added to
-use in the exception code to check for PMI interrupts.
-
-In the masked_interrupt handler, for PMIs we reset the MSR[EE]
-and return. In the __check_irq_replay(), replay the PMI interrupt
-by calling performance_monitor_common handler.
-
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/exception-64s.h |  5 +++++
- arch/powerpc/include/asm/hw_irq.h        |  2 ++
- arch/powerpc/kernel/entry_64.S           |  5 +++++
- arch/powerpc/kernel/exceptions-64s.S     |  6 ++++--
- arch/powerpc/kernel/irq.c                | 25 ++++++++++++++++++++++++-
- 5 files changed, 40 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h | 62 ++++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/irq.c         |  4 +++
+ 2 files changed, 65 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index ac0b8a25d9e6..8033f3950970 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -422,6 +422,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- #define SOFTEN_VALUE_0xe80	PACA_IRQ_DBELL
- #define SOFTEN_VALUE_0xe60	PACA_IRQ_HMI
- #define SOFTEN_VALUE_0xea0	PACA_IRQ_EE
-+#define SOFTEN_VALUE_0xf00	PACA_IRQ_PMI
- 
- #define __SOFTEN_TEST(h, vec, bitmask)					\
- 	lbz	r10,PACASOFTIRQEN(r13);					\
-@@ -486,6 +487,10 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	_MASKABLE_RELON_EXCEPTION_PSERIES(vec, label,			\
- 					  EXC_STD, SOFTEN_NOTEST_PR, bitmask)
- 
-+#define MASKABLE_RELON_EXCEPTION_PSERIES_OOL(vec, label, bitmask)	\
-+	MASKABLE_EXCEPTION_PROLOG_1(PACA_EXGEN, SOFTEN_NOTEST_PR, vec, bitmask);\
-+	EXCEPTION_PROLOG_PSERIES_1(label, EXC_STD);
-+
- #define MASKABLE_RELON_EXCEPTION_HV(loc, vec, label, bitmask)		\
- 	_MASKABLE_RELON_EXCEPTION_PSERIES(vec, label,			\
- 					  EXC_HV, SOFTEN_NOTEST_HV, bitmask)
 diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 8359fbf83376..ac9a17ea1d66 100644
+index ac9a17ea1d66..7be90b73a943 100644
 --- a/arch/powerpc/include/asm/hw_irq.h
 +++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -26,12 +26,14 @@
- #define PACA_IRQ_DEC		0x08 /* Or FIT */
- #define PACA_IRQ_EE_EDGE	0x10 /* BookE only */
- #define PACA_IRQ_HMI		0x20
-+#define PACA_IRQ_PMI		0x40
+@@ -90,6 +90,20 @@ static inline notrace unsigned long soft_enabled_set_return(unsigned long enable
+ 	return flags;
+ }
  
- /*
-  * flags for paca->soft_enabled
-  */
- #define IRQ_DISABLE_MASK_NONE	0
- #define IRQ_DISABLE_MASK_LINUX	1
-+#define IRQ_DISABLE_MASK_PMU	2
++static inline notrace unsigned long soft_enabled_or_return(unsigned long enable)
++{
++	unsigned long flags, zero;
++
++	asm volatile(
++		"mr %1,%3; lbz %0,%2(13); or %1,%0,%1; stb %1,%2(13)"
++		: "=r" (flags), "=&r"(zero)
++		: "i" (offsetof(struct paca_struct, soft_enabled)),\
++		 "r" (enable)
++		: "memory");
++
++	return flags;
++}
++
+ static inline unsigned long arch_local_save_flags(void)
+ {
+ 	return soft_enabled_return();
+@@ -114,7 +128,7 @@ static inline unsigned long arch_local_irq_save(void)
  
- #endif /* CONFIG_PPC64 */
+ static inline bool arch_irqs_disabled_flags(unsigned long flags)
+ {
+-	return flags == IRQ_DISABLE_MASK_LINUX;
++	return flags & IRQ_DISABLE_MASK_LINUX;
+ }
  
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index f3afa0b9332d..d021f7de79bd 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -931,6 +931,11 @@ restore_check_irq_replay:
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;
-  	bl	do_IRQ
- 	b	ret_from_except
-+1:	cmpwi	cr0,r3,0xf00
-+	bne	1f
-+	addi	r3,r1,STACK_FRAME_OVERHEAD;
-+	bl	performance_monitor_exception
-+	b	ret_from_except
- 1:	cmpwi	cr0,r3,0xe60
- 	bne	1f
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index adddaa8258b9..3718f1d13707 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1036,8 +1036,8 @@ EXC_REAL_NONE(0xec0, 0xf00)
- EXC_VIRT_NONE(0x4ec0, 0x4f00)
+ static inline bool arch_irqs_disabled(void)
+@@ -122,6 +136,52 @@ static inline bool arch_irqs_disabled(void)
+ 	return arch_irqs_disabled_flags(arch_local_save_flags());
+ }
  
- 
--EXC_REAL_OOL(performance_monitor, 0xf00, 0xf20)
--EXC_VIRT_OOL(performance_monitor, 0x4f00, 0x4f20, 0xf00)
-+EXC_REAL_OOL_MASKABLE(performance_monitor, 0xf00, 0xf20, IRQ_DISABLE_MASK_PMU)
-+EXC_VIRT_OOL_MASKABLE(performance_monitor, 0x4f00, 0x4f20, 0xf00, IRQ_DISABLE_MASK_PMU)
- TRAMP_KVM(PACA_EXGEN, 0xf00)
- EXC_COMMON_ASYNC(performance_monitor_common, 0xf00, performance_monitor_exception)
- 
-@@ -1575,6 +1575,8 @@ _GLOBAL(__replay_interrupt)
- 	beq	decrementer_common
- 	cmpwi	r3,0x500
- 	beq	hardware_interrupt_common
-+	cmpwi	r3,0xf00
-+	beq	performance_monitor_common
- BEGIN_FTR_SECTION
- 	cmpwi	r3,0xe80
- 	beq	h_doorbell_common
++/*
++ * To support disabling and enabling of irq with PMI, set of
++ * new powerpc_local_irq_pmu_save() and powerpc_local_irq_restore()
++ * functions are added. These macros are implemented using generic
++ * linux local_irq_* code from include/linux/irqflags.h.
++ */
++#define raw_local_irq_pmu_save(flags)					\
++	do {								\
++		typecheck(unsigned long, flags);			\
++		flags = soft_enabled_or_return(IRQ_DISABLE_MASK_LINUX | \
++				IRQ_DISABLE_MASK_PMU);			\
++	} while(0)
++
++#define raw_local_irq_pmu_restore(flags)				\
++	do {								\
++		typecheck(unsigned long, flags);			\
++		arch_local_irq_restore(flags);				\
++	} while(0)
++
++#ifdef CONFIG_TRACE_IRQFLAGS
++#define powerpc_local_irq_pmu_save(flags)			\
++	 do {							\
++		raw_local_irq_pmu_save(flags);			\
++		trace_hardirqs_off();				\
++	} while(0)
++#define powerpc_local_irq_pmu_restore(flags)			\
++	do {							\
++		if (raw_irqs_disabled_flags(flags)) {		\
++			raw_local_irq_pmu_restore(flags);	\
++			trace_hardirqs_off();			\
++		} else {					\
++			trace_hardirqs_on();			\
++			raw_local_irq_pmu_restore(flags);	\
++		}						\
++	} while(0)
++#else
++#define powerpc_local_irq_pmu_save(flags)			\
++	do {							\
++		raw_local_irq_pmu_save(flags);			\
++	} while(0)
++#define powerpc_local_irq_pmu_restore(flags)			\
++	do {							\
++		raw_local_irq_pmu_restore(flags);		\
++	} while (0)
++#endif  /* CONFIG_TRACE_IRQFLAGS */
++
+ #ifdef CONFIG_PPC_BOOK3E
+ #define __hard_irq_enable()	asm volatile("wrteei 1" : : : "memory")
+ #define __hard_irq_disable()	asm volatile("wrteei 0" : : : "memory")
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 5a995183dafb..c030ccd0a7aa 100644
+index 299b55071612..9010f996e238 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -169,6 +169,27 @@ notrace unsigned int __check_irq_replay(void)
- 	if ((happened & PACA_IRQ_DEC) || decrementer_check_overflow())
- 		return 0x900;
+@@ -227,6 +227,10 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 	unsigned char irq_happened;
+ 	unsigned int replay;
  
-+	/*
-+	 * In masked_handler() for PMI, we disable MSR[EE] and return.
-+	 * Replay it here.
-+	 *
-+	 * After this point, PMIs could still be disabled in certain
-+	 * scenarios like this one.
-+	 *
-+	 * local_irq_disable();
-+	 * powerpc_irq_pmu_save();
-+	 * powerpc_irq_pmu_restore();
-+	 * local_irq_restore();
-+	 *
-+	 * Even though powerpc_irq_pmu_restore() would have replayed the PMIs
-+	 * if any, we have still not enabled EE and this will happen only at
-+	 * complition of last *_restore in this nested cases. And PMIs will
-+	 * once again start firing only when we have MSR[EE] enabled.
-+	 */
-+	local_paca->irq_happened &= ~PACA_IRQ_PMI;
-+	if (happened & PACA_IRQ_PMI)
-+		return 0xf00;
++#ifdef CONFIG_IRQ_DEBUG_SUPPORT
++	WARN_ON(en & local_paca->soft_enabled & ~IRQ_DISABLE_MASK_LINUX);
++#endif
 +
- 	/* Finally check if an external interrupt happened */
- 	local_paca->irq_happened &= ~PACA_IRQ_EE;
- 	if (happened & PACA_IRQ_EE)
-@@ -208,7 +229,9 @@ notrace void arch_local_irq_restore(unsigned long en)
- 
  	/* Write the new soft-enabled value */
  	soft_enabled_set(en);
--	if (en == IRQ_DISABLE_MASK_LINUX)
-+
-+	/* any bits still disabled */
-+	if (en)
- 		return;
- 	/*
- 	 * From this point onward, we can take interrupts, preempt,
+ 
 -- 
 2.7.4
