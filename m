@@ -1,31 +1,42 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <akshay.adiga@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTbN0TFNzDvLb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:59:44 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- devicetree@vger.kernel.org, Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>, Balbir Singh <bsingharora@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 4/4] of/fdt: mark hotpluggable memory
-In-Reply-To: <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
-References: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
-Date: Mon, 14 Nov 2016 22:59:43 +1100
-Message-ID: <87bmxii85s.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTbv4SBTzDvhR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:00:11 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAEC00R5092476
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 07:00:09 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26q9cwab46-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 07:00:06 -0500
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Mon, 14 Nov 2016 21:59:46 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id F1FE73578053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:59:43 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAEBxhuU4391218
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:59:43 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAEBxhhS013506
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:59:43 +1100
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH -next] powernv: cpufreq: Fix uninitialized lpstate_idx in
+ gpstates_timer_handler
+Date: Mon, 14 Nov 2016 17:29:27 +0530
+Message-Id: <1479124767-20165-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +46,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reza Arbab <arbab@linux.vnet.ibm.com> writes:
+lpstate_idx remains uninitialized in the case when elapsed_time
+is greater than MAX_RAMP_DOWN_TIME. At the end of rampdown
+global pstate should be equal to local pstate.
 
-> When movable nodes are enabled, any node containing only hotpluggable
-> memory is made movable at boot time.
->
-> On x86, hotpluggable memory is discovered by parsing the ACPI SRAT,
-> making corresponding calls to memblock_mark_hotplug().
->
-> If we introduce a dt property to describe memory as hotpluggable,
-> configs supporting early fdt may then also do this marking and use
-> movable nodes.
+Fixes: 20b15b766354 ("cpufreq: powernv: Use PMCR to verify global and
+localpstate")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-So I'm not opposed to this, but it is a little vague.
-
-What does the "hotpluggable" property really mean?
-
-Is it just a hint to the operating system? (which may or may not be
-Linux).
-
-Or is it a direction, "this memory must be able to be hotunplugged"?
-
-I think you're intending the former, ie. a hint, which is probably OK.
-But it needs to be documented clearly.
-
-cheers
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index c82304b..c5c5bc3 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -624,6 +624,7 @@ void gpstate_timer_handler(unsigned long data)
+ 
+ 	if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
+ 		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
++		lpstate_idx = gpstate_idx;
+ 		reset_gpstates(policy);
+ 		gpstates->highest_lpstate_idx = gpstate_idx;
+ 	} else {
+-- 
+2.5.5
