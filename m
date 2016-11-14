@@ -1,22 +1,25 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHBxg61RQzDvNH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:59:35 +1100 (AEDT)
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHBPr03SXzDvQt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:35:28 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id e9so7082246pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Nov 2016 16:35:27 -0800 (PST)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org, agraf@suse.com
-Subject: [PATCH V4 2/2] powerpc/kvm: Update kvmppc_set_arch_compat() for ISA
- v3.00
-Date: Mon, 14 Nov 2016 11:35:08 +1100
-Message-Id: <1479083708-11797-3-git-send-email-sjitindarsingh@gmail.com>
-In-Reply-To: <1479083708-11797-1-git-send-email-sjitindarsingh@gmail.com>
-References: <1479083708-11797-1-git-send-email-sjitindarsingh@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3tHBxg2FSDz9t1h
+ for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2016 11:59:35 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id p66so7475186pga.2
+ for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2016 16:59:35 -0800 (PST)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Rename early_init_mmu to early_init_mmu_primary
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <77c0eab1-c85c-94fa-4d33-da2bcba7aa86@gmail.com>
+Date: Mon, 14 Nov 2016 11:59:29 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,90 +29,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function kvmppc_set_arch_compat() is used to determine the value of the
-processor compatibility register (PCR) for a guest running in a given
-compatibility mode. There is currently no support for v3.00 of the ISA.
 
-Add support for v3.00 of the ISA which adds an ISA v2.07 compatilibity mode
-to the PCR.
+It helps clarify that the action taken is just for the primary
+CPU and more action might be required for in the secondaries
+in early_init_mmu_secondary. This patch does not introduce
+a functional change
 
-We also add a check to ensure the processor we are running on is capable of
-emulating the chosen processor (for example a POWER7 cannot emulate a
-POWER8, similarly with a POWER8 and a POWER9).
-
-Based on work by: Paul Mackerras <paulus@samba.org>
-
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 38 +++++++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu.h | 10 +++++-----
+ arch/powerpc/include/asm/mmu.h           |  2 +-
+ arch/powerpc/kernel/setup_32.c           |  2 +-
+ arch/powerpc/kernel/setup_64.c           |  2 +-
+ arch/powerpc/mm/hash_utils_64.c          |  2 +-
+ arch/powerpc/mm/pgtable-radix.c          |  2 +-
+ arch/powerpc/mm/tlb_hash32.c             |  2 +-
+ arch/powerpc/mm/tlb_nohash.c             |  4 ++--
+ 8 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 3686471..5d83ecb 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -301,39 +301,47 @@ static void kvmppc_set_pvr_hv(struct kvm_vcpu *vcpu, u32 pvr)
- 
- static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 8afb0e0..c60a629 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -104,13 +104,13 @@ void mmu_early_init_devtree(void);
+ void hash__early_init_devtree(void);
+ void radix__early_init_devtree(void);
+ extern void radix_init_native(void);
+-extern void hash__early_init_mmu(void);
+-extern void radix__early_init_mmu(void);
+-static inline void early_init_mmu(void)
++extern void hash__early_init_mmu_primary(void);
++extern void radix__early_init_mmu_primary(void);
++static inline void early_init_mmu_primary(void)
  {
--	unsigned long pcr = 0;
-+	unsigned long host_pcr_bit = 0, guest_pcr_bit = 0;
- 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 	if (radix_enabled())
+-		return radix__early_init_mmu();
+-	return hash__early_init_mmu();
++		return radix__early_init_mmu_primary();
++	return hash__early_init_mmu_primary();
+ }
+ extern void hash__early_init_mmu_secondary(void);
+ extern void radix__early_init_mmu_secondary(void);
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index e883683..3f8226c 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -284,7 +284,7 @@ static inline bool early_radix_enabled(void)
  
-+	/* We can (emulate) our own architecture version and anything older */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		host_pcr_bit = PCR_ARCH_300;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		host_pcr_bit = PCR_ARCH_207;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_206))
-+		host_pcr_bit = PCR_ARCH_206;
-+	else
-+		host_pcr_bit = PCR_ARCH_205;
-+
-+	/* Determine lowest PCR bit needed to run guest in given PVR level */
- 	if (arch_compat) {
- 		switch (arch_compat) {
- 		case PVR_ARCH_205:
--			/*
--			 * If an arch bit is set in PCR, all the defined
--			 * higher-order arch bits also have to be set.
--			 */
--			pcr = PCR_ARCH_206 | PCR_ARCH_205;
-+			guest_pcr_bit = PCR_ARCH_205;
- 			break;
- 		case PVR_ARCH_206:
- 		case PVR_ARCH_206p:
--			pcr = PCR_ARCH_206;
-+			guest_pcr_bit = PCR_ARCH_206;
- 			break;
- 		case PVR_ARCH_207:
-+			guest_pcr_bit = PCR_ARCH_207;
-+			break;
-+		case PVR_ARCH_300:
-+			guest_pcr_bit = PCR_ARCH_300;
- 			break;
- 		default:
- 			return -EINVAL;
- 		}
--
--		if (!cpu_has_feature(CPU_FTR_ARCH_207S)) {
--			/* POWER7 can't emulate POWER8 */
--			if (!(pcr & PCR_ARCH_206))
--				return -EINVAL;
--			pcr &= ~PCR_ARCH_206;
--		}
- 	}
+ #ifndef __ASSEMBLY__
+ /* MMU initialization */
+-extern void early_init_mmu(void);
++extern void early_init_mmu_primary(void);
+ extern void early_init_mmu_secondary(void);
+ extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 				       phys_addr_t first_memblock_size);
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 5fe7918..e1ee6d6 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -118,7 +118,7 @@ notrace void __init machine_init(u64 dt_ptr)
+ 	/* Do some early initialization based on the flat device tree */
+ 	early_init_devtree(__va(dt_ptr));
  
-+	/* Check requested PCR bits don't exceed our capabilities */
-+	if (guest_pcr_bit > host_pcr_bit)
-+		return -EINVAL;
-+
- 	spin_lock(&vc->lock);
- 	vc->arch_compat = arch_compat;
--	vc->pcr = pcr;
-+	vc->pcr = host_pcr_bit - guest_pcr_bit;
- 	spin_unlock(&vc->lock);
+-	early_init_mmu();
++	early_init_mmu_primary();
  
- 	return 0;
+ 	setup_kdump_trampoline();
+ }
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index c3e1290..5d1ba51a 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -303,7 +303,7 @@ void __init early_setup(unsigned long dt_ptr)
+ 	setup_feature_keys();
+ 
+ 	/* Initialize the hash table or TLB handling */
+-	early_init_mmu();
++	early_init_mmu_primary();
+ 
+ 	/*
+ 	 * At this point, we can let interrupts switch to virtual mode
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 44d3c3a..e0acd6d 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -964,7 +964,7 @@ void __init hash__early_init_devtree(void)
+ 	htab_scan_page_sizes();
+ }
+ 
+-void __init hash__early_init_mmu(void)
++void __init hash__early_init_mmu_primary(void)
+ {
+ 	htab_init_page_sizes();
+ 
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index ed7bddc..968e29c 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -320,7 +320,7 @@ static void update_hid_for_radix(void)
+ 		cpu_relax();
+ }
+ 
+-void __init radix__early_init_mmu(void)
++void __init radix__early_init_mmu_primary(void)
+ {
+ 	unsigned long lpcr;
+ 
+diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
+index 702d768..c006f04 100644
+--- a/arch/powerpc/mm/tlb_hash32.c
++++ b/arch/powerpc/mm/tlb_hash32.c
+@@ -168,6 +168,6 @@ void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ }
+ EXPORT_SYMBOL(flush_tlb_range);
+ 
+-void __init early_init_mmu(void)
++void __init early_init_mmu_primary(void)
+ {
+ }
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index 050badc..e704b33 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -718,7 +718,7 @@ static void __init early_mmu_set_memory_limit(void)
+ }
+ 
+ /* boot cpu only */
+-void __init early_init_mmu(void)
++void __init early_init_mmu_primary(void)
+ {
+ 	early_init_mmu_global();
+ 	early_init_this_mmu();
+@@ -770,7 +770,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	memblock_set_current_limit(first_memblock_base + ppc64_rma_size);
+ }
+ #else /* ! CONFIG_PPC64 */
+-void __init early_init_mmu(void)
++void __init early_init_mmu_primary(void)
+ {
+ #ifdef CONFIG_PPC_47x
+ 	early_init_mmu_47x();
 -- 
 2.5.5
