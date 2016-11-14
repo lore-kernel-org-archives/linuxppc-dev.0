@@ -1,19 +1,16 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <fl@n621.de>
+Received: from nyx.n621.de (nyx.n621.de [176.9.182.227])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzr4744zDrBx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:28 +1100 (AEDT)
-In-Reply-To: <1475318516-8447-1-git-send-email-anton@ozlabs.org>
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, mahesh@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
- hbathini@linux.vnet.ibm.com
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/pseries: Use H_CLEAR_HPT to clear MMU hash table during
- kexec
-Message-Id: <3tHTzq6cHlz9t2C@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHVPN6FgDzDw2Q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:36:08 +1100 (AEDT)
+From: Florian Larysch <fl@n621.de>
+To: Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Florian Larysch <fl@n621.de>
+Subject: [PATCH] T4240RBD: add device tree entry for W83793
+Date: Mon, 14 Nov 2016 13:28:05 +0100
+Message-Id: <20161114122805.11376-1-fl@n621.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-01-10 at 10:41:56 UTC, Anton Blanchard wrote:
-> From: Anton Blanchard <anton@samba.org>
-> 
-> An hcall was recently added that does exactly what we need
-> during kexec - it clears the entire MMU hash table, ignoring any
-> VRMA mappings.
-> 
-> Try it and fall back to the old method if we get a failure.
-> 
-> On a POWER8 box with 5TB of memory, this reduces the time it takes to
-> kexec a new kernel from from 4 minutes to 1 minute.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+The T4240RDB contains a W83793 hardware monitoring chip. Add a device
+tree entry to make the driver attach to it, as the i2c-mpc bus driver
+dropped support for class-based instantiation of devices a long time
+ago.
 
-Applied to powerpc next, thanks.
+Signed-off-by: Florian Larysch <fl@n621.de>
+---
+ arch/powerpc/boot/dts/fsl/t4240rdb.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-https://git.kernel.org/powerpc/c/5246adec59458b5d325b8e1462ea9e
-
-cheers
+diff --git a/arch/powerpc/boot/dts/fsl/t4240rdb.dts b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+index cc0a264..b35eea1 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+@@ -142,6 +142,10 @@
+ 				reg = <0x68>;
+ 				interrupts = <0x1 0x1 0 0>;
+ 			};
++			hwmon@2f {
++				compatible = "winbond,w83793";
++				reg = <0x2f>;
++			};
+ 		};
+ 
+ 		sdhc@114000 {
+-- 
+2.10.2
