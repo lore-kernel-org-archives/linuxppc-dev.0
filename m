@@ -3,39 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdzM43S4zDvmj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:17:35 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHdzN6lbfzDvhd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 05:17:36 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAEIDT23033863
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:17:33 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26qe4r68dp-1
+ uAEIGgIg076055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:17:35 -0500
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26qcyghn8y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:17:33 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 13:17:34 -0500
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 14 Nov 2016 23:47:29 +0530
-Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7FBB5E005A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:47:37 +0530 (IST)
+ Mon, 14 Nov 2016 23:47:31 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 10272394005E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:47:30 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAEIHRlH25034782
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:47:27 +0530
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAEIHTV920774912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:47:29 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAEIHQdo009731
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:47:27 +0530
+ uAEIHSTb009782
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:47:29 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/4] Support PowerISA v3.0 PMU Raw event format
-Date: Mon, 14 Nov 2016 23:47:11 +0530
-Message-Id: <1479147435-18665-1-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/4] powerpc/perf: factor out the event format field
+Date: Mon, 14 Nov 2016 23:47:12 +0530
+In-Reply-To: <1479147435-18665-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1479147435-18665-1-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1479147435-18665-2-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,25 +47,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patchset to factor out the PowerISA v2.07 PMU raw event
-format encoding and add support to the PowerISA v3.0 PMU
-raw event format encoding.
+Factor out the format field structure for PowerISA v2.07.
 
-Changelog v1:
-1) Initialized "mmcra" variable to avoid compile time errors
-2) Made changes to commit message
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/isa207-common.c | 34 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/perf/power8-pmu.c    | 39 ++++-----------------------------------
+ arch/powerpc/perf/power9-pmu.c    | 39 ++++-----------------------------------
+ 3 files changed, 42 insertions(+), 70 deletions(-)
 
-Madhavan Srinivasan (4):
-  powerpc/perf: factor out the event format field
-  powerpc/perf: update attribute_group data structure
-  powerpc/perf: PowerISA v3.0 raw event format encoding
-  powerpc/perf: macros for PowerISA v3.0 format encoding
-
- arch/powerpc/perf/isa207-common.c | 124 +++++++++++++++++++++++++++++++++++---
- arch/powerpc/perf/isa207-common.h |  27 ++++++++-
- arch/powerpc/perf/power8-pmu.c    |  39 ++----------
- arch/powerpc/perf/power9-pmu.c    | 112 +++++++++++++++++++++++++++++++++-
- 4 files changed, 256 insertions(+), 46 deletions(-)
-
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 6143c99f3ec5..2a2040ea5f99 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -12,6 +12,40 @@
+  */
+ #include "isa207-common.h"
+ 
++PMU_FORMAT_ATTR(event,		"config:0-49");
++PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
++PMU_FORMAT_ATTR(mark,		"config:8");
++PMU_FORMAT_ATTR(combine,	"config:11");
++PMU_FORMAT_ATTR(unit,		"config:12-15");
++PMU_FORMAT_ATTR(pmc,		"config:16-19");
++PMU_FORMAT_ATTR(cache_sel,	"config:20-23");
++PMU_FORMAT_ATTR(sample_mode,	"config:24-28");
++PMU_FORMAT_ATTR(thresh_sel,	"config:29-31");
++PMU_FORMAT_ATTR(thresh_stop,	"config:32-35");
++PMU_FORMAT_ATTR(thresh_start,	"config:36-39");
++PMU_FORMAT_ATTR(thresh_cmp,	"config:40-49");
++
++struct attribute *isa207_pmu_format_attr[] = {
++	&format_attr_event.attr,
++	&format_attr_pmcxsel.attr,
++	&format_attr_mark.attr,
++	&format_attr_combine.attr,
++	&format_attr_unit.attr,
++	&format_attr_pmc.attr,
++	&format_attr_cache_sel.attr,
++	&format_attr_sample_mode.attr,
++	&format_attr_thresh_sel.attr,
++	&format_attr_thresh_stop.attr,
++	&format_attr_thresh_start.attr,
++	&format_attr_thresh_cmp.attr,
++	NULL,
++};
++
++struct attribute_group isa207_pmu_format_group = {
++	.name = "format",
++	.attrs = isa207_pmu_format_attr,
++};
++
+ static inline bool event_is_fab_match(u64 event)
+ {
+ 	/* Only check pmc, unit and pmcxsel, ignore the edge bit (0) */
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index ab830d106ec5..d07186382f3a 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -30,6 +30,9 @@ enum {
+ #define	POWER8_MMCRA_IFM2		0x0000000080000000UL
+ #define	POWER8_MMCRA_IFM3		0x00000000C0000000UL
+ 
++/* PowerISA v2.07 format attribute structure*/
++extern struct attribute_group isa207_pmu_format_group;
++
+ /* Table of alternatives, sorted by column 0 */
+ static const unsigned int event_alternatives[][MAX_ALT] = {
+ 	{ PM_MRK_ST_CMPL,		PM_MRK_ST_CMPL_ALT },
+@@ -175,42 +178,8 @@ static struct attribute_group power8_pmu_events_group = {
+ 	.attrs = power8_events_attr,
+ };
+ 
+-PMU_FORMAT_ATTR(event,		"config:0-49");
+-PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
+-PMU_FORMAT_ATTR(mark,		"config:8");
+-PMU_FORMAT_ATTR(combine,	"config:11");
+-PMU_FORMAT_ATTR(unit,		"config:12-15");
+-PMU_FORMAT_ATTR(pmc,		"config:16-19");
+-PMU_FORMAT_ATTR(cache_sel,	"config:20-23");
+-PMU_FORMAT_ATTR(sample_mode,	"config:24-28");
+-PMU_FORMAT_ATTR(thresh_sel,	"config:29-31");
+-PMU_FORMAT_ATTR(thresh_stop,	"config:32-35");
+-PMU_FORMAT_ATTR(thresh_start,	"config:36-39");
+-PMU_FORMAT_ATTR(thresh_cmp,	"config:40-49");
+-
+-static struct attribute *power8_pmu_format_attr[] = {
+-	&format_attr_event.attr,
+-	&format_attr_pmcxsel.attr,
+-	&format_attr_mark.attr,
+-	&format_attr_combine.attr,
+-	&format_attr_unit.attr,
+-	&format_attr_pmc.attr,
+-	&format_attr_cache_sel.attr,
+-	&format_attr_sample_mode.attr,
+-	&format_attr_thresh_sel.attr,
+-	&format_attr_thresh_stop.attr,
+-	&format_attr_thresh_start.attr,
+-	&format_attr_thresh_cmp.attr,
+-	NULL,
+-};
+-
+-static struct attribute_group power8_pmu_format_group = {
+-	.name = "format",
+-	.attrs = power8_pmu_format_attr,
+-};
+-
+ static const struct attribute_group *power8_pmu_attr_groups[] = {
+-	&power8_pmu_format_group,
++	&isa207_pmu_format_group,
+ 	&power8_pmu_events_group,
+ 	NULL,
+ };
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index 8e9a81967ff8..443511b18bc5 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -31,6 +31,9 @@ enum {
+ #define POWER9_MMCRA_IFM2		0x0000000080000000UL
+ #define POWER9_MMCRA_IFM3		0x00000000C0000000UL
+ 
++/* PowerISA v2.07 format attribute structure*/
++extern struct attribute_group isa207_pmu_format_group;
++
+ GENERIC_EVENT_ATTR(cpu-cycles,			PM_CYC);
+ GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_ICT_NOSLOT_CYC);
+ GENERIC_EVENT_ATTR(stalled-cycles-backend,	PM_CMPLU_STALL);
+@@ -90,42 +93,8 @@ static struct attribute_group power9_pmu_events_group = {
+ 	.attrs = power9_events_attr,
+ };
+ 
+-PMU_FORMAT_ATTR(event,		"config:0-49");
+-PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
+-PMU_FORMAT_ATTR(mark,		"config:8");
+-PMU_FORMAT_ATTR(combine,	"config:11");
+-PMU_FORMAT_ATTR(unit,		"config:12-15");
+-PMU_FORMAT_ATTR(pmc,		"config:16-19");
+-PMU_FORMAT_ATTR(cache_sel,	"config:20-23");
+-PMU_FORMAT_ATTR(sample_mode,	"config:24-28");
+-PMU_FORMAT_ATTR(thresh_sel,	"config:29-31");
+-PMU_FORMAT_ATTR(thresh_stop,	"config:32-35");
+-PMU_FORMAT_ATTR(thresh_start,	"config:36-39");
+-PMU_FORMAT_ATTR(thresh_cmp,	"config:40-49");
+-
+-static struct attribute *power9_pmu_format_attr[] = {
+-	&format_attr_event.attr,
+-	&format_attr_pmcxsel.attr,
+-	&format_attr_mark.attr,
+-	&format_attr_combine.attr,
+-	&format_attr_unit.attr,
+-	&format_attr_pmc.attr,
+-	&format_attr_cache_sel.attr,
+-	&format_attr_sample_mode.attr,
+-	&format_attr_thresh_sel.attr,
+-	&format_attr_thresh_stop.attr,
+-	&format_attr_thresh_start.attr,
+-	&format_attr_thresh_cmp.attr,
+-	NULL,
+-};
+-
+-static struct attribute_group power9_pmu_format_group = {
+-	.name = "format",
+-	.attrs = power9_pmu_format_attr,
+-};
+-
+ static const struct attribute_group *power9_pmu_attr_groups[] = {
+-	&power9_pmu_format_group,
++	&isa207_pmu_format_group,
+ 	&power9_pmu_events_group,
+ 	NULL,
+ };
 -- 
 2.7.4
