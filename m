@@ -1,42 +1,18 @@
-Return-Path: <akshay.adiga@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTbv4SBTzDvhR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:00:11 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAEC00R5092476
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 07:00:09 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26q9cwab46-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 07:00:06 -0500
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
- Mon, 14 Nov 2016 21:59:46 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id F1FE73578053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:59:43 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAEBxhuU4391218
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:59:43 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAEBxhhS013506
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:59:43 +1100
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH -next] powernv: cpufreq: Fix uninitialized lpstate_idx in
- gpstates_timer_handler
-Date: Mon, 14 Nov 2016 17:29:27 +0530
-Message-Id: <1479124767-20165-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Return-Path: <Zubair.Kakakhel@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tHTvs2V9RzDvJQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:14:00 +1100 (AEDT)
+From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+To: <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
+ <marc.zyngier@arm.com>
+CC: <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>,
+ <Zubair.Kakakhel@imgtec.com>
+Subject: [Patch v7 0/7] microblaze/PowerPC: Move irq-xilinx to irqchip
+Date: Mon, 14 Nov 2016 12:13:44 +0000
+Message-ID: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,29 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-lpstate_idx remains uninitialized in the case when elapsed_time
-is greater than MAX_RAMP_DOWN_TIME. At the end of rampdown
-global pstate should be equal to local pstate.
+Hi,
 
-Fixes: 20b15b766354 ("cpufreq: powernv: Use PMCR to verify global and
-localpstate")
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+This patch series moves the Xilinx interrupt controller driver out
+of arch/microblaze to drivers/irqchip and then cleans it up a bit.
+And then removes another implementation of the driver in arch/powerpc.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index c82304b..c5c5bc3 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -624,6 +624,7 @@ void gpstate_timer_handler(unsigned long data)
- 
- 	if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
- 		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
-+		lpstate_idx = gpstate_idx;
- 		reset_gpstates(policy);
- 		gpstates->highest_lpstate_idx = gpstate_idx;
- 	} else {
+This effort results in one common driver usable by mips,microblaze
+and powerpc.
+
+Compile tested on microblaze-el.
+Tested using qemu-system-ppc using virtix440-ml507
+Tested on MIPSfpga platform.
+
+Based on v4.9-rc5
+
+Thanks,
+ZubairLK
+
+V6 -> V7
+Rebase to v4.5-rc5
+Split print messages cleanup into a separate patch
+Use jump label api to restructure read/write handling in driver.
+
+V5 -> V6
+Split patch series. Patches for arch/mips can go separately
+Rebase to v4.9-rc3
+Added chained_irq_enter/exit
+Removed __func__ used in pr_err
+
+V4 -> V5
+Added a new patch that removes the PPC driver
+Rebase to v4.9-rc1
+Better error handling
+
+V3 -> V4
+Better error handling
+Some minor fixups
+
+V2 -> V3
+Cleanup the interrupt controller driver a bit based on feedback
+Rebase to v4.8-rc4
+
+V1 -> V2
+Resubmitting without truncating the diff output for file moves
+Removed accidental local mac address entry
+Individual logs have more detail
+
+
+Zubair Lutfullah Kakakhel (7):
+  microblaze: irqchip: Move intc driver to irqchip
+  irqchip: xilinx: clean up print messages
+  irqchip: xilinx: restructure and use jump label api
+  irqchip: xilinx: Rename get_irq to xintc_get_irq
+  irqchip: xilinx: Add support for parent intc
+  irqchip: xilinx: Try to fall back if xlnx,kind-of-intr not provided
+  powerpc/virtex: Use generic xilinx irqchip driver
+
+ arch/microblaze/Kconfig                |   1 +
+ arch/microblaze/include/asm/irq.h      |   2 +-
+ arch/microblaze/kernel/Makefile        |   2 +-
+ arch/microblaze/kernel/intc.c          | 196 ---------------------------
+ arch/microblaze/kernel/irq.c           |   4 +-
+ arch/powerpc/include/asm/xilinx_intc.h |   2 +-
+ arch/powerpc/platforms/40x/Kconfig     |   1 +
+ arch/powerpc/platforms/40x/virtex.c    |   2 +-
+ arch/powerpc/platforms/44x/Kconfig     |   1 +
+ arch/powerpc/platforms/44x/virtex.c    |   2 +-
+ arch/powerpc/sysdev/xilinx_intc.c      | 211 +----------------------------
+ drivers/irqchip/Kconfig                |   4 +
+ drivers/irqchip/Makefile               |   1 +
+ drivers/irqchip/irq-xilinx-intc.c      | 241 +++++++++++++++++++++++++++++++++
+ 14 files changed, 258 insertions(+), 412 deletions(-)
+ delete mode 100644 arch/microblaze/kernel/intc.c
+ create mode 100644 drivers/irqchip/irq-xilinx-intc.c
+
 -- 
-2.5.5
+2.10.2
