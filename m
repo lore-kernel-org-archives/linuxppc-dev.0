@@ -1,31 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tomi.valkeinen@ti.com>
+Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHSp63yPCzDvXK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:23:57 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Yangbo Lu <yangbo.lu@nxp.com>,
- Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Dirk Behme <dirk.behme@de.bosch.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH v2 7/7] soc: renesas: Identify SoC and register with the
- SoC bus
-Date: Mon, 14 Nov 2016 12:22:52 +0100
-Message-ID: <3061300.3PHW8Uxca3@wuerfel>
-In-Reply-To: <CAMuHMdWavRFnYFmiL2jy3KWZnHG_F8qaxK29zHx6fsLmqXEwiA@mail.gmail.com>
-References: <1477913455-5314-1-git-send-email-geert+renesas@glider.be>
- <25057157.YlGi2v6RrE@wuerfel>
- <CAMuHMdWavRFnYFmiL2jy3KWZnHG_F8qaxK29zHx6fsLmqXEwiA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHSxh4tyLzDvXN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 22:30:31 +1100 (AEDT)
+Subject: Re: [PATCH] Fix loading of module radeonfb on PowerMac
+To: Mathieu Malaterre <malat@debian.org>, <linux-fbdev@vger.kernel.org>
+References: <1475928540-19647-1-git-send-email-malat@debian.org>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Jean-Christophe
+ Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Message-ID: <d994a36f-a7d8-eeb7-ef73-7935ea737075@ti.com>
+Date: Mon, 14 Nov 2016 13:30:06 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1475928540-19647-1-git-send-email-malat@debian.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="pO9GldfQb1O0RFQIG4xD3hRbDsmgV5IwP"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,67 +27,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, November 14, 2016 11:51:15 AM CET Geert Uytterhoeven wrote:
-> On Thu, Nov 10, 2016 at 12:37 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Thursday, November 10, 2016 11:19:20 AM CET Geert Uytterhoeven wrote:
-> >> On Wed, Nov 9, 2016 at 5:55 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> >> > On Monday, October 31, 2016 12:30:55 PM CET Geert Uytterhoeven wrote:
-> >> >>   - Use "renesas,prr" and "renesas,cccr" device nodes in DT if
-> >> >>     available, else fall back to hardcoded addresses for compatibility
-> >> >>     with existing DTBs,
-> 
-> >> > It does seem wrong to have a device node for a specific register though.
-> >> > Shouldn't the node be for the block of registers that these are inside
-> >> > of?
-> >>
-> >> On R-Mobile APE6, R-Car Gen2 and Gen3, PRR is a lone register.
-> >> On R-Car Gen1, it's not even documented (and doesn't exist on all parts).
-> >
-> > It just seems odd to have it at address 0xff000044 when all the other
-> > devices are at page-aligned addresses. Do you mean that accessing
-> > 0xff000040 or 0xff000048 will result in a bus-level exception for a
-> > missing register and just 0xff000044 is actually valid for access,
-> > or is it just the only thing that is documented?
-> 
-> For PRR, all other registers in the page read as all zeroes on all SoCs that
-> have it. So it really is a lone register.
+--pO9GldfQb1O0RFQIG4xD3hRbDsmgV5IwP
+Content-Type: multipart/mixed; boundary="gLoJ4gNQ2FivwttWifopS59Io9MiRVdsd";
+ protected-headers="v1"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Mathieu Malaterre <malat@debian.org>, linux-fbdev@vger.kernel.org
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Message-ID: <d994a36f-a7d8-eeb7-ef73-7935ea737075@ti.com>
+Subject: Re: [PATCH] Fix loading of module radeonfb on PowerMac
+References: <1475928540-19647-1-git-send-email-malat@debian.org>
+In-Reply-To: <1475928540-19647-1-git-send-email-malat@debian.org>
 
-Ok.
+--gLoJ4gNQ2FivwttWifopS59Io9MiRVdsd
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> >> On SH-Mobile/R-Mobile, CCCR may be part of the HPB/APB register block, which
-> >> we further don't touch at all.
-> >> On R-Car Gen2, it's not documented, but does exist.
-> >
-> > This is where the family names would come in handy ;-) I now have
-> > no idea which chip(s) you are referring to.
-> 
-> SH/R-Mobile are r8a7740, r8a73a4, sh73a0.
-> R-Car Gen2 are r8a779[0-4].
-> 
-> > If you know the name of the register block, just put it into DT with
-> > that name. The driver can trivially add the right offset.
-> 
-> CCCR is different. The amount of registers that read as non-zero depends a lot
-> on the actual SoC.
-> 
-> HPB/APB is gonna need real DT bindings, which needs some more investigation.
-> Hence if you don't mind, I'd like to postpone that part, which only affects
-> the older SoCs. And I'll drop the "renesas,cccr" binding.
-> 
-> For now, having revision detection for R-Car Gen3 (r8a779[56]) using PRR is
-> most urgent, as several drivers (e.g. HDMI, Ethernet, clocks, pinctrl) are
-> waiting for this support. So I'd like to have that dependency in v4.10.
+On 08/10/16 15:09, Mathieu Malaterre wrote:
+> When the linux kernel is build with (typical kernel ship with Debian
+> installer):
+>=20
+> CONFIG_FB_OF=3Dy
+> CONFIG_VT_HW_CONSOLE_BINDING=3Dy
+> CONFIG_FB_RADEON=3Dm
+>=20
+> The offb driver takes precedence over module radeonfb. It is then
+> impossible to load the module, error reported is:
+>=20
+> [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+> [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000=
+000-0x9fffffff pref]
+> [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+> [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+>=20
+> This patch reproduce the behavior of the module radeon, so as to make i=
+t
+> possible to load radeonfb when offb is first loaded.
+>=20
+> It should be noticed that `offb_destroy` is never called which explain =
+the
+> need to skip error detection on the radeon side.
+>=20
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Link: https://bugs.debian.org/826629#57
+> Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> ---
+>  drivers/video/fbdev/aty/radeon_base.c | 22 ++++++++++++++++++++--
+>  1 file changed, 20 insertions(+), 2 deletions(-)
 
-Ok, sounds good.
+Thanks, queued for 4.9 fixes.
 
-> >> There is no SoC part number in the "renesas,prr" and "renesas,cccr" nodes.
-> >> Hence I always need to look at the root nodes.
-> >
-> > Not sure what that would protect you from. Could you have a renesas,cccr
-> 
-> Looks like you forgot to finish your sentence?
+ Tomi
 
-Yes, and I forgot what I was going to say there now. It's probably covered
-by what we discussed above.
 
-	Arnd
+--gLoJ4gNQ2FivwttWifopS59Io9MiRVdsd--
+
+--pO9GldfQb1O0RFQIG4xD3hRbDsmgV5IwP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYKaA+AAoJEPo9qoy8lh71K9UQAKKyOTf5J0IwOmmPGoF4Hmp9
+nUYk0gbySzPuDJYVHX+M7WaZFyfZFI9m+E/7N32kySFKfFwOjvBwl1xrDqXa6N5e
+n54x5dzMVkwrChfjkZUdxKh5ylzmKTCubbDFxSHIt8a/l8m4BT3X2nbQRJJ0PnDI
+aBT1J9lo73vbQJdTdhAM478NlvP/BMISywkaqWtBfRdRjN0ctzY9ooLqf6UwuRsA
+EpdLvky/4FtIKnL6PtZrgbqeGiwJZcdN34kKBzSQih7Ry2NAtx213bO0Vi/dIP0p
+pi3BrzaPs3WH75PSnI7xU4sLS7+v7QVDSRMZqpeZSsnkGq8rp+5Wqb7cx3BcdlGQ
+cwiZHDyOUceE2wPZGI/oP3UaNfcwCjcmoc2dKPS06tLpKkhnS5k4/pfuT6jAc2fG
+D8ePz5WZnHx7qzIWOWLj2mmF6wc/h02YQX1k3aBBXWnEhRPcMezHknDh+UbXlTNd
+ouJ4oI6l8rbpX9wOnvEpaVmmLFOcqY/H+nyuJ2Dmy+ASchidS/NMYUAJH49V4Z1A
+l3zVXPF7qvOwQnD+QD2+R/jG7HTn3AnJf+IYrFgjibJ6U6VqJI5f+qSm9RMZzW84
+6q9218VgYJxXSe+2LX+J89MNewM/A5DKzOjvmOEFyInfzmNFnCKaP5HqMeFjf732
+NiNBuUIa1Y1084ryc8L5
+=quIT
+-----END PGP SIGNATURE-----
+
+--pO9GldfQb1O0RFQIG4xD3hRbDsmgV5IwP--
