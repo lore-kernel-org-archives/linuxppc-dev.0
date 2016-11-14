@@ -2,16 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzP27JGzDvjc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:05 +1100 (AEDT)
-In-Reply-To: <1478148061-5724-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzQ1wvLzDvmL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:06 +1100 (AEDT)
+In-Reply-To: <1478013963-28871-1-git-send-email-johan@kernel.org>
+To: Johan Hovold <johan@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: anton@samba.org
-Subject: Re: [1/2] selftests/powerpc: Abort load_unaligned_zeropad on
- unhandled SEGV
-Message-Id: <3tHTzP0Ptdz9t17@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:04 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, Johan Hovold <johan@kernel.org>
+Subject: Re: [1/4] ibmebus: fix device reference leaks in sysfs interface
+Message-Id: <3tHTzQ16sXz9t1d@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:06 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,19 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-03-11 at 04:41:00 UTC, Michael Ellerman wrote:
-> If the load unaligned zeropad test takes a SEGV which can't be handled,
-> we increment segv_error, print the offending NIP and then return without
-> taking any further action. In almost all cases this means we'll just
-> take the SEGV again, and loop eternally spamming the console.
+On Tue, 2016-01-11 at 15:26:00 UTC, Johan Hovold wrote:
+> Make sure to drop any reference taken by bus_find_device() in the sysfs
+> callbacks that are used to create and destroy devices based on
+> device-tree entries.
 > 
-> Instead just abort(), it's a fatal error in the test. The test harness
-> will notice that the child died and print a nice message for us.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fixes: 6bccf755ff53 ("[POWERPC] ibmebus: dynamic addition/removal...)
+> Signed-off-by: Johan Hovold <johan@kernel.org>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/06236f4efb926aa433e2cb3e36e846
+https://git.kernel.org/powerpc/c/fe0f3168169f7c34c29b0cf0c489f1
 
 cheers
