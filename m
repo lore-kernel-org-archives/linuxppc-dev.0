@@ -1,27 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTz03J1vzDvr7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:16:44 +1100 (AEDT)
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tHTyz629Xz9ry7
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2016 23:16:43 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id 3so8880265pgd.0
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2016 04:16:43 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@ozlabs.org,
-	mpe@ellerman.id.au
-Cc: aneesh.kumar@linux.vnet.ibm.com,
-	Balbir Singh <bsingharora@gmail.com>
-Subject: [powerpc v5 3/3] Enable storage keys for radix - user mode execution
-Date: Mon, 14 Nov 2016 23:16:18 +1100
-Message-Id: <1479125778-18496-4-git-send-email-bsingharora@gmail.com>
-In-Reply-To: <1479125778-18496-1-git-send-email-bsingharora@gmail.com>
-References: <1479125778-18496-1-git-send-email-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzP27JGzDvjc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:05 +1100 (AEDT)
+In-Reply-To: <1478148061-5724-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: anton@samba.org
+Subject: Re: [1/2] selftests/powerpc: Abort load_unaligned_zeropad on
+ unhandled SEGV
+Message-Id: <3tHTzP0Ptdz9t17@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:04 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,63 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ISA 3 defines new encoded access authority that allows instruction
-access prevention in privileged mode and allows normal access
-to problem state. This patch just enables IAMR (Instruction Authority
-Mask Register), enabling AMR would require more work.
+On Thu, 2016-03-11 at 04:41:00 UTC, Michael Ellerman wrote:
+> If the load unaligned zeropad test takes a SEGV which can't be handled,
+> we increment segv_error, print the offending NIP and then return without
+> taking any further action. In almost all cases this means we'll just
+> take the SEGV again, and loop eternally spamming the console.
+> 
+> Instead just abort(), it's a fatal error in the test. The test harness
+> will notice that the child died and print a nice message for us.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-I've tested this with a buggy driver and a simple payload. The payload
-is specific to the build I've tested.
+Applied to powerpc next.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/mm/pgtable-radix.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+https://git.kernel.org/powerpc/c/06236f4efb926aa433e2cb3e36e846
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 7c21a52..ae0d701 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -339,6 +339,24 @@ static void radix_init_amor(void)
- 	mtspr(SPRN_AMOR, amor);
- }
- 
-+/*
-+ * For radix page tables we setup, the IAMR values as follows
-+ * IMAR = 0100...00 (key 0 is set to 1)
-+ * AMR, UAMR, UAMOR are not affected
-+ */
-+static void radix_init_iamr(void)
-+{
-+	unsigned long iamr_mask = 0x4000000000000000;
-+	unsigned long iamr = mfspr(SPRN_IAMR);
-+
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-+		return;
-+
-+	iamr = iamr_mask;
-+
-+	mtspr(SPRN_IAMR, iamr);
-+}
-+
- void __init radix__early_init_mmu(void)
- {
- 	unsigned long lpcr;
-@@ -398,6 +416,7 @@ void __init radix__early_init_mmu(void)
- 		radix_init_amor();
- 	}
- 
-+	radix_init_iamr();
- 	radix_init_pgtable();
- }
- 
-@@ -415,6 +434,7 @@ void radix__early_init_mmu_secondary(void)
- 		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
- 		radix_init_amor();
- 	}
-+	radix_init_iamr();
- }
- 
- void radix__mmu_cleanup_all(void)
--- 
-2.5.5
+cheers
