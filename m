@@ -1,48 +1,23 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHghm2GsKzDvcX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 06:35:03 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAEJXY9b054011
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 14:35:01 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26qdd4c5d4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 14:35:01 -0500
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Mon, 14 Nov 2016 12:35:00 -0700
-Date: Mon, 14 Nov 2016 13:34:52 -0600
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, devicetree@vger.kernel.org,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 4/4] of/fdt: mark hotpluggable memory
-References: <1478562276-25539-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1478562276-25539-5-git-send-email-arbab@linux.vnet.ibm.com>
- <87bmxii85s.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <87bmxii85s.fsf@concordia.ellerman.id.au>
-Message-Id: <20161114193451.bzowsi6csesoxwap@arbab-laptop.austin.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHhF86FmhzDvhN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 06:59:40 +1100 (AEDT)
+Received: by mail-wm0-x243.google.com with SMTP id u144so18479409wmu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 11:59:40 -0800 (PST)
+Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+To: linux-fbdev@vger.kernel.org
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Mathieu Malaterre <malat@debian.org>
+Subject: [PATCH v2] Fix loading of module radeonfb on PowerMac
+Date: Mon, 14 Nov 2016 20:59:17 +0100
+Message-Id: <1479153557-20849-1-git-send-email-malat@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,23 +27,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 14, 2016 at 10:59:43PM +1100, Michael Ellerman wrote:
->So I'm not opposed to this, but it is a little vague.
->
->What does the "hotpluggable" property really mean?
->
->Is it just a hint to the operating system? (which may or may not be
->Linux).
->
->Or is it a direction, "this memory must be able to be hotunplugged"?
->
->I think you're intending the former, ie. a hint, which is probably OK.
->But it needs to be documented clearly.
+When the linux kernel is build with (typical kernel ship with Debian
+installer):
 
-Yes, you've got it right. It's just a hint, not a mandate.
+CONFIG_FB_OF=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_FB_RADEON=m
 
-I'm about to send v7 which adds a description of "hotpluggable" in the 
-documentation. Hopefully I've explained it well enough there.
+The offb driver takes precedence over module radeonfb. It is then
+impossible to load the module, error reported is:
 
+[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+
+This patch reproduce the behavior of the module radeon, so as to make it
+possible to load radeonfb when offb is first loaded.
+
+It should be noticed that `offb_destroy` is never called which explain the
+need to skip error detection on the radeon side.
+
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Link: https://bugs.debian.org/826629#57
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=119741
+Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+---
+ drivers/video/fbdev/aty/radeon_base.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 218339a..84d634b 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
+ 
++static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 0);
++	ap->ranges[0].size = pci_resource_len(pdev, 0);
++
++	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
++	kfree(ap);
++
++	return 0;
++}
+ 
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+@@ -2314,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
++	ret = radeon_kick_out_firmware_fb(pdev);
++	if (ret)
++		return ret;
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+ 			pci_name(rinfo->pdev));
++#ifndef CONFIG_PPC
+ 		goto err_release_fb;
++#endif
+ 	}
+ 
+ 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+ 			pci_name(rinfo->pdev));
++#ifndef CONFIG_PPC
+ 		goto err_release_pci0;
++#endif
+ 	}
+ 
+ 	/* map the regions */
+@@ -2511,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	iounmap(rinfo->mmio_base);
+ err_release_pci2:
+ 	pci_release_region(pdev, 2);
++#ifndef CONFIG_PPC
+ err_release_pci0:
+ 	pci_release_region(pdev, 0);
+ err_release_fb:
+         framebuffer_release(info);
++#endif
+ err_disable:
+ err_out:
+ 	return ret;
 -- 
-Reza Arbab
+2.1.4
