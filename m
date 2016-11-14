@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzc3yt8zDvk1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:16 +1100 (AEDT)
-In-Reply-To: <1476856405-4811-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzd4z5RzDvcm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:17 +1100 (AEDT)
+In-Reply-To: <1478157487-1533-1-git-send-email-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v2] powerpc/hash64: Be more careful when generating tlbiel
-Message-Id: <3tHTzc0kgxz9t2b@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:15 +1100 (AEDT)
+Cc: anton@samba.org
+Subject: Re: powerpc/configs: Drop REISERFS from pseries & powernv
+Message-Id: <3tHTzd1YfNz9t1h@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:16 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,80 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-19-10 at 05:53:25 UTC, Michael Ellerman wrote:
-> From: Balbir Singh <bsingharora@gmail.com>
+On Thu, 2016-03-11 at 07:18:07 UTC, Michael Ellerman wrote:
+> No one uses reiserfs much these days, or is likely to in future. So drop
+> it from pseries and powernv defconfigs to save time and space. It's
+> still enabled in ppc64_defconfig so we get some build coverage.
 > 
-> In ISA v2.05, the tlbiel instruction takes two arguments, RB and L:
-> 
-> tlbiel RB,L
-> 
-> +---------+---------+----+---------+---------+---------+----+
-> |    31   |    /    | L  |    /    |    RB   |   274   | /  |
-> | 31 - 26 | 25 - 22 | 21 | 20 - 16 | 15 - 11 |  10 - 1 | 0  |
-> +---------+---------+----+---------+---------+---------+----+
-> 
-> In ISA v2.06 tlbiel takes only one argument, RB:
-> 
-> tlbiel RB
-> 
-> +---------+---------+---------+---------+---------+----+
-> |    31   |    /    |    /    |    RB   |   274   | /  |
-> | 31 - 26 | 25 - 21 | 20 - 16 | 15 - 11 |  10 - 1 | 0  |
-> +---------+---------+---------+---------+---------+----+
-> 
-> And in ISA v3.00 tlbiel takes five arguments:
-> 
-> tlbiel RB,RS,RIC,PRS,R
-> 
-> +---------+---------+----+---------+----+----+---------+---------+----+
-> |    31   |    RS   | /  |   RIC   |PRS | R  |    RB   |   274   | /  |
-> | 31 - 26 | 25 - 21 | 20 | 19 - 18 | 17 | 16 | 15 - 11 |  10 - 1 | 0  |
-> +---------+---------+----+---------+----+----+---------+---------+----+
-> 
-> However the assembler also accepts "tlbiel RB", and generates
-> "tlbiel RB,r0,0,0,0".
-> 
-> As you can see above the L field from the v2.05 encoding overlaps with the
-> reserved field of the v2.06 encoding, and the low bit of the RS field of the
-> v3.00 encoding.
-> 
-> Currently in __tlbiel() we generate two tlbiel instructions manually using hex
-> constants. In the first case, for MMU_PAGE_4K, we generate "tlbiel RB,0", which
-> is safe in all cases, because the L bit is zero.
-> 
-> However in the default case we generate "tlbiel RB,1", therefore setting bit 21
-> to 1.
-> 
-> This is not an actual bug on v2.06 processors, because the CPU ignores the value
-> of the reserved field. However software is supposed to encode the reserved
-> fields as zero to enable forward compatibility.
-> 
-> On v3.00 processors setting bit 21 to 1 and no other bits of RS, means we are
-> using r1 for the value of RS.
-> 
-> Although it's not obvious, the code sets the IS field (bits 10-11) to 0 (by
-> omission), and L=1, in the va value, which is passed as RB. We also pass R=0 in
-> the instruction.
-> 
-> The combination of IS=0, L=1 and R=0 means the value of RS is not used, so even
-> on ISA v3.00 there is no actual bug.
-> 
-> We should still fix it, as setting a reserved bit on v2.06 is naughty, and we
-> are only avoiding a bug on v3.00 by accident rather than design. Use
-> ASM_FTR_IFSET() to generate the single argument form on ISA v2.06 and later, and
-> the two argument form on pre v2.06.
-> 
-> Although there may be very old toolchains which don't understand tlbiel, we have
-> other code in the tree which has been using tlbiel for over five years, and no
-> one has reported any build failures, so just let the assembler generate the
-> instructions.
-> 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> [mpe: Rewrite change log, use IFSET instead of IFCLR]
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/f923efbcfdbaa4391874eeda676b08
+https://git.kernel.org/powerpc/c/7a53ef5ebe80bc15f70d060dc45484
 
 cheers
