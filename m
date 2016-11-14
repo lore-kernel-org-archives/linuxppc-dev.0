@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzm00HlzDvmj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:24 +1100 (AEDT)
-In-Reply-To: <20161013034352.9410-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzn096FzDvjR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:25 +1100 (AEDT)
+In-Reply-To: <20160918110845.akvr46gdpuubo2q2@aragorn.home.lxtec.de>
+To: Elimar Riesebieter <riesebie@lxtec.de>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: reduce exception alignment
-Message-Id: <3tHTzl660gz9t2b@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:23 +1100 (AEDT)
+Subject: Re: Removed dependency on IDE_GD_ATA if ADB_PMU_LED_DISK is selected.
+Message-Id: <3tHTzm5cpnz9t3K@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:24 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,24 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-13-10 at 03:43:52 UTC, Nicholas Piggin wrote:
-> Exception handlers are aligned to 128 bytes (L1 cache) on 64s, which is
-> overkill. It can reduce the icache footprint of any individual exception
-> path. However taken as a whole, the expansion in icache footprint seems
-> likely to be counter-productive and cause more total misses.
+On Sun, 2016-18-09 at 11:08:45 UTC, Elimar Riesebieter wrote:
+> We can use the front led of powerbooks/ibooks as a disk activitiy imagination
+> without the deprecated IDE_GD_ATA.
 > 
-> Create IFETCH_ALIGN_SHIFT/BYTES, which should give optimal ifetch
-> alignment with much more reasonable alignment. This saves 1792 bytes
-> from head_64.o text with an allmodconfig build.
-> 
-> Other subarchitectures should define appropriate IFETCH_ALIGN_SHIFT
-> values if this becomes more widely used.
-> 
-> Cc: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Elimar Riesebieter <riesebie@lxtec.de>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f4329f2ecb149282fdfdd8830a936a
+https://git.kernel.org/powerpc/c/0e865a80c1358db9311c411c4763b9
 
 cheers
