@@ -1,16 +1,21 @@
-Return-Path: <fl@n621.de>
-Received: from nyx.n621.de (nyx.n621.de [176.9.182.227])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHVPN6FgDzDw2Q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:36:08 +1100 (AEDT)
-From: Florian Larysch <fl@n621.de>
-To: Scott Wood <oss@buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Florian Larysch <fl@n621.de>
-Subject: [PATCH] T4240RBD: add device tree entry for W83793
-Date: Mon, 14 Nov 2016 13:28:05 +0100
-Message-Id: <20161114122805.11376-1-fl@n621.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHVbL66PmzDvmc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:44:46 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH] powerpc: fpr save/restore function cleanups
+In-Reply-To: <20161101161828.6075f836@roar.ozlabs.ibm.com>
+References: <20161101042219.25587-1-npiggin@gmail.com>
+ <20161101154112.1516b5cb@roar.ozlabs.ibm.com>
+ <20161101161828.6075f836@roar.ozlabs.ibm.com>
+Date: Mon, 14 Nov 2016 23:44:45 +1100
+Message-ID: <878tsmi62q.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,30 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The T4240RDB contains a W83793 hardware monitoring chip. Add a device
-tree entry to make the driver attach to it, as the i2c-mpc bus driver
-dropped support for class-based instantiation of devices a long time
-ago.
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Signed-off-by: Florian Larysch <fl@n621.de>
----
- arch/powerpc/boot/dts/fsl/t4240rdb.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+> On Tue, 1 Nov 2016 15:41:12 +1100
+> Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+>> On Tue,  1 Nov 2016 15:22:19 +1100
+>> Nicholas Piggin <npiggin@gmail.com> wrote:
+>> 
+>> > The powerpc64 linker generates fpr save/restore functions on-demand,
+>> > placing them in the .sfpr section. So remove the explicitly coded ones
+>> > from the 64 build.
+>> > 
+>> > Have 32-bit put save/restore functions into .sfpr section rather than
+>> > .text, to match 64-bit.
+>> > 
+>> > And explicitly have the linker script place the section rather than
+>> > leaving it as orphan.
+>> > 
+>> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> > ---
+>> > 
+>> > I tested this with 64-bit optimize-for-size build with modules,
+>> > and that works okay.  
+>> 
+>> No I didn't, it's broken. I'll send an update shortly.
+>
+> Working (hopefully) patch this time. I also removed the 32-bit changes
+> which aren't really necessary:
+>
+> The powerpc64 linker generates fpr save/restore functions on-demand,
+> placing them in the .sfpr section. Module linking (because it's a
+> "non-final" link) requires --save-restore-funcs for this.
+>
+> Remove the explicitly coded save/restore functions from the 64 build.
+>
+> And explicitly have the linker script place the section rather than
+> leaving it as orphan.
 
-diff --git a/arch/powerpc/boot/dts/fsl/t4240rdb.dts b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
-index cc0a264..b35eea1 100644
---- a/arch/powerpc/boot/dts/fsl/t4240rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
-@@ -142,6 +142,10 @@
- 				reg = <0x68>;
- 				interrupts = <0x1 0x1 0 0>;
- 			};
-+			hwmon@2f {
-+				compatible = "winbond,w83793";
-+				reg = <0x2f>;
-+			};
- 		};
- 
- 		sdhc@114000 {
--- 
-2.10.2
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/Makefile             |   4 +
+>  arch/powerpc/boot/Makefile        |   3 +-
+>  arch/powerpc/boot/crtsavres.S     |   8 +-
+>  arch/powerpc/kernel/vmlinux.lds.S |   6 +
+>  arch/powerpc/lib/Makefile         |   5 +-
+>  arch/powerpc/lib/crtsavres.S      | 238 +-------------------------------------
+>  6 files changed, 22 insertions(+), 242 deletions(-)
+>
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index fe76cfe..8ea7c9e 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -179,7 +179,11 @@ else
+>  CHECKFLAGS	+= -D__LITTLE_ENDIAN__
+>  endif
+>  
+> +ifeq ($(CONFIG_PPC32),y)
+>  KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
+> +else
+> +KBUILD_LDFLAGS_MODULE += --save-restore-funcs
+
+As discussed offline, this option is reasonably new, added in 2014 and
+appearing in binutils 2.25.
+
+So it's too new to require, we can use it if it's there, but we still
+need a fallback for when it's not.
+
+cheers
