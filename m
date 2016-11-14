@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzj2ZrxzDvms
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:21 +1100 (AEDT)
-In-Reply-To: <1478151792-13500-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzk2gJJzDvM8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:22 +1100 (AEDT)
+In-Reply-To: <20161013020714.5629-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: npiggin@gmail.com
-Subject: Re: [v2] powerpc: EX_TABLE macro for exception tables
-Message-Id: <3tHTzh6VcVz9t5m@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:20 +1100 (AEDT)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc: make _ASM_NOKPROBE_SYMBOL a noop when KPROBES not defined
+Message-Id: <3tHTzk01lwz9t0q@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:21 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +20,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-03-11 at 05:43:12 UTC, Michael Ellerman wrote:
-> From: Nicholas Piggin <npiggin@gmail.com>
-> 
-> This macro is taken from s390, and allows more flexibility in
-> changing exception table format.
-> 
-> mpe: Put it in ppc_asm.h and only define one version using stringinfy_in_c().
-> Add some empty definitions and headers to keep the selftests happy.
-> Add some missing .previouses in fsl_rio.c and tsi108_pci.c.
-> 
+On Thu, 2016-13-10 at 02:07:14 UTC, Nicholas Piggin wrote:
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/24bfa6a9e0d4fe414dfc4ad06c93e1
+https://git.kernel.org/powerpc/c/c0a5149105ab5f76f7c5a8fc2eb3d7
 
 cheers
