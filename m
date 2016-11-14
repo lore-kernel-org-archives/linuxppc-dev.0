@@ -1,6 +1,6 @@
 Return-Path: <Zubair.Kakakhel@imgtec.com>
 Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tHTvs2V9RzDvJQ
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tHTvs2WS9zDvLZ
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:14:00 +1100 (AEDT)
 From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 To: <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
@@ -8,9 +8,11 @@ To: <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
 CC: <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
  <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>,
  <Zubair.Kakakhel@imgtec.com>
-Subject: [Patch v7 0/7] microblaze/PowerPC: Move irq-xilinx to irqchip
-Date: Mon, 14 Nov 2016 12:13:44 +0000
-Message-ID: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
+Subject: [Patch v7 1/7] microblaze: irqchip: Move intc driver to irqchip
+Date: Mon, 14 Nov 2016 12:13:45 +0000
+Message-ID: <20161114121351.10924-2-Zubair.Kakakhel@imgtec.com>
+In-Reply-To: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
+References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,80 +24,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The Xilinx AXI Interrupt Controller IP block is used by the MIPS
+based xilfpga platform and a few PowerPC based platforms.
 
-This patch series moves the Xilinx interrupt controller driver out
-of arch/microblaze to drivers/irqchip and then cleans it up a bit.
-And then removes another implementation of the driver in arch/powerpc.
+Move the interrupt controller code out of arch/microblaze so that
+it can be used by everyone
 
-This effort results in one common driver usable by mips,microblaze
-and powerpc.
+Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 
-Compile tested on microblaze-el.
-Tested using qemu-system-ppc using virtix440-ml507
-Tested on MIPSfpga platform.
-
-Based on v4.9-rc5
-
-Thanks,
-ZubairLK
-
+---
 V6 -> V7
-Rebase to v4.5-rc5
-Split print messages cleanup into a separate patch
-Use jump label api to restructure read/write handling in driver.
+Rebase to v4.9-rc5
 
 V5 -> V6
-Split patch series. Patches for arch/mips can go separately
 Rebase to v4.9-rc3
-Added chained_irq_enter/exit
-Removed __func__ used in pr_err
 
 V4 -> V5
-Added a new patch that removes the PPC driver
 Rebase to v4.9-rc1
-Better error handling
+Renamed back to irq-xilinx-intc.c
 
 V3 -> V4
-Better error handling
-Some minor fixups
+No change
 
 V2 -> V3
-Cleanup the interrupt controller driver a bit based on feedback
-Rebase to v4.8-rc4
+No change here. Cleanup patches follow after this patch.
+Its debatable to cleanup before/after move. Decided to place cleanup
+after move to put history in new place.
 
 V1 -> V2
-Resubmitting without truncating the diff output for file moves
-Removed accidental local mac address entry
-Individual logs have more detail
 
+Renamed irq-xilinx to irq-axi-intc
+Renamed CONFIG_XILINX_INTC to CONFIG_XILINX_AXI_INTC
+Patch is now without rename flag so as to facilitate review
+---
+ arch/microblaze/Kconfig                                            | 1 +
+ arch/microblaze/kernel/Makefile                                    | 2 +-
+ drivers/irqchip/Kconfig                                            | 4 ++++
+ drivers/irqchip/Makefile                                           | 1 +
+ arch/microblaze/kernel/intc.c => drivers/irqchip/irq-xilinx-intc.c | 0
+ 5 files changed, 7 insertions(+), 1 deletion(-)
+ rename arch/microblaze/kernel/intc.c => drivers/irqchip/irq-xilinx-intc.c (100%)
 
-Zubair Lutfullah Kakakhel (7):
-  microblaze: irqchip: Move intc driver to irqchip
-  irqchip: xilinx: clean up print messages
-  irqchip: xilinx: restructure and use jump label api
-  irqchip: xilinx: Rename get_irq to xintc_get_irq
-  irqchip: xilinx: Add support for parent intc
-  irqchip: xilinx: Try to fall back if xlnx,kind-of-intr not provided
-  powerpc/virtex: Use generic xilinx irqchip driver
-
- arch/microblaze/Kconfig                |   1 +
- arch/microblaze/include/asm/irq.h      |   2 +-
- arch/microblaze/kernel/Makefile        |   2 +-
- arch/microblaze/kernel/intc.c          | 196 ---------------------------
- arch/microblaze/kernel/irq.c           |   4 +-
- arch/powerpc/include/asm/xilinx_intc.h |   2 +-
- arch/powerpc/platforms/40x/Kconfig     |   1 +
- arch/powerpc/platforms/40x/virtex.c    |   2 +-
- arch/powerpc/platforms/44x/Kconfig     |   1 +
- arch/powerpc/platforms/44x/virtex.c    |   2 +-
- arch/powerpc/sysdev/xilinx_intc.c      | 211 +----------------------------
- drivers/irqchip/Kconfig                |   4 +
- drivers/irqchip/Makefile               |   1 +
- drivers/irqchip/irq-xilinx-intc.c      | 241 +++++++++++++++++++++++++++++++++
- 14 files changed, 258 insertions(+), 412 deletions(-)
- delete mode 100644 arch/microblaze/kernel/intc.c
- create mode 100644 drivers/irqchip/irq-xilinx-intc.c
-
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index 86f6572..85885a5 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -27,6 +27,7 @@ config MICROBLAZE
+ 	select HAVE_MEMBLOCK_NODE_MAP
+ 	select HAVE_OPROFILE
+ 	select IRQ_DOMAIN
++	select XILINX_INTC
+ 	select MODULES_USE_ELF_RELA
+ 	select OF
+ 	select OF_EARLY_FLATTREE
+diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
+index f08baca..e098381 100644
+--- a/arch/microblaze/kernel/Makefile
++++ b/arch/microblaze/kernel/Makefile
+@@ -15,7 +15,7 @@ endif
+ extra-y := head.o vmlinux.lds
+ 
+ obj-y += dma.o exceptions.o \
+-	hw_exception_handler.o intc.o irq.o \
++	hw_exception_handler.o irq.o \
+ 	platform.o process.o prom.o ptrace.o \
+ 	reset.o setup.o signal.o sys_microblaze.o timer.o traps.o unwind.o
+ 
+diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
+index bc0af33..ae96731 100644
+--- a/drivers/irqchip/Kconfig
++++ b/drivers/irqchip/Kconfig
+@@ -211,6 +211,10 @@ config XTENSA_MX
+ 	bool
+ 	select IRQ_DOMAIN
+ 
++config XILINX_INTC
++	bool
++	select IRQ_DOMAIN
++
+ config IRQ_CROSSBAR
+ 	bool
+ 	help
+diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+index e4dbfc8..0e55d94 100644
+--- a/drivers/irqchip/Makefile
++++ b/drivers/irqchip/Makefile
+@@ -52,6 +52,7 @@ obj-$(CONFIG_TB10X_IRQC)		+= irq-tb10x.o
+ obj-$(CONFIG_TS4800_IRQ)		+= irq-ts4800.o
+ obj-$(CONFIG_XTENSA)			+= irq-xtensa-pic.o
+ obj-$(CONFIG_XTENSA_MX)			+= irq-xtensa-mx.o
++obj-$(CONFIG_XILINX_INTC)		+= irq-xilinx-intc.o
+ obj-$(CONFIG_IRQ_CROSSBAR)		+= irq-crossbar.o
+ obj-$(CONFIG_SOC_VF610)			+= irq-vf610-mscm-ir.o
+ obj-$(CONFIG_BCM6345_L1_IRQ)		+= irq-bcm6345-l1.o
+diff --git a/arch/microblaze/kernel/intc.c b/drivers/irqchip/irq-xilinx-intc.c
+similarity index 100%
+rename from arch/microblaze/kernel/intc.c
+rename to drivers/irqchip/irq-xilinx-intc.c
 -- 
 2.10.2
