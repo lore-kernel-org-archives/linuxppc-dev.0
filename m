@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzX5bhTzDvk4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:12 +1100 (AEDT)
-In-Reply-To: <1478013963-28871-4-git-send-email-johan@kernel.org>
-To: Johan Hovold <johan@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHTzN0540zDvNT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Nov 2016 23:17:04 +1100 (AEDT)
+In-Reply-To: <20161031021939.30989-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Johan Hovold <johan@kernel.org>
-Subject: Re: [4/4] powerpc/pci: fix device reference leaks
-Message-Id: <3tHTzX3F2sz9t1d@ozlabs.org>
-Date: Mon, 14 Nov 2016 23:17:12 +1100 (AEDT)
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
+ Jack Miller <jack@codezen.org>
+Subject: Re: [1/2] Revert "selftests/powerpc: Load Monitor Register Tests"
+Message-Id: <3tHTzM6MrWz9s5w@ozlabs.org>
+Date: Mon, 14 Nov 2016 23:17:03 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-01-11 at 15:26:03 UTC, Johan Hovold wrote:
-> Make sure to drop any device reference taken by vio_find_node() when
-> adding and removing virtual I/O slots.
+On Mon, 2016-31-10 at 02:19:38 UTC, Michael Neuling wrote:
+> Load monitored won't be supported in POWER9, so PPC_FEATURE2_ARCH_3_00
+> (in HWCAP2) will no longer imply Load monitor support.
 > 
-> Fixes: 5eeb8c63a38f ("[PATCH] PCI Hotplug: rpaphp: Move VIO...")
-> Signed-off-by: Johan Hovold <johan@kernel.org>
+> These Load monitored tests are enabled by PPC_FEATURE2_ARCH_3_00 so
+> they are now bogus and need to be removed.
+> 
+> This reverts commit 16c19a2e983346c547501795aadffde1977b058d.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/99e5cde5eae78bef95bfe7c16ccda8
+https://git.kernel.org/powerpc/c/7c65856b7e0d12f2be2adae7a75a11
 
 cheers
