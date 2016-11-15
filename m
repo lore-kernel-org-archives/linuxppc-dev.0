@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNWR1cHGzDvsY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:14:27 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNWc6nMLzDvmk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:14:36 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAFNEGt5122699
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:14:25 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26r77vtge5-1
+ uAFNEB9s059550
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:14:35 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26ra7dka1n-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:14:25 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:14:34 -0500
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Tue, 15 Nov 2016 16:14:24 -0700
+ Tue, 15 Nov 2016 16:14:34 -0700
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -29,11 +29,11 @@ Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>,
  Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Subject: [PATCH 03/14] cxlflash: Improve context_reset() logic
-Date: Tue, 15 Nov 2016 17:14:12 -0600
+Subject: [PATCH 04/14] cxlflash: Avoid command room violation
+Date: Tue, 15 Nov 2016 17:14:25 -0600
 In-Reply-To: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1479251652-22780-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1479251665-22816-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,70 +43,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, the context reset routine waits for command room to
-be available before sending the reset request. Per review of the
-SISLite specification and clarifications from the CXL Flash AFU
-designers, this wait is unnecessary. The reset request can be
-sent anytime regardless of command room, so long as only a single
-reset request is active at any one point in time.
+During test, a command room violation interrupt is occasionally seen
+for the master context when the CXL flash devices are stressed.
 
-This commit simplifies the reset routine by removing the wait for
-command room. Additionally it adds a debug trace to help pinpoint
-hardware errors when a context reset does not complete.
+After studying the code, there could be gaps in the way command room
+value is being cached in cxlflash. When the cached command room is zero
+the thread attempting to send becomes burdened with updating the cached
+value with the actual value from the AFU. Today, this is handled with
+an atomic set operation of the raw value read. Following the atomic
+update, the thread proceeds to send.
+
+This behavior is incorrect on two counts:
+
+   - The update fails to take into account the current thread and its
+     consumption of one of the hardware commands.
+
+   - The update does not take into account other threads also atomically
+     updating. Per design, a worker thread updates the cached value when
+     a send thread times out. By not performing an atomic compare/exchange,
+     the cached value can be incorrectly clobbered.
+
+To correct these issues, the runtime updates of the cached command room
+are updated to use atomic64_cmpxchg() and the send routine is updated to
+take into account the current thread consuming a hardware command.
 
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+ drivers/scsi/cxlflash/main.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 6004860..6d33d8c 100644
+index 6d33d8c..1a32e8b 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -263,8 +263,9 @@ static void context_reset(struct afu_cmd *cmd)
- {
- 	int nretry = 0;
- 	u64 rrin = 0x1;
--	u64 room = 0;
- 	struct afu *afu = cmd->parent;
-+	struct cxlflash_cfg *cfg = afu->parent;
-+	struct device *dev = &cfg->dev->dev;
+@@ -322,9 +322,10 @@ static int send_cmd(struct afu *afu, struct afu_cmd *cmd)
+ 	if (!newval) {
+ 		do {
+ 			room = readq_be(&afu->host_map->cmd_room);
+-			atomic64_set(&afu->room, room);
+-			if (room)
+-				goto write_ioarrin;
++			if (room) {
++				atomic64_cmpxchg(&afu->room, 0, room);
++				goto retry;
++			}
+ 			udelay(1 << nretry);
+ 		} while (nretry++ < MC_ROOM_RETRY_CNT);
+ 
+@@ -346,7 +347,6 @@ static int send_cmd(struct afu *afu, struct afu_cmd *cmd)
+ 		goto no_room;
+ 	}
+ 
+-write_ioarrin:
+ 	writeq_be((u64)&cmd->rcb, &afu->host_map->ioarrin);
+ out:
+ 	pr_devel("%s: cmd=%p len=%d ea=%p rc=%d\n", __func__, cmd,
+@@ -2409,6 +2409,7 @@ static void cxlflash_worker_thread(struct work_struct *work)
+ 	struct afu *afu = cfg->afu;
+ 	struct device *dev = &cfg->dev->dev;
+ 	int port;
++	u64 room;
  	ulong lock_flags;
  
- 	pr_debug("%s: cmd=%p\n", __func__, cmd);
-@@ -280,23 +281,6 @@ static void context_reset(struct afu_cmd *cmd)
- 	cmd->sa.host_use_b[0] |= (B_DONE | B_ERROR | B_TIMEOUT);
- 	spin_unlock_irqrestore(&cmd->slock, lock_flags);
+ 	/* Avoid MMIO if the device has failed */
+@@ -2437,8 +2438,11 @@ static void cxlflash_worker_thread(struct work_struct *work)
+ 	}
  
--	/*
--	 * We really want to send this reset at all costs, so spread
--	 * out wait time on successive retries for available room.
--	 */
--	do {
--		room = readq_be(&afu->host_map->cmd_room);
--		atomic64_set(&afu->room, room);
--		if (room)
--			goto write_rrin;
--		udelay(1 << nretry);
--	} while (nretry++ < MC_ROOM_RETRY_CNT);
--
--	pr_err("%s: no cmd_room to send reset\n", __func__);
--	return;
--
--write_rrin:
--	nretry = 0;
- 	writeq_be(rrin, &afu->host_map->ioarrin);
- 	do {
- 		rrin = readq_be(&afu->host_map->ioarrin);
-@@ -305,6 +289,9 @@ static void context_reset(struct afu_cmd *cmd)
- 		/* Double delay each time */
- 		udelay(1 << nretry);
- 	} while (nretry++ < MC_ROOM_RETRY_CNT);
-+
-+	dev_dbg(dev, "%s: returning rrin=0x%016llX nretry=%d\n",
-+		__func__, rrin, nretry);
- }
+ 	if (afu->read_room) {
+-		atomic64_set(&afu->room, readq_be(&afu->host_map->cmd_room));
+-		afu->read_room = false;
++		room = readq_be(&afu->host_map->cmd_room);
++		if (room) {
++			atomic64_cmpxchg(&afu->room, 0, room);
++			afu->read_room = false;
++		}
+ 	}
  
- /**
+ 	spin_unlock_irqrestore(cfg->host->host_lock, lock_flags);
 -- 
 2.1.0
