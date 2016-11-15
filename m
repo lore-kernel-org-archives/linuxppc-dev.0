@@ -1,43 +1,24 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michal.simek@xilinx.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0080.outbound.protection.outlook.com [104.47.38.80])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ5TD6t9VzDvYM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 22:56:32 +1100 (AEDT)
-Date: Tue, 15 Nov 2016 12:56:22 +0100
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Steffen Maier <maier@linux.vnet.ibm.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
- Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>,
- James Smart <james.smart@avagotech.com>,
- Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
-Message-ID: <20161115115622.j4ker3atejcodqrc@linux-x5ow.site>
-References: <cover.1476369687.git.jthumshirn@suse.de>
- <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
- <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
- <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
- <20161025074313.4ma4czgdj46imaei@linux-x5ow.site>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ63y3rtTzDvg2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 23:23:10 +1100 (AEDT)
+Subject: Re: [Patch v7 1/7] microblaze: irqchip: Move intc driver to irqchip
+To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>,
+ <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
+ <marc.zyngier@arm.com>
+References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
+ <20161114121351.10924-2-Zubair.Kakakhel@imgtec.com>
+CC: <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <4f055736-5977-4d0f-ddf2-113c787e383a@xilinx.com>
+Date: Tue, 15 Nov 2016 13:22:46 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20161025074313.4ma4czgdj46imaei@linux-x5ow.site>
+In-Reply-To: <20161114121351.10924-2-Zubair.Kakakhel@imgtec.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,46 +28,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 25, 2016 at 09:43:14AM +0200, Johannes Thumshirn wrote:
-> On Fri, Oct 14, 2016 at 09:38:21AM +0200, Johannes Thumshirn wrote:
-> > On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
-> > > Hm, still behaves for me like I reported for v2:
-> > > http://marc.info/?l=linux-scsi&m=147637177902937&w=2
-
-[...]
-
-> > 
-> > The rational behind this is, in fc_req_to_bsgjob() we're assigning
-> > job->request as req->cmd and job->request_len = req->cmd_len. But without
-> > checkinf job->request_len we don't know whether we're save to touch
-> > job->request (a.k.a. bsg_request).
+On 14.11.2016 13:13, Zubair Lutfullah Kakakhel wrote:
+> The Xilinx AXI Interrupt Controller IP block is used by the MIPS
+> based xilfpga platform and a few PowerPC based platforms.
 > 
-> Hi Steffen,
-> Did you have any chance testing this? I hacked fcping to work with non-FCoE
-> and rports as well and tested with FCoE and lpfc. No problems seen from my
-> side. I've also pused the series (With this change folded in) to my git 
-> tree at [1] if this helps you in any way.
+> Move the interrupt controller code out of arch/microblaze so that
+> it can be used by everyone
 > 
-> [1] https://git.kernel.org/cgit/linux/kernel/git/jth/linux.git/log/?h=scsi-bsg-rewrite-v4
+> Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+> 
+> ---
+> V6 -> V7
+> Rebase to v4.9-rc5
+> 
+> V5 -> V6
+> Rebase to v4.9-rc3
+> 
+> V4 -> V5
+> Rebase to v4.9-rc1
+> Renamed back to irq-xilinx-intc.c
+> 
+> V3 -> V4
+> No change
+> 
+> V2 -> V3
+> No change here. Cleanup patches follow after this patch.
+> Its debatable to cleanup before/after move. Decided to place cleanup
+> after move to put history in new place.
+> 
+> V1 -> V2
+> 
+> Renamed irq-xilinx to irq-axi-intc
+> Renamed CONFIG_XILINX_INTC to CONFIG_XILINX_AXI_INTC
+> Patch is now without rename flag so as to facilitate review
+> ---
+>  arch/microblaze/Kconfig                                            | 1 +
+>  arch/microblaze/kernel/Makefile                                    | 2 +-
+>  drivers/irqchip/Kconfig                                            | 4 ++++
+>  drivers/irqchip/Makefile                                           | 1 +
+>  arch/microblaze/kernel/intc.c => drivers/irqchip/irq-xilinx-intc.c | 0
+>  5 files changed, 7 insertions(+), 1 deletion(-)
+>  rename arch/microblaze/kernel/intc.c => drivers/irqchip/irq-xilinx-intc.c (100%)
+> 
+> diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+> index 86f6572..85885a5 100644
+> --- a/arch/microblaze/Kconfig
+> +++ b/arch/microblaze/Kconfig
+> @@ -27,6 +27,7 @@ config MICROBLAZE
+>  	select HAVE_MEMBLOCK_NODE_MAP
+>  	select HAVE_OPROFILE
+>  	select IRQ_DOMAIN
+> +	select XILINX_INTC
+>  	select MODULES_USE_ELF_RELA
+>  	select OF
+>  	select OF_EARLY_FLATTREE
+> diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
+> index f08baca..e098381 100644
+> --- a/arch/microblaze/kernel/Makefile
+> +++ b/arch/microblaze/kernel/Makefile
+> @@ -15,7 +15,7 @@ endif
+>  extra-y := head.o vmlinux.lds
+>  
+>  obj-y += dma.o exceptions.o \
+> -	hw_exception_handler.o intc.o irq.o \
+> +	hw_exception_handler.o irq.o \
+>  	platform.o process.o prom.o ptrace.o \
+>  	reset.o setup.o signal.o sys_microblaze.o timer.o traps.o unwind.o
+>  
+> diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
+> index bc0af33..ae96731 100644
+> --- a/drivers/irqchip/Kconfig
+> +++ b/drivers/irqchip/Kconfig
+> @@ -211,6 +211,10 @@ config XTENSA_MX
+>  	bool
+>  	select IRQ_DOMAIN
+>  
+> +config XILINX_INTC
+> +	bool
+> +	select IRQ_DOMAIN
+> +
+>  config IRQ_CROSSBAR
+>  	bool
+>  	help
+> diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+> index e4dbfc8..0e55d94 100644
+> --- a/drivers/irqchip/Makefile
+> +++ b/drivers/irqchip/Makefile
+> @@ -52,6 +52,7 @@ obj-$(CONFIG_TB10X_IRQC)		+= irq-tb10x.o
+>  obj-$(CONFIG_TS4800_IRQ)		+= irq-ts4800.o
+>  obj-$(CONFIG_XTENSA)			+= irq-xtensa-pic.o
+>  obj-$(CONFIG_XTENSA_MX)			+= irq-xtensa-mx.o
+> +obj-$(CONFIG_XILINX_INTC)		+= irq-xilinx-intc.o
+>  obj-$(CONFIG_IRQ_CROSSBAR)		+= irq-crossbar.o
+>  obj-$(CONFIG_SOC_VF610)			+= irq-vf610-mscm-ir.o
+>  obj-$(CONFIG_BCM6345_L1_IRQ)		+= irq-bcm6345-l1.o
+> diff --git a/arch/microblaze/kernel/intc.c b/drivers/irqchip/irq-xilinx-intc.c
+> similarity index 100%
+> rename from arch/microblaze/kernel/intc.c
+> rename to drivers/irqchip/irq-xilinx-intc.c
 > 
 
-So I finally have a test system up and running. I have good and bad news. The
-good news is, I can't get the system crashing with my patches, the bad news is
-I can't get zfcp_ping and zfcp_show to output something but HBA_STATUS_ERROR
-with my patches and without.
-
-And btw, I renamed the branch to fc-bsg-rewrite-v4 in case you want to clone
-from it (it has patch 2/16 changed to the v3 submission).
-
-Can you please have a look with your setup?
+Tested-by: Michal Simek <michal.simek@xilinx.com>
 
 Thanks,
-	Johannes
-
--- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+Michal
