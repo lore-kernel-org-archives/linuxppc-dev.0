@@ -1,23 +1,23 @@
 Return-Path: <michal.simek@xilinx.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0080.outbound.protection.outlook.com [104.47.38.80])
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0055.outbound.protection.outlook.com [104.47.34.55])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ63y3rtTzDvg2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 23:23:10 +1100 (AEDT)
-Subject: Re: [Patch v7 1/7] microblaze: irqchip: Move intc driver to irqchip
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ64c4ZCPzDvht
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 23:23:44 +1100 (AEDT)
+Subject: Re: [Patch v7 2/7] irqchip: xilinx: clean up print messages
 To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>,
  <monstr@monstr.eu>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
  <marc.zyngier@arm.com>
 References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
- <20161114121351.10924-2-Zubair.Kakakhel@imgtec.com>
+ <20161114121351.10924-3-Zubair.Kakakhel@imgtec.com>
 CC: <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
  <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
 From: Michal Simek <michal.simek@xilinx.com>
-Message-ID: <4f055736-5977-4d0f-ddf2-113c787e383a@xilinx.com>
-Date: Tue, 15 Nov 2016 13:22:46 +0100
+Message-ID: <80c03a8a-d204-2013-8396-7bbbe72316ce@xilinx.com>
+Date: Tue, 15 Nov 2016 13:23:22 +0100
 MIME-Version: 1.0
-In-Reply-To: <20161114121351.10924-2-Zubair.Kakakhel@imgtec.com>
+In-Reply-To: <20161114121351.10924-3-Zubair.Kakakhel@imgtec.com>
 Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,106 +29,93 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 14.11.2016 13:13, Zubair Lutfullah Kakakhel wrote:
-> The Xilinx AXI Interrupt Controller IP block is used by the MIPS
-> based xilfpga platform and a few PowerPC based platforms.
-> 
-> Move the interrupt controller code out of arch/microblaze so that
-> it can be used by everyone
+> Remove __func__ and prefix irq-xilinx in various debug prints
 > 
 > Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
 > 
 > ---
 > V6 -> V7
-> Rebase to v4.9-rc5
-> 
-> V5 -> V6
-> Rebase to v4.9-rc3
-> 
-> V4 -> V5
-> Rebase to v4.9-rc1
-> Renamed back to irq-xilinx-intc.c
-> 
-> V3 -> V4
-> No change
-> 
-> V2 -> V3
-> No change here. Cleanup patches follow after this patch.
-> Its debatable to cleanup before/after move. Decided to place cleanup
-> after move to put history in new place.
-> 
-> V1 -> V2
-> 
-> Renamed irq-xilinx to irq-axi-intc
-> Renamed CONFIG_XILINX_INTC to CONFIG_XILINX_AXI_INTC
-> Patch is now without rename flag so as to facilitate review
+> New patch
+> This diff was squashed into another patch. Split it up for cleanliness
 > ---
->  arch/microblaze/Kconfig                                            | 1 +
->  arch/microblaze/kernel/Makefile                                    | 2 +-
->  drivers/irqchip/Kconfig                                            | 4 ++++
->  drivers/irqchip/Makefile                                           | 1 +
->  arch/microblaze/kernel/intc.c => drivers/irqchip/irq-xilinx-intc.c | 0
->  5 files changed, 7 insertions(+), 1 deletion(-)
->  rename arch/microblaze/kernel/intc.c => drivers/irqchip/irq-xilinx-intc.c (100%)
+>  drivers/irqchip/irq-xilinx-intc.c | 18 +++++++++---------
+>  1 file changed, 9 insertions(+), 9 deletions(-)
 > 
-> diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-> index 86f6572..85885a5 100644
-> --- a/arch/microblaze/Kconfig
-> +++ b/arch/microblaze/Kconfig
-> @@ -27,6 +27,7 @@ config MICROBLAZE
->  	select HAVE_MEMBLOCK_NODE_MAP
->  	select HAVE_OPROFILE
->  	select IRQ_DOMAIN
-> +	select XILINX_INTC
->  	select MODULES_USE_ELF_RELA
->  	select OF
->  	select OF_EARLY_FLATTREE
-> diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
-> index f08baca..e098381 100644
-> --- a/arch/microblaze/kernel/Makefile
-> +++ b/arch/microblaze/kernel/Makefile
-> @@ -15,7 +15,7 @@ endif
->  extra-y := head.o vmlinux.lds
+> diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
+> index 90bec7d..096c1ed 100644
+> --- a/drivers/irqchip/irq-xilinx-intc.c
+> +++ b/drivers/irqchip/irq-xilinx-intc.c
+> @@ -58,7 +58,7 @@ static void intc_enable_or_unmask(struct irq_data *d)
+>  {
+>  	unsigned long mask = 1 << d->hwirq;
 >  
->  obj-y += dma.o exceptions.o \
-> -	hw_exception_handler.o intc.o irq.o \
-> +	hw_exception_handler.o irq.o \
->  	platform.o process.o prom.o ptrace.o \
->  	reset.o setup.o signal.o sys_microblaze.o timer.o traps.o unwind.o
+> -	pr_debug("enable_or_unmask: %ld\n", d->hwirq);
+> +	pr_debug("irq-xilinx: enable_or_unmask: %ld\n", d->hwirq);
 >  
-> diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
-> index bc0af33..ae96731 100644
-> --- a/drivers/irqchip/Kconfig
-> +++ b/drivers/irqchip/Kconfig
-> @@ -211,6 +211,10 @@ config XTENSA_MX
->  	bool
->  	select IRQ_DOMAIN
+>  	/* ack level irqs because they can't be acked during
+>  	 * ack function since the handle_level_irq function
+> @@ -72,13 +72,13 @@ static void intc_enable_or_unmask(struct irq_data *d)
 >  
-> +config XILINX_INTC
-> +	bool
-> +	select IRQ_DOMAIN
-> +
->  config IRQ_CROSSBAR
->  	bool
->  	help
-> diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-> index e4dbfc8..0e55d94 100644
-> --- a/drivers/irqchip/Makefile
-> +++ b/drivers/irqchip/Makefile
-> @@ -52,6 +52,7 @@ obj-$(CONFIG_TB10X_IRQC)		+= irq-tb10x.o
->  obj-$(CONFIG_TS4800_IRQ)		+= irq-ts4800.o
->  obj-$(CONFIG_XTENSA)			+= irq-xtensa-pic.o
->  obj-$(CONFIG_XTENSA_MX)			+= irq-xtensa-mx.o
-> +obj-$(CONFIG_XILINX_INTC)		+= irq-xilinx-intc.o
->  obj-$(CONFIG_IRQ_CROSSBAR)		+= irq-crossbar.o
->  obj-$(CONFIG_SOC_VF610)			+= irq-vf610-mscm-ir.o
->  obj-$(CONFIG_BCM6345_L1_IRQ)		+= irq-bcm6345-l1.o
-> diff --git a/arch/microblaze/kernel/intc.c b/drivers/irqchip/irq-xilinx-intc.c
-> similarity index 100%
-> rename from arch/microblaze/kernel/intc.c
-> rename to drivers/irqchip/irq-xilinx-intc.c
+>  static void intc_disable_or_mask(struct irq_data *d)
+>  {
+> -	pr_debug("disable: %ld\n", d->hwirq);
+> +	pr_debug("irq-xilinx: disable: %ld\n", d->hwirq);
+>  	write_fn(1 << d->hwirq, intc_baseaddr + CIE);
+>  }
+>  
+>  static void intc_ack(struct irq_data *d)
+>  {
+> -	pr_debug("ack: %ld\n", d->hwirq);
+> +	pr_debug("irq-xilinx: ack: %ld\n", d->hwirq);
+>  	write_fn(1 << d->hwirq, intc_baseaddr + IAR);
+>  }
+>  
+> @@ -86,7 +86,7 @@ static void intc_mask_ack(struct irq_data *d)
+>  {
+>  	unsigned long mask = 1 << d->hwirq;
+>  
+> -	pr_debug("disable_and_ack: %ld\n", d->hwirq);
+> +	pr_debug("irq-xilinx: disable_and_ack: %ld\n", d->hwirq);
+>  	write_fn(mask, intc_baseaddr + CIE);
+>  	write_fn(mask, intc_baseaddr + IAR);
+>  }
+> @@ -109,7 +109,7 @@ unsigned int get_irq(void)
+>  	if (hwirq != -1U)
+>  		irq = irq_find_mapping(root_domain, hwirq);
+>  
+> -	pr_debug("get_irq: hwirq=%d, irq=%d\n", hwirq, irq);
+> +	pr_debug("irq-xilinx: hwirq=%d, irq=%d\n", hwirq, irq);
+>  
+>  	return irq;
+>  }
+> @@ -146,20 +146,20 @@ static int __init xilinx_intc_of_init(struct device_node *intc,
+>  
+>  	ret = of_property_read_u32(intc, "xlnx,num-intr-inputs", &nr_irq);
+>  	if (ret < 0) {
+> -		pr_err("%s: unable to read xlnx,num-intr-inputs\n", __func__);
+> +		pr_err("irq-xilinx: unable to read xlnx,num-intr-inputs\n");
+>  		return ret;
+>  	}
+>  
+>  	ret = of_property_read_u32(intc, "xlnx,kind-of-intr", &intr_mask);
+>  	if (ret < 0) {
+> -		pr_err("%s: unable to read xlnx,kind-of-intr\n", __func__);
+> +		pr_err("irq-xilinx: unable to read xlnx,kind-of-intr\n");
+>  		return ret;
+>  	}
+>  
+>  	if (intr_mask >> nr_irq)
+> -		pr_warn("%s: mismatch in kind-of-intr param\n", __func__);
+> +		pr_warn("irq-xilinx: mismatch in kind-of-intr param\n");
+>  
+> -	pr_info("%s: num_irq=%d, edge=0x%x\n",
+> +	pr_info("irq-xilinx: %s: num_irq=%d, edge=0x%x\n",
+>  		intc->full_name, nr_irq, intr_mask);
+>  
+>  	write_fn = intc_write32;
 > 
 
-Tested-by: Michal Simek <michal.simek@xilinx.com>
+Acked-by: Michal Simek <michal.simek@xilinx.com>
 
 Thanks,
 Michal
