@@ -1,21 +1,46 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHyw76N2czDt0c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:00:55 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>, linux-mm@kvack.org
-Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, tj@kernel.org,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v1 3/3] powerpc: fix node_possible_map limitations
-In-Reply-To: <1479167045-28136-4-git-send-email-bsingharora@gmail.com>
-References: <1479167045-28136-1-git-send-email-bsingharora@gmail.com>
- <1479167045-28136-4-git-send-email-bsingharora@gmail.com>
-Date: Tue, 15 Nov 2016 18:00:52 +1100
-Message-ID: <8760npz0pn.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHz1y5wgJzDqV5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:05:58 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAF74nsR118117
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 02:05:56 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26qv3fv10u-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 02:05:56 -0500
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 15 Nov 2016 02:05:55 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ devicetree@vger.kernel.org, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 2/5] mm: remove x86-only restriction of movable_node
+In-Reply-To: <1479160961-25840-3-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1479160961-25840-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1479160961-25840-3-git-send-email-arbab@linux.vnet.ibm.com>
+Date: Tue, 15 Nov 2016 12:35:42 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87lgwlb4u1.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +50,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Can you make the subject a bit more descriptive?
+Reza Arbab <arbab@linux.vnet.ibm.com> writes:
 
-Currently this prevents node hotplug, so it's required that we remove it
-to support that IIUIC.
-
-Balbir Singh <bsingharora@gmail.com> writes:
-> We've fixed the memory hotplug issue with memcg, hence
-> this work around should not be required.
+> In commit c5320926e370 ("mem-hotplug: introduce movable_node boot
+> option"), the memblock allocation direction is changed to bottom-up and
+> then back to top-down like this:
 >
-> Fixes: commit 3af229f2071f
-> ("powerpc/numa: Reset node_possible_map to only node_online_map")
+> 1. memblock_set_bottom_up(true), called by cmdline_parse_movable_node().
+> 2. memblock_set_bottom_up(false), called by x86's numa_init().
+>
+> Even though (1) occurs in generic mm code, it is wrapped by #ifdef
+> CONFIG_MOVABLE_NODE, which depends on X86_64.
+>
+> This means that when we extend CONFIG_MOVABLE_NODE to non-x86 arches,
+> things will be unbalanced. (1) will happen for them, but (2) will not.
+>
+> This toggle was added in the first place because x86 has a delay between
+> adding memblocks and marking them as hotpluggable. Since other arches do
+> this marking either immediately or not at all, they do not require the
+> bottom-up toggle.
+>
+> So, resolve things by moving (1) from cmdline_parse_movable_node() to
+> x86's setup_arch(), immediately after the movable_node parameter has
+> been parsed.
 
-I don't think Fixes is right here, that commit wasn't buggy, it was just
-a workaround for the code at that time.
 
-Just say "This is a revert of commit 3af229f2071f ("powerpc/numa: Reset
-node_possible_map to only node_online_map")".
+Considering that we now can mark memblock hotpluggable, do we need to
+enable the bottom up allocation for ppc64 also ?
 
-Otherwise LGTM to go via mm.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> ---
+>  Documentation/kernel-parameters.txt |  2 +-
+>  arch/x86/kernel/setup.c             | 24 ++++++++++++++++++++++++
 
-cheers
+-aneesh
