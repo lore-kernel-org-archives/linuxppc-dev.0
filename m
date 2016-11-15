@@ -1,19 +1,18 @@
 Return-Path: <madalin.bucur@nxp.com>
 Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0631.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe45::631])
+ (mail-cys01nam02on0082.outbound.protection.outlook.com [104.47.37.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ1863y13zDt1n
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 19:41:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ1894GqQzDvkG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 19:41:29 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <davem@davemloft.net>, <oss@buserror.net>, <ppc@mindchasers.com>,
  <joe@perches.com>, <pebolle@tiscali.nl>, <joakim.tjernlund@infinera.com>
-Subject: [PATCH net-next v8 1/9] devres: add devm_alloc_percpu()
-Date: Tue, 15 Nov 2016 10:41:01 +0200
-Message-ID: <1479199269-9748-2-git-send-email-madalin.bucur@nxp.com>
+Subject: [PATCH net-next v8 3/9] dpaa_eth: add ethtool functionality
+Date: Tue, 15 Nov 2016 10:41:03 +0200
+Message-ID: <1479199269-9748-4-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1479199269-9748-1-git-send-email-madalin.bucur@nxp.com>
 References: <1479199269-9748-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -28,142 +27,275 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce managed counterparts for alloc_percpu() and free_percpu().
-Add devm_alloc_percpu() and devm_free_percpu() into the managed
-interfaces list.
+Add support for basic ethtool operations.
 
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- Documentation/driver-model/devres.txt |  4 +++
- drivers/base/devres.c                 | 66 +++++++++++++++++++++++++++++++++++
- include/linux/device.h                | 19 ++++++++++
- 3 files changed, 89 insertions(+)
+ drivers/net/ethernet/freescale/dpaa/Makefile       |   2 +-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |   2 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |   3 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c | 218 +++++++++++++++++++++
+ 4 files changed, 224 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
 
-diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
-index 1670708..ca9d1eb 100644
---- a/Documentation/driver-model/devres.txt
-+++ b/Documentation/driver-model/devres.txt
-@@ -332,6 +332,10 @@ MEM
- MFD
-  devm_mfd_add_devices()
+diff --git a/drivers/net/ethernet/freescale/dpaa/Makefile b/drivers/net/ethernet/freescale/dpaa/Makefile
+index fc76029..43a4cfd 100644
+--- a/drivers/net/ethernet/freescale/dpaa/Makefile
++++ b/drivers/net/ethernet/freescale/dpaa/Makefile
+@@ -8,4 +8,4 @@ ccflags-y += -I$(FMAN)
  
-+PER-CPU MEM
-+  devm_alloc_percpu()
-+  devm_free_percpu()
-+
- PCI
-   pcim_enable_device()	: after success, all PCI ops become managed
-   pcim_pin_device()	: keep PCI device enabled after release
-diff --git a/drivers/base/devres.c b/drivers/base/devres.c
-index 8fc654f..71d5770 100644
---- a/drivers/base/devres.c
-+++ b/drivers/base/devres.c
-@@ -10,6 +10,7 @@
- #include <linux/device.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/percpu.h>
+ obj-$(CONFIG_FSL_DPAA_ETH) += fsl_dpa.o
  
- #include "base.h"
+-fsl_dpa-objs += dpaa_eth.o
++fsl_dpa-objs += dpaa_eth.o dpaa_ethtool.o
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+index 8b9b0720f..0e7f1c7 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -240,6 +240,8 @@ static int dpaa_netdev_init(struct net_device *net_dev,
+ 	memcpy(net_dev->perm_addr, mac_addr, net_dev->addr_len);
+ 	memcpy(net_dev->dev_addr, mac_addr, net_dev->addr_len);
  
-@@ -985,3 +986,68 @@ void devm_free_pages(struct device *dev, unsigned long addr)
- 			       &devres));
- }
- EXPORT_SYMBOL_GPL(devm_free_pages);
++	net_dev->ethtool_ops = &dpaa_ethtool_ops;
 +
-+static void devm_percpu_release(struct device *dev, void *pdata)
-+{
-+	void __percpu *p;
+ 	net_dev->needed_headroom = priv->tx_headroom;
+ 	net_dev->watchdog_timeo = msecs_to_jiffies(tx_timeout);
+ 
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+index fe98e08..d6ab335 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+@@ -141,4 +141,7 @@ struct dpaa_priv {
+ 	struct dpaa_buffer_layout buf_layout[2];
+ 	u16 rx_headroom;
+ };
 +
-+	p = *(void __percpu **)pdata;
-+	free_percpu(p);
-+}
-+
-+static int devm_percpu_match(struct device *dev, void *data, void *p)
-+{
-+	struct devres *devr = container_of(data, struct devres, data);
-+
-+	return *(void **)devr->data == p;
-+}
-+
-+/**
-+ * __devm_alloc_percpu - Resource-managed alloc_percpu
-+ * @dev: Device to allocate per-cpu memory for
-+ * @size: Size of per-cpu memory to allocate
-+ * @align: Alignment of per-cpu memory to allocate
++/* from dpaa_ethtool.c */
++extern const struct ethtool_ops dpaa_ethtool_ops;
+ #endif	/* __DPAA_H */
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
+new file mode 100644
+index 0000000..3580a62
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
+@@ -0,0 +1,218 @@
++/* Copyright 2008-2016 Freescale Semiconductor, Inc.
 + *
-+ * Managed alloc_percpu. Per-cpu memory allocated with this function is
-+ * automatically freed on driver detach.
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
 + *
-+ * RETURNS:
-+ * Pointer to allocated memory on success, NULL on failure.
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
-+void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
-+		size_t align)
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/string.h>
++
++#include "dpaa_eth.h"
++#include "mac.h"
++
++static int dpaa_get_settings(struct net_device *net_dev,
++			     struct ethtool_cmd *et_cmd)
 +{
-+	void *p;
-+	void __percpu *pcpu;
++	int err;
 +
-+	pcpu = __alloc_percpu(size, align);
-+	if (!pcpu)
-+		return NULL;
-+
-+	p = devres_alloc(devm_percpu_release, sizeof(void *), GFP_KERNEL);
-+	if (!p) {
-+		free_percpu(pcpu);
-+		return NULL;
++	if (!net_dev->phydev) {
++		netdev_dbg(net_dev, "phy device not initialized\n");
++		return 0;
 +	}
 +
-+	*(void __percpu **)p = pcpu;
++	err = phy_ethtool_gset(net_dev->phydev, et_cmd);
 +
-+	devres_add(dev, p);
-+
-+	return pcpu;
++	return err;
 +}
-+EXPORT_SYMBOL_GPL(__devm_alloc_percpu);
 +
-+/**
-+ * devm_free_percpu - Resource-managed free_percpu
-+ * @dev: Device this memory belongs to
-+ * @pdata: Per-cpu memory to free
-+ *
-+ * Free memory allocated with devm_alloc_percpu().
-+ */
-+void devm_free_percpu(struct device *dev, void __percpu *pdata)
++static int dpaa_set_settings(struct net_device *net_dev,
++			     struct ethtool_cmd *et_cmd)
 +{
-+	WARN_ON(devres_destroy(dev, devm_percpu_release, devm_percpu_match,
-+			       (void *)pdata));
++	int err;
++
++	if (!net_dev->phydev) {
++		netdev_err(net_dev, "phy device not initialized\n");
++		return -ENODEV;
++	}
++
++	err = phy_ethtool_sset(net_dev->phydev, et_cmd);
++	if (err < 0)
++		netdev_err(net_dev, "phy_ethtool_sset() = %d\n", err);
++
++	return err;
 +}
-+EXPORT_SYMBOL_GPL(devm_free_percpu);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index bc41e87..a00105c 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -698,6 +698,25 @@ static inline int devm_add_action_or_reset(struct device *dev,
- 	return ret;
- }
- 
-+/**
-+ * devm_alloc_percpu - Resource-managed alloc_percpu
-+ * @dev: Device to allocate per-cpu memory for
-+ * @type: Type to allocate per-cpu memory for
-+ *
-+ * Managed alloc_percpu. Per-cpu memory allocated with this function is
-+ * automatically freed on driver detach.
-+ *
-+ * RETURNS:
-+ * Pointer to allocated memory on success, NULL on failure.
-+ */
-+#define devm_alloc_percpu(dev, type)      \
-+	((typeof(type) __percpu *)__devm_alloc_percpu((dev), sizeof(type), \
-+						      __alignof__(type)))
 +
-+void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
-+				   size_t align);
-+void devm_free_percpu(struct device *dev, void __percpu *pdata);
++static void dpaa_get_drvinfo(struct net_device *net_dev,
++			     struct ethtool_drvinfo *drvinfo)
++{
++	int len;
 +
- struct device_dma_parameters {
- 	/*
- 	 * a low level driver may set these to teach IOMMU code about
++	strlcpy(drvinfo->driver, KBUILD_MODNAME,
++		sizeof(drvinfo->driver));
++	len = snprintf(drvinfo->version, sizeof(drvinfo->version),
++		       "%X", 0);
++	len = snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
++		       "%X", 0);
++
++	if (len >= sizeof(drvinfo->fw_version)) {
++		/* Truncated output */
++		netdev_notice(net_dev, "snprintf() = %d\n", len);
++	}
++	strlcpy(drvinfo->bus_info, dev_name(net_dev->dev.parent->parent),
++		sizeof(drvinfo->bus_info));
++}
++
++static u32 dpaa_get_msglevel(struct net_device *net_dev)
++{
++	return ((struct dpaa_priv *)netdev_priv(net_dev))->msg_enable;
++}
++
++static void dpaa_set_msglevel(struct net_device *net_dev,
++			      u32 msg_enable)
++{
++	((struct dpaa_priv *)netdev_priv(net_dev))->msg_enable = msg_enable;
++}
++
++static int dpaa_nway_reset(struct net_device *net_dev)
++{
++	int err;
++
++	if (!net_dev->phydev) {
++		netdev_err(net_dev, "phy device not initialized\n");
++		return -ENODEV;
++	}
++
++	err = 0;
++	if (net_dev->phydev->autoneg) {
++		err = phy_start_aneg(net_dev->phydev);
++		if (err < 0)
++			netdev_err(net_dev, "phy_start_aneg() = %d\n",
++				   err);
++	}
++
++	return err;
++}
++
++static void dpaa_get_pauseparam(struct net_device *net_dev,
++				struct ethtool_pauseparam *epause)
++{
++	struct mac_device *mac_dev;
++	struct dpaa_priv *priv;
++
++	priv = netdev_priv(net_dev);
++	mac_dev = priv->mac_dev;
++
++	if (!net_dev->phydev) {
++		netdev_err(net_dev, "phy device not initialized\n");
++		return;
++	}
++
++	epause->autoneg = mac_dev->autoneg_pause;
++	epause->rx_pause = mac_dev->rx_pause_active;
++	epause->tx_pause = mac_dev->tx_pause_active;
++}
++
++static int dpaa_set_pauseparam(struct net_device *net_dev,
++			       struct ethtool_pauseparam *epause)
++{
++	struct mac_device *mac_dev;
++	struct phy_device *phydev;
++	bool rx_pause, tx_pause;
++	struct dpaa_priv *priv;
++	u32 newadv, oldadv;
++	int err;
++
++	priv = netdev_priv(net_dev);
++	mac_dev = priv->mac_dev;
++
++	phydev = net_dev->phydev;
++	if (!phydev) {
++		netdev_err(net_dev, "phy device not initialized\n");
++		return -ENODEV;
++	}
++
++	if (!(phydev->supported & SUPPORTED_Pause) ||
++	    (!(phydev->supported & SUPPORTED_Asym_Pause) &&
++	    (epause->rx_pause != epause->tx_pause)))
++		return -EINVAL;
++
++	/* The MAC should know how to handle PAUSE frame autonegotiation before
++	 * adjust_link is triggered by a forced renegotiation of sym/asym PAUSE
++	 * settings.
++	 */
++	mac_dev->autoneg_pause = !!epause->autoneg;
++	mac_dev->rx_pause_req = !!epause->rx_pause;
++	mac_dev->tx_pause_req = !!epause->tx_pause;
++
++	/* Determine the sym/asym advertised PAUSE capabilities from the desired
++	 * rx/tx pause settings.
++	 */
++	newadv = 0;
++	if (epause->rx_pause)
++		newadv = ADVERTISED_Pause | ADVERTISED_Asym_Pause;
++	if (epause->tx_pause)
++		newadv |= ADVERTISED_Asym_Pause;
++
++	oldadv = phydev->advertising &
++			(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
++
++	/* If there are differences between the old and the new advertised
++	 * values, restart PHY autonegotiation and advertise the new values.
++	 */
++	if (oldadv != newadv) {
++		phydev->advertising &= ~(ADVERTISED_Pause
++				| ADVERTISED_Asym_Pause);
++		phydev->advertising |= newadv;
++		if (phydev->autoneg) {
++			err = phy_start_aneg(phydev);
++			if (err < 0)
++				netdev_err(net_dev, "phy_start_aneg() = %d\n",
++					   err);
++		}
++	}
++
++	fman_get_pause_cfg(mac_dev, &rx_pause, &tx_pause);
++	err = fman_set_mac_active_pause(mac_dev, rx_pause, tx_pause);
++	if (err < 0)
++		netdev_err(net_dev, "set_mac_active_pause() = %d\n", err);
++
++	return err;
++}
++
++const struct ethtool_ops dpaa_ethtool_ops = {
++	.get_settings = dpaa_get_settings,
++	.set_settings = dpaa_set_settings,
++	.get_drvinfo = dpaa_get_drvinfo,
++	.get_msglevel = dpaa_get_msglevel,
++	.set_msglevel = dpaa_set_msglevel,
++	.nway_reset = dpaa_nway_reset,
++	.get_pauseparam = dpaa_get_pauseparam,
++	.set_pauseparam = dpaa_set_pauseparam,
++	.get_link = ethtool_op_get_link,
++};
 -- 
 2.1.0
