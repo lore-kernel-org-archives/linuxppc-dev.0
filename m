@@ -1,23 +1,23 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNYX1sBDzDvr8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:16:16 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAFNE851059191
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:16:14 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26ra7dkbmn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNYk6hxDzDw1W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:16:26 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAFNE7w8006169
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:16:24 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26r9rwcf2c-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:16:14 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:16:24 -0500
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Tue, 15 Nov 2016 16:16:13 -0700
+ Tue, 15 Nov 2016 16:16:23 -0700
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -29,12 +29,11 @@ Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>,
  Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Subject: [PATCH 13/14] cxlflash: Migrate IOARRIN specific routines to function
- pointers
-Date: Tue, 15 Nov 2016 17:16:03 -0600
+Subject: [PATCH 14/14] cxlflash: Migrate scsi command pointer to AFU command
+Date: Tue, 15 Nov 2016 17:16:16 -0600
 In-Reply-To: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1479251763-23150-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1479251776-23186-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,112 +45,85 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 
-As staging for supporting hardware with a different queuing mechanism,
-move the send_cmd() and context_reset() routines to function pointers
-that are configured when the AFU is initialized. In addition, rename
-the existing routines to better reflect the queue model they support.
+Currently, when sending a SCSI command, the pointer is stored in a
+reserved field of the AFU command descriptor for retrieval once the
+SCSI command has completed. In order to support new descriptor formats
+that make use of the reserved field, the pointer is migrated to outside
+the descriptor where it can still be found during completion processing.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/common.h |  3 +++
- drivers/scsi/cxlflash/main.c   | 21 +++++++++++----------
- 2 files changed, 14 insertions(+), 10 deletions(-)
+ drivers/scsi/cxlflash/common.h  |  1 +
+ drivers/scsi/cxlflash/main.c    | 10 +++++-----
+ drivers/scsi/cxlflash/sislite.h |  2 +-
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index c4a7014..30c3cdb 100644
+index 30c3cdb..7a892c5 100644
 --- a/drivers/scsi/cxlflash/common.h
 +++ b/drivers/scsi/cxlflash/common.h
-@@ -161,6 +161,9 @@ struct afu {
- 	 * fields after this point
- 	 */
+@@ -129,6 +129,7 @@ struct afu_cmd {
+ 	struct sisl_ioarcb rcb;	/* IOARCB (cache line aligned) */
+ 	struct sisl_ioasa sa;	/* IOASA must follow IOARCB */
+ 	struct afu *parent;
++	struct scsi_cmnd *scp;
+ 	struct completion cevent;
  
-+	int (*send_cmd)(struct afu *, struct afu_cmd *);
-+	void (*context_reset)(struct afu_cmd *);
-+
- 	/* AFU HW */
- 	struct cxl_ioctl_start_work work;
- 	struct cxlflash_afu_map __iomem *afu_map;	/* entire MMIO map */
+ 	u8 cmd_tmf:1;
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index d5b355c..7fc8843 100644
+index 7fc8843..08ef68a 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -188,12 +188,10 @@ static void cmd_complete(struct afu_cmd *cmd)
- }
- 
- /**
-- * context_reset() - timeout handler for AFU commands
-+ * context_reset_ioarrin() - reset command owner context via IOARRIN register
-  * @cmd:	AFU command that timed out.
-- *
-- * Sends a reset to the AFU.
-  */
--static void context_reset(struct afu_cmd *cmd)
-+static void context_reset_ioarrin(struct afu_cmd *cmd)
- {
- 	int nretry = 0;
- 	u64 rrin = 0x1;
-@@ -217,14 +215,14 @@ static void context_reset(struct afu_cmd *cmd)
- }
- 
- /**
-- * send_cmd() - sends an AFU command
-+ * send_cmd_ioarrin() - sends an AFU command via IOARRIN register
-  * @afu:	AFU associated with the host.
-  * @cmd:	AFU command to send.
+@@ -151,7 +151,7 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
   *
-  * Return:
-  *	0 on success, SCSI_MLQUEUE_HOST_BUSY on failure
+  * Prepares and submits command that has either completed or timed out to
+  * the SCSI stack. Checks AFU command back into command pool for non-internal
+- * (rcb.scp populated) commands.
++ * (cmd->scp populated) commands.
   */
--static int send_cmd(struct afu *afu, struct afu_cmd *cmd)
-+static int send_cmd_ioarrin(struct afu *afu, struct afu_cmd *cmd)
+ static void cmd_complete(struct afu_cmd *cmd)
  {
+@@ -161,8 +161,8 @@ static void cmd_complete(struct afu_cmd *cmd)
  	struct cxlflash_cfg *cfg = afu->parent;
- 	struct device *dev = &cfg->dev->dev;
-@@ -298,7 +296,7 @@ static int wait_resp(struct afu *afu, struct afu_cmd *cmd)
+ 	bool cmd_is_tmf;
  
- 	timeout = wait_for_completion_timeout(&cmd->cevent, timeout);
- 	if (!timeout) {
--		context_reset(cmd);
-+		afu->context_reset(cmd);
- 		rc = -1;
+-	if (cmd->rcb.scp) {
+-		scp = cmd->rcb.scp;
++	if (cmd->scp) {
++		scp = cmd->scp;
+ 		if (unlikely(cmd->sa.ioasc))
+ 			process_cmd_err(cmd, scp);
+ 		else
+@@ -340,7 +340,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
+ 	cfg->tmf_active = true;
+ 	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+ 
+-	cmd->rcb.scp = scp;
++	cmd->scp = scp;
+ 	cmd->parent = afu;
+ 	cmd->cmd_tmf = true;
+ 
+@@ -470,7 +470,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
+ 		cmd->rcb.data_ea = sg_dma_address(sg);
  	}
  
-@@ -355,7 +353,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 			      SISL_REQ_FLAGS_TMF_CMD);
- 	memcpy(cmd->rcb.cdb, &tmfcmd, sizeof(tmfcmd));
+-	cmd->rcb.scp = scp;
++	cmd->scp = scp;
+ 	cmd->parent = afu;
  
--	rc = send_cmd(afu, cmd);
-+	rc = afu->send_cmd(afu, cmd);
- 	if (unlikely(rc)) {
- 		spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 		cfg->tmf_active = false;
-@@ -486,7 +484,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 	cmd->rcb.req_flags = req_flags;
- 	memcpy(cmd->rcb.cdb, scp->cmnd, sizeof(cmd->rcb.cdb));
+ 	cmd->rcb.ctx_id = afu->ctx_hndl;
+diff --git a/drivers/scsi/cxlflash/sislite.h b/drivers/scsi/cxlflash/sislite.h
+index 347fc16..1a2d09c 100644
+--- a/drivers/scsi/cxlflash/sislite.h
++++ b/drivers/scsi/cxlflash/sislite.h
+@@ -72,7 +72,7 @@ struct sisl_ioarcb {
+ 	u16 timeout;		/* in units specified by req_flags */
+ 	u32 rsvd1;
+ 	u8 cdb[16];		/* must be in big endian */
+-	struct scsi_cmnd *scp;
++	u64 reserved;		/* Reserved area */
+ } __packed;
  
--	rc = send_cmd(afu, cmd);
-+	rc = afu->send_cmd(afu, cmd);
- 	if (unlikely(rc))
- 		scsi_dma_unmap(scp);
- out:
-@@ -1656,6 +1654,9 @@ static int init_afu(struct cxlflash_cfg *cfg)
- 		goto err2;
- 	}
- 
-+	afu->send_cmd = send_cmd_ioarrin;
-+	afu->context_reset = context_reset_ioarrin;
-+
- 	pr_debug("%s: afu version %s, interface version 0x%llX\n", __func__,
- 		 afu->version, afu->interface_version);
- 
-@@ -1747,7 +1748,7 @@ int cxlflash_afu_sync(struct afu *afu, ctx_hndl_t ctx_hndl_u,
- 	*((__be16 *)&cmd->rcb.cdb[2]) = cpu_to_be16(ctx_hndl_u);
- 	*((__be32 *)&cmd->rcb.cdb[4]) = cpu_to_be32(res_hndl_u);
- 
--	rc = send_cmd(afu, cmd);
-+	rc = afu->send_cmd(afu, cmd);
- 	if (unlikely(rc))
- 		goto out;
- 
+ struct sisl_rc {
 -- 
 2.1.0
