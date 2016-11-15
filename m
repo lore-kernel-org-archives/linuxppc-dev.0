@@ -1,28 +1,23 @@
-Return-Path: <michal.simek@xilinx.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0045.outbound.protection.outlook.com [104.47.38.45])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <tomi.valkeinen@ti.com>
+Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ4NH2ypqzDvg5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 22:07:11 +1100 (AEDT)
-Subject: Re: [Patch V6 2/6] irqchip: xilinx: Clean up irqdomain argument and
- read/write
-References: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
- <1477916207-25157-3-git-send-email-Zubair.Kakakhel@imgtec.com>
- <alpine.DEB.2.20.1610311335380.5011@nanos>
- <fea1e962-1af2-d666-2b0d-55a8e230430c@imgtec.com>
- <30e73e32-3144-3222-c758-dd8affd9b276@arm.com>
-To: Marc Zyngier <marc.zyngier@arm.com>, Zubair Lutfullah Kakakhel
- <Zubair.Kakakhel@imgtec.com>, Thomas Gleixner <tglx@linutronix.de>
-CC: <jason@lakedaemon.net>, <linux-kernel@vger.kernel.org>,
- <michal.simek@xilinx.com>, <linuxppc-dev@lists.ozlabs.org>,
- <mpe@ellerman.id.au>
-From: Michal Simek <michal.simek@xilinx.com>
-Message-ID: <9f06a324-a59a-378d-99ae-8a4c2549331c@xilinx.com>
-Date: Tue, 15 Nov 2016 12:06:45 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ5Fm0yL5zDvWr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 22:46:35 +1100 (AEDT)
+Subject: Re: [PATCH v2] Fix loading of module radeonfb on PowerMac
+To: Mathieu Malaterre <malat@debian.org>, <linux-fbdev@vger.kernel.org>
+References: <1479153557-20849-1-git-send-email-malat@debian.org>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Jean-Christophe
+ Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Message-ID: <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
+Date: Tue, 15 Nov 2016 13:46:10 +0200
 MIME-Version: 1.0
-In-Reply-To: <30e73e32-3144-3222-c758-dd8affd9b276@arm.com>
-Content-Type: text/plain; charset="windows-1252"
+In-Reply-To: <1479153557-20849-1-git-send-email-malat@debian.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="jm4563IB5xILfhwdtXWjFTvcWh01dKk9l"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,140 +27,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9.11.2016 16:53, Marc Zyngier wrote:
-> On 01/11/16 11:05, Zubair Lutfullah Kakakhel wrote:
->> Hi,
->>
->> Thanks for the review.
->>
->> On 10/31/2016 07:51 PM, Thomas Gleixner wrote:
->>> On Mon, 31 Oct 2016, Zubair Lutfullah Kakakhel wrote:
->>>> The drivers read/write function handling is a bit quirky.
->>>
->>> Can you please explain in more detail what's quirky and why it should be
->>> done differently,
->>>
->>>> And the irqmask is passed directly to the handler.
->>>
->>> I can't make any sense out of that sentence.  Which handler? If you talk
->>> about the write function, then I don't see a change. So what are you
->>> talking about?
->>
->> Thanks. I'll add more detail in v7 if this patch survives.
->>
->>>
->>>> Add a new irqchip struct to pass to the handler and
->>>> cleanup read/write handling.
->>>
->>> I still don't see what it cleans up. You move the write function pointer
->>> into a data structure, which is exposed by another pointer. So you create
->>> two levels of indirection in the hotpath. The function prototype is still
->>> the same. So all this does is making things slower unless I'm missing
->>> something.
->>
->> I wrote this patch/cleanup based on a review of driver by Marc when I moved the
->> driver from arch/microblaze to drivers/irqchip
->>
->> "Marc Zyngier
->>
->> ...
->>
->>  >  arch/microblaze/kernel/intc.c   | 196 ----------------------------------------
->>  >  drivers/irqchip/irq-axi-intc.c  | 196 ++++++++++++++++++++++++++++++++++++++++
->>
->> ...
->>
->>  > +	/* Yeah, okay, casting the intr_mask to a void* is butt-ugly, but I'm
->>  > +	 * lazy and Michal can clean it up to something nicer when he tests
->>  > +	 * and commits this patch.  ~~gcl */
->>  > +	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
->>  > +							(void *)intr_mask);
->>
->> Since you're now reworking this driver, how about addressing this
->> ugliness? You could store the intr_mask together with intc_baseaddr,
->> and the read/write functions in a global structure, and pass a
->> pointer to it? That would make the code a bit nicer...
->> "
->>
->> https://patchwork.kernel.org/patch/9287933/
->>
->>>
->>>> -static unsigned int (*read_fn)(void __iomem *);
->>>> -static void (*write_fn)(u32, void __iomem *);
->>>> +struct xintc_irq_chip {
->>>> +	void __iomem *base;
->>>> +	struct	irq_domain *domain;
->>>> +	struct	irq_chip chip;
->>>
->>> The tabs between struct and the structure name are bogus.
->>>
->>>> +	u32	intr_mask;
->>>> +	unsigned int (*read)(void __iomem *iomem);
->>>> +	void (*write)(u32 data, void __iomem *iomem);
->>>
->>> Please structure that like a table:
->>>
->>> 	void			__iomem *base;
->>> 	struct irq_domain	*domain;
->>> 	struct irq_chip		chip;
->>> 	u32			intr_mask;
->>> 	unsigned int		(*read)(void __iomem *iomem);
->>> 	void			(*write)(u32 data, void __iomem *iomem);
->>>
->>> Can you see how that makes parsing the struct simpler, because the data
->>> types are clearly to identify?
->>
->> That does make it look much better.
->>
->>>
->>>> +static struct xintc_irq_chip *xintc_irqc;
->>>>
->>>>  static void intc_write32(u32 val, void __iomem *addr)
->>>>  {
->>>> @@ -54,6 +60,18 @@ static unsigned int intc_read32_be(void __iomem *addr)
->>>>  	return ioread32be(addr);
->>>>  }
->>>>
->>>> +static inline unsigned int xintc_read(struct xintc_irq_chip *xintc_irqc,
->>>> +					     int reg)
->>>> +{
->>>> +	return xintc_irqc->read(xintc_irqc->base + reg);
->>>> +}
->>>> +
->>>> +static inline void xintc_write(struct xintc_irq_chip *xintc_irqc,
->>>> +				     int reg, u32 data)
->>>> +{
->>>> +	xintc_irqc->write(data, xintc_irqc->base + reg);
->>>> +}
->>>> +
->>>>  static void intc_enable_or_unmask(struct irq_data *d)
->>>>  {
->>>>  	unsigned long mask = 1 << d->hwirq;
->>>> @@ -65,21 +83,21 @@ static void intc_enable_or_unmask(struct irq_data *d)
->>>>  	 * acks the irq before calling the interrupt handler
->>>>  	 */
->>>>  	if (irqd_is_level_type(d))
->>>> -		write_fn(mask, intc_baseaddr + IAR);
->>>> +		xintc_write(xintc_irqc, IAR, mask);
->>>
->>> So this whole thing makes only sense, when you want to support multiple
->>> instances of that chip and then you need to store the xintc_irqc pointer as
->>> irqchip data and retrieve it from there. Unless you do that, this "cleanup"
->>> is just churn for nothing with the effect of making things less efficient.
->>>
->>
->> Indeed the driver doesn't support multiple instances of the Xilinx Interrupt controller.
->> I don't have a use-case or the hardware for that.
->>
->> So what would be the recommended course of action?
-> 
-> If you really don't want/need to support multi-instance, then this is
-> indeed overkill. You're then better off having a simple static key that
-> deals with the endianess of the peripheral, and have a global structure
-> that contains the relevant data:
+--jm4563IB5xILfhwdtXWjFTvcWh01dKk9l
+Content-Type: multipart/mixed; boundary="iMCSaRpwaLpECA0SNONQadmAxDl9X9uuf";
+ protected-headers="v1"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Mathieu Malaterre <malat@debian.org>, linux-fbdev@vger.kernel.org
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Message-ID: <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
+Subject: Re: [PATCH v2] Fix loading of module radeonfb on PowerMac
+References: <1479153557-20849-1-git-send-email-malat@debian.org>
+In-Reply-To: <1479153557-20849-1-git-send-email-malat@debian.org>
 
-By design this is PL IP and multi-instance support should be there.
-You are using it with MIPS but you can connect more INTC together.
+--iMCSaRpwaLpECA0SNONQadmAxDl9X9uuf
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Michal
+Hi,
+
+On 14/11/16 21:59, Mathieu Malaterre wrote:
+> When the linux kernel is build with (typical kernel ship with Debian
+> installer):
+>=20
+> CONFIG_FB_OF=3Dy
+> CONFIG_VT_HW_CONSOLE_BINDING=3Dy
+> CONFIG_FB_RADEON=3Dm
+>=20
+> The offb driver takes precedence over module radeonfb. It is then
+> impossible to load the module, error reported is:
+>=20
+> [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+> [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000=
+000-0x9fffffff pref]
+> [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+> [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+>=20
+> This patch reproduce the behavior of the module radeon, so as to make i=
+t
+> possible to load radeonfb when offb is first loaded.
+>=20
+> It should be noticed that `offb_destroy` is never called which explain =
+the
+> need to skip error detection on the radeon side.
+>=20
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Link: https://bugs.debian.org/826629#57
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D119741
+> Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> ---
+
+Please always have a changelog in patch new revisions. For individual
+patches, you can insert the changes here.
+
+>  drivers/video/fbdev/aty/radeon_base.c | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>=20
+> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbde=
+v/aty/radeon_base.c
+> index 218339a..84d634b 100644
+> --- a/drivers/video/fbdev/aty/radeon_base.c
+> +++ b/drivers/video/fbdev/aty/radeon_base.c
+> @@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr =3D {
+>  	.read	=3D radeon_show_edid2,
+>  };
+> =20
+> +static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
+> +{
+> +	struct apertures_struct *ap;
+> +
+> +	ap =3D alloc_apertures(1);
+> +	if (!ap)
+> +		return -ENOMEM;
+> +
+> +	ap->ranges[0].base =3D pci_resource_start(pdev, 0);
+> +	ap->ranges[0].size =3D pci_resource_len(pdev, 0);
+> +
+> +	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
+> +	kfree(ap);
+> +
+> +	return 0;
+> +}
+> =20
+>  static int radeonfb_pci_register(struct pci_dev *pdev,
+>  				 const struct pci_device_id *ent)
+> @@ -2314,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev=
+ *pdev,
+>  	rinfo->fb_base_phys =3D pci_resource_start (pdev, 0);
+>  	rinfo->mmio_base_phys =3D pci_resource_start (pdev, 2);
+> =20
+> +	ret =3D radeon_kick_out_firmware_fb(pdev);
+> +	if (ret)
+> +		return ret;
+> +
+>  	/* request the mem regions */
+>  	ret =3D pci_request_region(pdev, 0, "radeonfb framebuffer");
+>  	if (ret < 0) {
+>  		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+>  			pci_name(rinfo->pdev));
+> +#ifndef CONFIG_PPC
+>  		goto err_release_fb;
+> +#endif
+
+If this is not a problem on PPC, the kernel shouldn't print an error eith=
+er.
+
+>  	}
+> =20
+>  	ret =3D pci_request_region(pdev, 2, "radeonfb mmio");
+>  	if (ret < 0) {
+>  		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+>  			pci_name(rinfo->pdev));
+> +#ifndef CONFIG_PPC
+>  		goto err_release_pci0;
+> +#endif
+
+Same here.
+
+>  	}
+> =20
+>  	/* map the regions */
+> @@ -2511,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev=
+ *pdev,
+>  	iounmap(rinfo->mmio_base);
+>  err_release_pci2:
+>  	pci_release_region(pdev, 2);
+> +#ifndef CONFIG_PPC
+>  err_release_pci0:
+>  	pci_release_region(pdev, 0);
+>  err_release_fb:
+>          framebuffer_release(info);
+> +#endif
+>  err_disable:
+>  err_out:
+>  	return ret;
+>=20
+
+So I don't quite follow what's going on here. Why the CONFIG_PPC
+conditionals? Is this problem only with OFFB and only with PPC?
+
+And I think the code itself should have comments on this rather strange
+behavior: the driver fails to get HW resources, but decides to ignore
+the failure on PPC.
+
+ Tomi
+
+
+--iMCSaRpwaLpECA0SNONQadmAxDl9X9uuf--
+
+--jm4563IB5xILfhwdtXWjFTvcWh01dKk9l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYKvWCAAoJEPo9qoy8lh71XiUP/jzJk6QXKvLGydV/QDUYF+aC
+mWpZBTJB6ABKJGZG081hWCzEYgy4CIA7Zt7vat94xnIh0GD05JRohXzgWpBwFTXv
+250nYqO5ryatbbQmlLbvopSsy6T5W8YQX5P0SBx3GQDssaJ75ji4E/urYposuUig
+2KGflFLV1rHw84GbfS2hdAhy/2yLgtoAK8j0WTm345th0chnnumC09SXJawqhzMH
+X0DrT0AmsOhmTxZsHvcA7oU2UAC7JHNcODXMk1Fy+DBnySBkTrjgZAuAWZCFJWf3
+Ycivrqy6Ecv1vK/SC5RXE7Z62qgQWuDMulrAlNH0eOp2OS9gtvyRhg3yS8acq29a
+nuSlfxW9LnlSGDKXz8raAmdU1S1j1NN2K/6iuGygWClL8e15koPOojC8Dj9/T1UF
+FA9XQLGIMlcxsCzu7yv+7ukYf/t/Bsr9obS/TpPjhVNDj6ZARMVuiXZVRUM+9JPY
+rfgM+SiKDXboeLunlLMtOPSveI0Qd7DWPN+tIJGdbbfqEMjWUhuhNX1L61bttlxp
+3qIApsKwK4fSWkfStgw76wwqDsCA3nt3tTNAR0dyvak6Zkd3kqYA18lozfRlYCAM
+cVzqfDyM8yqNofbmYra8BWZg6e069Q5HYEfprTDKYGeq/1i7TGIyJVw1Opibhd2J
+aOqO7Il3DXESG9bT/Gfe
+=RK1v
+-----END PGP SIGNATURE-----
+
+--jm4563IB5xILfhwdtXWjFTvcWh01dKk9l--
