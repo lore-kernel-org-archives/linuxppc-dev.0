@@ -1,14 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michal.simek@xilinx.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0045.outbound.protection.outlook.com [104.47.38.45])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ4Cs0M5RzDvZ2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 21:59:53 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/64: Define ILLEGAL_POINTER_VALUE for 64-bit
-Date: Tue, 15 Nov 2016 21:59:38 +1100
-Message-Id: <1479207578-8762-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ4NH2ypqzDvg5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 22:07:11 +1100 (AEDT)
+Subject: Re: [Patch V6 2/6] irqchip: xilinx: Clean up irqdomain argument and
+ read/write
+References: <1477916207-25157-1-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <1477916207-25157-3-git-send-email-Zubair.Kakakhel@imgtec.com>
+ <alpine.DEB.2.20.1610311335380.5011@nanos>
+ <fea1e962-1af2-d666-2b0d-55a8e230430c@imgtec.com>
+ <30e73e32-3144-3222-c758-dd8affd9b276@arm.com>
+To: Marc Zyngier <marc.zyngier@arm.com>, Zubair Lutfullah Kakakhel
+ <Zubair.Kakakhel@imgtec.com>, Thomas Gleixner <tglx@linutronix.de>
+CC: <jason@lakedaemon.net>, <linux-kernel@vger.kernel.org>,
+ <michal.simek@xilinx.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <mpe@ellerman.id.au>
+From: Michal Simek <michal.simek@xilinx.com>
+Message-ID: <9f06a324-a59a-378d-99ae-8a4c2549331c@xilinx.com>
+Date: Tue, 15 Nov 2016 12:06:45 +0100
+MIME-Version: 1.0
+In-Reply-To: <30e73e32-3144-3222-c758-dd8affd9b276@arm.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,37 +32,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is used in poison.h to offset poison values so that they don't
-point directly into user space.
+On 9.11.2016 16:53, Marc Zyngier wrote:
+> On 01/11/16 11:05, Zubair Lutfullah Kakakhel wrote:
+>> Hi,
+>>
+>> Thanks for the review.
+>>
+>> On 10/31/2016 07:51 PM, Thomas Gleixner wrote:
+>>> On Mon, 31 Oct 2016, Zubair Lutfullah Kakakhel wrote:
+>>>> The drivers read/write function handling is a bit quirky.
+>>>
+>>> Can you please explain in more detail what's quirky and why it should be
+>>> done differently,
+>>>
+>>>> And the irqmask is passed directly to the handler.
+>>>
+>>> I can't make any sense out of that sentence.  Which handler? If you talk
+>>> about the write function, then I don't see a change. So what are you
+>>> talking about?
+>>
+>> Thanks. I'll add more detail in v7 if this patch survives.
+>>
+>>>
+>>>> Add a new irqchip struct to pass to the handler and
+>>>> cleanup read/write handling.
+>>>
+>>> I still don't see what it cleans up. You move the write function pointer
+>>> into a data structure, which is exposed by another pointer. So you create
+>>> two levels of indirection in the hotpath. The function prototype is still
+>>> the same. So all this does is making things slower unless I'm missing
+>>> something.
+>>
+>> I wrote this patch/cleanup based on a review of driver by Marc when I moved the
+>> driver from arch/microblaze to drivers/irqchip
+>>
+>> "Marc Zyngier
+>>
+>> ...
+>>
+>>  >  arch/microblaze/kernel/intc.c   | 196 ----------------------------------------
+>>  >  drivers/irqchip/irq-axi-intc.c  | 196 ++++++++++++++++++++++++++++++++++++++++
+>>
+>> ...
+>>
+>>  > +	/* Yeah, okay, casting the intr_mask to a void* is butt-ugly, but I'm
+>>  > +	 * lazy and Michal can clean it up to something nicer when he tests
+>>  > +	 * and commits this patch.  ~~gcl */
+>>  > +	root_domain = irq_domain_add_linear(intc, nr_irq, &xintc_irq_domain_ops,
+>>  > +							(void *)intr_mask);
+>>
+>> Since you're now reworking this driver, how about addressing this
+>> ugliness? You could store the intr_mask together with intc_baseaddr,
+>> and the read/write functions in a global structure, and pass a
+>> pointer to it? That would make the code a bit nicer...
+>> "
+>>
+>> https://patchwork.kernel.org/patch/9287933/
+>>
+>>>
+>>>> -static unsigned int (*read_fn)(void __iomem *);
+>>>> -static void (*write_fn)(u32, void __iomem *);
+>>>> +struct xintc_irq_chip {
+>>>> +	void __iomem *base;
+>>>> +	struct	irq_domain *domain;
+>>>> +	struct	irq_chip chip;
+>>>
+>>> The tabs between struct and the structure name are bogus.
+>>>
+>>>> +	u32	intr_mask;
+>>>> +	unsigned int (*read)(void __iomem *iomem);
+>>>> +	void (*write)(u32 data, void __iomem *iomem);
+>>>
+>>> Please structure that like a table:
+>>>
+>>> 	void			__iomem *base;
+>>> 	struct irq_domain	*domain;
+>>> 	struct irq_chip		chip;
+>>> 	u32			intr_mask;
+>>> 	unsigned int		(*read)(void __iomem *iomem);
+>>> 	void			(*write)(u32 data, void __iomem *iomem);
+>>>
+>>> Can you see how that makes parsing the struct simpler, because the data
+>>> types are clearly to identify?
+>>
+>> That does make it look much better.
+>>
+>>>
+>>>> +static struct xintc_irq_chip *xintc_irqc;
+>>>>
+>>>>  static void intc_write32(u32 val, void __iomem *addr)
+>>>>  {
+>>>> @@ -54,6 +60,18 @@ static unsigned int intc_read32_be(void __iomem *addr)
+>>>>  	return ioread32be(addr);
+>>>>  }
+>>>>
+>>>> +static inline unsigned int xintc_read(struct xintc_irq_chip *xintc_irqc,
+>>>> +					     int reg)
+>>>> +{
+>>>> +	return xintc_irqc->read(xintc_irqc->base + reg);
+>>>> +}
+>>>> +
+>>>> +static inline void xintc_write(struct xintc_irq_chip *xintc_irqc,
+>>>> +				     int reg, u32 data)
+>>>> +{
+>>>> +	xintc_irqc->write(data, xintc_irqc->base + reg);
+>>>> +}
+>>>> +
+>>>>  static void intc_enable_or_unmask(struct irq_data *d)
+>>>>  {
+>>>>  	unsigned long mask = 1 << d->hwirq;
+>>>> @@ -65,21 +83,21 @@ static void intc_enable_or_unmask(struct irq_data *d)
+>>>>  	 * acks the irq before calling the interrupt handler
+>>>>  	 */
+>>>>  	if (irqd_is_level_type(d))
+>>>> -		write_fn(mask, intc_baseaddr + IAR);
+>>>> +		xintc_write(xintc_irqc, IAR, mask);
+>>>
+>>> So this whole thing makes only sense, when you want to support multiple
+>>> instances of that chip and then you need to store the xintc_irqc pointer as
+>>> irqchip data and retrieve it from there. Unless you do that, this "cleanup"
+>>> is just churn for nothing with the effect of making things less efficient.
+>>>
+>>
+>> Indeed the driver doesn't support multiple instances of the Xilinx Interrupt controller.
+>> I don't have a use-case or the hardware for that.
+>>
+>> So what would be the recommended course of action?
+> 
+> If you really don't want/need to support multi-instance, then this is
+> indeed overkill. You're then better off having a simple static key that
+> deals with the endianess of the peripheral, and have a global structure
+> that contains the relevant data:
 
-The value we choose sits roughly between user and kernel space, which
-means on their own the poison values don't point anywhere useful. If an
-attacker can cause an access at some offset from the poison value then
-we may still be in trouble, but by putting the poison values between
-user and kernel space we maximise the required size of that offset.
+By design this is PL IP and multi-instance support should be there.
+You are using it with MIPS but you can connect more INTC together.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Kconfig | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 65fba4c34cd7..87705c113452 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -548,6 +548,13 @@ config ARCH_SPARSEMEM_DEFAULT
- config SYS_SUPPORTS_HUGETLBFS
- 	bool
- 
-+config ILLEGAL_POINTER_VALUE
-+	hex
-+	# This is roughly half way between the top of user space and the bottom
-+	# of kernel space, which seems about as good as we can get.
-+	default 0x5deadbeef0000000 if PPC64
-+	default 0
-+
- source "mm/Kconfig"
- 
- config ARCH_MEMORY_PROBE
--- 
-2.7.4
+Thanks,
+Michal
