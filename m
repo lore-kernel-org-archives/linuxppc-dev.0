@@ -1,31 +1,37 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
- [IPv6:2a00:1450:400c:c09::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNLJ5TmnzDvd3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:06:32 +1100 (AEDT)
-Received: by mail-wm0-x233.google.com with SMTP id f82so33021714wmf.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 15:06:32 -0800 (PST)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <f1e8522c-b33a-77ce-c2c3-9c74a468e663@au1.ibm.com>
-References: <20160626173451.c8406cd0c7a87cc3f94d9753@gmail.com>
- <70eb7a4c-be31-3fdd-a5b4-8075b29b3b38@au1.ibm.com>
- <CAGXu5j+8=3Vxm52Y2QbkDiCPx5X6DWemPO7B=2kj2EdVQpLHpA@mail.gmail.com>
- <f1e8522c-b33a-77ce-c2c3-9c74a468e663@au1.ibm.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 15 Nov 2016 15:06:28 -0800
-Message-ID: <CAGXu5jKD2r7Yz3GLekzbMZ+5qPqch7SLWUAbarvM7XR77=bgHw@mail.gmail.com>
-Subject: Re: [kernel-hardening] [PATCH] powerpc/kernel: Disable the latent
- entropy plugin unconditionally
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: "kernel-hardening@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>, Michal Marek <mmarek@suse.com>,
- linux-kbuild <linux-kbuild@vger.kernel.org>, PaX Team <pageexec@freemail.hu>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNTK3xGCzDvdR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:12:37 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAFN8w6I111071
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:12:35 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26r77vtep2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:12:35 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Tue, 15 Nov 2016 18:12:34 -0500
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Subject: [PATCH 00/14] cxlflash: Fixes, enhancements, cleanup and staging
+Date: Tue, 15 Nov 2016 17:12:10 -0600
+Message-Id: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +41,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 15, 2016 at 2:45 PM, Andrew Donnellan
-<andrew.donnellan@au1.ibm.com> wrote:
-> On 16/11/16 09:41, Kees Cook wrote:
->>
->> Just checking in: did these patches materialize? I'd love to see
->> plugins working on v4.10 for ppc.
->
->
-> Working on it!
-> https://github.com/ajdlinux/linux/tree/powerpc-gcc-plugin-infrastructure
+The first four patches in this patch series include fixes for command
+room violation and lun table management.
 
-Very cool, thanks!
+The remaining patches remove the reliance upon an internally maintained
+private command pool in favor of private commands being allocated
+alongside the SCSI commands. Several cleanup opportunities were noticed
+while removing the private command pool infrastructure and have been
+included as well. Lastly, the final two patches provide staging for
+supporting hardware with a different queuing model.
 
-> Just need to test with all the compilers to figure out which ones are broken
-> so we can put a version check in...
+The series is based upon 4.9-rc5, intended for 4.10 and is bisectable.
 
-Sounds good.
+Matthew R. Ochs (10):
+  cxlflash: Remove unused buffer from AFU command
+  cxlflash: Allocate memory instead of using command pool for AFU sync
+  cxlflash: Use cmd_size for private commands
+  cxlflash: Remove private command pool
+  cxlflash: Wait for active AFU commands to timeout upon tear down
+  cxlflash: Remove AFU command lock
+  cxlflash: Cleanup send_tmf()
+  cxlflash: Cleanup queuecommand()
+  cxlflash: Migrate IOARRIN specific routines to function pointers
+  cxlflash: Migrate scsi command pointer to AFU command
 
--Kees
+Uma Krishnan (4):
+  cxlflash: Set sg_tablesize to 1 instead of SG_NONE
+  cxlflash: Fix crash in cxlflash_restore_luntable()
+  cxlflash: Improve context_reset() logic
+  cxlflash: Avoid command room violation
+
+ drivers/scsi/cxlflash/common.h  |  35 ++--
+ drivers/scsi/cxlflash/lunmgt.c  |   6 +
+ drivers/scsi/cxlflash/main.c    | 360 +++++++++++-----------------------------
+ drivers/scsi/cxlflash/sislite.h |   2 +-
+ 4 files changed, 120 insertions(+), 283 deletions(-)
 
 -- 
-Kees Cook
-Nexus Security
+2.1.0
