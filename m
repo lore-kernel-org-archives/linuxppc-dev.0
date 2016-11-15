@@ -1,45 +1,31 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ9Hl5ZPPzDvjJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 01:48:35 +1100 (AEDT)
-Date: Tue, 15 Nov 2016 15:48:25 +0100
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Steffen Maier <maier@linux.vnet.ibm.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
- Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>,
- James Smart <james.smart@avagotech.com>,
- Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
-Message-ID: <20161115144825.flfj2uuioj7fp3pd@linux-x5ow.site>
-References: <cover.1476369687.git.jthumshirn@suse.de>
- <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
- <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
- <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
- <20161025074313.4ma4czgdj46imaei@linux-x5ow.site>
- <20161115115622.j4ker3atejcodqrc@linux-x5ow.site>
- <8647eacd-a029-dff0-4f78-dafef89a5ad9@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <8647eacd-a029-dff0-4f78-dafef89a5ad9@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ9hL2XsZzDvjK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 02:06:26 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAFF4NUx003384
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 10:06:24 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26r35gcrg0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 10:06:24 -0500
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 15 Nov 2016 08:06:23 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm/coproc: Handle bad address on coproc slb fault
+Date: Tue, 15 Nov 2016 20:36:06 +0530
+Message-Id: <20161115150606.14090-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,118 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 15, 2016 at 03:31:27PM +0100, Steffen Maier wrote:
-> Hi Johannes,
-> 
-> On 11/15/2016 12:56 PM, Johannes Thumshirn wrote:
-> > On Tue, Oct 25, 2016 at 09:43:14AM +0200, Johannes Thumshirn wrote:
-> > > On Fri, Oct 14, 2016 at 09:38:21AM +0200, Johannes Thumshirn wrote:
-> > > > On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
-> > > > > Hm, still behaves for me like I reported for v2:
-> > > > > http://marc.info/?l=linux-scsi&m=147637177902937&w=2
-> > 
-> > [...]
-> > 
-> > > > 
-> > > > The rational behind this is, in fc_req_to_bsgjob() we're assigning
-> > > > job->request as req->cmd and job->request_len = req->cmd_len. But without
-> > > > checkinf job->request_len we don't know whether we're save to touch
-> > > > job->request (a.k.a. bsg_request).
-> > > 
-> > > Hi Steffen,
-> > > Did you have any chance testing this? I hacked fcping to work with non-FCoE
-> > > and rports as well and tested with FCoE and lpfc. No problems seen from my
-> > > side. I've also pused the series (With this change folded in) to my git
-> > > tree at [1] if this helps you in any way.
-> > > 
-> > > [1] https://git.kernel.org/cgit/linux/kernel/git/jth/linux.git/log/?h=scsi-bsg-rewrite-v4
-> > > 
-> > 
-> > So I finally have a test system up and running. I have good and bad news. The
-> > good news is, I can't get the system crashing with my patches, the bad news is
-> > I can't get zfcp_ping and zfcp_show to output something but HBA_STATUS_ERROR
-> > with my patches and without.
-> 
-> Assuming you run the latest package version on s390x:
-> 
-> Do steps 2 and 3 of the procedure in
-> http://www.ibm.com/support/knowledgecenter/linuxonibm/com.ibm.linux.z.lhdd/lhdd_t_fcp_api_runappl.html
-> help?
+VSID 0 is bad address. Don't create slb entries on coproc fault for
+bad address
 
-No, I do have a correct /etc/hba.conf:
-$ grep libzfcphbaapi /etc/hba.conf 
-com.ibm.libzfcphbaapi /usr/lib64/libzfcphbaapi.so.0
-and bumping the log level via export LIB_ZFCP_HBAAPI_LOG_LEVEL=1 just adds 
-'(vlib.c:105)_initvlib: libzfcphbaapi.so loaded at Nov 15 15:43:23' to the 1st
-line of zfcp_ping output.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+NOTE: note tested
 
-Here's the full output:
-$ zfcp_ping -v -a 0.0.fc00 -d 0x50050763051b473a
-(vlib.c:105)_initvlib: libzfcphbaapi.so loaded at Nov 15 15:45:33
-Sending PNG from BUS_ID=0.0.fc00 WWPN=0xc05076e0f3002344 ID=0x760c1c
-dev=/dev/bsg/fc_host1 speed=8 GBit/s
---- REQUEST cmd = 0x0401 ---
-03 00 00 00 fa 01 00 00 
-04 01 00 01 00 00 00 00 
-00 00 00 01 00 02 00 08 
-50 05 07 63 05 1b 47 3a 
-00 00 00 00 
---- RESPONSE rc = 0x1 ---
-00 00 00 00 00 00 00 00 
-00 00 00 00 00 00 00 00 
-00 00 00 00 
---- REQUEST cmd = 0x0401 ---
-03 00 00 00 fa 01 00 00 
-04 01 00 01 00 00 00 00 
-00 00 00 01 00 02 00 08 
-50 05 07 63 05 1b 47 3a 
-00 00 00 00 
---- RESPONSE rc = 0x1 ---
-00 00 00 00 00 00 00 00 
-00 00 00 00 00 00 00 00 
-00 00 00 00 
---- REQUEST cmd = 0x0401 ---
-03 00 00 00 fa 01 00 00 
-04 01 00 01 00 00 00 00 
-00 00 00 01 00 02 00 08 
-50 05 07 63 05 1b 47 3a 
-00 00 00 00 
---- RESPONSE rc = 0x1 ---
-00 00 00 00 00 00 00 00 
-00 00 00 00 00 00 00 00 
-00 00 00 00 
-Error received for FPNG request, aborting.
+ arch/powerpc/mm/copro_fault.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
----------- ping statistics -----------
-min/avg/max = 0.000/0.000/0.000 ms
---------------------------------------
-
-I agree this looks a bit suspicious and I'll add some debugs in the kernel to
-see what's going on.
-
-> 
-> The only other thing I can think of from the top of my head is that BSG
-> ioctls are sensitive regarding ABI and I once had the kernel ioctl return
-> EINVAL due to unmatching kernel-headers and libzfcphbaapi maps this EINVAL
-> to HBA_STATUS_ERROR because there is no more specifically suitable HBA
-> constant [old SUSE bugs 834498 and 834500].
-> 
-> > And btw, I renamed the branch to fc-bsg-rewrite-v4 in case you want to clone
-> > from it (it has patch 2/16 changed to the v3 submission).
-> > 
-> > Can you please have a look with your setup?
-> 
-> I'm going to re-test hopefully within the next few days.
-
-That'll be great, thanks.
-
-Byte,
-	Johannes
-
+diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+index 362954f98029..aaa7ec6788b9 100644
+--- a/arch/powerpc/mm/copro_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -134,6 +134,9 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ 		pr_debug("%s: invalid region access at %016llx\n", __func__, ea);
+ 		return 1;
+ 	}
++	/* Bad address */
++	if (!vsid)
++		return 1;
+ 
+ 	vsid = (vsid << slb_vsid_shift(ssize)) | vsidkey;
+ 
 -- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+2.10.2
