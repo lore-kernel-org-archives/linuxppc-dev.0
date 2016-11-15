@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNXh1rb7zDvvk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:15:32 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAFNEB5M000783
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:29 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26rbr1892u-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNXs0ScqzDvsm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:15:40 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAFNE8IC134828
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:38 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26r2x1ytjb-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:38 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Tue, 15 Nov 2016 16:15:29 -0700
+ Tue, 15 Nov 2016 18:15:37 -0500
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -29,12 +29,11 @@ Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>,
  Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Subject: [PATCH 09/14] cxlflash: Wait for active AFU commands to timeout upon
- tear down
-Date: Tue, 15 Nov 2016 17:15:19 -0600
+Subject: [PATCH 10/14] cxlflash: Remove AFU command lock
+Date: Tue, 15 Nov 2016 17:15:28 -0600
 In-Reply-To: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1479251719-23002-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1479251728-23038-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,70 +45,170 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 
-With the removal of the static private command pool, the ability to
-'complete' outstanding commands was lost. While not an issue for the
-commands originating outside the driver, internal AFU commands are
-synchronous and therefore have a timeout associated with them. To
-avoid a stale memory access, the tear down sequence needs to ensure
-that there are not any active commands before proceeding. As these
-internal AFU commands are rare events, the simplest way to accomplish
-this is detecting the activity and waiting for it to timeout.
+The original design of the cxlflash driver required AFU commands
+to convey state information across multiple threads. The IOASA
+"host use" byte was used to track if a command was done, errored,
+or timed out. A per-command spin lock was used to serialize access
+to this byte. As this is no longer required with the introduction
+of completions and various refactoring over time, the spin lock,
+state tracking, and associated code can be removed. To support the
+simplification, the wait_resp() routine is refactored to return a
+success or failure. Additionally, as the simplification to the
+AFU internal command routine, explicit assignments of AFU command
+fields to zero are removed as the memory is zeroed upon allocation.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/common.h | 1 +
- drivers/scsi/cxlflash/main.c   | 6 +++++-
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ drivers/scsi/cxlflash/common.h |  8 +-------
+ drivers/scsi/cxlflash/main.c   | 46 ++++++++++++++----------------------------
+ 2 files changed, 16 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index 465330f..5e5651ba 100644
+index 5e5651ba..c4a7014 100644
 --- a/drivers/scsi/cxlflash/common.h
 +++ b/drivers/scsi/cxlflash/common.h
-@@ -181,6 +181,7 @@ struct afu {
- 	u64 *hrrq_curr;
- 	bool toggle;
- 	bool read_room;
-+	atomic_t cmds_active;	/* Number of currently active AFU commands */
- 	atomic64_t room;
- 	u64 hb;
- 	u32 internal_lun;	/* User-desired LUN mode for this AFU */
+@@ -63,11 +63,6 @@ static inline void check_sizes(void)
+ /* AFU defines a fixed size of 4K for command buffers (borrow 4K page define) */
+ #define CMD_BUFSIZE     SIZE_4K
+ 
+-/* flags in IOA status area for host use */
+-#define B_DONE       0x01
+-#define B_ERROR      0x02	/* set with B_DONE */
+-#define B_TIMEOUT    0x04	/* set with B_DONE & B_ERROR */
+-
+ enum cxlflash_lr_state {
+ 	LINK_RESET_INVALID,
+ 	LINK_RESET_REQUIRED,
+@@ -133,9 +128,8 @@ struct cxlflash_cfg {
+ struct afu_cmd {
+ 	struct sisl_ioarcb rcb;	/* IOARCB (cache line aligned) */
+ 	struct sisl_ioasa sa;	/* IOASA must follow IOARCB */
+-	spinlock_t slock;
+-	struct completion cevent;
+ 	struct afu *parent;
++	struct completion cevent;
+ 
+ 	u8 cmd_tmf:1;
+ 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index a17bff2..f192b1c 100644
+index f192b1c..e5b5d8f 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -556,7 +556,7 @@ static void free_mem(struct cxlflash_cfg *cfg)
-  *
-  * Safe to call with AFU in a partially allocated/initialized state.
-  *
-- * Cleans up all state associated with the command queue, and unmaps
-+ * Waits for any active internal AFU commands to timeout and then unmaps
-  * the MMIO space.
+@@ -161,10 +161,6 @@ static void cmd_complete(struct afu_cmd *cmd)
+ 	struct cxlflash_cfg *cfg = afu->parent;
+ 	bool cmd_is_tmf;
+ 
+-	spin_lock_irqsave(&cmd->slock, lock_flags);
+-	cmd->sa.host_use_b[0] |= B_DONE;
+-	spin_unlock_irqrestore(&cmd->slock, lock_flags);
+-
+ 	if (cmd->rcb.scp) {
+ 		scp = cmd->rcb.scp;
+ 		if (unlikely(cmd->sa.ioasc))
+@@ -204,21 +200,9 @@ static void context_reset(struct afu_cmd *cmd)
+ 	struct afu *afu = cmd->parent;
+ 	struct cxlflash_cfg *cfg = afu->parent;
+ 	struct device *dev = &cfg->dev->dev;
+-	ulong lock_flags;
+ 
+ 	pr_debug("%s: cmd=%p\n", __func__, cmd);
+ 
+-	spin_lock_irqsave(&cmd->slock, lock_flags);
+-
+-	/* Already completed? */
+-	if (cmd->sa.host_use_b[0] & B_DONE) {
+-		spin_unlock_irqrestore(&cmd->slock, lock_flags);
+-		return;
+-	}
+-
+-	cmd->sa.host_use_b[0] |= (B_DONE | B_ERROR | B_TIMEOUT);
+-	spin_unlock_irqrestore(&cmd->slock, lock_flags);
+-
+ 	writeq_be(rrin, &afu->host_map->ioarrin);
+ 	do {
+ 		rrin = readq_be(&afu->host_map->ioarrin);
+@@ -303,20 +287,30 @@ static int send_cmd(struct afu *afu, struct afu_cmd *cmd)
+  * wait_resp() - polls for a response or timeout to a sent AFU command
+  * @afu:	AFU associated with the host.
+  * @cmd:	AFU command that was sent.
++ *
++ * Return:
++ *	0 on success, -1 on timeout/error
   */
- static void stop_afu(struct cxlflash_cfg *cfg)
-@@ -564,6 +564,8 @@ static void stop_afu(struct cxlflash_cfg *cfg)
- 	struct afu *afu = cfg->afu;
+-static void wait_resp(struct afu *afu, struct afu_cmd *cmd)
++static int wait_resp(struct afu *afu, struct afu_cmd *cmd)
+ {
++	int rc = 0;
+ 	ulong timeout = msecs_to_jiffies(cmd->rcb.timeout * 2 * 1000);
  
- 	if (likely(afu)) {
-+		while (atomic_read(&afu->cmds_active))
-+			ssleep(1);
- 		if (likely(afu->afu_map)) {
- 			cxl_psa_unmap((void __iomem *)afu->afu_map);
- 			afu->afu_map = NULL;
-@@ -1745,6 +1747,7 @@ int cxlflash_afu_sync(struct afu *afu, ctx_hndl_t ctx_hndl_u,
- 	}
+ 	timeout = wait_for_completion_timeout(&cmd->cevent, timeout);
+-	if (!timeout)
++	if (!timeout) {
+ 		context_reset(cmd);
++		rc = -1;
++	}
  
- 	mutex_lock(&sync_active);
-+	atomic_inc(&afu->cmds_active);
- 	buf = kzalloc(sizeof(*cmd) + __alignof__(*cmd) - 1, GFP_KERNEL);
- 	if (unlikely(!buf)) {
- 		dev_err(dev, "%s: no memory for command\n", __func__);
-@@ -1786,6 +1789,7 @@ int cxlflash_afu_sync(struct afu *afu, ctx_hndl_t ctx_hndl_u,
- 		     (cmd->sa.host_use_b[0] & B_ERROR)))
+-	if (unlikely(cmd->sa.ioasc != 0))
++	if (unlikely(cmd->sa.ioasc != 0)) {
+ 		pr_err("%s: CMD 0x%X failed, IOASC: flags 0x%X, afu_rc 0x%X, "
+ 		       "scsi_rc 0x%X, fc_rc 0x%X\n", __func__, cmd->rcb.cdb[0],
+ 		       cmd->sa.rc.flags, cmd->sa.rc.afu_rc, cmd->sa.rc.scsi_rc,
+ 		       cmd->sa.rc.fc_rc);
++		rc = -1;
++	}
++
++	return rc;
+ }
+ 
+ /**
+@@ -364,7 +358,6 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
+ 	/* Stash the scp in the command, for reuse during interrupt */
+ 	cmd->rcb.scp = scp;
+ 	cmd->parent = afu;
+-	spin_lock_init(&cmd->slock);
+ 
+ 	/* Copy the CDB from the cmd passed in */
+ 	memcpy(cmd->rcb.cdb, &tmfcmd, sizeof(tmfcmd));
+@@ -491,7 +484,6 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
+ 	/* Stash the scp in the reserved field, for reuse during interrupt */
+ 	cmd->rcb.scp = scp;
+ 	cmd->parent = afu;
+-	spin_lock_init(&cmd->slock);
+ 
+ 	nseg = scsi_dma_map(scp);
+ 	if (unlikely(nseg < 0)) {
+@@ -1757,7 +1749,6 @@ int cxlflash_afu_sync(struct afu *afu, ctx_hndl_t ctx_hndl_u,
+ 
+ 	cmd = (struct afu_cmd *)PTR_ALIGN(buf, __alignof__(*cmd));
+ 	init_completion(&cmd->cevent);
+-	spin_lock_init(&cmd->slock);
+ 	cmd->parent = afu;
+ 
+ 	pr_debug("%s: afu=%p cmd=%p %d\n", __func__, afu, cmd, ctx_hndl_u);
+@@ -1765,10 +1756,6 @@ int cxlflash_afu_sync(struct afu *afu, ctx_hndl_t ctx_hndl_u,
+ 	cmd->rcb.req_flags = SISL_REQ_FLAGS_AFU_CMD;
+ 	cmd->rcb.ctx_id = afu->ctx_hndl;
+ 	cmd->rcb.msi = SISL_MSI_RRQ_UPDATED;
+-	cmd->rcb.port_sel = 0x0;	/* NA */
+-	cmd->rcb.lun_id = 0x0;	/* NA */
+-	cmd->rcb.data_len = 0x0;
+-	cmd->rcb.data_ea = 0x0;
+ 	cmd->rcb.timeout = MC_AFU_SYNC_TIMEOUT;
+ 
+ 	cmd->rcb.cdb[0] = 0xC0;	/* AFU Sync */
+@@ -1782,11 +1769,8 @@ int cxlflash_afu_sync(struct afu *afu, ctx_hndl_t ctx_hndl_u,
+ 	if (unlikely(rc))
+ 		goto out;
+ 
+-	wait_resp(afu, cmd);
+-
+-	/* Set on timeout */
+-	if (unlikely((cmd->sa.ioasc != 0) ||
+-		     (cmd->sa.host_use_b[0] & B_ERROR)))
++	rc = wait_resp(afu, cmd);
++	if (unlikely(rc))
  		rc = -1;
  out:
-+	atomic_dec(&afu->cmds_active);
- 	mutex_unlock(&sync_active);
- 	kfree(buf);
- 	pr_debug("%s: returning rc=%d\n", __func__, rc);
+ 	atomic_dec(&afu->cmds_active);
 -- 
 2.1.0
