@@ -1,31 +1,47 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJBc658rGzDvQt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 02:47:50 +1100 (AEDT)
-Date: Tue, 15 Nov 2016 16:47:06 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org,
- linux-s390@vger.kernel.org, xen-devel-request@lists.xenproject.org,
- kvm@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, paulmck@linux.vnet.ibm.com, will.deacon@arm.com,
- kernellwp@gmail.com, jgross@suse.com, pbonzini@redhat.com,
- bsingharora@gmail.com, boqun.feng@gmail.com, borntraeger@de.ibm.com,
- rkrcmar@redhat.com, David.Laight@ACULAB.COM, dave@stgolabs.net,
- konrad.wilk@oracle.com
-Subject: Re: [PATCH v7 06/11] x86, paravirt: Add interface to support kvm/xen
- vcpu preempted check
-Message-ID: <20161115154706.GF11311@worktop.programming.kicks-ass.net>
-References: <1478077718-37424-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1478077718-37424-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJBq259STzDvXv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 02:57:18 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAFFsMrt042580
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 10:57:15 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26r2cghyk5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 10:57:15 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Tue, 15 Nov 2016 08:57:14 -0700
+Date: Tue, 15 Nov 2016 09:57:07 -0600
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, devicetree@vger.kernel.org,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Alistair Popple <apopple@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 2/5] mm: remove x86-only restriction of movable_node
+References: <1479160961-25840-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1479160961-25840-3-git-send-email-arbab@linux.vnet.ibm.com>
+ <87lgwlb4u1.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1478077718-37424-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <87lgwlb4u1.fsf@linux.vnet.ibm.com>
+Message-Id: <20161115155706.zft7iaw2fjtwu7yp@arbab-laptop.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,263 +51,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 02, 2016 at 05:08:33AM -0400, Pan Xinhui wrote:
-> diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
-> index 0f400c0..38c3bb7 100644
-> --- a/arch/x86/include/asm/paravirt_types.h
-> +++ b/arch/x86/include/asm/paravirt_types.h
-> @@ -310,6 +310,8 @@ struct pv_lock_ops {
->  
->  	void (*wait)(u8 *ptr, u8 val);
->  	void (*kick)(int cpu);
-> +
-> +	bool (*vcpu_is_preempted)(int cpu);
->  };
+On Tue, Nov 15, 2016 at 12:35:42PM +0530, Aneesh Kumar K.V wrote:
+>Considering that we now can mark memblock hotpluggable, do we need to
+>enable the bottom up allocation for ppc64 also ?
 
-So that ends up with a full function call in the native case. I did
-something like the below on top, completely untested, not been near a
-compiler etc..
+No, we don't, because early_init_dt_scan_memory() marks the memblocks 
+hotpluggable immediately when they are added. There is no gap between 
+the addition and the marking, as there is on x86, during which an 
+allocation might accidentally occur in a movable node.
 
-It doesn't get rid of the branch, but at least it avoids the function
-call, and hardware should have no trouble predicting a constant
-condition.
-
-Also, it looks like you end up not setting vcpu_is_preempted when KVM
-doesn't support steal clock, which would end up in an instant NULL
-deref. Fixed that too.
-
----
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -673,6 +673,11 @@ static __always_inline void pv_kick(int
- 	PVOP_VCALL1(pv_lock_ops.kick, cpu);
- }
- 
-+static __always_inline void pv_vcpu_is_prempted(int cpu)
-+{
-+	PVOP_VCALLEE1(pv_lock_ops.vcpu_is_preempted, cpu);
-+}
-+
- #endif /* SMP && PARAVIRT_SPINLOCKS */
- 
- #ifdef CONFIG_X86_32
---- a/arch/x86/include/asm/paravirt_types.h
-+++ b/arch/x86/include/asm/paravirt_types.h
-@@ -309,7 +309,7 @@ struct pv_lock_ops {
- 	void (*wait)(u8 *ptr, u8 val);
- 	void (*kick)(int cpu);
- 
--	bool (*vcpu_is_preempted)(int cpu);
-+	struct paravirt_callee_save vcpu_is_preempted;
- };
- 
- /* This contains all the paravirt structures: we get a convenient
---- a/arch/x86/include/asm/qspinlock.h
-+++ b/arch/x86/include/asm/qspinlock.h
-@@ -32,6 +32,12 @@ static inline void queued_spin_unlock(st
- {
- 	pv_queued_spin_unlock(lock);
- }
-+
-+#define vcpu_is_preempted vcpu_is_preempted
-+static inline bool vcpu_is_preempted(int cpu)
-+{
-+	return pv_vcpu_is_preempted(cpu);
-+}
- #else
- static inline void queued_spin_unlock(struct qspinlock *lock)
- {
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -26,14 +26,6 @@
- extern struct static_key paravirt_ticketlocks_enabled;
- static __always_inline bool static_key_false(struct static_key *key);
- 
--#ifdef CONFIG_PARAVIRT_SPINLOCKS
--#define vcpu_is_preempted vcpu_is_preempted
--static inline bool vcpu_is_preempted(int cpu)
--{
--	return pv_lock_ops.vcpu_is_preempted(cpu);
--}
--#endif
--
- #include <asm/qspinlock.h>
- 
- /*
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -415,15 +415,6 @@ void kvm_disable_steal_time(void)
- 	wrmsr(MSR_KVM_STEAL_TIME, 0, 0);
- }
- 
--static bool kvm_vcpu_is_preempted(int cpu)
--{
--	struct kvm_steal_time *src;
--
--	src = &per_cpu(steal_time, cpu);
--
--	return !!src->preempted;
--}
--
- #ifdef CONFIG_SMP
- static void __init kvm_smp_prepare_boot_cpu(void)
- {
-@@ -480,9 +471,6 @@ void __init kvm_guest_init(void)
- 	if (kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
- 		has_steal_clock = 1;
- 		pv_time_ops.steal_clock = kvm_steal_clock;
--#ifdef CONFIG_PARAVIRT_SPINLOCKS
--		pv_lock_ops.vcpu_is_preempted = kvm_vcpu_is_preempted;
--#endif
- 	}
- 
- 	if (kvm_para_has_feature(KVM_FEATURE_PV_EOI))
-@@ -604,6 +592,14 @@ static void kvm_wait(u8 *ptr, u8 val)
- 	local_irq_restore(flags);
- }
- 
-+static bool __kvm_vcpu_is_preempted(int cpu)
-+{
-+	struct kvm_steal_time *src = &per_cpu(steal_time, cpu);
-+
-+	return !!src->preempted;
-+}
-+PV_CALLEE_SAVE_REGS_THUNK(__kvm_vcpu_is_preempted);
-+
- /*
-  * Setup pv_lock_ops to exploit KVM_FEATURE_PV_UNHALT if present.
-  */
-@@ -620,6 +616,12 @@ void __init kvm_spinlock_init(void)
- 	pv_lock_ops.queued_spin_unlock = PV_CALLEE_SAVE(__pv_queued_spin_unlock);
- 	pv_lock_ops.wait = kvm_wait;
- 	pv_lock_ops.kick = kvm_kick_cpu;
-+	pv_lock_ops.vcpu_is_preempted = PV_CALLEE_SAVE(__native_vcpu_is_preempted);
-+
-+	if (kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
-+		pv_lock_ops.vcpu_is_preempted =
-+			PV_CALLEE_SAVE(__kvm_vcpu_is_preempted);
-+	}
- }
- 
- static __init int kvm_spinlock_init_jump(void)
---- a/arch/x86/kernel/paravirt-spinlocks.c
-+++ b/arch/x86/kernel/paravirt-spinlocks.c
-@@ -12,7 +12,6 @@ __visible void __native_queued_spin_unlo
- {
- 	native_queued_spin_unlock(lock);
- }
--
- PV_CALLEE_SAVE_REGS_THUNK(__native_queued_spin_unlock);
- 
- bool pv_is_native_spin_unlock(void)
-@@ -21,9 +20,16 @@ bool pv_is_native_spin_unlock(void)
- 		__raw_callee_save___native_queued_spin_unlock;
- }
- 
--static bool native_vcpu_is_preempted(int cpu)
-+__visible bool __native_vcpu_is_preempted(int cpu)
- {
--	return 0;
-+	return false;
-+}
-+PV_CALLEE_SAVE_REGS_THUNK(__native_vcpu_is_preempted);
-+
-+bool pv_is_native_vcpu_is_preempted(void)
-+{
-+	return pv_lock_ops.queued_spin_unlock.func ==
-+		__raw_callee_save__native_vcpu_is_preempted;
- }
- 
- struct pv_lock_ops pv_lock_ops = {
-@@ -32,7 +38,7 @@ struct pv_lock_ops pv_lock_ops = {
- 	.queued_spin_unlock = PV_CALLEE_SAVE(__native_queued_spin_unlock),
- 	.wait = paravirt_nop,
- 	.kick = paravirt_nop,
--	.vcpu_is_preempted = native_vcpu_is_preempted,
-+	.vcpu_is_preempted = PV_CALLEE_SAVE(__native_vcpu_is_preempted),
- #endif /* SMP */
- };
- EXPORT_SYMBOL(pv_lock_ops);
---- a/arch/x86/kernel/paravirt_patch_32.c
-+++ b/arch/x86/kernel/paravirt_patch_32.c
-@@ -11,6 +11,7 @@ DEF_NATIVE(pv_mmu_ops, read_cr3, "mov %c
- 
- #if defined(CONFIG_PARAVIRT_SPINLOCKS)
- DEF_NATIVE(pv_lock_ops, queued_spin_unlock, "movb $0, (%eax)");
-+DEF_NATIVE(pv_lock_ops, vcpu_is_preempted, "movl $0, %eax");
- #endif
- 
- unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len)
-@@ -26,6 +27,7 @@ unsigned paravirt_patch_ident_64(void *i
- }
- 
- extern bool pv_is_native_spin_unlock(void);
-+extern bool pv_is_native_vcpu_is_preempted(void);
- 
- unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
- 		      unsigned long addr, unsigned len)
-@@ -54,6 +56,12 @@ unsigned native_patch(u8 type, u16 clobb
- 				end   = end_pv_lock_ops_queued_spin_unlock;
- 				goto patch_site;
- 			}
-+		case PARAVIRT_PATCH(pv_lock_ops.vcpu_is_preempted):
-+			if (pv_is_native_vcpu_is_preempted()) {
-+				start = start_pv_lock_ops_vcpu_is_preempted;
-+				end   = end_pv_lock_ops_vcpu_is_preempted;
-+				goto patch_site;
-+			}
- #endif
- 
- 	default:
---- a/arch/x86/kernel/paravirt_patch_64.c
-+++ b/arch/x86/kernel/paravirt_patch_64.c
-@@ -20,6 +20,7 @@ DEF_NATIVE(, mov64, "mov %rdi, %rax");
- 
- #if defined(CONFIG_PARAVIRT_SPINLOCKS)
- DEF_NATIVE(pv_lock_ops, queued_spin_unlock, "movb $0, (%rdi)");
-+DEF_NATIVE(pv_lock_ops, vcpu_is_preempted, "movl $0, rax");
- #endif
- 
- unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len)
-@@ -35,6 +36,7 @@ unsigned paravirt_patch_ident_64(void *i
- }
- 
- extern bool pv_is_native_spin_unlock(void);
-+extern bool pv_is_native_vcpu_is_preempted(void);
- 
- unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
- 		      unsigned long addr, unsigned len)
-@@ -66,6 +68,12 @@ unsigned native_patch(u8 type, u16 clobb
- 				end   = end_pv_lock_ops_queued_spin_unlock;
- 				goto patch_site;
- 			}
-+		case PARAVIRT_PATCH(pv_lock_ops.vcpu_is_preempted):
-+			if (pv_is_native_vcpu_is_preempted()) {
-+				start = start_pv_lock_ops_vcpu_is_preempted;
-+				end   = end_pv_lock_ops_vcpu_is_preempted;
-+				goto patch_site;
-+			}
- #endif
- 
- 	default:
---- a/arch/x86/xen/spinlock.c
-+++ b/arch/x86/xen/spinlock.c
-@@ -114,6 +114,8 @@ void xen_uninit_lock_cpu(int cpu)
- 	per_cpu(irq_name, cpu) = NULL;
- }
- 
-+PV_CALLEE_SAVE_REGS_THUNK(xen_vcpu_stolen);
-+
- /*
-  * Our init of PV spinlocks is split in two init functions due to us
-  * using paravirt patching and jump labels patching and having to do
-@@ -136,8 +138,7 @@ void __init xen_init_spinlocks(void)
- 	pv_lock_ops.queued_spin_unlock = PV_CALLEE_SAVE(__pv_queued_spin_unlock);
- 	pv_lock_ops.wait = xen_qlock_wait;
- 	pv_lock_ops.kick = xen_qlock_kick;
--
--	pv_lock_ops.vcpu_is_preempted = xen_vcpu_stolen;
-+	pv_lock_ops.vcpu_is_preempted = PV_CALLEE_SAVE(xen_vcpu_stolen);
- }
- 
- /*
+-- 
+Reza Arbab
