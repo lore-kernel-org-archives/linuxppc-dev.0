@@ -1,22 +1,31 @@
-Return-Path: <johnyoun@synopsys.com>
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
- [66.111.4.26])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
+ [IPv6:2a00:1450:400c:c09::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNH56ssTzDvY9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:03:45 +1100 (AEDT)
-Date: Tue, 15 Nov 2016 15:03:40 -0800
-Message-Id: <e2d277d12b82ea88e5092058e883f7cdecb5cec3.1479250846.git.johnyoun@synopsys.com>
-From: John Youn <johnyoun@synopsys.com>
-To: John Youn <johnyoun@synopsys.com>
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Christian Lamparter <chunkeey@googlemail.com>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Mark Rutland <mark.rutland@arm.com>,
- Rob Herring <robh+dt@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- John Youn <johnyoun@synopsys.com>
-Subject: [PATCH v3] usb: dwc2: add amcc,dwc-otg support
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNLJ5TmnzDvd3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:06:32 +1100 (AEDT)
+Received: by mail-wm0-x233.google.com with SMTP id f82so33021714wmf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 15:06:32 -0800 (PST)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <f1e8522c-b33a-77ce-c2c3-9c74a468e663@au1.ibm.com>
+References: <20160626173451.c8406cd0c7a87cc3f94d9753@gmail.com>
+ <70eb7a4c-be31-3fdd-a5b4-8075b29b3b38@au1.ibm.com>
+ <CAGXu5j+8=3Vxm52Y2QbkDiCPx5X6DWemPO7B=2kj2EdVQpLHpA@mail.gmail.com>
+ <f1e8522c-b33a-77ce-c2c3-9c74a468e663@au1.ibm.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 15 Nov 2016 15:06:28 -0800
+Message-ID: <CAGXu5jKD2r7Yz3GLekzbMZ+5qPqch7SLWUAbarvM7XR77=bgHw@mail.gmail.com>
+Subject: Re: [kernel-hardening] [PATCH] powerpc/kernel: Disable the latent
+ entropy plugin unconditionally
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>, Michal Marek <mmarek@suse.com>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>, PaX Team <pageexec@freemail.hu>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,67 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Christian Lamparter <chunkeey@googlemail.com>
+On Tue, Nov 15, 2016 at 2:45 PM, Andrew Donnellan
+<andrew.donnellan@au1.ibm.com> wrote:
+> On 16/11/16 09:41, Kees Cook wrote:
+>>
+>> Just checking in: did these patches materialize? I'd love to see
+>> plugins working on v4.10 for ppc.
+>
+>
+> Working on it!
+> https://github.com/ajdlinux/linux/tree/powerpc-gcc-plugin-infrastructure
 
-This patch adds support for the "amcc,usb-otg" device
-which is found in the PowerPC Canyonlands' dts.
+Very cool, thanks!
 
-The device definition was added by:
+> Just need to test with all the compilers to figure out which ones are broken
+> so we can put a version check in...
 
-commit c89b3458d8cc ("powerpc/44x: Add USB DWC DTS entry to Canyonlands
-board")
+Sounds good.
 
-but without any driver support as the dwc2 driver wasn't available at
-that time.
+-Kees
 
-Note: The system can't use the generic "snps,dwc2" compatible
-because of the special ahbcfg configuration. The default
-GAHBCFG_HBSTLEN_INCR4 of snps,dwc2 can cause a system hang
-when the USB and SATA is used concurrently.
-
-Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
-Signed-off-by: John Youn <johnyoun@synopsys.com>
----
-
-Sorry, the previous one broke compilation. This fixes it.
-
-Regards,
-John
-
-v3 [johnyoun]:
-* Fixed compilation issue
-
-v2 [johnyoun]:
-* Removed params struct
-* Minor commit message formatting
-
- Documentation/devicetree/bindings/usb/dwc2.txt | 1 +
- drivers/usb/dwc2/params.c                      | 1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/usb/dwc2.txt b/Documentation/devicetree/bindings/usb/dwc2.txt
-index ad8f7ff..6c7c2bce 100644
---- a/Documentation/devicetree/bindings/usb/dwc2.txt
-+++ b/Documentation/devicetree/bindings/usb/dwc2.txt
-@@ -12,6 +12,7 @@ Required properties:
-   - "lantiq,xrx200-usb": The DWC2 USB controller instance in Lantiq XRX SoCs;
-   - "amlogic,meson8b-usb": The DWC2 USB controller instance in Amlogic Meson8b SoCs;
-   - "amlogic,meson-gxbb-usb": The DWC2 USB controller instance in Amlogic S905 SoCs;
-+  - "amcc,dwc-otg": The DWC2 USB controller instance in AMCC Canyonlands 460EX SoCs;
-   - snps,dwc2: A generic DWC2 USB controller with default parameters.
- - reg : Should contain 1 register range (address and length)
- - interrupts : Should contain 1 interrupt
-diff --git a/drivers/usb/dwc2/params.c b/drivers/usb/dwc2/params.c
-index 513556a..a786256 100644
---- a/drivers/usb/dwc2/params.c
-+++ b/drivers/usb/dwc2/params.c
-@@ -239,6 +239,7 @@ const struct of_device_id dwc2_of_match_table[] = {
- 	{ .compatible = "samsung,s3c6400-hsotg", .data = NULL},
- 	{ .compatible = "amlogic,meson8b-usb", .data = &params_amlogic },
- 	{ .compatible = "amlogic,meson-gxbb-usb", .data = &params_amlogic },
-+	{ .compatible = "amcc,dwc-otg", .data = NULL },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, dwc2_of_match_table);
 -- 
-2.10.0
+Kees Cook
+Nexus Security
