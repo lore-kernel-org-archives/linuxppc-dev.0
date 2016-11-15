@@ -1,45 +1,24 @@
-Return-Path: <jthumshirn@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-yb0-x244.google.com (mail-yb0-x244.google.com
+ [IPv6:2607:f8b0:4002:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJBQg44yxzDt1x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 02:39:39 +1100 (AEDT)
-Date: Tue, 15 Nov 2016 16:39:33 +0100
-From: Johannes Thumshirn <jthumshirn@suse.de>
-To: Steffen Maier <maier@linux.vnet.ibm.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
- Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
- Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
- Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Johannes Thumshirn <jth@kernel.org>,
- James Smart <james.smart@avagotech.com>,
- Dick Kennedy <dick.kennedy@avagotech.com>,
- "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
- "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
-Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
- fc_bsg_job::reply directly
-Message-ID: <20161115153933.ktho6pui7awuvfyx@linux-x5ow.site>
-References: <cover.1476369687.git.jthumshirn@suse.de>
- <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
- <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
- <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
- <20161025074313.4ma4czgdj46imaei@linux-x5ow.site>
- <20161115115622.j4ker3atejcodqrc@linux-x5ow.site>
- <8647eacd-a029-dff0-4f78-dafef89a5ad9@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJBTq0qctzDt3c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 02:42:23 +1100 (AEDT)
+Received: by mail-yb0-x244.google.com with SMTP id h184so4045017ybb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 07:42:23 -0800 (PST)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Tue, 15 Nov 2016 10:42:19 -0500
+From: Tejun Heo <tj@kernel.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ akpm@linux-foundation.org
+Subject: Re: [v1 0/3] Support memory cgroup hotplug
+Message-ID: <20161115154219.GA28262@htj.duckdns.org>
+References: <1479167045-28136-1-git-send-email-bsingharora@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <8647eacd-a029-dff0-4f78-dafef89a5ad9@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1479167045-28136-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,50 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 15, 2016 at 03:31:27PM +0100, Steffen Maier wrote:
-> Hi Johannes,
+Hello, Balbir.
+
+On Tue, Nov 15, 2016 at 10:44:02AM +1100, Balbir Singh wrote:
+> In the absence of hotplug we use extra memory proportional to
+> (possible_nodes - online_nodes) * number_of_cgroups. PPC64 has a patch
+> to disable large consumption with large number of cgroups. This patch
+> adds hotplug support to memory cgroups and reverts the commit that
+> limited possible nodes to online nodes.
 > 
-> On 11/15/2016 12:56 PM, Johannes Thumshirn wrote:
-> > On Tue, Oct 25, 2016 at 09:43:14AM +0200, Johannes Thumshirn wrote:
-> > > On Fri, Oct 14, 2016 at 09:38:21AM +0200, Johannes Thumshirn wrote:
-> > > > On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
-> > > > > Hm, still behaves for me like I reported for v2:
-> > > > > http://marc.info/?l=linux-scsi&m=147637177902937&w=2
-> > 
-> > [...]
-> > 
-> > > > 
-> > > > The rational behind this is, in fc_req_to_bsgjob() we're assigning
-> > > > job->request as req->cmd and job->request_len = req->cmd_len. But without
-> > > > checkinf job->request_len we don't know whether we're save to touch
-> > > > job->request (a.k.a. bsg_request).
-> > > 
-> > > Hi Steffen,
-> > > Did you have any chance testing this? I hacked fcping to work with non-FCoE
-> > > and rports as well and tested with FCoE and lpfc. No problems seen from my
-> > > side. I've also pused the series (With this change folded in) to my git
-> > > tree at [1] if this helps you in any way.
-> > > 
-> > > [1] https://git.kernel.org/cgit/linux/kernel/git/jth/linux.git/log/?h=scsi-bsg-rewrite-v4
-> > > 
-> > 
-> > So I finally have a test system up and running. I have good and bad news. The
-> > good news is, I can't get the system crashing with my patches, the bad news is
-> > I can't get zfcp_ping and zfcp_show to output something but HBA_STATUS_ERROR
-> > with my patches and without.
+> Cc: Tejun Heo <tj@kernel.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
 
-Please ignore my last mails, apparently it's a wise idea to check which user
-id one has before running zfcp_ping...
+Can you please cc memcg maintainers?  Johannes Weiner
+<hannes@cmpxchg.org>, Michal Hocko <mhocko@kernel.org> and Vladimir
+Davydov <vdavydov.dev@gmail.com>.
 
-The good news for this is, I can now recreate the crashes you have and thus
-have a chance to fix them :-)
+Thanks.
 
-Byte,
-	Johannes
 -- 
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Jane Smithard, Graham Norton
-HRB 21284 (AG Nürnberg)
-Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+tejun
