@@ -1,23 +1,54 @@
-Return-Path: <paubert@iram.es>
-Received: from torres.puc.rediris.es (torres.puc.rediris.es
- [IPv6:2001:720:418:ca00::22])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (s3.sipsolutions.net [5.9.151.49])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ1tG4nMwzDt31
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 20:14:30 +1100 (AEDT)
-Date: Tue, 15 Nov 2016 09:06:44 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
- linuxppc-dev@lists.ozlabs.org, paulus@samba.org, anton@samba.org,
- npiggin@gmail.com
-Subject: Re: [PATCH v3 11/11] powerpc: rewrite local_t using soft_irq
-Message-ID: <20161115080644.GA23527@visitor2.iram.es>
-References: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1479146692-15726-12-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1479146692-15726-12-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJ2Dq2BXvzDqV5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 20:30:33 +1100 (AEDT)
+Message-ID: <1479202125.12007.24.camel@sipsolutions.net>
+Subject: Re: [RFC] fs: add userspace critical mounts event support
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Jouni
+ Malinen <j@w1.fi>, Seth Forshee <seth.forshee@canonical.com>, Tom Gundersen
+ <teg@jklm.no>,  Kay Sievers <kay@vrfy.org>, Bjorn Andersson
+ <bjorn.andersson@linaro.org>, Daniel Wagner <wagi@monom.org>, Daniel Wagner
+ <daniel.wagner@bmw-carit.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Herbert, Marc" <marc.herbert@intel.com>, Daniel Vetter
+ <daniel.vetter@ffwll.ch>, Rob Landley <rob@landley.net>, Mimi Zohar
+ <zohar@linux.vnet.ibm.com>, Felix Fietkau <nbd@nbd.name>, David Woodhouse
+ <dwmw2@infradead.org>, Roman Pen <r.peniaev@gmail.com>, Ming Lei
+ <ming.lei@canonical.com>, Andrew Morton <akpm@linux-foundation.org>, Michal
+ Marek <mmarek@suse.com>, Greg KH <gregkh@linuxfoundation.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Vikram Mulukutla
+ <markivx@codeaurora.org>,  Stephen Boyd <stephen.boyd@linaro.org>, Mark
+ Brown <broonie@kernel.org>, Takashi Iwai <tiwai@suse.de>,  Christian
+ Lamparter <chunkeey@googlemail.com>, Hauke Mehrtens <hauke@hauke-m.de>,
+ Josh Boyer <jwboyer@fedoraproject.org>,  Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, Jiri Slaby <jslaby@suse.com>, Andy Lutomirski
+ <luto@amacapital.net>,  Wu Fengguang <fengguang.wu@intel.com>, Richard
+ Purdie <rpurdie@rpsys.net>, Jeff Mahoney <jeffm@suse.com>,  Jacek
+ Anaszewski <j.anaszewski@samsung.com>, Abhay_Salunke@dell.com, Julia Lawall
+ <Julia.Lawall@lip6.fr>,  Gilles.Muller@lip6.fr, nicolas.palix@imag.fr,
+ David Howells <dhowells@redhat.com>,  Alessandro Rubini <rubini@gnudd.com>,
+ Kevin Cernekee <cernekee@gmail.com>, Kees Cook <keescook@chromium.org>,
+ Jonathan Corbet <corbet@lwn.net>, Thierry Martinez <martinez@nsup.org>,
+ linux-serial <linux-serial@vger.kernel.org>, "open list:DOCUMENTATION"
+ <linux-doc@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Josh Triplett <josh@joshtriplett.org>
+Date: Tue, 15 Nov 2016 10:28:45 +0100
+In-Reply-To: <20161108224726.GD13978@wotan.suse.de>
+References: <CAKMK7uGAacZ5Lc1n5CiCVKgKWMS-H3S=8muD-LO+wQjpGnOdJw@mail.gmail.com>
+ <20160824203901.GT3296@wotan.suse.de>
+ <CAKMK7uEJtEr91SM6V3hZzwMyzTVXJanMtPcWM81RFH_Xyq9KVQ@mail.gmail.com>
+ <20160825194133.GC3296@wotan.suse.de> <20160902235916.GO3296@wotan.suse.de>
+ <20160903002014.GP3296@wotan.suse.de>
+ <6332a54e-74c6-eafd-368e-71e87a3fa34e@landley.net>
+ <20161005180017.GD3296@wotan.suse.de>
+ <CA+55aFzrRekSrEczdtGb3RuOeJttJ7i7dQJxiTOXz8V+kr=hdA@mail.gmail.com>
+ <20161005194633.GE3296@wotan.suse.de>
+ <20161108224726.GD13978@wotan.suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,316 +58,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-    Hi,
-    
-On Mon, Nov 14, 2016 at 11:34:52PM +0530, Madhavan Srinivasan wrote:
-> Local atomic operations are fast and highly reentrant per CPU counters.
-> Used for percpu variable updates. Local atomic operations only guarantee
-> variable modification atomicity wrt the CPU which owns the data and
-> these needs to be executed in a preemption safe way.
-> 
-> Here is the design of this patch. Since local_* operations
-> are only need to be atomic to interrupts (IIUC), we have two options.
-> Either replay the "op" if interrupted or replay the interrupt after
-> the "op". Initial patchset posted was based on implementing local_* operation
-> based on CR5 which replay's the "op". Patchset had issues in case of
-> rewinding the address pointor from an array. This make the slow patch
+On Tue, 2016-11-08 at 23:47 +0100, Luis R. Rodriguez wrote:
 
-s/patch/path/ ?
+> This issue still stands. At Plumbers Johannes Berg did indicate to me
+> he had a simple elegant solution in mind. He suggested that since the
+> usermode helper was available, he had added support to be able to
+> differentiate async firmware request calls form sync requests,
 
-> really slow. Since CR5 based implementation proposed using __ex_table to find
-> the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
-> 
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
-> 
-> But this patch uses, powerpc_local_irq_pmu_save to soft_disable
-> interrupts (including PMIs). After finishing the "op", powerpc_local_irq_pmu_restore()
-> called and correspondingly interrupts are replayed if any occured.
-> 
-> patch re-write the current local_* functions to use arch_local_irq_disbale.
-> Base flow for each function is
-> 
-> {
-> 	powerpc_local_irq_pmu_save(flags)
-> 	load
-> 	..
-> 	store
-> 	powerpc_local_irq_pmu_restore(flags)
-> }
-> 
-> Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
-> instruction pair is used for local_* operations, which are heavy
-> on cycle count and they dont support a local variant. So to
-> see whether the new implementation helps, used a modified
-> version of Rusty's benchmark code on local_t.
-> 
-> https://lkml.org/lkml/2008/12/16/450
-> 
-> Modifications to Rusty's benchmark code:
-> - Executed only local_t test
-> 
-> Here are the values with the patch.
-> 
-> Time in ns per iteration
-> 
-> Local_t             Without Patch           With Patch
-> 
-> _inc                        28              8
-> _add                        28              8
-> _read                       3               3
-> _add_return	            28              7
-> 
-> Currently only asm/local.h has been rewrite, and also
+For reference:
 
-s/rewrite/rewritten/
+commit e9045f9178f3e3445a3a5b85206f8681b3869562
+Author: Johannes Berg <johannes.berg@intel.com>
+Date:   Mon Mar 29 17:57:20 2010 +0200
 
-> the entire change is tested only in PPC64 (pseries guest)
-> and PPC64 host (LE)
+    firmware class: export nowait to userspace
 
-I'm really wondering whether this is the kind of thing that would
-benefit from transactions. But transactional memory was only implemented
-on Power7 and later IIRC, and we still need to support machines without
-transactional memory. 
+> it can determine we're initramfs. The semantics issue is the same
+> though, is there a generic way to determine we're initramfs ? What if
+> we move multiple levels? Anyway -- provided we could figure this out,
+> userspace would simply yield and wait until the real rootfs is met. 
 
-Boot time patching would probably be very cumbersome, so I believe
-that the only sensible thing to do would be to add a config option 
-that would generate a kernel that only runs on machines with 
-transactional memory.
+One way or another we have to have this kind of information somewhere.
+I don't actually know how/where though.
 
-And then benchmark...
+> Upon pivot_root() the assumption is all previous udev events pending
+> would be re-triggered and finally udev could finally confirm/deny if
+> the firmware was present.
 
-    Gabriel
+The retriggering is already the case, as far as I know, if only to load
+modules that weren't part of initramfs.
 
-> 
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/local.h | 201 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 201 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-> index b8da91363864..7d117c07b0b1 100644
-> --- a/arch/powerpc/include/asm/local.h
-> +++ b/arch/powerpc/include/asm/local.h
-> @@ -3,6 +3,9 @@
->  
->  #include <linux/percpu.h>
->  #include <linux/atomic.h>
-> +#include <linux/irqflags.h>
-> +
-> +#include <asm/hw_irq.h>
->  
->  typedef struct
->  {
-> @@ -14,6 +17,202 @@ typedef struct
->  #define local_read(l)	atomic_long_read(&(l)->a)
->  #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
->  
-> +#ifdef CONFIG_PPC64
-> +
-> +static __inline__ void local_add(long i, local_t *l)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__(
-> +	PPC_LL" %0,0(%2)\n\
-> +	add	%0,%1,%0\n"
-> +	PPC_STL" %0,0(%2)\n"
-> +	: "=&r" (t)
-> +	: "r" (i), "r" (&(l->a.counter)));
-> +	powerpc_local_irq_pmu_restore(flags);
-> +}
-> +
-> +static __inline__ void local_sub(long i, local_t *l)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__(
-> +	PPC_LL" %0,0(%2)\n\
-> +	subf	%0,%1,%0\n"
-> +	PPC_STL" %0,0(%2)\n"
-> +	: "=&r" (t)
-> +	: "r" (i), "r" (&(l->a.counter)));
-> +	powerpc_local_irq_pmu_restore(flags);
-> +}
-> +
-> +static __inline__ long local_add_return(long a, local_t *l)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__(
-> +	PPC_LL" %0,0(%2)\n\
-> +	add	%0,%1,%0\n"
-> +	PPC_STL "%0,0(%2)\n"
-> +	: "=&r" (t)
-> +	: "r" (a), "r" (&(l->a.counter))
-> +	: "memory");
-> +	powerpc_local_irq_pmu_restore(flags);
-> +
-> +	return t;
-> +}
-> +
-> +#define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
-> +
-> +static __inline__ long local_sub_return(long a, local_t *l)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__(
-> +	PPC_LL" %0,0(%2)\n\
-> +	subf	%0,%1,%0\n"
-> +	PPC_STL "%0,0(%2)\n"
-> +	: "=&r" (t)
-> +	: "r" (a), "r" (&(l->a.counter))
-> +	: "memory");
-> +	powerpc_local_irq_pmu_restore(flags);
-> +
-> +	return t;
-> +}
-> +
-> +static __inline__ long local_inc_return(local_t *l)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__(
-> +	PPC_LL" %0,0(%1)\n\
-> +	addic	%0,%0,1\n"
-> +	PPC_STL "%0,0(%1)\n"
-> +	: "=&r" (t)
-> +	: "r" (&(l->a.counter))
-> +	: "xer", "memory");
-> +	powerpc_local_irq_pmu_restore(flags);
-> +
-> +	return t;
-> +}
-> +
-> +/*
-> + * local_inc_and_test - increment and test
-> + * @l: pointer of type local_t
-> + *
-> + * Atomically increments @l by 1
-> + * and returns true if the result is zero, or false for all
-> + * other cases.
-> + */
-> +#define local_inc_and_test(l) (local_inc_return(l) == 0)
-> +
-> +static __inline__ long local_dec_return(local_t *l)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__(
-> +	PPC_LL" %0,0(%1)\n\
-> +	addic	%0,%0,-1\n"
-> +	PPC_STL "%0,0(%1)\n"
-> +	: "=&r" (t)
-> +	: "r" (&(l->a.counter))
-> +	: "xer", "memory");
-> +	powerpc_local_irq_pmu_restore(flags);
-> +
-> +	return t;
-> +}
-> +
-> +#define local_inc(l)	local_inc_return(l)
-> +#define local_dec(l)	local_dec_return(l)
-> +
-> +#define local_cmpxchg(l, o, n) \
-> +	(cmpxchg_local(&((l)->a.counter), (o), (n)))
-> +#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
-> +
-> +/**
-> + * local_add_unless - add unless the number is a given value
-> + * @l: pointer of type local_t
-> + * @a: the amount to add to v...
-> + * @u: ...unless v is equal to u.
-> + *
-> + * Atomically adds @a to @l, so long as it was not @u.
-> + * Returns non-zero if @l was not @u, and zero otherwise.
-> + */
-> +static __inline__ int local_add_unless(local_t *l, long a, long u)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__ (
-> +	PPC_LL" %0,0(%1)\n\
-> +	cmpw	0,%0,%3 \n\
-> +	beq-	2f \n\
-> +	add	%0,%2,%0 \n"
-> +	PPC_STL" %0,0(%1) \n"
-> +"       subf	%0,%2,%0 \n\
-> +2:"
-> +        : "=&r" (t)
-> +        : "r" (&(l->a.counter)), "r" (a), "r" (u)
-> +        : "cc", "memory");
-> +        powerpc_local_irq_pmu_restore(flags);
-> +
-> +	return t != u;
-> +}
-> +
-> +#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
-> +
-> +#define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
-> +#define local_dec_and_test(l)		(local_dec_return((l)) == 0)
-> +
-> +/*
-> + * Atomically test *l and decrement if it is greater than 0.
-> + * The function returns the old value of *l minus 1.
-> + */
-> +static __inline__ long local_dec_if_positive(local_t *l)
-> +{
-> +	long t;
-> +	unsigned long flags;
-> +
-> +	powerpc_local_irq_pmu_save(flags);
-> +	__asm__ __volatile__(
-> +	PPC_LL" %0,0(%1)\n\
-> +	cmpwi	%0,1\n\
-> +	addi	%0,%0,-1\n\
-> +	blt-	2f\n"
-> +	PPC_STL "%0,0(%1)\n"
-> +	"\n\
-> +2:"	: "=&b" (t)
-> +	: "r" (&(l->a.counter))
-> +	: "cc", "memory");
-> +	powerpc_local_irq_pmu_restore(flags);
-> +
-> +	return t;
-> +}
-> +
-> +/* Use these for per-cpu local_t variables: on some archs they are
-> + * much more efficient than these naive implementations.  Note they take
-> + * a variable, not an address.
-> + */
-> +
-> +#define __local_inc(l)		((l)->a.counter++)
-> +#define __local_dec(l)		((l)->a.counter++)
-> +#define __local_add(i,l)	((l)->a.counter+=(i))
-> +#define __local_sub(i,l)	((l)->a.counter-=(i))
-> +
-> +#else
-> +
->  #define local_add(i,l)	atomic_long_add((i),(&(l)->a))
->  #define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
->  #define local_inc(l)	atomic_long_inc(&(l)->a)
-> @@ -172,4 +371,6 @@ static __inline__ long local_dec_if_positive(local_t *l)
->  #define __local_add(i,l)	((l)->a.counter+=(i))
->  #define __local_sub(i,l)	((l)->a.counter-=(i))
->  
-> +#endif /* CONFIG_PPC64 */
-> +
->  #endif /* _ARCH_POWERPC_LOCAL_H */
-> -- 
-> 2.7.4
+> note Johannes was asking for *all* async firmware requests to always
+> rely on the kernel syfs UMH fallback -- this suggestion is against
+> the direction we've been taking to eventually compartamentalize the
+> kernel UMH code, so whatever we decide to do, lets please take a
+> breather and seriously address this properly *with* systemd folks.
+
+I was saying that because that's the only way you can actually rely on
+this functionality as a system integrator. If drivers have to opt in or
+can opt out then you'll always end up chasing the drivers around.
+
+My argument basically goes like this:
+
+First, given good drivers (i.e. using request_firmware_nowait())
+putting firmware even for a built-in driver into initramfs or not
+should be a system integrator decision. If they don't need the device
+that early, it should be possible for them to delay it. Or, perhaps, if
+the firmware is too big, etc. I'm sure we can all come up with more
+examples of why you'd want to do it one way or another.
+
+Second, all of this can be solved in other ways by adding logic to the
+kernel, like the rejected proposal to add a "rootfs available" bit
+somewhere, that would cause async requests to behave similarly within
+the kernel (don't return "not found" until they time out or this bit is
+set, and retry loading when the bit gets set)
+
+Third, having this in place can be more friendly to users who play with
+kernel compilation, modules, etc. This is a fringe group in some ways,
+but it is (was?) actually a relatively common complaint that drivers
+built into the kernel wouldn't work - we'd always have to direct users
+to do magic steps like rebuilding initramfs with the right options etc.
+
+johannes
