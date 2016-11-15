@@ -1,17 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tHvXW6GdDzDvgf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 15:28:43 +1100 (AEDT)
-Message-ID: <1479184113.2608.45.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc/64: Fix setting of AIL in hypervisor mode
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Anton Blanchard <anton@au1.ibm.com>
-Date: Tue, 15 Nov 2016 15:28:33 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tHwDk54DTzDvYF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 16:00:06 +1100 (AEDT)
+Message-ID: <1479185995.21746.10.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Florian Larysch <fl@n621.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 14 Nov 2016 22:59:55 -0600
+In-Reply-To: <20161114122805.11376-1-fl@n621.de>
+References: <20161114122805.11376-1-fl@n621.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Subject: Re: [PATCH] T4240RBD: add device tree entry for W83793
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,55 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit d3cbff1b5 "powerpc: Put exception configuration in a common place"
-broke the setting of the AIL bit (which enables taking exceptions with
-the MMU still on) on all processors, moving it incorrectly to a function
-called only on the boot CPU. This was correct for the guest case but
-not when running in hypervisor mode.
+On Mon, 2016-11-14 at 13:28 +0100, Florian Larysch wrote:
+> The T4240RDB contains a W83793 hardware monitoring chip. Add a device
+> tree entry to make the driver attach to it, as the i2c-mpc bus driver
+> dropped support for class-based instantiation of devices a long time
+> ago.
+> 
+> Signed-off-by: Florian Larysch <fl@n621.de>
+> ---
+>  arch/powerpc/boot/dts/fsl/t4240rdb.dts | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+> b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+> index cc0a264..b35eea1 100644
+> --- a/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+> +++ b/arch/powerpc/boot/dts/fsl/t4240rdb.dts
+> @@ -142,6 +142,10 @@
+>  				reg = <0x68>;
+>  				interrupts = <0x1 0x1 0 0>;
+>  			};
+> +			hwmon@2f {
+> +				compatible = "winbond,w83793";
+> +				reg = <0x2f>;
+> +			};
+>  		};
+>  
+>  		sdhc@114000 {
 
-This fixes it by partially reverting that commit, putting the setting
-back in cpu_ready_for_interrupts()
+Please (in a separate patch) add this to
+Documentation/devicetree/bindings/i2c/trivial-devices.txt and CC\
+devicetree@vger.kernel.org
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Fixes: d3cbff1b5 ("powerpc: Put exception configuration in a common place")
-CC: stable@vger.kernel.org # v4.8+
----
- arch/powerpc/kernel/setup_64.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+Also, please keep the i2c nodes sorted by address.
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 7ac8e6e..ac75224 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -226,17 +226,25 @@ static void __init configure_exceptions(void)
- 		if (firmware_has_feature(FW_FEATURE_OPAL))
- 			opal_configure_cores();
- 
--		/* Enable AIL if supported, and we are in hypervisor mode */
--		if (early_cpu_has_feature(CPU_FTR_HVMODE) &&
--		    early_cpu_has_feature(CPU_FTR_ARCH_207S)) {
--			unsigned long lpcr = mfspr(SPRN_LPCR);
--			mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
--		}
-+		/* AIL on native is done in cpu_ready_for_interrupts */
- 	}
- }
- 
- static void cpu_ready_for_interrupts(void)
- {
-+	/*
-+	 * Enable AIL if supported, and we are in hypervisor mode. This
-+	 * is called once for every processor.
-+	 *
-+	 * If we are not in hypervisor mode the job is done once for
-+	 * the whole partition in configure_exceptions().
-+	 */
-+	if (early_cpu_has_feature(CPU_FTR_HVMODE) &&
-+	    early_cpu_has_feature(CPU_FTR_ARCH_207S)) {
-+		unsigned long lpcr = mfspr(SPRN_LPCR);
-+		mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
-+	}
-+
- 	/* Set IR and DR in PACA MSR */
- 	get_paca()->kernel_msr = MSR_KERNEL;
- }
+-Scott
