@@ -1,21 +1,24 @@
-Return-Path: <Zubair.Kakakhel@imgtec.com>
-Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tJBxs1Z0pzDvgC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 03:03:12 +1100 (AEDT)
-Subject: Re: [Patch v7 3/7] irqchip: xilinx: restructure and use jump label api
-To: Michal Simek <michal.simek@xilinx.com>, <monstr@monstr.eu>,
- <tglx@linutronix.de>, <jason@lakedaemon.net>, <marc.zyngier@arm.com>
-References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
- <20161114121351.10924-4-Zubair.Kakakhel@imgtec.com>
- <f60948d3-d283-bb53-268b-9638f686ff35@xilinx.com>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <mpe@ellerman.id.au>
-From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
-Message-ID: <cccf1577-b979-4034-7dda-5d43850c25a7@imgtec.com>
-Date: Tue, 15 Nov 2016 16:03:08 +0000
+Return-Path: <lsorense@csclub.uwaterloo.ca>
+Received: from caffeine.csclub.uwaterloo.ca (caffeine.csclub.uwaterloo.ca
+ [129.97.134.17])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJCSM2GNzzDvj0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 03:26:10 +1100 (AEDT)
+Date: Tue, 15 Nov 2016 11:26:05 -0500
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Mathieu Malaterre <malat@debian.org>, linux-fbdev@vger.kernel.org,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] Fix loading of module radeonfb on PowerMac
+Message-ID: <20161115162605.GI1465@csclub.uwaterloo.ca>
+References: <1479153557-20849-1-git-send-email-malat@debian.org>
+ <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
 MIME-Version: 1.0
-In-Reply-To: <f60948d3-d283-bb53-268b-9638f686ff35@xilinx.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +28,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Nov 15, 2016 at 01:46:10PM +0200, Tomi Valkeinen wrote:
+> Hi,
+> 
+> On 14/11/16 21:59, Mathieu Malaterre wrote:
+> > When the linux kernel is build with (typical kernel ship with Debian
+> > installer):
+> > 
+> > CONFIG_FB_OF=y
+> > CONFIG_VT_HW_CONSOLE_BINDING=y
+> > CONFIG_FB_RADEON=m
+> > 
+> > The offb driver takes precedence over module radeonfb. It is then
+> > impossible to load the module, error reported is:
+> > 
+> > [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+> > [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+> > [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+> > [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+> > 
+> > This patch reproduce the behavior of the module radeon, so as to make it
+> > possible to load radeonfb when offb is first loaded.
+> > 
+> > It should be noticed that `offb_destroy` is never called which explain the
+> > need to skip error detection on the radeon side.
+> > 
+> > Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> > Link: https://bugs.debian.org/826629#57
+> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=119741
+> > Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> > ---
+> 
+> Please always have a changelog in patch new revisions. For individual
+> patches, you can insert the changes here.
+> 
+> >  drivers/video/fbdev/aty/radeon_base.c | 26 ++++++++++++++++++++++++++
+> >  1 file changed, 26 insertions(+)
+> > 
+> > diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+> > index 218339a..84d634b 100644
+> > --- a/drivers/video/fbdev/aty/radeon_base.c
+> > +++ b/drivers/video/fbdev/aty/radeon_base.c
+> > @@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
+> >  	.read	= radeon_show_edid2,
+> >  };
+> >  
+> > +static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
+> > +{
+> > +	struct apertures_struct *ap;
+> > +
+> > +	ap = alloc_apertures(1);
+> > +	if (!ap)
+> > +		return -ENOMEM;
+> > +
+> > +	ap->ranges[0].base = pci_resource_start(pdev, 0);
+> > +	ap->ranges[0].size = pci_resource_len(pdev, 0);
+> > +
+> > +	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
+> > +	kfree(ap);
+> > +
+> > +	return 0;
+> > +}
+> >  
+> >  static int radeonfb_pci_register(struct pci_dev *pdev,
+> >  				 const struct pci_device_id *ent)
+> > @@ -2314,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+> >  	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+> >  	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+> >  
+> > +	ret = radeon_kick_out_firmware_fb(pdev);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> >  	/* request the mem regions */
+> >  	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+> >  	if (ret < 0) {
+> >  		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+> >  			pci_name(rinfo->pdev));
+> > +#ifndef CONFIG_PPC
+> >  		goto err_release_fb;
+> > +#endif
+> 
+> If this is not a problem on PPC, the kernel shouldn't print an error either.
+> 
+> >  	}
+> >  
+> >  	ret = pci_request_region(pdev, 2, "radeonfb mmio");
+> >  	if (ret < 0) {
+> >  		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+> >  			pci_name(rinfo->pdev));
+> > +#ifndef CONFIG_PPC
+> >  		goto err_release_pci0;
+> > +#endif
+> 
+> Same here.
+> 
+> >  	}
+> >  
+> >  	/* map the regions */
+> > @@ -2511,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+> >  	iounmap(rinfo->mmio_base);
+> >  err_release_pci2:
+> >  	pci_release_region(pdev, 2);
+> > +#ifndef CONFIG_PPC
+> >  err_release_pci0:
+> >  	pci_release_region(pdev, 0);
+> >  err_release_fb:
+> >          framebuffer_release(info);
+> > +#endif
+> >  err_disable:
+> >  err_out:
+> >  	return ret;
+> > 
+> 
+> So I don't quite follow what's going on here. Why the CONFIG_PPC
+> conditionals? Is this problem only with OFFB and only with PPC?
 
-On 11/15/2016 12:49 PM, Michal Simek wrote:
-> On 14.11.2016 13:13, Zubair Lutfullah Kakakhel wrote:
->> Add a global structure to house various variables.
->> And cleanup read/write handling by using jump label api.
->>
->> Signed-off-by: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
->>
+I don't think so.  I am no convinced the pci_request_region even serves
+a purpose.  Certainly a number of the other drivers don't even bother
+doing it.
 
-...
+The problem is that offb does do it, and radeon_fb tries to do it,
+and since one is trying to take over from the other, it can't do that
+because the area is already reserved.
 
->> @@ -138,59 +136,75 @@ static const struct irq_domain_ops xintc_irq_domain_ops = {
->>  static int __init xilinx_intc_of_init(struct device_node *intc,
->>  					     struct device_node *parent)
->>  {
->> -	u32 nr_irq, intr_mask;
->> +	u32 nr_irq;
->>  	int ret;
->> +	struct xintc_irq_chip *irqc;
->>
->> -	intc_baseaddr = of_iomap(intc, 0);
->> -	BUG_ON(!intc_baseaddr);
->> +	if (xintc_irqc) {
->> +		pr_err("irq-xilinx: Multiple instances aren't supported\n");
->> +		return -EINVAL;
->> +	}
->
-> I don't agree with this.
-> Pretty long time ago we were added support for multiple instances in
-> xilinx private tree.
-> You can look here.
->
-> https://github.com/Xilinx/linux-xlnx/blob/master/drivers/irqchip/irq-xilinx-intc.c
->
-> Not sure if this the latest way how to do it but as you can see
-> we were setting up
-> irq_set_handler_data(irq, intc);
->
-> and then when you need that structure we were calling
-> struct intc *local_intc = irq_data_get_irq_chip_data(d);
->
-> And that should be it to support multiple instance of this driver.
->
-> Based on 5/7 you are describing your interrupt subsystem like this.
->
-> Peripherals --> xilinx_intcontroller -> mips_cpu_int controller
-> If mips_cpu_int has more than one input you can connect more xilinx intc
-> controllers.
-> If not you still have an option to connect
-> xilinx_intcontroller(up to 32 peripherals) -> xilinx_intcontroller(one
-> intc + up to 31 peripherals)  -> mips_cpu_int controller
+> And I think the code itself should have comments on this rather strange
+> behavior: the driver fails to get HW resources, but decides to ignore
+> the failure on PPC.
 
-That configuration in FPGA is technically possible. Although not done/needed in the
-way we use the Xilinx Interrupt Controller IP block in MIPSfpga.
+It seems the simpler answer is to just not do it at all.
 
-This series takes the drivers out of arch code and makes it accessible.
-Any further development on the driver would be common to all architectures.
-Support for multiple instances would be a 'new feature'.
+Now if some architectures require you to do it (no idea), then that
+could be an issue.
 
-I say this as this series keeps growing and mutating in terms of its scope
-and work.
+Looking at all the other FB drivers, none of the ones that support
+kicking out another driver to takeover call pci_request_region.
+The ones that do call it all appear to be older drivers, likely not
+updated much lately.
 
-Would it be possible to ack this so that the restructure out of arch code
-can move forward?
-
-Regards,
-ZubairLK
-
->
-> Thanks,
-> Michal
->
+-- 
+Len Sorensen
