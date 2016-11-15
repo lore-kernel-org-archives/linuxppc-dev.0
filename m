@@ -1,39 +1,21 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNYk6hxDzDw1W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:16:26 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAFNE7w8006169
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:16:24 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26r9rwcf2c-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:16:24 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Tue, 15 Nov 2016 16:16:23 -0700
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Subject: [PATCH 14/14] cxlflash: Migrate scsi command pointer to AFU command
-Date: Tue, 15 Nov 2016 17:16:16 -0600
-In-Reply-To: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1479251776-23186-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJPBz51CMzDt1s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:45:15 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id 144so8666257pfv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 15:45:15 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+To: mpe@ellerman.id.au, hannes@cmpxchg.org, mhocko@kernel.org,
+ vdavydov.dev@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ Balbir Singh <bsingharora@gmail.com>, Tejun Heo <tj@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: [RESEND][v1 0/3] Support memory cgroup hotplug
+Date: Wed, 16 Nov 2016 10:44:58 +1100
+Message-Id: <1479253501-26261-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,87 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In the absence of hotplug we use extra memory proportional to
+(possible_nodes - online_nodes) * number_of_cgroups. PPC64 has a patch
+to disable large consumption with large number of cgroups. This patch
+adds hotplug support to memory cgroups and reverts the commit that
+limited possible nodes to online nodes.
 
-Currently, when sending a SCSI command, the pointer is stored in a
-reserved field of the AFU command descriptor for retrieval once the
-SCSI command has completed. In order to support new descriptor formats
-that make use of the reserved field, the pointer is migrated to outside
-the descriptor where it can still be found during completion processing.
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org> 
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
 
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/common.h  |  1 +
- drivers/scsi/cxlflash/main.c    | 10 +++++-----
- drivers/scsi/cxlflash/sislite.h |  2 +-
- 3 files changed, 7 insertions(+), 6 deletions(-)
+I've tested this patches under a VM with two nodes and movable
+nodes enabled. I've offlined nodes and checked that the system
+and cgroups with tasks deep in the hierarchy continue to work
+fine.
 
-diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index 30c3cdb..7a892c5 100644
---- a/drivers/scsi/cxlflash/common.h
-+++ b/drivers/scsi/cxlflash/common.h
-@@ -129,6 +129,7 @@ struct afu_cmd {
- 	struct sisl_ioarcb rcb;	/* IOARCB (cache line aligned) */
- 	struct sisl_ioasa sa;	/* IOASA must follow IOARCB */
- 	struct afu *parent;
-+	struct scsi_cmnd *scp;
- 	struct completion cevent;
- 
- 	u8 cmd_tmf:1;
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 7fc8843..08ef68a 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -151,7 +151,7 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
-  *
-  * Prepares and submits command that has either completed or timed out to
-  * the SCSI stack. Checks AFU command back into command pool for non-internal
-- * (rcb.scp populated) commands.
-+ * (cmd->scp populated) commands.
-  */
- static void cmd_complete(struct afu_cmd *cmd)
- {
-@@ -161,8 +161,8 @@ static void cmd_complete(struct afu_cmd *cmd)
- 	struct cxlflash_cfg *cfg = afu->parent;
- 	bool cmd_is_tmf;
- 
--	if (cmd->rcb.scp) {
--		scp = cmd->rcb.scp;
-+	if (cmd->scp) {
-+		scp = cmd->scp;
- 		if (unlikely(cmd->sa.ioasc))
- 			process_cmd_err(cmd, scp);
- 		else
-@@ -340,7 +340,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	cfg->tmf_active = true;
- 	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
--	cmd->rcb.scp = scp;
-+	cmd->scp = scp;
- 	cmd->parent = afu;
- 	cmd->cmd_tmf = true;
- 
-@@ -470,7 +470,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 		cmd->rcb.data_ea = sg_dma_address(sg);
- 	}
- 
--	cmd->rcb.scp = scp;
-+	cmd->scp = scp;
- 	cmd->parent = afu;
- 
- 	cmd->rcb.ctx_id = afu->ctx_hndl;
-diff --git a/drivers/scsi/cxlflash/sislite.h b/drivers/scsi/cxlflash/sislite.h
-index 347fc16..1a2d09c 100644
---- a/drivers/scsi/cxlflash/sislite.h
-+++ b/drivers/scsi/cxlflash/sislite.h
-@@ -72,7 +72,7 @@ struct sisl_ioarcb {
- 	u16 timeout;		/* in units specified by req_flags */
- 	u32 rsvd1;
- 	u8 cdb[16];		/* must be in big endian */
--	struct scsi_cmnd *scp;
-+	u64 reserved;		/* Reserved area */
- } __packed;
- 
- struct sisl_rc {
+Balbir Singh (3):
+  Add basic infrastructure for memcg hotplug support
+  Move from all possible nodes to online nodes
+  powerpc: fix node_possible_map limitations
+
+ arch/powerpc/mm/numa.c |  7 ----
+ mm/memcontrol.c        | 96 +++++++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 83 insertions(+), 20 deletions(-)
+
 -- 
-2.1.0
+2.5.5
