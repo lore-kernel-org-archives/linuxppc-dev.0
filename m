@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNXH2vdYzDvxr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:15:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJNXW07W3zDvnH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:15:22 +1100 (AEDT)
 Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAFNE9an064689
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:07 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26r2qsggb7-1
+ uAFNE9XQ064643
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:20 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26r2qsggmc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:07 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2016 18:15:20 -0500
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Tue, 15 Nov 2016 18:15:07 -0500
+ Tue, 15 Nov 2016 16:15:19 -0700
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -29,11 +29,11 @@ Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>,
  Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Subject: [PATCH 07/14] cxlflash: Use cmd_size for private commands
-Date: Tue, 15 Nov 2016 17:15:00 -0600
+Subject: [PATCH 08/14] cxlflash: Remove private command pool
+Date: Tue, 15 Nov 2016 17:15:12 -0600
 In-Reply-To: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1479251700-22928-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1479251712-22965-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,209 +45,168 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 
-Instead of using a private pool of AFU commands, use cmd_size to prime
-the private pool of SCSI commands such that they are allocated with a
-size large enough to contain an aligned AFU command. Use scsi_cmd_priv()
-to derive the aligned/zeroed private command on queuecommand and TMF
-paths. Remove cmd_checkout() as it is no longer required. The remaining
-AFU private command infrastructure will be removed in a cleanup commit.
+Clean up and remove the remaining private command pool infrastructure
+that is no longer required.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/common.h | 14 +++++++++
- drivers/scsi/cxlflash/main.c   | 65 +++++++-----------------------------------
- 2 files changed, 25 insertions(+), 54 deletions(-)
+ drivers/scsi/cxlflash/common.h |  7 -----
+ drivers/scsi/cxlflash/main.c   | 68 ------------------------------------------
+ 2 files changed, 75 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index 0744546..40507a9 100644
+index 40507a9..465330f 100644
 --- a/drivers/scsi/cxlflash/common.h
 +++ b/drivers/scsi/cxlflash/common.h
-@@ -19,6 +19,7 @@
- #include <linux/rwsem.h>
- #include <linux/types.h>
- #include <scsi/scsi.h>
-+#include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_device.h>
+@@ -136,8 +136,6 @@ struct afu_cmd {
+ 	spinlock_t slock;
+ 	struct completion cevent;
+ 	struct afu *parent;
+-	int slot;
+-	atomic_t free;
  
- extern const struct file_operations cxlflash_cxl_fops;
-@@ -146,6 +147,19 @@ struct afu_cmd {
- 	 */
- } __aligned(cache_line_size());
+ 	u8 cmd_tmf:1;
  
-+static inline struct afu_cmd *sc_to_afuc(struct scsi_cmnd *sc)
-+{
-+	return PTR_ALIGN(scsi_cmd_priv(sc), __alignof__(struct afu_cmd));
-+}
-+
-+static inline struct afu_cmd *sc_to_afucz(struct scsi_cmnd *sc)
-+{
-+	struct afu_cmd *afuc = sc_to_afuc(sc);
-+
-+	memset(afuc, 0, sizeof(*afuc));
-+	return afuc;
-+}
-+
- struct afu {
+@@ -164,10 +162,6 @@ struct afu {
  	/* Stuff requiring alignment go first. */
  
+ 	u64 rrq_entry[NUM_RRQ_ENTRY];	/* 2K RRQ */
+-	/*
+-	 * Command & data for AFU commands.
+-	 */
+-	struct afu_cmd cmd[CXLFLASH_NUM_CMDS];
+ 
+ 	/* Beware of alignment till here. Preferably introduce new
+ 	 * fields after this point
+@@ -189,7 +183,6 @@ struct afu {
+ 	bool read_room;
+ 	atomic64_t room;
+ 	u64 hb;
+-	u32 cmd_couts;		/* Number of command checkouts */
+ 	u32 internal_lun;	/* User-desired LUN mode for this AFU */
+ 
+ 	char version[16];
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 816d85c..7fa27db 100644
+index 7fa27db..a17bff2 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -35,38 +35,6 @@ MODULE_AUTHOR("Matthew R. Ochs <mrochs@linux.vnet.ibm.com>");
+@@ -35,33 +35,6 @@ MODULE_AUTHOR("Matthew R. Ochs <mrochs@linux.vnet.ibm.com>");
  MODULE_LICENSE("GPL");
  
  /**
-- * cmd_checkout() - checks out an AFU command
-- * @afu:	AFU to checkout from.
+- * cmd_checkin() - checks in an AFU command
+- * @cmd:	AFU command to checkin.
 - *
-- * Commands are checked out in a round-robin fashion. Note that since
-- * the command pool is larger than the hardware queue, the majority of
-- * times we will only loop once or twice before getting a command. The
-- * CDB within the command is initialized (zeroed) prior to returning.
-- *
-- * Return: The checked out command or NULL when command pool is empty.
+- * Safe to pass commands that have already been checked in. Several
+- * internal tracking fields are reset as part of the checkin. Note
+- * that these are intentionally reset prior to toggling the free bit
+- * to avoid clobbering values in the event that the command is checked
+- * out right away.
 - */
--static struct afu_cmd *cmd_checkout(struct afu *afu)
+-static void cmd_checkin(struct afu_cmd *cmd)
 -{
--	int k, dec = CXLFLASH_NUM_CMDS;
--	struct afu_cmd *cmd;
+-	cmd->rcb.scp = NULL;
+-	cmd->rcb.timeout = 0;
+-	cmd->sa.ioasc = 0;
+-	cmd->cmd_tmf = false;
+-	cmd->sa.host_use[0] = 0; /* clears both completion and retry bytes */
 -
--	while (dec--) {
--		k = (afu->cmd_couts++ & (CXLFLASH_NUM_CMDS - 1));
--
--		cmd = &afu->cmd[k];
--
--		if (!atomic_dec_if_positive(&cmd->free)) {
--			pr_devel("%s: returning found index=%d cmd=%p\n",
--				 __func__, cmd->slot, cmd);
--			memset(cmd->rcb.cdb, 0, sizeof(cmd->rcb.cdb));
--			return cmd;
--		}
+-	if (unlikely(atomic_inc_return(&cmd->free) != 1)) {
+-		pr_err("%s: Freeing cmd (%d) that is not in use!\n",
+-		       __func__, cmd->slot);
+-		return;
 -	}
 -
--	return NULL;
+-	pr_devel("%s: released cmd %p index=%d\n", __func__, cmd, cmd->slot);
 -}
 -
 -/**
-  * cmd_checkin() - checks in an AFU command
-  * @cmd:	AFU command to checkin.
+  * process_cmd_err() - command error handler
+  * @cmd:	AFU command that experienced the error.
+  * @scp:	SCSI command associated with the AFU command in error.
+@@ -585,28 +558,12 @@ static void free_mem(struct cxlflash_cfg *cfg)
   *
-@@ -232,7 +200,6 @@ static void cmd_complete(struct afu_cmd *cmd)
- 			scp->result = (DID_OK << 16);
- 
- 		cmd_is_tmf = cmd->cmd_tmf;
--		cmd_checkin(cmd); /* Don't use cmd after here */
- 
- 		pr_debug_ratelimited("%s: calling scsi_done scp=%p result=%X "
- 				     "ioasc=%d\n", __func__, scp, scp->result,
-@@ -390,7 +357,7 @@ static void wait_resp(struct afu *afu, struct afu_cmd *cmd)
+  * Cleans up all state associated with the command queue, and unmaps
+  * the MMIO space.
+- *
+- *  - complete() will take care of commands we initiated (they'll be checked
+- *  in as part of the cleanup that occurs after the completion)
+- *
+- *  - cmd_checkin() will take care of entries that we did not initiate and that
+- *  have not (and will not) complete because they are sitting on a [now stale]
+- *  hardware queue
   */
- static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
+ static void stop_afu(struct cxlflash_cfg *cfg)
  {
--	struct afu_cmd *cmd;
-+	struct afu_cmd *cmd = sc_to_afucz(scp);
- 
- 	u32 port_sel = scp->device->channel + 1;
- 	short lflag = 0;
-@@ -401,13 +368,6 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	int rc = 0;
- 	ulong to;
- 
--	cmd = cmd_checkout(afu);
--	if (unlikely(!cmd)) {
--		dev_err(dev, "%s: could not get a free command\n", __func__);
--		rc = SCSI_MLQUEUE_HOST_BUSY;
--		goto out;
--	}
--
- 	/* When Task Management Function is active do not send another */
- 	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active)
-@@ -419,6 +379,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
- 	cmd->rcb.ctx_id = afu->ctx_hndl;
-+	cmd->rcb.msi = SISL_MSI_RRQ_UPDATED;
- 	cmd->rcb.port_sel = port_sel;
- 	cmd->rcb.lun_id = lun_to_lunid(scp->device->lun);
- 
-@@ -427,8 +388,10 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	cmd->rcb.req_flags = (SISL_REQ_FLAGS_PORT_LUN_ID |
- 			      SISL_REQ_FLAGS_SUP_UNDERRUN | lflag);
- 
--	/* Stash the scp in the reserved field, for reuse during interrupt */
-+	/* Stash the scp in the command, for reuse during interrupt */
- 	cmd->rcb.scp = scp;
-+	cmd->parent = afu;
-+	spin_lock_init(&cmd->slock);
- 
- 	/* Copy the CDB from the cmd passed in */
- 	memcpy(cmd->rcb.cdb, &tmfcmd, sizeof(tmfcmd));
-@@ -436,7 +399,6 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	/* Send the command */
- 	rc = send_cmd(afu, cmd);
- 	if (unlikely(rc)) {
--		cmd_checkin(cmd);
- 		spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 		cfg->tmf_active = false;
- 		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
-@@ -492,7 +454,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 	struct cxlflash_cfg *cfg = (struct cxlflash_cfg *)host->hostdata;
+-	int i;
  	struct afu *afu = cfg->afu;
- 	struct device *dev = &cfg->dev->dev;
 -	struct afu_cmd *cmd;
-+	struct afu_cmd *cmd = sc_to_afucz(scp);
- 	u32 port_sel = scp->device->channel + 1;
- 	int nseg, i, ncount;
- 	struct scatterlist *sg;
-@@ -537,17 +499,11 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 		break;
- 	}
  
--	cmd = cmd_checkout(afu);
--	if (unlikely(!cmd)) {
--		dev_err(dev, "%s: could not get a free command\n", __func__);
--		rc = SCSI_MLQUEUE_HOST_BUSY;
--		goto out;
+ 	if (likely(afu)) {
+-		for (i = 0; i < CXLFLASH_NUM_CMDS; i++) {
+-			cmd = &afu->cmd[i];
+-			complete(&cmd->cevent);
+-			if (!atomic_read(&cmd->free))
+-				cmd_checkin(cmd);
+-		}
+-
+ 		if (likely(afu->afu_map)) {
+ 			cxl_psa_unmap((void __iomem *)afu->afu_map);
+ 			afu->afu_map = NULL;
+@@ -819,7 +776,6 @@ static void cxlflash_remove(struct pci_dev *pdev)
+ static int alloc_mem(struct cxlflash_cfg *cfg)
+ {
+ 	int rc = 0;
+-	int i;
+ 	struct device *dev = &cfg->dev->dev;
+ 
+ 	/* AFU is ~12k, i.e. only one 64k page or up to four 4k pages */
+@@ -833,12 +789,6 @@ static int alloc_mem(struct cxlflash_cfg *cfg)
+ 	}
+ 	cfg->afu->parent = cfg;
+ 	cfg->afu->afu_map = NULL;
+-
+-	for (i = 0; i < CXLFLASH_NUM_CMDS; i++) {
+-		atomic_set(&cfg->afu->cmd[i].free, 1);
+-		cfg->afu->cmd[i].slot = i;
 -	}
 -
- 	kref_get(&cfg->afu->mapcount);
- 	kref_got = 1;
- 
- 	cmd->rcb.ctx_id = afu->ctx_hndl;
-+	cmd->rcb.msi = SISL_MSI_RRQ_UPDATED;
- 	cmd->rcb.port_sel = port_sel;
- 	cmd->rcb.lun_id = lun_to_lunid(scp->device->lun);
- 
-@@ -561,6 +517,8 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 
- 	/* Stash the scp in the reserved field, for reuse during interrupt */
- 	cmd->rcb.scp = scp;
-+	cmd->parent = afu;
-+	spin_lock_init(&cmd->slock);
- 
- 	nseg = scsi_dma_map(scp);
- 	if (unlikely(nseg < 0)) {
-@@ -581,10 +539,8 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 
- 	/* Send the command */
- 	rc = send_cmd(afu, cmd);
--	if (unlikely(rc)) {
--		cmd_checkin(cmd);
-+	if (unlikely(rc))
- 		scsi_dma_unmap(scp);
--	}
- 
  out:
- 	if (kref_got)
-@@ -2338,6 +2294,7 @@ static struct scsi_host_template driver_template = {
- 	.change_queue_depth = cxlflash_change_queue_depth,
- 	.cmd_per_lun = CXLFLASH_MAX_CMDS_PER_LUN,
- 	.can_queue = CXLFLASH_MAX_CMDS,
-+	.cmd_size = sizeof(struct afu_cmd) + __alignof__(struct afu_cmd) - 1,
- 	.this_id = -1,
- 	.sg_tablesize = 1,	/* No scatter gather support */
- 	.max_sectors = CXLFLASH_MAX_SECTORS,
+ 	return rc;
+ }
+@@ -1468,13 +1418,6 @@ static void init_pcr(struct cxlflash_cfg *cfg)
+ 
+ 	/* Program the Endian Control for the master context */
+ 	writeq_be(SISL_ENDIAN_CTRL, &afu->host_map->endian_ctrl);
+-
+-	/* Initialize cmd fields that never change */
+-	for (i = 0; i < CXLFLASH_NUM_CMDS; i++) {
+-		afu->cmd[i].rcb.ctx_id = afu->ctx_hndl;
+-		afu->cmd[i].rcb.msi = SISL_MSI_RRQ_UPDATED;
+-		afu->cmd[i].rcb.rrq = 0x0;
+-	}
+ }
+ 
+ /**
+@@ -1563,19 +1506,8 @@ static int init_global(struct cxlflash_cfg *cfg)
+ static int start_afu(struct cxlflash_cfg *cfg)
+ {
+ 	struct afu *afu = cfg->afu;
+-	struct afu_cmd *cmd;
+-
+-	int i = 0;
+ 	int rc = 0;
+ 
+-	for (i = 0; i < CXLFLASH_NUM_CMDS; i++) {
+-		cmd = &afu->cmd[i];
+-
+-		init_completion(&cmd->cevent);
+-		spin_lock_init(&cmd->slock);
+-		cmd->parent = afu;
+-	}
+-
+ 	init_pcr(cfg);
+ 
+ 	/* After an AFU reset, RRQ entries are stale, clear them */
 -- 
 2.1.0
