@@ -1,17 +1,18 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0041.outbound.protection.outlook.com [104.47.34.41])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0070.outbound.protection.outlook.com [104.47.37.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn481SWZzDvTQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn496WZMzDt1c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:41 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>, Madalin Bucur
  <madalin.bucur@nxp.com>
-Subject: [PATCH 01/17] soc/qman: Check ioremap return value
-Date: Wed, 16 Nov 2016 16:40:14 +0200
-Message-ID: <1479307230-16650-2-git-send-email-claudiu.manoil@nxp.com>
+Subject: [PATCH 02/17] soc/qman: Replace of_get_property() with portable
+ equivalent
+Date: Wed, 16 Nov 2016 16:40:15 +0200
+Message-ID: <1479307230-16650-3-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -27,25 +28,61 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Madalin Bucur <madalin.bucur@nxp.com>
 
+Use arch portable of_property_read_u32() instead, which takes
+care of endianness conversions.
+
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman_ccsr.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/soc/fsl/qbman/dpaa_sys.h    |  1 +
+ drivers/soc/fsl/qbman/qman_portal.c | 12 ++++++------
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
-index 0cace9e..f4e6e70 100644
---- a/drivers/soc/fsl/qbman/qman_ccsr.c
-+++ b/drivers/soc/fsl/qbman/qman_ccsr.c
-@@ -444,6 +444,9 @@ static int zero_priv_mem(struct device *dev, struct device_node *node,
- 	/* map as cacheable, non-guarded */
- 	void __iomem *tmpp = ioremap_prot(addr, sz, 0);
+diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/dpaa_sys.h
+index b63fd72..2eaf318 100644
+--- a/drivers/soc/fsl/qbman/dpaa_sys.h
++++ b/drivers/soc/fsl/qbman/dpaa_sys.h
+@@ -38,6 +38,7 @@
+ #include <linux/kthread.h>
+ #include <linux/vmalloc.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
+ #include <linux/of_reserved_mem.h>
+ #include <linux/prefetch.h>
+ #include <linux/genalloc.h>
+diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+index 1486143..0c3e8ad 100644
+--- a/drivers/soc/fsl/qbman/qman_portal.c
++++ b/drivers/soc/fsl/qbman/qman_portal.c
+@@ -238,9 +238,9 @@ static int qman_portal_probe(struct platform_device *pdev)
+ 	struct device_node *node = dev->of_node;
+ 	struct qm_portal_config *pcfg;
+ 	struct resource *addr_phys[2];
+-	const u32 *channel;
+ 	void __iomem *va;
+-	int irq, len, cpu;
++	int irq, cpu, err;
++	u32 val;
  
-+	if (!tmpp)
-+		return -ENOMEM;
-+
- 	memset_io(tmpp, 0, sz);
- 	flush_dcache_range((unsigned long)tmpp,
- 			   (unsigned long)tmpp + sz);
+ 	pcfg = devm_kmalloc(dev, sizeof(*pcfg), GFP_KERNEL);
+ 	if (!pcfg)
+@@ -264,13 +264,13 @@ static int qman_portal_probe(struct platform_device *pdev)
+ 		return -ENXIO;
+ 	}
+ 
+-	channel = of_get_property(node, "cell-index", &len);
+-	if (!channel || (len != 4)) {
++	err = of_property_read_u32(node, "cell-index", &val);
++	if (err) {
+ 		dev_err(dev, "Can't get %s property 'cell-index'\n",
+ 			node->full_name);
+-		return -ENXIO;
++		return err;
+ 	}
+-	pcfg->channel = *channel;
++	pcfg->channel = val;
+ 	pcfg->cpu = -1;
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq <= 0) {
 -- 
 1.7.11.7
