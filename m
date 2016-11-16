@@ -1,29 +1,44 @@
-Return-Path: <david@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJkGn3XsDzDvk8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 23:34:37 +1100 (AEDT)
-Subject: Re: [PATCH 1/1] sched: provide common cpu_relax_yield definition
-To: Christian Borntraeger <borntraeger@de.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>
-References: <1479298985-191589-1-git-send-email-borntraeger@de.ibm.com>
-Cc: Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- xen-devel@lists.xenproject.org, kvm@vger.kernel.org,
- Will Deacon <will.deacon@arm.com>, Catalin Marinas
- <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Noam Camus <noamc@ezchip.com>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>, sparclinux@vger.kernel.org,
- virtualization@lists.linux-foundation.org
-From: David Hildenbrand <david@redhat.com>
-Message-ID: <c41d574c-c89e-e518-91bb-3acd701e5023@redhat.com>
-Date: Wed, 16 Nov 2016 13:34:22 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJzTw0BMkzDvnh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 09:30:10 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAGMSVTb082792
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 17:30:08 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26rx2d5gm5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 17:30:07 -0500
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 17 Nov 2016 08:30:05 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 47EC83578052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 09:30:03 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAGMU35324117384
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 09:30:03 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAGMU2fi002178
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 09:30:03 +1100
+Subject: Re: [PATCH] cxl: Fix potential build failure - select ANON_INODES
+To: Ben Hutchings <ben@decadent.org.uk>, linuxppc-dev@lists.ozlabs.org
+References: <20161116182916.GF2697@decadent.org.uk>
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 17 Nov 2016 09:30:00 +1100
 MIME-Version: 1.0
-In-Reply-To: <1479298985-191589-1-git-send-email-borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
+In-Reply-To: <20161116182916.GF2697@decadent.org.uk>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <f19ce00a-68e3-1f86-94ce-2d5126ec4843@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +48,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 16.11.2016 um 13:23 schrieb Christian Borntraeger:
-> No need to duplicate the same define everywhere. Since
-> the only user is stop-machine and the only provider is
-> s390, we can use a default implementation of cpu_relax_yield
-> in sched.h.
+On 17/11/16 05:29, Ben Hutchings wrote:
+> cxl calls anon_inode_get() so must select ANON_INODES.
 >
-> Suggested-by: Russell King <linux@armlinux.org.uk>
-> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-Looks good to me!
+Thanks for catching this.
 
-Reviewed-by: David Hildenbrand <david@redhat.com>
+Is this patch still necessary once 
+http://patchwork.ozlabs.org/patch/694415/ is applied though?
 
-David
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
