@@ -3,14 +3,14 @@ Received: from NAM01-SN1-obe.outbound.protection.outlook.com
  (mail-sn1nam01on0056.outbound.protection.outlook.com [104.47.32.56])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4W4VDQzDvXN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4X5pMbzDvXN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:41:00 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
-Subject: [PATCH 14/17] soc/qbman: Handle endianness of qm/bm_in/out()
-Date: Wed, 16 Nov 2016 16:40:27 +0200
-Message-ID: <1479307230-16650-15-git-send-email-claudiu.manoil@nxp.com>
+Subject: [PATCH 15/17] soc/qman: Change remaining contextB into context_b
+Date: Wed, 16 Nov 2016 16:40:28 +0200
+Message-ID: <1479307230-16650-16-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -24,67 +24,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There are multiple occurences of both contextB and context_b
+in different h/w descriptors, referring to the same descriptor
+field known as "Context B". Stick with the "context_b" naming,
+for obvious reasons including consistency (see also context_a).
+
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/bman.c | 6 +++---
- drivers/soc/fsl/qbman/qman.c | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/soc/fsl/qbman/qman.c | 12 ++++++------
+ include/soc/fsl/qman.h       | 12 ++++++------
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
-index ffa48fd..345e50c 100644
---- a/drivers/soc/fsl/qbman/bman.c
-+++ b/drivers/soc/fsl/qbman/bman.c
-@@ -167,12 +167,12 @@ struct bm_portal {
- /* Cache-inhibited register access. */
- static inline u32 bm_in(struct bm_portal *p, u32 offset)
- {
--	return __raw_readl(p->addr.ci + offset);
-+	return be32_to_cpu(__raw_readl(p->addr.ci + offset));
- }
- 
- static inline void bm_out(struct bm_portal *p, u32 offset, u32 val)
- {
--	__raw_writel(val, p->addr.ci + offset);
-+	__raw_writel(cpu_to_be32(val), p->addr.ci + offset);
- }
- 
- /* Cache Enabled Portal Access */
-@@ -188,7 +188,7 @@ static inline void bm_cl_touch_ro(struct bm_portal *p, u32 offset)
- 
- static inline u32 bm_ce_in(struct bm_portal *p, u32 offset)
- {
--	return __raw_readl(p->addr.ce + offset);
-+	return be32_to_cpu(__raw_readl(p->addr.ce + offset));
- }
- 
- struct bman_portal {
 diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index fd335bc..e7e1314 100644
+index e7e1314..ac020fd 100644
 --- a/drivers/soc/fsl/qbman/qman.c
 +++ b/drivers/soc/fsl/qbman/qman.c
-@@ -321,12 +321,12 @@ struct qm_portal {
- /* Cache-inhibited register access. */
- static inline u32 qm_in(struct qm_portal *p, u32 offset)
- {
--	return __raw_readl(p->addr.ci + offset);
-+	return be32_to_cpu(__raw_readl(p->addr.ci + offset));
- }
+@@ -1395,7 +1395,7 @@ static void qm_mr_process_task(struct work_struct *work)
+ 				break;
+ 			case QM_MR_VERB_FQPN:
+ 				/* Parked */
+-				fq = tag_to_fq(msg->fq.contextB);
++				fq = tag_to_fq(msg->fq.context_b);
+ 				fq_state_change(p, fq, msg, verb);
+ 				if (fq->cb.fqs)
+ 					fq->cb.fqs(p, fq, msg);
+@@ -1494,7 +1494,7 @@ static inline unsigned int __poll_portal_fast(struct qman_portal *p,
  
- static inline void qm_out(struct qm_portal *p, u32 offset, u32 val)
- {
--	__raw_writel(val, p->addr.ci + offset);
-+	__raw_writel(cpu_to_be32(val), p->addr.ci + offset);
- }
+ 		if (dq->stat & QM_DQRR_STAT_UNSCHEDULED) {
+ 			/*
+-			 * VDQCR: don't trust contextB as the FQ may have
++			 * VDQCR: don't trust context_b as the FQ may have
+ 			 * been configured for h/w consumption and we're
+ 			 * draining it post-retirement.
+ 			 */
+@@ -1520,8 +1520,8 @@ static inline unsigned int __poll_portal_fast(struct qman_portal *p,
+ 			if (dq->stat & QM_DQRR_STAT_DQCR_EXPIRED)
+ 				clear_vdqcr(p, fq);
+ 		} else {
+-			/* SDQCR: contextB points to the FQ */
+-			fq = tag_to_fq(dq->contextB);
++			/* SDQCR: context_b points to the FQ */
++			fq = tag_to_fq(dq->context_b);
+ 			/* Now let the callback do its stuff */
+ 			res = fq->cb.dqrr(p, fq, dq);
+ 			/*
+@@ -1757,7 +1757,7 @@ int qman_init_fq(struct qman_fq *fq, u32 flags, struct qm_mcc_initfq *opts)
+ 	qm_fqid_set(&mcc->fq, fq->fqid);
+ 	mcc->initfq.count = 0;
+ 	/*
+-	 * If the FQ does *not* have the TO_DCPORTAL flag, contextB is set as a
++	 * If the FQ does *not* have the TO_DCPORTAL flag, context_b is set as a
+ 	 * demux pointer. Otherwise, the caller-provided value is allowed to
+ 	 * stand, don't overwrite it.
+ 	 */
+@@ -1937,7 +1937,7 @@ int qman_retire_fq(struct qman_fq *fq, u32 *flags)
+ 			msg.verb = QM_MR_VERB_FQRNI;
+ 			msg.fq.fqs = mcr->alterfq.fqs;
+ 			qm_fqid_set(&msg.fq, fq->fqid);
+-			msg.fq.contextB = fq_to_tag(fq);
++			msg.fq.context_b = fq_to_tag(fq);
+ 			fq->cb.fqs(p, fq, &msg);
+ 		}
+ 	} else if (res == QM_MCR_RESULT_PENDING) {
+diff --git a/include/soc/fsl/qman.h b/include/soc/fsl/qman.h
+index 20bbc71..c80ecca 100644
+--- a/include/soc/fsl/qman.h
++++ b/include/soc/fsl/qman.h
+@@ -248,7 +248,7 @@ struct qm_dqrr_entry {
+ 	u8 tok;
+ 	u8 __reserved2[3];
+ 	u32 fqid;	/* 24-bit */
+-	u32 contextB;
++	u32 context_b;
+ 	struct qm_fd fd;
+ 	u8 __reserved4[32];
+ } __packed;
+@@ -290,7 +290,7 @@ struct qm_dqrr_entry {
+ 		u8 fqs;		/* Frame Queue Status */
+ 		u8 __reserved1[6];
+ 		u32 fqid;	/* 24-bit */
+-		u32 contextB;
++		u32 context_b;
+ 		u8 __reserved2[48];
+ 	} __packed fq;		/* FQRN/FQRNI/FQRL/FQPN */
+ };
+@@ -658,7 +658,7 @@ struct qm_mcc_initcgr {
+ /*
+  * This enum, and the callback type that returns it, are used when handling
+  * dequeued frames via DQRR. Note that for "null" callbacks registered with the
+- * portal object (for handling dequeues that do not demux because contextB is
++ * portal object (for handling dequeues that do not demux because context_b is
+  * NULL), the return value *MUST* be qman_cb_dqrr_consume.
+  */
+ enum qman_cb_dqrr_result {
+@@ -863,11 +863,11 @@ struct qman_cgr {
+  * qman_fq" for more info). NO_MODIFY is only intended for enqueuing to
+  * pre-existing frame-queues that aren't to be otherwise interfered with, it
+  * prevents all other modifications to the frame queue. The TO_DCPORTAL flag
+- * causes the driver to honour any contextB modifications requested in the
++ * causes the driver to honour any context_b modifications requested in the
+  * qm_init_fq() API, as this indicates the frame queue will be consumed by a
+  * direct-connect portal (PME, CAAM, or Fman). When frame queues are consumed by
+- * software portals, the contextB field is controlled by the driver and can't be
+- * modified by the caller.
++ * software portals, the context_b field is controlled by the driver and can't
++ * be modified by the caller.
+  */
+ int qman_create_fq(u32 fqid, u32 flags, struct qman_fq *fq);
  
- /* Cache Enabled Portal Access */
-@@ -342,7 +342,7 @@ static inline void qm_cl_touch_ro(struct qm_portal *p, u32 offset)
- 
- static inline u32 qm_ce_in(struct qm_portal *p, u32 offset)
- {
--	return __raw_readl(p->addr.ce + offset);
-+	return be32_to_cpu(__raw_readl(p->addr.ce + offset));
- }
- 
- /* --- EQCR API --- */
 -- 
 1.7.11.7
