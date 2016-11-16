@@ -1,61 +1,46 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJhr14zj9zDvt9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 22:29:53 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAGBSZUT144424
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 06:29:51 -0500
-Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26rdbpc1xv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 06:29:51 -0500
-Received: from localhost
- by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Wed, 16 Nov 2016 11:29:49 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id A49A72190056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 11:29:00 +0000 (GMT)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAGBTlp139518398
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 11:29:47 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAGBTk0w006607
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 06:29:47 -0500
-Subject: Re: [PATCH v7 06/11] x86, paravirt: Add interface to support kvm/xen
- vcpu preempted check
-To: Peter Zijlstra <peterz@infradead.org>,
- Pan Xinhui <xinhui@linux.vnet.ibm.com>
-References: <1478077718-37424-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1478077718-37424-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20161115154706.GF11311@worktop.programming.kicks-ass.net>
- <a6026a0c-9ad8-5025-c616-eb33f96e91ce@linux.vnet.ibm.com>
- <20161116102355.GP3142@twins.programming.kicks-ass.net>
-Cc: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org,
- xen-devel@lists.xenproject.org, x86@kernel.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, paulmck@linux.vnet.ibm.com, will.deacon@arm.com,
- kernellwp@gmail.com, jgross@suse.com, pbonzini@redhat.com,
- bsingharora@gmail.com, boqun.feng@gmail.com, rkrcmar@redhat.com,
- David.Laight@ACULAB.COM, dave@stgolabs.net, konrad.wilk@oracle.com
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Wed, 16 Nov 2016 12:29:44 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJhyZ6GN0zDt0g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 22:35:34 +1100 (AEDT)
+Date: Wed, 16 Nov 2016 12:35:13 +0100
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: Steffen Maier <maier@linux.vnet.ibm.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+ Christoph Hellwig <hch@infradead.org>, Hannes Reinecke <hare@suse.de>,
+ Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+ Linux SCSI Mailinglist <linux-scsi@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Johannes Thumshirn <jth@kernel.org>,
+ James Smart <james.smart@avagotech.com>,
+ Dick Kennedy <dick.kennedy@avagotech.com>,
+ "supporter:QLOGIC QLA2XXX FC-SCSI DRIVER" <qla2xxx-upstream@qlogic.com>,
+ "open list:S390 ZFCP DRIVER" <linux-s390@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe)" <fcoe-devel@open-fcoe.org>
+Subject: Re: [PATCH v3 02/16] scsi: don't use fc_bsg_job::request and
+ fc_bsg_job::reply directly
+Message-ID: <20161116113459.clrumsyjj3n7iqrd@linux-x5ow.site>
+References: <cover.1476369687.git.jthumshirn@suse.de>
+ <bbc682928173d64848ab0cbff689b1ad3d715fb7.1476369687.git.jthumshirn@suse.de>
+ <ebc46cfa-0bee-aa71-ba0b-d7c86628df0c@linux.vnet.ibm.com>
+ <20161014073821.qvkpjtwraqnwzzs3@linux-x5ow.site>
+ <20161025074313.4ma4czgdj46imaei@linux-x5ow.site>
+ <20161115115622.j4ker3atejcodqrc@linux-x5ow.site>
+ <8647eacd-a029-dff0-4f78-dafef89a5ad9@linux.vnet.ibm.com>
+ <20161115153933.ktho6pui7awuvfyx@linux-x5ow.site>
 MIME-Version: 1.0
-In-Reply-To: <20161116102355.GP3142@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <f8b9d1be-98a2-4d99-1ae1-c31c6fe13903@de.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20161115153933.ktho6pui7awuvfyx@linux-x5ow.site>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,36 +50,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2016 11:23 AM, Peter Zijlstra wrote:
-> On Wed, Nov 16, 2016 at 12:19:09PM +0800, Pan Xinhui wrote:
->> Hi, Peter.
->> 	I think we can avoid a function call in a simpler way. How about below
->>
->> static inline bool vcpu_is_preempted(int cpu)
->> {
->> 	/* only set in pv case*/
->> 	if (pv_lock_ops.vcpu_is_preempted)
->> 		return pv_lock_ops.vcpu_is_preempted(cpu);
->> 	return false;
->> }
+On Tue, Nov 15, 2016 at 04:39:33PM +0100, Johannes Thumshirn wrote:
+> On Tue, Nov 15, 2016 at 03:31:27PM +0100, Steffen Maier wrote:
+> > Hi Johannes,
+> > 
+> > On 11/15/2016 12:56 PM, Johannes Thumshirn wrote:
+> > > On Tue, Oct 25, 2016 at 09:43:14AM +0200, Johannes Thumshirn wrote:
+> > > > On Fri, Oct 14, 2016 at 09:38:21AM +0200, Johannes Thumshirn wrote:
+> > > > > On Thu, Oct 13, 2016 at 05:55:11PM +0200, Steffen Maier wrote:
+> > > > > > Hm, still behaves for me like I reported for v2:
+> > > > > > http://marc.info/?l=linux-scsi&m=147637177902937&w=2
+> > > 
+> > > [...]
+> > > 
+> > > > > 
+> > > > > The rational behind this is, in fc_req_to_bsgjob() we're assigning
+> > > > > job->request as req->cmd and job->request_len = req->cmd_len. But without
+> > > > > checkinf job->request_len we don't know whether we're save to touch
+> > > > > job->request (a.k.a. bsg_request).
+> > > > 
+> > > > Hi Steffen,
+> > > > Did you have any chance testing this? I hacked fcping to work with non-FCoE
+> > > > and rports as well and tested with FCoE and lpfc. No problems seen from my
+> > > > side. I've also pused the series (With this change folded in) to my git
+> > > > tree at [1] if this helps you in any way.
+> > > > 
+> > > > [1] https://git.kernel.org/cgit/linux/kernel/git/jth/linux.git/log/?h=scsi-bsg-rewrite-v4
+> > > > 
+> > > 
+> > > So I finally have a test system up and running. I have good and bad news. The
+> > > good news is, I can't get the system crashing with my patches, the bad news is
+> > > I can't get zfcp_ping and zfcp_show to output something but HBA_STATUS_ERROR
+> > > with my patches and without.
 > 
-> That is still more expensive. It needs to do an actual load and makes it
-> hard to predict the branch, you'd have to actually wait for the load to
-> complete etc.
-
-Out of curiosity, why is that hard to predict?
-On s390 the branch prediction runs asynchronously ahead of the downstream
-pipeline (e.g. search for "IBM z Systems Processor Optimization Primer" page 11).
-given enough capacity, I would assume that modern x86 processors would do the same
-and be able to predict this is as soon as it becomes hot (and otherwise you would
- not notice the branch miss anyway). Is x86 behaving differently here?
-
-> Also, it generates more code.
+> Please ignore my last mails, apparently it's a wise idea to check which user
+> id one has before running zfcp_ping...
 > 
-> Paravirt muck should strive to be as cheap as possible when ran on
-> native hardware.
+> The good news for this is, I can now recreate the crashes you have and thus
+> have a chance to fix them :-)
 
-As I am interested in this series from the s390 point of view, this is 
-the only thing that block this series?
+So JFTR, I was able to fix the 1 problem introduced by this patch, it's the
+follwoing hunk:
+@@ -3726,9 +3729,9 @@ fc_req_to_bsgjob(struct Scsi_Host *shost, struct fc_rport *rport,
+        if (i->f->dd_bsg_size)
+                job->dd_data = (void *)&job[1];
+        spin_lock_init(&job->job_lock);
+-       job->request = (struct fc_bsg_request *)req->cmd;
++       bsg_request = (struct fc_bsg_request *)req->cmd;
+        job->request_len = req->cmd_len;
+-       job->reply = req->sense;
++       bsg_reply = req->sense;
+        job->reply_len = SCSI_SENSE_BUFFERSIZE; /* Size of sense buffer
+                                                 * allocated */
+        if (req->bio) {
 
-Is there a chance to add a static key around the paravirt ops somehow?
+But as fc_req_to_bsgjob() get's deleted in Patch 15/16 the problem is
+re-introduced. Unfortunately the fix isn't as trivial as for 2/16 so I'm still
+trying to nail it down.
+
+Thanks,
+	Johannes
+
+-- 
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
