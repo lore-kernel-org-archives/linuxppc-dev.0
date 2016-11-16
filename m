@@ -1,45 +1,33 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJmNk2r3ZzDvmd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:09:57 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAGE8hqX007736
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 09:09:55 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26rq3fny7g-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJmyh42r3zDvR4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:35:56 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAGEYAi6075953
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 09:35:54 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26rr2242s9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 09:09:54 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 09:35:54 -0500
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Thu, 17 Nov 2016 00:09:52 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 44EA82BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:09:49 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAGE9nIj48103626
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:09:49 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAGE9mO9028561
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:09:49 +1100
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, gkurz@linux.vnet.ibm.com
-Subject: [PATCH] cxl: Do adapter fence check before handling afu interrupt
-Date: Wed, 16 Nov 2016 19:39:33 +0530
-Message-Id: <1479305373-20539-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Wed, 16 Nov 2016 07:35:53 -0700
+Subject: Re: [bug report] Driver for IBM System i/p VNIC protocol
+To: Dan Carpenter <dan.carpenter@oracle.com>
+References: <20161116122532.GA12147@mwanda>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Wed, 16 Nov 2016 08:35:49 -0600
+MIME-Version: 1.0
+In-Reply-To: <20161116122532.GA12147@mwanda>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <8eca3290-984a-bff2-2589-9371016b9425@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,56 +37,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If an afu interrupt is in flight when an eeh error is triggered the
-control still reaches the function native_irq_multiplexed and the
-PE-Handle read from the CXL_PSL_PEHandle_An register is 0xffff. The
-function then erroneously assumes that the interrupt belonged to a
-detached context and generates a warning with full stack dump in the
-kernel log complaining:
+On 11/16/2016 06:25 AM, Dan Carpenter wrote:
+> Hello Thomas Falcon,
+>
+> The patch 032c5e82847a: "Driver for IBM System i/p VNIC protocol"
+> from Dec 21, 2015, leads to the following static checker warning:
+>
+> 	drivers/net/ethernet/ibm/ibmvnic.c:2957 error_level_write()
+> 	why cast 'kstrtoul()?'
+>
+> drivers/net/ethernet/ibm/ibmvnic.c
+>   2946  static ssize_t error_level_write(struct file *file, const char __user *user_buf,
+>   2947                                   size_t len, loff_t *ppos)
+>   2948  {
+>   2949          struct ibmvnic_fw_comp_internal *ras_comp_int = file->private_data;
+>   2950          struct ibmvnic_adapter *adapter = ras_comp_int->adapter;
+>   2951          int num = ras_comp_int->num;
+>   2952          union ibmvnic_crq crq;
+>   2953          unsigned long val;
+>   2954          char buff[9]; /* decimal max int plus \n and \0 */
+>   2955  
+>   2956          copy_from_user(buff, user_buf, sizeof(buff));
+>
+> No error checking.
+>
+>   2957          val = kstrtoul(buff, 10, NULL);
+>
+> This is a wrong conversion from simple_strtoul().  The code has clearly
+> never been tested.  There are four other buggy untested calls to
+> kstrtoul() in this file.
+>
+>   2958  
+>   2959          if (val > 9)
+>   2960                  val = 9;
+>   2961  
+>   2962          memset(&crq, 0, sizeof(crq));
+>   2963          crq.control_ras.first = IBMVNIC_CRQ_CMD;
+>   2964          crq.control_ras.cmd = CONTROL_RAS;
+>   2965          crq.control_ras.correlator = adapter->ras_comps[num].correlator;
+>   2966          crq.control_ras.op = IBMVNIC_ERROR_LEVEL;
+>   2967          crq.control_ras.level = val;
+>   2968          ibmvnic_send_crq(adapter, &crq);
+>   2969  
+>   2970          return len;
+>   2971  }
+Thank you for your time and attention, Dan.  I had also noticed these errors, but did not immediately fix it after being told by our firmware team that support had been discontinued for these features.  I plan to remove/fix these soon.
 
-"Unable to demultiplex CXL PSL IRQ for PE 65535 DSISR ffffffff DAR
-ffffffff. (Possible AFU HW issue - was a term/remove acked with
-outstanding transactions"
+Thanks again,
+Tom
 
-To fix this the patch adds new code to the function
-native_irq_multiplexed function to compares the read value of register
-CXL_PSL_PEHandle_An to ~0ULL. If true then logs a warning message
-saying that the interrupt is being ignored and returns IRQ_HANDLED from
-the irq handler.
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
- drivers/misc/cxl/native.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index a217a74ccc98..c336350ede94 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -931,9 +931,18 @@ static irqreturn_t native_irq_multiplexed(int irq, void *data)
- 	struct cxl_afu *afu = data;
- 	struct cxl_context *ctx;
- 	struct cxl_irq_info irq_info;
--	int ph = cxl_p2n_read(afu, CXL_PSL_PEHandle_An) & 0xffff;
--	int ret;
--
-+	u64 phreg = cxl_p2n_read(afu, CXL_PSL_PEHandle_An);
-+	int ph, ret;
-+
-+	/* check if eeh kicked in while the interrupt was in flight */
-+	if (unlikely(phreg == ~0ULL)) {
-+		dev_warn(&afu->dev,
-+			 "Ignoring slice interrupt(%d) due to fenced card",
-+			 irq);
-+		return IRQ_HANDLED;
-+	}
-+	/* Mask the pe-handle from register value */
-+	ph = phreg & 0xffff;
- 	if ((ret = native_get_irq_info(afu, &irq_info))) {
- 		WARN(1, "Unable to get CXL IRQ Info: %i\n", ret);
- 		return fail_psl_irq(afu, &irq_info);
--- 
-2.7.4
+> regards,
+> dan carpenter
+>
