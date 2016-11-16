@@ -1,19 +1,37 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tJqlc6bsdzDt14
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 03:41:32 +1100 (AEDT)
-Subject: Re: [PATCH 1/2] soc: fsl: make it explicitly non-modular
-To: linuxppc-dev@lists.ozlabs.org
-References: <1479314367-9169-1-git-send-email-sudeep.holla@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org,
- Scott Wood <oss@buserror.net>, Yangbo Lu <yangbo.lu@nxp.com>,
- Arnd Bergmann <arnd@arndb.de>
-From: Sudeep Holla <sudeep.holla@arm.com>
-Message-ID: <acb8b99f-cb71-6614-b90e-c62494746fc8@arm.com>
-Date: Wed, 16 Nov 2016 16:41:29 +0000
-MIME-Version: 1.0
-In-Reply-To: <1479314367-9169-1-git-send-email-sudeep.holla@arm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJqqq3TJlzDvqL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 03:45:11 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAGGdUoP069646
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 11:45:09 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26rnsehgs6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 11:45:09 -0500
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Wed, 16 Nov 2016 11:45:08 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ Balbir Singh <bsingharora@gmail.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm: allow memory hotplug into an offline node
+Date: Wed, 16 Nov 2016 10:45:03 -0600
+In-Reply-To: <20161116164057.mzlhfigsuwn53r72@arbab-laptop.austin.ibm.com>
+References: <20161116164057.mzlhfigsuwn53r72@arbab-laptop.austin.ibm.com>
+Message-Id: <1479314703-18989-1-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,64 +41,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Relax the check preventing us from hotplugging into an offline node.
 
-On 16/11/16 16:39, Sudeep Holla wrote:
-> The Kconfig currently controlling compilation of this code is:
->
-> drivers/soc/fsl/Kconfig:config FSL_GUTS
-> drivers/soc/fsl/Kconfig:   bool
->
-> ...meaning that it currently is not being built as a module by anyone.
->
-> Lets remove the modular code that is essentially orphaned, so that
-> when reading the driver there is no doubt it is builtin-only.
->
-> Since module_init was not in use by this code, the init ordering
-> remains unchanged with this commit.
->
+This limitation was added in commit 482ec7c403d2 ("[PATCH] powerpc numa:
+Support sparse online node map") to prevent adding resources to an
+uninitialized node.
 
-Sorry I forgot to append -next as these are applicable only to linux-next
+These days, there is no harm in doing so. The addition will actually
+cause the node to be initialized and onlined; add_memory_resource()
+calls hotadd_new_pgdat() (if necessary) and node_set_online().
 
-> Cc: Scott Wood <oss@buserror.net>
-> Cc: Yangbo Lu <yangbo.lu@nxp.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/soc/fsl/guts.c | 8 --------
->  1 file changed, 8 deletions(-)
->
-> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> index 0ac88263c2d7..885409d84eb2 100644
-> --- a/drivers/soc/fsl/guts.c
-> +++ b/drivers/soc/fsl/guts.c
-> @@ -11,7 +11,6 @@
->
->  #include <linux/io.h>
->  #include <linux/slab.h>
-> -#include <linux/module.h>
->  #include <linux/of_fdt.h>
->  #include <linux/sys_soc.h>
->  #include <linux/of_address.h>
-> @@ -212,7 +211,6 @@ static const struct of_device_id fsl_guts_of_match[] = {
->  	{ .compatible = "fsl,ls2080a-dcfg", },
->  	{}
->  };
-> -MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
->
->  static struct platform_driver fsl_guts_driver = {
->  	.driver = {
-> @@ -228,9 +226,3 @@ static int __init fsl_guts_init(void)
->  	return platform_driver_register(&fsl_guts_driver);
->  }
->  core_initcall(fsl_guts_init);
-> -
-> -static void __exit fsl_guts_exit(void)
-> -{
-> -	platform_driver_unregister(&fsl_guts_driver);
-> -}
-> -module_exit(fsl_guts_exit);
->
+Cc: Balbir Singh <bsingharora@gmail.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: John Allen <jallen@linux.vnet.ibm.com>
+Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+---
+This applies on top of "powerpc/mm: allow memory hotplug into a
+memoryless node", currently in the -mm tree:
+http://lkml.kernel.org/r/1479160961-25840-2-git-send-email-arbab@linux.vnet.ibm.com
 
+ arch/powerpc/mm/numa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index d69f6f6..07620c9 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1091,7 +1091,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ 		nid = hot_add_node_scn_to_nid(scn_addr);
+ 	}
+ 
+-	if (nid < 0 || !node_online(nid))
++	if (nid < 0 || !node_possible(nid))
+ 		nid = first_online_node;
+ 
+ 	return nid;
 -- 
-Regards,
-Sudeep
+1.8.3.1
