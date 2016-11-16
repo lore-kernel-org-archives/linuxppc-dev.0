@@ -1,20 +1,43 @@
-Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0043.outbound.protection.outlook.com [104.47.34.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4l4l54zDvdX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:41:11 +1100 (AEDT)
-From: Claudiu Manoil <claudiu.manoil@nxp.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
-Subject: [PATCH 16/17] soc/qman: Clean up CGR CSCN target update operations
-Date: Wed, 16 Nov 2016 16:40:29 +0200
-Message-ID: <1479307230-16650-17-git-send-email-claudiu.manoil@nxp.com>
-In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
-References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJnmR6Q3NzDrBs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:12:07 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAGF8kWb097465
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:12:04 -0500
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26rmu8edut-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:12:04 -0500
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 17 Nov 2016 01:12:02 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E9F3D2CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:11:59 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAGFBxbE52297926
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:11:59 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAGFBxPL006260
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:11:59 +1100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: crypto/vmx: various build fixes
+Date: Wed, 16 Nov 2016 20:41:46 +0530
+Message-Id: <20161116151146.15720-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,89 +47,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
----
- drivers/soc/fsl/qbman/qman.c | 37 +++++++++++++++++++++++--------------
- include/soc/fsl/qman.h       |  4 ++--
- 2 files changed, 25 insertions(+), 16 deletions(-)
+First up, clean up the generated .S files properly on a 'make clean'.
+Secondly, force re-generation of these files when building for different
+endian-ness than what was built previously. Finally, generate the new
+files in the build tree, rather than the source tree.
 
-diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index ac020fd..d287ef0 100644
---- a/drivers/soc/fsl/qbman/qman.c
-+++ b/drivers/soc/fsl/qbman/qman.c
-@@ -2248,7 +2248,23 @@ static int qm_modify_cgr(struct qman_cgr *cgr, u32 flags,
- }
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+Michael,
+I've added your SOB here though you didn't explicitly include it in your
+previous mail. I hope that's fine from your end.
+
+- Naveen
+
+ drivers/crypto/vmx/Makefile | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
+index de6e241..55f7c39 100644
+--- a/drivers/crypto/vmx/Makefile
++++ b/drivers/crypto/vmx/Makefile
+@@ -10,10 +10,12 @@ endif
+ quiet_cmd_perl = PERL $@
+       cmd_perl = $(PERL) $(<) $(TARGET) > $(@)
  
- #define PORTAL_IDX(n)	(n->config->channel - QM_CHANNEL_SWPORTAL0)
--#define TARG_MASK(n)	(BIT(31) >> PORTAL_IDX(n))
+-$(src)/aesp8-ppc.S: $(src)/aesp8-ppc.pl
+-	$(call cmd,perl)
++targets += aesp8-ppc.S ghashp8-ppc.S
 +
-+/* congestion state change notification target update control */
-+static void qm_cgr_cscn_targ_set(struct __qm_mc_cgr *cgr, int pi, u32 val)
-+{
-+	if (qman_ip_rev >= QMAN_REV30)
-+		cgr->cscn_targ_upd_ctrl = QM_CGR_TARG_UDP_CTRL_WRITE_BIT | pi;
-+	else
-+		cgr->cscn_targ = val | QM_CGR_TARG_PORTAL(pi);
-+}
-+
-+static void qm_cgr_cscn_targ_clear(struct __qm_mc_cgr *cgr, int pi, u32 val)
-+{
-+	if (qman_ip_rev >= QMAN_REV30)
-+		cgr->cscn_targ_upd_ctrl = pi;
-+	else
-+		cgr->cscn_targ = val & ~QM_CGR_TARG_PORTAL(pi);
-+}
++$(obj)/aesp8-ppc.S: $(src)/aesp8-ppc.pl FORCE
++	$(call if_changed,perl)
+   
+-$(src)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl
+-	$(call cmd,perl)
++$(obj)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl FORCE
++	$(call if_changed,perl)
  
- static u8 qman_cgr_cpus[CGR_NUM];
- 
-@@ -2298,13 +2314,8 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
- 		if (ret)
- 			goto out;
- 
--		if ((qman_ip_rev & 0xFF00) >= QMAN_REV30)
--			local_opts.cgr.cscn_targ_upd_ctrl =
--				QM_CGR_TARG_UDP_CTRL_WRITE_BIT | PORTAL_IDX(p);
--		else
--			/* Overwrite TARG */
--			local_opts.cgr.cscn_targ = cgr_state.cgr.cscn_targ |
--						   TARG_MASK(p);
-+		qm_cgr_cscn_targ_set(&local_opts.cgr, PORTAL_IDX(p),
-+				     cgr_state.cgr.cscn_targ);
- 		local_opts.we_mask |= QM_CGR_WE_CSCN_TARG;
- 
- 		/* send init if flags indicate so */
-@@ -2371,13 +2382,11 @@ int qman_delete_cgr(struct qman_cgr *cgr)
- 		list_add(&cgr->node, &p->cgr_cbs);
- 		goto release_lock;
- 	}
--	/* Overwrite TARG */
-+
- 	local_opts.we_mask = QM_CGR_WE_CSCN_TARG;
--	if ((qman_ip_rev & 0xFF00) >= QMAN_REV30)
--		local_opts.cgr.cscn_targ_upd_ctrl = PORTAL_IDX(p);
--	else
--		local_opts.cgr.cscn_targ = cgr_state.cgr.cscn_targ &
--							 ~(TARG_MASK(p));
-+	qm_cgr_cscn_targ_clear(&local_opts.cgr, PORTAL_IDX(p),
-+			       cgr_state.cgr.cscn_targ);
-+
- 	ret = qm_modify_cgr(cgr, 0, &local_opts);
- 	if (ret)
- 		/* add back to the list */
-diff --git a/include/soc/fsl/qman.h b/include/soc/fsl/qman.h
-index c80ecca..d01d5a3 100644
---- a/include/soc/fsl/qman.h
-+++ b/include/soc/fsl/qman.h
-@@ -553,8 +553,8 @@ struct __qm_mc_cgr {
- 	u8 cscn_en;	/* boolean, use QM_CGR_EN */
- 	union {
- 		struct {
--			u16 cscn_targ_upd_ctrl; /* use QM_CSCN_TARG_UDP_ */
--			u16 cscn_targ_dcp_low;	/* CSCN_TARG_DCP low-16bits */
-+			u16 cscn_targ_upd_ctrl; /* use QM_CGR_TARG_UDP_* */
-+			u16 cscn_targ_dcp_low;
- 		};
- 		u32 cscn_targ;	/* use QM_CGR_TARG_* */
- 	};
+-.PRECIOUS: $(obj)/aesp8-ppc.S $(obj)/ghashp8-ppc.S
++clean-files := aesp8-ppc.S ghashp8-ppc.S
 -- 
-1.7.11.7
+2.10.2
