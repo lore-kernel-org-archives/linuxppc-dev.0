@@ -1,18 +1,16 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0070.outbound.protection.outlook.com [104.47.37.70])
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0043.outbound.protection.outlook.com [104.47.42.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn496WZMzDt1c
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4C5TwNzDt1c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:43 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>, Madalin Bucur
- <madalin.bucur@nxp.com>
-Subject: [PATCH 02/17] soc/qman: Replace of_get_property() with portable
- equivalent
-Date: Wed, 16 Nov 2016 16:40:15 +0200
-Message-ID: <1479307230-16650-3-git-send-email-claudiu.manoil@nxp.com>
+CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
+Subject: [PATCH 03/17] soc/qman: Fix h/w resource cleanup error path handling
+Date: Wed, 16 Nov 2016 16:40:16 +0200
+Message-ID: <1479307230-16650-4-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -26,63 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@nxp.com>
+qman_query_fq*() may return other error codes apart from
+-ERANGE, in which cases the error handling done by the
+resource cleanup callers would be wrong.  The patch
+fixes the handling of those cases, and cleans up related
+code inside the resource cleanup & release handlers (i.e.
+replace hardcoded fqid value with corresponding define).
 
-Use arch portable of_property_read_u32() instead, which takes
-care of endianness conversions.
-
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/dpaa_sys.h    |  1 +
- drivers/soc/fsl/qbman/qman_portal.c | 12 ++++++------
- 2 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/soc/fsl/qbman/qman.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/dpaa_sys.h
-index b63fd72..2eaf318 100644
---- a/drivers/soc/fsl/qbman/dpaa_sys.h
-+++ b/drivers/soc/fsl/qbman/dpaa_sys.h
-@@ -38,6 +38,7 @@
- #include <linux/kthread.h>
- #include <linux/vmalloc.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
- #include <linux/of_reserved_mem.h>
- #include <linux/prefetch.h>
- #include <linux/genalloc.h>
-diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-index 1486143..0c3e8ad 100644
---- a/drivers/soc/fsl/qbman/qman_portal.c
-+++ b/drivers/soc/fsl/qbman/qman_portal.c
-@@ -238,9 +238,9 @@ static int qman_portal_probe(struct platform_device *pdev)
- 	struct device_node *node = dev->of_node;
- 	struct qm_portal_config *pcfg;
- 	struct resource *addr_phys[2];
--	const u32 *channel;
- 	void __iomem *va;
--	int irq, len, cpu;
-+	int irq, cpu, err;
-+	u32 val;
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 119054b..80ff0b7 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -2789,15 +2789,18 @@ static int qpool_cleanup(u32 qp)
+ 		struct qm_mcr_queryfq_np np;
  
- 	pcfg = devm_kmalloc(dev, sizeof(*pcfg), GFP_KERNEL);
- 	if (!pcfg)
-@@ -264,13 +264,13 @@ static int qman_portal_probe(struct platform_device *pdev)
- 		return -ENXIO;
- 	}
+ 		err = qman_query_fq_np(&fq, &np);
+-		if (err)
++		if (err == -ERANGE)
+ 			/* FQID range exceeded, found no problems */
+ 			return 0;
++		else if (WARN_ON(err))
++			return err;
++
+ 		if ((np.state & QM_MCR_NP_STATE_MASK) != QM_MCR_NP_STATE_OOS) {
+ 			struct qm_fqd fqd;
  
--	channel = of_get_property(node, "cell-index", &len);
--	if (!channel || (len != 4)) {
-+	err = of_property_read_u32(node, "cell-index", &val);
-+	if (err) {
- 		dev_err(dev, "Can't get %s property 'cell-index'\n",
- 			node->full_name);
--		return -ENXIO;
-+		return err;
- 	}
--	pcfg->channel = *channel;
-+	pcfg->channel = val;
- 	pcfg->cpu = -1;
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq <= 0) {
+ 			err = qman_query_fq(&fq, &fqd);
+ 			if (WARN_ON(err))
+-				return 0;
++				return err;
+ 			if (qm_fqd_get_chan(&fqd) == qp) {
+ 				/* The channel is the FQ's target, clean it */
+ 				err = qman_shutdown_fq(fq.fqid);
+@@ -2836,7 +2839,7 @@ static int cgr_cleanup(u32 cgrid)
+ 	 * error, looking for non-OOS FQDs whose CGR is the CGR being released
+ 	 */
+ 	struct qman_fq fq = {
+-		.fqid = 1
++		.fqid = QM_FQID_RANGE_START
+ 	};
+ 	int err;
+ 
+@@ -2844,15 +2847,18 @@ static int cgr_cleanup(u32 cgrid)
+ 		struct qm_mcr_queryfq_np np;
+ 
+ 		err = qman_query_fq_np(&fq, &np);
+-		if (err)
++		if (err == -ERANGE)
+ 			/* FQID range exceeded, found no problems */
+ 			return 0;
++		else if (WARN_ON(err))
++			return err;
++
+ 		if ((np.state & QM_MCR_NP_STATE_MASK) != QM_MCR_NP_STATE_OOS) {
+ 			struct qm_fqd fqd;
+ 
+ 			err = qman_query_fq(&fq, &fqd);
+ 			if (WARN_ON(err))
+-				return 0;
++				return err;
+ 			if ((fqd.fq_ctrl & QM_FQCTRL_CGE) &&
+ 			    fqd.cgid == cgrid) {
+ 				pr_err("CRGID 0x%x is being used by FQID 0x%x, CGR will be leaked\n",
 -- 
 1.7.11.7
