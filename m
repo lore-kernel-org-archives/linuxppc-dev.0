@@ -1,20 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (unknown [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tJVJ82LknzDvnd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 14:35:03 +1100 (AEDT)
-Date: Tue, 15 Nov 2016 22:34:50 -0500 (EST)
-Message-Id: <20161115.223450.723967283520630203.davem@davemloft.net>
-To: madalin.bucur@nxp.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, oss@buserror.net, ppc@mindchasers.com,
- joe@perches.com, pebolle@tiscali.nl, joakim.tjernlund@infinera.com
-Subject: Re: [PATCH net-next v8 0/9] dpaa_eth: Add the QorIQ DPAA Ethernet
- driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1479199269-9748-1-git-send-email-madalin.bucur@nxp.com>
-References: <1479199269-9748-1-git-send-email-madalin.bucur@nxp.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJWGD3gd4zDvkR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 15:18:28 +1100 (AEDT)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, aneesh.kumar@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
+Subject: [PATCH] powerpc/mm/radix: Invalidate ERAT on tlbiel for POWER9 DD1
+Date: Wed, 16 Nov 2016 15:18:20 +1100
+Message-Id: <20161116041820.28433-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,10 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@nxp.com>
-Date: Tue, 15 Nov 2016 10:41:00 +0200
+On POWER9 DD1, when we do a local TLB invalidate we also need to explicitly
+invalidate the ERAT.
 
-> This patch series adds the Ethernet driver for the Freescale
-> QorIQ Data Path Acceleration Architecture (DPAA).
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/mm/tlb-radix.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Series applied, thanks.
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index bda8c43be7..4b087fc3c7 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -50,6 +50,10 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
+ 	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
+ 		__tlbiel_pid(pid, set, ric);
+ 	}
++	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
++		asm volatile("isync \n"
++			     PPC_SLBIA(0x7)
++			     : : :"memory");
+ 	return;
+ }
+ 
+@@ -83,6 +87,10 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
++	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
++		asm volatile("isync \n"
++			     PPC_SLBIA(0x7)
++			     : : :"memory");
+ }
+ 
+ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+-- 
+2.9.3
