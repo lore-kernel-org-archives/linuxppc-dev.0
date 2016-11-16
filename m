@@ -1,16 +1,16 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0048.outbound.protection.outlook.com [104.47.36.48])
+Received: from NAM01-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam01on0056.outbound.protection.outlook.com [104.47.32.56])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4V1t9LzDvb7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4W4VDQzDvXN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:59 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
-Subject: [PATCH 13/17] soc/qman: Drop unused field from eqcr/dqrr descriptors
-Date: Wed, 16 Nov 2016 16:40:26 +0200
-Message-ID: <1479307230-16650-14-git-send-email-claudiu.manoil@nxp.com>
+Subject: [PATCH 14/17] soc/qbman: Handle endianness of qm/bm_in/out()
+Date: Wed, 16 Nov 2016 16:40:27 +0200
+Message-ID: <1479307230-16650-15-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -24,48 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ORP ("Order Restoration Point") mechanism not supported.
-
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman.c | 3 +--
- include/soc/fsl/qman.h       | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/soc/fsl/qbman/bman.c | 6 +++---
+ drivers/soc/fsl/qbman/qman.c | 6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
+index ffa48fd..345e50c 100644
+--- a/drivers/soc/fsl/qbman/bman.c
++++ b/drivers/soc/fsl/qbman/bman.c
+@@ -167,12 +167,12 @@ struct bm_portal {
+ /* Cache-inhibited register access. */
+ static inline u32 bm_in(struct bm_portal *p, u32 offset)
+ {
+-	return __raw_readl(p->addr.ci + offset);
++	return be32_to_cpu(__raw_readl(p->addr.ci + offset));
+ }
+ 
+ static inline void bm_out(struct bm_portal *p, u32 offset, u32 val)
+ {
+-	__raw_writel(val, p->addr.ci + offset);
++	__raw_writel(cpu_to_be32(val), p->addr.ci + offset);
+ }
+ 
+ /* Cache Enabled Portal Access */
+@@ -188,7 +188,7 @@ static inline void bm_cl_touch_ro(struct bm_portal *p, u32 offset)
+ 
+ static inline u32 bm_ce_in(struct bm_portal *p, u32 offset)
+ {
+-	return __raw_readl(p->addr.ce + offset);
++	return be32_to_cpu(__raw_readl(p->addr.ce + offset));
+ }
+ 
+ struct bman_portal {
 diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index 099ba8e..fd335bc 100644
+index fd335bc..e7e1314 100644
 --- a/drivers/soc/fsl/qbman/qman.c
 +++ b/drivers/soc/fsl/qbman/qman.c
-@@ -141,7 +141,7 @@ struct qm_eqcr_entry {
- 	u8 _ncw_verb; /* writes to this are non-coherent */
- 	u8 dca;
- 	u16 seqnum;
--	u32 orp;	/* 24-bit */
-+	u8 __reserved[4];
- 	u32 fqid;	/* 24-bit */
- 	u32 tag;
- 	struct qm_fd fd;
-@@ -470,7 +470,6 @@ static inline struct qm_eqcr_entry *qm_eqcr_start_stash(struct qm_portal
- static inline void eqcr_commit_checks(struct qm_eqcr *eqcr)
+@@ -321,12 +321,12 @@ struct qm_portal {
+ /* Cache-inhibited register access. */
+ static inline u32 qm_in(struct qm_portal *p, u32 offset)
  {
- 	DPAA_ASSERT(eqcr->busy);
--	DPAA_ASSERT(eqcr->cursor->orp == (eqcr->cursor->orp & 0x00ffffff));
- 	DPAA_ASSERT(!(eqcr->cursor->fqid & ~QM_FQID_MASK));
- 	DPAA_ASSERT(eqcr->available >= 1);
+-	return __raw_readl(p->addr.ci + offset);
++	return be32_to_cpu(__raw_readl(p->addr.ci + offset));
  }
-diff --git a/include/soc/fsl/qman.h b/include/soc/fsl/qman.h
-index f3fa53f..20bbc71 100644
---- a/include/soc/fsl/qman.h
-+++ b/include/soc/fsl/qman.h
-@@ -279,8 +279,7 @@ struct qm_dqrr_entry {
- 		u8 dca;
- 		u16 seqnum;
- 		u8 rc;		/* Rej Code: 8-bit */
--		u8 orp_hi;	/* ORP: 24-bit */
--		u16 orp_lo;
-+		u8 __reserved[3];
- 		u32 fqid;	/* 24-bit */
- 		u32 tag;
- 		struct qm_fd fd;
+ 
+ static inline void qm_out(struct qm_portal *p, u32 offset, u32 val)
+ {
+-	__raw_writel(val, p->addr.ci + offset);
++	__raw_writel(cpu_to_be32(val), p->addr.ci + offset);
+ }
+ 
+ /* Cache Enabled Portal Access */
+@@ -342,7 +342,7 @@ static inline void qm_cl_touch_ro(struct qm_portal *p, u32 offset)
+ 
+ static inline u32 qm_ce_in(struct qm_portal *p, u32 offset)
+ {
+-	return __raw_readl(p->addr.ce + offset);
++	return be32_to_cpu(__raw_readl(p->addr.ce + offset));
+ }
+ 
+ /* --- EQCR API --- */
 -- 
 1.7.11.7
