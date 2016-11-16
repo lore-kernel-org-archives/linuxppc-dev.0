@@ -1,16 +1,49 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <mahesh@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJXjP0ZXyzDt30
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 16:23:37 +1100 (AEDT)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, aneesh.kumar@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
-Subject: [PATCH v2] powerpc/mm/radix: Invalidate ERAT on tlbiel for POWER9 DD1
-Date: Wed, 16 Nov 2016 16:23:19 +1100
-Message-Id: <20161116052319.15507-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJXpj6rhwzDvdP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 16:28:13 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tJXpj2GpCz9t1B
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:13 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAG5Nq1w027331
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 00:28:11 -0500
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26rd5gqyjs-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 00:28:10 -0500
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Wed, 16 Nov 2016 15:28:08 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CB0112BB0055
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:04 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAG5S4Oi48496668
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:04 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAG5S4kN019956
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:04 +1100
+Subject: [PATCH] powernv/hmi: Display the correct error info for CAPP errors.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Andrew Donnellan <andonnel@au1.ibm.com>
+Date: Wed, 16 Nov 2016 10:58:02 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <147927393883.28364.12544121254023856142.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,40 +53,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER9 DD1, when we do a local TLB invalidate we also need to explicitly
-invalidate the ERAT.
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-v2:
-  - Remove unnecessary isyncs
----
- arch/powerpc/mm/tlb-radix.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+On some CAPP errors we see console messages that prints unknown HMIs for
+which CAPI recovery is in progress. This patch fixes this by printing
+correct error info for HMI generated due to CAPP recovery.
 
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index bda8c43be7..4a19cdd8a0 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -50,6 +50,9 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- 	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
- 		__tlbiel_pid(pid, set, ric);
- 	}
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-+		asm volatile(PPC_SLBIA(0x7)
-+			     : : :"memory");
- 	return;
- }
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal-hmi.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
+index c0a8201..0d0d5f7 100644
+--- a/arch/powerpc/platforms/powernv/opal-hmi.c
++++ b/arch/powerpc/platforms/powernv/opal-hmi.c
+@@ -180,7 +180,8 @@ static void print_hmi_event_info(struct OpalHMIEvent *hmi_evt)
+ 		"An XSCOM operation completed",
+ 		"SCOM has set a reserved FIR bit to cause recovery",
+ 		"Debug trigger has set a reserved FIR bit to cause recovery",
+-		"A hypervisor resource error occurred"
++		"A hypervisor resource error occurred",
++		"CAPP recovery process is in progress"
+ 	};
  
-@@ -83,6 +86,9 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
- 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("ptesync": : :"memory");
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-+		asm volatile(PPC_SLBIA(0x7)
-+			     : : :"memory");
- }
- 
- static inline void _tlbie_va(unsigned long va, unsigned long pid,
--- 
-2.9.3
+ 	/* Print things out */
