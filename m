@@ -1,17 +1,15 @@
 Return-Path: <sudeep.holla@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tJqjR0WfszDvgn
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tJqjR0PLnzDvgH
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 03:39:37 +1100 (AEDT)
 From: Sudeep Holla <sudeep.holla@arm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org,
  Scott Wood <oss@buserror.net>, Yangbo Lu <yangbo.lu@nxp.com>,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 2/2] soc: fsl: fix section mismatch build warnings
-Date: Wed, 16 Nov 2016 16:39:27 +0000
-Message-Id: <1479314367-9169-2-git-send-email-sudeep.holla@arm.com>
-In-Reply-To: <1479314367-9169-1-git-send-email-sudeep.holla@arm.com>
-References: <1479314367-9169-1-git-send-email-sudeep.holla@arm.com>
+Subject: [PATCH 1/2] soc: fsl: make it explicitly non-modular
+Date: Wed, 16 Nov 2016 16:39:26 +0000
+Message-Id: <1479314367-9169-1-git-send-email-sudeep.holla@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,68 +19,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We get the following warning with the driver is compiled in:
+The Kconfig currently controlling compilation of this code is:
 
-WARNING: modpost: Found 1 section mismatch(es).
-To see full details build your kernel with:
-'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+drivers/soc/fsl/Kconfig:config FSL_GUTS
+drivers/soc/fsl/Kconfig:   bool
 
-With CONFIG_DEBUG_SECTION_MISMATCH enabled, the details are reported:
+...meaning that it currently is not being built as a module by anyone.
 
-WARNING: vmlinux.o(.text+0x55d014): Section mismatch in reference from the
-function fsl_guts_probe() to the function
-.init.text:of_flat_dt_get_machine_name()
-The function fsl_guts_probe() references
-the function __init of_flat_dt_get_machine_name().
-This is often because fsl_guts_probe lacks a __init
-annotation or the annotation of of_flat_dt_get_machine_name is wrong.
+Lets remove the modular code that is essentially orphaned, so that
+when reading the driver there is no doubt it is builtin-only.
 
-This patch stashes the machine name during fsl_guts_init initcall to
-fix the above warnings.
+Since module_init was not in use by this code, the init ordering
+remains unchanged with this commit.
 
 Cc: Scott Wood <oss@buserror.net>
 Cc: Yangbo Lu <yangbo.lu@nxp.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/soc/fsl/guts.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/soc/fsl/guts.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
 diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 885409d84eb2..5513a2b3448f 100644
+index 0ac88263c2d7..885409d84eb2 100644
 --- a/drivers/soc/fsl/guts.c
 +++ b/drivers/soc/fsl/guts.c
-@@ -31,6 +31,7 @@ struct fsl_soc_die_attr {
- static struct guts *guts;
- static struct soc_device_attribute soc_dev_attr;
- static struct soc_device *soc_dev;
-+static const char *machine;
+@@ -11,7 +11,6 @@
  
+ #include <linux/io.h>
+ #include <linux/slab.h>
+-#include <linux/module.h>
+ #include <linux/of_fdt.h>
+ #include <linux/sys_soc.h>
+ #include <linux/of_address.h>
+@@ -212,7 +211,6 @@ static const struct of_device_id fsl_guts_of_match[] = {
+ 	{ .compatible = "fsl,ls2080a-dcfg", },
+ 	{}
+ };
+-MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
  
- /* SoC die attribute definition for QorIQ platform */
-@@ -135,7 +136,6 @@ static int fsl_guts_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct resource *res;
- 	const struct fsl_soc_die_attr *soc_die;
--	const char *machine;
- 	u32 svr;
- 
- 	/* Initialize guts */
-@@ -151,7 +151,6 @@ static int fsl_guts_probe(struct platform_device *pdev)
- 		return PTR_ERR(guts->regs);
- 
- 	/* Register soc device */
--	machine = of_flat_dt_get_machine_name();
- 	if (machine)
- 		soc_dev_attr.machine = devm_kstrdup(dev, machine, GFP_KERNEL);
- 
-@@ -223,6 +222,7 @@ static struct platform_driver fsl_guts_driver = {
- 
- static int __init fsl_guts_init(void)
- {
-+	machine = of_flat_dt_get_machine_name();
+ static struct platform_driver fsl_guts_driver = {
+ 	.driver = {
+@@ -228,9 +226,3 @@ static int __init fsl_guts_init(void)
  	return platform_driver_register(&fsl_guts_driver);
  }
  core_initcall(fsl_guts_init);
+-
+-static void __exit fsl_guts_exit(void)
+-{
+-	platform_driver_unregister(&fsl_guts_driver);
+-}
+-module_exit(fsl_guts_exit);
 -- 
 2.7.4
