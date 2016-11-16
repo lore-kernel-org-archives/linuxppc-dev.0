@@ -1,43 +1,17 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJnmR6Q3NzDrBs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:12:07 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAGF8kWb097465
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:12:04 -0500
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26rmu8edut-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 10:12:04 -0500
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 17 Nov 2016 01:12:02 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E9F3D2CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:11:59 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAGFBxbE52297926
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:11:59 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAGFBxPL006260
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 02:11:59 +1100
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: crypto/vmx: various build fixes
-Date: Wed, 16 Nov 2016 20:41:46 +0530
-Message-Id: <20161116151146.15720-1-naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <sudeep.holla@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tJqjR0WfszDvgn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 03:39:37 +1100 (AEDT)
+From: Sudeep Holla <sudeep.holla@arm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org,
+ Scott Wood <oss@buserror.net>, Yangbo Lu <yangbo.lu@nxp.com>,
+ Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 2/2] soc: fsl: fix section mismatch build warnings
+Date: Wed, 16 Nov 2016 16:39:27 +0000
+Message-Id: <1479314367-9169-2-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <1479314367-9169-1-git-send-email-sudeep.holla@arm.com>
+References: <1479314367-9169-1-git-send-email-sudeep.holla@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,44 +21,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-First up, clean up the generated .S files properly on a 'make clean'.
-Secondly, force re-generation of these files when building for different
-endian-ness than what was built previously. Finally, generate the new
-files in the build tree, rather than the source tree.
+We get the following warning with the driver is compiled in:
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+WARNING: modpost: Found 1 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+
+With CONFIG_DEBUG_SECTION_MISMATCH enabled, the details are reported:
+
+WARNING: vmlinux.o(.text+0x55d014): Section mismatch in reference from the
+function fsl_guts_probe() to the function
+.init.text:of_flat_dt_get_machine_name()
+The function fsl_guts_probe() references
+the function __init of_flat_dt_get_machine_name().
+This is often because fsl_guts_probe lacks a __init
+annotation or the annotation of of_flat_dt_get_machine_name is wrong.
+
+This patch stashes the machine name during fsl_guts_init initcall to
+fix the above warnings.
+
+Cc: Scott Wood <oss@buserror.net>
+Cc: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
-Michael,
-I've added your SOB here though you didn't explicitly include it in your
-previous mail. I hope that's fine from your end.
+ drivers/soc/fsl/guts.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-- Naveen
-
- drivers/crypto/vmx/Makefile | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
-index de6e241..55f7c39 100644
---- a/drivers/crypto/vmx/Makefile
-+++ b/drivers/crypto/vmx/Makefile
-@@ -10,10 +10,12 @@ endif
- quiet_cmd_perl = PERL $@
-       cmd_perl = $(PERL) $(<) $(TARGET) > $(@)
+diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
+index 885409d84eb2..5513a2b3448f 100644
+--- a/drivers/soc/fsl/guts.c
++++ b/drivers/soc/fsl/guts.c
+@@ -31,6 +31,7 @@ struct fsl_soc_die_attr {
+ static struct guts *guts;
+ static struct soc_device_attribute soc_dev_attr;
+ static struct soc_device *soc_dev;
++static const char *machine;
  
--$(src)/aesp8-ppc.S: $(src)/aesp8-ppc.pl
--	$(call cmd,perl)
-+targets += aesp8-ppc.S ghashp8-ppc.S
-+
-+$(obj)/aesp8-ppc.S: $(src)/aesp8-ppc.pl FORCE
-+	$(call if_changed,perl)
-   
--$(src)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl
--	$(call cmd,perl)
-+$(obj)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl FORCE
-+	$(call if_changed,perl)
  
--.PRECIOUS: $(obj)/aesp8-ppc.S $(obj)/ghashp8-ppc.S
-+clean-files := aesp8-ppc.S ghashp8-ppc.S
+ /* SoC die attribute definition for QorIQ platform */
+@@ -135,7 +136,6 @@ static int fsl_guts_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct resource *res;
+ 	const struct fsl_soc_die_attr *soc_die;
+-	const char *machine;
+ 	u32 svr;
+ 
+ 	/* Initialize guts */
+@@ -151,7 +151,6 @@ static int fsl_guts_probe(struct platform_device *pdev)
+ 		return PTR_ERR(guts->regs);
+ 
+ 	/* Register soc device */
+-	machine = of_flat_dt_get_machine_name();
+ 	if (machine)
+ 		soc_dev_attr.machine = devm_kstrdup(dev, machine, GFP_KERNEL);
+ 
+@@ -223,6 +222,7 @@ static struct platform_driver fsl_guts_driver = {
+ 
+ static int __init fsl_guts_init(void)
+ {
++	machine = of_flat_dt_get_machine_name();
+ 	return platform_driver_register(&fsl_guts_driver);
+ }
+ core_initcall(fsl_guts_init);
 -- 
-2.10.2
+2.7.4
