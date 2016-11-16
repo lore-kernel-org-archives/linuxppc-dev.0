@@ -1,49 +1,34 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJXpj6rhwzDvdP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 16:28:13 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tJXpj2GpCz9t1B
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:13 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJc7z5d1lzDvmr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 18:58:23 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAG5Nq1w027331
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 00:28:11 -0500
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26rd5gqyjs-1
+ uAG7rXP9012932
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 02:58:21 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26rcgc66yp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 00:28:10 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 02:58:21 -0500
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 16 Nov 2016 15:28:08 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CB0112BB0055
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:04 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAG5S4Oi48496668
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:04 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAG5S4kN019956
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2016 16:28:04 +1100
-Subject: [PATCH] powernv/hmi: Display the correct error info for CAPP errors.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Andrew Donnellan <andonnel@au1.ibm.com>
-Date: Wed, 16 Nov 2016 10:58:02 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 16 Nov 2016 00:58:21 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [powerpc v6 1/3] Setup AMOR in HV mode
+In-Reply-To: <1479192976-17847-2-git-send-email-bsingharora@gmail.com>
+References: <1479192976-17847-1-git-send-email-bsingharora@gmail.com>
+ <1479192976-17847-2-git-send-email-bsingharora@gmail.com>
+Date: Wed, 16 Nov 2016 13:28:14 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <147927393883.28364.12544121254023856142.stgit@jupiter.in.ibm.com>
+Content-Type: text/plain
+Message-Id: <871sybn9ex.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,29 +38,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Balbir Singh <bsingharora@gmail.com> writes:
 
-On some CAPP errors we see console messages that prints unknown HMIs for
-which CAPI recovery is in progress. This patch fixes this by printing
-correct error info for HMI generated due to CAPP recovery.
+> AMOR should be setup in HV mode, we set it up once
+> and let the generic kernel handle IAMR. This patch is
+> used to enable storage keys in a following patch as
+> defined in ISA 3. We don't setup AMOR in DD1, since we
+> can't setup IAMR in DD1 (bits have to be 0). If we setup
+> AMOR some other code could potentially try to set IAMR
+> (guest kernel for example).
+>
+> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  arch/powerpc/mm/pgtable-radix.c | 23 +++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> index ed7bddc..7aa104d 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -320,6 +320,27 @@ static void update_hid_for_radix(void)
+>  		cpu_relax();
+>  }
+>  
+> +/*
+> + * In HV mode, we init AMOR so that the hypervisor
+> + * and guest can setup IMAR, enable key 0 and set
+> + * it to 1
+> + * AMOR = 1100....00 (Mask for key 0 is 11)
+> + */
+> +static void radix_init_amor(void)
+> +{
+> +	unsigned long amor_mask = 0xc000000000000000;
+> +	unsigned long amor;
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- arch/powerpc/platforms/powernv/opal-hmi.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I guess michael mentioned this in another email, why two variables ?
 
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index c0a8201..0d0d5f7 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -180,7 +180,8 @@ static void print_hmi_event_info(struct OpalHMIEvent *hmi_evt)
- 		"An XSCOM operation completed",
- 		"SCOM has set a reserved FIR bit to cause recovery",
- 		"Debug trigger has set a reserved FIR bit to cause recovery",
--		"A hypervisor resource error occurred"
-+		"A hypervisor resource error occurred",
-+		"CAPP recovery process is in progress"
- 	};
- 
- 	/* Print things out */
+> +
+> +	/*
+> +	 * The amor bits are unused in DD1
+> +	 */
+> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+> +		return;
+> +
+> +	amor = amor_mask;
+> +	mtspr(SPRN_AMOR, amor);
+> +}
+> +
+>  void __init radix__early_init_mmu(void)
+>  {
+>  	unsigned long lpcr;
+> @@ -376,6 +397,7 @@ void __init radix__early_init_mmu(void)
+>  		lpcr = mfspr(SPRN_LPCR);
+>  		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
+>  		radix_init_partition_table();
+> +		radix_init_amor();
+>  	}
+>  
+>  	radix_init_pgtable();
+> @@ -393,6 +415,7 @@ void radix__early_init_mmu_secondary(void)
+>  
+>  		mtspr(SPRN_PTCR,
+>  		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
+> +		radix_init_amor();
+>  	}
+>  }
+>  
+> -- 
+> 2.5.5
