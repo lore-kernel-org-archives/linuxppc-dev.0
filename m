@@ -3,19 +3,19 @@ Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
  [88.96.1.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJtWk6tJNzDvmt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 05:46:26 +1100 (AEDT)
-Date: Wed, 16 Nov 2016 18:27:56 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJtZF2kxyzDvn1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 05:48:37 +1100 (AEDT)
+Received: from ben by shadbolt.decadent.org.uk with local (Exim 4.84_2)
+ (envelope-from <ben@decadent.org.uk>) id 1c74xR-0001Ml-4r
+ for linuxppc-dev@lists.ozlabs.org; Wed, 16 Nov 2016 18:29:17 +0000
+Date: Wed, 16 Nov 2016 18:29:17 +0000
 From: Ben Hutchings <ben@decadent.org.uk>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: stable <stable@vger.kernel.org>, Oliver O'Halloran <oohall@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20161116182756.GE2697@decadent.org.uk>
+Message-ID: <20161116182916.GF2697@decadent.org.uk>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="oXNgvKVxGWJ0RPMJ"
-Subject: [PATCH] powerpc/boot: Fix build failure in 32-bit boot wrapper
+ protocol="application/pgp-signature"; boundary="K1n7F7fSdjvFAEnM"
+Subject: [PATCH] cxl: Fix potential build failure - select ANON_INODES
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,81 +26,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---oXNgvKVxGWJ0RPMJ
+--K1n7F7fSdjvFAEnM
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-OPAL is not callable from 32-bit mode and the assembly code for it
-may not even build (depending on how binutils was configured).
+cxl calls anon_inode_get() so must select ANON_INODES.
 
-References: https://buildd.debian.org/status/fetch.php?pkg=3Dlinux&arch=3Dp=
-owerpcspe&ver=3D4.8.7-1&stamp=3D1479203712
-Fixes: 656ad58ef19e ("powerpc/boot: Add OPAL console to epapr wrappers")
-Cc: stable <stable@vger.kernel.org> # 4.8
+Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
 Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
-I build-tested this (only) with minimal configurations for:
+ drivers/misc/cxl/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-- 32-bit big-endian, CONFIG_PPC_85xx
-- 64-bit big-endian, CONFIG_PPC_BOOK3S_64
-- 64-bit little-endian, CONFIG_PPC_BOOK3S_64
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+index b75cf830d08a..e745f77ac6a6 100644
+--- a/drivers/misc/cxl/Kconfig
++++ b/drivers/misc/cxl/Kconfig
+@@ -16,6 +16,7 @@ config CXL
+ 	depends on PPC_POWERNV && PCI_MSI && EEH
+ 	select CXL_BASE
+ 	select CXL_AFU_DRIVER_OPS
++	select ANON_INODES
+ 	default m
+ 	help
+ 	  Select this option to enable driver support for IBM Coherent
 
-Ben.
-
- arch/powerpc/boot/Makefile | 3 ++-
- arch/powerpc/boot/opal.c   | 2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index eae2dc8bc218..9d47f2efa830 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -100,7 +100,8 @@ src-wlib-y :=3D string.S crt0.S crtsavres.S stdio.c dec=
-ompress.c main.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		elf_util.c $(zlib-y) devtree.c stdlib.c \
- 		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
--		uartlite.c mpc52xx-psc.c opal.c opal-calls.S
-+		uartlite.c mpc52xx-psc.c opal.c
-+src-wlib-$(CONFIG_PPC64_BOOT_WRAPPER) +=3D  opal-calls.S
- src-wlib-$(CONFIG_40x) +=3D 4xx.c planetcore.c
- src-wlib-$(CONFIG_44x) +=3D 4xx.c ebony.c bamboo.c
- src-wlib-$(CONFIG_8xx) +=3D mpc8xx.c planetcore.c fsl-soc.c
-diff --git a/arch/powerpc/boot/opal.c b/arch/powerpc/boot/opal.c
-index 1f37e1c1d6d8..c2659978ef0c 100644
---- a/arch/powerpc/boot/opal.c
-+++ b/arch/powerpc/boot/opal.c
-@@ -13,7 +13,7 @@
- #include <libfdt.h>
- #include "../include/asm/opal-api.h"
-=20
--#ifdef __powerpc64__
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
-=20
- /* Global OPAL struct used by opal-call.S */
- struct opal {
-
---oXNgvKVxGWJ0RPMJ
+--K1n7F7fSdjvFAEnM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIVAwUBWCylLOe/yOyVhhEJAQpfIA//XQD41QpGyW/0x5c1c42PkT7u4w5cHcqR
-3PGx/by/EkeDFJRdxJeuBDkQ71OsnJtrhS80Jn7ENDX02iZhNdM11R0z/30R0gDe
-2lvJ36GFccC9qnrqvuX/V+cUUN1d/X20+zwTJbWuA1LoVYbhLlyhosYrqSCYBENk
-oJe2S30bawY+4ssRbU2+n4kIdwKpH0WZgjLp2tS/HlMoqFyyOPyvhAG5xUF4dH/U
-lO0WyVjHHitt8fk9EUQsi8pkKsGW1mROiBw4/BLYSI1X9OX0hhVX9/+Ez9y7sq0r
-KKpN9EFa0yRiuvzBR9HOPTo5uryyNpSso12UAkVn2vsi8Quy9jJ+vydiyYeeCQL3
-a5/zMrolXs4gOMpDpGGA+TQNT+Oj8qYzcd8nqj4s+dzOqFXwLwz2+hOqcV3CmhVg
-mnKi+lBYq3Xde+eR8kRkyTLgN0m2DuXqhq9hQtHkizwLu1Maogsdwte81tovjGuc
-subaOBmRw1JYCIeBCHA8NryuAA86LDrIb+CP6HeBnMMLzUjucXTcYuBFzoAjEd4J
-HOrMIde9KDZ31SavQqmRhXAGbsC/n3CH1Ojq8ByW3pHq7dLkVxAobcVi9ZdJne+4
-Mq4iu83x2U2SCLFdWqLzJqBJJHD2OUbha0ltlf7uHLMNY2KWc5YMj6//2BhfRw7E
-9Ou2q1GniFw=
-=EUGh
+iQIVAwUBWCylfOe/yOyVhhEJAQp0nhAAvVhV0BdlYLmL/PponV4XqSQws14Xncl5
+ufOQ8os+aYM3TCfRO+e+/trD7xjSWCNt6VmVal/Oo0lhVITar1H8R2P3NYxzyU/K
+RLPjWCX+SjLdfwqhNMgVXla0omOxCq6V8vs1W7Ll778sqbcOzPUVIfMPrwPh60A/
+gXuDSk+6MD2m/7GRy4P0loSUxYo+0XrPj5qAwbNdMiRKbbWLPAG80CyGgvxRarA2
+uz4oItJzU7apRmSUXqd3KqshtLzqEu71/JmuPgqXF3Zxbv3+GBk2PWXdJs7RR7zF
+a7W+ROicDQfu8RnBG0OJh2RkLliuj73PQRBicq2bZG3mmz/TwsH1t9FMWexsUk/X
+5nu9LivIlObA0S487n9QNWShcEOhdAZfkmL89popinkt/ZhCFjJqkyRXQ//nQLhA
+wgXYqHPUMM/Toryaw/9A89YrsT3vWu46rZZEgvXzK0v6SjF9rqctYB28a1TUNTME
+nIrAbiuOSaQHF8AyA9ftT5nkTMdmZqTwIe9hLijI3JQo8Quxqf69JWS6s19qo2YA
+CT2WMX3OSTTkITZZ4qdLINO7etEqnEkKz/jQFdl7ddio29PiF9JQMtEcyLnUhXk7
++g9r1gPbQIo7EtZQVk2pkkHhfR4UvlFUaZg0FYXY6ZClw3RnmON4qB8r/lE4JRae
+WnXZYCsWj40=
+=XAlG
 -----END PGP SIGNATURE-----
 
---oXNgvKVxGWJ0RPMJ--
+--K1n7F7fSdjvFAEnM--
