@@ -1,17 +1,16 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0075.outbound.protection.outlook.com [104.47.41.75])
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0043.outbound.protection.outlook.com [104.47.36.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4N2dFWzDvmh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4Q36sGzDvYD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:54 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
-Subject: [PATCH 09/17] soc/qman: test: Don't use dummy platform device for dma
- mapping
-Date: Wed, 16 Nov 2016 16:40:22 +0200
-Message-ID: <1479307230-16650-10-git-send-email-claudiu.manoil@nxp.com>
+Subject: [PATCH 10/17] soc/qman: Remove redundant checks from qman_create_cgr()
+Date: Wed, 16 Nov 2016 16:40:23 +0200
+Message-ID: <1479307230-16650-11-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -25,113 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace dummy platform device hack with a reference to a portal's
-platform device, in order to dma map the test frame for this
-small unit test.  The 2 qman symbols need to be exported because
-this self test is a kernel module.
+opts is checked redundantly.
+Move local_opts declaration inside its usage scope.
 
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman.c            |  1 +
- drivers/soc/fsl/qbman/qman_portal.c     |  1 +
- drivers/soc/fsl/qbman/qman_test_stash.c | 31 ++++++++++++++++++++-----------
- 3 files changed, 22 insertions(+), 11 deletions(-)
+ drivers/soc/fsl/qbman/qman.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index a0020d2..283c2d3 100644
+index 283c2d3..6715485 100644
 --- a/drivers/soc/fsl/qbman/qman.c
 +++ b/drivers/soc/fsl/qbman/qman.c
-@@ -2711,6 +2711,7 @@ const struct qm_portal_config *qman_get_qm_portal_config(
+@@ -2294,7 +2294,6 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
+ 		    struct qm_mcc_initcgr *opts)
  {
- 	return portal->config;
- }
-+EXPORT_SYMBOL(qman_get_qm_portal_config);
+ 	struct qm_mcr_querycgr cgr_state;
+-	struct qm_mcc_initcgr local_opts = {};
+ 	int ret;
+ 	struct qman_portal *p;
  
- struct gen_pool *qm_fqalloc; /* FQID allocator */
- struct gen_pool *qm_qpalloc; /* pool-channel allocator */
-diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-index e6da2ea..c9a9bcb 100644
---- a/drivers/soc/fsl/qbman/qman_portal.c
-+++ b/drivers/soc/fsl/qbman/qman_portal.c
-@@ -31,6 +31,7 @@
- #include "qman_priv.h"
+@@ -2316,11 +2315,12 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
+ 	spin_lock(&p->cgr_lock);
  
- struct qman_portal *qman_dma_portal;
-+EXPORT_SYMBOL(qman_dma_portal);
- 
- /* Enable portal interupts (as opposed to polling mode) */
- #define CONFIG_FSL_DPA_PIRQ_SLOW  1
-diff --git a/drivers/soc/fsl/qbman/qman_test_stash.c b/drivers/soc/fsl/qbman/qman_test_stash.c
-index 43cf66b..f8d25fa 100644
---- a/drivers/soc/fsl/qbman/qman_test_stash.c
-+++ b/drivers/soc/fsl/qbman/qman_test_stash.c
-@@ -191,6 +191,9 @@ struct hp_cpu {
- static u32 *frame_ptr;
- static dma_addr_t frame_dma;
- 
-+/* needed for dma_map*() */
-+static const struct qm_portal_config *pcfg;
+ 	if (opts) {
++		struct qm_mcc_initcgr local_opts = *opts;
 +
- /* the main function waits on this */
- static DECLARE_WAIT_QUEUE_HEAD(queue);
- 
-@@ -210,16 +213,14 @@ static int allocate_frame_data(void)
- {
- 	u32 lfsr = HP_FIRST_WORD;
- 	int loop;
--	struct platform_device *pdev = platform_device_alloc("foobar", -1);
- 
--	if (!pdev) {
--		pr_crit("platform_device_alloc() failed");
--		return -EIO;
--	}
--	if (platform_device_add(pdev)) {
--		pr_crit("platform_device_add() failed");
-+	if (!qman_dma_portal) {
-+		pr_crit("portal not available\n");
- 		return -EIO;
- 	}
+ 		ret = qman_query_cgr(cgr, &cgr_state);
+ 		if (ret)
+ 			goto out;
+-		if (opts)
+-			local_opts = *opts;
 +
-+	pcfg = qman_get_qm_portal_config(qman_dma_portal);
-+
- 	__frame_ptr = kmalloc(4 * HP_NUM_WORDS, GFP_KERNEL);
- 	if (!__frame_ptr)
- 		return -ENOMEM;
-@@ -229,15 +230,22 @@ static int allocate_frame_data(void)
- 		frame_ptr[loop] = lfsr;
- 		lfsr = do_lfsr(lfsr);
- 	}
--	frame_dma = dma_map_single(&pdev->dev, frame_ptr, 4 * HP_NUM_WORDS,
-+
-+	frame_dma = dma_map_single(pcfg->dev, frame_ptr, 4 * HP_NUM_WORDS,
- 				   DMA_BIDIRECTIONAL);
--	platform_device_del(pdev);
--	platform_device_put(pdev);
-+	if (dma_mapping_error(pcfg->dev, frame_dma)) {
-+		pr_crit("dma mapping failure\n");
-+		kfree(__frame_ptr);
-+		return -EIO;
-+	}
-+
- 	return 0;
- }
+ 		if ((qman_ip_rev & 0xFF00) >= QMAN_REV30)
+ 			local_opts.cgr.cscn_targ_upd_ctrl =
+ 				QM_CGR_TARG_UDP_CTRL_WRITE_BIT | PORTAL_IDX(p);
+@@ -2331,7 +2331,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
+ 		local_opts.we_mask |= QM_CGR_WE_CSCN_TARG;
  
- static void deallocate_frame_data(void)
- {
-+	dma_unmap_single(pcfg->dev, frame_dma, 4 * HP_NUM_WORDS,
-+			 DMA_BIDIRECTIONAL);
- 	kfree(__frame_ptr);
- }
- 
-@@ -249,7 +257,8 @@ static inline int process_frame_data(struct hp_handler *handler,
- 	int loop;
- 
- 	if (qm_fd_addr_get64(fd) != handler->addr) {
--		pr_crit("bad frame address");
-+		pr_crit("bad frame address, [%llX != %llX]\n",
-+			qm_fd_addr_get64(fd), handler->addr);
- 		return -EIO;
- 	}
- 	for (loop = 0; loop < HP_NUM_WORDS; loop++, p++) {
+ 		/* send init if flags indicate so */
+-		if (opts && (flags & QMAN_CGR_FLAG_USE_INIT))
++		if (flags & QMAN_CGR_FLAG_USE_INIT)
+ 			ret = qm_modify_cgr(cgr, QMAN_CGR_FLAG_USE_INIT,
+ 					    &local_opts);
+ 		else
 -- 
 1.7.11.7
