@@ -1,16 +1,16 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0043.outbound.protection.outlook.com [104.47.36.43])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0076.outbound.protection.outlook.com [104.47.37.76])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4Q36sGzDvYD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4R2HzZzDvYD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:55 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
-Subject: [PATCH 10/17] soc/qman: Remove redundant checks from qman_create_cgr()
-Date: Wed, 16 Nov 2016 16:40:23 +0200
-Message-ID: <1479307230-16650-11-git-send-email-claudiu.manoil@nxp.com>
+Subject: [PATCH 11/17] soc/qman: Remove unused struct qm_mcc* layouts
+Date: Wed, 16 Nov 2016 16:40:24 +0200
+Message-ID: <1479307230-16650-12-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -24,49 +24,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-opts is checked redundantly.
-Move local_opts declaration inside its usage scope.
+1. qm_mcc_querywq layout not used for now, so drop it;
+2. queryfq, queryfq_np and alterfq are used only for accesses to
+   the 'fqid' field, so replace these with a generic 'fq' layout.
+   As a consequence, 'querycgr' turns into 'cgr' following the
+   same reasoning above and for consistent naming.
 
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/soc/fsl/qbman/qman.c      | 58 ++++++++++++---------------------------
+ drivers/soc/fsl/qbman/qman_priv.h |  6 ----
+ 2 files changed, 18 insertions(+), 46 deletions(-)
 
 diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index 283c2d3..6715485 100644
+index 6715485..53d9bfb 100644
 --- a/drivers/soc/fsl/qbman/qman.c
 +++ b/drivers/soc/fsl/qbman/qman.c
-@@ -2294,7 +2294,6 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
- 		    struct qm_mcc_initcgr *opts)
- {
- 	struct qm_mcr_querycgr cgr_state;
--	struct qm_mcc_initcgr local_opts = {};
- 	int ret;
- 	struct qman_portal *p;
+@@ -183,41 +183,22 @@ struct qm_mr {
+ };
  
-@@ -2316,11 +2315,12 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
- 	spin_lock(&p->cgr_lock);
+ /* MC (Management Command) command */
+-/* "Query FQ" */
+-struct qm_mcc_queryfq {
++/* "FQ" command layout */
++struct qm_mcc_fq {
+ 	u8 _ncw_verb;
+ 	u8 __reserved1[3];
+ 	u32 fqid;	/* 24-bit */
+ 	u8 __reserved2[56];
+ } __packed;
+-/* "Alter FQ State Commands " */
+-struct qm_mcc_alterfq {
+-	u8 _ncw_verb;
+-	u8 __reserved1[3];
+-	u32 fqid;	/* 24-bit */
+-	u8 __reserved2;
+-	u8 count;	/* number of consecutive FQID */
+-	u8 __reserved3[10];
+-	u32 context_b;	/* frame queue context b */
+-	u8 __reserved4[40];
+-} __packed;
  
- 	if (opts) {
-+		struct qm_mcc_initcgr local_opts = *opts;
-+
- 		ret = qman_query_cgr(cgr, &cgr_state);
- 		if (ret)
- 			goto out;
--		if (opts)
--			local_opts = *opts;
-+
- 		if ((qman_ip_rev & 0xFF00) >= QMAN_REV30)
- 			local_opts.cgr.cscn_targ_upd_ctrl =
- 				QM_CGR_TARG_UDP_CTRL_WRITE_BIT | PORTAL_IDX(p);
-@@ -2331,7 +2331,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
- 		local_opts.we_mask |= QM_CGR_WE_CSCN_TARG;
+-/* "Query CGR" */
+-struct qm_mcc_querycgr {
++/* "CGR" command layout */
++struct qm_mcc_cgr {
+ 	u8 _ncw_verb;
+ 	u8 __reserved1[30];
+ 	u8 cgid;
+ 	u8 __reserved2[32];
+ };
  
- 		/* send init if flags indicate so */
--		if (opts && (flags & QMAN_CGR_FLAG_USE_INIT))
-+		if (flags & QMAN_CGR_FLAG_USE_INIT)
- 			ret = qm_modify_cgr(cgr, QMAN_CGR_FLAG_USE_INIT,
- 					    &local_opts);
- 		else
+-struct qm_mcc_querywq {
+-	u8 _ncw_verb;
+-	u8 __reserved;
+-	/* select channel if verb != QUERYWQ_DEDICATED */
+-	u16 channel_wq; /* ignores wq (3 lsbits): _res[0-2] */
+-	u8 __reserved2[60];
+-} __packed;
+-
+ #define QM_MCC_VERB_VBIT		0x80
+ #define QM_MCC_VERB_MASK		0x7f	/* where the verb contains; */
+ #define QM_MCC_VERB_INITFQ_PARKED	0x40
+@@ -243,12 +224,9 @@ struct qm_mcc_querywq {
+ 		u8 __reserved[63];
+ 	};
+ 	struct qm_mcc_initfq initfq;
+-	struct qm_mcc_queryfq queryfq;
+-	struct qm_mcc_alterfq alterfq;
+ 	struct qm_mcc_initcgr initcgr;
+-	struct qm_mcc_querycgr querycgr;
+-	struct qm_mcc_querywq querywq;
+-	struct qm_mcc_queryfq_np queryfq_np;
++	struct qm_mcc_fq fq;
++	struct qm_mcc_cgr cgr;
+ };
+ 
+ /* MC (Management Command) result */
+@@ -1777,7 +1755,7 @@ int qman_init_fq(struct qman_fq *fq, u32 flags, struct qm_mcc_initfq *opts)
+ 	mcc = qm_mc_start(&p->p);
+ 	if (opts)
+ 		mcc->initfq = *opts;
+-	mcc->initfq.fqid = fq->fqid;
++	mcc->fq.fqid = fq->fqid;
+ 	mcc->initfq.count = 0;
+ 	/*
+ 	 * If the FQ does *not* have the TO_DCPORTAL flag, contextB is set as a
+@@ -1873,7 +1851,7 @@ int qman_schedule_fq(struct qman_fq *fq)
+ 		goto out;
+ 	}
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->alterfq.fqid = fq->fqid;
++	mcc->fq.fqid = fq->fqid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_ALTER_SCHED);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		dev_err(p->config->dev, "ALTER_SCHED timeout\n");
+@@ -1916,7 +1894,7 @@ int qman_retire_fq(struct qman_fq *fq, u32 *flags)
+ 		goto out;
+ 	}
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->alterfq.fqid = fq->fqid;
++	mcc->fq.fqid = fq->fqid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_ALTER_RETIRE);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		dev_crit(p->config->dev, "ALTER_RETIRE timeout\n");
+@@ -1995,7 +1973,7 @@ int qman_oos_fq(struct qman_fq *fq)
+ 		goto out;
+ 	}
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->alterfq.fqid = fq->fqid;
++	mcc->fq.fqid = fq->fqid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_ALTER_OOS);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		ret = -ETIMEDOUT;
+@@ -2021,7 +1999,7 @@ int qman_query_fq(struct qman_fq *fq, struct qm_fqd *fqd)
+ 	int ret = 0;
+ 
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->queryfq.fqid = fq->fqid;
++	mcc->fq.fqid = fq->fqid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYFQ);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		ret = -ETIMEDOUT;
+@@ -2047,7 +2025,7 @@ static int qman_query_fq_np(struct qman_fq *fq,
+ 	int ret = 0;
+ 
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->queryfq.fqid = fq->fqid;
++	mcc->fq.fqid = fq->fqid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYFQ_NP);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		ret = -ETIMEDOUT;
+@@ -2075,7 +2053,7 @@ static int qman_query_cgr(struct qman_cgr *cgr,
+ 	int ret = 0;
+ 
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->querycgr.cgid = cgr->cgrid;
++	mcc->cgr.cgid = cgr->cgrid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCGR);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		ret = -ETIMEDOUT;
+@@ -2526,7 +2504,7 @@ static int qman_shutdown_fq(u32 fqid)
+ 	dev = p->config->dev;
+ 	/* Determine the state of the FQID */
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->queryfq_np.fqid = fqid;
++	mcc->fq.fqid = fqid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYFQ_NP);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		dev_err(dev, "QUERYFQ_NP timeout\n");
+@@ -2541,7 +2519,7 @@ static int qman_shutdown_fq(u32 fqid)
+ 
+ 	/* Query which channel the FQ is using */
+ 	mcc = qm_mc_start(&p->p);
+-	mcc->queryfq.fqid = fqid;
++	mcc->fq.fqid = fqid;
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYFQ);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 		dev_err(dev, "QUERYFQ timeout\n");
+@@ -2561,7 +2539,7 @@ static int qman_shutdown_fq(u32 fqid)
+ 	case QM_MCR_NP_STATE_PARKED:
+ 		orl_empty = 0;
+ 		mcc = qm_mc_start(&p->p);
+-		mcc->alterfq.fqid = fqid;
++		mcc->fq.fqid = fqid;
+ 		qm_mc_commit(&p->p, QM_MCC_VERB_ALTER_RETIRE);
+ 		if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 			dev_err(dev, "QUERYFQ_NP timeout\n");
+@@ -2656,7 +2634,7 @@ static int qman_shutdown_fq(u32 fqid)
+ 			cpu_relax();
+ 		}
+ 		mcc = qm_mc_start(&p->p);
+-		mcc->alterfq.fqid = fqid;
++		mcc->fq.fqid = fqid;
+ 		qm_mc_commit(&p->p, QM_MCC_VERB_ALTER_OOS);
+ 		if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 			ret = -ETIMEDOUT;
+@@ -2676,7 +2654,7 @@ static int qman_shutdown_fq(u32 fqid)
+ 	case QM_MCR_NP_STATE_RETIRED:
+ 		/* Send OOS Command */
+ 		mcc = qm_mc_start(&p->p);
+-		mcc->alterfq.fqid = fqid;
++		mcc->fq.fqid = fqid;
+ 		qm_mc_commit(&p->p, QM_MCC_VERB_ALTER_OOS);
+ 		if (!qm_mc_result_timeout(&p->p, &mcr)) {
+ 			ret = -ETIMEDOUT;
+diff --git a/drivers/soc/fsl/qbman/qman_priv.h b/drivers/soc/fsl/qbman/qman_priv.h
+index 59b4b46..5606d74 100644
+--- a/drivers/soc/fsl/qbman/qman_priv.h
++++ b/drivers/soc/fsl/qbman/qman_priv.h
+@@ -90,12 +90,6 @@ static inline u64 qm_mcr_querycgr_a_get64(const struct qm_mcr_querycgr *q)
+ }
+ 
+ /* "Query FQ Non-Programmable Fields" */
+-struct qm_mcc_queryfq_np {
+-	u8 _ncw_verb;
+-	u8 __reserved1[3];
+-	u32 fqid;	/* 24-bit */
+-	u8 __reserved2[56];
+-} __packed;
+ 
+ struct qm_mcr_queryfq_np {
+ 	u8 verb;
 -- 
 1.7.11.7
