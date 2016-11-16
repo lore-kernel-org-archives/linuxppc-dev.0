@@ -1,16 +1,17 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0043.outbound.protection.outlook.com [104.47.42.43])
+Received: from NAM01-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam01on0082.outbound.protection.outlook.com [104.47.32.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4C5TwNzDt1c
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4F10rBzDvXg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:44 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
-Subject: [PATCH 03/17] soc/qman: Fix h/w resource cleanup error path handling
-Date: Wed, 16 Nov 2016 16:40:16 +0200
-Message-ID: <1479307230-16650-4-git-send-email-claudiu.manoil@nxp.com>
+Subject: [PATCH 04/17] soc/qbman: Fix resource leak on portal probing error
+ path
+Date: Wed, 16 Nov 2016 16:40:17 +0200
+Message-ID: <1479307230-16650-5-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -24,72 +25,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-qman_query_fq*() may return other error codes apart from
--ERANGE, in which cases the error handling done by the
-resource cleanup callers would be wrong.  The patch
-fixes the handling of those cases, and cleans up related
-code inside the resource cleanup & release handlers (i.e.
-replace hardcoded fqid value with corresponding define).
+In case init_pcfg() returns with error the CI region
+must be unmapped too.
 
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+ drivers/soc/fsl/qbman/bman_portal.c | 17 ++++++++++++-----
+ drivers/soc/fsl/qbman/qman_portal.c | 17 ++++++++++++-----
+ 2 files changed, 24 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index 119054b..80ff0b7 100644
---- a/drivers/soc/fsl/qbman/qman.c
-+++ b/drivers/soc/fsl/qbman/qman.c
-@@ -2789,15 +2789,18 @@ static int qpool_cleanup(u32 qp)
- 		struct qm_mcr_queryfq_np np;
+diff --git a/drivers/soc/fsl/qbman/bman_portal.c b/drivers/soc/fsl/qbman/bman_portal.c
+index 6579cc1..dd3f5d7 100644
+--- a/drivers/soc/fsl/qbman/bman_portal.c
++++ b/drivers/soc/fsl/qbman/bman_portal.c
+@@ -146,15 +146,19 @@ static int bman_portal_probe(struct platform_device *pdev)
+ 	pcfg->irq = irq;
  
- 		err = qman_query_fq_np(&fq, &np);
--		if (err)
-+		if (err == -ERANGE)
- 			/* FQID range exceeded, found no problems */
- 			return 0;
-+		else if (WARN_ON(err))
-+			return err;
-+
- 		if ((np.state & QM_MCR_NP_STATE_MASK) != QM_MCR_NP_STATE_OOS) {
- 			struct qm_fqd fqd;
+ 	va = ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]), 0);
+-	if (!va)
++	if (!va) {
++		dev_err(dev, "ioremap::CE failed\n");
+ 		goto err_ioremap1;
++	}
  
- 			err = qman_query_fq(&fq, &fqd);
- 			if (WARN_ON(err))
--				return 0;
-+				return err;
- 			if (qm_fqd_get_chan(&fqd) == qp) {
- 				/* The channel is the FQ's target, clean it */
- 				err = qman_shutdown_fq(fq.fqid);
-@@ -2836,7 +2839,7 @@ static int cgr_cleanup(u32 cgrid)
- 	 * error, looking for non-OOS FQDs whose CGR is the CGR being released
- 	 */
- 	struct qman_fq fq = {
--		.fqid = 1
-+		.fqid = QM_FQID_RANGE_START
- 	};
- 	int err;
+ 	pcfg->addr_virt[DPAA_PORTAL_CE] = va;
  
-@@ -2844,15 +2847,18 @@ static int cgr_cleanup(u32 cgrid)
- 		struct qm_mcr_queryfq_np np;
+ 	va = ioremap_prot(addr_phys[1]->start, resource_size(addr_phys[1]),
+ 			  _PAGE_GUARDED | _PAGE_NO_CACHE);
+-	if (!va)
++	if (!va) {
++		dev_err(dev, "ioremap::CI failed\n");
+ 		goto err_ioremap2;
++	}
  
- 		err = qman_query_fq_np(&fq, &np);
--		if (err)
-+		if (err == -ERANGE)
- 			/* FQID range exceeded, found no problems */
- 			return 0;
-+		else if (WARN_ON(err))
-+			return err;
-+
- 		if ((np.state & QM_MCR_NP_STATE_MASK) != QM_MCR_NP_STATE_OOS) {
- 			struct qm_fqd fqd;
+ 	pcfg->addr_virt[DPAA_PORTAL_CI] = va;
  
- 			err = qman_query_fq(&fq, &fqd);
- 			if (WARN_ON(err))
--				return 0;
-+				return err;
- 			if ((fqd.fq_ctrl & QM_FQCTRL_CGE) &&
- 			    fqd.cgid == cgrid) {
- 				pr_err("CRGID 0x%x is being used by FQID 0x%x, CGR will be leaked\n",
+@@ -170,8 +174,10 @@ static int bman_portal_probe(struct platform_device *pdev)
+ 	spin_unlock(&bman_lock);
+ 	pcfg->cpu = cpu;
+ 
+-	if (!init_pcfg(pcfg))
+-		goto err_ioremap2;
++	if (!init_pcfg(pcfg)) {
++		dev_err(dev, "portal init failed\n");
++		goto err_portal_init;
++	}
+ 
+ 	/* clear irq affinity if assigned cpu is offline */
+ 	if (!cpu_online(cpu))
+@@ -179,10 +185,11 @@ static int bman_portal_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_portal_init:
++	iounmap(pcfg->addr_virt[DPAA_PORTAL_CI]);
+ err_ioremap2:
+ 	iounmap(pcfg->addr_virt[DPAA_PORTAL_CE]);
+ err_ioremap1:
+-	dev_err(dev, "ioremap failed\n");
+ 	return -ENXIO;
+ }
+ 
+diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+index 0c3e8ad..6651168 100644
+--- a/drivers/soc/fsl/qbman/qman_portal.c
++++ b/drivers/soc/fsl/qbman/qman_portal.c
+@@ -280,15 +280,19 @@ static int qman_portal_probe(struct platform_device *pdev)
+ 	pcfg->irq = irq;
+ 
+ 	va = ioremap_prot(addr_phys[0]->start, resource_size(addr_phys[0]), 0);
+-	if (!va)
++	if (!va) {
++		dev_err(dev, "ioremap::CE failed\n");
+ 		goto err_ioremap1;
++	}
+ 
+ 	pcfg->addr_virt[DPAA_PORTAL_CE] = va;
+ 
+ 	va = ioremap_prot(addr_phys[1]->start, resource_size(addr_phys[1]),
+ 			  _PAGE_GUARDED | _PAGE_NO_CACHE);
+-	if (!va)
++	if (!va) {
++		dev_err(dev, "ioremap::CI failed\n");
+ 		goto err_ioremap2;
++	}
+ 
+ 	pcfg->addr_virt[DPAA_PORTAL_CI] = va;
+ 
+@@ -306,8 +310,10 @@ static int qman_portal_probe(struct platform_device *pdev)
+ 	spin_unlock(&qman_lock);
+ 	pcfg->cpu = cpu;
+ 
+-	if (!init_pcfg(pcfg))
+-		goto err_ioremap2;
++	if (!init_pcfg(pcfg)) {
++		dev_err(dev, "portal init failed\n");
++		goto err_portal_init;
++	}
+ 
+ 	/* clear irq affinity if assigned cpu is offline */
+ 	if (!cpu_online(cpu))
+@@ -315,10 +321,11 @@ static int qman_portal_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_portal_init:
++	iounmap(pcfg->addr_virt[DPAA_PORTAL_CI]);
+ err_ioremap2:
+ 	iounmap(pcfg->addr_virt[DPAA_PORTAL_CE]);
+ err_ioremap1:
+-	dev_err(dev, "ioremap failed\n");
+ 	return -ENXIO;
+ }
+ 
 -- 
 1.7.11.7
