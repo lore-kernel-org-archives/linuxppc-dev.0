@@ -1,17 +1,17 @@
 Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0067.outbound.protection.outlook.com [104.47.40.67])
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0075.outbound.protection.outlook.com [104.47.41.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4M3NJgzDvVl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tJn4N2dFWzDvmh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 01:40:52 +1100 (AEDT)
 From: Claudiu Manoil <claudiu.manoil@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Scott Wood <oss@buserror.net>, <roy.pledge@nxp.com>
-Subject: [PATCH 08/17] soc/qman: Don't add a new platform device for dma
+Subject: [PATCH 09/17] soc/qman: test: Don't use dummy platform device for dma
  mapping
-Date: Wed, 16 Nov 2016 16:40:21 +0200
-Message-ID: <1479307230-16650-9-git-send-email-claudiu.manoil@nxp.com>
+Date: Wed, 16 Nov 2016 16:40:22 +0200
+Message-ID: <1479307230-16650-10-git-send-email-claudiu.manoil@nxp.com>
 In-Reply-To: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 References: <1479307230-16650-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
@@ -25,142 +25,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The qman portals are platform devices themselves, so they should
-handle dma mappings.  Creating a dummy platform device in order to
-support dma mapping operations is not justified (and not portable).
-Instead, do the mapping against the first portal that has been
-initialised.
+Replace dummy platform device hack with a reference to a portal's
+platform device, in order to dma map the test frame for this
+small unit test.  The 2 qman symbols need to be exported because
+this self test is a kernel module.
 
 Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
 ---
- drivers/soc/fsl/qbman/qman.c        | 31 ++++++++++---------------------
- drivers/soc/fsl/qbman/qman_portal.c | 11 +++++++++++
- drivers/soc/fsl/qbman/qman_priv.h   |  1 +
- 3 files changed, 22 insertions(+), 21 deletions(-)
+ drivers/soc/fsl/qbman/qman.c            |  1 +
+ drivers/soc/fsl/qbman/qman_portal.c     |  1 +
+ drivers/soc/fsl/qbman/qman_test_stash.c | 31 ++++++++++++++++++++-----------
+ 3 files changed, 22 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index b4ef4a3..a0020d2 100644
+index a0020d2..283c2d3 100644
 --- a/drivers/soc/fsl/qbman/qman.c
 +++ b/drivers/soc/fsl/qbman/qman.c
-@@ -962,8 +962,6 @@ struct qman_portal {
- 	u32 sdqcr;
- 	/* probing time config params for cpu-affine portals */
- 	const struct qm_portal_config *config;
--	/* needed for providing a non-NULL device to dma_map_***() */
--	struct platform_device *pdev;
- 	/* 2-element array. cgrs[0] is mask, cgrs[1] is snapshot. */
- 	struct qman_cgrs *cgrs;
- 	/* linked-list of CSCN handlers. */
-@@ -1133,7 +1131,6 @@ static int qman_create_portal(struct qman_portal *portal,
- 			      const struct qman_cgrs *cgrs)
+@@ -2711,6 +2711,7 @@ const struct qm_portal_config *qman_get_qm_portal_config(
  {
- 	struct qm_portal *p;
--	char buf[16];
- 	int ret;
- 	u32 isdr;
- 
-@@ -1196,15 +1193,6 @@ static int qman_create_portal(struct qman_portal *portal,
- 	portal->sdqcr = QM_SDQCR_SOURCE_CHANNELS | QM_SDQCR_COUNT_UPTO3 |
- 			QM_SDQCR_DEDICATED_PRECEDENCE | QM_SDQCR_TYPE_PRIO_QOS |
- 			QM_SDQCR_TOKEN_SET(0xab) | QM_SDQCR_CHANNELS_DEDICATED;
--	sprintf(buf, "qportal-%d", c->channel);
--	portal->pdev = platform_device_alloc(buf, -1);
--	if (!portal->pdev)
--		goto fail_devalloc;
--	if (dma_set_mask(&portal->pdev->dev, DMA_BIT_MASK(40)))
--		goto fail_devadd;
--	ret = platform_device_add(portal->pdev);
--	if (ret)
--		goto fail_devadd;
- 	isdr = 0xffffffff;
- 	qm_out(p, QM_REG_ISDR, isdr);
- 	portal->irq_sources = 0;
-@@ -1256,10 +1244,6 @@ static int qman_create_portal(struct qman_portal *portal,
- fail_affinity:
- 	free_irq(c->irq, portal);
- fail_irq:
--	platform_device_del(portal->pdev);
--fail_devadd:
--	platform_device_put(portal->pdev);
--fail_devalloc:
- 	kfree(portal->cgrs);
- fail_cgrs:
- 	qm_mc_finish(p);
-@@ -1321,9 +1305,6 @@ static void qman_destroy_portal(struct qman_portal *qm)
- 	qm_dqrr_finish(&qm->p);
- 	qm_eqcr_finish(&qm->p);
- 
--	platform_device_del(qm->pdev);
--	platform_device_put(qm->pdev);
--
- 	qm->config = NULL;
+ 	return portal->config;
  }
++EXPORT_SYMBOL(qman_get_qm_portal_config);
  
-@@ -1817,8 +1798,16 @@ int qman_init_fq(struct qman_fq *fq, u32 flags, struct qm_mcc_initfq *opts)
- 			memset(&mcc->initfq.fqd.context_a, 0,
- 				sizeof(mcc->initfq.fqd.context_a));
- 		} else {
--			phys_fq = dma_map_single(&p->pdev->dev, fq, sizeof(*fq),
--						 DMA_TO_DEVICE);
-+			struct qman_portal *p = qman_dma_portal;
-+
-+			phys_fq = dma_map_single(p->config->dev, fq,
-+						 sizeof(*fq), DMA_TO_DEVICE);
-+			if (dma_mapping_error(p->config->dev, phys_fq)) {
-+				dev_err(p->config->dev, "dma_mapping failed\n");
-+				ret = -EIO;
-+				goto out;
-+			}
-+
- 			qm_fqd_stashing_set64(&mcc->initfq.fqd, phys_fq);
- 		}
- 	}
+ struct gen_pool *qm_fqalloc; /* FQID allocator */
+ struct gen_pool *qm_qpalloc; /* pool-channel allocator */
 diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-index 6651168..e6da2ea 100644
+index e6da2ea..c9a9bcb 100644
 --- a/drivers/soc/fsl/qbman/qman_portal.c
 +++ b/drivers/soc/fsl/qbman/qman_portal.c
-@@ -30,6 +30,8 @@
- 
+@@ -31,6 +31,7 @@
  #include "qman_priv.h"
  
-+struct qman_portal *qman_dma_portal;
-+
+ struct qman_portal *qman_dma_portal;
++EXPORT_SYMBOL(qman_dma_portal);
+ 
  /* Enable portal interupts (as opposed to polling mode) */
  #define CONFIG_FSL_DPA_PIRQ_SLOW  1
- #define CONFIG_FSL_DPA_PIRQ_FAST  1
-@@ -150,6 +152,10 @@ static struct qman_portal *init_pcfg(struct qm_portal_config *pcfg)
- 		/* all assigned portals are initialized now */
- 		qman_init_cgr_all();
+diff --git a/drivers/soc/fsl/qbman/qman_test_stash.c b/drivers/soc/fsl/qbman/qman_test_stash.c
+index 43cf66b..f8d25fa 100644
+--- a/drivers/soc/fsl/qbman/qman_test_stash.c
++++ b/drivers/soc/fsl/qbman/qman_test_stash.c
+@@ -191,6 +191,9 @@ struct hp_cpu {
+ static u32 *frame_ptr;
+ static dma_addr_t frame_dma;
+ 
++/* needed for dma_map*() */
++static const struct qm_portal_config *pcfg;
++
+ /* the main function waits on this */
+ static DECLARE_WAIT_QUEUE_HEAD(queue);
+ 
+@@ -210,16 +213,14 @@ static int allocate_frame_data(void)
+ {
+ 	u32 lfsr = HP_FIRST_WORD;
+ 	int loop;
+-	struct platform_device *pdev = platform_device_alloc("foobar", -1);
+ 
+-	if (!pdev) {
+-		pr_crit("platform_device_alloc() failed");
+-		return -EIO;
+-	}
+-	if (platform_device_add(pdev)) {
+-		pr_crit("platform_device_add() failed");
++	if (!qman_dma_portal) {
++		pr_crit("portal not available\n");
+ 		return -EIO;
  	}
 +
-+	if (!qman_dma_portal)
-+		qman_dma_portal = p;
++	pcfg = qman_get_qm_portal_config(qman_dma_portal);
 +
- 	spin_unlock(&qman_lock);
- 
- 	dev_info(pcfg->dev, "Portal initialised, cpu %d\n", pcfg->cpu);
-@@ -310,6 +316,11 @@ static int qman_portal_probe(struct platform_device *pdev)
- 	spin_unlock(&qman_lock);
- 	pcfg->cpu = cpu;
- 
-+	if (dma_set_mask(dev, DMA_BIT_MASK(40))) {
-+		dev_err(dev, "dma_set_mask() failed\n");
-+		goto err_portal_init;
+ 	__frame_ptr = kmalloc(4 * HP_NUM_WORDS, GFP_KERNEL);
+ 	if (!__frame_ptr)
+ 		return -ENOMEM;
+@@ -229,15 +230,22 @@ static int allocate_frame_data(void)
+ 		frame_ptr[loop] = lfsr;
+ 		lfsr = do_lfsr(lfsr);
+ 	}
+-	frame_dma = dma_map_single(&pdev->dev, frame_ptr, 4 * HP_NUM_WORDS,
++
++	frame_dma = dma_map_single(pcfg->dev, frame_ptr, 4 * HP_NUM_WORDS,
+ 				   DMA_BIDIRECTIONAL);
+-	platform_device_del(pdev);
+-	platform_device_put(pdev);
++	if (dma_mapping_error(pcfg->dev, frame_dma)) {
++		pr_crit("dma mapping failure\n");
++		kfree(__frame_ptr);
++		return -EIO;
 +	}
 +
- 	if (!init_pcfg(pcfg)) {
- 		dev_err(dev, "portal init failed\n");
- 		goto err_portal_init;
-diff --git a/drivers/soc/fsl/qbman/qman_priv.h b/drivers/soc/fsl/qbman/qman_priv.h
-index 5cf821e..59b4b46 100644
---- a/drivers/soc/fsl/qbman/qman_priv.h
-+++ b/drivers/soc/fsl/qbman/qman_priv.h
-@@ -367,5 +367,6 @@ struct qman_portal *qman_create_affine_portal(
- #define QM_PIRQ_VISIBLE	(QM_PIRQ_SLOW | QM_PIRQ_DQRI)
+ 	return 0;
+ }
  
- extern struct qman_portal *affine_portals[NR_CPUS];
-+extern struct qman_portal *qman_dma_portal;
- const struct qm_portal_config *qman_get_qm_portal_config(
- 						struct qman_portal *portal);
+ static void deallocate_frame_data(void)
+ {
++	dma_unmap_single(pcfg->dev, frame_dma, 4 * HP_NUM_WORDS,
++			 DMA_BIDIRECTIONAL);
+ 	kfree(__frame_ptr);
+ }
+ 
+@@ -249,7 +257,8 @@ static inline int process_frame_data(struct hp_handler *handler,
+ 	int loop;
+ 
+ 	if (qm_fd_addr_get64(fd) != handler->addr) {
+-		pr_crit("bad frame address");
++		pr_crit("bad frame address, [%llX != %llX]\n",
++			qm_fd_addr_get64(fd), handler->addr);
+ 		return -EIO;
+ 	}
+ 	for (loop = 0; loop < HP_NUM_WORDS; loop++, p++) {
 -- 
 1.7.11.7
