@@ -1,12 +1,12 @@
 Return-Path: <tklauser@distanz.ch>
 Received: from mail.zhinst.com (mail.zhinst.com [212.126.164.98])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tKRCy18gqzDvjC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 03:19:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tKRDr3fSdzDvtK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 03:20:27 +1100 (AEDT)
 From: Tobias Klauser <tklauser@distanz.ch>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mce: Remove unused but set variable
-Date: Thu, 17 Nov 2016 17:19:21 +0100
-Message-Id: <20161117161921.13232-1-tklauser@distanz.ch>
+Subject: [PATCH] powerpc: Fix old style declaration GCC warnings
+Date: Thu, 17 Nov 2016 17:20:24 +0100
+Message-Id: <20161117162024.13344-1-tklauser@distanz.ch>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,36 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the unused but set variable srr1 in save_mce_event() to
-fix the following GCC warning when building with 'W=1':
-
-  arch/powerpc/kernel/mce.c:75:11: warning: variable 'srr1' set but not used [-Wunused-but-set-variable]
+Fix two [-Wold-style-declaration] GCC warnings by moving the inline
+keyword before the return type.
 
 Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
 ---
- arch/powerpc/kernel/mce.c | 3 ---
- 1 file changed, 3 deletions(-)
+ arch/powerpc/kernel/prom_init.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index 5e7ece0fda9f..c6923ff45131 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -72,7 +72,6 @@ void save_mce_event(struct pt_regs *regs, long handled,
- 		    struct mce_error_info *mce_err,
- 		    uint64_t nip, uint64_t addr)
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 88ac964f4858..05d2556ebb9f 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -461,14 +461,14 @@ static int __init prom_next_node(phandle *nodep)
+ 	}
+ }
+ 
+-static int inline prom_getprop(phandle node, const char *pname,
++static inline int prom_getprop(phandle node, const char *pname,
+ 			       void *value, size_t valuelen)
  {
--	uint64_t srr1;
- 	int index = __this_cpu_inc_return(mce_nest_count) - 1;
- 	struct machine_check_event *mce = this_cpu_ptr(&mce_event[index]);
+ 	return call_prom("getprop", 4, 1, node, ADDR(pname),
+ 			 (u32)(unsigned long) value, (u32) valuelen);
+ }
  
-@@ -99,8 +98,6 @@ void save_mce_event(struct pt_regs *regs, long handled,
- 		mce->disposition = MCE_DISPOSITION_NOT_RECOVERED;
- 	mce->severity = MCE_SEV_ERROR_SYNC;
- 
--	srr1 = regs->msr;
--
- 	/*
- 	 * Populate the mce error_type and type-specific error_type.
- 	 */
+-static int inline prom_getproplen(phandle node, const char *pname)
++static inline int prom_getproplen(phandle node, const char *pname)
+ {
+ 	return call_prom("getproplen", 2, 1, node, ADDR(pname));
+ }
 -- 
 2.11.0.rc0.7.gbe5a750
