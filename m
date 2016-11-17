@@ -1,25 +1,40 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKCh53H5fzDvmf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 18:39:49 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id e9so16556718pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 23:39:49 -0800 (PST)
-Subject: Re: [PATCH kernel v5 5/6] vfio/spapr: Reference mm in tce_container
-To: linuxppc-dev@lists.ozlabs.org
-References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
- <1478867537-27893-6-git-send-email-aik@ozlabs.ru>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
- <paulus@samba.org>, kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <7bf695fa-502a-80b1-85be-79f0aff55366@ozlabs.ru>
-Date: Thu, 17 Nov 2016 18:39:41 +1100
-MIME-Version: 1.0
-In-Reply-To: <1478867537-27893-6-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKG9N0m0qzDvrX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 20:31:51 +1100 (AEDT)
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@infradead.org>,
+ Johannes Thumshirn <jthumshirn@suse.de>,
+ Steffen Maier <maier@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Johannes Thumshirn <jth@kernel.org>,
+ James Smart <james.smart@broadcom.com>,
+ Dick Kennedy <dick.kennedy@broadcom.com>,
+ qla2xxx-upstream@qlogic.com (supporter:QLOGIC QLA2XXX FC-SCSI DRIVER),
+ linux-s390@vger.kernel.org (open list:S390 ZFCP DRIVER),
+ linux-kernel@vger.kernel.org (open list),
+ linux-scsi@vger.kernel.org (open list:BROCADE BFA FC SCSI DRIVER),
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)),
+ fcoe-devel@open-fcoe.org (open list:FCOE SUBSYSTEM (libfc, libfcoe, fcoe))
+Subject: [PATCH v4 03/15] scsi: fc: Export fc_bsg_jobdone and use it in FC
+ drivers
+Date: Thu, 17 Nov 2016 10:31:13 +0100
+Message-Id: <ff27b6d9ce9b6841eddec10fde59657e1c5cd3c8.1479374719.git.jthumshirn@suse.de>
+In-Reply-To: <cover.1479374719.git.jthumshirn@suse.de>
+References: <cover.1479374719.git.jthumshirn@suse.de>
+In-Reply-To: <cover.1479374719.git.jthumshirn@suse.de>
+References: <cover.1479374719.git.jthumshirn@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,82 +44,657 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/11/16 23:32, Alexey Kardashevskiy wrote:
-> In some situations the userspace memory context may live longer than
-> the userspace process itself so if we need to do proper memory context
-> cleanup, we better have tce_container take a reference to mm_struct and
-> use it later when the process is gone (@current or @current->mm is NULL).
-> 
-> This references mm and stores the pointer in the container; this is done
-> in a new helper - tce_iommu_mm_set() - when one of the following happens:
-> - a container is enabled (IOMMU v1);
-> - a first attempt to pre-register memory is made (IOMMU v2);
-> - a DMA window is created (IOMMU v2).
-> The @mm stays referenced till the container is destroyed.
-> 
-> This replaces current->mm with container->mm everywhere except debug
-> prints.
-> 
-> This adds a check that current->mm is the same as the one stored in
-> the container to prevent userspace from making changes to a memory
-> context of other processes.
-> 
-> DMA map/unmap ioctls() do not check for @mm as they already check
-> for @enabled which is set after tce_iommu_mm_set() is called.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> Changes:
-> v5:
-> * postpone referencing of mm
-> 
-> v4:
-> * added check for container->mm!=current->mm in tce_iommu_ioctl()
-> for all ioctls and removed other redundand checks
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 159 ++++++++++++++++++++++--------------
->  1 file changed, 99 insertions(+), 60 deletions(-)
-> 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 1c02498..9a81a7e 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -31,49 +31,49 @@
->  static void tce_iommu_detach_group(void *iommu_data,
->  		struct iommu_group *iommu_group);
->  
-> -static long try_increment_locked_vm(long npages)
-> +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
->  {
->  	long ret = 0, locked, lock_limit;
->  
-> -	if (!current || !current->mm)
-> -		return -ESRCH; /* process exited */
-> +	if (!mm)
-> +		return -EPERM;
->  
->  	if (!npages)
->  		return 0;
->  
-> -	down_write(&current->mm->mmap_sem);
-> -	locked = current->mm->locked_vm + npages;
-> +	down_write(&mm->mmap_sem);
-> +	locked = mm->locked_vm + npages;
->  	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+Export fc_bsg_jobdone so drivers can use it directly instead of doing
+the round-trip via struct fc_bsg_job::job_done() and use it in the LLDDs.
+That way we can also unify the interfaces of fc_bsg_jobdone and bsg_job_done.
 
+As we've converted all LLDDs over to use fc_bsg_jobdone() directly,
+we can remove the function pointer from struct fc_bsg_job as well.
 
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ drivers/s390/scsi/zfcp_fc.c      |  2 +-
+ drivers/scsi/bfa/bfad_bsg.c      |  6 ++--
+ drivers/scsi/ibmvscsi/ibmvfc.c   |  3 +-
+ drivers/scsi/libfc/fc_lport.c    |  6 ++--
+ drivers/scsi/lpfc/lpfc_bsg.c     | 71 +++++++++++++++++++++++++++-------------
+ drivers/scsi/qla2xxx/qla_bsg.c   | 66 ++++++++++++++++++++++++-------------
+ drivers/scsi/scsi_transport_fc.c | 25 +++++++-------
+ include/scsi/scsi_transport_fc.h |  3 +-
+ 8 files changed, 119 insertions(+), 63 deletions(-)
 
-Oh boy. Now it seems I have to reference a task, not just mm (which I may
-not have to reference at all after all as the task reference should keep mm
-alive) as I missed the fact capable() and rlimit() are working with @current.
-
-
-Alex,
-
-Is there anything else I should fix before posting v6? Thanks.
-
-
-
+diff --git a/drivers/s390/scsi/zfcp_fc.c b/drivers/s390/scsi/zfcp_fc.c
+index 4c4023f..87f6330 100644
+--- a/drivers/s390/scsi/zfcp_fc.c
++++ b/drivers/s390/scsi/zfcp_fc.c
+@@ -892,7 +892,7 @@ static void zfcp_fc_ct_els_job_handler(void *data)
+ 	jr->reply_payload_rcv_len = job->reply_payload.payload_len;
+ 	jr->reply_data.ctels_reply.status = FC_CTELS_STATUS_OK;
+ 	jr->result = zfcp_ct_els->status ? -EIO : 0;
+-	job->job_done(job);
++	fc_bsg_jobdone(job, jr->result, jr->reply_payload_rcv_len);
+ }
+ 
+ static struct zfcp_fc_wka_port *zfcp_fc_job_wka_port(struct fc_bsg_job *job)
+diff --git a/drivers/scsi/bfa/bfad_bsg.c b/drivers/scsi/bfa/bfad_bsg.c
+index 48366d8..e49a6c8 100644
+--- a/drivers/scsi/bfa/bfad_bsg.c
++++ b/drivers/scsi/bfa/bfad_bsg.c
+@@ -3180,7 +3180,8 @@
+ 	bsg_reply->reply_payload_rcv_len = job->reply_payload.payload_len;
+ 	bsg_reply->result = rc;
+ 
+-	job->job_done(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ error:
+ 	/* free the command buffer */
+@@ -3556,7 +3557,8 @@ struct bfad_buf_info *
+ 	bsg_reply->result = rc;
+ 
+ 	if (rc == BFA_STATUS_OK)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 
+ 	return rc;
+ }
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 7c17a7e..6070361 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -1945,7 +1945,8 @@ static int ibmvfc_bsg_request(struct fc_bsg_job *job)
+ 	ibmvfc_free_event(evt);
+ 	spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 	bsg_reply->result = rc;
+-	job->job_done(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	rc = 0;
+ out:
+ 	dma_unmap_sg(vhost->dev, job->request_payload.sg_list,
+diff --git a/drivers/scsi/libfc/fc_lport.c b/drivers/scsi/libfc/fc_lport.c
+index 2de6093..8ea6e93 100644
+--- a/drivers/scsi/libfc/fc_lport.c
++++ b/drivers/scsi/libfc/fc_lport.c
+@@ -1913,7 +1913,8 @@ static void fc_lport_bsg_resp(struct fc_seq *sp, struct fc_frame *fp,
+ 			-ECONNABORTED : -ETIMEDOUT;
+ 		job->reply_len = sizeof(uint32_t);
+ 		job->state_flags |= FC_RQST_STATE_DONE;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 		kfree(info);
+ 		return;
+ 	}
+@@ -1948,7 +1949,8 @@ static void fc_lport_bsg_resp(struct fc_seq *sp, struct fc_frame *fp,
+ 				job->reply_payload.payload_len;
+ 		bsg_reply->result = 0;
+ 		job->state_flags |= FC_RQST_STATE_DONE;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 		kfree(info);
+ 	}
+ 	fc_frame_free(fp);
+diff --git a/drivers/scsi/lpfc/lpfc_bsg.c b/drivers/scsi/lpfc/lpfc_bsg.c
+index f09a325..46f0b8f 100644
+--- a/drivers/scsi/lpfc/lpfc_bsg.c
++++ b/drivers/scsi/lpfc/lpfc_bsg.c
+@@ -371,7 +371,8 @@ struct lpfc_dmabufext {
+ 
+ 	if (job) {
+ 		bsg_reply->result = rc;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	}
+ 	return;
+ }
+@@ -644,7 +645,8 @@ struct lpfc_dmabufext {
+ 
+ 	if (job) {
+ 		bsg_reply->result = rc;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	}
+ 	return;
+ }
+@@ -1136,7 +1138,8 @@ struct lpfc_dmabufext {
+ 			job->dd_data = NULL;
+ 			/* complete the job back to userspace */
+ 			spin_unlock_irqrestore(&phba->ct_ev_lock, flags);
+-			job->job_done(job);
++			fc_bsg_jobdone(job, bsg_reply->result,
++				       bsg_reply->reply_payload_rcv_len);
+ 			spin_lock_irqsave(&phba->ct_ev_lock, flags);
+ 		}
+ 	}
+@@ -1361,7 +1364,8 @@ struct lpfc_dmabufext {
+ 	spin_unlock_irqrestore(&phba->ct_ev_lock, flags);
+ 	job->dd_data = NULL;
+ 	bsg_reply->result = 0;
+-	job->job_done(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return 0;
+ 
+ job_error:
+@@ -1458,7 +1462,8 @@ struct lpfc_dmabufext {
+ 
+ 	if (job) {
+ 		bsg_reply->result = rc;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	}
+ 	return;
+ }
+@@ -1886,7 +1891,8 @@ struct lpfc_dmabufext {
+ 	bsg_reply->result = rc;
+ 	/* complete the job back to userspace if no error */
+ 	if (rc == 0)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ }
+ 
+@@ -2175,7 +2181,8 @@ struct lpfc_dmabufext {
+ 	bsg_reply->result = rc;
+ 	/* complete the job back to userspace if no error */
+ 	if (rc == 0)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ }
+ 
+@@ -2289,7 +2296,8 @@ struct lpfc_dmabufext {
+ 	bsg_reply->result = rc;
+ 	/* complete the job back to userspace if no error */
+ 	if (rc == 0)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ }
+ 
+@@ -2441,7 +2449,8 @@ struct lpfc_dmabufext {
+ 	bsg_reply->result = rc;
+ 	/* complete the job back to userspace if no error */
+ 	if (rc == 0)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ }
+ 
+@@ -3301,7 +3310,8 @@ static int lpfcdiag_loop_post_rxbufs(struct lpfc_hba *phba, uint16_t rxxri,
+ 	job->dd_data = NULL;
+ 	/* complete the job back to userspace if no error */
+ 	if (rc == IOCB_SUCCESS)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ }
+ 
+@@ -3344,7 +3354,8 @@ static int lpfcdiag_loop_post_rxbufs(struct lpfc_hba *phba, uint16_t rxxri,
+ job_error:
+ 	bsg_reply->result = rc;
+ 	if (rc == 0)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ }
+ 
+@@ -3409,7 +3420,8 @@ static int lpfcdiag_loop_post_rxbufs(struct lpfc_hba *phba, uint16_t rxxri,
+ 
+ 	if (job) {
+ 		bsg_reply->result = 0;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	}
+ 	return;
+ }
+@@ -3635,6 +3647,7 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ lpfc_bsg_issue_read_mbox_ext_cmpl(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmboxq)
+ {
+ 	struct fc_bsg_job *job;
++	struct fc_bsg_reply *bsg_reply;
+ 
+ 	job = lpfc_bsg_issue_mbox_ext_handle_job(phba, pmboxq);
+ 
+@@ -3654,9 +3667,11 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ 	mempool_free(pmboxq, phba->mbox_mem_pool);
+ 
+ 	/* if the job is still active, call job done */
+-	if (job)
+-		job->job_done(job);
+-
++	if (job) {
++		bsg_reply = job->reply;
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
++	}
+ 	return;
+ }
+ 
+@@ -3672,6 +3687,7 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ lpfc_bsg_issue_write_mbox_ext_cmpl(struct lpfc_hba *phba, LPFC_MBOXQ_t *pmboxq)
+ {
+ 	struct fc_bsg_job *job;
++	struct fc_bsg_reply *bsg_reply;
+ 
+ 	job = lpfc_bsg_issue_mbox_ext_handle_job(phba, pmboxq);
+ 
+@@ -3689,8 +3705,11 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ 	lpfc_bsg_mbox_ext_session_reset(phba);
+ 
+ 	/* if the job is still active, call job done */
+-	if (job)
+-		job->job_done(job);
++	if (job) {
++		bsg_reply = job->reply;
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
++	}
+ 
+ 	return;
+ }
+@@ -4131,7 +4150,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ 	/* wait for additoinal external buffers */
+ 
+ 	bsg_reply->result = 0;
+-	job->job_done(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return SLI_CONFIG_HANDLED;
+ 
+ job_error:
+@@ -4357,7 +4377,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ 	}
+ 
+ 	bsg_reply->result = 0;
+-	job->job_done(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	return SLI_CONFIG_HANDLED;
+ }
+@@ -4473,7 +4494,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ 
+ 	/* wait for additoinal external buffers */
+ 	bsg_reply->result = 0;
+-	job->job_done(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return SLI_CONFIG_HANDLED;
+ 
+ job_error:
+@@ -4941,7 +4963,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ 		/* job done */
+ 		bsg_reply->result = 0;
+ 		job->dd_data = NULL;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	} else if (rc == 1)
+ 		/* job submitted, will complete later*/
+ 		rc = 0; /* return zero, no error */
+@@ -5051,7 +5074,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ 
+ 	if (job) {
+ 		bsg_reply->result = rc;
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	}
+ 
+ 	return;
+@@ -5269,7 +5293,8 @@ static int lpfc_bsg_check_cmd_access(struct lpfc_hba *phba,
+ job_error:
+ 	bsg_reply->result = rc;
+ 	if (rc == 0)
+-		job->job_done(job);
++		fc_bsg_jobdone(job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rc;
+ }
+ 
+diff --git a/drivers/scsi/qla2xxx/qla_bsg.c b/drivers/scsi/qla2xxx/qla_bsg.c
+index 40f7c10..9293d5a 100644
+--- a/drivers/scsi/qla2xxx/qla_bsg.c
++++ b/drivers/scsi/qla2xxx/qla_bsg.c
+@@ -20,7 +20,8 @@
+ 	struct fc_bsg_reply *bsg_reply = bsg_job->reply;
+ 
+ 	bsg_reply->result = res;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	sp->free(vha, sp);
+ }
+ 
+@@ -242,7 +243,8 @@
+ 	}
+ exit_fcp_prio_cfg:
+ 	if (!ret)
+-		bsg_job->job_done(bsg_job);
++		fc_bsg_jobdone(bsg_job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return ret;
+ }
+ 
+@@ -939,7 +941,8 @@
+ 	    bsg_job->request_payload.sg_list,
+ 	    bsg_job->request_payload.sg_cnt, DMA_TO_DEVICE);
+ 	if (!rval)
+-		bsg_job->job_done(bsg_job);
++		fc_bsg_jobdone(bsg_job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rval;
+ }
+ 
+@@ -972,7 +975,8 @@
+ 		ql_dbg(ql_dbg_user, vha, 0x7031,
+ 		    "Vendor request 84xx reset completed.\n");
+ 		bsg_reply->result = DID_OK;
+-		bsg_job->job_done(bsg_job);
++		fc_bsg_jobdone(bsg_job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	}
+ 
+ 	return rval;
+@@ -1085,7 +1089,8 @@
+ 		bsg_job->request_payload.sg_cnt, DMA_TO_DEVICE);
+ 
+ 	if (!rval)
+-		bsg_job->job_done(bsg_job);
++		fc_bsg_jobdone(bsg_job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rval;
+ }
+ 
+@@ -1282,7 +1287,8 @@
+ 	dma_pool_free(ha->s_dma_pool, mn, mn_dma);
+ 
+ 	if (!rval)
+-		bsg_job->job_done(bsg_job);
++		fc_bsg_jobdone(bsg_job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	return rval;
+ }
+ 
+@@ -1368,7 +1374,8 @@
+ 		}
+ 
+ 		bsg_reply->result = DID_OK;
+-		bsg_job->job_done(bsg_job);
++		fc_bsg_jobdone(bsg_job, bsg_reply->result,
++			       bsg_reply->reply_payload_rcv_len);
+ 	}
+ 
+ 	return rval;
+@@ -1476,7 +1483,8 @@
+ 	ha->optrom_buffer = NULL;
+ 	ha->optrom_state = QLA_SWAITING;
+ 	mutex_unlock(&ha->optrom_mutex);
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return rval;
+ }
+ 
+@@ -1511,7 +1519,8 @@
+ 	ha->optrom_buffer = NULL;
+ 	ha->optrom_state = QLA_SWAITING;
+ 	mutex_unlock(&ha->optrom_mutex);
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return rval;
+ }
+ 
+@@ -1561,7 +1570,8 @@
+ done:
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	return 0;
+ }
+@@ -1610,7 +1620,8 @@
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->reply_payload_rcv_len = sizeof(*sr);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	return 0;
+ }
+@@ -1655,7 +1666,8 @@
+ done:
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	return 0;
+ }
+@@ -1699,7 +1711,8 @@
+ done:
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	return 0;
+ }
+@@ -1747,7 +1760,8 @@
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->reply_payload_rcv_len = sizeof(*i2c);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	return 0;
+ }
+@@ -1925,7 +1939,8 @@
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->reply_payload_rcv_len = 0;
+ 	bsg_reply->result = (DID_OK) << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	/* Always return success, vendor rsp carries correct status */
+ 	return 0;
+ }
+@@ -2090,7 +2105,8 @@
+ 
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return 0;
+ }
+ 
+@@ -2131,7 +2147,8 @@
+ 
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return 0;
+ }
+ 
+@@ -2162,7 +2179,8 @@
+ 
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return 0;
+ }
+ 
+@@ -2207,7 +2225,8 @@
+ 
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return 0;
+ }
+ 
+@@ -2265,7 +2284,8 @@
+ 
+ 	bsg_job->reply_len = sizeof(struct fc_bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return 0;
+ }
+ 
+@@ -2321,7 +2341,8 @@
+ 
+ 	bsg_job->reply_len = sizeof(*bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	dma_free_coherent(&ha->pdev->dev, sizeof(*stats),
+ 		stats, stats_dma);
+@@ -2364,7 +2385,8 @@
+ 
+ 	bsg_job->reply_len = sizeof(*bsg_reply);
+ 	bsg_reply->result = DID_OK << 16;
+-	bsg_job->job_done(bsg_job);
++	fc_bsg_jobdone(bsg_job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 
+ 	kfree(dd);
+ 
+diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+index 02a83e5..66871c8 100644
+--- a/drivers/scsi/scsi_transport_fc.c
++++ b/drivers/scsi/scsi_transport_fc.c
+@@ -3582,16 +3582,17 @@ struct fc_vport *
+  * fc_bsg_jobdone - completion routine for bsg requests that the LLD has
+  *                  completed
+  * @job:	fc_bsg_job that is complete
++ * @result:	job reply result
++ * @reply_payload_rcv_len: length of payload received
+  */
+-static void
+-fc_bsg_jobdone(struct fc_bsg_job *job)
++void fc_bsg_jobdone(struct fc_bsg_job *job, int result,
++		    unsigned int reply_payload_rcv_len)
+ {
+ 	struct request *req = job->req;
+ 	struct request *rsp = req->next_rq;
+-	struct fc_bsg_reply *bsg_reply = job->reply;
+ 	int err;
+ 
+-	err = job->req->errors = bsg_reply->result;
++	err = job->req->errors = result;
+ 
+ 	if (err < 0)
+ 		/* we're only returning the result field in the reply */
+@@ -3603,14 +3604,14 @@ struct fc_vport *
+ 	req->resid_len = 0;
+ 
+ 	if (rsp) {
+-		WARN_ON(bsg_reply->reply_payload_rcv_len > rsp->resid_len);
++		WARN_ON(reply_payload_rcv_len > rsp->resid_len);
+ 
+ 		/* set reply (bidi) residual */
+-		rsp->resid_len -= min(bsg_reply->reply_payload_rcv_len,
+-				      rsp->resid_len);
++		rsp->resid_len -= min(reply_payload_rcv_len, rsp->resid_len);
+ 	}
+ 	blk_complete_request(req);
+ }
++EXPORT_SYMBOL_GPL(fc_bsg_jobdone);
+ 
+ /**
+  * fc_bsg_softirq_done - softirq done routine for destroying the bsg requests
+@@ -3742,7 +3743,6 @@ static void fc_bsg_softirq_done(struct request *rq)
+ 		if (ret)
+ 			goto failjob_rls_rqst_payload;
+ 	}
+-	job->job_done = fc_bsg_jobdone;
+ 	if (rport)
+ 		job->dev = &rport->dev;
+ 	else
+@@ -3846,7 +3846,8 @@ enum fc_dispatch_result {
+ 	bsg_reply->reply_payload_rcv_len = 0;
+ 	bsg_reply->result = ret;
+ 	job->reply_len = sizeof(uint32_t);
+-	fc_bsg_jobdone(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return FC_DISPATCH_UNLOCKED;
+ }
+ 
+@@ -3923,7 +3924,8 @@ enum fc_dispatch_result {
+ 	bsg_reply->reply_payload_rcv_len = 0;
+ 	bsg_reply->result = ret;
+ 	job->reply_len = sizeof(uint32_t);
+-	fc_bsg_jobdone(job);
++	fc_bsg_jobdone(job, bsg_reply->result,
++		       bsg_reply->reply_payload_rcv_len);
+ 	return FC_DISPATCH_UNLOCKED;
+ }
+ 
+@@ -3983,7 +3985,8 @@ enum fc_dispatch_result {
+ 			bsg_reply->reply_payload_rcv_len = 0;
+ 			bsg_reply->result = -ENOMSG;
+ 			job->reply_len = sizeof(uint32_t);
+-			fc_bsg_jobdone(job);
++			fc_bsg_jobdone(job, bsg_reply->result,
++				       bsg_reply->reply_payload_rcv_len);
+ 			spin_lock_irq(q->queue_lock);
+ 			continue;
+ 		}
+diff --git a/include/scsi/scsi_transport_fc.h b/include/scsi/scsi_transport_fc.h
+index 921b097..eca8ed7 100644
+--- a/include/scsi/scsi_transport_fc.h
++++ b/include/scsi/scsi_transport_fc.h
+@@ -637,7 +637,6 @@ struct fc_bsg_job {
+ 	spinlock_t job_lock;
+ 	unsigned int state_flags;
+ 	unsigned int ref_cnt;
+-	void (*job_done)(struct fc_bsg_job *);
+ 
+ 	struct fc_bsg_request *request;
+ 	struct fc_bsg_reply *reply;
+@@ -842,5 +841,7 @@ struct fc_vport *fc_vport_create(struct Scsi_Host *shost, int channel,
+ 		struct fc_vport_identifiers *);
+ int fc_vport_terminate(struct fc_vport *vport);
+ int fc_block_scsi_eh(struct scsi_cmnd *cmnd);
++void fc_bsg_jobdone(struct fc_bsg_job *job, int result,
++		    unsigned int reply_payload_rcv_len);
+ 
+ #endif /* SCSI_TRANSPORT_FC_H */
 -- 
-Alexey
+1.8.5.6
