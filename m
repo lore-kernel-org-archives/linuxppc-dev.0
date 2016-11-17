@@ -2,14 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKKXx2VTkzDvsD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 23:04:01 +1100 (AEDT)
-In-Reply-To: <1464328140-31178-2-git-send-email-rashmicy@gmail.com>
-To: Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKKXy1x9lzDvsP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 23:04:02 +1100 (AEDT)
+In-Reply-To: <1478669793-15074-1-git-send-email-sjitindarsingh@gmail.com>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v3,2/2] powerpc/mm: Dump hash table
-Message-Id: <3tKKXx0t2Wz9t25@ozlabs.org>
-Date: Thu, 17 Nov 2016 23:04:00 +1100 (AEDT)
+Cc: paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com, sjitindarsingh@gmail.com
+Subject: Re: powerpc/mm: Correct process and partition table max size
+Message-Id: <3tKKXy15wsz9t1d@ozlabs.org>
+Date: Thu, 17 Nov 2016 23:04:01 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,18 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-27-05 at 05:49:00 UTC, Rashmica Gupta wrote:
-> Useful to be able to dump the kernel hash page table to check
-> which pages are hashed along with their sizes and other details.
+On Wed, 2016-09-11 at 05:36:33 UTC, Suraj Jitindar Singh wrote:
+> Version 3.00 of the ISA states that the PATS (partition table size) field
+> of the PTCR (partition table control register) and the PRTS (process table
+> size) field of the partition table entry must both be less than or equal
+> to 24. However the actual size of the partition and process tables is equal
+> to 2 to the power of 12 plus the PATS and PRTS fields, respectively. This
+> means that the max allowable size of each of these tables is 2^36 or 64GB
+> for both.
 > 
-> Add a debugfs file to check the hash page table. If radix is enabled
-> (and so there is no hash page table) then this file doesn't exist. To
-> use this the PPC_PTDUMP config option must be selected.
+> Thus when checking the size shift for each we should be checking for values
+> of greater than 36 instead of the current check for shifts larger than 24
+> and 23.
 > 
-> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+> Fixes: 2bfd65e45e877fb5704730244da67c748d28a1b8
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1515ab932156257afd8a5864506dab
+https://git.kernel.org/powerpc/c/555c16328ae6d75a90e234eac9b519
 
 cheers
