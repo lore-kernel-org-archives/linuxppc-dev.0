@@ -1,28 +1,25 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKCWn39dxzDvk6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 18:32:37 +1100 (AEDT)
-Received: by mail-wm0-x242.google.com with SMTP id a20so18471140wme.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 23:32:37 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKCh53H5fzDvmf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 18:39:49 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id e9so16556718pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2016 23:39:49 -0800 (PST)
+Subject: Re: [PATCH kernel v5 5/6] vfio/spapr: Reference mm in tce_container
+To: linuxppc-dev@lists.ozlabs.org
+References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
+ <1478867537-27893-6-git-send-email-aik@ozlabs.ru>
+Cc: Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
+ <paulus@samba.org>, kvm@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <7bf695fa-502a-80b1-85be-79f0aff55366@ozlabs.ru>
+Date: Thu, 17 Nov 2016 18:39:41 +1100
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
-References: <1479153557-20849-1-git-send-email-malat@debian.org>
- <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Thu, 17 Nov 2016 08:32:14 +0100
-Message-ID: <CA+7wUsxgvtDee66mac_Z31Y5gMdQzz-v4kjmA8KxdJdQU+29fw@mail.gmail.com>
-Subject: Re: [PATCH v2] Fix loading of module radeonfb on PowerMac
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Milan Kupcevic <milan@debian.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1478867537-27893-6-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,137 +29,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tomi,
+On 11/11/16 23:32, Alexey Kardashevskiy wrote:
+> In some situations the userspace memory context may live longer than
+> the userspace process itself so if we need to do proper memory context
+> cleanup, we better have tce_container take a reference to mm_struct and
+> use it later when the process is gone (@current or @current->mm is NULL).
+> 
+> This references mm and stores the pointer in the container; this is done
+> in a new helper - tce_iommu_mm_set() - when one of the following happens:
+> - a container is enabled (IOMMU v1);
+> - a first attempt to pre-register memory is made (IOMMU v2);
+> - a DMA window is created (IOMMU v2).
+> The @mm stays referenced till the container is destroyed.
+> 
+> This replaces current->mm with container->mm everywhere except debug
+> prints.
+> 
+> This adds a check that current->mm is the same as the one stored in
+> the container to prevent userspace from making changes to a memory
+> context of other processes.
+> 
+> DMA map/unmap ioctls() do not check for @mm as they already check
+> for @enabled which is set after tce_iommu_mm_set() is called.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v5:
+> * postpone referencing of mm
+> 
+> v4:
+> * added check for container->mm!=current->mm in tce_iommu_ioctl()
+> for all ioctls and removed other redundand checks
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 159 ++++++++++++++++++++++--------------
+>  1 file changed, 99 insertions(+), 60 deletions(-)
+> 
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index 1c02498..9a81a7e 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -31,49 +31,49 @@
+>  static void tce_iommu_detach_group(void *iommu_data,
+>  		struct iommu_group *iommu_group);
+>  
+> -static long try_increment_locked_vm(long npages)
+> +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+>  {
+>  	long ret = 0, locked, lock_limit;
+>  
+> -	if (!current || !current->mm)
+> -		return -ESRCH; /* process exited */
+> +	if (!mm)
+> +		return -EPERM;
+>  
+>  	if (!npages)
+>  		return 0;
+>  
+> -	down_write(&current->mm->mmap_sem);
+> -	locked = current->mm->locked_vm + npages;
+> +	down_write(&mm->mmap_sem);
+> +	locked = mm->locked_vm + npages;
+>  	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
 
-On Tue, Nov 15, 2016 at 12:46 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> Hi,
->
-> On 14/11/16 21:59, Mathieu Malaterre wrote:
->> When the linux kernel is build with (typical kernel ship with Debian
->> installer):
->>
->> CONFIG_FB_OF=y
->> CONFIG_VT_HW_CONSOLE_BINDING=y
->> CONFIG_FB_RADEON=m
->>
->> The offb driver takes precedence over module radeonfb. It is then
->> impossible to load the module, error reported is:
->>
->> [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
->> [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
->> [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
->> [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
->>
->> This patch reproduce the behavior of the module radeon, so as to make it
->> possible to load radeonfb when offb is first loaded.
->>
->> It should be noticed that `offb_destroy` is never called which explain the
->> need to skip error detection on the radeon side.
->>
->> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->> Link: https://bugs.debian.org/826629#57
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=119741
->> Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
->> ---
->
-> Please always have a changelog in patch new revisions. For individual
-> patches, you can insert the changes here.
->
->>  drivers/video/fbdev/aty/radeon_base.c | 26 ++++++++++++++++++++++++++
->>  1 file changed, 26 insertions(+)
->>
->> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
->> index 218339a..84d634b 100644
->> --- a/drivers/video/fbdev/aty/radeon_base.c
->> +++ b/drivers/video/fbdev/aty/radeon_base.c
->> @@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
->>       .read   = radeon_show_edid2,
->>  };
->>
->> +static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
->> +{
->> +     struct apertures_struct *ap;
->> +
->> +     ap = alloc_apertures(1);
->> +     if (!ap)
->> +             return -ENOMEM;
->> +
->> +     ap->ranges[0].base = pci_resource_start(pdev, 0);
->> +     ap->ranges[0].size = pci_resource_len(pdev, 0);
->> +
->> +     remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
->> +     kfree(ap);
->> +
->> +     return 0;
->> +}
->>
->>  static int radeonfb_pci_register(struct pci_dev *pdev,
->>                                const struct pci_device_id *ent)
->> @@ -2314,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
->>       rinfo->fb_base_phys = pci_resource_start (pdev, 0);
->>       rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
->>
->> +     ret = radeon_kick_out_firmware_fb(pdev);
->> +     if (ret)
->> +             return ret;
->> +
->>       /* request the mem regions */
->>       ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
->>       if (ret < 0) {
->>               printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
->>                       pci_name(rinfo->pdev));
->> +#ifndef CONFIG_PPC
->>               goto err_release_fb;
->> +#endif
->
-> If this is not a problem on PPC, the kernel shouldn't print an error either.
->
->>       }
->>
->>       ret = pci_request_region(pdev, 2, "radeonfb mmio");
->>       if (ret < 0) {
->>               printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
->>                       pci_name(rinfo->pdev));
->> +#ifndef CONFIG_PPC
->>               goto err_release_pci0;
->> +#endif
->
-> Same here.
->
->>       }
->>
->>       /* map the regions */
->> @@ -2511,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
->>       iounmap(rinfo->mmio_base);
->>  err_release_pci2:
->>       pci_release_region(pdev, 2);
->> +#ifndef CONFIG_PPC
->>  err_release_pci0:
->>       pci_release_region(pdev, 0);
->>  err_release_fb:
->>          framebuffer_release(info);
->> +#endif
->>  err_disable:
->>  err_out:
->>       return ret;
->>
->
-> So I don't quite follow what's going on here. Why the CONFIG_PPC
-> conditionals? Is this problem only with OFFB and only with PPC?
 
-The radeonfb fails to load only (conflict with offb):
-- when on PPC (PMAC actually)
-- when compiled as module (CONFIG_FB_RADEON=y is OK)
 
-> And I think the code itself should have comments on this rather strange
-> behavior: the driver fails to get HW resources, but decides to ignore
-> the failure on PPC.
+Oh boy. Now it seems I have to reference a task, not just mm (which I may
+not have to reference at all after all as the task reference should keep mm
+alive) as I missed the fact capable() and rlimit() are working with @current.
 
-Actually you are right, I missed configuration such as Pegasos[0]
-machine (no openfirmware-framebuffer implemented in their firmware at
-all). So I cannot simply assume that offb already allocated stuff on
-all PPC out there.
 
-Will resent a v3 with proper changelog ASAP.
+Alex,
 
-[0] https://en.wikipedia.org/wiki/Pegasos
+Is there anything else I should fix before posting v6? Thanks.
+
+
+
+-- 
+Alexey
