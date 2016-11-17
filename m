@@ -2,9 +2,9 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKKY94jt9zDvs3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 23:04:13 +1100 (AEDT)
-In-Reply-To: <1454514630-29269-20-git-send-email-b.zolnierkie@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKKYB6czrzDvs3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 23:04:14 +1100 (AEDT)
+In-Reply-To: <1454514630-29269-21-git-send-email-b.zolnierkie@samsung.com>
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
  linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -12,9 +12,9 @@ To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
  b.zolnierkie@samsung.com
-Subject: Re: [RFT] powerpc: convert ppc64e_defconfig to use libata PATA drivers
-Message-Id: <3tKKY9221Mz9t1d@ozlabs.org>
-Date: Thu, 17 Nov 2016 23:04:12 +1100 (AEDT)
+Subject: Re: [RFT] powerpc: convert ppc6xx_defconfig to use libata PATA drivers
+Message-Id: <3tKKYB4QhRz9t1T@ozlabs.org>
+Date: Thu, 17 Nov 2016 23:04:13 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,7 +24,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-02 at 15:50:26 UTC, Bartlomiej Zolnierkiewicz wrote:
+On Wed, 2016-03-02 at 15:50:27 UTC, Bartlomiej Zolnierkiewicz wrote:
 > IDE subsystem has been deprecated since 2009 and the majority
 > (if not all) of Linux distributions have switched to use
 > libata for ATA support exclusively.  However there are still
@@ -38,13 +38,13 @@ On Wed, 2016-03-02 at 15:50:26 UTC, Bartlomiej Zolnierkiewicz wrote:
 > 
 > * having duplicate drivers for same hardware confuses users
 > 
-> This patch converts ppc64e_defconfig to use libata PATA
+> This patch converts ppc6xx_defconfig to use libata PATA
 > drivers.
 > 
 > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/4a0b4bfe0101901126dc4dba0ba904
+https://git.kernel.org/powerpc/c/7f10fe36369068341aff05c067a786
 
 cheers
