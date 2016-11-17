@@ -1,22 +1,41 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKWCc4T3czDvvN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 06:19:40 +1100 (AEDT)
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: rt@linuxtronix.de, Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 16/20] powerpc/sysfs: Convert to hotplug state machine
-Date: Thu, 17 Nov 2016 19:35:37 +0100
-Message-Id: <20161117183541.8588-17-bigeasy@linutronix.de>
-In-Reply-To: <20161117183541.8588-1-bigeasy@linutronix.de>
-References: <20161117183541.8588-1-bigeasy@linutronix.de>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKWDQ42f1zDvyd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 06:20:22 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAHJJHsH008233
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 14:20:20 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26sf0t3tn5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 14:20:20 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Thu, 17 Nov 2016 12:20:19 -0700
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 10.1 \(3251\))
+Subject: Re: [PATCH 01/14] cxlflash: Set sg_tablesize to 1 instead of SG_NONE
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1479251617-22707-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Thu, 17 Nov 2016 13:20:13 -0600
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <1479251530-22573-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1479251617-22707-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Message-Id: <E29324C2-3F4A-4046-86E8-F30EA11F3112@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,126 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Install the callbacks via the state machine and let the core invoke
-the callbacks on the already online CPUs.
+> On Nov 15, 2016, at 5:13 PM, Uma Krishnan <ukrishn@linux.vnet.ibm.com> =
+wrote:
+>=20
+> The following Oops is encountered when blk_mq is enabled with the
+> cxlflash driver:
+>=20
+> [ 2960.817172] Oops: Kernel access of bad area, sig: 11 [#5]
+> [ 2960.817309] NIP  __blk_mq_run_hw_queue+0x278/0x4c0
+> [ 2960.817313] LR __blk_mq_run_hw_queue+0x2bc/0x4c0
+> [ 2960.817314] Call Trace:
+> [ 2960.817320] __blk_mq_run_hw_queue+0x2bc/0x4c0 (unreliable)
+> [ 2960.817324] blk_mq_run_hw_queue+0xd8/0x100
+> [ 2960.817329] blk_mq_insert_requests+0x14c/0x1f0
+> [ 2960.817333] blk_mq_flush_plug_list+0x150/0x190
+> [ 2960.817338] blk_flush_plug_list+0x11c/0x2b0
+> [ 2960.817344] blk_finish_plug+0x58/0x80
+> [ 2960.817348] __do_page_cache_readahead+0x1c0/0x2e0
+> [ 2960.817352] force_page_cache_readahead+0x68/0xd0
+> [ 2960.817356] generic_file_read_iter+0x43c/0x6a0
+> [ 2960.817359] blkdev_read_iter+0x68/0xa0
+> [ 2960.817361] __vfs_read+0x11c/0x180
+> [ 2960.817364] vfs_read+0xa4/0x1c0
+> [ 2960.817366] SyS_read+0x6c/0x110
+> [ 2960.817369] system_call+0x38/0xb4
+>=20
+> The SCSI blk_mq stack assumes that sg_tablesize is always a non-zero
+> value with scsi_mq_setup_tags() allocating tags using sg_tablesize.
+> The cxlflash driver currently uses SG_NONE (0) for the sg_tablesize
+> as the devices it supports are not capable of scatter gather. This
+> mismatch of values results in the Oops above.
+>=20
+> To resolve this issue, sg_tablesize for cxlflash can simply be set
+> to 1, a value which satisfies the constraints in cxlflash and the
+> lack of support of SG_NONE in SCSI blk_mq.
+>=20
+> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 
-The previous convention of keeping the files around until the CPU is dead
-has not been preserved as there is no point to keep them available when the
-cpu is going down. This makes the hotplug call symmetric.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/kernel/sysfs.c | 50 +++++++++--------------------------------=
-----
- 1 file changed, 10 insertions(+), 40 deletions(-)
-
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index c4f1d1f7bae0..c1fb255a60d6 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -703,7 +703,7 @@ static struct device_attribute pa6t_attrs[] =3D {
- #endif /* HAS_PPC_PMC_PA6T */
- #endif /* HAS_PPC_PMC_CLASSIC */
-=20
--static void register_cpu_online(unsigned int cpu)
-+static int register_cpu_online(unsigned int cpu)
- {
- 	struct cpu *c =3D &per_cpu(cpu_devices, cpu);
- 	struct device *s =3D &c->dev;
-@@ -782,11 +782,12 @@ static void register_cpu_online(unsigned int cpu)
- 	}
- #endif
- 	cacheinfo_cpu_online(cpu);
-+	return 0;
- }
-=20
--#ifdef CONFIG_HOTPLUG_CPU
--static void unregister_cpu_online(unsigned int cpu)
-+static int unregister_cpu_online(unsigned int cpu)
- {
-+#ifdef CONFIG_HOTPLUG_CPU
- 	struct cpu *c =3D &per_cpu(cpu_devices, cpu);
- 	struct device *s =3D &c->dev;
- 	struct device_attribute *attrs, *pmc_attrs;
-@@ -863,6 +864,8 @@ static void unregister_cpu_online(unsigned int cpu)
- 	}
- #endif
- 	cacheinfo_cpu_offline(cpu);
-+#endif /* CONFIG_HOTPLUG_CPU */
-+	return 0;
- }
-=20
- #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-@@ -883,32 +886,6 @@ ssize_t arch_cpu_release(const char *buf, size_t count)
- }
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-=20
--#endif /* CONFIG_HOTPLUG_CPU */
--
--static int sysfs_cpu_notify(struct notifier_block *self,
--				      unsigned long action, void *hcpu)
--{
--	unsigned int cpu =3D (unsigned int)(long)hcpu;
--
--	switch (action) {
--	case CPU_ONLINE:
--	case CPU_ONLINE_FROZEN:
--		register_cpu_online(cpu);
--		break;
--#ifdef CONFIG_HOTPLUG_CPU
--	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
--		unregister_cpu_online(cpu);
--		break;
--#endif
--	}
--	return NOTIFY_OK;
--}
--
--static struct notifier_block sysfs_cpu_nb =3D {
--	.notifier_call	=3D sysfs_cpu_notify,
--};
--
- static DEFINE_MUTEX(cpu_mutex);
-=20
- int cpu_add_dev_attr(struct device_attribute *attr)
-@@ -1023,12 +1000,10 @@ static DEVICE_ATTR(physical_id, 0444, show_physical=
-_id, NULL);
-=20
- static int __init topology_init(void)
- {
--	int cpu;
-+	int cpu, r;
-=20
- 	register_nodes();
-=20
--	cpu_notifier_register_begin();
--
- 	for_each_possible_cpu(cpu) {
- 		struct cpu *c =3D &per_cpu(cpu_devices, cpu);
-=20
-@@ -1047,15 +1022,10 @@ static int __init topology_init(void)
-=20
- 			device_create_file(&c->dev, &dev_attr_physical_id);
- 		}
--
--		if (cpu_online(cpu))
--			register_cpu_online(cpu);
- 	}
--
--	__register_cpu_notifier(&sysfs_cpu_nb);
--
--	cpu_notifier_register_done();
--
-+	r =3D cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powerpc/topology:online",
-+			      register_cpu_online, unregister_cpu_online);
-+	WARN_ON(r < 0);
- #ifdef CONFIG_PPC64
- 	sysfs_create_dscr_default();
- #endif /* CONFIG_PPC64 */
---=20
-2.10.2
+Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
