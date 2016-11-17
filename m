@@ -1,21 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.apana.org.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKKYF4hP5zDvs8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 23:04:17 +1100 (AEDT)
-In-Reply-To: <1454514630-29269-24-git-send-email-b.zolnierkie@samsung.com>
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
- b.zolnierkie@samsung.com
-Subject: Re: [RFT] powerpc: convert storcenter_defconfig to use libata PATA
- drivers
-Message-Id: <3tKKYF2KnRz9t5m@ozlabs.org>
-Date: Thu, 17 Nov 2016 23:04:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKMCy3zPlzDvrx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 00:19:26 +1100 (AEDT)
+Date: Thu, 17 Nov 2016 21:03:12 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: crypto/vmx: various build fixes
+Message-ID: <20161117130311.GA1839@gondor.apana.org.au>
+References: <20161116151146.15720-1-naveen.n.rao@linux.vnet.ibm.com>
+ <87inrnx70z.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87inrnx70z.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-03-02 at 15:50:30 UTC, Bartlomiej Zolnierkiewicz wrote:
-> IDE subsystem has been deprecated since 2009 and the majority
-> (if not all) of Linux distributions have switched to use
-> libata for ATA support exclusively.  However there are still
-> some users (mostly old or/and embedded non-x86 systems) that
-> have not converted from using IDE subsystem to libata PATA
-> drivers.  This doesn't seem to be good thing in the long-term
-> for Linux as while there is less and less PATA systems left
-> in use:
-> 
-> * testing efforts are divided between two subsystems
-> 
-> * having duplicate drivers for same hardware confuses users
-> 
-> This patch converts storcenter_defconfig to use libata PATA
-> drivers.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+On Thu, Nov 17, 2016 at 11:51:56AM +1100, Michael Ellerman wrote:
+>
+> But maybe Herbert can fix it up for you when he applies this.
 
-Applied to powerpc next, thanks.
+Sure I can fix it up.
 
-https://git.kernel.org/powerpc/c/1aed61f9c9664cc7331079a66aba99
-
-cheers
+Cheers,
+--
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
