@@ -1,22 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tK2dW6Ql3zDvph
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 11:51:59 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: crypto/vmx: various build fixes
-In-Reply-To: <20161116151146.15720-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20161116151146.15720-1-naveen.n.rao@linux.vnet.ibm.com>
-Date: Thu, 17 Nov 2016 11:51:56 +1100
-Message-ID: <87inrnx70z.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tK88Z6YrSzDvrN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 16:00:46 +1100 (AEDT)
+In-Reply-To: <1479184113.2608.45.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Anton Blanchard <anton@au1.ibm.com>
+Subject: Re: powerpc/64: Fix setting of AIL in hypervisor mode
+Message-Id: <3tK88Z4mXzz9t0X@ozlabs.org>
+Date: Thu, 17 Nov 2016 16:00:46 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+On Tue, 2016-15-11 at 04:28:33 UTC, Benjamin Herrenschmidt wrote:
+> Commit d3cbff1b5 "powerpc: Put exception configuration in a common place"
+> broke the setting of the AIL bit (which enables taking exceptions with
+> the MMU still on) on all processors, moving it incorrectly to a function
+> called only on the boot CPU. This was correct for the guest case but
+> not when running in hypervisor mode.
+> 
+> This fixes it by partially reverting that commit, putting the setting
+> back in cpu_ready_for_interrupts()
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Fixes: d3cbff1b5 ("powerpc: Put exception configuration in a common place")
+> CC: stable@vger.kernel.org # v4.8+
 
-> First up, clean up the generated .S files properly on a 'make clean'.
-> Secondly, force re-generation of these files when building for different
-> endian-ness than what was built previously. Finally, generate the new
-> files in the build tree, rather than the source tree.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
-> Michael,
-> I've added your SOB here though you didn't explicitly include it in your
-> previous mail. I hope that's fine from your end.
+Applied to powerpc fixes, thanks.
 
-Yeah that's fine, thanks.
-
-Crypto patches usually have a subject like:
-
-crypto: vmx - Various build fixes
-
-
-But maybe Herbert can fix it up for you when he applies this.
+https://git.kernel.org/powerpc/c/c0a36013639b06760f7c2c21a8387e
 
 cheers
