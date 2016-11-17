@@ -1,25 +1,46 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKcdS3Z1wzDvvd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 10:23:56 +1100 (AEDT)
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tKcdR5GCxz9t1F
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 10:23:55 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id p66so18759345pga.2
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2016 15:23:55 -0800 (PST)
-To: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH] powerpc/xmon: Add support for dump in reverse
-Message-ID: <51a96060-527a-f9ca-ced8-d261fc526d2a@gmail.com>
-Date: Fri, 18 Nov 2016 10:23:48 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKdPg5sm8zDvvf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 10:58:47 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAHNwfEu105448
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 18:58:44 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26sjyb999q-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 18:58:44 -0500
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 18 Nov 2016 09:58:36 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6CBCF2BB0059
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 10:58:34 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAHNwY6f3604774
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 10:58:34 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAHNwXgd015570
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 10:58:34 +1100
+Date: Fri, 18 Nov 2016 10:59:47 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com
+Subject: Re: [PATCH] powerpc/eeh: Refactor EEH PE reset functions
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <20161117050747.18250-1-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161117050747.18250-1-ruscur@russell.cc>
+Message-Id: <20161117235946.GA24894@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,159 +50,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Nov 17, 2016 at 04:07:47PM +1100, Russell Currey wrote:
+>eeh_pe_reset and eeh_reset_pe are two different functions in the same
+>file which do mostly the same thing.  Not only is this confusing, but
+>potentially causes disrepancies in functionality, notably eeh_reset_pe
+>as it does not check return values for failure.
+>
 
-This patch adds support for dumping bytes in the reverse order of
-what they are read in, effectively doing an endian swap on double words.
+If possible, it'd better to keep them separate: one is used by powernv
+or pSeries. Another one is used by VFIO in virtualization path. Merging
+them increases the cost to maintain the code in future.
 
-This makes it easy to debug on a little endian system
+If you really want to merge them, it needs full testing to make sure it
+won't break the virtualization path. Otherwise, it all looks good.
 
-The output of "d" on a little endian system is
-
-0:mon> d c000000000e8bd10
-c000000000e8bd10 70bde800000000c0 8428002400000000  |p........(.$....|
-
-and with "dR"
-
-0:mon> dR c000000000e8bd10
-c000000000e8bd10 c000000000e8bd70 0000000024002884  |p........(.$....|
-
-The patch adds "dR" only for CONFIG_PPC64. A new function digithex
-is introduced which helps convert a digit to char in hex. There are
-other command line tools to do byte endian swap, but I find this
-useful for debugging.
-
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/xmon/xmon.c | 58 ++++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 51 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 7605455..0f4750c 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -120,7 +120,7 @@ static void byterev(unsigned char *, int);
- static void memex(void);
- static int bsesc(void);
- static void dump(void);
--static void prdump(unsigned long, long);
-+static void prdump(unsigned long, long, int);
- static int ppc_inst_dump(unsigned long, long, int);
- static void dump_log_buf(void);
- 
-@@ -144,6 +144,7 @@ int skipbl(void);
- int scanhex(unsigned long *valp);
- static void scannl(void);
- static int hexdigit(int);
-+static int digithex(int);
- void getstring(char *, int);
- static void flush_input(void);
- static int inchar(void);
-@@ -220,6 +221,7 @@ Commands:\n\
- #endif
- #ifdef CONFIG_PPC64
-   "\
-+  dR	dump bytes in reverse (double words) \n\
-   dp[#]	dump paca for current cpu, or cpu #\n\
-   dpa	dump paca for all possible cpus\n"
- #endif
-@@ -2371,43 +2373,76 @@ dump(void)
- 		xmon_rawdump(adrs, ndump);
- 		adrs += ndump;
- 		last_cmd = "dr\n";
-+#ifdef CONFIG_PPC64
-+	} else if (c == 'R') {
-+		scanhex(&ndump);
-+		if (ndump == 0)
-+			ndump = 64;
-+		else if (ndump > MAX_DUMP)
-+			ndump = MAX_DUMP;
-+		prdump(adrs, ndump, 1);
-+		adrs += ndump;
-+		last_cmd = "dR\n";
-+#endif
- 	} else {
- 		scanhex(&ndump);
- 		if (ndump == 0)
- 			ndump = 64;
- 		else if (ndump > MAX_DUMP)
- 			ndump = MAX_DUMP;
--		prdump(adrs, ndump);
-+		prdump(adrs, ndump, 0);
- 		adrs += ndump;
- 		last_cmd = "d\n";
- 	}
- }
- 
- static void
--prdump(unsigned long adrs, long ndump)
-+prdump(unsigned long adrs, long ndump, int reverse)
- {
- 	long n, m, c, r, nr;
- 	unsigned char temp[16];
-+	unsigned char buf[17];
-+	int idx;
- 
- 	for (n = ndump; n > 0;) {
- 		printf(REG, adrs);
- 		putchar(' ');
- 		r = n < 16? n: 16;
- 		nr = mread(adrs, temp, r);
-+
-+		if (reverse) {
-+			idx = 14;
-+			buf[16] = '\0';
-+		}
- 		adrs += nr;
- 		for (m = 0; m < r; ++m) {
--			if ((m & (sizeof(long) - 1)) == 0 && m > 0)
-+			if ((m & (sizeof(long) - 1)) == 0 && m > 0) {
-+				if (reverse) {
-+					printf("%s", buf);
-+					idx = 14;
-+				}
- 				putchar(' ');
--			if (m < nr)
--				printf("%.2x", temp[m]);
--			else
-+			}
-+
-+			if (m < nr) {
-+				if (reverse) {
-+					buf[idx + 1] = digithex(temp[m] % 16);
-+					buf[idx] = digithex(temp[m] / 16);
-+					idx -= 2;
-+				} else
-+					printf("%.2x", temp[m]);
-+			} else
- 				printf("%s", fault_chars[fault_type]);
- 		}
-+
-+		if (reverse)
-+			printf("%s", buf);
- 		for (; m < 16; ++m) {
- 			if ((m & (sizeof(long) - 1)) == 0)
- 				putchar(' ');
- 			printf("  ");
- 		}
-+
- 		printf("  |");
- 		for (m = 0; m < r; ++m) {
- 			if (m < nr) {
-@@ -2893,6 +2928,15 @@ static int hexdigit(int c)
- 	return EOF;
- }
- 
-+static int digithex(int c)
-+{
-+	if (c >= 0 && c <= 9)
-+		return c + '0';
-+	if (c >= 0xa && c <= 0xf)
-+		return c + ('a' - 10);
-+	return EOF;
-+}
-+
- void
- getstring(char *s, int size)
- {
--- 
-2.5.5
+>Refactor this into the following:
+>
+> - eeh_pe_reset(): stays as is, performs a single operation, exported
+> - eeh_pe_reset_full(): new, full reset process that calls eeh_pe_reset()
+> - eeh_reset_pe(): removed and replaced by eeh_pe_reset_full()
+> - eeh_reset_pe_once(): removed
+>
+>
+>Signed-off-by: Russell Currey <ruscur@russell.cc>
+>---
+>I'm not sure if this should go to stable.  Apparently it fixes some bug by
+>checking returns, but I don't fully understand what the problem was or how
+>severe it is.  Andrew (on CC) should know more.
+>
+>Also the diff for this looks awful, much easier to read when applied
+>---
+> arch/powerpc/include/asm/ppc-pci.h |  2 +-
+> arch/powerpc/kernel/eeh.c          | 82 +++++++++++++++++---------------------
+> arch/powerpc/kernel/eeh_driver.c   |  4 +-
+> 3 files changed, 40 insertions(+), 48 deletions(-)
+>
+>diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+>index 0f73de0..7262880 100644
+>--- a/arch/powerpc/include/asm/ppc-pci.h
+>+++ b/arch/powerpc/include/asm/ppc-pci.h
+>@@ -53,7 +53,7 @@ void eeh_addr_cache_rmv_dev(struct pci_dev *dev);
+> struct eeh_dev *eeh_addr_cache_get_dev(unsigned long addr);
+> void eeh_slot_error_detail(struct eeh_pe *pe, int severity);
+> int eeh_pci_enable(struct eeh_pe *pe, int function);
+>-int eeh_reset_pe(struct eeh_pe *);
+>+int eeh_pe_reset_full(struct eeh_pe *pe);
+> void eeh_save_bars(struct eeh_dev *edev);
+> int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
+> int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
+>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>index f257316..ad743d3 100644
+>--- a/arch/powerpc/kernel/eeh.c
+>+++ b/arch/powerpc/kernel/eeh.c
+>@@ -808,76 +808,67 @@ static void *eeh_set_dev_freset(void *data, void *flag)
+> }
+>
+> /**
+>- * eeh_reset_pe_once - Assert the pci #RST line for 1/4 second
+>+ * eeh_pe_reset_full - Complete a full reset process on the indicated PE
+>  * @pe: EEH PE
+>  *
+>- * Assert the PCI #RST line for 1/4 second.
+>+ * This function executes a full reset procedure on a PE, including setting
+>+ * the appropriate flags, performing a fundamental or hot reset, and then
+>+ * deactivating the reset status.  It is designed to be used within the EEH
+>+ * subsystem, as opposed to eeh_pe_reset which is exported to drivers and
+>+ * only performs a single operation at a time.
+>+ *
+>+ * This function will attempt to reset a PE three times before failing.
+>  */
+>-static void eeh_reset_pe_once(struct eeh_pe *pe)
+>+int eeh_pe_reset_full(struct eeh_pe *pe)
+> {
+>+	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+>+	int reset_state = (EEH_PE_RESET | EEH_PE_CFG_BLOCKED);
+>+	int type = EEH_RESET_HOT;
+> 	unsigned int freset = 0;
+>+	int i, state, ret;
+>
+>-	/* Determine type of EEH reset required for
+>-	 * Partitionable Endpoint, a hot-reset (1)
+>-	 * or a fundamental reset (3).
+>-	 * A fundamental reset required by any device under
+>-	 * Partitionable Endpoint trumps hot-reset.
+>+	/*
+>+	 * Determine the type of reset to perform - hot or fundamental.
+>+	 * Hot reset is the default operation, unless any device under the
+>+	 * PE requires a fundamental reset.
+> 	 */
+> 	eeh_pe_dev_traverse(pe, eeh_set_dev_freset, &freset);
+>
+> 	if (freset)
+>-		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+>-	else
+>-		eeh_ops->reset(pe, EEH_RESET_HOT);
+>-
+>-	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+>-}
+>-
+>-/**
+>- * eeh_reset_pe - Reset the indicated PE
+>- * @pe: EEH PE
+>- *
+>- * This routine should be called to reset indicated device, including
+>- * PE. A PE might include multiple PCI devices and sometimes PCI bridges
+>- * might be involved as well.
+>- */
+>-int eeh_reset_pe(struct eeh_pe *pe)
+>-{
+>-	int flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+>-	int i, state, ret;
+>+		type = EEH_RESET_FUNDAMENTAL;
+>
+>-	/* Mark as reset and block config space */
+>-	eeh_pe_state_mark(pe, EEH_PE_RESET | EEH_PE_CFG_BLOCKED);
+>+	/* Mark the PE as in reset state and block config space accesses */
+>+	eeh_pe_state_mark(pe, reset_state);
+>
+>-	/* Take three shots at resetting the bus */
+>+	/* Make three attempts at resetting the bus */
+> 	for (i = 0; i < 3; i++) {
+>-		eeh_reset_pe_once(pe);
+>+		ret = eeh_pe_reset(pe, type);
+>+		if (ret)
+>+			break;
+>
+>-		/*
+>-		 * EEH_PE_ISOLATED is expected to be removed after
+>-		 * BAR restore.
+>-		 */
+>+		ret = eeh_pe_reset(pe, EEH_RESET_DEACTIVATE);
+>+		if (ret)
+>+			break;
+>+
+>+		/* Wait until the PE is in a functioning state */
+> 		state = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
+>-		if ((state & flags) == flags) {
+>-			ret = 0;
+>-			goto out;
+>-		}
+>+		if ((state & active_flags) == active_flags)
+>+			break;
+>
+> 		if (state < 0) {
+>-			pr_warn("%s: Unrecoverable slot failure on PHB#%d-PE#%x",
+>+			pr_warn("%s: Unrecoverable slot failure on PHB#%x-PE#%d",
+> 				__func__, pe->phb->global_number, pe->addr);
+> 			ret = -ENOTRECOVERABLE;
+>-			goto out;
+>+			break;
+> 		}
+>
+>-		/* We might run out of credits */
+>+		/* Set error in case this is our last attempt */
+> 		ret = -EIO;
+>-		pr_warn("%s: Failure %d resetting PHB#%x-PE#%x\n (%d)\n",
+>+		pr_warn("%s: Failure %d resetting PHB#%x-PE#%d\n (%d)\n",
+> 			__func__, state, pe->phb->global_number, pe->addr, (i + 1));
+> 	}
+>
+>-out:
+>-	eeh_pe_state_clear(pe, EEH_PE_RESET | EEH_PE_CFG_BLOCKED);
+>+	eeh_pe_state_clear(pe, reset_state);
+> 	return ret;
+> }
+>
+>@@ -1601,6 +1592,7 @@ static int eeh_pe_reenable_devices(struct eeh_pe *pe)
+> 	return eeh_unfreeze_pe(pe, true);
+> }
+>
+>+
+> /**
+>  * eeh_pe_reset - Issue PE reset according to specified type
+>  * @pe: EEH PE
+>diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+>index a62be72..bb653f6 100644
+>--- a/arch/powerpc/kernel/eeh_driver.c
+>+++ b/arch/powerpc/kernel/eeh_driver.c
+>@@ -588,7 +588,7 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
+> 	eeh_pe_dev_traverse(pe, eeh_dev_save_state, NULL);
+>
+> 	/* Issue reset */
+>-	ret = eeh_reset_pe(pe);
+>+	ret = eeh_pe_reset_full(pe);
+> 	if (ret) {
+> 		eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+> 		return ret;
+>@@ -659,7 +659,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+> 	 * config accesses. So we prefer to block them. However, controlled
+> 	 * PCI config accesses initiated from EEH itself are allowed.
+> 	 */
+>-	rc = eeh_reset_pe(pe);
+>+	rc = eeh_pe_reset_full(pe);
+> 	if (rc)
+> 		return rc;
+>
+>-- 
+>2.10.2
+>
