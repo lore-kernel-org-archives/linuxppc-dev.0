@@ -1,22 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKJFw15RpzDvQC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 22:05:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKJkj6x4mzDvnM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2016 22:27:25 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 1/2] powerpc: initial stack protector (-fstack-protector)
- support
-In-Reply-To: <55ab3b5e81cc63a130df787708144bfcd43d85f1.1475181427.git.christophe.leroy@c-s.fr>
+To: Denis Kirjanov <kda@linux-powerpc.org>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Nicolas Pitre <nicolas.pitre@linaro.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] powerpc: stack protector (-fstack-protector) support
+In-Reply-To: <CAOJe8K2bYSGe5ciY75eSbthkXNtQwJ2LBdgWcyqqo_jwhmoUsg@mail.gmail.com>
 References: <cover.1475181427.git.christophe.leroy@c-s.fr>
- <55ab3b5e81cc63a130df787708144bfcd43d85f1.1475181427.git.christophe.leroy@c-s.fr>
-Date: Thu, 17 Nov 2016 22:05:55 +1100
-Message-ID: <878tsixt64.fsf@concordia.ellerman.id.au>
+ <CAOJe8K2bYSGe5ciY75eSbthkXNtQwJ2LBdgWcyqqo_jwhmoUsg@mail.gmail.com>
+Date: Thu, 17 Nov 2016 22:27:24 +1100
+Message-ID: <8760nmxs6b.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,74 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+Denis Kirjanov <kda@linux-powerpc.org> writes:
 
-> diff --git a/arch/powerpc/include/asm/stackprotector.h b/arch/powerpc/include/asm/stackprotector.h
-> new file mode 100644
-> index 0000000..de00332
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/stackprotector.h
-> @@ -0,0 +1,38 @@
-> +/*
-> + * GCC stack protector support.
-> + *
-> + * Stack protector works by putting predefined pattern at the start of
-> + * the stack frame and verifying that it hasn't been overwritten when
-> + * returning from the function.  The pattern is called stack canary
-> + * and gcc expects it to be defined by a global variable called
-> + * "__stack_chk_guard" on ARM.  This unfortunately means that on SMP
-                             ^
-                             PPC
-                             
-> + * we cannot have a different canary value per task.
-> + */
-> +
-> +#ifndef _ASM_STACKPROTECTOR_H
-> +#define _ASM_STACKPROTECTOR_H 1
+> On Friday, September 30, 2016, Christophe Leroy <christophe.leroy@c-s.fr>
+> wrote:
+>
+>> Add HAVE_CC_STACKPROTECTOR to powerpc. This is copied from ARM.
+>>
+>> Not tested on PPC64, compile ok with ppc64_
+>
+>
+> Hi Christophe,
+>
+> are you going to test it on ppc64? If not, I can take it
 
-We usually just define it, not define it to 1.
+Did you get around to testing it?
 
-> +
-> +#include <linux/random.h>
-> +#include <linux/version.h>
-> +
-> +extern unsigned long __stack_chk_guard;
-> +
-> +/*
-> + * Initialize the stackprotector canary value.
-> + *
-> + * NOTE: this must only be called from functions that never return,
-> + * and it must always be inlined.
-> + */
-> +static __always_inline void boot_init_stack_canary(void)
-> +{
-> +	unsigned long canary;
-> +
-> +	/* Try to get a semi random initial value. */
-> +	get_random_bytes(&canary, sizeof(canary));
-> +	canary ^= LINUX_VERSION_CODE;
+It seems to be working here:
 
-What about mixing in an mftb() as well ?
-
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index e59ed6a..4a62179 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -19,6 +19,11 @@ CFLAGS_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->  CFLAGS_btext.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->  CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->  
-> +# -fstack-protector triggers protection checks in this code,
-> +# but it is being used too early to link to meaningful stack_chk logic.
-> +nossp_flags := $(call cc-option, -fno-stack-protector)
-> +CFLAGS_prom_init.o := $(nossp_flags)
-
-We've already assigned to CFLAGS_prom_init.o so I think you should be
-using += not := shouldn't you?
-
-Also it could just be a single line:
-
-CFLAGS_prom_init.o += $(call cc-option, -fno-stack-protector)
+  root@mpe-ubuntu-le:/sys/kernel/debug/provoke-crash# echo CORRUPT_STACK > DIRECT
+  Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: c000000000671ed8
+  
+  CPU: 1 PID: 3835 Comm: bash Not tainted 4.9.0-rc5-compiler_gcc-6.2.0-00075-gf41db6c7a3c8-dirty #464
+  Call Trace:
+  [c0000000dbf73a30] [c000000000541728] dump_stack+0xb8/0x100 (unreliable)
+  
+  [c0000000dbf73a70] [c000000000219ba8] panic+0x14c/0x320
+  [c0000000dbf73b10] [c0000000000c27ec] __stack_chk_fail+0x2c/0x30
+  [c0000000dbf73b70] [c000000000671ed8] lkdtm_CORRUPT_STACK+0x88/0x90
+  [c0000000dbf73bf0] [6161616161616161] 0x6161616161616161
+  Rebooting in 10 seconds..
 
 
 cheers
