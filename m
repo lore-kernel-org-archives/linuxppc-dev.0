@@ -2,15 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqP035YvzDvt1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqP06BmDzDvt1
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:52 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/13] KVM: PPC: Book3S HV: Adapt to new HPTE format on POWER9
-Date: Fri, 18 Nov 2016 18:28:34 +1100
-Message-Id: <1479454122-26994-6-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 06/13] KVM: PPC: Book3S HV: Set partition table rather than
+ SDR1 on POWER9
+Date: Fri, 18 Nov 2016 18:28:35 +1100
+Message-Id: <1479454122-26994-7-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,390 +23,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adapts the KVM-HV hashed page table (HPT) code to read and write
-HPT entries in the new format defined in Power ISA v3.00 on POWER9
-machines.  The new format moves the B (segment size) field from the
-first doubleword to the second, and trims some bits from the AVA
-(abbreviated virtual address) and ARPN (abbreviated real page number)
-fields.  As far as possible, the conversion is done when reading or
-writing the HPT entries, and the rest of the code continues to use
-the old format.
+On POWER9, the SDR1 register (hashed page table base address) is no
+longer used, and instead the hardware reads the HPT base address
+and size from the partition table.  The partition table entry also
+contains the bits that specify the page size for the VRMA mapping,
+which were previously in the LPCR.  The VPM0 bit of the LPCR is
+now reserved; the processor now always uses the VRMA (virtual
+real-mode area) mechanism for guest real-mode accesses in HPT mode,
+and the RMO (real-mode offset) mechanism has been dropped.
+
+When entering or exiting the guest, we now only have to set the
+LPIDR (logical partition ID register), not the SDR1 register.
+There is also no requirement now to transition via a reserved
+LPID value.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c |  39 ++++++++++----
- arch/powerpc/kvm/book3s_hv_rm_mmu.c | 101 +++++++++++++++++++++++++-----------
- 2 files changed, 100 insertions(+), 40 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c            | 36 +++++++++++++++++++++++++++------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 10 ++++++---
+ 2 files changed, 37 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 7755bd0..20a8e8e 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -314,7 +314,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 	struct kvmppc_slb *slbe;
- 	unsigned long slb_v;
- 	unsigned long pp, key;
--	unsigned long v, gr;
-+	unsigned long v, orig_v, gr;
- 	__be64 *hptep;
- 	int index;
- 	int virtmode = vcpu->arch.shregs.msr & (data ? MSR_DR : MSR_IR);
-@@ -339,10 +339,12 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 		return -ENOENT;
- 	}
- 	hptep = (__be64 *)(kvm->arch.hpt_virt + (index << 4));
--	v = be64_to_cpu(hptep[0]) & ~HPTE_V_HVLOCK;
-+	v = orig_v = be64_to_cpu(hptep[0]) & ~HPTE_V_HVLOCK;
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		v = hpte_new_to_old_v(v, be64_to_cpu(hptep[1]));
- 	gr = kvm->arch.revmap[index].guest_rpte;
- 
--	unlock_hpte(hptep, v);
-+	unlock_hpte(hptep, orig_v);
- 	preempt_enable();
- 
- 	gpte->eaddr = eaddr;
-@@ -440,6 +442,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- {
- 	struct kvm *kvm = vcpu->kvm;
- 	unsigned long hpte[3], r;
-+	unsigned long hnow_v, hnow_r;
- 	__be64 *hptep;
- 	unsigned long mmu_seq, psize, pte_size;
- 	unsigned long gpa_base, gfn_base;
-@@ -488,6 +491,10 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	unlock_hpte(hptep, hpte[0]);
- 	preempt_enable();
- 
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		hpte[0] = hpte_new_to_old_v(hpte[0], hpte[1]);
-+		hpte[1] = hpte_new_to_old_r(hpte[1]);
-+	}
- 	if (hpte[0] != vcpu->arch.pgfault_hpte[0] ||
- 	    hpte[1] != vcpu->arch.pgfault_hpte[1])
- 		return RESUME_GUEST;
-@@ -599,9 +606,14 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	preempt_disable();
- 	while (!try_lock_hpte(hptep, HPTE_V_HVLOCK))
- 		cpu_relax();
--	if ((be64_to_cpu(hptep[0]) & ~HPTE_V_HVLOCK) != hpte[0] ||
--		be64_to_cpu(hptep[1]) != hpte[1] ||
--		rev->guest_rpte != hpte[2])
-+	hnow_v = be64_to_cpu(hptep[0]);
-+	hnow_r = be64_to_cpu(hptep[1]);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		hnow_v = hpte_new_to_old_v(hnow_v, hnow_r);
-+		hnow_r = hpte_new_to_old_r(hnow_r);
-+	}
-+	if ((hnow_v & ~HPTE_V_HVLOCK) != hpte[0] || hnow_r != hpte[1] ||
-+	    rev->guest_rpte != hpte[2])
- 		/* HPTE has been changed under us; let the guest retry */
- 		goto out_unlock;
- 	hpte[0] = (hpte[0] & ~HPTE_V_ABSENT) | HPTE_V_VALID;
-@@ -632,6 +644,10 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		kvmppc_add_revmap_chain(kvm, rev, rmap, index, 0);
- 	}
- 
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		r = hpte_old_to_new_r(hpte[0], r);
-+		hpte[0] = hpte_old_to_new_v(hpte[0]);
-+	}
- 	hptep[1] = cpu_to_be64(r);
- 	eieio();
- 	__unlock_hpte(hptep, hpte[0]);
-@@ -1183,7 +1199,7 @@ static long record_hpte(unsigned long flags, __be64 *hptp,
- 			unsigned long *hpte, struct revmap_entry *revp,
- 			int want_valid, int first_pass)
- {
--	unsigned long v, r;
-+	unsigned long v, r, hr;
- 	unsigned long rcbits_unset;
- 	int ok = 1;
- 	int valid, dirty;
-@@ -1210,6 +1226,11 @@ static long record_hpte(unsigned long flags, __be64 *hptp,
- 		while (!try_lock_hpte(hptp, HPTE_V_HVLOCK))
- 			cpu_relax();
- 		v = be64_to_cpu(hptp[0]);
-+		hr = be64_to_cpu(hptp[1]);
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			v = hpte_new_to_old_v(v, hr);
-+			hr = hpte_new_to_old_r(hr);
-+		}
- 
- 		/* re-evaluate valid and dirty from synchronized HPTE value */
- 		valid = !!(v & HPTE_V_VALID);
-@@ -1217,8 +1238,8 @@ static long record_hpte(unsigned long flags, __be64 *hptp,
- 
- 		/* Harvest R and C into guest view if necessary */
- 		rcbits_unset = ~revp->guest_rpte & (HPTE_R_R | HPTE_R_C);
--		if (valid && (rcbits_unset & be64_to_cpu(hptp[1]))) {
--			revp->guest_rpte |= (be64_to_cpu(hptp[1]) &
-+		if (valid && (rcbits_unset & hr)) {
-+			revp->guest_rpte |= (hr &
- 				(HPTE_R_R | HPTE_R_C)) | HPTE_GR_MODIFIED;
- 			dirty = 1;
- 		}
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 02786b3..1179e40 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -364,6 +364,11 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 		}
- 	}
- 
-+	/* Convert to new format on P9 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		ptel = hpte_old_to_new_r(pteh, ptel);
-+		pteh = hpte_old_to_new_v(pteh);
-+	}
- 	hpte[1] = cpu_to_be64(ptel);
- 
- 	/* Write the first HPTE dword, unlocking the HPTE and making it valid */
-@@ -445,27 +450,31 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
- 	__be64 *hpte;
- 	unsigned long v, r, rb;
- 	struct revmap_entry *rev;
--	u64 pte;
-+	u64 pte, orig_pte, pte_r;
- 
- 	if (pte_index >= kvm->arch.hpt_npte)
- 		return H_PARAMETER;
- 	hpte = (__be64 *)(kvm->arch.hpt_virt + (pte_index << 4));
- 	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
- 		cpu_relax();
--	pte = be64_to_cpu(hpte[0]);
-+	pte = orig_pte = be64_to_cpu(hpte[0]);
-+	pte_r = be64_to_cpu(hpte[1]);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		pte = hpte_new_to_old_v(pte, pte_r);
-+		pte_r = hpte_new_to_old_r(pte_r);
-+	}
- 	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
- 	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn) ||
- 	    ((flags & H_ANDCOND) && (pte & avpn) != 0)) {
--		__unlock_hpte(hpte, pte);
-+		__unlock_hpte(hpte, orig_pte);
- 		return H_NOT_FOUND;
- 	}
- 
- 	rev = real_vmalloc_addr(&kvm->arch.revmap[pte_index]);
- 	v = pte & ~HPTE_V_HVLOCK;
--	pte = be64_to_cpu(hpte[1]);
- 	if (v & HPTE_V_VALID) {
- 		hpte[0] &= ~cpu_to_be64(HPTE_V_VALID);
--		rb = compute_tlbie_rb(v, be64_to_cpu(hpte[1]), pte_index);
-+		rb = compute_tlbie_rb(v, pte_r, pte_index);
- 		do_tlbies(kvm, &rb, 1, global_invalidates(kvm, flags), true);
- 		/*
- 		 * The reference (R) and change (C) bits in a HPT
-@@ -483,7 +492,7 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
- 	note_hpte_modification(kvm, rev);
- 	unlock_hpte(hpte, 0);
- 
--	if (is_mmio_hpte(v, pte))
-+	if (is_mmio_hpte(v, pte_r))
- 		atomic64_inc(&kvm->arch.mmio_update);
- 
- 	if (v & HPTE_V_ABSENT)
-@@ -546,6 +555,10 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
- 			found = 0;
- 			hp0 = be64_to_cpu(hp[0]);
- 			hp1 = be64_to_cpu(hp[1]);
-+			if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+				hp0 = hpte_new_to_old_v(hp0, hp1);
-+				hp1 = hpte_new_to_old_r(hp1);
-+			}
- 			if (hp0 & (HPTE_V_ABSENT | HPTE_V_VALID)) {
- 				switch (flags & 3) {
- 				case 0:		/* absolute */
-@@ -583,8 +596,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
- 
- 			/* leave it locked */
- 			hp[0] &= ~cpu_to_be64(HPTE_V_VALID);
--			tlbrb[n] = compute_tlbie_rb(be64_to_cpu(hp[0]),
--				be64_to_cpu(hp[1]), pte_index);
-+			tlbrb[n] = compute_tlbie_rb(hp0, hp1, pte_index);
- 			indexes[n] = j;
- 			hptes[n] = hp;
- 			revs[n] = rev;
-@@ -622,7 +634,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 	__be64 *hpte;
- 	struct revmap_entry *rev;
- 	unsigned long v, r, rb, mask, bits;
--	u64 pte;
-+	u64 pte_v, pte_r;
- 
- 	if (pte_index >= kvm->arch.hpt_npte)
- 		return H_PARAMETER;
-@@ -630,15 +642,16 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 	hpte = (__be64 *)(kvm->arch.hpt_virt + (pte_index << 4));
- 	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
- 		cpu_relax();
--	pte = be64_to_cpu(hpte[0]);
--	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
--	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn)) {
--		__unlock_hpte(hpte, pte);
-+	v = pte_v = be64_to_cpu(hpte[0]);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		v = hpte_new_to_old_v(v, be64_to_cpu(hpte[1]));
-+	if ((v & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
-+	    ((flags & H_AVPN) && (v & ~0x7fUL) != avpn)) {
-+		__unlock_hpte(hpte, pte_v);
- 		return H_NOT_FOUND;
- 	}
- 
--	v = pte;
--	pte = be64_to_cpu(hpte[1]);
-+	pte_r = be64_to_cpu(hpte[1]);
- 	bits = (flags << 55) & HPTE_R_PP0;
- 	bits |= (flags << 48) & HPTE_R_KEY_HI;
- 	bits |= flags & (HPTE_R_PP | HPTE_R_N | HPTE_R_KEY_LO);
-@@ -660,13 +673,13 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 		 * readonly to writable.  If it should be writable, we'll
- 		 * take a trap and let the page fault code sort it out.
- 		 */
--		r = (pte & ~mask) | bits;
--		if (hpte_is_writable(r) && !hpte_is_writable(pte))
-+		r = (pte_r & ~mask) | bits;
-+		if (hpte_is_writable(r) && !hpte_is_writable(pte_r))
- 			r = hpte_make_readonly(r);
- 		/* If the PTE is changing, invalidate it first */
--		if (r != pte) {
-+		if (r != pte_r) {
- 			rb = compute_tlbie_rb(v, r, pte_index);
--			hpte[0] = cpu_to_be64((v & ~HPTE_V_VALID) |
-+			hpte[0] = cpu_to_be64((pte_v & ~HPTE_V_VALID) |
- 					      HPTE_V_ABSENT);
- 			do_tlbies(kvm, &rb, 1, global_invalidates(kvm, flags),
- 				  true);
-@@ -675,9 +688,9 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 			hpte[1] = cpu_to_be64(r);
- 		}
- 	}
--	unlock_hpte(hpte, v & ~HPTE_V_HVLOCK);
-+	unlock_hpte(hpte, pte_v & ~HPTE_V_HVLOCK);
- 	asm volatile("ptesync" : : : "memory");
--	if (is_mmio_hpte(v, pte))
-+	if (is_mmio_hpte(v, pte_r))
- 		atomic64_inc(&kvm->arch.mmio_update);
- 
- 	return H_SUCCESS;
-@@ -703,6 +716,10 @@ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
- 		hpte = (__be64 *)(kvm->arch.hpt_virt + (pte_index << 4));
- 		v = be64_to_cpu(hpte[0]) & ~HPTE_V_HVLOCK;
- 		r = be64_to_cpu(hpte[1]);
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			v = hpte_new_to_old_v(v, r);
-+			r = hpte_new_to_old_r(r);
-+		}
- 		if (v & HPTE_V_ABSENT) {
- 			v &= ~HPTE_V_ABSENT;
- 			v |= HPTE_V_VALID;
-@@ -820,10 +837,16 @@ void kvmppc_invalidate_hpte(struct kvm *kvm, __be64 *hptep,
- 			unsigned long pte_index)
- {
- 	unsigned long rb;
-+	u64 hp0, hp1;
- 
- 	hptep[0] &= ~cpu_to_be64(HPTE_V_VALID);
--	rb = compute_tlbie_rb(be64_to_cpu(hptep[0]), be64_to_cpu(hptep[1]),
--			      pte_index);
-+	hp0 = be64_to_cpu(hptep[0]);
-+	hp1 = be64_to_cpu(hptep[1]);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		hp0 = hpte_new_to_old_v(hp0, hp1);
-+		hp1 = hpte_new_to_old_r(hp1);
-+	}
-+	rb = compute_tlbie_rb(hp0, hp1, pte_index);
- 	do_tlbies(kvm, &rb, 1, 1, true);
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 40b2b6d..5cbe3c3 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -54,6 +54,7 @@
+ #include <asm/dbell.h>
+ #include <asm/hmi.h>
+ #include <asm/pnv-pci.h>
++#include <asm/mmu.h>
+ #include <linux/gfp.h>
+ #include <linux/vmalloc.h>
+ #include <linux/highmem.h>
+@@ -3024,6 +3025,22 @@ static void kvmppc_mmu_destroy_hv(struct kvm_vcpu *vcpu)
+ 	return;
  }
- EXPORT_SYMBOL_GPL(kvmppc_invalidate_hpte);
-@@ -833,9 +856,15 @@ void kvmppc_clear_ref_hpte(struct kvm *kvm, __be64 *hptep,
- {
- 	unsigned long rb;
- 	unsigned char rbyte;
-+	u64 hp0, hp1;
  
--	rb = compute_tlbie_rb(be64_to_cpu(hptep[0]), be64_to_cpu(hptep[1]),
--			      pte_index);
-+	hp0 = be64_to_cpu(hptep[0]);
-+	hp1 = be64_to_cpu(hptep[1]);
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		hp0 = hpte_new_to_old_v(hp0, hp1);
-+		hp1 = hpte_new_to_old_r(hp1);
++static void kvmppc_setup_partition_table(struct kvm *kvm)
++{
++	unsigned long dw0, dw1;
++
++	/* PS field - page size for VRMA */
++	dw0 = ((kvm->arch.vrma_slb_v & SLB_VSID_L) >> 1) |
++		((kvm->arch.vrma_slb_v & SLB_VSID_LP) << 1);
++	/* HTABSIZE and HTABORG fields */
++	dw0 |= kvm->arch.sdr1;
++
++	/* Second dword has GR=0; other fields are unused since UPRT=0 */
++	dw1 = 0;
++
++	mmu_partition_table_set_entry(kvm->arch.lpid, dw0, dw1);
++}
++
+ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
+ {
+ 	int err = 0;
+@@ -3075,17 +3092,20 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
+ 	      psize == 0x1000000))
+ 		goto out_srcu;
+ 
+-	/* Update VRMASD field in the LPCR */
+ 	senc = slb_pgsize_encoding(psize);
+ 	kvm->arch.vrma_slb_v = senc | SLB_VSID_B_1T |
+ 		(VRMA_VSID << SLB_VSID_SHIFT_1T);
+-	/* the -4 is to account for senc values starting at 0x10 */
+-	lpcr = senc << (LPCR_VRMASD_SH - 4);
+-
+ 	/* Create HPTEs in the hash page table for the VRMA */
+ 	kvmppc_map_vrma(vcpu, memslot, porder);
+ 
+-	kvmppc_update_lpcr(kvm, lpcr, LPCR_VRMASD);
++	/* Update VRMASD field in the LPCR */
++	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
++		/* the -4 is to account for senc values starting at 0x10 */
++		lpcr = senc << (LPCR_VRMASD_SH - 4);
++		kvmppc_update_lpcr(kvm, lpcr, LPCR_VRMASD);
++	} else {
++		kvmppc_setup_partition_table(kvm);
 +	}
-+	rb = compute_tlbie_rb(hp0, hp1, pte_index);
- 	rbyte = (be64_to_cpu(hptep[1]) & ~HPTE_R_R) >> 8;
- 	/* modify only the second-last byte, which contains the ref bit */
- 	*((char *)hptep + 14) = rbyte;
-@@ -895,7 +924,7 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
- 	unsigned long avpn;
- 	__be64 *hpte;
- 	unsigned long mask, val;
--	unsigned long v, r;
-+	unsigned long v, r, orig_v;
  
- 	/* Get page shift, work out hash and AVPN etc. */
- 	mask = SLB_VSID_B | HPTE_V_AVPN | HPTE_V_SECONDARY;
-@@ -930,6 +959,8 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
- 		for (i = 0; i < 16; i += 2) {
- 			/* Read the PTE racily */
- 			v = be64_to_cpu(hpte[i]) & ~HPTE_V_HVLOCK;
-+			if (cpu_has_feature(CPU_FTR_ARCH_300))
-+				v = hpte_new_to_old_v(v, be64_to_cpu(hpte[i+1]));
+ 	/* Order updates to kvm->arch.lpcr etc. vs. hpte_setup_done */
+ 	smp_wmb();
+@@ -3235,7 +3255,8 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 	memcpy(kvm->arch.enabled_hcalls, default_enabled_hcalls,
+ 	       sizeof(kvm->arch.enabled_hcalls));
  
- 			/* Check valid/absent, hash, segment size and AVPN */
- 			if (!(v & valid) || (v & mask) != val)
-@@ -938,8 +969,12 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
- 			/* Lock the PTE and read it under the lock */
- 			while (!try_lock_hpte(&hpte[i], HPTE_V_HVLOCK))
- 				cpu_relax();
--			v = be64_to_cpu(hpte[i]) & ~HPTE_V_HVLOCK;
-+			v = orig_v = be64_to_cpu(hpte[i]) & ~HPTE_V_HVLOCK;
- 			r = be64_to_cpu(hpte[i+1]);
-+			if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+				v = hpte_new_to_old_v(v, r);
-+				r = hpte_new_to_old_r(r);
-+			}
+-	kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
++	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++		kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
  
- 			/*
- 			 * Check the HPTE again, including base page size
-@@ -949,7 +984,7 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
- 				/* Return with the HPTE still locked */
- 				return (hash << 3) + (i >> 1);
+ 	/* Init LPCR for virtual RMA mode */
+ 	kvm->arch.host_lpid = mfspr(SPRN_LPID);
+@@ -3248,6 +3269,9 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 	/* On POWER8 turn on online bit to enable PURR/SPURR */
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+ 		lpcr |= LPCR_ONL;
++	/* On POWER9, VPM0 bit is reserved (VPM0=1 behaviour is assumed) */
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		lpcr &= ~LPCR_VPM0;
+ 	kvm->arch.lpcr = lpcr;
  
--			__unlock_hpte(&hpte[i], v);
-+			__unlock_hpte(&hpte[i], orig_v);
- 		}
+ 	/*
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index c3c1d1b..dc25467 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -581,12 +581,14 @@ kvmppc_hv_entry:
+ 	ld	r9,VCORE_KVM(r5)	/* pointer to struct kvm */
+ 	cmpwi	r6,0
+ 	bne	10f
+-	ld	r6,KVM_SDR1(r9)
+ 	lwz	r7,KVM_LPID(r9)
++BEGIN_FTR_SECTION
++	ld	r6,KVM_SDR1(r9)
+ 	li	r0,LPID_RSVD		/* switch to reserved LPID */
+ 	mtspr	SPRN_LPID,r0
+ 	ptesync
+ 	mtspr	SPRN_SDR1,r6		/* switch to partition page table */
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 	mtspr	SPRN_LPID,r7
+ 	isync
  
- 		if (val & HPTE_V_SECONDARY)
-@@ -977,7 +1012,7 @@ long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
- {
- 	struct kvm *kvm = vcpu->kvm;
- 	long int index;
--	unsigned long v, r, gr;
-+	unsigned long v, r, gr, orig_v;
- 	__be64 *hpte;
- 	unsigned long valid;
- 	struct revmap_entry *rev;
-@@ -1005,12 +1040,16 @@ long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
- 			return 0;	/* for prot fault, HPTE disappeared */
- 		}
- 		hpte = (__be64 *)(kvm->arch.hpt_virt + (index << 4));
--		v = be64_to_cpu(hpte[0]) & ~HPTE_V_HVLOCK;
-+		v = orig_v = be64_to_cpu(hpte[0]) & ~HPTE_V_HVLOCK;
- 		r = be64_to_cpu(hpte[1]);
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			v = hpte_new_to_old_v(v, r);
-+			r = hpte_new_to_old_r(r);
-+		}
- 		rev = real_vmalloc_addr(&kvm->arch.revmap[index]);
- 		gr = rev->guest_rpte;
+@@ -1552,12 +1554,14 @@ kvmhv_switch_to_host:
+ 	beq	19f
  
--		unlock_hpte(hpte, v);
-+		unlock_hpte(hpte, orig_v);
- 	}
+ 	/* Primary thread switches back to host partition */
+-	ld	r6,KVM_HOST_SDR1(r4)
+ 	lwz	r7,KVM_HOST_LPID(r4)
++BEGIN_FTR_SECTION
++	ld	r6,KVM_HOST_SDR1(r4)
+ 	li	r8,LPID_RSVD		/* switch to reserved LPID */
+ 	mtspr	SPRN_LPID,r8
+ 	ptesync
+-	mtspr	SPRN_SDR1,r6		/* switch to partition page table */
++	mtspr	SPRN_SDR1,r6		/* switch to host page table */
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 	mtspr	SPRN_LPID,r7
+ 	isync
  
- 	/* For not found, if the HPTE is valid by now, retry the instruction */
 -- 
 2.7.4
