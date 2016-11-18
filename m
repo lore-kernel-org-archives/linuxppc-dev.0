@@ -3,15 +3,15 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tL1bN4yqWzDw3B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 02:08:32 +1100 (AEDT)
-Subject: patch "usb: gadget: udc: fsl: remove unnecessary & operation" added
- to usb-testing
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tL1my4lT8zDvPc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 02:16:50 +1100 (AEDT)
+Subject: patch "usb: gadget: udc: fsl: make use of new
+ usb_endpoint_maxp_mult()" added to usb-next
 To: felipe.balbi@linux.intel.com, leoli@freescale.com,
  linuxppc-dev@lists.ozlabs.org
 From: <gregkh@linuxfoundation.org>
-Date: Fri, 18 Nov 2016 16:06:39 +0100
-Message-ID: <1479481599780@kroah.com>
+Date: Fri, 18 Nov 2016 16:10:01 +0100
+Message-ID: <1479481801247130@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,48 +26,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    usb: gadget: udc: fsl: remove unnecessary & operation
+    usb: gadget: udc: fsl: make use of new usb_endpoint_maxp_mult()
 
 to my usb git tree which can be found at
     git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git
-in the usb-testing branch.
+in the usb-next branch.
 
 The patch will show up in the next release of the linux-next tree
 (usually sometime within the next 24 hours during the week.)
 
-The patch will be merged to the usb-next branch sometime soon,
-after it passes testing, and the merge window is open.
+The patch will also be merged in the next major kernel release
+during the merge window.
 
 If you have any questions about this process, please let me know.
 
 
->From 0eb862e9c4f7a6a3abee25bc561ffdbe3d57a9d1 Mon Sep 17 00:00:00 2001
+>From 4250914d3a298aea7a6e940180d225b64e95a6e3 Mon Sep 17 00:00:00 2001
 From: Felipe Balbi <felipe.balbi@linux.intel.com>
-Date: Wed, 28 Sep 2016 14:17:38 +0300
-Subject: usb: gadget: udc: fsl: remove unnecessary & operation
+Date: Wed, 28 Sep 2016 13:33:23 +0300
+Subject: usb: gadget: udc: fsl: make use of new usb_endpoint_maxp_mult()
 
-Now that usb_endpoint_maxp() only returns the lowest
-11 bits from wMaxPacketSize, we can remove the &
-operation from this driver.
+We have introduced a helper to calculate multiplier
+value from wMaxPacketSize. Start using it.
 
 Cc: Li Yang <leoli@freescale.com>
 Cc: <linuxppc-dev@lists.ozlabs.org>
 Signed-off-by: Felipe Balbi <felipe.balbi@linux.intel.com>
 ---
- drivers/usb/gadget/udc/fsl_udc_core.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/usb/gadget/udc/fsl_udc_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
-index 4459644b9b55..71094e479a96 100644
+index aab5221d6c2e..4459644b9b55 100644
 --- a/drivers/usb/gadget/udc/fsl_udc_core.c
 +++ b/drivers/usb/gadget/udc/fsl_udc_core.c
-@@ -586,7 +586,6 @@ static int fsl_ep_enable(struct usb_ep *_ep,
+@@ -585,7 +585,7 @@ static int fsl_ep_enable(struct usb_ep *_ep,
+ 		break;
  	case USB_ENDPOINT_XFER_ISOC:
  		/* Calculate transactions needed for high bandwidth iso */
- 		mult = usb_endpoint_maxp_mult(desc);
--		max = max & 0x7ff;	/* bit 0~10 */
+-		mult = (unsigned char)(1 + ((max >> 11) & 0x03));
++		mult = usb_endpoint_maxp_mult(desc);
+ 		max = max & 0x7ff;	/* bit 0~10 */
  		/* 3 transactions at most */
  		if (mult > 3)
- 			goto en_done;
 -- 
 2.10.2
