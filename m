@@ -1,24 +1,21 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
- [209.85.218.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tL0lc2fbzzDt08
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 01:30:36 +1100 (AEDT)
-Received: by mail-oi0-f66.google.com with SMTP id v84so10947091oie.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 06:30:36 -0800 (PST)
-Date: Fri, 18 Nov 2016 08:30:32 -0600
-From: Rob Herring <robh@kernel.org>
-To: Florian Larysch <fl@n621.de>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] DT: i2c: W83793 is a trivial device
-Message-ID: <20161118143032.qupvnq5clbgnlpni@rob-hp-laptop>
-References: <20161117102324.18319-1-fl@n621.de>
- <20161117102324.18319-3-fl@n621.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161117102324.18319-3-fl@n621.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tL18d2Y3bzDvxv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 01:48:49 +1100 (AEDT)
+Date: Fri, 18 Nov 2016 23:48:41 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard
+ <anton@samba.org>, linuxppc-dev@lists.ozlabs.org, Ananth N
+ Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH] powerpc: kprobes: invoke handlers directly
+Message-Id: <20161118234841.ef216955ab8db0a9135c7582@kernel.org>
+In-Reply-To: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,10 +25,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 17, 2016 at 11:23:24AM +0100, Florian Larysch wrote:
-> Signed-off-by: Florian Larysch <fl@n621.de>
-> ---
->  Documentation/devicetree/bindings/i2c/trivial-devices.txt | 1 +
->  1 file changed, 1 insertion(+)
+On Fri, 18 Nov 2016 17:09:26 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 
-Acked-by: Rob Herring <robh@kernel.org>
+> ... rather than through notify_die(), to reduce path taken for handling
+> kprobes. Similar to commit 6f6343f53d13 ("kprobes/x86: Call exception
+> handlers directly from do_int3/do_debug").
+> 
+> While at it, rename post_kprobe_handler() to kprobe_post_handler() for
+> more uniform naming.
+
+Looks good to me.
+
+Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
+
+Thanks!
+
+> 
+> Reported-by: Masami Hiramatsu <mhiramat@kernel.org>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/kprobes.h |  2 ++
+>  arch/powerpc/kernel/kprobes.c      | 29 +++++++----------------------
+>  arch/powerpc/kernel/traps.c        | 20 ++++++++++++++++++++
+>  3 files changed, 29 insertions(+), 22 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+> index 2c9759bd..47c60d0 100644
+> --- a/arch/powerpc/include/asm/kprobes.h
+> +++ b/arch/powerpc/include/asm/kprobes.h
+> @@ -126,6 +126,8 @@ struct kprobe_ctlblk {
+>  
+>  extern int kprobe_exceptions_notify(struct notifier_block *self,
+>  					unsigned long val, void *data);
+> +extern int kprobe_handler(struct pt_regs *regs);
+> +extern int kprobe_post_handler(struct pt_regs *regs);
+>  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+>  #endif /* __KERNEL__ */
+>  #endif	/* _ASM_POWERPC_KPROBES_H */
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index 9479d8e..ad108b8 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -140,13 +140,16 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  	regs->link = (unsigned long)kretprobe_trampoline;
+>  }
+>  
+> -static int __kprobes kprobe_handler(struct pt_regs *regs)
+> +int __kprobes kprobe_handler(struct pt_regs *regs)
+>  {
+>  	struct kprobe *p;
+>  	int ret = 0;
+>  	unsigned int *addr = (unsigned int *)regs->nip;
+>  	struct kprobe_ctlblk *kcb;
+>  
+> +	if (user_mode(regs))
+> +		return 0;
+> +
+>  	/*
+>  	 * We don't want to be preempted for the entire
+>  	 * duration of kprobe processing
+> @@ -359,12 +362,12 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
+>   * single-stepped a copy of the instruction.  The address of this
+>   * copy is p->ainsn.insn.
+>   */
+> -static int __kprobes post_kprobe_handler(struct pt_regs *regs)
+> +int __kprobes kprobe_post_handler(struct pt_regs *regs)
+>  {
+>  	struct kprobe *cur = kprobe_running();
+>  	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+>  
+> -	if (!cur)
+> +	if (!cur || user_mode(regs))
+>  		return 0;
+>  
+>  	/* make sure we got here for instruction we have a kprobe on */
+> @@ -470,25 +473,7 @@ int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+>  int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
+>  				       unsigned long val, void *data)
+>  {
+> -	struct die_args *args = (struct die_args *)data;
+> -	int ret = NOTIFY_DONE;
+> -
+> -	if (args->regs && user_mode(args->regs))
+> -		return ret;
+> -
+> -	switch (val) {
+> -	case DIE_BPT:
+> -		if (kprobe_handler(args->regs))
+> -			ret = NOTIFY_STOP;
+> -		break;
+> -	case DIE_SSTEP:
+> -		if (post_kprobe_handler(args->regs))
+> -			ret = NOTIFY_STOP;
+> -		break;
+> -	default:
+> -		break;
+> -	}
+> -	return ret;
+> +	return NOTIFY_DONE;
+>  }
+>  
+>  unsigned long arch_deref_entry_point(void *entry)
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 91d278c..dbcdf48 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -824,6 +824,11 @@ void single_step_exception(struct pt_regs *regs)
+>  
+>  	clear_single_step(regs);
+>  
+> +#ifdef CONFIG_KPROBES
+> +	if (kprobe_post_handler(regs))
+> +		return;
+> +#endif
+> +
+>  	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
+>  					5, SIGTRAP) == NOTIFY_STOP)
+>  		goto bail;
+> @@ -1177,6 +1182,11 @@ void program_check_exception(struct pt_regs *regs)
+>  		if (debugger_bpt(regs))
+>  			goto bail;
+>  
+> +#ifdef CONFIG_KPROBES
+> +		if (kprobe_handler(regs))
+> +			goto bail;
+> +#endif
+> +
+>  		/* trap exception */
+>  		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+>  				== NOTIFY_STOP)
+> @@ -1745,6 +1755,11 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
+>  			return;
+>  		}
+>  
+> +#ifdef CONFIG_KPROBES
+> +		if (kprobe_post_handler(regs))
+> +			return;
+> +#endif
+> +
+>  		if (notify_die(DIE_SSTEP, "block_step", regs, 5,
+>  			       5, SIGTRAP) == NOTIFY_STOP) {
+>  			return;
+> @@ -1759,6 +1774,11 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
+>  		/* Clear the instruction completion event */
+>  		mtspr(SPRN_DBSR, DBSR_IC);
+>  
+> +#ifdef CONFIG_KPROBES
+> +		if (kprobe_post_handler(regs))
+> +			return;
+> +#endif
+> +
+>  		if (notify_die(DIE_SSTEP, "single_step", regs, 5,
+>  			       5, SIGTRAP) == NOTIFY_STOP) {
+>  			return;
+> -- 
+> 2.10.2
+> 
+
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
