@@ -1,22 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
+ [IPv6:2607:f8b0:4002:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKy8S6KsdzDw2b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 23:33:28 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/4] powerpc/mm: Rename hugetlb-radix.h to hugetlb.h
-In-Reply-To: <20161114151128.2146-2-aneesh.kumar@linux.vnet.ibm.com>
-References: <20161114151128.2146-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161114151128.2146-2-aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 18 Nov 2016 23:33:27 +1100
-Message-ID: <874m350xyg.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKyNQ6GVbzDvrS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 23:43:50 +1100 (AEDT)
+Received: by mail-yw0-x243.google.com with SMTP id b66so19768487ywh.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 04:43:50 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <8760nmxs6b.fsf@concordia.ellerman.id.au>
+References: <cover.1475181427.git.christophe.leroy@c-s.fr>
+ <CAOJe8K2bYSGe5ciY75eSbthkXNtQwJ2LBdgWcyqqo_jwhmoUsg@mail.gmail.com>
+ <8760nmxs6b.fsf@concordia.ellerman.id.au>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Fri, 18 Nov 2016 15:43:48 +0300
+Message-ID: <CAOJe8K0DsnoQiiT0CFxhJ8_LV784kMuH7cM88OSAgGXm7_Pysw@mail.gmail.com>
+Subject: Re: [PATCH 0/2] powerpc: stack protector (-fstack-protector) support
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Scott Wood <oss@buserror.net>, Nicolas Pitre <nicolas.pitre@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-
-> We will start moving some book3s specific hugetlb functions there.
+On 11/17/16, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Denis Kirjanov <kda@linux-powerpc.org> writes:
 >
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/{hugetlb-radix.h => hugetlb.h} | 8 ++++++--
->  arch/powerpc/include/asm/hugetlb.h                                | 2 +-
->  2 files changed, 7 insertions(+), 3 deletions(-)
->  rename arch/powerpc/include/asm/book3s/64/{hugetlb-radix.h => hugetlb.h} (78%)
+>> On Friday, September 30, 2016, Christophe Leroy <christophe.leroy@c-s.fr>
+>> wrote:
+>>
+>>> Add HAVE_CC_STACKPROTECTOR to powerpc. This is copied from ARM.
+>>>
+>>> Not tested on PPC64, compile ok with ppc64_
+>>
+>>
+>> Hi Christophe,
+>>
+>> are you going to test it on ppc64? If not, I can take it
+
+Not yet, I've broken my test machine :/ I need some time to recover
+
 >
-> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb-radix.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> similarity index 78%
-> rename from arch/powerpc/include/asm/book3s/64/hugetlb-radix.h
-> rename to arch/powerpc/include/asm/book3s/64/hugetlb.h
-> index c45189aa7476..d9c283f95e05 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hugetlb-radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> @@ -1,5 +1,5 @@
-> -#ifndef _ASM_POWERPC_BOOK3S_64_HUGETLB_RADIX_H
-> -#define _ASM_POWERPC_BOOK3S_64_HUGETLB_RADIX_H
-> +#ifndef _ASM_POWERPC_BOOK3S_64_HUGETLB_H
-> +#define _ASM_POWERPC_BOOK3S_64_HUGETLB_H
->  /*
->   * For radix we want generic code to handle hugetlb. But then if we want
->   * both hash and radix to be enabled together we need to workaround the
-> @@ -21,6 +21,10 @@ static inline int hstate_get_psize(struct hstate *hstate)
->  		return MMU_PAGE_2M;
->  	else if (shift == mmu_psize_defs[MMU_PAGE_1G].shift)
->  		return MMU_PAGE_1G;
-> +	else if (shift == mmu_psize_defs[MMU_PAGE_16M].shift)
-> +		return MMU_PAGE_16M;
-> +	else if (shift == mmu_psize_defs[MMU_PAGE_16G].shift)
-> +		return MMU_PAGE_16G;
-
-That's not just a rename?
-
-cheers
+> Did you get around to testing it?
+>
+> It seems to be working here:
+>
+>   root@mpe-ubuntu-le:/sys/kernel/debug/provoke-crash# echo CORRUPT_STACK >
+> DIRECT
+>   Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in:
+> c000000000671ed8
+>
+>   CPU: 1 PID: 3835 Comm: bash Not tainted
+> 4.9.0-rc5-compiler_gcc-6.2.0-00075-gf41db6c7a3c8-dirty #464
+>   Call Trace:
+>   [c0000000dbf73a30] [c000000000541728] dump_stack+0xb8/0x100 (unreliable)
+>
+>   [c0000000dbf73a70] [c000000000219ba8] panic+0x14c/0x320
+>   [c0000000dbf73b10] [c0000000000c27ec] __stack_chk_fail+0x2c/0x30
+>   [c0000000dbf73b70] [c000000000671ed8] lkdtm_CORRUPT_STACK+0x88/0x90
+>   [c0000000dbf73bf0] [6161616161616161] 0x6161616161616161
+>   Rebooting in 10 seconds..
+>
+>
+> cheers
+>
