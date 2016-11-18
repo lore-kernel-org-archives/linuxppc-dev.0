@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqNz50hQzDvt1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqNz6Z3ZzDvt1
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:51 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/13] powerpc/powernv: Define real-mode versions of OPAL XICS
- accessors
-Date: Fri, 18 Nov 2016 18:28:32 +1100
-Message-Id: <1479454122-26994-4-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 04/13] KVM: PPC: Book3S HV: Don't lose hardware R/C bit
+ updates in H_PROTECT
+Date: Fri, 18 Nov 2016 18:28:33 +1100
+Message-Id: <1479454122-26994-5-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,61 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This defines real-mode versions of opal_int_get_xirr(), opal_int_eoi()
-and opal_int_set_mfrr(), for use by KVM real-mode code.
+The hashed page table MMU in POWER processors can update the R
+(reference) and C (change) bits in a HPTE at any time until the
+HPTE has been invalidated and the TLB invalidation sequence has
+completed.  In kvmppc_h_protect, which implements the H_PROTECT
+hypercall, we read the HPTE, modify the second doubleword,
+invalidate the HPTE in memory, do the TLB invalidation sequence,
+and then write the modified value of the second doubleword back
+to memory.  In doing so we could overwrite an R/C bit update done
+by hardware between when we read the HPTE and when the TLB
+invalidation completed.  To fix this we re-read the second
+doubleword after the TLB invalidation and OR in the (possibly)
+new values of R and C.  We can use an OR since hardware only ever
+sets R and C, never clears them.
 
-It also exports opal_int_set_mfrr() so that the modular part of KVM
-can use it to send IPIs.
+This race was found by code inspection.  In principle this bug could
+cause occasional guest memory corruption under host memory pressure.
 
+Fixes: a8606e20e41a ("KVM: PPC: Handle some PAPR hcalls in the kernel", 2011-06-29)
+Cc: stable@vger.kernel.org # v3.19+
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/opal.h                | 3 +++
- arch/powerpc/platforms/powernv/opal-wrappers.S | 3 +++
- arch/powerpc/platforms/powernv/opal.c          | 2 ++
- 3 files changed, 8 insertions(+)
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index e958b70..5c7db0f 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -220,9 +220,12 @@ int64_t opal_pci_set_power_state(uint64_t async_token, uint64_t id,
- int64_t opal_pci_poll2(uint64_t id, uint64_t data);
- 
- int64_t opal_int_get_xirr(uint32_t *out_xirr, bool just_poll);
-+int64_t opal_rm_int_get_xirr(__be32 *out_xirr, bool just_poll);
- int64_t opal_int_set_cppr(uint8_t cppr);
- int64_t opal_int_eoi(uint32_t xirr);
-+int64_t opal_rm_int_eoi(uint32_t xirr);
- int64_t opal_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
-+int64_t opal_rm_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
- int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- 			  uint32_t pe_num, uint32_t tce_size,
- 			  uint64_t dma_addr, uint32_t npages);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 44d2d84..3aa40f1 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -304,8 +304,11 @@ OPAL_CALL(opal_pci_get_presence_state,		OPAL_PCI_GET_PRESENCE_STATE);
- OPAL_CALL(opal_pci_get_power_state,		OPAL_PCI_GET_POWER_STATE);
- OPAL_CALL(opal_pci_set_power_state,		OPAL_PCI_SET_POWER_STATE);
- OPAL_CALL(opal_int_get_xirr,			OPAL_INT_GET_XIRR);
-+OPAL_CALL_REAL(opal_rm_int_get_xirr,		OPAL_INT_GET_XIRR);
- OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
- OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
-+OPAL_CALL_REAL(opal_rm_int_eoi,			OPAL_INT_EOI);
- OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
-+OPAL_CALL_REAL(opal_rm_int_set_mfrr,		OPAL_INT_SET_MFRR);
- OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
- OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 6c9a65b..b3b8930 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -896,3 +896,5 @@ EXPORT_SYMBOL_GPL(opal_leds_get_ind);
- EXPORT_SYMBOL_GPL(opal_leds_set_ind);
- /* Export this symbol for PowerNV Operator Panel class driver */
- EXPORT_SYMBOL_GPL(opal_write_oppanel_async);
-+/* Export this for KVM */
-+EXPORT_SYMBOL_GPL(opal_int_set_mfrr);
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 752451f3..02786b3 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -670,6 +670,8 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+ 					      HPTE_V_ABSENT);
+ 			do_tlbies(kvm, &rb, 1, global_invalidates(kvm, flags),
+ 				  true);
++			/* Don't lose R/C bit updates done by hardware */
++			r |= be64_to_cpu(hpte[1]) & (HPTE_R_R | HPTE_R_C);
+ 			hpte[1] = cpu_to_be64(r);
+ 		}
+ 	}
 -- 
 2.7.4
