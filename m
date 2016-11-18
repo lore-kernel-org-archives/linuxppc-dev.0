@@ -1,17 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqP10qBlzDvt1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqNz35XfzDvt1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:51 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/13] KVM: PPC: Book3S HV: Adjust host/guest context switch
- for POWER9
-Date: Fri, 18 Nov 2016 18:28:36 +1100
-Message-Id: <1479454122-26994-8-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 02/13] powerpc/64: Provide functions for accessing POWER9
+ partition table
+Date: Fri, 18 Nov 2016 18:28:31 +1100
+Message-Id: <1479454122-26994-3-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,138 +23,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some special-purpose registers that were present and accessible
-by guests on POWER8 no longer exist on POWER9, so this adds
-feature sections to ensure that we don't try to context-switch
-them when going into or out of a guest on POWER9.  These are
-all relatively obscure, rarely-used registers, but we had to
-context-switch them on POWER8 to avoid creating a covert channel.
-They are: SPMC1, SPMC2, MMCRS, CSIGR, TACR, TCSCR, and ACOP.
+POWER9 requires the host to set up a partition table, which is a
+table in memory indexed by logical partition ID (LPID) which
+contains the pointers to page tables and process tables for the
+host and each guest.
+
+This factors out the initialization of the partition table into
+a single function.  This code was previously duplicated between
+hash_utils_64.c and pgtable-radix.c.
+
+This provides a function for setting a partition table entry,
+which is used in early MMU initialization, and will be used by
+KVM whenever a guest is created.  This function includes a tlbie
+instruction which will flush all TLB entries for the LPID and
+all caches of the partition table entry for the LPID, across the
+system.
+
+This also moves a call to memblock_set_current_limit(), which was
+in radix_init_partition_table(), but has nothing to do with the
+partition table.  By analogy with the similar code for hash, the
+call gets moved to near the end of radix__early_init_mmu().  It
+now gets called when running as a guest, whereas previously it
+would only be called if the kernel is running as the host.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 50 ++++++++++++++++++++-------------
- 1 file changed, 30 insertions(+), 20 deletions(-)
+ arch/powerpc/include/asm/mmu.h  |  5 +++++
+ arch/powerpc/mm/hash_utils_64.c | 28 ++++------------------------
+ arch/powerpc/mm/pgtable-radix.c | 18 ++++++------------
+ arch/powerpc/mm/pgtable_64.c    | 33 +++++++++++++++++++++++++++++++++
+ 4 files changed, 48 insertions(+), 36 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index dc25467..d422014 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -752,14 +752,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
- BEGIN_FTR_SECTION
- 	ld	r5, VCPU_MMCR + 24(r4)
- 	ld	r6, VCPU_SIER(r4)
-+	mtspr	SPRN_MMCR2, r5
-+	mtspr	SPRN_SIER, r6
-+BEGIN_FTR_SECTION_NESTED(96)
- 	lwz	r7, VCPU_PMC + 24(r4)
- 	lwz	r8, VCPU_PMC + 28(r4)
- 	ld	r9, VCPU_MMCR + 32(r4)
--	mtspr	SPRN_MMCR2, r5
--	mtspr	SPRN_SIER, r6
- 	mtspr	SPRN_SPMC1, r7
- 	mtspr	SPRN_SPMC2, r8
- 	mtspr	SPRN_MMCRS, r9
-+END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mtspr	SPRN_MMCR0, r3
- 	isync
-@@ -815,20 +817,22 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	mtspr	SPRN_EBBHR, r8
- 	ld	r5, VCPU_EBBRR(r4)
- 	ld	r6, VCPU_BESCR(r4)
--	ld	r7, VCPU_CSIGR(r4)
--	ld	r8, VCPU_TACR(r4)
-+	lwz	r7, VCPU_GUEST_PID(r4)
-+	ld	r8, VCPU_WORT(r4)
- 	mtspr	SPRN_EBBRR, r5
- 	mtspr	SPRN_BESCR, r6
--	mtspr	SPRN_CSIGR, r7
--	mtspr	SPRN_TACR, r8
-+	mtspr	SPRN_PID, r7
-+	mtspr	SPRN_WORT, r8
-+BEGIN_FTR_SECTION
- 	ld	r5, VCPU_TCSCR(r4)
- 	ld	r6, VCPU_ACOP(r4)
--	lwz	r7, VCPU_GUEST_PID(r4)
--	ld	r8, VCPU_WORT(r4)
-+	ld	r7, VCPU_CSIGR(r4)
-+	ld	r8, VCPU_TACR(r4)
- 	mtspr	SPRN_TCSCR, r5
- 	mtspr	SPRN_ACOP, r6
--	mtspr	SPRN_PID, r7
--	mtspr	SPRN_WORT, r8
-+	mtspr	SPRN_CSIGR, r7
-+	mtspr	SPRN_TACR, r8
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 8:
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index e883683..060b40b 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -208,6 +208,11 @@ extern u64 ppc64_rma_size;
+ /* Cleanup function used by kexec */
+ extern void mmu_cleanup_all(void);
+ extern void radix__mmu_cleanup_all(void);
++
++/* Functions for creating and updating partition table on POWER9 */
++extern void mmu_partition_table_init(void);
++extern void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
++					  unsigned long dw1);
+ #endif /* CONFIG_PPC64 */
+ 
+ struct mm_struct;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 44d3c3a..b9a062f 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -792,37 +792,17 @@ static void update_hid_for_hash(void)
+ static void __init hash_init_partition_table(phys_addr_t hash_table,
+ 					     unsigned long htab_size)
+ {
+-	unsigned long ps_field;
+-	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
++	mmu_partition_table_init();
  
  	/*
-@@ -1343,20 +1347,22 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	std	r8, VCPU_EBBHR(r9)
- 	mfspr	r5, SPRN_EBBRR
- 	mfspr	r6, SPRN_BESCR
--	mfspr	r7, SPRN_CSIGR
--	mfspr	r8, SPRN_TACR
-+	mfspr	r7, SPRN_PID
-+	mfspr	r8, SPRN_WORT
- 	std	r5, VCPU_EBBRR(r9)
- 	std	r6, VCPU_BESCR(r9)
--	std	r7, VCPU_CSIGR(r9)
--	std	r8, VCPU_TACR(r9)
-+	stw	r7, VCPU_GUEST_PID(r9)
-+	std	r8, VCPU_WORT(r9)
-+BEGIN_FTR_SECTION
- 	mfspr	r5, SPRN_TCSCR
- 	mfspr	r6, SPRN_ACOP
--	mfspr	r7, SPRN_PID
--	mfspr	r8, SPRN_WORT
-+	mfspr	r7, SPRN_CSIGR
-+	mfspr	r8, SPRN_TACR
- 	std	r5, VCPU_TCSCR(r9)
- 	std	r6, VCPU_ACOP(r9)
--	stw	r7, VCPU_GUEST_PID(r9)
--	std	r8, VCPU_WORT(r9)
-+	std	r7, VCPU_CSIGR(r9)
-+	std	r8, VCPU_TACR(r9)
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	/*
- 	 * Restore various registers to 0, where non-zero values
- 	 * set by the guest could disrupt the host.
-@@ -1365,12 +1371,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	mtspr	SPRN_IAMR, r0
- 	mtspr	SPRN_CIABR, r0
- 	mtspr	SPRN_DAWRX, r0
--	mtspr	SPRN_TCSCR, r0
- 	mtspr	SPRN_WORT, r0
-+BEGIN_FTR_SECTION
-+	mtspr	SPRN_TCSCR, r0
- 	/* Set MMCRS to 1<<31 to freeze and disable the SPMC counters */
- 	li	r0, 1
- 	sldi	r0, r0, 31
- 	mtspr	SPRN_MMCRS, r0
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 8:
+-	 * slb llp encoding for the page size used in VPM real mode.
+-	 * We can ignore that for lpid 0
++	 * PS field (VRMA page size) is not used for LPID 0, hence set to 0.
++	 * For now, UPRT is 0 and we have no segment table.
+ 	 */
+-	ps_field = 0;
+ 	htab_size =  __ilog2(htab_size) - 18;
+-
+-	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
+-	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
+-						MEMBLOCK_ALLOC_ANYWHERE));
+-
+-	/* Initialize the Partition Table with no entries */
+-	memset((void *)partition_tb, 0, patb_size);
+-	partition_tb->patb0 = cpu_to_be64(ps_field | hash_table | htab_size);
+-	/*
+-	 * FIXME!! This should be done via update_partition table
+-	 * For now UPRT is 0 for us.
+-	 */
+-	partition_tb->patb1 = 0;
++	mmu_partition_table_set_entry(0, hash_table | htab_size, 0);
+ 	pr_info("Partition table %p\n", partition_tb);
+ 	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+ 		update_hid_for_hash();
+-	/*
+-	 * update partition table control register,
+-	 * 64 K size.
+-	 */
+-	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
+-
+ }
  
- 	/* Save and reset AMR and UAMOR before turning on the MMU */
-@@ -1504,15 +1512,17 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	stw	r8, VCPU_PMC + 20(r9)
- BEGIN_FTR_SECTION
- 	mfspr	r5, SPRN_SIER
-+	std	r5, VCPU_SIER(r9)
-+BEGIN_FTR_SECTION_NESTED(96)
- 	mfspr	r6, SPRN_SPMC1
- 	mfspr	r7, SPRN_SPMC2
- 	mfspr	r8, SPRN_MMCRS
--	std	r5, VCPU_SIER(r9)
- 	stw	r6, VCPU_PMC + 24(r9)
- 	stw	r7, VCPU_PMC + 28(r9)
- 	std	r8, VCPU_MMCR + 32(r9)
- 	lis	r4, 0x8000
- 	mtspr	SPRN_MMCRS, r4
-+END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 22:
- 	/* Clear out SLB */
+ static void __init htab_initialize(void)
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index ed7bddc..186f1ad 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -177,23 +177,15 @@ static void __init radix_init_pgtable(void)
+ 
+ static void __init radix_init_partition_table(void)
+ {
+-	unsigned long rts_field;
++	unsigned long rts_field, dw0;
+ 
++	mmu_partition_table_init();
+ 	rts_field = radix__get_tree_size();
++	dw0 = rts_field | __pa(init_mm.pgd) | RADIX_PGD_INDEX_SIZE | PATB_HR;
++	mmu_partition_table_set_entry(0, dw0, 0);
+ 
+-	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
+-	partition_tb = early_alloc_pgtable(1UL << PATB_SIZE_SHIFT);
+-	partition_tb->patb0 = cpu_to_be64(rts_field | __pa(init_mm.pgd) |
+-					  RADIX_PGD_INDEX_SIZE | PATB_HR);
+ 	pr_info("Initializing Radix MMU\n");
+ 	pr_info("Partition table %p\n", partition_tb);
+-
+-	memblock_set_current_limit(MEMBLOCK_ALLOC_ANYWHERE);
+-	/*
+-	 * update partition table control register,
+-	 * 64 K size.
+-	 */
+-	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
+ }
+ 
+ void __init radix_init_native(void)
+@@ -378,6 +370,8 @@ void __init radix__early_init_mmu(void)
+ 		radix_init_partition_table();
+ 	}
+ 
++	memblock_set_current_limit(MEMBLOCK_ALLOC_ANYWHERE);
++
+ 	radix_init_pgtable();
+ }
+ 
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index f5e8d4e..fef0890 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -431,3 +431,36 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+ 	}
+ }
+ #endif
++
++#ifdef CONFIG_PPC_BOOK3S_64
++void mmu_partition_table_init(void)
++{
++	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
++
++	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
++	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
++						MEMBLOCK_ALLOC_ANYWHERE));
++
++	/* Initialize the Partition Table with no entries */
++	memset((void *)partition_tb, 0, patb_size);
++
++	/*
++	 * update partition table control register,
++	 * 64 K size.
++	 */
++	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
++}
++
++void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
++				   unsigned long dw1)
++{
++	partition_tb[lpid].patb0 = cpu_to_be64(dw0);
++	partition_tb[lpid].patb1 = cpu_to_be64(dw1);
++
++	/* Global flush of TLBs and partition table caches for this lpid */
++	asm volatile("ptesync");
++	asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : : "r"(0x800), "r" (lpid));
++	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
++}
++EXPORT_SYMBOL_GPL(mmu_partition_table_set_entry);
++#endif /* CONFIG_PPC_BOOK3S_64 */
 -- 
 2.7.4
