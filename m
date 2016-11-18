@@ -1,16 +1,18 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqNy5dzJzDvt1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqNz0Pq2zDvt1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:51 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 00/13] KVM: PPC: Support POWER9 guests
-Date: Fri, 18 Nov 2016 18:28:29 +1100
-Message-Id: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 01/13] powerpc/64: Add some more SPRs and SPR bits for POWER9
+Date: Fri, 18 Nov 2016 18:28:30 +1100
+Message-Id: <1479454122-26994-2-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
+References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,40 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series of patches adds support to HV KVM for running KVM guests
-on POWER9 systems.  This allows us to run KVM guests that use HPT
-(hashed page table) address translation and know about the POWER9
-processor.  With this, Suraj Jitindar Singh's recent patch series
-"powerpc: add support for ISA v2.07 compat level" and suitable changes
-to the user-mode driver will allow us to run guests on POWER9 in
-POWER8 (or POWER7) compatibility mode.
+These definitions will be needed by KVM.
 
-For now we require the host to be in HPT mode (not radix).
-
-This series of patches is based on v4.9-rc4 plus my patch "powerpc/64:
-Simplify adaptation to new ISA v3.00 HPTE format" and Yongji Xie's
-two-patch series "KVM: PPC: Book3S HV: Optimize for MMIO emulation".
-
-Paul.
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- Documentation/virtual/kvm/api.txt              |   2 +
- arch/powerpc/include/asm/kvm_host.h            |   3 +
- arch/powerpc/include/asm/kvm_ppc.h             |   7 +-
- arch/powerpc/include/asm/mmu.h                 |   5 +
- arch/powerpc/include/asm/opal.h                |   3 +
- arch/powerpc/include/asm/reg.h                 |   5 +
- arch/powerpc/include/uapi/asm/kvm.h            |   4 +
- arch/powerpc/kernel/asm-offsets.c              |   3 +
- arch/powerpc/kvm/book3s_64_mmu_hv.c            |  39 +++++--
- arch/powerpc/kvm/book3s_hv.c                   | 140 ++++++++++++++++++++++---
- arch/powerpc/kvm/book3s_hv_builtin.c           |  69 +++++++++---
- arch/powerpc/kvm/book3s_hv_rm_mmu.c            | 113 ++++++++++++++------
- arch/powerpc/kvm/book3s_hv_rm_xics.c           |  23 ++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S        | 132 ++++++++++++++++-------
- arch/powerpc/kvm/powerpc.c                     |  11 +-
- arch/powerpc/mm/hash_utils_64.c                |  28 +----
- arch/powerpc/mm/pgtable-radix.c                |  18 ++--
- arch/powerpc/mm/pgtable_64.c                   |  33 ++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |   3 +
- arch/powerpc/platforms/powernv/opal.c          |   2 +
- 20 files changed, 483 insertions(+), 160 deletions(-)
+ arch/powerpc/include/asm/reg.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 9cd4e8c..df81411 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -153,6 +153,8 @@
+ #define PSSCR_EC		0x00100000 /* Exit Criterion */
+ #define PSSCR_ESL		0x00200000 /* Enable State Loss */
+ #define PSSCR_SD		0x00400000 /* Status Disable */
++#define PSSCR_PLS	0xf000000000000000 /* Power-saving Level Status */
++#define PSSCR_GUEST_VIS	0xf0000000000003ff /* Guest-visible PSSCR fields */
+ 
+ /* Floating Point Status and Control Register (FPSCR) Fields */
+ #define FPSCR_FX	0x80000000	/* FPU exception summary */
+@@ -236,6 +238,7 @@
+ #define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
+ #define   TEXASR_FS	__MASK(63-36) /* TEXASR Failure Summary */
+ #define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
++#define SPRN_TIDR	144	/* Thread ID register */
+ #define SPRN_CTRLF	0x088
+ #define SPRN_CTRLT	0x098
+ #define   CTRL_CT	0xc0000000	/* current thread */
+@@ -294,6 +297,7 @@
+ #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
+ #define SPRN_LMRR	0x32D	/* Load Monitor Region Register */
+ #define SPRN_LMSER	0x32E	/* Load Monitor Section Enable Register */
++#define SPRN_ASDR	0x330	/* Access segment descriptor register */
+ #define SPRN_IC		0x350	/* Virtual Instruction Count */
+ #define SPRN_VTB	0x351	/* Virtual Time Base */
+ #define SPRN_LDBAR	0x352	/* LD Base Address Register */
+@@ -357,6 +361,7 @@
+ #define     LPCR_PECE2		ASM_CONST(0x0000000000001000)	/* machine check etc can cause exit */
+ #define   LPCR_MER		ASM_CONST(0x0000000000000800)	/* Mediated External Exception */
+ #define   LPCR_MER_SH		11
++#define	  LPCR_GTSE		ASM_CONST(0x0000000000000400)  	/* Guest Translation Shootdown Enable */
+ #define   LPCR_TC		ASM_CONST(0x0000000000000200)	/* Translation control */
+ #define   LPCR_LPES		0x0000000c
+ #define   LPCR_LPES0		ASM_CONST(0x0000000000000008)      /* LPAR Env selector 0 */
+-- 
+2.7.4
