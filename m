@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqP13GXjzDvt1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqP15XkfzDvt1
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:53 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 08/13] KVM: PPC: Book3S HV: Add new POWER9 guest-accessible
- SPRs
-Date: Fri, 18 Nov 2016 18:28:37 +1100
-Message-Id: <1479454122-26994-9-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 09/13] KVM: PPC: Book3S HV: Adapt TLB invalidations to work on
+ POWER9
+Date: Fri, 18 Nov 2016 18:28:38 +1100
+Message-Id: <1479454122-26994-10-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,194 +23,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds code to handle two new guest-accessible special-purpose
-registers on POWER9: TIDR (thread ID register) and PSSCR (processor
-stop status and control register).  They are context-switched
-between host and guest, and the guest values can be read and set
-via the one_reg interface.
+POWER9 adds new capabilities to the tlbie (TLB invalidate entry)
+and tlbiel (local tlbie) instructions.  Both instructions get a
+set of new parameters (RIC, PRS and R) which appear as bits in the
+instruction word.  The tlbiel instruction now has a second register
+operand, which contains a PID and/or LPID value if needed, and
+should otherwise contain 0.
 
-The PSSCR contains some fields which are guest-accessible and some
-which are only accessible in hypervisor mode.  We only allow the
-guest-accessible fields to be read or set by userspace.
+This adapts KVM-HV's usage of tlbie and tlbiel to work on POWER9
+as well as older processors.  Since we only handle HPT guests so
+far, we need RIC=0 PRS=0 R=0, which ends up with the same instruction
+word as on previous processors, so we don't need to conditionally
+execute different instructions depending on the processor.
+
+The local flush on first entry to a guest in book3s_hv_rmhandlers.S
+is a loop which depends on the number of TLB sets.  Rather than
+using feature sections to set the number of iterations based on
+which CPU we're on, we now work out this number at VM creation time
+and store it in the kvm_arch struct.  That will make it possible to
+get the number from the device tree in future, which will help with
+compatibility with future processors.
+
+Since mmu_partition_table_set_entry() does a global flush of the
+whole LPID, we don't need to do the TLB flush on first entry to the
+guest on each processor.  Therefore we don't set all bits in the
+tlb_need_flush bitmap on VM startup on POWER9.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- Documentation/virtual/kvm/api.txt       |  2 ++
- arch/powerpc/include/asm/kvm_host.h     |  2 ++
- arch/powerpc/include/uapi/asm/kvm.h     |  4 ++++
- arch/powerpc/kernel/asm-offsets.c       |  2 ++
- arch/powerpc/kvm/book3s_hv.c            | 12 ++++++++++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 39 +++++++++++++++++++++++++++++++--
- 6 files changed, 59 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h     |  1 +
+ arch/powerpc/kernel/asm-offsets.c       |  1 +
+ arch/powerpc/kvm/book3s_hv.c            | 17 ++++++++++++++++-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c     | 10 ++++++++--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |  8 ++------
+ 5 files changed, 28 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index 739db9a..40b2bfc 100644
---- a/Documentation/virtual/kvm/api.txt
-+++ b/Documentation/virtual/kvm/api.txt
-@@ -2023,6 +2023,8 @@ registers, find a list below:
-   PPC   | KVM_REG_PPC_WORT              | 64
-   PPC	| KVM_REG_PPC_SPRG9             | 64
-   PPC	| KVM_REG_PPC_DBSR              | 32
-+  PPC   | KVM_REG_PPC_TIDR              | 64
-+  PPC   | KVM_REG_PPC_PSSCR             | 64
-   PPC   | KVM_REG_PPC_TM_GPR0           | 64
-           ...
-   PPC   | KVM_REG_PPC_TM_GPR31          | 64
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 20ef27d..0d94608 100644
+index 0d94608..ea78864 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -517,6 +517,8 @@ struct kvm_vcpu_arch {
- 	ulong tcscr;
- 	ulong acop;
- 	ulong wort;
-+	ulong tid;
-+	ulong psscr;
- 	ulong shadow_srr1;
- #endif
- 	u32 vrsave; /* also USPRG0 */
-diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-index c93cf35..f0bae66 100644
---- a/arch/powerpc/include/uapi/asm/kvm.h
-+++ b/arch/powerpc/include/uapi/asm/kvm.h
-@@ -573,6 +573,10 @@ struct kvm_get_htab_header {
- #define KVM_REG_PPC_SPRG9	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xba)
- #define KVM_REG_PPC_DBSR	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xbb)
- 
-+/* POWER9 registers */
-+#define KVM_REG_PPC_TIDR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xbc)
-+#define KVM_REG_PPC_PSSCR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xbd)
-+
- /* Transactional Memory checkpointed state:
-  * This is all GPRs, all VSX regs and a subset of SPRs
-  */
+@@ -244,6 +244,7 @@ struct kvm_arch_memory_slot {
+ struct kvm_arch {
+ 	unsigned int lpid;
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++	unsigned int tlb_sets;
+ 	unsigned long hpt_virt;
+ 	struct revmap_entry *revmap;
+ 	atomic64_t mmio_update;
 diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index caec7bf..494241b 100644
+index 494241b..b9c8386 100644
 --- a/arch/powerpc/kernel/asm-offsets.c
 +++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -548,6 +548,8 @@ int main(void)
- 	DEFINE(VCPU_TCSCR, offsetof(struct kvm_vcpu, arch.tcscr));
- 	DEFINE(VCPU_ACOP, offsetof(struct kvm_vcpu, arch.acop));
- 	DEFINE(VCPU_WORT, offsetof(struct kvm_vcpu, arch.wort));
-+	DEFINE(VCPU_TID, offsetof(struct kvm_vcpu, arch.tid));
-+	DEFINE(VCPU_PSSCR, offsetof(struct kvm_vcpu, arch.psscr));
- 	DEFINE(VCORE_ENTRY_EXIT, offsetof(struct kvmppc_vcore, entry_exit_map));
- 	DEFINE(VCORE_IN_GUEST, offsetof(struct kvmppc_vcore, in_guest));
- 	DEFINE(VCORE_NAPPING_THREADS, offsetof(struct kvmppc_vcore, napping_threads));
+@@ -487,6 +487,7 @@ int main(void)
+ 
+ 	/* book3s */
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++	DEFINE(KVM_TLB_SETS, offsetof(struct kvm, arch.tlb_sets));
+ 	DEFINE(KVM_SDR1, offsetof(struct kvm, arch.sdr1));
+ 	DEFINE(KVM_HOST_LPID, offsetof(struct kvm, arch.host_lpid));
+ 	DEFINE(KVM_HOST_LPCR, offsetof(struct kvm, arch.host_lpcr));
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 5cbe3c3..59e18dfb 100644
+index 59e18dfb..8395a7f 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1230,6 +1230,12 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_WORT:
- 		*val = get_reg_val(id, vcpu->arch.wort);
- 		break;
-+	case KVM_REG_PPC_TIDR:
-+		*val = get_reg_val(id, vcpu->arch.tid);
-+		break;
-+	case KVM_REG_PPC_PSSCR:
-+		*val = get_reg_val(id, vcpu->arch.psscr);
-+		break;
- 	case KVM_REG_PPC_VPA_ADDR:
- 		spin_lock(&vcpu->arch.vpa_update_lock);
- 		*val = get_reg_val(id, vcpu->arch.vpa.next_gpa);
-@@ -1428,6 +1434,12 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_WORT:
- 		vcpu->arch.wort = set_reg_val(id, *val);
- 		break;
-+	case KVM_REG_PPC_TIDR:
-+		vcpu->arch.tid = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_PSSCR:
-+		vcpu->arch.psscr = set_reg_val(id, *val) & PSSCR_GUEST_VIS;
-+		break;
- 	case KVM_REG_PPC_VPA_ADDR:
- 		addr = set_reg_val(id, *val);
- 		r = -EINVAL;
+@@ -3260,8 +3260,11 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 	 * Since we don't flush the TLB when tearing down a VM,
+ 	 * and this lpid might have previously been used,
+ 	 * make sure we flush on each core before running the new VM.
++	 * On POWER9, the tlbie in mmu_partition_table_set_entry()
++	 * does this flush for us.
+ 	 */
+-	cpumask_setall(&kvm->arch.need_tlb_flush);
++	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++		cpumask_setall(&kvm->arch.need_tlb_flush);
+ 
+ 	/* Start out with the default set of hcalls enabled */
+ 	memcpy(kvm->arch.enabled_hcalls, default_enabled_hcalls,
+@@ -3287,6 +3290,17 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 	kvm->arch.lpcr = lpcr;
+ 
+ 	/*
++	 * Work out how many sets the TLB has, for the use of
++	 * the TLB invalidation loop in book3s_hv_rmhandlers.S.
++	 */
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		kvm->arch.tlb_sets = 256;	/* POWER9 */
++	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		kvm->arch.tlb_sets = 512;	/* POWER8 */
++	else
++		kvm->arch.tlb_sets = 128;	/* POWER7 */
++
++	/*
+ 	 * Track that we now have a HV mode VM active. This blocks secondary
+ 	 * CPU threads from coming online.
+ 	 */
+@@ -3728,3 +3742,4 @@ module_exit(kvmppc_book3s_exit_hv);
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_MISCDEV(KVM_MINOR);
+ MODULE_ALIAS("devname:kvm");
++
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 1179e40..9ef3c4b 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -424,13 +424,18 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
+ {
+ 	long i;
+ 
++	/*
++	 * We use the POWER9 5-operand versions of tlbie and tlbiel here.
++	 * Since we are using RIC=0 PRS=0 R=0, and P7/P8 tlbiel ignores
++	 * the RS field, this is backwards-compatible with P7 and P8.
++	 */
+ 	if (global) {
+ 		while (!try_lock_tlbie(&kvm->arch.tlbie_lock))
+ 			cpu_relax();
+ 		if (need_sync)
+ 			asm volatile("ptesync" : : : "memory");
+ 		for (i = 0; i < npages; ++i)
+-			asm volatile(PPC_TLBIE(%1,%0) : :
++			asm volatile(PPC_TLBIE_5(%0,%1,0,0,0) : :
+ 				     "r" (rbvalues[i]), "r" (kvm->arch.lpid));
+ 		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+ 		kvm->arch.tlbie_lock = 0;
+@@ -438,7 +443,8 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
+ 		if (need_sync)
+ 			asm volatile("ptesync" : : : "memory");
+ 		for (i = 0; i < npages; ++i)
+-			asm volatile("tlbiel %0" : : "r" (rbvalues[i]));
++			asm volatile(PPC_TLBIEL(%0,%1,0,0,0) : :
++				     "r" (rbvalues[i]), "r" (0));
+ 		asm volatile("ptesync" : : : "memory");
+ 	}
+ }
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index d422014..219a04f 100644
+index 219a04f..acae5c3 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -523,6 +523,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-  *                                                                            *
-  *****************************************************************************/
- 
-+/* Stack frame offsets */
-+#define STACK_SLOT_TID		(112-16)
-+#define STACK_SLOT_PSSCR	(112-24)
-+
- .global kvmppc_hv_entry
- kvmppc_hv_entry:
- 
-@@ -700,6 +704,14 @@ kvmppc_got_guest:
- 	mtspr	SPRN_PURR,r7
- 	mtspr	SPRN_SPURR,r8
- 
-+	/* Save host values of some registers */
-+BEGIN_FTR_SECTION
-+	mfspr	r5, SPRN_TIDR
-+	mfspr	r6, SPRN_PSSCR
-+	std	r5, STACK_SLOT_TID(r1)
-+	std	r6, STACK_SLOT_PSSCR(r1)
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-+
- BEGIN_FTR_SECTION
- 	/* Set partition DABR */
- 	/* Do this before re-enabling PMU to avoid P7 DABR corruption bug */
-@@ -824,6 +836,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	mtspr	SPRN_PID, r7
- 	mtspr	SPRN_WORT, r8
- BEGIN_FTR_SECTION
-+	/* POWER8-only registers */
- 	ld	r5, VCPU_TCSCR(r4)
- 	ld	r6, VCPU_ACOP(r4)
- 	ld	r7, VCPU_CSIGR(r4)
-@@ -832,7 +845,14 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_ACOP, r6
- 	mtspr	SPRN_CSIGR, r7
- 	mtspr	SPRN_TACR, r8
--END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
-+FTR_SECTION_ELSE
-+	/* POWER9-only registers */
-+	ld	r5, VCPU_TID(r4)
-+	ld	r6, VCPU_PSSCR(r4)
-+	oris	r6, r6, PSSCR_EC@h	/* This makes stop trap to HV */
-+	mtspr	SPRN_TIDR, r5
-+	mtspr	SPRN_PSSCR, r6
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- 8:
- 
- 	/*
-@@ -1362,7 +1382,14 @@ BEGIN_FTR_SECTION
- 	std	r6, VCPU_ACOP(r9)
- 	std	r7, VCPU_CSIGR(r9)
- 	std	r8, VCPU_TACR(r9)
--END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
-+FTR_SECTION_ELSE
-+	mfspr	r5, SPRN_TIDR
-+	mfspr	r6, SPRN_PSSCR
-+	std	r5, VCPU_TID(r9)
-+	rldicl	r6, r6, 4, 50		/* r6 &= PSSCR_GUEST_VIS */
-+	rotldi	r6, r6, 60
-+	std	r6, VCPU_PSSCR(r9)
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- 	/*
- 	 * Restore various registers to 0, where non-zero values
- 	 * set by the guest could disrupt the host.
-@@ -1531,6 +1558,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	slbia
+@@ -613,12 +613,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 	stdcx.	r7,0,r6
+ 	bne	23b
+ 	/* Flush the TLB of any entries for this LPID */
+-	/* use arch 2.07S as a proxy for POWER8 */
+-BEGIN_FTR_SECTION
+-	li	r6,512			/* POWER8 has 512 sets */
+-FTR_SECTION_ELSE
+-	li	r6,128			/* POWER7 has 128 sets */
+-ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_207S)
++	lwz	r6,KVM_TLB_SETS(r9)
++	li	r0,0			/* RS for P9 version of tlbiel */
+ 	mtctr	r6
+ 	li	r7,0x800		/* IS field = 0b10 */
  	ptesync
- 
-+	/* Restore host values of some registers */
-+BEGIN_FTR_SECTION
-+	ld	r5, STACK_SLOT_TID(r1)
-+	ld	r6, STACK_SLOT_PSSCR(r1)
-+	mtspr	SPRN_TIDR, r5
-+	mtspr	SPRN_PSSCR, r6
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-+
- 	/*
- 	 * POWER7/POWER8 guest -> host partition switch code.
- 	 * We don't have to lock against tlbies but we do
 -- 
 2.7.4
