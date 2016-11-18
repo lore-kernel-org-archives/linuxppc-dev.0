@@ -1,21 +1,40 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tL1Cg6rzyzDqV5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 01:51:27 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tL18d2Y3bzDvxv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 01:48:49 +1100 (AEDT)
-Date: Fri, 18 Nov 2016 23:48:41 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard
- <anton@samba.org>, linuxppc-dev@lists.ozlabs.org, Ananth N
- Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH] powerpc: kprobes: invoke handlers directly
-Message-Id: <20161118234841.ef216955ab8db0a9135c7582@kernel.org>
-In-Reply-To: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by ozlabs.org (Postfix) with ESMTPS id 3tL1Cg34LYz9t2p
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2016 01:51:27 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAIEnWLx018181
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 09:51:25 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26t2ud2xx9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 09:51:25 -0500
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 18 Nov 2016 09:51:23 -0500
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 09/13] KVM: PPC: Book3S HV: Adapt TLB invalidations to
+ work on POWER9
+In-Reply-To: <1479454122-26994-10-git-send-email-paulus@ozlabs.org>
+References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
+ <1479454122-26994-10-git-send-email-paulus@ozlabs.org>
+Date: Fri, 18 Nov 2016 20:11:34 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87y40gn941.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,164 +44,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 18 Nov 2016 17:09:26 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-> ... rather than through notify_die(), to reduce path taken for handling
-> kprobes. Similar to commit 6f6343f53d13 ("kprobes/x86: Call exception
-> handlers directly from do_int3/do_debug").
-> 
-> While at it, rename post_kprobe_handler() to kprobe_post_handler() for
-> more uniform naming.
-
-Looks good to me.
-
-Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
-
-Thanks!
-
-> 
-> Reported-by: Masami Hiramatsu <mhiramat@kernel.org>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> POWER9 adds new capabilities to the tlbie (TLB invalidate entry)
+> and tlbiel (local tlbie) instructions.  Both instructions get a
+> set of new parameters (RIC, PRS and R) which appear as bits in the
+> instruction word.  The tlbiel instruction now has a second register
+> operand, which contains a PID and/or LPID value if needed, and
+> should otherwise contain 0.
+>
+> This adapts KVM-HV's usage of tlbie and tlbiel to work on POWER9
+> as well as older processors.  Since we only handle HPT guests so
+> far, we need RIC=0 PRS=0 R=0, which ends up with the same instruction
+> word as on previous processors, so we don't need to conditionally
+> execute different instructions depending on the processor.
+>
+> The local flush on first entry to a guest in book3s_hv_rmhandlers.S
+> is a loop which depends on the number of TLB sets.  Rather than
+> using feature sections to set the number of iterations based on
+> which CPU we're on, we now work out this number at VM creation time
+> and store it in the kvm_arch struct.  That will make it possible to
+> get the number from the device tree in future, which will help with
+> compatibility with future processors.
+>
+> Since mmu_partition_table_set_entry() does a global flush of the
+> whole LPID, we don't need to do the TLB flush on first entry to the
+> guest on each processor.  Therefore we don't set all bits in the
+> tlb_need_flush bitmap on VM startup on POWER9.
+>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 > ---
->  arch/powerpc/include/asm/kprobes.h |  2 ++
->  arch/powerpc/kernel/kprobes.c      | 29 +++++++----------------------
->  arch/powerpc/kernel/traps.c        | 20 ++++++++++++++++++++
->  3 files changed, 29 insertions(+), 22 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-> index 2c9759bd..47c60d0 100644
-> --- a/arch/powerpc/include/asm/kprobes.h
-> +++ b/arch/powerpc/include/asm/kprobes.h
-> @@ -126,6 +126,8 @@ struct kprobe_ctlblk {
+>  arch/powerpc/include/asm/kvm_host.h     |  1 +
+>  arch/powerpc/kernel/asm-offsets.c       |  1 +
+>  arch/powerpc/kvm/book3s_hv.c            | 17 ++++++++++++++++-
+>  arch/powerpc/kvm/book3s_hv_rm_mmu.c     | 10 ++++++++--
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |  8 ++------
+>  5 files changed, 28 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 0d94608..ea78864 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -244,6 +244,7 @@ struct kvm_arch_memory_slot {
+>  struct kvm_arch {
+>  	unsigned int lpid;
+>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +	unsigned int tlb_sets;
+>  	unsigned long hpt_virt;
+>  	struct revmap_entry *revmap;
+>  	atomic64_t mmio_update;
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index 494241b..b9c8386 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -487,6 +487,7 @@ int main(void)
 >  
->  extern int kprobe_exceptions_notify(struct notifier_block *self,
->  					unsigned long val, void *data);
-> +extern int kprobe_handler(struct pt_regs *regs);
-> +extern int kprobe_post_handler(struct pt_regs *regs);
->  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
->  #endif /* __KERNEL__ */
->  #endif	/* _ASM_POWERPC_KPROBES_H */
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index 9479d8e..ad108b8 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -140,13 +140,16 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
->  	regs->link = (unsigned long)kretprobe_trampoline;
->  }
+>  	/* book3s */
+>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +	DEFINE(KVM_TLB_SETS, offsetof(struct kvm, arch.tlb_sets));
+>  	DEFINE(KVM_SDR1, offsetof(struct kvm, arch.sdr1));
+>  	DEFINE(KVM_HOST_LPID, offsetof(struct kvm, arch.host_lpid));
+>  	DEFINE(KVM_HOST_LPCR, offsetof(struct kvm, arch.host_lpcr));
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 59e18dfb..8395a7f 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -3260,8 +3260,11 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+>  	 * Since we don't flush the TLB when tearing down a VM,
+>  	 * and this lpid might have previously been used,
+>  	 * make sure we flush on each core before running the new VM.
+> +	 * On POWER9, the tlbie in mmu_partition_table_set_entry()
+> +	 * does this flush for us.
+>  	 */
+> -	cpumask_setall(&kvm->arch.need_tlb_flush);
+> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+> +		cpumask_setall(&kvm->arch.need_tlb_flush);
 >  
-> -static int __kprobes kprobe_handler(struct pt_regs *regs)
-> +int __kprobes kprobe_handler(struct pt_regs *regs)
->  {
->  	struct kprobe *p;
->  	int ret = 0;
->  	unsigned int *addr = (unsigned int *)regs->nip;
->  	struct kprobe_ctlblk *kcb;
+>  	/* Start out with the default set of hcalls enabled */
+>  	memcpy(kvm->arch.enabled_hcalls, default_enabled_hcalls,
+> @@ -3287,6 +3290,17 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+>  	kvm->arch.lpcr = lpcr;
 >  
-> +	if (user_mode(regs))
-> +		return 0;
-> +
 >  	/*
->  	 * We don't want to be preempted for the entire
->  	 * duration of kprobe processing
-> @@ -359,12 +362,12 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
->   * single-stepped a copy of the instruction.  The address of this
->   * copy is p->ainsn.insn.
->   */
-> -static int __kprobes post_kprobe_handler(struct pt_regs *regs)
-> +int __kprobes kprobe_post_handler(struct pt_regs *regs)
+> +	 * Work out how many sets the TLB has, for the use of
+> +	 * the TLB invalidation loop in book3s_hv_rmhandlers.S.
+> +	 */
+> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> +		kvm->arch.tlb_sets = 256;	/* POWER9 */
+> +	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
+> +		kvm->arch.tlb_sets = 512;	/* POWER8 */
+> +	else
+> +		kvm->arch.tlb_sets = 128;	/* POWER7 */
+> +
+
+We have 
+
+#define POWER7_TLB_SETS		128	/* # sets in POWER7 TLB */
+#define POWER8_TLB_SETS		512	/* # sets in POWER8 TLB */
+#define POWER9_TLB_SETS_HASH	256	/* # sets in POWER9 TLB Hash mode */
+#define POWER9_TLB_SETS_RADIX	128	/* # sets in POWER9 TLB Radix mode */
+
+May be use that instead of opencoding ?
+
+
+> +	/*
+>  	 * Track that we now have a HV mode VM active. This blocks secondary
+>  	 * CPU threads from coming online.
+>  	 */
+> @@ -3728,3 +3742,4 @@ module_exit(kvmppc_book3s_exit_hv);
+>  MODULE_LICENSE("GPL");
+>  MODULE_ALIAS_MISCDEV(KVM_MINOR);
+>  MODULE_ALIAS("devname:kvm");
+> +
+> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> index 1179e40..9ef3c4b 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> @@ -424,13 +424,18 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
 >  {
->  	struct kprobe *cur = kprobe_running();
->  	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+>  	long i;
 >  
-> -	if (!cur)
-> +	if (!cur || user_mode(regs))
->  		return 0;
->  
->  	/* make sure we got here for instruction we have a kprobe on */
-> @@ -470,25 +473,7 @@ int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
->  int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
->  				       unsigned long val, void *data)
->  {
-> -	struct die_args *args = (struct die_args *)data;
-> -	int ret = NOTIFY_DONE;
-> -
-> -	if (args->regs && user_mode(args->regs))
-> -		return ret;
-> -
-> -	switch (val) {
-> -	case DIE_BPT:
-> -		if (kprobe_handler(args->regs))
-> -			ret = NOTIFY_STOP;
-> -		break;
-> -	case DIE_SSTEP:
-> -		if (post_kprobe_handler(args->regs))
-> -			ret = NOTIFY_STOP;
-> -		break;
-> -	default:
-> -		break;
-> -	}
-> -	return ret;
-> +	return NOTIFY_DONE;
+> +	/*
+> +	 * We use the POWER9 5-operand versions of tlbie and tlbiel here.
+> +	 * Since we are using RIC=0 PRS=0 R=0, and P7/P8 tlbiel ignores
+> +	 * the RS field, this is backwards-compatible with P7 and P8.
+> +	 */
+>  	if (global) {
+>  		while (!try_lock_tlbie(&kvm->arch.tlbie_lock))
+>  			cpu_relax();
+>  		if (need_sync)
+>  			asm volatile("ptesync" : : : "memory");
+>  		for (i = 0; i < npages; ++i)
+> -			asm volatile(PPC_TLBIE(%1,%0) : :
+> +			asm volatile(PPC_TLBIE_5(%0,%1,0,0,0) : :
+>  				     "r" (rbvalues[i]), "r" (kvm->arch.lpid));
+>  		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+>  		kvm->arch.tlbie_lock = 0;
+> @@ -438,7 +443,8 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
+>  		if (need_sync)
+>  			asm volatile("ptesync" : : : "memory");
+>  		for (i = 0; i < npages; ++i)
+> -			asm volatile("tlbiel %0" : : "r" (rbvalues[i]));
+> +			asm volatile(PPC_TLBIEL(%0,%1,0,0,0) : :
+> +				     "r" (rbvalues[i]), "r" (0));
+>  		asm volatile("ptesync" : : : "memory");
+>  	}
 >  }
->  
->  unsigned long arch_deref_entry_point(void *entry)
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 91d278c..dbcdf48 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -824,6 +824,11 @@ void single_step_exception(struct pt_regs *regs)
->  
->  	clear_single_step(regs);
->  
-> +#ifdef CONFIG_KPROBES
-> +	if (kprobe_post_handler(regs))
-> +		return;
-> +#endif
-> +
->  	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
->  					5, SIGTRAP) == NOTIFY_STOP)
->  		goto bail;
-> @@ -1177,6 +1182,11 @@ void program_check_exception(struct pt_regs *regs)
->  		if (debugger_bpt(regs))
->  			goto bail;
->  
-> +#ifdef CONFIG_KPROBES
-> +		if (kprobe_handler(regs))
-> +			goto bail;
-> +#endif
-> +
->  		/* trap exception */
->  		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
->  				== NOTIFY_STOP)
-> @@ -1745,6 +1755,11 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
->  			return;
->  		}
->  
-> +#ifdef CONFIG_KPROBES
-> +		if (kprobe_post_handler(regs))
-> +			return;
-> +#endif
-> +
->  		if (notify_die(DIE_SSTEP, "block_step", regs, 5,
->  			       5, SIGTRAP) == NOTIFY_STOP) {
->  			return;
-> @@ -1759,6 +1774,11 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
->  		/* Clear the instruction completion event */
->  		mtspr(SPRN_DBSR, DBSR_IC);
->  
-> +#ifdef CONFIG_KPROBES
-> +		if (kprobe_post_handler(regs))
-> +			return;
-> +#endif
-> +
->  		if (notify_die(DIE_SSTEP, "single_step", regs, 5,
->  			       5, SIGTRAP) == NOTIFY_STOP) {
->  			return;
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 219a04f..acae5c3 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -613,12 +613,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+>  	stdcx.	r7,0,r6
+>  	bne	23b
+>  	/* Flush the TLB of any entries for this LPID */
+> -	/* use arch 2.07S as a proxy for POWER8 */
+> -BEGIN_FTR_SECTION
+> -	li	r6,512			/* POWER8 has 512 sets */
+> -FTR_SECTION_ELSE
+> -	li	r6,128			/* POWER7 has 128 sets */
+> -ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_207S)
+> +	lwz	r6,KVM_TLB_SETS(r9)
+> +	li	r0,0			/* RS for P9 version of tlbiel */
+>  	mtctr	r6
+>  	li	r7,0x800		/* IS field = 0b10 */
+>  	ptesync
 > -- 
-> 2.10.2
-> 
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+> 2.7.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
