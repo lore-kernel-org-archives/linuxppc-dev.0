@@ -1,23 +1,22 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-it0-x22b.google.com (mail-it0-x22b.google.com
- [IPv6:2607:f8b0:4001:c0b::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKt7m6SCbzDvj2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 20:32:36 +1100 (AEDT)
-Received: by mail-it0-x22b.google.com with SMTP id l8so3725028iti.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 01:32:36 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKtD70P9fzDsyc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 20:36:23 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Masami Hiramatsu <mhiramat@kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [RFC PATCH 4/4] powerpc: mm/slb: blacklist symbols from kprobe
+In-Reply-To: <a599d736aa7323a767fd62e1af33b99b235aed39.1479394571.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1479394571.git.naveen.n.rao@linux.vnet.ibm.com>
+ <a599d736aa7323a767fd62e1af33b99b235aed39.1479394571.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Fri, 18 Nov 2016 20:36:22 +1100
+Message-ID: <87shqpgmeh.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87vavlgmq4.fsf@concordia.ellerman.id.au>
-References: <CAFgQCTsUmYYSwNEJp=YD_FxVvGsW3G_69PdZxuGcF2P6JS-0vQ@mail.gmail.com>
- <87vavlgmq4.fsf@concordia.ellerman.id.au>
-From: Liu ping fan <kernelfans@gmail.com>
-Date: Fri, 18 Nov 2016 17:32:34 +0800
-Message-ID: <CAFgQCTvmQJ_Gh6R9YJf4EHsJRN5ceNNbhq2twKLdEFiGKTnYrA@mail.gmail.com>
-Subject: Re: fadump: a question about "ibm,configure-kernel-dump"
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thank you very much. I am more clear about it now.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-On Fri, Nov 18, 2016 at 5:29 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Liu ping fan <kernelfans@gmail.com> writes:
+> We can't really take a trap at this point. So, blacklist these symbols.
 >
->> I have an ibm-p8-garrison machine. But I can not find a node
->> "ibm,configure-kernel-dump" under /proc/device-tree.  Does garrison
->> machine support fadump? And normally, which component in open-power
->> presents the "ibm,configure-kernel-dump" ?  I had though it was in
->> skiboot gitree or  garrison-xml gitree, but found nothing.
+> Reported-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/slb_low.S | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 >
-> fadump only exists for guests running under PowerVM (LPARs). It sounds
-> like you're running bare metal (because you mention skiboot).
->
-> If you're talking about guests on top of KVM then it *could* be
-> implemented, but AFAIK Qemu/KVM do not implement it.
->
-> cheers
+> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+> index c1c7456..c2bae92 100644
+> --- a/arch/powerpc/mm/slb_low.S
+> +++ b/arch/powerpc/mm/slb_low.S
+> @@ -30,7 +30,7 @@
+>   *	r9, r10, r11 are clobbered by this function
+>   * No other registers are examined or changed.
+>   */
+> -_GLOBAL(slb_allocate_realmode)
+> +_GLOBAL_NOKPROBE(slb_allocate_realmode)
+
+I think I'd prefer we just leave these as is, and add somewhere nearby:
+
+_ASM_NOKPROBE_SYMBOL(slb_allocate_realmode)
+
+
+It means someone reading the code doesn't need to worry about the
+nokprobe part, just to understand the function. It also means we need
+fewer macros :)
+
+cheers
