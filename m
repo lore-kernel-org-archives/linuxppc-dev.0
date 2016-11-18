@@ -1,19 +1,43 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <benh@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tLBgP0JkKzDvyS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 08:57:37 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tL1nz4bTtzDvnG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 02:17:43 +1100 (AEDT)
-Subject: patch "usb: gadget: udc: fsl: remove unnecessary & operation" added
- to usb-next
-To: felipe.balbi@linux.intel.com, leoli@freescale.com,
- linuxppc-dev@lists.ozlabs.org
-From: <gregkh@linuxfoundation.org>
-Date: Fri, 18 Nov 2016 16:10:06 +0100
-Message-ID: <14794818069374@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+ by ozlabs.org (Postfix) with ESMTPS id 3tLBgN3w5cz9t0q
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2016 08:57:35 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAILrPDW140406
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 16:57:33 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26t4vhcxy8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 16:57:32 -0500
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
+ Sat, 19 Nov 2016 07:57:30 +1000
+Subject: Re: [PATCH 09/13] KVM: PPC: Book3S HV: Adapt TLB invalidations to
+ work on POWER9
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@ozlabs.org>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
+Date: Sat, 19 Nov 2016 08:57:28 +1100
+In-Reply-To: <87y40gn941.fsf@linux.vnet.ibm.com>
+References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
+ <1479454122-26994-10-git-send-email-paulus@ozlabs.org>
+ <87y40gn941.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1479506248.27850.18.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +47,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2016-11-18 at 20:11 +0530, Aneesh Kumar K.V wrote:
+> > +      * Work out how many sets the TLB has, for the use of
+> > +      * the TLB invalidation loop in book3s_hv_rmhandlers.S.
+> > +      */
+> > +     if (cpu_has_feature(CPU_FTR_ARCH_300))
+> > +             kvm->arch.tlb_sets = 256;       /* POWER9 */
+> > +     else if (cpu_has_feature(CPU_FTR_ARCH_207S))
+> > +             kvm->arch.tlb_sets = 512;       /* POWER8 */
+> > +     else
+> > +             kvm->arch.tlb_sets = 128;       /* POWER7 */
+> > +
+> 
+> We have 
+> 
+> #define POWER7_TLB_SETS         128     /* # sets in POWER7 TLB */
+> #define POWER8_TLB_SETS         512     /* # sets in POWER8 TLB */
+> #define POWER9_TLB_SETS_HASH    256     /* # sets in POWER9 TLB Hash mode */
+> #define POWER9_TLB_SETS_RADIX   128     /* # sets in POWER9 TLB Radix mode */
+> 
+> May be use that instead of opencoding ?
 
-This is a note to let you know that I've just added the patch titled
+Both are bad and are going to kill us for future backward
+compatibility.
 
-    usb: gadget: udc: fsl: remove unnecessary & operation
+These should be a device-tree property. We can fallback to hard wired
+values if it doesn't exist but we should at least look for one.
 
-to my usb git tree which can be found at
-    git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git
-in the usb-next branch.
+Note: P8 firmwares all have a bug creating a bogus "tlb-sets" property
+in the CPU node, so let's create a new one instead, with 2 entries
+(hash vs. radix) or 2 new ones, one for hash and one for radix (when
+available).
 
-The patch will show up in the next release of the linux-next tree
-(usually sometime within the next 24 hours during the week.)
-
-The patch will also be merged in the next major kernel release
-during the merge window.
-
-If you have any questions about this process, please let me know.
-
-
->From 0eb862e9c4f7a6a3abee25bc561ffdbe3d57a9d1 Mon Sep 17 00:00:00 2001
-From: Felipe Balbi <felipe.balbi@linux.intel.com>
-Date: Wed, 28 Sep 2016 14:17:38 +0300
-Subject: usb: gadget: udc: fsl: remove unnecessary & operation
-
-Now that usb_endpoint_maxp() only returns the lowest
-11 bits from wMaxPacketSize, we can remove the &
-operation from this driver.
-
-Cc: Li Yang <leoli@freescale.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Signed-off-by: Felipe Balbi <felipe.balbi@linux.intel.com>
----
- drivers/usb/gadget/udc/fsl_udc_core.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
-index 4459644b9b55..71094e479a96 100644
---- a/drivers/usb/gadget/udc/fsl_udc_core.c
-+++ b/drivers/usb/gadget/udc/fsl_udc_core.c
-@@ -586,7 +586,6 @@ static int fsl_ep_enable(struct usb_ep *_ep,
- 	case USB_ENDPOINT_XFER_ISOC:
- 		/* Calculate transactions needed for high bandwidth iso */
- 		mult = usb_endpoint_maxp_mult(desc);
--		max = max & 0x7ff;	/* bit 0~10 */
- 		/* 3 transactions at most */
- 		if (mult > 3)
- 			goto en_done;
--- 
-2.10.2
+Cheers,
+Ben.
