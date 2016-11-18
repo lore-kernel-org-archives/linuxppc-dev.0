@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqP15XkfzDvt1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tKqP23dcMzDvt1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2016 18:28:54 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/13] KVM: PPC: Book3S HV: Adapt TLB invalidations to work on
- POWER9
-Date: Fri, 18 Nov 2016 18:28:38 +1100
-Message-Id: <1479454122-26994-10-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 10/13] KVM: PPC: Book3S HV: Use msgsnd for IPIs to other cores
+ on POWER9
+Date: Fri, 18 Nov 2016 18:28:39 +1100
+Message-Id: <1479454122-26994-11-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,157 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 adds new capabilities to the tlbie (TLB invalidate entry)
-and tlbiel (local tlbie) instructions.  Both instructions get a
-set of new parameters (RIC, PRS and R) which appear as bits in the
-instruction word.  The tlbiel instruction now has a second register
-operand, which contains a PID and/or LPID value if needed, and
-should otherwise contain 0.
-
-This adapts KVM-HV's usage of tlbie and tlbiel to work on POWER9
-as well as older processors.  Since we only handle HPT guests so
-far, we need RIC=0 PRS=0 R=0, which ends up with the same instruction
-word as on previous processors, so we don't need to conditionally
-execute different instructions depending on the processor.
-
-The local flush on first entry to a guest in book3s_hv_rmhandlers.S
-is a loop which depends on the number of TLB sets.  Rather than
-using feature sections to set the number of iterations based on
-which CPU we're on, we now work out this number at VM creation time
-and store it in the kvm_arch struct.  That will make it possible to
-get the number from the device tree in future, which will help with
-compatibility with future processors.
-
-Since mmu_partition_table_set_entry() does a global flush of the
-whole LPID, we don't need to do the TLB flush on first entry to the
-guest on each processor.  Therefore we don't set all bits in the
-tlb_need_flush bitmap on VM startup on POWER9.
+On POWER9, the msgsnd instruction is able to send interrupts to
+other cores, as well as other threads on the local core.  Since
+msgsnd is generally simpler and faster than sending an IPI via the
+XICS, we use msgsnd for all IPIs sent by KVM on POWER9.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_host.h     |  1 +
- arch/powerpc/kernel/asm-offsets.c       |  1 +
- arch/powerpc/kvm/book3s_hv.c            | 17 ++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c     | 10 ++++++++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |  8 ++------
- 5 files changed, 28 insertions(+), 9 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c         | 11 ++++++++++-
+ arch/powerpc/kvm/book3s_hv_builtin.c | 10 ++++++++--
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 0d94608..ea78864 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -244,6 +244,7 @@ struct kvm_arch_memory_slot {
- struct kvm_arch {
- 	unsigned int lpid;
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	unsigned int tlb_sets;
- 	unsigned long hpt_virt;
- 	struct revmap_entry *revmap;
- 	atomic64_t mmio_update;
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 494241b..b9c8386 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -487,6 +487,7 @@ int main(void)
- 
- 	/* book3s */
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	DEFINE(KVM_TLB_SETS, offsetof(struct kvm, arch.tlb_sets));
- 	DEFINE(KVM_SDR1, offsetof(struct kvm, arch.sdr1));
- 	DEFINE(KVM_HOST_LPID, offsetof(struct kvm, arch.host_lpid));
- 	DEFINE(KVM_HOST_LPCR, offsetof(struct kvm, arch.host_lpcr));
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 59e18dfb..8395a7f 100644
+index 8395a7f..ace89df 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3260,8 +3260,11 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	 * Since we don't flush the TLB when tearing down a VM,
- 	 * and this lpid might have previously been used,
- 	 * make sure we flush on each core before running the new VM.
-+	 * On POWER9, the tlbie in mmu_partition_table_set_entry()
-+	 * does this flush for us.
- 	 */
--	cpumask_setall(&kvm->arch.need_tlb_flush);
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		cpumask_setall(&kvm->arch.need_tlb_flush);
+@@ -147,12 +147,21 @@ static inline struct kvm_vcpu *next_runnable_thread(struct kvmppc_vcore *vc,
  
- 	/* Start out with the default set of hcalls enabled */
- 	memcpy(kvm->arch.enabled_hcalls, default_enabled_hcalls,
-@@ -3287,6 +3290,17 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	kvm->arch.lpcr = lpcr;
- 
- 	/*
-+	 * Work out how many sets the TLB has, for the use of
-+	 * the TLB invalidation loop in book3s_hv_rmhandlers.S.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		kvm->arch.tlb_sets = 256;	/* POWER9 */
-+	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		kvm->arch.tlb_sets = 512;	/* POWER8 */
-+	else
-+		kvm->arch.tlb_sets = 128;	/* POWER7 */
-+
-+	/*
- 	 * Track that we now have a HV mode VM active. This blocks secondary
- 	 * CPU threads from coming online.
- 	 */
-@@ -3728,3 +3742,4 @@ module_exit(kvmppc_book3s_exit_hv);
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_MISCDEV(KVM_MINOR);
- MODULE_ALIAS("devname:kvm");
-+
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 1179e40..9ef3c4b 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -424,13 +424,18 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
+ static bool kvmppc_ipi_thread(int cpu)
  {
- 	long i;
++	unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
++
++	/* On POWER9 we can use msgsnd to IPI any cpu */
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		msg |= get_hard_smp_processor_id(cpu);
++		smp_mb();
++		__asm__ __volatile__ (PPC_MSGSND(%0) : : "r" (msg));
++		return true;
++	}
++
+ 	/* On POWER8 for IPIs to threads in the same core, use msgsnd */
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
+ 		preempt_disable();
+ 		if (cpu_first_thread_sibling(cpu) ==
+ 		    cpu_first_thread_sibling(smp_processor_id())) {
+-			unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
+ 			msg |= cpu_thread_in_core(cpu);
+ 			smp_mb();
+ 			__asm__ __volatile__ (PPC_MSGSND(%0) : : "r" (msg));
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index 0c84d6b..37ed045 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -205,12 +205,18 @@ static inline void rm_writeb(unsigned long paddr, u8 val)
+ void kvmhv_rm_send_ipi(int cpu)
+ {
+ 	unsigned long xics_phys;
++	unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
  
-+	/*
-+	 * We use the POWER9 5-operand versions of tlbie and tlbiel here.
-+	 * Since we are using RIC=0 PRS=0 R=0, and P7/P8 tlbiel ignores
-+	 * the RS field, this is backwards-compatible with P7 and P8.
-+	 */
- 	if (global) {
- 		while (!try_lock_tlbie(&kvm->arch.tlbie_lock))
- 			cpu_relax();
- 		if (need_sync)
- 			asm volatile("ptesync" : : : "memory");
- 		for (i = 0; i < npages; ++i)
--			asm volatile(PPC_TLBIE(%1,%0) : :
-+			asm volatile(PPC_TLBIE_5(%0,%1,0,0,0) : :
- 				     "r" (rbvalues[i]), "r" (kvm->arch.lpid));
- 		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
- 		kvm->arch.tlbie_lock = 0;
-@@ -438,7 +443,8 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
- 		if (need_sync)
- 			asm volatile("ptesync" : : : "memory");
- 		for (i = 0; i < npages; ++i)
--			asm volatile("tlbiel %0" : : "r" (rbvalues[i]));
-+			asm volatile(PPC_TLBIEL(%0,%1,0,0,0) : :
-+				     "r" (rbvalues[i]), "r" (0));
- 		asm volatile("ptesync" : : : "memory");
- 	}
- }
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 219a04f..acae5c3 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -613,12 +613,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	stdcx.	r7,0,r6
- 	bne	23b
- 	/* Flush the TLB of any entries for this LPID */
--	/* use arch 2.07S as a proxy for POWER8 */
--BEGIN_FTR_SECTION
--	li	r6,512			/* POWER8 has 512 sets */
--FTR_SECTION_ELSE
--	li	r6,128			/* POWER7 has 128 sets */
--ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_207S)
-+	lwz	r6,KVM_TLB_SETS(r9)
-+	li	r0,0			/* RS for P9 version of tlbiel */
- 	mtctr	r6
- 	li	r7,0x800		/* IS field = 0b10 */
- 	ptesync
+-	/* On POWER8 for IPIs to threads in the same core, use msgsnd */
++	/* On POWER9 we can use msgsnd for any destination cpu. */
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		msg |= get_hard_smp_processor_id(cpu);
++		__asm__ __volatile__ (PPC_MSGSND(%0) : : "r" (msg));
++		return;
++	}
++	/* On POWER8 for IPIs to threads in the same core, use msgsnd. */
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
+ 	    cpu_first_thread_sibling(cpu) ==
+ 	    cpu_first_thread_sibling(raw_smp_processor_id())) {
+-		unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
+ 		msg |= cpu_thread_in_core(cpu);
+ 		__asm__ __volatile__ (PPC_MSGSND(%0) : : "r" (msg));
+ 		return;
 -- 
 2.7.4
