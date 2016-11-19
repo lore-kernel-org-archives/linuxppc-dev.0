@@ -1,22 +1,44 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <benh@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tLMDY2zbTzDvy9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 15:23:25 +1100 (AEDT)
-Date: Sat, 19 Nov 2016 15:23:18 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 02/13] powerpc/64: Provide functions for accessing POWER9
- partition table
-Message-ID: <20161119042318.GG29462@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tLMds0QW4zDvXv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 15:41:53 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tLMdr38cHz9t1L
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2016 15:41:52 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAJ4cUGa045578
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 23:41:50 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26tcj362mg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 23:41:49 -0500
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
+ Sat, 19 Nov 2016 14:41:46 +1000
+Subject: Re: [PATCH 09/13] KVM: PPC: Book3S HV: Adapt TLB invalidations to
+ work on POWER9
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
+Date: Sat, 19 Nov 2016 15:41:44 +1100
+In-Reply-To: <20161119041434.GE29462@fergus.ozlabs.ibm.com>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
- <1479454122-26994-3-git-send-email-paulus@ozlabs.org>
- <a08edf29-2d09-0482-f870-18c8b44ace47@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <a08edf29-2d09-0482-f870-18c8b44ace47@gmail.com>
+ <1479454122-26994-10-git-send-email-paulus@ozlabs.org>
+ <87y40gn941.fsf@linux.vnet.ibm.com> <1479506248.27850.18.camel@au1.ibm.com>
+ <20161119041434.GE29462@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1479530504.27850.34.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +48,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 19, 2016 at 11:45:52AM +1100, Balbir Singh wrote:
-> > +#ifdef CONFIG_PPC_BOOK3S_64
-> > +void mmu_partition_table_init(void)
-> > +{
-> > +	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
-> > +
-> > +	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
+On Sat, 2016-11-19 at 15:14 +1100, Paul Mackerras wrote:
 > 
-> This should be 36 (12 + 24)
+> > These should be a device-tree property. We can fallback to hard wired
+> > values if it doesn't exist but we should at least look for one.
+> 
+> Tell me what the property is called and I'll add code to use it. :)
+> That's the whole reason why I moved this to C code.
+> 
+> > 
+> > Note: P8 firmwares all have a bug creating a bogus "tlb-sets" property
+> > in the CPU node, so let's create a new one instead, with 2 entries
+> > (hash vs. radix) or 2 new ones, one for hash and one for radix (when
+> > available).
 
-True, though for P9, PATB_SIZE_SHIFT has to be 16.
+Well, as I said above, there's a defined one but it has bogus values
+on almost all P8 firwmares. So I think we need the core code to export
+values for use by both the core mm and KVM which can then be picked up
+from the DT with "quirks" to fixup the DT values.
 
-The BUILD_BUG_ON_MSG is probably not really necessary - I just moved
-this code from elsewhere.
+(A bit like I did for the never-applied cache geometry patches)
 
-Paul.
+That or we make up new names.
+
+The question remains whether we need a separate property for radix
+vs. hash though, we probably should as the "radix is half of hash"
+might not be true on future chips.
+
+Cheers,
+Ben.
