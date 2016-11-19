@@ -1,44 +1,42 @@
-Return-Path: <benh@au1.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tLMds0QW4zDvXv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 15:41:53 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tLQ904QsLzDvqY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2016 17:35:32 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tLMdr38cHz9t1L
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2016 15:41:52 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAJ4cUGa045578
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 23:41:50 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26tcj362mg-1
+ by ozlabs.org (Postfix) with ESMTPS id 3tLQ8z6vkkz9t1T
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2016 17:35:31 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAJ6XtlC120120
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2016 01:35:29 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26tcw0r8uq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2016 23:41:49 -0500
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2016 01:35:28 -0500
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Sat, 19 Nov 2016 14:41:46 +1000
-Subject: Re: [PATCH 09/13] KVM: PPC: Book3S HV: Adapt TLB invalidations to
- work on POWER9
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 18 Nov 2016 23:35:28 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Paul Mackerras <paulus@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
-Date: Sat, 19 Nov 2016 15:41:44 +1100
-In-Reply-To: <20161119041434.GE29462@fergus.ozlabs.ibm.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 02/13] powerpc/64: Provide functions for accessing POWER9
+ partition table
+In-Reply-To: <20161119041954.GF29462@fergus.ozlabs.ibm.com>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
- <1479454122-26994-10-git-send-email-paulus@ozlabs.org>
- <87y40gn941.fsf@linux.vnet.ibm.com> <1479506248.27850.18.camel@au1.ibm.com>
- <20161119041434.GE29462@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1479530504.27850.34.camel@au1.ibm.com>
+ <1479454122-26994-3-git-send-email-paulus@ozlabs.org>
+ <878tsgoobx.fsf@linux.vnet.ibm.com>
+ <20161119041954.GF29462@fergus.ozlabs.ibm.com>
+Date: Sat, 19 Nov 2016 12:05:21 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87h974m0ye.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,32 +46,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-11-19 at 15:14 +1100, Paul Mackerras wrote:
-> 
-> > These should be a device-tree property. We can fallback to hard wired
-> > values if it doesn't exist but we should at least look for one.
-> 
-> Tell me what the property is called and I'll add code to use it. :)
-> That's the whole reason why I moved this to C code.
-> 
-> > 
-> > Note: P8 firmwares all have a bug creating a bogus "tlb-sets" property
-> > in the CPU node, so let's create a new one instead, with 2 entries
-> > (hash vs. radix) or 2 new ones, one for hash and one for radix (when
-> > available).
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-Well, as I said above, there's a defined one but it has bogus values
-on almost all P8 firwmares. So I think we need the core code to export
-values for use by both the core mm and KVM which can then be picked up
-from the DT with "quirks" to fixup the DT values.
+> On Fri, Nov 18, 2016 at 07:57:30PM +0530, Aneesh Kumar K.V wrote:
+>> Paul Mackerras <paulus@ozlabs.org> writes:
+>>  +
+>> > +	/* Global flush of TLBs and partition table caches for this lpid */
+>> > +	asm volatile("ptesync");
+>> > +	asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : : "r"(0x800), "r" (lpid));
+>> > +	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+>> > +}
+>> 
+>> 
+>> It would be nice to convert that 0x800 to a documented IS value or better use
+>> radix__flush_tlb_pid() ?
+>
+> Well, not radix__flush_tlb_pid - this isn't radix and it isn't a PID
+> flush.  I could use TLBIEL_INVAL_SET_LPID except the name implies it's
+> for tlbiel and this is a tlbie.
+>
 
-(A bit like I did for the never-applied cache geometry patches)
+I wrote that wrong, we really don't have tlb_pid() what we have is tlb_lpid().
 
-That or we make up new names.
+void radix__flush_tlb_lpid(unsigned long lpid)
+{
+	unsigned long rb,rs,prs,r;
+	unsigned long ric = RIC_FLUSH_ALL;
 
-The question remains whether we need a separate property for radix
-vs. hash though, we probably should as the "radix is half of hash"
-might not be true on future chips.
+	rb = 0x2 << PPC_BITLSHIFT(53); /* IS = 2 */
+	rs = lpid & ((1UL << 32) - 1);
+	prs = 0; /* partition scoped */
+	r = 1;   /* raidx format */
 
-Cheers,
-Ben.
+	asm volatile("ptesync": : :"memory");
+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+}
