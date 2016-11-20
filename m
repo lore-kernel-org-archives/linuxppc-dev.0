@@ -1,19 +1,34 @@
-Return-Path: <regressions@leemhuis.info>
-Received: from basicbox7.server-home.net (basicbox7.server-home.net
- [195.137.212.29])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMFX81NY2zDvgG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 02:09:58 +1100 (AEDT)
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.9: Reported regressions as of Sunday, 2016-11-20
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Message-ID: <fde89288-e3bc-356f-8d64-6f9a1cf23c47@leemhuis.info>
-Date: Sun, 20 Nov 2016 16:09:51 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMKNp2z9XzDvmd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 05:03:53 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAKI3hRC026034
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Nov 2016 13:03:50 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26u87aqvq9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Nov 2016 13:03:50 -0500
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 20 Nov 2016 11:03:49 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Geoff Levand <geoff@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: RE: [V2,10/68] powerpc/mm: Update _PAGE_KERNEL_RO
+In-Reply-To: <rep.1421449714.geoff@infradead.org>
+References: <1460182444-2468-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <rep.1421449714.geoff@infradead.org>
+Date: Sun, 20 Nov 2016 23:33:46 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
+Message-Id: <8760ni2flp.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,130 +38,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi! Here is my fourth regression report for Linux 4.9. It lists 10
-regressions I'm aware of. 6 of them are new; 11 got fixed (wow!)
-since the last report -- that was two weeks ago, because I 
-didn't find any spare time to compile a report last Sunday :-/
 
-As always: Are you aware of any other regressions? Then please let me
-know (simply CC regressions@leemhuis.info). And please tell me if there
-is anything in the report that shouldn't be there.
+Hi,
 
-Ciao, Thorsten
+Geoff Levand <geoff@infradead.org> writes:
 
-== Current regressions ==
-
-Desc: "irq 16: nobody cared (try booting with the ""irqpoll"" option) since t0b9e2988ab226 (ahci: use pci_alloc_irq_vectors)"
-Repo: 16-11-19 https://bugzilla.kernel.org/show_bug.cgi?id=188181
-Stat: n/a 
-Note: new
-
-Desc: [i.MX6 DRM IPUv3] Regression 4.9-rc5: greenish screen with YUV420 video
-Repo: 16-11-17 https://www.spinics.net/lists/kernel/msg2385550.html
-Stat: n/a 
-Note: new
-
-Desc: "oops due to 493b2ed3f760 (""crypto: algif_hash - Handle NULL hashes correctly"")"
-Repo: 16-11-17 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1273867.html
-Stat: 16-11-17 https://patchwork.kernel.org/patch/9434741/
-Note: WIP, Patch available
-
-Desc: MSI is no longer enabled for many/most Intel SATA controllers in 4.9
-Repo: 16-11-16 https://bugzilla.kernel.org/show_bug.cgi?id=187821
-Stat: 16-11-17 https://bugzilla.kernel.org/show_bug.cgi?id=187821#c3
-Note: WIP, Patch available
-
-Desc: "Failed boots bisected to 4cd13c21b207 ""softirq: Let ksoftirqd do its job"""
-Repo: 16-11-16 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1273344.html
-Stat: 16-11-18 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1275668.html
-Note: WIP
-
-Desc: qla2xxx: do not abort all commands in the adapter during EEH recovery
-Repo: 16-11-14 https://www.mail-archive.com/linux-scsi@vger.kernel.org/msg55186.html
-Stat: 16-11-14 https://www.mail-archive.com/linux-scsi@vger.kernel.org/msg55198.html
-Note: Fix heading mainline
-
-Desc: builddeb: fix cross-building to arm64 producing host-arch debs
-Repo: 16-11-04 https://www.spinics.net/lists/linux-kbuild/msg13635.html
-Stat: 16-11-10 https://www.spinics.net/lists/linux-kbuild/msg13676.html
-Note: Looks stalled
-
-Desc: "build regression: make.cross ARCH=mips fails with ""No rule to make target 'alchemy/devboards/'. """
-Repo: 16-10-30 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1262410.html https://marc.info/?l=linux-kernel&m=147780880425626
-Stat: n/a 
-Note: nothing happened yet; BTW: Should build regressions be on this list at all?
+> Hi Aneesh,
+>
+>> --- a/arch/powerpc/platforms/ps3/spu.c
+>> +++ b/arch/powerpc/platforms/ps3/spu.c
+>> @@ -205,7 +205,7 @@ static void spu_unmap(struct spu *spu)
+>>  static int __init setup_areas(struct spu *spu)
+>>  {
+>>  	struct table {char* name; unsigned long addr; unsigned long size;};
+>> -	static const unsigned long shadow_flags = _PAGE_NO_CACHE | 3;
+>> +	unsigned long shadow_flags = pgprot_val(pgprot_noncached_wc(PAGE_KERNEL_RO));
+>>  
+>>  	spu_pdata(spu)->shadow = __ioremap(spu_pdata(spu)->shadow_addr,
+>>  					   sizeof(struct spe_shadow),
+>
+> This shadow_flags setting doesn't work correctly for PS3.  The PS3's LV1
+> hypervisor wants the shadow reg pte bits N=1 and PP=11, so (rflags & 7) == 7.
+> It also doesn't want bit 0x8000000000000000 set.  So maybe these:
 
 
-== Stalled, waiting for feedback from reporter ==
-
-Desc: 4.9-rc1 boot regression, ambiguous bisect result
-Repo: 2016-10-19 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253369.html
-Stat: 16-10-21 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255296.html
-Note: Waiting for Dan or someone else to look into this
-
-Desc: Skylake gen6 suspend/resume video regression
-Repo: 16-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177731 https://bugs.freedesktop.org/show_bug.cgi?id=98517
-Stat: 16-10-25 https://bugzilla.kernel.org/show_bug.cgi?id=177731#c3
-Note: Stalled, poked bugzlla
+Ok so that shadow_flags usage was not really about read only mapping.
+Sorry for breaking that with the patch.
 
 
-== Going to be removed from the list ==
+>
+>   (HPTE_R_N | HPTE_R_PP & ~HPTE_R_PP0)
+>
+> For what its worth, this is the error for v4.8:
+>
+>   ps3_hpte_insert:result=LV1_ILLEGAL_PARAMETER_VALUE (-17) vpn=7e4fa575c0000 pa=300000003000 ix=bae0 v=7e4fa575c001 r=8000300000003126
+>
+> I tried different shadow_flags settings to try to get htab_convert_pte_flags()
+> to give me the right pte bits, but couldn't find anything that would work.
+>
+> Here's the only thing I could get to work:
+>
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -222,6 +222,12 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+>  		 */
+>  		rflags |= HPTE_R_M;
+>
+> +	if ((pteflags & 0xc000300000000000UL) == 0xc000300000000000UL) {
+> +		pr_info("%s: bad rflags: pteflags= %lx => rflags=%lx\n",
+> +			__func__, pteflags, rflags);
+> +		return 0x127;
+> +	}
+> +
+>  	return rflags;
+>  }
+>
+> And here's the output of that:
+>
+>  htab_convert_pte_flags: bad rflags: pteflags= c00030000000393c => rflags=8000000000000126
+>  htab_convert_pte_flags: bad rflags: pteflags= c00030000000593c => rflags=8000000000000126
+>  htab_convert_pte_flags: bad rflags: pteflags= c00030000000793c => rflags=8000000000000126
+>  htab_convert_pte_flags: bad rflags: pteflags= c00030000000993c => rflags=8000000000000126
+>  htab_convert_pte_flags: bad rflags: pteflags= c00030000000b93c => rflags=8000000000000126
+>  htab_convert_pte_flags: bad rflags: pteflags= c00030000000d93c => rflags=8000000000000126
+>
+> Actually, the problem started with (6a119eae942c "powerpc/mm: Add a _PAGE_PTE bit"),
+> but I could fix that by using 'shadow_flags =  (_PAGE_PRESENT | _PAGE_NO_CACHE | _PAGE_USER)'.
+>
+> Please let me know what I need for shadow_flags to get those pte bits set.
+>
 
-Desc: warning in intel_dp_aux_transfer: CPU: 0 PID: 4 at drivers/gpu/drm/i915/intel_dp.c:1062 intel_dp_aux_transfer+0x1ed/0x230#
-Repo: 16-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177701
-Stat: n/a 
-Note: the warning seems to be fixed, but the problem that Martin saw might still be there; this will get a new entry in the regression list once confirmed
+So I am trying to understand what the PPP bit value should be. I haven't
+studied PS3 enough to figure this out myself. So we use the SLB class
+value of 0 for the kernel and 1 for user. What is the expected PPP bit
+value for the above ioremap range ? Once we clarify that may be we can figure out
+a way to express that in linux page table and later map that correctly
+in hash fault.
 
-Desc: can't boot with root fs on md raid 0; mdadm: no devices listed in conf file were found. 
-Repo: 2016-10-17 https://bugzilla.kernel.org/show_bug.cgi?id=178211
-Stat: 16-11-03 https://bugzilla.kernel.org/show_bug.cgi?id=178211#c4
-Note: sata adapters not detected, reporter is unable to debug and could need some help;
+Right now we map PPP bits as below:
 
+kernel RW = 0b000 -> class 1 /user no access
+kernel RO = 0b110 -> class 1 /user no access
+USER RW   = 0b010 -> class 0/kernel RW
+USER RO   = 0b011 -> class 1/kernel RO
 
-== Fixed since last report ==
-
-Desc: """console: don't prefer first registered if DT specifies stdout-path"" breaks console on video outputs of various ARM boards; breaks some ppc machines as well"
-Repo: 16-10-18 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1264523.html https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1253391.html https://www.linux-mips.org/archives/linux-mips/2016-10/msg00176.html
-Fix:  https://git.kernel.org/torvalds/c/c6c7d83b9c9e6a8b3e6d84c820ac61fbffc9e396
-
-Desc: thinkpad x60, T40p: overheat with v4.9-rc4 (was Re: v4.8-rc1: thinkpad x60: running at low frequency even during kernel build)
-Repo: 16-11-05 https://www.mail-archive.com/ibm-acpi-devel@lists.sourceforge.net/msg03909.html https://bugzilla.kernel.org/show_bug.cgi?id=187311 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1264916.html
-Fix:  https://git.kernel.org/torvalds/c/e2174b0c24caca170ca61eda2ae49c9561ff8896
-
-Desc: mangled display since -rc1 (two systems: one with intel, one with nvidia gpu)
-Repo: 16-10-31 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1261699.html
-Fix:  https://git.kernel.org/torvalds/c/c4b8c570447a7bc171829532269878345b3ea9d0
-
-Desc: tpm0: TPM self test failed & can't request region for resource
-Repo: 16-10-28 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1259943.html https://bugzilla.kernel.org/show_bug.cgi?id=185631
-Fix:  https://git.kernel.org/torvalds/c/befd99656c5eb765fe9d96045c4cba099fd938db
-
-Desc: module loadling broken due to kbuild changes
-Repo: 16-10-15 http://www.gossamer-threads.com/lists/linux/kernel/2544734
-Stat: Fixes https://git.kernel.org/torvalds/c/4efca4ed05cbdfd13ec3e8cb623fb77d6e4ab187 https://git.kernel.org/torvalds/c/4efca4ed05cbdfd13ec3e8cb623fb77d6e4ab187
-Note: 
-
-Desc: unable to handle kernel NULL pointer dereference at fuse_setattr
-Repo: 16-10-17 https://bugzilla.kernel.org/show_bug.cgi?id=177801
-Fix:  https://git.kernel.org/torvalds/c/0ce267ff95a0302cf6fb2a552833abbfb7861a43
-
-Desc: Radeon Oops on shutdown / Panic on shutdown in routine radeon_connector_unregister()
-Repo: 16-10-19 https://bugzilla.kernel.org/show_bug.cgi?id=178421 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1261699.html
-Fix:  https://git.kernel.org/torvalds/c/0a6e21056eaa859353945c4b164f3ef574d84271
-
-Desc: boot failure of Intel Mobile Internet Devices due to a change in the PCI subsystem that appeared in v4.9-rc1.
-Repo: 16-10-23 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1255643.html
-Fix:  https://git.kernel.org/torvalds/c/e8a6123e9ead1b0d40349809e51de9341312fe08
-
-Desc: amdgpu, topaz: powerplay initialization failed
-Repo: 16-10-31 https://bugzilla.kernel.org/show_bug.cgi?id=185681 https://bugs.freedesktop.org/show_bug.cgi?id=98357
-Fix:  https://git.kernel.org/torvalds/c/0f12f73c5175d39445fa10cdca4481f80efdef49
-
-Desc: test failures of sendfile(2) and splice(2) 
-Repo: 16-11-01 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1262400.html
-Fix:  https://git.kernel.org/torvalds/c/6d6d36bc6e77f8b1f86d81884ad5149931bb4acd
-
-Desc: """Failed to find cpu0 device node"" in dmesg"
-Repo: 2016-10-16 https://bugzilla.kernel.org/show_bug.cgi?id=177681 https://bugzilla.kernel.org/show_bug.cgi?id=180031
-Stat: 16-10-28 https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1260133.html
-Note: Seems to be fixed, but I don't know where (https://bugzilla.kernel.org/show_bug.cgi?id=177681#c4 )
+-aneesh
