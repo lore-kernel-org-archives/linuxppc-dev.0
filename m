@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMdW21H1mzDvWk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:21 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMdW540bjzDvWk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:25 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAL68XhU057638
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 01:10:19 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26usb2c8hf-1
+ uAL68aNS028592
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 01:10:23 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26us3bcv32-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 01:10:19 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 01:10:22 -0500
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Mon, 21 Nov 2016 16:10:16 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id EF867357805B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:12 +1100 (EST)
+ Mon, 21 Nov 2016 16:10:18 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 057FA2CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:17 +1100 (EST)
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAL6ACfr53149922
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:12 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAL6AG2P46268666
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:16 +1100
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAL6ABu0030119
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:12 +1100
+ uAL6AFrB030325
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:10:16 +1100
 From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
@@ -36,9 +36,11 @@ Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
  maddy@linux.vnet.ibm.com, paulus@samba.org, anton@samba.org,
  sukadev@linux.vnet.ibm.com, eranian@google.com,
  Hemant Kumar <hemant@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/6] IMA Instrumentation Support
-Date: Mon, 21 Nov 2016 11:39:59 +0530
-Message-Id: <1479708605-10238-1-git-send-email-hemant@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/6] powerpc/powernv: Data structure and macros definitions
+Date: Mon, 21 Nov 2016 11:40:00 +0530
+In-Reply-To: <1479708605-10238-1-git-send-email-hemant@linux.vnet.ibm.com>
+References: <1479708605-10238-1-git-send-email-hemant@linux.vnet.ibm.com>
+Message-Id: <1479708605-10238-2-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,117 +50,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Power 9 has In-Memory-Accumulation (IMA) infrastructure which contains
-various Performance Monitoring Units (PMUs) at Nest level (these are
-on-chip but off-core). These Nest PMU counters are handled by a Nest
-IMA microcode. This microcode runs in the OCC (On-Chip Controller)
-complex and its purpose is to program the nest counters, collect the
-counter data and move the counter data to memory. 
+Create new header file "ima-pmu.h" to add the data structures
+and macros needed for IMA pmu support.
 
-The IMA infrastructure encapsulates nest (per-chip), core and thread
-level counters. While the nest IMA PMUs are handled by the nest IMA
-microcode, the core and thread level PMUs are handled by the Core-HPMC
-engine. This patchset enables the nest IMA PMUs and is based on the
-initial work done by Madhavan Srinivasan.
-"Nest Instrumentation Support" : https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-August/132078.html
-
-v1 for this patchset can be found here :
-https://lwn.net/Articles/705475/
-
-Nest events:
-Per-chip nest instrumentation provides various per-chip metrics
-such as memory, powerbus, Xlink and Alink bandwidth.
-
-PMU Events' Information:
-OPAL obtains the Nest PMU and event information from the IMA Catalog
-and passes on to the kernel via the device tree. The events' information
-contains :
- - Event name
- - Event Offset
- - Event description
-and, maybe :
- - Event scale
- - Event unit
-
-Some PMUs may have a common scale and unit values for all their
-supported events. For those cases, the scale and unit properties for
-those events must be inherited from the PMU.
-
-The event offset in the memory is where the counter data gets
-accumulated.
-
-The OPAL-side patches are posted upstream :
-https://lists.ozlabs.org/pipermail/skiboot/2016-November/005552.html
-
-The kernel discovers the IMA counters information in the device tree
-at the "ima-counters" device node which has a compatible field
-"ibm,opal-in-memory-counters".
-
-Parsing of the Events' information:
-To parse the IMA PMUs and events information, the kernel has to
-discover the "ima-counters" node and walk through the pmu and event
-nodes.
-
-Here is an excerpt of the dt showing the ima-counters and mcs node:
-/dts-v1/;
-
-[...]
-        ima-counters {                                                   
-                ima-nest-offset = <0x320000>;
-                compatible = "ibm,opal-in-memory-counters";
-                ima-nest-size = <0x30000>;
-                #address-cells = <0x1>;
-                #size-cells = <0x1>;
-                phandle = <0x10000238>;
-                version-id = [00];
-
-		mcs0 {                                                    
-                        compatible = "ibm,ima-counters-chip";
-                        ranges;
-                        #address-cells = <0x1>;
-                        #size-cells = <0x1>;
-                        phandle = <0x10000279>;
-			scale = "1.2207e-4";
-			unit = "MiB";
-
-			event@528 {
-				event-name = "PM_MCS_UP_128B_DATA_XFER_MC0" ;
-                       		desc = "Total Read Bandwidth seen on both MCS of MC0";
-                                phandle = <0x1000028c>;
-                                reg = <0x118 0x8>;
-                        };
-[...]
-
->From the device tree, the kernel parses the PMUs and their events'
-information.
-
-After parsing the nest IMA PMUs and their events, the PMUs and their
-attributes are registered in the kernel.
-
-Example Usage :
- # perf list
-
-  [...]
-  nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/           [Kernel PMU event]
-  nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0_LAST_SAMPLE/ [Kernel PMU event]
-  [...]
-
- # perf stat -e "nest_mcs0/PM_MCS_DOWN_128B_DATA_XFER_MC0/" -a --per-socket
-
-TODOs:
- - Add support for Core IMA.
- - Add support for thread IMA.
-
-Comments/feedback/suggestions are welcome.
-
-Changelog:
- v1 -> v2 :
- - Account for the cases where a PMU can have a common scale and unit
-   values for all its supported events (Patch 3/6).
- - Fixed a Build error (for maple_defconfig) by enabling ima_pmu.o
-   only for CONFIG_PPC_POWERNV=y (Patch 4/6)
- - Read from the "event-name" property instead of "name" for an event
-   node (Patch 3/6).
 
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -168,31 +62,91 @@ Cc: Anton Blanchard <anton@samba.org>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: Daniel Axtens <dja@axtens.net>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-
-Hemant Kumar (6):
-  powerpc/powernv: Data structure and macros definitions
-  powerpc/powernv: Autoload IMA device driver module
-  powerpc/powernv: Detect supported IMA units and its events
-  powerpc/perf: Add event attribute and group to IMA pmus
-  powerpc/perf: Generic ima pmu event functions
-  powerpc/perf: IMA pmu cpumask and cpu hotplug support
-
- arch/powerpc/include/asm/ima-pmu.h             |  75 ++++
- arch/powerpc/include/asm/opal-api.h            |   3 +-
- arch/powerpc/include/asm/opal.h                |   2 +
- arch/powerpc/perf/Makefile                     |   6 +-
- arch/powerpc/perf/ima-pmu.c                    | 383 ++++++++++++++++++++
- arch/powerpc/platforms/powernv/Makefile        |   2 +-
- arch/powerpc/platforms/powernv/opal-ima.c      | 480 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
- arch/powerpc/platforms/powernv/opal.c          |  13 +
- 9 files changed, 962 insertions(+), 3 deletions(-)
+---
+ arch/powerpc/include/asm/ima-pmu.h | 73 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 73 insertions(+)
  create mode 100644 arch/powerpc/include/asm/ima-pmu.h
- create mode 100644 arch/powerpc/perf/ima-pmu.c
- create mode 100644 arch/powerpc/platforms/powernv/opal-ima.c
 
+diff --git a/arch/powerpc/include/asm/ima-pmu.h b/arch/powerpc/include/asm/ima-pmu.h
+new file mode 100644
+index 0000000..0ed8886
+--- /dev/null
++++ b/arch/powerpc/include/asm/ima-pmu.h
+@@ -0,0 +1,73 @@
++#ifndef PPC_POWERNV_IMA_PMU_DEF_H
++#define PPC_POWERNV_IMA_PMU_DEF_H
++
++/*
++ * Nest Performance Monitor counter support.
++ *
++ * Copyright (C) 2016 Madhavan Srinivasan, IBM Corporation.
++ *           (C) 2016 Hemant K Shaw, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <linux/perf_event.h>
++#include <linux/slab.h>
++#include <linux/of.h>
++#include <linux/io.h>
++#include <asm/opal.h>
++
++#define IMA_MAX_CHIPS			32
++#define IMA_MAX_PMUS			32
++#define IMA_MAX_PMU_NAME_LEN		256
++
++#define NEST_IMA_ENGINE_START		1
++#define NEST_IMA_ENGINE_STOP		0
++#define NEST_MAX_PAGES			16
++
++#define NEST_IMA_PRODUCTION_MODE	1
++
++#define IMA_DTB_COMPAT		"ibm,opal-in-memory-counters"
++#define IMA_DTB_NEST_COMPAT	"ibm,ima-counters-chip"
++
++/*
++ * Structure to hold per chip specific memory address
++ * information for nest pmus. Nest Counter data are exported
++ * in per-chip reserved memory region by the PORE Engine.
++ */
++struct perchip_nest_info {
++	u32 chip_id;
++	u64 pbase;
++	u64 vbase[NEST_MAX_PAGES];
++	u64 size;
++};
++
++/*
++ * Place holder for nest pmu events and values.
++ */
++struct ima_events {
++	char *ev_name;
++	char *ev_value;
++};
++
++/*
++ * Device tree parser code detects IMA pmu support and
++ * registers new IMA pmus. This structure will
++ * hold the pmu functions and attrs for each ima pmu and
++ * will be referenced at the time of pmu registration.
++ */
++struct ima_pmu {
++	struct pmu pmu;
++	int domain;
++	const struct attribute_group *attr_groups[4];
++};
++
++/*
++ * Domains for IMA PMUs
++ */
++#define IMA_DOMAIN_NEST		1
++
++#define UNKNOWN_DOMAIN		-1
++
++#endif /* PPC_POWERNV_IMA_PMU_DEF_H */
 -- 
 2.7.4
