@@ -1,28 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMdqF0xcszDt1l
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 17:24:25 +1100 (AEDT)
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tMdqD2yGhz9t1F
- for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2016 17:24:24 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id p66so27644934pga.2
- for <linuxppc-dev@ozlabs.org>; Sun, 20 Nov 2016 22:24:24 -0800 (PST)
-Subject: Re: [PATCH] powerpc/xmon: Add support for dump in reverse
-To: kbuild test robot <lkp@intel.com>
-References: <201611181011.JmH0m3H9%fengguang.wu@intel.com>
-Cc: kbuild-all@01.org, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <044f9dc1-c2aa-9798-f5ca-5bfb4796ef42@gmail.com>
-Date: Mon, 21 Nov 2016 17:24:17 +1100
-MIME-Version: 1.0
-In-Reply-To: <201611181011.JmH0m3H9%fengguang.wu@intel.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMfnq0G80zDvj0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 18:08:14 +1100 (AEDT)
+Message-ID: <1479712085.10230.31.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc: Set missing wakeup bit in LPCR on POWER9
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Neuling
+ <michael.neuling@au1.ibm.com>
+Date: Mon, 21 Nov 2016 18:08:05 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,52 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There is a new bit, LPCR_PECEu0, which controls wakeup from STOP
+states on Hypervisor Virtualization Interrupts (which happen to
+also be all external interrupts in host or bare metal mode).
 
+It needs to be set or we will miss wakeups.
 
-On 18/11/16 13:02, kbuild test robot wrote:
-> Hi Balbir,
-> 
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.9-rc5 next-20161117]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/powerpc-xmon-Add-support-for-dump-in-reverse/20161118-081358
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-ppc64e_defconfig (attached as .config)
-> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=powerpc 
-> 
-> Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
-> http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
-> 
-> All errors (new ones prefixed by >>):
-> 
->    arch/powerpc/xmon/xmon.c: In function 'prdump':
->>> arch/powerpc/xmon/xmon.c:2431:10: error: 'idx' may be used uninitialized in this function [-Werror=maybe-uninitialized]
->          idx -= 2;
->          ~~~~^~~~
->    cc1: all warnings being treated as errors
-> 
-> vim +/idx +2431 arch/powerpc/xmon/xmon.c
-> 
->   2425				}
->   2426	
->   2427				if (m < nr) {
->   2428					if (reverse) {
->   2429						buf[idx + 1] = digithex(temp[m] % 16);
->   2430						buf[idx] = digithex(temp[m] / 16);
->> 2431						idx -= 2;
->   2432					} else
->   2433						printf("%.2x", temp[m]);
->   2434				} else
-> 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-This seems like a false positive, I don't see it with gcc 5.3.1 on my system. I also tried with gcc 6.2.0
-I tried with the same config as attached with the email in the reported failure. I'll try to get the debian
-6.1.1 compiler and see how that goes.
+Paul, I haven't fixed KVM. You probably should include such a fix
+as part of your KVM-on-power9 series.
 
-Balbir Singh.
+Michael: That should probably go to -stable as far as P9 support goes.
+
+ arch/powerpc/include/asm/reg.h        | 2 ++
+ arch/powerpc/kernel/cpu_setup_power.S | 8 ++++----
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 9cd4e8c..decef22 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -341,6 +341,8 @@
+ #define   LPCR_VRMA_L		ASM_CONST(0x0008000000000000)
+ #define   LPCR_VRMA_LP0		ASM_CONST(0x0001000000000000)
+ #define   LPCR_VRMA_LP1		ASM_CONST(0x0000800000000000)
++#define   LPCR_PECEu		ASM_CONST(0x0000700000000000)   /* P9 PECE "upper" */
++#define   LPCR_PECEu0		ASM_CONST(0x0000400000000000)   /* P9 Wakeup on HV interrupts" */
+ #define   LPCR_RMLS		0x1C000000	/* Implementation dependent RMO limit sel */
+ #define   LPCR_RMLS_SH		26
+ #define   LPCR_ILE		ASM_CONST(0x0000000002000000)   /* !HV irqs set MSR:LE */
+diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+index 52ff3f0..cbf3375 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.S
++++ b/arch/powerpc/kernel/cpu_setup_power.S
+@@ -98,8 +98,8 @@ _GLOBAL(__setup_cpu_power9)
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
+ 	mfspr	r3,SPRN_LPCR
+-	ori	r3, r3, LPCR_PECEDH
+-	ori	r3, r3, LPCR_HVICE
++	LOAD_REG_IMMEDIATE(r4, LPCR_PECEDH | LPCR_PECEu0 | LPCR_HVICE)
++	or	r3, r3, r4
+ 	bl	__init_LPCR
+ 	bl	__init_HFSCR
+ 	bl	__init_tlb_power9
+@@ -118,8 +118,8 @@ _GLOBAL(__restore_cpu_power9)
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
+ 	mfspr   r3,SPRN_LPCR
+-	ori	r3, r3, LPCR_PECEDH
+-	ori	r3, r3, LPCR_HVICE
++	LOAD_REG_IMMEDIATE(r4, LPCR_PECEDH | LPCR_PECEu0 | LPCR_HVICE)
++	or	r3, r3, r4
+ 	bl	__init_LPCR
+ 	bl	__init_HFSCR
+ 	bl	__init_tlb_power9
