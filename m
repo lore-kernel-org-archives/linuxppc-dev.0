@@ -1,15 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMc1L4HrwzDvhQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 16:03:02 +1100 (AEDT)
-Date: Mon, 21 Nov 2016 16:01:36 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMc1M0BGSzDvhR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 16:03:03 +1100 (AEDT)
+Date: Mon, 21 Nov 2016 16:00:23 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] powerpc/powernv: Define real-mode versions of OPAL XICS
- accessors
-Message-ID: <20161121050136.GF26748@fergus.ozlabs.ibm.com>
+Subject: [PATCH 1/4] powerpc/64: Add some more SPRs and SPR bits for POWER9
+Message-ID: <20161121050023.GD26748@fergus.ozlabs.ibm.com>
 References: <1479704214-29147-1-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,61 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This defines real-mode versions of opal_int_get_xirr(), opal_int_eoi()
-and opal_int_set_mfrr(), for use by KVM real-mode code.
-
-It also exports opal_int_set_mfrr() so that the modular part of KVM
-can use it to send IPIs.
+These definitions will be needed by KVM.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/opal.h                | 3 +++
- arch/powerpc/platforms/powernv/opal-wrappers.S | 3 +++
- arch/powerpc/platforms/powernv/opal.c          | 2 ++
- 3 files changed, 8 insertions(+)
+ arch/powerpc/include/asm/reg.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index e958b70..5c7db0f 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -220,9 +220,12 @@ int64_t opal_pci_set_power_state(uint64_t async_token, uint64_t id,
- int64_t opal_pci_poll2(uint64_t id, uint64_t data);
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index c491cfe..d2f868a 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -153,6 +153,8 @@
+ #define PSSCR_EC		0x00100000 /* Exit Criterion */
+ #define PSSCR_ESL		0x00200000 /* Enable State Loss */
+ #define PSSCR_SD		0x00400000 /* Status Disable */
++#define PSSCR_PLS	0xf000000000000000 /* Power-saving Level Status */
++#define PSSCR_GUEST_VIS	0xf0000000000003ff /* Guest-visible PSSCR fields */
  
- int64_t opal_int_get_xirr(uint32_t *out_xirr, bool just_poll);
-+int64_t opal_rm_int_get_xirr(__be32 *out_xirr, bool just_poll);
- int64_t opal_int_set_cppr(uint8_t cppr);
- int64_t opal_int_eoi(uint32_t xirr);
-+int64_t opal_rm_int_eoi(uint32_t xirr);
- int64_t opal_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
-+int64_t opal_rm_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
- int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- 			  uint32_t pe_num, uint32_t tce_size,
- 			  uint64_t dma_addr, uint32_t npages);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 44d2d84..3aa40f1 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -304,8 +304,11 @@ OPAL_CALL(opal_pci_get_presence_state,		OPAL_PCI_GET_PRESENCE_STATE);
- OPAL_CALL(opal_pci_get_power_state,		OPAL_PCI_GET_POWER_STATE);
- OPAL_CALL(opal_pci_set_power_state,		OPAL_PCI_SET_POWER_STATE);
- OPAL_CALL(opal_int_get_xirr,			OPAL_INT_GET_XIRR);
-+OPAL_CALL_REAL(opal_rm_int_get_xirr,		OPAL_INT_GET_XIRR);
- OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
- OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
-+OPAL_CALL_REAL(opal_rm_int_eoi,			OPAL_INT_EOI);
- OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
-+OPAL_CALL_REAL(opal_rm_int_set_mfrr,		OPAL_INT_SET_MFRR);
- OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
- OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 893d8ea..2822935 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -886,3 +886,5 @@ EXPORT_SYMBOL_GPL(opal_leds_get_ind);
- EXPORT_SYMBOL_GPL(opal_leds_set_ind);
- /* Export this symbol for PowerNV Operator Panel class driver */
- EXPORT_SYMBOL_GPL(opal_write_oppanel_async);
-+/* Export this for KVM */
-+EXPORT_SYMBOL_GPL(opal_int_set_mfrr);
+ /* Floating Point Status and Control Register (FPSCR) Fields */
+ #define FPSCR_FX	0x80000000	/* FPU exception summary */
+@@ -236,6 +238,7 @@
+ #define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
+ #define   TEXASR_FS	__MASK(63-36) /* TEXASR Failure Summary */
+ #define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
++#define SPRN_TIDR	144	/* Thread ID register */
+ #define SPRN_CTRLF	0x088
+ #define SPRN_CTRLT	0x098
+ #define   CTRL_CT	0xc0000000	/* current thread */
+@@ -292,6 +295,7 @@
+ #define SPRN_HRMOR	0x139	/* Real mode offset register */
+ #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
+ #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
++#define SPRN_ASDR	0x330	/* Access segment descriptor register */
+ #define SPRN_IC		0x350	/* Virtual Instruction Count */
+ #define SPRN_VTB	0x351	/* Virtual Time Base */
+ #define SPRN_LDBAR	0x352	/* LD Base Address Register */
+@@ -352,6 +356,7 @@
+ #define     LPCR_PECE2		ASM_CONST(0x0000000000001000)	/* machine check etc can cause exit */
+ #define   LPCR_MER		ASM_CONST(0x0000000000000800)	/* Mediated External Exception */
+ #define   LPCR_MER_SH		11
++#define	  LPCR_GTSE		ASM_CONST(0x0000000000000400)  	/* Guest Translation Shootdown Enable */
+ #define   LPCR_TC		ASM_CONST(0x0000000000000200)	/* Translation control */
+ #define   LPCR_LPES		0x0000000c
+ #define   LPCR_LPES0		ASM_CONST(0x0000000000000008)      /* LPAR Env selector 0 */
 -- 
 2.7.4
