@@ -2,21 +2,23 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMX0Y3MVkzDvg1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 13:02:05 +1100 (AEDT)
-Date: Mon, 21 Nov 2016 13:02:01 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMXH82ScDzDvj6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 13:14:44 +1100 (AEDT)
+Date: Mon, 21 Nov 2016 13:14:39 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Balbir Singh <bsingharora@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 05/13] KVM: PPC: Book3S HV: Adapt to new HPTE format on
- POWER9
-Message-ID: <20161121020201.GB26748@fergus.ozlabs.ibm.com>
+Subject: Re: [PATCH 02/13] powerpc/64: Provide functions for accessing POWER9
+ partition table
+Message-ID: <20161121021439.GC26748@fergus.ozlabs.ibm.com>
 References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
- <1479454122-26994-6-git-send-email-paulus@ozlabs.org>
- <8919b2ab-0702-d1d8-a391-b6c36571a8cf@gmail.com>
+ <1479454122-26994-3-git-send-email-paulus@ozlabs.org>
+ <878tsgoobx.fsf@linux.vnet.ibm.com>
+ <20161119041954.GF29462@fergus.ozlabs.ibm.com>
+ <87h974m0ye.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8919b2ab-0702-d1d8-a391-b6c36571a8cf@gmail.com>
+In-Reply-To: <87h974m0ye.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 19, 2016 at 11:38:40AM +1100, Balbir Singh wrote:
+On Sat, Nov 19, 2016 at 12:05:21PM +0530, Aneesh Kumar K.V wrote:
+> Paul Mackerras <paulus@ozlabs.org> writes:
 > 
+> > On Fri, Nov 18, 2016 at 07:57:30PM +0530, Aneesh Kumar K.V wrote:
+> >> Paul Mackerras <paulus@ozlabs.org> writes:
+> >>  +
+> >> > +	/* Global flush of TLBs and partition table caches for this lpid */
+> >> > +	asm volatile("ptesync");
+> >> > +	asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : : "r"(0x800), "r" (lpid));
+> >> > +	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+> >> > +}
+> >> 
+> >> 
+> >> It would be nice to convert that 0x800 to a documented IS value or better use
+> >> radix__flush_tlb_pid() ?
+> >
+> > Well, not radix__flush_tlb_pid - this isn't radix and it isn't a PID
+> > flush.  I could use TLBIEL_INVAL_SET_LPID except the name implies it's
+> > for tlbiel and this is a tlbie.
+> >
 > 
-> On 18/11/16 18:28, Paul Mackerras wrote:
-> > This adapts the KVM-HV hashed page table (HPT) code to read and write
-> > HPT entries in the new format defined in Power ISA v3.00 on POWER9
-> > machines.  The new format moves the B (segment size) field from the
-> > first doubleword to the second, and trims some bits from the AVA
-> > (abbreviated virtual address) and ARPN (abbreviated real page number)
-> > fields.  As far as possible, the conversion is done when reading or
-> > writing the HPT entries, and the rest of the code continues to use
-> > the old format.
-[snip]
-> > @@ -440,6 +442,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
-> >  {
-> >  	struct kvm *kvm = vcpu->kvm;
-> >  	unsigned long hpte[3], r;
-> > +	unsigned long hnow_v, hnow_r;
-> >  	__be64 *hptep;
-> >  	unsigned long mmu_seq, psize, pte_size;
-> >  	unsigned long gpa_base, gfn_base;
-> > @@ -488,6 +491,10 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
-> >  	unlock_hpte(hptep, hpte[0]);
-> >  	preempt_enable();
-> >  
-> > +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> > +		hpte[0] = hpte_new_to_old_v(hpte[0], hpte[1]);
-> > +		hpte[1] = hpte_new_to_old_r(hpte[1]);
-> > +	}
+> I wrote that wrong, we really don't have tlb_pid() what we have is tlb_lpid().
 > 
-> I think we can avoid this, if we avoid the conversion in kvmppc_hpte_hv_fault().
-> If we decide not to do this, then gpa will need to use a new mask to extract
-> the correct gpa.
+> void radix__flush_tlb_lpid(unsigned long lpid)
+> {
+> 	unsigned long rb,rs,prs,r;
+> 	unsigned long ric = RIC_FLUSH_ALL;
+> 
+> 	rb = 0x2 << PPC_BITLSHIFT(53); /* IS = 2 */
+> 	rs = lpid & ((1UL << 32) - 1);
+> 	prs = 0; /* partition scoped */
+> 	r = 1;   /* raidx format */
+> 
+> 	asm volatile("ptesync": : :"memory");
+> 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+> 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+> 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+> }
 
-Yes, we could store vcpu->arch.pgfault[] in native format, i.e. new
-format on P9.  That might make the code a bit simpler indeed.
+That has R=1, I'm using R=0.
 
 Paul.
