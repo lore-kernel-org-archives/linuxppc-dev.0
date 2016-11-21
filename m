@@ -2,18 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMkRm2fTxzDvjw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 20:52:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMkW31nV9zDvJb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 20:55:43 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Lars-Peter Clausen <lars@metafoo.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH] ibmebus: Remove legacy suspend/resume support
-In-Reply-To: <1479562934-1541-1-git-send-email-lars@metafoo.de>
-References: <1479562934-1541-1-git-send-email-lars@metafoo.de>
-Date: Mon, 21 Nov 2016 20:52:51 +1100
-Message-ID: <87polpw45o.fsf@concordia.ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/4] powerpc/mm: Rename hugetlb-radix.h to hugetlb.h
+In-Reply-To: <87mvgwn89b.fsf@linux.vnet.ibm.com>
+References: <20161114151128.2146-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20161114151128.2146-2-aneesh.kumar@linux.vnet.ibm.com>
+ <874m350xyg.fsf@concordia.ellerman.id.au> <87mvgwn89b.fsf@linux.vnet.ibm.com>
+Date: Mon, 21 Nov 2016 20:55:42 +1100
+Message-ID: <87mvgtw40x.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,21 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Lars-Peter Clausen <lars@metafoo.de> writes:
-
-> There are no ibmebus driver that make use of legacy suspend/resume. This
-> patch removes the support for it from ibmebus framework, new ibmebus driver
-> (as unlikely as they are) wanting to use suspend/resume should use
-> dev_pm_ops.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+>>> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb-radix.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+>>> similarity index 78%
+>>> rename from arch/powerpc/include/asm/book3s/64/hugetlb-radix.h
+>>> rename to arch/powerpc/include/asm/book3s/64/hugetlb.h
+>>> index c45189aa7476..d9c283f95e05 100644
+>>> --- a/arch/powerpc/include/asm/book3s/64/hugetlb-radix.h
+>>> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+>>> @@ -1,5 +1,5 @@
+>>> -#ifndef _ASM_POWERPC_BOOK3S_64_HUGETLB_RADIX_H
+>>> -#define _ASM_POWERPC_BOOK3S_64_HUGETLB_RADIX_H
+>>> +#ifndef _ASM_POWERPC_BOOK3S_64_HUGETLB_H
+>>> +#define _ASM_POWERPC_BOOK3S_64_HUGETLB_H
+>>>  /*
+>>>   * For radix we want generic code to handle hugetlb. But then if we want
+>>>   * both hash and radix to be enabled together we need to workaround the
+>>> @@ -21,6 +21,10 @@ static inline int hstate_get_psize(struct hstate *hstate)
+>>>  		return MMU_PAGE_2M;
+>>>  	else if (shift == mmu_psize_defs[MMU_PAGE_1G].shift)
+>>>  		return MMU_PAGE_1G;
+>>> +	else if (shift == mmu_psize_defs[MMU_PAGE_16M].shift)
+>>> +		return MMU_PAGE_16M;
+>>> +	else if (shift == mmu_psize_defs[MMU_PAGE_16G].shift)
+>>> +		return MMU_PAGE_16G;
+>>
+>> That's not just a rename?
 >
-> Since there aren't any special bus specific things to do during
-> suspend/resume and since the PM core will automatically fallback directly
-> to using the device's PM ops if no bus PM ops are specified there is no
-> need to have any special ibmebus PM ops at all.
+> In a way it is, because now it need to handle the new hugepage shift
+> supported by hash. 
 
-Thanks, this looks like a really nice cleanup.
+But it's not used by the hash code (yet) is it?
 
-I don't know the PM code at all, is there any down side to removing all
-of this?
+> I can split that to two patch if that makes explains it better.
+
+I think that would make it clearer yeah. Do the rename, and then any
+adaptations. Or vice versa.
 
 cheers
