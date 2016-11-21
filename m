@@ -1,21 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mstsxfx@gmail.com>
+Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMl8B2zgbzDvmk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:24:26 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH] powerpc: kprobes: invoke handlers directly
-In-Reply-To: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
-Date: Mon, 21 Nov 2016 21:24:25 +1100
-Message-ID: <87bmx9w2p2.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMr1F3NM6zDvjG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 01:03:45 +1100 (AEDT)
+Received: by mail-wm0-f67.google.com with SMTP id g23so2295303wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 06:03:45 -0800 (PST)
+Date: Mon, 21 Nov 2016 15:03:41 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: mpe@ellerman.id.au, hannes@cmpxchg.org, vdavydov.dev@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RESEND][v1 0/3] Support memory cgroup hotplug
+Message-ID: <20161121140340.GC18112@dhcp22.suse.cz>
+References: <1479253501-26261-1-git-send-email-bsingharora@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1479253501-26261-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> +#ifdef CONFIG_KPROBES
-> +	if (kprobe_post_handler(regs))
-> +		return;
-> +#endif
-...
-> +#ifdef CONFIG_KPROBES
-> +		if (kprobe_handler(regs))
-> +			goto bail;
-> +#endif
-...
-> +#ifdef CONFIG_KPROBES
-> +		if (kprobe_post_handler(regs))
-> +			return;
-> +#endif
-...
-> +#ifdef CONFIG_KPROBES
-> +		if (kprobe_post_handler(regs))
-> +			return;
-> +#endif
-> +
+On Wed 16-11-16 10:44:58, Balbir Singh wrote:
+> In the absence of hotplug we use extra memory proportional to
+> (possible_nodes - online_nodes) * number_of_cgroups. PPC64 has a patch
+> to disable large consumption with large number of cgroups. This patch
+> adds hotplug support to memory cgroups and reverts the commit that
+> limited possible nodes to online nodes.
 
-Sorry too many ifdefs.
+I didn't get to read patches yet (I am currently swamped by emails after
+longer vacation so bear with me) but this doesn't tell us _why_ we want
+this and how much we can actaully save. In general being dynamic is more
+complex and most systems tend to have possible_nodes close to
+online_nodes in my experience (well at least on most reasonable
+architectures). I would also appreciate some highlevel description of
+the implications. E.g. how to we synchronize with the hotplug operations
+when iterating node specific data structures.
 
-Can you please add empty static inline versions for CONFIG_KPROBES=n
-that always return false. The compiler will be smart enough to elide
-them entirely.
+Thanks!
 
-cheers
+-- 
+Michal Hocko
+SUSE Labs
