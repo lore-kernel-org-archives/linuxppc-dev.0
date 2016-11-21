@@ -1,21 +1,22 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMV2m1nS5zDvNk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 11:33:52 +1100 (AEDT)
-Subject: Re: [V2,10/68] powerpc/mm: Update _PAGE_KERNEL_RO
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <1460182444-2468-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <rep.1421449714.geoff@infradead.org> <8760ni2flp.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Geoff Levand <geoff@infradead.org>
-Message-ID: <adbd0bd1-f483-5da7-17ec-0ce0847b9143@infradead.org>
-Date: Sun, 20 Nov 2016 16:33:48 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMX0Y3MVkzDvg1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 13:02:05 +1100 (AEDT)
+Date: Mon, 21 Nov 2016 13:02:01 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 05/13] KVM: PPC: Book3S HV: Adapt to new HPTE format on
+ POWER9
+Message-ID: <20161121020201.GB26748@fergus.ozlabs.ibm.com>
+References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
+ <1479454122-26994-6-git-send-email-paulus@ozlabs.org>
+ <8919b2ab-0702-d1d8-a391-b6c36571a8cf@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <8760ni2flp.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8919b2ab-0702-d1d8-a391-b6c36571a8cf@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Aneesh,
-
-On 11/20/2016 10:03 AM, Aneesh Kumar K.V wrote: 
-> So I am trying to understand what the PPP bit value should be. I haven't
-> studied PS3 enough to figure this out myself. So we use the SLB class
-> value of 0 for the kernel and 1 for user. What is the expected PPP bit
-> value for the above ioremap range ? Once we clarify that may be we can figure out
-> a way to express that in linux page table and later map that correctly
-> in hash fault.
+On Sat, Nov 19, 2016 at 11:38:40AM +1100, Balbir Singh wrote:
 > 
-> Right now we map PPP bits as below:
 > 
-> kernel RW = 0b000 -> class 1 /user no access
-> kernel RO = 0b110 -> class 1 /user no access
-> USER RW   = 0b010 -> class 0/kernel RW
-> USER RO   = 0b011 -> class 1/kernel RO
+> On 18/11/16 18:28, Paul Mackerras wrote:
+> > This adapts the KVM-HV hashed page table (HPT) code to read and write
+> > HPT entries in the new format defined in Power ISA v3.00 on POWER9
+> > machines.  The new format moves the B (segment size) field from the
+> > first doubleword to the second, and trims some bits from the AVA
+> > (abbreviated virtual address) and ARPN (abbreviated real page number)
+> > fields.  As far as possible, the conversion is done when reading or
+> > writing the HPT entries, and the rest of the code continues to use
+> > the old format.
+[snip]
+> > @@ -440,6 +442,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> >  {
+> >  	struct kvm *kvm = vcpu->kvm;
+> >  	unsigned long hpte[3], r;
+> > +	unsigned long hnow_v, hnow_r;
+> >  	__be64 *hptep;
+> >  	unsigned long mmu_seq, psize, pte_size;
+> >  	unsigned long gpa_base, gfn_base;
+> > @@ -488,6 +491,10 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> >  	unlock_hpte(hptep, hpte[0]);
+> >  	preempt_enable();
+> >  
+> > +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> > +		hpte[0] = hpte_new_to_old_v(hpte[0], hpte[1]);
+> > +		hpte[1] = hpte_new_to_old_r(hpte[1]);
+> > +	}
+> 
+> I think we can avoid this, if we avoid the conversion in kvmppc_hpte_hv_fault().
+> If we decide not to do this, then gpa will need to use a new mask to extract
+> the correct gpa.
 
-I don't quite understand what is meant by these PPP bits and how
-those relate to the documented PTE bits.
+Yes, we could store vcpu->arch.pgfault[] in native format, i.e. new
+format on P9.  That might make the code a bit simpler indeed.
 
-As for the PS3's spu shadow registers, they are read-only, and
-only used within the kernel, actually, only within
-platforms/ps3/spu.c.
-
-Here is a test I did that looped varying rflags.
-
-ps3_hpte_insert: rflags=0 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=1 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=2 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=3 result=LV1_SUCCESS (0)
-ps3_hpte_insert: rflags=4 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=5 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=6 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=7 result=LV1_SUCCESS (0)
-ps3_hpte_insert: rflags=8 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=9 result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=a result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=b result=LV1_SUCCESS (0)
-ps3_hpte_insert: rflags=c result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=d result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=e result=LV1_ACCESS_VIOLATION (-5)
-ps3_hpte_insert: rflags=f result=LV1_SUCCESS (0)
-
-Please let me know what other info you need.
-
--Geoff
+Paul.
