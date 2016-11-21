@@ -2,13 +2,14 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMc1M0BGSzDvhR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMc1M0XZwzDvhQ
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 16:03:03 +1100 (AEDT)
-Date: Mon, 21 Nov 2016 16:00:23 +1100
+Date: Mon, 21 Nov 2016 16:00:58 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] powerpc/64: Add some more SPRs and SPR bits for POWER9
-Message-ID: <20161121050023.GD26748@fergus.ozlabs.ibm.com>
+Subject: [PATCH 2/4] powerpc/64: Provide functions for accessing POWER9
+ partition table
+Message-ID: <20161121050058.GE26748@fergus.ozlabs.ibm.com>
 References: <1479704214-29147-1-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -22,49 +23,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These definitions will be needed by KVM.
+POWER9 requires the host to set up a partition table, which is a
+table in memory indexed by logical partition ID (LPID) which
+contains the pointers to page tables and process tables for the
+host and each guest.
+
+This factors out the initialization of the partition table into
+a single function.  This code was previously duplicated between
+hash_utils_64.c and pgtable-radix.c.
+
+This provides a function for setting a partition table entry,
+which is used in early MMU initialization, and will be used by
+KVM whenever a guest is created.  This function includes a tlbie
+instruction which will flush all TLB entries for the LPID and
+all caches of the partition table entry for the LPID, across the
+system.
+
+This also moves a call to memblock_set_current_limit(), which was
+in radix_init_partition_table(), but has nothing to do with the
+partition table.  By analogy with the similar code for hash, the
+call gets moved to near the end of radix__early_init_mmu().  It
+now gets called when running as a guest, whereas previously it
+would only be called if the kernel is running as the host.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/reg.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/include/asm/mmu.h  |  5 +++++
+ arch/powerpc/mm/hash_utils_64.c | 28 ++++------------------------
+ arch/powerpc/mm/pgtable-radix.c | 18 ++++++------------
+ arch/powerpc/mm/pgtable_64.c    | 34 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 49 insertions(+), 36 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index c491cfe..d2f868a 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -153,6 +153,8 @@
- #define PSSCR_EC		0x00100000 /* Exit Criterion */
- #define PSSCR_ESL		0x00200000 /* Enable State Loss */
- #define PSSCR_SD		0x00400000 /* Status Disable */
-+#define PSSCR_PLS	0xf000000000000000 /* Power-saving Level Status */
-+#define PSSCR_GUEST_VIS	0xf0000000000003ff /* Guest-visible PSSCR fields */
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index e883683..060b40b 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -208,6 +208,11 @@ extern u64 ppc64_rma_size;
+ /* Cleanup function used by kexec */
+ extern void mmu_cleanup_all(void);
+ extern void radix__mmu_cleanup_all(void);
++
++/* Functions for creating and updating partition table on POWER9 */
++extern void mmu_partition_table_init(void);
++extern void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
++					  unsigned long dw1);
+ #endif /* CONFIG_PPC64 */
  
- /* Floating Point Status and Control Register (FPSCR) Fields */
- #define FPSCR_FX	0x80000000	/* FPU exception summary */
-@@ -236,6 +238,7 @@
- #define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
- #define   TEXASR_FS	__MASK(63-36) /* TEXASR Failure Summary */
- #define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
-+#define SPRN_TIDR	144	/* Thread ID register */
- #define SPRN_CTRLF	0x088
- #define SPRN_CTRLT	0x098
- #define   CTRL_CT	0xc0000000	/* current thread */
-@@ -292,6 +295,7 @@
- #define SPRN_HRMOR	0x139	/* Real mode offset register */
- #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
- #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
-+#define SPRN_ASDR	0x330	/* Access segment descriptor register */
- #define SPRN_IC		0x350	/* Virtual Instruction Count */
- #define SPRN_VTB	0x351	/* Virtual Time Base */
- #define SPRN_LDBAR	0x352	/* LD Base Address Register */
-@@ -352,6 +356,7 @@
- #define     LPCR_PECE2		ASM_CONST(0x0000000000001000)	/* machine check etc can cause exit */
- #define   LPCR_MER		ASM_CONST(0x0000000000000800)	/* Mediated External Exception */
- #define   LPCR_MER_SH		11
-+#define	  LPCR_GTSE		ASM_CONST(0x0000000000000400)  	/* Guest Translation Shootdown Enable */
- #define   LPCR_TC		ASM_CONST(0x0000000000000200)	/* Translation control */
- #define   LPCR_LPES		0x0000000c
- #define   LPCR_LPES0		ASM_CONST(0x0000000000000008)      /* LPAR Env selector 0 */
+ struct mm_struct;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 44d3c3a..b9a062f 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -792,37 +792,17 @@ static void update_hid_for_hash(void)
+ static void __init hash_init_partition_table(phys_addr_t hash_table,
+ 					     unsigned long htab_size)
+ {
+-	unsigned long ps_field;
+-	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
++	mmu_partition_table_init();
+ 
+ 	/*
+-	 * slb llp encoding for the page size used in VPM real mode.
+-	 * We can ignore that for lpid 0
++	 * PS field (VRMA page size) is not used for LPID 0, hence set to 0.
++	 * For now, UPRT is 0 and we have no segment table.
+ 	 */
+-	ps_field = 0;
+ 	htab_size =  __ilog2(htab_size) - 18;
+-
+-	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
+-	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
+-						MEMBLOCK_ALLOC_ANYWHERE));
+-
+-	/* Initialize the Partition Table with no entries */
+-	memset((void *)partition_tb, 0, patb_size);
+-	partition_tb->patb0 = cpu_to_be64(ps_field | hash_table | htab_size);
+-	/*
+-	 * FIXME!! This should be done via update_partition table
+-	 * For now UPRT is 0 for us.
+-	 */
+-	partition_tb->patb1 = 0;
++	mmu_partition_table_set_entry(0, hash_table | htab_size, 0);
+ 	pr_info("Partition table %p\n", partition_tb);
+ 	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+ 		update_hid_for_hash();
+-	/*
+-	 * update partition table control register,
+-	 * 64 K size.
+-	 */
+-	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
+-
+ }
+ 
+ static void __init htab_initialize(void)
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index e93e384..8d00ab4 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -177,23 +177,15 @@ static void __init radix_init_pgtable(void)
+ 
+ static void __init radix_init_partition_table(void)
+ {
+-	unsigned long rts_field;
++	unsigned long rts_field, dw0;
+ 
++	mmu_partition_table_init();
+ 	rts_field = radix__get_tree_size();
++	dw0 = rts_field | __pa(init_mm.pgd) | RADIX_PGD_INDEX_SIZE | PATB_HR;
++	mmu_partition_table_set_entry(0, dw0, 0);
+ 
+-	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
+-	partition_tb = early_alloc_pgtable(1UL << PATB_SIZE_SHIFT);
+-	partition_tb->patb0 = cpu_to_be64(rts_field | __pa(init_mm.pgd) |
+-					  RADIX_PGD_INDEX_SIZE | PATB_HR);
+ 	pr_info("Initializing Radix MMU\n");
+ 	pr_info("Partition table %p\n", partition_tb);
+-
+-	memblock_set_current_limit(MEMBLOCK_ALLOC_ANYWHERE);
+-	/*
+-	 * update partition table control register,
+-	 * 64 K size.
+-	 */
+-	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
+ }
+ 
+ void __init radix_init_native(void)
+@@ -378,6 +370,8 @@ void __init radix__early_init_mmu(void)
+ 		radix_init_partition_table();
+ 	}
+ 
++	memblock_set_current_limit(MEMBLOCK_ALLOC_ANYWHERE);
++
+ 	radix_init_pgtable();
+ }
+ 
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index f5e8d4e..48ba056 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -431,3 +431,37 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+ 	}
+ }
+ #endif
++
++#ifdef CONFIG_PPC_BOOK3S_64
++void mmu_partition_table_init(void)
++{
++	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
++
++	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
++	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
++						MEMBLOCK_ALLOC_ANYWHERE));
++
++	/* Initialize the Partition Table with no entries */
++	memset((void *)partition_tb, 0, patb_size);
++
++	/*
++	 * update partition table control register,
++	 * 64 K size.
++	 */
++	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
++}
++
++void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
++				   unsigned long dw1)
++{
++	partition_tb[lpid].patb0 = cpu_to_be64(dw0);
++	partition_tb[lpid].patb1 = cpu_to_be64(dw1);
++
++	/* Global flush of TLBs and partition table caches for this lpid */
++	asm volatile("ptesync" : : : "memory");
++	asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : :
++		     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
++	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
++}
++EXPORT_SYMBOL_GPL(mmu_partition_table_set_entry);
++#endif /* CONFIG_PPC_BOOK3S_64 */
 -- 
 2.7.4
