@@ -1,42 +1,46 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMw4m2cq2zDvj5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 04:07:04 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMw4q10jNzDvj5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 04:07:06 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uALH3s0K143860
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:01 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26v13gbp1y-1
+ uALH3vpM059339
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:04 -0500
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26uygm0gaf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:01 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:04 -0500
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 21 Nov 2016 22:36:58 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6C942E0063
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:37:11 +0530 (IST)
+ Mon, 21 Nov 2016 22:37:00 +0530
+Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 25D473940065
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:58 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uALH6sOV35061942
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:54 +0530
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uALH6Rh627852920
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:27 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uALH6q1T000870
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:54 +0530
+ uALH6t4q001035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:57 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Masami Hiramatsu <mhiramat@kernel.org>
 Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
  Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: [PATCH v2 1/2] powerpc: remove extraneous header from asm-prototypes.h
-Date: Mon, 21 Nov 2016 22:36:40 +0530
-Message-Id: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/2] powerpc: kprobes: invoke handlers directly
+Date: Mon, 21 Nov 2016 22:36:41 +0530
+In-Reply-To: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <1bde4adb6da9695007f409af9ea4db6be400ca54.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,30 +50,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 03465f899bda ("powerpc: Use kprobe blacklist for exception
-handlers") removed __kprobes annotation from some of the prototypes,
-but left the kprobes header include directive unchanged. Remove it as it
-is no longer needed.
+... rather than through notify_die(), to reduce path taken for handling
+kprobes. Similar to commit 6f6343f53d13 ("kprobes/x86: Call exception
+handlers directly from do_int3/do_debug").
 
+While at it, rename post_kprobe_handler() to kprobe_post_handler() for
+more uniform naming.
+
+Reported-by: Masami Hiramatsu <mhiramat@kernel.org>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
-New in v2.
+Changes since v1:
+- Removed CONFIG_KPROBES guard in traps.c
+- Introduce CONFIG_KPROBES guard in asm/kprobes.h to prevent conflicts when
+  including both linux/kprobes.h as well as asm/kprobes.h
 
- arch/powerpc/include/asm/asm-prototypes.h | 2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/include/asm/kprobes.h |  7 +++++++
+ arch/powerpc/kernel/kprobes.c      | 29 +++++++----------------------
+ arch/powerpc/kernel/traps.c        | 13 +++++++++++++
+ 3 files changed, 27 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index d149273..dfef117 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -13,8 +13,6 @@
+diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+index 2c9759bd..da30dc3 100644
+--- a/arch/powerpc/include/asm/kprobes.h
++++ b/arch/powerpc/include/asm/kprobes.h
+@@ -32,6 +32,7 @@
+ #include <asm/probes.h>
+ #include <asm/code-patching.h>
+ 
++#ifdef CONFIG_KPROBES
+ #define  __ARCH_WANT_KPROBES_INSN_SLOT
+ 
+ struct pt_regs;
+@@ -127,5 +128,11 @@ struct kprobe_ctlblk {
+ extern int kprobe_exceptions_notify(struct notifier_block *self,
+ 					unsigned long val, void *data);
+ extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
++extern int kprobe_handler(struct pt_regs *regs);
++extern int kprobe_post_handler(struct pt_regs *regs);
++#else
++static int kprobe_handler(struct pt_regs *regs) { return 0; }
++static int kprobe_post_handler(struct pt_regs *regs) { return 0; }
++#endif /* CONFIG_KPROBES */
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_KPROBES_H */
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 9479d8e..ad108b8 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -140,13 +140,16 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+ 	regs->link = (unsigned long)kretprobe_trampoline;
+ }
+ 
+-static int __kprobes kprobe_handler(struct pt_regs *regs)
++int __kprobes kprobe_handler(struct pt_regs *regs)
+ {
+ 	struct kprobe *p;
+ 	int ret = 0;
+ 	unsigned int *addr = (unsigned int *)regs->nip;
+ 	struct kprobe_ctlblk *kcb;
+ 
++	if (user_mode(regs))
++		return 0;
++
+ 	/*
+ 	 * We don't want to be preempted for the entire
+ 	 * duration of kprobe processing
+@@ -359,12 +362,12 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
+  * single-stepped a copy of the instruction.  The address of this
+  * copy is p->ainsn.insn.
   */
+-static int __kprobes post_kprobe_handler(struct pt_regs *regs)
++int __kprobes kprobe_post_handler(struct pt_regs *regs)
+ {
+ 	struct kprobe *cur = kprobe_running();
+ 	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
  
- #include <linux/threads.h>
--#include <linux/kprobes.h>
+-	if (!cur)
++	if (!cur || user_mode(regs))
+ 		return 0;
+ 
+ 	/* make sure we got here for instruction we have a kprobe on */
+@@ -470,25 +473,7 @@ int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
+ 				       unsigned long val, void *data)
+ {
+-	struct die_args *args = (struct die_args *)data;
+-	int ret = NOTIFY_DONE;
 -
- #include <uapi/asm/ucontext.h>
+-	if (args->regs && user_mode(args->regs))
+-		return ret;
+-
+-	switch (val) {
+-	case DIE_BPT:
+-		if (kprobe_handler(args->regs))
+-			ret = NOTIFY_STOP;
+-		break;
+-	case DIE_SSTEP:
+-		if (post_kprobe_handler(args->regs))
+-			ret = NOTIFY_STOP;
+-		break;
+-	default:
+-		break;
+-	}
+-	return ret;
++	return NOTIFY_DONE;
+ }
  
- /* SMP */
+ unsigned long arch_deref_entry_point(void *entry)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 91d278c..38d5fbf 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -64,6 +64,7 @@
+ #include <asm/asm-prototypes.h>
+ #include <asm/hmi.h>
+ #include <sysdev/fsl_pci.h>
++#include <asm/kprobes.h>
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ int (*__debugger)(struct pt_regs *regs) __read_mostly;
+@@ -824,6 +825,9 @@ void single_step_exception(struct pt_regs *regs)
+ 
+ 	clear_single_step(regs);
+ 
++	if (kprobe_post_handler(regs))
++		return;
++
+ 	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
+ 					5, SIGTRAP) == NOTIFY_STOP)
+ 		goto bail;
+@@ -1177,6 +1181,9 @@ void program_check_exception(struct pt_regs *regs)
+ 		if (debugger_bpt(regs))
+ 			goto bail;
+ 
++		if (kprobe_handler(regs))
++			goto bail;
++
+ 		/* trap exception */
+ 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+ 				== NOTIFY_STOP)
+@@ -1745,6 +1752,9 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
+ 			return;
+ 		}
+ 
++		if (kprobe_post_handler(regs))
++			return;
++
+ 		if (notify_die(DIE_SSTEP, "block_step", regs, 5,
+ 			       5, SIGTRAP) == NOTIFY_STOP) {
+ 			return;
+@@ -1759,6 +1769,9 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
+ 		/* Clear the instruction completion event */
+ 		mtspr(SPRN_DBSR, DBSR_IC);
+ 
++		if (kprobe_post_handler(regs))
++			return;
++
+ 		if (notify_die(DIE_SSTEP, "single_step", regs, 5,
+ 			       5, SIGTRAP) == NOTIFY_STOP) {
+ 			return;
 -- 
 2.10.2
