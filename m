@@ -1,23 +1,22 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMr1F3NM6zDvjG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 01:03:45 +1100 (AEDT)
-Received: by mail-wm0-f67.google.com with SMTP id g23so2295303wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 06:03:45 -0800 (PST)
-Date: Mon, 21 Nov 2016 15:03:41 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: mpe@ellerman.id.au, hannes@cmpxchg.org, vdavydov.dev@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RESEND][v1 0/3] Support memory cgroup hotplug
-Message-ID: <20161121140340.GC18112@dhcp22.suse.cz>
-References: <1479253501-26261-1-git-send-email-bsingharora@gmail.com>
+Return-Path: <Zubair.Kakakhel@imgtec.com>
+Received: from mailapp01.imgtec.com (mailapp01.imgtec.com [195.59.15.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tMr3g3PLJzDqMx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 01:05:50 +1100 (AEDT)
+Subject: Re: [Patch v7 6/7] irqchip: xilinx: Try to fall back if
+ xlnx,kind-of-intr not provided
+To: Thomas Gleixner <tglx@linutronix.de>
+References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
+ <20161114121351.10924-7-Zubair.Kakakhel@imgtec.com>
+ <alpine.DEB.2.20.1611181426430.3615@nanos>
+CC: <monstr@monstr.eu>, <jason@lakedaemon.net>, <marc.zyngier@arm.com>,
+ <linux-kernel@vger.kernel.org>, <michal.simek@xilinx.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
+From: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
+Message-ID: <7f07be12-fb2e-e8ad-e0e6-52c58542470a@imgtec.com>
+Date: Mon, 21 Nov 2016 14:05:46 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1479253501-26261-1-git-send-email-bsingharora@gmail.com>
+In-Reply-To: <alpine.DEB.2.20.1611181426430.3615@nanos>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +26,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 16-11-16 10:44:58, Balbir Singh wrote:
-> In the absence of hotplug we use extra memory proportional to
-> (possible_nodes - online_nodes) * number_of_cgroups. PPC64 has a patch
-> to disable large consumption with large number of cgroups. This patch
-> adds hotplug support to memory cgroups and reverts the commit that
-> limited possible nodes to online nodes.
+Hi,
 
-I didn't get to read patches yet (I am currently swamped by emails after
-longer vacation so bear with me) but this doesn't tell us _why_ we want
-this and how much we can actaully save. In general being dynamic is more
-complex and most systems tend to have possible_nodes close to
-online_nodes in my experience (well at least on most reasonable
-architectures). I would also appreciate some highlevel description of
-the implications. E.g. how to we synchronize with the hotplug operations
-when iterating node specific data structures.
+On 11/18/2016 01:29 PM, Thomas Gleixner wrote:
+> On Mon, 14 Nov 2016, Zubair Lutfullah Kakakhel wrote:
+>
+>> The powerpc dts file does not have the xlnx,kind-of-intr property.
+>> Instead of erroring out, give a warning instead. And attempt to
+>> continue to probe the interrupt controller while assuming
+>> kind-of-intr is 0x0 as a fall back.
+>
+> This is broken, really. On multiplatform kernels this will try to probe the
+> chip no matter what.
 
-Thanks!
+I'm not sure I understand why this driver will probe on multi-platform kernels
+if the compatible string isn't in the DT?
 
--- 
-Michal Hocko
-SUSE Labs
+>
+> Powerpc already has:
+>
+> static const struct of_device_id xilinx_intc_match[] __initconst = {
+>        { .compatible = "xlnx,opb-intc-1.00.c", },
+>        { .compatible = "xlnx,xps-intc-1.00.a", },
+>        {}
+> };
+>
+> Unless I'm missing something important, then adding those compatible
+> strings to the driver will just keep stuff working as expected instead of
+> adding unsafe and broken heuristics.
+>
+
+The last two lines of the driver already specify the compatible strings.
+
+"
+IRQCHIP_DECLARE(xilinx_intc_xps, "xlnx,xps-intc-1.00.a", xilinx_intc_of_init);
+IRQCHIP_DECLARE(xilinx_intc_opb, "xlnx,opb-intc-1.00.c", xilinx_intc_of_init);
+"
+
+I'll elaborate on the commit message.
+
+The DT node in arch/powerpc for this driver is
+
+intc_0: interrupt-controller@81800000 {
+			#interrupt-cells = <0x2>;
+			compatible = "xlnx,xps-intc-1.00.a";
+			interrupt-controller ;
+			reg = < 0x81800000 0x10000 >;
+			xlnx,num-intr-inputs = <0xc>;
+		} ;
+
+The DT node in arch/microblaze for this driver is
+
+intc_0: interrupt-controller@81800000 {
+			#interrupt-cells = <0x2>;
+			compatible = "xlnx,xps-intc-1.00.a";
+			interrupt-controller ;
+			reg = < 0x81800000 0x10000 >;
+			xlnx,kind-of-intr = <0x100>;	//<Missing from ppc>!
+			xlnx,num-intr-inputs = <0x9>;
+		} ;
+
+The PPC driver assumes the kind-of-intr value be 0x0 and doesn't specify it in DT.
+This patch makes that a fall back case. Instead of completely error-ing out.
+
+Regards,
+ZubairLK
+
+> Thanks,
+>
+> 	tglx
+>
+>
