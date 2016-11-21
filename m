@@ -1,16 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMkwy4PZMzDvh9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:14:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMkzM38fPzDvy7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:16:47 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc/boot: Fix rebuild when changing kernel endian
-Date: Mon, 21 Nov 2016 21:14:35 +1100
-Message-Id: <1479723275-11736-3-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1479723275-11736-1-git-send-email-mpe@ellerman.id.au>
-References: <1479723275-11736-1-git-send-email-mpe@ellerman.id.au>
+To: Lars-Peter Clausen <lars@metafoo.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] ibmebus: Remove legacy suspend/resume support
+In-Reply-To: <57d7b8c5-1deb-937c-5ad9-23912b38bd60@metafoo.de>
+References: <1479562934-1541-1-git-send-email-lars@metafoo.de>
+ <87polpw45o.fsf@concordia.ellerman.id.au>
+ <57d7b8c5-1deb-937c-5ad9-23912b38bd60@metafoo.de>
+Date: Mon, 21 Nov 2016 21:16:46 +1100
+Message-ID: <87k2bxw31t.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,37 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ka3.ozlabs.ibm.com>
+Lars-Peter Clausen <lars@metafoo.de> writes:
 
-Now that we don't set ARCH incorrectly when calling the boot Makefile,
-we can use the generic cpp_lds_S rule for converting our zImage.lds.S
-into zImage.lds.
+> On 11/21/2016 10:52 AM, Michael Ellerman wrote:
+>> Lars-Peter Clausen <lars@metafoo.de> writes:
+>> 
+>>> There are no ibmebus driver that make use of legacy suspend/resume. This
+>>> patch removes the support for it from ibmebus framework, new ibmebus driver
+>>> (as unlikely as they are) wanting to use suspend/resume should use
+>>> dev_pm_ops.
+>>>
+>>> Since there aren't any special bus specific things to do during
+>>> suspend/resume and since the PM core will automatically fallback directly
+>>> to using the device's PM ops if no bus PM ops are specified there is no
+>>> need to have any special ibmebus PM ops at all.
+>> 
+>> Thanks, this looks like a really nice cleanup.
+>> 
+>> I don't know the PM code at all, is there any down side to removing all
+>> of this?
+>
+> No, dev_pm_op is a full replacement for the legacy suspend/resume callbacks
+> and dev_pm_ops are supported by the power management core out of the box
+> without having to have any bus specific code. Which is why we want to get
+> rid of legacy PM callbacks in general and this is one of the last few buses
+> that still implements it. But since there are no drivers that use it
+> removing it is straight forward in this case, for others it takes a bit more
+> work.
 
-The main advantage of using the generic rule is that it correctly uses
-if_changed, which means we correctly regenerate the linker script when
-switching endian. Fixing that means we are finally able to build one
-endian and then rebuild the other endian without requiring to clean
-between builds.
+Great, thanks. I'll merge this via the powerpc tree for 4.10.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/boot/Makefile | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 7f3faa6255a8..1d41d5a9d05e 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -171,10 +171,6 @@ $(addprefix $(obj)/,$(libfdt) $(libfdtheader)): $(obj)/%: $(srctree)/scripts/dtc
- $(obj)/empty.c:
- 	$(Q)touch $@
- 
--$(obj)/zImage.lds: $(obj)/%: $(srctree)/$(src)/%.S
--	$(CROSS32CC) $(cpp_flags) -E -Wp,-MD,$(depfile) -P -Upowerpc \
--		-D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
--
- $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds : $(obj)/%: $(srctree)/$(src)/%.S
- 	$(Q)cp $< $@
- 
--- 
-2.7.4
+cheers
