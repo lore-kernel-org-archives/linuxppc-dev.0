@@ -1,26 +1,42 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMtPF5FXPzDvfs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 02:51:13 +1100 (AEDT)
-Date: Mon, 21 Nov 2016 16:48:23 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>
-cc: monstr@monstr.eu, jason@lakedaemon.net, marc.zyngier@arm.com,
- linux-kernel@vger.kernel.org, michal.simek@xilinx.com,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [Patch v7 6/7] irqchip: xilinx: Try to fall back if xlnx,
- kind-of-intr not provided
-In-Reply-To: <7f07be12-fb2e-e8ad-e0e6-52c58542470a@imgtec.com>
-Message-ID: <alpine.DEB.2.20.1611211647260.15760@nanos>
-References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
- <20161114121351.10924-7-Zubair.Kakakhel@imgtec.com>
- <alpine.DEB.2.20.1611181426430.3615@nanos>
- <7f07be12-fb2e-e8ad-e0e6-52c58542470a@imgtec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMw4m2cq2zDvj5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 04:07:04 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uALH3s0K143860
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:01 -0500
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26v13gbp1y-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:01 -0500
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 21 Nov 2016 22:36:58 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6C942E0063
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:37:11 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uALH6sOV35061942
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:54 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uALH6q1T000870
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:54 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: [PATCH v2 1/2] powerpc: remove extraneous header from asm-prototypes.h
+Date: Mon, 21 Nov 2016 22:36:40 +0530
+Message-Id: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +46,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 21 Nov 2016, Zubair Lutfullah Kakakhel wrote:
-> On 11/18/2016 01:29 PM, Thomas Gleixner wrote:
-> I'll elaborate on the commit message.
-> 
-> The DT node in arch/powerpc for this driver is
-> 
-> intc_0: interrupt-controller@81800000 {
-> 			#interrupt-cells = <0x2>;
-> 			compatible = "xlnx,xps-intc-1.00.a";
-> 			interrupt-controller ;
-> 			reg = < 0x81800000 0x10000 >;
-> 			xlnx,num-intr-inputs = <0xc>;
-> 		} ;
-> 
-> The DT node in arch/microblaze for this driver is
-> 
-> intc_0: interrupt-controller@81800000 {
-> 			#interrupt-cells = <0x2>;
-> 			compatible = "xlnx,xps-intc-1.00.a";
-> 			interrupt-controller ;
-> 			reg = < 0x81800000 0x10000 >;
-> 			xlnx,kind-of-intr = <0x100>;	//<Missing from ppc>!
-> 			xlnx,num-intr-inputs = <0x9>;
-> 		} ;
-> 
-> The PPC driver assumes the kind-of-intr value be 0x0 and doesn't specify it in
-> DT.
-> This patch makes that a fall back case. Instead of completely error-ing out.
+Commit 03465f899bda ("powerpc: Use kprobe blacklist for exception
+handlers") removed __kprobes annotation from some of the prototypes,
+but left the kprobes header include directive unchanged. Remove it as it
+is no longer needed.
 
-Ok. makes sense. I misread the changelog/patch.
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+New in v2.
 
-Thanks,
+ arch/powerpc/include/asm/asm-prototypes.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-	tglx
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index d149273..dfef117 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -13,8 +13,6 @@
+  */
+ 
+ #include <linux/threads.h>
+-#include <linux/kprobes.h>
+-
+ #include <uapi/asm/ucontext.h>
+ 
+ /* SMP */
+-- 
+2.10.2
