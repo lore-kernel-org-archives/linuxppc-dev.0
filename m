@@ -1,59 +1,24 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tN51G3Z9yzDvkP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 10:49:38 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uALNnLfU085466
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 18:49:36 -0500
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26v5eyxgd0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 18:49:36 -0500
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 21 Nov 2016 21:49:33 -0200
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 4496A352005C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 18:49:01 -0500 (EST)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uALNnUi44784318
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:49:30 -0200
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uALNnTFJ007073
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:49:30 -0200
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- Eric Biederman <ebiederm@xmission.com>,
- Vivek Goyal <vgoyal@redhat.com>, Baoquan He <bhe@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v10 04/10] kexec_file: Add support for purgatory built as
- PIE.
-Date: Mon, 21 Nov 2016 21:49:23 -0200
-In-Reply-To: <20161120024546.GA4413@dhcp-128-65.nay.redhat.com>
-References: <1478748449-3894-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1478748449-3894-5-git-send-email-bauerman@linux.vnet.ibm.com>
- <20161120024546.GA4413@dhcp-128-65.nay.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tN5KP63GLzDvkS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:03:37 +1100 (AEDT)
+Date: Tue, 22 Nov 2016 10:27:57 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v5 3/6] vfio/spapr: Postpone allocation of
+ userspace version of TCE table
+Message-ID: <20161121232757.GG8681@umbus.fritz.box>
+References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
+ <1478867537-27893-4-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <5009580.5GxAkTrMYA@morokweng>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="iJXiJc/TAIT2rh2r"
+In-Reply-To: <1478867537-27893-4-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,438 +28,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Dave,
 
-Thanks for your review.
+--iJXiJc/TAIT2rh2r
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Am Sonntag, 20. November 2016, 10:45:46 BRST schrieb Dave Young:
-> On 11/10/16 at 01:27am, Thiago Jung Bauermann wrote:
-> > powerpc's purgatory.ro has 12 relocation types when built as
-> > a relocatable object. To implement support for them requires
-> > arch_kexec_apply_relocations_add to duplicate a lot of code with
-> > module_64.c:apply_relocate_add.
-> > 
-> > When built as a Position Independent Executable there are only 4
-> > relocation types in purgatory.ro, so it becomes practical for the powerpc
-> > implementation of kexec_file to have its own relocation implementation.
-> > 
-> > Also, the purgatory is an executable and not an intermediary output from
-> > the compiler so it makes sense conceptually that it is easier to build
-> > it as a PIE than as a partially linked object.
-> > 
-> > Apart from the greatly reduced number of relocations, there are two
-> > differences between a relocatable object and a PIE:
-> > 
-> > 1. __kexec_load_purgatory needs to use the program headers rather than the
-> > 
-> >    section headers to figure out how to load the binary.
-> > 
-> > 2. Symbol values are absolute addresses instead of relative to the
-> > 
-> >    start of the section.
-> > 
-> > This patch adds the support needed in generic code for the differences
-> > above and allows powerpc to load and relocate a position independent
-> > purgatory.
-> 
-> [snip]
-> 
-> The kexec-tools machine_apply_elf_rel is pretty simple for ppc64, it is
-> not that complex. So could you look into simplify your kexec_file
-> implementation?
+On Fri, Nov 11, 2016 at 11:32:14PM +1100, Alexey Kardashevskiy wrote:
+> The iommu_table struct manages a hardware TCE table and a vmalloc'd
+> table with corresponding userspace addresses. Both are allocated when
+> the default DMA window is created and this happens when the very first
+> group is attached to a container.
+>=20
+> As we are going to allow the userspace to configure container in one
+> memory context and pas container fd to another, we have to postpones
+> such allocations till a container fd is passed to the destination
+> user process so we would account locked memory limit against the actual
+> container user constrainsts.
+>=20
+> This postpones the it_userspace array allocation till it is used first
+> time for mapping. The unmapping patch already checks if the array is
+> allocated.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-I can try, but there is one fundamental issue here: powerpc position-dependent 
-code relies more on relocations than x86 position-dependent code does, so 
-there's a limit to how simple it can be made without switching to position-
-independent code. And it will always be more involved than it is on x86.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-BTW, building x86's purgatory as PIE results in it not having any relocation 
-at all, so it's an advantage even in that architecture. Unfortunately, the 
-machine locks up during reboot and I didn't have time to try to figure out 
-what's going on.
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index d0c38b2..442baac 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -515,6 +515,12 @@ static long tce_iommu_build_v2(struct tce_container =
+*container,
+>  	unsigned long hpa;
+>  	enum dma_data_direction dirtmp;
+> =20
+> +	if (!tbl->it_userspace) {
+> +		ret =3D tce_iommu_userspace_view_alloc(tbl);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+>  	for (i =3D 0; i < pages; ++i) {
+>  		struct mm_iommu_table_group_mem_t *mem =3D NULL;
+>  		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
+> @@ -1068,10 +1074,7 @@ static int tce_iommu_take_ownership(struct tce_con=
+tainer *container,
+>  		if (!tbl || !tbl->it_map)
+>  			continue;
+> =20
+> -		rc =3D tce_iommu_userspace_view_alloc(tbl);
+> -		if (!rc)
+> -			rc =3D iommu_take_ownership(tbl);
+> -
+> +		rc =3D iommu_take_ownership(tbl);
+>  		if (rc) {
+>  			for (j =3D 0; j < i; ++j)
+>  				iommu_release_ownership(
 
-> kernel/kexec_file.c kexec_apply_relocations only do limited things
-> and some of the logic is in arch/x86, so move general code out of arch
-> code, then I guess the arch code will be simpler
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-I agree that is a good idea. Is the patch below what you had in mind?
+--iJXiJc/TAIT2rh2r
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> and then we probably do not need this PIE stuff anymore.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-If you are ok with the patch below I can post a new version of the series 
-based on it and we can see if Michael Ellerman thinks it is enough.
+iQIcBAEBCAAGBQJYM4L9AAoJEGw4ysog2bOStV8QANEthykAmjyhkUA0Ehr1wmmj
+YkKDniKhlC4TQxUuA9QllLiFkmPvtkU9ElrCIsniFoB76+sUYShUfOz8nQGiYFNq
+NpMa8Ds8FSFkKo3IB/NfMH/BkWMsYgbp/fOsZrT19qBPKAs0eC9SEbRqBxsnSdP7
+K3ZYQVbDSte0OzY6tOJ97ZMq2mV2GeiDve09uB0/A8MfxsTP3p2i3POgWCKMfnfZ
+MJHLs+Pzf0vPoPaH2b1FvgOUAB02/baDbeq3uxaA9H6JiwTDARrYlVxpNUqAnL/1
+qWbTMRTqIxRrZfoPwx0bswuYnfbUzvAenlIvVg93hmgHG7ARDnNUOwvQmRqFx5W0
+LAK5BvlU6134BZF13uQ9S5oTktucONkk0Xv1bdkHMgAd7qr+8S6sRN7mZLPbDaVN
+R+4qb+agFV/DV8FiCrept+NGzMTvCmGypKBNyT5Oc93RiiYbozYK1Fa7pTy8lx9h
+H58829esWwZnl1BEZCC/I99xzlCy0/qhImePjAZ15yKULgX8NfbLl3f77qAcSwk5
+2eiumXrUpwFlBXdlwR97wpb1ApsofFSFqXMoYD46zcDJoFJVcn/95HbAIFqyAMGs
+cuCB2n+DkWqF1APakmVwig3K165MqJxXl2jKrmiysE1v9pc7tS6ljK/o/9Fta7VQ
+jXFPtMLZMXp6D2qrz9ZM
+=iNpO
+-----END PGP SIGNATURE-----
 
-> BTW, __kexec_really_load_purgatory looks worse than
-> ___kexec_load_purgatory ;)
-
-Really? I find the special handling of bss makes the section-based loader a 
-bit more confusing.
-
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
-
-
-Subject: [PATCH] kexec_file: Move generic relocation code from arch/x86 to
- kernel/kexec_file.c
-
-The check for undefined symbols stays in arch-specific code because
-powerpc needs to allow TOC symbols to be processed even though they're
-undefined.
-
-There is no functional change.
-
-Suggested-by: Dave Young <dyoung@redhat.com>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
----
- arch/x86/kernel/machine_kexec_64.c | 160 +++++++------------------------------
- include/linux/kexec.h              |   9 ++-
- kernel/kexec_file.c                | 120 +++++++++++++++++++++++++++-
- 3 files changed, 154 insertions(+), 135 deletions(-)
-
-diff --git a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
-index 8c1f218926d7..f4860c408ece 100644
---- a/arch/x86/kernel/machine_kexec_64.c
-+++ b/arch/x86/kernel/machine_kexec_64.c
-@@ -401,143 +401,45 @@ int arch_kexec_kernel_verify_sig(struct kimage *image, void *kernel,
- }
- #endif
- 
--/*
-- * Apply purgatory relocations.
-- *
-- * ehdr: Pointer to elf headers
-- * sechdrs: Pointer to section headers.
-- * relsec: section index of SHT_RELA section.
-- *
-- * TODO: Some of the code belongs to generic code. Move that in kexec.c.
-- */
--int arch_kexec_apply_relocations_add(const Elf64_Ehdr *ehdr,
--				     Elf64_Shdr *sechdrs, unsigned int relsec)
-+int arch_kexec_apply_relocation_add(const Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
-+				    unsigned int reltype, Elf_Sym *sym,
-+				    const char *name, unsigned long *location,
-+				    unsigned long address, unsigned long value)
- {
--	unsigned int i;
--	Elf64_Rela *rel;
--	Elf64_Sym *sym;
--	void *location;
--	Elf64_Shdr *section, *symtabsec;
--	unsigned long address, sec_base, value;
--	const char *strtab, *name, *shstrtab;
--
--	/*
--	 * ->sh_offset has been modified to keep the pointer to section
--	 * contents in memory
--	 */
--	rel = (void *)sechdrs[relsec].sh_offset;
--
--	/* Section to which relocations apply */
--	section = &sechdrs[sechdrs[relsec].sh_info];
--
--	pr_debug("Applying relocate section %u to %u\n", relsec,
--		 sechdrs[relsec].sh_info);
--
--	/* Associated symbol table */
--	symtabsec = &sechdrs[sechdrs[relsec].sh_link];
--
--	/* String table */
--	if (symtabsec->sh_link >= ehdr->e_shnum) {
--		/* Invalid strtab section number */
--		pr_err("Invalid string table section index %d\n",
--		       symtabsec->sh_link);
-+	if (sym->st_shndx == SHN_UNDEF) {
-+		pr_err("Undefined symbol: %s\n", name);
- 		return -ENOEXEC;
- 	}
- 
--	strtab = (char *)sechdrs[symtabsec->sh_link].sh_offset;
--
--	/* section header string table */
--	shstrtab = (char *)sechdrs[ehdr->e_shstrndx].sh_offset;
--
--	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
--
--		/*
--		 * rel[i].r_offset contains byte offset from beginning
--		 * of section to the storage unit affected.
--		 *
--		 * This is location to update (->sh_offset). This is temporary
--		 * buffer where section is currently loaded. This will finally
--		 * be loaded to a different address later, pointed to by
--		 * ->sh_addr. kexec takes care of moving it
--		 *  (kexec_load_segment()).
--		 */
--		location = (void *)(section->sh_offset + rel[i].r_offset);
--
--		/* Final address of the location */
--		address = section->sh_addr + rel[i].r_offset;
--
--		/*
--		 * rel[i].r_info contains information about symbol table index
--		 * w.r.t which relocation must be made and type of relocation
--		 * to apply. ELF64_R_SYM() and ELF64_R_TYPE() macros get
--		 * these respectively.
--		 */
--		sym = (Elf64_Sym *)symtabsec->sh_offset +
--				ELF64_R_SYM(rel[i].r_info);
--
--		if (sym->st_name)
--			name = strtab + sym->st_name;
--		else
--			name = shstrtab + sechdrs[sym->st_shndx].sh_name;
--
--		pr_debug("Symbol: %s info: %02x shndx: %02x value=%llx size: %llx\n",
--			 name, sym->st_info, sym->st_shndx, sym->st_value,
--			 sym->st_size);
--
--		if (sym->st_shndx == SHN_UNDEF) {
--			pr_err("Undefined symbol: %s\n", name);
--			return -ENOEXEC;
--		}
--
--		if (sym->st_shndx == SHN_COMMON) {
--			pr_err("symbol '%s' in common section\n", name);
--			return -ENOEXEC;
--		}
--
--		if (sym->st_shndx == SHN_ABS)
--			sec_base = 0;
--		else if (sym->st_shndx >= ehdr->e_shnum) {
--			pr_err("Invalid section %d for symbol %s\n",
--			       sym->st_shndx, name);
--			return -ENOEXEC;
--		} else
--			sec_base = sechdrs[sym->st_shndx].sh_addr;
--
--		value = sym->st_value;
--		value += sec_base;
--		value += rel[i].r_addend;
--
--		switch (ELF64_R_TYPE(rel[i].r_info)) {
--		case R_X86_64_NONE:
--			break;
--		case R_X86_64_64:
--			*(u64 *)location = value;
--			break;
--		case R_X86_64_32:
--			*(u32 *)location = value;
--			if (value != *(u32 *)location)
--				goto overflow;
--			break;
--		case R_X86_64_32S:
--			*(s32 *)location = value;
--			if ((s64)value != *(s32 *)location)
--				goto overflow;
--			break;
--		case R_X86_64_PC32:
--			value -= (u64)address;
--			*(u32 *)location = value;
--			break;
--		default:
--			pr_err("Unknown rela relocation: %llu\n",
--			       ELF64_R_TYPE(rel[i].r_info));
--			return -ENOEXEC;
--		}
-+	switch (reltype) {
-+	case R_X86_64_NONE:
-+		break;
-+	case R_X86_64_64:
-+		*(u64 *)location = value;
-+		break;
-+	case R_X86_64_32:
-+		*(u32 *)location = value;
-+		if (value != *(u32 *)location)
-+			goto overflow;
-+		break;
-+	case R_X86_64_32S:
-+		*(s32 *)location = value;
-+		if ((s64)value != *(s32 *)location)
-+			goto overflow;
-+		break;
-+	case R_X86_64_PC32:
-+		value -= (u64)address;
-+		*(u32 *)location = value;
-+		break;
-+	default:
-+		pr_err("Unknown rela relocation: %u\n", reltype);
-+		return -ENOEXEC;
- 	}
-+
- 	return 0;
- 
- overflow:
--	pr_err("Overflow in relocation type %d value 0x%lx\n",
--	       (int)ELF64_R_TYPE(rel[i].r_info), value);
-+	pr_err("Overflow in relocation type %u value 0x%lx\n", reltype, value);
- 	return -ENOEXEC;
- }
- #endif /* CONFIG_KEXEC_FILE */
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 406c33dcae13..e171a083540d 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -320,8 +320,13 @@ void * __weak arch_kexec_kernel_image_load(struct kimage *image);
- int __weak arch_kimage_file_post_load_cleanup(struct kimage *image);
- int __weak arch_kexec_kernel_verify_sig(struct kimage *image, void *buf,
- 					unsigned long buf_len);
--int __weak arch_kexec_apply_relocations_add(const Elf_Ehdr *ehdr,
--					Elf_Shdr *sechdrs, unsigned int relsec);
-+int __weak arch_kexec_apply_relocation_add(const Elf_Ehdr *ehdr,
-+					   Elf_Shdr *sechdrs,
-+					   unsigned int reltype, Elf_Sym *sym,
-+					   const char *name,
-+					   unsigned long *location,
-+					   unsigned long address,
-+					   unsigned long value);
- int __weak arch_kexec_apply_relocations(const Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
- 					unsigned int relsec);
- void arch_kexec_protect_crashkres(void);
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 037c321c5618..1517f977cc25 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -61,8 +61,10 @@ int __weak arch_kexec_kernel_verify_sig(struct kimage *image, void *buf,
- 
- /* Apply relocations of type RELA */
- int __weak
--arch_kexec_apply_relocations_add(const Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
--				 unsigned int relsec)
-+arch_kexec_apply_relocation_add(const Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
-+				unsigned int reltype, Elf_Sym *sym,
-+				const char *name, unsigned long *location,
-+				unsigned long address, unsigned long value)
- {
- 	pr_err("RELA relocation unsupported.\n");
- 	return -ENOEXEC;
-@@ -793,6 +795,117 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 	return ret;
- }
- 
-+/**
-+ * kexec_apply_relocations_add - apply purgatory relocations
-+ * @ehdr:	Pointer to elf headers
-+ * @sechdrs:	Pointer to section headers.
-+ * @relsec:	Section index of SHT_RELA section.
-+ */
-+static int kexec_apply_relocations_add(const Elf64_Ehdr *ehdr,
-+				       Elf64_Shdr *sechdrs, unsigned int relsec)
-+{
-+	int ret;
-+	unsigned int i;
-+	Elf64_Rela *rel;
-+	Elf64_Sym *sym;
-+	void *location;
-+	Elf64_Shdr *section, *symtabsec;
-+	unsigned long address, sec_base, value;
-+	const char *strtab, *name, *shstrtab;
-+
-+	/*
-+	 * ->sh_offset has been modified to keep the pointer to section
-+	 * contents in memory
-+	 */
-+	rel = (void *)sechdrs[relsec].sh_offset;
-+
-+	/* Section to which relocations apply */
-+	section = &sechdrs[sechdrs[relsec].sh_info];
-+
-+	pr_debug("Applying relocate section %u to %u\n", relsec,
-+		 sechdrs[relsec].sh_info);
-+
-+	/* Associated symbol table */
-+	symtabsec = &sechdrs[sechdrs[relsec].sh_link];
-+
-+	/* String table */
-+	if (symtabsec->sh_link >= ehdr->e_shnum) {
-+		/* Invalid strtab section number */
-+		pr_err("Invalid string table section index %d\n",
-+		       symtabsec->sh_link);
-+		return -ENOEXEC;
-+	}
-+
-+	/* String table for the associated symbol table. */
-+	strtab = (char *)sechdrs[symtabsec->sh_link].sh_offset;
-+
-+	/* section header string table */
-+	shstrtab = (char *)sechdrs[ehdr->e_shstrndx].sh_offset;
-+
-+	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
-+
-+		/*
-+		 * rel[i].r_offset contains byte offset from beginning
-+		 * of section to the storage unit affected.
-+		 *
-+		 * This is location to update (->sh_offset). This is temporary
-+		 * buffer where section is currently loaded. This will finally
-+		 * be loaded to a different address later, pointed to by
-+		 * ->sh_addr. kexec takes care of moving it
-+		 *  (kexec_load_segment()).
-+		 */
-+		location = (void *)(section->sh_offset + rel[i].r_offset);
-+
-+		/* Final address of the location */
-+		address = section->sh_addr + rel[i].r_offset;
-+
-+		/*
-+		 * rel[i].r_info contains information about symbol table index
-+		 * w.r.t which relocation must be made and type of relocation
-+		 * to apply. ELF64_R_SYM() and ELF64_R_TYPE() macros get
-+		 * these respectively.
-+		 */
-+		sym = (Elf64_Sym *)symtabsec->sh_offset +
-+				ELF64_R_SYM(rel[i].r_info);
-+
-+		if (sym->st_name)
-+			name = strtab + sym->st_name;
-+		else
-+			name = shstrtab + sechdrs[sym->st_shndx].sh_name;
-+
-+		pr_debug("Symbol: %s info: %02x shndx: %02x value=%llx size: %llx\n",
-+			 name, sym->st_info, sym->st_shndx, sym->st_value,
-+			 sym->st_size);
-+
-+		if (sym->st_shndx == SHN_COMMON) {
-+			pr_err("symbol '%s' in common section\n", name);
-+			return -ENOEXEC;
-+		}
-+
-+		if (sym->st_shndx == SHN_ABS)
-+			sec_base = 0;
-+		else if (sym->st_shndx >= ehdr->e_shnum) {
-+			pr_err("Invalid section %d for symbol %s\n",
-+			       sym->st_shndx, name);
-+			return -ENOEXEC;
-+		} else
-+			sec_base = sechdrs[sym->st_shndx].sh_addr;
-+
-+		value = sym->st_value;
-+		value += sec_base;
-+		value += rel[i].r_addend;
-+
-+		ret = arch_kexec_apply_relocation_add(ehdr, sechdrs,
-+						      ELF64_R_TYPE(rel[i].r_info),
-+						      sym, name, location,
-+						      address, value);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
- static int kexec_apply_relocations(struct kimage *image)
- {
- 	int i, ret;
-@@ -836,8 +949,7 @@ static int kexec_apply_relocations(struct kimage *image)
- 		 * relocations of type SHT_RELA/SHT_REL.
- 		 */
- 		if (sechdrs[i].sh_type == SHT_RELA)
--			ret = arch_kexec_apply_relocations_add(pi->ehdr,
--							       sechdrs, i);
-+			ret = kexec_apply_relocations_add(pi->ehdr, sechdrs, i);
- 		else if (sechdrs[i].sh_type == SHT_REL)
- 			ret = arch_kexec_apply_relocations(pi->ehdr,
- 							   sechdrs, i);
--- 
-2.7.4
+--iJXiJc/TAIT2rh2r--
