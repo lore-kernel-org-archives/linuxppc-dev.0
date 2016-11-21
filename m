@@ -2,17 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMl211RWzzDvgS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:19:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMl5J6Z84zDvMJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:21:56 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Michael Neuling <michael.neuling@au1.ibm.com>
-Subject: Re: [PATCH] powerpc: Set missing wakeup bit in LPCR on POWER9
-In-Reply-To: <1479712085.10230.31.camel@kernel.crashing.org>
-References: <1479712085.10230.31.camel@kernel.crashing.org>
-Date: Mon, 21 Nov 2016 21:19:04 +1100
-Message-ID: <87h971w2xz.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc/xmon: Add support for dump in reverse
+In-Reply-To: <044f9dc1-c2aa-9798-f5ca-5bfb4796ef42@gmail.com>
+References: <201611181011.JmH0m3H9%fengguang.wu@intel.com>
+ <044f9dc1-c2aa-9798-f5ca-5bfb4796ef42@gmail.com>
+Date: Mon, 21 Nov 2016 21:21:55 +1100
+Message-ID: <87eg25w2t8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,38 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> There is a new bit, LPCR_PECEu0, which controls wakeup from STOP
-> states on Hypervisor Virtualization Interrupts (which happen to
-> also be all external interrupts in host or bare metal mode).
+> On 18/11/16 13:02, kbuild test robot wrote:
+>> Hi Balbir,
+>> 
+>> [auto build test ERROR on powerpc/next]
+>> [also build test ERROR on v4.9-rc5 next-20161117]
+>> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>> 
+>> url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/powerpc-xmon-Add-support-for-dump-in-reverse/20161118-081358
+>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+>> config: powerpc-ppc64e_defconfig (attached as .config)
+>> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+>> reproduce:
+>>         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+>>         chmod +x ~/bin/make.cross
+>>         # save the attached .config to linux build tree
+>>         make.cross ARCH=powerpc 
+>> 
+>> Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
+>> http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
+>> 
+>> All errors (new ones prefixed by >>):
+>> 
+>>    arch/powerpc/xmon/xmon.c: In function 'prdump':
+>>>> arch/powerpc/xmon/xmon.c:2431:10: error: 'idx' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+>>          idx -= 2;
+>>          ~~~~^~~~
+>>    cc1: all warnings being treated as errors
+>> 
+>> vim +/idx +2431 arch/powerpc/xmon/xmon.c
+>> 
+>>   2425				}
+>>   2426	
+>>   2427				if (m < nr) {
+>>   2428					if (reverse) {
+>>   2429						buf[idx + 1] = digithex(temp[m] % 16);
+>>   2430						buf[idx] = digithex(temp[m] / 16);
+>>> 2431						idx -= 2;
+>>   2432					} else
+>>   2433						printf("%.2x", temp[m]);
+>>   2434				} else
+>> 
 >
-> It needs to be set or we will miss wakeups.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> Paul, I haven't fixed KVM. You probably should include such a fix
-> as part of your KVM-on-power9 series.
->
-> Michael: That should probably go to -stable as far as P9 support goes.
+> This seems like a false positive, I don't see it with gcc 5.3.1 on my system. I also tried with gcc 6.2.0
+> I tried with the same config as attached with the email in the reported failure. I'll try to get the debian
+> 6.1.1 compiler and see how that goes.
 
-I ended up with:
+Actually I want you to rework the patch anyway :)
 
-    powerpc: Set missing wakeup bit in LPCR on POWER9
-    
-    There is a new bit, LPCR_PECE_HVEE (Hypervisor Virtualization Exit
-    Enable), which controls wakeup from STOP states on Hypervisor
-    Virtualization Interrupts (which happen to also be all external
-    interrupts in host or bare metal mode).
-    
-    It needs to be set or we will miss wakeups.
-    
-    Fixes: 9baaef0a22c8 ("powerpc/irq: Add support for HV virtualization interrupts")
-    Cc: stable@vger.kernel.org # v4.8+
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    [mpe: Rename it to HVEE to match the name in the ISA]
-    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
+Will talk tomorrow.
 
 cheers
