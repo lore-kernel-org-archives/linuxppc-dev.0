@@ -1,24 +1,36 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ananth@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMXH82ScDzDvj6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 13:14:44 +1100 (AEDT)
-Date: Mon, 21 Nov 2016 13:14:39 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 02/13] powerpc/64: Provide functions for accessing POWER9
- partition table
-Message-ID: <20161121021439.GC26748@fergus.ozlabs.ibm.com>
-References: <1479454122-26994-1-git-send-email-paulus@ozlabs.org>
- <1479454122-26994-3-git-send-email-paulus@ozlabs.org>
- <878tsgoobx.fsf@linux.vnet.ibm.com>
- <20161119041954.GF29462@fergus.ozlabs.ibm.com>
- <87h974m0ye.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMb8H3xLRzDvhm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 15:23:58 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAL4Nii1010678
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Nov 2016 23:23:56 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26usb290sm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Nov 2016 23:23:56 -0500
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@linux.vnet.ibm.com>;
+ Sun, 20 Nov 2016 21:23:55 -0700
+Date: Mon, 21 Nov 2016 09:53:50 +0530
+From: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: kprobes: invoke handlers directly
+Reply-To: ananth@linux.vnet.ibm.com
+References: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87h974m0ye.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20161118113926.31350-1-naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <20161121042350.GA4482@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +40,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 19, 2016 at 12:05:21PM +0530, Aneesh Kumar K.V wrote:
-> Paul Mackerras <paulus@ozlabs.org> writes:
+On Fri, Nov 18, 2016 at 05:09:26PM +0530, Naveen N. Rao wrote:
+> ... rather than through notify_die(), to reduce path taken for handling
+> kprobes. Similar to commit 6f6343f53d13 ("kprobes/x86: Call exception
+> handlers directly from do_int3/do_debug").
 > 
-> > On Fri, Nov 18, 2016 at 07:57:30PM +0530, Aneesh Kumar K.V wrote:
-> >> Paul Mackerras <paulus@ozlabs.org> writes:
-> >>  +
-> >> > +	/* Global flush of TLBs and partition table caches for this lpid */
-> >> > +	asm volatile("ptesync");
-> >> > +	asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : : "r"(0x800), "r" (lpid));
-> >> > +	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
-> >> > +}
-> >> 
-> >> 
-> >> It would be nice to convert that 0x800 to a documented IS value or better use
-> >> radix__flush_tlb_pid() ?
-> >
-> > Well, not radix__flush_tlb_pid - this isn't radix and it isn't a PID
-> > flush.  I could use TLBIEL_INVAL_SET_LPID except the name implies it's
-> > for tlbiel and this is a tlbie.
-> >
+> While at it, rename post_kprobe_handler() to kprobe_post_handler() for
+> more uniform naming.
 > 
-> I wrote that wrong, we really don't have tlb_pid() what we have is tlb_lpid().
-> 
-> void radix__flush_tlb_lpid(unsigned long lpid)
-> {
-> 	unsigned long rb,rs,prs,r;
-> 	unsigned long ric = RIC_FLUSH_ALL;
-> 
-> 	rb = 0x2 << PPC_BITLSHIFT(53); /* IS = 2 */
-> 	rs = lpid & ((1UL << 32) - 1);
-> 	prs = 0; /* partition scoped */
-> 	r = 1;   /* raidx format */
-> 
-> 	asm volatile("ptesync": : :"memory");
-> 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-> 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-> 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-> }
+> Reported-by: Masami Hiramatsu <mhiramat@kernel.org>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-That has R=1, I'm using R=0.
-
-Paul.
+Acked-by: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
