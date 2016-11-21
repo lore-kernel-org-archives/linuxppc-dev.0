@@ -1,18 +1,17 @@
 Return-Path: <Yanjiang.Jin@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMgy41bNdzDvhx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 19:00:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMhCV6L3KzDvj2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 19:12:06 +1100 (AEDT)
 From: <yanjiang.jin@windriver.com>
-To: <mark.rutland@arm.com>, <benh@kernel.crashing.org>, <leoli@freescale.com>,
- <zw@zh-kernel.org>
-CC: <dmaengine@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <devicetree@vger.kernel.org>, <yanjiang.jin@windriver.com>,
+To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <oss@buserror.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, <yanjiang.jin@windriver.com>,
  <linux-kernel@vger.kernel.org>, <jinyanjiang@gmail.com>
-Subject: [PATCH] fsldma: t4240qds: drop "SG" CAP for DMA3
-Date: Mon, 21 Nov 2016 12:52:49 +0800
-Message-ID: <1479703969-15413-1-git-send-email-yanjiang.jin@windriver.com>
+Subject: [PATCH] powerpc: cputime: fix a compile warning
+Date: Mon, 21 Nov 2016 12:56:59 +0800
+Message-ID: <1479704219-21403-1-git-send-email-yanjiang.jin@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,81 +25,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Yanjiang Jin <yanjiang.jin@windriver.com>
 
-T4240QDS DMA controller uses the external DMA control signals to start or
-restart a paused DMA transfer, acknowledge a DMA transfer in progress and
-also indicates a transfer completion.
-"scatterlist copy" depends on these signals.
+This patch is to avoid the below warning:
 
-But as "T4240 Reference Manual" shown:
-"The external DMA control signals are available on DMA1 and DMA2. They are
- not supported by DMA3."
-
-So add an of_node property "fsl,external-dma-control-signals" to only DMA1
-and DMA2, it can prevent DMA3 from doing DMA_SG operations. Else we would
-get the below errors during doing dmatest:
-
-modprobe dmatest run=1 iterations=42
-
-dmatest: Started 1 threads using dma2chan0
-fsl-elo-dma ffe102300.dma: chan0: Transfer Error!
-fsl-elo-dma ffe102300.dma: chan0: irq: unhandled sr 0x00000080
-dmatest: dma2chan0-sg0: dstbuf[0x3954] not copied! Expected d8, got 2b
-........................
-dmatest: dma2chan7-sg0: dstbuf[0x1c51] not copied! Expected df, got 2e
-dmatest: dma2chan7-sg0: 1301 errors suppressed
-dmatest: dma2chan7-sg0: result #42: 'data error' with
-src_off=0xf21 dst_off=0x1c32 len=0x535 (1333)
-dmatest: dma2chan7-sg0: summary 42 tests, 42 failures 2952 iops 23968 KB/s
+kernel/sched/cpuacct.c:298:25: warning:
+format '%lld' expects argument of type 'long long int',
+but argument 4 has type 'long unsigned int' [-Wformat=]
 
 Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
 ---
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  6 ++++++
- drivers/dma/fsldma.c                        | 11 +++++++++--
- 2 files changed, 15 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/cputime.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index 68c4ead..155997d 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -1029,7 +1029,13 @@
- 	};
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index 4f60db0..4423e97 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -228,7 +228,8 @@ static inline cputime_t clock_t_to_cputime(const unsigned long clk)
+ 	return (__force cputime_t) ct;
+ }
  
- /include/ "elo3-dma-0.dtsi"
-+	dma@100300 {
-+		fsl,external-dma-control-signals;
-+	};
- /include/ "elo3-dma-1.dtsi"
-+	dma@101300 {
-+		fsl,external-dma-control-signals;
-+	};
- /include/ "elo3-dma-2.dtsi"
+-#define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
++#define cputime64_to_clock_t(ct)	\
++	(__force u64)(cputime_to_clock_t((cputime_t)(ct)))
  
- /include/ "qoriq-espi-0.dtsi"
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 51c75bf..f7054f4 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1354,12 +1354,19 @@ static int fsldma_of_probe(struct platform_device *op)
- 	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
- 
- 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
--	dma_cap_set(DMA_SG, fdev->common.cap_mask);
-+
- 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
-+
-+	if (of_get_property(op->dev.of_node,
-+		"fsl,external-dma-control-signals", NULL)) {
-+		dma_cap_set(DMA_SG, fdev->common.cap_mask);
-+		fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
-+	} else
-+		dma_cap_clear(DMA_SG, fdev->common.cap_mask);
-+
- 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
- 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
- 	fdev->common.device_prep_dma_memcpy = fsl_dma_prep_memcpy;
--	fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
- 	fdev->common.device_tx_status = fsl_tx_status;
- 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
- 	fdev->common.device_config = fsl_dma_device_config;
+ /*
+  * PPC64 uses PACA which is task independent for storing accounting data while
 -- 
 1.9.1
