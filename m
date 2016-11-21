@@ -1,46 +1,31 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tMw4q10jNzDvj5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 04:07:06 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMy0c3qVDzDvk7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 05:33:35 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uALH3vpM059339
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:04 -0500
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26uygm0gaf-1
+ uALIT20O063790
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 13:33:33 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26v13gfyy9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 12:07:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 13:33:33 -0500
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 21 Nov 2016 22:37:00 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 25D473940065
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:58 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uALH6Rh627852920
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:27 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uALH6t4q001035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 22:36:57 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: [PATCH v2 2/2] powerpc: kprobes: invoke handlers directly
-Date: Mon, 21 Nov 2016 22:36:41 +0530
-In-Reply-To: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <1bde4adb6da9695007f409af9ea4db6be400ca54.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 21 Nov 2016 11:33:32 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v3 1/6] powerpc/mm: update ptep_set_access_flag to not do full
+ mm tlb flush
+Date: Tue, 22 Nov 2016 00:03:17 +0530
+Message-Id: <20161121183322.14585-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,165 +35,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-... rather than through notify_die(), to reduce path taken for handling
-kprobes. Similar to commit 6f6343f53d13 ("kprobes/x86: Call exception
-handlers directly from do_int3/do_debug").
+When we are updating pte, we just need to flush the tlb mapping for
+that pte. Right now we do a full mm flush because we don't track page
+size. Update the interface to track the page size and use that to
+do the right tlb flush.
 
-While at it, rename post_kprobe_handler() to kprobe_post_handler() for
-more uniform naming.
-
-Reported-by: Masami Hiramatsu <mhiramat@kernel.org>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
-Changes since v1:
-- Removed CONFIG_KPROBES guard in traps.c
-- Introduce CONFIG_KPROBES guard in asm/kprobes.h to prevent conflicts when
-  including both linux/kprobes.h as well as asm/kprobes.h
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  4 +++-
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++--
+ arch/powerpc/include/asm/book3s/64/radix.h   | 14 +++++++-------
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  4 +++-
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  4 +++-
+ arch/powerpc/mm/pgtable-book3s64.c           |  3 ++-
+ arch/powerpc/mm/pgtable-radix.c              | 16 ++++++++++++++++
+ arch/powerpc/mm/pgtable.c                    | 10 ++++++++--
+ arch/powerpc/mm/tlb-radix.c                  | 15 ---------------
+ 9 files changed, 47 insertions(+), 30 deletions(-)
 
- arch/powerpc/include/asm/kprobes.h |  7 +++++++
- arch/powerpc/kernel/kprobes.c      | 29 +++++++----------------------
- arch/powerpc/kernel/traps.c        | 13 +++++++++++++
- 3 files changed, 27 insertions(+), 22 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-index 2c9759bd..da30dc3 100644
---- a/arch/powerpc/include/asm/kprobes.h
-+++ b/arch/powerpc/include/asm/kprobes.h
-@@ -32,6 +32,7 @@
- #include <asm/probes.h>
- #include <asm/code-patching.h>
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 6b8b2d57fdc8..0713626e9189 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -224,7 +224,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
  
-+#ifdef CONFIG_KPROBES
- #define  __ARCH_WANT_KPROBES_INSN_SLOT
  
- struct pt_regs;
-@@ -127,5 +128,11 @@ struct kprobe_ctlblk {
- extern int kprobe_exceptions_notify(struct notifier_block *self,
- 					unsigned long val, void *data);
- extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-+extern int kprobe_handler(struct pt_regs *regs);
-+extern int kprobe_post_handler(struct pt_regs *regs);
-+#else
-+static int kprobe_handler(struct pt_regs *regs) { return 0; }
-+static int kprobe_post_handler(struct pt_regs *regs) { return 0; }
-+#endif /* CONFIG_KPROBES */
- #endif /* __KERNEL__ */
- #endif	/* _ASM_POWERPC_KPROBES_H */
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 9479d8e..ad108b8 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -140,13 +140,16 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
- 	regs->link = (unsigned long)kretprobe_trampoline;
- }
- 
--static int __kprobes kprobe_handler(struct pt_regs *regs)
-+int __kprobes kprobe_handler(struct pt_regs *regs)
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long pg_sz)
  {
- 	struct kprobe *p;
- 	int ret = 0;
- 	unsigned int *addr = (unsigned int *)regs->nip;
- 	struct kprobe_ctlblk *kcb;
- 
-+	if (user_mode(regs))
-+		return 0;
-+
- 	/*
- 	 * We don't want to be preempted for the entire
- 	 * duration of kprobe processing
-@@ -359,12 +362,12 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
-  * single-stepped a copy of the instruction.  The address of this
-  * copy is p->ainsn.insn.
+ 	unsigned long set = pte_val(entry) &
+ 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 86870c11917b..46d739457d68 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -580,10 +580,13 @@ static inline bool check_pte_access(unsigned long access, unsigned long ptev)
   */
--static int __kprobes post_kprobe_handler(struct pt_regs *regs)
-+int __kprobes kprobe_post_handler(struct pt_regs *regs)
- {
- 	struct kprobe *cur = kprobe_running();
- 	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
  
--	if (!cur)
-+	if (!cur || user_mode(regs))
- 		return 0;
- 
- 	/* make sure we got here for instruction we have a kprobe on */
-@@ -470,25 +473,7 @@ int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
- int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
- 				       unsigned long val, void *data)
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long pg_sz)
  {
--	struct die_args *args = (struct die_args *)data;
--	int ret = NOTIFY_DONE;
--
--	if (args->regs && user_mode(args->regs))
--		return ret;
--
--	switch (val) {
--	case DIE_BPT:
--		if (kprobe_handler(args->regs))
--			ret = NOTIFY_STOP;
--		break;
--	case DIE_SSTEP:
--		if (post_kprobe_handler(args->regs))
--			ret = NOTIFY_STOP;
--		break;
--	default:
--		break;
--	}
--	return ret;
-+	return NOTIFY_DONE;
+ 	if (radix_enabled())
+-		return radix__ptep_set_access_flags(mm, ptep, entry);
++		return radix__ptep_set_access_flags(mm, ptep, entry,
++						    address, pg_sz);
+ 	return hash__ptep_set_access_flags(ptep, entry);
  }
  
- unsigned long arch_deref_entry_point(void *entry)
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 91d278c..38d5fbf 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -64,6 +64,7 @@
- #include <asm/asm-prototypes.h>
- #include <asm/hmi.h>
- #include <sysdev/fsl_pci.h>
-+#include <asm/kprobes.h>
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index 2a46dea8e1b1..279b2f68e00f 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -110,6 +110,7 @@
+ #define RADIX_PUD_TABLE_SIZE	(sizeof(pud_t) << RADIX_PUD_INDEX_SIZE)
+ #define RADIX_PGD_TABLE_SIZE	(sizeof(pgd_t) << RADIX_PGD_INDEX_SIZE)
  
- #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
- int (*__debugger)(struct pt_regs *regs) __read_mostly;
-@@ -824,6 +825,9 @@ void single_step_exception(struct pt_regs *regs)
++extern int radix_get_mmu_psize(unsigned long pg_sz);
+ static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
+ 					       unsigned long set)
+ {
+@@ -167,7 +168,9 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+  * function doesn't need to invalidate tlb.
+  */
+ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
+-						pte_t *ptep, pte_t entry)
++						pte_t *ptep, pte_t entry,
++						unsigned long address,
++						unsigned long pg_sz)
+ {
  
- 	clear_single_step(regs);
+ 	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED |
+@@ -175,6 +178,7 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
  
-+	if (kprobe_post_handler(regs))
-+		return;
+ 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+ 
++		int psize;
+ 		unsigned long old_pte, new_pte;
+ 
+ 		old_pte = __radix_pte_update(ptep, ~0, 0);
+@@ -183,12 +187,8 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
+ 		 * new value of pte
+ 		 */
+ 		new_pte = old_pte | set;
+-
+-		/*
+-		 * For now let's do heavy pid flush
+-		 * radix__flush_tlb_page_psize(mm, addr, mmu_virtual_psize);
+-		 */
+-		radix__flush_tlb_mm(mm);
++		psize = radix_get_mmu_psize(pg_sz);
++		radix__flush_tlb_page_psize(mm, address, psize);
+ 
+ 		__radix_pte_update(ptep, 0, new_pte);
+ 	} else
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index c219ef7be53b..24ee66bf7223 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -268,7 +268,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 
+ 
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long pg_sz)
+ {
+ 	unsigned long set = pte_val(entry) &
+ 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index 653a1838469d..86d49dc60ec6 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -301,7 +301,9 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+  * function doesn't need to flush the hash entry
+  */
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long pg_sz)
+ {
+ 	unsigned long bits = pte_val(entry) &
+ 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index f4f437cbabf1..5c7c501b7cae 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -35,7 +35,8 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ #endif
+ 	changed = !pmd_same(*(pmdp), entry);
+ 	if (changed) {
+-		__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp), pmd_pte(entry));
++		__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp), pmd_pte(entry),
++					address, HPAGE_PMD_SIZE);
+ 		flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+ 	}
+ 	return changed;
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 688b54517655..416918005395 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -222,6 +222,22 @@ static int __init get_idx_from_shift(unsigned int shift)
+ 	return idx;
+ }
+ 
++int radix_get_mmu_psize(unsigned long page_size)
++{
++	int psize;
 +
- 	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
- 					5, SIGTRAP) == NOTIFY_STOP)
- 		goto bail;
-@@ -1177,6 +1181,9 @@ void program_check_exception(struct pt_regs *regs)
- 		if (debugger_bpt(regs))
- 			goto bail;
- 
-+		if (kprobe_handler(regs))
-+			goto bail;
++	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
++		psize = mmu_virtual_psize;
++	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
++		psize = MMU_PAGE_2M;
++	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
++		psize = MMU_PAGE_1G;
++	else
++		return -1;
++	return psize;
++}
 +
- 		/* trap exception */
- 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
- 				== NOTIFY_STOP)
-@@ -1745,6 +1752,9 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
- 			return;
- 		}
- 
-+		if (kprobe_post_handler(regs))
-+			return;
 +
- 		if (notify_die(DIE_SSTEP, "block_step", regs, 5,
- 			       5, SIGTRAP) == NOTIFY_STOP) {
- 			return;
-@@ -1759,6 +1769,9 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
- 		/* Clear the instruction completion event */
- 		mtspr(SPRN_DBSR, DBSR_IC);
- 
-+		if (kprobe_post_handler(regs))
-+			return;
+ static int __init radix_dt_scan_page_sizes(unsigned long node,
+ 					   const char *uname, int depth,
+ 					   void *data)
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 911fdfb63ec1..a9ec0d8f1bcf 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -219,12 +219,18 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 			  pte_t *ptep, pte_t entry, int dirty)
+ {
+ 	int changed;
++	unsigned long pg_sz;
 +
- 		if (notify_die(DIE_SSTEP, "single_step", regs, 5,
- 			       5, SIGTRAP) == NOTIFY_STOP) {
- 			return;
+ 	entry = set_access_flags_filter(entry, vma, dirty);
+ 	changed = !pte_same(*(ptep), entry);
+ 	if (changed) {
+-		if (!is_vm_hugetlb_page(vma))
++		if (!is_vm_hugetlb_page(vma)) {
++			pg_sz = PAGE_SIZE;
+ 			assert_pte_locked(vma->vm_mm, address);
+-		__ptep_set_access_flags(vma->vm_mm, ptep, entry);
++		} else
++			pg_sz = huge_page_size(hstate_vma(vma));
++		__ptep_set_access_flags(vma->vm_mm, ptep, entry,
++					address, pg_sz);
+ 		flush_tlb_page(vma, address);
+ 	}
+ 	return changed;
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 3493cf4e0452..81a9f6390f64 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -282,21 +282,6 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_range);
+ 
+-static int radix_get_mmu_psize(int page_size)
+-{
+-	int psize;
+-
+-	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
+-		psize = mmu_virtual_psize;
+-	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
+-		psize = MMU_PAGE_2M;
+-	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
+-		psize = MMU_PAGE_1G;
+-	else
+-		return -1;
+-	return psize;
+-}
+-
+ void radix__tlb_flush(struct mmu_gather *tlb)
+ {
+ 	int psize = 0;
 -- 
 2.10.2
