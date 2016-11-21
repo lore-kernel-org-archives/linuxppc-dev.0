@@ -1,23 +1,21 @@
-Return-Path: <vdavydov@tarantool.org>
-Received: from fallback8.mail.ru (fallback8.mail.ru [94.100.181.110])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tMjHp3kGdzDvj0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 20:00:54 +1100 (AEDT)
-Date: Mon, 21 Nov 2016 11:36:16 +0300
-From: Vladimir Davydov <vdavydov@tarantool.org>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: mpe@ellerman.id.au, hannes@cmpxchg.org, mhocko@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RESEND] [PATCH v1 1/3] Add basic infrastructure for memcg
- hotplug support
-Message-ID: <20161121083616.GC18431@esperanza>
-References: <1479253501-26261-1-git-send-email-bsingharora@gmail.com>
- <1479253501-26261-2-git-send-email-bsingharora@gmail.com>
- <20161116090129.GA18225@esperanza>
- <3accc533-8dda-a69c-fabc-23eb388cf11b@gmail.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tMkRm2fTxzDvjw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 20:52:52 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Lars-Peter Clausen <lars@metafoo.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [PATCH] ibmebus: Remove legacy suspend/resume support
+In-Reply-To: <1479562934-1541-1-git-send-email-lars@metafoo.de>
+References: <1479562934-1541-1-git-send-email-lars@metafoo.de>
+Date: Mon, 21 Nov 2016 20:52:51 +1100
+Message-ID: <87polpw45o.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3accc533-8dda-a69c-fabc-23eb388cf11b@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 17, 2016 at 11:28:12AM +1100, Balbir Singh wrote:
-> >> @@ -5773,6 +5771,59 @@ static int __init cgroup_memory(char *s)
-> >>  }
-> >>  __setup("cgroup.memory=", cgroup_memory);
-> >>  
-> >> +static void memcg_node_offline(int node)
-> >> +{
-> >> +	struct mem_cgroup *memcg;
-> >> +
-> >> +	if (node < 0)
-> >> +		return;
-> > 
-> > Is this possible?
-> 
-> Yes, please see node_states_check_changes_online/offline
+Lars-Peter Clausen <lars@metafoo.de> writes:
 
-OK, I see.
+> There are no ibmebus driver that make use of legacy suspend/resume. This
+> patch removes the support for it from ibmebus framework, new ibmebus driver
+> (as unlikely as they are) wanting to use suspend/resume should use
+> dev_pm_ops.
+>
+> Since there aren't any special bus specific things to do during
+> suspend/resume and since the PM core will automatically fallback directly
+> to using the device's PM ops if no bus PM ops are specified there is no
+> need to have any special ibmebus PM ops at all.
 
-> 
-> > 
-> >> +
-> >> +	for_each_mem_cgroup(memcg) {
-> >> +		free_mem_cgroup_per_node_info(memcg, node);
-> >> +		mem_cgroup_may_update_nodemask(memcg);
-> > 
-> > If memcg->numainfo_events is 0, mem_cgroup_may_update_nodemask() won't
-> > update memcg->scan_nodes. Is it OK?
-> > 
-> >> +	}
-> > 
-> > What if a memory cgroup is created or destroyed while you're walking the
-> > tree? Should we probably use get_online_mems() in mem_cgroup_alloc() to
-> > avoid that?
-> > 
-> 
-> The iterator internally takes rcu_read_lock() to avoid any side-effects
-> of cgroups added/removed. I suspect you are also suggesting using get_online_mems()
-> around each call to for_each_online_node
-> 
-> My understanding so far is
-> 
-> 1. invalidate_reclaim_iterators should be safe (no bad side-effects)
-> 2. mem_cgroup_free - should be safe as well
-> 3. mem_cgroup_alloc - needs protection
-> 4. mem_cgroup_init - needs protection
-> 5. mem_cgroup_remove_from_tress - should be safe
+Thanks, this looks like a really nice cleanup.
 
-I'm not into the memory hotplug code, but my understanding is that if
-memcg offline happens to race with node unplug, it's possible that
+I don't know the PM code at all, is there any down side to removing all
+of this?
 
- - mem_cgroup_free() doesn't free the node's data, because it sees the
-   node as already offline
- - memcg hotplug code doesn't free the node's data either, because it
-   sees the cgroup as offline
-
-May be, we should surround all the loops over online nodes with
-get/put_online_mems() to be sure that nothing wrong can happen.
-They are slow path, anyway.
-
-Thanks,
-Vladimir
+cheers
