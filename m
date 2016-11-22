@@ -1,37 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tN8Nr6pxYzDwQv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 13:21:48 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAM2IPXE017184
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:21:46 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26vcxk8ftx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 21:21:46 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 21 Nov 2016 19:21:45 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 6/6] powerpc/mm: Batch tlb flush when invalidating pte
- entries
-In-Reply-To: <1479760841.10230.47.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tN8qK3185zDvNS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 13:41:17 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 4/6] powerpc/mm/hugetlb: Switch hugetlb update to use
+ huge_pte_update
+In-Reply-To: <20161121183322.14585-4-aneesh.kumar@linux.vnet.ibm.com>
 References: <20161121183322.14585-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161121183322.14585-6-aneesh.kumar@linux.vnet.ibm.com>
- <1479760841.10230.47.camel@kernel.crashing.org>
-Date: Tue, 22 Nov 2016 07:51:38 +0530
+ <20161121183322.14585-4-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 22 Nov 2016 13:41:09 +1100
+Message-ID: <8760ngw81m.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <87d1ho1cgd.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,26 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QmVuamFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPiB3cml0ZXM6
-DQoNCj4gT24gVHVlLCAyMDE2LTExLTIyIGF0IDAwOjAzICswNTMwLCBBbmVlc2ggS3VtYXIgSy5W
-IHdyb3RlOg0KPj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoC8qDQo+PiArwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICogSWYgd2UgYXJlIHRyeWluZyB0byBjbGVhciB0aGUg
-cHRlLCB3ZSBjYW4gc2tpcA0KPj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCAqIHRo
-ZSBiZWxvdyBzZXF1ZW5jZSBhbmQgYmF0Y2ggdGhlIHRsYiBmbHVzaC4gVGhlDQo+PiArwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICogdGxiIGZsdXNoIGJhdGNoaW5nIGlzIGRvbmUgYnkg
-bW11IGdhdGhlciBjb2RlDQo+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICovDQo+
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKG5ld19wdGUpIHsNCj4+ICvCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgYXNtIHZvbGF0aWxlKCJw
-dGVzeW5jIiA6IDogOiAibWVtb3J5Iik7DQo+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoHBzaXplID0gcmFkaXhfZ2V0X21tdV9wc2l6ZShwZ19zeik7DQo+
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJhZGl4X19m
-bHVzaF90bGJfcGFnZV9wc2l6ZShtbSwgYWRkciwgcHNpemUpOw0KPj4gK8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBfX3JhZGl4X3B0ZV91cGRhdGUocHRlcCwg
-MCwgbmV3X3B0ZSk7DQo+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgfQ0KPj4gwqDC
-oMKgwqDCoMKgwqDCoH0gZWxzZQ0KPj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBv
-bGRfcHRlID0gX19yYWRpeF9wdGVfdXBkYXRlKHB0ZXAsIGNsciwgc2V0KTsNCj4NCj4gQ2FuIHlv
-dSBjaGVjayB0aGUgdmFsaWQgYml0ID8gV2hhdCBpZiB3ZSBhcmUganVzdCBzZXR0aW5nIGEgc3dh
-cCBQVEUNCj4gb24gdG9wIG9mIGFuIGludmFsaWQgb25lIGZvciBleGFtcGxlID8NCj4NCj4gU2hv
-dWxkIHRoZSBhYm92ZSBjYXNlIGJlIGxpbWl0ZWQgdG8gYm90aCBvbGQgYW5kIG5ldyBiZWluZyB2
-YWxpZCA/DQoNCldlIHNob3VsZCB1c2Ugc2V0X3B0ZV9hdCBpZiB0aGUgb2xkIHB0ZSBpcyBub3Qg
-dmFsaWQgYW5kIHRoYXQgZG9lc24ndA0KaW52b2x2ZSBhIHRsYiBmbHVzaC4NCg0KLWFuZWVzaA0K
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+
+> We want to switch pte_update to use va based tlb flush. In order to do th=
+at we
+> need to track the page size. With hugetlb we currently don't have page si=
+ze
+> available in these functions. Hence switch hugetlb to use seperate functi=
+ons
+> for update. In later patch we will update hugetlb functions to take
+> vm_area_struct from which we can derive the page size. After that we will=
+ switch
+> this back to use pte_update
+
+This breaks corenet64_smp_defconfig:
+
+In file included from ../arch/powerpc/include/asm/page.h:294:0,
+                 from ../arch/powerpc/include/asm/thread_info.h:34,
+                 from ../include/linux/thread_info.h:58,
+                 from ../include/asm-generic/preempt.h:4,
+                 from ./arch/powerpc/include/generated/asm/preempt.h:1,
+                 from ../include/linux/preempt.h:59,
+                 from ../include/linux/spinlock.h:50,
+                 from ../include/linux/mmzone.h:7,
+                 from ../include/linux/gfp.h:5,
+                 from ../arch/powerpc/mm/pgtable.c:25:
+../arch/powerpc/include/asm/hugetlb.h: In function =E2=80=98huge_ptep_get_a=
+nd_clear=E2=80=99:
+../arch/powerpc/include/asm/hugetlb.h:139:15: error: implicit declaration o=
+f function =E2=80=98huge_pte_update=E2=80=99 [-Werror=3Dimplicit-function-d=
+eclaration]
+  return __pte(huge_pte_update(mm, addr, ptep, ~0UL, 0));
+               ^
+../arch/powerpc/include/asm/pgtable-types.h:6:30: note: in definition of ma=
+cro =E2=80=98__pte=E2=80=99
+ #define __pte(x) ((pte_t) { (x) })
+
+
+And many more.
+
+cheers
