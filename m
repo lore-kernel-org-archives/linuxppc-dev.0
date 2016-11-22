@@ -1,19 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tN60r1LFfzDvfJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tN60r5jZ6zDvmm
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:34:20 +1100 (AEDT)
-In-Reply-To: <20161030193557.23862-1-christophe.jaillet@wanadoo.fr>
-To: Christophe Jaillet <christophe.jaillet@wanadoo.fr>, imunsie@au1.ibm.com,
- fbarrat@linux.vnet.ibm.com
+In-Reply-To: <20160921144928.4EB431A2455@localhost.localdomain>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: cxl: Fix memory allocation failure test
-Message-Id: <3tN60q61rdz9t17@ozlabs.org>
-Date: Tue, 22 Nov 2016 11:34:19 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/64: get rid of MIN_HUGEPTE_SHIFT
+Message-Id: <3tN60r4hk7z9t26@ozlabs.org>
+Date: Tue, 22 Nov 2016 11:34:20 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-10-30 at 19:35:57 UTC, Christophe Jaillet wrote:
-> 'cxl_context_alloc()' does not return an error pointer. It is just a
-> shortcut for a call to 'kzalloc' with 'sizeof(struct cxl_context)' as the
-> size parameter.
+On Wed, 2016-09-21 at 14:49:27 UTC, Christophe Leroy wrote:
+> MIN_HUGEPTE_SHIFT hasn't been used since commit d1837cba5d5d5
+> ("powerpc/mm: Cleanup initialization of hugepages on powerpc")
 > 
-> So its return value should be compared with NULL.
-> While fixing it, simplify a bit the code.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5cd4f5cec2374d2c09299211d2b357
+https://git.kernel.org/powerpc/c/c05f69a3dc702312bbecae4c7ddfc9
 
 cheers
