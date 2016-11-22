@@ -1,19 +1,18 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tNMnW6JJMzDsxY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 21:55:27 +1100 (AEDT)
-Subject: Re: [Patch v7 0/7] microblaze/PowerPC: Move irq-xilinx to irqchip
-To: Zubair Lutfullah Kakakhel <Zubair.Kakakhel@imgtec.com>, monstr@monstr.eu,
- tglx@linutronix.de, jason@lakedaemon.net
-References: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
-Cc: linux-kernel@vger.kernel.org, michal.simek@xilinx.com,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-From: Marc Zyngier <marc.zyngier@arm.com>
-Message-ID: <981aad31-906e-090a-de4e-1b601db3703c@arm.com>
-Date: Tue, 22 Nov 2016 10:55:21 +0000
-MIME-Version: 1.0
-In-Reply-To: <20161114121351.10924-1-Zubair.Kakakhel@imgtec.com>
-Content-Type: text/plain; charset=windows-1252
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNMq2220JzDvmd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 21:56:46 +1100 (AEDT)
+Message-Id: <cover.1479742486.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 0/2] powerpc: stack protector (-fstack-protector) support
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Nicolas Pitre <nicolas.pitre@linaro.org>
+Date: Tue, 22 Nov 2016 11:49:28 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/11/16 12:13, Zubair Lutfullah Kakakhel wrote:
-> Hi,
-> 
-> This patch series moves the Xilinx interrupt controller driver out
-> of arch/microblaze to drivers/irqchip and then cleans it up a bit.
-> And then removes another implementation of the driver in arch/powerpc.
-> 
-> This effort results in one common driver usable by mips,microblaze
-> and powerpc.
-> 
-> Compile tested on microblaze-el.
-> Tested using qemu-system-ppc using virtix440-ml507
-> Tested on MIPSfpga platform.
-> 
-> Based on v4.9-rc5
+Add HAVE_CC_STACKPROTECTOR to powerpc. This is copied from ARM.
 
-I've queued this for 4.10 with Michal's Acks and TBs.
+Christophe Leroy (2):
+  powerpc: initial stack protector (-fstack-protector) support
+  powerpc/32: stack protector: change the canary value per task
 
-Thanks,
+ arch/powerpc/Kconfig                      |  1 +
+ arch/powerpc/include/asm/stackprotector.h | 40 +++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/Makefile              |  4 ++++
+ arch/powerpc/kernel/asm-offsets.c         |  3 +++
+ arch/powerpc/kernel/entry_32.S            |  6 ++++-
+ arch/powerpc/kernel/process.c             |  6 +++++
+ 6 files changed, 59 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/stackprotector.h
 
-	M.
 -- 
-Jazz is not dead. It just smells funny...
+2.10.1
