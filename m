@@ -1,23 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tN8qK3185zDvNS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 13:41:17 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tN97l61HBzDw4G
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 13:55:31 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id 144so355713pfv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 18:55:31 -0800 (PST)
+Subject: Re: [PATCH v3 1/6] powerpc/mm: update ptep_set_access_flag to not do
+ full mm tlb flush
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/6] powerpc/mm/hugetlb: Switch hugetlb update to use
- huge_pte_update
-In-Reply-To: <20161121183322.14585-4-aneesh.kumar@linux.vnet.ibm.com>
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 References: <20161121183322.14585-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161121183322.14585-4-aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 22 Nov 2016 13:41:09 +1100
-Message-ID: <8760ngw81m.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <229327ef-bafe-75c5-79d9-2bece549ea38@gmail.com>
+Date: Tue, 22 Nov 2016 13:55:25 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20161121183322.14585-1-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-
-> We want to switch pte_update to use va based tlb flush. In order to do th=
-at we
-> need to track the page size. With hugetlb we currently don't have page si=
-ze
-> available in these functions. Hence switch hugetlb to use seperate functi=
-ons
-> for update. In later patch we will update hugetlb functions to take
-> vm_area_struct from which we can derive the page size. After that we will=
- switch
-> this back to use pte_update
-
-This breaks corenet64_smp_defconfig:
-
-In file included from ../arch/powerpc/include/asm/page.h:294:0,
-                 from ../arch/powerpc/include/asm/thread_info.h:34,
-                 from ../include/linux/thread_info.h:58,
-                 from ../include/asm-generic/preempt.h:4,
-                 from ./arch/powerpc/include/generated/asm/preempt.h:1,
-                 from ../include/linux/preempt.h:59,
-                 from ../include/linux/spinlock.h:50,
-                 from ../include/linux/mmzone.h:7,
-                 from ../include/linux/gfp.h:5,
-                 from ../arch/powerpc/mm/pgtable.c:25:
-../arch/powerpc/include/asm/hugetlb.h: In function =E2=80=98huge_ptep_get_a=
-nd_clear=E2=80=99:
-../arch/powerpc/include/asm/hugetlb.h:139:15: error: implicit declaration o=
-f function =E2=80=98huge_pte_update=E2=80=99 [-Werror=3Dimplicit-function-d=
-eclaration]
-  return __pte(huge_pte_update(mm, addr, ptep, ~0UL, 0));
-               ^
-../arch/powerpc/include/asm/pgtable-types.h:6:30: note: in definition of ma=
-cro =E2=80=98__pte=E2=80=99
- #define __pte(x) ((pte_t) { (x) })
 
 
-And many more.
+On 22/11/16 05:33, Aneesh Kumar K.V wrote:
+> When we are updating pte, we just need to flush the tlb mapping for
+> that pte. Right now we do a full mm flush because we don't track page
+> size. Update the interface to track the page size and use that to
+> do the right tlb flush.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/32/pgtable.h |  4 +++-
+>  arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++--
+>  arch/powerpc/include/asm/book3s/64/radix.h   | 14 +++++++-------
+>  arch/powerpc/include/asm/nohash/32/pgtable.h |  4 +++-
+>  arch/powerpc/include/asm/nohash/64/pgtable.h |  4 +++-
+>  arch/powerpc/mm/pgtable-book3s64.c           |  3 ++-
+>  arch/powerpc/mm/pgtable-radix.c              | 16 ++++++++++++++++
+>  arch/powerpc/mm/pgtable.c                    | 10 ++++++++--
+>  arch/powerpc/mm/tlb-radix.c                  | 15 ---------------
+>  9 files changed, 47 insertions(+), 30 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> index 6b8b2d57fdc8..0713626e9189 100644
+> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+> @@ -224,7 +224,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>  
+>  
+>  static inline void __ptep_set_access_flags(struct mm_struct *mm,
+> -					   pte_t *ptep, pte_t entry)
+> +					   pte_t *ptep, pte_t entry,
+> +					   unsigned long address,
+> +					   unsigned long pg_sz)
 
-cheers
+I wonder if the change can be limited in scope by passing the struct vma instead
+of struct mm as the first argument and not passing pg_sz (I don't like that
+name at all, page_size if we decide to do it, please). Then extract the mm from
+vma->mm
+
+
+Balbir Singh.
