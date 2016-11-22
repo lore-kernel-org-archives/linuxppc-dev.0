@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNHxb05sLzDw2Z
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 19:02:10 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNHxf3XttzDw3B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 19:02:14 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAM7wtkE135459
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 03:02:08 -0500
+ uAM7wpB4070513
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 03:02:12 -0500
 Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26vfqrf657-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26vcwbd664-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 03:02:08 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 03:02:11 -0500
 Received: from localhost
  by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 22 Nov 2016 03:02:07 -0500
+ Tue, 22 Nov 2016 03:02:11 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v4 5/7] powerpc/mm/hugetlb: Switch hugetlb update to use
- huge_pte_update
-Date: Tue, 22 Nov 2016 13:31:47 +0530
+Subject: [PATCH v4 6/7] powerpc/mm: update pte_update to not do full mm tlb
+ flush
+Date: Tue, 22 Nov 2016 13:31:48 +0530
 In-Reply-To: <20161122080149.31306-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20161122080149.31306-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20161122080149.31306-5-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20161122080149.31306-6-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,94 +37,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We want to switch pte_update to use va based tlb flush. In order to do that we
-need to track the page size. With hugetlb we currently don't have page size
-available in these functions. Hence switch hugetlb to use seperate functions
-for update. In later patch we will update hugetlb functions to take
-vm_area_struct from which we can derive the page size. After that we will switch
-this back to use pte_update
+When we are updating pte, we just need to flush the tlb mapping for
+that pte. Right now we do a full mm flush because we don't track page
+size. Update the interface to track the page size and use that to
+do the right tlb flush.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 43 +++++++++++++++++++++++++++-
- arch/powerpc/include/asm/book3s/64/pgtable.h |  9 ------
- 2 files changed, 42 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 16 ++++++++++------
+ arch/powerpc/include/asm/book3s/64/radix.h   | 19 ++++++++-----------
+ arch/powerpc/mm/pgtable-radix.c              |  2 +-
+ 3 files changed, 19 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 8fc04d2ac86f..586236625117 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -31,9 +31,50 @@ static inline int hstate_get_psize(struct hstate *hstate)
- 	}
- }
- 
-+static inline unsigned long huge_pte_update(struct mm_struct *mm, unsigned long addr,
-+					    pte_t *ptep, unsigned long clr,
-+					    unsigned long set)
-+{
-+	if (radix_enabled()) {
-+		unsigned long old_pte;
-+
-+		if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-+
-+			unsigned long new_pte;
-+
-+			old_pte = __radix_pte_update(ptep, ~0, 0);
-+			asm volatile("ptesync" : : : "memory");
-+			/*
-+			 * new value of pte
-+			 */
-+			new_pte = (old_pte | set) & ~clr;
-+			/*
-+			 * For now let's do heavy pid flush
-+			 * radix__flush_tlb_page_psize(mm, addr, mmu_virtual_psize);
-+			 */
-+			radix__flush_tlb_mm(mm);
-+
-+			__radix_pte_update(ptep, 0, new_pte);
-+		} else
-+			old_pte = __radix_pte_update(ptep, clr, set);
-+		asm volatile("ptesync" : : : "memory");
-+		return old_pte;
-+	}
-+	return hash__pte_update(mm, addr, ptep, clr, set, true);
-+}
-+
-+static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
-+					   unsigned long addr, pte_t *ptep)
-+{
-+	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_WRITE)) == 0)
-+		return;
-+
-+	huge_pte_update(mm, addr, ptep, _PAGE_WRITE, 0);
-+}
-+
- static inline pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
- 					    unsigned long addr, pte_t *ptep)
- {
--	return __pte(pte_update(mm, addr, ptep, ~0UL, 0, 1));
-+	return __pte(huge_pte_update(mm, addr, ptep, ~0UL, 0));
- }
- #endif
 diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 46d739457d68..ef2eef1ba99a 100644
+index ef2eef1ba99a..09869ad37aba 100644
 --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
 +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -346,15 +346,6 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
+@@ -301,12 +301,16 @@ extern unsigned long pci_io_base;
+ 
+ static inline unsigned long pte_update(struct mm_struct *mm, unsigned long addr,
+ 				       pte_t *ptep, unsigned long clr,
+-				       unsigned long set, int huge)
++				       unsigned long set,
++				       unsigned long pg_sz)
+ {
++	bool huge = (pg_sz != PAGE_SIZE);
++
+ 	if (radix_enabled())
+-		return radix__pte_update(mm, addr, ptep, clr, set, huge);
++		return radix__pte_update(mm, addr, ptep, clr, set, pg_sz);
+ 	return hash__pte_update(mm, addr, ptep, clr, set, huge);
+ }
++
+ /*
+  * For hash even if we have _PAGE_ACCESSED = 0, we do a pte_update.
+  * We currently remove entries from the hashtable regardless of whether
+@@ -324,7 +328,7 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+ 
+ 	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
+ 		return 0;
+-	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
++	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, PAGE_SIZE);
+ 	return (old & _PAGE_ACCESSED) != 0;
  }
  
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
--{
--	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_WRITE)) == 0)
--		return;
--
--	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 1);
--}
--
+@@ -343,21 +347,21 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_WRITE)) == 0)
+ 		return;
+ 
+-	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
++	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, PAGE_SIZE);
+ }
+ 
  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
  static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
  				       unsigned long addr, pte_t *ptep)
+ {
+-	unsigned long old = pte_update(mm, addr, ptep, ~0UL, 0, 0);
++	unsigned long old = pte_update(mm, addr, ptep, ~0UL, 0, PAGE_SIZE);
+ 	return __pte(old);
+ }
+ 
+ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+ 			     pte_t * ptep)
+ {
+-	pte_update(mm, addr, ptep, ~0UL, 0, 0);
++	pte_update(mm, addr, ptep, ~0UL, 0, PAGE_SIZE);
+ }
+ 
+ static inline int pte_write(pte_t pte)
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index 279b2f68e00f..aec6e8ee6e27 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -129,15 +129,16 @@ static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
+ 
+ 
+ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+-					unsigned long addr,
+-					pte_t *ptep, unsigned long clr,
+-					unsigned long set,
+-					int huge)
++					      unsigned long addr,
++					      pte_t *ptep, unsigned long clr,
++					      unsigned long set,
++					      unsigned long pg_sz)
+ {
+ 	unsigned long old_pte;
+ 
+ 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+ 
++		int psize;
+ 		unsigned long new_pte;
+ 
+ 		old_pte = __radix_pte_update(ptep, ~0, 0);
+@@ -146,18 +147,14 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+ 		 * new value of pte
+ 		 */
+ 		new_pte = (old_pte | set) & ~clr;
+-
+-		/*
+-		 * For now let's do heavy pid flush
+-		 * radix__flush_tlb_page_psize(mm, addr, mmu_virtual_psize);
+-		 */
+-		radix__flush_tlb_mm(mm);
++		psize = radix_get_mmu_psize(pg_sz);
++		radix__flush_tlb_page_psize(mm, addr, psize);
+ 
+ 		__radix_pte_update(ptep, 0, new_pte);
+ 	} else
+ 		old_pte = __radix_pte_update(ptep, clr, set);
+ 	asm volatile("ptesync" : : : "memory");
+-	if (!huge)
++	if (pg_sz == PAGE_SIZE)
+ 		assert_pte_locked(mm, addr);
+ 
+ 	return old_pte;
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 416918005395..2fc7336619b3 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -486,7 +486,7 @@ unsigned long radix__pmd_hugepage_update(struct mm_struct *mm, unsigned long add
+ 	assert_spin_locked(&mm->page_table_lock);
+ #endif
+ 
+-	old = radix__pte_update(mm, addr, (pte_t *)pmdp, clr, set, 1);
++	old = radix__pte_update(mm, addr, (pte_t *)pmdp, clr, set, HPAGE_PMD_SIZE);
+ 	trace_hugepage_update(addr, old, clr, set);
+ 
+ 	return old;
 -- 
 2.10.2
