@@ -1,18 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNM9f0FhqzDvkR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 21:27:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNMWl00f0zDvrt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 21:43:30 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: stewart@linux.vnet.ibm.com
-Subject: Re: [PATCH RFC] powerpc/powernv: sysfs entry to force full IPL reboot
-In-Reply-To: <20161122092258.32514-1-andrew.donnellan@au1.ibm.com>
-References: <20161122092258.32514-1-andrew.donnellan@au1.ibm.com>
-Date: Tue, 22 Nov 2016 21:27:46 +1100
-Message-ID: <87twazvmfx.fsf@concordia.ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v2 2/2] powerpc: kprobes: invoke handlers directly
+In-Reply-To: <20161122062549.GJ4019@naverao1-tp.localdomain>
+References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+ <1bde4adb6da9695007f409af9ea4db6be400ca54.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20161122142537.42e365a22d866026aa726bfe@kernel.org>
+ <20161122062549.GJ4019@naverao1-tp.localdomain>
+Date: Tue, 22 Nov 2016 21:43:28 +1100
+Message-ID: <87r363vlpr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,44 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
-
-> skiboot now supports "fast reboot", a reboot procedure where skiboot
-> reinitialises hardware and loads a new kernel without re-IPLing the
-> machine. At present, fast reboot support is still experimental and is not
-> enabled by default, however it is intended that it will be enabled by
-> default in a near-future release.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> On 2016/11/22 02:25PM, Masami Hiramatsu wrote:
+>> On Mon, 21 Nov 2016 22:36:41 +0530
+>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+>> > diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+>> > index 2c9759bd..da30dc3 100644
+>> > --- a/arch/powerpc/include/asm/kprobes.h
+>> > +++ b/arch/powerpc/include/asm/kprobes.h
+>> > @@ -32,6 +32,7 @@
+>> >  #include <asm/probes.h>
+>> >  #include <asm/code-patching.h>
+>> >  
+>> > +#ifdef CONFIG_KPROBES
+>> >  #define  __ARCH_WANT_KPROBES_INSN_SLOT
+>> >  
+>> >  struct pt_regs;
+>> > @@ -127,5 +128,11 @@ struct kprobe_ctlblk {
+>> >  extern int kprobe_exceptions_notify(struct notifier_block *self,
+>> >  					unsigned long val, void *data);
+>> >  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+>> > +extern int kprobe_handler(struct pt_regs *regs);
+>> > +extern int kprobe_post_handler(struct pt_regs *regs);
+>> > +#else
+>> > +static int kprobe_handler(struct pt_regs *regs) { return 0; }
+>> > +static int kprobe_post_handler(struct pt_regs *regs) { return 0; }
+>> 
+>> These should be "static inline int kprobe_...", you lost 'inline' here.
+>> Others are OK for me.
 >
-> There may be some circumstances where the user wants to force a full IPL
-> reboot rather than using fast reboot. Add support for the
-> OPAL_REBOOT_FULL_IPL reboot type, enabled by writing 1 to
-> /sys/firmware/opal/force_full_ipl_reboot. On versions of skiboot that
-> implement the OPAL_REBOOT_FULL_IPL reboot type, this will force an IPL. On
-> versions that do not, print an error message on reboot and proceed with a
-> regular reboot (which could be a full IPL or a fast reboot).
+> Ah, indeed. Good catch. Thanks.
+>  
+> Michael,
+> Would you be ok to make this change when applying this, if you're ok 
+> with the rest of the patch?
 
-Hi Andrew,
+Yep done.
 
-Can I suggest:
- - Fix OPAL
- - Fix OPAL
- - Fix OPAL
-
-...
-
-Oh OK, it's firmware :D
-
-There's existing logic in kernel/reboot.c to handle a reboot= command
-line parameter, which can set the reboot_mode, so my preference would be
-that we use that.
-
-Currently we completely ignore the reboot_mode, so there's no backward
-compatibility issue.
-
-It looks like the default is REBOOT_COLD, whatever that means. So I
-think we could define that on powernv REBOOT_HARD means "do a full IPL".
-
-Or we could use "force", which already exists, though I can't quite see
-what that actually means on x86.
+Why do we still need kprobe_exceptions_notify() now that it's empty?
+Just to keep the generic code happy?
 
 cheers
