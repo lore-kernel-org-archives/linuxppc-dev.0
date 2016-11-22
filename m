@@ -1,39 +1,29 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rjwysocki@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNfF71nDpzDvss
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 08:46:49 +1100 (AEDT)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 3418E202EB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 21:46:46 +0000 (UTC)
-Received: from mail-yw0-f174.google.com (mail-yw0-f174.google.com
- [209.85.161.174])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1B16420279
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 21:46:43 +0000 (UTC)
-Received: by mail-yw0-f174.google.com with SMTP id i145so26319490ywg.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 13:46:43 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNgXF5qb9zDvx4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 09:45:01 +1100 (AEDT)
+Received: by mail-wm0-x244.google.com with SMTP id u144so7241643wmu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 14:45:01 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1495076.fZ1uLW9fli@debian64>
-References: <cover.1479339900.git.johnyoun@synopsys.com>
- <2016796.9qgSSGQn9z@debian64>
- <0677657e-043d-c6d4-783e-9b471d12afcb@synopsys.com>
- <1495076.fZ1uLW9fli@debian64>
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 22 Nov 2016 15:46:21 -0600
-Message-ID: <CAL_JsqLHQzuaLvkSVNJ2Yx3gA_9GdNFpqX-SAGjTGoiKyd233Q@mail.gmail.com>
-Subject: Re: [PATCH v2 2/4] usb: dwc2: Add binding for AHB burst
-To: Christian Lamparter <chunkeey@googlemail.com>
-Cc: John Youn <John.Youn@synopsys.com>, Stefan Wahren <stefan.wahren@i2se.com>,
- Felipe Balbi <balbi@kernel.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Sender: rjwysocki@gmail.com
+In-Reply-To: <1479820025-15855-1-git-send-email-kda@linux-powerpc.org>
+References: <1479820025-15855-1-git-send-email-kda@linux-powerpc.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 22 Nov 2016 23:44:58 +0100
+Message-ID: <CAJZ5v0jPhGHsUPHsfMyzxktC_1YMhxdXEmCZO6+_kt6YaJ9fxg@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq, powernv: Disable preemption while checking
+ CPU throttling state throttling state
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Linux PM <linux-pm@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ akshay.adiga@linux.vnet.ibm.com
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,112 +34,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 22, 2016 at 2:51 PM, Christian Lamparter
-<chunkeey@googlemail.com> wrote:
-> On Monday, November 21, 2016 7:32:30 PM CET John Youn wrote:
->> On 11/21/2016 1:10 PM, Christian Lamparter wrote:
->> > On Monday, November 21, 2016 12:16:31 PM CET John Youn wrote:
->> >> On 11/18/2016 12:18 PM, Christian Lamparter wrote:
->> >>> On Friday, November 18, 2016 8:16:08 AM CET Rob Herring wrote:
->> >>>> Also, perhaps you should allow that the compatible string can define the
->> >>>> default.
->> >>>>
->> >>> I hoped you would say that :).
->> >>>
->> >>> I've attached a patch (on top of John Youn changes) [...]
->> >>> ---
->> >>> Subject: [PATCH] usb: dwc2: add a default ahb-burst setting for amcc,dwc-otg
->> >>> [...]
->> >>> @@ -1097,6 +1097,22 @@ static const char *const ahb_bursts[] = {
->> >>> +/* [...] */
->> >>> +static const struct of_device_id dwc2_compat_ahb_bursts[] = {
->> >>> + {
->> >>> +         .compatible = "amcc,dwc-otg",
->> >>> +         .data = (void *) GAHBCFG_HBSTLEN_INCR16,
->> >>> + },
->> >>> +};
->> [...]
->> > >>> @@ -1107,6 +1123,12 @@ static int dwc2_get_property_ahb_burst(struct dwc2_hsotg *hsotg)
->> >>>   ret = device_property_read_string(hsotg->dev, "snps,ahb-burst", &str);
->> >>>   if (ret < 0) {
->> >>> +         const struct of_device_id *match;
->> >>> +
->> >>> +         match = of_match_node(dwc2_compat_ahb_bursts, node);
->> >>> +         if (match)
->> >>> +                 ret = (int)match->data;
->> >>> +
->> [...]
->> >> I'd prefer if you use the binding which requires no extra code in
->> >> dwc2.
->> > I'm fine with either option. However it think that this would require
->> > that either Mark or Rob would allow an exception to the "keep existing
->> > dts the way they are) and ack the following change to the canyonlands.dts.
->>
->> I don't know about that. Under what circumstance can the dts change?
-> As far as I know, the justification for not changing the DTS is that a
-> compiled DTB might be stored in an read-only ROM on a board. So it would
-> be impossible to update it. Hence, the driver have work with the existing
-> (and sometimes buggy or incomplete) information to stay compatible.
+On Tue, Nov 22, 2016 at 2:07 PM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> With preemption turned on we can read incorrect throttling state while being switched
+> to CPU on a different chip.
+> The following BUG_() was hit while running the 4.8-rc5 kernel compiled
+> with CONFIG_PREEMPT_DEBUG on a POWER machine.
 >
-> (Note: Thankfully, the canyonlands dtb is stored in flash, it's possible
-> to update it. But it is an extra step that's not done automatically
-> with make install).
 >
->> The canyonlands dts was binding to an external vendor driver. So it
->> wasn't documented nor expected to work with dwc2 until your recent
->> patch adding the compatible string.
+>     [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+>     [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+>     [   67.701038] Call Trace:
+>     [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+>     [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+>     [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+>     [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+>     [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+>     [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+>     [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+>     [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+>     [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+>     [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+>     [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+>     [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+>     [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
 >
-> Oh, no that's not what happend. Let me explain why there was no "external
-> vendor driver": AMCC/APM were planing to upstream their hole platform. And
-> in fact, the devs tried very hard to include their driver back in 2011 [0].
-> But this driver was denied inclusion back then due to:
+> The task which updates the cpu-frequency checks if the chip was
+> throttled. However, it does so without protecting itself against
+> preemption. Hence, if the task is preempted and woken up on a CPU on
+> another chip, it can end up updating the throttle statistics of the
+> incorrect chip.
 >
-> "[...]
-> I would also like to point out that the same Synopsys USB controller
-> is used in a number of other SoCs (especially ARM chips), and
-> supported by other drivers, some of these even in mainline.
+> This patch fixes the issue by ensuring that the throttle_check is
+> performed with preemption disabled.
 >
-> See http://thread.gmane.org/gmane.linux.usb.general/61714/focus=62139
-> for a related thread.
->
-> Instead of trying to add a completely new driver to mainline (and one
-> which has been repeatedly been rejected), I vote for focusing on the
-> existing driver code that is already in mainline, and testing and
-> improving this so we can use a single implementation of this driver
-> code for all SoCs that use the same IP block." [1]
->
-> Of course: The listed link goes the "USB Host driver for i.MX28" driver.
-> And this is an ehci-hcd like driver... Which is as you are well aware not
-> that similar to the dwc2 OTG. And as far as I can tell: AMCC abandoned
-> the patch series right there.
->
-> Note: AMCC did however succeed in pushing your employer's Synopsys
-> DesignWare SATA and DMA drivers to the kernel back then. And I'm happy
-> to report that both drivers are still around and working fine for the 460EX
-> (sata_dwc_460ex.c[2] and the DW AHB DMA [3]). (The drivers also work for
-> different platforms than the original PPC. I know that because I helped
-> Andy Shevchenko with testing and pushing some fixes to it when he was
-> adding support for the Intel Quark SoC, which uses the DWC SATA and DMA).
->
-> So Please?
->> Systems that use the vendor driver will still work with the dts. If
->> you remove the vendor driver and configure it to use dwc2, it won't
->> work due to a quirk of the canyonlands hardware, for which you need to
->> add a dts property.
-> Sadly, there is no up to date vendor driver. The canyonlands.dts binding
-> is still in place and the hardware works fine. I'm interested in this
-> platform since it is a cheap BigEndian system which is useful for usb
-> driver development (carl9170 and rtl8192su)... and I would like to
-> have out-of-the-box support.
->
->> I think this is reasonable. Rob or Mark, any feedback?
-> I recall that Rob has already voiced his opinion about the ahb-burst setting:
-> "Also, perhaps you should allow that the compatible string can define the default."
->
-> And based on that, I made the "add a default ahb-burst setting for amcc,dwc-otg"
-> patch above. Of course, it would be nice to have any feedback too. But unless I
-> hear otherwise, I'll continue with posting patches to the dwc2 driver :).
+> Fixes: 09a972d16209 ("cpufreq: powernv: Report cpu frequency throttling")
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 
-And this is the correct thing to do. Requiring a dtb update is not.
+That's already queued up for v4.10, you don't have to resend it.
 
-Rob
+Thanks,
+Rafael
