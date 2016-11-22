@@ -1,17 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tN60r5jZ6zDvmm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tN60r5l2JzDvmq
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:34:20 +1100 (AEDT)
-In-Reply-To: <20160921144928.4EB431A2455@localhost.localdomain>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+In-Reply-To: <1479430638-4186-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc/64: get rid of MIN_HUGEPTE_SHIFT
-Message-Id: <3tN60r4hk7z9t26@ozlabs.org>
+Subject: Re: powerpc/lib: Fix randconfig build failure in sstep.c
+Message-Id: <3tN60r3HFNz9t2G@ozlabs.org>
 Date: Tue, 22 Nov 2016 11:34:20 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,14 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-09-21 at 14:49:27 UTC, Christophe Leroy wrote:
-> MIN_HUGEPTE_SHIFT hasn't been used since commit d1837cba5d5d5
-> ("powerpc/mm: Cleanup initialization of hugepages on powerpc")
+On Fri, 2016-11-18 at 00:57:18 UTC, Michael Ellerman wrote:
+> Under some configs we need to explicitly include cpu_has_feature.h,
+> otherwise we fail with:
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>   arch/powerpc/lib/sstep.c:1992:7: error: implicit declaration of function 'cpu_has_feature'
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/c05f69a3dc702312bbecae4c7ddfc9
+https://git.kernel.org/powerpc/c/5e9d0e3d9ea6f771fa9fc9dbb65b54
 
 cheers
