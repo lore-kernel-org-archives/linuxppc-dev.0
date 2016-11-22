@@ -1,33 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jun.yang@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0056.outbound.protection.outlook.com [104.47.1.56])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNHxh10FGzDw3D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 19:02:15 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAM7wttk126769
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 03:02:13 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26vcrs5b1y-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 03:02:13 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 22 Nov 2016 03:02:12 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v4 7/7] powerpc/mm: Batch tlb flush when invalidating pte
- entries
-Date: Tue, 22 Nov 2016 13:31:49 +0530
-In-Reply-To: <20161122080149.31306-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20161122080149.31306-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20161122080149.31306-7-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNJrw2jS2zDvw2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 19:43:11 +1100 (AEDT)
+From: Jun Yang <jun.yang@nxp.com>
+To: Scott Wood <oss@buserror.net>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: fsl_pamu: erratum a007907 should be applied on all versions of
+ E6500 chips.
+Date: Tue, 22 Nov 2016 08:43:05 +0000
+Message-ID: <VI1PR0401MB20628C7AC37B0187C721F10F9DB40@VI1PR0401MB2062.eurprd04.prod.outlook.com>
+References: <1477500644-31812-1-git-send-email-jun.yang@nxp.com>
+ <20161122074126.GA15587@home.buserror.net>
+In-Reply-To: <20161122074126.GA15587@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,43 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will improve the task exit case, by batching tlb invalidates.
+Hello Scott,
+Do you know the IOMMU maintainer's mail address?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/radix.h | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+BR
+Jun
 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index aec6e8ee6e27..83c77323a769 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -142,15 +142,21 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
- 		unsigned long new_pte;
- 
- 		old_pte = __radix_pte_update(ptep, ~0, 0);
--		asm volatile("ptesync" : : : "memory");
- 		/*
- 		 * new value of pte
- 		 */
- 		new_pte = (old_pte | set) & ~clr;
--		psize = radix_get_mmu_psize(pg_sz);
--		radix__flush_tlb_page_psize(mm, addr, psize);
--
--		__radix_pte_update(ptep, 0, new_pte);
-+		/*
-+		 * If we are trying to clear the pte, we can skip
-+		 * the below sequence and batch the tlb flush. The
-+		 * tlb flush batching is done by mmu gather code
-+		 */
-+		if (new_pte) {
-+			asm volatile("ptesync" : : : "memory");
-+			psize = radix_get_mmu_psize(pg_sz);
-+			radix__flush_tlb_page_psize(mm, addr, psize);
-+			__radix_pte_update(ptep, 0, new_pte);
-+		}
- 	} else
- 		old_pte = __radix_pte_update(ptep, clr, set);
- 	asm volatile("ptesync" : : : "memory");
--- 
-2.10.2
+-----Original Message-----
+From: Scott Wood [mailto:oss@buserror.net]=20
+Sent: Tuesday, November 22, 2016 3:41 PM
+To: Jun Yang
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: fsl_pamu: erratum a007907 should be applied on all versions of=
+ E6500 chips.
+
+On Thu, Oct 27, 2016 at 12:50:44AM +0800, jun wrote:
+> Signed-off-by: jun <jun.yang@nxp.com>
+> ---
+>  drivers/iommu/fsl_pamu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c index=20
+> db3a1cd..a8fe503 100644
+> --- a/drivers/iommu/fsl_pamu.c
+> +++ b/drivers/iommu/fsl_pamu.c
+> @@ -668,7 +668,7 @@ static bool has_erratum_a007907(void)  {
+>  	u32 pvr =3D mfspr(SPRN_PVR);
+> =20
+> -	if (PVR_VER(pvr) =3D=3D PVR_VER_E6500 && PVR_REV(pvr) <=3D 0x20)
+> +	if (PVR_VER(pvr) =3D=3D PVR_VER_E6500)
+>  		return true;
+> =20
+>  	return false;
+
+This needs to be sent to the IOMMU maintainer and list.
+
+-Scott
