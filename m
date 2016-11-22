@@ -1,18 +1,37 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNNtT0XcnzDvrr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 22:44:49 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/32: Discard ffs() function and use builtin_ffs
- instead
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20161122114444.D0CE8678CE@localhost.localdomain>
-Date: Tue, 22 Nov 2016 12:44:44 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNP1V0hYpzDvrr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 22:50:53 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAMBmr6J041986
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 06:50:52 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26vkwsqyms-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 06:50:51 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Tue, 22 Nov 2016 06:50:48 -0500
+Subject: Re: [PATCH] powerpc/xmon: Fix data-breakpoint
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1479806759-5409-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <87eg23vjds.fsf@concordia.ellerman.id.au>
+Cc: benh@kernel.crashing.org, paulus@samba.org, npiggin@gmail.com,
+ peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, naveen.n.rao@linux.vnet.ibm.com,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Tue, 22 Nov 2016 17:20:38 +0530
+MIME-Version: 1.0
+In-Reply-To: <87eg23vjds.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <5834310E.1050107@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,103 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the ffs() function as defined in arch/powerpc/include/asm/bitops.h
-GCC will not optimise the code in case of constant parameter, as shown
-by the small exemple below.
+Thanks Michael,
 
-int ffs_test(void)
-{
-	return 4 << ffs(31);
-}
+On Tuesday 22 November 2016 05:03 PM, Michael Ellerman wrote:
+> Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
+>
+>> Xmon data-breakpoint feature is broken.
+>>
+>> Whenever there is a watchpoint match occurs, hw_breakpoint_handler will
+>> be called by do_break via notifier chains mechanism. If watchpoint is
+>> registered by xmon, hw_breakpoint_handler won't find any associated
+>> perf_event and returns immediately with NOTIFY_STOP. Similarly, do_break
+>> also returns without notifying to xmon.
+>>
+>> Solve this by returning NOTIFY_DONE when hw_breakpoint_handler does not
+>> find any perf_event associated with matched watchpoint.
+> .. rather than NOTIFY_STOP, which tells the core code to continue
+> calling the other breakpoint handlers including the xmon one.
+>
+> Right?
 
-c000b8f4 <ffs_test>:
-c000b8f4:	38 00 00 01 	li      r0,1
-c000b8f8:	38 60 00 04 	li      r3,4
-c000b8fc:	7c 00 00 34 	cntlzw  r0,r0
-c000b900:	20 00 00 20 	subfic  r0,r0,32
-c000b904:	7c 63 00 30 	slw     r3,r3,r0
-c000b908:	4e 80 00 20 	blr
+Yes.
 
-With this patch, the same function will compile as follows:
+> Also any idea when we broke this?
 
-c000b8f4 <ffs_test>:
-c000b8f4:	38 60 00 08 	li      r3,8
-c000b8f8:	4e 80 00 20 	blr
+Hmm, not sure exactly. The code is same since it was merged in 2010 when
+support for hw_breakpoint was added for server processor.
 
-With non constant parameters, the generated code is identical on PPC32
-without and with the patch:
+-Ravi
 
-int ffs_test2(long x)
-{
-	return ffs(x);
-}
-
-Before:
-c000b90c <ffs_test2>:
-c000b90c:	7c 03 00 d0 	neg     r0,r3
-c000b910:	7c 03 18 38 	and     r3,r0,r3
-c000b914:	7c 63 00 34 	cntlzw  r3,r3
-c000b918:	20 63 00 20 	subfic  r3,r3,32
-c000b91c:	4e 80 00 20 	blr
-
-After:
-c000b8fc <ffs_test2>:
-c000b8fc:	7c 03 00 d0 	neg     r0,r3
-c000b900:	7c 03 18 38 	and     r3,r0,r3
-c000b904:	7c 63 00 34 	cntlzw  r3,r3
-c000b908:	20 63 00 20 	subfic  r3,r3,32
-c000b90c:	4e 80 00 20 	blr
-
-__builtin_ffs() is already used in arch/powerpc/include/asm/page_32.h
-__builtin_ffs() has been in GCC since at least gcc-2.95
-
-On PPC64, the generated code is different, so we do this change
-only on PPC32:
-
-Before the change:
-c000000000027c00 <.ffs_test2>:
-c000000000027c00:	7c 03 00 d0 	neg     r0,r3
-c000000000027c04:	7c 03 18 38 	and     r3,r0,r3
-c000000000027c08:	7c 63 00 74 	cntlzd  r3,r3
-c000000000027c0c:	20 63 00 40 	subfic  r3,r3,64
-c000000000027c10:	7c 63 07 b4 	extsw   r3,r3
-c000000000027c14:	4e 80 00 20 	blr
-
-After the change:
-c000000000027bf0 <.ffs_test2>:
-c000000000027bf0:	7c 03 00 d0 	neg     r0,r3
-c000000000027bf4:	7c 03 18 38 	and     r3,r0,r3
-c000000000027bf8:	7c 63 00 34 	cntlzw  r3,r3
-c000000000027bfc:	20 63 00 20 	subfic  r3,r3,32
-c000000000027c00:	7c 63 07 b4 	extsw   r3,r3
-c000000000027c04:	4e 80 00 20 	blr
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v2: limit the change to PPC32
-
- arch/powerpc/include/asm/bitops.h | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 59abc62..0e84f0c 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -223,11 +223,15 @@ static __inline__ unsigned long __ffs(unsigned long x)
-  * the libc and compiler builtin ffs routines, therefore
-  * differs in spirit from the above ffz (man ffs).
-  */
-+#ifdef CONFIG_PPC64
- static __inline__ int ffs(int x)
- {
- 	unsigned long i = (unsigned long)x;
- 	return __ilog2(i & -i) + 1;
- }
-+#else
-+#include <asm-generic/bitops/builtin-ffs.h>
-+#endif
- 
- /*
-  * fls: find last (most-significant) bit set.
--- 
-2.10.1
+> cheers
+>
