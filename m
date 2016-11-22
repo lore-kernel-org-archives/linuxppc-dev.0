@@ -1,22 +1,28 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNH7t0XcczDvx9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 18:26:01 +1100 (AEDT)
-Date: Tue, 22 Nov 2016 01:25:41 -0600
-From: Scott Wood <oss@buserror.net>
-To: yanjiang.jin@windriver.com
-Cc: mark.rutland@arm.com, benh@kernel.crashing.org, leoli@freescale.com,
- zw@zh-kernel.org, devicetree@vger.kernel.org, jinyanjiang@gmail.com,
- linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, yao.yuan@nxp.com, hongbo.zhang@nxp.com
-Message-ID: <20161122072541.GA10135@home.buserror.net>
-References: <1479703969-15413-1-git-send-email-yanjiang.jin@windriver.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNHDB59NkzDw0N
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 18:29:46 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id e9so1303788pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 23:29:46 -0800 (PST)
+Subject: Re: [PATCH kernel v5 4/6] vfio/spapr: Postpone default window creation
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
+ <1478867537-27893-5-git-send-email-aik@ozlabs.ru>
+ <20161122025052.GB28479@umbus.fritz.box>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <b1aa544a-d4a1-fb2c-8069-63c52f3dbf8d@ozlabs.ru>
+Date: Tue, 22 Nov 2016 18:29:39 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1479703969-15413-1-git-send-email-yanjiang.jin@windriver.com>
-Subject: Re: fsldma: t4240qds: drop "SG" CAP for DMA3
+In-Reply-To: <20161122025052.GB28479@umbus.fritz.box>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="bhaOtJWvdKbNFMhMCuxC00GOmpmxdEI20"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,109 +32,301 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 21, 2016 at 12:52:49PM +0800, yanjiang.jin@windriver.com wrote:
-> From: Yanjiang Jin <yanjiang.jin@windriver.com>
-> 
-> T4240QDS DMA controller uses the external DMA control signals to start or
-> restart a paused DMA transfer, acknowledge a DMA transfer in progress and
-> also indicates a transfer completion.
-> "scatterlist copy" depends on these signals.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--bhaOtJWvdKbNFMhMCuxC00GOmpmxdEI20
+Content-Type: multipart/mixed; boundary="bsFoAdND5jbq9Nva71M6gK1DSFVHNxCi9";
+ protected-headers="v1"
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Message-ID: <b1aa544a-d4a1-fb2c-8069-63c52f3dbf8d@ozlabs.ru>
+Subject: Re: [PATCH kernel v5 4/6] vfio/spapr: Postpone default window
+ creation
+References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
+ <1478867537-27893-5-git-send-email-aik@ozlabs.ru>
+ <20161122025052.GB28479@umbus.fritz.box>
+In-Reply-To: <20161122025052.GB28479@umbus.fritz.box>
 
-How specifically does sg depend on these signals?
+--bsFoAdND5jbq9Nva71M6gK1DSFVHNxCi9
+Content-Type: text/plain; charset=koi8-r
+Content-Transfer-Encoding: quoted-printable
 
-What about chips other than t4240?
+On 22/11/16 13:50, David Gibson wrote:
+> On Fri, Nov 11, 2016 at 11:32:15PM +1100, Alexey Kardashevskiy wrote:
+>> As mentioned in the previous patch, we are going to allow the userspac=
+e
+>> to configure container in one memory context and pass container fd to
+>> another so we are postponing memory allocations accounted against
+>> the locked memory limit. The previous patch took care of it_userspace.=
 
-> But as "T4240 Reference Manual" shown:
-> "The external DMA control signals are available on DMA1 and DMA2. They are
->  not supported by DMA3."
-> 
-> So add an of_node property "fsl,external-dma-control-signals" to only DMA1
-> and DMA2, it can prevent DMA3 from doing DMA_SG operations. Else we would
-> get the below errors during doing dmatest:
-> 
-> modprobe dmatest run=1 iterations=42
-> 
-> dmatest: Started 1 threads using dma2chan0
-> fsl-elo-dma ffe102300.dma: chan0: Transfer Error!
-> fsl-elo-dma ffe102300.dma: chan0: irq: unhandled sr 0x00000080
-> dmatest: dma2chan0-sg0: dstbuf[0x3954] not copied! Expected d8, got 2b
-> ........................
-> dmatest: dma2chan7-sg0: dstbuf[0x1c51] not copied! Expected df, got 2e
-> dmatest: dma2chan7-sg0: 1301 errors suppressed
-> dmatest: dma2chan7-sg0: result #42: 'data error' with
-> src_off=0xf21 dst_off=0x1c32 len=0x535 (1333)
-> dmatest: dma2chan7-sg0: summary 42 tests, 42 failures 2952 iops 23968 KB/s
-> 
-> Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
-> ---
->  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  6 ++++++
->  drivers/dma/fsldma.c                        | 11 +++++++++--
->  2 files changed, 15 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-> index 68c4ead..155997d 100644
-> --- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-> +++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-> @@ -1029,7 +1029,13 @@
->  	};
->  
->  /include/ "elo3-dma-0.dtsi"
-> +	dma@100300 {
-> +		fsl,external-dma-control-signals;
-> +	};
->  /include/ "elo3-dma-1.dtsi"
-> +	dma@101300 {
-> +		fsl,external-dma-control-signals;
-> +	};
->  /include/ "elo3-dma-2.dtsi"
->  
->  /include/ "qoriq-espi-0.dtsi"
+>>
+>> At the moment we create the default DMA window when the first group is=
 
-Where is the binding for this property?
+>> attached to a container; this is done for the userspace which is not
+>> DDW-aware but familiar with the SPAPR TCE IOMMU v2 in the part of memo=
+ry
+>> pre-registration - such client expects the default DMA window to exist=
+=2E
+>>
+>> This postpones the default DMA window allocation till first map/unmap
+>> request happens.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  drivers/vfio/vfio_iommu_spapr_tce.c | 98 ++++++++++++++++++----------=
+---------
+>>  1 file changed, 47 insertions(+), 51 deletions(-)
+>>
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_i=
+ommu_spapr_tce.c
+>> index 442baac..1c02498 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -97,6 +97,7 @@ struct tce_container {
+>>  	struct mutex lock;
+>>  	bool enabled;
+>>  	bool v2;
+>> +	bool def_window_pending;
+>>  	unsigned long locked_pages;
+>>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>>  	struct list_head group_list;
+>> @@ -594,15 +595,6 @@ static long tce_iommu_create_table(struct tce_con=
+tainer *container,
+>>  	WARN_ON(!ret && !(*ptbl)->it_ops->free);
+>>  	WARN_ON(!ret && ((*ptbl)->it_allocated_size !=3D table_size));
+>> =20
+>> -	if (!ret && container->v2) {
+>> -		ret =3D tce_iommu_userspace_view_alloc(*ptbl);
+>> -		if (ret)
+>> -			(*ptbl)->it_ops->free(*ptbl);
+>> -	}
+>=20
+> Does this stuff for the user view belong in the previous patch?
 
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+Yes it does, my mistake, will fix.
 
-The device tree update should be a separate patch from the driver, as
-they would likely be merged via different trees.
 
-> index 51c75bf..f7054f4 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -1354,12 +1354,19 @@ static int fsldma_of_probe(struct platform_device *op)
->  	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
->  
->  	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
-> -	dma_cap_set(DMA_SG, fdev->common.cap_mask);
-> +
->  	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
-> +
-> +	if (of_get_property(op->dev.of_node,
-> +		"fsl,external-dma-control-signals", NULL)) {
-> +		dma_cap_set(DMA_SG, fdev->common.cap_mask);
-> +		fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
-> +	} else
-> +		dma_cap_clear(DMA_SG, fdev->common.cap_mask);
+>=20
+>> -
+>> -	if (ret)
+>> -		decrement_locked_vm(table_size >> PAGE_SHIFT);
+>> -
+>>  	return ret;
+>>  }
+>> =20
+>> @@ -719,6 +711,29 @@ static long tce_iommu_remove_window(struct tce_co=
+ntainer *container,
+>>  	return 0;
+>>  }
+>> =20
+>> +static long tce_iommu_create_default_window(struct tce_container *con=
+tainer)
+>> +{
+>> +	long ret;
+>> +	__u64 start_addr =3D 0;
+>> +	struct tce_iommu_group *tcegrp;
+>> +	struct iommu_table_group *table_group;
+>> +
+>> +	if (!tce_groups_attached(container))
+>> +		return -ENODEV;
+>> +
+>> +	tcegrp =3D list_first_entry(&container->group_list,
+>> +			struct tce_iommu_group, next);
+>> +	table_group =3D iommu_group_get_iommudata(tcegrp->grp);
+>> +	if (!table_group)
+>> +		return -ENODEV;
+>> +
+>> +	ret =3D tce_iommu_create_window(container, IOMMU_PAGE_SHIFT_4K,
+>> +			table_group->tce32_size, 1, &start_addr);
+>> +	WARN_ON_ONCE(!ret && start_addr);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>>  static long tce_iommu_ioctl(void *iommu_data,
+>>  				 unsigned int cmd, unsigned long arg)
+>>  {
+>> @@ -809,6 +824,13 @@ static long tce_iommu_ioctl(void *iommu_data,
+>>  				VFIO_DMA_MAP_FLAG_WRITE))
+>>  			return -EINVAL;
+>> =20
+>> +		if (container->def_window_pending) {
+>> +			ret =3D tce_iommu_create_default_window(container);
+>> +			if (ret)
+>> +				return ret;
+>> +			container->def_window_pending =3D false;
+>=20
+> Would it make sense to clear (and maybe test) def_window_pending
+> within create_default_window()?
 
-This indentation is not very readable (continuation line aligned with
-if-body).
+Dunno, matter of taste I suppose. I'll move it there.
 
-How about:
 
-	if (of_property_read_bool(op->dev.of_node,
-				  "fsl,external-dma-control-signals")) {
-		dma_cap_set(...);
-		...
-	} else {
-		dma_cap_clear(...);
-	}
+>=20
+>> +		}
+>> +
+>>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
+>>  		if (num < 0)
+>>  			return -ENXIO;
+>> @@ -872,6 +894,13 @@ static long tce_iommu_ioctl(void *iommu_data,
+>>  		if (param.flags)
+>>  			return -EINVAL;
+>> =20
+>> +		if (container->def_window_pending) {
+>> +			ret =3D tce_iommu_create_default_window(container);
+>> +			if (ret)
+>> +				return ret;
+>> +			container->def_window_pending =3D false;
+>> +		}
+>> +
+>>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
+>>  		if (num < 0)
+>>  			return -ENXIO;
+>> @@ -998,6 +1027,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+>> =20
+>>  		mutex_lock(&container->lock);
+>> =20
+>> +		container->def_window_pending =3D false;
+>=20
+> Uh.. why is it cleared here, without calling
+> tce_iommu_create_default_window() AFAICT?
 
-Shortening the property name would also help (e.g. "fsl,dma-ext-ctrl").
 
-I assume nothing bad will happen (other than performance loss) if the
-updated driver is used with an existing device tree, and thus none of the
-channels get DMA_SG?
+It is a branch which creates new window, if we do not have a default
+window, then it will be created as the result of this ioctl(), if there i=
+s
+a default window, then the flag should be false already.
 
-Is there any need to explicitly clear the capablitity in the else path? 
-Wouldn't it be clear by default?
 
--Scott
+
+
+>=20
+>>  		ret =3D tce_iommu_create_window(container, create.page_shift,
+>>  				create.window_size, create.levels,
+>>  				&create.start_addr);
+>> @@ -1030,6 +1061,12 @@ static long tce_iommu_ioctl(void *iommu_data,
+>>  		if (remove.flags)
+>>  			return -EINVAL;
+>> =20
+>> +		if (container->def_window_pending && !remove.start_addr) {
+>> +			container->def_window_pending =3D false;
+>> +			return 0;
+>> +		}
+>> +		container->def_window_pending =3D false;
+>> +
+>>  		mutex_lock(&container->lock);
+>> =20
+>>  		ret =3D tce_iommu_remove_window(container, remove.start_addr);
+>> @@ -1109,9 +1146,6 @@ static void tce_iommu_release_ownership_ddw(stru=
+ct tce_container *container,
+>>  static long tce_iommu_take_ownership_ddw(struct tce_container *contai=
+ner,
+>>  		struct iommu_table_group *table_group)
+>>  {
+>> -	long i, ret =3D 0;
+>> -	struct iommu_table *tbl =3D NULL;
+>> -
+>>  	if (!table_group->ops->create_table || !table_group->ops->set_window=
+ ||
+>>  			!table_group->ops->release_ownership) {
+>>  		WARN_ON_ONCE(1);
+>> @@ -1120,47 +1154,9 @@ static long tce_iommu_take_ownership_ddw(struct=
+ tce_container *container,
+>> =20
+>>  	table_group->ops->take_ownership(table_group);
+>> =20
+>> -	/*
+>> -	 * If it the first group attached, check if there is
+>> -	 * a default DMA window and create one if none as
+>> -	 * the userspace expects it to exist.
+>> -	 */
+>> -	if (!tce_groups_attached(container) && !container->tables[0]) {
+>> -		ret =3D tce_iommu_create_table(container,
+>> -				table_group,
+>> -				0, /* window number */
+>> -				IOMMU_PAGE_SHIFT_4K,
+>> -				table_group->tce32_size,
+>> -				1, /* default levels */
+>> -				&tbl);
+>> -		if (ret)
+>> -			goto release_exit;
+>> -		else
+>> -			container->tables[0] =3D tbl;
+>> -	}
+>> -
+>> -	/* Set all windows to the new group */
+>> -	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+>> -		tbl =3D container->tables[i];
+>> -
+>> -		if (!tbl)
+>> -			continue;
+>> -
+>> -		/* Set the default window to a new group */
+>> -		ret =3D table_group->ops->set_window(table_group, i, tbl);
+>=20
+> Uh... nothing in the new code seems to replace these set_window (and
+> unset_window) calls.  What's up with that?
+
+
+tce_iommu_create_table() + set_window() is replaced with
+tce_iommu_create_default_window() which calls tce_iommu_create_window()
+which calls tce_iommu_create_table() + set_window().
+
+I'll split this patch into 2 patches, one with the change I just explaine=
+d
+and one to postpone the default window creation.
+
+
+>=20
+>> -		if (ret)
+>> -			goto release_exit;
+>> -	}
+>> +	container->def_window_pending =3D true;
+>> =20
+>>  	return 0;
+>> -
+>> -release_exit:
+>> -	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
+>> -		table_group->ops->unset_window(table_group, i);
+>> -
+>> -	table_group->ops->release_ownership(table_group);
+>> -
+>> -	return ret;
+>>  }
+>> =20
+>>  static int tce_iommu_attach_group(void *iommu_data,
+>=20
+
+
+--=20
+Alexey
+
+
+--bsFoAdND5jbq9Nva71M6gK1DSFVHNxCi9--
+
+--bhaOtJWvdKbNFMhMCuxC00GOmpmxdEI20
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIrBAEBCAAVBQJYM/PjDhxhaWtAb3psYWJzLnJ1AAoJEIYTPdgrwSC5IPgQALEH
+N8MHzGRVgy93Wxp2riDpcMgoIQbWkwEsjjc+xg5CntcEkPgMAWDEwInPlL0GLG5K
+kjoiu5MOwhOPz+D5VBC/i77gJ2S/AlSzhyN04m50rf+KdcJ8EhkY+AORdhg81rWp
+PdZTilqSOfGELjTizipeuvwgv/UhwQeB8s5yHVnRNRlAVkjxBr4dlAAzWmosv3TM
+x1bBvCfHWtr+PDFWvityeuyj+KUuexNjK6xCEzrMvxGvLOAj9g6wyxqTEsFeMuiv
+LAoxKZSC61rXbVE7x3dFeUEE5cVtCzSMSfE82/uj9ztSmk9YmKiIj+dP5WldX64s
+gTLTGmhgY0jYZ6y3e78Je2O+rn70OtDGFpMngyA5xNNomT6SxePuslWeCMoHbBjM
+59aF0wykgcN339La3AxkxyOVAFPjagKn7EDRs2mxbm+WFIc42799usaduRuC6sTH
+hqfYWnGldRhCtWIhOV24agwwsdNHav/WA8AhvjpiiDBrIwhW1TpQQhbtSci6pOdl
+SjNR9gL0eRzArIGA5oPZINsZLTojLOlXr72yUh1LlFqbWjGp5dySPFghfwKYDC+A
+0sxgCzzVRBcfxAkLh6h6/9gHE1Zhc/dYs0M7E5A4P33TYQnxZOF53fFm2Lc8rxoa
+EStc8DnAT20VjxcnQwvYbDRsip8DkqOVruF9/dPJ
+=Uw7p
+-----END PGP SIGNATURE-----
+
+--bhaOtJWvdKbNFMhMCuxC00GOmpmxdEI20--
