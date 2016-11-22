@@ -1,22 +1,25 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNdXk4MWKzDvwr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 08:15:18 +1100 (AEDT)
-Date: Wed, 23 Nov 2016 08:15:14 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNdct2fRTzDvwr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 08:18:54 +1100 (AEDT)
+Date: Wed, 23 Nov 2016 08:18:41 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: kbuild test robot <lkp@intel.com>, linuxppc-dev@ozlabs.org,
- kbuild-all@01.org, kvm@vger.kernel.org
-Subject: Re: [PATCH 2/4] powerpc/64: Provide functions for accessing POWER9
- partition table
-Message-ID: <20161122211514.GA6487@fergus.ozlabs.ibm.com>
-References: <201611211551.D3xry2wx%fengguang.wu@intel.com>
- <87k2bvvkwl.fsf@concordia.ellerman.id.au>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] powernv: Handle wakeup from idle due to SRESET
+Message-ID: <20161122211841.GB6487@fergus.ozlabs.ibm.com>
+References: <1479753469-10625-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1479836192-21233-1-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87k2bvvkwl.fsf@concordia.ellerman.id.au>
+In-Reply-To: <1479836192-21233-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 22, 2016 at 10:00:58PM +1100, Michael Ellerman wrote:
-> kbuild test robot <lkp@intel.com> writes:
-> > [auto build test WARNING on powerpc/next]
-> > [cannot apply to v4.9-rc6 next-20161117]
-> > [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> >
-> > url:    https://github.com/0day-ci/linux/commits/Paul-Mackerras/powerpc-64-Preparation-for-KVM-support-on-POWER9/20161121-133431
-> > base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> > config: powerpc-allyesconfig (attached as .config)
-> > compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> > reproduce:
-> >         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-> >         chmod +x ~/bin/make.cross
-> >         # save the attached .config to linux build tree
-> >         make.cross ARCH=powerpc 
-> >
-> > All warnings (new ones prefixed by >>):
-> >
-> >>> WARNING: vmlinux.o(.text+0x5c650): Section mismatch in reference from the function .mmu_partition_table_init() to the function .init.text:.memblock_alloc_base()
-> >    The function .mmu_partition_table_init() references
-> >    the function __init .memblock_alloc_base().
+On Tue, Nov 22, 2016 at 11:06:32PM +0530, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> >    This is often because .mmu_partition_table_init lacks a __init
+> The existing code doesn't handle the case when CPU which was in a
+> hardware-idle state (nap,sleep,winkle on POWER8 and various stop
+> states on POWER9) gets woken up due to a System Reset interrupt.
 > 
-> Indeed that looks like the problem.
+> This patch checks if the CPU was woken up due to System Reset, in
+> which case, after restoring the required hardware state, it jumps to
+> the system reset handler.
 > 
-> Paul have you already merged the topic branch, or can I squash in a fix
-> for this? Or I'll just do it on top.
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+> v1 -> v2: Set r9,r11,r12 to CR,SRR0,SRR1 values
+> before jumping to system_reset_common as expected by
+> EXCEPTION_PROLOG_COMMON
+> 
+>  arch/powerpc/kernel/idle_book3s.S | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+> index 72dac0b..06afe0e 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -353,6 +353,22 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+>  	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
+>  20:	nop;
+>  
+> +#define CHECK_SRESET_INTERRUPT                                          \
+> +BEGIN_FTR_SECTION_NESTED(67);						\
+> +	mfspr	r0,SPRN_SRR1;						\
+> +	rlwinm	r0,r0,45-31,0xf; /* Extract wake reason field (P8,9) */ \
+> +	cmpwi	r0,0x4;		  /* System Reset ? 	*/		\
+> +	bne	21f;							\
+> +	ld	r1,PACAR1(r13);						\
+> +	ld	r9,_CCR(r1);						\
+> +	ld	r11,_NIP(r1);						\
+> +	mfspr	r12, SPRN_SRR1;						\
+> +	b	system_reset_common ;					\
+> +	b	.; 		/* We shouldn't return here */		\
+> +FTR_SECTION_ELSE_NESTED(67);						\
+> +	nop		   ;						\
+> +ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 67); \
 
-I haven't pushed out the merge, so go ahead.
+What's the point of the else section?
 
 Paul.
