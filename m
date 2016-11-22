@@ -1,24 +1,28 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tN5c23yyszDvfJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:16:18 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id e9so202092pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 16:16:17 -0800 (PST)
-Subject: Re: [RESEND][v1 0/3] Support memory cgroup hotplug
-To: Michal Hocko <mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tN5f04KZqzDvt3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:18:00 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id p66so200633pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 16:18:00 -0800 (PST)
+Subject: Re: [RESEND] [PATCH v1 1/3] Add basic infrastructure for memcg
+ hotplug support
+To: Vladimir Davydov <vdavydov@tarantool.org>
 References: <1479253501-26261-1-git-send-email-bsingharora@gmail.com>
- <20161121140340.GC18112@dhcp22.suse.cz>
-Cc: mpe@ellerman.id.au, hannes@cmpxchg.org, vdavydov.dev@gmail.com,
+ <1479253501-26261-2-git-send-email-bsingharora@gmail.com>
+ <20161116090129.GA18225@esperanza>
+ <3accc533-8dda-a69c-fabc-23eb388cf11b@gmail.com>
+ <20161121083616.GC18431@esperanza>
+Cc: mpe@ellerman.id.au, hannes@cmpxchg.org, mhocko@kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, Tejun Heo
  <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <20dc8052-a622-e138-72f2-1a921095133b@gmail.com>
-Date: Tue, 22 Nov 2016 11:16:10 +1100
+Message-ID: <2395f702-8246-4ce6-ca23-7d71ce872507@gmail.com>
+Date: Tue, 22 Nov 2016 11:17:53 +1100
 MIME-Version: 1.0
-In-Reply-To: <20161121140340.GC18112@dhcp22.suse.cz>
+In-Reply-To: <20161121083616.GC18431@esperanza>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,34 +34,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-
-On 22/11/16 01:03, Michal Hocko wrote:
-> On Wed 16-11-16 10:44:58, Balbir Singh wrote:
->> In the absence of hotplug we use extra memory proportional to
->> (possible_nodes - online_nodes) * number_of_cgroups. PPC64 has a patch
->> to disable large consumption with large number of cgroups. This patch
->> adds hotplug support to memory cgroups and reverts the commit that
->> limited possible nodes to online nodes.
+>>
+>> The iterator internally takes rcu_read_lock() to avoid any side-effects
+>> of cgroups added/removed. I suspect you are also suggesting using get_online_mems()
+>> around each call to for_each_online_node
+>>
+>> My understanding so far is
+>>
+>> 1. invalidate_reclaim_iterators should be safe (no bad side-effects)
+>> 2. mem_cgroup_free - should be safe as well
+>> 3. mem_cgroup_alloc - needs protection
+>> 4. mem_cgroup_init - needs protection
+>> 5. mem_cgroup_remove_from_tress - should be safe
 > 
-> I didn't get to read patches yet (I am currently swamped by emails after
-> longer vacation so bear with me) but this doesn't tell us _why_ we want
-> this and how much we can actaully save. 
+> I'm not into the memory hotplug code, but my understanding is that if
+> memcg offline happens to race with node unplug, it's possible that
+> 
+>  - mem_cgroup_free() doesn't free the node's data, because it sees the
+>    node as already offline
+>  - memcg hotplug code doesn't free the node's data either, because it
+>    sees the cgroup as offline
+> 
+> May be, we should surround all the loops over online nodes with
+> get/put_online_mems() to be sure that nothing wrong can happen.
+> They are slow path, anyway.
+> 
 
-The motivation was 3af229f2071f
-(powerpc/numa: Reset node_possible_map to only node_online_map)
+Makes sense, agreed
 
-In general being dynamic is more
-> complex and most systems tend to have possible_nodes close to
-> online_nodes in my experience (well at least on most reasonable
-> architectures). I would also appreciate some highlevel description of
-> the implications. E.g. how to we synchronize with the hotplug operations
-> when iterating node specific data structures.
-
-I agree dynamic is more complex, but I think we'll begin to see a lot
-of more of it. The rules are not hard IMHO. From an implication perspective
-it means that we need to get/put_online_mem_nodes in certain paths - specifically
-mem_cgroup_alloc/free and mem_cgroup_init from what I can see so far
-
-Thanks for the review!
-
-Balbir Singh
+Balbir
