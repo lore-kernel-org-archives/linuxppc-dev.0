@@ -1,21 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNMq325B4zDvYL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 21:56:47 +1100 (AEDT)
-Message-Id: <d59d33a13c8956d6e2dbd228b247d3d8bc7caf1f.1479742486.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1479742486.git.christophe.leroy@c-s.fr>
-References: <cover.1479742486.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 2/2] powerpc/32: stack protector: change the canary value
- per task
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Nicolas Pitre <nicolas.pitre@linaro.org>
-Date: Tue, 22 Nov 2016 11:49:32 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNMvw6Z80zDvsf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 22:01:00 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: kbuild test robot <lkp@intel.com>, Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, kbuild-all@01.org, kvm@vger.kernel.org
+Subject: Re: [PATCH 2/4] powerpc/64: Provide functions for accessing POWER9
+ partition table
+In-Reply-To: <201611211551.D3xry2wx%fengguang.wu@intel.com>
+References: <201611211551.D3xry2wx%fengguang.wu@intel.com>
+Date: Tue, 22 Nov 2016 22:00:58 +1100
+Message-ID: <87k2bvvkwl.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Partially copied from commit df0698be14c66 ("ARM: stack protector:
-change the canary value per task")
+kbuild test robot <lkp@intel.com> writes:
+> [auto build test WARNING on powerpc/next]
+> [cannot apply to v4.9-rc6 next-20161117]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Paul-Mackerras/powerpc-64-Preparation-for-KVM-support-on-POWER9/20161121-133431
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: powerpc-allyesconfig (attached as .config)
+> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=powerpc 
+>
+> All warnings (new ones prefixed by >>):
+>
+>>> WARNING: vmlinux.o(.text+0x5c650): Section mismatch in reference from the function .mmu_partition_table_init() to the function .init.text:.memblock_alloc_base()
+>    The function .mmu_partition_table_init() references
+>    the function __init .memblock_alloc_base().
 
-A new random value for the canary is stored in the task struct whenever
-a new task is forked.  This is meant to allow for different canary values
-per task.  On powerpc, GCC expects the canary value to be found in a global
-variable called __stack_chk_guard.  So this variable has to be updated
-with the value stored in the task struct whenever a task switch occurs.
+>    This is often because .mmu_partition_table_init lacks a __init
 
-Because the variable GCC expects is global, this cannot work on SMP
-unfortunately.  So, on SMP, the same initial canary value is kept
-throughout, making this feature a bit less effective although it is still
-useful.
+Indeed that looks like the problem.
 
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/asm-offsets.c | 3 +++
- arch/powerpc/kernel/entry_32.S    | 6 +++++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+Paul have you already merged the topic branch, or can I squash in a fix
+for this? Or I'll just do it on top.
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index caec7bf..5c86030 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -91,6 +91,9 @@ int main(void)
- 	DEFINE(TI_livepatch_sp, offsetof(struct thread_info, livepatch_sp));
- #endif
- 
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+	DEFINE(TSK_STACK_CANARY, offsetof(struct task_struct, stack_canary));
-+#endif
- 	DEFINE(KSP, offsetof(struct thread_struct, ksp));
- 	DEFINE(PT_REGS, offsetof(struct thread_struct, regs));
- #ifdef CONFIG_BOOKE
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 3841d74..5742dbd 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -674,7 +674,11 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_SPEFSCR,r0		/* restore SPEFSCR reg */
- END_FTR_SECTION_IFSET(CPU_FTR_SPE)
- #endif /* CONFIG_SPE */
--
-+#if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
-+	lwz	r0,TSK_STACK_CANARY(r2)
-+	lis	r4,__stack_chk_guard@ha
-+	stw	r0,__stack_chk_guard@l(r4)
-+#endif
- 	lwz	r0,_CCR(r1)
- 	mtcrf	0xFF,r0
- 	/* r3-r12 are destroyed -- Cort */
--- 
-2.10.1
+cheers
