@@ -1,36 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNF9j5Tl1zDvtQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 16:57:29 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAM5s16q013451
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 00:57:27 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26vb43tu91-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 00:57:27 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 21 Nov 2016 22:57:26 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 1/6] powerpc/mm: update ptep_set_access_flag to not do
- full mm tlb flush
-In-Reply-To: <229327ef-bafe-75c5-79d9-2bece549ea38@gmail.com>
-References: <20161121183322.14585-1-aneesh.kumar@linux.vnet.ibm.com>
- <229327ef-bafe-75c5-79d9-2bece549ea38@gmail.com>
-Date: Tue, 22 Nov 2016 11:27:19 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNFFy4sTfzDvtd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:01:10 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Dave Young <dyoung@redhat.com>
+Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, x86@kernel.org,
+ Eric Biederman <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>,
+ Baoquan He <bhe@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v10 04/10] kexec_file: Add support for purgatory built as
+ PIE.
+In-Reply-To: <5009580.5GxAkTrMYA@morokweng>
+References: <1478748449-3894-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1478748449-3894-5-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20161120024546.GA4413@dhcp-128-65.nay.redhat.com>
+ <5009580.5GxAkTrMYA@morokweng>
+Date: Tue, 22 Nov 2016 17:01:10 +1100
+Message-ID: <87ziksuk7t.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87a8cshxa8.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,51 +36,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
-
-> On 22/11/16 05:33, Aneesh Kumar K.V wrote:
->> When we are updating pte, we just need to flush the tlb mapping for
->> that pte. Right now we do a full mm flush because we don't track page
->> size. Update the interface to track the page size and use that to
->> do the right tlb flush.
+Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+> Am Sonntag, 20. November 2016, 10:45:46 BRST schrieb Dave Young:
+>> On 11/10/16 at 01:27am, Thiago Jung Bauermann wrote:
+>> > powerpc's purgatory.ro has 12 relocation types when built as
+>> > a relocatable object. To implement support for them requires
+>> > arch_kexec_apply_relocations_add to duplicate a lot of code with
+>> > module_64.c:apply_relocate_add.
+>> > 
+>> > When built as a Position Independent Executable there are only 4
+>> > relocation types in purgatory.ro, so it becomes practical for the powerpc
+>> > implementation of kexec_file to have its own relocation implementation.
+>> > 
+>> > Also, the purgatory is an executable and not an intermediary output from
+>> > the compiler so it makes sense conceptually that it is easier to build
+>> > it as a PIE than as a partially linked object.
+>> > 
+>> > Apart from the greatly reduced number of relocations, there are two
+>> > differences between a relocatable object and a PIE:
+>> > 
+>> > 1. __kexec_load_purgatory needs to use the program headers rather than the
+>> > 
+>> >    section headers to figure out how to load the binary.
+>> > 
+>> > 2. Symbol values are absolute addresses instead of relative to the
+>> > 
+>> >    start of the section.
+>> > 
+>> > This patch adds the support needed in generic code for the differences
+>> > above and allows powerpc to load and relocate a position independent
+>> > purgatory.
 >> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/book3s/32/pgtable.h |  4 +++-
->>  arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++--
->>  arch/powerpc/include/asm/book3s/64/radix.h   | 14 +++++++-------
->>  arch/powerpc/include/asm/nohash/32/pgtable.h |  4 +++-
->>  arch/powerpc/include/asm/nohash/64/pgtable.h |  4 +++-
->>  arch/powerpc/mm/pgtable-book3s64.c           |  3 ++-
->>  arch/powerpc/mm/pgtable-radix.c              | 16 ++++++++++++++++
->>  arch/powerpc/mm/pgtable.c                    | 10 ++++++++--
->>  arch/powerpc/mm/tlb-radix.c                  | 15 ---------------
->>  9 files changed, 47 insertions(+), 30 deletions(-)
+>> [snip]
 >> 
->> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
->> index 6b8b2d57fdc8..0713626e9189 100644
->> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
->> @@ -224,7 +224,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
->>  
->>  
->>  static inline void __ptep_set_access_flags(struct mm_struct *mm,
->> -					   pte_t *ptep, pte_t entry)
->> +					   pte_t *ptep, pte_t entry,
->> +					   unsigned long address,
->> +					   unsigned long pg_sz)
+>> The kexec-tools machine_apply_elf_rel is pretty simple for ppc64, it is
+>> not that complex. So could you look into simplify your kexec_file
+>> implementation?
 >
-> I wonder if the change can be limited in scope by passing the struct vma instead
-> of struct mm as the first argument and not passing pg_sz (I don't like that
-> name at all, page_size if we decide to do it, please). Then extract the mm from
-> vma->mm
->
+> I can try, but there is one fundamental issue here: powerpc position-dependent 
+> code relies more on relocations than x86 position-dependent code does, so 
+> there's a limit to how simple it can be made without switching to position-
+> independent code. And it will always be more involved than it is on x86.
 
-https://lkml.kernel.org/r/20161114152020.4608-1-aneesh.kumar@linux.vnet.ibm.com
+I think we need to go back to the drawing board on this one.
 
-That patch series go on top of this series. The idea of splitting this
-into two is to make it easy to backport this series if needed to older
-kernels.
+My hope was that building purgatory as PIE would reduce the amount of
+complexity, but instead it's just added more. Sorry for sending you in
+that direction.
 
 
--aneesh
+In general I dislike the level of complexity of the kexec-tools
+purgatory, and in particular I'm not comfortable with things like:
+
+diff --git a/arch/powerpc/purgatory/sha256.c b/arch/powerpc/purgatory/sha256.c
+new file mode 100644
+index 000000000000..6abee1877d56
+--- /dev/null
++++ b/arch/powerpc/purgatory/sha256.c
+@@ -0,0 +1,6 @@
++#include "../boot/string.h"
++
++/* Avoid including x86's boot/string.h in sha256.c. */
++#define BOOT_STRING_H
++
++#include "../../x86/purgatory/sha256.c"
+
+
+I think the best way to get this over the line would be to take the
+kexec-lite purgatory implementation and use that to begin with. I know
+it doesn't have all the features of the kexec-tools version, but it
+should work, and we can look at adding the extra features later.
+
+I'll try and get that working tonight.
+
+cheers
