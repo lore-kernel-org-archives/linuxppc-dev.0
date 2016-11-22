@@ -1,28 +1,36 @@
-Return-Path: <sthemmin@microsoft.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0117.outbound.protection.outlook.com [104.47.33.117])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNXG240qwzDvxr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 04:17:13 +1100 (AEDT)
-From: Stephen Hemminger <sthemmin@microsoft.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Bjorn Helgaas
- <helgaas@kernel.org>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Frederic Barrat
- <fbarrat@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Ian
- Munsie" <imunsie@au1.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 1/2] PCI: Add pci_set_vpd_timeout() to set VPD access
- timeout
-Date: Tue, 22 Nov 2016 17:17:07 +0000
-Message-ID: <BLUPR0301MB2098AD79A327EBDE07ADA255CCB40@BLUPR0301MB2098.namprd03.prod.outlook.com>
-References: <1479762225-51440-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1479762589-51557-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <20161121220523.GB4832@bhelgaas-glaptop.roam.corp.google.com>
- <9f08836b-d483-e54a-b56d-c4f20d4d1a90@au1.ibm.com>
-In-Reply-To: <9f08836b-d483-e54a-b56d-c4f20d4d1a90@au1.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNXhl4XNtzDvr1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 04:36:55 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAMHXv0T015631
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 12:36:52 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26vn5m384s-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 12:36:52 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 22 Nov 2016 12:36:52 -0500
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v2] powernv: Handle wakeup from idle due to SRESET
+Date: Tue, 22 Nov 2016 23:06:32 +0530
+In-Reply-To: <1479753469-10625-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1479753469-10625-1-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1479836192-21233-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +40,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I had old Marvell Sky2 hardware that had slow flash.
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
------Original Message-----
-From: Andrew Donnellan [mailto:andrew.donnellan@au1.ibm.com]=20
-Sent: Monday, November 21, 2016 4:16 PM
-To: Bjorn Helgaas <helgaas@kernel.org>; Matthew R. Ochs <mrochs@linux.vnet.=
-ibm.com>
-Cc: linux-pci@vger.kernel.org; Frederic Barrat <fbarrat@linux.vnet.ibm.com>=
-; Uma Krishnan <ukrishn@linux.vnet.ibm.com>; Ian Munsie <imunsie@au1.ibm.co=
-m>; Bjorn Helgaas <bhelgaas@google.com>; linuxppc-dev@lists.ozlabs.org; Ste=
-phen Hemminger <sthemmin@microsoft.com>
-Subject: Re: [PATCH 1/2] PCI: Add pci_set_vpd_timeout() to set VPD access t=
-imeout
+The existing code doesn't handle the case when CPU which was in a
+hardware-idle state (nap,sleep,winkle on POWER8 and various stop
+states on POWER9) gets woken up due to a System Reset interrupt.
 
-On 22/11/16 09:05, Bjorn Helgaas wrote:
-> Hi Matthew,
->
-> On Mon, Nov 21, 2016 at 03:09:49PM -0600, Matthew R. Ochs wrote:
->> The PCI core uses a fixed 50ms timeout when waiting for VPD accesses=20
->> to complete. When an access does not complete within this period, a=20
->> warning is logged and an error returned to the caller.
->>
->> While this default timeout is valid for most hardware, some devices=20
->> can experience longer access delays under certain circumstances. For=20
->> example, one of the IBM CXL Flash devices can take up to ~120ms in a=20
->> worst-case scenario. These types of devices can benefit from an=20
->> extended timeout that is specific to their hardware constraints.
->>
->> To support per-device VPD access timeouts, pci_set_vpd_timeout() is=20
->> added as an exported service. PCI devices will continue to default=20
->> with the 50ms timeout and use a per-device timeout when a driver calls t=
-his new service.
->
-> Can you include a pointer to something in the spec that's behind the=20
-> default 50ms timeout, or did somebody just pull that number out of the=20
-> air?
+This patch checks if the CPU was woken up due to System Reset, in
+which case, after restoring the required hardware state, it jumps to
+the system reset handler.
 
-It looks like Stephen Hemminger added the 50ms timeout in 1120f8b8169f, whi=
-ch seems to indicate that 50ms was chosen because it's longer than the 13ms=
- per word that was measured on one device.
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+v1 -> v2: Set r9,r11,r12 to CR,SRR0,SRR1 values
+before jumping to system_reset_common as expected by
+EXCEPTION_PROLOG_COMMON
 
---=20
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+ arch/powerpc/kernel/idle_book3s.S | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 72dac0b..06afe0e 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -353,6 +353,22 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+ 	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
+ 20:	nop;
+ 
++#define CHECK_SRESET_INTERRUPT                                          \
++BEGIN_FTR_SECTION_NESTED(67);						\
++	mfspr	r0,SPRN_SRR1;						\
++	rlwinm	r0,r0,45-31,0xf; /* Extract wake reason field (P8,9) */ \
++	cmpwi	r0,0x4;		  /* System Reset ? 	*/		\
++	bne	21f;							\
++	ld	r1,PACAR1(r13);						\
++	ld	r9,_CCR(r1);						\
++	ld	r11,_NIP(r1);						\
++	mfspr	r12, SPRN_SRR1;						\
++	b	system_reset_common ;					\
++	b	.; 		/* We shouldn't return here */		\
++FTR_SECTION_ELSE_NESTED(67);						\
++	nop		   ;						\
++ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 67); \
++21:	nop;
+ 
+ /*
+  * r3 - requested stop state
+@@ -644,6 +660,7 @@ _GLOBAL(pnv_wakeup_loss)
+ 	ld	r1,PACAR1(r13)
+ BEGIN_FTR_SECTION
+ 	CHECK_HMI_INTERRUPT
++	CHECK_SRESET_INTERRUPT
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+ 	REST_NVGPRS(r1)
+ 	REST_GPR(2, r1)
+@@ -666,6 +683,7 @@ _GLOBAL(pnv_wakeup_noloss)
+ 	bne	pnv_wakeup_loss
+ BEGIN_FTR_SECTION
+ 	CHECK_HMI_INTERRUPT
++	CHECK_SRESET_INTERRUPT
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+ 	ld	r1,PACAR1(r13)
+ 	ld	r6,_CCR(r1)
+-- 
+1.8.3.1
