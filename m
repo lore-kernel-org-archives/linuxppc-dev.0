@@ -1,48 +1,22 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNFpf4KWKzDw6V
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:26:02 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAM6NWvT021616
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 01:25:59 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26v8cka6ga-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 01:25:59 -0500
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 22 Nov 2016 16:25:57 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3F1E52CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:25:53 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAM6PrVw57081890
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:25:53 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAM6PqbJ017903
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:25:53 +1100
-Date: Tue, 22 Nov 2016 11:55:49 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH v2 2/2] powerpc: kprobes: invoke handlers directly
-References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
- <1bde4adb6da9695007f409af9ea4db6be400ca54.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
- <20161122142537.42e365a22d866026aa726bfe@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNH7t0XcczDvx9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 18:26:01 +1100 (AEDT)
+Date: Tue, 22 Nov 2016 01:25:41 -0600
+From: Scott Wood <oss@buserror.net>
+To: yanjiang.jin@windriver.com
+Cc: mark.rutland@arm.com, benh@kernel.crashing.org, leoli@freescale.com,
+ zw@zh-kernel.org, devicetree@vger.kernel.org, jinyanjiang@gmail.com,
+ linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, yao.yuan@nxp.com, hongbo.zhang@nxp.com
+Message-ID: <20161122072541.GA10135@home.buserror.net>
+References: <1479703969-15413-1-git-send-email-yanjiang.jin@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161122142537.42e365a22d866026aa726bfe@kernel.org>
-Message-Id: <20161122062549.GJ4019@naverao1-tp.localdomain>
+In-Reply-To: <1479703969-15413-1-git-send-email-yanjiang.jin@windriver.com>
+Subject: Re: fsldma: t4240qds: drop "SG" CAP for DMA3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,66 +26,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/11/22 02:25PM, Masami Hiramatsu wrote:
-> Hello Naveen,
-
-Hi Masami,
-
+On Mon, Nov 21, 2016 at 12:52:49PM +0800, yanjiang.jin@windriver.com wrote:
+> From: Yanjiang Jin <yanjiang.jin@windriver.com>
 > 
-> On Mon, 21 Nov 2016 22:36:41 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> 
-> > ... rather than through notify_die(), to reduce path taken for handling
-> > kprobes. Similar to commit 6f6343f53d13 ("kprobes/x86: Call exception
-> > handlers directly from do_int3/do_debug").
-> > 
-> > While at it, rename post_kprobe_handler() to kprobe_post_handler() for
-> > more uniform naming.
-> > 
-> > Reported-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> > Changes since v1:
-> > - Removed CONFIG_KPROBES guard in traps.c
-> > - Introduce CONFIG_KPROBES guard in asm/kprobes.h to prevent conflicts when
-> >   including both linux/kprobes.h as well as asm/kprobes.h
-> > 
-> >  arch/powerpc/include/asm/kprobes.h |  7 +++++++
-> >  arch/powerpc/kernel/kprobes.c      | 29 +++++++----------------------
-> >  arch/powerpc/kernel/traps.c        | 13 +++++++++++++
-> >  3 files changed, 27 insertions(+), 22 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-> > index 2c9759bd..da30dc3 100644
-> > --- a/arch/powerpc/include/asm/kprobes.h
-> > +++ b/arch/powerpc/include/asm/kprobes.h
-> > @@ -32,6 +32,7 @@
-> >  #include <asm/probes.h>
-> >  #include <asm/code-patching.h>
-> >  
-> > +#ifdef CONFIG_KPROBES
-> >  #define  __ARCH_WANT_KPROBES_INSN_SLOT
-> >  
-> >  struct pt_regs;
-> > @@ -127,5 +128,11 @@ struct kprobe_ctlblk {
-> >  extern int kprobe_exceptions_notify(struct notifier_block *self,
-> >  					unsigned long val, void *data);
-> >  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-> > +extern int kprobe_handler(struct pt_regs *regs);
-> > +extern int kprobe_post_handler(struct pt_regs *regs);
-> > +#else
-> > +static int kprobe_handler(struct pt_regs *regs) { return 0; }
-> > +static int kprobe_post_handler(struct pt_regs *regs) { return 0; }
-> 
-> These should be "static inline int kprobe_...", you lost 'inline' here.
-> Others are OK for me.
+> T4240QDS DMA controller uses the external DMA control signals to start or
+> restart a paused DMA transfer, acknowledge a DMA transfer in progress and
+> also indicates a transfer completion.
+> "scatterlist copy" depends on these signals.
 
-Ah, indeed. Good catch. Thanks.
- 
-Michael,
-Would you be ok to make this change when applying this, if you're ok 
-with the rest of the patch? If not, please let me know and I will send 
-an updated version.
+How specifically does sg depend on these signals?
 
-Thanks,
-Naveen
+What about chips other than t4240?
+
+> But as "T4240 Reference Manual" shown:
+> "The external DMA control signals are available on DMA1 and DMA2. They are
+>  not supported by DMA3."
+> 
+> So add an of_node property "fsl,external-dma-control-signals" to only DMA1
+> and DMA2, it can prevent DMA3 from doing DMA_SG operations. Else we would
+> get the below errors during doing dmatest:
+> 
+> modprobe dmatest run=1 iterations=42
+> 
+> dmatest: Started 1 threads using dma2chan0
+> fsl-elo-dma ffe102300.dma: chan0: Transfer Error!
+> fsl-elo-dma ffe102300.dma: chan0: irq: unhandled sr 0x00000080
+> dmatest: dma2chan0-sg0: dstbuf[0x3954] not copied! Expected d8, got 2b
+> ........................
+> dmatest: dma2chan7-sg0: dstbuf[0x1c51] not copied! Expected df, got 2e
+> dmatest: dma2chan7-sg0: 1301 errors suppressed
+> dmatest: dma2chan7-sg0: result #42: 'data error' with
+> src_off=0xf21 dst_off=0x1c32 len=0x535 (1333)
+> dmatest: dma2chan7-sg0: summary 42 tests, 42 failures 2952 iops 23968 KB/s
+> 
+> Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |  6 ++++++
+>  drivers/dma/fsldma.c                        | 11 +++++++++--
+>  2 files changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+> index 68c4ead..155997d 100644
+> --- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+> @@ -1029,7 +1029,13 @@
+>  	};
+>  
+>  /include/ "elo3-dma-0.dtsi"
+> +	dma@100300 {
+> +		fsl,external-dma-control-signals;
+> +	};
+>  /include/ "elo3-dma-1.dtsi"
+> +	dma@101300 {
+> +		fsl,external-dma-control-signals;
+> +	};
+>  /include/ "elo3-dma-2.dtsi"
+>  
+>  /include/ "qoriq-espi-0.dtsi"
+
+Where is the binding for this property?
+
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+
+The device tree update should be a separate patch from the driver, as
+they would likely be merged via different trees.
+
+> index 51c75bf..f7054f4 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -1354,12 +1354,19 @@ static int fsldma_of_probe(struct platform_device *op)
+>  	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
+>  
+>  	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+> -	dma_cap_set(DMA_SG, fdev->common.cap_mask);
+> +
+>  	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+> +
+> +	if (of_get_property(op->dev.of_node,
+> +		"fsl,external-dma-control-signals", NULL)) {
+> +		dma_cap_set(DMA_SG, fdev->common.cap_mask);
+> +		fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
+> +	} else
+> +		dma_cap_clear(DMA_SG, fdev->common.cap_mask);
+
+This indentation is not very readable (continuation line aligned with
+if-body).
+
+How about:
+
+	if (of_property_read_bool(op->dev.of_node,
+				  "fsl,external-dma-control-signals")) {
+		dma_cap_set(...);
+		...
+	} else {
+		dma_cap_clear(...);
+	}
+
+Shortening the property name would also help (e.g. "fsl,dma-ext-ctrl").
+
+I assume nothing bad will happen (other than performance loss) if the
+updated driver is used with an existing device tree, and thus none of the
+channels get DMA_SG?
+
+Is there any need to explicitly clear the capablitity in the else path? 
+Wouldn't it be clear by default?
+
+-Scott
