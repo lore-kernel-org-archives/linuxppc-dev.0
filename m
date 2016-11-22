@@ -1,23 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNF886NkdzDvtQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 16:56:08 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 4/7] powerpc/64: tool to check head sections location
- sanity
-In-Reply-To: <20161122155447.61198020@roar.ozlabs.ibm.com>
-References: <20161019031600.17933-1-npiggin@gmail.com>
- <20161019031600.17933-5-npiggin@gmail.com>
- <8760npimtd.fsf@concordia.ellerman.id.au>
- <20161122155447.61198020@roar.ozlabs.ibm.com>
-Date: Tue, 22 Nov 2016 16:56:04 +1100
-Message-ID: <871sy4vz0r.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNF9j5Tl1zDvtQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 16:57:29 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAM5s16q013451
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 00:57:27 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26vb43tu91-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 00:57:27 -0500
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 21 Nov 2016 22:57:26 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 1/6] powerpc/mm: update ptep_set_access_flag to not do
+ full mm tlb flush
+In-Reply-To: <229327ef-bafe-75c5-79d9-2bece549ea38@gmail.com>
+References: <20161121183322.14585-1-aneesh.kumar@linux.vnet.ibm.com>
+ <229327ef-bafe-75c5-79d9-2bece549ea38@gmail.com>
+Date: Tue, 22 Nov 2016 11:27:19 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87a8cshxa8.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +40,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> On Tue, 15 Nov 2016 11:55:26 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Nicholas Piggin <npiggin@gmail.com> writes:
->> > diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
->> > new file mode 100755
->> > index 0000000..9635fe7
->> > --- /dev/null
->> > +++ b/arch/powerpc/tools/head_check.sh
->> > @@ -0,0 +1,69 @@
->> > +#!/bin/sh  
+Balbir Singh <bsingharora@gmail.com> writes:
+
+> On 22/11/16 05:33, Aneesh Kumar K.V wrote:
+>> When we are updating pte, we just need to flush the tlb mapping for
+>> that pte. Right now we do a full mm flush because we don't track page
+>> size. Update the interface to track the page size and use that to
+>> do the right tlb flush.
 >> 
->> We run this explicitly via $(CONFIG_SHELL), so having a shebang here is
->> redundant and also a little confusing. I added "-x" here, to turn on
->> tracing, but it doesn't take effect, so I think better to just drop the
->> line. If anyone wants to run it manually they can just pass it to sh.
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/book3s/32/pgtable.h |  4 +++-
+>>  arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++--
+>>  arch/powerpc/include/asm/book3s/64/radix.h   | 14 +++++++-------
+>>  arch/powerpc/include/asm/nohash/32/pgtable.h |  4 +++-
+>>  arch/powerpc/include/asm/nohash/64/pgtable.h |  4 +++-
+>>  arch/powerpc/mm/pgtable-book3s64.c           |  3 ++-
+>>  arch/powerpc/mm/pgtable-radix.c              | 16 ++++++++++++++++
+>>  arch/powerpc/mm/pgtable.c                    | 10 ++++++++--
+>>  arch/powerpc/mm/tlb-radix.c                  | 15 ---------------
+>>  9 files changed, 47 insertions(+), 30 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+>> index 6b8b2d57fdc8..0713626e9189 100644
+>> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
+>> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+>> @@ -224,7 +224,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>>  
+>>  
+>>  static inline void __ptep_set_access_flags(struct mm_struct *mm,
+>> -					   pte_t *ptep, pte_t entry)
+>> +					   pte_t *ptep, pte_t entry,
+>> +					   unsigned long address,
+>> +					   unsigned long pg_sz)
 >
-> Okay. How about relocs_check.sh? I just started by copying that.
-
-Yeah may as well fix it too. 
-
->> # Turn this on if you want more debug output:
->> # set -x
+> I wonder if the change can be limited in scope by passing the struct vma instead
+> of struct mm as the first argument and not passing pg_sz (I don't like that
+> name at all, page_size if we decide to do it, please). Then extract the mm from
+> vma->mm
 >
-> Can do, same question applies for relocs_check.sh
 
-Yep, save the next person who's debugging it the time.
+https://lkml.kernel.org/r/20161114152020.4608-1-aneesh.kumar@linux.vnet.ibm.com
 
-cheers
+That patch series go on top of this series. The idea of splitting this
+into two is to make it easy to backport this series if needed to older
+kernels.
+
+
+-aneesh
