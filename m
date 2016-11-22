@@ -1,24 +1,51 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tN5KP63GLzDvkS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:03:37 +1100 (AEDT)
-Date: Tue, 22 Nov 2016 10:27:57 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v5 3/6] vfio/spapr: Postpone allocation of
- userspace version of TCE table
-Message-ID: <20161121232757.GG8681@umbus.fritz.box>
-References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
- <1478867537-27893-4-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tN5bx6Q90zDvLW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:16:13 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAM0E0pb015528
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 19:16:09 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26v5j3f5s7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2016 19:16:08 -0500
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 22 Nov 2016 10:16:06 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 769612BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:16:03 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAM0G3ps41549872
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:16:03 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAM0G2Io027848
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 11:16:03 +1100
+Subject: Re: [PATCH 1/2] PCI: Add pci_set_vpd_timeout() to set VPD access
+ timeout
+To: Bjorn Helgaas <helgaas@kernel.org>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+References: <1479762225-51440-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1479762589-51557-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <20161121220523.GB4832@bhelgaas-glaptop.roam.corp.google.com>
+Cc: linux-pci@vger.kernel.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org, Stephen Hemminger <sthemmin@microsoft.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 22 Nov 2016 11:15:59 +1100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="iJXiJc/TAIT2rh2r"
-In-Reply-To: <1478867537-27893-4-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <20161121220523.GB4832@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <9f08836b-d483-e54a-b56d-c4f20d4d1a90@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,94 +55,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 22/11/16 09:05, Bjorn Helgaas wrote:
+> Hi Matthew,
+>
+> On Mon, Nov 21, 2016 at 03:09:49PM -0600, Matthew R. Ochs wrote:
+>> The PCI core uses a fixed 50ms timeout when waiting for VPD accesses to
+>> complete. When an access does not complete within this period, a warning
+>> is logged and an error returned to the caller.
+>>
+>> While this default timeout is valid for most hardware, some devices can
+>> experience longer access delays under certain circumstances. For example,
+>> one of the IBM CXL Flash devices can take up to ~120ms in a worst-case
+>> scenario. These types of devices can benefit from an extended timeout that
+>> is specific to their hardware constraints.
+>>
+>> To support per-device VPD access timeouts, pci_set_vpd_timeout() is added
+>> as an exported service. PCI devices will continue to default with the 50ms
+>> timeout and use a per-device timeout when a driver calls this new service.
+>
+> Can you include a pointer to something in the spec that's behind the
+> default 50ms timeout, or did somebody just pull that number out of the
+> air?
 
---iJXiJc/TAIT2rh2r
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It looks like Stephen Hemminger added the 50ms timeout in 1120f8b8169f, 
+which seems to indicate that 50ms was chosen because it's longer than 
+the 13ms per word that was measured on one device.
 
-On Fri, Nov 11, 2016 at 11:32:14PM +1100, Alexey Kardashevskiy wrote:
-> The iommu_table struct manages a hardware TCE table and a vmalloc'd
-> table with corresponding userspace addresses. Both are allocated when
-> the default DMA window is created and this happens when the very first
-> group is attached to a container.
->=20
-> As we are going to allow the userspace to configure container in one
-> memory context and pas container fd to another, we have to postpones
-> such allocations till a container fd is passed to the destination
-> user process so we would account locked memory limit against the actual
-> container user constrainsts.
->=20
-> This postpones the it_userspace array allocation till it is used first
-> time for mapping. The unmapping patch already checks if the array is
-> allocated.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index d0c38b2..442baac 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -515,6 +515,12 @@ static long tce_iommu_build_v2(struct tce_container =
-*container,
->  	unsigned long hpa;
->  	enum dma_data_direction dirtmp;
-> =20
-> +	if (!tbl->it_userspace) {
-> +		ret =3D tce_iommu_userspace_view_alloc(tbl);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
->  	for (i =3D 0; i < pages; ++i) {
->  		struct mm_iommu_table_group_mem_t *mem =3D NULL;
->  		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
-> @@ -1068,10 +1074,7 @@ static int tce_iommu_take_ownership(struct tce_con=
-tainer *container,
->  		if (!tbl || !tbl->it_map)
->  			continue;
-> =20
-> -		rc =3D tce_iommu_userspace_view_alloc(tbl);
-> -		if (!rc)
-> -			rc =3D iommu_take_ownership(tbl);
-> -
-> +		rc =3D iommu_take_ownership(tbl);
->  		if (rc) {
->  			for (j =3D 0; j < i; ++j)
->  				iommu_release_ownership(
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---iJXiJc/TAIT2rh2r
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJYM4L9AAoJEGw4ysog2bOStV8QANEthykAmjyhkUA0Ehr1wmmj
-YkKDniKhlC4TQxUuA9QllLiFkmPvtkU9ElrCIsniFoB76+sUYShUfOz8nQGiYFNq
-NpMa8Ds8FSFkKo3IB/NfMH/BkWMsYgbp/fOsZrT19qBPKAs0eC9SEbRqBxsnSdP7
-K3ZYQVbDSte0OzY6tOJ97ZMq2mV2GeiDve09uB0/A8MfxsTP3p2i3POgWCKMfnfZ
-MJHLs+Pzf0vPoPaH2b1FvgOUAB02/baDbeq3uxaA9H6JiwTDARrYlVxpNUqAnL/1
-qWbTMRTqIxRrZfoPwx0bswuYnfbUzvAenlIvVg93hmgHG7ARDnNUOwvQmRqFx5W0
-LAK5BvlU6134BZF13uQ9S5oTktucONkk0Xv1bdkHMgAd7qr+8S6sRN7mZLPbDaVN
-R+4qb+agFV/DV8FiCrept+NGzMTvCmGypKBNyT5Oc93RiiYbozYK1Fa7pTy8lx9h
-H58829esWwZnl1BEZCC/I99xzlCy0/qhImePjAZ15yKULgX8NfbLl3f77qAcSwk5
-2eiumXrUpwFlBXdlwR97wpb1ApsofFSFqXMoYD46zcDJoFJVcn/95HbAIFqyAMGs
-cuCB2n+DkWqF1APakmVwig3K165MqJxXl2jKrmiysE1v9pc7tS6ljK/o/9Fta7VQ
-jXFPtMLZMXp6D2qrz9ZM
-=iNpO
------END PGP SIGNATURE-----
-
---iJXiJc/TAIT2rh2r--
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
