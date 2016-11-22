@@ -1,36 +1,48 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNFbl5G3dzDw4H
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:16:35 +1100 (AEDT)
-Date: Tue, 22 Nov 2016 14:16:22 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- Eric Biederman <ebiederm@xmission.com>,
- Vivek Goyal <vgoyal@redhat.com>, Baoquan He <bhe@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v10 04/10] kexec_file: Add support for purgatory built as
- PIE.
-Message-ID: <20161122061622.GB11254@dhcp-128-65.nay.redhat.com>
-References: <1478748449-3894-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1478748449-3894-5-git-send-email-bauerman@linux.vnet.ibm.com>
- <20161120024546.GA4413@dhcp-128-65.nay.redhat.com>
- <5009580.5GxAkTrMYA@morokweng>
- <87ziksuk7t.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNFpf4KWKzDw6V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:26:02 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAM6NWvT021616
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 01:25:59 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26v8cka6ga-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 01:25:59 -0500
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 22 Nov 2016 16:25:57 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3F1E52CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:25:53 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAM6PrVw57081890
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:25:53 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAM6PqbJ017903
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 17:25:53 +1100
+Date: Tue, 22 Nov 2016 11:55:49 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v2 2/2] powerpc: kprobes: invoke handlers directly
+References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+ <1bde4adb6da9695007f409af9ea4db6be400ca54.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20161122142537.42e365a22d866026aa726bfe@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87ziksuk7t.fsf@concordia.ellerman.id.au>
+In-Reply-To: <20161122142537.42e365a22d866026aa726bfe@kernel.org>
+Message-Id: <20161122062549.GJ4019@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,89 +52,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael
-On 11/22/16 at 05:01pm, Michael Ellerman wrote:
-> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
-> > Am Sonntag, 20. November 2016, 10:45:46 BRST schrieb Dave Young:
-> >> On 11/10/16 at 01:27am, Thiago Jung Bauermann wrote:
-> >> > powerpc's purgatory.ro has 12 relocation types when built as
-> >> > a relocatable object. To implement support for them requires
-> >> > arch_kexec_apply_relocations_add to duplicate a lot of code with
-> >> > module_64.c:apply_relocate_add.
-> >> > 
-> >> > When built as a Position Independent Executable there are only 4
-> >> > relocation types in purgatory.ro, so it becomes practical for the powerpc
-> >> > implementation of kexec_file to have its own relocation implementation.
-> >> > 
-> >> > Also, the purgatory is an executable and not an intermediary output from
-> >> > the compiler so it makes sense conceptually that it is easier to build
-> >> > it as a PIE than as a partially linked object.
-> >> > 
-> >> > Apart from the greatly reduced number of relocations, there are two
-> >> > differences between a relocatable object and a PIE:
-> >> > 
-> >> > 1. __kexec_load_purgatory needs to use the program headers rather than the
-> >> > 
-> >> >    section headers to figure out how to load the binary.
-> >> > 
-> >> > 2. Symbol values are absolute addresses instead of relative to the
-> >> > 
-> >> >    start of the section.
-> >> > 
-> >> > This patch adds the support needed in generic code for the differences
-> >> > above and allows powerpc to load and relocate a position independent
-> >> > purgatory.
-> >> 
-> >> [snip]
-> >> 
-> >> The kexec-tools machine_apply_elf_rel is pretty simple for ppc64, it is
-> >> not that complex. So could you look into simplify your kexec_file
-> >> implementation?
-> >
-> > I can try, but there is one fundamental issue here: powerpc position-dependent 
-> > code relies more on relocations than x86 position-dependent code does, so 
-> > there's a limit to how simple it can be made without switching to position-
-> > independent code. And it will always be more involved than it is on x86.
-> 
-> I think we need to go back to the drawing board on this one.
-> 
-> My hope was that building purgatory as PIE would reduce the amount of
-> complexity, but instead it's just added more. Sorry for sending you in
-> that direction.
-> 
-> 
-> In general I dislike the level of complexity of the kexec-tools
-> purgatory, and in particular I'm not comfortable with things like:
-> 
-> diff --git a/arch/powerpc/purgatory/sha256.c b/arch/powerpc/purgatory/sha256.c
-> new file mode 100644
-> index 000000000000..6abee1877d56
-> --- /dev/null
-> +++ b/arch/powerpc/purgatory/sha256.c
-> @@ -0,0 +1,6 @@
-> +#include "../boot/string.h"
-> +
-> +/* Avoid including x86's boot/string.h in sha256.c. */
-> +#define BOOT_STRING_H
-> +
-> +#include "../../x86/purgatory/sha256.c"
-> 
+On 2016/11/22 02:25PM, Masami Hiramatsu wrote:
+> Hello Naveen,
 
-Agreed, include x86 code in powerpc looks bad
+Hi Masami,
 
 > 
-> I think the best way to get this over the line would be to take the
-> kexec-lite purgatory implementation and use that to begin with. I know
-> it doesn't have all the features of the kexec-tools version, but it
-> should work, and we can look at adding the extra features later.
-
-Instead of adding other implementation, moving the purgatory sha256 code
-out of x86 sounds better so that we can reuse them cleanly..
-
+> On Mon, 21 Nov 2016 22:36:41 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 > 
-> I'll try and get that working tonight.
+> > ... rather than through notify_die(), to reduce path taken for handling
+> > kprobes. Similar to commit 6f6343f53d13 ("kprobes/x86: Call exception
+> > handlers directly from do_int3/do_debug").
+> > 
+> > While at it, rename post_kprobe_handler() to kprobe_post_handler() for
+> > more uniform naming.
+> > 
+> > Reported-by: Masami Hiramatsu <mhiramat@kernel.org>
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> > Changes since v1:
+> > - Removed CONFIG_KPROBES guard in traps.c
+> > - Introduce CONFIG_KPROBES guard in asm/kprobes.h to prevent conflicts when
+> >   including both linux/kprobes.h as well as asm/kprobes.h
+> > 
+> >  arch/powerpc/include/asm/kprobes.h |  7 +++++++
+> >  arch/powerpc/kernel/kprobes.c      | 29 +++++++----------------------
+> >  arch/powerpc/kernel/traps.c        | 13 +++++++++++++
+> >  3 files changed, 27 insertions(+), 22 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+> > index 2c9759bd..da30dc3 100644
+> > --- a/arch/powerpc/include/asm/kprobes.h
+> > +++ b/arch/powerpc/include/asm/kprobes.h
+> > @@ -32,6 +32,7 @@
+> >  #include <asm/probes.h>
+> >  #include <asm/code-patching.h>
+> >  
+> > +#ifdef CONFIG_KPROBES
+> >  #define  __ARCH_WANT_KPROBES_INSN_SLOT
+> >  
+> >  struct pt_regs;
+> > @@ -127,5 +128,11 @@ struct kprobe_ctlblk {
+> >  extern int kprobe_exceptions_notify(struct notifier_block *self,
+> >  					unsigned long val, void *data);
+> >  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+> > +extern int kprobe_handler(struct pt_regs *regs);
+> > +extern int kprobe_post_handler(struct pt_regs *regs);
+> > +#else
+> > +static int kprobe_handler(struct pt_regs *regs) { return 0; }
+> > +static int kprobe_post_handler(struct pt_regs *regs) { return 0; }
 > 
-> cheers
+> These should be "static inline int kprobe_...", you lost 'inline' here.
+> Others are OK for me.
 
-Thanks
-Dave
+Ah, indeed. Good catch. Thanks.
+ 
+Michael,
+Would you be ok to make this change when applying this, if you're ok 
+with the rest of the patch? If not, please let me know and I will send 
+an updated version.
+
+Thanks,
+Naveen
