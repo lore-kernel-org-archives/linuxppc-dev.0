@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNjvx6yn0zDw1q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 11:32:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNjvy0MWFzDw1r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 11:32:14 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm-ppc@vger.kernel.org,
 	kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 08/11] KVM: PPC: Book3S HV: Use stop instruction rather
- than nap on POWER9
-Date: Wed, 23 Nov 2016 11:32:02 +1100
-Message-Id: <1479861125-21394-9-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v2 09/11] KVM: PPC: Book3S HV: Enable hypervisor
+ virtualization interrupts while in guest
+Date: Wed, 23 Nov 2016 11:32:03 +1100
+Message-Id: <1479861125-21394-10-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 References: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,78 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 replaces the various power-saving mode instructions on POWER8
-(doze, nap, sleep and rvwinkle) with a single "stop" instruction, plus
-a register, PSSCR, which controls the depth of the power-saving mode.
-This replaces the use of the nap instruction when threads are idle
-during guest execution with the stop instruction, and adds code to
-set PSSCR to a value which will allow an SMT mode switch while the
-thread is idle (given that the core as a whole won't be idle in these
-cases).
+The new XIVE interrupt controller on POWER9 can direct external
+interrupts to the hypervisor or the guest.  The interrupts directed to
+the hypervisor are controlled by an LPCR bit called LPCR_HVICE, and
+come in as a "hypervisor virtualization interrupt".  This sets the
+LPCR bit so that hypervisor virtualization interrupts can occur while
+we are in the guest.  We then also need to cope with exiting the guest
+because of a hypervisor virtualization interrupt.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 33 ++++++++++++++++++++++-----------
- 1 file changed, 22 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/kvm_asm.h |  1 +
+ arch/powerpc/kvm/book3s_hv.c       | 11 +++++++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 598d828..9338a81 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -501,17 +501,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	cmpwi	r0, 0
- 	beq	57f
- 	li	r3, (LPCR_PECEDH | LPCR_PECE0) >> 4
--	mfspr	r4, SPRN_LPCR
--	rlwimi	r4, r3, 4, (LPCR_PECEDP | LPCR_PECEDH | LPCR_PECE0 | LPCR_PECE1)
--	mtspr	SPRN_LPCR, r4
--	isync
--	std	r0, HSTATE_SCRATCH0(r13)
--	ptesync
--	ld	r0, HSTATE_SCRATCH0(r13)
--1:	cmpd	r0, r0
--	bne	1b
--	nap
--	b	.
-+	mfspr	r5, SPRN_LPCR
-+	rlwimi	r5, r3, 4, (LPCR_PECEDP | LPCR_PECEDH | LPCR_PECE0 | LPCR_PECE1)
-+	b	kvm_nap_sequence
- 
- 57:	li	r0, 0
- 	stbx	r0, r3, r4
-@@ -2256,6 +2248,21 @@ BEGIN_FTR_SECTION
- 	ori	r5, r5, LPCR_PECEDH
- 	rlwimi	r5, r3, 0, LPCR_PECEDP
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+
-+kvm_nap_sequence:		/* desired LPCR value in r5 */
-+BEGIN_FTR_SECTION
+diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
+index 05cabed..09a802b 100644
+--- a/arch/powerpc/include/asm/kvm_asm.h
++++ b/arch/powerpc/include/asm/kvm_asm.h
+@@ -99,6 +99,7 @@
+ #define BOOK3S_INTERRUPT_H_EMUL_ASSIST	0xe40
+ #define BOOK3S_INTERRUPT_HMI		0xe60
+ #define BOOK3S_INTERRUPT_H_DOORBELL	0xe80
++#define BOOK3S_INTERRUPT_H_VIRT		0xea0
+ #define BOOK3S_INTERRUPT_PERFMON	0xf00
+ #define BOOK3S_INTERRUPT_ALTIVEC	0xf20
+ #define BOOK3S_INTERRUPT_VSX		0xf40
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index aca9fbf..b6bc867 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -962,6 +962,7 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
+ 	case BOOK3S_INTERRUPT_EXTERNAL:
+ 	case BOOK3S_INTERRUPT_H_DOORBELL:
++	case BOOK3S_INTERRUPT_H_VIRT:
+ 		vcpu->stat.ext_intr_exits++;
+ 		r = RESUME_GUEST;
+ 		break;
+@@ -3305,9 +3306,15 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 	/* On POWER8 turn on online bit to enable PURR/SPURR */
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+ 		lpcr |= LPCR_ONL;
+-	/* On POWER9, VPM0 bit is reserved (VPM0=1 behaviour is assumed) */
+-	if (cpu_has_feature(CPU_FTR_ARCH_300))
 +	/*
-+	 * PSSCR bits:	exit criterion = 1 (wakeup based on LPCR at sreset)
-+	 *		enable state loss = 1 (allow SMT mode switch)
-+	 *		requested level = 0 (just stop dispatching)
++	 * On POWER9, VPM0 bit is reserved (VPM0=1 behaviour is assumed)
++	 * Set HVICE bit to enable hypervisor virtualization interrupts.
 +	 */
-+	lis	r3, (PSSCR_EC | PSSCR_ESL)@h
-+	mtspr	SPRN_PSSCR, r3
-+	/* Set LPCR_PECE_HVEE bit to enable wakeup by HV interrupts */
-+	li	r4, LPCR_PECE_HVEE@higher
-+	sldi	r4, r4, 32
-+	or	r5, r5, r4
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	mtspr	SPRN_LPCR,r5
- 	isync
- 	li	r0, 0
-@@ -2264,7 +2271,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	ld	r0, HSTATE_SCRATCH0(r13)
- 1:	cmpd	r0, r0
- 	bne	1b
-+BEGIN_FTR_SECTION
- 	nap
-+FTR_SECTION_ELSE
-+	PPC_STOP
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- 	b	.
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+ 		lpcr &= ~LPCR_VPM0;
++		lpcr |= LPCR_HVICE;
++	}
++
+ 	kvm->arch.lpcr = lpcr;
  
- 33:	mr	r4, r3
+ 	/*
 -- 
 2.7.4
