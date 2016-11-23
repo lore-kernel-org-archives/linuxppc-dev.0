@@ -11,15 +11,15 @@ To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
  Stewart Smith <stewart@linux.vnet.ibm.com>,
  Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>
 Cc: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <linux-pm@vger.kernel.org>, <skiboot@lists.ozlabs.org>,
+ <linux-pm@vger.kernel.org>, skiboot@lists.ozlabs.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 2/3] cpuidle:powernv: Add helper function to populate
- powernv idle states.
-In-Reply-To: <9c2b5cae68b54ec5dcb2651f352f740f1d09051c.1478760806.git.ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 3/3] powernv: Pass PSSCR value and mask to
+ power9_idle_stop
+In-Reply-To: <f3853e81d3b3a1cf51a920acbbddc8f64238d7b6.1478760806.git.ego@linux.vnet.ibm.com>
 References: <cover.1478760806.git.ego@linux.vnet.ibm.com>
- <9c2b5cae68b54ec5dcb2651f352f740f1d09051c.1478760806.git.ego@linux.vnet.ibm.com>
-Date: Wed, 23 Nov 2016 20:49:08 +1100
-Message-ID: <87vavettkb.fsf@concordia.ellerman.id.au>
+ <f3853e81d3b3a1cf51a920acbbddc8f64238d7b6.1478760806.git.ego@linux.vnet.ibm.com>
+Date: Wed, 23 Nov 2016 20:51:10 +1100
+Message-ID: <87shqittgx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,29 +33,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 7fe442c..9240e08 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -243,28 +262,31 @@ static int powernv_add_idle_states(void)
->  		 */
->  		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
->  			continue;
-> +		/*
-> +		 * Firmware passes residency and latency values in ns.
-> +		 * cpuidle expects it in us.
-> +		 */
-> +		exit_latency = ((unsigned int)latency_ns[i]) / 1000;
-> +		target_residency = (!rc) ? ((unsigned int)residency_ns[i]) : 0;
-> +		target_residency /= 1000;
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> The power9_idle_stop method currently takes only the requested stop
+> level as a parameter and picks up the rest of the PSSCR bits from a
+> hand-coded macro. This is not a very flexible design, especially when
+> the firmware has the capability to communicate the psscr value and the
+> mask associated with a particular stop state via device tree.
+>
+> This patch modifies the power9_idle_stop API to take as parameters the
+> PSSCR value and the PSSCR mask corresponding to the stop state that
+> needs to be set. These PSSCR value and mask are respectively obtained
+> by parsing the "ibm,cpu-idle-state-psscr" and
+> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
+>
+> In addition to this, the patch adds support for handling stop states
+> for which ESL and EC bits in the PSSCR are zero. As per the
+> architecture, a wakeup from these stop states resumes execution from
+> the subsequent instruction as opposed to waking up at the System
+> Vector.
+>
+> The older firmware sets only the Requested Level (RL) field in the
+> psscr and psscr-mask exposed in the device tree. For older firmware
+> where psscr-mask=0xf, this patch will set the default sane values that
+> the set for for remaining PSSCR fields (i.e PSLL, MTL, ESL, EC, and
+> TR).
 
-Urk.
+So we're using psscr-mas=0xf as a signal that we're running on old
+firmware.
 
-Can you just do it normally:
+That's OK I think, but please send a patch to document it in the device
+tree binding.
 
-		if (rc == 0)
-			target_residency = (unsigned int)residency_ns[i] / 1000;
-
-I also don't see why you need the cast?
+And call it out below in the code.
 
 cheers
