@@ -1,23 +1,18 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPLbC6qfHzDvxg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 12:04:55 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id 144so1162977pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 17:04:55 -0800 (PST)
-Date: Thu, 24 Nov 2016 12:04:36 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Alan Modra <amodra@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/3] minor build fixes
-Message-ID: <20161124120436.4d0fa257@roar.ozlabs.ibm.com>
-In-Reply-To: <20161123230320.GQ11815@bubble.grove.modra.org>
-References: <20161123130209.1667-1-npiggin@gmail.com>
- <20161123230320.GQ11815@bubble.grove.modra.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPMBy4NhLzDw3Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 12:32:26 +1100 (AEDT)
+Date: Thu, 24 Nov 2016 10:03:32 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 00/11] KVM: PPC: Book3S HV: Support KVM guests on POWER9
+Message-ID: <20161123230332.GA21071@fergus.ozlabs.ibm.com>
+References: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 24 Nov 2016 09:33:20 +1030
-Alan Modra <amodra@gmail.com> wrote:
+On Wed, Nov 23, 2016 at 11:31:54AM +1100, Paul Mackerras wrote:
+> This series of patches adds support to HV KVM for running KVM guests
+> on POWER9 systems.  This allows us to run KVM guests that use HPT
+> (hashed page table) address translation and know about the POWER9
+> processor.  With suitable changes to the user-mode driver, this can
+> also run guests on POWER9 in POWER8 or POWER7 compatibility mode.
+> 
+> For now we require the host to be in HPT mode (not radix).
+> 
+> This series of patches is based on the ppc-kvm topic branch from the
+> powerpc tree merged with my current kvm-ppc-next tree.
 
-> On Thu, Nov 24, 2016 at 12:02:06AM +1100, Nicholas Piggin wrote:
-> > I was building BookE and big endian with a little endian cross
-> > compiler and it stopped working. My BookS BE tests must have been
-> > building using the ELFv2 ABI. After this, the build sometimes still
-> > strangely fails with dot symbols in syscall table unable to be found,
-> > but that's looking like it may be a linker bug (Alan is going to take
-> > a look).  
-> 
-> Yes it is a bug.  In compatibility code that was supposed to handle
-> mixing old object files that use dot-symbols on function entry with
-> newer object files that don't.  Here, "old" means mid 2004 or
-> earlier.
-> 
-> As you can imagine, I'm not hugely concerned about the ld bug..
-> 
-> Since every binutils back to at least 2.17 has the bug, what changed
-> in the kernel to expose it?  Are you building without -mcall-aixdesc?
-> 
+I have pushed the merge plus this series to my kvm-ppc-next branch.
 
-Yeah, it's my attempt to get powerpc64le compiler to build big endian
-with -mabi=elfv2, so I'd have missed -mcall-aixdesc somewhere.
-
-Thanks,
-Nick
+Paul.
