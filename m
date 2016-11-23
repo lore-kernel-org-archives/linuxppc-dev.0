@@ -1,19 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNr9K4XWDzDvgr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 16:14:13 +1100 (AEDT)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: paulus@samba.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, benh@kernel.crashing.org, aik@ozlabs.ru,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/2] powerpc/kvm: Corectly report KVM_CAP_PPC_ALLOC_HTAB
-Date: Wed, 23 Nov 2016 16:14:07 +1100
-Message-Id: <1479878047-19431-3-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1479878047-19431-1-git-send-email-david@gibson.dropbear.id.au>
-References: <1479878047-19431-1-git-send-email-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNrTD3B3FzDvmC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 16:28:00 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Locking API testsuite output mangled
+In-Reply-To: <alpine.DEB.2.20.16.1611221606290.7542@trent.utfs.org>
+References: <alpine.DEB.2.20.16.1611221606290.7542@trent.utfs.org>
+Date: Wed, 23 Nov 2016 16:27:57 +1100
+Message-ID: <87zikqu5nm.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +23,228 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At present KVM on powerpc always reports KVM_CAP_PPC_ALLOC_HTAB as enabled.
-However, the ioctl() it advertises (KVM_PPC_ALLOCATE_HTAB) only actually
-works on KVM HV.  On KVM PR it will fail with ENOTTY.
+Christian Kujau <lists@nerdbynature.de> writes:
 
-qemu already has a workaround for this, so it's not breaking things in
-practice, but it would be better to advertise this correctly.
+> The "Locking API testsuite" output during bootup (with 
+> CONFIG_DEBUG_LOCKING_API_SELFTESTS=y) on this PowerPC system looks 
+> mangled, possibly related to the recent printk changes (4bcc595ccd80, 
+> "printk: reinstate KERN_CONT for printing continuation lines"). Before 
+> (e.g. with v4.6) it looked like this:
+>
+>  http://nerdbynature.de/bits/4.6.0-rc7/dmesg.txt
+>
+> See below for the current output.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/kvm/powerpc.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+That's nothing powerpc specific AFAICS, does this fix it?
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 70963c8..7b6b9eb 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -536,7 +536,6 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- #ifdef CONFIG_PPC_BOOK3S_64
- 	case KVM_CAP_SPAPR_TCE:
- 	case KVM_CAP_SPAPR_TCE_64:
--	case KVM_CAP_PPC_ALLOC_HTAB:
- 	case KVM_CAP_PPC_RTAS:
- 	case KVM_CAP_PPC_FIXUP_HCALL:
- 	case KVM_CAP_PPC_ENABLE_HCALL:
-@@ -545,6 +544,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+cheers
+
+diff --git a/lib/locking-selftest.c b/lib/locking-selftest.c
+index 872a15a2a637..f3a217ea0388 100644
+--- a/lib/locking-selftest.c
++++ b/lib/locking-selftest.c
+@@ -980,23 +980,23 @@ static void dotest(void (*testcase_fn)(void), int expected, int lockclass_mask)
+ #ifndef CONFIG_PROVE_LOCKING
+ 	if (expected == FAILURE && debug_locks) {
+ 		expected_testcase_failures++;
+-		printk("failed|");
++		pr_cont("failed|");
+ 	}
+ 	else
  #endif
- 		r = 1;
- 		break;
-+
-+	case KVM_CAP_PPC_ALLOC_HTAB:
-+		r = hv_enabled;
-+		break;
- #endif /* CONFIG_PPC_BOOK3S_64 */
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	case KVM_CAP_PPC_SMT:
--- 
-2.7.4
+ 	if (debug_locks != expected) {
+ 		unexpected_testcase_failures++;
+-		printk("FAILED|");
++		pr_cont("FAILED|");
+ 
+ 		dump_stack();
+ 	} else {
+ 		testcase_successes++;
+-		printk("  ok  |");
++		pr_cont("  ok  |");
+ 	}
+ 	testcase_total++;
+ 
+ 	if (debug_locks_verbose)
+-		printk(" lockclass mask: %x, debug_locks: %d, expected: %d\n",
++		pr_cont(" lockclass mask: %x, debug_locks: %d, expected: %d\n",
+ 			lockclass_mask, debug_locks, expected);
+ 	/*
+ 	 * Some tests (e.g. double-unlock) might corrupt the preemption
+@@ -1021,26 +1021,26 @@ static inline void print_testname(const char *testname)
+ #define DO_TESTCASE_1(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_##nr, SUCCESS, LOCKTYPE_RWLOCK);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_1B(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_##nr, FAILURE, LOCKTYPE_RWLOCK);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_3(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN);	\
+ 	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
+ 	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_3RW(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN|LOCKTYPE_RWLOCK);\
+ 	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
+ 	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_6(desc, name)				\
+ 	print_testname(desc);					\
+@@ -1050,7 +1050,7 @@ static inline void print_testname(const char *testname)
+ 	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
+ 	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
+ 	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_6_SUCCESS(desc, name)			\
+ 	print_testname(desc);					\
+@@ -1060,7 +1060,7 @@ static inline void print_testname(const char *testname)
+ 	dotest(name##_mutex, SUCCESS, LOCKTYPE_MUTEX);		\
+ 	dotest(name##_wsem, SUCCESS, LOCKTYPE_RWSEM);		\
+ 	dotest(name##_rsem, SUCCESS, LOCKTYPE_RWSEM);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ /*
+  * 'read' variant: rlocks must not trigger.
+@@ -1073,7 +1073,7 @@ static inline void print_testname(const char *testname)
+ 	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
+ 	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
+ 	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_2I(desc, name, nr)				\
+ 	DO_TESTCASE_1("hard-"desc, name##_hard, nr);		\
+@@ -1726,25 +1726,25 @@ static void ww_tests(void)
+ 	dotest(ww_test_fail_acquire, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_normal, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_unneeded_slow, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("ww contexts mixing");
+ 	dotest(ww_test_two_contexts, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_diff_class, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("finishing ww context");
+ 	dotest(ww_test_context_done_twice, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_unlock_twice, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_fini_early, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_lock_after_done, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("locking mismatches");
+ 	dotest(ww_test_object_unlock_twice, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_object_lock_unbalanced, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_object_lock_stale_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("EDEADLK handling");
+ 	dotest(ww_test_edeadlk_normal, SUCCESS, LOCKTYPE_WW);
+@@ -1757,11 +1757,11 @@ static void ww_tests(void)
+ 	dotest(ww_test_edeadlk_acquire_more_edeadlk_slow, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_edeadlk_acquire_wrong, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_edeadlk_acquire_wrong_slow, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("spinlock nest unlocked");
+ 	dotest(ww_test_spin_nest_unlocked, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	printk("  -----------------------------------------------------\n");
+ 	printk("                                 |block | try  |context|\n");
+@@ -1771,25 +1771,25 @@ static void ww_tests(void)
+ 	dotest(ww_test_context_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_context_context, SUCCESS, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("try");
+ 	dotest(ww_test_try_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_try_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_try_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("block");
+ 	dotest(ww_test_block_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_block_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_block_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("spinlock");
+ 	dotest(ww_test_spin_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_spin_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_spin_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ }
+ 
+ void locking_selftest(void)
+@@ -1829,32 +1829,32 @@ void locking_selftest(void)
+ 
+ 	printk("  --------------------------------------------------------------------------\n");
+ 	print_testname("recursive read-lock");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA1, SUCCESS, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA1, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("recursive read-lock #2");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA1B, SUCCESS, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA1B, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("mixed read-write-lock");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA2, FAILURE, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA2, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("mixed write-read-lock");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA3, FAILURE, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA3, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	printk("  --------------------------------------------------------------------------\n");
+ 
