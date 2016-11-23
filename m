@@ -1,20 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tP1Ll6nvBzDw5d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 23:07:59 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@lists.ozlabs.org,
- Torsten Duwe <duwe@lst.de>
-Subject: Re: [PATCH v2] powerpc: split ftrace bits into a separate file
-In-Reply-To: <20161122163439.524-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20161122163439.524-1-naveen.n.rao@linux.vnet.ibm.com>
-Date: Wed, 23 Nov 2016 23:07:56 +1100
-Message-ID: <87inretn4z.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tP2YZ3bcCzDvyq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 00:02:26 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id i88so698917pfk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 05:02:26 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Alan Modra <amodra@gmail.com>
+Subject: [PATCH 0/3] minor build fixes
+Date: Thu, 24 Nov 2016 00:02:06 +1100
+Message-Id: <20161123130209.1667-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+I was building BookE and big endian with a little endian cross
+compiler and it stopped working. My BookS BE tests must have been
+building using the ELFv2 ABI. After this, the build sometimes still
+strangely fails with dot symbols in syscall table unable to be found,
+but that's looking like it may be a linker bug (Alan is going to take
+a look).
 
-> entry_*.S now includes a lot more than just kernel entry/exit code. As a
-> first step at cleaning this up, let's split out the ftrace bits into
-> separate files.
->
-> No functional changes.
->
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
-> v2: updated commit description.
->
->  arch/powerpc/kernel/Makefile    |   2 +
->  arch/powerpc/kernel/entry_32.S  | 107 -----------
->  arch/powerpc/kernel/entry_64.S  | 380 --------------------------------------
->  arch/powerpc/kernel/ftrace_32.S | 118 ++++++++++++
->  arch/powerpc/kernel/ftrace_64.S | 391 ++++++++++++++++++++++++++++++++++++++++
+Thanks,
+Nick
 
-Thanks for having a crack at this.
+Nicholas Piggin (3):
+  powerpc/64e: convert cmpi to cmpwi in head_64.S
+  powerpc: allow compilation on cross-endian toolchain
+  powerpc/64e: don't branch to dot symbols
 
-I think I'd actually like to go the whole way, and move all the tracing
-code into arch/powerpc/trace (or ftrace?).
+ arch/powerpc/Makefile                | 6 ++++++
+ arch/powerpc/boot/Makefile           | 1 +
+ arch/powerpc/kernel/exceptions-64e.S | 6 +++---
+ arch/powerpc/kernel/head_64.S        | 8 ++++----
+ 4 files changed, 14 insertions(+), 7 deletions(-)
 
-There's the 32 and 64-bit asm, and ftrace.c, and trace_clock.c. And then
-possibly later some of the ftrace module code could move in there too.
-
-And as part of moving the asm, I think we can come up with a better way
-to organise the code. If you look at the ftrace code in entry_64.S for
-example the ifdefs look like:
-
-#ifdef CONFIG_FUNCTION_TRACER
-#ifdef CONFIG_DYNAMIC_FTRACE
-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-#endif
-#else /* CC_USING_MPROFILE_KERNEL */
-#ifdef CONFIG_LIVEPATCH
-#endif
-#ifdef CONFIG_LIVEPATCH
-#endif
-#ifdef CONFIG_LIVEPATCH
-#endif
-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-#endif
-#endif /* CC_USING_MPROFILE_KERNEL */
-#ifdef CONFIG_LIVEPATCH
-#endif
-#else
-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-#endif
-#endif /* CONFIG_DYNAMIC_FTRACE */
-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-#else /* CC_USING_MPROFILE_KERNEL */
-#endif /* CC_USING_MPROFILE_KERNEL */
-#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-#endif /* CONFIG_FUNCTION_TRACER */
-
-
-Which is not easy to follow.
-
-I think the main axis is CC_USING_MPROFILE_KERNEL y/n, so perhaps we split
-it into two .S files based on that?
-
-cheers
+-- 
+2.10.2
