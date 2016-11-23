@@ -1,34 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNzQw5nGQzDw1F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 21:41:28 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uANAench130805
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 05:41:26 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26w6aehw3f-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tP0484LwDzDw1x
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 22:10:16 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uANB8sN1095810
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 06:10:13 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26w9m5ssfh-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 05:41:26 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 06:10:13 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 23 Nov 2016 03:41:23 -0700
+ Wed, 23 Nov 2016 04:10:12 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Geoff Levand <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: RE: [V2,10/68] powerpc/mm: Update _PAGE_KERNEL_RO
-In-Reply-To: <rep.1421449714.geoff@infradead.org>
-References: <1460182444-2468-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <rep.1421449714.geoff@infradead.org>
-Date: Wed, 23 Nov 2016 16:11:18 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <874m2yiilt.fsf@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v5 1/7] powerpc/mm: update ptep_set_access_flag to not do full
+ mm tlb flush
+Date: Wed, 23 Nov 2016 16:39:57 +0530
+Message-Id: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,123 +35,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Geoff Levand <geoff@infradead.org> writes:
+When we are updating pte, we just need to flush the tlb mapping for
+that pte. Right now we do a full mm flush because we don't track page
+size. Update the interface to track the page size and use that to
+do the right tlb flush.
 
-> Hi Aneesh,
->
->> --- a/arch/powerpc/platforms/ps3/spu.c
->> +++ b/arch/powerpc/platforms/ps3/spu.c
->> @@ -205,7 +205,7 @@ static void spu_unmap(struct spu *spu)
->>  static int __init setup_areas(struct spu *spu)
->>  {
->>  	struct table {char* name; unsigned long addr; unsigned long size;};
->> -	static const unsigned long shadow_flags = _PAGE_NO_CACHE | 3;
->> +	unsigned long shadow_flags = pgprot_val(pgprot_noncached_wc(PAGE_KERNEL_RO));
->>  
->>  	spu_pdata(spu)->shadow = __ioremap(spu_pdata(spu)->shadow_addr,
->>  					   sizeof(struct spe_shadow),
->
-> This shadow_flags setting doesn't work correctly for PS3.  The PS3's LV1
-> hypervisor wants the shadow reg pte bits N=1 and PP=11, so (rflags & 7) == 7.
-> It also doesn't want bit 0x8000000000000000 set.  So maybe these:
->
->   (HPTE_R_N | HPTE_R_PP & ~HPTE_R_PP0)
->
-> For what its worth, this is the error for v4.8:
->
->   ps3_hpte_insert:result=LV1_ILLEGAL_PARAMETER_VALUE (-17) vpn=7e4fa575c0000 pa=300000003000 ix=bae0 v=7e4fa575c001 r=8000300000003126
->
-> I tried different shadow_flags settings to try to get htab_convert_pte_flags()
-> to give me the right pte bits, but couldn't find anything that would work.
->
-> Here's the only thing I could get to work:
->
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -222,6 +222,12 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
->  		 */
->  		rflags |= HPTE_R_M;
->
-> +	if ((pteflags & 0xc000300000000000UL) == 0xc000300000000000UL) {
-> +		pr_info("%s: bad rflags: pteflags= %lx => rflags=%lx\n",
-> +			__func__, pteflags, rflags);
-> +		return 0x127;
-> +	}
-> +
->  	return rflags;
->  }
->
-> And here's the output of that:
->
->  htab_convert_pte_flags: bad rflags: pteflags= c00030000000393c => rflags=8000000000000126
->  htab_convert_pte_flags: bad rflags: pteflags= c00030000000593c => rflags=8000000000000126
->  htab_convert_pte_flags: bad rflags: pteflags= c00030000000793c => rflags=8000000000000126
->  htab_convert_pte_flags: bad rflags: pteflags= c00030000000993c => rflags=8000000000000126
->  htab_convert_pte_flags: bad rflags: pteflags= c00030000000b93c => rflags=8000000000000126
->  htab_convert_pte_flags: bad rflags: pteflags= c00030000000d93c => rflags=8000000000000126
->
-> Actually, the problem started with (6a119eae942c "powerpc/mm: Add a _PAGE_PTE bit"),
-> but I could fix that by using 'shadow_flags =  (_PAGE_PRESENT | _PAGE_NO_CACHE | _PAGE_USER)'.
->
-> Please let me know what I need for shadow_flags to get those pte bits set.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  4 +++-
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++--
+ arch/powerpc/include/asm/book3s/64/radix.h   | 14 +++++++-------
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  4 +++-
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  4 +++-
+ arch/powerpc/mm/pgtable-book3s64.c           |  3 ++-
+ arch/powerpc/mm/pgtable-radix.c              | 16 ++++++++++++++++
+ arch/powerpc/mm/pgtable.c                    | 10 ++++++++--
+ arch/powerpc/mm/tlb-radix.c                  | 15 ---------------
+ 9 files changed, 47 insertions(+), 30 deletions(-)
 
-Can you try this patch ?
-
-commit 43e05fa840330f0f2deae1e8cc2effd5df68079f
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Wed Nov 23 15:23:05 2016 +0530
-
-    powerpc/mm: Kernel RO fixup for cell
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index e88368354e49..c13242bf3098 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -27,6 +27,11 @@
- /*
-  * Individual features below.
-  */
-+/*
-+ * kernel read only support
-+ * We added the ppp value 0b110 in ISA 2.04
-+ */
-+#define MMU_FTR_KERNEL_RO		ASM_CONST(0x00004000)
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 6b8b2d57fdc8..cd835e74e633 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -224,7 +224,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
  
- /*
-  * We need to clear top 16bits of va (from the remaining 64 bits )in
-@@ -103,10 +108,10 @@
- #define MMU_FTRS_POWER4		MMU_FTRS_DEFAULT_HPTE_ARCH_V2
- #define MMU_FTRS_PPC970		MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA
- #define MMU_FTRS_POWER5		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
--#define MMU_FTRS_POWER6		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
--#define MMU_FTRS_POWER7		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
--#define MMU_FTRS_POWER8		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
--#define MMU_FTRS_POWER9		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
-+#define MMU_FTRS_POWER6		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
-+#define MMU_FTRS_POWER7		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
-+#define MMU_FTRS_POWER8		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
-+#define MMU_FTRS_POWER9		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_KERNEL_RO
- #define MMU_FTRS_CELL		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
- 				MMU_FTR_CI_LARGE_PAGE
- #define MMU_FTRS_PA6T		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 5503078090cd..78dabf065ba9 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -193,8 +193,12 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
- 		/*
- 		 * Kernel read only mapped with ppp bits 0b110
+ 
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long page_size)
+ {
+ 	unsigned long set = pte_val(entry) &
+ 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 86870c11917b..761622ec7f2a 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -580,10 +580,13 @@ static inline bool check_pte_access(unsigned long access, unsigned long ptev)
+  */
+ 
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long page_size)
+ {
+ 	if (radix_enabled())
+-		return radix__ptep_set_access_flags(mm, ptep, entry);
++		return radix__ptep_set_access_flags(mm, ptep, entry,
++						    address, page_size);
+ 	return hash__ptep_set_access_flags(ptep, entry);
+ }
+ 
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index 2a46dea8e1b1..e104004bf2b1 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -110,6 +110,7 @@
+ #define RADIX_PUD_TABLE_SIZE	(sizeof(pud_t) << RADIX_PUD_INDEX_SIZE)
+ #define RADIX_PGD_TABLE_SIZE	(sizeof(pgd_t) << RADIX_PGD_INDEX_SIZE)
+ 
++extern int radix_get_mmu_psize(unsigned long page_size);
+ static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
+ 					       unsigned long set)
+ {
+@@ -167,7 +168,9 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+  * function doesn't need to invalidate tlb.
+  */
+ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
+-						pte_t *ptep, pte_t entry)
++						pte_t *ptep, pte_t entry,
++						unsigned long address,
++						unsigned long page_size)
+ {
+ 
+ 	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED |
+@@ -175,6 +178,7 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
+ 
+ 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+ 
++		int psize;
+ 		unsigned long old_pte, new_pte;
+ 
+ 		old_pte = __radix_pte_update(ptep, ~0, 0);
+@@ -183,12 +187,8 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
+ 		 * new value of pte
  		 */
--		if (!(pteflags & _PAGE_WRITE))
--			rflags |= (HPTE_R_PP0 | 0x2);
-+		if (!(pteflags & _PAGE_WRITE)) {
-+			if (mmu_has_feature(MMU_FTR_KERNEL_RO))
-+				rflags |= (HPTE_R_PP0 | 0x2);
-+			else
-+				rflags |= 0x3;
-+		}
- 	} else {
- 		if (pteflags & _PAGE_RWX)
- 			rflags |= 0x2;
+ 		new_pte = old_pte | set;
+-
+-		/*
+-		 * For now let's do heavy pid flush
+-		 * radix__flush_tlb_page_psize(mm, addr, mmu_virtual_psize);
+-		 */
+-		radix__flush_tlb_mm(mm);
++		psize = radix_get_mmu_psize(page_size);
++		radix__flush_tlb_page_psize(mm, address, psize);
+ 
+ 		__radix_pte_update(ptep, 0, new_pte);
+ 	} else
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index c219ef7be53b..4153b8e591a4 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -268,7 +268,9 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 
+ 
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long page_size)
+ {
+ 	unsigned long set = pte_val(entry) &
+ 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index 653a1838469d..7e42b8195e85 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -301,7 +301,9 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+  * function doesn't need to flush the hash entry
+  */
+ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+-					   pte_t *ptep, pte_t entry)
++					   pte_t *ptep, pte_t entry,
++					   unsigned long address,
++					   unsigned long page_size)
+ {
+ 	unsigned long bits = pte_val(entry) &
+ 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index f4f437cbabf1..5c7c501b7cae 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -35,7 +35,8 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ #endif
+ 	changed = !pmd_same(*(pmdp), entry);
+ 	if (changed) {
+-		__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp), pmd_pte(entry));
++		__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp), pmd_pte(entry),
++					address, HPAGE_PMD_SIZE);
+ 		flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+ 	}
+ 	return changed;
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 688b54517655..416918005395 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -222,6 +222,22 @@ static int __init get_idx_from_shift(unsigned int shift)
+ 	return idx;
+ }
+ 
++int radix_get_mmu_psize(unsigned long page_size)
++{
++	int psize;
++
++	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
++		psize = mmu_virtual_psize;
++	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
++		psize = MMU_PAGE_2M;
++	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
++		psize = MMU_PAGE_1G;
++	else
++		return -1;
++	return psize;
++}
++
++
+ static int __init radix_dt_scan_page_sizes(unsigned long node,
+ 					   const char *uname, int depth,
+ 					   void *data)
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 911fdfb63ec1..503ae9bd3efe 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -219,12 +219,18 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 			  pte_t *ptep, pte_t entry, int dirty)
+ {
+ 	int changed;
++	unsigned long page_size;
++
+ 	entry = set_access_flags_filter(entry, vma, dirty);
+ 	changed = !pte_same(*(ptep), entry);
+ 	if (changed) {
+-		if (!is_vm_hugetlb_page(vma))
++		if (!is_vm_hugetlb_page(vma)) {
++			page_size = PAGE_SIZE;
+ 			assert_pte_locked(vma->vm_mm, address);
+-		__ptep_set_access_flags(vma->vm_mm, ptep, entry);
++		} else
++			page_size = huge_page_size(hstate_vma(vma));
++		__ptep_set_access_flags(vma->vm_mm, ptep, entry,
++					address, page_size);
+ 		flush_tlb_page(vma, address);
+ 	}
+ 	return changed;
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 3493cf4e0452..81a9f6390f64 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -282,21 +282,6 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_range);
+ 
+-static int radix_get_mmu_psize(int page_size)
+-{
+-	int psize;
+-
+-	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
+-		psize = mmu_virtual_psize;
+-	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
+-		psize = MMU_PAGE_2M;
+-	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
+-		psize = MMU_PAGE_1G;
+-	else
+-		return -1;
+-	return psize;
+-}
+-
+ void radix__tlb_flush(struct mmu_gather *tlb)
+ {
+ 	int psize = 0;
+-- 
+2.10.2
