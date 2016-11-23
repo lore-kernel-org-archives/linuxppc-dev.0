@@ -1,45 +1,25 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNlMZ3kM7zDvHh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 12:37:46 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAN1XoNn062751
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 20:37:44 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26vuqfy2e4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 20:37:44 -0500
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 23 Nov 2016 11:37:41 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CB8A52BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 12:37:37 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAN1bbw67733712
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 12:37:37 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAN1bbAW031457
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 12:37:37 +1100
-Subject: Re: [PATCH RFC] powerpc/powernv: sysfs entry to force full IPL reboot
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20161122092258.32514-1-andrew.donnellan@au1.ibm.com>
- <87twazvmfx.fsf@concordia.ellerman.id.au>
-Cc: stewart@linux.vnet.ibm.com
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 23 Nov 2016 12:37:36 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNlw10KXxzDvnB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 13:02:25 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id i88so2270903pfk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 18:02:24 -0800 (PST)
+Date: Wed, 23 Nov 2016 13:02:10 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: build failure after merge of the powerpc tree
+Message-ID: <20161123130210.72c35b76@roar.ozlabs.ibm.com>
+In-Reply-To: <20161122212114.45ba8b17@canb.auug.org.au>
+References: <20161122195832.0f031e62@canb.auug.org.au>
+ <20161122212114.45ba8b17@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <87twazvmfx.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <f9cb1ce3-f636-4b41-4621-47ad742b66ad@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,35 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/11/16 21:27, Michael Ellerman wrote:
-> Can I suggest:
->  - Fix OPAL
->  - Fix OPAL
->  - Fix OPAL
->
-> ...
->
-> Oh OK, it's firmware :D
+On Tue, 22 Nov 2016 21:21:14 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Yep :D
+> Hi all,
+> 
+> On Tue, 22 Nov 2016 19:58:32 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > After merging the powerpc tree, today's linux-next build (powerpc
+> > allyesconfig) failed like this:
+> > 
+> > Inconsistent kallsyms data
+> > Try make KALLSYMS_EXTRA_PASS=1 as a workaround
+> > 
+> > Which is a vast improvement.  I'll try adding 'KALLSYMS_EXTRA_PASS=1'
+> > later and see how it goes.  It would be nice not to need it, though.  
+> 
+> It build with KALLSYMS_EXTRA_PASS=1 on the command line.
+> 
 
-> There's existing logic in kernel/reboot.c to handle a reboot= command
-> line parameter, which can set the reboot_mode, so my preference would be
-> that we use that.
->
-> Currently we completely ignore the reboot_mode, so there's no backward
-> compatibility issue.
->
-> It looks like the default is REBOOT_COLD, whatever that means. So I
-> think we could define that on powernv REBOOT_HARD means "do a full IPL".
+Yay!
 
-Sounds good.
+The inconsistent kallsyms data is not something we're doing wrong or
+toolchain bug so much as an inherent flaw in how kallsyms are done.
+Basically the allyesconfig kallsyms section expands the kernel so much
+that a subsequent linking requires even more stubs, which adds more
+symbols, which means the next kallsyms will be a different size, which
+means or offsets will be wrong :)
 
-> Or we could use "force", which already exists, though I can't quite see
-> what that actually means on x86.
+In theory I think it could actually be triggered on smaller kernels if
+the size was just right. I'm sort of looking at ways to fix it:
 
-Hmm.
+https://patchwork.ozlabs.org/patch/684910/
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Hopefully will get something in 4.10. Worst case we could detect the
+kallsyms size change and do another pass in response without slowing
+down the case where it's not required. Hmm, that might be the best
+thing to do for a first pass.
+
+Thanks,
+Nick
