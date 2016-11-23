@@ -1,20 +1,21 @@
 Return-Path: <geliangtang@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tP58D452YzDvMX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 01:59:08 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id p66so1268105pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 06:59:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tP5BH0Z6pzDwHc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 02:00:55 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id p66so1271113pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 07:00:54 -0800 (PST)
 From: Geliang Tang <geliangtang@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: Geliang Tang <geliangtang@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/eeh/of: use builtin_platform_driver
-Date: Wed, 23 Nov 2016 22:58:56 +0800
-Message-Id: <5f8659707d87126507e163dcada64c6f8923933e.1479913108.git.geliangtang@gmail.com>
+Subject: [PATCH] powerpc: platforms: 83xx: use builtin_platform_driver
+Date: Wed, 23 Nov 2016 23:00:45 +0800
+Message-Id: <ef0ee6ed95fe3cf6943fb03e2a87bae9c6261c36.1479913207.git.geliangtang@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +29,22 @@ Use builtin_platform_driver() helper to simplify the code.
 
 Signed-off-by: Geliang Tang <geliangtang@gmail.com>
 ---
- arch/powerpc/kernel/of_platform.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ arch/powerpc/platforms/83xx/suspend.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index b60a67d..34aeac5 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -114,11 +114,6 @@ static struct platform_driver of_pci_phb_driver = {
- 	},
+diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
+index 24717d0..08f92f6 100644
+--- a/arch/powerpc/platforms/83xx/suspend.c
++++ b/arch/powerpc/platforms/83xx/suspend.c
+@@ -441,8 +441,4 @@ static struct platform_driver pmc_driver = {
+ 	.remove = pmc_remove
  };
  
--static __init int of_pci_phb_init(void)
+-static int pmc_init(void)
 -{
--	return platform_driver_register(&of_pci_phb_driver);
+-	return platform_driver_register(&pmc_driver);
 -}
--
--device_initcall(of_pci_phb_init);
-+builtin_platform_driver(of_pci_phb_driver);
- 
- #endif /* CONFIG_PPC_OF_PLATFORM_PCI */
+-device_initcall(pmc_init);
++builtin_platform_driver(pmc_driver);
 -- 
 2.9.3
