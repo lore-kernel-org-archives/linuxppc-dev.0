@@ -1,44 +1,20 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNtHg167DzDvpJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 17:49:49 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAN6msH2114320
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 01:49:47 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26w3rpbxj8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 01:49:47 -0500
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 23 Nov 2016 16:49:44 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6C0D82CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 17:49:43 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAN6nhJF61472988
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 17:49:43 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAN6ng0b003756
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 17:49:43 +1100
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: "andrew.donnellan" <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- fbarrat <fbarrat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cxl: fix coccinelle warnings
-In-reply-to: <20161122101327.14281-1-andrew.donnellan@au1.ibm.com>
-References: <20161122101327.14281-1-andrew.donnellan@au1.ibm.com>
-Date: Wed, 23 Nov 2016 17:49:41 +1100
-Message-Id: <1479883732-sup-5050@x230.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNtXJ3KqzzDw1F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:00:48 +1100 (AEDT)
+Date: Wed, 23 Nov 2016 01:00:36 -0600
+From: Scott Wood <oss@buserror.net>
+To: Andy Fleming <afleming@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com,
+ aperez@alexperez.com
+Message-ID: <20161123070036.GA10541@home.buserror.net>
+References: <1477266519-25173-1-git-send-email-afleming@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1477266519-25173-1-git-send-email-afleming@gmail.com>
+Subject: Re: [v2,1/3] cyrus: Add poweroff/reset support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,13 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Most of these look fine
+On Sun, Oct 23, 2016 at 06:48:37PM -0500, Andy Fleming wrote:
+> Cyrus uses GPIOs to complete board shutdown/reset.
+> Add nodes to indicate that support to the device tree.
+> 
+> Signed-off-by: Andy Fleming <afleming@gmail.com>
+> ---
+> v2: No changes
+> 
+>  arch/powerpc/boot/dts/fsl/cyrus_p5020.dts | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+> index c603390..e417aaa 100644
+> --- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+> +++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+> @@ -150,6 +150,17 @@
+>  				  0 0x00010000>;
+>  		};
+>  	};
+> +
+> +        gpio-poweroff {
+> +                compatible = "gpio-poweroff";
+> +                gpios = <&gpio0 3 1>;
+> +        };
+> +
+> +        gpio-restart {
+> +                compatible = "gpio-restart";
+> +                gpios = <&gpio0 2 1>;
 
-> -    return debugfs_create_file(name, mode, parent, (void __force *)value, &fops_io_x64);
-> +    return debugfs_create_file_unsafe(name, mode, parent,
-> +                      (void __force *)value, &fops_io_x64);
+Please use tabs, not spaces.
 
-Just wondering what this one is about?
+> +        };
+> +
+>  };
 
-Cheers,
--Ian
+Don't put a blank line here.
+
+-Scott
