@@ -1,25 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNys010DkzDw0W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 21:15:32 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <linux-pm@vger.kernel.org>, skiboot@lists.ozlabs.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/3] powernv: Pass PSSCR value and mask to
- power9_idle_stop
-In-Reply-To: <f3853e81d3b3a1cf51a920acbbddc8f64238d7b6.1478760806.git.ego@linux.vnet.ibm.com>
-References: <cover.1478760806.git.ego@linux.vnet.ibm.com>
- <f3853e81d3b3a1cf51a920acbbddc8f64238d7b6.1478760806.git.ego@linux.vnet.ibm.com>
-Date: Wed, 23 Nov 2016 20:51:10 +1100
-Message-ID: <87shqittgx.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC] [PATCH] Trace TLBIE's
+In-Reply-To: <3dcd0c76-46fd-cb7a-945d-4b5a679fa544@gmail.com>
+References: <3dcd0c76-46fd-cb7a-945d-4b5a679fa544@gmail.com>
+Date: Wed, 23 Nov 2016 21:15:30 +1100
+Message-ID: <87polmtscd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,40 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> Just a quick patch to trace tlbie(l)'s. The idea being that it can be
+> enabled when we suspect corruption or when we need to see if we are doing
+> the right thing during flush. I think the format can be enhanced to
+> make it nicer (expand the RB/RS/IS/L cases in more detail). For now I am
+> sharing the idea to get inputs
 >
-> The power9_idle_stop method currently takes only the requested stop
-> level as a parameter and picks up the rest of the PSSCR bits from a
-> hand-coded macro. This is not a very flexible design, especially when
-> the firmware has the capability to communicate the psscr value and the
-> mask associated with a particular stop state via device tree.
+> A typical trace might look like this
 >
-> This patch modifies the power9_idle_stop API to take as parameters the
-> PSSCR value and the PSSCR mask corresponding to the stop state that
-> needs to be set. These PSSCR value and mask are respectively obtained
-> by parsing the "ibm,cpu-idle-state-psscr" and
-> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
 >
-> In addition to this, the patch adds support for handling stop states
-> for which ESL and EC bits in the PSSCR are zero. As per the
-> architecture, a wakeup from these stop states resumes execution from
-> the subsequent instruction as opposed to waking up at the System
-> Vector.
+> <...>-5141  [062]  1354.486693: tlbie:                
+> 	tlbie with lpid 0, local 0, rb=7b5d0ff874f11f1, rs=0, ric=0 prs=0 r=0
+> systemd-udevd-2584  [018]  1354.486772: tlbie:
+> 	tlbie with lpid 0, local 0, rb=17be1f421adc10c1, rs=0, ric=0 prs=0 r=0
+> ...
 >
-> The older firmware sets only the Requested Level (RL) field in the
-> psscr and psscr-mask exposed in the device tree. For older firmware
-> where psscr-mask=0xf, this patch will set the default sane values that
-> the set for for remaining PSSCR fields (i.e PSLL, MTL, ESL, EC, and
-> TR).
+> qemu-system-ppc-5371  [016]  1412.369519: tlbie:
+> 	tlbie with lpid 0, local 1, rb=67bd8900174c11c1, rs=0, ric=0 prs=0 r=0
+> qemu-system-ppc-5377  [056]  1421.687262: tlbie:
+> 	tlbie with lpid 1, local 0, rb=5f04edffa00c11c1, rs=1, ric=0 prs=0 r=0
 
-So we're using psscr-mas=0xf as a signal that we're running on old
-firmware.
+My first reaction is "why the hell do we have so many open-coded
+tlbies". So step one might be to add a static inline helper, that way we
+don't have to add the trace_tlbie() in so many places.
 
-That's OK I think, but please send a patch to document it in the device
-tree binding.
+Also in some of them you call trace_tlbie() before the
+eieio/tlbsync/ptesync. Which may not be wrong, but looks worrying at
+first glance.
 
-And call it out below in the code.
+But overall I guess it's OK. We'd want to do a quick benchmark to make
+sure it's not adding any overhead.
 
 cheers
