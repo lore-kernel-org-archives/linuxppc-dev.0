@@ -1,21 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPJcl4bVxzDvyv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 10:36:07 +1100 (AEDT)
-Date: Thu, 24 Nov 2016 10:36:06 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas
- Piggin <npiggin@gmail.com>, "Naveen N. Rao"
- <naveen.n.rao@linux.vnet.ibm.com>
-Subject: linux-next: manual merge of the powerpc tree with the powerpc-fixes
- tree
-Message-ID: <20161124103606.0333e388@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPJvy0h5mzDw04
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 10:49:17 +1100 (AEDT)
+Date: Wed, 23 Nov 2016 17:49:10 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ clsoto@us.ibm.com
+Subject: Re: [PATCH v3 0/2] Disable VF's memory space on updating IOV BARs
+Message-ID: <20161123234910.GN16033@bhelgaas-glaptop.roam.corp.google.com>
+References: <1477444536-29612-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1477444536-29612-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Wed, Oct 26, 2016 at 12:15:34PM +1100, Gavin Shan wrote:
+> This moves pcibios_sriov_enable() to the point before VF and VF BARs
+> are enabled on PowerNV platform. Also, pci_update_resource() is used
+> to update IOV BARs on PowerNV platform, the PF might have been functional
+> when the function is called. We shouldn't disable PF's memory decoding
+> at that point. Instead, the VF's memory space should be disabled.
+> 
+> Changelog
+> =========
+> v3:
+>   * Disable VF's memory space when IOV BARs are updated in
+>     pcibios_sriov_enable().
+> v2:
+>   * Added one patch calling pcibios_sriov_enable() before the VF
+>     and VF BARs are enabled.
+> 
+> Gavin Shan (2):
+>   PCI: Call pcibios_sriov_enable() before IOV BARs are enabled
+>   PCI: Disable VF's memory space on updating IOV BAR in
+>     pci_update_resource()
+> 
+>  drivers/pci/iov.c       | 14 +++++++-------
+>  drivers/pci/setup-res.c | 28 ++++++++++++++++++++--------
+>  2 files changed, 27 insertions(+), 15 deletions(-)
 
-Today's linux-next merge of the powerpc tree got a conflict in:
-
-  arch/powerpc/include/asm/asm-prototypes.h
-
-between commit:
-
-  9e5f68842276 ("powerpc: Fix missing CRCs, add more asm-prototypes.h declarations")
-
-from the powerpc-fixes tree and commit:
-
-  82de5797a260 ("powerpc: Remove extraneous header from asm-prototypes.h")
-
-from the powerpc tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
--- 
-Cheers,
-Stephen Rothwell
-
-diff --cc arch/powerpc/include/asm/asm-prototypes.h
-index e0baba1535e6,dfef1174663e..000000000000
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@@ -13,12 -13,6 +13,11 @@@
-   */
-  
-  #include <linux/threads.h>
-- #include <linux/kprobes.h>
- +#include <asm/cacheflush.h>
- +#include <asm/checksum.h>
- +#include <asm/uaccess.h>
- +#include <asm/epapr_hcalls.h>
- +
-  #include <uapi/asm/ucontext.h>
-  
-  /* SMP */
+I applied these to pci/virtualization for v4.10.  Thanks for your
+patience, Gavin.
