@@ -1,22 +1,21 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPHv32PVNzDw3K
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 10:03:27 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id x23so1996284pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 15:03:27 -0800 (PST)
-Date: Thu, 24 Nov 2016 09:33:20 +1030
-From: Alan Modra <amodra@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/3] minor build fixes
-Message-ID: <20161123230320.GQ11815@bubble.grove.modra.org>
-References: <20161123130209.1667-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPJcl4bVxzDvyv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 10:36:07 +1100 (AEDT)
+Date: Thu, 24 Nov 2016 10:36:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas
+ Piggin <npiggin@gmail.com>, "Naveen N. Rao"
+ <naveen.n.rao@linux.vnet.ibm.com>
+Subject: linux-next: manual merge of the powerpc tree with the powerpc-fixes
+ tree
+Message-ID: <20161124103606.0333e388@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161123130209.1667-1-npiggin@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 24, 2016 at 12:02:06AM +1100, Nicholas Piggin wrote:
-> I was building BookE and big endian with a little endian cross
-> compiler and it stopped working. My BookS BE tests must have been
-> building using the ELFv2 ABI. After this, the build sometimes still
-> strangely fails with dot symbols in syscall table unable to be found,
-> but that's looking like it may be a linker bug (Alan is going to take
-> a look).
+Hi all,
 
-Yes it is a bug.  In compatibility code that was supposed to handle
-mixing old object files that use dot-symbols on function entry with
-newer object files that don't.  Here, "old" means mid 2004 or
-earlier.
+Today's linux-next merge of the powerpc tree got a conflict in:
 
-As you can imagine, I'm not hugely concerned about the ld bug..
+  arch/powerpc/include/asm/asm-prototypes.h
 
-Since every binutils back to at least 2.17 has the bug, what changed
-in the kernel to expose it?  Are you building without -mcall-aixdesc?
+between commit:
+
+  9e5f68842276 ("powerpc: Fix missing CRCs, add more asm-prototypes.h declarations")
+
+from the powerpc-fixes tree and commit:
+
+  82de5797a260 ("powerpc: Remove extraneous header from asm-prototypes.h")
+
+from the powerpc tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
 
 -- 
-Alan Modra
-Australia Development Lab, IBM
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/include/asm/asm-prototypes.h
+index e0baba1535e6,dfef1174663e..000000000000
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@@ -13,12 -13,6 +13,11 @@@
+   */
+  
+  #include <linux/threads.h>
+- #include <linux/kprobes.h>
+ +#include <asm/cacheflush.h>
+ +#include <asm/checksum.h>
+ +#include <asm/uaccess.h>
+ +#include <asm/epapr_hcalls.h>
+ +
+  #include <uapi/asm/ucontext.h>
+  
+  /* SMP */
