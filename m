@@ -1,29 +1,36 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tP0l50Rc0zDw5b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 22:40:33 +1100 (AEDT)
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tP0l43bXBz9t0w
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Nov 2016 22:40:32 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id 3so961247pgd.0
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Nov 2016 03:40:32 -0800 (PST)
-Subject: Re: [RFC] [PATCH] Trace TLBIE's
-To: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-References: <3dcd0c76-46fd-cb7a-945d-4b5a679fa544@gmail.com>
- <87polmtscd.fsf@concordia.ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <8a496713-bc00-6520-b715-481de507363e@gmail.com>
-Date: Wed, 23 Nov 2016 22:40:36 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tP1230D2tzDw70
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 22:53:30 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uANBnJrf105038
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 06:53:28 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26w6hpnyt4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 06:53:28 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 23 Nov 2016 04:53:27 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 1/7] powerpc/mm: update ptep_set_access_flag to not do
+ full mm tlb flush
+In-Reply-To: <fe12e986-0c81-a71c-29a2-a8ca4ea2600c@gmail.com>
+References: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
+ <fe12e986-0c81-a71c-29a2-a8ca4ea2600c@gmail.com>
+Date: Wed, 23 Nov 2016 17:23:21 +0530
 MIME-Version: 1.0
-In-Reply-To: <87polmtscd.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
+Message-Id: <87y40ah0pa.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,62 +40,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Balbir Singh <bsingharora@gmail.com> writes:
+
+> On 23/11/16 22:09, Aneesh Kumar K.V wrote:
+>> When we are updating pte, we just need to flush the tlb mapping for
+>> that pte. Right now we do a full mm flush because we don't track page
+>> size. Update the interface to track the page size and use that to
+>> do the right tlb flush.
+>> 
+>
+> Could you also clarify the scope -- this seems to be _radix_ only.
+> The problem statement is not very clear and why doesn't the flush_tlb_page()
+> following ptep_set_access_flags() work? What else do we need to do?
+
+Yes it modifies only radix part.  Don't understand the flush_tlb_page()
+part of the comment above. We are modifying the tlbflush that we need to do in the pte update
+sequence for DD1. ie, we need to do the flush before we can set the pte
+with new value.
+
+Also in this specific case, we can idealy drop that flush_tlb_page,
+because relaxing an access really don't need a tlb flush from generic
+architecture point of view. I left it there to make sure, we measure and
+get the invalidate path correct before going ahead with that
+optimization.
 
 
-On 23/11/16 21:15, Michael Ellerman wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
-> 
->> Just a quick patch to trace tlbie(l)'s. The idea being that it can be
->> enabled when we suspect corruption or when we need to see if we are doing
->> the right thing during flush. I think the format can be enhanced to
->> make it nicer (expand the RB/RS/IS/L cases in more detail). For now I am
->> sharing the idea to get inputs
->>
->> A typical trace might look like this
->>
->>
->> <...>-5141  [062]  1354.486693: tlbie:                
->> 	tlbie with lpid 0, local 0, rb=7b5d0ff874f11f1, rs=0, ric=0 prs=0 r=0
->> systemd-udevd-2584  [018]  1354.486772: tlbie:
->> 	tlbie with lpid 0, local 0, rb=17be1f421adc10c1, rs=0, ric=0 prs=0 r=0
->> ...
->>
->> qemu-system-ppc-5371  [016]  1412.369519: tlbie:
->> 	tlbie with lpid 0, local 1, rb=67bd8900174c11c1, rs=0, ric=0 prs=0 r=0
->> qemu-system-ppc-5377  [056]  1421.687262: tlbie:
->> 	tlbie with lpid 1, local 0, rb=5f04edffa00c11c1, rs=1, ric=0 prs=0 r=0
-> 
-> My first reaction is "why the hell do we have so many open-coded
-> tlbies". So step one might be to add a static inline helper, that way we
-> don't have to add the trace_tlbie() in so many places.
-> 
+>
+>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/book3s/32/pgtable.h |  4 +++-
+>>  arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++--
+>>  arch/powerpc/include/asm/book3s/64/radix.h   | 14 +++++++-------
+>>  arch/powerpc/include/asm/nohash/32/pgtable.h |  4 +++-
+>>  arch/powerpc/include/asm/nohash/64/pgtable.h |  4 +++-
+>>  arch/powerpc/mm/pgtable-book3s64.c           |  3 ++-
+>>  arch/powerpc/mm/pgtable-radix.c              | 16 ++++++++++++++++
+>>  arch/powerpc/mm/pgtable.c                    | 10 ++++++++--
+>>  arch/powerpc/mm/tlb-radix.c                  | 15 ---------------
+>>  9 files changed, 47 insertions(+), 30 deletions(-)
+>> 
 
-The problem is the variants
-
-Hash uses the two operand variant and radix on p9 uses the 5 operand variant.
-To make matters even more complex depending on the CPU_FTR_ARCH we also have
-operand variants with L and a version where the immediate value was removed.
-I've tried to encapsulate the traces with their variants, but that implied
-having the traces at the various call sites
-
-We also use tlbie* from assembly (like the one called by kvmppc_hv_entry),
-which is not covered by these traces at the moment, but I guess we can
-add them as well.
-
-> Also in some of them you call trace_tlbie() before the
-> eieio/tlbsync/ptesync. Which may not be wrong, but looks worrying at
-> first glance.
-> 
-
-I'll try and make it consistent, but there are places like do_tlbies()
-where we loop do the tlbie(l)'s and then do sync's. In those case
-I've had to put the traces within the loop instead of queuing or looping
-twice. We don't access any of the addresses flushed, just print the registers.
-
-> But overall I guess it's OK. We'd want to do a quick benchmark to make
-> sure it's not adding any overhead.
-
-OK.. I'll try and find a benchmark and run it with traces disabled.
-
-Thanks for the review
-Balbir Singh
+-aneesh
