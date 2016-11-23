@@ -1,23 +1,46 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNv6S5ksrzDw9n
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:26:56 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id a20so861863wme.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 23:26:56 -0800 (PST)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: linux-fbdev@vger.kernel.org
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Mathieu Malaterre <malat@debian.org>
-Subject: [PATCH v3] Fix loading of module radeonfb on PowerMac
-Date: Wed, 23 Nov 2016 08:26:41 +0100
-Message-Id: <1479886001-27801-1-git-send-email-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNvDx1QhPzDvxJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:32:33 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAN7SQXQ054482
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 02:32:31 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26w3rpdrn3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 02:32:30 -0500
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 23 Nov 2016 17:32:28 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 626533578056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:32:25 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAN7WOwt51904682
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:32:24 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAN7WO8G022643
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:32:25 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: "andrew.donnellan" <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ fbarrat <fbarrat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cxl: fix coccinelle warnings
+In-reply-to: <72ee4e44-af7d-2351-91ae-4f3f28999bce@au1.ibm.com>
+References: <20161122101327.14281-1-andrew.donnellan@au1.ibm.com>
+ <1479883732-sup-5050@x230.ozlabs.ibm.com>
+ <72ee4e44-af7d-2351-91ae-4f3f28999bce@au1.ibm.com>
+Date: Wed, 23 Nov 2016 18:32:23 +1100
+Message-Id: <1479886310-sup-1768@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,113 +50,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the linux kernel is build with (typical kernel ship with Debian
-installer):
+Excerpts from andrew.donnellan's message of 2016-11-23 18:06:59 +1100:
+> On 23/11/16 17:49, Ian Munsie wrote:
+> > Most of these look fine
+> >
+> >> -    return debugfs_create_file(name, mode, parent, (void __force *)value, &fops_io_x64);
+> >> +    return debugfs_create_file_unsafe(name, mode, parent,
+> >> +                      (void __force *)value, &fops_io_x64);
+> >
+> > Just wondering what this one is about?
+> 
+> See explanation at https://lkml.org/lkml/2016/3/6/75 - when we use 
+> DEFINE_DEBUGFS_ATTRIBUTE() rather than DEFINE_SIMPLE_ATTRIBUTE(), we 
+> don't need the "lifetime managing proxy" that debugfs_create_file() sets up.
+> 
+> coccinelle proposed that change based on 
+> scripts/coccinelle/api/debugfs/debugfs_simple_attr.cocci
 
-CONFIG_FB_OF=y
-CONFIG_VT_HW_CONSOLE_BINDING=y
-CONFIG_FB_RADEON=m
+Thanks, that makes sense :)
 
-The offb driver takes precedence over module radeonfb. It is then
-impossible to load the module, error reported is:
-
-[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
-[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
-[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
-[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
-
-This patch reproduce the behavior of the module radeon, so as to make it
-possible to load radeonfb when offb is first loaded.
-
-The problem is that offb call pci_request_region first, and then radeonfb
-tries to do it, and since one is trying to take over from the other, it can't
-do that because the area is already reserved.
-
-It should be noticed that `offb_destroy` is never called which explain the
-need to skip error detection on the radeonfb side.
-
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
-Link: https://bugs.debian.org/826629#57
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=119741
-Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
----
-
-v2: Remove compilation warning
-
-v3: Hide error messages on PPC
-
- drivers/video/fbdev/aty/radeon_base.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
-
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 218339a..837c86a 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
- 	.read	= radeon_show_edid2,
- };
- 
-+static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
-+{
-+	struct apertures_struct *ap;
-+
-+	ap = alloc_apertures(1);
-+	if (!ap)
-+		return -ENOMEM;
-+
-+	ap->ranges[0].base = pci_resource_start(pdev, 0);
-+	ap->ranges[0].size = pci_resource_len(pdev, 0);
-+
-+	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
-+	kfree(ap);
-+
-+	return 0;
-+}
- 
- static int radeonfb_pci_register(struct pci_dev *pdev,
- 				 const struct pci_device_id *ent)
-@@ -2314,20 +2330,29 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
- 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
- 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
- 
-+	ret = radeon_kick_out_firmware_fb(pdev);
-+	if (ret)
-+		return ret;
-+
- 	/* request the mem regions */
- 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
-+  /* this is not an error on PowerMac where offb already requested mem regions */
-+#ifndef CONFIG_PPC
- 	if (ret < 0) {
- 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
- 			pci_name(rinfo->pdev));
- 		goto err_release_fb;
- 	}
-+#endif
- 
- 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
-+#ifndef CONFIG_PPC
- 	if (ret < 0) {
- 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
- 			pci_name(rinfo->pdev));
- 		goto err_release_pci0;
- 	}
-+#endif
- 
- 	/* map the regions */
- 	rinfo->mmio_base = ioremap(rinfo->mmio_base_phys, RADEON_REGSIZE);
-@@ -2511,10 +2536,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
- 	iounmap(rinfo->mmio_base);
- err_release_pci2:
- 	pci_release_region(pdev, 2);
-+#ifndef CONFIG_PPC
- err_release_pci0:
- 	pci_release_region(pdev, 0);
- err_release_fb:
-         framebuffer_release(info);
-+#endif
- err_disable:
- err_out:
- 	return ret;
--- 
-2.1.4
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
