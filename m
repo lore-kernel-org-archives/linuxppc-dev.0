@@ -1,24 +1,23 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f66.google.com (mail-wm0-f66.google.com [74.125.82.66])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNv583q3VzDw4h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:25:48 +1100 (AEDT)
-Received: by mail-wm0-f66.google.com with SMTP id u144so858120wmu.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 23:25:48 -0800 (PST)
-Date: Wed, 23 Nov 2016 08:25:44 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Johannes Weiner <hannes@cmpxchg.org>,
- Vladimir Davydov <vdavydov.dev@gmail.com>
-Subject: Re: [mm v2 0/3] Support memory cgroup hotplug
-Message-ID: <20161123072543.GD2864@dhcp22.suse.cz>
-References: <1479875814-11938-1-git-send-email-bsingharora@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1479875814-11938-1-git-send-email-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNv6S5ksrzDw9n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 18:26:56 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id a20so861863wme.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2016 23:26:56 -0800 (PST)
+Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+To: linux-fbdev@vger.kernel.org
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Mathieu Malaterre <malat@debian.org>
+Subject: [PATCH v3] Fix loading of module radeonfb on PowerMac
+Date: Wed, 23 Nov 2016 08:26:41 +0100
+Message-Id: <1479886001-27801-1-git-send-email-malat@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +27,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 23-11-16 15:36:51, Balbir Singh wrote:
-> In the absence of hotplug we use extra memory proportional to
-> (possible_nodes - online_nodes) * number_of_cgroups. PPC64 has a patch
-> to disable large consumption with large number of cgroups. This patch
-> adds hotplug support to memory cgroups and reverts the commit that
-> limited possible nodes to online nodes.
+When the linux kernel is build with (typical kernel ship with Debian
+installer):
 
-Balbir,
-I have asked this in the previous version but there still seems to be a
-lack of information of _why_ do we want this, _how_ much do we save on
-the memory overhead on most systems and _why_ the additional complexity
-is really worth it. Please make sure to add all this in the cover
-letter.
+CONFIG_FB_OF=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_FB_RADEON=m
 
-I still didn't get to look into those patches because I am swamped with
-other things but to be honest I do not really see a strong justification
-to make it high priority for me.
+The offb driver takes precedence over module radeonfb. It is then
+impossible to load the module, error reported is:
 
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Michal Hocko <mhocko@kernel.org> 
-> Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
-> 
-> I've tested this patches under a VM with two nodes and movable
-> nodes enabled. I've offlined nodes and checked that the system
-> and cgroups with tasks deep in the hierarchy continue to work
-> fine.
-> 
-> These patches are on top of linux-next (20161117)
-> 
-> Changelog v2:
-> 	Add get/put_online_mems() around node iteration
-> 	Use MEM_OFFLINE/MEM_ONLINE instead of MEM_GOING_OFFLINE/ONLINE
-> 
-> Balbir Singh (3):
->   mm: Add basic infrastructure for memcg hotplug support
->   mm: Move operations to hotplug callbacks
->   powerpc/mm: fix node_possible_map limitations
-> 
->  arch/powerpc/mm/numa.c |   7 ----
->  mm/memcontrol.c        | 107 +++++++++++++++++++++++++++++++++++++++++++------
->  2 files changed, 94 insertions(+), 20 deletions(-)
-> 
-> -- 
-> 2.5.5
+[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
 
+This patch reproduce the behavior of the module radeon, so as to make it
+possible to load radeonfb when offb is first loaded.
+
+The problem is that offb call pci_request_region first, and then radeonfb
+tries to do it, and since one is trying to take over from the other, it can't
+do that because the area is already reserved.
+
+It should be noticed that `offb_destroy` is never called which explain the
+need to skip error detection on the radeonfb side.
+
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Link: https://bugs.debian.org/826629#57
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=119741
+Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+---
+
+v2: Remove compilation warning
+
+v3: Hide error messages on PPC
+
+ drivers/video/fbdev/aty/radeon_base.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 218339a..837c86a 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
+ 
++static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 0);
++	ap->ranges[0].size = pci_resource_len(pdev, 0);
++
++	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
++	kfree(ap);
++
++	return 0;
++}
+ 
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+@@ -2314,20 +2330,29 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
++	ret = radeon_kick_out_firmware_fb(pdev);
++	if (ret)
++		return ret;
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
++  /* this is not an error on PowerMac where offb already requested mem regions */
++#ifndef CONFIG_PPC
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_fb;
+ 	}
++#endif
+ 
+ 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
++#ifndef CONFIG_PPC
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_pci0;
+ 	}
++#endif
+ 
+ 	/* map the regions */
+ 	rinfo->mmio_base = ioremap(rinfo->mmio_base_phys, RADEON_REGSIZE);
+@@ -2511,10 +2536,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	iounmap(rinfo->mmio_base);
+ err_release_pci2:
+ 	pci_release_region(pdev, 2);
++#ifndef CONFIG_PPC
+ err_release_pci0:
+ 	pci_release_region(pdev, 0);
+ err_release_fb:
+         framebuffer_release(info);
++#endif
+ err_disable:
+ err_out:
+ 	return ret;
 -- 
-Michal Hocko
-SUSE Labs
+2.1.4
