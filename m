@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNjvx4hS1zDw1t
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNjvx69GyzDw1r
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 11:32:13 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm-ppc@vger.kernel.org,
 	kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 05/11] KVM: PPC: Book3S HV: Adapt TLB invalidations to work
- on POWER9
-Date: Wed, 23 Nov 2016 11:31:59 +1100
-Message-Id: <1479861125-21394-6-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v2 07/11] KVM: PPC: Book3S HV: Use OPAL XICS emulation on
+ POWER9
+Date: Wed, 23 Nov 2016 11:32:01 +1100
+Message-Id: <1479861125-21394-8-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 References: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,157 +23,321 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER9 adds new capabilities to the tlbie (TLB invalidate entry)
-and tlbiel (local tlbie) instructions.  Both instructions get a
-set of new parameters (RIC, PRS and R) which appear as bits in the
-instruction word.  The tlbiel instruction now has a second register
-operand, which contains a PID and/or LPID value if needed, and
-should otherwise contain 0.
+POWER9 includes a new interrupt controller, called XIVE, which is
+quite different from the XICS interrupt controller on POWER7 and
+POWER8 machines.  KVM-HV accesses the XICS directly in several places
+in order to send and clear IPIs and handle interrupts from PCI
+devices being passed through to the guest.
 
-This adapts KVM-HV's usage of tlbie and tlbiel to work on POWER9
-as well as older processors.  Since we only handle HPT guests so
-far, we need RIC=0 PRS=0 R=0, which ends up with the same instruction
-word as on previous processors, so we don't need to conditionally
-execute different instructions depending on the processor.
+In order to make the transition to XIVE easier, OPAL firmware will
+include an emulation of XICS on top of XIVE.  Access to the emulated
+XICS is via OPAL calls.  The one complication is that the EOI
+(end-of-interrupt) function can now return a value indicating that
+another interrupt is pending; in this case, the XIVE will not signal
+an interrupt in hardware to the CPU, and software is supposed to
+acknowledge the new interrupt without waiting for another interrupt
+to be delivered in hardware.
 
-The local flush on first entry to a guest in book3s_hv_rmhandlers.S
-is a loop which depends on the number of TLB sets.  Rather than
-using feature sections to set the number of iterations based on
-which CPU we're on, we now work out this number at VM creation time
-and store it in the kvm_arch struct.  That will make it possible to
-get the number from the device tree in future, which will help with
-compatibility with future processors.
+This adapts KVM-HV to use the OPAL calls on machines where there is
+no XICS hardware.  When there is no XICS, we look for a device-tree
+node with "ibm,opal-intc" in its compatible property, which is how
+OPAL indicates that it provides XICS emulation.
 
-Since mmu_partition_table_set_entry() does a global flush of the
-whole LPID, we don't need to do the TLB flush on first entry to the
-guest on each processor.  Therefore we don't set all bits in the
-tlb_need_flush bitmap on VM startup on POWER9.
+In order to handle the EOI return value, kvmppc_read_intr() has
+become kvmppc_read_one_intr(), with a boolean variable passed by
+reference which can be set by the EOI functions to indicate that
+another interrupt is pending.  The new kvmppc_read_intr() keeps
+calling kvmppc_read_one_intr() until there are no more interrupts
+to process.  The return value from kvmppc_read_intr() is the
+largest non-zero value of the returns from kvmppc_read_one_intr().
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_host.h     |  1 +
- arch/powerpc/kernel/asm-offsets.c       |  1 +
- arch/powerpc/kvm/book3s_hv.c            | 17 ++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c     | 10 ++++++++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |  8 ++------
- 5 files changed, 28 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h   |  7 +++--
+ arch/powerpc/kvm/book3s_hv.c         | 28 +++++++++++++++--
+ arch/powerpc/kvm/book3s_hv_builtin.c | 59 ++++++++++++++++++++++++++++++------
+ arch/powerpc/kvm/book3s_hv_rm_xics.c | 23 ++++++++++----
+ 4 files changed, 96 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 9556de6..f15713a 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -244,6 +244,7 @@ struct kvm_arch_memory_slot {
- struct kvm_arch {
- 	unsigned int lpid;
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	unsigned int tlb_sets;
- 	unsigned long hpt_virt;
- 	struct revmap_entry *revmap;
- 	atomic64_t mmio_update;
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index a4f6d5e..195a9fc 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -487,6 +487,7 @@ int main(void)
- 
- 	/* book3s */
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	DEFINE(KVM_TLB_SETS, offsetof(struct kvm, arch.tlb_sets));
- 	DEFINE(KVM_SDR1, offsetof(struct kvm, arch.sdr1));
- 	DEFINE(KVM_HOST_LPID, offsetof(struct kvm, arch.host_lpid));
- 	DEFINE(KVM_HOST_LPCR, offsetof(struct kvm, arch.host_lpcr));
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index f6e4964..a5b94be 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -483,9 +483,10 @@ extern void kvmppc_xics_set_mapped(struct kvm *kvm, unsigned long guest_irq,
+ 				   unsigned long host_irq);
+ extern void kvmppc_xics_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
+ 				   unsigned long host_irq);
+-extern long kvmppc_deliver_irq_passthru(struct kvm_vcpu *vcpu, u32 xirr,
+-				 struct kvmppc_irq_map *irq_map,
+-				 struct kvmppc_passthru_irqmap *pimap);
++extern long kvmppc_deliver_irq_passthru(struct kvm_vcpu *vcpu, __be32 xirr,
++					struct kvmppc_irq_map *irq_map,
++					struct kvmppc_passthru_irqmap *pimap,
++					bool *again);
+ extern int h_ipi_redirect;
+ #else
+ static inline struct kvmppc_passthru_irqmap *kvmppc_get_passthru_irqmap(
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 14eeacc..0a90fa4 100644
+index 7a6a00a..aca9fbf 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3265,8 +3265,11 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	 * Since we don't flush the TLB when tearing down a VM,
- 	 * and this lpid might have previously been used,
- 	 * make sure we flush on each core before running the new VM.
-+	 * On POWER9, the tlbie in mmu_partition_table_set_entry()
-+	 * does this flush for us.
- 	 */
--	cpumask_setall(&kvm->arch.need_tlb_flush);
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		cpumask_setall(&kvm->arch.need_tlb_flush);
+@@ -55,6 +55,8 @@
+ #include <asm/hmi.h>
+ #include <asm/pnv-pci.h>
+ #include <asm/mmu.h>
++#include <asm/opal.h>
++#include <asm/xics.h>
+ #include <linux/gfp.h>
+ #include <linux/vmalloc.h>
+ #include <linux/highmem.h>
+@@ -63,6 +65,7 @@
+ #include <linux/irqbypass.h>
+ #include <linux/module.h>
+ #include <linux/compiler.h>
++#include <linux/of.h>
  
- 	/* Start out with the default set of hcalls enabled */
- 	memcpy(kvm->arch.enabled_hcalls, default_enabled_hcalls,
-@@ -3292,6 +3295,17 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	kvm->arch.lpcr = lpcr;
+ #include "book3s.h"
+ 
+@@ -172,8 +175,12 @@ static bool kvmppc_ipi_thread(int cpu)
+ 	}
+ 
+ #if defined(CONFIG_PPC_ICP_NATIVE) && defined(CONFIG_SMP)
+-	if (cpu >= 0 && cpu < nr_cpu_ids && paca[cpu].kvm_hstate.xics_phys) {
+-		xics_wake_cpu(cpu);
++	if (cpu >= 0 && cpu < nr_cpu_ids) {
++		if (paca[cpu].kvm_hstate.xics_phys) {
++			xics_wake_cpu(cpu);
++			return true;
++		}
++		opal_int_set_mfrr(get_hard_smp_processor_id(cpu), IPI_PRIORITY);
+ 		return true;
+ 	}
+ #endif
+@@ -3734,6 +3741,23 @@ static int kvmppc_book3s_init_hv(void)
+ 	if (r)
+ 		return r;
+ 
++	/*
++	 * We need a way of accessing the XICS interrupt controller,
++	 * either directly, via paca[cpu].kvm_hstate.xics_phys, or
++	 * indirectly, via OPAL.
++	 */
++#ifdef CONFIG_SMP
++	if (!get_paca()->kvm_hstate.xics_phys) {
++		struct device_node *np;
++
++		np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
++		if (!np) {
++			pr_err("KVM-HV: Cannot determine method for accessing XICS\n");
++			return -ENODEV;
++		}
++	}
++#endif
++
+ 	kvm_ops_hv.owner = THIS_MODULE;
+ 	kvmppc_hv_ops = &kvm_ops_hv;
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index e1e1ead..9e1223a 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -27,6 +27,7 @@
+ #include <asm/cputhreads.h>
+ #include <asm/io.h>
+ #include <asm/asm-prototypes.h>
++#include <asm/opal.h>
+ 
+ #define KVM_CMA_CHUNK_ORDER	18
+ 
+@@ -225,7 +226,11 @@ void kvmhv_rm_send_ipi(int cpu)
+ 
+ 	/* Else poke the target with an IPI */
+ 	xics_phys = paca[cpu].kvm_hstate.xics_phys;
+-	rm_writeb(xics_phys + XICS_MFRR, IPI_PRIORITY);
++	if (xics_phys)
++		rm_writeb(xics_phys + XICS_MFRR, IPI_PRIORITY);
++	else
++		opal_rm_int_set_mfrr(get_hard_smp_processor_id(cpu),
++				     IPI_PRIORITY);
+ }
+ 
+ /*
+@@ -336,7 +341,7 @@ static struct kvmppc_irq_map *get_irqmap(struct kvmppc_passthru_irqmap *pimap,
+  * saved a copy of the XIRR in the PACA, it will be picked up by
+  * the host ICP driver.
+  */
+-static int kvmppc_check_passthru(u32 xisr, __be32 xirr)
++static int kvmppc_check_passthru(u32 xisr, __be32 xirr, bool *again)
+ {
+ 	struct kvmppc_passthru_irqmap *pimap;
+ 	struct kvmppc_irq_map *irq_map;
+@@ -355,7 +360,7 @@ static int kvmppc_check_passthru(u32 xisr, __be32 xirr)
+ 	/* We're handling this interrupt, generic code doesn't need to */
+ 	local_paca->kvm_hstate.saved_xirr = 0;
+ 
+-	return kvmppc_deliver_irq_passthru(vcpu, xirr, irq_map, pimap);
++	return kvmppc_deliver_irq_passthru(vcpu, xirr, irq_map, pimap, again);
+ }
+ 
+ #else
+@@ -374,14 +379,31 @@ static inline int kvmppc_check_passthru(u32 xisr, __be32 xirr)
+  *	-1 if there was a guest wakeup IPI (which has now been cleared)
+  *	-2 if there is PCI passthrough external interrupt that was handled
+  */
++static long kvmppc_read_one_intr(bool *again);
+ 
+ long kvmppc_read_intr(void)
+ {
++	long ret = 0;
++	long rc;
++	bool again;
++
++	do {
++		again = false;
++		rc = kvmppc_read_one_intr(&again);
++		if (rc && (ret == 0 || rc > ret))
++			ret = rc;
++	} while (again);
++	return ret;
++}
++
++static long kvmppc_read_one_intr(bool *again)
++{
+ 	unsigned long xics_phys;
+ 	u32 h_xirr;
+ 	__be32 xirr;
+ 	u32 xisr;
+ 	u8 host_ipi;
++	int64_t rc;
+ 
+ 	/* see if a host IPI is pending */
+ 	host_ipi = local_paca->kvm_hstate.host_ipi;
+@@ -390,8 +412,14 @@ long kvmppc_read_intr(void)
+ 
+ 	/* Now read the interrupt from the ICP */
+ 	xics_phys = local_paca->kvm_hstate.xics_phys;
+-	if (unlikely(!xics_phys))
+-		return 1;
++	if (!xics_phys) {
++		/* Use OPAL to read the XIRR */
++		rc = opal_rm_int_get_xirr(&xirr, false);
++		if (rc < 0)
++			return 1;
++	} else {
++		xirr = _lwzcix(xics_phys + XICS_XIRR);
++	}
  
  	/*
-+	 * Work out how many sets the TLB has, for the use of
-+	 * the TLB invalidation loop in book3s_hv_rmhandlers.S.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		kvm->arch.tlb_sets = POWER9_TLB_SETS_HASH;	/* 256 */
-+	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		kvm->arch.tlb_sets = POWER8_TLB_SETS;		/* 512 */
-+	else
-+		kvm->arch.tlb_sets = POWER7_TLB_SETS;		/* 128 */
-+
-+	/*
- 	 * Track that we now have a HV mode VM active. This blocks secondary
- 	 * CPU threads from coming online.
+ 	 * Save XIRR for later. Since we get control in reverse endian
+@@ -399,7 +427,6 @@ long kvmppc_read_intr(void)
+ 	 * host endian. Note that xirr is the value read from the
+ 	 * XIRR register, while h_xirr is the host endian version.
  	 */
-@@ -3733,3 +3747,4 @@ module_exit(kvmppc_book3s_exit_hv);
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_MISCDEV(KVM_MINOR);
- MODULE_ALIAS("devname:kvm");
+-	xirr = _lwzcix(xics_phys + XICS_XIRR);
+ 	h_xirr = be32_to_cpu(xirr);
+ 	local_paca->kvm_hstate.saved_xirr = h_xirr;
+ 	xisr = h_xirr & 0xffffff;
+@@ -418,8 +445,16 @@ long kvmppc_read_intr(void)
+ 	 * If it is an IPI, clear the MFRR and EOI it.
+ 	 */
+ 	if (xisr == XICS_IPI) {
+-		_stbcix(xics_phys + XICS_MFRR, 0xff);
+-		_stwcix(xics_phys + XICS_XIRR, xirr);
++		if (xics_phys) {
++			_stbcix(xics_phys + XICS_MFRR, 0xff);
++			_stwcix(xics_phys + XICS_XIRR, xirr);
++		} else {
++			opal_rm_int_set_mfrr(hard_smp_processor_id(), 0xff);
++			rc = opal_rm_int_eoi(h_xirr);
++			/* If rc > 0, there is another interrupt pending */
++			*again = rc > 0;
++		}
 +
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 59d3458..378b962 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -425,13 +425,18 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
- {
- 	long i;
- 
-+	/*
-+	 * We use the POWER9 5-operand versions of tlbie and tlbiel here.
-+	 * Since we are using RIC=0 PRS=0 R=0, and P7/P8 tlbiel ignores
-+	 * the RS field, this is backwards-compatible with P7 and P8.
-+	 */
- 	if (global) {
- 		while (!try_lock_tlbie(&kvm->arch.tlbie_lock))
- 			cpu_relax();
- 		if (need_sync)
- 			asm volatile("ptesync" : : : "memory");
- 		for (i = 0; i < npages; ++i)
--			asm volatile(PPC_TLBIE(%1,%0) : :
-+			asm volatile(PPC_TLBIE_5(%0,%1,0,0,0) : :
- 				     "r" (rbvalues[i]), "r" (kvm->arch.lpid));
- 		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
- 		kvm->arch.tlbie_lock = 0;
-@@ -439,7 +444,8 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
- 		if (need_sync)
- 			asm volatile("ptesync" : : : "memory");
- 		for (i = 0; i < npages; ++i)
--			asm volatile("tlbiel %0" : : "r" (rbvalues[i]));
-+			asm volatile(PPC_TLBIEL(%0,%1,0,0,0) : :
-+				     "r" (rbvalues[i]), "r" (0));
- 		asm volatile("ptesync" : : : "memory");
+ 		/*
+ 		 * Need to ensure side effects of above stores
+ 		 * complete before proceeding.
+@@ -436,7 +471,11 @@ long kvmppc_read_intr(void)
+ 			/* We raced with the host,
+ 			 * we need to resend that IPI, bummer
+ 			 */
+-			_stbcix(xics_phys + XICS_MFRR, IPI_PRIORITY);
++			if (xics_phys)
++				_stbcix(xics_phys + XICS_MFRR, IPI_PRIORITY);
++			else
++				opal_rm_int_set_mfrr(hard_smp_processor_id(),
++						     IPI_PRIORITY);
+ 			/* Let side effects complete */
+ 			smp_mb();
+ 			return 1;
+@@ -447,5 +486,5 @@ long kvmppc_read_intr(void)
+ 		return -1;
  	}
+ 
+-	return kvmppc_check_passthru(xisr, xirr);
++	return kvmppc_check_passthru(xisr, xirr, again);
  }
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 499be60..598d828 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -613,12 +613,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	stdcx.	r7,0,r6
- 	bne	23b
- 	/* Flush the TLB of any entries for this LPID */
--	/* use arch 2.07S as a proxy for POWER8 */
--BEGIN_FTR_SECTION
--	li	r6,512			/* POWER8 has 512 sets */
--FTR_SECTION_ELSE
--	li	r6,128			/* POWER7 has 128 sets */
--ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_207S)
-+	lwz	r6,KVM_TLB_SETS(r9)
-+	li	r0,0			/* RS for P9 version of tlbiel */
- 	mtctr	r6
- 	li	r7,0x800		/* IS field = 0b10 */
- 	ptesync
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+index f2d4487..6a4c4d75 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+@@ -71,7 +71,11 @@ static inline void icp_send_hcore_msg(int hcore, struct kvm_vcpu *vcpu)
+ 	hcpu = hcore << threads_shift;
+ 	kvmppc_host_rm_ops_hv->rm_core[hcore].rm_data = vcpu;
+ 	smp_muxed_ipi_set_message(hcpu, PPC_MSG_RM_HOST_ACTION);
+-	icp_native_cause_ipi_rm(hcpu);
++	if (paca[hcpu].kvm_hstate.xics_phys)
++		icp_native_cause_ipi_rm(hcpu);
++	else
++		opal_rm_int_set_mfrr(get_hard_smp_processor_id(hcpu),
++				     IPI_PRIORITY);
+ }
+ #else
+ static inline void icp_send_hcore_msg(int hcore, struct kvm_vcpu *vcpu) { }
+@@ -738,7 +742,7 @@ int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr)
+ 
+ unsigned long eoi_rc;
+ 
+-static void icp_eoi(struct irq_chip *c, u32 hwirq, u32 xirr)
++static void icp_eoi(struct irq_chip *c, u32 hwirq, __be32 xirr, bool *again)
+ {
+ 	unsigned long xics_phys;
+ 	int64_t rc;
+@@ -752,7 +756,12 @@ static void icp_eoi(struct irq_chip *c, u32 hwirq, u32 xirr)
+ 
+ 	/* EOI it */
+ 	xics_phys = local_paca->kvm_hstate.xics_phys;
+-	_stwcix(xics_phys + XICS_XIRR, xirr);
++	if (xics_phys) {
++		_stwcix(xics_phys + XICS_XIRR, xirr);
++	} else {
++		rc = opal_rm_int_eoi(be32_to_cpu(xirr));
++		*again = rc > 0;
++	}
+ }
+ 
+ static int xics_opal_rm_set_server(unsigned int hw_irq, int server_cpu)
+@@ -810,9 +819,10 @@ static void kvmppc_rm_handle_irq_desc(struct irq_desc *desc)
+ }
+ 
+ long kvmppc_deliver_irq_passthru(struct kvm_vcpu *vcpu,
+-				 u32 xirr,
++				 __be32 xirr,
+ 				 struct kvmppc_irq_map *irq_map,
+-				 struct kvmppc_passthru_irqmap *pimap)
++				 struct kvmppc_passthru_irqmap *pimap,
++				 bool *again)
+ {
+ 	struct kvmppc_xics *xics;
+ 	struct kvmppc_icp *icp;
+@@ -826,7 +836,8 @@ long kvmppc_deliver_irq_passthru(struct kvm_vcpu *vcpu,
+ 	icp_rm_deliver_irq(xics, icp, irq);
+ 
+ 	/* EOI the interrupt */
+-	icp_eoi(irq_desc_get_chip(irq_map->desc), irq_map->r_hwirq, xirr);
++	icp_eoi(irq_desc_get_chip(irq_map->desc), irq_map->r_hwirq, xirr,
++		again);
+ 
+ 	if (check_too_hard(xics, icp) == H_TOO_HARD)
+ 		return 2;
 -- 
 2.7.4
