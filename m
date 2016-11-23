@@ -1,19 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Return-Path: <mstsxfx@gmail.com>
+Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tP2j0539NzDwL6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 00:08:52 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id e9so1099390pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 05:08:52 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
-Date: Thu, 24 Nov 2016 00:08:40 +1100
-Message-Id: <20161123130840.1877-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tP30m17gZzDwK5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 00:22:32 +1100 (AEDT)
+Received: by mail-wm0-f67.google.com with SMTP id m203so1984309wma.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 05:22:31 -0800 (PST)
+Date: Wed, 23 Nov 2016 14:22:27 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ Vladimir Davydov <vdavydov.dev@gmail.com>
+Subject: Re: [mm v2 0/3] Support memory cgroup hotplug
+Message-ID: <20161123132226.GL2864@dhcp22.suse.cz>
+References: <1479875814-11938-1-git-send-email-bsingharora@gmail.com>
+ <20161123072543.GD2864@dhcp22.suse.cz>
+ <342ebcca-b54c-4bc6-906b-653042caae06@gmail.com>
+ <20161123080744.GG2864@dhcp22.suse.cz>
+ <61dc32fd-2802-6deb-24cf-fa11b5b31532@gmail.com>
+ <20161123092830.GH2864@dhcp22.suse.cz>
+ <962ac541-55c4-de09-59a3-4947c394eee6@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <962ac541-55c4-de09-59a3-4947c394eee6@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Question, are there any fundamental reasons we shouldn't use the ELFv2
-ABI to build big endian kernels if the compiler supports it?
+On Thu 24-11-16 00:05:12, Balbir Singh wrote:
+> 
+> 
+> On 23/11/16 20:28, Michal Hocko wrote:
+[...]
+> > I am more worried about synchronization with the hotplug which tends to
+> > be a PITA in places were we were simply safe by definition until now. We
+> > do not have all that many users of memcg->nodeinfo[nid] from what I can see
+> > but are all of them safe to never race with the hotplug. A lack of
+> > highlevel design description is less than encouraging.
+> 
+> As in explanation? The design is dictated by the notifier and the actions
+> to take when the node comes online/offline.
 
-Thanks,
-Nick
+Sure but how all the users of lruvec (for example) which is stored in
+the nodeinfo AFAIR, are supposed to synchronize with the notifier.
+Really if you are doing something dynamic then the first thing to
+explain is the sychronization. There might be really good reasons why we
+do not have to care about explicit synchr. for most code paths but my
+past experience with many subtle hotplug related bugs just make me a bit
+suspicious. So in other words, please make sure to document as much as
+possible. This will make the review so much easier.
 
----
- arch/powerpc/Makefile      | 15 +++++----------
- arch/powerpc/boot/Makefile |  2 +-
- 2 files changed, 6 insertions(+), 11 deletions(-)
+>  So please try to
+> > spend some time describing how do we use nodeinfo currently and how is
+> > the synchronization with the hotplug supposed to work and what
+> > guarantees that no stale nodinfos can be ever used. This is just too
+> > easy to get wrong...
+> > 
+> 
+> OK.. I'll add that in the next cover letter
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 902da6e..b4867fc 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -72,18 +72,19 @@ GNUTARGET	:= powerpc
- MULTIPLEWORD	:= -mmultiple
- endif
- 
-+ifeq ($(CONFIG_PPC64),y)
-+cflags-y				+= $(call cc-option,-mabi=elfv2)
-+aflags-y				+= $(call cc-option,-mabi=elfv2)
-+endif
-+
- cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
--cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
- cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
--cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
- ifneq ($(cc-name),clang)
-   cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
- endif
- 
- aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
--aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
- aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
--aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
- 
- ifeq ($(HAS_BIARCH),y)
- override AS	+= -a$(BITS)
-@@ -113,14 +114,8 @@ endif
- endif
- 
- CFLAGS-$(CONFIG_PPC64)	:= $(call cc-option,-mtraceback=no)
--ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
- AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
--else
--CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcall-aixdesc)
--CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
--AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
--endif
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
- CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 1d50d41..ef2499b 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -33,7 +33,7 @@ BOOTCFLAGS	+= -m64
- endif
- ifdef CONFIG_CPU_BIG_ENDIAN
- BOOTCFLAGS	+= -mbig-endian
--BOOTCFLAGS	+= $(call cc-option,-mabi=elfv1)
-+BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
- else
- BOOTCFLAGS	+= -mlittle-endian
- BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
+Thanks!
+
 -- 
-2.10.2
+Michal Hocko
+SUSE Labs
