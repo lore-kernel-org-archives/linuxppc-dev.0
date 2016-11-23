@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tNjvx1rT0zDw1t
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tNjvx2nH0zDw1r
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 11:32:13 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm-ppc@vger.kernel.org,
 	kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 02/11] KVM: PPC: Book3S HV: Set partition table rather than
- SDR1 on POWER9
-Date: Wed, 23 Nov 2016 11:31:56 +1100
-Message-Id: <1479861125-21394-3-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v2 04/11] KVM: PPC: Book3S HV: Add new POWER9 guest-accessible
+ SPRs
+Date: Wed, 23 Nov 2016 11:31:58 +1100
+Message-Id: <1479861125-21394-5-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 References: <1479861125-21394-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,143 +23,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER9, the SDR1 register (hashed page table base address) is no
-longer used, and instead the hardware reads the HPT base address
-and size from the partition table.  The partition table entry also
-contains the bits that specify the page size for the VRMA mapping,
-which were previously in the LPCR.  The VPM0 bit of the LPCR is
-now reserved; the processor now always uses the VRMA (virtual
-real-mode area) mechanism for guest real-mode accesses in HPT mode,
-and the RMO (real-mode offset) mechanism has been dropped.
+This adds code to handle two new guest-accessible special-purpose
+registers on POWER9: TIDR (thread ID register) and PSSCR (processor
+stop status and control register).  They are context-switched
+between host and guest, and the guest values can be read and set
+via the one_reg interface.
 
-When entering or exiting the guest, we now only have to set the
-LPIDR (logical partition ID register), not the SDR1 register.
-There is also no requirement now to transition via a reserved
-LPID value.
+The PSSCR contains some fields which are guest-accessible and some
+which are only accessible in hypervisor mode.  We only allow the
+guest-accessible fields to be read or set by userspace.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv.c            | 36 +++++++++++++++++++++++++++------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 10 ++++++---
- 2 files changed, 37 insertions(+), 9 deletions(-)
+ Documentation/virtual/kvm/api.txt       |  2 ++
+ arch/powerpc/include/asm/kvm_host.h     |  2 ++
+ arch/powerpc/include/uapi/asm/kvm.h     |  4 ++++
+ arch/powerpc/kernel/asm-offsets.c       |  2 ++
+ arch/powerpc/kvm/book3s_hv.c            | 12 ++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 39 +++++++++++++++++++++++++++++++--
+ 6 files changed, 59 insertions(+), 2 deletions(-)
 
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index a7596e9..8a5ebd1 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -2023,6 +2023,8 @@ registers, find a list below:
+   PPC   | KVM_REG_PPC_WORT              | 64
+   PPC	| KVM_REG_PPC_SPRG9             | 64
+   PPC	| KVM_REG_PPC_DBSR              | 32
++  PPC   | KVM_REG_PPC_TIDR              | 64
++  PPC   | KVM_REG_PPC_PSSCR             | 64
+   PPC   | KVM_REG_PPC_TM_GPR0           | 64
+           ...
+   PPC   | KVM_REG_PPC_TM_GPR31          | 64
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 0e584ee..9556de6 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -517,6 +517,8 @@ struct kvm_vcpu_arch {
+ 	ulong tcscr;
+ 	ulong acop;
+ 	ulong wort;
++	ulong tid;
++	ulong psscr;
+ 	ulong shadow_srr1;
+ #endif
+ 	u32 vrsave; /* also USPRG0 */
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index 0fb1326..3603b6f 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -573,6 +573,10 @@ struct kvm_get_htab_header {
+ #define KVM_REG_PPC_SPRG9	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xba)
+ #define KVM_REG_PPC_DBSR	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xbb)
+ 
++/* POWER9 registers */
++#define KVM_REG_PPC_TIDR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xbc)
++#define KVM_REG_PPC_PSSCR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xbd)
++
+ /* Transactional Memory checkpointed state:
+  * This is all GPRs, all VSX regs and a subset of SPRs
+  */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index c833d88..a4f6d5e 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -548,6 +548,8 @@ int main(void)
+ 	DEFINE(VCPU_TCSCR, offsetof(struct kvm_vcpu, arch.tcscr));
+ 	DEFINE(VCPU_ACOP, offsetof(struct kvm_vcpu, arch.acop));
+ 	DEFINE(VCPU_WORT, offsetof(struct kvm_vcpu, arch.wort));
++	DEFINE(VCPU_TID, offsetof(struct kvm_vcpu, arch.tid));
++	DEFINE(VCPU_PSSCR, offsetof(struct kvm_vcpu, arch.psscr));
+ 	DEFINE(VCORE_ENTRY_EXIT, offsetof(struct kvmppc_vcore, entry_exit_map));
+ 	DEFINE(VCORE_IN_GUEST, offsetof(struct kvmppc_vcore, in_guest));
+ 	DEFINE(VCORE_NAPPING_THREADS, offsetof(struct kvmppc_vcore, napping_threads));
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 02f9aed..13b6e61 100644
+index 13b6e61..14eeacc 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -54,6 +54,7 @@
- #include <asm/dbell.h>
- #include <asm/hmi.h>
- #include <asm/pnv-pci.h>
-+#include <asm/mmu.h>
- #include <linux/gfp.h>
- #include <linux/vmalloc.h>
- #include <linux/highmem.h>
-@@ -3029,6 +3030,22 @@ static void kvmppc_mmu_destroy_hv(struct kvm_vcpu *vcpu)
- 	return;
- }
- 
-+static void kvmppc_setup_partition_table(struct kvm *kvm)
-+{
-+	unsigned long dw0, dw1;
-+
-+	/* PS field - page size for VRMA */
-+	dw0 = ((kvm->arch.vrma_slb_v & SLB_VSID_L) >> 1) |
-+		((kvm->arch.vrma_slb_v & SLB_VSID_LP) << 1);
-+	/* HTABSIZE and HTABORG fields */
-+	dw0 |= kvm->arch.sdr1;
-+
-+	/* Second dword has GR=0; other fields are unused since UPRT=0 */
-+	dw1 = 0;
-+
-+	mmu_partition_table_set_entry(kvm->arch.lpid, dw0, dw1);
-+}
-+
- static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
- {
- 	int err = 0;
-@@ -3080,17 +3097,20 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
- 	      psize == 0x1000000))
- 		goto out_srcu;
- 
--	/* Update VRMASD field in the LPCR */
- 	senc = slb_pgsize_encoding(psize);
- 	kvm->arch.vrma_slb_v = senc | SLB_VSID_B_1T |
- 		(VRMA_VSID << SLB_VSID_SHIFT_1T);
--	/* the -4 is to account for senc values starting at 0x10 */
--	lpcr = senc << (LPCR_VRMASD_SH - 4);
--
- 	/* Create HPTEs in the hash page table for the VRMA */
- 	kvmppc_map_vrma(vcpu, memslot, porder);
- 
--	kvmppc_update_lpcr(kvm, lpcr, LPCR_VRMASD);
-+	/* Update VRMASD field in the LPCR */
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		/* the -4 is to account for senc values starting at 0x10 */
-+		lpcr = senc << (LPCR_VRMASD_SH - 4);
-+		kvmppc_update_lpcr(kvm, lpcr, LPCR_VRMASD);
-+	} else {
-+		kvmppc_setup_partition_table(kvm);
-+	}
- 
- 	/* Order updates to kvm->arch.lpcr etc. vs. hpte_setup_done */
- 	smp_wmb();
-@@ -3240,7 +3260,8 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	memcpy(kvm->arch.enabled_hcalls, default_enabled_hcalls,
- 	       sizeof(kvm->arch.enabled_hcalls));
- 
--	kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
- 
- 	/* Init LPCR for virtual RMA mode */
- 	kvm->arch.host_lpid = mfspr(SPRN_LPID);
-@@ -3253,6 +3274,9 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	/* On POWER8 turn on online bit to enable PURR/SPURR */
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		lpcr |= LPCR_ONL;
-+	/* On POWER9, VPM0 bit is reserved (VPM0=1 behaviour is assumed) */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		lpcr &= ~LPCR_VPM0;
- 	kvm->arch.lpcr = lpcr;
- 
- 	/*
+@@ -1230,6 +1230,12 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 	case KVM_REG_PPC_WORT:
+ 		*val = get_reg_val(id, vcpu->arch.wort);
+ 		break;
++	case KVM_REG_PPC_TIDR:
++		*val = get_reg_val(id, vcpu->arch.tid);
++		break;
++	case KVM_REG_PPC_PSSCR:
++		*val = get_reg_val(id, vcpu->arch.psscr);
++		break;
+ 	case KVM_REG_PPC_VPA_ADDR:
+ 		spin_lock(&vcpu->arch.vpa_update_lock);
+ 		*val = get_reg_val(id, vcpu->arch.vpa.next_gpa);
+@@ -1431,6 +1437,12 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 	case KVM_REG_PPC_WORT:
+ 		vcpu->arch.wort = set_reg_val(id, *val);
+ 		break;
++	case KVM_REG_PPC_TIDR:
++		vcpu->arch.tid = set_reg_val(id, *val);
++		break;
++	case KVM_REG_PPC_PSSCR:
++		vcpu->arch.psscr = set_reg_val(id, *val) & PSSCR_GUEST_VIS;
++		break;
+ 	case KVM_REG_PPC_VPA_ADDR:
+ 		addr = set_reg_val(id, *val);
+ 		r = -EINVAL;
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 6f81adb..b2d107d 100644
+index c7dd251..499be60 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -581,12 +581,14 @@ kvmppc_hv_entry:
- 	ld	r9,VCORE_KVM(r5)	/* pointer to struct kvm */
- 	cmpwi	r6,0
- 	bne	10f
--	ld	r6,KVM_SDR1(r9)
- 	lwz	r7,KVM_LPID(r9)
+@@ -523,6 +523,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+  *                                                                            *
+  *****************************************************************************/
+ 
++/* Stack frame offsets */
++#define STACK_SLOT_TID		(112-16)
++#define STACK_SLOT_PSSCR	(112-24)
++
+ .global kvmppc_hv_entry
+ kvmppc_hv_entry:
+ 
+@@ -700,6 +704,14 @@ kvmppc_got_guest:
+ 	mtspr	SPRN_PURR,r7
+ 	mtspr	SPRN_SPURR,r8
+ 
++	/* Save host values of some registers */
 +BEGIN_FTR_SECTION
-+	ld	r6,KVM_SDR1(r9)
- 	li	r0,LPID_RSVD		/* switch to reserved LPID */
- 	mtspr	SPRN_LPID,r0
++	mfspr	r5, SPRN_TIDR
++	mfspr	r6, SPRN_PSSCR
++	std	r5, STACK_SLOT_TID(r1)
++	std	r6, STACK_SLOT_PSSCR(r1)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++
+ BEGIN_FTR_SECTION
+ 	/* Set partition DABR */
+ 	/* Do this before re-enabling PMU to avoid P7 DABR corruption bug */
+@@ -824,6 +836,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mtspr	SPRN_PID, r7
+ 	mtspr	SPRN_WORT, r8
+ BEGIN_FTR_SECTION
++	/* POWER8-only registers */
+ 	ld	r5, VCPU_TCSCR(r4)
+ 	ld	r6, VCPU_ACOP(r4)
+ 	ld	r7, VCPU_CSIGR(r4)
+@@ -832,7 +845,14 @@ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_ACOP, r6
+ 	mtspr	SPRN_CSIGR, r7
+ 	mtspr	SPRN_TACR, r8
+-END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
++FTR_SECTION_ELSE
++	/* POWER9-only registers */
++	ld	r5, VCPU_TID(r4)
++	ld	r6, VCPU_PSSCR(r4)
++	oris	r6, r6, PSSCR_EC@h	/* This makes stop trap to HV */
++	mtspr	SPRN_TIDR, r5
++	mtspr	SPRN_PSSCR, r6
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+ 8:
+ 
+ 	/*
+@@ -1362,7 +1382,14 @@ BEGIN_FTR_SECTION
+ 	std	r6, VCPU_ACOP(r9)
+ 	std	r7, VCPU_CSIGR(r9)
+ 	std	r8, VCPU_TACR(r9)
+-END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
++FTR_SECTION_ELSE
++	mfspr	r5, SPRN_TIDR
++	mfspr	r6, SPRN_PSSCR
++	std	r5, VCPU_TID(r9)
++	rldicl	r6, r6, 4, 50		/* r6 &= PSSCR_GUEST_VIS */
++	rotldi	r6, r6, 60
++	std	r6, VCPU_PSSCR(r9)
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+ 	/*
+ 	 * Restore various registers to 0, where non-zero values
+ 	 * set by the guest could disrupt the host.
+@@ -1531,6 +1558,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	slbia
  	ptesync
- 	mtspr	SPRN_SDR1,r6		/* switch to partition page table */
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	mtspr	SPRN_LPID,r7
- 	isync
  
-@@ -1552,12 +1554,14 @@ kvmhv_switch_to_host:
- 	beq	19f
- 
- 	/* Primary thread switches back to host partition */
--	ld	r6,KVM_HOST_SDR1(r4)
- 	lwz	r7,KVM_HOST_LPID(r4)
++	/* Restore host values of some registers */
 +BEGIN_FTR_SECTION
-+	ld	r6,KVM_HOST_SDR1(r4)
- 	li	r8,LPID_RSVD		/* switch to reserved LPID */
- 	mtspr	SPRN_LPID,r8
- 	ptesync
--	mtspr	SPRN_SDR1,r6		/* switch to partition page table */
-+	mtspr	SPRN_SDR1,r6		/* switch to host page table */
-+END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- 	mtspr	SPRN_LPID,r7
- 	isync
- 
++	ld	r5, STACK_SLOT_TID(r1)
++	ld	r6, STACK_SLOT_PSSCR(r1)
++	mtspr	SPRN_TIDR, r5
++	mtspr	SPRN_PSSCR, r6
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++
+ 	/*
+ 	 * POWER7/POWER8 guest -> host partition switch code.
+ 	 * We don't have to lock against tlbies but we do
 -- 
 2.7.4
