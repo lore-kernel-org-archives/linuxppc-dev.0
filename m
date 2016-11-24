@@ -1,47 +1,24 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPjB41z1XzDw5R
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 02:02:52 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAOExJx1089511
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 10:02:49 -0500
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26wy6j7ccg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 10:02:49 -0500
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 24 Nov 2016 13:02:46 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.18.232.42])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 7961E3520068
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 10:02:15 -0500 (EST)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAOF2iRe21102700
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 13:02:44 -0200
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAOF2h4D013708
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 13:02:44 -0200
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
- linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: build failure after merge of the akpm-current tree
-Date: Thu, 24 Nov 2016 13:02:39 -0200
-In-Reply-To: <20161124160151.20206af7@canb.auug.org.au>
-References: <20161124160151.20206af7@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPtx76Kn9zDw5b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 09:22:19 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>,
+ Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ Alan Modra <amodra@gmail.com>
+Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
+In-Reply-To: <20161124122713.GC14394@gate.crashing.org>
+References: <20161123130840.1877-1-npiggin@gmail.com>
+ <20161123143834.GB6099@gate.crashing.org>
+ <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
+ <20161124122713.GC14394@gate.crashing.org>
+Date: Fri, 25 Nov 2016 09:22:16 +1100
+Message-ID: <87d1hktt5z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <9443137.1vHEJqnA2s@morokweng>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,43 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Stephen,
+Segher Boessenkool <segher@kernel.crashing.org> writes:
 
-Am Donnerstag, 24. November 2016, 16:01:51 BRST schrieb Stephen Rothwell:
-> Hi Andrew,
-> 
-> After merging the akpm-current tree, today's linux-next build (powerpc
-> ppc64_defconfig) failed like this:
-> 
-> powerpc-linux-ld: unrecognized option '--no-dynamic-linker'
-> 
-> Caused by patch
-> 
->   "powerpc: add purgatory for kexec_file_load implementation"
-> 
+> On Thu, Nov 24, 2016 at 04:37:50PM +1100, Oliver O'Halloran wrote:
+>> On Thu, Nov 24, 2016 at 1:38 AM, Segher Boessenkool
+>> <segher@kernel.crashing.org> wrote:
+>> > On Thu, Nov 24, 2016 at 12:08:40AM +1100, Nicholas Piggin wrote:
+>> >> Question, are there any fundamental reasons we shouldn't use the ELFv2
+>> >> ABI to build big endian kernels if the compiler supports it?
+>> >
+>> > No one uses ELFv2 for BE in production, and it isn't thoroughly tested
+>> > at all, not even regularly tested.  "Not supported", as far as GCC is
+>> > concerned (or any of the distros AFAIK).
+>> 
+>> Is this actually unsupported by gcc?
+>
+> It may or may not work.  We of course try to keep it working, or make
+> it work if it doesn't now.  But it isn't regularly tested, and it isn't
+> a target that is considered for the release criteria (see
+> https://gcc.gnu.org/gcc-7/criteria.html -- powerpc64{,le}-linux, i.e.
+> ABIv1 for BE, ABIv2 for LE).
 
-Sorry about that. --no-dynamic-linker was added in binutils 2.26.
-The patch below fixes the problem.
+It doesn't actually say that though. It just says
+powerpc64-unknown-linux-gnu. So how is someone, say the musl folks,
+supposed to know that BE ABIv2 is not supported?
 
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
-
-
-diff --git a/arch/powerpc/purgatory/Makefile b/arch/powerpc/purgatory/Makefile
-index 2dfb53ac9944..cf6e78b9af86 100644
---- a/arch/powerpc/purgatory/Makefile
-+++ b/arch/powerpc/purgatory/Makefile
-@@ -6,8 +6,10 @@ purgatory-y := purgatory.o string.o v2wrap.o purgatory-ppc64.o crtsavres.o \
- targets += $(purgatory-y)
- PURGATORY_OBJS = $(addprefix $(obj)/,$(purgatory-y))
- 
--LDFLAGS_purgatory.ro := -pie --no-dynamic-linker -e purgatory_start \
--			--no-undefined -nostartfiles -nostdlib -nodefaultlibs
-+LDFLAGS_purgatory.ro := -pie -e purgatory_start --no-undefined -nostartfiles \
-+			-nostdlib -nodefaultlibs
-+LDFLAGS_purgatory.ro += $(call ld-option, --no-dynamic-linker)
-+
- targets += purgatory.ro
- 
- KBUILD_CFLAGS := $(filter-out $(CC_FLAGS_FTRACE), $(KBUILD_CFLAGS))
+cheers
