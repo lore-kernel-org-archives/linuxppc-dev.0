@@ -1,23 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPwkT0850zDw7R
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 10:43:13 +1100 (AEDT)
-Date: Fri, 25 Nov 2016 10:43:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
- linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: build failure after merge of the akpm-current tree
-Message-ID: <20161125104312.6bc3fdaf@canb.auug.org.au>
-In-Reply-To: <9443137.1vHEJqnA2s@morokweng>
-References: <20161124160151.20206af7@canb.auug.org.au>
- <9443137.1vHEJqnA2s@morokweng>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPx546H64zDvxJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 10:59:20 +1100 (AEDT)
+In-Reply-To: <1479869713-30059-1-git-send-email-oohall@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: powerpc/boot: fix the early OPAL console wrappers
+Message-Id: <3tPx5366f6z9t1B@ozlabs.org>
+Date: Fri, 25 Nov 2016 10:59:19 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Thiago,
-
-On Thu, 24 Nov 2016 13:02:39 -0200 Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> wrote:
->
-> Am Donnerstag, 24. November 2016, 16:01:51 BRST schrieb Stephen Rothwell:
-> > Hi Andrew,
-> > 
-> > After merging the akpm-current tree, today's linux-next build (powerpc
-> > ppc64_defconfig) failed like this:
-> > 
-> > powerpc-linux-ld: unrecognized option '--no-dynamic-linker'
-> > 
-> > Caused by patch
-> > 
-> >   "powerpc: add purgatory for kexec_file_load implementation"
-> >   
+On Wed, 2016-11-23 at 02:55:13 UTC, Oliver O'Halloran wrote:
+> When configured with CONFIG_PPC_EARLY_DEBUG_OPAL=y the kernel expects
+> the OPAL entry and base addresses to be passed in r8 and r9
+> respectively. Currently the wrapper does not attempt to restore these
+> values before entering the decompressed kernel which causes the kernel
+> to branch into whatever happens to be in r9 when doing a write to the
+> OPAL console in early boot.
 > 
-> Sorry about that. --no-dynamic-linker was added in binutils 2.26.
-> The patch below fixes the problem.
+> This patch adds a platform_ops hook that can be used to branch into the
+> new kernel. The OPAL console driver patches this at runtime so that if
+> the console is used it will be restored just prior to entering the
+> kernel.
+> 
+> Fixes: 656ad58ef19e
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
-OK, I will apply that patch instead of disabling CONFIG_KEXEC_FILE
-today.
+Applied to powerpc fixes, thanks.
 
--- 
-Cheers,
-Stephen Rothwell
+https://git.kernel.org/powerpc/c/a1ff57416af9a7971a801d553cd53e
+
+cheers
