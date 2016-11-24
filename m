@@ -1,20 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geoff@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPPzl0DXVzDvWt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 14:37:55 +1100 (AEDT)
-Date: Thu, 24 Nov 2016 14:37:49 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, benh@kernel.crashing.org, aik@ozlabs.ru
-Subject: Re: [PATCH 0/2] Preliminary cleanups for HPT resizing
-Message-ID: <20161124033749.376ugjrnvnwbhmut@oak.ozlabs.ibm.com>
-References: <1479878047-19431-1-git-send-email-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPQZV05rjzDw5c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 15:04:34 +1100 (AEDT)
+Subject: Re: [V2,10/68] powerpc/mm: Update _PAGE_KERNEL_RO
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <1460182444-2468-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <rep.1421449714.geoff@infradead.org> <874m2yiilt.fsf@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <5aa3fbff-70f8-10de-45a7-d32a224be4e9@infradead.org>
+Date: Wed, 23 Nov 2016 20:04:31 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1479878047-19431-1-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <874m2yiilt.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 23, 2016 at 04:14:05PM +1100, David Gibson wrote:
-> Hi Paul,
-> 
-> I'm still chasing this confusion about the CAS bit to send the real
-> HPT resizing patches.  However, in the meantime, here are some
-> preliminary cleanups.
-> 
-> These cleanups stand on their own, although I wrote them in the
-> context of writing the HPT resizing code, and are prerequisites for
-> those patches.
-> 
-> David Gibson (2):
->   kvm: Move KVM_PPC_PVINFO_FLAGS_EV_IDLE definition next to its
->     structure
->   powerpc/kvm: Corectly report KVM_CAP_PPC_ALLOC_HTAB
-> 
->  arch/powerpc/kvm/powerpc.c | 5 ++++-
->  include/uapi/linux/kvm.h   | 5 +++--
->  2 files changed, 7 insertions(+), 3 deletions(-)
+Hi Aneesh,
 
-Thanks, series applied to my kvm-ppc-next branch.
+On 11/23/2016 02:41 AM, Aneesh Kumar K.V wrote:
+> Can you try this patch ?
+>
+> commit 43e05fa840330f0f2deae1e8cc2effd5df68079f
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Date:   Wed Nov 23 15:23:05 2016 +0530
+>
+>     powerpc/mm: Kernel RO fixup for cell
 
-Paul.
+I tested your patch with v4.7, v4.8 and v4.9-rc6, and all work OK.
+
+-Geoff
