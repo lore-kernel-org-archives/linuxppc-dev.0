@@ -1,44 +1,21 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPS6z6QmvzDw45
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:19 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAO5EA7l116598
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 00:14:16 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26wdwvapa2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 00:14:15 -0500
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 24 Nov 2016 15:14:07 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3916B3578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:04 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAO5E4qh31785096
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:04 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAO5E33K008193
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:03 +1100
-Subject: Re: [RFC][PATCH] Update ppc disassembly in xmon
-To: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <6229e33e-2d6e-25d8-4206-2b62f3a11500@gmail.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 24 Nov 2016 16:14:03 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPSKw0PVTzDw5c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:23:48 +1100 (AEDT)
+Date: Wed, 23 Nov 2016 23:23:30 -0600
+From: Scott Wood <oss@buserror.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Message-ID: <20161124052330.GA17212@home.buserror.net>
+References: <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <6229e33e-2d6e-25d8-4206-2b62f3a11500@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <9f8b3a9a-3744-6452-5c33-bcf0cdbdaa21@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
+Subject: Re: [v3,2/3] powerpc: get hugetlbpage handling more generic
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,11 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24/11/16 13:05, Balbir Singh wrote:
-> 9. The license for these files is now GPL v3 or later
+On Wed, Sep 21, 2016 at 10:11:54AM +0200, Christophe Leroy wrote:
+> Today there are two implementations of hugetlbpages which are managed
+> by exclusive #ifdefs:
+> * FSL_BOOKE: several directory entries points to the same single hugepage
+> * BOOK3S: one upper level directory entry points to a table of hugepages
+> 
+> In preparation of implementation of hugepage support on the 8xx, we
+> need a mix of the two above solutions, because the 8xx needs both cases
+> depending on the size of pages:
+> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
+> that 2 PGD entries will be necessary to cover an 8M hugepage while a
+> single PGD entry will cover 8x 512k hugepages.
+> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
+> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
+> hugepages will be covers by one PGD entry.
+> 
+> This patch:
+> * removes #ifdefs in favor of if/else based on the range sizes
+> * merges the two huge_pte_alloc() functions as they are pretty similar
+> * merges the two hugetlbpage_init() functions as they are pretty similar
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-As much as I love the GPLv3, isn't this an instant NAK?
+With this patch on e6500, running the hugetlb testsuite results in the
+system hanging in a storm of OOM killer invocations (I'll try to debug
+more deeply later).  This patch also changes the default hugepage size on
+FSL book3e from 4M to 16M.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+-Scott
