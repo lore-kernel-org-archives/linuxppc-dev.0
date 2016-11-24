@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tPStW3BNTzDw6g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:48:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tPStd3cL2zDw5b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:48:41 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,9 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v6 5/7] vfio/spapr: Postpone default window creation
-Date: Thu, 24 Nov 2016 16:48:08 +1100
-Message-Id: <1479966490-8739-6-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 7/7] powerpc/mm/iommu,
+ vfio/spapr: Put pages on VFIO container shutdown
+Date: Thu, 24 Nov 2016 16:48:10 +1100
+Message-Id: <1479966490-8739-8-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
 References: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,149 +24,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are going to allow the userspace to configure container in
-one memory context and pass container fd to another so
-we are postponing memory allocations accounted against
-the locked memory limit. One of previous patches took care of
-it_userspace.
+At the moment the userspace tool is expected to request pinning of
+the entire guest RAM when VFIO IOMMU SPAPR v2 driver is present.
+When the userspace process finishes, all the pinned pages need to
+be put; this is done as a part of the userspace memory context (MM)
+destruction which happens on the very last mmdrop().
 
-At the moment we create the default DMA window when the first group is
-attached to a container; this is done for the userspace which is not
-DDW-aware but familiar with the SPAPR TCE IOMMU v2 in the part of memory
-pre-registration - such client expects the default DMA window to exist.
+This approach has a problem that a MM of the userspace process
+may live longer than the userspace process itself as kernel threads
+use userspace process MMs which was runnning on a CPU where
+the kernel thread was scheduled to. If this happened, the MM remains
+referenced until this exact kernel thread wakes up again
+and releases the very last reference to the MM, on an idle system this
+can take even hours.
 
-This postpones the default DMA window allocation till one of
-the folliwing happens:
-1. first map/unmap request arrives;
-2. new window is requested;
-This adds noop for the case when the userspace requested removal
-of the default window which has not been created yet.
+This moves preregistered regions tracking from MM to VFIO; insteads of
+using mm_iommu_table_group_mem_t::used, tce_container::prereg_list is
+added so each container releases regions which it has pre-registered.
+
+This changes the userspace interface to return EBUSY if a memory
+region is already registered in a container. However it should not
+have any practical effect as the only userspace tool available now
+does register memory region once per container anyway.
+
+As tce_iommu_register_pages/tce_iommu_unregister_pages are called
+under container->lock, this does not need additional locking.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
 Changes:
-v6:
-* new helper tce_iommu_create_default_window() moved to a separate patch;
-* creates a default window when new window is requested; it used to
-reset the def_window_pending flag instead;
-* def_window_pending handling (mostly) localized in
-tce_iommu_create_default_window() now, the only exception is removal
-of not yet created default window.
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 40 +++++++++++++++++++++++--------------
- 1 file changed, 25 insertions(+), 15 deletions(-)
+v4:
+* changed tce_iommu_register_pages() to call mm_iommu_find() first and
+avoid calling mm_iommu_put() if memory is preregistered already
 
+v3:
+* moved tce_iommu_prereg_free() call out of list_for_each_entry()
+
+v2:
+* updated commit log
+---
+ arch/powerpc/mm/mmu_context_book3s64.c |  4 ---
+ arch/powerpc/mm/mmu_context_iommu.c    | 11 -------
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 58 +++++++++++++++++++++++++++++++++-
+ 3 files changed, 57 insertions(+), 16 deletions(-)
+
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index ad82735..1a07969 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -159,10 +159,6 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
+ 
+ void destroy_context(struct mm_struct *mm)
+ {
+-#ifdef CONFIG_SPAPR_TCE_IOMMU
+-	mm_iommu_cleanup(mm);
+-#endif
+-
+ #ifdef CONFIG_PPC_ICSWX
+ 	drop_cop(mm->context.acop, mm);
+ 	kfree(mm->context.cop_lockp);
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 4c6db09..104bad0 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -365,14 +365,3 @@ void mm_iommu_init(struct mm_struct *mm)
+ {
+ 	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
+ }
+-
+-void mm_iommu_cleanup(struct mm_struct *mm)
+-{
+-	struct mm_iommu_table_group_mem_t *mem, *tmp;
+-
+-	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
+-			next) {
+-		list_del_rcu(&mem->next);
+-		mm_iommu_do_free(mem);
+-	}
+-}
 diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index a67bbfd..88622be 100644
+index b2fb05ac..86c9348 100644
 --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -97,6 +97,7 @@ struct tce_container {
- 	struct mutex lock;
- 	bool enabled;
- 	bool v2;
-+	bool def_window_pending;
- 	unsigned long locked_pages;
+@@ -89,6 +89,15 @@ struct tce_iommu_group {
+ };
+ 
+ /*
++ * A container needs to remember which preregistered region  it has
++ * referenced to do proper cleanup at the userspace process exit.
++ */
++struct tce_iommu_prereg {
++	struct list_head next;
++	struct mm_iommu_table_group_mem_t *mem;
++};
++
++/*
+  * The container descriptor supports only a single group per container.
+  * Required by the API as the container is not supplied with the IOMMU group
+  * at the moment of initialization.
+@@ -102,6 +111,7 @@ struct tce_container {
+ 	struct mm_struct *mm;
  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
  	struct list_head group_list;
-@@ -717,6 +718,9 @@ static long tce_iommu_create_default_window(struct tce_container *container)
- 	struct tce_iommu_group *tcegrp;
- 	struct iommu_table_group *table_group;
++	struct list_head prereg_list;
+ };
  
-+	if (!container->def_window_pending)
-+		return 0;
-+
- 	if (!tce_groups_attached(container))
- 		return -ENODEV;
- 
-@@ -730,6 +734,9 @@ static long tce_iommu_create_default_window(struct tce_container *container)
- 			table_group->tce32_size, 1, &start_addr);
- 	WARN_ON_ONCE(!ret && start_addr);
- 
-+	if (!ret)
-+		container->def_window_pending = false;
-+
- 	return ret;
+ static long tce_iommu_mm_set(struct tce_container *container)
+@@ -118,10 +128,24 @@ static long tce_iommu_mm_set(struct tce_container *container)
+ 	return 0;
  }
  
-@@ -823,6 +830,10 @@ static long tce_iommu_ioctl(void *iommu_data,
- 				VFIO_DMA_MAP_FLAG_WRITE))
- 			return -EINVAL;
- 
-+		ret = tce_iommu_create_default_window(container);
-+		if (ret)
-+			return ret;
++static long tce_iommu_prereg_free(struct tce_container *container,
++		struct tce_iommu_prereg *tcemem)
++{
++	long ret;
 +
- 		num = tce_iommu_find_table(container, param.iova, &tbl);
- 		if (num < 0)
- 			return -ENXIO;
-@@ -886,6 +897,10 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (param.flags)
- 			return -EINVAL;
- 
-+		ret = tce_iommu_create_default_window(container);
-+		if (ret)
-+			return ret;
++	list_del(&tcemem->next);
++	ret = mm_iommu_put(container->mm, tcemem->mem);
++	kfree(tcemem);
 +
- 		num = tce_iommu_find_table(container, param.iova, &tbl);
- 		if (num < 0)
- 			return -ENXIO;
-@@ -1012,6 +1027,10 @@ static long tce_iommu_ioctl(void *iommu_data,
- 
- 		mutex_lock(&container->lock);
- 
-+		ret = tce_iommu_create_default_window(container);
-+		if (ret)
-+			return ret;
++	return ret;
++}
 +
- 		ret = tce_iommu_create_window(container, create.page_shift,
- 				create.window_size, create.levels,
- 				&create.start_addr);
-@@ -1044,6 +1063,11 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (remove.flags)
- 			return -EINVAL;
+ static long tce_iommu_unregister_pages(struct tce_container *container,
+ 		__u64 vaddr, __u64 size)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
++	struct tce_iommu_prereg *tcemem;
++	bool found = false;
  
-+		if (container->def_window_pending && !remove.start_addr) {
-+			container->def_window_pending = false;
-+			return 0;
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+ 		return -EINVAL;
+@@ -130,7 +154,17 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
+ 	if (!mem)
+ 		return -ENOENT;
+ 
+-	return mm_iommu_put(container->mm, mem);
++	list_for_each_entry(tcemem, &container->prereg_list, next) {
++		if (tcemem->mem == mem) {
++			found = true;
++			break;
 +		}
++	}
 +
- 		mutex_lock(&container->lock);
++	if (!found)
++		return -ENOENT;
++
++	return tce_iommu_prereg_free(container, tcemem);
+ }
  
- 		ret = tce_iommu_remove_window(container, remove.start_addr);
-@@ -1141,7 +1165,6 @@ static int tce_iommu_attach_group(void *iommu_data,
- 	struct tce_container *container = iommu_data;
- 	struct iommu_table_group *table_group;
- 	struct tce_iommu_group *tcegrp = NULL;
--	bool create_default_window = false;
+ static long tce_iommu_register_pages(struct tce_container *container,
+@@ -138,16 +172,29 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ {
+ 	long ret = 0;
+ 	struct mm_iommu_table_group_mem_t *mem = NULL;
++	struct tce_iommu_prereg *tcemem;
+ 	unsigned long entries = size >> PAGE_SHIFT;
  
- 	mutex_lock(&container->lock);
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
+ 			((vaddr + size) < vaddr))
+ 		return -EINVAL;
  
-@@ -1189,25 +1212,12 @@ static int tce_iommu_attach_group(void *iommu_data,
- 	} else {
- 		ret = tce_iommu_take_ownership_ddw(container, table_group);
- 		if (!tce_groups_attached(container) && !container->tables[0])
--			create_default_window = true;
-+			container->def_window_pending = true;
++	mem = mm_iommu_find(container->mm, vaddr, entries);
++	if (mem) {
++		list_for_each_entry(tcemem, &container->prereg_list, next) {
++			if (tcemem->mem == mem)
++				return -EBUSY;
++		}
++	}
++
+ 	ret = mm_iommu_get(container->mm, vaddr, entries, &mem);
+ 	if (ret)
+ 		return ret;
+ 
++	tcemem = kzalloc(sizeof(*tcemem), GFP_KERNEL);
++	tcemem->mem = mem;
++	list_add(&tcemem->next, &container->prereg_list);
++
+ 	container->enabled = true;
+ 
+ 	return 0;
+@@ -334,6 +381,7 @@ static void *tce_iommu_open(unsigned long arg)
+ 
+ 	mutex_init(&container->lock);
+ 	INIT_LIST_HEAD_RCU(&container->group_list);
++	INIT_LIST_HEAD_RCU(&container->prereg_list);
+ 
+ 	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
+ 
+@@ -372,6 +420,14 @@ static void tce_iommu_release(void *iommu_data)
+ 		tce_iommu_free_table(container, tbl);
  	}
  
- 	if (!ret) {
- 		tcegrp->grp = iommu_group;
- 		list_add(&tcegrp->next, &container->group_list);
--		/*
--		 * If it the first group attached, check if there is
--		 * a default DMA window and create one if none as
--		 * the userspace expects it to exist.
--		 */
--		if (create_default_window) {
--			ret = tce_iommu_create_default_window(container);
--			if (ret) {
--				list_del(&tcegrp->next);
--				tce_iommu_release_ownership_ddw(container,
--						table_group);
--			}
--		}
- 	}
- 
- unlock_exit:
++	while (!list_empty(&container->prereg_list)) {
++		struct tce_iommu_prereg *tcemem;
++
++		tcemem = list_first_entry(&container->prereg_list,
++				struct tce_iommu_prereg, next);
++		tce_iommu_prereg_free(container, tcemem);
++	}
++
+ 	tce_iommu_disable(container);
+ 	if (container->mm)
+ 		mmdrop(container->mm);
 -- 
 2.5.0.rc3
