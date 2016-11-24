@@ -2,18 +2,18 @@ Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPNlW0YykzDw3S
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 13:42:15 +1100 (AEDT)
-Date: Thu, 24 Nov 2016 13:42:14 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPNv35PWxzDw45
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 13:48:47 +1100 (AEDT)
+Date: Thu, 24 Nov 2016 13:48:47 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman
  <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, "Naveen N.
- Rao" <naveen.n.rao@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Michael
+ Neuling <mikey@neuling.org>
 Subject: linux-next: manual merge of the kvm-ppc-paulus tree with the
- powerpc-fixes tree
-Message-ID: <20161124134214.3287a024@canb.auug.org.au>
+ powerpc tree
+Message-ID: <20161124134847.1006994a@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,15 +29,16 @@ Hi Paul,
 
 Today's linux-next merge of the kvm-ppc-paulus tree got a conflict in:
 
-  arch/powerpc/include/asm/asm-prototypes.h
+  arch/powerpc/include/asm/reg.h
 
 between commit:
 
-  82de5797a260 ("powerpc: Remove extraneous header from asm-prototypes.h")
+  29a969b76481 ("powerpc: Revert Load Monitor Register Support")
 
-from the powerpc-fixes tree and commit:
+from the powerpc tree and commits:
 
-  ebe4535fbe7a ("KVM: PPC: Book3S HV: sparse: prototypes for functions called from assembler")
+  7fd317f8c330 ("powerpc/64: Add some more SPRs and SPR bits for POWER9")
+  02ed21aeda0e ("powerpc/powernv: Define and set POWER9 HFSCR doorbell bit")
 
 from the kvm-ppc-paulus tree.
 
@@ -52,76 +53,35 @@ complex conflicts.
 Cheers,
 Stephen Rothwell
 
-diff --cc arch/powerpc/include/asm/asm-prototypes.h
-index 81592562e0f8,6c853bcd11fa..000000000000
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@@ -13,10 -13,10 +13,13 @@@
-   */
+diff --cc arch/powerpc/include/asm/reg.h
+index 332e6b4b306a,04aa1ee8cdb6..000000000000
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@@ -292,6 -295,9 +295,7 @@@
+  #define SPRN_HRMOR	0x139	/* Real mode offset register */
+  #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
+  #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
+ -#define SPRN_LMRR	0x32D	/* Load Monitor Region Register */
+ -#define SPRN_LMSER	0x32E	/* Load Monitor Section Enable Register */
++ #define SPRN_ASDR	0x330	/* Access segment descriptor register */
+  #define SPRN_IC		0x350	/* Virtual Instruction Count */
+  #define SPRN_VTB	0x351	/* Virtual Time Base */
+  #define SPRN_LDBAR	0x352	/* LD Base Address Register */
+@@@ -302,6 -308,8 +306,7 @@@
+  #define SPRN_PMCR	0x374	/* Power Management Control Register */
   
-  #include <linux/threads.h>
- -#include <linux/kprobes.h>
- +#include <asm/cacheflush.h>
- +#include <asm/checksum.h>
- +#include <asm/uaccess.h>
- +#include <asm/epapr_hcalls.h>
-+ #ifdef CONFIG_KVM
-+ #include <linux/kvm_host.h>
-+ #endif
-  
-  #include <uapi/asm/ucontext.h>
-  
-@@@ -112,12 -112,45 +115,53 @@@ void early_setup_secondary(void)
-  /* time */
-  void accumulate_stolen_time(void);
-  
- +/* misc runtime */
- +extern u64 __bswapdi2(u64);
- +extern s64 __lshrdi3(s64, int);
- +extern s64 __ashldi3(s64, int);
- +extern s64 __ashrdi3(s64, int);
- +extern int __cmpdi2(s64, s64);
- +extern int __ucmpdi2(u64, u64);
- +
-+ /* kvm */
-+ #ifdef CONFIG_KVM
-+ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-+ 			 unsigned long ioba, unsigned long tce);
-+ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
-+ 				  unsigned long liobn, unsigned long ioba,
-+ 				  unsigned long tce_list, unsigned long npages);
-+ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
-+ 			   unsigned long liobn, unsigned long ioba,
-+ 			   unsigned long tce_value, unsigned long npages);
-+ long int kvmppc_rm_h_confer(struct kvm_vcpu *vcpu, int target,
-+                             unsigned int yield_count);
-+ long kvmppc_h_random(struct kvm_vcpu *vcpu);
-+ void kvmhv_commence_exit(int trap);
-+ long kvmppc_realmode_machine_check(struct kvm_vcpu *vcpu);
-+ void kvmppc_subcore_enter_guest(void);
-+ void kvmppc_subcore_exit_guest(void);
-+ long kvmppc_realmode_hmi_handler(void);
-+ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
-+                     long pte_index, unsigned long pteh, unsigned long ptel);
-+ long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
-+                      unsigned long pte_index, unsigned long avpn);
-+ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu);
-+ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
-+                       unsigned long pte_index, unsigned long avpn,
-+                       unsigned long va);
-+ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
-+                    unsigned long pte_index);
-+ long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
-+                         unsigned long pte_index);
-+ long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
-+                         unsigned long pte_index);
-+ long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
-+                           unsigned long slb_v, unsigned int status, bool data);
-+ unsigned long kvmppc_rm_h_xirr(struct kvm_vcpu *vcpu);
-+ int kvmppc_rm_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
-+                     unsigned long mfrr);
-+ int kvmppc_rm_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr);
-+ int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr);
-+ #endif
-+ 
-  #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+  /* HFSCR and FSCR bit numbers are the same */
+ -#define FSCR_LM_LG	11	/* Enable Load Monitor Registers */
++ #define FSCR_MSGP_LG	10	/* Enable MSGP */
+  #define FSCR_TAR_LG	8	/* Enable Target Address Register */
+  #define FSCR_EBB_LG	7	/* Enable Event Based Branching */
+  #define FSCR_TM_LG	5	/* Enable Transactional Memory */
+@@@ -315,6 -324,8 +320,7 @@@
+  #define   FSCR_EBB	__MASK(FSCR_EBB_LG)
+  #define   FSCR_DSCR	__MASK(FSCR_DSCR_LG)
+  #define SPRN_HFSCR	0xbe	/* HV=1 Facility Status & Control Register */
+ -#define   HFSCR_LM	__MASK(FSCR_LM_LG)
++ #define   HFSCR_MSGP	__MASK(FSCR_MSGP_LG)
+  #define   HFSCR_TAR	__MASK(FSCR_TAR_LG)
+  #define   HFSCR_EBB	__MASK(FSCR_EBB_LG)
+  #define   HFSCR_TM	__MASK(FSCR_TM_LG)
