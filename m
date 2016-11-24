@@ -1,24 +1,23 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPw8q1B04zDw7h
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 10:17:30 +1100 (AEDT)
-Date: Thu, 24 Nov 2016 17:17:16 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
-Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
-Message-ID: <20161124231716.GB30675@gate.crashing.org>
-References: <20161123130840.1877-1-npiggin@gmail.com>
- <20161123143834.GB6099@gate.crashing.org>
- <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
- <20161124122713.GC14394@gate.crashing.org>
- <87d1hktt5z.fsf@concordia.ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87d1hktt5z.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPwkT0850zDw7R
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 10:43:13 +1100 (AEDT)
+Date: Fri, 25 Nov 2016 10:43:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: build failure after merge of the akpm-current tree
+Message-ID: <20161125104312.6bc3fdaf@canb.auug.org.au>
+In-Reply-To: <9443137.1vHEJqnA2s@morokweng>
+References: <20161124160151.20206af7@canb.auug.org.au>
+ <9443137.1vHEJqnA2s@morokweng>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 25, 2016 at 09:22:16AM +1100, Michael Ellerman wrote:
-> >> >> Question, are there any fundamental reasons we shouldn't use the ELFv2
-> >> >> ABI to build big endian kernels if the compiler supports it?
-> >> >
-> >> > No one uses ELFv2 for BE in production, and it isn't thoroughly tested
-> >> > at all, not even regularly tested.  "Not supported", as far as GCC is
-> >> > concerned (or any of the distros AFAIK).
-> >> 
-> >> Is this actually unsupported by gcc?
-> >
-> > It may or may not work.  We of course try to keep it working, or make
-> > it work if it doesn't now.  But it isn't regularly tested, and it isn't
-> > a target that is considered for the release criteria (see
-> > https://gcc.gnu.org/gcc-7/criteria.html -- powerpc64{,le}-linux, i.e.
-> > ABIv1 for BE, ABIv2 for LE).
+Hi Thiago,
+
+On Thu, 24 Nov 2016 13:02:39 -0200 Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> wrote:
+>
+> Am Donnerstag, 24. November 2016, 16:01:51 BRST schrieb Stephen Rothwell:
+> > Hi Andrew,
+> > 
+> > After merging the akpm-current tree, today's linux-next build (powerpc
+> > ppc64_defconfig) failed like this:
+> > 
+> > powerpc-linux-ld: unrecognized option '--no-dynamic-linker'
+> > 
+> > Caused by patch
+> > 
+> >   "powerpc: add purgatory for kexec_file_load implementation"
+> >   
 > 
-> It doesn't actually say that though. It just says
-> powerpc64-unknown-linux-gnu. So how is someone, say the musl folks,
-> supposed to know that BE ABIv2 is not supported?
+> Sorry about that. --no-dynamic-linker was added in binutils 2.26.
+> The patch below fixes the problem.
 
-Because their target is powerpc64*-*-linux-musl instead?  It is not on
-the release criteria list, it is not something we make any claims about.
+OK, I will apply that patch instead of disabling CONFIG_KEXEC_FILE
+today.
 
-How would you know -m32 -mlittle is not well tested at all?  It is in much
-the same boat: unusual combinations of options, and unusual configurations,
-are not well tested.  You have to build a separate C library just to get
-started with it, that should tell you there are some rough waters ahead!
-
-Which isn't to say you should not do this -- just think twice before
-doing so.  And wear a life vest.
-
-
-Segher
+-- 
+Cheers,
+Stephen Rothwell
