@@ -1,21 +1,24 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <oohall@gmail.com>
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPSKw0PVTzDw5c
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:23:48 +1100 (AEDT)
-Date: Wed, 23 Nov 2016 23:23:30 -0600
-From: Scott Wood <oss@buserror.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Message-ID: <20161124052330.GA17212@home.buserror.net>
-References: <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPSf95DvjzDw3t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:37:53 +1100 (AEDT)
+Received: by mail-qt0-x243.google.com with SMTP id n34so2015208qtb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 21:37:53 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
-Subject: Re: [v3,2/3] powerpc: get hugetlbpage handling more generic
+In-Reply-To: <20161123143834.GB6099@gate.crashing.org>
+References: <20161123130840.1877-1-npiggin@gmail.com>
+ <20161123143834.GB6099@gate.crashing.org>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Thu, 24 Nov 2016 16:37:50 +1100
+Message-ID: <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
+Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Alan Modra <amodra@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 21, 2016 at 10:11:54AM +0200, Christophe Leroy wrote:
-> Today there are two implementations of hugetlbpages which are managed
-> by exclusive #ifdefs:
-> * FSL_BOOKE: several directory entries points to the same single hugepage
-> * BOOK3S: one upper level directory entry points to a table of hugepages
-> 
-> In preparation of implementation of hugepage support on the 8xx, we
-> need a mix of the two above solutions, because the 8xx needs both cases
-> depending on the size of pages:
-> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
-> that 2 PGD entries will be necessary to cover an 8M hugepage while a
-> single PGD entry will cover 8x 512k hugepages.
-> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
-> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
-> hugepages will be covers by one PGD entry.
-> 
-> This patch:
-> * removes #ifdefs in favor of if/else based on the range sizes
-> * merges the two huge_pte_alloc() functions as they are pretty similar
-> * merges the two hugetlbpage_init() functions as they are pretty similar
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On Thu, Nov 24, 2016 at 1:38 AM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+> On Thu, Nov 24, 2016 at 12:08:40AM +1100, Nicholas Piggin wrote:
+>> Question, are there any fundamental reasons we shouldn't use the ELFv2
+>> ABI to build big endian kernels if the compiler supports it?
+>
+> No one uses ELFv2 for BE in production, and it isn't thoroughly tested
+> at all, not even regularly tested.  "Not supported", as far as GCC is
+> concerned (or any of the distros AFAIK).
 
-With this patch on e6500, running the hugetlb testsuite results in the
-system hanging in a storm of OOM killer invocations (I'll try to debug
-more deeply later).  This patch also changes the default hugepage size on
-FSL book3e from 4M to 16M.
-
--Scott
+Is this actually unsupported by gcc? The ppc64 musl libc port is ABI
+v2 only so they use it on BE too. Buildroot forces ABI v2 to be used
+for all of userspace when musl is selected as the libc for this reason
+so it's not completely used in the wild. It's still pretty niche
+though...
