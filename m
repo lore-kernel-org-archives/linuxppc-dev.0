@@ -1,24 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPtx76Kn9zDw5b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 09:22:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPvS43mtJzDw7H
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 09:45:40 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Oliver O'Halloran <oohall@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- Alan Modra <amodra@gmail.com>
-Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
-In-Reply-To: <20161124122713.GC14394@gate.crashing.org>
-References: <20161123130840.1877-1-npiggin@gmail.com>
- <20161123143834.GB6099@gate.crashing.org>
- <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
- <20161124122713.GC14394@gate.crashing.org>
-Date: Fri, 25 Nov 2016 09:22:16 +1100
-Message-ID: <87d1hktt5z.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: peterz@infradead.org,
+	mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ lists@nerdbynature.de
+Subject: [PATCH] locking-selftest: Fix output since KERN_CONT changes
+Date: Fri, 25 Nov 2016 09:45:28 +1100
+Message-Id: <1480027528-934-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +21,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
+Since the KERN_CONT changes the locking-selftest output is messed up, eg:
 
-> On Thu, Nov 24, 2016 at 04:37:50PM +1100, Oliver O'Halloran wrote:
->> On Thu, Nov 24, 2016 at 1:38 AM, Segher Boessenkool
->> <segher@kernel.crashing.org> wrote:
->> > On Thu, Nov 24, 2016 at 12:08:40AM +1100, Nicholas Piggin wrote:
->> >> Question, are there any fundamental reasons we shouldn't use the ELFv2
->> >> ABI to build big endian kernels if the compiler supports it?
->> >
->> > No one uses ELFv2 for BE in production, and it isn't thoroughly tested
->> > at all, not even regularly tested.  "Not supported", as far as GCC is
->> > concerned (or any of the distros AFAIK).
->> 
->> Is this actually unsupported by gcc?
->
-> It may or may not work.  We of course try to keep it working, or make
-> it work if it doesn't now.  But it isn't regularly tested, and it isn't
-> a target that is considered for the release criteria (see
-> https://gcc.gnu.org/gcc-7/criteria.html -- powerpc64{,le}-linux, i.e.
-> ABIv1 for BE, ABIv2 for LE).
+  ----------------------------------------------------------------------------
+                                   | spin |wlock |rlock |mutex | wsem | rsem |
+    --------------------------------------------------------------------------
+                       A-A deadlock:
+    ok  |
+    ok  |
+    ok  |
+    ok  |
+    ok  |
+    ok  |
 
-It doesn't actually say that though. It just says
-powerpc64-unknown-linux-gnu. So how is someone, say the musl folks,
-supposed to know that BE ABIv2 is not supported?
+Use pr_cont() to get it looking normal again:
 
-cheers
+  ----------------------------------------------------------------------------
+                                   | spin |wlock |rlock |mutex | wsem | rsem |
+    --------------------------------------------------------------------------
+                       A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+
+Reported-by: Christian Kujau <lists@nerdbynature.de>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ lib/locking-selftest.c | 66 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 33 insertions(+), 33 deletions(-)
+
+diff --git a/lib/locking-selftest.c b/lib/locking-selftest.c
+index 872a15a2a637..f3a217ea0388 100644
+--- a/lib/locking-selftest.c
++++ b/lib/locking-selftest.c
+@@ -980,23 +980,23 @@ static void dotest(void (*testcase_fn)(void), int expected, int lockclass_mask)
+ #ifndef CONFIG_PROVE_LOCKING
+ 	if (expected == FAILURE && debug_locks) {
+ 		expected_testcase_failures++;
+-		printk("failed|");
++		pr_cont("failed|");
+ 	}
+ 	else
+ #endif
+ 	if (debug_locks != expected) {
+ 		unexpected_testcase_failures++;
+-		printk("FAILED|");
++		pr_cont("FAILED|");
+ 
+ 		dump_stack();
+ 	} else {
+ 		testcase_successes++;
+-		printk("  ok  |");
++		pr_cont("  ok  |");
+ 	}
+ 	testcase_total++;
+ 
+ 	if (debug_locks_verbose)
+-		printk(" lockclass mask: %x, debug_locks: %d, expected: %d\n",
++		pr_cont(" lockclass mask: %x, debug_locks: %d, expected: %d\n",
+ 			lockclass_mask, debug_locks, expected);
+ 	/*
+ 	 * Some tests (e.g. double-unlock) might corrupt the preemption
+@@ -1021,26 +1021,26 @@ static inline void print_testname(const char *testname)
+ #define DO_TESTCASE_1(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_##nr, SUCCESS, LOCKTYPE_RWLOCK);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_1B(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_##nr, FAILURE, LOCKTYPE_RWLOCK);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_3(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN);	\
+ 	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
+ 	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_3RW(desc, name, nr)				\
+ 	print_testname(desc"/"#nr);				\
+ 	dotest(name##_spin_##nr, FAILURE, LOCKTYPE_SPIN|LOCKTYPE_RWLOCK);\
+ 	dotest(name##_wlock_##nr, FAILURE, LOCKTYPE_RWLOCK);	\
+ 	dotest(name##_rlock_##nr, SUCCESS, LOCKTYPE_RWLOCK);	\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_6(desc, name)				\
+ 	print_testname(desc);					\
+@@ -1050,7 +1050,7 @@ static inline void print_testname(const char *testname)
+ 	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
+ 	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
+ 	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_6_SUCCESS(desc, name)			\
+ 	print_testname(desc);					\
+@@ -1060,7 +1060,7 @@ static inline void print_testname(const char *testname)
+ 	dotest(name##_mutex, SUCCESS, LOCKTYPE_MUTEX);		\
+ 	dotest(name##_wsem, SUCCESS, LOCKTYPE_RWSEM);		\
+ 	dotest(name##_rsem, SUCCESS, LOCKTYPE_RWSEM);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ /*
+  * 'read' variant: rlocks must not trigger.
+@@ -1073,7 +1073,7 @@ static inline void print_testname(const char *testname)
+ 	dotest(name##_mutex, FAILURE, LOCKTYPE_MUTEX);		\
+ 	dotest(name##_wsem, FAILURE, LOCKTYPE_RWSEM);		\
+ 	dotest(name##_rsem, FAILURE, LOCKTYPE_RWSEM);		\
+-	printk("\n");
++	pr_cont("\n");
+ 
+ #define DO_TESTCASE_2I(desc, name, nr)				\
+ 	DO_TESTCASE_1("hard-"desc, name##_hard, nr);		\
+@@ -1726,25 +1726,25 @@ static void ww_tests(void)
+ 	dotest(ww_test_fail_acquire, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_normal, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_unneeded_slow, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("ww contexts mixing");
+ 	dotest(ww_test_two_contexts, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_diff_class, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("finishing ww context");
+ 	dotest(ww_test_context_done_twice, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_unlock_twice, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_fini_early, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_lock_after_done, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("locking mismatches");
+ 	dotest(ww_test_object_unlock_twice, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_object_lock_unbalanced, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_object_lock_stale_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("EDEADLK handling");
+ 	dotest(ww_test_edeadlk_normal, SUCCESS, LOCKTYPE_WW);
+@@ -1757,11 +1757,11 @@ static void ww_tests(void)
+ 	dotest(ww_test_edeadlk_acquire_more_edeadlk_slow, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_edeadlk_acquire_wrong, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_edeadlk_acquire_wrong_slow, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("spinlock nest unlocked");
+ 	dotest(ww_test_spin_nest_unlocked, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	printk("  -----------------------------------------------------\n");
+ 	printk("                                 |block | try  |context|\n");
+@@ -1771,25 +1771,25 @@ static void ww_tests(void)
+ 	dotest(ww_test_context_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_context_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_context_context, SUCCESS, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("try");
+ 	dotest(ww_test_try_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_try_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_try_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("block");
+ 	dotest(ww_test_block_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_block_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_block_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("spinlock");
+ 	dotest(ww_test_spin_block, FAILURE, LOCKTYPE_WW);
+ 	dotest(ww_test_spin_try, SUCCESS, LOCKTYPE_WW);
+ 	dotest(ww_test_spin_context, FAILURE, LOCKTYPE_WW);
+-	printk("\n");
++	pr_cont("\n");
+ }
+ 
+ void locking_selftest(void)
+@@ -1829,32 +1829,32 @@ void locking_selftest(void)
+ 
+ 	printk("  --------------------------------------------------------------------------\n");
+ 	print_testname("recursive read-lock");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA1, SUCCESS, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA1, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("recursive read-lock #2");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA1B, SUCCESS, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA1B, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("mixed read-write-lock");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA2, FAILURE, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA2, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	print_testname("mixed write-read-lock");
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rlock_AA3, FAILURE, LOCKTYPE_RWLOCK);
+-	printk("             |");
++	pr_cont("             |");
+ 	dotest(rsem_AA3, FAILURE, LOCKTYPE_RWSEM);
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	printk("  --------------------------------------------------------------------------\n");
+ 
+-- 
+2.7.4
