@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tPStd3cL2zDw5b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:48:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tPSv24fn8zDwBN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:49:02 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v6 7/7] powerpc/mm/iommu,
- vfio/spapr: Put pages on VFIO container shutdown
-Date: Thu, 24 Nov 2016 16:48:10 +1100
-Message-Id: <1479966490-8739-8-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 4/7] vfio/spapr: Add a helper to create default DMA
+ window
+Date: Thu, 24 Nov 2016 16:48:07 +1100
+Message-Id: <1479966490-8739-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
 References: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,209 +24,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the userspace tool is expected to request pinning of
-the entire guest RAM when VFIO IOMMU SPAPR v2 driver is present.
-When the userspace process finishes, all the pinned pages need to
-be put; this is done as a part of the userspace memory context (MM)
-destruction which happens on the very last mmdrop().
+There is already a helper to create a DMA window which does allocate
+a table and programs it to the IOMMU group. However
+tce_iommu_take_ownership_ddw() did not use it and did these 2 calls
+itself to simplify error path.
 
-This approach has a problem that a MM of the userspace process
-may live longer than the userspace process itself as kernel threads
-use userspace process MMs which was runnning on a CPU where
-the kernel thread was scheduled to. If this happened, the MM remains
-referenced until this exact kernel thread wakes up again
-and releases the very last reference to the MM, on an idle system this
-can take even hours.
+Since we are going to delay the default window creation till
+the default window is accessed/removed or new window is added,
+we need a helper to create a default window from all these cases.
 
-This moves preregistered regions tracking from MM to VFIO; insteads of
-using mm_iommu_table_group_mem_t::used, tce_container::prereg_list is
-added so each container releases regions which it has pre-registered.
-
-This changes the userspace interface to return EBUSY if a memory
-region is already registered in a container. However it should not
-have any practical effect as the only userspace tool available now
-does register memory region once per container anyway.
-
-As tce_iommu_register_pages/tce_iommu_unregister_pages are called
-under container->lock, this does not need additional locking.
+This adds tce_iommu_create_default_window(). Since it relies on
+a VFIO container to have at least one IOMMU group (for future use),
+this changes tce_iommu_attach_group() to add a group to the container
+first and then call the new helper.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
 Changes:
-v4:
-* changed tce_iommu_register_pages() to call mm_iommu_find() first and
-avoid calling mm_iommu_put() if memory is preregistered already
-
-v3:
-* moved tce_iommu_prereg_free() call out of list_for_each_entry()
-
-v2:
-* updated commit log
+v6:
+* new to the patchset
 ---
- arch/powerpc/mm/mmu_context_book3s64.c |  4 ---
- arch/powerpc/mm/mmu_context_iommu.c    | 11 -------
- drivers/vfio/vfio_iommu_spapr_tce.c    | 58 +++++++++++++++++++++++++++++++++-
- 3 files changed, 57 insertions(+), 16 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 87 ++++++++++++++++++-------------------
+ 1 file changed, 42 insertions(+), 45 deletions(-)
 
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index ad82735..1a07969 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -159,10 +159,6 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
- 
- void destroy_context(struct mm_struct *mm)
- {
--#ifdef CONFIG_SPAPR_TCE_IOMMU
--	mm_iommu_cleanup(mm);
--#endif
--
- #ifdef CONFIG_PPC_ICSWX
- 	drop_cop(mm->context.acop, mm);
- 	kfree(mm->context.cop_lockp);
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 4c6db09..104bad0 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -365,14 +365,3 @@ void mm_iommu_init(struct mm_struct *mm)
- {
- 	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
- }
--
--void mm_iommu_cleanup(struct mm_struct *mm)
--{
--	struct mm_iommu_table_group_mem_t *mem, *tmp;
--
--	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
--			next) {
--		list_del_rcu(&mem->next);
--		mm_iommu_do_free(mem);
--	}
--}
 diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index b2fb05ac..86c9348 100644
+index 4efd2b2..a67bbfd 100644
 --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -89,6 +89,15 @@ struct tce_iommu_group {
- };
- 
- /*
-+ * A container needs to remember which preregistered region  it has
-+ * referenced to do proper cleanup at the userspace process exit.
-+ */
-+struct tce_iommu_prereg {
-+	struct list_head next;
-+	struct mm_iommu_table_group_mem_t *mem;
-+};
-+
-+/*
-  * The container descriptor supports only a single group per container.
-  * Required by the API as the container is not supplied with the IOMMU group
-  * at the moment of initialization.
-@@ -102,6 +111,7 @@ struct tce_container {
- 	struct mm_struct *mm;
- 	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
- 	struct list_head group_list;
-+	struct list_head prereg_list;
- };
- 
- static long tce_iommu_mm_set(struct tce_container *container)
-@@ -118,10 +128,24 @@ static long tce_iommu_mm_set(struct tce_container *container)
+@@ -710,6 +710,29 @@ static long tce_iommu_remove_window(struct tce_container *container,
  	return 0;
  }
  
-+static long tce_iommu_prereg_free(struct tce_container *container,
-+		struct tce_iommu_prereg *tcemem)
++static long tce_iommu_create_default_window(struct tce_container *container)
 +{
 +	long ret;
++	__u64 start_addr = 0;
++	struct tce_iommu_group *tcegrp;
++	struct iommu_table_group *table_group;
 +
-+	list_del(&tcemem->next);
-+	ret = mm_iommu_put(container->mm, tcemem->mem);
-+	kfree(tcemem);
++	if (!tce_groups_attached(container))
++		return -ENODEV;
++
++	tcegrp = list_first_entry(&container->group_list,
++			struct tce_iommu_group, next);
++	table_group = iommu_group_get_iommudata(tcegrp->grp);
++	if (!table_group)
++		return -ENODEV;
++
++	ret = tce_iommu_create_window(container, IOMMU_PAGE_SHIFT_4K,
++			table_group->tce32_size, 1, &start_addr);
++	WARN_ON_ONCE(!ret && start_addr);
 +
 +	return ret;
 +}
 +
- static long tce_iommu_unregister_pages(struct tce_container *container,
- 		__u64 vaddr, __u64 size)
+ static long tce_iommu_ioctl(void *iommu_data,
+ 				 unsigned int cmd, unsigned long arg)
  {
- 	struct mm_iommu_table_group_mem_t *mem;
-+	struct tce_iommu_prereg *tcemem;
-+	bool found = false;
+@@ -1100,9 +1123,6 @@ static void tce_iommu_release_ownership_ddw(struct tce_container *container,
+ static long tce_iommu_take_ownership_ddw(struct tce_container *container,
+ 		struct iommu_table_group *table_group)
+ {
+-	long i, ret = 0;
+-	struct iommu_table *tbl = NULL;
+-
+ 	if (!table_group->ops->create_table || !table_group->ops->set_window ||
+ 			!table_group->ops->release_ownership) {
+ 		WARN_ON_ONCE(1);
+@@ -1111,47 +1131,7 @@ static long tce_iommu_take_ownership_ddw(struct tce_container *container,
  
- 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
- 		return -EINVAL;
-@@ -130,7 +154,17 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
- 	if (!mem)
- 		return -ENOENT;
+ 	table_group->ops->take_ownership(table_group);
  
--	return mm_iommu_put(container->mm, mem);
-+	list_for_each_entry(tcemem, &container->prereg_list, next) {
-+		if (tcemem->mem == mem) {
-+			found = true;
-+			break;
-+		}
-+	}
-+
-+	if (!found)
-+		return -ENOENT;
-+
-+	return tce_iommu_prereg_free(container, tcemem);
+-	/*
+-	 * If it the first group attached, check if there is
+-	 * a default DMA window and create one if none as
+-	 * the userspace expects it to exist.
+-	 */
+-	if (!tce_groups_attached(container) && !container->tables[0]) {
+-		ret = tce_iommu_create_table(container,
+-				table_group,
+-				0, /* window number */
+-				IOMMU_PAGE_SHIFT_4K,
+-				table_group->tce32_size,
+-				1, /* default levels */
+-				&tbl);
+-		if (ret)
+-			goto release_exit;
+-		else
+-			container->tables[0] = tbl;
+-	}
+-
+-	/* Set all windows to the new group */
+-	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+-		tbl = container->tables[i];
+-
+-		if (!tbl)
+-			continue;
+-
+-		/* Set the default window to a new group */
+-		ret = table_group->ops->set_window(table_group, i, tbl);
+-		if (ret)
+-			goto release_exit;
+-	}
+-
+ 	return 0;
+-
+-release_exit:
+-	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
+-		table_group->ops->unset_window(table_group, i);
+-
+-	table_group->ops->release_ownership(table_group);
+-
+-	return ret;
  }
  
- static long tce_iommu_register_pages(struct tce_container *container,
-@@ -138,16 +172,29 @@ static long tce_iommu_register_pages(struct tce_container *container,
- {
- 	long ret = 0;
- 	struct mm_iommu_table_group_mem_t *mem = NULL;
-+	struct tce_iommu_prereg *tcemem;
- 	unsigned long entries = size >> PAGE_SHIFT;
+ static int tce_iommu_attach_group(void *iommu_data,
+@@ -1161,6 +1141,7 @@ static int tce_iommu_attach_group(void *iommu_data,
+ 	struct tce_container *container = iommu_data;
+ 	struct iommu_table_group *table_group;
+ 	struct tce_iommu_group *tcegrp = NULL;
++	bool create_default_window = false;
  
- 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
- 			((vaddr + size) < vaddr))
- 		return -EINVAL;
+ 	mutex_lock(&container->lock);
  
-+	mem = mm_iommu_find(container->mm, vaddr, entries);
-+	if (mem) {
-+		list_for_each_entry(tcemem, &container->prereg_list, next) {
-+			if (tcemem->mem == mem)
-+				return -EBUSY;
-+		}
-+	}
-+
- 	ret = mm_iommu_get(container->mm, vaddr, entries, &mem);
- 	if (ret)
- 		return ret;
- 
-+	tcemem = kzalloc(sizeof(*tcemem), GFP_KERNEL);
-+	tcemem->mem = mem;
-+	list_add(&tcemem->next, &container->prereg_list);
-+
- 	container->enabled = true;
- 
- 	return 0;
-@@ -334,6 +381,7 @@ static void *tce_iommu_open(unsigned long arg)
- 
- 	mutex_init(&container->lock);
- 	INIT_LIST_HEAD_RCU(&container->group_list);
-+	INIT_LIST_HEAD_RCU(&container->prereg_list);
- 
- 	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
- 
-@@ -372,6 +420,14 @@ static void tce_iommu_release(void *iommu_data)
- 		tce_iommu_free_table(container, tbl);
+@@ -1203,14 +1184,30 @@ static int tce_iommu_attach_group(void *iommu_data,
  	}
  
-+	while (!list_empty(&container->prereg_list)) {
-+		struct tce_iommu_prereg *tcemem;
-+
-+		tcemem = list_first_entry(&container->prereg_list,
-+				struct tce_iommu_prereg, next);
-+		tce_iommu_prereg_free(container, tcemem);
+ 	if (!table_group->ops || !table_group->ops->take_ownership ||
+-			!table_group->ops->release_ownership)
++			!table_group->ops->release_ownership) {
+ 		ret = tce_iommu_take_ownership(container, table_group);
+-	else
++	} else {
+ 		ret = tce_iommu_take_ownership_ddw(container, table_group);
++		if (!tce_groups_attached(container) && !container->tables[0])
++			create_default_window = true;
 +	}
-+
- 	tce_iommu_disable(container);
- 	if (container->mm)
- 		mmdrop(container->mm);
+ 
+ 	if (!ret) {
+ 		tcegrp->grp = iommu_group;
+ 		list_add(&tcegrp->next, &container->group_list);
++		/*
++		 * If it the first group attached, check if there is
++		 * a default DMA window and create one if none as
++		 * the userspace expects it to exist.
++		 */
++		if (create_default_window) {
++			ret = tce_iommu_create_default_window(container);
++			if (ret) {
++				list_del(&tcegrp->next);
++				tce_iommu_release_ownership_ddw(container,
++						table_group);
++			}
++		}
+ 	}
+ 
+ unlock_exit:
 -- 
 2.5.0.rc3
