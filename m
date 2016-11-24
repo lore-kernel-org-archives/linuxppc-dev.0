@@ -1,27 +1,24 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPN375G6szDvwl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 13:10:41 +1100 (AEDT)
-Date: Thu, 24 Nov 2016 11:10:29 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Masami Hiramatsu
- <mhiramat@kernel.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Ananth N Mavinakayanahalli
- <ananth@in.ibm.com>
-Subject: Re: [PATCH v2 2/2] powerpc: kprobes: invoke handlers directly
-Message-Id: <20161124111029.410bce49ed612566b623063c@kernel.org>
-In-Reply-To: <20161122105313.GK4019@naverao1-tp.localdomain>
-References: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
- <1bde4adb6da9695007f409af9ea4db6be400ca54.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
- <20161122142537.42e365a22d866026aa726bfe@kernel.org>
- <20161122062549.GJ4019@naverao1-tp.localdomain>
- <87r363vlpr.fsf@concordia.ellerman.id.au>
- <20161122105313.GK4019@naverao1-tp.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPNjW36ykzDw3Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 13:40:31 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: linux-next: manual merge of the powerpc tree with the
+ powerpc-fixes tree
+In-Reply-To: <20161124103606.0333e388@canb.auug.org.au>
+References: <20161124103606.0333e388@canb.auug.org.au>
+Date: Thu, 24 Nov 2016 13:40:28 +1100
+Message-ID: <87fumhtxb7.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 22 Nov 2016 16:23:13 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-> On 2016/11/22 09:43PM, Michael Ellerman wrote:
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> > > On 2016/11/22 02:25PM, Masami Hiramatsu wrote:
-> > >> On Mon, 21 Nov 2016 22:36:41 +0530
-> > >> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > >> > diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-> > >> > index 2c9759bd..da30dc3 100644
-> > >> > --- a/arch/powerpc/include/asm/kprobes.h
-> > >> > +++ b/arch/powerpc/include/asm/kprobes.h
-> > >> > @@ -32,6 +32,7 @@
-> > >> >  #include <asm/probes.h>
-> > >> >  #include <asm/code-patching.h>
-> > >> >  
-> > >> > +#ifdef CONFIG_KPROBES
-> > >> >  #define  __ARCH_WANT_KPROBES_INSN_SLOT
-> > >> >  
-> > >> >  struct pt_regs;
-> > >> > @@ -127,5 +128,11 @@ struct kprobe_ctlblk {
-> > >> >  extern int kprobe_exceptions_notify(struct notifier_block *self,
-> > >> >  					unsigned long val, void *data);
-> > >> >  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-> > >> > +extern int kprobe_handler(struct pt_regs *regs);
-> > >> > +extern int kprobe_post_handler(struct pt_regs *regs);
-> > >> > +#else
-> > >> > +static int kprobe_handler(struct pt_regs *regs) { return 0; }
-> > >> > +static int kprobe_post_handler(struct pt_regs *regs) { return 0; }
-> > >> 
-> > >> These should be "static inline int kprobe_...", you lost 'inline' here.
-> > >> Others are OK for me.
-> > >
-> > > Ah, indeed. Good catch. Thanks.
-> > >  
-> > > Michael,
-> > > Would you be ok to make this change when applying this, if you're ok 
-> > > with the rest of the patch?
-> > 
-> > Yep done.
-> > 
-> > Why do we still need kprobe_exceptions_notify() now that it's empty?
-> > Just to keep the generic code happy?
-> 
-> Yup. I took a look to see if we can get rid of it, but there are other 
-> architectures that need it.
+> Hi all,
+>
+> Today's linux-next merge of the powerpc tree got a conflict in:
+>
+>   arch/powerpc/include/asm/asm-prototypes.h
+>
+> between commit:
+>
+>   9e5f68842276 ("powerpc: Fix missing CRCs, add more asm-prototypes.h declarations")
+>
+> from the powerpc-fixes tree and commit:
+>
+>   82de5797a260 ("powerpc: Remove extraneous header from asm-prototypes.h")
+>
+> from the powerpc tree.
+>
+> I fixed it up (see below) and can carry the fix as necessary. This
+> is now fixed as far as linux-next is concerned, but any non trivial
+> conflicts should be mentioned to your upstream maintainer when your tree
+> is submitted for merging.  You may also want to consider cooperating
+> with the maintainer of the conflicting tree to minimise any particularly
+> complex conflicts.
 
-FYI, x86 use it not only for hooking traps but also hooking page
-protection fault in kprobe handlers. Anyway, I'd better add an weak
-function for that.
+Thanks. I'm planning to merge fixes into next RSN ... as soon as people
+stop finding bugs.
 
-Thanks!
-
-> 
-> Thanks!
-> - Naveen
-> 
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+cheers
