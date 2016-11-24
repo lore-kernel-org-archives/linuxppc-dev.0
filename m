@@ -1,21 +1,23 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPLKJ1H0FzDvtr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 11:52:52 +1100 (AEDT)
-Message-ID: <1479948766.5547.1.camel@russell.cc>
-Subject: Re: [PATCH] powerpc/eeh/of: use builtin_platform_driver
-From: Russell Currey <ruscur@russell.cc>
-To: Geliang Tang <geliangtang@gmail.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Thu, 24 Nov 2016 11:52:46 +1100
-In-Reply-To: <5f8659707d87126507e163dcada64c6f8923933e.1479913108.git.geliangtang@gmail.com>
-References: <5f8659707d87126507e163dcada64c6f8923933e.1479913108.git.geliangtang@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPLbC6qfHzDvxg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 12:04:55 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id 144so1162977pfv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 17:04:55 -0800 (PST)
+Date: Thu, 24 Nov 2016 12:04:36 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Alan Modra <amodra@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/3] minor build fixes
+Message-ID: <20161124120436.4d0fa257@roar.ozlabs.ibm.com>
+In-Reply-To: <20161123230320.GQ11815@bubble.grove.modra.org>
+References: <20161123130209.1667-1-npiggin@gmail.com>
+ <20161123230320.GQ11815@bubble.grove.modra.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,10 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-23 at 22:58 +0800, Geliang Tang wrote:
-> Use builtin_platform_driver() helper to simplify the code.
-> 
-> Signed-off-by: Geliang Tang <geliangtang@gmail.com>
-> ---
+On Thu, 24 Nov 2016 09:33:20 +1030
+Alan Modra <amodra@gmail.com> wrote:
 
-Acked-by: Russell Currey <ruscur@russell.cc>
+> On Thu, Nov 24, 2016 at 12:02:06AM +1100, Nicholas Piggin wrote:
+> > I was building BookE and big endian with a little endian cross
+> > compiler and it stopped working. My BookS BE tests must have been
+> > building using the ELFv2 ABI. After this, the build sometimes still
+> > strangely fails with dot symbols in syscall table unable to be found,
+> > but that's looking like it may be a linker bug (Alan is going to take
+> > a look).  
+> 
+> Yes it is a bug.  In compatibility code that was supposed to handle
+> mixing old object files that use dot-symbols on function entry with
+> newer object files that don't.  Here, "old" means mid 2004 or
+> earlier.
+> 
+> As you can imagine, I'm not hugely concerned about the ld bug..
+> 
+> Since every binutils back to at least 2.17 has the bug, what changed
+> in the kernel to expose it?  Are you building without -mcall-aixdesc?
+> 
+
+Yeah, it's my attempt to get powerpc64le compiler to build big endian
+with -mabi=elfv2, so I'd have missed -mcall-aixdesc somewhere.
+
+Thanks,
+Nick
