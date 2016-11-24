@@ -1,27 +1,44 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPRsq4hczzDw2T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:02:55 +1100 (AEDT)
-Date: Thu, 24 Nov 2016 15:08:18 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v5 4/6] vfio/spapr: Postpone default window creation
-Message-ID: <20161124040818.GC23872@umbus.fritz.box>
-References: <1478867537-27893-1-git-send-email-aik@ozlabs.ru>
- <1478867537-27893-5-git-send-email-aik@ozlabs.ru>
- <20161122025052.GB28479@umbus.fritz.box>
- <b1aa544a-d4a1-fb2c-8069-63c52f3dbf8d@ozlabs.ru>
- <20161123013546.GH28479@umbus.fritz.box>
- <8475a1f4-fa4f-ec6b-8e41-743219cbe59e@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPS6z6QmvzDw45
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:19 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAO5EA7l116598
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 00:14:16 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26wdwvapa2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 00:14:15 -0500
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 24 Nov 2016 15:14:07 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3916B3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:04 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAO5E4qh31785096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:04 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAO5E33K008193
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:14:03 +1100
+Subject: Re: [RFC][PATCH] Update ppc disassembly in xmon
+To: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+References: <6229e33e-2d6e-25d8-4206-2b62f3a11500@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 24 Nov 2016 16:14:03 +1100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="vEao7xgI/oilGqZ+"
-In-Reply-To: <8475a1f4-fa4f-ec6b-8e41-743219cbe59e@ozlabs.ru>
+In-Reply-To: <6229e33e-2d6e-25d8-4206-2b62f3a11500@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <9f8b3a9a-3744-6452-5c33-bcf0cdbdaa21@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,226 +48,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 24/11/16 13:05, Balbir Singh wrote:
+> 9. The license for these files is now GPL v3 or later
 
---vEao7xgI/oilGqZ+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As much as I love the GPLv3, isn't this an instant NAK?
 
-On Wed, Nov 23, 2016 at 04:06:30PM +1100, Alexey Kardashevskiy wrote:
-> On 23/11/16 12:35, David Gibson wrote:
-> > On Tue, Nov 22, 2016 at 06:29:39PM +1100, Alexey Kardashevskiy wrote:
-> >> On 22/11/16 13:50, David Gibson wrote:
-> >>> On Fri, Nov 11, 2016 at 11:32:15PM +1100, Alexey Kardashevskiy wrote:
-> >>>> As mentioned in the previous patch, we are going to allow the usersp=
-ace
-> >>>> to configure container in one memory context and pass container fd to
-> >>>> another so we are postponing memory allocations accounted against
-> >>>> the locked memory limit. The previous patch took care of it_userspac=
-e.
-> >>>>
-> >>>> At the moment we create the default DMA window when the first group =
-is
-> >>>> attached to a container; this is done for the userspace which is not
-> >>>> DDW-aware but familiar with the SPAPR TCE IOMMU v2 in the part of me=
-mory
-> >>>> pre-registration - such client expects the default DMA window to exi=
-st.
-> >>>>
-> >>>> This postpones the default DMA window allocation till first map/unmap
-> >>>> request happens.
-> >>>>
-> >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>> ---
-> >>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 98 ++++++++++++++++++--------=
------------
-> >>>>  1 file changed, 47 insertions(+), 51 deletions(-)
-> >>>>
-> >>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio=
-_iommu_spapr_tce.c
-> >>>> index 442baac..1c02498 100644
-> >>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> @@ -97,6 +97,7 @@ struct tce_container {
-> >>>>  	struct mutex lock;
-> >>>>  	bool enabled;
-> >>>>  	bool v2;
-> >>>> +	bool def_window_pending;
-> >>>>  	unsigned long locked_pages;
-> >>>>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
-> >>>>  	struct list_head group_list;
-> >>>> @@ -594,15 +595,6 @@ static long tce_iommu_create_table(struct tce_c=
-ontainer *container,
-> >>>>  	WARN_ON(!ret && !(*ptbl)->it_ops->free);
-> >>>>  	WARN_ON(!ret && ((*ptbl)->it_allocated_size !=3D table_size));
-> >>>> =20
-> >>>> -	if (!ret && container->v2) {
-> >>>> -		ret =3D tce_iommu_userspace_view_alloc(*ptbl);
-> >>>> -		if (ret)
-> >>>> -			(*ptbl)->it_ops->free(*ptbl);
-> >>>> -	}
-> >>>
-> >>> Does this stuff for the user view belong in the previous patch?
-> >>
-> >> Yes it does, my mistake, will fix.
-> >>
-> >>
-> >>>
-> >>>> -
-> >>>> -	if (ret)
-> >>>> -		decrement_locked_vm(table_size >> PAGE_SHIFT);
-> >>>> -
-> >>>>  	return ret;
-> >>>>  }
-> >>>> =20
-> >>>> @@ -719,6 +711,29 @@ static long tce_iommu_remove_window(struct tce_=
-container *container,
-> >>>>  	return 0;
-> >>>>  }
-> >>>> =20
-> >>>> +static long tce_iommu_create_default_window(struct tce_container *c=
-ontainer)
-> >>>> +{
-> >>>> +	long ret;
-> >>>> +	__u64 start_addr =3D 0;
-> >>>> +	struct tce_iommu_group *tcegrp;
-> >>>> +	struct iommu_table_group *table_group;
-> >>>> +
-> >>>> +	if (!tce_groups_attached(container))
-> >>>> +		return -ENODEV;
-> >>>> +
-> >>>> +	tcegrp =3D list_first_entry(&container->group_list,
-> >>>> +			struct tce_iommu_group, next);
-> >>>> +	table_group =3D iommu_group_get_iommudata(tcegrp->grp);
-> >>>> +	if (!table_group)
-> >>>> +		return -ENODEV;
-> >>>> +
-> >>>> +	ret =3D tce_iommu_create_window(container, IOMMU_PAGE_SHIFT_4K,
-> >>>> +			table_group->tce32_size, 1, &start_addr);
-> >>>> +	WARN_ON_ONCE(!ret && start_addr);
-> >>>> +
-> >>>> +	return ret;
-> >>>> +}
-> >>>> +
-> >>>>  static long tce_iommu_ioctl(void *iommu_data,
-> >>>>  				 unsigned int cmd, unsigned long arg)
-> >>>>  {
-> >>>> @@ -809,6 +824,13 @@ static long tce_iommu_ioctl(void *iommu_data,
-> >>>>  				VFIO_DMA_MAP_FLAG_WRITE))
-> >>>>  			return -EINVAL;
-> >>>> =20
-> >>>> +		if (container->def_window_pending) {
-> >>>> +			ret =3D tce_iommu_create_default_window(container);
-> >>>> +			if (ret)
-> >>>> +				return ret;
-> >>>> +			container->def_window_pending =3D false;
-> >>>
-> >>> Would it make sense to clear (and maybe test) def_window_pending
-> >>> within create_default_window()?
-> >>
-> >> Dunno, matter of taste I suppose. I'll move it there.
-> >>
-> >>
-> >>>
-> >>>> +		}
-> >>>> +
-> >>>>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
-> >>>>  		if (num < 0)
-> >>>>  			return -ENXIO;
-> >>>> @@ -872,6 +894,13 @@ static long tce_iommu_ioctl(void *iommu_data,
-> >>>>  		if (param.flags)
-> >>>>  			return -EINVAL;
-> >>>> =20
-> >>>> +		if (container->def_window_pending) {
-> >>>> +			ret =3D tce_iommu_create_default_window(container);
-> >>>> +			if (ret)
-> >>>> +				return ret;
-> >>>> +			container->def_window_pending =3D false;
-> >>>> +		}
-> >>>> +
-> >>>>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
-> >>>>  		if (num < 0)
-> >>>>  			return -ENXIO;
-> >>>> @@ -998,6 +1027,8 @@ static long tce_iommu_ioctl(void *iommu_data,
-> >>>> =20
-> >>>>  		mutex_lock(&container->lock);
-> >>>> =20
-> >>>> +		container->def_window_pending =3D false;
-> >>>
-> >>> Uh.. why is it cleared here, without calling
-> >>> tce_iommu_create_default_window() AFAICT?
-> >>
-> >>
-> >> It is a branch which creates new window, if we do not have a default
-> >> window, then it will be created as the result of this ioctl(), if ther=
-e is
-> >> a default window, then the flag should be false already.
-> >=20
-> > Um.. it will create *a* window, but not necessarily the default one.
-> > Consider this scenario:
-> >=20
-> > 1. Container is opened
-> > 2. A group is attached
-> > 3. Userspace, expecting the default window to be in place, creates a
-> >    second window
-> > 4. Mapping starts
-> >=20
-> > Won't the above code mean that we create what userspace expected to be
-> > the second window as the first window replacing the default one
-> > instead?
->=20
-> Uff. Yes, this is correct.
->=20
-> This is a bug in my initial design - I should not have created a "default"
-> window in the first place - it does not make sense at this level; and the
-> userspace (i.e. QEMU) removes all windows on reset anyway.
->=20
-> The only way QEMU will use this default window is when it is at 318f67ce1
-> "vfio: spapr: Add DMA memory preregistering (SPAPR IOMMU v2)" - memory
-> preregistration is there, but ddw is not yet but it is 2 patches later
-> where vfio_connect_container() unconditionally removes the default window.
-> Which is unlikely scenario.
->=20
-> Taking into account small number of DDW users (basically - QEMU v2.7.0),
-> does it still make sense to keep this default window code? The only
-> immediate problem I see here is QEMU will receive error from
-> vfio_spapr_remove_window() in vfio_connect_container() as there will be no
-> default window but I could workaround this.
-
-Hmm.. I dislike changing the semantics now.
-
-Can't you just
-	if (def_window_pending)
-		create_default_window()
-
-Before completing the CREATE_WINDOW ioctl().  That should handle it,
-no?
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---vEao7xgI/oilGqZ+
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJYNmeyAAoJEGw4ysog2bOS/oQQAIdRXQd4Bz0rHjXMc3qTI8TW
-34cVOMKdJWvap35ZTZ8uXRjg8aMac+5n3CUD4SsXVWY9fJXKL2QhpvZ31kg4gCRQ
-Vsrycuf6vvU25k6JJcZDBi+z1CTZ6RwHGMpeejVQyV6/xH2vxJlCULuqtEfYw++p
-3qrwDwkr1FiFEbtq7tGhAsBhdn8C4Y7ftH4WSqTQyveBG2RBJfUh+fqf1WsjdJ76
-N54lhjCcQdEx70CgtRx7SnmlqUrG8g8UrAfk8rV5Xj3XN0xclcnl/ru/GovqMo0q
-8Hv+Ekg+dFC92Dwc+zYImyODLeGdpgyufZ4gb2FcbNoAfrkwtoCDSZ3eaqgSlken
-/N/vHER9ku4xxmNMN3yMRk2j6iE45D0Eyf8MawNDn4nJb1oI9eJ/f3SgGcrdGFzX
-aR9+0h1WtC1XirSYCVOg7T0evozK8i1uVwWLdmY9JTVFgtOk5MVu/FczMOkOvFLf
-1BrIPD0FSQHuPbei4oBEn04DmJ1TP7rv22kcvXPZwGYvjd+LHMIuFClOO/oghOT0
-WgIU38SllfzRCiONcj2HMJ6PIpcPgh+1zuQJ7tswSbRmAp3UncShgeW2CqCH6p+t
-hRryjU31ChM0nH7v7NOgbYfFb9HrARufVu3/J9MImClXd5SMSnTyiATz7IbhSNBf
-XTtpVKwF8UN0/68SZC9A
-=6XLl
------END PGP SIGNATURE-----
-
---vEao7xgI/oilGqZ+--
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
