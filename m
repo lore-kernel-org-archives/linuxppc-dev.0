@@ -1,24 +1,18 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPSf95DvjzDw3t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:37:53 +1100 (AEDT)
-Received: by mail-qt0-x243.google.com with SMTP id n34so2015208qtb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2016 21:37:53 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20161123143834.GB6099@gate.crashing.org>
-References: <20161123130840.1877-1-npiggin@gmail.com>
- <20161123143834.GB6099@gate.crashing.org>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Thu, 24 Nov 2016 16:37:50 +1100
-Message-ID: <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
-Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Alan Modra <amodra@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tPStD0M2wzDw45
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 16:48:19 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org
+Subject: [PATCH kernel v6 0/7] powerpc/spapr/vfio: Put pages on VFIO container
+ shutdown
+Date: Thu, 24 Nov 2016 16:48:03 +1100
+Message-Id: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 24, 2016 at 1:38 AM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
-> On Thu, Nov 24, 2016 at 12:08:40AM +1100, Nicholas Piggin wrote:
->> Question, are there any fundamental reasons we shouldn't use the ELFv2
->> ABI to build big endian kernels if the compiler supports it?
->
-> No one uses ELFv2 for BE in production, and it isn't thoroughly tested
-> at all, not even regularly tested.  "Not supported", as far as GCC is
-> concerned (or any of the distros AFAIK).
+These patches are to fix a bug when pages stay pinned hours
+after QEMU which requested pinning exited.
 
-Is this actually unsupported by gcc? The ppc64 musl libc port is ABI
-v2 only so they use it on BE too. Buildroot forces ABI v2 to be used
-for all of userspace when musl is selected as the libc for this reason
-so it's not completely used in the wild. It's still pretty niche
-though...
+Main change to v5 that it is now 7 patches.
+
+Please comment. Thanks.
+
+Alexey Kardashevskiy (7):
+  powerpc/iommu: Pass mm_struct to init/cleanup helpers
+  powerpc/iommu: Stop using @current in mm_iommu_xxx
+  vfio/spapr: Postpone allocation of userspace version of TCE table
+  vfio/spapr: Add a helper to create default DMA window
+  vfio/spapr: Postpone default window creation
+  vfio/spapr: Reference mm in tce_container
+  powerpc/mm/iommu, vfio/spapr: Put pages on VFIO container shutdown
+
+ arch/powerpc/include/asm/mmu_context.h |  20 +-
+ arch/powerpc/kernel/setup-common.c     |   2 +-
+ arch/powerpc/mm/mmu_context_book3s64.c |   6 +-
+ arch/powerpc/mm/mmu_context_iommu.c    |  60 ++----
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 324 ++++++++++++++++++++++-----------
+ 5 files changed, 245 insertions(+), 167 deletions(-)
+
+-- 
+2.5.0.rc3
