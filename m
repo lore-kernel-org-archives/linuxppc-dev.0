@@ -1,49 +1,24 @@
-Return-Path: <xinhui@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ30n5S8FzDw0Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 15:26:01 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tQ30n17lGz9t2C
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2016 15:26:00 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAP4Nemf074714
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2016 23:25:59 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 26x7t04r7h-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Nov 2016 23:25:58 -0500
-Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
- Fri, 25 Nov 2016 09:55:55 +0530
-Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2B8B2394004E
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2016 09:55:53 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAP4PrKT27984086
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2016 09:55:53 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAP4Pqd5015606
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2016 09:55:52 +0530
-Subject: Re: [PATCH] powerpc: Fix __cmpxchg() to take a volatile ptr again
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <1480043229-2363-1-git-send-email-mpe@ellerman.id.au>
-Cc: xinhui.pan@linux.vnet.ibm.com, peterz@infradead.org
-From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
-Date: Fri, 25 Nov 2016 12:26:04 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ3J846wDzDvPc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 15:39:20 +1100 (AEDT)
+Date: Fri, 25 Nov 2016 15:39:04 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v6 5/7] vfio/spapr: Postpone default window creation
+Message-ID: <20161125043904.GE12287@umbus.fritz.box>
+References: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
+ <1479966490-8739-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <1480043229-2363-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <480bd5a3-1981-e716-9049-cbd5877cd122@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="BZaMRJmqxGScZ8Mx"
+In-Reply-To: <1479966490-8739-6-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,61 +29,210 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--BZaMRJmqxGScZ8Mx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-在 2016/11/25 11:07, Michael Ellerman 写道:
-> In commit d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
-> we removed the volatile from __cmpxchg().
->
-> This is leading to warnings such as:
->
->   drivers/gpu/drm/drm_lock.c: In function ‘drm_lock_take’:
->   arch/powerpc/include/asm/cmpxchg.h:484:37: warning: passing argument 1
->   of ‘__cmpxchg’ discards ‘volatile’ qualifier from pointer target
->      (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,   \
->
-> There doesn't seem to be consensus across architectures whether the
-> argument is volatile or not, so at least for now put the volatile back.
->
-> Fixes: d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Thu, Nov 24, 2016 at 04:48:08PM +1100, Alexey Kardashevskiy wrote:
+> We are going to allow the userspace to configure container in
+> one memory context and pass container fd to another so
+> we are postponing memory allocations accounted against
+> the locked memory limit. One of previous patches took care of
+> it_userspace.
+>=20
+> At the moment we create the default DMA window when the first group is
+> attached to a container; this is done for the userspace which is not
+> DDW-aware but familiar with the SPAPR TCE IOMMU v2 in the part of memory
+> pre-registration - such client expects the default DMA window to exist.
+>=20
+> This postpones the default DMA window allocation till one of
+> the folliwing happens:
+> 1. first map/unmap request arrives;
+> 2. new window is requested;
+> This adds noop for the case when the userspace requested removal
+> of the default window which has not been created yet.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+Hmm.. it just occurred to me: why do you even need to delay creation
+of the default window?
+
+In order to allow the open container - move to new process - map
+scenario you need to delay binding of the mm to the container until
+mapping actually occurs.  And if you're doing that, you also want to
+delay allocation of the userspace table view, since the "userspace
+view" is only well defined once you're bound to a particular mm.
+
+But I don't see why you can't actually create the window - including
+the actual TCE table and all - before that point.  After all, in the
+non-ddw case that's effectively what happens - the fixed window is
+there all the time.
+
+If you leave the creation of the default window at the point the first
+group is bound to the container, I think you'll simplify things -
+including because you'll remove an extra difference between the ddw
+and non-ddw cases.
+
+The you treat the binding of a table to an mm as a later step, that
+should go together with the allocation of the userspace view.
+
 > ---
-Hi, mpe
-	We implement __cmpxchg in asm so volatile maybe is not needed I think.
-But seems compiler is not happy :(
-I am okay with your patch. thanks!
+> Changes:
+> v6:
+> * new helper tce_iommu_create_default_window() moved to a separate patch;
+> * creates a default window when new window is requested; it used to
+> reset the def_window_pending flag instead;
+> * def_window_pending handling (mostly) localized in
+> tce_iommu_create_default_window() now, the only exception is removal
+> of not yet created default window.
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 40 +++++++++++++++++++++++--------=
+------
+>  1 file changed, 25 insertions(+), 15 deletions(-)
+>=20
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index a67bbfd..88622be 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -97,6 +97,7 @@ struct tce_container {
+>  	struct mutex lock;
+>  	bool enabled;
+>  	bool v2;
+> +	bool def_window_pending;
+>  	unsigned long locked_pages;
+>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>  	struct list_head group_list;
+> @@ -717,6 +718,9 @@ static long tce_iommu_create_default_window(struct tc=
+e_container *container)
+>  	struct tce_iommu_group *tcegrp;
+>  	struct iommu_table_group *table_group;
+> =20
+> +	if (!container->def_window_pending)
+> +		return 0;
+> +
+>  	if (!tce_groups_attached(container))
+>  		return -ENODEV;
+> =20
+> @@ -730,6 +734,9 @@ static long tce_iommu_create_default_window(struct tc=
+e_container *container)
+>  			table_group->tce32_size, 1, &start_addr);
+>  	WARN_ON_ONCE(!ret && start_addr);
+> =20
+> +	if (!ret)
+> +		container->def_window_pending =3D false;
+> +
+>  	return ret;
+>  }
+> =20
+> @@ -823,6 +830,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  				VFIO_DMA_MAP_FLAG_WRITE))
+>  			return -EINVAL;
+> =20
+> +		ret =3D tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
+>  		if (num < 0)
+>  			return -ENXIO;
+> @@ -886,6 +897,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		if (param.flags)
+>  			return -EINVAL;
+> =20
+> +		ret =3D tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
+>  		if (num < 0)
+>  			return -ENXIO;
+> @@ -1012,6 +1027,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+> =20
+>  		mutex_lock(&container->lock);
+> =20
+> +		ret =3D tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		ret =3D tce_iommu_create_window(container, create.page_shift,
+>  				create.window_size, create.levels,
+>  				&create.start_addr);
+> @@ -1044,6 +1063,11 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		if (remove.flags)
+>  			return -EINVAL;
+> =20
+> +		if (container->def_window_pending && !remove.start_addr) {
+> +			container->def_window_pending =3D false;
+> +			return 0;
+> +		}
+> +
+>  		mutex_lock(&container->lock);
+> =20
+>  		ret =3D tce_iommu_remove_window(container, remove.start_addr);
+> @@ -1141,7 +1165,6 @@ static int tce_iommu_attach_group(void *iommu_data,
+>  	struct tce_container *container =3D iommu_data;
+>  	struct iommu_table_group *table_group;
+>  	struct tce_iommu_group *tcegrp =3D NULL;
+> -	bool create_default_window =3D false;
+> =20
+>  	mutex_lock(&container->lock);
+> =20
+> @@ -1189,25 +1212,12 @@ static int tce_iommu_attach_group(void *iommu_dat=
+a,
+>  	} else {
+>  		ret =3D tce_iommu_take_ownership_ddw(container, table_group);
+>  		if (!tce_groups_attached(container) && !container->tables[0])
+> -			create_default_window =3D true;
+> +			container->def_window_pending =3D true;
+>  	}
+> =20
+>  	if (!ret) {
+>  		tcegrp->grp =3D iommu_group;
+>  		list_add(&tcegrp->next, &container->group_list);
+> -		/*
+> -		 * If it the first group attached, check if there is
+> -		 * a default DMA window and create one if none as
+> -		 * the userspace expects it to exist.
+> -		 */
+> -		if (create_default_window) {
+> -			ret =3D tce_iommu_create_default_window(container);
+> -			if (ret) {
+> -				list_del(&tcegrp->next);
+> -				tce_iommu_release_ownership_ddw(container,
+> -						table_group);
+> -			}
+> -		}
+>  	}
+> =20
+>  unlock_exit:
 
->  arch/powerpc/include/asm/cmpxchg.h | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-> index c12f110261b2..fc46b664c49e 100644
-> --- a/arch/powerpc/include/asm/cmpxchg.h
-> +++ b/arch/powerpc/include/asm/cmpxchg.h
-> @@ -14,7 +14,7 @@
->  #endif
->
->  #define XCHG_GEN(type, sfx, cl)				\
-> -static inline u32 __xchg_##type##sfx(void *p, u32 val)		\
-> +static inline u32 __xchg_##type##sfx(volatile void *p, u32 val)	\
->  {								\
->  	unsigned int prev, prev_mask, tmp, bitoff, off;		\
->  								\
-> @@ -40,7 +40,7 @@ static inline u32 __xchg_##type##sfx(void *p, u32 val)		\
->
->  #define CMPXCHG_GEN(type, sfx, br, br2, cl)			\
->  static inline							\
-> -u32 __cmpxchg_##type##sfx(void *p, u32 old, u32 new)		\
-> +u32 __cmpxchg_##type##sfx(volatile void *p, u32 old, u32 new)	\
->  {								\
->  	unsigned int prev, prev_mask, tmp, bitoff, off;		\
->  								\
-> @@ -399,7 +399,7 @@ __cmpxchg_u64_acquire(u64 *p, unsigned long old, unsigned long new)
->  #endif
->
->  static __always_inline unsigned long
-> -__cmpxchg(void *ptr, unsigned long old, unsigned long new,
-> +__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
->  	  unsigned int size)
->  {
->  	switch (size) {
->
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--BZaMRJmqxGScZ8Mx
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYN8BoAAoJEGw4ysog2bOSDRgP/0AVPCjQ05Pcyhla3k+Xq+pO
+b0o3hTBqhueAhD2RRvwrugregmzpMz9p++K0dPcnoNh+z2QGFlY0nl/BmIW5s5rt
+hnuaLlrb/C4ML+kMXGX9sNwofwYxhv2jNCblBvazcSm18cuBgByVIfQj5Jlckh5u
+LVzCnO1g2oCdciMo0B4+WsSqW7mQkNPj7fDNmPNwGwuCAiFEitDeZjEqG1Ctlp6+
+3BfBBTKw/qtLtHx43lmwYUGjuAu3ob6qv+xhll4nbY9Aw1glededP94qUgZovWvK
+Tf1ICp0Pz8t8wtwSUCJRbG5qpwUTH3i3+c91VBPeBKPzUKMr8ISUPB8Tbkanalwc
+Vbpm5zVRgegoJ7ufGPCbCD1/UbDvAiSybmXqOm7iQalXxRsMx/M8U5F7aTgtDMj/
+rwkIIomqfHUWqLfUyWkuirIn35eYWpHMuTGxXGojok2GGUNj7AthX0nJMbnEOulS
+gdpnQnhjGmF4UX40IPQd7HctL1zKFO+8Ft4D8eWE3OGu4XeTUJp4JdeHNTB7Xyea
+jztVokLcL90wQNd1MlLpFZfBs5wYk2zwfv8js5lAEs16VwQ6oXMYh/5gYA5STAZW
+347OTppsWixTBax/HQq4cfnrmNZD+u9Hhqj/lXvqCHb3POz7GtcLxv74GoelQI+y
+Io3kVe4jv86SR+dUu1Lr
+=TrSF
+-----END PGP SIGNATURE-----
+
+--BZaMRJmqxGScZ8Mx--
