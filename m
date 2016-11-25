@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPxBc4hvpzDvsB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:04:08 +1100 (AEDT)
-In-Reply-To: <20161116030215.6886-1-ruscur@russell.cc>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPxBd4jJ4zDvsB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:04:09 +1100 (AEDT)
+In-Reply-To: <20161122101327.14281-1-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/pci: Always print PHB and PE numbers as hexadecimal
-Message-Id: <3tPxBc1Rp2z9t0Z@ozlabs.org>
-Date: Fri, 25 Nov 2016 11:04:07 +1100 (AEDT)
+Subject: Re: cxl: fix coccinelle warnings
+Message-Id: <3tPxBc54s5z9t2n@ozlabs.org>
+Date: Fri, 25 Nov 2016 11:04:08 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,32 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-16 at 03:02:15 UTC, Russell Currey wrote:
-> PHB, PE (and by association MVE) numbers are printed as a mix of decimal
-> and hexadecimal throughout the kernel.  This can be misleading, so make
-> them all hexadecimal.
+On Tue, 2016-11-22 at 10:13:27 UTC, Andrew Donnellan wrote:
+> Fix the following coccinelle warnings:
 > 
-> Standardising on hex instead of dec because:
+>     drivers/misc/cxl/debugfs.c:46:0-23: WARNING: fops_io_x64 should be
+>         defined with DEFINE_DEBUGFS_ATTRIBUTE
+>     drivers/misc/cxl/guest.c:890:5-26: WARNING: Comparison to bool
+>     drivers/misc/cxl/irq.c:107:3-23: WARNING: Assignment of bool to 0/1
+>     drivers/misc/cxl/native.c:57:2-3: Unneeded semicolon
+>     drivers/misc/cxl/native.c:170:2-3: Unneeded semicolon
 > 
->  - PHB numbers are presented in hex in sysfs/debugfs (and lspci, etc)
->  - PE numbers are presented as hex in sysfs and parsed in hex in debugfs
-> 
-> The only place I think this could cause confusing are the messages during
-> boot, i.e.
-> 
-> 	pci 000a:01     : [PE# 000] Secondary bus 1 associated with PE#0
-> 
-> which can be a quick way to check PE numbers.  pe_level_printk() will
-> only print two characters instead of three, so the above would be
-> 
-> 	pci 000a:01     : [PE# 00] Secondary bus 1 associated with PE#0
-> 
-> which gives a hint it's in hex.
-> 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1f52f1761456c919814c995710153a
+https://git.kernel.org/powerpc/c/3382a6220ff3bac886d9d90766f3fe
 
 cheers
