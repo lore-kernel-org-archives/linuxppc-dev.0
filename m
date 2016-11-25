@@ -2,16 +2,13 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPxBb6qKkzDvk5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:04:07 +1100 (AEDT)
-In-Reply-To: <9dd0626d840e60b15603d767ce1576630fe1376d.1479745635.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Masami Hiramatsu <mhiramat@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPxBc4hvpzDvsB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:04:08 +1100 (AEDT)
+In-Reply-To: <20161116030215.6886-1-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [v2,1/2] powerpc: remove extraneous header from asm-prototypes.h
-Message-Id: <3tPxBb4zk5z9t2C@ozlabs.org>
+Subject: Re: powerpc/pci: Always print PHB and PE numbers as hexadecimal
+Message-Id: <3tPxBc1Rp2z9t0Z@ozlabs.org>
 Date: Fri, 25 Nov 2016 11:04:07 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,16 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-11-21 at 17:06:40 UTC, "Naveen N. Rao" wrote:
-> Commit 03465f899bda ("powerpc: Use kprobe blacklist for exception
-> handlers") removed __kprobes annotation from some of the prototypes,
-> but left the kprobes header include directive unchanged. Remove it as it
-> is no longer needed.
+On Wed, 2016-11-16 at 03:02:15 UTC, Russell Currey wrote:
+> PHB, PE (and by association MVE) numbers are printed as a mix of decimal
+> and hexadecimal throughout the kernel.  This can be misleading, so make
+> them all hexadecimal.
 > 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Standardising on hex instead of dec because:
+> 
+>  - PHB numbers are presented in hex in sysfs/debugfs (and lspci, etc)
+>  - PE numbers are presented as hex in sysfs and parsed in hex in debugfs
+> 
+> The only place I think this could cause confusing are the messages during
+> boot, i.e.
+> 
+> 	pci 000a:01     : [PE# 000] Secondary bus 1 associated with PE#0
+> 
+> which can be a quick way to check PE numbers.  pe_level_printk() will
+> only print two characters instead of three, so the above would be
+> 
+> 	pci 000a:01     : [PE# 00] Secondary bus 1 associated with PE#0
+> 
+> which gives a hint it's in hex.
+> 
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/82de5797a26087c651a06de327e6aa
+https://git.kernel.org/powerpc/c/1f52f1761456c919814c995710153a
 
 cheers
