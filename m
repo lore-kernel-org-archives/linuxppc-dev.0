@@ -1,33 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0024.hostedemail.com
+ [216.40.44.24])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQLTZ3v11zDvyY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 03:03:30 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAPFwhr9014026
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:03:28 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26xg61wt3a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:03:28 -0500
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 25 Nov 2016 09:03:27 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v6 7/7] powerpc/mm: Batch tlb flush when invalidating pte
- entries
-Date: Fri, 25 Nov 2016 21:32:57 +0530
-In-Reply-To: <20161125160257.9158-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20161125160257.9158-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20161125160257.9158-8-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQNkK5dWHzDw1J
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 04:44:41 +1100 (AEDT)
+Message-ID: <1480095870.19726.31.camel@perches.com>
+Subject: Re: [PATCH] powerpc: Use pr_warn instead of pr_warning
+From: Joe Perches <joe@perches.com>
+To: Anatolij Gustschin <agust@denx.de>, Scott Wood <oss@buserror.net>, Kumar
+ Gala <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>,  Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Geoff Levand <geoff@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Fri, 25 Nov 2016 09:44:30 -0800
+In-Reply-To: <af9bcd9cdbc64f2c2638ba869979de003ba4671c.1477367819.git.joe@perches.com>
+References: <af9bcd9cdbc64f2c2638ba869979de003ba4671c.1477367819.git.joe@perches.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will improve the task exit case, by batching tlb invalidates.
+On Mon, 2016-10-24 at 21:00 -0700, Joe Perches wrote:
+> At some point, pr_warning will be removed so all logging messages use
+> a consistent <prefix>_warn style.
+> 
+> Update arch/powerpc/
+> 
+> Miscellanea:
+> 
+> o Coalesce formats
+> o Realign arguments
+> o Use %s, __func__ instead of embedded function names
+> o Remove unnecessary line continuations
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/radix.h | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+Ping?
 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index c0d43766ec63..98a0aee8b148 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -140,13 +140,20 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
- 		unsigned long new_pte;
- 
- 		old_pte = __radix_pte_update(ptep, ~0, 0);
--		asm volatile("ptesync" : : : "memory");
- 		/*
- 		 * new value of pte
- 		 */
- 		new_pte = (old_pte | set) & ~clr;
--		radix__flush_tlb_pte(old_pte, mm, addr);
--		__radix_pte_update(ptep, 0, new_pte);
-+		/*
-+		 * If we are trying to clear the pte, we can skip
-+		 * the below sequence and batch the tlb flush. The
-+		 * tlb flush batching is done by mmu gather code
-+		 */
-+		if (new_pte) {
-+			asm volatile("ptesync" : : : "memory");
-+			radix__flush_tlb_pte(old_pte, mm, addr);
-+			__radix_pte_update(ptep, 0, new_pte);
-+		}
- 	} else
- 		old_pte = __radix_pte_update(ptep, clr, set);
- 	asm volatile("ptesync" : : : "memory");
--- 
-2.10.2
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/powerpc/kernel/pci-common.c                |  4 ++--
+>  arch/powerpc/mm/init_64.c                       |  5 ++---
+>  arch/powerpc/mm/mem.c                           |  3 +--
+>  arch/powerpc/platforms/512x/mpc512x_shared.c    |  4 ++--
+>  arch/powerpc/platforms/85xx/socrates_fpga_pic.c |  7 +++----
+>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c      |  2 +-
+>  arch/powerpc/platforms/pasemi/dma_lib.c         |  4 ++--
+>  arch/powerpc/platforms/powernv/opal.c           |  8 ++++----
+>  arch/powerpc/platforms/powernv/pci-ioda.c       | 10 +++++-----
+>  arch/powerpc/platforms/ps3/device-init.c        | 12 +++++-------
+>  arch/powerpc/platforms/ps3/mm.c                 |  4 ++--
+>  arch/powerpc/platforms/ps3/os-area.c            |  2 +-
+>  arch/powerpc/platforms/pseries/iommu.c          |  8 +++-----
+>  arch/powerpc/platforms/pseries/setup.c          |  4 ++--
+>  arch/powerpc/sysdev/fsl_pci.c                   |  9 +++------
+>  arch/powerpc/sysdev/mpic.c                      | 10 ++++------
+>  arch/powerpc/sysdev/xics/icp-native.c           | 10 ++++------
+>  arch/powerpc/sysdev/xics/ics-opal.c             |  4 +--
+>  arch/powerpc/sysdev/xics/ics-rtas.c             |  4 ++--
+>  arch/powerpc/sysdev/xics/xics-common.c          |  8 ++++----
+>  20 files changed, 54 insertions(+), 68 deletions(-)
+> 
