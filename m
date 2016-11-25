@@ -1,36 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <meng.yi@nxp.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0087.outbound.protection.outlook.com [104.47.42.87])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ6YM6YbHzDvwx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 18:05:59 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAP742Du125127
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 02:05:57 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26xdbcsu40-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 02:05:57 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 25 Nov 2016 00:05:56 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 1/7] powerpc/mm: update ptep_set_access_flag to not do
- full mm tlb flush
-In-Reply-To: <87fumgjimq.fsf@linux.vnet.ibm.com>
-References: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161125024843.GA24925@fergus.ozlabs.ibm.com>
- <87fumgjimq.fsf@linux.vnet.ibm.com>
-Date: Fri, 25 Nov 2016 12:35:49 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ6Hr312lzDvsm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 17:54:16 +1100 (AEDT)
+From: Meng Yi <meng.yi@nxp.com>
+To: <oss@buserror.net>, <galak@kernel.crashing.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Jason Jin
+ <jason.jin@nxp.com>, Meng Yi <meng.yi@nxp.com>
+Subject: [PATCH] nxp/diu: enable diu support for t1042 platform
+Date: Fri, 25 Nov 2016 14:40:55 +0800
+Message-ID: <1480056055-3385-1-git-send-email-meng.yi@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87d1hkjaya.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,39 +23,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+From: Jason Jin <jason.jin@nxp.com>
 
-> Paul Mackerras <paulus@ozlabs.org> writes:
->
+This patch add the DIU support for t1042 platform.
+signed-off-by: Jason Jin <jason.jin@nxp.com> [Meng Yi: Made file t1042rdb-specific]
+Signed-off-by: Meng Yi <meng.yi@nxp.com>
+---
+ arch/powerpc/platforms/85xx/Makefile       |   1 +
+ arch/powerpc/platforms/85xx/t1042rdb_diu.c | 152 +++++++++++++++++++++++++++++
+ 2 files changed, 153 insertions(+)
+ create mode 100644 arch/powerpc/platforms/85xx/t1042rdb_diu.c
 
->>
->>  #define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
->>  #define _PAGE_PRESENT		(1ul << 63)	/* pte contains a translation */
->> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
->> index f4f437c..7ff0289 100644
->> --- a/arch/powerpc/mm/pgtable-book3s64.c
->> +++ b/arch/powerpc/mm/pgtable-book3s64.c
->> @@ -86,7 +86,7 @@ pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
->>  {
->>  	unsigned long pmdv;
->>
->> -	pmdv = (pfn << PAGE_SHIFT) & PTE_RPN_MASK;
->> +	pmdv = ((pfn << PAGE_SHIFT) & PTE_RPN_MASK) | _PAGE_LARGE;
->>  	return pmd_set_protbits(__pmd(pmdv), pgprot);
->>  }
->>
->
-> I will look at this and see if can make the patch simpler. But do we
-> really want to use the pte bit for this ? Aren't we low on free pte bits
-
-
-Ok this will work, provided we are ok to take up two pte bits for this
-So we can use make_huge_pte() to fixup the pte entry for hugetlb and
-pmd_mkhuge() to fixup the THP.
-
-Now the question will be how will we support _PAGE_DEVMAP (for nvidmm).
-We don't have free software pte bits after we make the above change.
-
-NOTE: We do have 3 reserved bits(ppc bit 4-6 ) can we use that ?
-
--aneesh
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 7bc86da..fe19dad 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -22,6 +22,7 @@ obj-$(CONFIG_P1022_RDK)   += p1022_rdk.o
+ obj-$(CONFIG_P1023_RDB)   += p1023_rdb.o
+ obj-$(CONFIG_TWR_P102x)   += twr_p102x.o
+ obj-$(CONFIG_CORENET_GENERIC)   += corenet_generic.o
++obj-$(CONFIG_FB_FSL_DIU)	+= t1042rdb_diu.o
+ obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
+ obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
+ obj-$(CONFIG_SBC8548)     += sbc8548.o
+diff --git a/arch/powerpc/platforms/85xx/t1042rdb_diu.c b/arch/powerpc/platforms/85xx/t1042rdb_diu.c
+new file mode 100644
+index 0000000..58fa3d3
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/t1042rdb_diu.c
+@@ -0,0 +1,152 @@
++/*
++ * T1042 platform DIU operation
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++
++#include <sysdev/fsl_soc.h>
++
++/*DIU Pixel ClockCR offset in scfg*/
++#define CCSR_SCFG_PIXCLKCR      0x28
++
++/* DIU Pixel Clock bits of the PIXCLKCR */
++#define PIXCLKCR_PXCKEN		0x80000000
++#define PIXCLKCR_PXCKINV	0x40000000
++#define PIXCLKCR_PXCKDLY	0x0000FF00
++#define PIXCLKCR_PXCLK_MASK	0x00FF0000
++
++/* Some CPLD register definitions */
++#define CPLD_DIUCSR		0x16
++#define CPLD_DIUCSR_DVIEN	0x80
++#define CPLD_DIUCSR_BACKLIGHT	0x0f
++
++struct device_node *cpld_node;
++
++/**
++ * t1042rdb_set_monitor_port: switch the output to a different monitor port
++ */
++static void t1042rdb_set_monitor_port(enum fsl_diu_monitor_port port)
++{
++	static void __iomem *cpld_base;
++
++	cpld_base = of_iomap(cpld_node, 0);
++	if (!cpld_base) {
++		pr_err("%s: Could not map cpld registers\n", __func__);
++		goto exit;
++	}
++
++	switch (port) {
++	case FSL_DIU_PORT_DVI:
++		/* Enable the DVI(HDMI) port, disable the DFP and
++		 * the backlight
++		 */
++		clrbits8(cpld_base + CPLD_DIUCSR, CPLD_DIUCSR_DVIEN);
++		break;
++	case FSL_DIU_PORT_LVDS:
++		/*
++		 * LVDS also needs backlight enabled, otherwise the display
++		 * will be blank.
++		 */
++		/* Enable the DFP port, disable the DVI*/
++		setbits8(cpld_base + CPLD_DIUCSR, 0x01 << 8);
++		setbits8(cpld_base + CPLD_DIUCSR, 0x01 << 4);
++		setbits8(cpld_base + CPLD_DIUCSR, CPLD_DIUCSR_BACKLIGHT);
++		break;
++	default:
++		pr_err("%s: Unsupported monitor port %i\n", __func__, port);
++	}
++
++	iounmap(cpld_base);
++exit:
++	of_node_put(cpld_node);
++}
++
++/**
++ * t1042rdb_set_pixel_clock: program the DIU's clock
++ * @pixclock: pixel clock in ps (pico seconds)
++ */
++static void t1042rdb_set_pixel_clock(unsigned int pixclock)
++{
++	struct device_node *scfg_np;
++	void __iomem *scfg;
++	unsigned long freq;
++	u64 temp;
++	u32 pxclk;
++
++	scfg_np = of_find_compatible_node(NULL, NULL, "fsl,t1040-scfg");
++	if (!scfg_np) {
++		pr_err("%s: Missing scfg node. Can not display video.\n",
++		       __func__);
++		return;
++	}
++
++	scfg = of_iomap(scfg_np, 0);
++	of_node_put(scfg_np);
++	if (!scfg) {
++		pr_err("%s: Could not map device. Can not display video.\n",
++		       __func__);
++		return;
++	}
++
++	/* Convert pixclock into frequency */
++	temp = 1000000000000ULL;
++	do_div(temp, pixclock);
++	freq = temp;
++
++	/*
++	 * 'pxclk' is the ratio of the platform clock to the pixel clock.
++	 * This number is programmed into the PIXCLKCR register, and the valid
++	 * range of values is 2-255.
++	 */
++	pxclk = DIV_ROUND_CLOSEST(fsl_get_sys_freq(), freq);
++	pxclk = clamp_t(u32, pxclk, 2, 255);
++
++	/* Disable the pixel clock, and set it to non-inverted and no delay */
++	clrbits32(scfg + CCSR_SCFG_PIXCLKCR,
++		  PIXCLKCR_PXCKEN | PIXCLKCR_PXCKDLY | PIXCLKCR_PXCLK_MASK);
++
++	/* Enable the clock and set the pxclk */
++	setbits32(scfg + CCSR_SCFG_PIXCLKCR, PIXCLKCR_PXCKEN | (pxclk << 16));
++
++	iounmap(scfg);
++}
++
++/**
++ * t1042rdb_valid_monitor_port: set the monitor port for sysfs
++ */
++static enum fsl_diu_monitor_port
++t1042rdb_valid_monitor_port(enum fsl_diu_monitor_port port)
++{
++	switch (port) {
++	case FSL_DIU_PORT_DVI:
++	case FSL_DIU_PORT_LVDS:
++		return port;
++	default:
++		return FSL_DIU_PORT_DVI; /* Dual-link LVDS is not supported */
++	}
++}
++
++static int __init t1042rdb_diu_init(void)
++{
++	cpld_node = of_find_compatible_node(NULL, NULL, "fsl,t1042rdb-cpld");
++	if (!cpld_node)
++		return 0;
++
++	diu_ops.set_monitor_port	= t1042rdb_set_monitor_port;
++	diu_ops.set_pixel_clock		= t1042rdb_set_pixel_clock;
++	diu_ops.valid_monitor_port	= t1042rdb_valid_monitor_port;
++
++	return 0;
++}
++
++early_initcall(t1042rdb_diu_init);
+-- 
+2.1.0.27.g96db324
