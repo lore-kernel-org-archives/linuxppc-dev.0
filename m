@@ -1,18 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ1GG5td2zDvxW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 14:07:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ1sz0LndzDvYL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 14:35:03 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: xinhui.pan@linux.vnet.ibm.com,
-	peterz@infradead.org
-Subject: [PATCH] powerpc: Fix __cmpxchg() to take a volatile ptr again
-Date: Fri, 25 Nov 2016 14:07:09 +1100
-Message-Id: <1480043229-2363-1-git-send-email-mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+ Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Alan Modra <amodra@gmail.com>
+Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
+In-Reply-To: <20161125133559.21461ca1@roar.ozlabs.ibm.com>
+References: <20161123130840.1877-1-npiggin@gmail.com>
+ <20161123143834.GB6099@gate.crashing.org>
+ <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
+ <20161124122713.GC14394@gate.crashing.org>
+ <87d1hktt5z.fsf@concordia.ellerman.id.au>
+ <20161124231716.GB30675@gate.crashing.org>
+ <20161125121300.111a70c0@roar.ozlabs.ibm.com>
+ <8737igtip8.fsf@concordia.ellerman.id.au>
+ <20161125133559.21461ca1@roar.ozlabs.ibm.com>
+Date: Fri, 25 Nov 2016 14:35:02 +1100
+Message-ID: <87zikos049.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,55 +33,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
-we removed the volatile from __cmpxchg().
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-This is leading to warnings such as:
+> On Fri, 25 Nov 2016 13:08:19 +1100
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> 
+>> > On Thu, 24 Nov 2016 17:17:16 -0600
+>> > Segher Boessenkool <segher@kernel.crashing.org> wrote:
+>> >  
+>> >> On Fri, Nov 25, 2016 at 09:22:16AM +1100, Michael Ellerman wrote:  
+>> >> > >> >> Question, are there any fundamental reasons we shouldn't use the ELFv2
+>> >> > >> >> ABI to build big endian kernels if the compiler supports it?    
+>> >> > >> >
+>> >> > >> > No one uses ELFv2 for BE in production, and it isn't thoroughly tested
+>> >> > >> > at all, not even regularly tested.  "Not supported", as far as GCC is
+>> >> > >> > concerned (or any of the distros AFAIK).    
+>> >> > >> 
+>> >> > >> Is this actually unsupported by gcc?    
+>> >> > >
+>> >> > > It may or may not work.  We of course try to keep it working, or make
+>> >> > > it work if it doesn't now.  But it isn't regularly tested, and it isn't
+>> >> > > a target that is considered for the release criteria (see
+>> >> > > https://gcc.gnu.org/gcc-7/criteria.html -- powerpc64{,le}-linux, i.e.
+>> >> > > ABIv1 for BE, ABIv2 for LE).    
+>> >> > 
+>> >> > It doesn't actually say that though. It just says
+>> >> > powerpc64-unknown-linux-gnu. So how is someone, say the musl folks,
+>> >> > supposed to know that BE ABIv2 is not supported?    
+>> >> 
+>> >> Because their target is powerpc64*-*-linux-musl instead?  It is not on
+>> >> the release criteria list, it is not something we make any claims about.
+>> >> 
+>> >> How would you know -m32 -mlittle is not well tested at all?  It is in much
+>> >> the same boat: unusual combinations of options, and unusual configurations,
+>> >> are not well tested.  You have to build a separate C library just to get
+>> >> started with it, that should tell you there are some rough waters ahead!
+>> >> 
+>> >> Which isn't to say you should not do this -- just think twice before
+>> >> doing so.  And wear a life vest.  
+>> >
+>> > Other than curiosity, only two reasons for the kernel to enable it:
+>> > either it helps end users, or it allows us to get rid of elfv1 support
+>> > (eventually). Both would require gcc to have some base amount of testing.  
+>> 
+>> I think it might be worth adding as option, as long as it's not too
+>> intrusive. We could then put it in our CI and at least keep an eye on
+>> whether it continues to work.
+>
+> If you're willing to take it, sure. I'll resubmit it with a default-n
+> config option hidden away somewhere.
 
-  drivers/gpu/drm/drm_lock.c: In function ‘drm_lock_take’:
-  arch/powerpc/include/asm/cmpxchg.h:484:37: warning: passing argument 1
-  of ‘__cmpxchg’ discards ‘volatile’ qualifier from pointer target
-     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,   \
+I think so, unless we find that the size of the patch grows once we
+start testing it more.
 
-There doesn't seem to be consensus across architectures whether the
-argument is volatile or not, so at least for now put the volatile back.
+>> Using ABIv1 does have user visible effects, ie. dot symbols show up in
+>> traces and so on. So getting rid of that would be nice.
+>> 
+>> Having said that, perf and other tools are currently built to assume
+>> BE==ABIv1, so breaking that assumption would possibly cause more
+>> trouble.
+>
+> We can make it clear it's experimental/not supported, but things like
+> that could probably be cleaned up slowly. They should depend on elf
+> version rather than endian anyway.
 
-Fixes: d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/cmpxchg.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+They should, but that assumes you have the vmlinux ELF, or some other
+way to query the ABI of the kernel which may not always be the case. But
+it's probably solvable.
 
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index c12f110261b2..fc46b664c49e 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -14,7 +14,7 @@
- #endif
- 
- #define XCHG_GEN(type, sfx, cl)				\
--static inline u32 __xchg_##type##sfx(void *p, u32 val)		\
-+static inline u32 __xchg_##type##sfx(volatile void *p, u32 val)	\
- {								\
- 	unsigned int prev, prev_mask, tmp, bitoff, off;		\
- 								\
-@@ -40,7 +40,7 @@ static inline u32 __xchg_##type##sfx(void *p, u32 val)		\
- 
- #define CMPXCHG_GEN(type, sfx, br, br2, cl)			\
- static inline							\
--u32 __cmpxchg_##type##sfx(void *p, u32 old, u32 new)		\
-+u32 __cmpxchg_##type##sfx(volatile void *p, u32 old, u32 new)	\
- {								\
- 	unsigned int prev, prev_mask, tmp, bitoff, off;		\
- 								\
-@@ -399,7 +399,7 @@ __cmpxchg_u64_acquire(u64 *p, unsigned long old, unsigned long new)
- #endif
- 
- static __always_inline unsigned long
--__cmpxchg(void *ptr, unsigned long old, unsigned long new,
-+__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
- 	  unsigned int size)
- {
- 	switch (size) {
--- 
-2.7.4
+>> I guess the other question is when did ABIv2 land in the toolchain, ie.
+>> how many years do we have to wait until we can mandate it.
+>
+> I think gcc 4.9, binutils 2.24, early 2014.
+>
+> But if we've never been testing with those older toolchains we're a bit
+> behind the 8 ball. Still, the second best time to plant the tree is now...
+
+True and true.
+
+cheers
