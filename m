@@ -1,29 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ1sz0LndzDvYL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 14:35:03 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
- Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Alan Modra <amodra@gmail.com>
-Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
-In-Reply-To: <20161125133559.21461ca1@roar.ozlabs.ibm.com>
-References: <20161123130840.1877-1-npiggin@gmail.com>
- <20161123143834.GB6099@gate.crashing.org>
- <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
- <20161124122713.GC14394@gate.crashing.org>
- <87d1hktt5z.fsf@concordia.ellerman.id.au>
- <20161124231716.GB30675@gate.crashing.org>
- <20161125121300.111a70c0@roar.ozlabs.ibm.com>
- <8737igtip8.fsf@concordia.ellerman.id.au>
- <20161125133559.21461ca1@roar.ozlabs.ibm.com>
-Date: Fri, 25 Nov 2016 14:35:02 +1100
-Message-ID: <87zikos049.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ2ln08drzDvtc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 15:14:45 +1100 (AEDT)
+Date: Fri, 25 Nov 2016 12:36:22 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v6 3/7] vfio/spapr: Postpone allocation of
+ userspace version of TCE table
+Message-ID: <20161125013622.GA12287@umbus.fritz.box>
+References: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
+ <1479966490-8739-4-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="lrZ03NoBR/3+SXJZ"
+In-Reply-To: <1479966490-8739-4-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,84 +29,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
 
-> On Fri, 25 Nov 2016 13:08:19 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->
->> Nicholas Piggin <npiggin@gmail.com> writes:
->> 
->> > On Thu, 24 Nov 2016 17:17:16 -0600
->> > Segher Boessenkool <segher@kernel.crashing.org> wrote:
->> >  
->> >> On Fri, Nov 25, 2016 at 09:22:16AM +1100, Michael Ellerman wrote:  
->> >> > >> >> Question, are there any fundamental reasons we shouldn't use the ELFv2
->> >> > >> >> ABI to build big endian kernels if the compiler supports it?    
->> >> > >> >
->> >> > >> > No one uses ELFv2 for BE in production, and it isn't thoroughly tested
->> >> > >> > at all, not even regularly tested.  "Not supported", as far as GCC is
->> >> > >> > concerned (or any of the distros AFAIK).    
->> >> > >> 
->> >> > >> Is this actually unsupported by gcc?    
->> >> > >
->> >> > > It may or may not work.  We of course try to keep it working, or make
->> >> > > it work if it doesn't now.  But it isn't regularly tested, and it isn't
->> >> > > a target that is considered for the release criteria (see
->> >> > > https://gcc.gnu.org/gcc-7/criteria.html -- powerpc64{,le}-linux, i.e.
->> >> > > ABIv1 for BE, ABIv2 for LE).    
->> >> > 
->> >> > It doesn't actually say that though. It just says
->> >> > powerpc64-unknown-linux-gnu. So how is someone, say the musl folks,
->> >> > supposed to know that BE ABIv2 is not supported?    
->> >> 
->> >> Because their target is powerpc64*-*-linux-musl instead?  It is not on
->> >> the release criteria list, it is not something we make any claims about.
->> >> 
->> >> How would you know -m32 -mlittle is not well tested at all?  It is in much
->> >> the same boat: unusual combinations of options, and unusual configurations,
->> >> are not well tested.  You have to build a separate C library just to get
->> >> started with it, that should tell you there are some rough waters ahead!
->> >> 
->> >> Which isn't to say you should not do this -- just think twice before
->> >> doing so.  And wear a life vest.  
->> >
->> > Other than curiosity, only two reasons for the kernel to enable it:
->> > either it helps end users, or it allows us to get rid of elfv1 support
->> > (eventually). Both would require gcc to have some base amount of testing.  
->> 
->> I think it might be worth adding as option, as long as it's not too
->> intrusive. We could then put it in our CI and at least keep an eye on
->> whether it continues to work.
->
-> If you're willing to take it, sure. I'll resubmit it with a default-n
-> config option hidden away somewhere.
+--lrZ03NoBR/3+SXJZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think so, unless we find that the size of the patch grows once we
-start testing it more.
+On Thu, Nov 24, 2016 at 04:48:06PM +1100, Alexey Kardashevskiy wrote:
+> The iommu_table struct manages a hardware TCE table and a vmalloc'd
+> table with corresponding userspace addresses. Both are allocated when
+> the default DMA window is created and this happens when the very first
+> group is attached to a container.
+>=20
+> As we are going to allow the userspace to configure container in one
+> memory context and pas container fd to another, we have to postpones
+> such allocations till a container fd is passed to the destination
+> user process so we would account locked memory limit against the actual
+> container user constrainsts.
+>=20
+> This postpones the it_userspace array allocation till it is used first
+> time for mapping. The unmapping patch already checks if the array is
+> allocated.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
->> Using ABIv1 does have user visible effects, ie. dot symbols show up in
->> traces and so on. So getting rid of that would be nice.
->> 
->> Having said that, perf and other tools are currently built to assume
->> BE==ABIv1, so breaking that assumption would possibly cause more
->> trouble.
->
-> We can make it clear it's experimental/not supported, but things like
-> that could probably be cleaned up slowly. They should depend on elf
-> version rather than endian anyway.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-They should, but that assumes you have the vmlinux ELF, or some other
-way to query the ABI of the kernel which may not always be the case. But
-it's probably solvable.
+> ---
+> Changes:
+> v6:
+> * moved missing hunk from the next patch: tce_iommu_create_table()
+> would decrement locked_vm while new caller - tce_iommu_build_v2() -
+> will not; this adds a new return code to the DMA mapping path but
+> this seems to be a minor change.
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 20 +++++++-------------
+>  1 file changed, 7 insertions(+), 13 deletions(-)
+>=20
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index d0c38b2..4efd2b2 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -515,6 +515,12 @@ static long tce_iommu_build_v2(struct tce_container =
+*container,
+>  	unsigned long hpa;
+>  	enum dma_data_direction dirtmp;
+> =20
+> +	if (!tbl->it_userspace) {
+> +		ret =3D tce_iommu_userspace_view_alloc(tbl);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+>  	for (i =3D 0; i < pages; ++i) {
+>  		struct mm_iommu_table_group_mem_t *mem =3D NULL;
+>  		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
+> @@ -588,15 +594,6 @@ static long tce_iommu_create_table(struct tce_contai=
+ner *container,
+>  	WARN_ON(!ret && !(*ptbl)->it_ops->free);
+>  	WARN_ON(!ret && ((*ptbl)->it_allocated_size !=3D table_size));
+> =20
+> -	if (!ret && container->v2) {
+> -		ret =3D tce_iommu_userspace_view_alloc(*ptbl);
+> -		if (ret)
+> -			(*ptbl)->it_ops->free(*ptbl);
+> -	}
+> -
+> -	if (ret)
+> -		decrement_locked_vm(table_size >> PAGE_SHIFT);
+> -
+>  	return ret;
+>  }
+> =20
+> @@ -1068,10 +1065,7 @@ static int tce_iommu_take_ownership(struct tce_con=
+tainer *container,
+>  		if (!tbl || !tbl->it_map)
+>  			continue;
+> =20
+> -		rc =3D tce_iommu_userspace_view_alloc(tbl);
+> -		if (!rc)
+> -			rc =3D iommu_take_ownership(tbl);
+> -
+> +		rc =3D iommu_take_ownership(tbl);
+>  		if (rc) {
+>  			for (j =3D 0; j < i; ++j)
+>  				iommu_release_ownership(
 
->> I guess the other question is when did ABIv2 land in the toolchain, ie.
->> how many years do we have to wait until we can mandate it.
->
-> I think gcc 4.9, binutils 2.24, early 2014.
->
-> But if we've never been testing with those older toolchains we're a bit
-> behind the 8 ball. Still, the second best time to plant the tree is now...
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-True and true.
+--lrZ03NoBR/3+SXJZ
+Content-Type: application/pgp-signature; name="signature.asc"
 
-cheers
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYN5WTAAoJEGw4ysog2bOSsGAQAJ+mzkR7Rg3n+YsrbfdR0N/h
+HjKSz9j0NU+egMXOcoVHoCUvd8ZN2pZ0CNonqFadHEN6RoYbReqXXhFysz9fi2Ai
+JnCgqfId8cvYoOgqBTrPvRRMnGxk2deWliVD8Tkb5Y/TAoGfHDC1505+vbizLUpV
+FwjjQrVo0xj0C8cbiO/IBDY3oec3CIscy2crinj0IDCs19Wlmy5kYu8SmT7E38uS
+g9mZwJ+lKarNwLCOGvXCvGDl8o//pKnFYdVFFtUdBoqyp2IURKGJz92W6kfoN+sq
+VqcBosauP8sBAq6Z5DvBlAqC5avOO0X1JOdosnbzwsrVbMra3/fB9z3peBBZ85t1
+HWkuJUW+qFSM3JrPTdHKQDGbjo3CnsQujYcoPb4ShNGCbhg4RB0MEUoZwkgfz7rz
+DWbnzimoDwUWVxjnLXo4un63aOcnooIhwtKUsDonnvb0hSQ2dkzMtchUcAKzYKdh
+Fv7dmeTcCWygSrrndiWgZ2jgpA8APNcYbH8FCZRID/njy/8FuGTwEJmEbGI6+2NY
+tVkajt/PEiJBwXlnVKjh0Dujzs55Agt52j1VVerk4Kng11SdY0z/LeQ3jmGMaQYc
+2fvW+C6YFqSVh05LAK1CYVHD+MR+GmOQEJmBFZ9a9ULecISuutDG3C8h7dqsaYKd
+MMSrFhPIc0Y7ICkBnNAi
+=xc1C
+-----END PGP SIGNATURE-----
+
+--lrZ03NoBR/3+SXJZ--
