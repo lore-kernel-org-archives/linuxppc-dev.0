@@ -1,19 +1,22 @@
-Return-Path: <meng.yi@nxp.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0087.outbound.protection.outlook.com [104.47.42.87])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ6Hr312lzDvsm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 17:54:16 +1100 (AEDT)
-From: Meng Yi <meng.yi@nxp.com>
-To: <oss@buserror.net>, <galak@kernel.crashing.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Jason Jin
- <jason.jin@nxp.com>, Meng Yi <meng.yi@nxp.com>
-Subject: [PATCH] nxp/diu: enable diu support for t1042 platform
-Date: Fri, 25 Nov 2016 14:40:55 +0800
-Message-ID: <1480056055-3385-1-git-send-email-meng.yi@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ85k6wxHzDvv2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 19:15:38 +1100 (AEDT)
+Subject: Re: [v3,2/3] powerpc: get hugetlbpage handling more generic
+To: Scott Wood <oss@buserror.net>
+References: <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
+ <20161124052330.GA17212@home.buserror.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <aa9a2f8a-a480-0cc9-adf6-4017c771fb46@c-s.fr>
+Date: Fri, 25 Nov 2016 09:14:03 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20161124052330.GA17212@home.buserror.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,186 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jason Jin <jason.jin@nxp.com>
 
-This patch add the DIU support for t1042 platform.
-signed-off-by: Jason Jin <jason.jin@nxp.com> [Meng Yi: Made file t1042rdb-specific]
-Signed-off-by: Meng Yi <meng.yi@nxp.com>
----
- arch/powerpc/platforms/85xx/Makefile       |   1 +
- arch/powerpc/platforms/85xx/t1042rdb_diu.c | 152 +++++++++++++++++++++++++++++
- 2 files changed, 153 insertions(+)
- create mode 100644 arch/powerpc/platforms/85xx/t1042rdb_diu.c
 
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 7bc86da..fe19dad 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -22,6 +22,7 @@ obj-$(CONFIG_P1022_RDK)   += p1022_rdk.o
- obj-$(CONFIG_P1023_RDB)   += p1023_rdb.o
- obj-$(CONFIG_TWR_P102x)   += twr_p102x.o
- obj-$(CONFIG_CORENET_GENERIC)   += corenet_generic.o
-+obj-$(CONFIG_FB_FSL_DIU)	+= t1042rdb_diu.o
- obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
- obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
- obj-$(CONFIG_SBC8548)     += sbc8548.o
-diff --git a/arch/powerpc/platforms/85xx/t1042rdb_diu.c b/arch/powerpc/platforms/85xx/t1042rdb_diu.c
-new file mode 100644
-index 0000000..58fa3d3
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/t1042rdb_diu.c
-@@ -0,0 +1,152 @@
-+/*
-+ * T1042 platform DIU operation
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+/*DIU Pixel ClockCR offset in scfg*/
-+#define CCSR_SCFG_PIXCLKCR      0x28
-+
-+/* DIU Pixel Clock bits of the PIXCLKCR */
-+#define PIXCLKCR_PXCKEN		0x80000000
-+#define PIXCLKCR_PXCKINV	0x40000000
-+#define PIXCLKCR_PXCKDLY	0x0000FF00
-+#define PIXCLKCR_PXCLK_MASK	0x00FF0000
-+
-+/* Some CPLD register definitions */
-+#define CPLD_DIUCSR		0x16
-+#define CPLD_DIUCSR_DVIEN	0x80
-+#define CPLD_DIUCSR_BACKLIGHT	0x0f
-+
-+struct device_node *cpld_node;
-+
-+/**
-+ * t1042rdb_set_monitor_port: switch the output to a different monitor port
-+ */
-+static void t1042rdb_set_monitor_port(enum fsl_diu_monitor_port port)
-+{
-+	static void __iomem *cpld_base;
-+
-+	cpld_base = of_iomap(cpld_node, 0);
-+	if (!cpld_base) {
-+		pr_err("%s: Could not map cpld registers\n", __func__);
-+		goto exit;
-+	}
-+
-+	switch (port) {
-+	case FSL_DIU_PORT_DVI:
-+		/* Enable the DVI(HDMI) port, disable the DFP and
-+		 * the backlight
-+		 */
-+		clrbits8(cpld_base + CPLD_DIUCSR, CPLD_DIUCSR_DVIEN);
-+		break;
-+	case FSL_DIU_PORT_LVDS:
-+		/*
-+		 * LVDS also needs backlight enabled, otherwise the display
-+		 * will be blank.
-+		 */
-+		/* Enable the DFP port, disable the DVI*/
-+		setbits8(cpld_base + CPLD_DIUCSR, 0x01 << 8);
-+		setbits8(cpld_base + CPLD_DIUCSR, 0x01 << 4);
-+		setbits8(cpld_base + CPLD_DIUCSR, CPLD_DIUCSR_BACKLIGHT);
-+		break;
-+	default:
-+		pr_err("%s: Unsupported monitor port %i\n", __func__, port);
-+	}
-+
-+	iounmap(cpld_base);
-+exit:
-+	of_node_put(cpld_node);
-+}
-+
-+/**
-+ * t1042rdb_set_pixel_clock: program the DIU's clock
-+ * @pixclock: pixel clock in ps (pico seconds)
-+ */
-+static void t1042rdb_set_pixel_clock(unsigned int pixclock)
-+{
-+	struct device_node *scfg_np;
-+	void __iomem *scfg;
-+	unsigned long freq;
-+	u64 temp;
-+	u32 pxclk;
-+
-+	scfg_np = of_find_compatible_node(NULL, NULL, "fsl,t1040-scfg");
-+	if (!scfg_np) {
-+		pr_err("%s: Missing scfg node. Can not display video.\n",
-+		       __func__);
-+		return;
-+	}
-+
-+	scfg = of_iomap(scfg_np, 0);
-+	of_node_put(scfg_np);
-+	if (!scfg) {
-+		pr_err("%s: Could not map device. Can not display video.\n",
-+		       __func__);
-+		return;
-+	}
-+
-+	/* Convert pixclock into frequency */
-+	temp = 1000000000000ULL;
-+	do_div(temp, pixclock);
-+	freq = temp;
-+
-+	/*
-+	 * 'pxclk' is the ratio of the platform clock to the pixel clock.
-+	 * This number is programmed into the PIXCLKCR register, and the valid
-+	 * range of values is 2-255.
-+	 */
-+	pxclk = DIV_ROUND_CLOSEST(fsl_get_sys_freq(), freq);
-+	pxclk = clamp_t(u32, pxclk, 2, 255);
-+
-+	/* Disable the pixel clock, and set it to non-inverted and no delay */
-+	clrbits32(scfg + CCSR_SCFG_PIXCLKCR,
-+		  PIXCLKCR_PXCKEN | PIXCLKCR_PXCKDLY | PIXCLKCR_PXCLK_MASK);
-+
-+	/* Enable the clock and set the pxclk */
-+	setbits32(scfg + CCSR_SCFG_PIXCLKCR, PIXCLKCR_PXCKEN | (pxclk << 16));
-+
-+	iounmap(scfg);
-+}
-+
-+/**
-+ * t1042rdb_valid_monitor_port: set the monitor port for sysfs
-+ */
-+static enum fsl_diu_monitor_port
-+t1042rdb_valid_monitor_port(enum fsl_diu_monitor_port port)
-+{
-+	switch (port) {
-+	case FSL_DIU_PORT_DVI:
-+	case FSL_DIU_PORT_LVDS:
-+		return port;
-+	default:
-+		return FSL_DIU_PORT_DVI; /* Dual-link LVDS is not supported */
-+	}
-+}
-+
-+static int __init t1042rdb_diu_init(void)
-+{
-+	cpld_node = of_find_compatible_node(NULL, NULL, "fsl,t1042rdb-cpld");
-+	if (!cpld_node)
-+		return 0;
-+
-+	diu_ops.set_monitor_port	= t1042rdb_set_monitor_port;
-+	diu_ops.set_pixel_clock		= t1042rdb_set_pixel_clock;
-+	diu_ops.valid_monitor_port	= t1042rdb_valid_monitor_port;
-+
-+	return 0;
-+}
-+
-+early_initcall(t1042rdb_diu_init);
--- 
-2.1.0.27.g96db324
+Le 24/11/2016 à 06:23, Scott Wood a écrit :
+> On Wed, Sep 21, 2016 at 10:11:54AM +0200, Christophe Leroy wrote:
+>> Today there are two implementations of hugetlbpages which are managed
+>> by exclusive #ifdefs:
+>> * FSL_BOOKE: several directory entries points to the same single hugepage
+>> * BOOK3S: one upper level directory entry points to a table of hugepages
+>>
+>> In preparation of implementation of hugepage support on the 8xx, we
+>> need a mix of the two above solutions, because the 8xx needs both cases
+>> depending on the size of pages:
+>> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
+>> that 2 PGD entries will be necessary to cover an 8M hugepage while a
+>> single PGD entry will cover 8x 512k hugepages.
+>> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
+>> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
+>> hugepages will be covers by one PGD entry.
+>>
+>> This patch:
+>> * removes #ifdefs in favor of if/else based on the range sizes
+>> * merges the two huge_pte_alloc() functions as they are pretty similar
+>> * merges the two hugetlbpage_init() functions as they are pretty similar
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+> With this patch on e6500, running the hugetlb testsuite results in the
+> system hanging in a storm of OOM killer invocations (I'll try to debug
+> more deeply later).  This patch also changes the default hugepage size on
+> FSL book3e from 4M to 16M.
+>
+
+Regarding the default hugepage size, it is a result of the merge of the 
+two hugetlbpage_init().
+Should I add an ifdef to get 4M on FSL book3e by default ?
+What's the reason for selecting different hugepage sizes depending on 
+the CPU ? I thought default size was selected based on what was existing.
+
+What testsuite do you run exactly ?
+
+Christophe
