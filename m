@@ -1,20 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ0rb2jrJzDvwx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 13:48:47 +1100 (AEDT)
-Date: Fri, 25 Nov 2016 13:48:43 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 1/7] powerpc/mm: update ptep_set_access_flag to not do
- full mm tlb flush
-Message-ID: <20161125024843.GA24925@fergus.ozlabs.ibm.com>
-References: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ1GG5td2zDvxW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 14:07:34 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: xinhui.pan@linux.vnet.ibm.com,
+	peterz@infradead.org
+Subject: [PATCH] powerpc: Fix __cmpxchg() to take a volatile ptr again
+Date: Fri, 25 Nov 2016 14:07:09 +1100
+Message-Id: <1480043229-2363-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,93 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 23, 2016 at 04:39:57PM +0530, Aneesh Kumar K.V wrote:
-> When we are updating pte, we just need to flush the tlb mapping for
-> that pte. Right now we do a full mm flush because we don't track page
-> size. Update the interface to track the page size and use that to
-> do the right tlb flush.
-[...]
+In commit d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
+we removed the volatile from __cmpxchg().
 
-> +int radix_get_mmu_psize(unsigned long page_size)
-> +{
-> +	int psize;
-> +
-> +	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
-> +		psize = mmu_virtual_psize;
-> +	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
-> +		psize = MMU_PAGE_2M;
-> +	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
-> +		psize = MMU_PAGE_1G;
+This is leading to warnings such as:
 
-Do we actually have support for 1G pages yet?  I couldn't see where
-they get instantiated.
+  drivers/gpu/drm/drm_lock.c: In function ‘drm_lock_take’:
+  arch/powerpc/include/asm/cmpxchg.h:484:37: warning: passing argument 1
+  of ‘__cmpxchg’ discards ‘volatile’ qualifier from pointer target
+     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,   \
 
-> +	else
-> +		return -1;
-> +	return psize;
-> +}
-> +
-> +
->  static int __init radix_dt_scan_page_sizes(unsigned long node,
->  					   const char *uname, int depth,
->  					   void *data)
-> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-> index 911fdfb63ec1..503ae9bd3efe 100644
-> --- a/arch/powerpc/mm/pgtable.c
-> +++ b/arch/powerpc/mm/pgtable.c
-> @@ -219,12 +219,18 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
->  			  pte_t *ptep, pte_t entry, int dirty)
->  {
->  	int changed;
-> +	unsigned long page_size;
-> +
->  	entry = set_access_flags_filter(entry, vma, dirty);
->  	changed = !pte_same(*(ptep), entry);
->  	if (changed) {
-> -		if (!is_vm_hugetlb_page(vma))
-> +		if (!is_vm_hugetlb_page(vma)) {
-> +			page_size = PAGE_SIZE;
->  			assert_pte_locked(vma->vm_mm, address);
-> -		__ptep_set_access_flags(vma->vm_mm, ptep, entry);
-> +		} else
-> +			page_size = huge_page_size(hstate_vma(vma));
+There doesn't seem to be consensus across architectures whether the
+argument is volatile or not, so at least for now put the volatile back.
 
-I don't understand how this can work with THP.  You're determining the
-page size using only the VMA, but with a THP VMA surely we get
-different page sizes at different addresses?
+Fixes: d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/cmpxchg.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-More generally, I'm OK with adding the address parameter to
-__ptep_set_access_flags, but I think Ben's suggestion of encoding the
-page size in the PTE value is a good one.  I think it is as simple as
-the patch below (assuming we only support 2MB large pages for now).
-That would simplify things a bit and also it would mean that we are
-sure we know the page size correctly even with THP.
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 9fd77f8..e4f3581 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -32,7 +32,8 @@
- #define _PAGE_SOFT_DIRTY	0x00000
+diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
+index c12f110261b2..fc46b664c49e 100644
+--- a/arch/powerpc/include/asm/cmpxchg.h
++++ b/arch/powerpc/include/asm/cmpxchg.h
+@@ -14,7 +14,7 @@
  #endif
- #define _PAGE_SPECIAL		_RPAGE_SW2 /* software: special page */
--
-+#define _PAGE_GIGANTIC		_RPAGE_SW0	/* software: 1GB page */
-+#define _PAGE_LARGE		_RPAGE_SW1	/* software: 2MB page */
  
- #define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
- #define _PAGE_PRESENT		(1ul << 63)	/* pte contains a translation */
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index f4f437c..7ff0289 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -86,7 +86,7 @@ pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
+ #define XCHG_GEN(type, sfx, cl)				\
+-static inline u32 __xchg_##type##sfx(void *p, u32 val)		\
++static inline u32 __xchg_##type##sfx(volatile void *p, u32 val)	\
+ {								\
+ 	unsigned int prev, prev_mask, tmp, bitoff, off;		\
+ 								\
+@@ -40,7 +40,7 @@ static inline u32 __xchg_##type##sfx(void *p, u32 val)		\
+ 
+ #define CMPXCHG_GEN(type, sfx, br, br2, cl)			\
+ static inline							\
+-u32 __cmpxchg_##type##sfx(void *p, u32 old, u32 new)		\
++u32 __cmpxchg_##type##sfx(volatile void *p, u32 old, u32 new)	\
+ {								\
+ 	unsigned int prev, prev_mask, tmp, bitoff, off;		\
+ 								\
+@@ -399,7 +399,7 @@ __cmpxchg_u64_acquire(u64 *p, unsigned long old, unsigned long new)
+ #endif
+ 
+ static __always_inline unsigned long
+-__cmpxchg(void *ptr, unsigned long old, unsigned long new,
++__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
+ 	  unsigned int size)
  {
- 	unsigned long pmdv;
- 
--	pmdv = (pfn << PAGE_SHIFT) & PTE_RPN_MASK;
-+	pmdv = ((pfn << PAGE_SHIFT) & PTE_RPN_MASK) | _PAGE_LARGE;
- 	return pmd_set_protbits(__pmd(pmdv), pgprot);
- }
- 
-Paul.
+ 	switch (size) {
+-- 
+2.7.4
