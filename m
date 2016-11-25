@@ -3,31 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQLTL5Ly1zDvxx
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 03:03:18 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQLTP4jBlzDvyb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 03:03:21 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAPFwhn8048113
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:03:17 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 26xm6aktf3-1
+ uAPG0nnA092494
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:03:19 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 26xn9b7h0v-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:03:16 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:03:19 -0500
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 25 Nov 2016 11:03:15 -0500
+ Fri, 25 Nov 2016 09:03:18 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v6 3/7] powerpc/mm: Introduce _PAGE_GIGANTIC and _PAGE_LARGE
- software pte bits
-Date: Fri, 25 Nov 2016 21:32:53 +0530
+Subject: [PATCH v6 4/7] powerpc/mm: Add radix__tlb_flush_pte
+Date: Fri, 25 Nov 2016 21:32:54 +0530
 In-Reply-To: <20161125160257.9158-1-aneesh.kumar@linux.vnet.ibm.com>
 References: <20161125160257.9158-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20161125160257.9158-4-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <20161125160257.9158-5-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,82 +36,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds two new software defined pte bits. We use the reserved
-fields of ISA 3.0 pte definitions here, because we will only be using this
-on DD1 code paths. We can possibly look at removing this code later.
-
-These two software bits will be used to differentiate between 64K, 2M and 1G ptes.
-We need to know the page size mapping pte so that we can do efficient tlb flush.
+Now that we have page size details encoded in pte using software pte bits,
+use that to find page size needed for tlb flush.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 13 +++++++++++++
- arch/powerpc/include/asm/book3s/64/pgtable.h | 10 ++++++++++
- arch/powerpc/include/asm/book3s/64/radix.h   |  2 +-
- 3 files changed, 24 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/book3s/64/tlbflush-radix.h |  2 ++
+ arch/powerpc/mm/tlb-radix.c                         | 11 +++++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index d9c283f95e05..f246dadaf1f9 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -30,4 +30,17 @@ static inline int hstate_get_psize(struct hstate *hstate)
- 		return mmu_virtual_psize;
- 	}
- }
-+
-+#define arch_make_huge_pte arch_make_huge_pte
-+static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
-+				       struct page *page, int writable)
-+{
-+	unsigned long page_shift = huge_page_shift(hstate_vma(vma));
-+
-+	if (page_shift == mmu_psize_defs[MMU_PAGE_2M].shift ||
-+	    page_shift == mmu_psize_defs[MMU_PAGE_16M].shift)
-+		return __pte(pte_val(entry) | _PAGE_LARGE);
-+	else
-+		return __pte(pte_val(entry) | _PAGE_GIGANTIC);
-+}
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+index a9e19cb2f7c5..e9bbd10ee7e9 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+@@ -42,4 +42,6 @@ extern void radix__flush_tlb_lpid_va(unsigned long lpid, unsigned long gpa,
+ 				     unsigned long page_size);
+ extern void radix__flush_tlb_lpid(unsigned long lpid);
+ extern void radix__flush_tlb_all(void);
++extern void radix__flush_tlb_pte(unsigned long old_pte, struct mm_struct *mm,
++				 unsigned long address);
  #endif
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 86870c11917b..e05028894a8e 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -26,6 +26,11 @@
- #define _RPAGE_SW1		0x00800
- #define _RPAGE_SW2		0x00400
- #define _RPAGE_SW3		0x00200
-+#define _RPAGE_RSV1		0x1000000000000000UL
-+#define _RPAGE_RSV2		0x0800000000000000UL
-+#define _RPAGE_RSV3		0x0400000000000000UL
-+#define _RPAGE_RSV4		0x0200000000000000UL
-+
- #ifdef CONFIG_MEM_SOFT_DIRTY
- #define _PAGE_SOFT_DIRTY	_RPAGE_SW3 /* software: software dirty tracking */
- #else
-@@ -34,6 +39,11 @@
- #define _PAGE_SPECIAL		_RPAGE_SW2 /* software: special page */
- #define _PAGE_DEVMAP		_RPAGE_SW1
- #define __HAVE_ARCH_PTE_DEVMAP
-+/*
-+ * For DD1 only, we need to track whether the pte huge or gigantic.
-+ */
-+#define _PAGE_GIGANTIC	_RPAGE_RSV1
-+#define _PAGE_LARGE	_RPAGE_RSV2
- 
- 
- #define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 2a46dea8e1b1..de009387e258 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -243,7 +243,7 @@ static inline int radix__pmd_trans_huge(pmd_t pmd)
- 
- static inline pmd_t radix__pmd_mkhuge(pmd_t pmd)
- {
--	return __pmd(pmd_val(pmd) | _PAGE_PTE);
-+	return __pmd(pmd_val(pmd) | _PAGE_PTE | _PAGE_LARGE);
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 3493cf4e0452..9a1084b45bb5 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -428,3 +428,14 @@ void radix__flush_tlb_all(void)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(0) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
  }
- static inline void radix__pmdp_huge_split_prepare(struct vm_area_struct *vma,
- 					    unsigned long address, pmd_t *pmdp)
++
++void radix__flush_tlb_pte(unsigned long old_pte, struct mm_struct *mm,
++			  unsigned long address)
++{
++	if (old_pte & _PAGE_LARGE)
++		radix__flush_tlb_page_psize(mm, address, MMU_PAGE_2M);
++	else if (old_pte & _PAGE_GIGANTIC)
++		radix__flush_tlb_page_psize(mm, address, MMU_PAGE_1G);
++	else
++		radix__flush_tlb_page_psize(mm, address, mmu_virtual_psize);
++}
 -- 
 2.10.2
