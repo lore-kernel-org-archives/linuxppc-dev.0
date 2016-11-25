@@ -1,25 +1,35 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ2ln08drzDvtc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 15:14:45 +1100 (AEDT)
-Date: Fri, 25 Nov 2016 12:36:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v6 3/7] vfio/spapr: Postpone allocation of
- userspace version of TCE table
-Message-ID: <20161125013622.GA12287@umbus.fritz.box>
-References: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
- <1479966490-8739-4-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ2sy4WRjzDt3F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 15:20:06 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAP4JCwX006626
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 23:20:04 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 26x6m708jk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 23:20:03 -0500
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 24 Nov 2016 21:20:03 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 1/7] powerpc/mm: update ptep_set_access_flag to not do
+ full mm tlb flush
+In-Reply-To: <20161125024843.GA24925@fergus.ozlabs.ibm.com>
+References: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20161125024843.GA24925@fergus.ozlabs.ibm.com>
+Date: Fri, 25 Nov 2016 09:49:57 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="lrZ03NoBR/3+SXJZ"
-In-Reply-To: <1479966490-8739-4-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain
+Message-Id: <87fumgjimq.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,118 +39,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Paul Mackerras <paulus@ozlabs.org> writes:
 
---lrZ03NoBR/3+SXJZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Wed, Nov 23, 2016 at 04:39:57PM +0530, Aneesh Kumar K.V wrote:
+>> When we are updating pte, we just need to flush the tlb mapping for
+>> that pte. Right now we do a full mm flush because we don't track page
+>> size. Update the interface to track the page size and use that to
+>> do the right tlb flush.
+> [...]
+>
+>> +int radix_get_mmu_psize(unsigned long page_size)
+>> +{
+>> +	int psize;
+>> +
+>> +	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
+>> +		psize = mmu_virtual_psize;
+>> +	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
+>> +		psize = MMU_PAGE_2M;
+>> +	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
+>> +		psize = MMU_PAGE_1G;
+>
+> Do we actually have support for 1G pages yet?  I couldn't see where
+> they get instantiated.
 
-On Thu, Nov 24, 2016 at 04:48:06PM +1100, Alexey Kardashevskiy wrote:
-> The iommu_table struct manages a hardware TCE table and a vmalloc'd
-> table with corresponding userspace addresses. Both are allocated when
-> the default DMA window is created and this happens when the very first
-> group is attached to a container.
->=20
-> As we are going to allow the userspace to configure container in one
-> memory context and pas container fd to another, we have to postpones
-> such allocations till a container fd is passed to the destination
-> user process so we would account locked memory limit against the actual
-> container user constrainsts.
->=20
-> This postpones the it_userspace array allocation till it is used first
-> time for mapping. The unmapping patch already checks if the array is
-> allocated.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+We use that for kernel linear mapping.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+>
+>> +	else
+>> +		return -1;
+>> +	return psize;
+>> +}
+>> +
+>> +
+>>  static int __init radix_dt_scan_page_sizes(unsigned long node,
+>>  					   const char *uname, int depth,
+>>  					   void *data)
+>> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+>> index 911fdfb63ec1..503ae9bd3efe 100644
+>> --- a/arch/powerpc/mm/pgtable.c
+>> +++ b/arch/powerpc/mm/pgtable.c
+>> @@ -219,12 +219,18 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+>>  			  pte_t *ptep, pte_t entry, int dirty)
+>>  {
+>>  	int changed;
+>> +	unsigned long page_size;
+>> +
+>>  	entry = set_access_flags_filter(entry, vma, dirty);
+>>  	changed = !pte_same(*(ptep), entry);
+>>  	if (changed) {
+>> -		if (!is_vm_hugetlb_page(vma))
+>> +		if (!is_vm_hugetlb_page(vma)) {
+>> +			page_size = PAGE_SIZE;
+>>  			assert_pte_locked(vma->vm_mm, address);
+>> -		__ptep_set_access_flags(vma->vm_mm, ptep, entry);
+>> +		} else
+>> +			page_size = huge_page_size(hstate_vma(vma));
+>
+> I don't understand how this can work with THP.  You're determining the
+> page size using only the VMA, but with a THP VMA surely we get
+> different page sizes at different addresses?
 
-> ---
-> Changes:
-> v6:
-> * moved missing hunk from the next patch: tce_iommu_create_table()
-> would decrement locked_vm while new caller - tce_iommu_build_v2() -
-> will not; this adds a new return code to the DMA mapping path but
-> this seems to be a minor change.
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 20 +++++++-------------
->  1 file changed, 7 insertions(+), 13 deletions(-)
->=20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index d0c38b2..4efd2b2 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -515,6 +515,12 @@ static long tce_iommu_build_v2(struct tce_container =
-*container,
->  	unsigned long hpa;
->  	enum dma_data_direction dirtmp;
-> =20
-> +	if (!tbl->it_userspace) {
-> +		ret =3D tce_iommu_userspace_view_alloc(tbl);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
->  	for (i =3D 0; i < pages; ++i) {
->  		struct mm_iommu_table_group_mem_t *mem =3D NULL;
->  		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
-> @@ -588,15 +594,6 @@ static long tce_iommu_create_table(struct tce_contai=
-ner *container,
->  	WARN_ON(!ret && !(*ptbl)->it_ops->free);
->  	WARN_ON(!ret && ((*ptbl)->it_allocated_size !=3D table_size));
-> =20
-> -	if (!ret && container->v2) {
-> -		ret =3D tce_iommu_userspace_view_alloc(*ptbl);
-> -		if (ret)
-> -			(*ptbl)->it_ops->free(*ptbl);
-> -	}
+That applies only for hugetlb pages. Ie, for hugetlb vma we use
+vm_area_struct to determine the hugepage size.
+
+For THP hugepage configuration we end up calling 
+
+int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+			  pmd_t *pmdp, pmd_t entry, int dirty)
+
+and for that we do
+	__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp), pmd_pte(entry),
+				address, HPAGE_PMD_SIZE);
+
+
+>
+> More generally, I'm OK with adding the address parameter to
+> __ptep_set_access_flags, but I think Ben's suggestion of encoding the
+> page size in the PTE value is a good one.  I think it is as simple as
+> the patch below (assuming we only support 2MB large pages for now).
+> That would simplify things a bit and also it would mean that we are
+> sure we know the page size correctly even with THP.
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 9fd77f8..e4f3581 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -32,7 +32,8 @@
+>  #define _PAGE_SOFT_DIRTY	0x00000
+>  #endif
+>  #define _PAGE_SPECIAL		_RPAGE_SW2 /* software: special page */
 > -
-> -	if (ret)
-> -		decrement_locked_vm(table_size >> PAGE_SHIFT);
-> -
->  	return ret;
+> +#define _PAGE_GIGANTIC		_RPAGE_SW0	/* software: 1GB page */
+> +#define _PAGE_LARGE		_RPAGE_SW1	/* software: 2MB page */
+
+I already use _RPAGE_SW1 for _PAGE_DEVMAP (pmem/nvdimm, patch set to the
+list but not merged yet). We are really low on software free bits w.r.t
+pte and I was avoiding using that.
+
+I was thinking this series is a simpler cleanup of different page table
+update interface to take page size as argument.
+
+
+>
+>  #define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
+>  #define _PAGE_PRESENT		(1ul << 63)	/* pte contains a translation */
+> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+> index f4f437c..7ff0289 100644
+> --- a/arch/powerpc/mm/pgtable-book3s64.c
+> +++ b/arch/powerpc/mm/pgtable-book3s64.c
+> @@ -86,7 +86,7 @@ pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
+>  {
+>  	unsigned long pmdv;
+>
+> -	pmdv = (pfn << PAGE_SHIFT) & PTE_RPN_MASK;
+> +	pmdv = ((pfn << PAGE_SHIFT) & PTE_RPN_MASK) | _PAGE_LARGE;
+>  	return pmd_set_protbits(__pmd(pmdv), pgprot);
 >  }
-> =20
-> @@ -1068,10 +1065,7 @@ static int tce_iommu_take_ownership(struct tce_con=
-tainer *container,
->  		if (!tbl || !tbl->it_map)
->  			continue;
-> =20
-> -		rc =3D tce_iommu_userspace_view_alloc(tbl);
-> -		if (!rc)
-> -			rc =3D iommu_take_ownership(tbl);
-> -
-> +		rc =3D iommu_take_ownership(tbl);
->  		if (rc) {
->  			for (j =3D 0; j < i; ++j)
->  				iommu_release_ownership(
+>
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I will look at this and see if can make the patch simpler. But do we
+really want to use the pte bit for this ? Aren't we low on free pte bits
+?
 
---lrZ03NoBR/3+SXJZ
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJYN5WTAAoJEGw4ysog2bOSsGAQAJ+mzkR7Rg3n+YsrbfdR0N/h
-HjKSz9j0NU+egMXOcoVHoCUvd8ZN2pZ0CNonqFadHEN6RoYbReqXXhFysz9fi2Ai
-JnCgqfId8cvYoOgqBTrPvRRMnGxk2deWliVD8Tkb5Y/TAoGfHDC1505+vbizLUpV
-FwjjQrVo0xj0C8cbiO/IBDY3oec3CIscy2crinj0IDCs19Wlmy5kYu8SmT7E38uS
-g9mZwJ+lKarNwLCOGvXCvGDl8o//pKnFYdVFFtUdBoqyp2IURKGJz92W6kfoN+sq
-VqcBosauP8sBAq6Z5DvBlAqC5avOO0X1JOdosnbzwsrVbMra3/fB9z3peBBZ85t1
-HWkuJUW+qFSM3JrPTdHKQDGbjo3CnsQujYcoPb4ShNGCbhg4RB0MEUoZwkgfz7rz
-DWbnzimoDwUWVxjnLXo4un63aOcnooIhwtKUsDonnvb0hSQ2dkzMtchUcAKzYKdh
-Fv7dmeTcCWygSrrndiWgZ2jgpA8APNcYbH8FCZRID/njy/8FuGTwEJmEbGI6+2NY
-tVkajt/PEiJBwXlnVKjh0Dujzs55Agt52j1VVerk4Kng11SdY0z/LeQ3jmGMaQYc
-2fvW+C6YFqSVh05LAK1CYVHD+MR+GmOQEJmBFZ9a9ULecISuutDG3C8h7dqsaYKd
-MMSrFhPIc0Y7ICkBnNAi
-=xc1C
------END PGP SIGNATURE-----
-
---lrZ03NoBR/3+SXJZ--
+-aneesh
