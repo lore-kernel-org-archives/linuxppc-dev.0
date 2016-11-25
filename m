@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tPxBd4jJ4zDvsB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tPxBd5C3MzDvwy
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 11:04:09 +1100 (AEDT)
-In-Reply-To: <20161122101327.14281-1-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com, imunsie@au1.ibm.com
+In-Reply-To: <20161116011226.24589-1-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: cxl: fix coccinelle warnings
-Message-Id: <3tPxBc54s5z9t2n@ozlabs.org>
+Cc: alistair@popple.id.au, gwshan@linux.vnet.ibm.com,
+ Russell Currey <ruscur@russell.cc>
+Subject: Re: powerpc/powernv: Don't warn on PE init if unfreeze is unsupported
+Message-Id: <3tPxBd2CWHz9t2G@ozlabs.org>
 Date: Fri, 25 Nov 2016 11:04:08 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,23 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-11-22 at 10:13:27 UTC, Andrew Donnellan wrote:
-> Fix the following coccinelle warnings:
+On Wed, 2016-11-16 at 01:12:26 UTC, Russell Currey wrote:
+> Whenever a PE is initialised in powernv, opal_pci_eeh_freeze_clear() is
+> called.  This is to remove any existing freeze, and has no negative side
+> effects if the PE is already in an unfrozen state.  On PHB backends that
+> don't support this operation and return OPAL_UNSUPPORTED, this creates a
+> scary and misleading warning message.
 > 
->     drivers/misc/cxl/debugfs.c:46:0-23: WARNING: fops_io_x64 should be
->         defined with DEFINE_DEBUGFS_ATTRIBUTE
->     drivers/misc/cxl/guest.c:890:5-26: WARNING: Comparison to bool
->     drivers/misc/cxl/irq.c:107:3-23: WARNING: Assignment of bool to 0/1
->     drivers/misc/cxl/native.c:57:2-3: Unneeded semicolon
->     drivers/misc/cxl/native.c:170:2-3: Unneeded semicolon
+> Skip the warning message on init if OPAL_UNSUPPORTED is returned.
 > 
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> As far as I'm aware, this currently only affects NPUs.
+> 
+> Fixes: 313483d ("powerpc/powernv: Unfreeze PE on allocation")
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/3382a6220ff3bac886d9d90766f3fe
+https://git.kernel.org/powerpc/c/d4791db527bf397c84c9956c3ece96
 
 cheers
