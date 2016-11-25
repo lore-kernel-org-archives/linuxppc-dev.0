@@ -1,31 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ0Z63qvJzDvRV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 13:36:14 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id 144so2399893pfv.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2016 18:36:14 -0800 (PST)
-Date: Fri, 25 Nov 2016 13:35:59 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>, Oliver O'Halloran
- <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Alan Modra
- <amodra@gmail.com>
-Subject: Re: [RFC][PATCH] powerpc/64be: use ELFv2 ABI for big endian kernels
-Message-ID: <20161125133559.21461ca1@roar.ozlabs.ibm.com>
-In-Reply-To: <8737igtip8.fsf@concordia.ellerman.id.au>
-References: <20161123130840.1877-1-npiggin@gmail.com>
- <20161123143834.GB6099@gate.crashing.org>
- <CAOSf1CEJwdCCPVcksOBUSut_fPbr6WizacRrFRgMAJAeWoCqRw@mail.gmail.com>
- <20161124122713.GC14394@gate.crashing.org>
- <87d1hktt5z.fsf@concordia.ellerman.id.au>
- <20161124231716.GB30675@gate.crashing.org>
- <20161125121300.111a70c0@roar.ozlabs.ibm.com>
- <8737igtip8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQ0rb2jrJzDvwx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 13:48:47 +1100 (AEDT)
+Date: Fri, 25 Nov 2016 13:48:43 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 1/7] powerpc/mm: update ptep_set_access_flag to not do
+ full mm tlb flush
+Message-ID: <20161125024843.GA24925@fergus.ozlabs.ibm.com>
+References: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161123111003.459-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,76 +24,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 25 Nov 2016 13:08:19 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Wed, Nov 23, 2016 at 04:39:57PM +0530, Aneesh Kumar K.V wrote:
+> When we are updating pte, we just need to flush the tlb mapping for
+> that pte. Right now we do a full mm flush because we don't track page
+> size. Update the interface to track the page size and use that to
+> do the right tlb flush.
+[...]
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > On Thu, 24 Nov 2016 17:17:16 -0600
-> > Segher Boessenkool <segher@kernel.crashing.org> wrote:
-> >  
-> >> On Fri, Nov 25, 2016 at 09:22:16AM +1100, Michael Ellerman wrote:  
-> >> > >> >> Question, are there any fundamental reasons we shouldn't use the ELFv2
-> >> > >> >> ABI to build big endian kernels if the compiler supports it?    
-> >> > >> >
-> >> > >> > No one uses ELFv2 for BE in production, and it isn't thoroughly tested
-> >> > >> > at all, not even regularly tested.  "Not supported", as far as GCC is
-> >> > >> > concerned (or any of the distros AFAIK).    
-> >> > >> 
-> >> > >> Is this actually unsupported by gcc?    
-> >> > >
-> >> > > It may or may not work.  We of course try to keep it working, or make
-> >> > > it work if it doesn't now.  But it isn't regularly tested, and it isn't
-> >> > > a target that is considered for the release criteria (see
-> >> > > https://gcc.gnu.org/gcc-7/criteria.html -- powerpc64{,le}-linux, i.e.
-> >> > > ABIv1 for BE, ABIv2 for LE).    
-> >> > 
-> >> > It doesn't actually say that though. It just says
-> >> > powerpc64-unknown-linux-gnu. So how is someone, say the musl folks,
-> >> > supposed to know that BE ABIv2 is not supported?    
-> >> 
-> >> Because their target is powerpc64*-*-linux-musl instead?  It is not on
-> >> the release criteria list, it is not something we make any claims about.
-> >> 
-> >> How would you know -m32 -mlittle is not well tested at all?  It is in much
-> >> the same boat: unusual combinations of options, and unusual configurations,
-> >> are not well tested.  You have to build a separate C library just to get
-> >> started with it, that should tell you there are some rough waters ahead!
-> >> 
-> >> Which isn't to say you should not do this -- just think twice before
-> >> doing so.  And wear a life vest.  
-> >
-> > Other than curiosity, only two reasons for the kernel to enable it:
-> > either it helps end users, or it allows us to get rid of elfv1 support
-> > (eventually). Both would require gcc to have some base amount of testing.  
-> 
-> I think it might be worth adding as option, as long as it's not too
-> intrusive. We could then put it in our CI and at least keep an eye on
-> whether it continues to work.
+> +int radix_get_mmu_psize(unsigned long page_size)
+> +{
+> +	int psize;
+> +
+> +	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
+> +		psize = mmu_virtual_psize;
+> +	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
+> +		psize = MMU_PAGE_2M;
+> +	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
+> +		psize = MMU_PAGE_1G;
 
-If you're willing to take it, sure. I'll resubmit it with a default-n
-config option hidden away somewhere.
+Do we actually have support for 1G pages yet?  I couldn't see where
+they get instantiated.
 
-> 
-> Using ABIv1 does have user visible effects, ie. dot symbols show up in
-> traces and so on. So getting rid of that would be nice.
-> 
-> Having said that, perf and other tools are currently built to assume
-> BE==ABIv1, so breaking that assumption would possibly cause more
-> trouble.
+> +	else
+> +		return -1;
+> +	return psize;
+> +}
+> +
+> +
+>  static int __init radix_dt_scan_page_sizes(unsigned long node,
+>  					   const char *uname, int depth,
+>  					   void *data)
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index 911fdfb63ec1..503ae9bd3efe 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -219,12 +219,18 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+>  			  pte_t *ptep, pte_t entry, int dirty)
+>  {
+>  	int changed;
+> +	unsigned long page_size;
+> +
+>  	entry = set_access_flags_filter(entry, vma, dirty);
+>  	changed = !pte_same(*(ptep), entry);
+>  	if (changed) {
+> -		if (!is_vm_hugetlb_page(vma))
+> +		if (!is_vm_hugetlb_page(vma)) {
+> +			page_size = PAGE_SIZE;
+>  			assert_pte_locked(vma->vm_mm, address);
+> -		__ptep_set_access_flags(vma->vm_mm, ptep, entry);
+> +		} else
+> +			page_size = huge_page_size(hstate_vma(vma));
 
-We can make it clear it's experimental/not supported, but things like
-that could probably be cleaned up slowly. They should depend on elf
-version rather than endian anyway.
+I don't understand how this can work with THP.  You're determining the
+page size using only the VMA, but with a THP VMA surely we get
+different page sizes at different addresses?
 
-> 
-> I guess the other question is when did ABIv2 land in the toolchain, ie.
-> how many years do we have to wait until we can mandate it.
+More generally, I'm OK with adding the address parameter to
+__ptep_set_access_flags, but I think Ben's suggestion of encoding the
+page size in the PTE value is a good one.  I think it is as simple as
+the patch below (assuming we only support 2MB large pages for now).
+That would simplify things a bit and also it would mean that we are
+sure we know the page size correctly even with THP.
 
-I think gcc 4.9, binutils 2.24, early 2014.
-
-But if we've never been testing with those older toolchains we're a bit
-behind the 8 ball. Still, the second best time to plant the tree is now...
-
-Thanks,
-Nick
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 9fd77f8..e4f3581 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -32,7 +32,8 @@
+ #define _PAGE_SOFT_DIRTY	0x00000
+ #endif
+ #define _PAGE_SPECIAL		_RPAGE_SW2 /* software: special page */
+-
++#define _PAGE_GIGANTIC		_RPAGE_SW0	/* software: 1GB page */
++#define _PAGE_LARGE		_RPAGE_SW1	/* software: 2MB page */
+ 
+ #define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
+ #define _PAGE_PRESENT		(1ul << 63)	/* pte contains a translation */
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index f4f437c..7ff0289 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -86,7 +86,7 @@ pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot)
+ {
+ 	unsigned long pmdv;
+ 
+-	pmdv = (pfn << PAGE_SHIFT) & PTE_RPN_MASK;
++	pmdv = ((pfn << PAGE_SHIFT) & PTE_RPN_MASK) | _PAGE_LARGE;
+ 	return pmd_set_protbits(__pmd(pmdv), pgprot);
+ }
+ 
+Paul.
