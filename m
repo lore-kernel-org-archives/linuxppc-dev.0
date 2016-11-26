@@ -1,20 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQfNX618czDvxR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 15:00:12 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id y68so3637212pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 20:00:12 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tQfxX3p4tzDvn2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 15:25:20 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id p66so7101199pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2016 20:25:20 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/boot: regenerate zImage linker script when options
- change
-Date: Sat, 26 Nov 2016 15:00:00 +1100
-Message-Id: <20161126040000.25052-1-npiggin@gmail.com>
+ "Leonidas S . Barbosa" <leosilva@linux.vnet.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+ linux-crypto@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] crypto: vmx - rebuild generated asm when target changes
+Date: Sat, 26 Nov 2016 15:24:59 +1100
+Message-Id: <20161126042459.1964-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changing config options (e.g., endianness) does not always seem to
-regenerate zImage.lds properly. Adapt the standard kernel linker script
-build command and use that.
+Switching from big endian to little endian can fail to regenerate
+the crypto assembly properly. Switch to using standard form of
+kbuild dependency checking (i.e., use FORCE and if_changed).
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/boot/Makefile | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/crypto/vmx/Makefile | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 0442516..cf60936 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -175,9 +175,12 @@ $(addprefix $(obj)/,$(libfdt) $(libfdtheader)): $(obj)/%: $(srctree)/scripts/dtc
- $(obj)/empty.c:
- 	$(Q)touch $@
+diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
+index b47da00..16ab2a0 100644
+--- a/drivers/crypto/vmx/Makefile
++++ b/drivers/crypto/vmx/Makefile
+@@ -1,6 +1,8 @@
+ obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
+ vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
  
--$(obj)/zImage.lds: $(obj)/%: $(srctree)/$(src)/%.S
--	$(CROSS32CC) $(cpp_flags) -E -Wp,-MD,$(depfile) -P -Upowerpc \
--		-D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
-+quiet_cmd_cpp_lds_S = LDS     $@
-+	cmd_cpp_lds_S = $(CROSS32CC) $(cpp_flags) -E -Wp,-MD,$(depfile) -P \
-+			-Upowerpc -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
++targets += aesp8-ppc.S ghashp8-ppc.S
 +
-+$(obj)/zImage.lds: $(obj)/%: $(srctree)/$(src)/%.S FORCE
-+	$(call if_changed_dep,cpp_lds_S)
+ ifdef CONFIG_CPU_LITTLE_ENDIAN
+ TARGET := linux-ppc64le
+ else
+@@ -11,13 +13,13 @@ TARGET := linux-ppc64
+ endif
+ endif
  
- $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds : $(obj)/%: $(srctree)/$(src)/%.S
- 	$(Q)cp $< $@
+-quiet_cmd_perl = PERL $@
++quiet_cmd_perl = PERL    $@
+       cmd_perl = $(PERL) $(<) $(TARGET) > $(@)
+ 
+-$(src)/aesp8-ppc.S: $(src)/aesp8-ppc.pl
+-	$(call cmd,perl)
++$(src)/aesp8-ppc.S: $(src)/aesp8-ppc.pl FORCE
++	$(call if_changed,perl)
+   
+-$(src)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl
+-	$(call cmd,perl)
++$(src)/ghashp8-ppc.S: $(src)/ghashp8-ppc.pl FORCE
++	$(call if_changed,perl)
+ 
+ .PRECIOUS: $(obj)/aesp8-ppc.S $(obj)/ghashp8-ppc.S
 -- 
 2.10.2
