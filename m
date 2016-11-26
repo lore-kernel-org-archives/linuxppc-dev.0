@@ -1,23 +1,21 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0024.hostedemail.com
- [216.40.44.24])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tQNkK5dWHzDw1J
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 04:44:41 +1100 (AEDT)
-Message-ID: <1480095870.19726.31.camel@perches.com>
-Subject: Re: [PATCH] powerpc: Use pr_warn instead of pr_warning
-From: Joe Perches <joe@perches.com>
-To: Anatolij Gustschin <agust@denx.de>, Scott Wood <oss@buserror.net>, Kumar
- Gala <galak@kernel.crashing.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,  Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Geoff Levand <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 25 Nov 2016 09:44:30 -0800
-In-Reply-To: <af9bcd9cdbc64f2c2638ba869979de003ba4671c.1477367819.git.joe@perches.com>
-References: <af9bcd9cdbc64f2c2638ba869979de003ba4671c.1477367819.git.joe@perches.com>
-Content-Type: text/plain; charset="ISO-8859-1"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tQb6X5jNMzDvwm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 12:32:52 +1100 (AEDT)
+Date: Fri, 25 Nov 2016 20:32:38 -0500 (EST)
+Message-Id: <20161125.203238.454691729914835681.davem@davemloft.net>
+To: geliangtang@gmail.com
+Cc: tlfalcon@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ibmvnic: drop duplicate header seq_file.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <9f2baee4e0a81ba8b5089a2b5a42f67678de4b06.1479989017.git.geliangtang@gmail.com>
+References: <15299de49216a2360976ca37ff774cae9d27d88b.1479991297.git.geliangtang@gmail.com>
+ <9f2baee4e0a81ba8b5089a2b5a42f67678de4b06.1479989017.git.geliangtang@gmail.com>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-10-24 at 21:00 -0700, Joe Perches wrote:
-> At some point, pr_warning will be removed so all logging messages use
-> a consistent <prefix>_warn style.
-> 
-> Update arch/powerpc/
-> 
-> Miscellanea:
-> 
-> o Coalesce formats
-> o Realign arguments
-> o Use %s, __func__ instead of embedded function names
-> o Remove unnecessary line continuations
+From: Geliang Tang <geliangtang@gmail.com>
+Date: Thu, 24 Nov 2016 21:58:29 +0800
 
-Ping?
-
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/powerpc/kernel/pci-common.c                |  4 ++--
->  arch/powerpc/mm/init_64.c                       |  5 ++---
->  arch/powerpc/mm/mem.c                           |  3 +--
->  arch/powerpc/platforms/512x/mpc512x_shared.c    |  4 ++--
->  arch/powerpc/platforms/85xx/socrates_fpga_pic.c |  7 +++----
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c      |  2 +-
->  arch/powerpc/platforms/pasemi/dma_lib.c         |  4 ++--
->  arch/powerpc/platforms/powernv/opal.c           |  8 ++++----
->  arch/powerpc/platforms/powernv/pci-ioda.c       | 10 +++++-----
->  arch/powerpc/platforms/ps3/device-init.c        | 12 +++++-------
->  arch/powerpc/platforms/ps3/mm.c                 |  4 ++--
->  arch/powerpc/platforms/ps3/os-area.c            |  2 +-
->  arch/powerpc/platforms/pseries/iommu.c          |  8 +++-----
->  arch/powerpc/platforms/pseries/setup.c          |  4 ++--
->  arch/powerpc/sysdev/fsl_pci.c                   |  9 +++------
->  arch/powerpc/sysdev/mpic.c                      | 10 ++++------
->  arch/powerpc/sysdev/xics/icp-native.c           | 10 ++++------
->  arch/powerpc/sysdev/xics/ics-opal.c             |  4 +--
->  arch/powerpc/sysdev/xics/ics-rtas.c             |  4 ++--
->  arch/powerpc/sysdev/xics/xics-common.c          |  8 ++++----
->  20 files changed, 54 insertions(+), 68 deletions(-)
+> Drop duplicate header seq_file.h from ibmvnic.c.
 > 
+> Signed-off-by: Geliang Tang <geliangtang@gmail.com>
+
+Applied.
