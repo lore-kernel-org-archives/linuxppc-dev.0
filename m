@@ -3,21 +3,21 @@ Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
  [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tRDjC508YzDvpJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 13:46:39 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id x23so9313213pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 18:46:39 -0800 (PST)
-Date: Sun, 27 Nov 2016 13:46:20 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tRDtg4GFczDvpJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 13:54:51 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id p66so9326033pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2016 18:54:51 -0800 (PST)
+Date: Sun, 27 Nov 2016 13:54:39 +1100
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Alan Modra <amodra@gmail.com>
-Subject: Re: [PATCH 2/3] powerpc: allow compilation on cross-endian toolchain
-Message-ID: <20161127134620.74007843@roar.ozlabs.ibm.com>
-In-Reply-To: <87lgw6snp4.fsf@concordia.ellerman.id.au>
-References: <20161123130209.1667-1-npiggin@gmail.com>
- <20161123130209.1667-3-npiggin@gmail.com>
- <20161124200423.45c5ec87@roar.ozlabs.ibm.com>
- <87lgw6snp4.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Segher Boessenkool
+ <segher@kernel.crashing.org>, Oliver O'Halloran <oohall@gmail.com>, Alan
+ Modra <amodra@gmail.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v2] powerpc/64be: option to use ELFv2 ABI for big endian
+ kernels
+Message-ID: <20161127135439.6f56ff23@roar.ozlabs.ibm.com>
+In-Reply-To: <20161126033338.13892-1-npiggin@gmail.com>
+References: <20161126033338.13892-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,106 +29,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 26 Nov 2016 18:30:15 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> > On Thu, 24 Nov 2016 00:02:08 +1100
-> > diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> > index 617dece..8828807 100644
-> > --- a/arch/powerpc/Makefile
-> > +++ b/arch/powerpc/Makefile
-> > @@ -73,13 +73,18 @@ MULTIPLEWORD	:= -mmultiple
-> >  endif
-> >  
-> >  cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
-> > +cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
-> > +cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mcall-aixdesc)  
-> 
-> This blew up the world:
-> 
->   http://kisskb.ellerman.id.au/kisskb/head/1ba4cb3d67e181bdc9a911d7be81f64e3d7597d2/
-> 
->   Successful:	24% 63/258
-> 
-> I suspect you need to make -mcall-aixdesc 64-bit only.
-
-Yes, I forgot 32-bit will pick those up. 3rd time's a charm, this compiles
-64 bit be/le and 32-bit now.
-
---
-
-Subject: [PATCH] powerpc: allow compilation on cross-endian toolchain
-
-GCC can compile with either endian, but the ABI version always
-defaults to the default endian. Alan Modra says:
-
-  you need both -mbig and -mabi=elfv1 to make a powerpc64le gcc
-  generate powerpc64 code
-
-The opposite is true for powerpc64 when generating -mlittle it
-requires -mabi=elfv2 to generate v2 ABI. This change adds ABI
-annotations together with endianness. The kernel with ELFv2 ABI
-also uses -mcall-aixdesc, but boot/ does not.
+Provide an option to use ELFv2 ABI for big endian builds. The
+toolchain check can't be done at configure-time, so the way this
+option is provided can result in unbuildable kernel on older
+toolchains. Being experimental expert option there isn't a need
+to add a lot of fallback logic to make this build.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/Makefile      | 11 ++++++++++-
- arch/powerpc/boot/Makefile |  4 +++-
- 2 files changed, 13 insertions(+), 2 deletions(-)
+Changes since v1:
+- Fix kconfig so it (hopefully) works as expected with all combinations
+  of EXPERT and endianness.
+- Rebased to new "powerpc: allow compilation on cross-endian toolchain"
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 617dece..a60c9c6 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -72,8 +72,15 @@ GNUTARGET	:= powerpc
- MULTIPLEWORD	:= -mmultiple
- endif
+ arch/powerpc/Kconfig            | 17 +++++++++++++++++
+ arch/powerpc/Makefile           | 15 ++++++++++-----
+ arch/powerpc/boot/Makefile      |  2 ++
+ drivers/crypto/vmx/Makefile     |  6 +++++-
+ drivers/crypto/vmx/aesp8-ppc.pl |  2 +-
+ drivers/crypto/vmx/ppc-xlate.pl | 11 +++++++----
+ 6 files changed, 42 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 65fba4c..1f0500b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -146,6 +146,7 @@ config PPC
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select DCACHE_WORD_ACCESS if PPC64 && CPU_LITTLE_ENDIAN
++	select BUILD_ELF_V2 if PPC64 && CPU_LITTLE_ENDIAN
+ 	select NO_BOOTMEM
+ 	select HAVE_GENERIC_RCU_GUP
+ 	select HAVE_PERF_EVENTS_NMI if PPC64
+@@ -455,6 +456,22 @@ config KEXEC
+ 	  interface is strongly in flux, so no good recommendation can be
+ 	  made.
  
--cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
-+ifdef CONFIG_PPC64
-+cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
-+cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mcall-aixdesc)
-+aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
-+aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
++if PPC64 && CPU_BIG_ENDIAN
++config BUILD_ELF_V2
++	bool "Build big-endian kernel using ELFv2 ABI (EXPERIMENTAL)"
++	depends on PPC64 && CPU_BIG_ENDIAN && EXPERT
++	default n
++	help
++	  This builds the kernel image using the ELFv2 ABI, which has a
++	  reduced stack overhead and faster function calls. This does not
++	  affect the userspace ABIs.
++
++	  ELFv2 is the standard ABI for little-endian. For big-endian this is
++	  an experimental option that is not well tested (kernel and
++	  toolchain). This requires gcc 4.9 or newer and binutils 2.24 or
++	  newer.
 +endif
 +
- cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
-+cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
- ifneq ($(cc-name),clang)
-   cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
+ config RELOCATABLE
+ 	bool "Build a relocatable kernel"
+ 	depends on (PPC64 && !COMPILE_TEST) || (FLATMEM && (44x || FSL_BOOKE))
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index a389ee0..9fbc1c8 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -73,10 +73,14 @@ MULTIPLEWORD	:= -mmultiple
  endif
-@@ -113,7 +120,9 @@ ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
+ 
+ ifdef CONFIG_PPC64
+-cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
+-cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mcall-aixdesc)
+-aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
+-aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
++ifdef CONFIG_BUILD_ELF_V2
++cflags-y				+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
++aflags-y				+= $(call cc-option,-mabi=elfv2)
++else
++cflags-y				+= $(call cc-option,-mabi=elfv1)
++cflags-y				+= $(call cc-option,-mcall-aixdesc)
++aflags-y				+= $(call cc-option,-mabi=elfv1)
++endif
+ endif
+ 
+ cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
+@@ -116,7 +120,7 @@ endif
+ endif
+ 
+ CFLAGS-$(CONFIG_PPC64)	:= $(call cc-option,-mtraceback=no)
+-ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
++ifdef CONFIG_BUILD_ELF_V2
  CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
  AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
  else
-+CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
+@@ -124,6 +128,7 @@ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
  CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcall-aixdesc)
-+AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
- endif
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index eae2dc8..7c46cf3 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -28,14 +28,16 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -isystem $(shell $(CROSS32CC) -print-file-name=include) \
- 		 -D$(compress-y)
- 
-+# PPC64_BOOT_WRAPPER is little-endian specific.
- ifdef CONFIG_PPC64_BOOT_WRAPPER
- BOOTCFLAGS	+= -m64
-+BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
+ AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
  endif
 +
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
+ CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 7c46cf3..0442516 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -31,8 +31,10 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ # PPC64_BOOT_WRAPPER is little-endian specific.
+ ifdef CONFIG_PPC64_BOOT_WRAPPER
+ BOOTCFLAGS	+= -m64
++ifdef CONFIG_BUILD_ELF_V2
+ BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
+ endif
++endif
+ 
  ifdef CONFIG_CPU_BIG_ENDIAN
  BOOTCFLAGS	+= -mbig-endian
- else
- BOOTCFLAGS	+= -mlittle-endian
--BOOTCFLAGS	+= $(call cc-option,-mabi=elfv2)
- endif
+diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
+index de6e241..b47da00 100644
+--- a/drivers/crypto/vmx/Makefile
++++ b/drivers/crypto/vmx/Makefile
+@@ -1,11 +1,15 @@
+ obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
+ vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
  
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+-ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
++ifdef CONFIG_CPU_LITTLE_ENDIAN
+ TARGET := linux-ppc64le
+ else
++ifdef CONFIG_BUILD_ELF_V2
++TARGET := linux-ppc64v2
++else
+ TARGET := linux-ppc64
+ endif
++endif
+ 
+ quiet_cmd_perl = PERL $@
+       cmd_perl = $(PERL) $(<) $(TARGET) > $(@)
+diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
+index 0b4a293..6d423f6 100644
+--- a/drivers/crypto/vmx/aesp8-ppc.pl
++++ b/drivers/crypto/vmx/aesp8-ppc.pl
+@@ -61,7 +61,7 @@ if ($flavour =~ /64/) {
+ 	$SHL	="slwi";
+ } else { die "nonsense $flavour"; }
+ 
+-$LITTLE_ENDIAN = ($flavour=~/le$/) ? $SIZE_T : 0;
++$LITTLE_ENDIAN = ($flavour=~/ppc64le/) ? $SIZE_T : 0;
+ 
+ $0 =~ m/(.*[\/\\])[^\/\\]+$/; $dir=$1;
+ ( $xlate="${dir}ppc-xlate.pl" and -f $xlate ) or
+diff --git a/drivers/crypto/vmx/ppc-xlate.pl b/drivers/crypto/vmx/ppc-xlate.pl
+index b18e67d..0355a1e 100644
+--- a/drivers/crypto/vmx/ppc-xlate.pl
++++ b/drivers/crypto/vmx/ppc-xlate.pl
+@@ -8,6 +8,8 @@ open STDOUT,">$output" || die "can't open $output: $!";
+ 
+ my %GLOBALS;
+ my $dotinlocallabels=($flavour=~/linux/)?1:0;
++my $abielfv2=(($flavour =~ /linux-ppc64le/) or ($flavour =~ /linux-ppc64v2/))?1:0;
++my $dotfunctions=($abielfv2=~1)?0:1;
+ 
+ ################################################################
+ # directives which need special treatment on different platforms
+@@ -37,9 +39,10 @@ my $globl = sub {
+     $$global = $name;
+     $ret;
+ };
++
+ my $text = sub {
+     my $ret = ($flavour =~ /aix/) ? ".csect\t.text[PR],7" : ".text";
+-    $ret = ".abiversion	2\n".$ret	if ($flavour =~ /linux.*64le/);
++    $ret = ".abiversion	2\n".$ret	if ($abielfv2);
+     $ret;
+ };
+ my $machine = sub {
+@@ -55,8 +58,8 @@ my $size = sub {
+     if ($flavour =~ /linux/)
+     {	shift;
+ 	my $name = shift; $name =~ s|^[\.\_]||;
+-	my $ret  = ".size	$name,.-".($flavour=~/64$/?".":"").$name;
+-	$ret .= "\n.size	.$name,.-.$name" if ($flavour=~/64$/);
++	my $ret  = ".size	$name,.-".($dotfunctions?".":"").$name;
++	$ret .= "\n.size	.$name,.-.$name" if ($dotfunctions);
+ 	$ret;
+     }
+     else
+@@ -141,7 +144,7 @@ my $vmr = sub {
+ 
+ # Some ABIs specify vrsave, special-purpose register #256, as reserved
+ # for system use.
+-my $no_vrsave = ($flavour =~ /linux-ppc64le/);
++my $no_vrsave = ($abielfv2);
+ my $mtspr = sub {
+     my ($f,$idx,$ra) = @_;
+     if ($idx == 256 && $no_vrsave) {
 -- 
 2.10.2
