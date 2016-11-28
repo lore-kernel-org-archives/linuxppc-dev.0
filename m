@@ -1,45 +1,43 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tRpmq4ClKzDvnN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:47 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAS1Ik15133292
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:45 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2702q66477-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tRpms4XwhzDvnW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:49 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAS1Ii28122274
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:47 -0500
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27016y901t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:45 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:47 -0500
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 28 Nov 2016 11:21:42 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 633252BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:40 +1100 (EST)
+ Mon, 28 Nov 2016 11:21:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8F0142BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:43 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAS1Lem343647118
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:40 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAS1Lht559834548
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:43 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAS1LdRj010148
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:40 +1100
+ uAS1LhJh010210
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:43 +1100
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v3 3/4] powerpc/perf: PowerISA v3.0 raw event format encoding
-Date: Mon, 28 Nov 2016 06:51:15 +0530
+Subject: [PATCH v3 4/4] powerpc/perf: macros for PowerISA v3.0 format encoding
+Date: Mon, 28 Nov 2016 06:51:16 +0530
 In-Reply-To: <1480296076-28880-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1480296076-28880-1-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1480296076-28880-4-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1480296076-28880-5-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,179 +47,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patch to update the PowerISA v3.0 raw event encoding format
-information and add support for the same in Power9-pmu.c.
+Patch to add macros and contants to support the PowerISA v3.0 raw
+event encoding format. Couple of functions added since some of the
+bits fields like PMCxCOMB and THRESH_CMP has different width and location
+within MMCR* in PowerISA v3.0.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power9-pmu.c | 134 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 134 insertions(+)
+ arch/powerpc/perf/isa207-common.c | 90 ++++++++++++++++++++++++++++++++++++---
+ arch/powerpc/perf/isa207-common.h | 27 +++++++++++-
+ 2 files changed, 109 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index 0bdbee132105..ce43bf36f602 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -16,6 +16,78 @@
- #include "isa207-common.h"
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 2a2040ea5f99..e747bbf06661 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -55,6 +55,81 @@ static inline bool event_is_fab_match(u64 event)
+ 	return (event == 0x30056 || event == 0x4f052);
+ }
  
- /*
-+ * Raw event encoding for PowerISA v3.0:
-+ *
-+ *        60        56        52        48        44        40        36        32
-+ * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-+ *   | | [ ]                       [ ] [      thresh_cmp     ]   [  thresh_ctl   ]
-+ *   | |  |                         |                                     |
-+ *   | |  *- IFM (Linux)            |    thresh start/stop OR FAB match -*
-+ *   | *- BHRB (Linux)              *sm
-+ *   *- EBB (Linux)
-+ *
-+ *        28        24        20        16        12         8         4         0
-+ * | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - | - - - - |
-+ *   [   ] [  sample ]   [cache]   [ pmc ]   [unit ]   []    m   [    pmcxsel    ]
-+ *     |        |           |                          |     |
-+ *     |        |           |                          |     *- mark
-+ *     |        |           *- L1/L2/L3 cache_sel      |
-+ *     |        |                                      |
-+ *     |        *- sampling mode for marked events     *- combine
-+ *     |
-+ *     *- thresh_sel
-+ *
-+ * Below uses IBM bit numbering.
-+ *
-+ * MMCR1[x:y] = unit    (PMCxUNIT)
-+ * MMCR1[24]   = pmc1combine[0]
-+ * MMCR1[25]   = pmc1combine[1]
-+ * MMCR1[26]   = pmc2combine[0]
-+ * MMCR1[27]   = pmc2combine[1]
-+ * MMCR1[28]   = pmc3combine[0]
-+ * MMCR1[29]   = pmc3combine[1]
-+ * MMCR1[30]   = pmc4combine[0]
-+ * MMCR1[31]   = pmc4combine[1]
-+ *
-+ * if pmc == 3 and unit == 0 and pmcxsel[0:6] == 0b0101011
-+ *	# PM_MRK_FAB_RSP_MATCH
-+ *	MMCR1[20:27] = thresh_ctl   (FAB_CRESP_MATCH / FAB_TYPE_MATCH)
-+ * else if pmc == 4 and unit == 0xf and pmcxsel[0:6] == 0b0101001
-+ *	# PM_MRK_FAB_RSP_MATCH_CYC
-+ *	MMCR1[20:27] = thresh_ctl   (FAB_CRESP_MATCH / FAB_TYPE_MATCH)
-+ * else
-+ *	MMCRA[48:55] = thresh_ctl   (THRESH START/END)
-+ *
-+ * if thresh_sel:
-+ *	MMCRA[45:47] = thresh_sel
-+ *
-+ * if thresh_cmp:
-+ *	MMCRA[9:11] = thresh_cmp[0:2]
-+ *	MMCRA[12:18] = thresh_cmp[3:9]
-+ *
-+ * if unit == 6 or unit == 7
-+ *	MMCRC[53:55] = cache_sel[1:3]      (L2EVENT_SEL)
-+ * else if unit == 8 or unit == 9:
-+ *	if cache_sel[0] == 0: # L3 bank
-+ *		MMCRC[47:49] = cache_sel[1:3]  (L3EVENT_SEL0)
-+ *	else if cache_sel[0] == 1:
-+ *		MMCRC[50:51] = cache_sel[2:3]  (L3EVENT_SEL1)
-+ * else if cache_sel[1]: # L1 event
-+ *	MMCR1[16] = cache_sel[2]
-+ *	MMCR1[17] = cache_sel[3]
-+ *
-+ * if mark:
-+ *	MMCRA[63]    = 1		(SAMPLE_ENABLE)
-+ *	MMCRA[57:59] = sample[0:2]	(RAND_SAMP_ELIG)
-+ *	MMCRA[61:62] = sample[3:4]	(RAND_SAMP_MODE)
-+ *
-+ * if EBB and BHRB:
-+ *	MMCRA[32:33] = IFM
-+ *
-+ * MMCRA[SDAR_MODE]  = sm
-+ */
++static bool is_event_valid(u64 event)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++		(cpu_has_feature(CPU_FTR_POWER9_DD1)) &&
++		(event & ~EVENT_VALID_MASK))
++		return false;
++	else if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++		(event & ~ISA300_EVENT_VALID_MASK))
++		return false;
++	else if (event & ~EVENT_VALID_MASK)
++		return false;
 +
-+/*
-  * Some power9 event codes.
-  */
- #define EVENT(_name, _code)	_name = _code,
-@@ -99,6 +171,48 @@ static const struct attribute_group *power9_isa207_pmu_attr_groups[] = {
- 	NULL,
- };
- 
-+PMU_FORMAT_ATTR(event,		"config:0-51");
-+PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
-+PMU_FORMAT_ATTR(mark,		"config:8");
-+PMU_FORMAT_ATTR(combine,	"config:10-11");
-+PMU_FORMAT_ATTR(unit,		"config:12-15");
-+PMU_FORMAT_ATTR(pmc,		"config:16-19");
-+PMU_FORMAT_ATTR(cache_sel,	"config:20-23");
-+PMU_FORMAT_ATTR(sample_mode,	"config:24-28");
-+PMU_FORMAT_ATTR(thresh_sel,	"config:29-31");
-+PMU_FORMAT_ATTR(thresh_stop,	"config:32-35");
-+PMU_FORMAT_ATTR(thresh_start,	"config:36-39");
-+PMU_FORMAT_ATTR(thresh_cmp,	"config:40-49");
-+PMU_FORMAT_ATTR(sdar_mode,	"config:50-51");
++	return true;
++}
 +
-+static struct attribute *power9_pmu_format_attr[] = {
-+	&format_attr_event.attr,
-+	&format_attr_pmcxsel.attr,
-+	&format_attr_mark.attr,
-+	&format_attr_combine.attr,
-+	&format_attr_unit.attr,
-+	&format_attr_pmc.attr,
-+	&format_attr_cache_sel.attr,
-+	&format_attr_sample_mode.attr,
-+	&format_attr_thresh_sel.attr,
-+	&format_attr_thresh_stop.attr,
-+	&format_attr_thresh_start.attr,
-+	&format_attr_thresh_cmp.attr,
-+	&format_attr_sdar_mode.attr,
-+	NULL,
-+};
++static u64 mmcra_sdar_mode(u64 event)
++{
++	u64 sm;
 +
-+static struct attribute_group power9_pmu_format_group = {
-+	.name = "format",
-+	.attrs = power9_pmu_format_attr,
-+};
++	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++	   (cpu_has_feature(CPU_FTR_POWER9_DD1))) {
++		goto sm_tlb;
++	} else if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		sm = (event >> ISA300_SDAR_MODE_SHIFT) & ISA300_SDAR_MODE_MASK;
++		if (sm)
++			return sm<<MMCRA_SDAR_MODE_SHIFT;
++	} else
++		goto sm_tlb;
 +
-+static const struct attribute_group *power9_pmu_attr_groups[] = {
-+	&power9_pmu_format_group,
-+	&power9_pmu_events_group,
-+	NULL,
-+};
++sm_tlb:
++	return MMCRA_SDAR_MODE_TLB;
++}
 +
- static int power9_generic_events[] = {
- 	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
- 	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_ICT_NOSLOT_CYC,
-@@ -278,6 +392,24 @@ static struct power_pmu power9_isa207_pmu = {
- 	.bhrb_nr		= 32,
- };
- 
-+static struct power_pmu power9_pmu = {
-+	.name			= "POWER9",
-+	.n_counter		= MAX_PMU_COUNTERS,
-+	.add_fields		= ISA207_ADD_FIELDS,
-+	.test_adder		= ISA207_TEST_ADDER,
-+	.compute_mmcr		= isa207_compute_mmcr,
-+	.config_bhrb		= power9_config_bhrb,
-+	.bhrb_filter_map	= power9_bhrb_filter_map,
-+	.get_constraint		= isa207_get_constraint,
-+	.disable_pmc		= isa207_disable_pmc,
-+	.flags			= PPMU_HAS_SIER | PPMU_ARCH_207S,
-+	.n_generic		= ARRAY_SIZE(power9_generic_events),
-+	.generic_events		= power9_generic_events,
-+	.cache_events		= &power9_cache_events,
-+	.attr_groups		= power9_pmu_attr_groups,
-+	.bhrb_nr		= 32,
-+};
++static u64 thresh_cmp_val(u64 value)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
++		goto thr_cmp;
++	else if (cpu_has_feature(CPU_FTR_ARCH_300))
++		return value<<ISA300_MMCRA_THR_CMP_SHIFT;
++	else
++		goto thr_cmp;
++thr_cmp:
++	return value<<MMCRA_THR_CMP_SHIFT;
++}
 +
- static int __init init_power9_pmu(void)
++static unsigned long combine_from_event(u64 event)
++{
++	unsigned long combine;
++
++	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
++		combine = (event >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
++	else if (cpu_has_feature(CPU_FTR_ARCH_300))
++		combine = (event >> ISA300_EVENT_COMBINE_SHIFT) & ISA300_EVENT_COMBINE_MASK;
++	else
++		combine = (event >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
++
++	return combine;
++}
++
++static unsigned long combine_shift(unsigned long pmc)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
++		goto comb_shift;
++	else if (cpu_has_feature(CPU_FTR_ARCH_300))
++		return ISA300_MMCR1_COMBINE_SHIFT(pmc);
++	else
++		goto comb_shift;
++
++comb_shift:
++	return MMCR1_COMBINE_SHIFT(pmc);
++}
++
+ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
  {
- 	int rc = 0;
-@@ -289,6 +421,8 @@ static int __init init_power9_pmu(void)
+ 	unsigned int unit, pmc, cache, ebb;
+@@ -62,7 +137,7 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
  
- 	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
- 		rc = register_power_pmu(&power9_isa207_pmu);
-+	} else {
-+		rc = register_power_pmu(&power9_pmu);
+ 	mask = value = 0;
+ 
+-	if (event & ~EVENT_VALID_MASK)
++	if (!is_event_valid(event))
+ 		return -1;
+ 
+ 	pmc   = (event >> EVENT_PMC_SHIFT)        & EVENT_PMC_MASK;
+@@ -189,15 +264,13 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 			pmc_inuse |= 1 << pmc;
  	}
  
- 	if (rc)
+-	/* In continuous sampling mode, update SDAR on TLB miss */
+-	mmcra = MMCRA_SDAR_MODE_TLB;
+-	mmcr1 = mmcr2 = 0;
++	mmcra = mmcr1 = mmcr2 = 0;
+ 
+ 	/* Second pass: assign PMCs, set all MMCR1 fields */
+ 	for (i = 0; i < n_ev; ++i) {
+ 		pmc     = (event[i] >> EVENT_PMC_SHIFT) & EVENT_PMC_MASK;
+ 		unit    = (event[i] >> EVENT_UNIT_SHIFT) & EVENT_UNIT_MASK;
+-		combine = (event[i] >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
++		combine = combine_from_event(event[i]);
+ 		psel    =  event[i] & EVENT_PSEL_MASK;
+ 
+ 		if (!pmc) {
+@@ -211,10 +284,13 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 
+ 		if (pmc <= 4) {
+ 			mmcr1 |= unit << MMCR1_UNIT_SHIFT(pmc);
+-			mmcr1 |= combine << MMCR1_COMBINE_SHIFT(pmc);
++			mmcr1 |= combine << combine_shift(pmc);
+ 			mmcr1 |= psel << MMCR1_PMCSEL_SHIFT(pmc);
+ 		}
+ 
++		/* In continuous sampling mode, update SDAR on TLB miss */
++		mmcra |= mmcra_sdar_mode(event[i]);
++
+ 		if (event[i] & EVENT_IS_L1) {
+ 			cache = event[i] >> EVENT_CACHE_SEL_SHIFT;
+ 			mmcr1 |= (cache & 1) << MMCR1_IC_QUAL_SHIFT;
+@@ -245,7 +321,7 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 			val = (event[i] >> EVENT_THR_SEL_SHIFT) & EVENT_THR_SEL_MASK;
+ 			mmcra |= val << MMCRA_THR_SEL_SHIFT;
+ 			val = (event[i] >> EVENT_THR_CMP_SHIFT) & EVENT_THR_CMP_MASK;
+-			mmcra |= val << MMCRA_THR_CMP_SHIFT;
++			mmcra |= thresh_cmp_val(val);
+ 		}
+ 
+ 		if (event[i] & EVENT_WANTS_BHRB) {
+diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+index 4d0a4e5017c2..0a240635cf48 100644
+--- a/arch/powerpc/perf/isa207-common.h
++++ b/arch/powerpc/perf/isa207-common.h
+@@ -134,6 +134,24 @@
+ 	 PERF_SAMPLE_BRANCH_KERNEL      |\
+ 	 PERF_SAMPLE_BRANCH_HV)
+ 
++/* Contants to support PowerISA v3.0 encoding format */
++#define ISA300_EVENT_COMBINE_SHIFT	10	/* Combine bit */
++#define ISA300_EVENT_COMBINE_MASK	0x3ull
++#define ISA300_SDAR_MODE_SHIFT		50
++#define ISA300_SDAR_MODE_MASK		0x3ull
++
++#define ISA300_EVENT_VALID_MASK		\
++	((ISA300_SDAR_MODE_MASK<< ISA300_SDAR_MODE_SHIFT	|	\
++	(EVENT_THRESH_MASK    << EVENT_THRESH_SHIFT)		|	\
++	(EVENT_SAMPLE_MASK    << EVENT_SAMPLE_SHIFT)		|	\
++	(EVENT_CACHE_SEL_MASK << EVENT_CACHE_SEL_SHIFT)		|	\
++	(EVENT_PMC_MASK       << EVENT_PMC_SHIFT)		|	\
++	(EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
++	(ISA300_EVENT_COMBINE_MASK << ISA300_EVENT_COMBINE_SHIFT) |	\
++	(EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
++	 EVENT_LINUX_MASK					|	\
++	 EVENT_PSEL_MASK))
++
+ /*
+  * Layout of constraint bits:
+  *
+@@ -210,15 +228,22 @@
+ #define MMCR1_DC_QUAL_SHIFT		47
+ #define MMCR1_IC_QUAL_SHIFT		46
+ 
++/* MMCR1 Combine bits macro for PowerISA v3.0 */
++#define ISA300_MMCR1_COMBINE_SHIFT(pmc)	(38 - ((pmc - 1) * 2))
++
+ /* Bits in MMCRA for PowerISA v2.07 */
+ #define MMCRA_SAMP_MODE_SHIFT		1
+ #define MMCRA_SAMP_ELIG_SHIFT		4
+ #define MMCRA_THR_CTL_SHIFT		8
+ #define MMCRA_THR_SEL_SHIFT		16
+ #define MMCRA_THR_CMP_SHIFT		32
+-#define MMCRA_SDAR_MODE_TLB		(1ull << 42)
++#define MMCRA_SDAR_MODE_SHIFT		42
++#define MMCRA_SDAR_MODE_TLB		(1ull << MMCRA_SDAR_MODE_SHIFT)
+ #define MMCRA_IFM_SHIFT			30
+ 
++/* MMCR1 Threshold Compare bit constant for PowerISA v3.0 */
++#define ISA300_MMCRA_THR_CMP_SHIFT	45
++
+ /* Bits in MMCR2 for PowerISA v2.07 */
+ #define MMCR2_FCS(pmc)			(1ull << (63 - (((pmc) - 1) * 9)))
+ #define MMCR2_FCP(pmc)			(1ull << (62 - (((pmc) - 1) * 9)))
 -- 
 2.7.4
