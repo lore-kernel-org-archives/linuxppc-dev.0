@@ -1,45 +1,22 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nickc@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSCZk3NmVzDvY9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 03:59:26 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uASGxO9N004930
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 11:59:24 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 270nv9p4c1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 11:59:18 -0500
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 28 Nov 2016 09:59:17 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 71ACD3E40030
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 09:59:14 -0700 (MST)
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uASGxE7x4456780
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 16:59:14 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E7A2928041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 11:59:13 -0500 (EST)
-Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id C726428048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 11:59:13 -0500 (EST)
-Subject: [PATCH] powerpc/pserie: Use lmb_is_removable() to check removability
-To: linuxppc-dev@lists.ozlabs.org
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Mon, 28 Nov 2016 11:50:45 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tS5q21fhxzDvjf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:39:42 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/boot: request no dynamic linker for boot wrapper
+To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20161128014226.7656-1-npiggin@gmail.com>
+ <87shqbrhfo.fsf@concordia.ellerman.id.au>
+ <20161128230724.375227b4@roar.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ Alan Modra <amodra@gmail.com>
+From: Nick Clifton <nickc@redhat.com>
+Message-ID: <a3674ff0-2c57-b04e-6cdf-3ac43296f854@redhat.com>
+Date: Mon, 28 Nov 2016 12:39:38 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20161128165044.7375.36918.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+In-Reply-To: <20161128230724.375227b4@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,43 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We should be using lmb_is_removable() to validate that enough LMBs
-are available to remove when doing a remove by count. This will check
-that the LMB is owned by the system and it is considered removable.
-This patch also adds a pr_info() notification to report the LMB count
-to remove was not satisfied.
+Hi Nicholas,
 
-What we do now is just check that there are enough LMBs owned by the
-system when validating there are enough LMBs to remove. This can
-lead to situations where there are enough LMBs owned by the system
-but not enough that are considered removable. This results in having
-to bail out of the remove operation instead of just failing the request
-that we should have known wouldn't succeed.
+>>> The boot wrapper performs its own relocations and does not require
+>>> PT_INTERP segment.
+>>>
+>>> Without this option, binutils 2.28 and newer tries to create a program
+>>> header segment due to PT_INTERP, and the link fails because there is no
+>>> space for it.  
+>>
+>> 2.28 is not released yet though is it?
+>>
+>> So can we just declare versions with that behaviour broken?
+> 
+> No it's not released yet, but I don't know if it's due entirely to binutils
+> bug. Let's see what Nick thinks.
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-memory.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Well the patch that caused this problem was an attempt to fix the linker so 
+that it would enforce the ELF standard.  Prior to the patch the linker would 
+silently create binaries that violated the standard and which, at least for
+the people reporting the problem in binutils PR 20815, failed to execute.
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 76ec104..2617f9f 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -472,12 +472,15 @@ static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
- 
- 	/* Validate that there are enough LMBs to satisfy the request */
- 	for (i = 0; i < num_lmbs; i++) {
--		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
-+		if (lmb_is_removable(&lmbs[i]))
- 			lmbs_available++;
- 	}
- 
--	if (lmbs_available < lmbs_to_remove)
-+	if (lmbs_available < lmbs_to_remove) {
-+		pr_info("Not enough LMBs available (%d of %d) to satisfy request\n",
-+			lmbs_available, lmbs_to_remove);
- 		return -EINVAL;
-+	}
- 
- 	for (i = 0; i < num_lmbs && lmbs_removed < lmbs_to_remove; i++) {
- 		rc = dlpar_remove_lmb(&lmbs[i]);
+It now appears however that some programs, including the boot wrapper and the
+Linux kernel, may actually rely upon non-standard ELF binaries being created.
+Before I revert the patch however, I would like to ask...
+
+>>> +# Do not include PT_INTERP segment when linking pie. Non-pie linking
+>>> +# just ignores this option.
+>>> +LD_VERSION=$(${CROSS}ld --version | $srctree/scripts/ld-version.sh)
+>>> +LD_NO_DL_MIN_VERSION=$(echo 2.26 | $srctree/scripts/ld-version.sh)
+>>> +if [ "$LD_VERSION" -ge "$LD_NO_DL_MIN_VERSION" ] ; then
+>>> +	nodl="--no-dynamic-linker"
+>>> +fi  
+
+... this actually seems like a better fix to me.  If you do not want the 
+PT_INTERP segment, then telling this linker this is a good idea.  So wouldn't
+a patch like this be a better solution to the problem ?
+
+Cheers
+  Nick
