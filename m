@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tS5Gs06HxzDvWg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:15:17 +1100 (AEDT)
-In-Reply-To: <1479192976-17847-2-git-send-email-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tS5Gt6DFHzDt3c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:15:18 +1100 (AEDT)
+In-Reply-To: <1480043229-2363-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [powerpc,v6,1/3] Setup AMOR in HV mode
-Message-Id: <3tS5Gr4Xtxz9vFs@ozlabs.org>
-Date: Mon, 28 Nov 2016 23:15:16 +1100 (AEDT)
+Cc: peterz@infradead.org, xinhui.pan@linux.vnet.ibm.com
+Subject: Re: powerpc: Fix __cmpxchg() to take a volatile ptr again
+Message-Id: <3tS5Gs6KZYz9vFt@ozlabs.org>
+Date: Mon, 28 Nov 2016 23:15:17 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-11-15 at 06:56:14 UTC, Balbir Singh wrote:
-> AMOR should be setup in HV mode, we set it up once
-> and let the generic kernel handle IAMR. This patch is
-> used to enable storage keys in a following patch as
-> defined in ISA 3. We don't setup AMOR in DD1, since we
-> can't setup IAMR in DD1 (bits have to be 0). If we setup
-> AMOR some other code could potentially try to set IAMR
-> (guest kernel for example).
+On Fri, 2016-11-25 at 03:07:09 UTC, Michael Ellerman wrote:
+> In commit d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
+> we removed the volatile from __cmpxchg().
 > 
-> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> This is leading to warnings such as:
+> 
+>   drivers/gpu/drm/drm_lock.c: In function ‘drm_lock_take’:
+>   arch/powerpc/include/asm/cmpxchg.h:484:37: warning: passing argument 1
+>   of ‘__cmpxchg’ discards ‘volatile’ qualifier from pointer target
+>      (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,   \
+> 
+> There doesn't seem to be consensus across architectures whether the
+> argument is volatile or not, so at least for now put the volatile back.
+> 
+> Fixes: d0563a1297e2 ("powerpc: Implement {cmp}xchg for u8 and u16")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/ee97b6b99f42285d29d439f2e5376e
+https://git.kernel.org/powerpc/c/da58b23cb976ab83a80d358102e139
 
 cheers
