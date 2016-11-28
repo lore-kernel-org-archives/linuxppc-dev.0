@@ -1,33 +1,48 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tRxL96hlFzDvgf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 17:17:37 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAS6DbnV008363
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 01:17:35 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 270exb8hw0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tS05T0PcKzDrBv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 19:21:48 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAS8Inj2087242
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 03:21:46 -0500
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 270f8t4qsf-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 01:17:35 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 03:21:45 -0500
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 28 Nov 2016 01:17:34 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v7 7/7] powerpc/mm: Batch tlb flush when invalidating pte
- entries
-Date: Mon, 28 Nov 2016 11:47:04 +0530
-In-Reply-To: <20161128061704.4914-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20161128061704.4914-1-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <20161128061704.4914-8-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 28 Nov 2016 13:51:42 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2B5D7E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 13:52:03 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAS8Lewr34996250
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 13:51:40 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAS8Lcvg017008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 13:51:40 +0530
+Date: Mon, 28 Nov 2016 13:51:36 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "Leonidas S . Barbosa" <leosilva@linux.vnet.ibm.com>,
+ linux-crypto@vger.kernel.org,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] crypto: vmx - rebuild generated asm when target changes
+References: <20161126042459.1964-1-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161126042459.1964-1-npiggin@gmail.com>
+Message-Id: <20161128082136.GD29256@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +52,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will improve the task exit case, by batching tlb invalidates.
+On 2016/11/26 03:24PM, Nicholas Piggin wrote:
+> Switching from big endian to little endian can fail to regenerate
+> the crypto assembly properly. Switch to using standard form of
+> kbuild dependency checking (i.e., use FORCE and if_changed).
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/radix.h | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+Hi Nick,
+A similar patch is already in:
+https://mid.mail-archive.com/linux-crypto@vger.kernel.org/msg21855.html
 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 4e88178cf03b..20a4eb4d065a 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -140,13 +140,20 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
- 		unsigned long new_pte;
- 
- 		old_pte = __radix_pte_update(ptep, ~0, 0);
--		asm volatile("ptesync" : : : "memory");
- 		/*
- 		 * new value of pte
- 		 */
- 		new_pte = (old_pte | set) & ~clr;
--		radix__flush_tlb_pte(old_pte, mm, addr);
--		__radix_pte_update(ptep, 0, new_pte);
-+		/*
-+		 * If we are trying to clear the pte, we can skip
-+		 * the below sequence and batch the tlb flush. The
-+		 * tlb flush batching is done by mmu gather code
-+		 */
-+		if (new_pte) {
-+			asm volatile("ptesync" : : : "memory");
-+			radix__flush_tlb_pte(old_pte, mm, addr);
-+			__radix_pte_update(ptep, 0, new_pte);
-+		}
- 	} else
- 		old_pte = __radix_pte_update(ptep, clr, set);
- 	asm volatile("ptesync" : : : "memory");
--- 
-2.10.2
+- Naveen
