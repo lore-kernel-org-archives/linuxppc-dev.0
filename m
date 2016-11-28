@@ -1,41 +1,31 @@
-Return-Path: <jhovold@gmail.com>
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <groug@kaod.org>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXR4f2wzDvjw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:35 +1100 (AEDT)
-Received: by mail-lf0-x242.google.com with SMTP id o141so10369306lff.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:35 -0800 (PST)
-Sender: Johan Hovold <jhovold@gmail.com>
-From: Johan Hovold <johan@kernel.org>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Vince Bridgers <vbridger@opensource.altera.com>,
- Florian Fainelli <f.fainelli@gmail.com>, Fugang Duan <fugang.duan@nxp.com>,
- Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Li Yang <leoli@freescale.com>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Felix Fietkau <nbd@openwrt.org>, John Crispin <blogic@openwrt.org>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- Lars Persson <lars.persson@axis.com>, Mugunthan V N <mugunthanvnm@ti.com>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Andrew Lunn <andrew@lunn.ch>,
- Vivien Didelot <vivien.didelot@savoirfairelinux.com>,
- netdev@vger.kernel.org, nios2-dev@lists.rocketboards.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
- linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
- Johan Hovold <johan@kernel.org>
-Subject: [PATCH net 15/16] net: ethernet: ti: davinci_emac: fix fixed-link
- phydev and of-node leaks
-Date: Mon, 28 Nov 2016 19:25:08 +0100
-Message-Id: <1480357509-28074-16-git-send-email-johan@kernel.org>
-In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
-References: <1480357509-28074-1-git-send-email-johan@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFFD51bxzDvhP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:14:23 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uASI3qPv022881
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 13:14:21 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 270mkp92t7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 13:14:20 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <groug@kaod.org>;
+ Mon, 28 Nov 2016 11:14:20 -0700
+Subject: [PATCH] mail: improve bash completion
+From: Greg Kurz <groug@kaod.org>
+To: stgit-users@gna.org
+Cc: Catalin Marinas <catalin.marinas@gmail.com>
+Date: Mon, 28 Nov 2016 19:14:15 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <148035685494.6934.10229668031570371685.stgit@bahia>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,66 +35,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make sure to deregister and free any fixed-link PHY registered using
-of_phy_register_fixed_link() on probe errors and on driver unbind.
+This adds completion of the --to, --cc and --bcc options based on the
+content of the [mail "alias"] section of GIT configuration files.
 
-Also remember to put the of-node reference on probe errors.
-
-Fixes: 1bb6aa56bb38 ("net: davinci_emac: Add support for fixed-link
-PHY")
-Signed-off-by: Johan Hovold <johan@kernel.org>
+Signed-off-by: Greg Kurz <groug@kaod.org>
 ---
- drivers/net/ethernet/ti/davinci_emac.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ stgit/argparse.py      |    1 +
+ stgit/commands/mail.py |    6 +++---
+ stgit/completion.py    |    2 ++
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/ti/davinci_emac.c b/drivers/net/ethernet/ti/davinci_emac.c
-index 84fbe5714f8b..481c7bf0395b 100644
---- a/drivers/net/ethernet/ti/davinci_emac.c
-+++ b/drivers/net/ethernet/ti/davinci_emac.c
-@@ -1767,6 +1767,7 @@ static int davinci_emac_try_get_mac(struct platform_device *pdev,
-  */
- static int davinci_emac_probe(struct platform_device *pdev)
- {
-+	struct device_node *np = pdev->dev.of_node;
- 	int rc = 0;
- 	struct resource *res, *res_ctrl;
- 	struct net_device *ndev;
-@@ -1805,7 +1806,7 @@ static int davinci_emac_probe(struct platform_device *pdev)
- 	if (!pdata) {
- 		dev_err(&pdev->dev, "no platform data\n");
- 		rc = -ENODEV;
--		goto no_pdata;
-+		goto err_free_netdev;
- 	}
- 
- 	/* MAC addr and PHY mask , RMII enable info from platform_data */
-@@ -1941,6 +1942,10 @@ static int davinci_emac_probe(struct platform_device *pdev)
- 		cpdma_chan_destroy(priv->rxchan);
- 	cpdma_ctlr_destroy(priv->dma);
- no_pdata:
-+	if (of_phy_is_fixed_link(np))
-+		of_phy_deregister_fixed_link(np);
-+	of_node_put(priv->phy_node);
-+err_free_netdev:
- 	free_netdev(ndev);
- 	return rc;
- }
-@@ -1956,6 +1961,7 @@ static int davinci_emac_remove(struct platform_device *pdev)
- {
- 	struct net_device *ndev = platform_get_drvdata(pdev);
- 	struct emac_priv *priv = netdev_priv(ndev);
-+	struct device_node *np = pdev->dev.of_node;
- 
- 	dev_notice(&ndev->dev, "DaVinci EMAC: davinci_emac_remove()\n");
- 
-@@ -1968,6 +1974,8 @@ static int davinci_emac_remove(struct platform_device *pdev)
- 	unregister_netdev(ndev);
- 	of_node_put(priv->phy_node);
- 	pm_runtime_disable(&pdev->dev);
-+	if (of_phy_is_fixed_link(np))
-+		of_phy_deregister_fixed_link(np);
- 	free_netdev(ndev);
- 
- 	return 0;
--- 
-2.7.3
+diff --git a/stgit/argparse.py b/stgit/argparse.py
+index 43c6cf9bbbb3..86f4a1095d10 100644
+--- a/stgit/argparse.py
++++ b/stgit/argparse.py
+@@ -286,6 +286,7 @@ known_files = Compgen(['$(_known_files)'])
+ repo = Compgen(actions = ['directory'])
+ dir = Compgen(actions = ['directory'])
+ files = Compgen(actions = ['file'])
++mail_aliases = Compgen(['$(_mail_aliases)'])
+ def strings(*ss): return Compgen(ss)
+ class patch_range(CompgenBase):
+     def __init__(self, *endpoints):
+diff --git a/stgit/commands/mail.py b/stgit/commands/mail.py
+index ff9f2e11ca36..2dc3dba6680d 100644
+--- a/stgit/commands/mail.py
++++ b/stgit/commands/mail.py
+@@ -102,11 +102,11 @@ args = [argparse.patch_range(argparse.applied_patches,
+ options = [
+     opt('-a', '--all', action = 'store_true',
+         short = 'E-mail all the applied patches'),
+-    opt('--to', action = 'append',
++    opt('--to', action = 'append', args = [argparse.mail_aliases],
+         short = 'Add TO to the To: list'),
+-    opt('--cc', action = 'append',
++    opt('--cc', action = 'append', args = [argparse.mail_aliases],
+         short = 'Add CC to the Cc: list'),
+-    opt('--bcc', action = 'append',
++    opt('--bcc', action = 'append', args = [argparse.mail_aliases],
+         short = 'Add BCC to the Bcc: list'),
+     opt('--auto', action = 'store_true',
+         short = 'Automatically cc the patch signers'),
+diff --git a/stgit/completion.py b/stgit/completion.py
+index 38f06705b76a..010fc4fbee0c 100644
+--- a/stgit/completion.py
++++ b/stgit/completion.py
+@@ -58,6 +58,8 @@ def util():
+              'esac'),
+          fun('_stg_branches',
+              'local g=$(_gitdir)', 'test "$g" && (cd $g/patches/ && echo *)'),
++         fun('_mail_aliases',
++             'git config --name-only --get-regexp "^mail\.alias\." | cut -d. -f 3'),
+          ref_list_fun('_all_branches', 'refs/heads'),
+          ref_list_fun('_tags', 'refs/tags'),
+          ref_list_fun('_remotes', 'refs/remotes')]
