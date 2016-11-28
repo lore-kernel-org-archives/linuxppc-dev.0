@@ -1,24 +1,40 @@
-Return-Path: <nickc@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jhovold@gmail.com>
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tS89D09J4zDsxb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 01:25:35 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc/boot: request no dynamic linker for boot wrapper
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <20161128014226.7656-1-npiggin@gmail.com>
- <87shqbrhfo.fsf@concordia.ellerman.id.au>
- <20161128230724.375227b4@roar.ozlabs.ibm.com>
- <a3674ff0-2c57-b04e-6cdf-3ac43296f854@redhat.com>
- <20161129000211.54199985@roar.ozlabs.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>, Alan Modra <amodra@gmail.com>
-From: Nick Clifton <nickc@redhat.com>
-Message-ID: <3cc30a4c-59db-fc24-7b77-69f8665dadc3@redhat.com>
-Date: Mon, 28 Nov 2016 14:25:31 +0000
-MIME-Version: 1.0
-In-Reply-To: <20161129000211.54199985@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXL1CtVzDvhs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:30 +1100 (AEDT)
+Received: by mail-lf0-x243.google.com with SMTP id p100so10340561lfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:30 -0800 (PST)
+Sender: Johan Hovold <jhovold@gmail.com>
+From: Johan Hovold <johan@kernel.org>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Vince Bridgers <vbridger@opensource.altera.com>,
+ Florian Fainelli <f.fainelli@gmail.com>, Fugang Duan <fugang.duan@nxp.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Li Yang <leoli@freescale.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Felix Fietkau <nbd@openwrt.org>, John Crispin <blogic@openwrt.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ Lars Persson <lars.persson@axis.com>, Mugunthan V N <mugunthanvnm@ti.com>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Andrew Lunn <andrew@lunn.ch>,
+ Vivien Didelot <vivien.didelot@savoirfairelinux.com>,
+ netdev@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
+ Johan Hovold <johan@kernel.org>
+Subject: [PATCH net 03/16] net: ethernet: altera: fix fixed-link phydev leaks
+Date: Mon, 28 Nov 2016 19:24:56 +0100
+Message-Id: <1480357509-28074-4-git-send-email-johan@kernel.org>
+In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
+References: <1480357509-28074-1-git-send-email-johan@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +44,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nicholas,
+Make sure to deregister and free any fixed-link PHY registered using
+of_phy_register_fixed_link() on probe errors and on driver unbind.
 
->> ... this actually seems like a better fix to me.  If you do not want the 
->> PT_INTERP segment, then telling this linker this is a good idea.  So wouldn't
->> a patch like this be a better solution to the problem ?
-> 
-> Yes, I wasn't asking for the binutils change to be reverted.
+Fixes: 7cdbc6f74f8e ("altera tse: add support for fixed-links.")
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/net/ethernet/altera/altera_tse_main.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-Oh right.  Actually it looks like at least part of the patch is going to have
-to be reverted, (the part that sorts the PT_LOAD segments into ascending order), 
-as currently it breaks building Linux  kernels.  *sigh*
-
-> I don't think the
-> boot wrapper is relying on this non-standard form. If we go with
-> --no-dynamic-linker then I'm assuming we get a standard ELF binary?
-> That seems desirable.
-
-Yes, you definitely should get a proper ELF binary.
-
-> I was just checking whether this is the best think for the kernel to do.
-> Is it possible to get a similar behaviour using the linker script instead
-> (so it's compatible with older binutils)?
-
-Actually probably not.  :-(  Several backends, including the PPC, will now 
-attempt to automatically create and install the PT_INTERP segment unless you
-explicitly tell them not too.  Even if you are using a custom linker script.
-
-Cheers
-  Nick
+diff --git a/drivers/net/ethernet/altera/altera_tse_main.c b/drivers/net/ethernet/altera/altera_tse_main.c
+index bda31f308cc2..6532829b70d2 100644
+--- a/drivers/net/ethernet/altera/altera_tse_main.c
++++ b/drivers/net/ethernet/altera/altera_tse_main.c
+@@ -819,6 +819,8 @@ static int init_phy(struct net_device *dev)
+ 
+ 	if (!phydev) {
+ 		netdev_err(dev, "Could not find the PHY\n");
++		if (fixed_link)
++			of_phy_deregister_fixed_link(priv->device->of_node);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -1545,10 +1547,15 @@ static int altera_tse_probe(struct platform_device *pdev)
+ static int altera_tse_remove(struct platform_device *pdev)
+ {
+ 	struct net_device *ndev = platform_get_drvdata(pdev);
++	struct altera_tse_private *priv = netdev_priv(ndev);
+ 
+-	if (ndev->phydev)
++	if (ndev->phydev) {
+ 		phy_disconnect(ndev->phydev);
+ 
++		if (of_phy_is_fixed_link(priv->device->of_node))
++			of_phy_deregister_fixed_link(priv->device->of_node);
++	}
++
+ 	platform_set_drvdata(pdev, NULL);
+ 	altera_tse_mdio_destroy(ndev);
+ 	unregister_netdev(ndev);
+-- 
+2.7.3
