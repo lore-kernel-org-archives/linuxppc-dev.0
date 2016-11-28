@@ -1,11 +1,11 @@
 Return-Path: <jhovold@gmail.com>
-Received: from mail-lf0-x244.google.com (mail-lf0-x244.google.com
- [IPv6:2a00:1450:4010:c07::244])
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXK5t4szDvhn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXK4lpMzDvhR
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:29 +1100 (AEDT)
-Received: by mail-lf0-x244.google.com with SMTP id p100so10340524lfg.2
+Received: by mail-lf0-x243.google.com with SMTP id p100so10340508lfg.2
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:29 -0800 (PST)
 Sender: Johan Hovold <jhovold@gmail.com>
 From: Johan Hovold <johan@kernel.org>
@@ -30,9 +30,9 @@ Cc: Vince Bridgers <vbridger@opensource.altera.com>,
  linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
  linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
  Johan Hovold <johan@kernel.org>
-Subject: [PATCH net 02/16] of_mdio: add helper to deregister fixed-link PHYs
-Date: Mon, 28 Nov 2016 19:24:55 +0100
-Message-Id: <1480357509-28074-3-git-send-email-johan@kernel.org>
+Subject: [PATCH net 01/16] net: dsa: slave: fix of-node leak and phy priority
+Date: Mon, 28 Nov 2016 19:24:54 +0100
+Message-Id: <1480357509-28074-2-git-send-email-johan@kernel.org>
 In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
 References: <1480357509-28074-1-git-send-email-johan@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,114 +44,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add helper to deregister fixed-link PHYs registered using
-of_phy_register_fixed_link().
+Make sure to drop the reference taken by of_parse_phandle() before
+returning from dsa_slave_phy_setup().
 
-Convert the two drivers that care to deregister their fixed-link PHYs to
-use the new helper, but note that most drivers currently fail to do so.
+Note that this also modifies the PHY priority so that any fixed-link
+node is only parsed when no phy-handle is given, which is in accordance
+with the common scheme for this.
 
+Fixes: 0d8bcdd383b8 ("net: dsa: allow for more complex PHY setups")
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/net/ethernet/ti/cpsw.c | 16 ++--------------
- drivers/of/of_mdio.c           | 15 +++++++++++++++
- include/linux/of_mdio.h        |  4 ++++
- net/dsa/dsa.c                  | 12 ++----------
- 4 files changed, 23 insertions(+), 24 deletions(-)
+ net/dsa/slave.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
-index 58947aae31c7..9f0646512624 100644
---- a/drivers/net/ethernet/ti/cpsw.c
-+++ b/drivers/net/ethernet/ti/cpsw.c
-@@ -2459,20 +2459,8 @@ static void cpsw_remove_dt(struct platform_device *pdev)
- 		if (strcmp(slave_node->name, "slave"))
- 			continue;
+diff --git a/net/dsa/slave.c b/net/dsa/slave.c
+index 6b1282c006b1..2a5c20a13fe4 100644
+--- a/net/dsa/slave.c
++++ b/net/dsa/slave.c
+@@ -1125,7 +1125,7 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
+ 	p->phy_interface = mode;
  
--		if (of_phy_is_fixed_link(slave_node)) {
--			struct phy_device *phydev;
--
--			phydev = of_phy_find_device(slave_node);
--			if (phydev) {
--				fixed_phy_unregister(phydev);
--				/* Put references taken by
--				 * of_phy_find_device() and
--				 * of_phy_register_fixed_link().
--				 */
--				phy_device_free(phydev);
--				phy_device_free(phydev);
--			}
--		}
-+		if (of_phy_is_fixed_link(slave_node))
-+			of_phy_deregister_fixed_link(slave_node);
- 
- 		of_node_put(slave_data->phy_node);
- 
-diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
-index 5a3145a02547..262281bd68fa 100644
---- a/drivers/of/of_mdio.c
-+++ b/drivers/of/of_mdio.c
-@@ -490,3 +490,18 @@ int of_phy_register_fixed_link(struct device_node *np)
- 	return -ENODEV;
- }
- EXPORT_SYMBOL(of_phy_register_fixed_link);
-+
-+void of_phy_deregister_fixed_link(struct device_node *np)
-+{
-+	struct phy_device *phydev;
-+
-+	phydev = of_phy_find_device(np);
-+	if (!phydev)
-+		return;
-+
-+	fixed_phy_unregister(phydev);
-+
-+	put_device(&phydev->mdio.dev);	/* of_phy_find_device() */
-+	phy_device_free(phydev);	/* fixed_phy_register() */
-+}
-+EXPORT_SYMBOL(of_phy_deregister_fixed_link);
-diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
-index 2ab233661ae5..a58cca8bcb29 100644
---- a/include/linux/of_mdio.h
-+++ b/include/linux/of_mdio.h
-@@ -29,6 +29,7 @@ struct phy_device *of_phy_attach(struct net_device *dev,
- extern struct mii_bus *of_mdio_find_bus(struct device_node *mdio_np);
- extern int of_mdio_parse_addr(struct device *dev, const struct device_node *np);
- extern int of_phy_register_fixed_link(struct device_node *np);
-+extern void of_phy_deregister_fixed_link(struct device_node *np);
- extern bool of_phy_is_fixed_link(struct device_node *np);
- 
- #else /* CONFIG_OF */
-@@ -83,6 +84,9 @@ static inline int of_phy_register_fixed_link(struct device_node *np)
- {
- 	return -ENOSYS;
- }
-+static inline void of_phy_deregister_fixed_link(struct device_node *np)
-+{
-+}
- static inline bool of_phy_is_fixed_link(struct device_node *np)
- {
- 	return false;
-diff --git a/net/dsa/dsa.c b/net/dsa/dsa.c
-index cb0091b99592..7899919cd9f0 100644
---- a/net/dsa/dsa.c
-+++ b/net/dsa/dsa.c
-@@ -506,16 +506,8 @@ dsa_switch_setup(struct dsa_switch_tree *dst, int index,
- 
- void dsa_cpu_dsa_destroy(struct device_node *port_dn)
- {
--	struct phy_device *phydev;
--
+ 	phy_dn = of_parse_phandle(port_dn, "phy-handle", 0);
 -	if (of_phy_is_fixed_link(port_dn)) {
--		phydev = of_phy_find_device(port_dn);
--		if (phydev) {
--			fixed_phy_unregister(phydev);
--			put_device(&phydev->mdio.dev);
--			phy_device_free(phydev);
--		}
--	}
-+	if (of_phy_is_fixed_link(port_dn))
-+		of_phy_deregister_fixed_link(port_dn);
- }
++	if (!phy_dn && of_phy_is_fixed_link(port_dn)) {
+ 		/* In the case of a fixed PHY, the DT node associated
+ 		 * to the fixed PHY is the Port DT node
+ 		 */
+@@ -1135,7 +1135,7 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
+ 			return ret;
+ 		}
+ 		phy_is_fixed = true;
+-		phy_dn = port_dn;
++		phy_dn = of_node_get(port_dn);
+ 	}
  
- static void dsa_switch_destroy(struct dsa_switch *ds)
+ 	if (ds->ops->get_phy_flags)
+@@ -1154,6 +1154,7 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
+ 			ret = dsa_slave_phy_connect(p, slave_dev, phy_id);
+ 			if (ret) {
+ 				netdev_err(slave_dev, "failed to connect to phy%d: %d\n", phy_id, ret);
++				of_node_put(phy_dn);
+ 				return ret;
+ 			}
+ 		} else {
+@@ -1162,6 +1163,8 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
+ 						phy_flags,
+ 						p->phy_interface);
+ 		}
++
++		of_node_put(phy_dn);
+ 	}
+ 
+ 	if (p->phy && phy_is_fixed)
 -- 
 2.7.3
