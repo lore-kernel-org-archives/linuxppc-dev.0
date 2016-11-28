@@ -1,24 +1,41 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tRW5h5VlCzDvfJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 00:35:20 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id x23so10377159pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 05:35:20 -0800 (PST)
-Date: Mon, 28 Nov 2016 00:35:05 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Kernel build issues with upstream binutils
-Message-ID: <20161128003505.61590f63@roar.ozlabs.ibm.com>
-In-Reply-To: <20161127090430.5039d436@kryten>
-References: <20161127090430.5039d436@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tRpmf35GvzDt1x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:38 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAS1IhHl144956
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:36 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2704s3tt3n-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:36 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 28 Nov 2016 11:21:33 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 693D33578056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:32 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAS1LWMj59834542
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:32 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAS1LVvb010013
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:32 +1100
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/4] Support PowerISA v3.0 PMU Raw event format
+Date: Mon, 28 Nov 2016 06:51:12 +0530
+Message-Id: <1480296076-28880-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +45,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 27 Nov 2016 09:04:30 +1100
-Anton Blanchard <anton@samba.org> wrote:
+Patchset to factor out the PowerISA v2.07 PMU raw event
+format encoding and add support to the PowerISA v3.0 PMU
+raw event format encoding.
 
-> Hi,
-> 
-> A recent binutils commit:
-> 
-> https://sourceware.org/git/?p=binutils-gdb.git;a=commitdiff;h=1a9ccd70f9a75dc6b48d340059f28ef3550c107b
-> 
-> has broken kernel builds:
-> 
-> /home/anton/gcc.install/bin/ld: arch/powerpc/boot/zImage.pseries: Not enough room for program headers, try linking with -N
-> /home/anton/gcc.install/bin/ld: final link failed: Bad value
-> 
-> I guess we have an issue with our linker script.
+Changelog v2:
+1)Initialized return variable to avoid compile errors in pasemi_defconfig
 
-We may need something like this (not boot tested). I'll have a better look
-tomorrow.
+Changelog v1:
+1) Initialized "mmcra" variable to avoid compile time errors
+2) Made changes to commit message
 
----
- arch/powerpc/boot/zImage.lds.S | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+Madhavan Srinivasan (4):
+  powerpc/perf: factor out the event format field
+  powerpc/perf: update attribute_group data structure
+  powerpc/perf: PowerISA v3.0 raw event format encoding
+  powerpc/perf: macros for PowerISA v3.0 format encoding
 
-diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
-index 861e721..8963544 100644
---- a/arch/powerpc/boot/zImage.lds.S
-+++ b/arch/powerpc/boot/zImage.lds.S
-@@ -7,6 +7,13 @@ OUTPUT_ARCH(powerpc:common)
- #endif
- ENTRY(_zimage_start)
- EXTERN(_zimage_start)
-+
-+PHDRS
-+{
-+  text PT_LOAD FLAGS(5);          /* R_E */
-+  data PT_LOAD FLAGS(6);          /* RW_ */
-+}
-+
- SECTIONS
- {
-   .text      :
-@@ -15,7 +22,7 @@ SECTIONS
-     *(.text)
-     *(.fixup)
-     _etext = .;
--  }
-+  } :text
-   . = ALIGN(4096);
-   .data    :
-   {
-@@ -25,7 +32,7 @@ SECTIONS
- #ifndef CONFIG_PPC64_BOOT_WRAPPER
-     *(.got2)
- #endif
--  }
-+  } :data
-   .dynsym : { *(.dynsym) }
-   .dynstr : { *(.dynstr) }
-   .dynamic :
-@@ -34,7 +41,6 @@ SECTIONS
-     *(.dynamic)
-   }
-   .hash : { *(.hash) }
--  .interp : { *(.interp) }
-   .rela.dyn :
-   {
- #ifdef CONFIG_PPC64_BOOT_WRAPPER
-@@ -86,4 +92,9 @@ SECTIONS
-     *(COMMON)
-     _end = . ;
-   }
-+
-+  /DISCARD/ :
-+  {
-+    *(.interp)
-+  }
- }
+ arch/powerpc/perf/isa207-common.c | 124 +++++++++++++++++++++++++++++++++++---
+ arch/powerpc/perf/isa207-common.h |  27 ++++++++-
+ arch/powerpc/perf/power8-pmu.c    |  39 ++----------
+ arch/powerpc/perf/power9-pmu.c    | 114 +++++++++++++++++++++++++++++++++--
+ 4 files changed, 257 insertions(+), 47 deletions(-)
+
 -- 
-2.10.2
+2.7.4
