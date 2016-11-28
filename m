@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tS5Bf6hvbzDvLb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:11:38 +1100 (AEDT)
-In-Reply-To: <20161124093954.12051-1-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tS5Gn6kvxzDt3c
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:15:13 +1100 (AEDT)
+In-Reply-To: <1446776477-2604-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm: Fixup kernel read only mapping
-Message-Id: <3tS5Bf5sX6z9vFb@ozlabs.org>
-Date: Mon, 28 Nov 2016 23:11:38 +1100 (AEDT)
+Cc: rostedt@goodmis.org
+Subject: Re: powerpc/xmon: Add 'dt' command to dump trace buffers
+Message-Id: <3tS5Gn5hd1z9vFX@ozlabs.org>
+Date: Mon, 28 Nov 2016 23:15:13 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-11-24 at 09:39:54 UTC, "Aneesh Kumar K.V" wrote:
-> With commit e58e87adc8bf9 ("powerpc/mm: Update _PAGE_KERNEL_RO") we started
-> using the ppp value 0b110 to map kernel readonly. But that facility
-> was only added as part of ISA 2.04. For earlier ISA version only supported ppp
-> bit value for readonly mapping is 0b011. (This implies both user and kernel
-> get mapped using the same ppp bit value for readonly mapping.).
+On Fri, 2015-11-06 at 02:21:17 UTC, Michael Ellerman wrote:
+> There is a nice interface for asking ftrace to dump all its tracing
+> buffers. The only down side for use in xmon is that it uses printk.
+> Depending on circumstances printk may not work when in xmon, but it also
+> may, so add a 'dt' command which dumps the ftrace buffers, and add a
+> note to the help to mentiont that it uses printk.
 > 
-> Update the code such that for earlier architecture version we use ppp value
-> 0b011 for readonly mapping. We don't differentiate between power5+ and power5
-> here and apply the new ppp bits only from power6 (ISA 2.05). This keep the
-> changes minimal.
+> Calling this routine also disables tracing, which is problematic if you
+> return from xmon and expect the system to keep operating normally. So
+> after we do the dump turn tracing back on.
 > 
-> This fixes issue with PS3 spu usage reported at
-> https://lkml.kernel.org/r/rep.1421449714.geoff@infradead.org
+> Both functions already have nop versions defined for when ftrace is not
+> enabled, so we don't need any extra #ifdefs.
 > 
-> Fixes: e58e87adc8bf9 ("powerpc/mm: Update _PAGE_KERNEL_RO")
-> Tested-by: Geoff Levand <geoff@infradead.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/984d7a1ec67ce3a46324fa4bcb4c74
+https://git.kernel.org/powerpc/c/56144ec7c93f6f18aa878560074633
 
 cheers
