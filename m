@@ -1,11 +1,11 @@
 Return-Path: <jhovold@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
+Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
+ [IPv6:2a00:1450:4010:c07::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXK4lpMzDvhR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXK2pNqzDvhQ
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:29 +1100 (AEDT)
-Received: by mail-lf0-x243.google.com with SMTP id p100so10340508lfg.2
+Received: by mail-lf0-x241.google.com with SMTP id o20so10330106lfg.3
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:29 -0800 (PST)
 Sender: Johan Hovold <jhovold@gmail.com>
 From: Johan Hovold <johan@kernel.org>
@@ -30,9 +30,10 @@ Cc: Vince Bridgers <vbridger@opensource.altera.com>,
  linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
  linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
  Johan Hovold <johan@kernel.org>
-Subject: [PATCH net 01/16] net: dsa: slave: fix of-node leak and phy priority
-Date: Mon, 28 Nov 2016 19:24:54 +0100
-Message-Id: <1480357509-28074-2-git-send-email-johan@kernel.org>
+Subject: [PATCH net 04/16] net: ethernet: aurora: nb8800: fix fixed-link
+ phydev leaks
+Date: Mon, 28 Nov 2016 19:24:57 +0100
+Message-Id: <1480357509-28074-5-git-send-email-johan@kernel.org>
 In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
 References: <1480357509-28074-1-git-send-email-johan@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,57 +45,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make sure to drop the reference taken by of_parse_phandle() before
-returning from dsa_slave_phy_setup().
+Make sure to deregister and free any fixed-link PHY registered using
+of_phy_register_fixed_link() on probe errors and on driver unbind.
 
-Note that this also modifies the PHY priority so that any fixed-link
-node is only parsed when no phy-handle is given, which is in accordance
-with the common scheme for this.
-
-Fixes: 0d8bcdd383b8 ("net: dsa: allow for more complex PHY setups")
+Fixes: c7dfe3abf40e ("net: ethernet: nb8800: support fixed-link DT
+node")
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- net/dsa/slave.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/aurora/nb8800.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/net/dsa/slave.c b/net/dsa/slave.c
-index 6b1282c006b1..2a5c20a13fe4 100644
---- a/net/dsa/slave.c
-+++ b/net/dsa/slave.c
-@@ -1125,7 +1125,7 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
- 	p->phy_interface = mode;
+diff --git a/drivers/net/ethernet/aurora/nb8800.c b/drivers/net/ethernet/aurora/nb8800.c
+index 00c38bf151e6..e078d8da978c 100644
+--- a/drivers/net/ethernet/aurora/nb8800.c
++++ b/drivers/net/ethernet/aurora/nb8800.c
+@@ -1466,12 +1466,12 @@ static int nb8800_probe(struct platform_device *pdev)
  
- 	phy_dn = of_parse_phandle(port_dn, "phy-handle", 0);
--	if (of_phy_is_fixed_link(port_dn)) {
-+	if (!phy_dn && of_phy_is_fixed_link(port_dn)) {
- 		/* In the case of a fixed PHY, the DT node associated
- 		 * to the fixed PHY is the Port DT node
- 		 */
-@@ -1135,7 +1135,7 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
- 			return ret;
- 		}
- 		phy_is_fixed = true;
--		phy_dn = port_dn;
-+		phy_dn = of_node_get(port_dn);
+ 	ret = nb8800_hw_init(dev);
+ 	if (ret)
+-		goto err_free_bus;
++		goto err_deregister_fixed_link;
+ 
+ 	if (ops && ops->init) {
+ 		ret = ops->init(dev);
+ 		if (ret)
+-			goto err_free_bus;
++			goto err_deregister_fixed_link;
  	}
  
- 	if (ds->ops->get_phy_flags)
-@@ -1154,6 +1154,7 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
- 			ret = dsa_slave_phy_connect(p, slave_dev, phy_id);
- 			if (ret) {
- 				netdev_err(slave_dev, "failed to connect to phy%d: %d\n", phy_id, ret);
-+				of_node_put(phy_dn);
- 				return ret;
- 			}
- 		} else {
-@@ -1162,6 +1163,8 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
- 						phy_flags,
- 						p->phy_interface);
- 		}
-+
-+		of_node_put(phy_dn);
- 	}
+ 	dev->netdev_ops = &nb8800_netdev_ops;
+@@ -1504,6 +1504,9 @@ static int nb8800_probe(struct platform_device *pdev)
  
- 	if (p->phy && phy_is_fixed)
+ err_free_dma:
+ 	nb8800_dma_free(dev);
++err_deregister_fixed_link:
++	if (of_phy_is_fixed_link(pdev->dev.of_node))
++		of_phy_deregister_fixed_link(pdev->dev.of_node);
+ err_free_bus:
+ 	of_node_put(priv->phy_node);
+ 	mdiobus_unregister(bus);
+@@ -1521,6 +1524,8 @@ static int nb8800_remove(struct platform_device *pdev)
+ 	struct nb8800_priv *priv = netdev_priv(ndev);
+ 
+ 	unregister_netdev(ndev);
++	if (of_phy_is_fixed_link(pdev->dev.of_node))
++		of_phy_deregister_fixed_link(pdev->dev.of_node);
+ 	of_node_put(priv->phy_node);
+ 
+ 	mdiobus_unregister(priv->mii_bus);
 -- 
 2.7.3
