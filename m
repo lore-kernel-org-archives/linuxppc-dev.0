@@ -1,31 +1,40 @@
-Return-Path: <groug@kaod.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jhovold@gmail.com>
+Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
+ [IPv6:2a00:1450:4010:c07::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFFD51bxzDvhP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:14:23 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uASI3qPv022881
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 13:14:21 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 270mkp92t7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 13:14:20 -0500
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <groug@kaod.org>;
- Mon, 28 Nov 2016 11:14:20 -0700
-Subject: [PATCH] mail: improve bash completion
-From: Greg Kurz <groug@kaod.org>
-To: stgit-users@gna.org
-Cc: Catalin Marinas <catalin.marinas@gmail.com>
-Date: Mon, 28 Nov 2016 19:14:15 +0100
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <148035685494.6934.10229668031570371685.stgit@bahia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSG1g4LH1zDw1k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:49:27 +1100 (AEDT)
+Received: by mail-lf0-x241.google.com with SMTP id o20so10386120lfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:49:27 -0800 (PST)
+Sender: Johan Hovold <jhovold@gmail.com>
+From: Johan Hovold <johan@kernel.org>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Vince Bridgers <vbridger@opensource.altera.com>,
+ Florian Fainelli <f.fainelli@gmail.com>, Fugang Duan <fugang.duan@nxp.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Li Yang <leoli@freescale.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Felix Fietkau <nbd@openwrt.org>, John Crispin <blogic@openwrt.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ Lars Persson <lars.persson@axis.com>, Mugunthan V N <mugunthanvnm@ti.com>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Andrew Lunn <andrew@lunn.ch>,
+ Vivien Didelot <vivien.didelot@savoirfairelinux.com>,
+ netdev@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
+ Johan Hovold <johan@kernel.org>
+Subject: [PATCH net 12/16] net: ethernet: mediatek: fix fixed-link phydev leaks
+Date: Mon, 28 Nov 2016 19:25:05 +0100
+Message-Id: <1480357509-28074-13-git-send-email-johan@kernel.org>
+In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
+References: <1480357509-28074-1-git-send-email-johan@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,57 +44,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds completion of the --to, --cc and --bcc options based on the
-content of the [mail "alias"] section of GIT configuration files.
+Make sure to deregister and free any fixed-link PHY registered using
+of_phy_register_fixed_link() on initialisation errors and on uninit.
 
-Signed-off-by: Greg Kurz <groug@kaod.org>
+Fixes: 0c72c50f6f93 ("net-next: mediatek: add fixed-phy support")
+Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- stgit/argparse.py      |    1 +
- stgit/commands/mail.py |    6 +++---
- stgit/completion.py    |    2 ++
- 3 files changed, 6 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/stgit/argparse.py b/stgit/argparse.py
-index 43c6cf9bbbb3..86f4a1095d10 100644
---- a/stgit/argparse.py
-+++ b/stgit/argparse.py
-@@ -286,6 +286,7 @@ known_files = Compgen(['$(_known_files)'])
- repo = Compgen(actions = ['directory'])
- dir = Compgen(actions = ['directory'])
- files = Compgen(actions = ['file'])
-+mail_aliases = Compgen(['$(_mail_aliases)'])
- def strings(*ss): return Compgen(ss)
- class patch_range(CompgenBase):
-     def __init__(self, *endpoints):
-diff --git a/stgit/commands/mail.py b/stgit/commands/mail.py
-index ff9f2e11ca36..2dc3dba6680d 100644
---- a/stgit/commands/mail.py
-+++ b/stgit/commands/mail.py
-@@ -102,11 +102,11 @@ args = [argparse.patch_range(argparse.applied_patches,
- options = [
-     opt('-a', '--all', action = 'store_true',
-         short = 'E-mail all the applied patches'),
--    opt('--to', action = 'append',
-+    opt('--to', action = 'append', args = [argparse.mail_aliases],
-         short = 'Add TO to the To: list'),
--    opt('--cc', action = 'append',
-+    opt('--cc', action = 'append', args = [argparse.mail_aliases],
-         short = 'Add CC to the Cc: list'),
--    opt('--bcc', action = 'append',
-+    opt('--bcc', action = 'append', args = [argparse.mail_aliases],
-         short = 'Add BCC to the Bcc: list'),
-     opt('--auto', action = 'store_true',
-         short = 'Automatically cc the patch signers'),
-diff --git a/stgit/completion.py b/stgit/completion.py
-index 38f06705b76a..010fc4fbee0c 100644
---- a/stgit/completion.py
-+++ b/stgit/completion.py
-@@ -58,6 +58,8 @@ def util():
-              'esac'),
-          fun('_stg_branches',
-              'local g=$(_gitdir)', 'test "$g" && (cd $g/patches/ && echo *)'),
-+         fun('_mail_aliases',
-+             'git config --name-only --get-regexp "^mail\.alias\." | cut -d. -f 3'),
-          ref_list_fun('_all_branches', 'refs/heads'),
-          ref_list_fun('_tags', 'refs/tags'),
-          ref_list_fun('_remotes', 'refs/remotes')]
+diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+index 4a62ffd7729d..86a89cbd3ec9 100644
+--- a/drivers/net/ethernet/mediatek/mtk_eth_soc.c
++++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
+@@ -318,6 +318,8 @@ static int mtk_phy_connect(struct net_device *dev)
+ 	return 0;
+ 
+ err_phy:
++	if (of_phy_is_fixed_link(mac->of_node))
++		of_phy_deregister_fixed_link(mac->of_node);
+ 	of_node_put(np);
+ 	dev_err(eth->dev, "%s: invalid phy\n", __func__);
+ 	return -EINVAL;
+@@ -1923,6 +1925,8 @@ static void mtk_uninit(struct net_device *dev)
+ 	struct mtk_eth *eth = mac->hw;
+ 
+ 	phy_disconnect(dev->phydev);
++	if (of_phy_is_fixed_link(mac->of_node))
++		of_phy_deregister_fixed_link(mac->of_node);
+ 	mtk_irq_disable(eth, MTK_QDMA_INT_MASK, ~0);
+ 	mtk_irq_disable(eth, MTK_PDMA_INT_MASK, ~0);
+ }
+-- 
+2.7.3
