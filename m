@@ -3,10 +3,10 @@ Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
  [IPv6:2a00:1450:4010:c07::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXQ3c2QzDvj3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:34 +1100 (AEDT)
-Received: by mail-lf0-x243.google.com with SMTP id 98so10306134lfs.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXR1s5kzDvjk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:35 +1100 (AEDT)
+Received: by mail-lf0-x243.google.com with SMTP id p100so10340874lfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:35 -0800 (PST)
 Sender: Johan Hovold <jhovold@gmail.com>
 From: Johan Hovold <johan@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>
@@ -30,10 +30,9 @@ Cc: Vince Bridgers <vbridger@opensource.altera.com>,
  linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
  linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
  Johan Hovold <johan@kernel.org>
-Subject: [PATCH net 14/16] net: ethernet: dwc_eth_qos: fix fixed-link phydev
- leaks
-Date: Mon, 28 Nov 2016 19:25:07 +0100
-Message-Id: <1480357509-28074-15-git-send-email-johan@kernel.org>
+Subject: [PATCH net 16/16] net: dsa: slave: fix fixed-link phydev leaks
+Date: Mon, 28 Nov 2016 19:25:09 +0100
+Message-Id: <1480357509-28074-17-git-send-email-johan@kernel.org>
 In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
 References: <1480357509-28074-1-git-send-email-johan@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,91 +45,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Make sure to deregister and free any fixed-link PHY registered using
-of_phy_register_fixed_link() on probe errors and on driver unbind.
+of_phy_register_fixed_link() on slave-setup errors and on slave destroy.
 
-Fixes: 077742dac2c7 ("dwc_eth_qos: Add support for Synopsys DWC Ethernet
-QoS")
+Fixes: 0d8bcdd383b8 ("net: dsa: allow for more complex PHY setups")
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/net/ethernet/synopsys/dwc_eth_qos.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ net/dsa/slave.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/synopsys/dwc_eth_qos.c b/drivers/net/ethernet/synopsys/dwc_eth_qos.c
-index 4ba2421e625d..97d64bfed465 100644
---- a/drivers/net/ethernet/synopsys/dwc_eth_qos.c
-+++ b/drivers/net/ethernet/synopsys/dwc_eth_qos.c
-@@ -2881,7 +2881,7 @@ static int dwceqos_probe(struct platform_device *pdev)
- 	ret = of_get_phy_mode(lp->pdev->dev.of_node);
- 	if (ret < 0) {
- 		dev_err(&lp->pdev->dev, "error in getting phy i/f\n");
--		goto err_out_clk_dis_phy;
-+		goto err_out_deregister_fixed_link;
+diff --git a/net/dsa/slave.c b/net/dsa/slave.c
+index 2a5c20a13fe4..30e2e21d7619 100644
+--- a/net/dsa/slave.c
++++ b/net/dsa/slave.c
+@@ -1177,6 +1177,8 @@ static int dsa_slave_phy_setup(struct dsa_slave_priv *p,
+ 		ret = dsa_slave_phy_connect(p, slave_dev, p->port);
+ 		if (ret) {
+ 			netdev_err(slave_dev, "failed to connect to port %d: %d\n", p->port, ret);
++			if (phy_is_fixed)
++				of_phy_deregister_fixed_link(port_dn);
+ 			return ret;
+ 		}
  	}
+@@ -1292,10 +1294,18 @@ int dsa_slave_create(struct dsa_switch *ds, struct device *parent,
+ void dsa_slave_destroy(struct net_device *slave_dev)
+ {
+ 	struct dsa_slave_priv *p = netdev_priv(slave_dev);
++	struct dsa_switch *ds = p->parent;
++	struct device_node *port_dn;
++
++	port_dn = ds->ports[p->port].dn;
  
- 	lp->phy_interface = ret;
-@@ -2889,14 +2889,14 @@ static int dwceqos_probe(struct platform_device *pdev)
- 	ret = dwceqos_mii_init(lp);
- 	if (ret) {
- 		dev_err(&lp->pdev->dev, "error in dwceqos_mii_init\n");
--		goto err_out_clk_dis_phy;
-+		goto err_out_deregister_fixed_link;
- 	}
- 
- 	ret = dwceqos_mii_probe(ndev);
- 	if (ret != 0) {
- 		netdev_err(ndev, "mii_probe fail.\n");
- 		ret = -ENXIO;
--		goto err_out_clk_dis_phy;
-+		goto err_out_deregister_fixed_link;
- 	}
- 
- 	dwceqos_set_umac_addr(lp, lp->ndev->dev_addr, 0);
-@@ -2914,7 +2914,7 @@ static int dwceqos_probe(struct platform_device *pdev)
- 	if (ret) {
- 		dev_err(&lp->pdev->dev, "Unable to retrieve DT, error %d\n",
- 			ret);
--		goto err_out_clk_dis_phy;
-+		goto err_out_deregister_fixed_link;
- 	}
- 	dev_info(&lp->pdev->dev, "pdev->id %d, baseaddr 0x%08lx, irq %d\n",
- 		 pdev->id, ndev->base_addr, ndev->irq);
-@@ -2924,7 +2924,7 @@ static int dwceqos_probe(struct platform_device *pdev)
- 	if (ret) {
- 		dev_err(&lp->pdev->dev, "Unable to request IRQ %d, error %d\n",
- 			ndev->irq, ret);
--		goto err_out_clk_dis_phy;
-+		goto err_out_deregister_fixed_link;
- 	}
- 
- 	if (netif_msg_probe(lp))
-@@ -2935,11 +2935,14 @@ static int dwceqos_probe(struct platform_device *pdev)
- 	ret = register_netdev(ndev);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Cannot register net device, aborting.\n");
--			goto err_out_clk_dis_phy;
-+		goto err_out_deregister_fixed_link;
- 	}
- 
- 	return 0;
- 
-+err_out_deregister_fixed_link:
-+	if (of_phy_is_fixed_link(pdev->dev.of_node))
-+		of_phy_deregister_fixed_link(pdev->dev.of_node);
- err_out_clk_dis_phy:
- 	clk_disable_unprepare(lp->phy_ref_clk);
- err_out_clk_dis_aper:
-@@ -2959,8 +2962,11 @@ static int dwceqos_remove(struct platform_device *pdev)
- 	if (ndev) {
- 		lp = netdev_priv(ndev);
- 
--		if (ndev->phydev)
-+		if (ndev->phydev) {
- 			phy_disconnect(ndev->phydev);
-+			if (of_phy_is_fixed_link(pdev->dev.of_node))
-+				of_phy_deregister_fixed_link(pdev->dev.of_node);
-+		}
- 		mdiobus_unregister(lp->mii_bus);
- 		mdiobus_free(lp->mii_bus);
- 
+ 	netif_carrier_off(slave_dev);
+-	if (p->phy)
++	if (p->phy) {
+ 		phy_disconnect(p->phy);
++
++		if (of_phy_is_fixed_link(port_dn))
++			of_phy_deregister_fixed_link(port_dn);
++	}
+ 	unregister_netdev(slave_dev);
+ 	free_netdev(slave_dev);
+ }
 -- 
 2.7.3
