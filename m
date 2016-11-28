@@ -1,11 +1,11 @@
 Return-Path: <jhovold@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
+Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
+ [IPv6:2a00:1450:4010:c07::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXP36VGzDvhQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXP4tW2zDvhR
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:33 +1100 (AEDT)
-Received: by mail-lf0-x243.google.com with SMTP id 98so10306070lfs.0
+Received: by mail-lf0-x241.google.com with SMTP id o141so10369199lff.1
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:33 -0800 (PST)
 Sender: Johan Hovold <jhovold@gmail.com>
 From: Johan Hovold <johan@kernel.org>
@@ -30,9 +30,9 @@ Cc: Vince Bridgers <vbridger@opensource.altera.com>,
  linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
  linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
  Johan Hovold <johan@kernel.org>
-Subject: [PATCH net 10/16] net: ethernet: ucc_geth: fix fixed-link phydev leaks
-Date: Mon, 28 Nov 2016 19:25:03 +0100
-Message-Id: <1480357509-28074-11-git-send-email-johan@kernel.org>
+Subject: [PATCH net 08/16] net: ethernet: fs_enet: fix fixed-link phydev leaks
+Date: Mon, 28 Nov 2016 19:25:01 +0100
+Message-Id: <1480357509-28074-9-git-send-email-johan@kernel.org>
 In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
 References: <1480357509-28074-1-git-send-email-johan@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,69 +47,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Make sure to deregister and free any fixed-link PHY registered using
 of_phy_register_fixed_link() on probe errors and on driver unbind.
 
-Fixes: 87009814cdbb ("ucc_geth: use the new fixed PHY helpers")
+Fixes: bb74d9a4a87b ("fs_enet: use the new fixed PHY helpers")
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/net/ethernet/freescale/ucc_geth.c | 23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 186ef8f16c80..f76d33279454 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -3868,9 +3868,8 @@ static int ucc_geth_probe(struct platform_device* ofdev)
- 	dev = alloc_etherdev(sizeof(*ugeth));
- 
- 	if (dev == NULL) {
--		of_node_put(ug_info->tbi_node);
--		of_node_put(ug_info->phy_node);
--		return -ENOMEM;
-+		err = -ENOMEM;
-+		goto err_deregister_fixed_link;
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+index dc120c148d97..4b86260584a0 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+@@ -980,7 +980,7 @@ static int fs_enet_probe(struct platform_device *ofdev)
+ 		err = clk_prepare_enable(clk);
+ 		if (err) {
+ 			ret = err;
+-			goto out_free_fpi;
++			goto out_deregister_fixed_link;
+ 		}
+ 		fpi->clk_per = clk;
  	}
- 
- 	ugeth = netdev_priv(dev);
-@@ -3907,10 +3906,7 @@ static int ucc_geth_probe(struct platform_device* ofdev)
- 		if (netif_msg_probe(ugeth))
- 			pr_err("%s: Cannot register net device, aborting\n",
- 			       dev->name);
--		free_netdev(dev);
--		of_node_put(ug_info->tbi_node);
--		of_node_put(ug_info->phy_node);
--		return err;
-+		goto err_free_netdev;
- 	}
- 
- 	mac_addr = of_get_mac_address(np);
-@@ -3923,16 +3919,29 @@ static int ucc_geth_probe(struct platform_device* ofdev)
- 	ugeth->node = np;
- 
+@@ -1061,6 +1061,9 @@ static int fs_enet_probe(struct platform_device *ofdev)
+ 	of_node_put(fpi->phy_node);
+ 	if (fpi->clk_per)
+ 		clk_disable_unprepare(fpi->clk_per);
++out_deregister_fixed_link:
++	if (of_phy_is_fixed_link(ofdev->dev.of_node))
++		of_phy_deregister_fixed_link(ofdev->dev.of_node);
+ out_free_fpi:
+ 	kfree(fpi);
+ 	return ret;
+@@ -1079,6 +1082,8 @@ static int fs_enet_remove(struct platform_device *ofdev)
+ 	of_node_put(fep->fpi->phy_node);
+ 	if (fep->fpi->clk_per)
+ 		clk_disable_unprepare(fep->fpi->clk_per);
++	if (of_phy_is_fixed_link(ofdev->dev.of_node))
++		of_phy_deregister_fixed_link(ofdev->dev.of_node);
+ 	free_netdev(ndev);
  	return 0;
-+
-+err_free_netdev:
-+	free_netdev(dev);
-+err_deregister_fixed_link:
-+	if (of_phy_is_fixed_link(np))
-+		of_phy_deregister_fixed_link(np);
-+	of_node_put(ug_info->tbi_node);
-+	of_node_put(ug_info->phy_node);
-+
-+	return err;
  }
- 
- static int ucc_geth_remove(struct platform_device* ofdev)
- {
- 	struct net_device *dev = platform_get_drvdata(ofdev);
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
-+	struct device_node *np = ofdev->dev.of_node;
- 
- 	unregister_netdev(dev);
- 	free_netdev(dev);
- 	ucc_geth_memclean(ugeth);
-+	if (of_phy_is_fixed_link(np))
-+		of_phy_deregister_fixed_link(np);
- 	of_node_put(ugeth->ug_info->tbi_node);
- 	of_node_put(ugeth->ug_info->phy_node);
- 
 -- 
 2.7.3
