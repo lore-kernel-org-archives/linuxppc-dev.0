@@ -2,20 +2,22 @@ Return-Path: <nickc@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tS5q21fhxzDvjf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:39:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tS89D09J4zDsxb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 01:25:35 +1100 (AEDT)
 Subject: Re: [PATCH] powerpc/boot: request no dynamic linker for boot wrapper
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
 References: <20161128014226.7656-1-npiggin@gmail.com>
  <87shqbrhfo.fsf@concordia.ellerman.id.au>
  <20161128230724.375227b4@roar.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- Alan Modra <amodra@gmail.com>
+ <a3674ff0-2c57-b04e-6cdf-3ac43296f854@redhat.com>
+ <20161129000211.54199985@roar.ozlabs.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, Alan Modra <amodra@gmail.com>
 From: Nick Clifton <nickc@redhat.com>
-Message-ID: <a3674ff0-2c57-b04e-6cdf-3ac43296f854@redhat.com>
-Date: Mon, 28 Nov 2016 12:39:38 +0000
+Message-ID: <3cc30a4c-59db-fc24-7b77-69f8665dadc3@redhat.com>
+Date: Mon, 28 Nov 2016 14:25:31 +0000
 MIME-Version: 1.0
-In-Reply-To: <20161128230724.375227b4@roar.ozlabs.ibm.com>
+In-Reply-To: <20161129000211.54199985@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,40 +30,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Nicholas,
 
->>> The boot wrapper performs its own relocations and does not require
->>> PT_INTERP segment.
->>>
->>> Without this option, binutils 2.28 and newer tries to create a program
->>> header segment due to PT_INTERP, and the link fails because there is no
->>> space for it.  
->>
->> 2.28 is not released yet though is it?
->>
->> So can we just declare versions with that behaviour broken?
+>> ... this actually seems like a better fix to me.  If you do not want the 
+>> PT_INTERP segment, then telling this linker this is a good idea.  So wouldn't
+>> a patch like this be a better solution to the problem ?
 > 
-> No it's not released yet, but I don't know if it's due entirely to binutils
-> bug. Let's see what Nick thinks.
+> Yes, I wasn't asking for the binutils change to be reverted.
 
-Well the patch that caused this problem was an attempt to fix the linker so 
-that it would enforce the ELF standard.  Prior to the patch the linker would 
-silently create binaries that violated the standard and which, at least for
-the people reporting the problem in binutils PR 20815, failed to execute.
+Oh right.  Actually it looks like at least part of the patch is going to have
+to be reverted, (the part that sorts the PT_LOAD segments into ascending order), 
+as currently it breaks building Linux  kernels.  *sigh*
 
-It now appears however that some programs, including the boot wrapper and the
-Linux kernel, may actually rely upon non-standard ELF binaries being created.
-Before I revert the patch however, I would like to ask...
+> I don't think the
+> boot wrapper is relying on this non-standard form. If we go with
+> --no-dynamic-linker then I'm assuming we get a standard ELF binary?
+> That seems desirable.
 
->>> +# Do not include PT_INTERP segment when linking pie. Non-pie linking
->>> +# just ignores this option.
->>> +LD_VERSION=$(${CROSS}ld --version | $srctree/scripts/ld-version.sh)
->>> +LD_NO_DL_MIN_VERSION=$(echo 2.26 | $srctree/scripts/ld-version.sh)
->>> +if [ "$LD_VERSION" -ge "$LD_NO_DL_MIN_VERSION" ] ; then
->>> +	nodl="--no-dynamic-linker"
->>> +fi  
+Yes, you definitely should get a proper ELF binary.
 
-... this actually seems like a better fix to me.  If you do not want the 
-PT_INTERP segment, then telling this linker this is a good idea.  So wouldn't
-a patch like this be a better solution to the problem ?
+> I was just checking whether this is the best think for the kernel to do.
+> Is it possible to get a similar behaviour using the linker script instead
+> (so it's compatible with older binutils)?
+
+Actually probably not.  :-(  Several backends, including the PPC, will now 
+attempt to automatically create and install the PT_INTERP segment unless you
+explicitly tell them not too.  Even if you are using a custom linker script.
 
 Cheers
   Nick
