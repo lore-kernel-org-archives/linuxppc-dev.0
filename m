@@ -1,43 +1,48 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tRpms4XwhzDvnW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:49 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAS1Ii28122274
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:47 -0500
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27016y901t-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tRq981YsjzDsyH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:39:24 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAS1cpl5033105
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:39:22 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2704s3ubq6-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:21:47 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2016 20:39:21 -0500
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 28 Nov 2016 11:21:44 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8F0142BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:43 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAS1Lht559834548
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:43 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAS1LhJh010210
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:21:43 +1100
+ Mon, 28 Nov 2016 11:39:19 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A2BF42BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:39:16 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAS1dGuQ4719102
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:39:16 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAS1dFRW026763
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 12:39:16 +1100
+Subject: Re: [PATCH v3 11/11] powerpc: rewrite local_t using soft_irq
+To: Gabriel Paubert <paubert@iram.es>
+References: <1479146692-15726-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1479146692-15726-12-git-send-email-maddy@linux.vnet.ibm.com>
+ <20161115080644.GA23527@visitor2.iram.es>
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org, anton@samba.org,
+ npiggin@gmail.com
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v3 4/4] powerpc/perf: macros for PowerISA v3.0 format encoding
-Date: Mon, 28 Nov 2016 06:51:16 +0530
-In-Reply-To: <1480296076-28880-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1480296076-28880-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1480296076-28880-5-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Mon, 28 Nov 2016 07:09:11 +0530
+MIME-Version: 1.0
+In-Reply-To: <20161115080644.GA23527@visitor2.iram.es>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <4148f8a3-2af7-731c-3721-8e6c94370550@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,206 +52,329 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patch to add macros and contants to support the PowerISA v3.0 raw
-event encoding format. Couple of functions added since some of the
-bits fields like PMCxCOMB and THRESH_CMP has different width and location
-within MMCR* in PowerISA v3.0.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/isa207-common.c | 90 ++++++++++++++++++++++++++++++++++++---
- arch/powerpc/perf/isa207-common.h | 27 +++++++++++-
- 2 files changed, 109 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 2a2040ea5f99..e747bbf06661 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -55,6 +55,81 @@ static inline bool event_is_fab_match(u64 event)
- 	return (event == 0x30056 || event == 0x4f052);
- }
- 
-+static bool is_event_valid(u64 event)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+		(cpu_has_feature(CPU_FTR_POWER9_DD1)) &&
-+		(event & ~EVENT_VALID_MASK))
-+		return false;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+		(event & ~ISA300_EVENT_VALID_MASK))
-+		return false;
-+	else if (event & ~EVENT_VALID_MASK)
-+		return false;
-+
-+	return true;
-+}
-+
-+static u64 mmcra_sdar_mode(u64 event)
-+{
-+	u64 sm;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1))) {
-+		goto sm_tlb;
-+	} else if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		sm = (event >> ISA300_SDAR_MODE_SHIFT) & ISA300_SDAR_MODE_MASK;
-+		if (sm)
-+			return sm<<MMCRA_SDAR_MODE_SHIFT;
-+	} else
-+		goto sm_tlb;
-+
-+sm_tlb:
-+	return MMCRA_SDAR_MODE_TLB;
-+}
-+
-+static u64 thresh_cmp_val(u64 value)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+		goto thr_cmp;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		return value<<ISA300_MMCRA_THR_CMP_SHIFT;
-+	else
-+		goto thr_cmp;
-+thr_cmp:
-+	return value<<MMCRA_THR_CMP_SHIFT;
-+}
-+
-+static unsigned long combine_from_event(u64 event)
-+{
-+	unsigned long combine;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+		combine = (event >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		combine = (event >> ISA300_EVENT_COMBINE_SHIFT) & ISA300_EVENT_COMBINE_MASK;
-+	else
-+		combine = (event >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
-+
-+	return combine;
-+}
-+
-+static unsigned long combine_shift(unsigned long pmc)
-+{
-+	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-+	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
-+		goto comb_shift;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		return ISA300_MMCR1_COMBINE_SHIFT(pmc);
-+	else
-+		goto comb_shift;
-+
-+comb_shift:
-+	return MMCR1_COMBINE_SHIFT(pmc);
-+}
-+
- int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- {
- 	unsigned int unit, pmc, cache, ebb;
-@@ -62,7 +137,7 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- 
- 	mask = value = 0;
- 
--	if (event & ~EVENT_VALID_MASK)
-+	if (!is_event_valid(event))
- 		return -1;
- 
- 	pmc   = (event >> EVENT_PMC_SHIFT)        & EVENT_PMC_MASK;
-@@ -189,15 +264,13 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 			pmc_inuse |= 1 << pmc;
- 	}
- 
--	/* In continuous sampling mode, update SDAR on TLB miss */
--	mmcra = MMCRA_SDAR_MODE_TLB;
--	mmcr1 = mmcr2 = 0;
-+	mmcra = mmcr1 = mmcr2 = 0;
- 
- 	/* Second pass: assign PMCs, set all MMCR1 fields */
- 	for (i = 0; i < n_ev; ++i) {
- 		pmc     = (event[i] >> EVENT_PMC_SHIFT) & EVENT_PMC_MASK;
- 		unit    = (event[i] >> EVENT_UNIT_SHIFT) & EVENT_UNIT_MASK;
--		combine = (event[i] >> EVENT_COMBINE_SHIFT) & EVENT_COMBINE_MASK;
-+		combine = combine_from_event(event[i]);
- 		psel    =  event[i] & EVENT_PSEL_MASK;
- 
- 		if (!pmc) {
-@@ -211,10 +284,13 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 
- 		if (pmc <= 4) {
- 			mmcr1 |= unit << MMCR1_UNIT_SHIFT(pmc);
--			mmcr1 |= combine << MMCR1_COMBINE_SHIFT(pmc);
-+			mmcr1 |= combine << combine_shift(pmc);
- 			mmcr1 |= psel << MMCR1_PMCSEL_SHIFT(pmc);
- 		}
- 
-+		/* In continuous sampling mode, update SDAR on TLB miss */
-+		mmcra |= mmcra_sdar_mode(event[i]);
-+
- 		if (event[i] & EVENT_IS_L1) {
- 			cache = event[i] >> EVENT_CACHE_SEL_SHIFT;
- 			mmcr1 |= (cache & 1) << MMCR1_IC_QUAL_SHIFT;
-@@ -245,7 +321,7 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 			val = (event[i] >> EVENT_THR_SEL_SHIFT) & EVENT_THR_SEL_MASK;
- 			mmcra |= val << MMCRA_THR_SEL_SHIFT;
- 			val = (event[i] >> EVENT_THR_CMP_SHIFT) & EVENT_THR_CMP_MASK;
--			mmcra |= val << MMCRA_THR_CMP_SHIFT;
-+			mmcra |= thresh_cmp_val(val);
- 		}
- 
- 		if (event[i] & EVENT_WANTS_BHRB) {
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 4d0a4e5017c2..0a240635cf48 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -134,6 +134,24 @@
- 	 PERF_SAMPLE_BRANCH_KERNEL      |\
- 	 PERF_SAMPLE_BRANCH_HV)
- 
-+/* Contants to support PowerISA v3.0 encoding format */
-+#define ISA300_EVENT_COMBINE_SHIFT	10	/* Combine bit */
-+#define ISA300_EVENT_COMBINE_MASK	0x3ull
-+#define ISA300_SDAR_MODE_SHIFT		50
-+#define ISA300_SDAR_MODE_MASK		0x3ull
-+
-+#define ISA300_EVENT_VALID_MASK		\
-+	((ISA300_SDAR_MODE_MASK<< ISA300_SDAR_MODE_SHIFT	|	\
-+	(EVENT_THRESH_MASK    << EVENT_THRESH_SHIFT)		|	\
-+	(EVENT_SAMPLE_MASK    << EVENT_SAMPLE_SHIFT)		|	\
-+	(EVENT_CACHE_SEL_MASK << EVENT_CACHE_SEL_SHIFT)		|	\
-+	(EVENT_PMC_MASK       << EVENT_PMC_SHIFT)		|	\
-+	(EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
-+	(ISA300_EVENT_COMBINE_MASK << ISA300_EVENT_COMBINE_SHIFT) |	\
-+	(EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
-+	 EVENT_LINUX_MASK					|	\
-+	 EVENT_PSEL_MASK))
-+
- /*
-  * Layout of constraint bits:
-  *
-@@ -210,15 +228,22 @@
- #define MMCR1_DC_QUAL_SHIFT		47
- #define MMCR1_IC_QUAL_SHIFT		46
- 
-+/* MMCR1 Combine bits macro for PowerISA v3.0 */
-+#define ISA300_MMCR1_COMBINE_SHIFT(pmc)	(38 - ((pmc - 1) * 2))
-+
- /* Bits in MMCRA for PowerISA v2.07 */
- #define MMCRA_SAMP_MODE_SHIFT		1
- #define MMCRA_SAMP_ELIG_SHIFT		4
- #define MMCRA_THR_CTL_SHIFT		8
- #define MMCRA_THR_SEL_SHIFT		16
- #define MMCRA_THR_CMP_SHIFT		32
--#define MMCRA_SDAR_MODE_TLB		(1ull << 42)
-+#define MMCRA_SDAR_MODE_SHIFT		42
-+#define MMCRA_SDAR_MODE_TLB		(1ull << MMCRA_SDAR_MODE_SHIFT)
- #define MMCRA_IFM_SHIFT			30
- 
-+/* MMCR1 Threshold Compare bit constant for PowerISA v3.0 */
-+#define ISA300_MMCRA_THR_CMP_SHIFT	45
-+
- /* Bits in MMCR2 for PowerISA v2.07 */
- #define MMCR2_FCS(pmc)			(1ull << (63 - (((pmc) - 1) * 9)))
- #define MMCR2_FCP(pmc)			(1ull << (62 - (((pmc) - 1) * 9)))
--- 
-2.7.4
+On Tuesday 15 November 2016 01:36 PM, Gabriel Paubert wrote:
+>      Hi,
+>      
+> On Mon, Nov 14, 2016 at 11:34:52PM +0530, Madhavan Srinivasan wrote:
+>> Local atomic operations are fast and highly reentrant per CPU counters.
+>> Used for percpu variable updates. Local atomic operations only guarantee
+>> variable modification atomicity wrt the CPU which owns the data and
+>> these needs to be executed in a preemption safe way.
+>>
+>> Here is the design of this patch. Since local_* operations
+>> are only need to be atomic to interrupts (IIUC), we have two options.
+>> Either replay the "op" if interrupted or replay the interrupt after
+>> the "op". Initial patchset posted was based on implementing local_* operation
+>> based on CR5 which replay's the "op". Patchset had issues in case of
+>> rewinding the address pointor from an array. This make the slow patch
+> s/patch/path/ ?
+
+Yep. Right.
+>
+>> really slow. Since CR5 based implementation proposed using __ex_table to find
+>> the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
+>>
+>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
+>>
+>> But this patch uses, powerpc_local_irq_pmu_save to soft_disable
+>> interrupts (including PMIs). After finishing the "op", powerpc_local_irq_pmu_restore()
+>> called and correspondingly interrupts are replayed if any occured.
+>>
+>> patch re-write the current local_* functions to use arch_local_irq_disbale.
+>> Base flow for each function is
+>>
+>> {
+>> 	powerpc_local_irq_pmu_save(flags)
+>> 	load
+>> 	..
+>> 	store
+>> 	powerpc_local_irq_pmu_restore(flags)
+>> }
+>>
+>> Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
+>> instruction pair is used for local_* operations, which are heavy
+>> on cycle count and they dont support a local variant. So to
+>> see whether the new implementation helps, used a modified
+>> version of Rusty's benchmark code on local_t.
+>>
+>> https://lkml.org/lkml/2008/12/16/450
+>>
+>> Modifications to Rusty's benchmark code:
+>> - Executed only local_t test
+>>
+>> Here are the values with the patch.
+>>
+>> Time in ns per iteration
+>>
+>> Local_t             Without Patch           With Patch
+>>
+>> _inc                        28              8
+>> _add                        28              8
+>> _read                       3               3
+>> _add_return	            28              7
+>>
+>> Currently only asm/local.h has been rewrite, and also
+> s/rewrite/rewritten/
+
+Yes. My bad.
+Will fix it.
+
+>
+>> the entire change is tested only in PPC64 (pseries guest)
+>> and PPC64 host (LE)
+> I'm really wondering whether this is the kind of thing that would
+> benefit from transactions. But transactional memory was only implemented
+> on Power7 and later IIRC, and we still need to support machines without
+> transactional memory.
+
+Transactional memory was added in Power8.
+This patchset is to improve the performance
+of local atomic updates in general and also
+wanted previous generations to benefit.
+
+Thanks for review
+Maddy
+
+> Boot time patching would probably be very cumbersome, so I believe
+> that the only sensible thing to do would be to add a config option
+> that would generate a kernel that only runs on machines with
+> transactional memory.
+>
+> And then benchmark...
+>
+>      Gabriel
+>
+>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/local.h | 201 +++++++++++++++++++++++++++++++++++++++
+>>   1 file changed, 201 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
+>> index b8da91363864..7d117c07b0b1 100644
+>> --- a/arch/powerpc/include/asm/local.h
+>> +++ b/arch/powerpc/include/asm/local.h
+>> @@ -3,6 +3,9 @@
+>>   
+>>   #include <linux/percpu.h>
+>>   #include <linux/atomic.h>
+>> +#include <linux/irqflags.h>
+>> +
+>> +#include <asm/hw_irq.h>
+>>   
+>>   typedef struct
+>>   {
+>> @@ -14,6 +17,202 @@ typedef struct
+>>   #define local_read(l)	atomic_long_read(&(l)->a)
+>>   #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
+>>   
+>> +#ifdef CONFIG_PPC64
+>> +
+>> +static __inline__ void local_add(long i, local_t *l)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__(
+>> +	PPC_LL" %0,0(%2)\n\
+>> +	add	%0,%1,%0\n"
+>> +	PPC_STL" %0,0(%2)\n"
+>> +	: "=&r" (t)
+>> +	: "r" (i), "r" (&(l->a.counter)));
+>> +	powerpc_local_irq_pmu_restore(flags);
+>> +}
+>> +
+>> +static __inline__ void local_sub(long i, local_t *l)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__(
+>> +	PPC_LL" %0,0(%2)\n\
+>> +	subf	%0,%1,%0\n"
+>> +	PPC_STL" %0,0(%2)\n"
+>> +	: "=&r" (t)
+>> +	: "r" (i), "r" (&(l->a.counter)));
+>> +	powerpc_local_irq_pmu_restore(flags);
+>> +}
+>> +
+>> +static __inline__ long local_add_return(long a, local_t *l)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__(
+>> +	PPC_LL" %0,0(%2)\n\
+>> +	add	%0,%1,%0\n"
+>> +	PPC_STL "%0,0(%2)\n"
+>> +	: "=&r" (t)
+>> +	: "r" (a), "r" (&(l->a.counter))
+>> +	: "memory");
+>> +	powerpc_local_irq_pmu_restore(flags);
+>> +
+>> +	return t;
+>> +}
+>> +
+>> +#define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
+>> +
+>> +static __inline__ long local_sub_return(long a, local_t *l)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__(
+>> +	PPC_LL" %0,0(%2)\n\
+>> +	subf	%0,%1,%0\n"
+>> +	PPC_STL "%0,0(%2)\n"
+>> +	: "=&r" (t)
+>> +	: "r" (a), "r" (&(l->a.counter))
+>> +	: "memory");
+>> +	powerpc_local_irq_pmu_restore(flags);
+>> +
+>> +	return t;
+>> +}
+>> +
+>> +static __inline__ long local_inc_return(local_t *l)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__(
+>> +	PPC_LL" %0,0(%1)\n\
+>> +	addic	%0,%0,1\n"
+>> +	PPC_STL "%0,0(%1)\n"
+>> +	: "=&r" (t)
+>> +	: "r" (&(l->a.counter))
+>> +	: "xer", "memory");
+>> +	powerpc_local_irq_pmu_restore(flags);
+>> +
+>> +	return t;
+>> +}
+>> +
+>> +/*
+>> + * local_inc_and_test - increment and test
+>> + * @l: pointer of type local_t
+>> + *
+>> + * Atomically increments @l by 1
+>> + * and returns true if the result is zero, or false for all
+>> + * other cases.
+>> + */
+>> +#define local_inc_and_test(l) (local_inc_return(l) == 0)
+>> +
+>> +static __inline__ long local_dec_return(local_t *l)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__(
+>> +	PPC_LL" %0,0(%1)\n\
+>> +	addic	%0,%0,-1\n"
+>> +	PPC_STL "%0,0(%1)\n"
+>> +	: "=&r" (t)
+>> +	: "r" (&(l->a.counter))
+>> +	: "xer", "memory");
+>> +	powerpc_local_irq_pmu_restore(flags);
+>> +
+>> +	return t;
+>> +}
+>> +
+>> +#define local_inc(l)	local_inc_return(l)
+>> +#define local_dec(l)	local_dec_return(l)
+>> +
+>> +#define local_cmpxchg(l, o, n) \
+>> +	(cmpxchg_local(&((l)->a.counter), (o), (n)))
+>> +#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
+>> +
+>> +/**
+>> + * local_add_unless - add unless the number is a given value
+>> + * @l: pointer of type local_t
+>> + * @a: the amount to add to v...
+>> + * @u: ...unless v is equal to u.
+>> + *
+>> + * Atomically adds @a to @l, so long as it was not @u.
+>> + * Returns non-zero if @l was not @u, and zero otherwise.
+>> + */
+>> +static __inline__ int local_add_unless(local_t *l, long a, long u)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__ (
+>> +	PPC_LL" %0,0(%1)\n\
+>> +	cmpw	0,%0,%3 \n\
+>> +	beq-	2f \n\
+>> +	add	%0,%2,%0 \n"
+>> +	PPC_STL" %0,0(%1) \n"
+>> +"       subf	%0,%2,%0 \n\
+>> +2:"
+>> +        : "=&r" (t)
+>> +        : "r" (&(l->a.counter)), "r" (a), "r" (u)
+>> +        : "cc", "memory");
+>> +        powerpc_local_irq_pmu_restore(flags);
+>> +
+>> +	return t != u;
+>> +}
+>> +
+>> +#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+>> +
+>> +#define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
+>> +#define local_dec_and_test(l)		(local_dec_return((l)) == 0)
+>> +
+>> +/*
+>> + * Atomically test *l and decrement if it is greater than 0.
+>> + * The function returns the old value of *l minus 1.
+>> + */
+>> +static __inline__ long local_dec_if_positive(local_t *l)
+>> +{
+>> +	long t;
+>> +	unsigned long flags;
+>> +
+>> +	powerpc_local_irq_pmu_save(flags);
+>> +	__asm__ __volatile__(
+>> +	PPC_LL" %0,0(%1)\n\
+>> +	cmpwi	%0,1\n\
+>> +	addi	%0,%0,-1\n\
+>> +	blt-	2f\n"
+>> +	PPC_STL "%0,0(%1)\n"
+>> +	"\n\
+>> +2:"	: "=&b" (t)
+>> +	: "r" (&(l->a.counter))
+>> +	: "cc", "memory");
+>> +	powerpc_local_irq_pmu_restore(flags);
+>> +
+>> +	return t;
+>> +}
+>> +
+>> +/* Use these for per-cpu local_t variables: on some archs they are
+>> + * much more efficient than these naive implementations.  Note they take
+>> + * a variable, not an address.
+>> + */
+>> +
+>> +#define __local_inc(l)		((l)->a.counter++)
+>> +#define __local_dec(l)		((l)->a.counter++)
+>> +#define __local_add(i,l)	((l)->a.counter+=(i))
+>> +#define __local_sub(i,l)	((l)->a.counter-=(i))
+>> +
+>> +#else
+>> +
+>>   #define local_add(i,l)	atomic_long_add((i),(&(l)->a))
+>>   #define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
+>>   #define local_inc(l)	atomic_long_inc(&(l)->a)
+>> @@ -172,4 +371,6 @@ static __inline__ long local_dec_if_positive(local_t *l)
+>>   #define __local_add(i,l)	((l)->a.counter+=(i))
+>>   #define __local_sub(i,l)	((l)->a.counter-=(i))
+>>   
+>> +#endif /* CONFIG_PPC64 */
+>> +
+>>   #endif /* _ARCH_POWERPC_LOCAL_H */
+>> -- 
+>> 2.7.4
