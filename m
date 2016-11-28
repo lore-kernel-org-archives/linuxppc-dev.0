@@ -1,12 +1,12 @@
 Return-Path: <jhovold@gmail.com>
-Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
- [IPv6:2a00:1450:4010:c07::241])
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXN0zBdzDvhR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSFXN3V5JzDvhn
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 05:27:32 +1100 (AEDT)
-Received: by mail-lf0-x241.google.com with SMTP id o20so10330321lfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:31 -0800 (PST)
+Received: by mail-lf0-x243.google.com with SMTP id p100so10340716lfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 10:27:32 -0800 (PST)
 Sender: Johan Hovold <jhovold@gmail.com>
 From: Johan Hovold <johan@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>
@@ -30,9 +30,10 @@ Cc: Vince Bridgers <vbridger@opensource.altera.com>,
  linux-mediatek@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
  linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
  Johan Hovold <johan@kernel.org>
-Subject: [PATCH net 06/16] net: ethernet: bcmgenet: fix fixed-link phydev leaks
-Date: Mon, 28 Nov 2016 19:24:59 +0100
-Message-Id: <1480357509-28074-7-git-send-email-johan@kernel.org>
+Subject: [PATCH net 11/16] net: ethernet: marvell: mvneta: fix fixed-link
+ phydev leaks
+Date: Mon, 28 Nov 2016 19:25:04 +0100
+Message-Id: <1480357509-28074-12-git-send-email-johan@kernel.org>
 In-Reply-To: <1480357509-28074-1-git-send-email-johan@kernel.org>
 References: <1480357509-28074-1-git-send-email-johan@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,46 +48,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Make sure to deregister and free any fixed-link PHY registered using
 of_phy_register_fixed_link() on probe errors and on driver unbind.
 
-Note that we're still leaking any fixed-link PHY registered in the
-non-OF probe path.
-
-Fixes: 9abf0c2b717a ("net: bcmgenet: use the new fixed PHY helpers")
+Fixes: 83895bedeee6 ("net: mvneta: add support for fixed links")
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/net/ethernet/broadcom/genet/bcmmii.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/marvell/mvneta.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/net/ethernet/broadcom/genet/bcmmii.c b/drivers/net/ethernet/broadcom/genet/bcmmii.c
-index 2e745bd51df4..e87607621e62 100644
---- a/drivers/net/ethernet/broadcom/genet/bcmmii.c
-+++ b/drivers/net/ethernet/broadcom/genet/bcmmii.c
-@@ -627,6 +627,7 @@ static int bcmgenet_mii_bus_init(struct bcmgenet_priv *priv)
- int bcmgenet_mii_init(struct net_device *dev)
- {
- 	struct bcmgenet_priv *priv = netdev_priv(dev);
-+	struct device_node *dn = priv->pdev->dev.of_node;
- 	int ret;
- 
- 	ret = bcmgenet_mii_alloc(priv);
-@@ -640,6 +641,8 @@ int bcmgenet_mii_init(struct net_device *dev)
- 	return 0;
- 
- out:
+diff --git a/drivers/net/ethernet/marvell/mvneta.c b/drivers/net/ethernet/marvell/mvneta.c
+index 0c0a45af950f..707bc4680b9b 100644
+--- a/drivers/net/ethernet/marvell/mvneta.c
++++ b/drivers/net/ethernet/marvell/mvneta.c
+@@ -4191,6 +4191,8 @@ static int mvneta_probe(struct platform_device *pdev)
+ 	clk_disable_unprepare(pp->clk);
+ err_put_phy_node:
+ 	of_node_put(phy_node);
 +	if (of_phy_is_fixed_link(dn))
 +		of_phy_deregister_fixed_link(dn);
- 	of_node_put(priv->phy_dn);
- 	mdiobus_unregister(priv->mii_bus);
- 	mdiobus_free(priv->mii_bus);
-@@ -649,7 +652,10 @@ int bcmgenet_mii_init(struct net_device *dev)
- void bcmgenet_mii_exit(struct net_device *dev)
+ err_free_irq:
+ 	irq_dispose_mapping(dev->irq);
+ err_free_netdev:
+@@ -4202,6 +4204,7 @@ static int mvneta_probe(struct platform_device *pdev)
+ static int mvneta_remove(struct platform_device *pdev)
  {
- 	struct bcmgenet_priv *priv = netdev_priv(dev);
-+	struct device_node *dn = priv->pdev->dev.of_node;
+ 	struct net_device  *dev = platform_get_drvdata(pdev);
++	struct device_node *dn = pdev->dev.of_node;
+ 	struct mvneta_port *pp = netdev_priv(dev);
  
+ 	unregister_netdev(dev);
+@@ -4209,6 +4212,8 @@ static int mvneta_remove(struct platform_device *pdev)
+ 	clk_disable_unprepare(pp->clk);
+ 	free_percpu(pp->ports);
+ 	free_percpu(pp->stats);
 +	if (of_phy_is_fixed_link(dn))
 +		of_phy_deregister_fixed_link(dn);
- 	of_node_put(priv->phy_dn);
- 	mdiobus_unregister(priv->mii_bus);
- 	mdiobus_free(priv->mii_bus);
+ 	irq_dispose_mapping(dev->irq);
+ 	of_node_put(pp->phy_node);
+ 	free_netdev(dev);
 -- 
 2.7.3
