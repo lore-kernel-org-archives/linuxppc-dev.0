@@ -1,38 +1,28 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSPt8292gzDvwT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 11:43:27 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAT0hQJJ123274
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 19:43:26 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 270vsg7pae-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 19:43:25 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Mon, 28 Nov 2016 19:43:24 -0500
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v2 14/14] cxlflash: Migrate scsi command pointer to AFU command
-Date: Mon, 28 Nov 2016 18:43:18 -0600
-In-Reply-To: <1480379984-60114-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1480379984-60114-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1480380198-60687-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSRLz0mmGzDw20
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 12:50:03 +1100 (AEDT)
+Received: by mail-pg0-x242.google.com with SMTP id 3so14694012pgd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 17:50:03 -0800 (PST)
+Date: Tue, 29 Nov 2016 12:49:42 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Nick Clifton <nickc@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH] powerpc/boot: request no dynamic linker for boot wrapper
+Message-ID: <20161129124942.17ee80a6@roar.ozlabs.ibm.com>
+In-Reply-To: <3cc30a4c-59db-fc24-7b77-69f8665dadc3@redhat.com>
+References: <20161128014226.7656-1-npiggin@gmail.com>
+ <87shqbrhfo.fsf@concordia.ellerman.id.au>
+ <20161128230724.375227b4@roar.ozlabs.ibm.com>
+ <a3674ff0-2c57-b04e-6cdf-3ac43296f854@redhat.com>
+ <20161129000211.54199985@roar.ozlabs.ibm.com>
+ <3cc30a4c-59db-fc24-7b77-69f8665dadc3@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,87 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+On Mon, 28 Nov 2016 14:25:31 +0000
+Nick Clifton <nickc@redhat.com> wrote:
 
-Currently, when sending a SCSI command, the pointer is stored in a
-reserved field of the AFU command descriptor for retrieval once the
-SCSI command has completed. In order to support new descriptor formats
-that make use of the reserved field, the pointer is migrated to outside
-the descriptor where it can still be found during completion processing.
+> Hi Nicholas,
+> 
+> >> ... this actually seems like a better fix to me.  If you do not want the 
+> >> PT_INTERP segment, then telling this linker this is a good idea.  So wouldn't
+> >> a patch like this be a better solution to the problem ?  
+> > 
+> > Yes, I wasn't asking for the binutils change to be reverted.  
+> 
+> Oh right.  Actually it looks like at least part of the patch is going to have
+> to be reverted, (the part that sorts the PT_LOAD segments into ascending order), 
+> as currently it breaks building Linux  kernels.  *sigh*
 
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/common.h  |  1 +
- drivers/scsi/cxlflash/main.c    | 10 +++++-----
- drivers/scsi/cxlflash/sislite.h |  2 +-
- 3 files changed, 7 insertions(+), 6 deletions(-)
+If the kernel has been doing the wrong thing, we can accept the breakage.
+It's a matter for binutils policy in the end I suppose.
 
-diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index 6b8d1d3..0e9de5d 100644
---- a/drivers/scsi/cxlflash/common.h
-+++ b/drivers/scsi/cxlflash/common.h
-@@ -129,6 +129,7 @@ struct afu_cmd {
- 	struct sisl_ioarcb rcb;	/* IOARCB (cache line aligned) */
- 	struct sisl_ioasa sa;	/* IOASA must follow IOARCB */
- 	struct afu *parent;
-+	struct scsi_cmnd *scp;
- 	struct completion cevent;
- 
- 	u8 cmd_tmf:1;
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index d2d2d83..b17ebf6 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -151,7 +151,7 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
-  *
-  * Prepares and submits command that has either completed or timed out to
-  * the SCSI stack. Checks AFU command back into command pool for non-internal
-- * (rcb.scp populated) commands.
-+ * (cmd->scp populated) commands.
-  */
- static void cmd_complete(struct afu_cmd *cmd)
- {
-@@ -161,8 +161,8 @@ static void cmd_complete(struct afu_cmd *cmd)
- 	struct cxlflash_cfg *cfg = afu->parent;
- 	bool cmd_is_tmf;
- 
--	if (cmd->rcb.scp) {
--		scp = cmd->rcb.scp;
-+	if (cmd->scp) {
-+		scp = cmd->scp;
- 		if (unlikely(cmd->sa.ioasc))
- 			process_cmd_err(cmd, scp);
- 		else
-@@ -315,7 +315,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	cfg->tmf_active = true;
- 	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
--	cmd->rcb.scp = scp;
-+	cmd->scp = scp;
- 	cmd->parent = afu;
- 	cmd->cmd_tmf = true;
- 
-@@ -445,7 +445,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 		cmd->rcb.data_ea = sg_dma_address(sg);
- 	}
- 
--	cmd->rcb.scp = scp;
-+	cmd->scp = scp;
- 	cmd->parent = afu;
- 
- 	cmd->rcb.ctx_id = afu->ctx_hndl;
-diff --git a/drivers/scsi/cxlflash/sislite.h b/drivers/scsi/cxlflash/sislite.h
-index 347fc16..1a2d09c 100644
---- a/drivers/scsi/cxlflash/sislite.h
-+++ b/drivers/scsi/cxlflash/sislite.h
-@@ -72,7 +72,7 @@ struct sisl_ioarcb {
- 	u16 timeout;		/* in units specified by req_flags */
- 	u32 rsvd1;
- 	u8 cdb[16];		/* must be in big endian */
--	struct scsi_cmnd *scp;
-+	u64 reserved;		/* Reserved area */
- } __packed;
- 
- struct sisl_rc {
--- 
-2.1.0
+> 
+> > I don't think the
+> > boot wrapper is relying on this non-standard form. If we go with
+> > --no-dynamic-linker then I'm assuming we get a standard ELF binary?
+> > That seems desirable.  
+> 
+> Yes, you definitely should get a proper ELF binary.
+> 
+> > I was just checking whether this is the best think for the kernel to do.
+> > Is it possible to get a similar behaviour using the linker script instead
+> > (so it's compatible with older binutils)?  
+> 
+> Actually probably not.  :-(  Several backends, including the PPC, will now 
+> attempt to automatically create and install the PT_INTERP segment unless you
+> explicitly tell them not too.  Even if you are using a custom linker script.
+
+Okay. It sounds like we should use --no-dynamic-linker whether or not your
+patch is changed.
+
+Thanks,
+Nick
