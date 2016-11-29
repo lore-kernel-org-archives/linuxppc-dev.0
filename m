@@ -2,15 +2,17 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSVYC1ZDmzDw58
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:14:05 +1100 (AEDT)
-Subject: [PATCH v4 0/7] Disable VF's memory space on updating IOV BARs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSVYZ4RBmzDwBf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:14:26 +1100 (AEDT)
+Subject: [PATCH v4 1/7] PCI: Do any VF BAR updates before enabling the BARs
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Cc: clsoto@us.ibm.com, benh@kernel.crashing.org, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Date: Mon, 28 Nov 2016 22:13:41 -0600
-Message-ID: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Mon, 28 Nov 2016 22:14:06 -0600
+Message-ID: <20161129041406.21453.62657.stgit@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
+References: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,59 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a v4 of Gavin's series for handling VF BAR updates.  The
-important piece is the first patch ("PCI: Do any VF BAR updates before
-enabling the BARs").  That makes sure that if we update VF BARs, we do
-it before enabling the VFs, and that is unchanged from v3.
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-The second patch in Gavin's series ("PCI: Disable VF's memory space on
-updating IOV BAR in pci_update_resource()") temporarily disabled VF
-memory space during an update.  Since the first patch does the update
-before enabling VFs, this case shouldn't happen in practice.
+Previously we enabled VFs and enable their memory space before calling
+pcibios_sriov_enable().  But pcibios_sriov_enable() may update the VF BARs:
+for example, on PPC PowerNV we may change them to manage the association of
+VFs to PEs.
 
-But even if we want to update a VF BAR while VF memory space is
-enabled, I think temporarily disabling it is wrong.  So I replaced
-the second patch with a few patches that make that such an update
-fail.
+Because 64-bit BARs cannot be updated atomically, it's unsafe to update
+them while they're enabled.  The half-updated state may conflict with other
+devices in the system.
 
-Please comment.  These are on my pci/virtualization branch.
+Call pcibios_sriov_enable() before enabling the VFs so any BAR updates
+happen while the VF BARs are disabled.
 
-Changelog
-=========
-v4:
-  * Don't disable VF's memory space when IOV BARs are updated; fail the
-    update instead. 
-  * Split IOV BAR updates from standard BAR updates so IOV updates can go
-    in pci/iov.c.
-  * Remove pci_resource_bar() and pci_iov_resource_bar() (the relevant
-    code is simpler when inlined into the callers).
-  * Cleanup IORESOURCE_ROM_ENABLE usage.
-  * Add comments about why ROMs are updated differently.
-v3:
-  * Disable VF's memory space when IOV BARs are updated in
-    pcibios_sriov_enable().
-v2:
-  * Added one patch calling pcibios_sriov_enable() before the VF
-    and VF BARs are enabled.
-
+[bhelgaas: changelog]
+Tested-by: Carol Soto <clsoto@us.ibm.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
+ drivers/pci/iov.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-Bjorn Helgaas (6):
-      PCI: Ignore BAR updates on virtual functions
-      PCI: Separate VF BAR updates from standard BAR updates
-      PCI: Don't update VF BARs while VF memory space is enabled
-      PCI: Remove pci_resource_bar() and pci_iov_resource_bar()
-      PCI: Decouple IORESOURCE_ROM_ENABLE and PCI_ROM_ADDRESS_ENABLE
-      PCI: Add comments about ROM BAR updating
-
-Gavin Shan (1):
-      PCI: Do any VF BAR updates before enabling the BARs
-
-
- drivers/pci/iov.c       |   69 +++++++++++++++++++++++++++++++++++++----------
- drivers/pci/pci.c       |   34 -----------------------
- drivers/pci/pci.h       |    7 +----
- drivers/pci/probe.c     |    3 +-
- drivers/pci/rom.c       |    5 +++
- drivers/pci/setup-res.c |   37 ++++++++++++++++++-------
- 6 files changed, 88 insertions(+), 67 deletions(-)
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index e30f05c..d41ec29 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -306,13 +306,6 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 			return rc;
+ 	}
+ 
+-	pci_iov_set_numvfs(dev, nr_virtfn);
+-	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
+-	pci_cfg_access_lock(dev);
+-	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+-	msleep(100);
+-	pci_cfg_access_unlock(dev);
+-
+ 	iov->initial_VFs = initial;
+ 	if (nr_virtfn < initial)
+ 		initial = nr_virtfn;
+@@ -323,6 +316,13 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 		goto err_pcibios;
+ 	}
+ 
++	pci_iov_set_numvfs(dev, nr_virtfn);
++	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
++	pci_cfg_access_lock(dev);
++	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
++	msleep(100);
++	pci_cfg_access_unlock(dev);
++
+ 	for (i = 0; i < initial; i++) {
+ 		rc = pci_iov_add_virtfn(dev, i, 0);
+ 		if (rc)
