@@ -2,15 +2,15 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSVYZ4RBmzDwBf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:14:26 +1100 (AEDT)
-Subject: [PATCH v4 1/7] PCI: Do any VF BAR updates before enabling the BARs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSVZJ2786zDwCn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:15:04 +1100 (AEDT)
+Subject: [PATCH v4 2/7] PCI: Ignore BAR updates on virtual functions
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Cc: clsoto@us.ibm.com, benh@kernel.crashing.org, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Date: Mon, 28 Nov 2016 22:14:06 -0600
-Message-ID: <20161129041406.21453.62657.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Mon, 28 Nov 2016 22:14:29 -0600
+Message-ID: <20161129041429.21453.83322.stgit@bhelgaas-glaptop.roam.corp.google.com>
 In-Reply-To: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
@@ -24,57 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+VF BARs are read-only zero, so updating VF BARs will not have any effect.
+See the SR-IOV spec r1.1, sec 3.4.1.11.
 
-Previously we enabled VFs and enable their memory space before calling
-pcibios_sriov_enable().  But pcibios_sriov_enable() may update the VF BARs:
-for example, on PPC PowerNV we may change them to manage the association of
-VFs to PEs.
+We already ignore these updates because of 70675e0b6a1a ("PCI: Don't try to
+restore VF BARs"); this merely restructures it slightly to make it easier
+to split updates for standard and SR-IOV BARs.
 
-Because 64-bit BARs cannot be updated atomically, it's unsafe to update
-them while they're enabled.  The half-updated state may conflict with other
-devices in the system.
-
-Call pcibios_sriov_enable() before enabling the VFs so any BAR updates
-happen while the VF BARs are disabled.
-
-[bhelgaas: changelog]
-Tested-by: Carol Soto <clsoto@us.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+CC: Wei Yang <richard.weiyang@gmail.com>
 ---
- drivers/pci/iov.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/pci/pci.c       |    4 ----
+ drivers/pci/setup-res.c |    5 ++---
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index e30f05c..d41ec29 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -306,13 +306,6 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 			return rc;
- 	}
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index ba34907..631eac2 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -564,10 +564,6 @@ static void pci_restore_bars(struct pci_dev *dev)
+ {
+ 	int i;
  
--	pci_iov_set_numvfs(dev, nr_virtfn);
--	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
--	pci_cfg_access_lock(dev);
--	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
--	msleep(100);
--	pci_cfg_access_unlock(dev);
+-	/* Per SR-IOV spec 3.4.1.11, VF BARs are RO zero */
+-	if (dev->is_virtfn)
+-		return;
 -
- 	iov->initial_VFs = initial;
- 	if (nr_virtfn < initial)
- 		initial = nr_virtfn;
-@@ -323,6 +316,13 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 		goto err_pcibios;
- 	}
+ 	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++)
+ 		pci_update_resource(dev, i);
+ }
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index 66c4d8f..d2a32d8 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -36,10 +36,9 @@ void pci_update_resource(struct pci_dev *dev, int resno)
+ 	enum pci_bar_type type;
+ 	struct resource *res = dev->resource + resno;
  
-+	pci_iov_set_numvfs(dev, nr_virtfn);
-+	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
-+	pci_cfg_access_lock(dev);
-+	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
-+	msleep(100);
-+	pci_cfg_access_unlock(dev);
-+
- 	for (i = 0; i < initial; i++) {
- 		rc = pci_iov_add_virtfn(dev, i, 0);
- 		if (rc)
+-	if (dev->is_virtfn) {
+-		dev_warn(&dev->dev, "can't update VF BAR%d\n", resno);
++	/* Per SR-IOV spec 3.4.1.11, VF BARs are RO zero */
++	if (dev->is_virtfn)
+ 		return;
+-	}
+ 
+ 	/*
+ 	 * Ignore resources for unimplemented BARs and unused resource slots
