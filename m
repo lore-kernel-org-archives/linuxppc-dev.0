@@ -1,48 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSWfj3dLfzDvmL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 16:03:57 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAT4wVCs072079
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 00:03:55 -0500
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2712rw2m7b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 00:03:54 -0500
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 29 Nov 2016 15:03:51 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 20B832CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 16:03:49 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAT53nrO34537596
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 16:03:49 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAT53m1k026945
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 16:03:48 +1100
-Date: Tue, 29 Nov 2016 16:05:10 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, clsoto@us.ibm.com,
- benh@kernel.crashing.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v4 7/7] PCI: Add comments about ROM BAR updating
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20161129041648.21453.94596.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSX8Z0rmwzDvjw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 16:26:22 +1100 (AEDT)
+Date: Tue, 29 Nov 2016 16:07:32 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v6 7/7] powerpc/mm/iommu, vfio/spapr: Put pages on
+ VFIO container shutdown
+Message-ID: <20161129050732.GN13307@umbus.fritz.box>
+References: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
+ <1479966490-8739-8-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161129041648.21453.94596.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-Id: <20161129050510.GA23688@gwshan>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="8CNmCRe8Sh4keFKJ"
+In-Reply-To: <1479966490-8739-8-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,69 +29,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 28, 2016 at 10:16:48PM -0600, Bjorn Helgaas wrote:
->pci_update_resource() updates a hardware BAR so its address matches the
->kernel's struct resource UNLESS it's a disabled ROM BAR.  We only update
->those when we enable the ROM.
->
->It's not obvious from the code why ROM BARs should be handled specially.
->Apparently there are Matrox devices with defective ROM BARs that read as
->zero when disabled.  That means that if pci_enable_rom() reads the disabled
->BAR, sets PCI_ROM_ADDRESS_ENABLE (without re-inserting the address), and
->writes it back, it would enable the ROM at address zero.
->
->Add comments and references to explain why we can't make the code look more
->rational.
->
->The code changes are from 755528c860b0 ("Ignore disabled ROM resources at
->setup") and 8085ce084c0f ("[PATCH] Fix PCI ROM mapping").
->
->Link: https://lkml.org/lkml/2005/8/30/138
->Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+--8CNmCRe8Sh4keFKJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->---
-> drivers/pci/rom.c       |    5 +++++
-> drivers/pci/setup-res.c |    6 ++++++
-> 2 files changed, 11 insertions(+)
->
->diff --git a/drivers/pci/rom.c b/drivers/pci/rom.c
->index 06663d3..b6edb18 100644
->--- a/drivers/pci/rom.c
->+++ b/drivers/pci/rom.c
->@@ -35,6 +35,11 @@ int pci_enable_rom(struct pci_dev *pdev)
-> 	if (res->flags & IORESOURCE_ROM_SHADOW)
-> 		return 0;
->
->+	/*
->+	 * Ideally pci_update_resource() would update the ROM BAR address,
->+	 * and we would only set the enable bit here.  But apparently some
->+	 * devices have buggy ROM BARs that read as zero when disabled.
->+	 */
-> 	pcibios_resource_to_bus(pdev->bus, &region, res);
-> 	pci_read_config_dword(pdev, pdev->rom_base_reg, &rom_addr);
-> 	rom_addr &= ~PCI_ROM_ADDRESS_MASK;
->diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
->index 09bdff7..57d7041 100644
->--- a/drivers/pci/setup-res.c
->+++ b/drivers/pci/setup-res.c
->@@ -67,6 +67,12 @@ static void pci_std_update_resource(struct pci_dev *dev, int resno)
-> 	if (resno < PCI_ROM_RESOURCE) {
-> 		reg = PCI_BASE_ADDRESS_0 + 4 * resno;
-> 	} else if (resno == PCI_ROM_RESOURCE) {
->+
->+		/*
->+		 * Apparently some Matrox devices have ROM BARs that read
->+		 * as zero when disabled, so don't update ROM BARs unless
->+		 * they're enabled.  See https://lkml.org/lkml/2005/8/30/138.
->+		 */
-> 		if (!(res->flags & IORESOURCE_ROM_ENABLE))
-> 			return;
->
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+On Thu, Nov 24, 2016 at 04:48:10PM +1100, Alexey Kardashevskiy wrote:
+> At the moment the userspace tool is expected to request pinning of
+> the entire guest RAM when VFIO IOMMU SPAPR v2 driver is present.
+> When the userspace process finishes, all the pinned pages need to
+> be put; this is done as a part of the userspace memory context (MM)
+> destruction which happens on the very last mmdrop().
+>=20
+> This approach has a problem that a MM of the userspace process
+> may live longer than the userspace process itself as kernel threads
+> use userspace process MMs which was runnning on a CPU where
+> the kernel thread was scheduled to. If this happened, the MM remains
+> referenced until this exact kernel thread wakes up again
+> and releases the very last reference to the MM, on an idle system this
+> can take even hours.
+
+Incidentally, I think this change will also help if we ever had a use
+case of a long-lived process that only occasionally (rather than
+constantly) uses VFIO.  IIUC, before this change, when the process
+shuts down VFIO the locked memory would still be accounted until the
+process exits, even if it keeps running for a long time without VFIO.
+
+> This moves preregistered regions tracking from MM to VFIO; insteads of
+> using mm_iommu_table_group_mem_t::used, tce_container::prereg_list is
+> added so each container releases regions which it has pre-registered.
+>=20
+> This changes the userspace interface to return EBUSY if a memory
+> region is already registered in a container. However it should not
+> have any practical effect as the only userspace tool available now
+> does register memory region once per container anyway.
+>=20
+> As tce_iommu_register_pages/tce_iommu_unregister_pages are called
+> under container->lock, this does not need additional locking.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> Changes:
+> v4:
+> * changed tce_iommu_register_pages() to call mm_iommu_find() first and
+> avoid calling mm_iommu_put() if memory is preregistered already
+>=20
+> v3:
+> * moved tce_iommu_prereg_free() call out of list_for_each_entry()
+>=20
+> v2:
+> * updated commit log
+> ---
+>  arch/powerpc/mm/mmu_context_book3s64.c |  4 ---
+>  arch/powerpc/mm/mmu_context_iommu.c    | 11 -------
+>  drivers/vfio/vfio_iommu_spapr_tce.c    | 58 ++++++++++++++++++++++++++++=
++++++-
+>  3 files changed, 57 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu=
+_context_book3s64.c
+> index ad82735..1a07969 100644
+> --- a/arch/powerpc/mm/mmu_context_book3s64.c
+> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
+> @@ -159,10 +159,6 @@ static inline void destroy_pagetable_page(struct mm_=
+struct *mm)
+> =20
+>  void destroy_context(struct mm_struct *mm)
+>  {
+> -#ifdef CONFIG_SPAPR_TCE_IOMMU
+> -	mm_iommu_cleanup(mm);
+> -#endif
+> -
+
+Would it be worth having a WARN_ON() here (or somewhere in the
+callchain) to verify that all iommu preregs have been removed by the
+time the context is removed?
+
+>  #ifdef CONFIG_PPC_ICSWX
+>  	drop_cop(mm->context.acop, mm);
+>  	kfree(mm->context.cop_lockp);
+> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_co=
+ntext_iommu.c
+> index 4c6db09..104bad0 100644
+> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> @@ -365,14 +365,3 @@ void mm_iommu_init(struct mm_struct *mm)
+>  {
+>  	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
+>  }
+> -
+> -void mm_iommu_cleanup(struct mm_struct *mm)
+> -{
+> -	struct mm_iommu_table_group_mem_t *mem, *tmp;
+> -
+> -	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
+> -			next) {
+> -		list_del_rcu(&mem->next);
+> -		mm_iommu_do_free(mem);
+> -	}
+> -}
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index b2fb05ac..86c9348 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -89,6 +89,15 @@ struct tce_iommu_group {
+>  };
+> =20
+>  /*
+> + * A container needs to remember which preregistered region  it has
+> + * referenced to do proper cleanup at the userspace process exit.
+> + */
+> +struct tce_iommu_prereg {
+> +	struct list_head next;
+> +	struct mm_iommu_table_group_mem_t *mem;
+> +};
+
+So, as a future optimization, you might be able to (sort of) avoid
+having both the per-container list and the per-mm list if you put a
+private list pointer of some sort into mm_iommu_table_group_mem_t -
+i.e. allowing both a list of all the preregs for a whole mm, and a
+sub-list of all those for a single container on the same structure.
+
+> +
+> +/*
+>   * The container descriptor supports only a single group per container.
+>   * Required by the API as the container is not supplied with the IOMMU g=
+roup
+>   * at the moment of initialization.
+> @@ -102,6 +111,7 @@ struct tce_container {
+>  	struct mm_struct *mm;
+>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>  	struct list_head group_list;
+> +	struct list_head prereg_list;
+>  };
+> =20
+>  static long tce_iommu_mm_set(struct tce_container *container)
+> @@ -118,10 +128,24 @@ static long tce_iommu_mm_set(struct tce_container *=
+container)
+>  	return 0;
+>  }
+> =20
+> +static long tce_iommu_prereg_free(struct tce_container *container,
+> +		struct tce_iommu_prereg *tcemem)
+> +{
+> +	long ret;
+> +
+> +	list_del(&tcemem->next);
+> +	ret =3D mm_iommu_put(container->mm, tcemem->mem);
+
+What happens in the error case here.  ENOENT should never happen, but
+IIUC an EBUSY could happen.  If it does the entry will still be in the
+per-mm list, but will be removed from the container list which sounds
+like it could be bad.
+
+> +	kfree(tcemem);
+> +
+> +	return ret;
+> +}
+> +
+>  static long tce_iommu_unregister_pages(struct tce_container *container,
+>  		__u64 vaddr, __u64 size)
+>  {
+>  	struct mm_iommu_table_group_mem_t *mem;
+> +	struct tce_iommu_prereg *tcemem;
+> +	bool found =3D false;
+> =20
+>  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+>  		return -EINVAL;
+> @@ -130,7 +154,17 @@ static long tce_iommu_unregister_pages(struct tce_co=
+ntainer *container,
+>  	if (!mem)
+>  		return -ENOENT;
+> =20
+> -	return mm_iommu_put(container->mm, mem);
+> +	list_for_each_entry(tcemem, &container->prereg_list, next) {
+> +		if (tcemem->mem =3D=3D mem) {
+> +			found =3D true;
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (!found)
+> +		return -ENOENT;
+> +
+> +	return tce_iommu_prereg_free(container, tcemem);
+>  }
+> =20
+>  static long tce_iommu_register_pages(struct tce_container *container,
+> @@ -138,16 +172,29 @@ static long tce_iommu_register_pages(struct tce_con=
+tainer *container,
+>  {
+>  	long ret =3D 0;
+>  	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> +	struct tce_iommu_prereg *tcemem;
+>  	unsigned long entries =3D size >> PAGE_SHIFT;
+> =20
+>  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
+>  			((vaddr + size) < vaddr))
+>  		return -EINVAL;
+> =20
+> +	mem =3D mm_iommu_find(container->mm, vaddr, entries);
+> +	if (mem) {
+> +		list_for_each_entry(tcemem, &container->prereg_list, next) {
+> +			if (tcemem->mem =3D=3D mem)
+> +				return -EBUSY;
+> +		}
+> +	}
+> +
+>  	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
+>  	if (ret)
+>  		return ret;
+> =20
+> +	tcemem =3D kzalloc(sizeof(*tcemem), GFP_KERNEL);
+> +	tcemem->mem =3D mem;
+> +	list_add(&tcemem->next, &container->prereg_list);
+> +
+>  	container->enabled =3D true;
+> =20
+>  	return 0;
+> @@ -334,6 +381,7 @@ static void *tce_iommu_open(unsigned long arg)
+> =20
+>  	mutex_init(&container->lock);
+>  	INIT_LIST_HEAD_RCU(&container->group_list);
+> +	INIT_LIST_HEAD_RCU(&container->prereg_list);
+> =20
+>  	container->v2 =3D arg =3D=3D VFIO_SPAPR_TCE_v2_IOMMU;
+> =20
+> @@ -372,6 +420,14 @@ static void tce_iommu_release(void *iommu_data)
+>  		tce_iommu_free_table(container, tbl);
+>  	}
+> =20
+> +	while (!list_empty(&container->prereg_list)) {
+> +		struct tce_iommu_prereg *tcemem;
+> +
+> +		tcemem =3D list_first_entry(&container->prereg_list,
+> +				struct tce_iommu_prereg, next);
+> +		tce_iommu_prereg_free(container, tcemem);
+> +	}
+> +
+>  	tce_iommu_disable(container);
+>  	if (container->mm)
+>  		mmdrop(container->mm);
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--8CNmCRe8Sh4keFKJ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYPQ0RAAoJEGw4ysog2bOSDiQP/36FYc+g/JBxJ3dCVE5ZE+h+
+61ssbtE8kudlHSsrQ9BP+9oOL3HQYl3F1DbPCKWQktoe9YOQHZ7091p8f12jOCWF
+0+LzOAhxzhDu59RHLQKW6hid2u1VTow+kuk7NbabgmeULwv8vRWnkII/ihUhWdA+
++A65VGl4lw6G7kNEYUcbMg6qJGrPCqJO+GPpVtcN8oogLkOF64Cd21xyS7xquLRX
+bCArxAFjJgucOlBwXoixEk0IqrwF97qWSKdzPKFAnNosEZInTnr78/iG5A9F6eKV
+fA5V20pfi7ZMDgUQHu2casIk6x+nT/syNFdSdu8lKIMGcWQ/BkIHdbEO+oyPB7Pb
+9iFH8pJCwVqj+cAURBTvBy1IXyqh0qwlBdycyxWcNZ8REH1vvR+UuEZ8SvwsLeKw
+GGCP1znV+i8qSHh0745n4KOf1GMlFkHaOji397/dxDC4bHKGMSITEY71BMr1oNzL
+C3HdGKsSiZH28TIXAacY6oRuaDFFOr5dxdym4zUrEvMebBQzPUvPKkbWyUdHYm43
+AnAM/UNcSIC5rN4TXoi3J0gPALK8BlTRl6pqA5azT5NSWHH/qNZDJfqIg1DPp7lo
+xvF5mjgiHqdeb2xhbJC9v4/IJ2a3H6KC9T9liBk1n+G5nO09E/GPbEOykOMNniW4
+a1uS48C9FPzaG9hapLxS
+=A5i5
+-----END PGP SIGNATURE-----
+
+--8CNmCRe8Sh4keFKJ--
