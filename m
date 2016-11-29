@@ -1,32 +1,36 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSP723LRzzDvNm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 11:09:34 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id p66so14477728pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 16:09:34 -0800 (PST)
-Subject: Re: [mm v2 0/3] Support memory cgroup hotplug
-To: Tejun Heo <tj@kernel.org>
-References: <1479875814-11938-1-git-send-email-bsingharora@gmail.com>
- <20161123072543.GD2864@dhcp22.suse.cz>
- <342ebcca-b54c-4bc6-906b-653042caae06@gmail.com>
- <20161123080744.GG2864@dhcp22.suse.cz>
- <61dc32fd-2802-6deb-24cf-fa11b5b31532@gmail.com>
- <20161123092830.GH2864@dhcp22.suse.cz>
- <962ac541-55c4-de09-59a3-4947c394eee6@gmail.com>
- <20161128211014.GB12143@htj.duckdns.org>
-Cc: Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- Johannes Weiner <hannes@cmpxchg.org>,
- Vladimir Davydov <vdavydov.dev@gmail.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <fffa4fdc-8bb0-2891-d314-286d4ede305b@gmail.com>
-Date: Tue, 29 Nov 2016 11:09:26 +1100
-MIME-Version: 1.0
-In-Reply-To: <20161128211014.GB12143@htj.duckdns.org>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSPq05JMFzDvjw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 11:40:44 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAT0cbp1103504
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 19:40:42 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 270t5crve0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 19:40:42 -0500
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Mon, 28 Nov 2016 17:40:41 -0700
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH v2 00/14] cxlflash: Fixes, enhancements, cleanup and staging
+Date: Mon, 28 Nov 2016 18:39:44 -0600
+Message-Id: <1480379984-60114-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,43 +40,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The first four patches in this patch series include fixes for command
+room violation and lun table management.
 
+The remaining patches remove the reliance upon an internally maintained
+private command pool in favor of private commands being allocated
+alongside the SCSI commands. Several cleanup opportunities were noticed
+while removing the private command pool infrastructure and have been
+included as well. Lastly, the final two patches provide staging for
+supporting hardware with a different queuing model.
 
-On 29/11/16 08:10, Tejun Heo wrote:
-> On Thu, Nov 24, 2016 at 12:05:12AM +1100, Balbir Singh wrote:
->> On my desktop NODES_SHIFT is 6, many distro kernels have it a 9. I've known
->> of solutions that use fake NUMA for partitioning and need as many nodes as
->> possible.
-> 
-> It was a crude kludge that people used before memcg.  If people still
-> use it, that's fine but we don't want to optimize / make code
-> complicated for it, so let's please put away this part of
-> justification.
+The series is based upon 4.9-rc5, intended for 4.10 and is bisectable.
 
-Are you suggesting those use cases can be ignored now?
+v2 Changes:
+- Incorporate comments from Matthew R. Ochs
+- Updated command room violation patch to use a spin lock
 
-> 
-> It's understandable that some kernels want to have large NODES_SHIFT
-> to support wide range of configurations but if that makes wastage too
-> high, the simpler solution is updating the users to use the rumtime
-> detected possible number / mask instead of the compile time
-> NODES_SHIFT.  Note that we do exactly the same thing for per-cpu
-> things - we configure high max but do all operations on what's
-> possible on the system.
-> 
-> NUMA code already has possible detection.  Why not simply make memcg
-> use those instead of MAX_NUMNODES like how we use nr_cpu_ids instead
-> of NR_CPUS?
-> 
+Matthew R. Ochs (10):
+  cxlflash: Remove unused buffer from AFU command
+  cxlflash: Allocate memory instead of using command pool for AFU sync
+  cxlflash: Use cmd_size for private commands
+  cxlflash: Remove private command pool
+  cxlflash: Wait for active AFU commands to timeout upon tear down
+  cxlflash: Remove AFU command lock
+  cxlflash: Cleanup send_tmf()
+  cxlflash: Cleanup queuecommand()
+  cxlflash: Migrate IOARRIN specific routines to function pointers
+  cxlflash: Migrate scsi command pointer to AFU command
 
-nodes_possible_map is set to node_online_map at the moment for ppc64.
-Which becomes a problem when hotplugging a node that was not already
-online.
+Uma Krishnan (4):
+  cxlflash: Set sg_tablesize to 1 instead of SG_NONE
+  cxlflash: Fix crash in cxlflash_restore_luntable()
+  cxlflash: Improve context_reset() logic
+  cxlflash: Avoid command room violation
 
-I am not sure what you mean by possible detection. node_possible_map
-is set based on CONFIG_NODE_SHIFT and then can be adjusted by the
-architecture (if desired). Are you suggesting firmware populate it
-in?
+ drivers/scsi/cxlflash/common.h  |  39 ++--
+ drivers/scsi/cxlflash/lunmgt.c  |   6 +
+ drivers/scsi/cxlflash/main.c    | 410 ++++++++++------------------------------
+ drivers/scsi/cxlflash/sislite.h |   2 +-
+ 4 files changed, 130 insertions(+), 327 deletions(-)
 
-Thanks,
-Balbir Singh
+-- 
+2.1.0
