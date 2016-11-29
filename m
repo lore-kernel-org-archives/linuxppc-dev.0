@@ -2,24 +2,23 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSWCr5zC5zDwQq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSWCr5SPXzDwR8
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:44:08 +1100 (AEDT)
-Date: Tue, 29 Nov 2016 15:33:08 +1100
+Date: Tue, 29 Nov 2016 15:33:36 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Nicholas Piggin <npiggin@gmail.com>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v6 4/7] vfio/spapr: Add a helper to create default
- DMA window
-Message-ID: <20161129043308.GK13307@umbus.fritz.box>
+Subject: Re: [PATCH kernel v6 5/7] vfio/spapr: Postpone default window creation
+Message-ID: <20161129043336.GL13307@umbus.fritz.box>
 References: <1479966490-8739-1-git-send-email-aik@ozlabs.ru>
- <1479966490-8739-5-git-send-email-aik@ozlabs.ru>
+ <1479966490-8739-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="J2pR2RtFp0tAjF3C"
-In-Reply-To: <1479966490-8739-5-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="V3eawNQxI9TAjvgi"
+In-Reply-To: <1479966490-8739-6-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +29,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---J2pR2RtFp0tAjF3C
+--V3eawNQxI9TAjvgi
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Nov 24, 2016 at 04:48:07PM +1100, Alexey Kardashevskiy wrote:
-> There is already a helper to create a DMA window which does allocate
-> a table and programs it to the IOMMU group. However
-> tce_iommu_take_ownership_ddw() did not use it and did these 2 calls
-> itself to simplify error path.
+On Thu, Nov 24, 2016 at 04:48:08PM +1100, Alexey Kardashevskiy wrote:
+> We are going to allow the userspace to configure container in
+> one memory context and pass container fd to another so
+> we are postponing memory allocations accounted against
+> the locked memory limit. One of previous patches took care of
+> it_userspace.
 >=20
-> Since we are going to delay the default window creation till
-> the default window is accessed/removed or new window is added,
-> we need a helper to create a default window from all these cases.
+> At the moment we create the default DMA window when the first group is
+> attached to a container; this is done for the userspace which is not
+> DDW-aware but familiar with the SPAPR TCE IOMMU v2 in the part of memory
+> pre-registration - such client expects the default DMA window to exist.
 >=20
-> This adds tce_iommu_create_default_window(). Since it relies on
-> a VFIO container to have at least one IOMMU group (for future use),
-> this changes tce_iommu_attach_group() to add a group to the container
-> first and then call the new helper.
+> This postpones the default DMA window allocation till one of
+> the folliwing happens:
+> 1. first map/unmap request arrives;
+> 2. new window is requested;
+> This adds noop for the case when the userspace requested removal
+> of the default window which has not been created yet.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
@@ -57,148 +60,130 @@ Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 > ---
 > Changes:
 > v6:
-> * new to the patchset
+> * new helper tce_iommu_create_default_window() moved to a separate patch;
+> * creates a default window when new window is requested; it used to
+> reset the def_window_pending flag instead;
+> * def_window_pending handling (mostly) localized in
+> tce_iommu_create_default_window() now, the only exception is removal
+> of not yet created default window.
 > ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 87 ++++++++++++++++++-------------=
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 40 +++++++++++++++++++++++--------=
 ------
->  1 file changed, 42 insertions(+), 45 deletions(-)
+>  1 file changed, 25 insertions(+), 15 deletions(-)
 >=20
 > diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
 u_spapr_tce.c
-> index 4efd2b2..a67bbfd 100644
+> index a67bbfd..88622be 100644
 > --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 > +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -710,6 +710,29 @@ static long tce_iommu_remove_window(struct tce_conta=
-iner *container,
->  	return 0;
+> @@ -97,6 +97,7 @@ struct tce_container {
+>  	struct mutex lock;
+>  	bool enabled;
+>  	bool v2;
+> +	bool def_window_pending;
+>  	unsigned long locked_pages;
+>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>  	struct list_head group_list;
+> @@ -717,6 +718,9 @@ static long tce_iommu_create_default_window(struct tc=
+e_container *container)
+>  	struct tce_iommu_group *tcegrp;
+>  	struct iommu_table_group *table_group;
+> =20
+> +	if (!container->def_window_pending)
+> +		return 0;
+> +
+>  	if (!tce_groups_attached(container))
+>  		return -ENODEV;
+> =20
+> @@ -730,6 +734,9 @@ static long tce_iommu_create_default_window(struct tc=
+e_container *container)
+>  			table_group->tce32_size, 1, &start_addr);
+>  	WARN_ON_ONCE(!ret && start_addr);
+> =20
+> +	if (!ret)
+> +		container->def_window_pending =3D false;
+> +
+>  	return ret;
 >  }
 > =20
-> +static long tce_iommu_create_default_window(struct tce_container *contai=
-ner)
-> +{
-> +	long ret;
-> +	__u64 start_addr =3D 0;
-> +	struct tce_iommu_group *tcegrp;
-> +	struct iommu_table_group *table_group;
-> +
-> +	if (!tce_groups_attached(container))
-> +		return -ENODEV;
-> +
-> +	tcegrp =3D list_first_entry(&container->group_list,
-> +			struct tce_iommu_group, next);
-> +	table_group =3D iommu_group_get_iommudata(tcegrp->grp);
-> +	if (!table_group)
-> +		return -ENODEV;
-> +
-> +	ret =3D tce_iommu_create_window(container, IOMMU_PAGE_SHIFT_4K,
-> +			table_group->tce32_size, 1, &start_addr);
-> +	WARN_ON_ONCE(!ret && start_addr);
-> +
-> +	return ret;
-> +}
-> +
->  static long tce_iommu_ioctl(void *iommu_data,
->  				 unsigned int cmd, unsigned long arg)
->  {
-> @@ -1100,9 +1123,6 @@ static void tce_iommu_release_ownership_ddw(struct =
-tce_container *container,
->  static long tce_iommu_take_ownership_ddw(struct tce_container *container,
->  		struct iommu_table_group *table_group)
->  {
-> -	long i, ret =3D 0;
-> -	struct iommu_table *tbl =3D NULL;
-> -
->  	if (!table_group->ops->create_table || !table_group->ops->set_window ||
->  			!table_group->ops->release_ownership) {
->  		WARN_ON_ONCE(1);
-> @@ -1111,47 +1131,7 @@ static long tce_iommu_take_ownership_ddw(struct tc=
-e_container *container,
+> @@ -823,6 +830,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  				VFIO_DMA_MAP_FLAG_WRITE))
+>  			return -EINVAL;
 > =20
->  	table_group->ops->take_ownership(table_group);
+> +		ret =3D tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
+>  		if (num < 0)
+>  			return -ENXIO;
+> @@ -886,6 +897,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		if (param.flags)
+>  			return -EINVAL;
 > =20
-> -	/*
-> -	 * If it the first group attached, check if there is
-> -	 * a default DMA window and create one if none as
-> -	 * the userspace expects it to exist.
-> -	 */
-> -	if (!tce_groups_attached(container) && !container->tables[0]) {
-> -		ret =3D tce_iommu_create_table(container,
-> -				table_group,
-> -				0, /* window number */
-> -				IOMMU_PAGE_SHIFT_4K,
-> -				table_group->tce32_size,
-> -				1, /* default levels */
-> -				&tbl);
-> -		if (ret)
-> -			goto release_exit;
-> -		else
-> -			container->tables[0] =3D tbl;
-> -	}
-> -
-> -	/* Set all windows to the new group */
-> -	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-> -		tbl =3D container->tables[i];
-> -
-> -		if (!tbl)
-> -			continue;
-> -
-> -		/* Set the default window to a new group */
-> -		ret =3D table_group->ops->set_window(table_group, i, tbl);
-> -		if (ret)
-> -			goto release_exit;
-> -	}
-> -
->  	return 0;
-> -
-> -release_exit:
-> -	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-> -		table_group->ops->unset_window(table_group, i);
-> -
-> -	table_group->ops->release_ownership(table_group);
-> -
-> -	return ret;
->  }
+> +		ret =3D tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		num =3D tce_iommu_find_table(container, param.iova, &tbl);
+>  		if (num < 0)
+>  			return -ENXIO;
+> @@ -1012,6 +1027,10 @@ static long tce_iommu_ioctl(void *iommu_data,
 > =20
->  static int tce_iommu_attach_group(void *iommu_data,
-> @@ -1161,6 +1141,7 @@ static int tce_iommu_attach_group(void *iommu_data,
+>  		mutex_lock(&container->lock);
+> =20
+> +		ret =3D tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		ret =3D tce_iommu_create_window(container, create.page_shift,
+>  				create.window_size, create.levels,
+>  				&create.start_addr);
+> @@ -1044,6 +1063,11 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		if (remove.flags)
+>  			return -EINVAL;
+> =20
+> +		if (container->def_window_pending && !remove.start_addr) {
+> +			container->def_window_pending =3D false;
+> +			return 0;
+> +		}
+> +
+>  		mutex_lock(&container->lock);
+> =20
+>  		ret =3D tce_iommu_remove_window(container, remove.start_addr);
+> @@ -1141,7 +1165,6 @@ static int tce_iommu_attach_group(void *iommu_data,
 >  	struct tce_container *container =3D iommu_data;
 >  	struct iommu_table_group *table_group;
 >  	struct tce_iommu_group *tcegrp =3D NULL;
-> +	bool create_default_window =3D false;
+> -	bool create_default_window =3D false;
 > =20
 >  	mutex_lock(&container->lock);
 > =20
-> @@ -1203,14 +1184,30 @@ static int tce_iommu_attach_group(void *iommu_dat=
+> @@ -1189,25 +1212,12 @@ static int tce_iommu_attach_group(void *iommu_dat=
 a,
->  	}
-> =20
->  	if (!table_group->ops || !table_group->ops->take_ownership ||
-> -			!table_group->ops->release_ownership)
-> +			!table_group->ops->release_ownership) {
->  		ret =3D tce_iommu_take_ownership(container, table_group);
-> -	else
-> +	} else {
+>  	} else {
 >  		ret =3D tce_iommu_take_ownership_ddw(container, table_group);
-> +		if (!tce_groups_attached(container) && !container->tables[0])
-> +			create_default_window =3D true;
-> +	}
+>  		if (!tce_groups_attached(container) && !container->tables[0])
+> -			create_default_window =3D true;
+> +			container->def_window_pending =3D true;
+>  	}
 > =20
 >  	if (!ret) {
 >  		tcegrp->grp =3D iommu_group;
 >  		list_add(&tcegrp->next, &container->group_list);
-> +		/*
-> +		 * If it the first group attached, check if there is
-> +		 * a default DMA window and create one if none as
-> +		 * the userspace expects it to exist.
-> +		 */
-> +		if (create_default_window) {
-> +			ret =3D tce_iommu_create_default_window(container);
-> +			if (ret) {
-> +				list_del(&tcegrp->next);
-> +				tce_iommu_release_ownership_ddw(container,
-> +						table_group);
-> +			}
-> +		}
+> -		/*
+> -		 * If it the first group attached, check if there is
+> -		 * a default DMA window and create one if none as
+> -		 * the userspace expects it to exist.
+> -		 */
+> -		if (create_default_window) {
+> -			ret =3D tce_iommu_create_default_window(container);
+> -			if (ret) {
+> -				list_del(&tcegrp->next);
+> -				tce_iommu_release_ownership_ddw(container,
+> -						table_group);
+> -			}
+> -		}
 >  	}
 > =20
 >  unlock_exit:
@@ -209,25 +194,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---J2pR2RtFp0tAjF3C
+--V3eawNQxI9TAjvgi
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJYPQUEAAoJEGw4ysog2bOSon4P/1bpCm3yDtFuX8++gUXpjOGb
-yXKj3YTTuuDQ3+KkN0WxM2jthyZ7vryBqiG+sGp5+WTNlbjyitNLmnna1RC662N9
-Iu6L7jtfwjdMGxGJpEAi2RJfBN/emcl3WO9+hm+PSut8xdcgJ3AjGpA9SJt4SMx0
-wxmdTYMf4abracfsQ7tQPbBr0132jA8oyOG0Y1NrJHGCFP6xbPUNiWg+thXZiVvT
-wKw0gpbNrImW7HcLuTKPgKRsE2iqzanzjeS4g4rxNXBPFoWP0JU8SiV0xy5W+ajA
-ON18xnMCAPfM/xqlBNjlqcRPrZjA+4+40QY3IqH5Wrkd28X8lRHy+XMMxIsIVZXk
-VQTmmsdq+Rq6N7VSGe96RmzeOSoWG2frrcuFz4AWVcCGoZG97+QBGeWm8qZIP96G
-sWvPYxEIl/Xmr8rVrM4ulZppvMjXhlLjQBB0S+Y2VBrZ6+Klse2uZyRumMNiM9jU
-Jw18g+F+9Wx5BZuNtShy+i4zRRQ3INxPEel7aoyFU4flkuBGyt2MnxZ9Q+qapGrT
-yWuE0pdhfTIYdd2mzHhBQYrbI6o7efw0ZQEW9EjiBllHGIiKgYxSId6ppzT0IJO6
-Cyi0AKVbzvfbIShP+9QrkxbJJ1q2exrtZXwqXcguqSL8IuAVEj1BImBl7SR5Yw0R
-PvzdFz72WKWL2YTojC9q
-=LGKP
+iQIcBAEBCAAGBQJYPQUgAAoJEGw4ysog2bOSWCoP/0uFgBe4DZPmUy7mG1REDU1/
++h9TNWtzxhdce09i0t1plNTZCzCdg8eHgFCNikG6rogNQs76Zx9MOYkl1oi0rP/w
+LBo+/rh045brMWvZTciPHfqyX9TPfrS/chesnUBXBiLvNbVboQ1KhClmDtaFbbZr
+fWVZFb4u0ROr5y7DbDpAE+D2YsfDy6RcnGxV0ZYTa2Ona48Iq73yQqzbz1jbLiTe
+iXCGACH/95HlFuGgKdtlcNVSroWc1qO3npjWzEOzvOKcOvmBULXYXFNiJe8CVWHN
+nI05F55xaDXNoYdEtDzNOOqkMXrYSv6Z90RvfambSqUwYcKSfRbJMeJZQD388OGu
+/AwLeu54QeeTqGyU2PJqxtfXMWNUPgRYjSRvTzFkipaidcKYLS2n1G55zAew2ipB
+swbLDLHMp8T/OqZYTKxbhk0nhXCF5TvAkDB7xxAjLMHeqHGZcR5QLtK5sKsTVK0r
+azbBLUFvTXABW08F/00ZSG25iJWD7zhZeoLjpv8/JArpocrLNpmWka8XFvLaXX8P
+WMlnQwcCh5PVXWI/UjgNUmpujR3oP5zJiLM//DLpO+mPwN6bM2ld7BB7W9Z8S1tY
+NFoUs4JG0RibNojYEaUXD4A27Ul1y0WZzooF4DTUSG2mh+Upr4NepXRY/QOHN7KZ
+FOqIiGUmChIOjtgZcoD/
+=hfS6
 -----END PGP SIGNATURE-----
 
---J2pR2RtFp0tAjF3C--
+--V3eawNQxI9TAjvgi--
