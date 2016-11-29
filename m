@@ -1,34 +1,38 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSPrX56ZpzDrPL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 11:42:04 +1100 (AEDT)
-Received: by mail-qt0-x243.google.com with SMTP id n6so13686058qtd.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 16:42:04 -0800 (PST)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Mon, 28 Nov 2016 19:42:00 -0500
-From: Tejun Heo <tj@kernel.org>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- Johannes Weiner <hannes@cmpxchg.org>,
- Vladimir Davydov <vdavydov.dev@gmail.com>
-Subject: Re: [mm v2 0/3] Support memory cgroup hotplug
-Message-ID: <20161129004200.GA10703@mtj.duckdns.org>
-References: <1479875814-11938-1-git-send-email-bsingharora@gmail.com>
- <20161123072543.GD2864@dhcp22.suse.cz>
- <342ebcca-b54c-4bc6-906b-653042caae06@gmail.com>
- <20161123080744.GG2864@dhcp22.suse.cz>
- <61dc32fd-2802-6deb-24cf-fa11b5b31532@gmail.com>
- <20161123092830.GH2864@dhcp22.suse.cz>
- <962ac541-55c4-de09-59a3-4947c394eee6@gmail.com>
- <20161128211014.GB12143@htj.duckdns.org>
- <fffa4fdc-8bb0-2891-d314-286d4ede305b@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fffa4fdc-8bb0-2891-d314-286d4ede305b@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSPrj49PhzDvxG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 11:42:13 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAT0cUhV128548
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 19:42:11 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 270tu467c1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 19:42:11 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Mon, 28 Nov 2016 17:42:10 -0700
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH v2 05/14] cxlflash: Remove unused buffer from AFU command
+Date: Mon, 28 Nov 2016 18:42:01 -0600
+In-Reply-To: <1480379984-60114-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+References: <1480379984-60114-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1480380121-60346-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,50 +42,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Balbir.
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 
-On Tue, Nov 29, 2016 at 11:09:26AM +1100, Balbir Singh wrote:
-> On 29/11/16 08:10, Tejun Heo wrote:
-> > On Thu, Nov 24, 2016 at 12:05:12AM +1100, Balbir Singh wrote:
-> >> On my desktop NODES_SHIFT is 6, many distro kernels have it a 9. I've known
-> >> of solutions that use fake NUMA for partitioning and need as many nodes as
-> >> possible.
-> > 
-> > It was a crude kludge that people used before memcg.  If people still
-> > use it, that's fine but we don't want to optimize / make code
-> > complicated for it, so let's please put away this part of
-> > justification.
-> 
-> Are you suggesting those use cases can be ignored now?
+The cxlflash driver originally required a per-command 4K buffer that
+hosted data passed to the AFU. When the routines that initiate AFU
+and internal SCSI commands were refactored to use scsi_execute(), the
+need for this buffer became obsolete. As it is no longer necessary,
+the buffer is removed.
 
-Don't do that.  When did I say that?  What I said is that it isn't a
-good idea to optimize and complicate the code base for it at this
-point.  It shouldn't a controversial argument given fake numa's
-inherent issues and general lack of popularity.
+Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+---
+ drivers/scsi/cxlflash/common.h |  1 -
+ drivers/scsi/cxlflash/main.c   | 28 ++--------------------------
+ 2 files changed, 2 insertions(+), 27 deletions(-)
 
-Besides, does node hotplug even apply to fake numa?  ISTR it being
-configured statically on the boot prompt.
-
-> > NUMA code already has possible detection.  Why not simply make memcg
-> > use those instead of MAX_NUMNODES like how we use nr_cpu_ids instead
-> > of NR_CPUS?
-> 
-> nodes_possible_map is set to node_online_map at the moment for ppc64.
-> Which becomes a problem when hotplugging a node that was not already
-> online.
-> 
-> I am not sure what you mean by possible detection. node_possible_map
-> is set based on CONFIG_NODE_SHIFT and then can be adjusted by the
-> architecture (if desired). Are you suggesting firmware populate it
-> in?
-
-That's what we do with cpus.  The kernel is built with high maximum
-limit and the kernel queries the firmware during boot to determine how
-many are actually possible on the system, which in most cases isn't
-too far from what's already on the system.  I don't see why we would
-take a different approach with NUMA nodes.
-
-Thanks.
-
+diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
+index ef2943d..4525514 100644
+--- a/drivers/scsi/cxlflash/common.h
++++ b/drivers/scsi/cxlflash/common.h
+@@ -134,7 +134,6 @@ struct afu_cmd {
+ 	struct sisl_ioasa sa;	/* IOASA must follow IOARCB */
+ 	spinlock_t slock;
+ 	struct completion cevent;
+-	char *buf;		/* per command buffer */
+ 	struct afu *parent;
+ 	int slot;
+ 	atomic_t free;
+diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+index 1292a74..9f2821d 100644
+--- a/drivers/scsi/cxlflash/main.c
++++ b/drivers/scsi/cxlflash/main.c
+@@ -41,8 +41,7 @@ MODULE_LICENSE("GPL");
+  * Commands are checked out in a round-robin fashion. Note that since
+  * the command pool is larger than the hardware queue, the majority of
+  * times we will only loop once or twice before getting a command. The
+- * buffer and CDB within the command are initialized (zeroed) prior to
+- * returning.
++ * CDB within the command is initialized (zeroed) prior to returning.
+  *
+  * Return: The checked out command or NULL when command pool is empty.
+  */
+@@ -59,7 +58,6 @@ static struct afu_cmd *cmd_checkout(struct afu *afu)
+ 		if (!atomic_dec_if_positive(&cmd->free)) {
+ 			pr_devel("%s: returning found index=%d cmd=%p\n",
+ 				 __func__, cmd->slot, cmd);
+-			memset(cmd->buf, 0, CMD_BUFSIZE);
+ 			memset(cmd->rcb.cdb, 0, sizeof(cmd->rcb.cdb));
+ 			return cmd;
+ 		}
+@@ -590,17 +588,9 @@ static void cxlflash_wait_for_pci_err_recovery(struct cxlflash_cfg *cfg)
+  */
+ static void free_mem(struct cxlflash_cfg *cfg)
+ {
+-	int i;
+-	char *buf = NULL;
+ 	struct afu *afu = cfg->afu;
+ 
+ 	if (cfg->afu) {
+-		for (i = 0; i < CXLFLASH_NUM_CMDS; i++) {
+-			buf = afu->cmd[i].buf;
+-			if (!((u64)buf & (PAGE_SIZE - 1)))
+-				free_page((ulong)buf);
+-		}
+-
+ 		free_pages((ulong)afu, get_order(sizeof(struct afu)));
+ 		cfg->afu = NULL;
+ 	}
+@@ -849,7 +839,6 @@ static int alloc_mem(struct cxlflash_cfg *cfg)
+ {
+ 	int rc = 0;
+ 	int i;
+-	char *buf = NULL;
+ 	struct device *dev = &cfg->dev->dev;
+ 
+ 	/* AFU is ~12k, i.e. only one 64k page or up to four 4k pages */
+@@ -864,20 +853,7 @@ static int alloc_mem(struct cxlflash_cfg *cfg)
+ 	cfg->afu->parent = cfg;
+ 	cfg->afu->afu_map = NULL;
+ 
+-	for (i = 0; i < CXLFLASH_NUM_CMDS; buf += CMD_BUFSIZE, i++) {
+-		if (!((u64)buf & (PAGE_SIZE - 1))) {
+-			buf = (void *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
+-			if (unlikely(!buf)) {
+-				dev_err(dev,
+-					"%s: Allocate command buffers fail!\n",
+-				       __func__);
+-				rc = -ENOMEM;
+-				free_mem(cfg);
+-				goto out;
+-			}
+-		}
+-
+-		cfg->afu->cmd[i].buf = buf;
++	for (i = 0; i < CXLFLASH_NUM_CMDS; i++) {
+ 		atomic_set(&cfg->afu->cmd[i].free, 1);
+ 		cfg->afu->cmd[i].slot = i;
+ 	}
 -- 
-tejun
+2.1.0
