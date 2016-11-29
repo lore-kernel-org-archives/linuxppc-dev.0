@@ -1,25 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tShLs6N3hzDvvn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 22:35:49 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id e9so16142075pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 03:35:49 -0800 (PST)
-Subject: Re: [PATCH v7 2/7] powerpc/mm/hugetlb: Handle hugepage size supported
- by hash config
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <20161128061704.4914-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161128061704.4914-3-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <4dac81ab-b4cc-c2ea-d406-ef6045ea31c8@gmail.com>
-Date: Tue, 29 Nov 2016 22:35:40 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tShrh5KTszDsyH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 22:58:11 +1100 (AEDT)
+Date: Tue, 29 Nov 2016 12:58:00 +0100
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: Chris Packham <chris.packham@alliedtelesis.co.nz>
+Cc: linux-edac@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Johannes Thumshirn <morbidrsa@gmail.com>, Borislav Petkov <bp@alien8.de>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] EDAC: mpc85xx: Add T2080 l2-cache support
+Message-ID: <20161129115800.2v5eshxkpec66vkb@linux-x5ow.site>
+References: <20161129022038.24737-1-chris.packham@alliedtelesis.co.nz>
 MIME-Version: 1.0
-In-Reply-To: <20161128061704.4914-3-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20161129022038.24737-1-chris.packham@alliedtelesis.co.nz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 28/11/16 17:16, Aneesh Kumar K.V wrote:
-> W.r.t hash page table config, we support 16MB and 16GB as the hugepage
-> size. Update the hstate_get_psize to handle 16M and 16G.
+On Tue, Nov 29, 2016 at 03:20:37PM +1300, Chris Packham wrote:
+> The l2-cache controller on the T2080 SoC has similar capabilities to the
+> others already supported by the mpc85xx_edac driver. Add it to the list
+> of compatible devices.
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
 > ---
->  arch/powerpc/include/asm/book3s/64/hugetlb.h | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> index 499268045306..d9c283f95e05 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> @@ -21,6 +21,10 @@ static inline int hstate_get_psize(struct hstate *hstate)
->  		return MMU_PAGE_2M;
->  	else if (shift == mmu_psize_defs[MMU_PAGE_1G].shift)
->  		return MMU_PAGE_1G;
-> +	else if (shift == mmu_psize_defs[MMU_PAGE_16M].shift)
-> +		return MMU_PAGE_16M;
-> +	else if (shift == mmu_psize_defs[MMU_PAGE_16G].shift)
-> +		return MMU_PAGE_16G;
 
-Could we reorder this
+Looks good,
+Acked-by: Johannes Thumshirn <jth@kernel.org>
 
-We check for 2M, 1G, 16M and 16G. The likely sizes are
-2M and 16M. Can we have those upfront so that the order of checks
-is 2M, 16M, 1G and 16G
-
-Balbir
+-- 
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
