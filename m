@@ -2,18 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSjvx3Ht5zDvqn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 23:46:05 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, dyoung@redhat.com,
- stewart@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com
-Subject: [PATCH v11 8/8] powerpc: Enable CONFIG_KEXEC_FILE in powerpc server
- defconfigs.
-Date: Tue, 29 Nov 2016 23:45:54 +1100
-Message-Id: <1480423554-6411-9-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1480423554-6411-1-git-send-email-mpe@ellerman.id.au>
-References: <1480423554-6411-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSk9v51j1zDvph
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 23:58:11 +1100 (AEDT)
+In-Reply-To: <20161123130209.1667-2-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
+Subject: Re: [1/3] powerpc/64e: convert cmpi to cmpwi in head_64.S
+Message-Id: <3tSk9v3tzcz9t1C@ozlabs.org>
+Date: Tue, 29 Nov 2016 23:58:11 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,80 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+On Wed, 2016-11-23 at 13:02:07 UTC, Nicholas Piggin wrote:
+> >From 80f23935cadb ("powerpc: Convert cmp to cmpd in idle enter sequence"):
+> 
+>     PowerPC's "cmp" instruction has four operands. Normally people write
+>     "cmpw" or "cmpd" for the second cmp operand 0 or 1. But, frequently
+>     people forget, and write "cmp" with just three operands.
+> 
+>     With older binutils this is silently accepted as if this was "cmpw",
+>     while often "cmpd" is wanted. With newer binutils GAS will complain
+>     about this for 64-bit code. For 32-bit code it still silently assumes
+>     "cmpw" is what is meant.
+> 
+>     In this instance the code comes directly from ISA v2.07, including the
+>     cmp, but cmpd is correct. Backport to stable so that new toolchains can
+>     build old kernels.
+> 
+> In this case, cmpwi is called for, so this is just a build fix for
+> new toolchians.
+> 
+> Stable: v3.0
+> Cc: Segher Boessenkool <segher@kernel.crashing.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Enable CONFIG_KEXEC_FILE in powernv_defconfig, ppc64_defconfig and
-pseries_defconfig.
+Applied to powerpc next, thanks.
 
-It depends on CONFIG_CRYPTO_SHA256=y, so add that as well.
+https://git.kernel.org/powerpc/c/f87f253bac3ce4a4eb2a60a1ae604d
 
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/configs/powernv_defconfig | 2 ++
- arch/powerpc/configs/ppc64_defconfig   | 2 ++
- arch/powerpc/configs/pseries_defconfig | 2 ++
- 3 files changed, 6 insertions(+)
-
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index d98b6eb3254f..5a190aa5534b 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -49,6 +49,7 @@ CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_HOTPLUG_CPU=y
- CONFIG_KEXEC=y
-+CONFIG_KEXEC_FILE=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_NUMA=y
- CONFIG_MEMORY_HOTPLUG=y
-@@ -301,6 +302,7 @@ CONFIG_CRYPTO_CCM=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
- CONFIG_CRYPTO_MICHAEL_MIC=m
-+CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 58a98d40086f..0059d2088b9c 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -46,6 +46,7 @@ CONFIG_HZ_100=y
- CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_KEXEC=y
-+CONFIG_KEXEC_FILE=y
- CONFIG_CRASH_DUMP=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_MEMORY_HOTREMOVE=y
-@@ -336,6 +337,7 @@ CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
- CONFIG_CRYPTO_MICHAEL_MIC=m
-+CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 8a3bc016b732..f022f657a984 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -52,6 +52,7 @@ CONFIG_HZ_100=y
- CONFIG_BINFMT_MISC=m
- CONFIG_PPC_TRANSACTIONAL_MEM=y
- CONFIG_KEXEC=y
-+CONFIG_KEXEC_FILE=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_MEMORY_HOTPLUG=y
- CONFIG_MEMORY_HOTREMOVE=y
-@@ -303,6 +304,7 @@ CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
- CONFIG_CRYPTO_MICHAEL_MIC=m
-+CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_TGR192=m
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
--- 
-2.7.4
+cheers
