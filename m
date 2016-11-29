@@ -1,16 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSk9z1RkTzDvph
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 23:58:15 +1100 (AEDT)
-In-Reply-To: <20161123130209.1667-4-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
-Subject: Re: [3/3] powerpc/64e: don't branch to dot symbols
-Message-Id: <3tSk9z0gm5z9t2C@ozlabs.org>
-Date: Tue, 29 Nov 2016 23:58:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSmdD5SZNzDvrZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 01:48:32 +1100 (AEDT)
+Date: Tue, 29 Nov 2016 08:48:26 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, clsoto@us.ibm.com,
+ benh@kernel.crashing.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH v4 3/7] PCI: Separate VF BAR updates from standard BAR
+ updates
+Message-ID: <20161129144826.GB7285@bhelgaas-glaptop.roam.corp.google.com>
+References: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20161129041506.21453.18478.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20161129045546.GB20642@gwshan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161129045546.GB20642@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,14 +28,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-23 at 13:02:09 UTC, Nicholas Piggin wrote:
-> This converts one that was missed by b1576fec7f4d ("powerpc: No need
-> to use dot symbols when branching to a function").
+On Tue, Nov 29, 2016 at 03:55:46PM +1100, Gavin Shan wrote:
+> On Mon, Nov 28, 2016 at 10:15:06PM -0600, Bjorn Helgaas wrote:
+> >Previously pci_update_resource() used the same code path for updating
+> >standard BARs and VF BARs in SR-IOV capabilities.
+> >
+> >Split the VF BAR update into a new pci_iov_update_resource() internal
+> >interface, which makes it simpler to compute the BAR address (we can get
+> >rid of pci_resource_bar() and pci_iov_resource_bar()).
+> >
+> >This patch:
+> >
+> >  - Renames pci_update_resource() to pci_std_update_resource(),
+> >  - Adds pci_iov_update_resource(),
+> >  - Makes pci_update_resource() a wrapper that calls the appropriate one,
+> >
+> >No functional change intended.
+> >
+> >Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> With below minor comments fixed:
+> 
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> 
+> >---
+> > drivers/pci/iov.c       |   49 +++++++++++++++++++++++++++++++++++++++++++++++
+> > drivers/pci/pci.h       |    1 +
+> > drivers/pci/setup-res.c |   13 +++++++++++-
+> > 3 files changed, 61 insertions(+), 2 deletions(-)
+> >
+> >diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+> >index d41ec29..d00ed5c 100644
+> >--- a/drivers/pci/iov.c
+> >+++ b/drivers/pci/iov.c
+> >@@ -571,6 +571,55 @@ int pci_iov_resource_bar(struct pci_dev *dev, int resno)
+> > 		4 * (resno - PCI_IOV_RESOURCES);
+> > }
+> >
+> >+/**
+> >+ * pci_iov_update_resource - update a VF BAR
+> >+ * @dev: the PCI device
+> >+ * @resno: the resource number
+> >+ *
+> >+ * Update a VF BAR in the SR-IOV capability of a PF.
+> >+ */
+> >+void pci_iov_update_resource(struct pci_dev *dev, int resno)
+> >+{
+> >+	struct pci_sriov *iov = dev->is_physfn ? dev->sriov : NULL;
+> >+	struct resource *res = dev->resource + resno;
+> >+	int vf_bar = resno - PCI_IOV_RESOURCES;
+> >+	struct pci_bus_region region;
+> >+	u32 new;
+> >+	int reg;
+> >+
+> >+	/*
+> >+	 * The generic pci_restore_bars() path calls this for all devices,
+> >+	 * including VFs and non-SR-IOV devices.  If this is not a PF, we
+> >+	 * have nothing to do.
+> >+	 */
+> >+	if (!iov)
+> >+		return;
+> >+
+> >+	/*
+> >+	 * Ignore unimplemented BARs, unused resource slots for 64-bit
+> >+	 * BARs, and non-movable resources, e.g., those described via
+> >+	 * Enhanced Allocation.
+> >+	 */
+> >+	if (!res->flags)
+> >+		return;
+> >+
+> >+	if (res->flags & IORESOURCE_UNSET)
+> >+		return;
+> >+
+> >+	if (res->flags & IORESOURCE_PCI_FIXED)
+> >+		return;
+> >+
+> >+	pcibios_resource_to_bus(dev->bus, &region, res);
+> >+	new = region.start;
+> >+
+> 
+> The bits indicating the BAR's property (e.g. memory, IO etc) are missed in @new.
 
-Applied to powerpc next, thanks.
+Hmm, yes.  I omitted those because those bits are supposed to be
+read-only, per spec (PCI r3.0, sec 6.2.5.1).  But I guess it would be
+more conservative to keep them, and this shouldn't be needlessly
+different from pci_std_update_resource().
 
-https://git.kernel.org/powerpc/c/ae88f7b9af17a1267f5dd5b87a4487
+However, I don't think this code in pci_update_resource() is obviously
+correct:
 
-cheers
+  new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
+
+PCI_REGION_FLAG_MASK is 0xf.  For memory BARs, bits 0-3 are read-only
+property bits.  For I/O BARs, bits 0-1 are read-only and bits 2-3 are
+part of the address, so on the face of it, the above could corrupt two
+bits of an I/O address.
+
+It's true that decode_bar() initializes flags correctly, using
+PCI_BASE_ADDRESS_IO_MASK for I/O BARs and PCI_BASE_ADDRESS_MEM_MASK
+for memory BARs, but it would take a little more digging to be sure
+that we never set bits 2-3 of flags for an I/O resource elsewhere.
+
+How about this in pci_std_update_resource():
+
+        pcibios_resource_to_bus(dev->bus, &region, res);
+        new = region.start;
+
+        if (res->flags & IORESOURCE_IO) {
+                mask = (u32)PCI_BASE_ADDRESS_IO_MASK;
+                new |= res->flags & ~PCI_BASE_ADDRESS_IO_MASK;
+        } else {
+                mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
+                new |= res->flags & ~PCI_BASE_ADDRESS_MEM_MASK;
+        }
+
+and this in pci_iov_update_resource():
+
+        pcibios_resource_to_bus(dev->bus, &region, res);
+        new = region.start;
+        new |= res->flags & ~PCI_BASE_ADDRESS_MEM_MASK;
+
+It shouldn't fix anything, but I think it is more obvious that we
+can't corrupt bits 2-3 of an I/O BAR.
+
+> >+	reg = iov->pos + PCI_SRIOV_BAR + 4 * vf_bar;
+> >+	pci_write_config_dword(dev, reg, new);
+> >+	if (res->flags & IORESOURCE_MEM_64) {
+> >+		new = region.start >> 16 >> 16;
+> 
+> I think it was copied from pci_update_resource(). Why we can't just have "new = region.start >> 32"? 
+
+Right; I did copy this from pci_update_resource().  The changelog from
+cf7bee5a0bf2 ("[PATCH] Fix restore of 64-bit PCI BAR's") says "Also
+make sure to write high bits - use "x >> 16 >> 16" (rather than the
+simpler ">> 32") to avoid warnings on 32-bit architectures where we're
+not going to have any high bits."
+
+I didn't take the time to revalidate whether that's still applicable.
+
+> >+void pci_update_resource(struct pci_dev *dev, int resno)
+> >+{
+> >+	if (resno <= PCI_ROM_RESOURCE)
+> >+		pci_std_update_resource(dev, resno);
+> >+#ifdef CONFIG_PCI_IOV
+> >+	else if (resno >= PCI_IOV_RESOURCES && resno < PCI_IOV_RESOURCE_END)
+> 
+> The last BAR is missed:
+> 
+> 	else if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
+
+Ah, right, thanks!
+
+> >+		pci_iov_update_resource(dev, resno);
