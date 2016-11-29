@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSk9y2nLvzDvph
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 23:58:14 +1100 (AEDT)
-In-Reply-To: <20161128061704.4914-2-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSk9z1RkTzDvph
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 23:58:15 +1100 (AEDT)
+In-Reply-To: <20161123130209.1667-4-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [v7,1/7] powerpc/mm: Rename hugetlb-radix.h to hugetlb.h
-Message-Id: <3tSk9y1hBbz9t1C@ozlabs.org>
-Date: Tue, 29 Nov 2016 23:58:13 +1100 (AEDT)
+Cc: Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
+Subject: Re: [3/3] powerpc/64e: don't branch to dot symbols
+Message-Id: <3tSk9z0gm5z9t2C@ozlabs.org>
+Date: Tue, 29 Nov 2016 23:58:15 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,13 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-11-28 at 06:16:58 UTC, "Aneesh Kumar K.V" wrote:
-> We will start moving some book3s specific hugetlb functions there.
+On Wed, 2016-11-23 at 13:02:09 UTC, Nicholas Piggin wrote:
+> This converts one that was missed by b1576fec7f4d ("powerpc: No need
+> to use dot symbols when branching to a function").
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bee8b3b56d1dfc4075254a61340ee3
+https://git.kernel.org/powerpc/c/ae88f7b9af17a1267f5dd5b87a4487
 
 cheers
