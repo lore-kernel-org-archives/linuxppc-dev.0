@@ -1,22 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSW2T1kP6zDw6h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:36:01 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/4] powerpc/perf: PowerISA v3.0 raw event format
- encoding
-In-Reply-To: <1480296076-28880-4-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1480296076-28880-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1480296076-28880-4-git-send-email-maddy@linux.vnet.ibm.com>
-Date: Tue, 29 Nov 2016 15:36:00 +1100
-Message-ID: <87bmwyrjgv.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSW6z4dK9zDt1Y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:39:55 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id c4so7523287pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 20:39:55 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/4] Try orphan section warning again
+Date: Tue, 29 Nov 2016 15:39:38 +1100
+Message-Id: <20161129043942.13848-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+Hi,
 
-> Patch to update the PowerISA v3.0 raw event encoding format
-> information and add support for the same in Power9-pmu.c.
+The orphan section warning patch had a minor issue with unhandled
+.text.save.restore last time I sent it. I went back and tidied up
+crtsavres a bit, so after these, I think we can enable orphan section
+warnings.
 
-I'm not sure if calling this the "PowerISA v3.0" encoding is right. It's
-not actually specified in the ISA anywhere right?
+There is a further step we can take which is to enable
+--save-restore-funcs for module link, which means 64-bit does not
+need crtsavres at all. That option is only in binutils 2.25 though,
+so I'll send that later.
 
-Maybe it should just be the "P9 encoding" ?
+Thanks,
+Nick
 
-Though admittedly that is slightly confusing because P9 DD1 doesn't
-implement it.
+Nicholas Piggin (4):
+  powerpc/64: place sfpr section explicitly with the linker script
+  powerpc/64: do not link crtsavres routines into vmlinux
+  powerpc/64: do not create new section for save/restore functions
+  powerpc: link warning for orphan sections
 
-cheers
+ arch/powerpc/Makefile             |  1 +
+ arch/powerpc/kernel/vmlinux.lds.S | 24 ++++++++++++++++++++++--
+ arch/powerpc/lib/Makefile         |  8 ++++++--
+ arch/powerpc/lib/crtsavres.S      |  6 ++----
+ include/asm-generic/vmlinux.lds.h | 11 +++++++++++
+ 5 files changed, 42 insertions(+), 8 deletions(-)
+
+-- 
+2.10.2
