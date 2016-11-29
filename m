@@ -1,23 +1,26 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSf522HBHzDvkB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 20:53:42 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id y68so8056102pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 01:53:42 -0800 (PST)
-Date: Tue, 29 Nov 2016 20:53:29 +1100
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/8xx: xmon compile fix
-Message-ID: <20161129205329.7ba39d19@roar.ozlabs.ibm.com>
-In-Reply-To: <cc525418-2763-6346-0106-325f81e6444c@c-s.fr>
-References: <20161129085654.1967-1-npiggin@gmail.com>
- <cc525418-2763-6346-0106-325f81e6444c@c-s.fr>
+Return-Path: <bsingharora@gmail.com>
+Subject: Re: [PATCH v3 1/3] powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>
+References: <cover.1478760806.git.ego@linux.vnet.ibm.com>
+ <e3af60739710139801505562b4f09d59a1786f65.1478760806.git.ego@linux.vnet.ibm.com>
+Cc: "\"linuxppc-dev"@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, "skiboot\""@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <de9bf0bb-d188-86f5-86b1-b5931e587b63@gmail.com>
+Date: Tue, 29 Nov 2016 21:42:20 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <e3af60739710139801505562b4f09d59a1786f65.1478760806.git.ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 29 Nov 2016 10:06:43 +0100
-Christophe LEROY <christophe.leroy@c-s.fr> wrote:
 
-> Le 29/11/2016 à 09:56, Nicholas Piggin a écrit :
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/xmon/xmon.c | 5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> > index 7605455..435f5f5 100644
-> > --- a/arch/powerpc/xmon/xmon.c
-> > +++ b/arch/powerpc/xmon/xmon.c
-> > @@ -1213,10 +1213,13 @@ bpt_cmds(void)
-> >  {
-> >  	int cmd;
-> >  	unsigned long a;
-> > -	int mode, i;
-> > +	int i;
-> >  	struct bpt *bp;
-> > +#ifndef CONFIG_8xx  
+
+On 10/11/16 18:54, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> CONFIG_8xx is deprecated (ref arch/powerpc/platforms/Kconfig.cputype).
-> CONFIG_PPC_8xx should be used instead.
-
-Thanks for picking that up. Michael, can you adjust it if you merge
-please?
-
+> Currently all the low-power idle states are expected to wake up
+> at reset vector 0x100. Which is why the macro IDLE_STATE_ENTER_SEQ
+> that puts the CPU to an idle state and never returns.
 > 
-> > +	int mode;  
+> On ISA_300, when the ESL and EC bits in the PSSCR are zero, the
+> CPU is expected to wake up at the next instruction of the idle
+> instruction.
 > 
-> You could also have moved this declaration inside the switch {, 
-> something like
+> This patch adds a new macro named IDLE_STATE_ENTER_SEQ_NORET for the
 
-I tried that, couldn't decide that it was better (you also need badaddr).
+I think something like IDLE_STATE_ENTER_SEQ_LOSE_CTX would be better?
 
-Thanks,
-Nick
+> no-return variant and reuses the name IDLE_STATE_ENTER_SEQ
+> for a variant that allows resuming operation at the instruction next
+> to the idle-instruction.
+> 
+<snip>
+> +
+> +#define	IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)			\
+> +	IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
+
+So we start off with both as the same?
+
+>  	b	.
+>  #endif /* CONFIG_PPC_P7_NAP */
+<snip>
+Balbir
