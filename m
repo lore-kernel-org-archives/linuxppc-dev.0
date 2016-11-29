@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSW796dcBzDwFY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:40:05 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id x23so15098176pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 20:40:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSW7F127tzDwCG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:40:09 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id i88so7507516pfk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 20:40:09 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Nicholas Piggin <npiggin@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/4] powerpc/64: do not create new section for save/restore
- functions
-Date: Tue, 29 Nov 2016 15:39:41 +1100
-Message-Id: <20161129043942.13848-4-npiggin@gmail.com>
+Subject: [PATCH 4/4] powerpc: link warning for orphan sections
+Date: Tue, 29 Nov 2016 15:39:42 +1100
+Message-Id: <20161129043942.13848-5-npiggin@gmail.com>
 In-Reply-To: <20161129043942.13848-1-npiggin@gmail.com>
 References: <20161129043942.13848-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,39 +25,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no need to create a new section for these. Consolidate
-with 32-bit and just use .text.
+Add --orphan-handling=warn to final link flags. This ensures we can
+handle all sections explicitly. This would have caught subtle breakage
+such as 7de3b27bac47da9de08409df1d69664acbb72197 at build-time.
+
+Also bring some wayward sections into the fold:
+- .text.hot and .text.unlikely are compiler generated sections.
+- .sdata2, .dynsbss, .plt are used by PPC32
+- We previously did not specify DWARF_DEBUG or STABS_DEBUG
+- DWARF_DEBUG did not include all DWARF sections that can be emitted
+- A number of sections are unused.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/lib/crtsavres.S | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/lib/crtsavres.S b/arch/powerpc/lib/crtsavres.S
-index 18af0b3..7e5e1c2 100644
---- a/arch/powerpc/lib/crtsavres.S
-+++ b/arch/powerpc/lib/crtsavres.S
-@@ -44,10 +44,10 @@
+I don't know if I've exactly got everything right here, particularly
+with ppc32, so would appreciate people casting their eye over it.
+
+ arch/powerpc/Makefile             |  1 +
+ arch/powerpc/kernel/vmlinux.lds.S | 16 ++++++++++++++--
+ include/asm-generic/vmlinux.lds.h | 11 +++++++++++
+ 3 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 9fbc1c8..6a9f319 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -102,6 +102,7 @@ endif
+ LDFLAGS_vmlinux-y := -Bstatic
+ LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
+ LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
++LDFLAGS_vmlinux += $(call ld-option,--orphan-handling=warn)
  
- #ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+ ifeq ($(CONFIG_PPC64),y)
+ ifeq ($(call cc-option-yn,-mcmodel=medium),y)
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index f710d15..6bd42d3 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -86,7 +86,7 @@ SECTIONS
+ 		ALIGN_FUNCTION();
+ #endif
+ 		/* careful! __ftr_alt_* sections need to be close to .text */
+-		*(.text .fixup __ftr_alt_* .ref.text)
++		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
+ 		SCHED_TEXT
+ 		CPUIDLE_TEXT
+ 		LOCK_TEXT
+@@ -253,7 +253,9 @@ SECTIONS
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		DATA_DATA
+ 		*(.sdata)
++		*(.sdata2)
+ 		*(.got.plt) *(.got)
++		*(.plt)
+ 	}
+ #else
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+@@ -314,6 +316,16 @@ SECTIONS
+ 	_end = . ;
+ 	PROVIDE32 (end = .);
  
--#ifndef CONFIG_PPC64
--
- 	.section ".text"
- 
-+#ifndef CONFIG_PPC64
+-	/* Sections to be discarded. */
++	STABS_DEBUG
 +
- /* Routines for saving integer registers, called by the compiler.  */
- /* Called with r11 pointing to the stack header word of the caller of the */
- /* function, just beyond the end of the integer save area.  */
-@@ -314,8 +314,6 @@ _GLOBAL(_restvr_31)
++	DWARF_DEBUG
++
+ 	DISCARDS
++	/DISCARD/ : {
++		*(*.EMB.apuinfo)
++		*(.glink .iplt .plt .rela* .comment)
++		*(.gnu.version*)
++		*(.gnu.attributes)
++		*(.eh_frame)
++	}
+ }
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 31e1d63..6d5d35f 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -595,6 +595,7 @@
+ #define SBSS(sbss_align)						\
+ 	. = ALIGN(sbss_align);						\
+ 	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
++		*(.dynsbss)						\
+ 		*(.sbss)						\
+ 		*(.scommon)						\
+ 	}
+@@ -641,11 +642,21 @@
+ 		.debug_str      0 : { *(.debug_str) }			\
+ 		.debug_loc      0 : { *(.debug_loc) }			\
+ 		.debug_macinfo  0 : { *(.debug_macinfo) }		\
++		.debug_pubtypes 0 : { *(.debug_pubtypes) }		\
++		/* DWARF 3 */						\
++		.debug_ranges	0 : { *(.debug_ranges) }		\
+ 		/* SGI/MIPS DWARF 2 extensions */			\
+ 		.debug_weaknames 0 : { *(.debug_weaknames) }		\
+ 		.debug_funcnames 0 : { *(.debug_funcnames) }		\
+ 		.debug_typenames 0 : { *(.debug_typenames) }		\
+ 		.debug_varnames  0 : { *(.debug_varnames) }		\
++		/* GNU DWARF 2 extensions */				\
++		.debug_gnu_pubnames 0 : { *(.debug_gnu_pubnames) }	\
++		.debug_gnu_pubtypes 0 : { *(.debug_gnu_pubtypes) }	\
++		/* DWARF 4 */						\
++		.debug_types	0 : { *(.debug_types) }			\
++		/* DWARF 5 */						\
++		.debug_addr	0 : { *(.debug_addr) }
  
- #else /* CONFIG_PPC64 */
- 
--	.section ".text.save.restore","ax",@progbits
--
- .globl	_savegpr0_14
- _savegpr0_14:
- 	std	r14,-144(r1)
+ 		/* Stabs debugging sections.  */
+ #define STABS_DEBUG							\
 -- 
 2.10.2
