@@ -1,15 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSk9x07jqzDvph
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 23:58:13 +1100 (AEDT)
-In-Reply-To: <1479723275-11736-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSk9y2nLvzDvph
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 23:58:14 +1100 (AEDT)
+In-Reply-To: <20161128061704.4914-2-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] powerpc: Stop passing ARCH=ppc64 to boot Makefile
-Message-Id: <3tSk9w5k4gz9t1b@ozlabs.org>
-Date: Tue, 29 Nov 2016 23:58:12 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [v7,1/7] powerpc/mm: Rename hugetlb-radix.h to hugetlb.h
+Message-Id: <3tSk9y1hBbz9t1C@ozlabs.org>
+Date: Tue, 29 Nov 2016 23:58:13 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,41 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-11-21 at 10:14:33 UTC, Michael Ellerman wrote:
-> Back in 2005 when the ppc/ppc64 merge started, we used to build the
-> kernel code in arch/powerpc but use the boot code from arch/ppc or
-> arch/ppc64 depending on whether we were building for 32 or 64-bit.
+On Mon, 2016-11-28 at 06:16:58 UTC, "Aneesh Kumar K.V" wrote:
+> We will start moving some book3s specific hugetlb functions there.
 > 
-> Originally we called the boot Makefile passing ARCH=$(OLDARCH), where
-> OLDARCH was ppc or ppc64.
-> 
-> In commit 20f629549b30 ("powerpc: Make building the boot image work for
-> both 32-bit and 64-bit") (2005-10-11) we split the call for 32/64-bit
-> using an ifeq check, because the two Makefiles took different targets,
-> and explicitly passed ARCH=ppc64 for the 64-bit case and ARCH=ppc for
-> the 32-bit case.
-> 
-> Then in commit 94b212c29f68 ("powerpc: Move ppc64 boot wrapper code over
-> to arch/powerpc") (2005-11-16) we moved the boot code into arch/powerpc
-> and dropped the ppc case, but kept passing ARCH=ppc64 to
-> arch/powerpc/boot/Makefile.
-> 
-> Since then there have been several more boot targets added, all of which
-> have copied the ARCH=ppc64 setting, such that now we have four targets
-> using it.
-> 
-> Currently it seems that nothing actually uses the ARCH value, but that's
-> basically just luck, and in particular it prevents us from using the
-> generic cpp_lds_S rule. It's also clearly wrong, ARCH=ppc64 is dead,
-> buried and cremated.
-> 
-> Fix it by dropping the setting of ARCH completely, the correct value is
-> exported by the top level Makefile.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Series applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1196d7aaebf6cdad619310fe283422
+https://git.kernel.org/powerpc/c/bee8b3b56d1dfc4075254a61340ee3
 
 cheers
