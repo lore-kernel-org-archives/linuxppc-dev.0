@@ -1,23 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSTrq06DCzDvgt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 14:42:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- Alan Modra <amodra@gmail.com>, Nick Clifton <nickc@redhat.com>,
- gustavold@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/boot: request no dynamic linker for boot wrapper
-In-Reply-To: <20161128230724.375227b4@roar.ozlabs.ibm.com>
-References: <20161128014226.7656-1-npiggin@gmail.com>
- <87shqbrhfo.fsf@concordia.ellerman.id.au>
- <20161128230724.375227b4@roar.ozlabs.ibm.com>
-Date: Tue, 29 Nov 2016 14:42:34 +1100
-Message-ID: <87fumbq7dh.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSV084YW0zDvsy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 14:48:56 +1100 (AEDT)
+Date: Mon, 28 Nov 2016 21:48:31 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ clsoto@us.ibm.com
+Subject: Re: [PATCH v3 0/2] Disable VF's memory space on updating IOV BARs
+Message-ID: <20161129034831.GP16033@bhelgaas-glaptop.roam.corp.google.com>
+References: <1477444536-29612-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20161123234910.GN16033@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161123234910.GN16033@bhelgaas-glaptop.roam.corp.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> On Mon, 28 Nov 2016 22:07:39 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Nicholas Piggin <npiggin@gmail.com> writes:
->> > diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
->> > index 404b3aa..cd941a8 100755
->> > --- a/arch/powerpc/boot/wrapper
->> > +++ b/arch/powerpc/boot/wrapper
->> > @@ -181,6 +181,13 @@ case "$elfformat" in
->> >      elf32-powerpc)	format=elf32ppc	;;
->> >  esac
->> >  
->> > +# Do not include PT_INTERP segment when linking pie. Non-pie linking
->> > +# just ignores this option.
->> > +LD_VERSION=$(${CROSS}ld --version | $srctree/scripts/ld-version.sh)
->> > +LD_NO_DL_MIN_VERSION=$(echo 2.26 | $srctree/scripts/ld-version.sh)
->> > +if [ "$LD_VERSION" -ge "$LD_NO_DL_MIN_VERSION" ] ; then
->> > +	nodl="--no-dynamic-linker"
->> > +fi  
->> 
->> Some distros (RHEL at least?), ship the wrapper as a standalone script.
->> So I don't think we can call things in $srctree. Or at least I don't
->> know how that's supposed to work when it's shipped standalone.
->> We're also basically reinventing ld-option, which is a PITA.
->
-> Okay I didn't realize that. It's already using mkuboot.sh, but only
-> for uboot targets... I don't know, I don't have any good ideas at the
-> moment.
+On Wed, Nov 23, 2016 at 05:49:10PM -0600, Bjorn Helgaas wrote:
+> On Wed, Oct 26, 2016 at 12:15:34PM +1100, Gavin Shan wrote:
+> > This moves pcibios_sriov_enable() to the point before VF and VF BARs
+> > are enabled on PowerNV platform. Also, pci_update_resource() is used
+> > to update IOV BARs on PowerNV platform, the PF might have been functional
+> > when the function is called. We shouldn't disable PF's memory decoding
+> > at that point. Instead, the VF's memory space should be disabled.
+> > 
+> > Changelog
+> > =========
+> > v3:
+> >   * Disable VF's memory space when IOV BARs are updated in
+> >     pcibios_sriov_enable().
+> > v2:
+> >   * Added one patch calling pcibios_sriov_enable() before the VF
+> >     and VF BARs are enabled.
+> > 
+> > Gavin Shan (2):
+> >   PCI: Call pcibios_sriov_enable() before IOV BARs are enabled
+> >   PCI: Disable VF's memory space on updating IOV BAR in
+> >     pci_update_resource()
+> > 
+> >  drivers/pci/iov.c       | 14 +++++++-------
+> >  drivers/pci/setup-res.c | 28 ++++++++++++++++++++--------
+> >  2 files changed, 27 insertions(+), 15 deletions(-)
+> 
+> I applied these to pci/virtualization for v4.10.  Thanks for your
+> patience, Gavin.
 
-That looks like a bug, but I guess no one runs Fedora/RHEL on those
-machines? Previously it just called mkimage using $PATH.
+This nagged at me over the holidays, and I think that if the VF has
+memory decoding enabled, it's wrong to allow a VF BAR to be updated,
+even if we temporarily disable memory decoding.
 
-The Fedora spec file does:
+If the VF is enabled, a driver may have claimed it, and that means the
+driver probably has ioremapped the BAR, and if we update the BAR, that
+ioremap is now stale.  The driver has no idea that anything changed.
 
-make DESTDIR=$RPM_BUILD_ROOT bootwrapper_install WRAPPER_OBJDIR=%{_libdir}/kernel-wrapper WRAPPER_DTSDIR=%{_libdir}/kernel-wrapper/dts
+Of course, we may know that pci_update_resource() is never called
+after a driver has claimed the VF, but I think it's much better to
+restructure the callers so the VF BAR updates happen *before* enabling
+the VFs, as you did in patch 1.
 
-bootwrapper_install installs a bunch of files, and also calls:
+Once we have that, there's no point in temporarily disabling memory
+decoding, so I worked up some patches to make the update fail.  I'll
+post those in a minute and you can see what you think.
 
-quiet_cmd_install_wrapper = INSTALL $(patsubst $(DESTDIR)$(WRAPPER_BINDIR)/%,%,$@)
-      cmd_install_wrapper = $(INSTALL)  -m0755 $(patsubst $(DESTDIR)$(WRAPPER_BINDIR)/%,$(srctree)/$(obj)/%,$@) $@ ;\
-				sed -i $@ -e 's%^object=.*%object=$(WRAPPER_OBJDIR)%' \
-					  -e 's%^objbin=.*%objbin=$(WRAPPER_BINDIR)%' \
-
-ie. it seds the script. So we could probably just install ld-version.sh
-into $(DESTDIR)$(WRAPPER_OBJDIR) and then sed $srctree maybe?
-
-But it's old code and I'm not that across how it gets used in the wild.
-CC'ing Gustavo who is our Fedora/RHEL/Power guy.
-
-cheers
+Bjorn
