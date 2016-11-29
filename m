@@ -1,22 +1,49 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tSWF93F0bzDwPm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:45:17 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/4] powerpc/perf: macros for PowerISA v3.0 format
- encoding
-In-Reply-To: <1480296076-28880-5-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1480296076-28880-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1480296076-28880-5-git-send-email-maddy@linux.vnet.ibm.com>
-Date: Tue, 29 Nov 2016 15:45:16 +1100
-Message-ID: <878ts2rj1f.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tSWRw6cpNzDwVf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:54:36 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAT4s8uq037585
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:54:34 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 270w68nh9m-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2016 23:54:34 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 29 Nov 2016 14:54:31 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 29A142BB0059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:54:28 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAT4sR2C52166864
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:54:27 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAT4sQlZ011456
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 15:54:27 +1100
+Date: Tue, 29 Nov 2016 15:55:46 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, clsoto@us.ibm.com,
+ benh@kernel.crashing.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH v4 3/7] PCI: Separate VF BAR updates from standard BAR
+ updates
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20161129041506.21453.18478.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161129041506.21453.18478.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Message-Id: <20161129045546.GB20642@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,99 +53,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+On Mon, Nov 28, 2016 at 10:15:06PM -0600, Bjorn Helgaas wrote:
+>Previously pci_update_resource() used the same code path for updating
+>standard BARs and VF BARs in SR-IOV capabilities.
+>
+>Split the VF BAR update into a new pci_iov_update_resource() internal
+>interface, which makes it simpler to compute the BAR address (we can get
+>rid of pci_resource_bar() and pci_iov_resource_bar()).
+>
+>This patch:
+>
+>  - Renames pci_update_resource() to pci_std_update_resource(),
+>  - Adds pci_iov_update_resource(),
+>  - Makes pci_update_resource() a wrapper that calls the appropriate one,
+>
+>No functional change intended.
+>
+>Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-> diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-> index 2a2040ea5f99..e747bbf06661 100644
-> --- a/arch/powerpc/perf/isa207-common.c
-> +++ b/arch/powerpc/perf/isa207-common.c
-> @@ -55,6 +55,81 @@ static inline bool event_is_fab_match(u64 event)
->  	return (event == 0x30056 || event == 0x4f052);
->  }
->  
-> +static bool is_event_valid(u64 event)
-> +{
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-> +		(cpu_has_feature(CPU_FTR_POWER9_DD1)) &&
+With below minor comments fixed:
 
-You don't need ARCH_300 in these checks.
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-POWER9_DD1 implies ARCH_300.
+>---
+> drivers/pci/iov.c       |   49 +++++++++++++++++++++++++++++++++++++++++++++++
+> drivers/pci/pci.h       |    1 +
+> drivers/pci/setup-res.c |   13 +++++++++++-
+> 3 files changed, 61 insertions(+), 2 deletions(-)
+>
+>diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>index d41ec29..d00ed5c 100644
+>--- a/drivers/pci/iov.c
+>+++ b/drivers/pci/iov.c
+>@@ -571,6 +571,55 @@ int pci_iov_resource_bar(struct pci_dev *dev, int resno)
+> 		4 * (resno - PCI_IOV_RESOURCES);
+> }
+>
+>+/**
+>+ * pci_iov_update_resource - update a VF BAR
+>+ * @dev: the PCI device
+>+ * @resno: the resource number
+>+ *
+>+ * Update a VF BAR in the SR-IOV capability of a PF.
+>+ */
+>+void pci_iov_update_resource(struct pci_dev *dev, int resno)
+>+{
+>+	struct pci_sriov *iov = dev->is_physfn ? dev->sriov : NULL;
+>+	struct resource *res = dev->resource + resno;
+>+	int vf_bar = resno - PCI_IOV_RESOURCES;
+>+	struct pci_bus_region region;
+>+	u32 new;
+>+	int reg;
+>+
+>+	/*
+>+	 * The generic pci_restore_bars() path calls this for all devices,
+>+	 * including VFs and non-SR-IOV devices.  If this is not a PF, we
+>+	 * have nothing to do.
+>+	 */
+>+	if (!iov)
+>+		return;
+>+
+>+	/*
+>+	 * Ignore unimplemented BARs, unused resource slots for 64-bit
+>+	 * BARs, and non-movable resources, e.g., those described via
+>+	 * Enhanced Allocation.
+>+	 */
+>+	if (!res->flags)
+>+		return;
+>+
+>+	if (res->flags & IORESOURCE_UNSET)
+>+		return;
+>+
+>+	if (res->flags & IORESOURCE_PCI_FIXED)
+>+		return;
+>+
+>+	pcibios_resource_to_bus(dev->bus, &region, res);
+>+	new = region.start;
+>+
 
-And the way you've written it you have two arms that use
-EVENT_VALID_MASK, which is confusing.
+The bits indicating the BAR's property (e.g. memory, IO etc) are missed in @new.
 
-> +		(event & ~EVENT_VALID_MASK))
-> +		return false;
-> +	else if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-> +		(event & ~ISA300_EVENT_VALID_MASK))
-> +		return false;
-> +	else if (event & ~EVENT_VALID_MASK)
-> +		return false;
-> +
-> +	return true;
-> +}
+>+	reg = iov->pos + PCI_SRIOV_BAR + 4 * vf_bar;
+>+	pci_write_config_dword(dev, reg, new);
+>+	if (res->flags & IORESOURCE_MEM_64) {
+>+		new = region.start >> 16 >> 16;
 
-I think it would read better as:
+I think it was copied from pci_update_resource(). Why we can't just have "new = region.start >> 32"? 
 
-	u64 valid_mask = EVENT_VALID_MASK;
-        
-	if (cpu_has_feature(CPU_FTR_ARCH_300) && !cpu_has_feature(CPU_FTR_POWER9_DD1))
-		valid_mask = ISA300_EVENT_VALID_MASK;
+>+		pci_write_config_dword(dev, reg + 4, new);
+>+	}
+>+}
+>+
+> resource_size_t __weak pcibios_iov_resource_alignment(struct pci_dev *dev,
+> 						      int resno)
+> {
+>diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+>index 4518562..5bfcb92 100644
+>--- a/drivers/pci/pci.h
+>+++ b/drivers/pci/pci.h
+>@@ -290,6 +290,7 @@ static inline void pci_restore_ats_state(struct pci_dev *dev)
+> int pci_iov_init(struct pci_dev *dev);
+> void pci_iov_release(struct pci_dev *dev);
+> int pci_iov_resource_bar(struct pci_dev *dev, int resno);
+>+void pci_iov_update_resource(struct pci_dev *dev, int resno);
+> resource_size_t pci_sriov_resource_alignment(struct pci_dev *dev, int resno);
+> void pci_restore_iov_state(struct pci_dev *dev);
+> int pci_iov_bus_range(struct pci_bus *bus);
+>diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+>index d2a32d8..ee0be34 100644
+>--- a/drivers/pci/setup-res.c
+>+++ b/drivers/pci/setup-res.c
+>@@ -25,8 +25,7 @@
+> #include <linux/slab.h>
+> #include "pci.h"
+>
+>-
+>-void pci_update_resource(struct pci_dev *dev, int resno)
+>+static void pci_std_update_resource(struct pci_dev *dev, int resno)
+> {
+> 	struct pci_bus_region region;
+> 	bool disable;
+>@@ -109,6 +108,16 @@ void pci_update_resource(struct pci_dev *dev, int resno)
+> 		pci_write_config_word(dev, PCI_COMMAND, cmd);
+> }
+>
+>+void pci_update_resource(struct pci_dev *dev, int resno)
+>+{
+>+	if (resno <= PCI_ROM_RESOURCE)
+>+		pci_std_update_resource(dev, resno);
+>+#ifdef CONFIG_PCI_IOV
+>+	else if (resno >= PCI_IOV_RESOURCES && resno < PCI_IOV_RESOURCE_END)
 
-	return !(event & ~valid_mask);
+The last BAR is missed:
 
-> +static u64 mmcra_sdar_mode(u64 event)
-> +{
-> +	u64 sm;
-> +
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-> +	   (cpu_has_feature(CPU_FTR_POWER9_DD1))) {
-> +		goto sm_tlb;
-> +	} else if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +		sm = (event >> ISA300_SDAR_MODE_SHIFT) & ISA300_SDAR_MODE_MASK;
-> +		if (sm)
-> +			return sm<<MMCRA_SDAR_MODE_SHIFT;
-> +	} else
-> +		goto sm_tlb;
-> +
-> +sm_tlb:
-> +	return MMCRA_SDAR_MODE_TLB;
-> +}
+	else if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
 
-You should not need a goto to implement that logic.
-
-> +static u64 thresh_cmp_val(u64 value)
-> +{
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
-> +	   (cpu_has_feature(CPU_FTR_POWER9_DD1)))
-> +		goto thr_cmp;
-> +	else if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		return value<<ISA300_MMCRA_THR_CMP_SHIFT;
-> +	else
-> +		goto thr_cmp;
-> +thr_cmp:
-> +	return value<<MMCRA_THR_CMP_SHIFT;
-> +}
-
-And similarly for this one and all the others.
-
-> diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-> index 4d0a4e5017c2..0a240635cf48 100644
-> --- a/arch/powerpc/perf/isa207-common.h
-> +++ b/arch/powerpc/perf/isa207-common.h
-> @@ -134,6 +134,24 @@
->  	 PERF_SAMPLE_BRANCH_KERNEL      |\
->  	 PERF_SAMPLE_BRANCH_HV)
->  
-> +/* Contants to support PowerISA v3.0 encoding format */
-> +#define ISA300_EVENT_COMBINE_SHIFT	10	/* Combine bit */
-> +#define ISA300_EVENT_COMBINE_MASK	0x3ull
-> +#define ISA300_SDAR_MODE_SHIFT		50
-> +#define ISA300_SDAR_MODE_MASK		0x3ull
-
-As I said in the previous patch, calling these P9 would be more accurate
-I think. And shorter.
-
-
-cheers
+>+		pci_iov_update_resource(dev, resno);
+>+#endif
+>+}
+>+
+> int pci_claim_resource(struct pci_dev *dev, int resource)
+> {
+> 	struct resource *res = &dev->resource[resource];
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
