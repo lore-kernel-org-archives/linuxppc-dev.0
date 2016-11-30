@@ -1,25 +1,19 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tT9sQ6xbyzDvt6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 17:45:30 +1100 (AEDT)
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tT9sQ0VQdz9t2g
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 17:45:30 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id e9so400061pgc.1
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2016 22:45:29 -0800 (PST)
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] Fix the message in facility unavailable exception
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <d7b1e63e-7b9f-1f0e-df57-5f2e08e0ca6e@gmail.com>
-Date: Wed, 30 Nov 2016 17:45:09 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tTB1K2R5dzDt0R
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 17:52:21 +1100 (AEDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Subject: [PATCH kernel v7 3/7] vfio/spapr: Postpone allocation of userspace
+ version of TCE table
+Date: Wed, 30 Nov 2016 17:52:01 +1100
+Message-Id: <1480488725-12783-4-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1480488725-12783-1-git-send-email-aik@ozlabs.ru>
+References: <1480488725-12783-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The iommu_table struct manages a hardware TCE table and a vmalloc'd
+table with corresponding userspace addresses. Both are allocated when
+the default DMA window is created and this happens when the very first
+group is attached to a container.
 
-I ran into this during some testing on qemu. The current
-facility_strings[] are correct when the trap address is
-0xf80 (hypervisor facility unavailable). When the trap
-address is 0xf60, IC (Interruption Cause) a.k.a status
-in the code is undefined for values 0 and 1. This patch
-adds a check to prevent printing the wrong information
-and helps better direct debugging effort.
+As we are going to allow the userspace to configure container in one
+memory context and pas container fd to another, we have to postpones
+such allocations till a container fd is passed to the destination
+user process so we would account locked memory limit against the actual
+container user constrainsts.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+This postpones the it_userspace array allocation till it is used first
+time for mapping. The unmapping patch already checks if the array is
+allocated.
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- Changelog v2:
-   Redo conditional checks as suggested by Michael
+Changes:
+v6:
+* moved missing hunk from the next patch: tce_iommu_create_table()
+would decrement locked_vm while new caller - tce_iommu_build_v2() -
+will not; this adds a new return code to the DMA mapping path but
+this seems to be a minor change.
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
- arch/powerpc/kernel/traps.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 023a462..010b11d 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1519,9 +1519,13 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 		return;
- 	}
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index d0c38b2..4efd2b2 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -515,6 +515,12 @@ static long tce_iommu_build_v2(struct tce_container *container,
+ 	unsigned long hpa;
+ 	enum dma_data_direction dirtmp;
  
--	if ((status < ARRAY_SIZE(facility_strings)) &&
--	    facility_strings[status])
--		facility = facility_strings[status];
-+	if ((hv || status >= 2) &&
-+		(status < ARRAY_SIZE(facility_strings)) &&
-+		facility_strings[status])
-+			facility = facility_strings[status];
-+	else
-+		pr_warn_ratelimited("Unexpected facility unavailable exception "
-+			"interruption cause %d\n", status);
++	if (!tbl->it_userspace) {
++		ret = tce_iommu_userspace_view_alloc(tbl);
++		if (ret)
++			return ret;
++	}
++
+ 	for (i = 0; i < pages; ++i) {
+ 		struct mm_iommu_table_group_mem_t *mem = NULL;
+ 		unsigned long *pua = IOMMU_TABLE_USERSPACE_ENTRY(tbl,
+@@ -588,15 +594,6 @@ static long tce_iommu_create_table(struct tce_container *container,
+ 	WARN_ON(!ret && !(*ptbl)->it_ops->free);
+ 	WARN_ON(!ret && ((*ptbl)->it_allocated_size != table_size));
  
- 	/* We restore the interrupt state now */
- 	if (!arch_irq_disabled_regs(regs))
+-	if (!ret && container->v2) {
+-		ret = tce_iommu_userspace_view_alloc(*ptbl);
+-		if (ret)
+-			(*ptbl)->it_ops->free(*ptbl);
+-	}
+-
+-	if (ret)
+-		decrement_locked_vm(table_size >> PAGE_SHIFT);
+-
+ 	return ret;
+ }
+ 
+@@ -1068,10 +1065,7 @@ static int tce_iommu_take_ownership(struct tce_container *container,
+ 		if (!tbl || !tbl->it_map)
+ 			continue;
+ 
+-		rc = tce_iommu_userspace_view_alloc(tbl);
+-		if (!rc)
+-			rc = iommu_take_ownership(tbl);
+-
++		rc = iommu_take_ownership(tbl);
+ 		if (rc) {
+ 			for (j = 0; j < i; ++j)
+ 				iommu_release_ownership(
 -- 
-2.5.5
+2.5.0.rc3
