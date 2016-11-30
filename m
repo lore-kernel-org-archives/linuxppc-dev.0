@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTWJD4g80zDvpJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 06:51:24 +1100 (AEDT)
-In-Reply-To: <1480423554-6411-2-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTWJF4V2RzDvpJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 06:51:25 +1100 (AEDT)
+In-Reply-To: <b8a934c7-899f-a320-31d5-5f2889f77d6c@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: stewart@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com,
- akpm@linux-foundation.org, dyoung@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [v11, 1/8] kexec_file: Allow arch-specific memory walking for
- kexec_add_buffer
-Message-Id: <3tTWJD3SqTz9sfH@ozlabs.org>
-Date: Thu,  1 Dec 2016 06:51:24 +1100 (AEDT)
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/radix/mm: Fixup storage key mm fault
+Message-Id: <3tTWJF28vWz9snk@ozlabs.org>
+Date: Thu,  1 Dec 2016 06:51:25 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-11-29 at 12:45:47 UTC, Michael Ellerman wrote:
-> From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+On Wed, 2016-11-30 at 00:35:36 UTC, Balbir Singh wrote:
+> Aneesh/Ben reported that the change to do_page_fault() needs
+> to handle the case where CPU_FTR_COHERENT_ICACHE is missing
+> but we have CPU_FTR_NOEXECUTE. In those cases the check
+> added for SRR1_ISI_N_OR_G might trigger a false positive.
 > 
-> Allow architectures to specify a different memory walking function for
-> kexec_add_buffer. x86 uses iomem to track reserved memory ranges, but
-> PowerPC uses the memblock subsystem.
+> This patch checks for CPU_FTR_COHERENT_ICACHE in addition
+> to the MSR value
 > 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> Acked-by: Dave Young <dyoung@redhat.com>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
-Series applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/60fe3910bb029e3671ce7ac080a7ac
+https://git.kernel.org/powerpc/c/0ab5171b8971282d7562b77f9b1413
 
 cheers
