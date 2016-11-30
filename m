@@ -1,26 +1,24 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tT10q4l8JzDvp9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 11:06:18 +1100 (AEDT)
-Date: Tue, 29 Nov 2016 18:06:05 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, clsoto@us.ibm.com,
- benh@kernel.crashing.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v4 3/7] PCI: Separate VF BAR updates from standard BAR
- updates
-Message-ID: <20161130000605.GC7375@bhelgaas-glaptop.roam.corp.google.com>
-References: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20161129041506.21453.18478.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20161129045546.GB20642@gwshan>
- <20161129144826.GB7285@bhelgaas-glaptop.roam.corp.google.com>
- <20161129232028.GA8143@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tT1Bb231kzDvpd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 11:14:47 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id e9so17777141pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2016 16:14:47 -0800 (PST)
+Subject: Re: [PATCH v7 3/7] powerpc/mm: Introduce _PAGE_LARGE software pte bits
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <20161128061704.4914-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20161128061704.4914-4-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <2b65879e-e0c7-f915-b622-290899e41031@gmail.com>
+Date: Wed, 30 Nov 2016 11:14:38 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161129232028.GA8143@gwshan>
+In-Reply-To: <20161128061704.4914-4-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,90 +28,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 30, 2016 at 10:20:28AM +1100, Gavin Shan wrote:
-> On Tue, Nov 29, 2016 at 08:48:26AM -0600, Bjorn Helgaas wrote:
-> >On Tue, Nov 29, 2016 at 03:55:46PM +1100, Gavin Shan wrote:
-> >> On Mon, Nov 28, 2016 at 10:15:06PM -0600, Bjorn Helgaas wrote:
-> >> >Previously pci_update_resource() used the same code path for updating
-> >> >standard BARs and VF BARs in SR-IOV capabilities.
-> >> >
-> >> >Split the VF BAR update into a new pci_iov_update_resource() internal
-> >> >interface, which makes it simpler to compute the BAR address (we can get
-> >> >rid of pci_resource_bar() and pci_iov_resource_bar()).
-> >> >
-> >> >This patch:
-> >> >
-> >> >  - Renames pci_update_resource() to pci_std_update_resource(),
-> >> >  - Adds pci_iov_update_resource(),
-> >> >  - Makes pci_update_resource() a wrapper that calls the appropriate one,
-> >> >
-> >> >No functional change intended.
 
-> >However, I don't think this code in pci_update_resource() is obviously
-> >correct:
-> >
-> >  new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
-> >
-> >PCI_REGION_FLAG_MASK is 0xf.  For memory BARs, bits 0-3 are read-only
-> >property bits.  For I/O BARs, bits 0-1 are read-only and bits 2-3 are
-> >part of the address, so on the face of it, the above could corrupt two
-> >bits of an I/O address.
-> >
-> >It's true that decode_bar() initializes flags correctly, using
-> >PCI_BASE_ADDRESS_IO_MASK for I/O BARs and PCI_BASE_ADDRESS_MEM_MASK
-> >for memory BARs, but it would take a little more digging to be sure
-> >that we never set bits 2-3 of flags for an I/O resource elsewhere.
-> >
+
+On 28/11/16 17:17, Aneesh Kumar K.V wrote:
+> This patch adds a new software defined pte bit. We use the reserved
+> fields of ISA 3.0 pte definition since we will only be using this
+> on DD1 code paths. We can possibly look at removing this code later.
 > 
-> The BAR's property bits are probed from device-tree, not hardware
-> on some platforms (e.g. pSeries). Also, there is only one (property)
-> bit if it's a ROM BAR. So more check as below might be needed because
-> the code (without the enhancement) should also work fine.
-
-Ah, right, I forgot about that.  I didn't do enough digging :)
-
-> >How about this in pci_std_update_resource():
-> >
-> >        pcibios_resource_to_bus(dev->bus, &region, res);
-> >        new = region.start;
-> >
-> >        if (res->flags & IORESOURCE_IO) {
-> >                mask = (u32)PCI_BASE_ADDRESS_IO_MASK;
-> >                new |= res->flags & ~PCI_BASE_ADDRESS_IO_MASK;
-> >        } else {
-> >                mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
-> >                new |= res->flags & ~PCI_BASE_ADDRESS_MEM_MASK;
-> >        }
-> >
+> The software bit will be used to differentiate between 64K/4K and 2M ptes.
+> This helps in finding the page size mapping by a pte so that we can do efficient
+> tlb flush.
 > 
-> 	if (res->flags & IORESOURCE_IO) {
-> 		mask = (u32)PCI_BASE_ADDRESS_IO_MASK;
-> 		new |= res->flags & ~PCI_BASE_ADDRESS_IO_MASK;
-> 	} else if (resno < PCI_ROM_RESOURCE) {
-> 		mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
-> 		new |= res->flags & ~PCI_BASE_ADDRESS_MEM_MASK;
-> 	} else if (resno == PCI_ROM_RESOURCE) {
-> 		mask = ~((u32)IORESOURCE_ROM_ENABLE);
-> 		new |= res->flags & IORESOURCE_ROM_ENABLE);
-> 	} else {
-> 		dev_warn(&dev->dev, "BAR#%d out of range\n", resno);
-> 		return;
-> 	}
+> We don't support 1G hugetlb pages yet. So we add a DEBUG WARN_ON to catch
+> wrong usage.
+> 
 
-After this patch, the only thing we OR into a ROM BAR value is
-PCI_ROM_ADDRESS_ENABLE, and that's done below, only if the ROM is
-already enabled.
+I thought we do in hugetlb_page_init() don't we register sizes for every size
+from 0 to MMU_PAGE_COUNT?
 
-I did update the ROM mask (to PCI_ROM_ADDRESS_MASK).  I'm not 100%
-sure about doing that -- it follows the spec, but it is a change from
-what we've been doing before.  I guess it should be safe because it
-means we're checking fewer bits than before (only the top 21 bits for
-ROMs, where we used check the top 28), so the only possible difference
-is that we might not warn about "error updating" in some case where we
-used to.
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hugetlb.h | 20 ++++++++++++++++++++
+>  arch/powerpc/include/asm/book3s/64/pgtable.h |  9 +++++++++
+>  arch/powerpc/include/asm/book3s/64/radix.h   |  2 ++
+>  3 files changed, 31 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> index d9c283f95e05..c62f14d0bec1 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> @@ -30,4 +30,24 @@ static inline int hstate_get_psize(struct hstate *hstate)
+>  		return mmu_virtual_psize;
+>  	}
+>  }
+> +
+> +#define arch_make_huge_pte arch_make_huge_pte
+> +static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
+> +				       struct page *page, int writable)
+> +{
+> +	unsigned long page_shift;
+> +
+> +	if (!cpu_has_feature(CPU_FTR_POWER9_DD1))
+> +		return entry;
+> +
+> +	page_shift = huge_page_shift(hstate_vma(vma));
+> +	/*
+> +	 * We don't support 1G hugetlb pages yet.
+> +	 */
+> +	VM_WARN_ON(page_shift == mmu_psize_defs[MMU_PAGE_1G].shift);
+> +	if (page_shift == mmu_psize_defs[MMU_PAGE_2M].shift)
+> +		return __pte(pte_val(entry) | _PAGE_LARGE);
+> +	else
+> +		return entry;
+> +}
+>  #endif
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 86870c11917b..6f39b9d134a2 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -26,6 +26,11 @@
+>  #define _RPAGE_SW1		0x00800
+>  #define _RPAGE_SW2		0x00400
+>  #define _RPAGE_SW3		0x00200
+> +#define _RPAGE_RSV1		0x1000000000000000UL
+> +#define _RPAGE_RSV2		0x0800000000000000UL
+> +#define _RPAGE_RSV3		0x0400000000000000UL
+> +#define _RPAGE_RSV4		0x0200000000000000UL
+> +
 
-I'm not really sure about the value of the "error updating" checks to
-begin with, though I guess it does help us find broken devices that
-put non-BARs where BARs are supposed to be.
+We use the top 4 bits and not the _SW bits?
 
-Bjorn
+>  #ifdef CONFIG_MEM_SOFT_DIRTY
+>  #define _PAGE_SOFT_DIRTY	_RPAGE_SW3 /* software: software dirty tracking */
+>  #else
+> @@ -34,6 +39,10 @@
+>  #define _PAGE_SPECIAL		_RPAGE_SW2 /* software: special page */
+>  #define _PAGE_DEVMAP		_RPAGE_SW1
+>  #define __HAVE_ARCH_PTE_DEVMAP
+> +/*
+> + * For DD1 only, we need to track whether the pte huge
+
+For POWER9_DD1 only
+
+> + */
+> +#define _PAGE_LARGE	_RPAGE_RSV1
+>  
+>  
+>  #define _PAGE_PTE		(1ul << 62)	/* distinguishes PTEs from pointers */
+> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+> index 2a46dea8e1b1..d2c5c064e266 100644
+> --- a/arch/powerpc/include/asm/book3s/64/radix.h
+> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
+> @@ -243,6 +243,8 @@ static inline int radix__pmd_trans_huge(pmd_t pmd)
+>  
+>  static inline pmd_t radix__pmd_mkhuge(pmd_t pmd)
+>  {
+> +	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+> +		return __pmd(pmd_val(pmd) | _PAGE_PTE | _PAGE_LARGE);
+>  	return __pmd(pmd_val(pmd) | _PAGE_PTE);
+>  }
+>  static inline void radix__pmdp_huge_split_prepare(struct vm_area_struct *vma,
+> 
