@@ -1,53 +1,41 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTLGT2LTbzDvJD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 00:04:17 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tTLGS5lcrz9t2g
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2016 00:04:16 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAUD43BG071450
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 08:04:15 -0500
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
- by mx0a-001b2d01.pphosted.com with ESMTP id 271u566uy0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTLM72z7lzDvpB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 00:08:19 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAUD4Vmx108729
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 08:08:16 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 271xk93dkk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 08:04:10 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 08:08:16 -0500
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Wed, 30 Nov 2016 18:34:04 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 437773940060
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 18:34:01 +0530 (IST)
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAUD40qH26148936
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 18:34:00 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAUD3vJ0010111
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 18:34:00 +0530
-Subject: Re: [PATCH v11 0/8] powerpc: Implement kexec_file_load()
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, dyoung@redhat.com,
- stewart@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com
-Date: Wed, 30 Nov 2016 08:03:46 -0500
-In-Reply-To: <87inr5po0n.fsf@concordia.ellerman.id.au>
-References: <1480423554-6411-1-git-send-email-mpe@ellerman.id.au>
- <20161129134518.7ddc9b733b65b5eed94acd3e@linux-foundation.org>
- <87inr5po0n.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1480511026.18110.102.camel@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 30 Nov 2016 23:08:13 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9305B2CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 00:08:10 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uAUD8A5w34537648
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 00:08:10 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uAUD8A1I017239
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 00:08:10 +1100
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/perf: Add constraints for power9 l2/l3 bus events
+Date: Wed, 30 Nov 2016 18:38:06 +0530
+Message-Id: <1480511286-25154-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,64 +45,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-30 at 15:52 +1100, Michael Ellerman wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > On Tue, 29 Nov 2016 23:45:46 +1100 Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >
-> >> This is v11 of the kexec_file_load() for powerpc series.
-> >> 
-> >> I've stripped this down to the minimum we need, so we can get this in for 4.10.
-> >> Any additions can come later incrementally.
-> >
-> > This made a bit of a mess of Mimi's series "ima: carry the
-> > measurement list across kexec v10".
-> 
-> Urk, sorry about that. I didn't realise there was a big dependency
-> between them, but I guess I should have tried to do the rebase.
-> 
-> > powerpc-ima-get-the-kexec-buffer-passed-by-the-previous-kernel.patch
-> > ima-on-soft-reboot-restore-the-measurement-list.patch
-> > ima-permit-duplicate-measurement-list-entries.patch
-> > ima-maintain-memory-size-needed-for-serializing-the-measurement-list.patch
-> > powerpc-ima-send-the-kexec-buffer-to-the-next-kernel.patch
-> > ima-on-soft-reboot-save-the-measurement-list.patch
-> > ima-store-the-builtin-custom-template-definitions-in-a-list.patch
-> > ima-support-restoring-multiple-template-formats.patch
-> > ima-define-a-canonical-binary_runtime_measurements-list-format.patch
-> > ima-platform-independent-hash-value.patch
-> >
-> > I made the syntactic fixes but I won't be testing it.
+In Power9, L2/L3 bus events are always available as a
+"bank" of 4 events. To obtain the counts for any of the
+l2/l3 bus events in a given bank, the user will have to
+program PMC4 with corresponding l2/l3 bus event for that
+bank. Patch adds a constraint check to enforce it.
 
-Dmitry Kasatkin's acked-by needs to be included for the IMA patches.
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/perf_event_server.h |  1 +
+ arch/powerpc/perf/core-book3s.c              |  4 ++++
+ arch/powerpc/perf/power9-pmu.c               | 20 ++++++++++++++++++++
+ 3 files changed, 25 insertions(+)
 
-> Thanks. 
-> 
-> TBH I don't know how to test the IMA part, I'm relying on Thiago and
-> Mimi to do that.
-
-It should be straight forward.  Enable CONFIG_IMA_KEXEC to carry the
-measurements from one kernel to the next.  Use a kexec_file_load version
-of kexec to boot the next kernel.  On the boot command line add
-"ima_tcb" or "ima_policy=ima_tcb".
-
-If the measurements were carried across kexec, the IMA measurement list
-<securityfs>/ima/ascii_runtime_measurements should contain an initial
-"boot_aggregate", as the first record, and a "boot_aggregate", as a
-delimiter, for each subsequent kexec.
-
-> >> If no one objects I'll merge this via the powerpc tree. The three kexec patches
-> >> have been acked by Dave Young (since forever), and have been in linux-next (via
-> >> akpm's tree) also for a long time.
-> >
-> > OK, I'll wait for these to appear in -next and I will await advice on 
-> 
-> Thanks. I'll let them stew for a few more hours and then put them in my
-> next for tomorrows linux-next.
-
-Thaigo tested the patches yesterday.   Everything seemed fine.  After
-cherry picking the kexec_file_load() patches and rebasing the
-restore_kexec patches on top of it in my tree, there were some problems.
-Perhaps there is some dependencies that I'm missing.
-
-Mimi
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index e157489ee7a1..3e6616c3e911 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -38,6 +38,7 @@ struct power_pmu {
+ 				unsigned long *valp);
+ 	int		(*get_alternatives)(u64 event_id, unsigned int flags,
+ 				u64 alt[]);
++	int		(*get_llevent_constraint)(u64 events[], int n_ev);
+ 	u64             (*bhrb_filter_map)(u64 branch_sample_type);
+ 	void            (*config_bhrb)(u64 pmu_bhrb_filter);
+ 	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 72c27b8d2cf3..2cdf2647cdb0 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1267,6 +1267,10 @@ static void power_pmu_enable(struct pmu *pmu)
+ 		goto out;
+ 	}
+ 
++	if ( (ppmu->get_llevent_constraint) &&
++	     ppmu->get_llevent_constraint(cpuhw->events, cpuhw->n_events))
++		goto out;
++
+ 	if (!(ppmu->flags & PPMU_ARCH_207S)) {
+ 		/*
+ 		 * Add in MMCR0 freeze bits corresponding to the attr.exclude_*
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index 8e9a81967ff8..d67d532116b3 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -181,6 +181,25 @@ static void power9_config_bhrb(u64 pmu_bhrb_filter)
+ 	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
+ }
+ 
++static int power9_llevent_get_constraint(u64 event[], int n_ev)
++{
++	int i;
++	unsigned int pmc, unit, mask = 0;
++
++	for (i = 0; i < n_ev; ++i) {
++		pmc	= (event[i] >> EVENT_PMC_SHIFT) & EVENT_PMC_MASK;
++		unit	= (event[i] >> EVENT_UNIT_SHIFT) & EVENT_UNIT_MASK;
++		if (unit >= 6 && unit <= 9)
++			mask |= 1 << (pmc - 1);
++
++	}
++
++	if ((mask) && ((mask & 0xf) < 0x8))
++		return -1;
++
++	return 0;
++}
++
+ #define C(x)	PERF_COUNT_HW_CACHE_##x
+ 
+ /*
+@@ -307,6 +326,7 @@ static struct power_pmu power9_pmu = {
+ 	.cache_events		= &power9_cache_events,
+ 	.attr_groups		= power9_pmu_attr_groups,
+ 	.bhrb_nr		= 32,
++	.get_llevent_constraint	= power9_llevent_get_constraint,
+ };
+ 
+ static int __init init_power9_pmu(void)
+-- 
+2.7.4
