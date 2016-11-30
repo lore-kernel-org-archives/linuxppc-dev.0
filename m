@@ -1,22 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tT1fY0nhDzDvrH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 11:35:32 +1100 (AEDT)
-Message-ID: <1480466113.3459.2.camel@kernel.crashing.org>
-Subject: Re: [PATCH v7 3/7] powerpc/mm: Introduce _PAGE_LARGE software pte bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Balbir Singh <bsingharora@gmail.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 30 Nov 2016 11:35:13 +1100
-In-Reply-To: <2b65879e-e0c7-f915-b622-290899e41031@gmail.com>
-References: <20161128061704.4914-1-aneesh.kumar@linux.vnet.ibm.com>
- <20161128061704.4914-4-aneesh.kumar@linux.vnet.ibm.com>
- <2b65879e-e0c7-f915-b622-290899e41031@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tT1fm4mNCzDvNV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 11:35:44 +1100 (AEDT)
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tT1fm01dQz9t2C
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 11:35:44 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id x23so17863442pgx.3
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2016 16:35:43 -0800 (PST)
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/radix/mm: Fixup storage key mm fault
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <b8a934c7-899f-a320-31d5-5f2889f77d6c@gmail.com>
+Date: Wed, 30 Nov 2016 11:35:36 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-30 at 11:14 +1100, Balbir Singh wrote:
-> > +#define _RPAGE_RSV1          0x1000000000000000UL
-> > +#define _RPAGE_RSV2          0x0800000000000000UL
-> > +#define _RPAGE_RSV3          0x0400000000000000UL
-> > +#define _RPAGE_RSV4          0x0200000000000000UL
-> > +
-> 
-> We use the top 4 bits and not the _SW bits?
 
-Correct, welcome to the discussion we've been having the last 2 weeks
-:-)
+Aneesh/Ben reported that the change to do_page_fault() needs
+to handle the case where CPU_FTR_COHERENT_ICACHE is missing
+but we have CPU_FTR_NOEXECUTE. In those cases the check
+added for SRR1_ISI_N_OR_G might trigger a false positive.
 
-We use those bits because we are otherwise short on SW bits (we still
-need _PAGE_DEVMAP etc...). We know P9 DD1 is supposed to ignore the
-reserved bits so it's a good place holder.
+This patch checks for CPU_FTR_COHERENT_ICACHE in addition
+to the MSR value
 
-Cheers,
-Ben.
+Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+
+ Applies on top of powerpc/next and I've not added a fixes tag
+
+ arch/powerpc/mm/fault.c | 9 ++++++++-
+ drivers/crypto/Makefile | 1 -
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index a17029aa..eab3ded 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -392,8 +392,15 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	if (is_exec) {
+ 		/*
+ 		 * An execution fault + no execute ?
++		 * We need to check for CPU_FTR_COHERENT_ICACHE, since
++		 * on some variants, an NX fault is taken and
++		 * hash_page_do_lazy_icache() does the fixup. Without the
++		 * check for CPU_FTR_COHERENT_ICACHE we could have a false
++		 * positive if we have !CPU_FTR_COHERENT_ICACHE and
++		 * CPU_FTR_NOEXECUTE
+ 		 */
+-		if (regs->msr & SRR1_ISI_N_OR_G)
++		if (cpu_has_feature(CPU_FTR_COHERENT_ICACHE) &&
++			(regs->msr & SRR1_ISI_N_OR_G))
+ 			goto bad_area;
+ 
+ 		/*
+diff --git a/drivers/crypto/Makefile b/drivers/crypto/Makefile
+index ad7250f..3c6432d 100644
+--- a/drivers/crypto/Makefile
++++ b/drivers/crypto/Makefile
+@@ -31,4 +31,3 @@ obj-$(CONFIG_CRYPTO_DEV_QCE) += qce/
+ obj-$(CONFIG_CRYPTO_DEV_VMX) += vmx/
+ obj-$(CONFIG_CRYPTO_DEV_SUN4I_SS) += sunxi-ss/
+ obj-$(CONFIG_CRYPTO_DEV_ROCKCHIP) += rockchip/
+-obj-$(CONFIG_CRYPTO_DEV_CHELSIO) += chelsio/
+-- 
+2.5.5
