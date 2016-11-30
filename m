@@ -1,17 +1,17 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tTB1n5NBDzDvt3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 17:52:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tTB1r4HR9zDvwv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 17:52:48 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Alex Williamson <alex.williamson@redhat.com>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
-Subject: [PATCH kernel v7 1/7] powerpc/iommu: Pass mm_struct to init/cleanup
- helpers
-Date: Wed, 30 Nov 2016 17:51:59 +1100
-Message-Id: <1480488725-12783-2-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v7 2/7] powerpc/iommu: Stop using @current in
+ mm_iommu_xxx
+Date: Wed, 30 Nov 2016 17:52:00 +1100
+Message-Id: <1480488725-12783-3-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1480488725-12783-1-git-send-email-aik@ozlabs.ru>
 References: <1480488725-12783-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,100 +23,243 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are going to get rid of @current references in mmu_context_boos3s64.c
-and cache mm_struct in the VFIO container. Since mm_context_t does not
-have reference counting, we will be using mm_struct which does have
-the reference counter.
+This changes mm_iommu_xxx helpers to take mm_struct as a parameter
+instead of getting it from @current which in some situations may
+not have a valid reference to mm.
 
-This changes mm_iommu_init/mm_iommu_cleanup to receive mm_struct rather
-than mm_context_t (which is embedded into mm).
+This changes helpers to receive @mm and moves all references to @current
+to the caller, including checks for !current and !current->mm;
+checks in mm_iommu_preregistered() are removed as there is no caller
+yet.
 
-This should not cause any behavioral change.
+This moves the mm_iommu_adjust_locked_vm() call to the caller as
+it receives mm_iommu_table_group_mem_t but it needs mm.
+
+This should cause no behavioral change.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/mmu_context.h | 4 ++--
- arch/powerpc/kernel/setup-common.c     | 2 +-
- arch/powerpc/mm/mmu_context_book3s64.c | 4 ++--
- arch/powerpc/mm/mmu_context_iommu.c    | 9 +++++----
- 4 files changed, 10 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/mmu_context.h | 16 ++++++------
+ arch/powerpc/mm/mmu_context_iommu.c    | 46 +++++++++++++---------------------
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 14 ++++++++---
+ 3 files changed, 36 insertions(+), 40 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 5c45114..424844b 100644
+index 424844b..b9e3f0a 100644
 --- a/arch/powerpc/include/asm/mmu_context.h
 +++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -23,8 +23,8 @@ extern bool mm_iommu_preregistered(void);
- extern long mm_iommu_get(unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem);
- extern long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem);
--extern void mm_iommu_init(mm_context_t *ctx);
--extern void mm_iommu_cleanup(mm_context_t *ctx);
-+extern void mm_iommu_init(struct mm_struct *mm);
-+extern void mm_iommu_cleanup(struct mm_struct *mm);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
- 		unsigned long size);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long ua,
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 270ee30..f516ac5 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -915,7 +915,7 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.context.pte_frag = NULL;
- #endif
- #ifdef CONFIG_SPAPR_TCE_IOMMU
--	mm_iommu_init(&init_mm.context);
-+	mm_iommu_init(&init_mm);
- #endif
- 	irqstack_early_init();
- 	exc_lvl_early_init();
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index b114f8b..ad82735 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -115,7 +115,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- 	mm->context.pte_frag = NULL;
- #endif
- #ifdef CONFIG_SPAPR_TCE_IOMMU
--	mm_iommu_init(&mm->context);
-+	mm_iommu_init(mm);
- #endif
- 	return 0;
- }
-@@ -160,7 +160,7 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
- void destroy_context(struct mm_struct *mm)
- {
- #ifdef CONFIG_SPAPR_TCE_IOMMU
--	mm_iommu_cleanup(&mm->context);
-+	mm_iommu_cleanup(mm);
- #endif
+@@ -19,16 +19,18 @@ extern void destroy_context(struct mm_struct *mm);
+ struct mm_iommu_table_group_mem_t;
  
- #ifdef CONFIG_PPC_ICSWX
+ extern int isolate_lru_page(struct page *page);	/* from internal.h */
+-extern bool mm_iommu_preregistered(void);
+-extern long mm_iommu_get(unsigned long ua, unsigned long entries,
++extern bool mm_iommu_preregistered(struct mm_struct *mm);
++extern long mm_iommu_get(struct mm_struct *mm,
++		unsigned long ua, unsigned long entries,
+ 		struct mm_iommu_table_group_mem_t **pmem);
+-extern long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem);
++extern long mm_iommu_put(struct mm_struct *mm,
++		struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_init(struct mm_struct *mm);
+ extern void mm_iommu_cleanup(struct mm_struct *mm);
+-extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
+-		unsigned long size);
+-extern struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long ua,
+-		unsigned long entries);
++extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
++		unsigned long ua, unsigned long size);
++extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
++		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned long *hpa);
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
 diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index e0f1c33..ad2e575 100644
+index ad2e575..4c6db09 100644
 --- a/arch/powerpc/mm/mmu_context_iommu.c
 +++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -373,16 +373,17 @@ void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem)
- }
- EXPORT_SYMBOL_GPL(mm_iommu_mapped_dec);
- 
--void mm_iommu_init(mm_context_t *ctx)
-+void mm_iommu_init(struct mm_struct *mm)
- {
--	INIT_LIST_HEAD_RCU(&ctx->iommu_group_mem_list);
-+	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
- }
- 
--void mm_iommu_cleanup(mm_context_t *ctx)
-+void mm_iommu_cleanup(struct mm_struct *mm)
- {
- 	struct mm_iommu_table_group_mem_t *mem, *tmp;
- 
--	list_for_each_entry_safe(mem, tmp, &ctx->iommu_group_mem_list, next) {
-+	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
-+			next) {
- 		list_del_rcu(&mem->next);
- 		mm_iommu_do_free(mem);
+@@ -56,7 +56,7 @@ static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
  	}
+ 
+ 	pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%ld %ld/%ld\n",
+-			current->pid,
++			current ? current->pid : 0,
+ 			incr ? '+' : '-',
+ 			npages << PAGE_SHIFT,
+ 			mm->locked_vm << PAGE_SHIFT,
+@@ -66,12 +66,9 @@ static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
+ 	return ret;
+ }
+ 
+-bool mm_iommu_preregistered(void)
++bool mm_iommu_preregistered(struct mm_struct *mm)
+ {
+-	if (!current || !current->mm)
+-		return false;
+-
+-	return !list_empty(&current->mm->context.iommu_group_mem_list);
++	return !list_empty(&mm->context.iommu_group_mem_list);
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
+ 
+@@ -124,19 +121,16 @@ static int mm_iommu_move_page_from_cma(struct page *page)
+ 	return 0;
+ }
+ 
+-long mm_iommu_get(unsigned long ua, unsigned long entries,
++long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 		struct mm_iommu_table_group_mem_t **pmem)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 	long i, j, ret = 0, locked_entries = 0;
+ 	struct page *page = NULL;
+ 
+-	if (!current || !current->mm)
+-		return -ESRCH; /* process exited */
+-
+ 	mutex_lock(&mem_list_mutex);
+ 
+-	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
++	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
+ 			next) {
+ 		if ((mem->ua == ua) && (mem->entries == entries)) {
+ 			++mem->used;
+@@ -154,7 +148,7 @@ long mm_iommu_get(unsigned long ua, unsigned long entries,
+ 
+ 	}
+ 
+-	ret = mm_iommu_adjust_locked_vm(current->mm, entries, true);
++	ret = mm_iommu_adjust_locked_vm(mm, entries, true);
+ 	if (ret)
+ 		goto unlock_exit;
+ 
+@@ -215,11 +209,11 @@ long mm_iommu_get(unsigned long ua, unsigned long entries,
+ 	mem->entries = entries;
+ 	*pmem = mem;
+ 
+-	list_add_rcu(&mem->next, &current->mm->context.iommu_group_mem_list);
++	list_add_rcu(&mem->next, &mm->context.iommu_group_mem_list);
+ 
+ unlock_exit:
+ 	if (locked_entries && ret)
+-		mm_iommu_adjust_locked_vm(current->mm, locked_entries, false);
++		mm_iommu_adjust_locked_vm(mm, locked_entries, false);
+ 
+ 	mutex_unlock(&mem_list_mutex);
+ 
+@@ -264,17 +258,13 @@ static void mm_iommu_free(struct rcu_head *head)
+ static void mm_iommu_release(struct mm_iommu_table_group_mem_t *mem)
+ {
+ 	list_del_rcu(&mem->next);
+-	mm_iommu_adjust_locked_vm(current->mm, mem->entries, false);
+ 	call_rcu(&mem->rcu, mm_iommu_free);
+ }
+ 
+-long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
++long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
+ {
+ 	long ret = 0;
+ 
+-	if (!current || !current->mm)
+-		return -ESRCH; /* process exited */
+-
+ 	mutex_lock(&mem_list_mutex);
+ 
+ 	if (mem->used == 0) {
+@@ -297,6 +287,8 @@ long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
+ 	/* @mapped became 0 so now mappings are disabled, release the region */
+ 	mm_iommu_release(mem);
+ 
++	mm_iommu_adjust_locked_vm(mm, mem->entries, false);
++
+ unlock_exit:
+ 	mutex_unlock(&mem_list_mutex);
+ 
+@@ -304,14 +296,12 @@ long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_put);
+ 
+-struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
+-		unsigned long size)
++struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
++		unsigned long ua, unsigned long size)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
+ 
+-	list_for_each_entry_rcu(mem,
+-			&current->mm->context.iommu_group_mem_list,
+-			next) {
++	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
+ 		if ((mem->ua <= ua) &&
+ 				(ua + size <= mem->ua +
+ 				 (mem->entries << PAGE_SHIFT))) {
+@@ -324,14 +314,12 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+ 
+-struct mm_iommu_table_group_mem_t *mm_iommu_find(unsigned long ua,
+-		unsigned long entries)
++struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
++		unsigned long ua, unsigned long entries)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
+ 
+-	list_for_each_entry_rcu(mem,
+-			&current->mm->context.iommu_group_mem_list,
+-			next) {
++	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
+ 		if ((mem->ua == ua) && (mem->entries == entries)) {
+ 			ret = mem;
+ 			break;
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 80378dd..d0c38b2 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -107,14 +107,17 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 
++	if (!current || !current->mm)
++		return -ESRCH; /* process exited */
++
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+ 		return -EINVAL;
+ 
+-	mem = mm_iommu_find(vaddr, size >> PAGE_SHIFT);
++	mem = mm_iommu_find(current->mm, vaddr, size >> PAGE_SHIFT);
+ 	if (!mem)
+ 		return -ENOENT;
+ 
+-	return mm_iommu_put(mem);
++	return mm_iommu_put(current->mm, mem);
+ }
+ 
+ static long tce_iommu_register_pages(struct tce_container *container,
+@@ -124,11 +127,14 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 	struct mm_iommu_table_group_mem_t *mem = NULL;
+ 	unsigned long entries = size >> PAGE_SHIFT;
+ 
++	if (!current || !current->mm)
++		return -ESRCH; /* process exited */
++
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
+ 			((vaddr + size) < vaddr))
+ 		return -EINVAL;
+ 
+-	ret = mm_iommu_get(vaddr, entries, &mem);
++	ret = mm_iommu_get(current->mm, vaddr, entries, &mem);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -375,7 +381,7 @@ static int tce_iommu_prereg_ua_to_hpa(unsigned long tce, unsigned long size,
+ 	long ret = 0;
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 
+-	mem = mm_iommu_lookup(tce, size);
++	mem = mm_iommu_lookup(current->mm, tce, size);
+ 	if (!mem)
+ 		return -EINVAL;
+ 
 -- 
 2.5.0.rc3
