@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTKRh6FcJzDvh3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 23:27:12 +1100 (AEDT)
-In-Reply-To: <20161116182756.GE2697@decadent.org.uk>
-To: Ben Hutchings <ben@decadent.org.uk>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTKRk0PSpzDvh3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 23:27:14 +1100 (AEDT)
+In-Reply-To: <1480385626.11342.53.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Oliver O'Halloran <oohall@gmail.com>, stable <stable@vger.kernel.org>
-Subject: Re: powerpc/boot: Fix build failure in 32-bit boot wrapper
-Message-Id: <3tTKRh4RW6z9t2G@ozlabs.org>
-Date: Wed, 30 Nov 2016 23:27:12 +1100 (AEDT)
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm: Fix lazy icache flush on pre-POWER5
+Message-Id: <3tTKRj6bRrz9t2N@ozlabs.org>
+Date: Wed, 30 Nov 2016 23:27:13 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,17 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-16 at 18:27:56 UTC, Ben Hutchings wrote:
-> OPAL is not callable from 32-bit mode and the assembly code for it
-> may not even build (depending on how binutils was configured).
+On Tue, 2016-11-29 at 02:13:46 UTC, Benjamin Herrenschmidt wrote:
+> On 64-bit CPUs with no-execute support and non-snooping icache, such as
+> 970 or POWER4, we have a software mechanism to ensure coherency of the
+> cache (using exec faults when needed).
 > 
-> References: https://buildd.debian.org/status/fetch.php?pkg=linux&arch=powerpcspe&ver=4.8.7-1&stamp=1479203712
-> Fixes: 656ad58ef19e ("powerpc/boot: Add OPAL console to epapr wrappers")
-> Cc: stable <stable@vger.kernel.org> # 4.8
-> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+> This was broken due to a logic inversion when that code was rewritten
+> from assembly to C.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Fixes: 91f1da99792a1d133df94c4753510305353064a1
+> Fixes: 89ff725051d177556b23d80f2a30f880a657a6c1
+> Fixes: a43c0eb8364c022725df586e91dd753633374d66
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/10c77dba40ff58fc03587b3b60725b
+https://git.kernel.org/powerpc/c/dd7b2f035ec41a409f7a7cec7aabc0
 
 cheers
