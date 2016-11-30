@@ -1,17 +1,36 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTWJF4V2RzDvpJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 06:51:25 +1100 (AEDT)
-In-Reply-To: <b8a934c7-899f-a320-31d5-5f2889f77d6c@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/radix/mm: Fixup storage key mm fault
-Message-Id: <3tTWJF28vWz9snk@ozlabs.org>
-Date: Thu,  1 Dec 2016 06:51:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTYSv4Pf7zDvxC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 08:29:03 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uAULSmZT026087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 16:29:00 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2723qah9ek-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 16:29:00 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Wed, 30 Nov 2016 14:28:59 -0700
+Subject: Re: [PATCH] scsi/ipr: Fix runaway IRQs when falling back from MSI to
+ LSI
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-scsi@vger.kernel.org
+References: <1479947042.10230.88.camel@kernel.crashing.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Wed, 30 Nov 2016 15:28:55 -0600
+MIME-Version: 1.0
+In-Reply-To: <1479947042.10230.88.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <683a1049-2ff3-2777-b908-062212008ae4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,20 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-30 at 00:35:36 UTC, Balbir Singh wrote:
-> Aneesh/Ben reported that the change to do_page_fault() needs
-> to handle the case where CPU_FTR_COHERENT_ICACHE is missing
-> but we have CPU_FTR_NOEXECUTE. In those cases the check
-> added for SRR1_ISI_N_OR_G might trigger a false positive.
-> 
-> This patch checks for CPU_FTR_COHERENT_ICACHE in addition
-> to the MSR value
-> 
-> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
-Applied to powerpc next, thanks.
+Looks good. Thanks! Here is an updated version that should apply
+cleanly on top of scsi-next.
 
-https://git.kernel.org/powerpc/c/0ab5171b8971282d7562b77f9b1413
+8<
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-cheers
+LSIs must be ack'ed with an MMIO otherwise they remain asserted
+forever. This is controlled by the "clear_isr" flag.
+
+While we set that flag properly when deciding initially whether
+to use LSIs or MSIs, we fail to set it if we first chose MSIs,
+the test fails, then fallback to LSIs.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+
+ drivers/scsi/ipr.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff -puN drivers/scsi/ipr.c~ipr_misx_fail_intx_clear_isr drivers/scsi/ipr.c
+--- scsi/drivers/scsi/ipr.c~ipr_misx_fail_intx_clear_isr	2016-11-29 20:56:27.902534325 -0600
++++ scsi-bjking1/drivers/scsi/ipr.c	2016-11-29 20:56:50.645538533 -0600
+@@ -10157,6 +10157,7 @@ static int ipr_probe_ioa(struct pci_dev
+ 			pci_free_irq_vectors(pdev);
+ 
+ 			ioa_cfg->nvectors = 1;
++			ioa_cfg->clear_isr = 1;
+ 			break;
+ 		default:
+ 			goto out_msi_disable;
+_
