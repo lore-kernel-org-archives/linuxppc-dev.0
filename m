@@ -2,16 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTCXV580dzDt1n
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 19:00:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTCgn4frqzDvpH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 19:07:17 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/8xx: xmon compile fix
-In-Reply-To: <20161129085654.1967-1-npiggin@gmail.com>
-References: <20161129085654.1967-1-npiggin@gmail.com>
-Date: Wed, 30 Nov 2016 19:00:57 +1100
-Message-ID: <87fum9pfba.fsf@concordia.ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ stewart@linux.vnet.ibm.com <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/opal-irqchip: Use interrupt names if present
+In-Reply-To: <1480463779.11342.79.camel@kernel.crashing.org>
+References: <1480463779.11342.79.camel@kernel.crashing.org>
+Date: Wed, 30 Nov 2016 19:07:16 +1100
+Message-ID: <87d1hdpf0r.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,34 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Recent versions of OPAL will be able to provide names for the various
+> OPAL interrupts via a new "opal-interrupt-names" property. So let's
+> use them to make /proc/interrupts more informative.
 
-What's the actual error? mode/badaddr defined but not used?
-
-I'm just curious why I've never hit it?
+I guess there's no point asking whether there's a generic device tree
+spec for this sort of thing, and if so whether we should use it?
 
 cheers
-
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 7605455..435f5f5 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -1213,10 +1213,13 @@ bpt_cmds(void)
->  {
->  	int cmd;
->  	unsigned long a;
-> -	int mode, i;
-> +	int i;
->  	struct bpt *bp;
-> +#ifndef CONFIG_8xx
-> +	int mode;
->  	const char badaddr[] = "Only kernel addresses are permitted "
->  		"for breakpoints\n";
-> +#endif
->  
->  	cmd = inchar();
->  	switch (cmd) {
-> -- 
-> 2.10.2
