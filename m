@@ -1,26 +1,17 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tThCL0hGyzDvyS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 13:32:46 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id x23so3030223pgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 18:32:46 -0800 (PST)
-Subject: Re: [RFC PATCH v7 0/3] PCI: Introduce a way to enforce all MMIO BARs
- not to share PAGE_SIZE
-To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, bhelgaas@google.com
-References: <1477464813-2499-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <6931390b-151e-ec62-b694-e3ff49163245@linux.vnet.ibm.com>
-Cc: zhong@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
- gwshan@linux.vnet.ibm.com, alex.williamson@redhat.com, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <2d8d7196-9eb3-01cc-4f21-423b90bd7cf7@ozlabs.ru>
-Date: Thu, 1 Dec 2016 13:32:37 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTjTV3B7GzDvyT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 14:30:06 +1100 (AEDT)
+Date: Thu, 1 Dec 2016 14:30:04 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] KVM: PPC: Book3S: Move prototypes for KVM functions into
+ kvm_ppc.h
+Message-ID: <20161201033004.2yh4txylpayxzmpu@oak.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <6931390b-151e-ec62-b694-e3ff49163245@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,85 +21,200 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/11/16 13:53, Yongji Xie wrote:
-> Hi Bjorn,
-> 
-> 
-> Kindly ping. What do you think of the way to fix the bug that resources's
-> size is changed
-> 
-> when using resource_alignment. Thanks.
+This moves the prototypes for functions that are only called from
+assembler code out of asm/asm-prototypes.h into asm/kvm_ppc.h.
+The prototypes were added in commit ebe4535fbe7a ("KVM: PPC:
+Book3S HV: sparse: prototypes for functions called from assembler",
+2016-10-10), but given that the functions are KVM functions,
+having them in a KVM header will be better for long-term
+maintenance.
 
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+[For information; I intend to merge this through the KVM tree.]
 
-Could anyone please comment on this? Thanks!
+ arch/powerpc/include/asm/asm-prototypes.h | 44 -------------------------------
+ arch/powerpc/include/asm/kvm_ppc.h        | 42 +++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_64_vio_hv.c       |  1 -
+ arch/powerpc/kvm/book3s_hv_builtin.c      |  1 -
+ arch/powerpc/kvm/book3s_hv_ras.c          |  2 +-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  1 -
+ arch/powerpc/kvm/book3s_hv_rm_xics.c      |  1 -
+ 7 files changed, 43 insertions(+), 49 deletions(-)
 
-
-
-> 
-> 
-> On 2016/10/26 14:53, Yongji Xie wrote:
->> This series introduces a way for PCI resource allocator to force
->> MMIO BARs not to share PAGE_SIZE. This would make sense to VFIO
->> driver. Because current VFIO implementation disallows to mmap
->> sub-page(size < PAGE_SIZE) MMIO BARs which may share the same page
->> with other BARs for security reasons. Thus, we have to handle mmio
->> access to these BARs in QEMU emulation rather than in guest which
->> will cause some performance loss.
->>
->> In our solution, we try to make use of the existing code path of
->> resource_alignment kernel parameter and add a macro to set default
->> alignment for it. Thus we can define this macro by default on some
->> archs which may easily hit the performance issue because of their
->> 64K page.
->>
->> In this series, patch 1,2 fixed bugs of using resource_alignment;
->> patch 3 adds a macro to set the default alignment of all MMIO BARs.
->>
->> Changelog v7:
->> - Rebased against v4.9-rc2
->> - Drop two merged patches
->> - Rework the patch which fix a bug that resources's size is changed when
->>    using resource_alignment
->> - Add a patch that fix a bug for IOV BARs when using resource_alignment
->>
->> Changelog v6:
->> - Remove the option "noresize@" of resource_alignment
->>
->> Changelog v5:
->> - Rebased against v4.8-rc6
->> - Drop the patch that forbidding disable memory decoding in
->>    pci_reassigndev_resource_alignment()
->>
->> Changelog v4:
->> - Rebased against v4.8-rc1
->> - Drop one irrelevant patch
->> - Drop the patch that adding wildcard to resource_alignment to enforce
->>    the alignment of all MMIO BARs to be at least PAGE_SIZE
->> - Change the format of option "noresize" of resource_alignment
->> - Code style improvements
->>
->> Changelog v3:
->> - Ignore enforced alignment to fixed BARs
->> - Fix issue that disabling memory decoding when reassigning the alignment
->> - Only enable default alignment on PowerNV platform
->>
->> Changelog v2:
->> - Ignore enforced alignment to VF BARs on
->> pci_reassigndev_resource_alignment()
->>
->> Yongji Xie (3):
->>    PCI: Ignore requested alignment for IOV BARs
->>    PCI: Restore resource's size if we expand it by using resource_alignment
->>    PCI: Add a macro to set default alignment for all PCI devices
->>
->>   arch/powerpc/include/asm/pci.h |    4 ++++
->>   drivers/pci/pci.c              |    6 +++++-
->>   drivers/pci/setup-bus.c        |   19 +++++++++++++++++++
->>   include/linux/pci.h            |    1 +
->>   4 files changed, 29 insertions(+), 1 deletion(-)
->>
-> 
-
-
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 6c853bc..d149273 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -14,9 +14,6 @@
+ 
+ #include <linux/threads.h>
+ #include <linux/kprobes.h>
+-#ifdef CONFIG_KVM
+-#include <linux/kvm_host.h>
+-#endif
+ 
+ #include <uapi/asm/ucontext.h>
+ 
+@@ -112,45 +109,4 @@ void early_setup_secondary(void);
+ /* time */
+ void accumulate_stolen_time(void);
+ 
+-/* kvm */
+-#ifdef CONFIG_KVM
+-long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+-			 unsigned long ioba, unsigned long tce);
+-long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+-				  unsigned long liobn, unsigned long ioba,
+-				  unsigned long tce_list, unsigned long npages);
+-long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+-			   unsigned long liobn, unsigned long ioba,
+-			   unsigned long tce_value, unsigned long npages);
+-long int kvmppc_rm_h_confer(struct kvm_vcpu *vcpu, int target,
+-                            unsigned int yield_count);
+-long kvmppc_h_random(struct kvm_vcpu *vcpu);
+-void kvmhv_commence_exit(int trap);
+-long kvmppc_realmode_machine_check(struct kvm_vcpu *vcpu);
+-void kvmppc_subcore_enter_guest(void);
+-void kvmppc_subcore_exit_guest(void);
+-long kvmppc_realmode_hmi_handler(void);
+-long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+-                    long pte_index, unsigned long pteh, unsigned long ptel);
+-long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
+-                     unsigned long pte_index, unsigned long avpn);
+-long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu);
+-long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+-                      unsigned long pte_index, unsigned long avpn,
+-                      unsigned long va);
+-long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
+-                   unsigned long pte_index);
+-long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
+-                        unsigned long pte_index);
+-long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
+-                        unsigned long pte_index);
+-long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
+-                          unsigned long slb_v, unsigned int status, bool data);
+-unsigned long kvmppc_rm_h_xirr(struct kvm_vcpu *vcpu);
+-int kvmppc_rm_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
+-                    unsigned long mfrr);
+-int kvmppc_rm_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr);
+-int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr);
+-#endif
+-
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index a5b94be..2da67bf 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -511,6 +511,48 @@ static inline int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32 cmd)
+ #endif
+ 
+ /*
++ * Prototypes for functions called only from assembler code.
++ * Having prototypes reduces sparse errors.
++ */
++long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
++			 unsigned long ioba, unsigned long tce);
++long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
++				  unsigned long liobn, unsigned long ioba,
++				  unsigned long tce_list, unsigned long npages);
++long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
++			   unsigned long liobn, unsigned long ioba,
++			   unsigned long tce_value, unsigned long npages);
++long int kvmppc_rm_h_confer(struct kvm_vcpu *vcpu, int target,
++                            unsigned int yield_count);
++long kvmppc_h_random(struct kvm_vcpu *vcpu);
++void kvmhv_commence_exit(int trap);
++long kvmppc_realmode_machine_check(struct kvm_vcpu *vcpu);
++void kvmppc_subcore_enter_guest(void);
++void kvmppc_subcore_exit_guest(void);
++long kvmppc_realmode_hmi_handler(void);
++long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
++                    long pte_index, unsigned long pteh, unsigned long ptel);
++long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
++                     unsigned long pte_index, unsigned long avpn);
++long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu);
++long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
++                      unsigned long pte_index, unsigned long avpn,
++                      unsigned long va);
++long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
++                   unsigned long pte_index);
++long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
++                        unsigned long pte_index);
++long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
++                        unsigned long pte_index);
++long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
++                          unsigned long slb_v, unsigned int status, bool data);
++unsigned long kvmppc_rm_h_xirr(struct kvm_vcpu *vcpu);
++int kvmppc_rm_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
++                    unsigned long mfrr);
++int kvmppc_rm_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr);
++int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr);
++
++/*
+  * Host-side operations we want to set up while running in real
+  * mode in the guest operating on the xics.
+  * Currently only VCPU wakeup is supported.
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index 66e9827..e4c4ea9 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -39,7 +39,6 @@
+ #include <asm/udbg.h>
+ #include <asm/iommu.h>
+ #include <asm/tce.h>
+-#include <asm/asm-prototypes.h>
+ 
+ #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index 11561f0..5bb24be 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -26,7 +26,6 @@
+ #include <asm/dbell.h>
+ #include <asm/cputhreads.h>
+ #include <asm/io.h>
+-#include <asm/asm-prototypes.h>
+ #include <asm/opal.h>
+ #include <asm/smp.h>
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
+index be1cee5..7ef0993 100644
+--- a/arch/powerpc/kvm/book3s_hv_ras.c
++++ b/arch/powerpc/kvm/book3s_hv_ras.c
+@@ -16,7 +16,7 @@
+ #include <asm/machdep.h>
+ #include <asm/cputhreads.h>
+ #include <asm/hmi.h>
+-#include <asm/asm-prototypes.h>
++#include <asm/kvm_ppc.h>
+ 
+ /* SRR1 bits for machine check on POWER7 */
+ #define SRR1_MC_LDSTERR		(1ul << (63-42))
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 378b962..9ef3c4b 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -21,7 +21,6 @@
+ #include <asm/hvcall.h>
+ #include <asm/synch.h>
+ #include <asm/ppc-opcode.h>
+-#include <asm/asm-prototypes.h>
+ 
+ /* Translate address of a vmalloc'd thing to a linear map address */
+ static void *real_vmalloc_addr(void *x)
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+index 6a4c4d75..06edc43 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+@@ -24,7 +24,6 @@
+ #include <asm/pnv-pci.h>
+ #include <asm/opal.h>
+ #include <asm/smp.h>
+-#include <asm/asm-prototypes.h>
+ 
+ #include "book3s_xics.h"
+ 
 -- 
-Alexey
+2.10.2
