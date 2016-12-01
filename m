@@ -1,55 +1,41 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
+Return-Path: <andrew.donnellan@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTcns6HV5zDvnx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 10:58:57 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTdL14jGdzDvvX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 11:23:21 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uAUNwVZf146384
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 18:58:55 -0500
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2728bv9bc3-1
+ uB10IfH6010250
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 19:23:19 -0500
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2724mx457t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 18:58:55 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 19:23:18 -0500
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 1 Dec 2016 09:58:52 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id EE32D3578056
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 10:58:50 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uAUNwoqC262574
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 10:58:50 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uAUNwoup020751
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 10:58:50 +1100
-Date: Thu, 1 Dec 2016 11:00:13 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, clsoto@us.ibm.com,
- linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 3/7] PCI: Separate VF BAR updates from standard BAR
- updates
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20161129035218.21453.93986.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20161129041506.21453.18478.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20161129045546.GB20642@gwshan>
- <20161129144826.GB7285@bhelgaas-glaptop.roam.corp.google.com>
- <20161129232028.GA8143@gwshan>
- <20161130000605.GC7375@bhelgaas-glaptop.roam.corp.google.com>
- <20161130230254.GA10567@gwshan>
- <20161130234518.GA9409@bhelgaas-glaptop.roam.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161130234518.GA9409@bhelgaas-glaptop.roam.corp.google.com>
-Message-Id: <20161201000013.GA15529@gwshan>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 1 Dec 2016 10:23:16 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D1C2E3578056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 11:23:14 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uB10NE7C56754382
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 11:23:14 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uB10NE8s029753
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 11:23:14 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, ruscur@russell.cc, gwshan@linux.vnet.ibm.com
+Cc: ukrishn@linux.vnet.ibm.com, pradghos@in.ibm.com
+Subject: [PATCH] powerpc/eeh: fix deadlock when PE frozen state can't be
+ cleared
+Date: Thu,  1 Dec 2016 11:23:05 +1100
+Message-Id: <20161201002305.14591-1-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,101 +45,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 30, 2016 at 05:45:18PM -0600, Bjorn Helgaas wrote:
->On Thu, Dec 01, 2016 at 10:02:54AM +1100, Gavin Shan wrote:
->> On Tue, Nov 29, 2016 at 06:06:05PM -0600, Bjorn Helgaas wrote:
->> >On Wed, Nov 30, 2016 at 10:20:28AM +1100, Gavin Shan wrote:
->> >> On Tue, Nov 29, 2016 at 08:48:26AM -0600, Bjorn Helgaas wrote:
->> >> >On Tue, Nov 29, 2016 at 03:55:46PM +1100, Gavin Shan wrote:
->> >> >> On Mon, Nov 28, 2016 at 10:15:06PM -0600, Bjorn Helgaas wrote:
->> >> >> >Previously pci_update_resource() used the same code path for updating
->> >> >> >standard BARs and VF BARs in SR-IOV capabilities.
->> >> >> >
->> >> >> >Split the VF BAR update into a new pci_iov_update_resource() internal
->> >> >> >interface, which makes it simpler to compute the BAR address (we can get
->> >> >> >rid of pci_resource_bar() and pci_iov_resource_bar()).
->> >> >> >
->> >> >> >This patch:
->> >> >> >
->> >> >> >  - Renames pci_update_resource() to pci_std_update_resource(),
->> >> >> >  - Adds pci_iov_update_resource(),
->> >> >> >  - Makes pci_update_resource() a wrapper that calls the appropriate one,
->> >> >> >
->> >> >> >No functional change intended.
->> >
->> >> >However, I don't think this code in pci_update_resource() is obviously
->> >> >correct:
->> >> >
->> >> >  new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
->> >> >
->> >> >PCI_REGION_FLAG_MASK is 0xf.  For memory BARs, bits 0-3 are read-only
->> >> >property bits.  For I/O BARs, bits 0-1 are read-only and bits 2-3 are
->> >> >part of the address, so on the face of it, the above could corrupt two
->> >> >bits of an I/O address.
->> >> >
->> >> >It's true that decode_bar() initializes flags correctly, using
->> >> >PCI_BASE_ADDRESS_IO_MASK for I/O BARs and PCI_BASE_ADDRESS_MEM_MASK
->> >> >for memory BARs, but it would take a little more digging to be sure
->> >> >that we never set bits 2-3 of flags for an I/O resource elsewhere.
->> >> >
->> >> 
->> >> The BAR's property bits are probed from device-tree, not hardware
->> >> on some platforms (e.g. pSeries). Also, there is only one (property)
->> >> bit if it's a ROM BAR. So more check as below might be needed because
->> >> the code (without the enhancement) should also work fine.
->> >
->> >Ah, right, I forgot about that.  I didn't do enough digging :)
->> >
->> >> >How about this in pci_std_update_resource():
->> >> >
->> >> >        pcibios_resource_to_bus(dev->bus, &region, res);
->> >> >        new = region.start;
->> >> >
->> >> >        if (res->flags & IORESOURCE_IO) {
->> >> >                mask = (u32)PCI_BASE_ADDRESS_IO_MASK;
->> >> >                new |= res->flags & ~PCI_BASE_ADDRESS_IO_MASK;
->> >> >        } else {
->> >> >                mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
->> >> >                new |= res->flags & ~PCI_BASE_ADDRESS_MEM_MASK;
->> >> >        }
->> >> >
->> >> 
->> >> 	if (res->flags & IORESOURCE_IO) {
->> >> 		mask = (u32)PCI_BASE_ADDRESS_IO_MASK;
->> >> 		new |= res->flags & ~PCI_BASE_ADDRESS_IO_MASK;
->> >> 	} else if (resno < PCI_ROM_RESOURCE) {
->> >> 		mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
->> >> 		new |= res->flags & ~PCI_BASE_ADDRESS_MEM_MASK;
->> >> 	} else if (resno == PCI_ROM_RESOURCE) {
->> >> 		mask = ~((u32)IORESOURCE_ROM_ENABLE);
->> >> 		new |= res->flags & IORESOURCE_ROM_ENABLE);
->> >> 	} else {
->> >> 		dev_warn(&dev->dev, "BAR#%d out of range\n", resno);
->> >> 		return;
->> >> 	}
->> >
->> >After this patch, the only thing we OR into a ROM BAR value is
->> >PCI_ROM_ADDRESS_ENABLE, and that's done below, only if the ROM is
->> >already enabled.
->> >
->> >I did update the ROM mask (to PCI_ROM_ADDRESS_MASK).  I'm not 100%
->> >sure about doing that -- it follows the spec, but it is a change from
->> >what we've been doing before.  I guess it should be safe because it
->> >means we're checking fewer bits than before (only the top 21 bits for
->> >ROMs, where we used check the top 28), so the only possible difference
->> >is that we might not warn about "error updating" in some case where we
->> >used to.
->> >
->> >I'm not really sure about the value of the "error updating" checks to
->> >begin with, though I guess it does help us find broken devices that
->> >put non-BARs where BARs are supposed to be.
->> >
->> 
->> Yeah, agree. Bjorn, I don't have more comments. please take your time
->> to respin the series and maybe applied it. I really want to see the
->> fixes can be in 4.10 if possible :-)
->
->These will definitely be in v4.10.  Thanks for all your help!
->
+In eeh_reset_device(), we take the pci_rescan_remove_lock immediately after
+after we call eeh_reset_pe() to reset the PCI controller. We then call
+eeh_clear_pe_frozen_state(), which can return an error. In this case, we
+bail out of eeh_reset_device() without calling pci_unlock_rescan_remove().
 
-Thanks for your helps actually :-)
+Add a call to pci_unlock_rescan_remove() in the eeh_clear_pe_frozen_state()
+error path so that we don't cause a deadlock later on.
+
+Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
+Fixes: 78954700631f ("powerpc/eeh: Avoid I/O access during PE reset")
+Cc: stable@vger.kernel.org
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ arch/powerpc/kernel/eeh_driver.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index a62be72..5c31369 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -671,8 +671,10 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+ 
+ 	/* Clear frozen state */
+ 	rc = eeh_clear_pe_frozen_state(pe, false);
+-	if (rc)
++	if (rc) {
++		pci_unlock_rescan_remove();
+ 		return rc;
++	}
+ 
+ 	/* Give the system 5 seconds to finish running the user-space
+ 	 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes,
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
