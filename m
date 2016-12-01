@@ -1,17 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTjTV3B7GzDvyT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 14:30:06 +1100 (AEDT)
-Date: Thu, 1 Dec 2016 14:30:04 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] KVM: PPC: Book3S: Move prototypes for KVM functions into
- kvm_ppc.h
-Message-ID: <20161201033004.2yh4txylpayxzmpu@oak.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTlPr107kzDvyC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 15:57:04 +1100 (AEDT)
+Date: Thu, 1 Dec 2016 12:56:53 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, fenghua.yu@intel.com, tony.luck@intel.com,
+ linux-ia64@vger.kernel.org, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, ebiederm@xmission.com,
+ Michael Ellerman <mpe@ellerman.id.au>, vgoyal@redhat.com
+Subject: Re: [PATCH v2 2/5] ia64: reuse append_elf_note() and final_note()
+ functions
+Message-ID: <20161201045653.GA13670@dhcp-128-65.nay.redhat.com>
+References: <148007477669.1053.4107773905913128028.stgit@hbathini.in.ibm.com>
+ <148007484315.1053.12317233313990302812.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <148007484315.1053.12317233313990302812.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,200 +28,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the prototypes for functions that are only called from
-assembler code out of asm/asm-prototypes.h into asm/kvm_ppc.h.
-The prototypes were added in commit ebe4535fbe7a ("KVM: PPC:
-Book3S HV: sparse: prototypes for functions called from assembler",
-2016-10-10), but given that the functions are KVM functions,
-having them in a KVM header will be better for long-term
-maintenance.
+Hi Hari
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
-[For information; I intend to merge this through the KVM tree.]
+Personally I like V1 more, but split the patch 2 is easier for ia64
+people to reivew.  I did basic x86 testing, it runs ok.
 
- arch/powerpc/include/asm/asm-prototypes.h | 44 -------------------------------
- arch/powerpc/include/asm/kvm_ppc.h        | 42 +++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_64_vio_hv.c       |  1 -
- arch/powerpc/kvm/book3s_hv_builtin.c      |  1 -
- arch/powerpc/kvm/book3s_hv_ras.c          |  2 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  1 -
- arch/powerpc/kvm/book3s_hv_rm_xics.c      |  1 -
- 7 files changed, 43 insertions(+), 49 deletions(-)
+On 11/25/16 at 05:24pm, Hari Bathini wrote:
+> Get rid of multiple definitions of append_elf_note() & final_note()
+> functions. Reuse these functions compiled under CONFIG_CRASH_CORE.
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> ---
+>  arch/ia64/kernel/crash.c   |   22 ----------------------
+>  include/linux/crash_core.h |    4 ++++
+>  kernel/crash_core.c        |    6 +++---
+>  kernel/kexec_core.c        |   28 ----------------------------
+>  4 files changed, 7 insertions(+), 53 deletions(-)
+> 
+> diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
+> index 2955f35..75859a0 100644
+> --- a/arch/ia64/kernel/crash.c
+> +++ b/arch/ia64/kernel/crash.c
+> @@ -27,28 +27,6 @@ static int kdump_freeze_monarch;
+>  static int kdump_on_init = 1;
+>  static int kdump_on_fatal_mca = 1;
+>  
+> -static inline Elf64_Word
+> -*append_elf_note(Elf64_Word *buf, char *name, unsigned type, void *data,
+> -		size_t data_len)
+> -{
+> -	struct elf_note *note = (struct elf_note *)buf;
+> -	note->n_namesz = strlen(name) + 1;
+> -	note->n_descsz = data_len;
+> -	note->n_type   = type;
+> -	buf += (sizeof(*note) + 3)/4;
+> -	memcpy(buf, name, note->n_namesz);
+> -	buf += (note->n_namesz + 3)/4;
+> -	memcpy(buf, data, data_len);
+> -	buf += (data_len + 3)/4;
+> -	return buf;
+> -}
+> -
+> -static void
+> -final_note(void *buf)
+> -{
+> -	memset(buf, 0, sizeof(struct elf_note));
+> -}
+> -
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 6c853bc..d149273 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -14,9 +14,6 @@
- 
- #include <linux/threads.h>
- #include <linux/kprobes.h>
--#ifdef CONFIG_KVM
--#include <linux/kvm_host.h>
--#endif
- 
- #include <uapi/asm/ucontext.h>
- 
-@@ -112,45 +109,4 @@ void early_setup_secondary(void);
- /* time */
- void accumulate_stolen_time(void);
- 
--/* kvm */
--#ifdef CONFIG_KVM
--long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
--			 unsigned long ioba, unsigned long tce);
--long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
--				  unsigned long liobn, unsigned long ioba,
--				  unsigned long tce_list, unsigned long npages);
--long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
--			   unsigned long liobn, unsigned long ioba,
--			   unsigned long tce_value, unsigned long npages);
--long int kvmppc_rm_h_confer(struct kvm_vcpu *vcpu, int target,
--                            unsigned int yield_count);
--long kvmppc_h_random(struct kvm_vcpu *vcpu);
--void kvmhv_commence_exit(int trap);
--long kvmppc_realmode_machine_check(struct kvm_vcpu *vcpu);
--void kvmppc_subcore_enter_guest(void);
--void kvmppc_subcore_exit_guest(void);
--long kvmppc_realmode_hmi_handler(void);
--long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
--                    long pte_index, unsigned long pteh, unsigned long ptel);
--long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
--                     unsigned long pte_index, unsigned long avpn);
--long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu);
--long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
--                      unsigned long pte_index, unsigned long avpn,
--                      unsigned long va);
--long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
--                   unsigned long pte_index);
--long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
--                        unsigned long pte_index);
--long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
--                        unsigned long pte_index);
--long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
--                          unsigned long slb_v, unsigned int status, bool data);
--unsigned long kvmppc_rm_h_xirr(struct kvm_vcpu *vcpu);
--int kvmppc_rm_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
--                    unsigned long mfrr);
--int kvmppc_rm_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr);
--int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr);
--#endif
--
- #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index a5b94be..2da67bf 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -511,6 +511,48 @@ static inline int kvmppc_xics_hcall(struct kvm_vcpu *vcpu, u32 cmd)
- #endif
- 
- /*
-+ * Prototypes for functions called only from assembler code.
-+ * Having prototypes reduces sparse errors.
-+ */
-+long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-+			 unsigned long ioba, unsigned long tce);
-+long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
-+				  unsigned long liobn, unsigned long ioba,
-+				  unsigned long tce_list, unsigned long npages);
-+long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
-+			   unsigned long liobn, unsigned long ioba,
-+			   unsigned long tce_value, unsigned long npages);
-+long int kvmppc_rm_h_confer(struct kvm_vcpu *vcpu, int target,
-+                            unsigned int yield_count);
-+long kvmppc_h_random(struct kvm_vcpu *vcpu);
-+void kvmhv_commence_exit(int trap);
-+long kvmppc_realmode_machine_check(struct kvm_vcpu *vcpu);
-+void kvmppc_subcore_enter_guest(void);
-+void kvmppc_subcore_exit_guest(void);
-+long kvmppc_realmode_hmi_handler(void);
-+long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
-+                    long pte_index, unsigned long pteh, unsigned long ptel);
-+long kvmppc_h_remove(struct kvm_vcpu *vcpu, unsigned long flags,
-+                     unsigned long pte_index, unsigned long avpn);
-+long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu);
-+long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
-+                      unsigned long pte_index, unsigned long avpn,
-+                      unsigned long va);
-+long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
-+                   unsigned long pte_index);
-+long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
-+                        unsigned long pte_index);
-+long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
-+                        unsigned long pte_index);
-+long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
-+                          unsigned long slb_v, unsigned int status, bool data);
-+unsigned long kvmppc_rm_h_xirr(struct kvm_vcpu *vcpu);
-+int kvmppc_rm_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
-+                    unsigned long mfrr);
-+int kvmppc_rm_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr);
-+int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr);
-+
-+/*
-  * Host-side operations we want to set up while running in real
-  * mode in the guest operating on the xics.
-  * Currently only VCPU wakeup is supported.
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 66e9827..e4c4ea9 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -39,7 +39,6 @@
- #include <asm/udbg.h>
- #include <asm/iommu.h>
- #include <asm/tce.h>
--#include <asm/asm-prototypes.h>
- 
- #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-index 11561f0..5bb24be 100644
---- a/arch/powerpc/kvm/book3s_hv_builtin.c
-+++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-@@ -26,7 +26,6 @@
- #include <asm/dbell.h>
- #include <asm/cputhreads.h>
- #include <asm/io.h>
--#include <asm/asm-prototypes.h>
- #include <asm/opal.h>
- #include <asm/smp.h>
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index be1cee5..7ef0993 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -16,7 +16,7 @@
- #include <asm/machdep.h>
- #include <asm/cputhreads.h>
- #include <asm/hmi.h>
--#include <asm/asm-prototypes.h>
-+#include <asm/kvm_ppc.h>
- 
- /* SRR1 bits for machine check on POWER7 */
- #define SRR1_MC_LDSTERR		(1ul << (63-42))
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 378b962..9ef3c4b 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -21,7 +21,6 @@
- #include <asm/hvcall.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
--#include <asm/asm-prototypes.h>
- 
- /* Translate address of a vmalloc'd thing to a linear map address */
- static void *real_vmalloc_addr(void *x)
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-index 6a4c4d75..06edc43 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-@@ -24,7 +24,6 @@
- #include <asm/pnv-pci.h>
- #include <asm/opal.h>
- #include <asm/smp.h>
--#include <asm/asm-prototypes.h>
- 
- #include "book3s_xics.h"
- 
--- 
-2.10.2
+The above IA64 version looks better than the functions in kexec_core.c
+about the Elf64_Word type usage and the simpler final_note function.
+
+Care to update crash_core.c to use this instead?
+
+Otherwise I'm fine with the changes.
+
+>  extern void ia64_dump_cpu_regs(void *);
+>  
+>  static DEFINE_PER_CPU(struct elf_prstatus, elf_prstatus);
+> diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
+> index 9a4f4b0..2ae20b1 100644
+> --- a/include/linux/crash_core.h
+> +++ b/include/linux/crash_core.h
+> @@ -61,6 +61,10 @@ extern u32 vmcoreinfo_note[VMCOREINFO_NOTE_SIZE/4];
+>  extern size_t vmcoreinfo_size;
+>  extern size_t vmcoreinfo_max_size;
+>  
+> +u32 *append_elf_note(u32 *buf, char *name, unsigned int type,
+> +		     void *data, size_t data_len);
+> +void final_note(u32 *buf);
+> +
+>  int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
+>  		unsigned long long *crash_size, unsigned long long *crash_base);
+>  int parse_crashkernel_high(char *cmdline, unsigned long long system_ram,
+> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+> index 60a98fc..9223976 100644
+> --- a/kernel/crash_core.c
+> +++ b/kernel/crash_core.c
+> @@ -291,8 +291,8 @@ int __init parse_crashkernel_low(char *cmdline,
+>  				"crashkernel=", suffix_tbl[SUFFIX_LOW]);
+>  }
+>  
+> -static u32 *append_elf_note(u32 *buf, char *name, unsigned int type,
+> -			    void *data, size_t data_len)
+> +u32 *append_elf_note(u32 *buf, char *name, unsigned int type,
+> +		     void *data, size_t data_len)
+>  {
+>  	struct elf_note note;
+>  
+> @@ -309,7 +309,7 @@ static u32 *append_elf_note(u32 *buf, char *name, unsigned int type,
+>  	return buf;
+>  }
+>  
+> -static void final_note(u32 *buf)
+> +void final_note(u32 *buf)
+>  {
+>  	struct elf_note note;
+>  
+> diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
+> index 3aa21f3..596cb32 100644
+> --- a/kernel/kexec_core.c
+> +++ b/kernel/kexec_core.c
+> @@ -988,34 +988,6 @@ int crash_shrink_memory(unsigned long new_size)
+>  	return ret;
+>  }
+>  
+> -static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
+> -			    size_t data_len)
+> -{
+> -	struct elf_note note;
+> -
+> -	note.n_namesz = strlen(name) + 1;
+> -	note.n_descsz = data_len;
+> -	note.n_type   = type;
+> -	memcpy(buf, &note, sizeof(note));
+> -	buf += (sizeof(note) + 3)/4;
+> -	memcpy(buf, name, note.n_namesz);
+> -	buf += (note.n_namesz + 3)/4;
+> -	memcpy(buf, data, note.n_descsz);
+> -	buf += (note.n_descsz + 3)/4;
+> -
+> -	return buf;
+> -}
+> -
+> -static void final_note(u32 *buf)
+> -{
+> -	struct elf_note note;
+> -
+> -	note.n_namesz = 0;
+> -	note.n_descsz = 0;
+> -	note.n_type   = 0;
+> -	memcpy(buf, &note, sizeof(note));
+> -}
+> -
+>  void crash_save_cpu(struct pt_regs *regs, int cpu)
+>  {
+>  	struct elf_prstatus prstatus;
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
+
+Thanks
+Dave
