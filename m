@@ -1,17 +1,17 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tTn8G0TMfzDvyF
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tTn8G0NZPzDvyC
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 17:15:25 +1100 (AEDT)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Message-Id: <99a2b46bcc2885ee9ad790bb2fc3305ac1bbc81c.1480572271.git.fthain@telegraphics.com.au>
+Message-Id: <9a7138cc43b5fa07b719600fae74e656ea6b096c.1480572271.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1480572271.git.fthain@telegraphics.com.au>
 References: <cover.1480572271.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 04/10] via-cuda: Prevent read buffer overflow
+Subject: [PATCH 01/10] via-cuda: Cleanup printk calls
 Date: Thu,  1 Dec 2016 01:09:33 -0500 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,41 +22,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the Cuda driver does not enter the 'read_done' state for some
-reason, it may continue in the 'reading' state until the buffer
-overflows. Add a bounds check to prevent this.
+Add missing log message severity, remove old debug messages and
+replace printk() loop with print_hex_dump() call.
 
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/macintosh/via-cuda.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/macintosh/via-cuda.c | 26 ++++++--------------------
+ 1 file changed, 6 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/macintosh/via-cuda.c b/drivers/macintosh/via-cuda.c
-index 64626d2..acf3a95 100644
+index bad1813..98ced65 100644
 --- a/drivers/macintosh/via-cuda.c
 +++ b/drivers/macintosh/via-cuda.c
-@@ -470,6 +470,8 @@ cuda_poll(void)
- }
- EXPORT_SYMBOL(cuda_poll);
+@@ -221,7 +221,7 @@ static int __init via_cuda_start(void)
+ 	return -EAGAIN;
+     }
  
-+#define ARRAY_FULL(a, p)	((p) - (a) == ARRAY_SIZE(a))
+-    printk("Macintosh CUDA driver v0.5 for Unified ADB.\n");
++    pr_info("Macintosh CUDA driver v0.5 for Unified ADB.\n");
+ 
+     cuda_fully_inited = 1;
+     return 0;
+@@ -251,7 +251,7 @@ cuda_probe(void)
+     	int x;							\
+ 	for (x = 1000; !(cond); --x) {				\
+ 	    if (x == 0) {					\
+-		printk("Timeout waiting for " what "\n");	\
++		pr_err("Timeout waiting for " what "\n");	\
+ 		return -ENXIO;					\
+ 	    }							\
+ 	    udelay(100);					\
+@@ -357,6 +357,7 @@ cuda_reset_adb_bus(void)
+     return 0;
+ }
+ #endif /* CONFIG_ADB */
 +
- static irqreturn_t
- cuda_interrupt(int irq, void *arg)
- {
-@@ -558,7 +560,11 @@ cuda_interrupt(int irq, void *arg)
+ /* Construct and send a cuda request */
+ int
+ cuda_request(struct adb_request *req, void (*done)(struct adb_request *),
+@@ -474,12 +475,9 @@ cuda_interrupt(int irq, void *arg)
+     }
+     
+     status = (~in_8(&via[B]) & (TIP|TREQ)) | (in_8(&via[ACR]) & SR_OUT);
+-    /* printk("cuda_interrupt: state=%d status=%x\n", cuda_state, status); */
+     switch (cuda_state) {
+     case idle:
+ 	/* CUDA has sent us the first byte of data - unsolicited */
+-	if (status != TREQ)
+-	    printk("cuda: state=idle, status=%x\n", status);
+ 	(void)in_8(&via[SR]);
+ 	out_8(&via[B], in_8(&via[B]) & ~TIP);
+ 	cuda_state = reading;
+@@ -489,8 +487,6 @@ cuda_interrupt(int irq, void *arg)
+ 
+     case awaiting_reply:
+ 	/* CUDA has sent us the first byte of data of a reply */
+-	if (status != TREQ)
+-	    printk("cuda: state=awaiting_reply, status=%x\n", status);
+ 	(void)in_8(&via[SR]);
+ 	out_8(&via[B], in_8(&via[B]) & ~TIP);
+ 	cuda_state = reading;
+@@ -506,9 +502,6 @@ cuda_interrupt(int irq, void *arg)
+ 	    out_8(&via[B], in_8(&via[B]) | TIP | TACK);
+ 	    cuda_state = idle;
+ 	} else {
+-	    /* assert status == TIP + SR_OUT */
+-	    if (status != TIP + SR_OUT)
+-		printk("cuda: state=sent_first_byte status=%x\n", status);
+ 	    out_8(&via[SR], current_req->data[1]);
+ 	    out_8(&via[B], in_8(&via[B]) ^ TACK);
+ 	    data_index = 2;
+@@ -545,9 +538,6 @@ cuda_interrupt(int irq, void *arg)
+ 	    out_8(&via[B], in_8(&via[B]) | TACK | TIP);
+ 	    cuda_state = read_done;
+ 	} else {
+-	    /* assert status == TIP | TREQ */
+-	    if (status != TIP + TREQ)
+-		printk("cuda: state=reading status=%x\n", status);
+ 	    out_8(&via[B], in_8(&via[B]) ^ TACK);
+ 	}
+ 	break;
+@@ -593,7 +583,7 @@ cuda_interrupt(int irq, void *arg)
  	break;
  
-     case reading:
--	*reply_ptr++ = in_8(&via[SR]);
-+	if (reading_reply ? ARRAY_FULL(current_req->reply, reply_ptr)
-+	                  : ARRAY_FULL(cuda_rbuf, reply_ptr))
-+	    (void)in_8(&via[SR]);
-+	else
-+	    *reply_ptr++ = in_8(&via[SR]);
- 	if (!TREQ_asserted(status)) {
- 	    /* that's all folks */
- 	    negate_TIP_and_TACK();
+     default:
+-	printk("cuda_interrupt: unknown cuda_state %d?\n", cuda_state);
++	pr_err("cuda_interrupt: unknown cuda_state %d?\n", cuda_state);
+     }
+     spin_unlock(&cuda_lock);
+     if (complete && req) {
+@@ -614,8 +604,6 @@ cuda_interrupt(int irq, void *arg)
+ static void
+ cuda_input(unsigned char *buf, int nb)
+ {
+-    int i;
+-
+     switch (buf[0]) {
+     case ADB_PACKET:
+ #ifdef CONFIG_XMON
+@@ -633,9 +621,7 @@ cuda_input(unsigned char *buf, int nb)
+ 	break;
+ 
+     default:
+-	printk("data from cuda (%d bytes):", nb);
+-	for (i = 0; i < nb; ++i)
+-	    printk(" %.2x", buf[i]);
+-	printk("\n");
++	print_hex_dump(KERN_INFO, "cuda_input: ", DUMP_PREFIX_NONE, 32, 1,
++	               buf, nb, false);
+     }
+ }
 -- 
 2.7.3
