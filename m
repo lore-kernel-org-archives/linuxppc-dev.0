@@ -1,15 +1,41 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mukesh02@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTrpH4yxPzDvyc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 20:00:07 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: rashmicy@gmail.com
-Subject: [PATCH] powerpc/mm: Fix page table dump build on non-Book3S
-Date: Thu,  1 Dec 2016 20:00:00 +1100
-Message-Id: <1480582800-28597-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTs0005gdzDvj3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 20:08:31 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB194KA1117684
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 04:08:28 -0500
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 272f8ewcdh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2016 04:08:28 -0500
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
+ Thu, 1 Dec 2016 14:38:23 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 39FCD394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 14:38:21 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uB198KrF31129746
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 14:38:20 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uB198JW2011349
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 14:38:20 +0530
+From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] powerpc/powernv/opal-dump : Handles opal_dump_info
+ properly
+Date: Thu,  1 Dec 2016 14:38:08 +0530
+Message-Id: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,69 +45,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the recent commit 1515ab932156 ("powerpc/mm: Dump hash table") we
-added code to dump the hage page table. Currently this can be selected
-to build on any platform. However it breaks the build if we're building
-for a non-Book3S platform, because none of the hash page table related
-defines and so on exist. So restrict it to building only on Book3S.
+Moves the return value check of 'opal_dump_info' to a proper place which
+was previously unnecessarily filling all the dump info even on failure.
 
-Similarly in commit 8eb07b187000 ("powerpc/mm: Dump linux pagetables")
-we added code to dump the Linux page tables, which uses some constants
-which are only defined on Book3S - so guard those with an #ifdef.
-
-Fixes: 1515ab932156 ("powerpc/mm: Dump hash table")
-Fixes: 8eb07b187000 ("powerpc/mm: Dump linux pagetables")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
 ---
- arch/powerpc/Kconfig.debug             | 4 ++++
- arch/powerpc/mm/Makefile               | 4 ++--
- arch/powerpc/mm/dump_linuxpagetables.c | 2 ++
- 3 files changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/opal-dump.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 20cf770611ec..949258d412d0 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -366,4 +366,8 @@ config PPC_PTDUMP
+diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+index 4c82782..ae32212 100644
+--- a/arch/powerpc/platforms/powernv/opal-dump.c
++++ b/arch/powerpc/platforms/powernv/opal-dump.c
+@@ -225,13 +225,16 @@ static int64_t dump_read_info(uint32_t *dump_id, uint32_t *dump_size, uint32_t *
+ 	if (rc == OPAL_PARAMETER)
+ 		rc = opal_dump_info(&id, &size);
  
- 	  If you are unsure, say N.
- 
-+config PPC_HTDUMP
-+	def_bool y
-+	depends on PPC_PTDUMP && PPC_BOOK3S
++	if (rc) {
++		pr_warn("%s: Failed to get dump info (%d)\n",
++			__func__, rc);
++		return rc;
++	}
 +
- endmenu
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index f4ffe1f68ce9..5784682d7b63 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -42,5 +42,5 @@ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
- obj-$(CONFIG_HIGHMEM)		+= highmem.o
- obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
- obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
--obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o \
--				   dump_hashpagetable.o
-+obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
-+obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index d242bc79ae64..49abaf4dc8e3 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -159,6 +159,7 @@ static const struct flag_info flag_array[] = {
- 		.set	= "no cache",
- 		.clear	= "        ",
- 	}, {
-+#ifdef CONFIG_PPC_BOOK3S_64
- 		.mask	= H_PAGE_BUSY,
- 		.val	= H_PAGE_BUSY,
- 		.set	= "busy",
-@@ -183,6 +184,7 @@ static const struct flag_info flag_array[] = {
- 		.val	= H_PAGE_F_SECOND,
- 		.set	= "f_second",
- 	}, {
-+#endif
- 		.mask	= _PAGE_SPECIAL,
- 		.val	= _PAGE_SPECIAL,
- 		.set	= "special",
+ 	*dump_id = be32_to_cpu(id);
+ 	*dump_size = be32_to_cpu(size);
+ 	*dump_type = be32_to_cpu(type);
+ 
+-	if (rc)
+-		pr_warn("%s: Failed to get dump info (%d)\n",
+-			__func__, rc);
+ 	return rc;
+ }
+ 
 -- 
 2.7.4
