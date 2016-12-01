@@ -1,22 +1,19 @@
-Return-Path: <corbet@lwn.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tV4c122LrzDw1j
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 04:52:01 +1100 (AEDT)
-Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01::f03c:91ff:fe2c:2b9f])
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tV4c06QMNz9t1B
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2016 04:52:00 +1100 (AEDT)
-Date: Thu, 1 Dec 2016 10:45:27 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linux-doc@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH][DOC] ppc/idle: Add documentation for powersave=off
-Message-ID: <20161201104527.18c75e8a@lwn.net>
-In-Reply-To: <9d2bef9b-1df5-fb84-870e-14572ef0ea40@gmail.com>
-References: <9d2bef9b-1df5-fb84-870e-14572ef0ea40@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tV7656HSmzDw1n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 06:44:44 +1100 (AEDT)
+Date: Thu, 1 Dec 2016 12:44:40 -0700
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH kernel v7 5/7] vfio/spapr: Postpone default window creation
+Message-ID: <20161201124440.57863bff@t450s.home>
+In-Reply-To: <1480488725-12783-6-git-send-email-aik@ozlabs.ru>
+References: <1480488725-12783-1-git-send-email-aik@ozlabs.ru>
+ <1480488725-12783-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,12 +25,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2 Dec 2016 00:08:26 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
+On Wed, 30 Nov 2016 17:52:03 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-> Update kernel-parameters.txt to add Documentation
-> for powersave=off.
+> We are going to allow the userspace to configure container in
+> one memory context and pass container fd to another so
+> we are postponing memory allocations accounted against
+> the locked memory limit. One of previous patches took care of
+> it_userspace.
+> 
+> At the moment we create the default DMA window when the first group is
+> attached to a container; this is done for the userspace which is not
+> DDW-aware but familiar with the SPAPR TCE IOMMU v2 in the part of memory
+> pre-registration - such client expects the default DMA window to exist.
+> 
+> This postpones the default DMA window allocation till one of
+> the folliwing happens:
+> 1. first map/unmap request arrives;
+> 2. new window is requested;
+> This adds noop for the case when the userspace requested removal
+> of the default window which has not been created yet.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+> Changes:
+> v6:
+> * new helper tce_iommu_create_default_window() moved to a separate patch;
+> * creates a default window when new window is requested; it used to
+> reset the def_window_pending flag instead;
+> * def_window_pending handling (mostly) localized in
+> tce_iommu_create_default_window() now, the only exception is removal
+> of not yet created default window.
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 40 +++++++++++++++++++++++--------------
+>  1 file changed, 25 insertions(+), 15 deletions(-)
 
-Applied to docs-next, thanks.
 
-jon
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
+
+ 
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index a67bbfd..88622be 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -97,6 +97,7 @@ struct tce_container {
+>  	struct mutex lock;
+>  	bool enabled;
+>  	bool v2;
+> +	bool def_window_pending;
+>  	unsigned long locked_pages;
+>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>  	struct list_head group_list;
+> @@ -717,6 +718,9 @@ static long tce_iommu_create_default_window(struct tce_container *container)
+>  	struct tce_iommu_group *tcegrp;
+>  	struct iommu_table_group *table_group;
+>  
+> +	if (!container->def_window_pending)
+> +		return 0;
+> +
+>  	if (!tce_groups_attached(container))
+>  		return -ENODEV;
+>  
+> @@ -730,6 +734,9 @@ static long tce_iommu_create_default_window(struct tce_container *container)
+>  			table_group->tce32_size, 1, &start_addr);
+>  	WARN_ON_ONCE(!ret && start_addr);
+>  
+> +	if (!ret)
+> +		container->def_window_pending = false;
+> +
+>  	return ret;
+>  }
+>  
+> @@ -823,6 +830,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  				VFIO_DMA_MAP_FLAG_WRITE))
+>  			return -EINVAL;
+>  
+> +		ret = tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		num = tce_iommu_find_table(container, param.iova, &tbl);
+>  		if (num < 0)
+>  			return -ENXIO;
+> @@ -886,6 +897,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		if (param.flags)
+>  			return -EINVAL;
+>  
+> +		ret = tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		num = tce_iommu_find_table(container, param.iova, &tbl);
+>  		if (num < 0)
+>  			return -ENXIO;
+> @@ -1012,6 +1027,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  
+>  		mutex_lock(&container->lock);
+>  
+> +		ret = tce_iommu_create_default_window(container);
+> +		if (ret)
+> +			return ret;
+> +
+>  		ret = tce_iommu_create_window(container, create.page_shift,
+>  				create.window_size, create.levels,
+>  				&create.start_addr);
+> @@ -1044,6 +1063,11 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		if (remove.flags)
+>  			return -EINVAL;
+>  
+> +		if (container->def_window_pending && !remove.start_addr) {
+> +			container->def_window_pending = false;
+> +			return 0;
+> +		}
+> +
+>  		mutex_lock(&container->lock);
+>  
+>  		ret = tce_iommu_remove_window(container, remove.start_addr);
+> @@ -1141,7 +1165,6 @@ static int tce_iommu_attach_group(void *iommu_data,
+>  	struct tce_container *container = iommu_data;
+>  	struct iommu_table_group *table_group;
+>  	struct tce_iommu_group *tcegrp = NULL;
+> -	bool create_default_window = false;
+>  
+>  	mutex_lock(&container->lock);
+>  
+> @@ -1189,25 +1212,12 @@ static int tce_iommu_attach_group(void *iommu_data,
+>  	} else {
+>  		ret = tce_iommu_take_ownership_ddw(container, table_group);
+>  		if (!tce_groups_attached(container) && !container->tables[0])
+> -			create_default_window = true;
+> +			container->def_window_pending = true;
+>  	}
+>  
+>  	if (!ret) {
+>  		tcegrp->grp = iommu_group;
+>  		list_add(&tcegrp->next, &container->group_list);
+> -		/*
+> -		 * If it the first group attached, check if there is
+> -		 * a default DMA window and create one if none as
+> -		 * the userspace expects it to exist.
+> -		 */
+> -		if (create_default_window) {
+> -			ret = tce_iommu_create_default_window(container);
+> -			if (ret) {
+> -				list_del(&tcegrp->next);
+> -				tce_iommu_release_ownership_ddw(container,
+> -						table_group);
+> -			}
+> -		}
+>  	}
+>  
+>  unlock_exit:
