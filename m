@@ -1,22 +1,16 @@
-Return-Path: <Yanjiang.Jin@windriver.com>
-Received: from mail5.wrs.com (mail5.windriver.com [192.103.53.11])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTlsg18FDzDvyC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 16:17:42 +1100 (AEDT)
-Message-ID: <583FAF71.7070708@windriver.com>
-Date: Thu, 1 Dec 2016 13:04:49 +0800
-From: yjin <yanjiang.jin@windriver.com>
-MIME-Version: 1.0
-To: Scott Wood <oss@buserror.net>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <mpe@ellerman.id.au>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <jinyanjiang@gmail.com>, <yanjiang.jin@windriver.com>
-Subject: Re: [PATCH] powerpc: cputime: fix a compile warning
-References: <1479704219-21403-1-git-send-email-yanjiang.jin@windriver.com>
- <1480516844.21746.66.camel@buserror.net>
-In-Reply-To: <1480516844.21746.66.camel@buserror.net>
-Content-Type: multipart/mixed; boundary="------------090906000303010903050305"
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tTn8G0MHmzDvy9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 17:15:25 +1100 (AEDT)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Message-Id: <cover.1480572271.git.fthain@telegraphics.com.au>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH 00/10] Replace via-maciisi with via-cuda driver
+Date: Thu,  1 Dec 2016 01:09:33 -0500 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,99 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---------------090906000303010903050305
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
+This patch series has some improvements for the the Cuda driver: cleanup,
+bug fixes and new functionality.
 
-Hi Scott,
+The broken via-maciisi driver is then replaced by via-cuda. This
+eliminates over 600 LoC.
 
-Thanks for your reminder!
-I rephrased it as below:
-
--#define cputime64_to_clock_t(ct) cputime_to_clock_t((cputime_t)(ct))
-+#define cputime64_to_clock_t(ct)       \
-+       (u64)(cputime_to_clock_t((cputime_t)(ct)))
+Thanks to Stan Johnson for testing these patches on a Mac LC III and
+a PowerMac G3.
 
 
-and rebuilt the kernel, no warnings found.
-New patch is attached, could you also help me to review it?
+Finn Thain (10):
+  via-cuda: Cleanup printk calls
+  via-cuda: Remove redundant temporary variable
+  via-cuda: Add TREQ, TIP and TACK signal helpers
+  via-cuda: Prevent read buffer overflow
+  via-cuda: Fix re-initialization of reply_ptr and reading_reply
+  via-cuda: Avoid TREQ race condition
+  via-cuda: Use spinlock_irq_save/restore instead of enable/disable_irq
+  via-cuda: Initialize data_index early and increment consistently
+  via-cuda: Add support for Egret system controller
+  m68k/mac: Replace via-maciisi driver with via-cuda driver
 
-Regards!
-Yanjiang
+ arch/m68k/include/asm/macintosh.h |   2 +-
+ arch/m68k/mac/config.c            |  18 +-
+ arch/m68k/mac/misc.c              |  72 +---
+ drivers/macintosh/Kconfig         |  24 +-
+ drivers/macintosh/Makefile        |   1 -
+ drivers/macintosh/adb.c           |   4 -
+ drivers/macintosh/via-cuda.c      | 294 ++++++++++++-----
+ drivers/macintosh/via-maciisi.c   | 677 --------------------------------------
+ 8 files changed, 235 insertions(+), 857 deletions(-)
+ delete mode 100644 drivers/macintosh/via-maciisi.c
 
-On 2016年11月30日 22:40, Scott Wood wrote:
-> On Mon, 2016-11-21 at 12:56 +0800, yanjiang.jin@windriver.com wrote:
->> From: Yanjiang Jin <yanjiang.jin@windriver.com>
->>
->> This patch is to avoid the below warning:
->>
->> kernel/sched/cpuacct.c:298:25: warning:
->> format '%lld' expects argument of type 'long long int',
->> but argument 4 has type 'long unsigned int' [-Wformat=]
->>
->> Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
->> ---
->>   arch/powerpc/include/asm/cputime.h | 3 ++-
->>   1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/cputime.h
->> b/arch/powerpc/include/asm/cputime.h
->> index 4f60db0..4423e97 100644
->> --- a/arch/powerpc/include/asm/cputime.h
->> +++ b/arch/powerpc/include/asm/cputime.h
->> @@ -228,7 +228,8 @@ static inline cputime_t clock_t_to_cputime(const
->> unsigned long clk)
->>   	return (__force cputime_t) ct;
->>   }
->>   
->> -#define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
->> +#define cputime64_to_clock_t(ct)	\
->> +	(__force u64)(cputime_to_clock_t((cputime_t)(ct)))
-> Why is __force needed?
->
-> -Scott
->
-
-
---------------090906000303010903050305
-Content-Type: text/x-patch;
-	name="0001-powerpc-cputime-fix-a-compile-warning.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="0001-powerpc-cputime-fix-a-compile-warning.patch"
-
->From c32bc6ffe070e3d79a420e6adcbed5709079dc23 Mon Sep 17 00:00:00 2001
-From: Yanjiang Jin <yanjiang.jin@windriver.com>
-Date: Sat, 19 Nov 2016 05:04:53 +0000
-Subject: [PATCH] powerpc: cputime: fix a compile warning
-
-This patch is to avoid the below warning:
-
-kernel/sched/cpuacct.c:298:25: warning:
-format '%lld' expects argument of type 'long long int',
-but argument 4 has type 'long unsigned int' [-Wformat=]
-
-Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
----
- arch/powerpc/include/asm/cputime.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index 4f60db0..a25082b 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -228,7 +228,8 @@ static inline cputime_t clock_t_to_cputime(const unsigned long clk)
- 	return (__force cputime_t) ct;
- }
- 
--#define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
-+#define cputime64_to_clock_t(ct)	\
-+	(u64)(cputime_to_clock_t((cputime_t)(ct)))
- 
- /*
-  * PPC64 uses PACA which is task independent for storing accounting data while
 -- 
-1.9.1
-
-
---------------090906000303010903050305--
+2.7.3
