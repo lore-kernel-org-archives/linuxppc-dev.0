@@ -1,47 +1,54 @@
 Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTfTK4D3KzDwN5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 12:14:45 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTfJZ13YvzDw0J
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 12:07:09 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB1142Sp035747
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 20:07:08 -0500
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2728pj35n2-1
+ by ozlabs.org (Postfix) with ESMTPS id 3tTfTK0Gz8z9t1P
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2016 12:14:44 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB11EM43034882
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 20:14:42 -0500
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 272347k4y0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2016 20:07:07 -0500
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2016 20:14:42 -0500
 Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Thu, 1 Dec 2016 06:37:04 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 013B4394005C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 06:37:02 +0530 (IST)
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB1171WZ34078810
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 06:37:01 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB1171LH016524
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Dec 2016 06:37:01 +0530
+ for <linuxppc-dev@ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Thu, 1 Dec 2016 06:44:39 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 18F771258026
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2016 06:45:41 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uB11E3X627918494
+ for <linuxppc-dev@ozlabs.org>; Thu, 1 Dec 2016 06:44:03 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uB11EY7t002072
+ for <linuxppc-dev@ozlabs.org>; Thu, 1 Dec 2016 06:44:36 +0530
+Subject: Re: [PATCH v11 0/8] powerpc: Implement kexec_file_load()
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-security-module <linux-security-module@vger.kernel.org>
-Cc: Andreas Steffen <andreas.steffen@strongswan.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: [PATCH v8 10/10] ima: platform-independent hash value
-Date: Wed, 30 Nov 2016 20:05:46 -0500
-In-Reply-To: <1480554346-29071-1-git-send-email-zohar@linux.vnet.ibm.com>
-References: <1480554346-29071-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-Id: <1480554346-29071-11-git-send-email-zohar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, dyoung@redhat.com,
+ stewart@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com
+Date: Wed, 30 Nov 2016 20:14:31 -0500
+In-Reply-To: <1480511026.18110.102.camel@linux.vnet.ibm.com>
+References: <1480423554-6411-1-git-send-email-mpe@ellerman.id.au>
+ <20161129134518.7ddc9b733b65b5eed94acd3e@linux-foundation.org>
+ <87inr5po0n.fsf@concordia.ellerman.id.au>
+ <1480511026.18110.102.camel@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1480554871.24704.7.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,40 +58,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andreas Steffen <andreas.steffen@strongswan.org>
+On Wed, 2016-11-30 at 08:03 -0500, Mimi Zohar wrote:
+> On Wed, 2016-11-30 at 15:52 +1100, Michael Ellerman wrote:
 
-For remote attestion it is important for the ima measurement values
-to be platform-independent. Therefore integer fields to be hashed
-must be converted to canonical format.
+> Thaigo tested the patches yesterday.   Everything seemed fine.  After
+> cherry picking the kexec_file_load() patches and rebasing the
+> restore_kexec patches on top of it in my tree, there were some problems.
+> Perhaps there is some dependencies that I'm missing.
 
-Changelog:
-- Define canonical format as little endian (Mimi)
+There was one last change based on Dmitry Kasatkin's review, that I
+implemented incorrectly which caused the failure.  It's now fixed.
+Sorry for the delay ...
 
-Signed-off-by: Andreas Steffen <andreas.steffen@strongswan.org>
-Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
----
- security/integrity/ima/ima_crypto.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/security/integrity/ima/ima_crypto.c b/security/integrity/ima/ima_crypto.c
-index 38f2ed830dd6..802d5d20f36f 100644
---- a/security/integrity/ima/ima_crypto.c
-+++ b/security/integrity/ima/ima_crypto.c
-@@ -477,11 +477,13 @@ static int ima_calc_field_array_hash_tfm(struct ima_field_data *field_data,
- 		u8 buffer[IMA_EVENT_NAME_LEN_MAX + 1] = { 0 };
- 		u8 *data_to_hash = field_data[i].data;
- 		u32 datalen = field_data[i].len;
-+		u32 datalen_to_hash =
-+		    !ima_canonical_fmt ? datalen : cpu_to_le32(datalen);
- 
- 		if (strcmp(td->name, IMA_TEMPLATE_IMA_NAME) != 0) {
- 			rc = crypto_shash_update(shash,
--						(const u8 *) &field_data[i].len,
--						sizeof(field_data[i].len));
-+						(const u8 *) &datalen_to_hash,
-+						sizeof(datalen_to_hash));
- 			if (rc)
- 				break;
- 		} else if (strcmp(td->fields[i]->field_id, "n") == 0) {
--- 
-2.1.0
+Mimi
