@@ -1,16 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tTswr0bMXzDvyX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2016 20:50:52 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 2/2] powerpc: Make selects of IBM_EMAC_* depend on IBM_EMAC
-Date: Thu,  1 Dec 2016 20:50:46 +1100
-Message-Id: <1480585846-7936-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1480585846-7936-1-git-send-email-mpe@ellerman.id.au>
-References: <1480585846-7936-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tTyK74sslzDvyl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 00:08:43 +1100 (AEDT)
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tTyK66rJCz9t9b
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2016 00:08:42 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id 144so11960459pfv.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 01 Dec 2016 05:08:42 -0800 (PST)
+To: Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Subject: [PATCH][DOC] ppc/idle: Add documentation for powersave=off
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <9d2bef9b-1df5-fb84-870e-14572ef0ea40@gmail.com>
+Date: Fri, 2 Dec 2016 00:08:26 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,212 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have a bunch of Kconfig symbols which select various IBM_EMAC_*
-symbols. These all cause warnings when IBM_EMAC is not selected.
 
-eg.
 
-  warning: (PPC_CELL_NATIVE && BLUESTONE && CANYONLANDS && GLACIER &&
-  EIGER && 440EPX && 440GRX && 440GX && 460SX && 405EX) selects
-  IBM_EMAC_RGMII which has unmet direct dependencies (NETDEVICES &&
-  ETHERNET && NET_VENDOR_IBM)
+Update kernel-parameters.txt to add Documentation
+for powersave=off.
 
-So make them all depend on IBM_EMAC being enabled first.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/platforms/40x/Kconfig  | 12 ++++----
- arch/powerpc/platforms/44x/Kconfig  | 56 ++++++++++++++++++-------------------
- arch/powerpc/platforms/cell/Kconfig |  8 +++---
- 3 files changed, 38 insertions(+), 38 deletions(-)
+ Applies of top of linux-next 20161201
 
-v2: Rebase.
+ Documentation/admin-guide/kernel-parameters.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index e3257f24a8a1..f8d1410aa5bb 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -102,18 +102,18 @@ config 405GP
- 	bool
- 	select IBM405_ERR77
- 	select IBM405_ERR51
--	select IBM_EMAC_ZMII
-+	select IBM_EMAC_ZMII if IBM_EMAC
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 0a178fc..be2d6d0 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -3051,6 +3051,12 @@
+ 			may be specified.
+ 			Format: <port>,<port>....
  
- config 405EX
- 	bool
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_RGMII
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_RGMII if IBM_EMAC
- 
- config 405EZ
- 	bool
--	select IBM_EMAC_NO_FLOW_CTRL
--	select IBM_EMAC_MAL_CLR_ICINTSTAT
--	select IBM_EMAC_MAL_COMMON_ERR
-+	select IBM_EMAC_NO_FLOW_CTRL if IBM_EMAC
-+	select IBM_EMAC_MAL_CLR_ICINTSTAT if IBM_EMAC
-+	select IBM_EMAC_MAL_COMMON_ERR if IBM_EMAC
- 
- config XILINX_VIRTEX
- 	bool
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 48fc18041ff6..8d18669856f9 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -26,7 +26,7 @@ config BLUESTONE
- 	select PCI_MSI
- 	select PPC4xx_MSI
- 	select PPC4xx_PCI_EXPRESS
--	select IBM_EMAC_RGMII
-+	select IBM_EMAC_RGMII if IBM_EMAC
- 	help
- 	  This option enables support for the APM APM821xx Evaluation board.
- 
-@@ -125,8 +125,8 @@ config CANYONLANDS
- 	select PPC4xx_PCI_EXPRESS
- 	select PCI_MSI
- 	select PPC4xx_MSI
--	select IBM_EMAC_RGMII
--	select IBM_EMAC_ZMII
-+	select IBM_EMAC_RGMII if IBM_EMAC
-+	select IBM_EMAC_ZMII if IBM_EMAC
- 	help
- 	  This option enables support for the AMCC PPC460EX evaluation board.
- 
-@@ -138,8 +138,8 @@ config GLACIER
- 	select 460EX # Odd since it uses 460GT but the effects are the same
- 	select PCI
- 	select PPC4xx_PCI_EXPRESS
--	select IBM_EMAC_RGMII
--	select IBM_EMAC_ZMII
-+	select IBM_EMAC_RGMII if IBM_EMAC
-+	select IBM_EMAC_ZMII if IBM_EMAC
- 	help
- 	  This option enables support for the AMCC PPC460GT evaluation board.
- 
-@@ -164,7 +164,7 @@ config EIGER
- 	select 460SX
- 	select PCI
- 	select PPC4xx_PCI_EXPRESS
--	select IBM_EMAC_RGMII
-+	select IBM_EMAC_RGMII if IBM_EMAC
- 	help
- 	  This option enables support for the AMCC PPC460SX evaluation board.
- 
-@@ -213,7 +213,7 @@ config AKEBONO
- 	select NETDEVICES
- 	select ETHERNET
- 	select NET_VENDOR_IBM
--	select IBM_EMAC_EMAC4
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
- 	select USB if USB_SUPPORT
- 	select USB_OHCI_HCD_PLATFORM if USB_OHCI_HCD
- 	select USB_EHCI_HCD_PLATFORM if USB_EHCI_HCD
-@@ -290,54 +290,54 @@ config 440EP
- 	bool
- 	select PPC_FPU
- 	select IBM440EP_ERR42
--	select IBM_EMAC_ZMII
-+	select IBM_EMAC_ZMII if IBM_EMAC
- 
- config 440EPX
- 	bool
- 	select PPC_FPU
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_RGMII
--	select IBM_EMAC_ZMII
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_RGMII if IBM_EMAC
-+	select IBM_EMAC_ZMII if IBM_EMAC
- 	select USB_EHCI_BIG_ENDIAN_MMIO
- 	select USB_EHCI_BIG_ENDIAN_DESC
- 
- config 440GRX
- 	bool
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_RGMII
--	select IBM_EMAC_ZMII
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_RGMII if IBM_EMAC
-+	select IBM_EMAC_ZMII if IBM_EMAC
- 
- config 440GP
- 	bool
--	select IBM_EMAC_ZMII
-+	select IBM_EMAC_ZMII if IBM_EMAC
- 
- config 440GX
- 	bool
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_RGMII
--	select IBM_EMAC_ZMII #test only
--	select IBM_EMAC_TAH  #test only
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_RGMII if IBM_EMAC
-+	select IBM_EMAC_ZMII if IBM_EMAC #test only
-+	select IBM_EMAC_TAH if IBM_EMAC  #test only
- 
- config 440SP
- 	bool
- 
- config 440SPe
- 	bool
--	select IBM_EMAC_EMAC4
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
- 
- config 460EX
- 	bool
- 	select PPC_FPU
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_TAH
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_TAH if IBM_EMAC
- 
- config 460SX
- 	bool
- 	select PPC_FPU
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_RGMII
--	select IBM_EMAC_ZMII
--	select IBM_EMAC_TAH
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_RGMII if IBM_EMAC
-+	select IBM_EMAC_ZMII if IBM_EMAC
-+	select IBM_EMAC_TAH if IBM_EMAC
- 
- config 476FPE
- 	bool
-@@ -346,8 +346,8 @@ config 476FPE
- config APM821xx
- 	bool
- 	select PPC_FPU
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_TAH
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_TAH if IBM_EMAC
- 
- config 476FPE_ERR46
- 	depends on 476FPE
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 441ad3bad3db..a4522f09d65e 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -17,10 +17,10 @@ config PPC_CELL_NATIVE
- 	select PPC_CELL_COMMON
- 	select MPIC
- 	select PPC_IO_WORKAROUNDS
--	select IBM_EMAC_EMAC4
--	select IBM_EMAC_RGMII
--	select IBM_EMAC_ZMII #test only
--	select IBM_EMAC_TAH  #test only
-+	select IBM_EMAC_EMAC4 if IBM_EMAC
-+	select IBM_EMAC_RGMII if IBM_EMAC
-+	select IBM_EMAC_ZMII if IBM_EMAC #test only
-+	select IBM_EMAC_TAH if IBM_EMAC  #test only
- 	default n
- 
- config PPC_IBM_CELL_BLADE
++	powersave=off	[PPC] This option disables power saving features.
++			It specifically disables cpuidle and sets the
++			platform machine description specific power_save
++			function to NULL. On Idle the CPU just reduces
++			execution priority.
++
+ 	ppc_strict_facility_enable
+ 			[PPC] This option catches any kernel floating point,
+ 			Altivec, VSX and SPE outside of regions specifically
 -- 
-2.7.4
+2.9.3
