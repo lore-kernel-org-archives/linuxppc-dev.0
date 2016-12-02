@@ -1,23 +1,24 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVK6t71hMzDvxx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 14:16:06 +1100 (AEDT)
-Date: Fri, 2 Dec 2016 14:00:46 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tVK6v0zQ9zDw1s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 14:16:07 +1100 (AEDT)
+Date: Fri, 2 Dec 2016 14:02:09 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v7 6/7] vfio/spapr: Reference mm in tce_container
-Message-ID: <20161202030046.GD31412@umbus.fritz.box>
+Subject: Re: [PATCH kernel v7 7/7] powerpc/mm/iommu, vfio/spapr: Put pages on
+ VFIO container shutdown
+Message-ID: <20161202030209.GE31412@umbus.fritz.box>
 References: <1480488725-12783-1-git-send-email-aik@ozlabs.ru>
- <1480488725-12783-7-git-send-email-aik@ozlabs.ru>
+ <1480488725-12783-8-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="9UV9rz0O2dU/yYYn"
-In-Reply-To: <1480488725-12783-7-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="M/SuVGWktc5uNpra"
+In-Reply-To: <1480488725-12783-8-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,155 +29,154 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---9UV9rz0O2dU/yYYn
+--M/SuVGWktc5uNpra
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 30, 2016 at 05:52:04PM +1100, Alexey Kardashevskiy wrote:
-> In some situations the userspace memory context may live longer than
-> the userspace process itself so if we need to do proper memory context
-> cleanup, we better have tce_container take a reference to mm_struct and
-> use it later when the process is gone (@current or @current->mm is NULL).
+On Wed, Nov 30, 2016 at 05:52:05PM +1100, Alexey Kardashevskiy wrote:
+> At the moment the userspace tool is expected to request pinning of
+> the entire guest RAM when VFIO IOMMU SPAPR v2 driver is present.
+> When the userspace process finishes, all the pinned pages need to
+> be put; this is done as a part of the userspace memory context (MM)
+> destruction which happens on the very last mmdrop().
 >=20
-> This references mm and stores the pointer in the container; this is done
-> in a new helper - tce_iommu_mm_set() - when one of the following happens:
-> - a container is enabled (IOMMU v1);
-> - a first attempt to pre-register memory is made (IOMMU v2);
-> - a DMA window is created (IOMMU v2).
-> The @mm stays referenced till the container is destroyed.
+> This approach has a problem that a MM of the userspace process
+> may live longer than the userspace process itself as kernel threads
+> use userspace process MMs which was runnning on a CPU where
+> the kernel thread was scheduled to. If this happened, the MM remains
+> referenced until this exact kernel thread wakes up again
+> and releases the very last reference to the MM, on an idle system this
+> can take even hours.
 >=20
-> This replaces current->mm with container->mm everywhere except debug
-> prints.
+> This moves preregistered regions tracking from MM to VFIO; insteads of
+> using mm_iommu_table_group_mem_t::used, tce_container::prereg_list is
+> added so each container releases regions which it has pre-registered.
 >=20
-> This adds a check that current->mm is the same as the one stored in
-> the container to prevent userspace from making changes to a memory
-> context of other processes.
+> This changes the userspace interface to return EBUSY if a memory
+> region is already registered in a container. However it should not
+> have any practical effect as the only userspace tool available now
+> does register memory region once per container anyway.
 >=20
-> DMA map/unmap ioctls() do not check for @mm as they already check
-> for @enabled which is set after tce_iommu_mm_set() is called.
->=20
-> This does not reference a task as multiple threads within the same mm
-> are allowed to ioctl() to vfio and supposedly they will have same limits
-> and capabilities and if they do not, we'll just fail with no harm made.
+> As tce_iommu_register_pages/tce_iommu_unregister_pages are called
+> under container->lock, this does not need additional locking.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
 > Changes:
 > v7:
-> * WARN_ON_ONCE(!mm)) in try_increment_locked_vm()
-> * s/&&/||/ in a parameter check in decrement_locked_vm()
-> * instead of failing on unset container,
-> the VFIO_IOMMU_SPAPR_TCE_REMOVE handler sets mm to container now
->=20
-> v6:
-> * updated the commit log about not referencing task
->=20
-> v5:
-> * postpone referencing of mm
+> * left sanity check in destroy_context()
+> * tce_iommu_prereg_free() does not free tce_iommu_prereg struct if
+> mm_iommu_put() failed; VFIO SPAPR container release callback now warns
+> on an error
 >=20
 > v4:
-> * added check for container->mm!=3Dcurrent->mm in tce_iommu_ioctl()
-> for all ioctls and removed other redundand checks
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 160 ++++++++++++++++++++++--------=
-------
->  1 file changed, 100 insertions(+), 60 deletions(-)
+> * changed tce_iommu_register_pages() to call mm_iommu_find() first and
+> avoid calling mm_iommu_put() if memory is preregistered already
 >=20
+> v3:
+> * moved tce_iommu_prereg_free() call out of list_for_each_entry()
+>=20
+> v2:
+> * updated commit log
+> ---
+>  arch/powerpc/mm/mmu_context_book3s64.c |  4 +--
+>  arch/powerpc/mm/mmu_context_iommu.c    | 11 ------
+>  drivers/vfio/vfio_iommu_spapr_tce.c    | 61 ++++++++++++++++++++++++++++=
++++++-
+>  3 files changed, 61 insertions(+), 15 deletions(-)
+>=20
+> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu=
+_context_book3s64.c
+> index ad82735..73bf6e1 100644
+> --- a/arch/powerpc/mm/mmu_context_book3s64.c
+> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
+> @@ -156,13 +156,11 @@ static inline void destroy_pagetable_page(struct mm=
+_struct *mm)
+>  }
+>  #endif
+> =20
+> -
+>  void destroy_context(struct mm_struct *mm)
+>  {
+>  #ifdef CONFIG_SPAPR_TCE_IOMMU
+> -	mm_iommu_cleanup(mm);
+> +	WARN_ON_ONCE(!list_empty(&mm->context.iommu_group_mem_list));
+>  #endif
+> -
+>  #ifdef CONFIG_PPC_ICSWX
+>  	drop_cop(mm->context.acop, mm);
+>  	kfree(mm->context.cop_lockp);
+> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_co=
+ntext_iommu.c
+> index 4c6db09..104bad0 100644
+> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> @@ -365,14 +365,3 @@ void mm_iommu_init(struct mm_struct *mm)
+>  {
+>  	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
+>  }
+> -
+> -void mm_iommu_cleanup(struct mm_struct *mm)
+> -{
+> -	struct mm_iommu_table_group_mem_t *mem, *tmp;
+> -
+> -	list_for_each_entry_safe(mem, tmp, &mm->context.iommu_group_mem_list,
+> -			next) {
+> -		list_del_rcu(&mem->next);
+> -		mm_iommu_do_free(mem);
+> -	}
+> -}
 > diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
 u_spapr_tce.c
-> index 88622be..4c03c85 100644
+> index 4c03c85..c882357 100644
 > --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 > +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -31,49 +31,49 @@
->  static void tce_iommu_detach_group(void *iommu_data,
->  		struct iommu_group *iommu_group);
-> =20
-> -static long try_increment_locked_vm(long npages)
-> +static long try_increment_locked_vm(struct mm_struct *mm, long npages)
->  {
->  	long ret =3D 0, locked, lock_limit;
-> =20
-> -	if (!current || !current->mm)
-> -		return -ESRCH; /* process exited */
-> +	if (WARN_ON_ONCE(!mm))
-> +		return -EPERM;
-> =20
->  	if (!npages)
->  		return 0;
-> =20
-> -	down_write(&current->mm->mmap_sem);
-> -	locked =3D current->mm->locked_vm + npages;
-> +	down_write(&mm->mmap_sem);
-> +	locked =3D mm->locked_vm + npages;
->  	lock_limit =3D rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->  	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
->  		ret =3D -ENOMEM;
->  	else
-> -		current->mm->locked_vm +=3D npages;
-> +		mm->locked_vm +=3D npages;
-> =20
->  	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
->  			npages << PAGE_SHIFT,
-> -			current->mm->locked_vm << PAGE_SHIFT,
-> +			mm->locked_vm << PAGE_SHIFT,
->  			rlimit(RLIMIT_MEMLOCK),
->  			ret ? " - exceeded" : "");
-> =20
-> -	up_write(&current->mm->mmap_sem);
-> +	up_write(&mm->mmap_sem);
-> =20
->  	return ret;
->  }
-> =20
-> -static void decrement_locked_vm(long npages)
-> +static void decrement_locked_vm(struct mm_struct *mm, long npages)
->  {
-> -	if (!current || !current->mm || !npages)
-> -		return; /* process exited */
-> +	if (!mm || !npages)
-> +		return;
-> =20
-> -	down_write(&current->mm->mmap_sem);
-> -	if (WARN_ON_ONCE(npages > current->mm->locked_vm))
-> -		npages =3D current->mm->locked_vm;
-> -	current->mm->locked_vm -=3D npages;
-> +	down_write(&mm->mmap_sem);
-> +	if (WARN_ON_ONCE(npages > mm->locked_vm))
-> +		npages =3D mm->locked_vm;
-> +	mm->locked_vm -=3D npages;
->  	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
->  			npages << PAGE_SHIFT,
-> -			current->mm->locked_vm << PAGE_SHIFT,
-> +			mm->locked_vm << PAGE_SHIFT,
->  			rlimit(RLIMIT_MEMLOCK));
-> -	up_write(&current->mm->mmap_sem);
-> +	up_write(&mm->mmap_sem);
->  }
-> =20
->  /*
-> @@ -99,26 +99,38 @@ struct tce_container {
->  	bool v2;
->  	bool def_window_pending;
->  	unsigned long locked_pages;
-> +	struct mm_struct *mm;
->  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
->  	struct list_head group_list;
+> @@ -89,6 +89,15 @@ struct tce_iommu_group {
 >  };
 > =20
-> +static long tce_iommu_mm_set(struct tce_container *container)
+>  /*
+> + * A container needs to remember which preregistered region  it has
+> + * referenced to do proper cleanup at the userspace process exit.
+> + */
+> +struct tce_iommu_prereg {
+> +	struct list_head next;
+> +	struct mm_iommu_table_group_mem_t *mem;
+> +};
+> +
+> +/*
+>   * The container descriptor supports only a single group per container.
+>   * Required by the API as the container is not supplied with the IOMMU g=
+roup
+>   * at the moment of initialization.
+> @@ -102,6 +111,7 @@ struct tce_container {
+>  	struct mm_struct *mm;
+>  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>  	struct list_head group_list;
+> +	struct list_head prereg_list;
+>  };
+> =20
+>  static long tce_iommu_mm_set(struct tce_container *container)
+> @@ -118,10 +128,27 @@ static long tce_iommu_mm_set(struct tce_container *=
+container)
+>  	return 0;
+>  }
+> =20
+> +static long tce_iommu_prereg_free(struct tce_container *container,
+> +		struct tce_iommu_prereg *tcemem)
 > +{
-> +	if (container->mm) {
-> +		if (container->mm =3D=3D current->mm)
-> +			return 0;
-> +		return -EPERM;
-> +	}
-> +	BUG_ON(!current->mm);
-> +	container->mm =3D current->mm;
-> +	atomic_inc(&container->mm->mm_count);
+> +	long ret;
+> +
+> +	ret =3D mm_iommu_put(container->mm, tcemem->mem);
+> +	if (ret)
+> +		return ret;
+> +
+> +	list_del(&tcemem->next);
+> +	kfree(tcemem);
 > +
 > +	return 0;
 > +}
@@ -185,369 +185,85 @@ u_spapr_tce.c
 >  		__u64 vaddr, __u64 size)
 >  {
 >  	struct mm_iommu_table_group_mem_t *mem;
+> +	struct tce_iommu_prereg *tcemem;
+> +	bool found =3D false;
 > =20
-> -	if (!current || !current->mm)
-> -		return -ESRCH; /* process exited */
-> -
 >  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
 >  		return -EINVAL;
-> =20
-> -	mem =3D mm_iommu_find(current->mm, vaddr, size >> PAGE_SHIFT);
-> +	mem =3D mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
+> @@ -130,7 +157,17 @@ static long tce_iommu_unregister_pages(struct tce_co=
+ntainer *container,
 >  	if (!mem)
 >  		return -ENOENT;
 > =20
-> -	return mm_iommu_put(current->mm, mem);
-> +	return mm_iommu_put(container->mm, mem);
+> -	return mm_iommu_put(container->mm, mem);
+> +	list_for_each_entry(tcemem, &container->prereg_list, next) {
+> +		if (tcemem->mem =3D=3D mem) {
+> +			found =3D true;
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (!found)
+> +		return -ENOENT;
+> +
+> +	return tce_iommu_prereg_free(container, tcemem);
 >  }
 > =20
 >  static long tce_iommu_register_pages(struct tce_container *container,
-> @@ -128,14 +140,11 @@ static long tce_iommu_register_pages(struct tce_con=
+> @@ -138,16 +175,29 @@ static long tce_iommu_register_pages(struct tce_con=
 tainer *container,
+>  {
+>  	long ret =3D 0;
 >  	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> +	struct tce_iommu_prereg *tcemem;
 >  	unsigned long entries =3D size >> PAGE_SHIFT;
 > =20
-> -	if (!current || !current->mm)
-> -		return -ESRCH; /* process exited */
-> -
 >  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
 >  			((vaddr + size) < vaddr))
 >  		return -EINVAL;
 > =20
-> -	ret =3D mm_iommu_get(current->mm, vaddr, entries, &mem);
-> +	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
->  	if (ret)
->  		return ret;
-> =20
-> @@ -144,7 +153,8 @@ static long tce_iommu_register_pages(struct tce_conta=
-iner *container,
->  	return 0;
->  }
-> =20
-> -static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl)
-> +static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl,
-> +		struct mm_struct *mm)
->  {
->  	unsigned long cb =3D _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
->  			tbl->it_size, PAGE_SIZE);
-> @@ -153,13 +163,13 @@ static long tce_iommu_userspace_view_alloc(struct i=
-ommu_table *tbl)
-> =20
->  	BUG_ON(tbl->it_userspace);
-> =20
-> -	ret =3D try_increment_locked_vm(cb >> PAGE_SHIFT);
-> +	ret =3D try_increment_locked_vm(mm, cb >> PAGE_SHIFT);
->  	if (ret)
->  		return ret;
-> =20
->  	uas =3D vzalloc(cb);
->  	if (!uas) {
-> -		decrement_locked_vm(cb >> PAGE_SHIFT);
-> +		decrement_locked_vm(mm, cb >> PAGE_SHIFT);
->  		return -ENOMEM;
->  	}
->  	tbl->it_userspace =3D uas;
-> @@ -167,7 +177,8 @@ static long tce_iommu_userspace_view_alloc(struct iom=
-mu_table *tbl)
->  	return 0;
->  }
-> =20
-> -static void tce_iommu_userspace_view_free(struct iommu_table *tbl)
-> +static void tce_iommu_userspace_view_free(struct iommu_table *tbl,
-> +		struct mm_struct *mm)
->  {
->  	unsigned long cb =3D _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
->  			tbl->it_size, PAGE_SIZE);
-> @@ -177,7 +188,7 @@ static void tce_iommu_userspace_view_free(struct iomm=
-u_table *tbl)
-> =20
->  	vfree(tbl->it_userspace);
->  	tbl->it_userspace =3D NULL;
-> -	decrement_locked_vm(cb >> PAGE_SHIFT);
-> +	decrement_locked_vm(mm, cb >> PAGE_SHIFT);
->  }
-> =20
->  static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-> @@ -237,9 +248,6 @@ static int tce_iommu_enable(struct tce_container *con=
-tainer)
->  	struct iommu_table_group *table_group;
->  	struct tce_iommu_group *tcegrp;
-> =20
-> -	if (!current->mm)
-> -		return -ESRCH; /* process exited */
-> -
->  	if (container->enabled)
->  		return -EBUSY;
-> =20
-> @@ -284,8 +292,12 @@ static int tce_iommu_enable(struct tce_container *co=
-ntainer)
->  	if (!table_group->tce32_size)
->  		return -EPERM;
-> =20
-> +	ret =3D tce_iommu_mm_set(container);
-> +	if (ret)
-> +		return ret;
-> +
->  	locked =3D table_group->tce32_size >> PAGE_SHIFT;
-> -	ret =3D try_increment_locked_vm(locked);
-> +	ret =3D try_increment_locked_vm(container->mm, locked);
->  	if (ret)
->  		return ret;
-> =20
-> @@ -303,10 +315,8 @@ static void tce_iommu_disable(struct tce_container *=
-container)
-> =20
->  	container->enabled =3D false;
-> =20
-> -	if (!current->mm)
-> -		return;
-> -
-> -	decrement_locked_vm(container->locked_pages);
-> +	BUG_ON(!container->mm);
-> +	decrement_locked_vm(container->mm, container->locked_pages);
->  }
-> =20
->  static void *tce_iommu_open(unsigned long arg)
-> @@ -333,7 +343,8 @@ static void *tce_iommu_open(unsigned long arg)
->  static int tce_iommu_clear(struct tce_container *container,
->  		struct iommu_table *tbl,
->  		unsigned long entry, unsigned long pages);
-> -static void tce_iommu_free_table(struct iommu_table *tbl);
-> +static void tce_iommu_free_table(struct tce_container *container,
-> +		struct iommu_table *tbl);
-> =20
->  static void tce_iommu_release(void *iommu_data)
->  {
-> @@ -358,10 +369,12 @@ static void tce_iommu_release(void *iommu_data)
->  			continue;
-> =20
->  		tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
-> -		tce_iommu_free_table(tbl);
-> +		tce_iommu_free_table(container, tbl);
->  	}
-> =20
->  	tce_iommu_disable(container);
-> +	if (container->mm)
-> +		mmdrop(container->mm);
->  	mutex_destroy(&container->lock);
-> =20
->  	kfree(container);
-> @@ -376,13 +389,14 @@ static void tce_iommu_unuse_page(struct tce_contain=
-er *container,
->  	put_page(page);
->  }
-> =20
-> -static int tce_iommu_prereg_ua_to_hpa(unsigned long tce, unsigned long s=
-ize,
-> +static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
-> +		unsigned long tce, unsigned long size,
->  		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
->  {
->  	long ret =3D 0;
->  	struct mm_iommu_table_group_mem_t *mem;
-> =20
-> -	mem =3D mm_iommu_lookup(current->mm, tce, size);
-> +	mem =3D mm_iommu_lookup(container->mm, tce, size);
->  	if (!mem)
->  		return -EINVAL;
-> =20
-> @@ -395,18 +409,18 @@ static int tce_iommu_prereg_ua_to_hpa(unsigned long=
- tce, unsigned long size,
->  	return 0;
->  }
-> =20
-> -static void tce_iommu_unuse_page_v2(struct iommu_table *tbl,
-> -		unsigned long entry)
-> +static void tce_iommu_unuse_page_v2(struct tce_container *container,
-> +		struct iommu_table *tbl, unsigned long entry)
->  {
->  	struct mm_iommu_table_group_mem_t *mem =3D NULL;
->  	int ret;
->  	unsigned long hpa =3D 0;
->  	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
-> =20
-> -	if (!pua || !current || !current->mm)
-> +	if (!pua)
->  		return;
-> =20
-> -	ret =3D tce_iommu_prereg_ua_to_hpa(*pua, IOMMU_PAGE_SIZE(tbl),
-> +	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(tbl=
-),
->  			&hpa, &mem);
->  	if (ret)
->  		pr_debug("%s: tce %lx at #%lx was not cached, ret=3D%d\n",
-> @@ -436,7 +450,7 @@ static int tce_iommu_clear(struct tce_container *cont=
-ainer,
->  			continue;
-> =20
->  		if (container->v2) {
-> -			tce_iommu_unuse_page_v2(tbl, entry);
-> +			tce_iommu_unuse_page_v2(container, tbl, entry);
->  			continue;
->  		}
-> =20
-> @@ -517,7 +531,7 @@ static long tce_iommu_build_v2(struct tce_container *=
-container,
->  	enum dma_data_direction dirtmp;
-> =20
->  	if (!tbl->it_userspace) {
-> -		ret =3D tce_iommu_userspace_view_alloc(tbl);
-> +		ret =3D tce_iommu_userspace_view_alloc(tbl, container->mm);
->  		if (ret)
->  			return ret;
->  	}
-> @@ -527,8 +541,8 @@ static long tce_iommu_build_v2(struct tce_container *=
-container,
->  		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
->  				entry + i);
-> =20
-> -		ret =3D tce_iommu_prereg_ua_to_hpa(tce, IOMMU_PAGE_SIZE(tbl),
-> -				&hpa, &mem);
-> +		ret =3D tce_iommu_prereg_ua_to_hpa(container,
-> +				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
->  		if (ret)
->  			break;
-> =20
-> @@ -549,7 +563,7 @@ static long tce_iommu_build_v2(struct tce_container *=
-container,
->  		ret =3D iommu_tce_xchg(tbl, entry + i, &hpa, &dirtmp);
->  		if (ret) {
->  			/* dirtmp cannot be DMA_NONE here */
-> -			tce_iommu_unuse_page_v2(tbl, entry + i);
-> +			tce_iommu_unuse_page_v2(container, tbl, entry + i);
->  			pr_err("iommu_tce: %s failed ioba=3D%lx, tce=3D%lx, ret=3D%ld\n",
->  					__func__, entry << tbl->it_page_shift,
->  					tce, ret);
-> @@ -557,7 +571,7 @@ static long tce_iommu_build_v2(struct tce_container *=
-container,
->  		}
-> =20
->  		if (dirtmp !=3D DMA_NONE)
-> -			tce_iommu_unuse_page_v2(tbl, entry + i);
-> +			tce_iommu_unuse_page_v2(container, tbl, entry + i);
-> =20
->  		*pua =3D tce;
-> =20
-> @@ -585,7 +599,7 @@ static long tce_iommu_create_table(struct tce_contain=
-er *container,
->  	if (!table_size)
->  		return -EINVAL;
-> =20
-> -	ret =3D try_increment_locked_vm(table_size >> PAGE_SHIFT);
-> +	ret =3D try_increment_locked_vm(container->mm, table_size >> PAGE_SHIFT=
-);
->  	if (ret)
->  		return ret;
-> =20
-> @@ -598,13 +612,14 @@ static long tce_iommu_create_table(struct tce_conta=
-iner *container,
->  	return ret;
->  }
-> =20
-> -static void tce_iommu_free_table(struct iommu_table *tbl)
-> +static void tce_iommu_free_table(struct tce_container *container,
-> +		struct iommu_table *tbl)
->  {
->  	unsigned long pages =3D tbl->it_allocated_size >> PAGE_SHIFT;
-> =20
-> -	tce_iommu_userspace_view_free(tbl);
-> +	tce_iommu_userspace_view_free(tbl, container->mm);
->  	tbl->it_ops->free(tbl);
-> -	decrement_locked_vm(pages);
-> +	decrement_locked_vm(container->mm, pages);
->  }
-> =20
->  static long tce_iommu_create_window(struct tce_container *container,
-> @@ -667,7 +682,7 @@ static long tce_iommu_create_window(struct tce_contai=
-ner *container,
->  		table_group =3D iommu_group_get_iommudata(tcegrp->grp);
->  		table_group->ops->unset_window(table_group, num);
->  	}
-> -	tce_iommu_free_table(tbl);
-> +	tce_iommu_free_table(container, tbl);
-> =20
->  	return ret;
->  }
-> @@ -705,7 +720,7 @@ static long tce_iommu_remove_window(struct tce_contai=
-ner *container,
-> =20
->  	/* Free table */
->  	tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
-> -	tce_iommu_free_table(tbl);
-> +	tce_iommu_free_table(container, tbl);
->  	container->tables[num] =3D NULL;
-> =20
->  	return 0;
-> @@ -760,7 +775,17 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		}
-> =20
->  		return (ret < 0) ? 0 : ret;
+> +	mem =3D mm_iommu_find(container->mm, vaddr, entries);
+> +	if (mem) {
+> +		list_for_each_entry(tcemem, &container->prereg_list, next) {
+> +			if (tcemem->mem =3D=3D mem)
+> +				return -EBUSY;
+> +		}
 > +	}
-> =20
-> +	/*
-> +	 * Sanity check to prevent one userspace from manipulating
-> +	 * another userspace mm.
-> +	 */
-> +	BUG_ON(!container);
-> +	if (container->mm && container->mm !=3D current->mm)
-> +		return -EPERM;
-> +	switch (cmd) {
->  	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
->  		struct vfio_iommu_spapr_tce_info info;
->  		struct tce_iommu_group *tcegrp;
-> @@ -929,6 +954,10 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		minsz =3D offsetofend(struct vfio_iommu_spapr_register_memory,
->  				size);
-> =20
-> +		ret =3D tce_iommu_mm_set(container);
-> +		if (ret)
-> +			return ret;
 > +
->  		if (copy_from_user(&param, (void __user *)arg, minsz))
->  			return -EFAULT;
+>  	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
+>  	if (ret)
+>  		return ret;
 > =20
-> @@ -952,6 +981,9 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		if (!container->v2)
->  			break;
-> =20
-> +		if (!container->mm)
-> +			return -EPERM;
+> +	tcemem =3D kzalloc(sizeof(*tcemem), GFP_KERNEL);
+> +	tcemem->mem =3D mem;
+> +	list_add(&tcemem->next, &container->prereg_list);
 > +
->  		minsz =3D offsetofend(struct vfio_iommu_spapr_register_memory,
->  				size);
+>  	container->enabled =3D true;
 > =20
-> @@ -1010,6 +1042,10 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		if (!container->v2)
->  			break;
+>  	return 0;
+> @@ -334,6 +384,7 @@ static void *tce_iommu_open(unsigned long arg)
 > =20
-> +		ret =3D tce_iommu_mm_set(container);
-> +		if (ret)
-> +			return ret;
+>  	mutex_init(&container->lock);
+>  	INIT_LIST_HEAD_RCU(&container->group_list);
+> +	INIT_LIST_HEAD_RCU(&container->prereg_list);
+> =20
+>  	container->v2 =3D arg =3D=3D VFIO_SPAPR_TCE_v2_IOMMU;
+> =20
+> @@ -372,6 +423,14 @@ static void tce_iommu_release(void *iommu_data)
+>  		tce_iommu_free_table(container, tbl);
+>  	}
+> =20
+> +	while (!list_empty(&container->prereg_list)) {
+> +		struct tce_iommu_prereg *tcemem;
 > +
->  		if (!tce_groups_attached(container))
->  			return -ENXIO;
-> =20
-> @@ -1048,6 +1084,10 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		if (!container->v2)
->  			break;
-> =20
-> +		ret =3D tce_iommu_mm_set(container);
-> +		if (ret)
-> +			return ret;
+> +		tcemem =3D list_first_entry(&container->prereg_list,
+> +				struct tce_iommu_prereg, next);
+> +		WARN_ON_ONCE(tce_iommu_prereg_free(container, tcemem));
+> +	}
 > +
->  		if (!tce_groups_attached(container))
->  			return -ENXIO;
-> =20
-> @@ -1093,7 +1133,7 @@ static void tce_iommu_release_ownership(struct tce_=
-container *container,
->  			continue;
-> =20
->  		tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
-> -		tce_iommu_userspace_view_free(tbl);
-> +		tce_iommu_userspace_view_free(tbl, container->mm);
->  		if (tbl->it_map)
->  			iommu_release_ownership(tbl);
-> =20
+>  	tce_iommu_disable(container);
+>  	if (container->mm)
+>  		mmdrop(container->mm);
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -555,25 +271,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---9UV9rz0O2dU/yYYn
+--M/SuVGWktc5uNpra
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJYQOPcAAoJEGw4ysog2bOSQFAQAMFaMa6CUQ/9ExakV0jjzXNd
-45c74ANBXE+B+v2Yxv4xsOr5ZzzSrDeEd0juMeB01W2EuQjlzJ8gi/nvRyqF6zpD
-z419LPY1TGGDIenDvJ8QLdnlEdz7nhq8diE4cwhRYq5CbMFn+ZEAMKsfuCtAbDAG
-W9eckMDWMn1VEXnwg94O9BZk0YpIqDia5T5gVd0ALln6t0IFSYWGIiJ7/C9Tttej
-VJ4Iamq1/w4nM7QhyqRXh9IdGVqV4NzO9M/21DFRbijm0O9zo6Glu8KxQbbzudvY
-ZqNEHFKNmCPpUMCkagFgLTi0KyeO6XfZ7uLL9hr00bp75tU4nF2OBbKSKXZpvJWQ
-SctXO1CTgxxFTjWG5CxPTJg+mRtAfMb5cznr8Tzxu6cqLlY4W9qFM4WDWILq2jq8
-en1nhkmK71eGcliqHQ+K1VioFwvU6lwnl5b7tgwxq0irVodAGwlOU03Fj1y425M2
-bxDAxdcFGMUAGt9RkdFVblt81qxt4mqLecxGzZw/Qfk8+KkVM+GhNoNKqdnV7APt
-yw/oeNfm9ZCnY7h02RaBJHu+LnXWpbL5MGxZaMkW7ZTPgb0rgTjK08RhFKRPU9I4
-BWbO1LBh2zDRcDgI7w2DwfBKLcWcqOtW3xnV8zCUeifrSFTKLV1yITnvF+EqFm4t
-srgChYQRxS1fdmAuKYYg
-=Apkz
+iQIcBAEBCAAGBQJYQOQxAAoJEGw4ysog2bOSOGkP/2gVZDqULDfhsw1rzkZzY7cw
+JVQMYocR+RCfGA42BieHb0OwjGhXDYZnZFgZwmYlP94tsk7f3wtPGeg7E6H0X9aE
+tUhUb++ALW6/hFGCcTvGBV+vwieofXNNZeXsG4S++KY321IFalnTBZV+Jinjob2U
+7gKwtIaHH2lLbhaEFHR6V8Cn3c+faZN5ROPEFDXJFzPBinamsb3gsHaBB2604IYr
+RRBw+ZT5EDzv2T9AZOqlPNg9sHDZNi13ORTSMpzqeNQ6n7LJbqQySBTDspKXL+ni
+IVhu8feEHWwcIg1nqmwAWzERG6G0OSR/eFX69vP7KxpIgw861PYotwBHdSJoseu6
+8Vit4BCt/Hb1aaDtJDUHXAjSaO97SAk0hmvlcV46zfgIOQCUtJuQigqh3tKnhv3J
+uFwQPw4n1v6H6kT07il3D53lEGfcvXcZf1+F6XG4ALYmIkLrozVuMGJCkJCD1074
+3uacIc8oNsYDdZeRuGABBCPSvKhC5ZdIsEOd8Q5nO8MaP+WjCV25j5KWGjI/72w0
+qacGV2JT4MmcJfP2qhAaPlWmSjS2pNWBVWFh4eh1hCW7QhCTp7er6OXJUS12Hm31
+lhxNIE+O/a5umWGid1Fp/44DAn1Szp7kiWEUhM6kRb1PS8Py46L+W8R9F3Q47OV6
+NDViG7Ms+rpe0Fzw6opm
+=F9q/
 -----END PGP SIGNATURE-----
 
---9UV9rz0O2dU/yYYn--
+--M/SuVGWktc5uNpra--
