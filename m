@@ -1,29 +1,16 @@
-Return-Path: <Yanjiang.Jin@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVMqq5VZqzDvtR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 16:18:15 +1100 (AEDT)
-Message-ID: <58410402.506@windriver.com>
-Date: Fri, 2 Dec 2016 13:17:54 +0800
-From: yjin <yanjiang.jin@windriver.com>
-MIME-Version: 1.0
-To: Pan Xinhui <xinhui@linux.vnet.ibm.com>, Balbir Singh
- <bsingharora@gmail.com>
-CC: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, <oss@buserror.net>,
- <jinyanjiang@gmail.com>, "open list:LINUX FOR POWERPC
- (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] powerpc: cputime: fix a compile warning
-References: <1479704219-21403-1-git-send-email-yanjiang.jin@windriver.com>
- <874m2n7yrf.fsf@concordia.ellerman.id.au>
- <CAKTCnzkY_g8Z61K_rQetLGbcGdJ-VUV79MEBkZej=yCM3=KJkw@mail.gmail.com>
- <5840FA25.3010009@windriver.com>
- <546ba7c8-999c-b393-b4b3-ee8602b724fd@linux.vnet.ibm.com>
-In-Reply-To: <546ba7c8-999c-b393-b4b3-ee8602b724fd@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tVN5L4g23zDw28
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 16:29:58 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
+ Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH v2] powerpc/powernv: Initialise nest mmu
+Date: Fri,  2 Dec 2016 16:29:48 +1100
+Message-Id: <1480656588-25504-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,88 +20,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+POWER9 contains an off core mmu called the nest mmu (NMMU). This is
+used by other hardware units on the chip to translate virtual
+addresses into real addresses. The unit attempting an address
+translation provides the majority of the context required for the
+translation request except for the base address of the partition table
+(ie. the PTCR) which needs to be programmed into the NMMU.
 
-On 2016年12月02日 13:15, Pan Xinhui wrote:
->
->
-> 在 2016/12/2 12:35, yjin 写道:
->>
->> On 2016年12月02日 12:22, Balbir Singh wrote:
->>> On Fri, Dec 2, 2016 at 3:15 PM, Michael Ellerman 
->>> <mpe@ellerman.id.au> wrote:
->>>> yanjiang.jin@windriver.com writes:
->>>>
->>>>> diff --git a/arch/powerpc/include/asm/cputime.h 
->>>>> b/arch/powerpc/include/asm/cputime.h
->>>>> index 4f60db0..4423e97 100644
->>>>> --- a/arch/powerpc/include/asm/cputime.h
->>>>> +++ b/arch/powerpc/include/asm/cputime.h
->>>>> @@ -228,7 +228,8 @@ static inline cputime_t 
->>>>> clock_t_to_cputime(const unsigned long clk)
->>>>>        return (__force cputime_t) ct;
->>>>>   }
->>>>>
->>>>> -#define cputime64_to_clock_t(ct) cputime_to_clock_t((cputime_t)(ct))
->>>>> +#define cputime64_to_clock_t(ct)     \
->>>>> +     (__force u64)(cputime_to_clock_t((cputime_t)(ct)))
->>>> Given the name of the function is "cputime64 to clock_t", surely we
->>>> should be returning a clock_t ?
->>> Please fix it in cpuacct.c  Also check out git commit
->>> 527b0a76f41d062381adbb55c8eb61e32cb0bfc9
->>> sched/cpuacct: Avoid %lld seq_printf warning
->>
->> Hi Balbir,
->>
->> Where can I find this commit?
->>
-> hello,
->     it is in next tree. :)
+This patch adds a call to OPAL to set the PTCR for the nest mmu in
+opal_init().
 
-Got it. Thanks!
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+ arch/powerpc/include/asm/opal-api.h            |  3 ++-
+ arch/powerpc/include/asm/opal.h                |  1 +
+ arch/powerpc/mm/pgtable-radix.c                |  8 ++++++--
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/opal.c          | 11 +++++++++++
+ arch/powerpc/platforms/powernv/powernv.h       |  6 ++++++
+ 6 files changed, 27 insertions(+), 3 deletions(-)
 
-Regards!
-Yanjiang
-
->
-> commit 527b0a76f41d062381adbb55c8eb61e32cb0bfc9
-> Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Date:   Fri Nov 11 15:27:49 2016 +0100
->
->     sched/cpuacct: Avoid %lld seq_printf warning
->         For s390 kernel builds I keep getting this warning:
->          kernel/sched/cpuacct.c: In function 'cpuacct_stats_show':
->      kernel/sched/cpuacct.c:298:25: warning: format '%lld' expects 
-> argument of type 'long long int', but argument 4 has type 'clock_t 
-> {aka long int}' [-Wformat=]
->        seq_printf(sf, "%s %lld\n",
->         Silence the warning by adding an explicit cast.
->         Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
->     Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
->     Cc: Linus Torvalds <torvalds@linux-foundation.org>
->     Cc: Peter Zijlstra <peterz@infradead.org>
->     Cc: Thomas Gleixner <tglx@linutronix.de>
->     Link: 
-> http://lkml.kernel.org/r/20161111142749.6545-1-schwidefsky@de.ibm.com
->     Signed-off-by: Ingo Molnar <mingo@kernel.org>
->
-> diff --git a/kernel/sched/cpuacct.c b/kernel/sched/cpuacct.c
-> index bc0b309c..9add206 100644
-> --- a/kernel/sched/cpuacct.c
-> +++ b/kernel/sched/cpuacct.c
-> @@ -297,7 +297,7 @@ static int cpuacct_stats_show(struct seq_file *sf, 
-> void *v)
->         for (stat = 0; stat < CPUACCT_STAT_NSTATS; stat++) {
->                 seq_printf(sf, "%s %lld\n",
->                            cpuacct_stat_desc[stat],
-> -                          cputime64_to_clock_t(val[stat]));
-> +                          (long long)cputime64_to_clock_t(val[stat]));
->         }
->
->         return 0;
->
->> Thanks!
->> Yanjiang
->>>
->>> Balbir
->>
->
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0e2e57b..a0aa285 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -167,7 +167,8 @@
+ #define OPAL_INT_EOI				124
+ #define OPAL_INT_SET_MFRR			125
+ #define OPAL_PCI_TCE_KILL			126
+-#define OPAL_LAST				126
++#define OPAL_NMMU_SET_PTCR			127
++#define OPAL_LAST				127
+ 
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index e958b70..b61c3d3 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -229,6 +229,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ 			     uint32_t pe_num, uint32_t tce_size,
+ 			     uint64_t dma_addr, uint32_t npages);
++int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 688b545..b9ae2a1 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -18,6 +18,7 @@
+ #include <asm/machdep.h>
+ #include <asm/mmu.h>
+ #include <asm/firmware.h>
++#include <platforms/powernv/powernv.h>
+ 
+ #include <trace/events/thp.h>
+ 
+@@ -177,7 +178,7 @@ static void __init radix_init_pgtable(void)
+ 
+ static void __init radix_init_partition_table(void)
+ {
+-	unsigned long rts_field;
++	unsigned long rts_field, ptcr;
+ 
+ 	rts_field = radix__get_tree_size();
+ 
+@@ -193,7 +194,9 @@ static void __init radix_init_partition_table(void)
+ 	 * update partition table control register,
+ 	 * 64 K size.
+ 	 */
+-	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
++	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
++	mtspr(SPRN_PTCR, ptcr);
++	powernv_set_ptcr(ptcr);
+ }
+ 
+ void __init radix_init_native(void)
+@@ -408,6 +411,7 @@ void radix__mmu_cleanup_all(void)
+ 		lpcr = mfspr(SPRN_LPCR);
+ 		mtspr(SPRN_LPCR, lpcr & ~LPCR_UPRT);
+ 		mtspr(SPRN_PTCR, 0);
++		powernv_set_ptcr(0);
+ 		radix__flush_tlb_all();
+ 	}
+ }
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 44d2d84..894639b 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -308,4 +308,5 @@ OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
+ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+ OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+ OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
++OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
+ OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 6c9a65b..054e774 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -885,6 +885,17 @@ int opal_error_code(int rc)
+ 	}
+ }
+ 
++void powernv_set_ptcr(unsigned long ptcr)
++{
++	int rc;
++
++	if (firmware_has_feature(FW_FEATURE_OPAL)) {
++		rc = opal_nmmu_set_ptcr(-1UL, ptcr);
++		if (rc != OPAL_SUCCESS || rc != OPAL_UNSUPPORTED)
++			pr_warn("%s: Unable to set nest mmu ptcr\n", __func__);
++	}
++}
++
+ EXPORT_SYMBOL_GPL(opal_poll_events);
+ EXPORT_SYMBOL_GPL(opal_rtc_read);
+ EXPORT_SYMBOL_GPL(opal_rtc_write);
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index da7c843..6fa9551 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -9,6 +9,12 @@ static inline void pnv_smp_init(void) { }
+ 
+ struct pci_dev;
+ 
++#ifdef CONFIG_PPC_POWERNV
++extern void powernv_set_ptcr(unsigned long ptcr);
++#else
++static inline void powernv_set_ptcr(unisigned long ptcr) { }
++#endif
++
+ #ifdef CONFIG_PCI
+ extern void pnv_pci_init(void);
+ extern void pnv_pci_shutdown(void);
+-- 
+2.1.4
