@@ -1,19 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <bsingharora@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVTlb71zdzDw2X
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 20:44:59 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/64: Fix checksum folding in
- csum_tcpudp_nofold and ip_fast_csum_nofold
-In-Reply-To: <20161103051055.GA8368@fergus.ozlabs.ibm.com>
-References: <20161103051055.GA8368@fergus.ozlabs.ibm.com>
-Date: Fri, 02 Dec 2016 20:44:58 +1100
-Message-ID: <87y3zyy89x.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tVWWV1NL3zDw2Z
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 22:04:38 +1100 (AEDT)
+Received: from mail-ua0-x242.google.com (mail-ua0-x242.google.com
+ [IPv6:2607:f8b0:400c:c08::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tVWWT0xFqz9vDS
+ for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2016 22:04:37 +1100 (AEDT)
+Received: by mail-ua0-x242.google.com with SMTP id 50so24347814uae.2
+ for <linuxppc-dev@ozlabs.org>; Fri, 02 Dec 2016 03:04:37 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1480656588-25504-1-git-send-email-alistair@popple.id.au>
+References: <1480656588-25504-1-git-send-email-alistair@popple.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 2 Dec 2016 22:04:34 +1100
+Message-ID: <CAKTCnzkAaKNtcTOGuyO=kkjFGFSObGeEf+Dy0qvTM7xXit5dJg@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/powernv: Initialise nest mmu
+To: Alistair Popple <alistair@popple.id.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@ozlabs.org> writes:
+<snip>
 
-> These functions compute an IP checksum by computing a 64-bit sum and
-> folding it to 32 bits (the "nofold" in their names refers to folding
-> down to 16 bits).  However, doing (u32) (s + (s >> 32)) is not
-> sufficient to fold a 64-bit sum to 32 bits correctly.  The addition
-> can produce a carry out from bit 31, which needs to be added in to
-> the sum to produce the correct result.
+>  static void __init radix_init_partition_table(void)
+>  {
+> -       unsigned long rts_field;
+> +       unsigned long rts_field, ptcr;
+
+I think these functions have changed, check for conflicts against
+http://git.kernel.org/cgit/linux/kernel/git/paulus/powerpc.git/commit/?h=kvm-ppc-next&id=9d66195807ac6cb8a14231fd055ff755977c5fca
+
+
+
 >
-> To fix this, we copy the from64to32() function from lib/checksum.c
-> and use that.
+>         rts_field = radix__get_tree_size();
+>
+> @@ -193,7 +194,9 @@ static void __init radix_init_partition_table(void)
+>          * update partition table control register,
+>          * 64 K size.
+>          */
+<snip>
+>
+> +#ifdef CONFIG_PPC_POWERNV
+> +extern void powernv_set_ptcr(unsigned long ptcr);
+> +#else
+> +static inline void powernv_set_ptcr(unisigned long ptcr) { }
 
-This collided with:
+Michael caught you for this already
 
-f9d4286b9516 ("arch/powerpc: Update parameters for csum_tcpudp_magic & csum_tcpudp_nofold")
-
-Mind rebasing?
-
-cheers
+Balbir
