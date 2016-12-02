@@ -1,19 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVLKy0DBfzDvkq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 15:10:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tVLQs1Yl7zDvkq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 15:15:01 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andreas Schwab <schwab@linux-m68k.org>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] adb: properly mark continued kernel messages
-In-Reply-To: <87oa0zpcvg.fsf_-_@linux-m68k.org>
-References: <87r35ynzoe.fsf@linux-m68k.org>
- <1480200189.11342.4.camel@au1.ibm.com> <87oa0zpcvg.fsf_-_@linux-m68k.org>
-Date: Fri, 02 Dec 2016 15:10:43 +1100
-Message-ID: <877f7j7yyk.fsf@concordia.ellerman.id.au>
+To: yanjiang.jin@windriver.com, benh@kernel.crashing.org, paulus@samba.org,
+ oss@buserror.net
+Cc: linuxppc-dev@lists.ozlabs.org, yanjiang.jin@windriver.com,
+ linux-kernel@vger.kernel.org, jinyanjiang@gmail.com
+Subject: Re: [PATCH] powerpc: cputime: fix a compile warning
+In-Reply-To: <1479704219-21403-1-git-send-email-yanjiang.jin@windriver.com>
+References: <1479704219-21403-1-git-send-email-yanjiang.jin@windriver.com>
+Date: Fri, 02 Dec 2016 15:15:00 +1100
+Message-ID: <874m2n7yrf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,37 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andreas Schwab <schwab@linux-m68k.org> writes:
+yanjiang.jin@windriver.com writes:
 
-> Use pr_cont where appropriate, and switch to pr_foo throughout.
-> Additionally, lower messages in adb_probe_task to debug level.
->
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
-> ---
->  drivers/macintosh/adb.c    | 24 +++++++++-----------
->  drivers/macintosh/adbhid.c | 56 +++++++++++++++++++++++-----------------------
->  2 files changed, 39 insertions(+), 41 deletions(-)
->
-> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-> index 226179b975..5abc265383 100644
-> --- a/drivers/macintosh/adb.c
-> +++ b/drivers/macintosh/adb.c
-> @@ -206,18 +206,17 @@ static int adb_scan_bus(void)
->  	}
+> diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+> index 4f60db0..4423e97 100644
+> --- a/arch/powerpc/include/asm/cputime.h
+> +++ b/arch/powerpc/include/asm/cputime.h
+> @@ -228,7 +228,8 @@ static inline cputime_t clock_t_to_cputime(const unsigned long clk)
+>  	return (__force cputime_t) ct;
+>  }
 >  
->  	/* Now fill in the handler_id field of the adb_handler entries. */
-> -	printk(KERN_DEBUG "adb devices:");
-> +	pr_debug("adb devices:\n");
+> -#define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
+> +#define cputime64_to_clock_t(ct)	\
+> +	(__force u64)(cputime_to_clock_t((cputime_t)(ct)))
 
-Unfortunately pr_debug() is not directly equivalent to printk(KERN_DEBUG).
-The latter always prints at DEBUG level, the former prints at DEBUG
-level if it is enabled via dynamic debug, or if DEBUG is #defined in the
-source.
-
-So in general using pr_debug() means the messages won't be printed,
-unless a user takes some action to enable it.
-
-Perhaps in this case that's actually what we want to do, but if so we
-should call it out in the change log.
+Given the name of the function is "cputime64 to clock_t", surely we
+should be returning a clock_t ?
 
 cheers
