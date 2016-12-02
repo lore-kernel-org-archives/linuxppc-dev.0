@@ -1,27 +1,22 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVkdW4YxfzDw3w
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 06:25:35 +1100 (AEDT)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Dave Young <dyoung@redhat.com>, linux-kernel@vger.kernel.org,
- fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
- kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>, vgoyal@redhat.com
-References: <148007477669.1053.4107773905913128028.stgit@hbathini.in.ibm.com>
- <148007484315.1053.12317233313990302812.stgit@hbathini.in.ibm.com>
- <20161201045653.GA13670@dhcp-128-65.nay.redhat.com>
- <fe3784de-a68b-5d6e-a9ab-f77a7da781a8@linux.vnet.ibm.com>
-Date: Fri, 02 Dec 2016 13:22:39 -0600
-In-Reply-To: <fe3784de-a68b-5d6e-a9ab-f77a7da781a8@linux.vnet.ibm.com> (Hari
- Bathini's message of "Fri, 2 Dec 2016 16:56:48 +0530")
-Message-ID: <87mvge16gw.fsf@xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [PATCH v2 2/5] ia64: reuse append_elf_note() and final_note()
- functions
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tVlHX35g9zDvy8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 06:55:04 +1100 (AEDT)
+Message-ID: <1480708489.3947.3.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, yanjiang.jin@windriver.com,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jinyanjiang@gmail.com
+Date: Fri, 02 Dec 2016 13:54:49 -0600
+In-Reply-To: <874m2n7yrf.fsf@concordia.ellerman.id.au>
+References: <1479704219-21403-1-git-send-email-yanjiang.jin@windriver.com>
+ <874m2n7yrf.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH] powerpc: cputime: fix a compile warning
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,72 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+On Fri, 2016-12-02 at 15:15 +1100, Michael Ellerman wrote:
+> yanjiang.jin@windriver.com writes:
+> 
+> > 
+> > diff --git a/arch/powerpc/include/asm/cputime.h
+> > b/arch/powerpc/include/asm/cputime.h
+> > index 4f60db0..4423e97 100644
+> > --- a/arch/powerpc/include/asm/cputime.h
+> > +++ b/arch/powerpc/include/asm/cputime.h
+> > @@ -228,7 +228,8 @@ static inline cputime_t clock_t_to_cputime(const
+> > unsigned long clk)
+> >  	return (__force cputime_t) ct;
+> >  }
+> >  
+> > -#define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct
+> > ))
+> > +#define cputime64_to_clock_t(ct)	\
+> > +	(__force u64)(cputime_to_clock_t((cputime_t)(ct)))
+> Given the name of the function is "cputime64 to clock_t", surely we
+> should be returning a clock_t ?
 
-> Hi Dave,
->
->
-> Thanks for the review.
->
->
-> On Thursday 01 December 2016 10:26 AM, Dave Young wrote:
->> Hi Hari
->>
->> Personally I like V1 more, but split the patch 2 is easier for ia64
->> people to reivew.  I did basic x86 testing, it runs ok.
->>
->> On 11/25/16 at 05:24pm, Hari Bathini wrote:
->>> Get rid of multiple definitions of append_elf_note() & final_note()
->>> functions. Reuse these functions compiled under CONFIG_CRASH_CORE.
->>>
->>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
->>> ---
->>>   arch/ia64/kernel/crash.c   |   22 ----------------------
->>>   include/linux/crash_core.h |    4 ++++
->>>   kernel/crash_core.c        |    6 +++---
->>>   kernel/kexec_core.c        |   28 ----------------------------
->>>   4 files changed, 7 insertions(+), 53 deletions(-)
->>>
->>> diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
->>> index 2955f35..75859a0 100644
->>> --- a/arch/ia64/kernel/crash.c
->>> +++ b/arch/ia64/kernel/crash.c
->>> @@ -27,28 +27,6 @@ static int kdump_freeze_monarch;
->>>   static int kdump_on_init = 1;
->>>   static int kdump_on_fatal_mca = 1;
->>>   -static inline Elf64_Word
->>> -*append_elf_note(Elf64_Word *buf, char *name, unsigned type, void *data,
->>> -		size_t data_len)
->>> -{
->>> -	struct elf_note *note = (struct elf_note *)buf;
->>> -	note->n_namesz = strlen(name) + 1;
->>> -	note->n_descsz = data_len;
->>> -	note->n_type   = type;
->>> -	buf += (sizeof(*note) + 3)/4;
->>> -	memcpy(buf, name, note->n_namesz);
->>> -	buf += (note->n_namesz + 3)/4;
->>> -	memcpy(buf, data, data_len);
->>> -	buf += (data_len + 3)/4;
->>> -	return buf;
->>> -}
->>> -
->>> -static void
->>> -final_note(void *buf)
->>> -{
->>> -	memset(buf, 0, sizeof(struct elf_note));
->>> -}
->>> -
->> The above IA64 version looks better than the functions in kexec_core.c
->> about the Elf64_Word type usage and the simpler final_note function.
->
-> Hmmm.. Is void* better over Elf64_Word* to be agnostic of Elf32 or
-> Elf64 type?
+That was my initial reaction but it seems that this function has meant "return
+a u64 that is otherwise like clock_t" since before the beginning of git
+history.  Both generic implementations return u64, including
+jiffies_64_to_clock_t which does so explicitly.
 
-Both Elf64_Word and Elf32_Word result in a u32.  So I expect the right
-solution is to add a definition of Elf_Word to include/linux/elf.h
-and to make the buffer "Elf_Word *buf".
-
-That way we preserve the alignment knowledge, while making the code
-depend on 32bit or 64bit.
-
-Eric
+-Scott
