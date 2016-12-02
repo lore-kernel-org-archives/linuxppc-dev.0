@@ -2,17 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVL1r139YzDw3H
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 14:56:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tVLKy0DBfzDvkq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 15:10:46 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ben Hutchings <ben@decadent.org.uk>, linuxppc-dev@lists.ozlabs.org
-Cc: Alexander Graf <agraf@suse.de>,
- Benjamin Herrenschmidt  <benh@kernel.crashing.org>, <paulus@samba.org>
-Subject: Re: [PATCH 1/2] powerpc: Remove Mac-on-Linux hooks
-In-Reply-To: <20161202023552.GJ2697@decadent.org.uk>
-References: <20161202023552.GJ2697@decadent.org.uk>
-Date: Fri, 02 Dec 2016 14:56:47 +1100
-Message-ID: <87a8cf7zls.fsf@concordia.ellerman.id.au>
+To: Andreas Schwab <schwab@linux-m68k.org>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] adb: properly mark continued kernel messages
+In-Reply-To: <87oa0zpcvg.fsf_-_@linux-m68k.org>
+References: <87r35ynzoe.fsf@linux-m68k.org>
+ <1480200189.11342.4.camel@au1.ibm.com> <87oa0zpcvg.fsf_-_@linux-m68k.org>
+Date: Fri, 02 Dec 2016 15:10:43 +1100
+Message-ID: <877f7j7yyk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,57 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben Hutchings <ben@decadent.org.uk> writes:
+Andreas Schwab <schwab@linux-m68k.org> writes:
 
-> [ Unknown signature status ]
-> The symbols exported for use by MOL aren't getting CRCs and I was
-> about to fix that.  But MOL is dead upstream, and the latest work on
-> it was to make it use KVM instead of its own kernel module.  So remove
-> them instead.
-
-Sounds good to me.
-
-> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-> index 9d963547d243..87998430cd9b 100644
-> --- a/arch/powerpc/kernel/head_32.S
-> +++ b/arch/powerpc/kernel/head_32.S
-> @@ -735,11 +735,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
->  	EXCEPTION(0x2c00, Trap_2c, unknown_exception, EXC_XFER_EE)
->  	EXCEPTION(0x2d00, Trap_2d, unknown_exception, EXC_XFER_EE)
->  	EXCEPTION(0x2e00, Trap_2e, unknown_exception, EXC_XFER_EE)
-> -	EXCEPTION(0x2f00, MOLTrampoline, unknown_exception, EXC_XFER_EE_LITE)
-> -
-> -	.globl mol_trampoline
-> -	.set mol_trampoline, i0x2f00
-> -	EXPORT_SYMBOL(mol_trampoline)
-> +	EXCEPTION(0x2f00, Trap_2f, unknown_exception, EXC_XFER_EE)
+> Use pr_cont where appropriate, and switch to pr_foo throughout.
+> Additionally, lower messages in adb_probe_task to debug level.
+>
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> ---
+>  drivers/macintosh/adb.c    | 24 +++++++++-----------
+>  drivers/macintosh/adbhid.c | 56 +++++++++++++++++++++++-----------------------
+>  2 files changed, 39 insertions(+), 41 deletions(-)
+>
+> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+> index 226179b975..5abc265383 100644
+> --- a/drivers/macintosh/adb.c
+> +++ b/drivers/macintosh/adb.c
+> @@ -206,18 +206,17 @@ static int adb_scan_bus(void)
+>  	}
 >  
->  	. = 0x3000
->  
-> @@ -1289,7 +1285,6 @@ intercept_table:
->  	.long 0, 0, 0, 0, 0, 0, 0, 0
->  	.long 0, 0, 0, 0, 0, 0, 0, 0
->  	.long 0, 0, 0, 0, 0, 0, 0, 0
-> -EXPORT_SYMBOL(intercept_table)
+>  	/* Now fill in the handler_id field of the adb_handler entries. */
+> -	printk(KERN_DEBUG "adb devices:");
+> +	pr_debug("adb devices:\n");
 
-I don't see intercept_table used anywhere, so I think we can just remove
-it entirely?
+Unfortunately pr_debug() is not directly equivalent to printk(KERN_DEBUG).
+The latter always prints at DEBUG level, the former prints at DEBUG
+level if it is enabled via dynamic debug, or if DEBUG is #defined in the
+source.
 
-> diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/hash_low_32.S
-> index 09cc50c8dace..cddf14f60bf3 100644
-> --- a/arch/powerpc/mm/hash_low_32.S
-> +++ b/arch/powerpc/mm/hash_low_32.S
-> @@ -34,7 +34,6 @@
->  	.globl mmu_hash_lock
->  mmu_hash_lock:
->  	.space	4
-> -EXPORT_SYMBOL(mmu_hash_lock)
->  #endif /* CONFIG_SMP */
+So in general using pr_debug() means the messages won't be printed,
+unless a user takes some action to enable it.
 
-And now mmu_hash_lock is only used in this file, so doesn't need to be
-global anymore.
-
-I can fix both of those up here, will just wait a bit to see if anyone
-else has comments.
+Perhaps in this case that's actually what we want to do, but if so we
+should call it out in the change log.
 
 cheers
