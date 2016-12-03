@@ -1,48 +1,21 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVtpH53W5zDw40
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 12:33:42 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB31XdKL117294
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Dec 2016 20:33:39 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 273envpvma-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Dec 2016 20:33:38 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Fri, 2 Dec 2016 18:33:34 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 7169A3E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 18:33:32 -0700 (MST)
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB31XWpc7733510
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 3 Dec 2016 01:33:32 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EC547AE03B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 20:33:31 -0500 (EST)
-Received: from oc7015585048.ibm.com (unknown [9.48.102.228])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP id A9A92AE034
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2016 20:33:31 -0500 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tW7Hb0MJgzDvwd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 21:56:27 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>,
+ Alistair Popple <alistair@popple.id.au>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 Subject: Re: [PATCH v2] powerpc/powernv: Initialise nest mmu
-To: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <CAKTCnzkAaKNtcTOGuyO=kkjFGFSObGeEf+Dy0qvTM7xXit5dJg@mail.gmail.com>
 References: <1480656588-25504-1-git-send-email-alistair@popple.id.au>
- <871sxqznt2.fsf@concordia.ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Fri, 2 Dec 2016 17:33:30 -0800
+ <CAKTCnzkAaKNtcTOGuyO=kkjFGFSObGeEf+Dy0qvTM7xXit5dJg@mail.gmail.com>
+Date: Sat, 03 Dec 2016 21:56:22 +1100
+Message-ID: <87twalxovd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <871sxqznt2.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <305fa5b2-ca6b-c7d6-98d0-d1b04db6e02c@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,27 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/02/2016 01:24 AM, Michael Ellerman wrote:
-> Alistair Popple <alistair@popple.id.au> writes:
-> 
->> diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
->> index da7c843..6fa9551 100644
->> --- a/arch/powerpc/platforms/powernv/powernv.h
->> +++ b/arch/powerpc/platforms/powernv/powernv.h
->> @@ -9,6 +9,12 @@ static inline void pnv_smp_init(void) { }
->>  
->>  struct pci_dev;
->>  
->> +#ifdef CONFIG_PPC_POWERNV
->> +extern void powernv_set_ptcr(unsigned long ptcr);
->> +#else
->> +static inline void powernv_set_ptcr(unisigned long ptcr) { }
->                                          ^
->                                          Your shout next time we're at the pub ;)
-> 
-> cheers
-> 
+Balbir Singh <bsingharora@gmail.com> writes:
 
-Ah, the elusive unicorn of signed longs!
+> <snip>
+>
+>>  static void __init radix_init_partition_table(void)
+>>  {
+>> -       unsigned long rts_field;
+>> +       unsigned long rts_field, ptcr;
+>
+> I think these functions have changed, check for conflicts against
+> http://git.kernel.org/cgit/linux/kernel/git/paulus/powerpc.git/commit/?h=kvm-ppc-next&id=9d66195807ac6cb8a14231fd055ff755977c5fca
 
--Tyrel
+They did, I ended up with:
+
+https://github.com/linuxppc/linux/commit/fb7314c5d6b00dbaaac14c28a52a87dee7e726df
+
+modified   arch/powerpc/mm/pgtable_64.c
+@@ -44,6 +44,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/pgtable.h>
+ #include <asm/mmu.h>
++#include <asm/opal.h>
+ #include <asm/smp.h>
+ #include <asm/machdep.h>
+ #include <asm/tlb.h>
+@@ -435,7 +436,7 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ void __init mmu_partition_table_init(void)
+ {
+-	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
++	unsigned long ptcr, patb_size = 1UL << PATB_SIZE_SHIFT;
+ 
+ 	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
+ 	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
+@@ -448,7 +449,9 @@ void __init mmu_partition_table_init(void)
+ 	 * update partition table control register,
+ 	 * 64 K size.
+ 	 */
+-	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
++	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
++	mtspr(SPRN_PTCR, ptcr);
++	powernv_set_ptcr(ptcr);
+ }
+ 
+ void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
+
+
+cheers
