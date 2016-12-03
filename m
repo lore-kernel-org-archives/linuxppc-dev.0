@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tW83j4g8mzDwBK
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 22:31:13 +1100 (AEDT)
-In-Reply-To: <20161201002305.14591-1-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, ruscur@russell.cc, gwshan@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tW83k2F8mzDwB5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 22:31:14 +1100 (AEDT)
+In-Reply-To: <20161126032031.12765-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: pradghos@in.ibm.com, ukrishn@linux.vnet.ibm.com
-Subject: Re: powerpc/eeh: fix deadlock when PE frozen state can't be cleared
-Message-Id: <3tW83j2zrGz9t1B@ozlabs.org>
-Date: Sat,  3 Dec 2016 22:31:13 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/64: place .text immediately following .head.text
+Message-Id: <3tW83k1STcz9t1F@ozlabs.org>
+Date: Sat,  3 Dec 2016 22:31:14 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,23 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-12-01 at 00:23:05 UTC, Andrew Donnellan wrote:
-> In eeh_reset_device(), we take the pci_rescan_remove_lock immediately after
-> after we call eeh_reset_pe() to reset the PCI controller. We then call
-> eeh_clear_pe_frozen_state(), which can return an error. In this case, we
-> bail out of eeh_reset_device() without calling pci_unlock_rescan_remove().
+On Sat, 2016-11-26 at 03:20:31 UTC, Nicholas Piggin wrote:
+> Do not introduce any additional alignment. Placement of text section
+> will be set by fixed section macros. Without this, output section
+> alignment defaults to 4096, which makes BookE text section start at
+> 0x1000 when it is expected to start at 0x100.
 > 
-> Add a call to pci_unlock_rescan_remove() in the eeh_clear_pe_frozen_state()
-> error path so that we don't cause a deadlock later on.
+> This was introduced by 57f266497d81 ("powerpc: Use gas sections for
+> arranging exception vectors") and was caught with the scripted head
+> section checker (not yet merged).
 > 
-> Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
-> Fixes: 78954700631f ("powerpc/eeh: Avoid I/O access during PE reset")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Russell Currey <ruscur@russell.cc>
+> Fixes: 57f266497d81
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/409bf7f8a02ef88db5a0f2cdcf9489
+https://git.kernel.org/powerpc/c/dadc4a1bb9f0095343ed9dd4f1d9f3
 
 cheers
