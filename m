@@ -1,22 +1,24 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tVlHX35g9zDvy8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 06:55:04 +1100 (AEDT)
-Message-ID: <1480708489.3947.3.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Michael Ellerman <mpe@ellerman.id.au>, yanjiang.jin@windriver.com,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jinyanjiang@gmail.com
-Date: Fri, 02 Dec 2016 13:54:49 -0600
-In-Reply-To: <874m2n7yrf.fsf@concordia.ellerman.id.au>
-References: <1479704219-21403-1-git-send-email-yanjiang.jin@windriver.com>
- <874m2n7yrf.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH] powerpc: cputime: fix a compile warning
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tVrwR5zGXzDw40
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 11:08:55 +1100 (AEDT)
+Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
+ [150.101.137.131])
+ by ozlabs.org (Postfix) with ESMTP id 3tVrwR4FD4z9t1H
+ for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2016 11:08:55 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com
+Subject: Re: [PATCH v2] powerpc/powernv: Initialise nest mmu
+Date: Sat, 03 Dec 2016 11:08:51 +1100
+Message-ID: <1581241.5C7qS6j5fY@new-mexico>
+In-Reply-To: <871sxqznt2.fsf@concordia.ellerman.id.au>
+References: <1480656588-25504-1-git-send-email-alistair@popple.id.au>
+ <871sxqznt2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-12-02 at 15:15 +1100, Michael Ellerman wrote:
-> yanjiang.jin@windriver.com writes:
+On Fri, 2 Dec 2016 08:24:09 PM Michael Ellerman wrote:
+> Alistair Popple <alistair@popple.id.au> writes:
 > 
-> > 
-> > diff --git a/arch/powerpc/include/asm/cputime.h
-> > b/arch/powerpc/include/asm/cputime.h
-> > index 4f60db0..4423e97 100644
-> > --- a/arch/powerpc/include/asm/cputime.h
-> > +++ b/arch/powerpc/include/asm/cputime.h
-> > @@ -228,7 +228,8 @@ static inline cputime_t clock_t_to_cputime(const
-> > unsigned long clk)
-> >  	return (__force cputime_t) ct;
-> >  }
-> >  
-> > -#define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct
-> > ))
-> > +#define cputime64_to_clock_t(ct)	\
-> > +	(__force u64)(cputime_to_clock_t((cputime_t)(ct)))
-> Given the name of the function is "cputime64 to clock_t", surely we
-> should be returning a clock_t ?
+> > diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+> > index da7c843..6fa9551 100644
+> > --- a/arch/powerpc/platforms/powernv/powernv.h
+> > +++ b/arch/powerpc/platforms/powernv/powernv.h
+> > @@ -9,6 +9,12 @@ static inline void pnv_smp_init(void) { }
+> >  
+> >  struct pci_dev;
+> >  
+> > +#ifdef CONFIG_PPC_POWERNV
+> > +extern void powernv_set_ptcr(unsigned long ptcr);
+> > +#else
+> > +static inline void powernv_set_ptcr(unisigned long ptcr) { }
+>                                          ^
+>                                          Your shout next time we're at the pub ;)
 
-That was my initial reaction but it seems that this function has meant "return
-a u64 that is otherwise like clock_t" since before the beginning of git
-history.  Both generic implementations return u64, including
-jiffies_64_to_clock_t which does so explicitly.
+Whoops. Guess I was too keen to get there myself. Thanks for picking that up!
 
--Scott
+> cheers
