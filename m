@@ -1,21 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tW7Hb0MJgzDvwd
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 21:56:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tW7WD6vkdzDw1q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 22:06:32 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>,
- Alistair Popple <alistair@popple.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v2] powerpc/powernv: Initialise nest mmu
-In-Reply-To: <CAKTCnzkAaKNtcTOGuyO=kkjFGFSObGeEf+Dy0qvTM7xXit5dJg@mail.gmail.com>
-References: <1480656588-25504-1-git-send-email-alistair@popple.id.au>
- <CAKTCnzkAaKNtcTOGuyO=kkjFGFSObGeEf+Dy0qvTM7xXit5dJg@mail.gmail.com>
-Date: Sat, 03 Dec 2016 21:56:22 +1100
-Message-ID: <87twalxovd.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: npiggin@gmail.com
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, amodra@gmail.com,
+ nickc@redhat.com
+Subject: [PATCH v2] powerpc/boot: Request no dynamic linker for boot wrapper
+Date: Sat,  3 Dec 2016 22:06:28 +1100
+Message-Id: <1480763188-20224-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +20,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+From: Nicholas Piggin <npiggin@gmail.com>
 
-> <snip>
->
->>  static void __init radix_init_partition_table(void)
->>  {
->> -       unsigned long rts_field;
->> +       unsigned long rts_field, ptcr;
->
-> I think these functions have changed, check for conflicts against
-> http://git.kernel.org/cgit/linux/kernel/git/paulus/powerpc.git/commit/?h=kvm-ppc-next&id=9d66195807ac6cb8a14231fd055ff755977c5fca
+The boot wrapper performs its own relocations and does not require
+PT_INTERP segment. However currently we don't tell the linker that.
 
-They did, I ended up with:
+Prior to binutils 2.28 that works OK. But since binutils commit
+1a9ccd70f9a7 ("Fix the linker so that it will not silently generate ELF
+binaries with invalid program headers. Fix readelf to report such
+invalid binaries.") binutils tries to create a program header segment
+due to PT_INTERP, and the link fails because there is no space for it:
 
-https://github.com/linuxppc/linux/commit/fb7314c5d6b00dbaaac14c28a52a87dee7e726df
+  ld: arch/powerpc/boot/zImage.pseries: Not enough room for program headers, try linking with -N
+  ld: final link failed: Bad value
 
-modified   arch/powerpc/mm/pgtable_64.c
-@@ -44,6 +44,7 @@
- #include <asm/mmu_context.h>
- #include <asm/pgtable.h>
- #include <asm/mmu.h>
-+#include <asm/opal.h>
- #include <asm/smp.h>
- #include <asm/machdep.h>
- #include <asm/tlb.h>
-@@ -435,7 +436,7 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
- #ifdef CONFIG_PPC_BOOK3S_64
- void __init mmu_partition_table_init(void)
- {
--	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
-+	unsigned long ptcr, patb_size = 1UL << PATB_SIZE_SHIFT;
+So tell the linker not to do that, by passing --no-dynamic-linker.
+
+Reported-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+[mpe: Drop dependency on ld-version.sh and massage change log]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/boot/wrapper | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
+
+v2: Drop dependency on ld-version.sh.
+
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 404b3aabdb4d..76fe3ccfd381 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -181,6 +181,28 @@ case "$elfformat" in
+     elf32-powerpc)	format=elf32ppc	;;
+ esac
  
- 	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
- 	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
-@@ -448,7 +449,9 @@ void __init mmu_partition_table_init(void)
- 	 * update partition table control register,
- 	 * 64 K size.
- 	 */
--	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
-+	mtspr(SPRN_PTCR, ptcr);
-+	powernv_set_ptcr(ptcr);
- }
++ld_version()
++{
++    # Poached from scripts/ld-version.sh, but we don't want to call that because
++    # this script (wrapper) is distributed separately from the kernel source.
++    # Extract linker version number from stdin and turn into single number.
++    awk '{
++	gsub(".*\\)", "");
++	gsub(".*version ", "");
++	gsub("-.*", "");
++	split($1,a, ".");
++	print a[1]*100000000 + a[2]*1000000 + a[3]*10000;
++	exit
++    }'
++}
++
++# Do not include PT_INTERP segment when linking pie. Non-pie linking
++# just ignores this option.
++LD_VERSION=$(${CROSS}ld --version | ld_version)
++LD_NO_DL_MIN_VERSION=$(echo 2.26 | ld_version)
++if [ "$LD_VERSION" -ge "$LD_NO_DL_MIN_VERSION" ] ; then
++	nodl="--no-dynamic-linker"
++fi
  
- void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
-
-
-cheers
+ platformo=$object/"$platform".o
+ lds=$object/zImage.lds
+@@ -446,7 +468,7 @@ if [ "$platform" != "miboot" ]; then
+         text_start="-Ttext $link_address"
+     fi
+ #link everything
+-    ${CROSS}ld -m $format -T $lds $text_start $pie -o "$ofile" \
++    ${CROSS}ld -m $format -T $lds $text_start $pie $nodl -o "$ofile" \
+ 	$platformo $tmp $object/wrapper.a
+     rm $tmp
+ fi
+-- 
+2.7.4
