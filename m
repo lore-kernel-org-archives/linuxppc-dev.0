@@ -2,15 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tW80H4SbTzDw28
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 22:28:15 +1100 (AEDT)
-In-Reply-To: <20161108060806.16168-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tW80K0NxHzDw2Q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 22:28:17 +1100 (AEDT)
+In-Reply-To: <1479207578-8762-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/pseries: add definitions for new H_SIGNAL_SYS_RESET hcall
-Message-Id: <3tW80H3Pn5z9t1F@ozlabs.org>
-Date: Sat,  3 Dec 2016 22:28:15 +1100 (AEDT)
+Subject: Re: powerpc/64: Define ILLEGAL_POINTER_VALUE for 64-bit
+Message-Id: <3tW80J5GSnz9t1d@ozlabs.org>
+Date: Sat,  3 Dec 2016 22:28:16 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-11-08 at 06:08:06 UTC, Nicholas Piggin wrote:
-> This has not made its way to a PAPR release yet, but we have an hcall
-> number assigned.
+On Tue, 2016-11-15 at 10:59:38 UTC, Michael Ellerman wrote:
+> This is used in poison.h to offset poison values so that they don't
+> point directly into user space.
 > 
->   H_SIGNAL_SYS_RESET = 0x380
+> The value we choose sits roughly between user and kernel space, which
+> means on their own the poison values don't point anywhere useful. If an
+> attacker can cause an access at some offset from the poison value then
+> we may still be in trouble, but by putting the poison values between
+> user and kernel space we maximise the required size of that offset.
 > 
->   Syntax:
->   hcall(uint64 H_SIGNAL_SYS_RESET, /* generate a system reset NMI on   */
->                                    /* the threads indicated by target  */
->         int64 target); /* thread target selection */
->         /* -1 = target all online threads including the caller         */
->         /* -2 = target all online threads except for the caller        */
->         /* All other negative values: reserved                         */
->         /* Positive values: The thread to be targeted,                 */
->         /* obtained from the value of the "ibm,ppc-interrupt-server#s" */
->         /* property of the CPU in the OF device tree                   */
-> 
->   Semantics:
->   - If the NMI handlers are not registered, terminate the partition.
->   - Invalid target: return H_Parameter.
->   - Otherwise: Generate a system reset NMI on target thread(s),
->     return H_Success.
-> 
-> This will be used by crash/debug code to get stuck CPUs into a known state.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/53ce299615e587e900548eb6b384c3
+https://git.kernel.org/powerpc/c/f6853eb561fb9bfd56dfe0009f0ea2
 
 cheers
