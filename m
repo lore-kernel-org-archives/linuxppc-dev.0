@@ -2,14 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tW80D53vjzDw1s
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 22:28:12 +1100 (AEDT)
-In-Reply-To: <1479471342-24195-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tW80F40pGzDw1s
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2016 22:28:13 +1100 (AEDT)
+In-Reply-To: <1480585846-7936-1-git-send-email-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/2] powerpc/prom: Define structs for client architecture vectors
-Message-Id: <3tW80D3NKxz9t1B@ozlabs.org>
-Date: Sat,  3 Dec 2016 22:28:12 +1100 (AEDT)
+Subject: Re: [v2,1/2] powerpc/cell: Drop select of MEMORY_HOTPLUG
+Message-Id: <3tW80F2G3qz9t1F@ozlabs.org>
+Date: Sat,  3 Dec 2016 22:28:13 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,18 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-11-18 at 12:15:41 UTC, Michael Ellerman wrote:
-> The "client architecture vectors" are a series of structures we pass to
-> firmware to define various things, such as what processors we support
-> and many other options.
+On Thu, 2016-12-01 at 09:50:45 UTC, Michael Ellerman wrote:
+> SPU_FS selects MEMORY_HOTPLUG, which is problematic because
+> MEMORY_HOTPLUG is user selectable, meaning we can end up with a broken
+> .config where MEMORY_HOTPLUG is enabled but its dependencies are not,
+> leading to build breakages.
 > 
-> Each structure is entirely different so we have to define a different
-> struct for each one, but that's OK.
+> The select of MEMORY_HOTPLUG for SPU_FS was added back in 2006, in
+> commit 4da30d15b6d5 ("[POWERPC] spufs: fix memory hotplug dependency").
+> 
+> However we reworked the spufs code and removed the dependency on memory
+> hotplug in 2007 in commit 78bde53e351b ("[POWERPC] spufs: remove need
+> for struct page for SPEs").
+> 
+> So drop the select as it's no longer needed and causes problems.
 > 
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/d03d1d65b5570ab6fba462a09c2b32
+https://git.kernel.org/powerpc/c/577ec789a79eb34f85a26c01f38516
 
 cheers
