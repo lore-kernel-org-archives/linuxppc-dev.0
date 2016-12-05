@@ -1,21 +1,51 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXV9N27Z2zDqcf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 03:10:48 +1100 (AEDT)
-Subject: Re: [PATCH 1/1] serial/uuc_uart: Set shutdown timeout to CONFIG_HZ
- independent 2ms
-To: Alexander Stein <alexander.stein@systec-electronic.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org
-References: <1480953058-4958-1-git-send-email-alexander.stein@systec-electronic.com>
-From: Timur Tabi <timur@tabi.org>
-Message-ID: <5845900B.5010108@tabi.org>
-Date: Mon, 5 Dec 2016 10:04:27 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXYyK3cylzDvw5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 06:01:29 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB5IwcWj108563
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 14:01:26 -0500
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2759gy19cd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2016 14:01:26 -0500
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Mon, 5 Dec 2016 17:01:24 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id C29981DC006E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 14:01:21 -0500 (EST)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uB5J1Lxn4927512
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 17:01:21 -0200
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uB5J1Kor023770
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 17:01:21 -0200
+Subject: Re: [PATCH v2] of/irq: improve error report on irq discovery process
+ failure
+To: Rob Herring <robh+dt@kernel.org>
+References: <1480946356-16778-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <CAL_JsqKg4+SANVuhfjFQRrC4Ax7OhAjwuBpo0Xes9UFevFAdWg@mail.gmail.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Frank Rowand <frowand.list@gmail.com>, Marc Zyngier <marc.zyngier@arm.com>
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Date: Mon, 5 Dec 2016 17:01:20 -0200
 MIME-Version: 1.0
-In-Reply-To: <1480953058-4958-1-git-send-email-alexander.stein@systec-electronic.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <CAL_JsqKg4+SANVuhfjFQRrC4Ax7OhAjwuBpo0Xes9UFevFAdWg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5845B980.2030609@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +55,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Stein wrote:
-> -		schedule_timeout(2);
-> +		schedule_timeout(msecs_to_jiffies(2));
+On 12/05/2016 12:28 PM, Rob Herring wrote:
+> On Mon, Dec 5, 2016 at 7:59 AM, Guilherme G. Piccoli
+> <gpiccoli@linux.vnet.ibm.com> wrote:
+>> On PowerPC machines some PCI slots might not have level triggered
+>> interrupts capability (also know as level signaled interrupts),
+>> leading of_irq_parse_pci() to complain by presenting error messages
+>> on the kernel log - in this case, the properties "interrupt-map" and
+>> "interrupt-map-mask" are not present on device's node in the device
+>> tree.
+>>
+>> This patch introduces a different message for this specific case,
+>> and also reduces its level from error to warning. Besides, we warn
+>> (once) that possibly some PCI slots on the system have no level
+>> triggered interrupts available.
+>> We changed some error return codes too on function of_irq_parse_raw()
+>> in order other failure's cases can be presented in a more precise way.
+>>
+>> Before this patch, when an adapter was plugged in a slot without level
+>> interrupts capabilitiy on PowerPC, we saw a generic error message
+>> like this:
+>>
+>>     [54.239] pci 002d:70:00.0: of_irq_parse_pci() failed with rc=-22
+>>
+>> Now, with this applied, we see the following specific message:
+>>
+>>     [16.154] pci 0014:60:00.1: of_irq_parse_pci: no interrupt-map found,
+>>     INTx interrupts not available
+>>
+>> Finally, we standardize the error path in of_irq_parse_raw() by always
+>> taking the fail path instead of returning directly from the loop.
+>>
+>> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+>> ---
+>>
+>> v2:
+>>   * Changed function return code to always return negative values;
+> 
+> Are you sure this is safe? This is tricky because of differing values
+> of NO_IRQ (0 or -1).
 
-NACK.
+Thanks Rob, but this is purely bad wording from myself. I'm sorry - I
+meant to say that I changed only my positive return code (that was
+suggested to be removed in the prior revision) to negative return code!
 
-So I don't remember why I wrote this code, but I don't think I was 
-expecting it to be 2ms.  Instead, I think I just wanted it to be some 
-delay, but I believed that schedule_timeout(1) was too short or would be 
-"optimized" out somehow.
+So, I changed only code I added myself in v1 =)
 
-Note that right below this, I do:
 
-	if (qe_port->wait_closing) {
-		/* Wait a bit longer */
-		set_current_state(TASK_UNINTERRUPTIBLE);
-		schedule_timeout(qe_port->wait_closing);
-	}
+> 
+>>   * Improved/simplified warning outputs;
+>>   * Changed some return codes and some error paths in of_irq_parse_raw()
+>> in order to be more precise/consistent;
+> 
+> This too could have some side effects on callers.
+> 
+> Not saying don't do these changes, just need some assurances this has
+> been considered.
 
-And wait_closing is a number of jiffies, so I knew that 
-schedule_timeout() took jiffies as a parameter.
+Thanks for your attention. I performed a quick investigation before
+changing this, all the places that use the return values are just
+getting "true/false" information from that, meaning they just are
+comparing to 0 basically. So change -EINVAL to -ENOENT wouldn't hurt any
+user of these return values, it'll only become more informative IMHO.
 
-So I think I'm going to NACK this patch, since I believe I knew what I 
-was doing when I wrote it five years ago.
+Now, regarding the only error path that was changed: for some reason,
+this was the only place in which we didn't goto fail label in case of
+failure - it was added by a legacy commit from Ben, dated from 2006:
+006b64de60 ("[POWERPC] Make OF irq map code detect more error cases").
+Then it was carried by Grant Likely's commit 7dc2e1134a ("of/irq: merge
+irq mapping code"), 6-year old commit.
+I wasn't able to imagine a scenario in which changing this would break
+something; I believe the change improve consistency, but I'd remove it
+if you or somebody else thinks it worth be removed.
+
+Cheers,
+
+Guilherme
+
+
+> 
+> Rob
+> 
