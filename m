@@ -1,46 +1,35 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joao.Pinto@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay2.synopsys.com
+ [198.182.60.111])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXLTk1hWtzDw4P
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 21:24:26 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB5AK4PL024574
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 05:24:24 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27541n6hw3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2016 05:24:23 -0500
-Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Mon, 5 Dec 2016 15:54:21 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id D3095394004E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 15:54:18 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB5ANhpa18743472
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 15:53:43 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB5AOCYP029241
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 15:54:18 +0530
-From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, peterz@infradead.org, mingo@redhat.com,
- paulmck@linux.vnet.ibm.com, waiman.long@hpe.com,
- xinhui.pan@linux.vnet.ibm.com,
- virtualization@lists.linux-foundation.org, boqun.feng@gmail.com
-Subject: [PATCH v8 6/6] powerpc/pv-qspinlock: Optimise native unlock path
-Date: Mon,  5 Dec 2016 10:19:26 -0500
-In-Reply-To: <1480951166-44830-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-References: <1480951166-44830-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1480951166-44830-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXLV41jtNzDw01
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 21:24:43 +1100 (AEDT)
+Subject: Re: [RFC PATCH] PCI: designware: add host_init() error handling
+To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Bjorn Helgaas
+ <bhelgaas@google.com>, <linux-pci@vger.kernel.org>
+References: <1480593077-15402-1-git-send-email-srinivas.kandagatla@linaro.org>
+ <f2c8ebba-e51a-5f47-2d96-c75f7e086c0e@synopsys.com>
+ <d416f9b3-20d9-0339-a4d2-9a4ba0669633@linaro.org>
+CC: Joao Pinto <Joao.Pinto@synopsys.com>, Kishon Vijay Abraham I
+ <kishon@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Kukjin Kim
+ <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, "Javier Martinez
+ Canillas" <javier@osg.samsung.com>, Richard Zhu <Richard.Zhu@freescale.com>,
+ Lucas Stach <l.stach@pengutronix.de>, Murali Karicheri <m-karicheri2@ti.com>,
+ Minghuan Lian <minghuan.Lian@freescale.com>, Mingkai Hu
+ <mingkai.hu@freescale.com>, Roy Zang <tie-fei.zang@freescale.com>, "Thomas
+ Petazzoni" <thomas.petazzoni@free-electrons.com>, Jose Abreu
+ <Jose.Abreu@synopsys.com>, Pratyush Anand <pratyush.anand@gmail.com>,
+ Stanimir Varbanov <svarbanov@mm-sol.com>, <linux-omap@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-msm@vger.kernel.org>
+From: Joao Pinto <Joao.Pinto@synopsys.com>
+Message-ID: <05a1f59e-b5da-7a6a-149e-7e9037deb7bd@synopsys.com>
+Date: Mon, 5 Dec 2016 10:24:33 +0000
+MIME-Version: 1.0
+In-Reply-To: <d416f9b3-20d9-0339-a4d2-9a4ba0669633@linaro.org>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,81 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Avoid a function call under native version of qspinlock. On powerNV,
-bafore applying this patch, every unlock is expensive. This small
-optimizes enhance the performance.
+Às 11:51 AM de 12/2/2016, Srinivas Kandagatla escreveu:
+> 
+> 
+> On 02/12/16 10:32, Joao Pinto wrote:
+>>
+>> Hi Srinivas,
+>>
+>> Às 11:51 AM de 12/1/2016, Srinivas Kandagatla escreveu:
+>>>  drivers/pci/host/pci-dra7xx.c           |  4 +++-
+>>>  drivers/pci/host/pci-exynos.c           |  4 +++-
+>>>  drivers/pci/host/pci-imx6.c             |  4 +++-
+>>>  drivers/pci/host/pci-keystone.c         |  4 +++-
+>>>  drivers/pci/host/pci-layerscape.c       | 12 ++++++++----
+>>>  drivers/pci/host/pcie-armada8k.c        |  4 +++-
+>>>  drivers/pci/host/pcie-designware-plat.c |  4 +++-
+>>>  drivers/pci/host/pcie-designware.c      |  4 +++-
+>>>  drivers/pci/host/pcie-designware.h      |  2 +-
+>>>  drivers/pci/host/pcie-qcom.c            |  6 ++++--
+>>>  drivers/pci/host/pcie-spear13xx.c       |  4 +++-
+>>>  11 files changed, 37 insertions(+), 15 deletions(-)
+>>>
+>>
+>> Thanks for the patch!
+>>
+>> In my opinion your idea is good but only qcom driver is able to detect failure
+>> in the specific host init routine, all others have a 'return 0' even if
+>> something not well init. I would recomend that we take this issue a bit further
+>> and add the error checking to all specific pci drivers in order to make them as
+>> robust as qcom'.
+> I totally agree with you, I can give this a go in next version.
 
-We use static_key with jump_label which removes unnecessary loads of
-lppaca and its stuff.
+Sure, but I think it would be better to finish now since we are on top of the
+task. I can help you if you need.
 
-Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/qspinlock_paravirt.h | 18 +++++++++++++++++-
- arch/powerpc/kernel/paravirt.c                |  4 ++++
- 2 files changed, 21 insertions(+), 1 deletion(-)
+Thanks Joao
 
-diff --git a/arch/powerpc/include/asm/qspinlock_paravirt.h b/arch/powerpc/include/asm/qspinlock_paravirt.h
-index d87cda0..8d39446 100644
---- a/arch/powerpc/include/asm/qspinlock_paravirt.h
-+++ b/arch/powerpc/include/asm/qspinlock_paravirt.h
-@@ -6,12 +6,14 @@
- #define _ASM_QSPINLOCK_PARAVIRT_H
- 
- #include  <asm/qspinlock_paravirt_types.h>
-+#include  <linux/jump_label.h>
- 
- extern void pv_lock_init(void);
- extern void native_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
- extern void __pv_init_lock_hash(void);
- extern void __pv_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
- extern void __pv_queued_spin_unlock(struct qspinlock *lock);
-+extern struct static_key_true sharedprocessor_key;
- 
- static inline void pv_queued_spin_lock(struct qspinlock *lock, u32 val)
- {
-@@ -20,7 +22,21 @@ static inline void pv_queued_spin_lock(struct qspinlock *lock, u32 val)
- 
- static inline void pv_queued_spin_unlock(struct qspinlock *lock)
- {
--	pv_lock_op.unlock(lock);
-+	/*
-+	 * on powerNV and pSeries with jump_label, code will be
-+	 *	PowerNV:		pSeries:
-+	 *	nop;			b 2f;
-+	 *	native unlock		2:
-+	 *				pv unlock;
-+	 * In this way, we can do unlock quick in native case.
-+	 *
-+	 * IF jump_label is not enabled, we fall back into
-+	 * if condition, IOW, ld && cmp && bne.
-+	 */
-+	if (static_branch_likely(&sharedprocessor_key))
-+		native_queued_spin_unlock(lock);
-+	else
-+		pv_lock_op.unlock(lock);
- }
- 
- static inline void pv_wait(u8 *ptr, u8 val)
-diff --git a/arch/powerpc/kernel/paravirt.c b/arch/powerpc/kernel/paravirt.c
-index e697b17..a0a000e 100644
---- a/arch/powerpc/kernel/paravirt.c
-+++ b/arch/powerpc/kernel/paravirt.c
-@@ -140,6 +140,9 @@ struct pv_lock_ops pv_lock_op = {
- };
- EXPORT_SYMBOL(pv_lock_op);
- 
-+struct static_key_true sharedprocessor_key = STATIC_KEY_TRUE_INIT;
-+EXPORT_SYMBOL(sharedprocessor_key);
-+
- void __init pv_lock_init(void)
- {
- 	if (SHARED_PROCESSOR) {
-@@ -149,5 +152,6 @@ void __init pv_lock_init(void)
- 		pv_lock_op.unlock = __pv_queued_spin_unlock;
- 		pv_lock_op.wait = __pv_wait;
- 		pv_lock_op.kick = __pv_kick;
-+		static_branch_disable(&sharedprocessor_key);
- 	}
- }
--- 
-2.4.11
+> 
+> Thanks,
+> srini
+> 
+>>
+>> Thanks,
+>> Joao
+>>
