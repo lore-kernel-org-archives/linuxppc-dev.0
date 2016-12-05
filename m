@@ -1,23 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXDzk187RzDvgw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 17:16:34 +1100 (AEDT)
-Date: Mon, 5 Dec 2016 17:16:33 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>,
- linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: build failure in the powerpc allyesconfig build
-Message-ID: <20161205171633.4e0cc235@canb.auug.org.au>
-In-Reply-To: <20161205164153.43c84010@roar.ozlabs.ibm.com>
-References: <20161205162204.02c2c236@canb.auug.org.au>
- <20161205162431.71013317@canb.auug.org.au>
- <20161205164153.43c84010@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXFKw4dxdzDsxq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 17:32:20 +1100 (AEDT)
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tXFKv6lY3z9t1h
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2016 17:32:19 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id x23so15454205pgx.3
+ for <linuxppc-dev@ozlabs.org>; Sun, 04 Dec 2016 22:32:19 -0800 (PST)
+Subject: Re: [PATCH v2] powerpc/powernv: Initialise nest mmu
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <1480903162-1986-1-git-send-email-mpe@ellerman.id.au>
+Cc: alistair@popple.id.au
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <dd699260-28a9-ccf3-3159-c127e819724f@gmail.com>
+Date: Mon, 5 Dec 2016 17:32:13 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1480903162-1986-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nick,
 
-On Mon, 5 Dec 2016 16:41:53 +1100 Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> In scripts/kallsyms.c, is there a table[i].sym string you can print?
 
-=46rom a quick try, it printed nothing useful i.e. just some garbled
-random characters.
+On 05/12/16 12:59, Michael Ellerman wrote:
+> From: Alistair Popple <alistair@popple.id.au>
+> 
+> POWER9 contains an off core mmu called the nest mmu (NMMU). This is used
+> by other hardware units on the chip to translate virtual addresses into
+> real addresses. The unit attempting an address translation provides the
+> majority of the context required for the translation request except for
+> the base address of the partition table (ie. the PTCR) which needs to be
+> programmed into the NMMU.
+> 
+> This patch adds a call to OPAL to set the PTCR for the nest mmu in
+> opal_init().
+> 
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
 
---=20
-Cheers,
-Stephen Rothwell
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
