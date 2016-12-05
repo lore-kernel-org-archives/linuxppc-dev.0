@@ -1,18 +1,21 @@
-Return-Path: <alexander.stein@systec-electronic.com>
-Received: from webbox1416.server-home.net (webbox1416.server-home.net
- [77.236.96.61])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tXTwl4tYPzDvyQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 02:59:51 +1100 (AEDT)
-From: Alexander Stein <alexander.stein@systec-electronic.com>
-To: Timur Tabi <timur@tabi.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>
-Cc: Alexander Stein <alexander.stein@systec-electronic.com>,
- linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org
-Subject: [PATCH 1/1] serial/uuc_uart: Set shutdown timeout to CONFIG_HZ
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXV9N27Z2zDqcf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 03:10:48 +1100 (AEDT)
+Subject: Re: [PATCH 1/1] serial/uuc_uart: Set shutdown timeout to CONFIG_HZ
  independent 2ms
-Date: Mon,  5 Dec 2016 16:50:58 +0100
-Message-Id: <1480953058-4958-1-git-send-email-alexander.stein@systec-electronic.com>
+To: Alexander Stein <alexander.stein@systec-electronic.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org
+References: <1480953058-4958-1-git-send-email-alexander.stein@systec-electronic.com>
+From: Timur Tabi <timur@tabi.org>
+Message-ID: <5845900B.5010108@tabi.org>
+Date: Mon, 5 Dec 2016 10:04:27 -0600
+MIME-Version: 1.0
+In-Reply-To: <1480953058-4958-1-git-send-email-alexander.stein@systec-electronic.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-schedule_timeout takes a timeout in jiffies resolution. So pass 2ms
-as a converted jiffies value. This makes the timeout independent of
-CONFIG_HZ.
+Alexander Stein wrote:
+> -		schedule_timeout(2);
+> +		schedule_timeout(msecs_to_jiffies(2));
 
-Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
----
- drivers/tty/serial/ucc_uart.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+NACK.
 
-diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
-index 481eb29..c6c01a4 100644
---- a/drivers/tty/serial/ucc_uart.c
-+++ b/drivers/tty/serial/ucc_uart.c
-@@ -827,7 +827,7 @@ static void qe_uart_shutdown(struct uart_port *port)
- 			break;
- 		}
- 		set_current_state(TASK_UNINTERRUPTIBLE);
--		schedule_timeout(2);
-+		schedule_timeout(msecs_to_jiffies(2));
- 	}
- 
- 	if (qe_port->wait_closing) {
--- 
-2.7.3
+So I don't remember why I wrote this code, but I don't think I was 
+expecting it to be 2ms.  Instead, I think I just wanted it to be some 
+delay, but I believed that schedule_timeout(1) was too short or would be 
+"optimized" out somehow.
+
+Note that right below this, I do:
+
+	if (qe_port->wait_closing) {
+		/* Wait a bit longer */
+		set_current_state(TASK_UNINTERRUPTIBLE);
+		schedule_timeout(qe_port->wait_closing);
+	}
+
+And wait_closing is a number of jiffies, so I knew that 
+schedule_timeout() took jiffies as a parameter.
+
+So I think I'm going to NACK this patch, since I believe I knew what I 
+was doing when I wrote it five years ago.
