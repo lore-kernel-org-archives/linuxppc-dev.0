@@ -1,15 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tX7H26HbszDt0L
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 12:59:26 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: alistair@popple.id.au
-Subject: [PATCH v2] powerpc/powernv: Initialise nest mmu
-Date: Mon,  5 Dec 2016 12:59:22 +1100
-Message-Id: <1480903162-1986-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tX8bQ0JHlzDvkP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 13:58:42 +1100 (AEDT)
+Message-ID: <1480906702.32531.7.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Sun, 04 Dec 2016 20:58:22 -0600
+In-Reply-To: <aa9a2f8a-a480-0cc9-adf6-4017c771fb46@c-s.fr>
+References: <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
+ <20161124052330.GA17212@home.buserror.net>
+ <aa9a2f8a-a480-0cc9-adf6-4017c771fb46@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [v3,2/3] powerpc: get hugetlbpage handling more generic
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,153 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alistair Popple <alistair@popple.id.au>
+On Fri, 2016-11-25 at 09:14 +0100, Christophe LEROY wrote:
+> 
+> Le 24/11/2016 à 06:23, Scott Wood a écrit :
+> > 
+> > On Wed, Sep 21, 2016 at 10:11:54AM +0200, Christophe Leroy wrote:
+> > > 
+> > > Today there are two implementations of hugetlbpages which are managed
+> > > by exclusive #ifdefs:
+> > > * FSL_BOOKE: several directory entries points to the same single
+> > > hugepage
+> > > * BOOK3S: one upper level directory entry points to a table of hugepages
+> > > 
+> > > In preparation of implementation of hugepage support on the 8xx, we
+> > > need a mix of the two above solutions, because the 8xx needs both cases
+> > > depending on the size of pages:
+> > > * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
+> > > that 2 PGD entries will be necessary to cover an 8M hugepage while a
+> > > single PGD entry will cover 8x 512k hugepages.
+> > > * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
+> > > that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
+> > > hugepages will be covers by one PGD entry.
+> > > 
+> > > This patch:
+> > > * removes #ifdefs in favor of if/else based on the range sizes
+> > > * merges the two huge_pte_alloc() functions as they are pretty similar
+> > > * merges the two hugetlbpage_init() functions as they are pretty similar
+> > > 
+> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > > Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > With this patch on e6500, running the hugetlb testsuite results in the
+> > system hanging in a storm of OOM killer invocations (I'll try to debug
+> > more deeply later).  This patch also changes the default hugepage size on
+> > FSL book3e from 4M to 16M.
+> > 
+> Regarding the default hugepage size, it is a result of the merge of the 
+> two hugetlbpage_init().
+> Should I add an ifdef to get 4M on FSL book3e by default ?
+> What's the reason for selecting different hugepage sizes depending on 
+> the CPU ? 
 
-POWER9 contains an off core mmu called the nest mmu (NMMU). This is used
-by other hardware units on the chip to translate virtual addresses into
-real addresses. The unit attempting an address translation provides the
-majority of the context required for the translation request except for
-the base address of the partition table (ie. the PTCR) which needs to be
-programmed into the NMMU.
+I'm not sure what the original reason was, but a change in defaults could
+disturb existing users.
 
-This patch adds a call to OPAL to set the PTCR for the nest mmu in
-opal_init().
+> I thought default size was selected based on what was existing.
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/opal-api.h            |  3 ++-
- arch/powerpc/include/asm/opal.h                |  7 +++++++
- arch/powerpc/mm/pgtable-radix.c                |  2 ++
- arch/powerpc/mm/pgtable_64.c                   |  7 +++++--
- arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
- arch/powerpc/platforms/powernv/opal.c          | 11 +++++++++++
- 6 files changed, 28 insertions(+), 3 deletions(-)
+...by code that doesn't expect 4M to ever exist.  Both 4M and 16M (and a bunch
+of other sizes) are available on FSL book3e.
 
-v2: Rebased onto powerpc#next.
+What is the reason for preferring 16M over 1M, but preferring 1M over 2M?
+ Seems arbitrary.
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0e2e57bcab50..a0aa285869b5 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -167,7 +167,8 @@
- #define OPAL_INT_EOI				124
- #define OPAL_INT_SET_MFRR			125
- #define OPAL_PCI_TCE_KILL			126
--#define OPAL_LAST				126
-+#define OPAL_NMMU_SET_PTCR			127
-+#define OPAL_LAST				127
- 
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 5c7db0f1a708..a3f9578614db 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -232,6 +232,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
- 			     uint32_t pe_num, uint32_t tce_size,
- 			     uint64_t dma_addr, uint32_t npages);
-+int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-@@ -310,6 +311,12 @@ static inline int opal_get_async_rc(struct opal_msg msg)
- 
- void opal_wake_poller(void);
- 
-+#ifdef CONFIG_PPC_POWERNV
-+extern void powernv_set_ptcr(unsigned long ptcr);
-+#else
-+static inline void powernv_set_ptcr(unsigned long ptcr) { }
-+#endif
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_OPAL_H */
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 623a0dc9a9fa..8af5ece4d0b3 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -12,6 +12,7 @@
- #include <linux/memblock.h>
- #include <linux/of_fdt.h>
- 
-+#include <asm/opal.h>
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
- #include <asm/dma.h>
-@@ -434,6 +435,7 @@ void radix__mmu_cleanup_all(void)
- 		lpcr = mfspr(SPRN_LPCR);
- 		mtspr(SPRN_LPCR, lpcr & ~LPCR_UPRT);
- 		mtspr(SPRN_PTCR, 0);
-+		powernv_set_ptcr(0);
- 		radix__flush_tlb_all();
- 	}
- }
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 8bca7f58afc4..461c902efbb7 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -44,6 +44,7 @@
- #include <asm/mmu_context.h>
- #include <asm/pgtable.h>
- #include <asm/mmu.h>
-+#include <asm/opal.h>
- #include <asm/smp.h>
- #include <asm/machdep.h>
- #include <asm/tlb.h>
-@@ -435,7 +436,7 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
- #ifdef CONFIG_PPC_BOOK3S_64
- void __init mmu_partition_table_init(void)
- {
--	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
-+	unsigned long ptcr, patb_size = 1UL << PATB_SIZE_SHIFT;
- 
- 	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
- 	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
-@@ -448,7 +449,9 @@ void __init mmu_partition_table_init(void)
- 	 * update partition table control register,
- 	 * 64 K size.
- 	 */
--	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
-+	mtspr(SPRN_PTCR, ptcr);
-+	powernv_set_ptcr(ptcr);
- }
- 
- void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 3aa40f1b20f5..f7c19c9c57ed 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -311,4 +311,5 @@ OPAL_CALL_REAL(opal_rm_int_eoi,			OPAL_INT_EOI);
- OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
- OPAL_CALL_REAL(opal_rm_int_set_mfrr,		OPAL_INT_SET_MFRR);
- OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
-+OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
- OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 282293572dc8..efc20e93cd36 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -875,6 +875,17 @@ int opal_error_code(int rc)
- 	}
- }
- 
-+void powernv_set_ptcr(unsigned long ptcr)
-+{
-+	int rc;
-+
-+	if (firmware_has_feature(FW_FEATURE_OPAL)) {
-+		rc = opal_nmmu_set_ptcr(-1UL, ptcr);
-+		if (rc != OPAL_SUCCESS || rc != OPAL_UNSUPPORTED)
-+			pr_warn("%s: Unable to set nest mmu ptcr\n", __func__);
-+	}
-+}
-+
- EXPORT_SYMBOL_GPL(opal_poll_events);
- EXPORT_SYMBOL_GPL(opal_rtc_read);
- EXPORT_SYMBOL_GPL(opal_rtc_write);
--- 
-2.7.4
+If we want to preserve the exsiting behavior without an ifdef, we could put a
+check for 4M before the other sizes, with a comment explaining why we're
+making the selection look even more arbitrary.  Or we could try to figure out
+what size actually makes a better default.
+
+> What testsuite do you run exactly ?
+
+The one that comes with libhugetlbfs (not a particularly recent version, but
+not sure exactly how old).
+
+-Scott
