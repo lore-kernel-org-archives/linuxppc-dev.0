@@ -1,42 +1,43 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXQRj21YGzDvh3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 00:22:56 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB5DJqmW106451
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 08:22:54 -0500
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2756v9g7ba-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXRFk6XX9zDvk1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 00:59:22 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB5DsqXW049512
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 08:59:20 -0500
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2758p9bteg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2016 08:22:54 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2016 08:59:20 -0500
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 5 Dec 2016 23:22:51 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B9CCB3578053
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 00:22:48 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB5DMmva58720406
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 00:22:48 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB5DMmCd027413
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 00:22:48 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: ukrishn@linux.vnet.ibm.com, pradghos@in.ibm.com, imunsie@au1.ibm.com,
- fbarrat@linux.vnet.ibm.com
-Subject: [PATCH] cxl: prevent read/write to AFU config space while AFU not
- configured
-Date: Tue,  6 Dec 2016 00:22:42 +1100
-Message-Id: <20161205132242.13517-1-andrew.donnellan@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Mon, 5 Dec 2016 11:59:18 -0200
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.18.232.42])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 218DE1DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 08:59:17 -0500 (EST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uB5DxHbZ38535408
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 11:59:17 -0200
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uB5DxG52007577
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 11:59:16 -0200
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: gpiccoli@linux.vnet.ibm.com, robh+dt@kernel.org, mark.rutland@arm.com,
+ benh@kernel.crashing.org, frowand.list@gmail.com, marc.zyngier@arm.com
+Subject: [PATCH v2] of/irq: improve error report on irq discovery process
+ failure
+Date: Mon,  5 Dec 2016 11:59:16 -0200
+Message-Id: <1480946356-16778-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,121 +47,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During EEH recovery, we deconfigure all AFUs whilst leaving the
-corresponding vPHB and virtual PCI device in place.
+On PowerPC machines some PCI slots might not have level triggered
+interrupts capability (also know as level signaled interrupts),
+leading of_irq_parse_pci() to complain by presenting error messages
+on the kernel log - in this case, the properties "interrupt-map" and
+"interrupt-map-mask" are not present on device's node in the device
+tree.
 
-If something attempts to interact with the AFU's PCI config space (e.g.
-running lspci) after the AFU has been deconfigured and before it's
-reconfigured, cxl_pcie_{read,write}_config() will read invalid values from
-the deconfigured struct cxl_afu and proceed to Oops when they try to
-dereference pointers that have been set to NULL during deconfiguration.
+This patch introduces a different message for this specific case,
+and also reduces its level from error to warning. Besides, we warn
+(once) that possibly some PCI slots on the system have no level
+triggered interrupts available.
+We changed some error return codes too on function of_irq_parse_raw()
+in order other failure's cases can be presented in a more precise way.
 
-Add a rwsem to struct cxl_afu so we can prevent interaction with config
-space while the AFU is deconfigured.
+Before this patch, when an adapter was plugged in a slot without level
+interrupts capabilitiy on PowerPC, we saw a generic error message
+like this:
 
-Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
-Suggested-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org # 4.4+
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+    [54.239] pci 002d:70:00.0: of_irq_parse_pci() failed with rc=-22
+
+Now, with this applied, we see the following specific message:
+
+    [16.154] pci 0014:60:00.1: of_irq_parse_pci: no interrupt-map found,
+    INTx interrupts not available
+
+Finally, we standardize the error path in of_irq_parse_raw() by always
+taking the fail path instead of returning directly from the loop.
+
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 ---
 
-Pradipta found this while doing testing for cxlflash. I've tested this 
-patch and I'm satisfied that it solves the issue, but I've asked Pradipta 
-to test it a bit further. 
+v2:
+  * Changed function return code to always return negative values;
+  * Improved/simplified warning outputs;
+  * Changed some return codes and some error paths in of_irq_parse_raw()
+in order to be more precise/consistent;
 
----
+ drivers/of/irq.c        | 19 ++++++++++++-------
+ drivers/of/of_pci_irq.c | 10 +++++++++-
+ 2 files changed, 21 insertions(+), 8 deletions(-)
 
- drivers/misc/cxl/cxl.h  |  2 ++
- drivers/misc/cxl/main.c |  3 ++-
- drivers/misc/cxl/pci.c  |  2 ++
- drivers/misc/cxl/vphb.c | 11 ++++++++++-
- 4 files changed, 16 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index a144073..379c463 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -418,6 +418,8 @@ struct cxl_afu {
- 	struct dentry *debugfs;
- 	struct mutex contexts_lock;
- 	spinlock_t afu_cntl_lock;
-+	/* Used to block access to AFU config space while deconfigured */
-+	struct rw_semaphore configured_rwsem;
+diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+index 393fea8..9deee86 100644
+--- a/drivers/of/irq.c
++++ b/drivers/of/irq.c
+@@ -104,7 +104,7 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+ 	const __be32 *match_array = initial_match_array;
+ 	const __be32 *tmp, *imap, *imask, dummy_imask[] = { [0 ... MAX_PHANDLE_ARGS] = ~0 };
+ 	u32 intsize = 1, addrsize, newintsize = 0, newaddrsize = 0;
+-	int imaplen, match, i;
++	int imaplen, match, i, rc = -EINVAL;
  
- 	/* AFU error buffer fields and bin attribute for sysfs */
- 	u64 eb_len, eb_offset;
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 62e0dfb..2a6bf1d 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -268,7 +268,8 @@ struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
- 	idr_init(&afu->contexts_idr);
- 	mutex_init(&afu->contexts_lock);
- 	spin_lock_init(&afu->afu_cntl_lock);
--
-+	init_rwsem(&afu->configured_rwsem);
-+	down_write(&afu->configured_rwsem);
- 	afu->prefault_mode = CXL_PREFAULT_NONE;
- 	afu->irqs_max = afu->adapter->user_irqs;
+ #ifdef DEBUG
+ 	of_print_phandle_args("of_irq_parse_raw: ", out_irq);
+@@ -134,7 +134,7 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+ 	pr_debug("of_irq_parse_raw: ipar=%s, size=%d\n", of_node_full_name(ipar), intsize);
  
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index c4d79b5d..c7b2121 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1129,6 +1129,7 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 	if ((rc = cxl_native_register_psl_irq(afu)))
- 		goto err2;
+ 	if (out_irq->args_count != intsize)
+-		return -EINVAL;
++		goto fail;
  
-+	up_write(&afu->configured_rwsem);
- 	return 0;
+ 	/* Look for this #address-cells. We have to implement the old linux
+ 	 * trick of looking for the parent here as some device-trees rely on it
+@@ -153,8 +153,10 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+ 	pr_debug(" -> addrsize=%d\n", addrsize);
  
- err2:
-@@ -1141,6 +1142,7 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 
- static void pci_deconfigure_afu(struct cxl_afu *afu)
- {
-+	down_write(&afu->configured_rwsem);
- 	cxl_native_release_psl_irq(afu);
- 	if (afu->adapter->native->sl_ops->release_serr_irq)
- 		afu->adapter->native->sl_ops->release_serr_irq(afu);
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index 3519ace..d79aba5 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -88,9 +88,16 @@ static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
- 	afu = (struct cxl_afu *)phb->private_data;
-+
-+	/* Grab a reader lock on afu. We rely on the caller to release this! */
-+	if (!down_read_trylock(&afu->configured_rwsem))
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
- 	record = cxl_pcie_cfg_record(bus->number, devfn);
--	if (record > afu->crs_num)
-+	if (record > afu->crs_num) {
-+		up_read(&afu->configured_rwsem);
- 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 	/* Range check so that the temporary buffer doesn't overflow */
+-	if (WARN_ON(addrsize + intsize > MAX_PHANDLE_ARGS))
++	if (WARN_ON(addrsize + intsize > MAX_PHANDLE_ARGS)) {
++		rc = -EFAULT;
+ 		goto fail;
 +	}
  
- 	*_afu = afu;
- 	*_record = record;
-@@ -127,6 +134,7 @@ static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
- 		WARN_ON(1);
+ 	/* Precalculate the match array - this simplifies match loop */
+ 	for (i = 0; i < addrsize; i++)
+@@ -240,10 +242,11 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+ 			    newintsize, newaddrsize);
+ 
+ 			/* Check for malformed properties */
+-			if (WARN_ON(newaddrsize + newintsize > MAX_PHANDLE_ARGS))
+-				goto fail;
+-			if (imaplen < (newaddrsize + newintsize))
++			if (WARN_ON(newaddrsize + newintsize > MAX_PHANDLE_ARGS)
++			    || (imaplen < (newaddrsize + newintsize))) {
++				rc = -EFAULT;
+ 				goto fail;
++			}
+ 
+ 			imap += newaddrsize + newintsize;
+ 			imaplen -= newaddrsize + newintsize;
+@@ -271,11 +274,13 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+ 		ipar = newpar;
+ 		newpar = NULL;
  	}
++	rc = -ENOENT; /* No interrupt-map found */
++
+  fail:
+ 	of_node_put(ipar);
+ 	of_node_put(newpar);
  
-+	up_read(&afu->configured_rwsem); /* locked in cxl_pcie_config_info() */
- 	if (rc)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
+-	return -EINVAL;
++	return rc;
+ }
+ EXPORT_SYMBOL_GPL(of_irq_parse_raw);
  
-@@ -157,6 +165,7 @@ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
- 		WARN_ON(1);
- 	}
- 
-+	up_read(&afu->configured_rwsem); /* locked in cxl_pcie_config_info() */
- 	if (rc)
- 		return PCIBIOS_SET_FAILED;
- 
+diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
+index 2306313..c175d9c 100644
+--- a/drivers/of/of_pci_irq.c
++++ b/drivers/of/of_pci_irq.c
+@@ -93,7 +93,15 @@ int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *out_irq
+ 		goto err;
+ 	return 0;
+ err:
+-	dev_err(&pdev->dev, "of_irq_parse_pci() failed with rc=%d\n", rc);
++	if (rc == -ENOENT) {
++		dev_warn(&pdev->dev,
++			"%s: no interrupt-map found, INTx interrupts not available\n",
++			__func__);
++		pr_warn_once("%s: possibly some PCI slots don't have level triggered interrupts capability\n",
++			__func__);
++	} else {
++		dev_err(&pdev->dev, "%s: failed with rc=%d\n", __func__, rc);
++	}
+ 	return rc;
+ }
+ EXPORT_SYMBOL_GPL(of_irq_parse_pci);
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.1.0
