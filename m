@@ -1,19 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXKsn6nmdzDvHh
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 20:56:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXKzg2KDPzDvtL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 21:01:51 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [RFC][PATCH] powerpc/oops: Provide disassembly on OOPS
-In-Reply-To: <a04c2ba0-88f7-17af-8c2f-8fda8569ec13@gmail.com>
-References: <a04c2ba0-88f7-17af-8c2f-8fda8569ec13@gmail.com>
-Date: Mon, 05 Dec 2016 20:56:41 +1100
-Message-ID: <877f7e66na.fsf@concordia.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: andrew.donnellan@au1.ibm.com, ben@decadent.org.uk, benh@kernel.crashing.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+ ruscur@russell.cc
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.9-7 tag
+Date: Mon, 05 Dec 2016 21:01:41 +1100
+Message-ID: <874m2i66ey.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha1; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,80 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
+--=-=-=
+Content-Type: text/plain
 
-> This patch is tied to xmon, it can be refactored out
-> better later if required. The idea is to provide
-> disassembly using xmon so that when we get an OOPS
-> we see something like the following below
->
-> ...
-> NIP [c00000000063a230] lkdtm_WARNING+0x0/0x10
-> LR [c00000000063986c] lkdtm_do_action+0x3c/0x80
-> Call Trace:
-> [c0000000ef1bbbc0] [c0000000009a5804] printk+0x50/0x64 (unreliable)
-> [c0000000ef1bbbe0] [c000000000639cc0] direct_entry+0x100/0x1b0
-> [c0000000ef1bbc70] [c00000000043eb4c] full_proxy_write+0x8c/0x100
-> [c0000000ef1bbcd0] [c00000000028fe24] __vfs_write+0x54/0x1c0
-> [c0000000ef1bbd80] [c000000000291138] vfs_write+0xc8/0x260
-> [c0000000ef1bbdd0] [c000000000292c98] SyS_write+0x78/0x120
-> [c0000000ef1bbe30] [c00000000000b220] system_call+0x38/0xfc
-> Instruction dump:
-> c00000000063a200  38630618      addi    r3,r3,1560
-> c00000000063a204  f8010010      std     r0,16(r1)
-> c00000000063a208  f821ffa1      stdu    r1,-96(r1)
-> c00000000063a20c  4836b0f1      bl      c0000000009a52fc# panic+0x8/0x304
-> c00000000063a210  60000000      nop
-> c00000000063a214  60000000      nop
-> c00000000063a218  60000000      nop
-> c00000000063a21c  60420000      ori     r2,r2,0
-> c00000000063a220  0fe00000      twi     31,r0,0
-> c00000000063a224  60000000      nop
-> c00000000063a228  60000000      nop
-> c00000000063a22c  60420000      ori     r2,r2,0
-> c00000000063a230  0fe00000      twi     31,r0,0
->                   ^^^^^^^^
+Hi Linus,
 
-> NOTE: That the <> around the instruction that caused the
-> OOPS is now replaced with a ^^^^ following the disassembly
-> in the output.
+Please pull what is hopefully the last batch of powerpc fixes for 4.9.
 
-I think I'd prefer:
-  c00000000063a22c  60420000      ori     r2,r2,0
-  c00000000063a230  0fe00000      twi     31,r0,0	# <- nip
-  c00000000063a234  4e800020      blr
+The following changes since commit 984d7a1ec67ce3a46324fa4bcb4c745bbc266cf2:
 
-Or maybe:
-  c00000000063a22c  60420000      ori     r2,r2,0
-  c00000000063a230  0fe00000      twi     31,r0,0	# Faulting instruction
-  c00000000063a234  4e800020      blr
+  powerpc/mm: Fixup kernel read only mapping (2016-11-25 14:18:25 +1100)
 
-?
+are available in the git repository at:
 
-> An issue was raised if as to whether calling
-> xmon during OOPS can cause further issues? xmon has been used
-> robustly in the past to look at OOPS and disassemble them
-> and moreover the OOPS output is at the end, so we've already
-> captured the GPR's and stack trace already.
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.9-7
 
-Once it's refactored properly you won't be calling xmon at all, you'll
-just be calling the disassembly code.
+for you to fetch changes up to dadc4a1bb9f0095343ed9dd4f1d9f3825d7b3e45:
 
-The problem we have is that currently print_insn_powerpc() is built
-using nonstdio.h, which means it is calling xmon_printf(), and that's
-not what we want to do for an oops. An oops is printed using printk. So
-that will need more work.
+  powerpc/64: Fix placement of .text to be immediately following .head.text (2016-12-01 22:26:31 +1100)
 
-> NOTE2: If CONFIG_XMON_DISASSEMBLY is turned off, the disassembly
-> will be printed as a list of .long(s). It is highly recommended
-> to have both CONFIG_XMON_DISASSEMBLY and CONFIG_XMON for usable
-> output.
+----------------------------------------------------------------
+powerpc fixes for 4.9 #7
 
-So once it's refactored CONFIG_XMON_DISASSEMBLY would become
-CONFIG_PPC_DISASSEMBLY (or something like that), and there'd be no
-dependency on CONFIG_XMON.
+Four fixes, the first for code we merged this cycle and three that are also
+going to stable:
 
-And so there'd be no fallback to printing longs, you'd either print the
-old compact format, or the disassembled format.
+ - On 64-bit Book3E we were not placing the .text section where we said we would
+   in the asm.
+ - We broke building the boot wrapper on some 32-bit toolchains.
+ - Lazy icache flushing was broken on pre-POWER5 machines.
+ - One of the error paths in our EEH code would lead to a deadlock.
 
-cheers
+Thanks to:
+  Andrew Donnellan, Ben Hutchings, Benjamin Herrenschmidt, Nicholas Piggin.
+
+----------------------------------------------------------------
+Andrew Donnellan (1):
+      powerpc/eeh: Fix deadlock when PE frozen state can't be cleared
+
+Ben Hutchings (1):
+      powerpc/boot: Fix build failure in 32-bit boot wrapper
+
+Benjamin Herrenschmidt (1):
+      powerpc/mm: Fix lazy icache flush on pre-POWER5
+
+Nicholas Piggin (1):
+      powerpc/64: Fix placement of .text to be immediately following .head.text
+
+ arch/powerpc/boot/Makefile        | 3 ++-
+ arch/powerpc/boot/opal.c          | 2 +-
+ arch/powerpc/kernel/eeh_driver.c  | 4 +++-
+ arch/powerpc/kernel/vmlinux.lds.S | 9 +++++++++
+ arch/powerpc/mm/hash64_4k.c       | 2 +-
+ arch/powerpc/mm/hash64_64k.c      | 4 ++--
+ 6 files changed, 18 insertions(+), 6 deletions(-)
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJYRTsGAAoJEFHr6jzI4aWASakP/1EH9pihRLvE8N7toqGIHIOB
+K4NjWyPbtUe8Q5Glle2ShpruoGVhCpITzrdb5FsVQIUtvNuQTtCRCmJAwH2AktGs
+IPHcgrNjcgswy+iElj+qWznIaxqoeSIWx7zfBaRmmWJLd+/2KEdMK9yb43+/rr3S
+9XVObJSsVRbFsbzJrREHD227xl9lgIpqTSFipJLFEt1fVHqkbJpdq9vJe6ngerBp
+U2qbmo46IR7XRcz0NNXD45BcT1Su8ww2slAQ3E9N9w7PlF2YS5aTMrjJJMRS61R8
+YU0DnXaklr+vA1oEp2LxOOfcV3XBUx86VUziLrGpg1WM3Y+Sz349PMoiG8A+3pVB
+q5BdNquf6dcUe5QyHeq+Wcy2qcHHExcX3IQYPxZdkyiL4UqUMBVA6uDf70+35TfC
+Ch3gPPSJgzn3lvYe5h5sPACX4vTUBm13qdIVRVvWRQ1rw07gtFJCmCjpQRzXIWJ5
+s665lL2iT4QNsu0wxiTtORvVFAjA12+PGKEwQnOGSMVIQSHtX6z9F02X99jpI6/y
+YTatR6rIfjY/IG+1gnnynUxGwrBQekRzL/EzQcAwu/ZmXm1Kuys8YrUJBwwtUzkR
+6/T85Y50OwxTNmy6pUe5iCiliN0Fz/63odlwe4T/9iQK3fDRaLRzTo7GeNeRCEJz
+exZL6rn6uk0DjByQ21Nx
+=QRy9
+-----END PGP SIGNATURE-----
+--=-=-=--
