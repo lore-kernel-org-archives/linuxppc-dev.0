@@ -1,26 +1,29 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <npiggin@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tX4j75T5jzDvkb
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 11:03:23 +1100 (AEDT)
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [150.101.137.141])
- by ozlabs.org (Postfix) with ESMTP id 3tX4j7424dz9t1F
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2016 11:03:23 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tX5D23rc3zDvkR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 11:26:42 +1100 (AEDT)
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tX5D15YWbz9t1h
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2016 11:26:41 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id p66so14573288pga.2
+ for <linuxppc-dev@ozlabs.org>; Sun, 04 Dec 2016 16:26:41 -0800 (PST)
+Date: Mon, 5 Dec 2016 11:26:26 +1100
+From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Balbir Singh <bsingharora@gmail.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v2] powerpc/powernv: Initialise nest mmu
-Date: Mon, 05 Dec 2016 11:02:35 +1100
-Message-ID: <1500348.HuelYn9x60@new-mexico>
-In-Reply-To: <87mvgdxmt1.fsf@concordia.ellerman.id.au>
-References: <1480656588-25504-1-git-send-email-alistair@popple.id.au>
- <87twalxovd.fsf@concordia.ellerman.id.au>
- <87mvgdxmt1.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, amodra@gmail.com,
+ nickc@redhat.com
+Subject: Re: [PATCH v2] powerpc/boot: Request no dynamic linker for boot
+ wrapper
+Message-ID: <20161205112626.12c41c3e@roar.ozlabs.ibm.com>
+In-Reply-To: <1480763188-20224-1-git-send-email-mpe@ellerman.id.au>
+References: <1480763188-20224-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Sat,  3 Dec 2016 22:06:28 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-On Sat, 3 Dec 2016 10:40:58 PM Michael Ellerman wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+> From: Nicholas Piggin <npiggin@gmail.com>
 > 
-> > Balbir Singh <bsingharora@gmail.com> writes:
-> >
-> >> <snip>
-> >>
-> >>>  static void __init radix_init_partition_table(void)
-> >>>  {
-> >>> -       unsigned long rts_field;
-> >>> +       unsigned long rts_field, ptcr;
-> >>
-> >> I think these functions have changed, check for conflicts against
-> >> http://git.kernel.org/cgit/linux/kernel/git/paulus/powerpc.git/commit/?h=kvm-ppc-next&id=9d66195807ac6cb8a14231fd055ff755977c5fca
-> >
-> > They did, I ended up with:
-> >
-> > https://github.com/linuxppc/linux/commit/fb7314c5d6b00dbaaac14c28a52a87dee7e726df
+> The boot wrapper performs its own relocations and does not require
+> PT_INTERP segment. However currently we don't tell the linker that.
 > 
-> It's not happy on mambo:
+> Prior to binutils 2.28 that works OK. But since binutils commit
+> 1a9ccd70f9a7 ("Fix the linker so that it will not silently generate ELF
+> binaries with invalid program headers. Fix readelf to report such
+> invalid binaries.") binutils tries to create a program header segment
+> due to PT_INTERP, and the link fails because there is no space for it:
 > 
-> WARNING: 20856759: (20856757): Invalid address 0x0000000028096258 in XSCOM range,  SCOM=0x00280962b
-> WARNING: 20856759: (20856757): Attempt to store non-existent address 0x00001A0028096258
-> 20856759: (20856757): 0x000000003002DA08 : stdcix  r26,r0,r3
-> FATAL ERROR: 20856759: (20856757): Check Stop for 0:0: Machine Check with ME bit of MSR off
+>   ld: arch/powerpc/boot/zImage.pseries: Not enough room for program headers, try linking with -N
+>   ld: final link failed: Bad value
 > 
-> Which looks to be one of the xscom_write()'s from opal_nmmu_set_ptcr().
+> So tell the linker not to do that, by passing --no-dynamic-linker.
+> 
+> Reported-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> [mpe: Drop dependency on ld-version.sh and massage change log]
 
-Weird. Do you happen to know which one? It should only be touching the NMMU
-PTCR register which is defined as 0x5012c4b.
+Thanks for fixing that up, it looks good.
 
-> Do I need a newer mambo?
-
-I'm not sure to be honest. I do all of my testing under Simics which uses Mambo
-internally but provides some additional models. Perhaps Mambo is missing a
-required model? Will see if I can recreate it under Simics with that branch.
-
-- Alistair
-
-> cheers
+Thanks,
+Nick
