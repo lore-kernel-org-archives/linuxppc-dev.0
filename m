@@ -1,34 +1,34 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+Received: from mx0a-001b2d01.pphosted.com (001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXLTb0TTXzDvyr
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 21:24:18 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXLTk1hWtzDw4P
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 21:24:26 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB5AK33v127869
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 05:24:16 -0500
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2753ydetcd-1
+ uB5AK4PL024574
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 05:24:24 -0500
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27541n6hw3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2016 05:24:16 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2016 05:24:23 -0500
 Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Mon, 5 Dec 2016 15:54:13 +0530
+ Mon, 5 Dec 2016 15:54:21 +0530
 Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1BBB61258026
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 15:55:18 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id D3095394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2016 15:54:18 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB5ANZ6W23003356
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 15:53:35 +0530
+ uB5ANhpa18743472
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 15:53:43 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB5AO3XJ028784
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 15:54:10 +0530
+ uB5AOCYP029241
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Dec 2016 15:54:18 +0530
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
@@ -36,11 +36,11 @@ Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
  paulmck@linux.vnet.ibm.com, waiman.long@hpe.com,
  xinhui.pan@linux.vnet.ibm.com,
  virtualization@lists.linux-foundation.org, boqun.feng@gmail.com
-Subject: [PATCH v8 5/6] powerpc: pSeries: Add pv-qspinlock build config/make
-Date: Mon,  5 Dec 2016 10:19:25 -0500
+Subject: [PATCH v8 6/6] powerpc/pv-qspinlock: Optimise native unlock path
+Date: Mon,  5 Dec 2016 10:19:26 -0500
 In-Reply-To: <1480951166-44830-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 References: <1480951166-44830-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1480951166-44830-6-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Message-Id: <1480951166-44830-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,44 +50,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pSeries run as a guest and might need pv-qspinlock.
+Avoid a function call under native version of qspinlock. On powerNV,
+bafore applying this patch, every unlock is expensive. This small
+optimizes enhance the performance.
+
+We use static_key with jump_label which removes unnecessary loads of
+lppaca and its stuff.
 
 Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/Makefile           | 1 +
- arch/powerpc/platforms/pseries/Kconfig | 8 ++++++++
- 2 files changed, 9 insertions(+)
+ arch/powerpc/include/asm/qspinlock_paravirt.h | 18 +++++++++++++++++-
+ arch/powerpc/kernel/paravirt.c                |  4 ++++
+ 2 files changed, 21 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 1925341..4780415 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -53,6 +53,7 @@ obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
- obj-$(CONFIG_PPC_P7_NAP)	+= idle_book3s.o
- procfs-y			:= proc_powerpc.o
- obj-$(CONFIG_PROC_FS)		+= $(procfs-y)
-+obj-$(CONFIG_PARAVIRT_SPINLOCKS)	+= paravirt.o
- rtaspci-$(CONFIG_PPC64)-$(CONFIG_PCI)	:= rtas_pci.o
- obj-$(CONFIG_PPC_RTAS)		+= rtas.o rtas-rtc.o $(rtaspci-y-y)
- obj-$(CONFIG_PPC_RTAS_DAEMON)	+= rtasd.o
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 8a87d06..0288c78 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -31,6 +31,14 @@ config ARCH_USE_QUEUED_SPINLOCKS
- 	  fairlock.  It has shown a good performance improvement on x86 and also ppc
- 	  especially in high contention cases.
+diff --git a/arch/powerpc/include/asm/qspinlock_paravirt.h b/arch/powerpc/include/asm/qspinlock_paravirt.h
+index d87cda0..8d39446 100644
+--- a/arch/powerpc/include/asm/qspinlock_paravirt.h
++++ b/arch/powerpc/include/asm/qspinlock_paravirt.h
+@@ -6,12 +6,14 @@
+ #define _ASM_QSPINLOCK_PARAVIRT_H
  
-+config PARAVIRT_SPINLOCKS
-+       bool "Paravirtialization support for qspinlock"
-+       depends on PPC_SPLPAR && QUEUED_SPINLOCKS
-+       default y
-+       help
-+         If kernel need run as a guest then enable this option.
-+         Generally it can let kernel have a better performace.
+ #include  <asm/qspinlock_paravirt_types.h>
++#include  <linux/jump_label.h>
+ 
+ extern void pv_lock_init(void);
+ extern void native_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
+ extern void __pv_init_lock_hash(void);
+ extern void __pv_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
+ extern void __pv_queued_spin_unlock(struct qspinlock *lock);
++extern struct static_key_true sharedprocessor_key;
+ 
+ static inline void pv_queued_spin_lock(struct qspinlock *lock, u32 val)
+ {
+@@ -20,7 +22,21 @@ static inline void pv_queued_spin_lock(struct qspinlock *lock, u32 val)
+ 
+ static inline void pv_queued_spin_unlock(struct qspinlock *lock)
+ {
+-	pv_lock_op.unlock(lock);
++	/*
++	 * on powerNV and pSeries with jump_label, code will be
++	 *	PowerNV:		pSeries:
++	 *	nop;			b 2f;
++	 *	native unlock		2:
++	 *				pv unlock;
++	 * In this way, we can do unlock quick in native case.
++	 *
++	 * IF jump_label is not enabled, we fall back into
++	 * if condition, IOW, ld && cmp && bne.
++	 */
++	if (static_branch_likely(&sharedprocessor_key))
++		native_queued_spin_unlock(lock);
++	else
++		pv_lock_op.unlock(lock);
+ }
+ 
+ static inline void pv_wait(u8 *ptr, u8 val)
+diff --git a/arch/powerpc/kernel/paravirt.c b/arch/powerpc/kernel/paravirt.c
+index e697b17..a0a000e 100644
+--- a/arch/powerpc/kernel/paravirt.c
++++ b/arch/powerpc/kernel/paravirt.c
+@@ -140,6 +140,9 @@ struct pv_lock_ops pv_lock_op = {
+ };
+ EXPORT_SYMBOL(pv_lock_op);
+ 
++struct static_key_true sharedprocessor_key = STATIC_KEY_TRUE_INIT;
++EXPORT_SYMBOL(sharedprocessor_key);
 +
- config PPC_SPLPAR
- 	depends on PPC_PSERIES
- 	bool "Support for shared-processor logical partitions"
+ void __init pv_lock_init(void)
+ {
+ 	if (SHARED_PROCESSOR) {
+@@ -149,5 +152,6 @@ void __init pv_lock_init(void)
+ 		pv_lock_op.unlock = __pv_queued_spin_unlock;
+ 		pv_lock_op.wait = __pv_wait;
+ 		pv_lock_op.kick = __pv_kick;
++		static_branch_disable(&sharedprocessor_key);
+ 	}
+ }
 -- 
 2.4.11
