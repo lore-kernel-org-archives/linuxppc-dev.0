@@ -1,46 +1,29 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
+ [IPv6:2607:f8b0:4001:c06::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tY7hs3FrGzDvjh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 04:21:49 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB6HKfC9107105
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 12:21:46 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2760s4kc26-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 12:21:45 -0500
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 7 Dec 2016 03:21:43 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9715B3578053
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 04:21:41 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB6HLfNN46792912
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 04:21:41 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB6HLefF013441
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 04:21:41 +1100
-Date: Tue, 6 Dec 2016 22:51:36 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] PPC: sstep.c: Add modsw, moduw instruction emulation
-References: <20161204165521.10045-1-prasannatsmkumar@gmail.com>
- <20161206063628.GF3450@naverao1-tp.localdomain>
- <CANc+2y6hp3-Dw0YJmeGOvgXDZ_Rn9hpyzxrajohsYSnVnGm8OA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYD6c0fgtzDrWR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 07:40:55 +1100 (AEDT)
+Received: by mail-io0-x236.google.com with SMTP id c21so620539003ioj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 12:40:55 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CANc+2y6hp3-Dw0YJmeGOvgXDZ_Rn9hpyzxrajohsYSnVnGm8OA@mail.gmail.com>
-Message-Id: <20161206172136.GI3450@naverao1-tp.localdomain>
+Sender: keescook@google.com
+In-Reply-To: <20161206062800.21800-3-andrew.donnellan@au1.ibm.com>
+References: <20161206062800.21800-1-andrew.donnellan@au1.ibm.com>
+ <20161206062800.21800-3-andrew.donnellan@au1.ibm.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 6 Dec 2016 12:40:50 -0800
+Message-ID: <CAGXu5jKQf4ReBkGC85+r_j1rVUFTZoeWk9A_mjhjnFHq1PAr8Q@mail.gmail.com>
+Subject: Re: [PATCH 3/3] powerpc: enable support for GCC plugins
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Emese Revfy <re.emese@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Michal Marek <mmarek@suse.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,12 +33,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/12/06 10:18PM, PrasannaKumar Muralidharan wrote:
-> > By the way, I missed mentioning previously: please use 'powerpc: '
-> > prefix for the subject, rather than PPC.
-> 
-> I will change it. Wondering how they are different.
+On Mon, Dec 5, 2016 at 10:28 PM, Andrew Donnellan
+<andrew.donnellan@au1.ibm.com> wrote:
+> Enable support for GCC plugins on powerpc.
+>
+> Add an additional version check in gcc-plugins-check to advise users to
+> upgrade to gcc 5.2+ on powerpc to avoid issues with header files (gcc <=
+> 4.6) or missing copies of rs6000-cpus.def (4.8 to 5.1 on 64-bit targets).
+>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+>
+> ---
+>
+> Open to bikeshedding on the gcc version check.
 
-It's by convention. Maintainers are picky ;)
+I think this looks fine. Anyone wanting to use gcc plugins on ppc with
+an earlier gcc can send patches if they find a sane way to make it
+work. :)
 
-- Naveen
+> Compile tested with all plugins enabled on gcc 4.6-6.2,
+> x86->ppc{32,64,64le} and 4.8-6.2 ppc64le->ppc{32,64,64le}. Thanks to
+> Chris Smart for help with this.
+
+I assume also tested on 5.2? :)
+
+> I think it's best to take this through powerpc#next with an ACK from
+> Kees/Emese?
+
+That would be fine by me. Please consider the whole series:
+
+Acked-by: Kees Cook <keescook@chromium.org>
+
+Thanks!
+
+-Kees
+
+> ---
+>  arch/powerpc/Kconfig         | 1 +
+>  scripts/Makefile.gcc-plugins | 8 ++++++++
+>  2 files changed, 9 insertions(+)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 65fba4c..6efbc08 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -92,6 +92,7 @@ config PPC
+>         select HAVE_DYNAMIC_FTRACE_WITH_REGS if MPROFILE_KERNEL
+>         select HAVE_FUNCTION_TRACER
+>         select HAVE_FUNCTION_GRAPH_TRACER
+> +       select HAVE_GCC_PLUGINS
+>         select SYSCTL_EXCEPTION_TRACE
+>         select VIRT_TO_BUS if !PPC64
+>         select HAVE_IDE
+> diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
+> index 26c67b7..9835a75 100644
+> --- a/scripts/Makefile.gcc-plugins
+> +++ b/scripts/Makefile.gcc-plugins
+> @@ -47,6 +47,14 @@ gcc-plugins-check: FORCE
+>  ifdef CONFIG_GCC_PLUGINS
+>    ifeq ($(PLUGINCC),)
+>      ifneq ($(GCC_PLUGINS_CFLAGS),)
+> +      # Various gccs between 4.5 and 5.1 have bugs on powerpc due to missing
+> +      # header files. gcc <= 4.6 doesn't work at all, gccs from 4.8 to 5.1 have
+> +      # issues with 64-bit targets.
+> +      ifeq ($(ARCH),powerpc)
+> +        ifeq ($(call cc-ifversion, -le, 0501, y), y)
+> +         @echo "Cannot use CONFIG_GCC_PLUGINS: plugin support on gcc <= 5.1 is buggy on powerpc, please upgrade to gcc 5.2 or newer" >&2 && exit 1
+> +        endif
+> +      endif
+>        ifeq ($(call cc-ifversion, -ge, 0405, y), y)
+>         $(Q)$(srctree)/scripts/gcc-plugin.sh --show-error "$(__PLUGINCC)" "$(HOSTCXX)" "$(CC)" || true
+>         @echo "Cannot use CONFIG_GCC_PLUGINS: your gcc installation does not support plugins, perhaps the necessary headers are missing?" >&2 && exit 1
+> --
+> Andrew Donnellan              OzLabs, ADL Canberra
+> andrew.donnellan@au1.ibm.com  IBM Australia Limited
+>
+
+
+
+-- 
+Kees Cook
+Nexus Security
