@@ -1,22 +1,43 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXs6Q6jXbzDvxY
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:24:30 +1100 (AEDT)
-Date: Tue, 6 Dec 2016 17:09:07 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Alexander Graf <agraf@suse.com>, kvm-ppc@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] KVM: PPC: Book3S: Change interrupt call to reduce
- scratch space use on HV
-Message-ID: <20161206060907.GA25458@fergus.ozlabs.ibm.com>
-References: <20161201071812.23258-1-npiggin@gmail.com>
- <20161201071812.23258-2-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161201071812.23258-2-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXsC61DkhzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:28:33 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB66OF1J079226
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 01:28:31 -0500
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2756tfd74g-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 01:28:31 -0500
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 6 Dec 2016 16:28:28 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D21A22BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:28:25 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uB66SP8j6750572
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 17:28:25 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uB66SOgO026746
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 17:28:25 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
+ keescook@chromium.org, re.emese@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ pageexec@freemail.hu, spender@grsecurity.net, mmarek@suse.com
+Subject: [PATCH 1/3] gcc-plugins: fix definition of
+ DISABLE_LATENT_ENTROPY_PLUGIN
+Date: Tue,  6 Dec 2016 17:27:58 +1100
+Message-Id: <20161206062800.21800-1-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,154 +47,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 01, 2016 at 06:18:10PM +1100, Nicholas Piggin wrote:
-> Change the calling convention to put the trap number together with
-> CR in two halves of r12, which frees up HSTATE_SCRATCH2 in the HV
-> handler, and r9 free.
+The variable DISABLE_LATENT_ENTROPY_PLUGIN is defined when
+CONFIG_PAX_LATENT_ENTROPY is set. This is leftover from the original PaX
+version of the plugin code and doesn't actually exist. Change the condition
+to depend on CONFIG_GCC_PLUGIN_LATENT_ENTROPY instead.
 
-Cute idea!  Some comments below...
+Fixes: 38addce8b600 ("gcc-plugins: Add latent_entropy plugin")
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ scripts/Makefile.gcc-plugins | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> The 64-bit PR handler entry translates the calling convention back
-> to match the previous call convention (i.e., shared with 32-bit), for
-> simplicity.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/include/asm/exception-64s.h | 28 +++++++++++++++-------------
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 15 +++++++--------
->  arch/powerpc/kvm/book3s_segment.S        | 27 ++++++++++++++++++++-------
->  3 files changed, 42 insertions(+), 28 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-> index 9a3eee6..bc8fc45 100644
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -233,7 +233,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
->  
->  #endif
->  
-> -#define __KVM_HANDLER_PROLOG(area, n)					\
-> +#define __KVM_HANDLER(area, h, n)					\
->  	BEGIN_FTR_SECTION_NESTED(947)					\
->  	ld	r10,area+EX_CFAR(r13);					\
->  	std	r10,HSTATE_CFAR(r13);					\
-> @@ -243,30 +243,32 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
->  	std	r10,HSTATE_PPR(r13);					\
->  	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
->  	ld	r10,area+EX_R10(r13);					\
-> -	stw	r9,HSTATE_SCRATCH1(r13);				\
-> -	ld	r9,area+EX_R9(r13);					\
->  	std	r12,HSTATE_SCRATCH0(r13);				\
-> -
-> -#define __KVM_HANDLER(area, h, n)					\
-> -	__KVM_HANDLER_PROLOG(area, n)					\
-> -	li	r12,n;							\
-> +	li	r12,(n);						\
-> +	sldi	r12,r12,32;						\
-> +	or	r12,r12,r9;						\
-
-Did you consider doing it the other way around, i.e. with r12
-containing (cr << 32) | trap?  That would save 1 instruction in each
-handler:
-
-+	sldi	r12,r9,32;						\
-+	ori	r12,r12,(n);						\
-
-> +	ld	r9,area+EX_R9(r13);					\
-> +	std	r9,HSTATE_SCRATCH1(r13);				\
-
-Why not put this std in kvmppc_interrupt[_hv] rather than in each
-handler?
-
->  	b	kvmppc_interrupt
->  
->  #define __KVM_HANDLER_SKIP(area, h, n)					\
->  	cmpwi	r10,KVM_GUEST_MODE_SKIP;				\
-> -	ld	r10,area+EX_R10(r13);					\
->  	beq	89f;							\
-> -	stw	r9,HSTATE_SCRATCH1(r13);				\
->  	BEGIN_FTR_SECTION_NESTED(948)					\
-> -	ld	r9,area+EX_PPR(r13);					\
-> -	std	r9,HSTATE_PPR(r13);					\
-> +	ld	r10,area+EX_PPR(r13);					\
-> +	std	r10,HSTATE_PPR(r13);					\
->  	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
-> -	ld	r9,area+EX_R9(r13);					\
-> +	ld	r10,area+EX_R10(r13);					\
->  	std	r12,HSTATE_SCRATCH0(r13);				\
-> -	li	r12,n;							\
-> +	li	r12,(n);						\
-> +	sldi	r12,r12,32;						\
-> +	or	r12,r12,r9;						\
-> +	ld	r9,area+EX_R9(r13);					\
-> +	std	r9,HSTATE_SCRATCH1(r13);				\
-
-Same comment again, of course.
-
->  	b	kvmppc_interrupt;					\
->  89:	mtocrf	0x80,r9;						\
->  	ld	r9,area+EX_R9(r13);					\
-> +	ld	r10,area+EX_R10(r13);					\
->  	b	kvmppc_skip_##h##interrupt
->  
->  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index c3c1d1b..0536c73 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -1043,19 +1043,18 @@ hdec_soon:
->  kvmppc_interrupt_hv:
->  	/*
->  	 * Register contents:
-> -	 * R12		= interrupt vector
-> +	 * R12		= (interrupt vector << 32) | guest CR
->  	 * R13		= PACA
-> -	 * guest CR, R12 saved in shadow VCPU SCRATCH1/0
-> +	 * R9		= unused
-> +	 * guest R12, R9 saved in shadow VCPU SCRATCH0/1 respectively
->  	 * guest R13 saved in SPRN_SCRATCH0
->  	 */
-> -	std	r9, HSTATE_SCRATCH2(r13)
-> -
->  	lbz	r9, HSTATE_IN_GUEST(r13)
->  	cmpwi	r9, KVM_GUEST_MODE_HOST_HV
->  	beq	kvmppc_bad_host_intr
->  #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
->  	cmpwi	r9, KVM_GUEST_MODE_GUEST
-> -	ld	r9, HSTATE_SCRATCH2(r13)
-> +	ld	r9, HSTATE_SCRATCH1(r13)
->  	beq	kvmppc_interrupt_pr
->  #endif
->  	/* We're now back in the host but in guest MMU context */
-> @@ -1075,14 +1074,13 @@ kvmppc_interrupt_hv:
->  	std	r6, VCPU_GPR(R6)(r9)
->  	std	r7, VCPU_GPR(R7)(r9)
->  	std	r8, VCPU_GPR(R8)(r9)
-> -	ld	r0, HSTATE_SCRATCH2(r13)
-> +	ld	r0, HSTATE_SCRATCH1(r13)
->  	std	r0, VCPU_GPR(R9)(r9)
->  	std	r10, VCPU_GPR(R10)(r9)
->  	std	r11, VCPU_GPR(R11)(r9)
->  	ld	r3, HSTATE_SCRATCH0(r13)
-> -	lwz	r4, HSTATE_SCRATCH1(r13)
->  	std	r3, VCPU_GPR(R12)(r9)
-> -	stw	r4, VCPU_CR(r9)
-> +	stw	r12, VCPU_CR(r9)	/* CR is in the low half of r12 */
-
-This would then need to be srdi r4, r12, 32; stw r4, VCPU_CR(r9)
-
->  BEGIN_FTR_SECTION
->  	ld	r3, HSTATE_CFAR(r13)
->  	std	r3, VCPU_CFAR(r9)
-> @@ -1100,6 +1098,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
->  	mfspr	r11, SPRN_SRR1
->  	std	r10, VCPU_SRR0(r9)
->  	std	r11, VCPU_SRR1(r9)
-> +	srdi	r12, r12, 32		/* trap is in the high half of r12 */
-
-and this would become clrldi r12,r12,32 though arguably that's not
-totally necessary since we always do cmpwi/stw/lwz on r12 (but I'd
-feel safer with the clrldi in place).
-
-Cheers,
-Paul.
+diff --git a/scripts/Makefile.gcc-plugins b/scripts/Makefile.gcc-plugins
+index 060d2cb..26c67b7 100644
+--- a/scripts/Makefile.gcc-plugins
++++ b/scripts/Makefile.gcc-plugins
+@@ -8,7 +8,7 @@ ifdef CONFIG_GCC_PLUGINS
+ 
+   gcc-plugin-$(CONFIG_GCC_PLUGIN_LATENT_ENTROPY)	+= latent_entropy_plugin.so
+   gcc-plugin-cflags-$(CONFIG_GCC_PLUGIN_LATENT_ENTROPY)	+= -DLATENT_ENTROPY_PLUGIN
+-  ifdef CONFIG_PAX_LATENT_ENTROPY
++  ifdef CONFIG_GCC_PLUGIN_LATENT_ENTROPY
+     DISABLE_LATENT_ENTROPY_PLUGIN			+= -fplugin-arg-latent_entropy_plugin-disable
+   endif
+ 
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
