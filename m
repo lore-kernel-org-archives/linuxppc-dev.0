@@ -1,45 +1,20 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0071.outbound.protection.outlook.com [104.47.38.71])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tY2B61DFgzDvxR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:13:17 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB6D5WuY029924
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 08:13:16 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 275w2uunjm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 08:13:15 -0500
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Tue, 6 Dec 2016 23:13:12 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3E6042CE805A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:13:11 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB6DDBm15243256
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 00:13:11 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB6DDA1R000630
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 00:13:11 +1100
-From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- peterz@infradead.org, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
- longman@redhat.com, xinhui.pan@linux.vnet.ibm.com,
- virtualization@lists.linux-foundation.org, boqun.feng@gmail.com
-Subject: [PATCH v9 6/6] powerpc/pv-qspinlock: Optimise native unlock path
-Date: Tue,  6 Dec 2016 13:09:27 -0500
-In-Reply-To: <1481047767-60255-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-References: <1481047767-60255-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1481047767-60255-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tY2Bg1dy7zDvsF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:13:47 +1100 (AEDT)
+From: Madalin Bucur <madalin.bucur@nxp.com>
+To: <devicetree@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>, <oss@buserror.net>
+Subject: [PATCH v2 1/3] powerpc/fsl/dts: add QMan and BMan portal nodes on
+ t1023rdb
+Date: Tue, 6 Dec 2016 15:13:37 +0200
+Message-ID: <1481030019-31854-1-git-send-email-madalin.bucur@nxp.com>
+Reply-To: <madalin.bucur@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,81 +24,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Avoid a function call under native version of qspinlock. On powerNV,
-bafore applying this patch, every unlock is expensive. This small
-optimizes enhance the performance.
-
-We use static_key with jump_lable which removes unnecessary loads of
-lppaca and its stuff.
-
-Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- arch/powerpc/include/asm/qspinlock_paravirt.h | 18 +++++++++++++++++-
- arch/powerpc/kernel/paravirt.c                |  4 ++++
- 2 files changed, 21 insertions(+), 1 deletion(-)
+ arch/powerpc/boot/dts/fsl/t1023rdb.dts      |  29 ++++++++
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 103 ++++++++++++++++++++++++++++
+ 2 files changed, 132 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/qspinlock_paravirt.h b/arch/powerpc/include/asm/qspinlock_paravirt.h
-index d87cda0..8d39446 100644
---- a/arch/powerpc/include/asm/qspinlock_paravirt.h
-+++ b/arch/powerpc/include/asm/qspinlock_paravirt.h
-@@ -6,12 +6,14 @@
- #define _ASM_QSPINLOCK_PARAVIRT_H
+diff --git a/arch/powerpc/boot/dts/fsl/t1023rdb.dts b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+index 2975762..5ba6fbf 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+@@ -41,6 +41,27 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
  
- #include  <asm/qspinlock_paravirt_types.h>
-+#include  <linux/jump_label.h>
- 
- extern void pv_lock_init(void);
- extern void native_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
- extern void __pv_init_lock_hash(void);
- extern void __pv_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
- extern void __pv_queued_spin_unlock(struct qspinlock *lock);
-+extern struct static_key_true sharedprocessor_key;
- 
- static inline void pv_queued_spin_lock(struct qspinlock *lock, u32 val)
- {
-@@ -20,7 +22,21 @@ static inline void pv_queued_spin_lock(struct qspinlock *lock, u32 val)
- 
- static inline void pv_queued_spin_unlock(struct qspinlock *lock)
- {
--	pv_lock_op.unlock(lock);
-+	/*
-+	 * on powerNV and pSeries with jump_label, code will be
-+	 *	PowerNV:		pSeries:
-+	 *	nop;			b 2f;
-+	 *	native unlock		2:
-+	 *				pv unlock;
-+	 * In this way, we can do unlock quick in native case.
-+	 *
-+	 * IF jump_label is not enabled, we fall back into
-+	 * if condition, IOW, ld && cmp && bne.
-+	 */
-+	if (static_branch_likely(&sharedprocessor_key))
-+		native_queued_spin_unlock(lock);
-+	else
-+		pv_lock_op.unlock(lock);
- }
- 
- static inline void pv_wait(u8 *ptr, u8 val)
-diff --git a/arch/powerpc/kernel/paravirt.c b/arch/powerpc/kernel/paravirt.c
-index e697b17..a0a000e 100644
---- a/arch/powerpc/kernel/paravirt.c
-+++ b/arch/powerpc/kernel/paravirt.c
-@@ -140,6 +140,9 @@ struct pv_lock_ops pv_lock_op = {
- };
- EXPORT_SYMBOL(pv_lock_op);
- 
-+struct static_key_true sharedprocessor_key = STATIC_KEY_TRUE_INIT;
-+EXPORT_SYMBOL(sharedprocessor_key);
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
 +
- void __init pv_lock_init(void)
- {
- 	if (SHARED_PROCESSOR) {
-@@ -149,5 +152,6 @@ void __init pv_lock_init(void)
- 		pv_lock_op.unlock = __pv_queued_spin_unlock;
- 		pv_lock_op.wait = __pv_wait;
- 		pv_lock_op.kick = __pv_kick;
-+		static_branch_disable(&sharedprocessor_key);
- 	}
- }
++		bman_fbpr: bman-fbpr {
++			size = <0 0x1000000>;
++			alignment = <0 0x1000000>;
++		};
++
++		qman_fqd: qman-fqd {
++			size = <0 0x400000>;
++			alignment = <0 0x400000>;
++		};
++
++		qman_pfdr: qman-pfdr {
++			size = <0 0x2000000>;
++			alignment = <0 0x2000000>;
++		};
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x2000>;
+ 		ranges = <0 0 0xf 0xe8000000 0x08000000
+@@ -72,6 +93,14 @@
+ 		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
+ 	};
+ 
++	bportals: bman-portals@ff4000000 {
++		ranges = <0x0 0xf 0xf4000000 0x2000000>;
++	};
++
++	qportals: qman-portals@ff6000000 {
++		ranges = <0x0 0xf 0xf6000000 0x2000000>;
++	};
++
+ 	soc: soc@ffe000000 {
+ 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
+ 		reg = <0xf 0xfe000000 0 0x00001000>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+index 6e0b489..da2894c 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+@@ -34,6 +34,21 @@
+ 
+ #include <dt-bindings/thermal/thermal.h>
+ 
++&bman_fbpr {
++	compatible = "fsl,bman-fbpr";
++	alloc-ranges = <0 0 0x10000 0>;
++};
++
++&qman_fqd {
++	compatible = "fsl,qman-fqd";
++	alloc-ranges = <0 0 0x10000 0>;
++};
++
++&qman_pfdr {
++	compatible = "fsl,qman-pfdr";
++	alloc-ranges = <0 0 0x10000 0>;
++};
++
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+@@ -180,6 +195,92 @@
+ 	};
+ };
+ 
++&bportals {
++	#address-cells = <0x1>;
++	#size-cells = <0x1>;
++	compatible = "simple-bus";
++
++	bman-portal@0 {
++		cell-index = <0x0>;
++		compatible = "fsl,bman-portal";
++		reg = <0x0 0x4000>, <0x1000000 0x1000>;
++		interrupts = <105 2 0 0>;
++	};
++	bman-portal@4000 {
++		cell-index = <0x1>;
++		compatible = "fsl,bman-portal";
++		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
++		interrupts = <107 2 0 0>;
++	};
++	bman-portal@8000 {
++		cell-index = <2>;
++		compatible = "fsl,bman-portal";
++		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
++		interrupts = <109 2 0 0>;
++	};
++	bman-portal@c000 {
++		cell-index = <0x3>;
++		compatible = "fsl,bman-portal";
++		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
++		interrupts = <111 2 0 0>;
++	};
++	bman-portal@10000 {
++		cell-index = <0x4>;
++		compatible = "fsl,bman-portal";
++		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
++		interrupts = <113 2 0 0>;
++	};
++	bman-portal@14000 {
++		cell-index = <0x5>;
++		compatible = "fsl,bman-portal";
++		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
++		interrupts = <115 2 0 0>;
++	};
++};
++
++&qportals {
++	#address-cells = <0x1>;
++	#size-cells = <0x1>;
++	compatible = "simple-bus";
++
++	qportal0: qman-portal@0 {
++		compatible = "fsl,qman-portal";
++		reg = <0x0 0x4000>, <0x1000000 0x1000>;
++		interrupts = <104 0x2 0 0>;
++		cell-index = <0x0>;
++	};
++	qportal1: qman-portal@4000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
++		interrupts = <106 0x2 0 0>;
++		cell-index = <0x1>;
++	};
++	qportal2: qman-portal@8000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
++		interrupts = <108 0x2 0 0>;
++		cell-index = <0x2>;
++	};
++	qportal3: qman-portal@c000 {
++		compatible = "fsl,qman-portal";
++		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
++		interrupts = <110 0x2 0 0>;
++		cell-index = <0x3>;
++	};
++	qportal4: qman-portal@10000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
++		interrupts = <112 0x2 0 0>;
++		cell-index = <0x4>;
++	};
++	qportal5: qman-portal@14000 {
++		compatible = "fsl,qman-portal";
++		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
++		interrupts = <114 0x2 0 0>;
++		cell-index = <0x5>;
++	};
++};
++
+ &soc {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+@@ -413,6 +514,8 @@
+ 	};
+ 
+ /include/ "qoriq-sec5.0-0.dtsi"
++/include/ "qoriq-qman3.dtsi"
++/include/ "qoriq-bman1.dtsi"
+ 
+ /include/ "qoriq-fman3l-0.dtsi"
+ /include/ "qoriq-fman3-0-10g-0-best-effort.dtsi"
 -- 
-2.4.11
+2.1.0
