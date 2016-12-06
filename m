@@ -1,21 +1,23 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0081.outbound.protection.outlook.com [104.47.34.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tY2Bj43ZNzDvvS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:13:49 +1100 (AEDT)
-From: Madalin Bucur <madalin.bucur@nxp.com>
-To: <devicetree@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>, <oss@buserror.net>
-Subject: [PATCH v2 3/3] powerpc/fsl/dts: add FMan node for t1042d4rdb
-Date: Tue, 6 Dec 2016 15:13:39 +0200
-Message-ID: <1481030019-31854-3-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1481030019-31854-1-git-send-email-madalin.bucur@nxp.com>
-References: <1481030019-31854-1-git-send-email-madalin.bucur@nxp.com>
-Reply-To: <madalin.bucur@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tY2h36tgGzDvh9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:35:47 +1100 (AEDT)
+Subject: Re: [PATCH 1/1] serial/uuc_uart: Set shutdown timeout to CONFIG_HZ
+ independent 2ms
+To: Alexander Stein <alexander.stein@systec-electronic.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org
+References: <1480953058-4958-1-git-send-email-alexander.stein@systec-electronic.com>
+ <5845900B.5010108@tabi.org> <18303458.zhjk47K7B1@ws-stein>
+From: Timur Tabi <timur@tabi.org>
+Message-ID: <5846BEAF.3040003@tabi.org>
+Date: Tue, 6 Dec 2016 07:35:43 -0600
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <18303458.zhjk47K7B1@ws-stein>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,73 +27,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
----
- arch/powerpc/boot/dts/fsl/t1042d4rdb.dts | 52 ++++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
+Alexander Stein wrote:
+> Okay, I was just wondering why the timeout is dependant on the timer tick.
+> That didn't seem obvious to me.
+> Rethinking about this, I would rather replace those lines with msleep instead.
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts b/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
-index 2a5a90d..fcd2aeb 100644
---- a/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
-@@ -48,6 +48,58 @@
- 					"fsl,deepsleep-cpld";
- 		};
- 	};
-+
-+	soc: soc@ffe000000 {
-+		fman0: fman@400000 {
-+			ethernet@e0000 {
-+				phy-handle = <&phy_sgmii_0>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e2000 {
-+				phy-handle = <&phy_sgmii_1>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e4000 {
-+				phy-handle = <&phy_sgmii_2>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e6000 {
-+				phy-handle = <&phy_rgmii_0>;
-+				phy-connection-type = "rgmii";
-+			};
-+
-+			ethernet@e8000 {
-+				phy-handle = <&phy_rgmii_1>;
-+				phy-connection-type = "rgmii";
-+			};
-+
-+			mdio0: mdio@fc000 {
-+				phy_sgmii_0: ethernet-phy@02 {
-+					reg = <0x02>;
-+				};
-+
-+				phy_sgmii_1: ethernet-phy@03 {
-+					reg = <0x03>;
-+				};
-+
-+				phy_sgmii_2: ethernet-phy@01 {
-+					reg = <0x01>;
-+				};
-+
-+				phy_rgmii_0: ethernet-phy@04 {
-+					reg = <0x04>;
-+				};
-+
-+				phy_rgmii_1: ethernet-phy@05 {
-+					reg = <0x05>;
-+				};
-+			};
-+		};
-+	};
-+
- };
- 
- #include "t1042si-post.dtsi"
--- 
-2.1.0
+What's wrong with leaving it as-is?  The code is five years old, and 
+Freescale/NXP barely uses the QE any more.  I don't have access to any 
+hardware to test any changes you would propose.
