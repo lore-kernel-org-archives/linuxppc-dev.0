@@ -1,32 +1,27 @@
-Return-Path: <BATV+4c94f64e688bd1b3d3b9+4852+infradead.org+acme@merlin.srs.infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXdRg1s1xzDw1g
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 08:38:39 +1100 (AEDT)
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Alexei Starovoitov <ast@fb.com>, Chris Riyder <chris.ryder@arm.com>,
- David Ahern <dsahern@gmail.com>, He Kuang <hekuang@huawei.com>,
- Jiri Olsa <jolsa@redhat.com>, Joe Stringer <joe@ovn.org>,
- Kim Phillips <kim.phillips@arm.com>, linuxppc-dev@lists.ozlabs.org,
- Markus Trippelsdorf <markus@trippelsdorf.de>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Peter Foley <pefoley2@pefoley.com>, Peter Zijlstra <peterz@infradead.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Taeung Song <treeze.taeung@gmail.com>, Wang Nan <wangnan0@huawei.com>,
- Zefan Li <lizefan@huawei.com>, pi3orama@163.com,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [GIT PULL 00/20] perf/core improvements and fixes
-Date: Mon,  5 Dec 2016 18:37:48 -0300
-Message-Id: <20161205213808.6231-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXjfh3hW1zDvvf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 11:48:28 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id e9so17946915pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2016 16:48:28 -0800 (PST)
+Date: Tue, 6 Dec 2016 08:47:47 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ peterz@infradead.org, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
+ waiman.long@hpe.com, virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH v8 1/6] powerpc/qspinlock: powerpc support qspinlock
+Message-ID: <20161206004747.GB18164@tardis.cn.ibm.com>
+References: <1480951166-44830-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1480951166-44830-2-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="KdquIMZPjGJQvRdI"
+In-Reply-To: <1480951166-44830-2-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,252 +31,314 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
 
-	Please consider pulling,
+--KdquIMZPjGJQvRdI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-- Arnaldo
+On Mon, Dec 05, 2016 at 10:19:21AM -0500, Pan Xinhui wrote:
+> This patch add basic code to enable qspinlock on powerpc. qspinlock is
+> one kind of fairlock implementation. And seen some performance improvement
+> under some scenarios.
+>=20
+> queued_spin_unlock() release the lock by just one write of NULL to the
+> ::locked field which sits at different places in the two endianness
+> system.
+>=20
+> We override some arch_spin_XXX as powerpc has io_sync stuff which makes
+> sure the io operations are protected by the lock correctly.
+>=20
+> There is another special case, see commit
+> 2c610022711 ("locking/qspinlock: Fix spin_unlock_wait() some more")
+>=20
+> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/qspinlock.h      | 66 +++++++++++++++++++++++++=
+++++++
+>  arch/powerpc/include/asm/spinlock.h       | 31 +++++++++------
+>  arch/powerpc/include/asm/spinlock_types.h |  4 ++
+>  arch/powerpc/lib/locks.c                  | 59 +++++++++++++++++++++++++=
+++
+>  4 files changed, 147 insertions(+), 13 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/qspinlock.h
+>=20
+> diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include/=
+asm/qspinlock.h
+> new file mode 100644
+> index 0000000..4c89256
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/qspinlock.h
+> @@ -0,0 +1,66 @@
+> +#ifndef _ASM_POWERPC_QSPINLOCK_H
+> +#define _ASM_POWERPC_QSPINLOCK_H
+> +
+> +#include <asm-generic/qspinlock_types.h>
+> +
+> +#define SPIN_THRESHOLD (1 << 15)
+> +#define queued_spin_unlock queued_spin_unlock
+> +#define queued_spin_is_locked queued_spin_is_locked
+> +#define queued_spin_unlock_wait queued_spin_unlock_wait
+> +
+> +extern void queued_spin_unlock_wait(struct qspinlock *lock);
+> +
+> +static inline u8 *__qspinlock_lock_byte(struct qspinlock *lock)
+> +{
+> +	return (u8 *)lock + 3 * IS_BUILTIN(CONFIG_CPU_BIG_ENDIAN);
+> +}
+> +
+> +static inline void queued_spin_unlock(struct qspinlock *lock)
+> +{
+> +	/* release semantics is required */
+> +	smp_store_release(__qspinlock_lock_byte(lock), 0);
+> +}
+> +
+> +static inline int queued_spin_is_locked(struct qspinlock *lock)
+> +{
+> +	smp_mb();
+> +	return atomic_read(&lock->val);
+> +}
+> +
+> +#include <asm-generic/qspinlock.h>
+> +
+> +/* we need override it as ppc has io_sync stuff */
+> +#undef arch_spin_trylock
+> +#undef arch_spin_lock
+> +#undef arch_spin_lock_flags
+> +#undef arch_spin_unlock
+> +#define arch_spin_trylock arch_spin_trylock
+> +#define arch_spin_lock arch_spin_lock
+> +#define arch_spin_lock_flags arch_spin_lock_flags
+> +#define arch_spin_unlock arch_spin_unlock
+> +
+> +static inline int arch_spin_trylock(arch_spinlock_t *lock)
+> +{
+> +	CLEAR_IO_SYNC;
+> +	return queued_spin_trylock(lock);
+> +}
+> +
+> +static inline void arch_spin_lock(arch_spinlock_t *lock)
+> +{
+> +	CLEAR_IO_SYNC;
+> +	queued_spin_lock(lock);
+> +}
+> +
+> +static inline
+> +void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
+> +{
+> +	CLEAR_IO_SYNC;
+> +	queued_spin_lock(lock);
+> +}
+> +
+> +static inline void arch_spin_unlock(arch_spinlock_t *lock)
+> +{
+> +	SYNC_IO;
+> +	queued_spin_unlock(lock);
+> +}
+> +#endif /* _ASM_POWERPC_QSPINLOCK_H */
+> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/a=
+sm/spinlock.h
+> index 8c1b913..954099e 100644
+> --- a/arch/powerpc/include/asm/spinlock.h
+> +++ b/arch/powerpc/include/asm/spinlock.h
+> @@ -60,6 +60,23 @@ static inline bool vcpu_is_preempted(int cpu)
+>  }
+>  #endif
+> =20
+> +#if defined(CONFIG_PPC_SPLPAR)
+> +/* We only yield to the hypervisor if we are in shared processor mode */
+> +#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
+> +extern void __spin_yield(arch_spinlock_t *lock);
+> +extern void __rw_yield(arch_rwlock_t *lock);
+> +#else /* SPLPAR */
+> +#define __spin_yield(x)        barrier()
+> +#define __rw_yield(x)  barrier()
+> +#define SHARED_PROCESSOR       0
+> +#endif
+> +
+> +#ifdef CONFIG_QUEUED_SPINLOCKS
+> +#include <asm/qspinlock.h>
+> +#else
+> +
+> +#define arch_spin_relax(lock)  __spin_yield(lock)
+> +
+>  static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
+>  {
+>  	return lock.slock =3D=3D 0;
+> @@ -114,18 +131,6 @@ static inline int arch_spin_trylock(arch_spinlock_t =
+*lock)
+>   * held.  Conveniently, we have a word in the paca that holds this
+>   * value.
+>   */
+> -
+> -#if defined(CONFIG_PPC_SPLPAR)
+> -/* We only yield to the hypervisor if we are in shared processor mode */
+> -#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
+> -extern void __spin_yield(arch_spinlock_t *lock);
+> -extern void __rw_yield(arch_rwlock_t *lock);
+> -#else /* SPLPAR */
+> -#define __spin_yield(x)	barrier()
+> -#define __rw_yield(x)	barrier()
+> -#define SHARED_PROCESSOR	0
+> -#endif
+> -
+>  static inline void arch_spin_lock(arch_spinlock_t *lock)
+>  {
+>  	CLEAR_IO_SYNC;
+> @@ -203,6 +208,7 @@ static inline void arch_spin_unlock_wait(arch_spinloc=
+k_t *lock)
+>  	smp_mb();
+>  }
+> =20
+> +#endif /* !CONFIG_QUEUED_SPINLOCKS */
+>  /*
+>   * Read-write spinlocks, allowing multiple readers
+>   * but only one writer.
+> @@ -338,7 +344,6 @@ static inline void arch_write_unlock(arch_rwlock_t *r=
+w)
+>  #define arch_read_lock_flags(lock, flags) arch_read_lock(lock)
+>  #define arch_write_lock_flags(lock, flags) arch_write_lock(lock)
+> =20
+> -#define arch_spin_relax(lock)	__spin_yield(lock)
+>  #define arch_read_relax(lock)	__rw_yield(lock)
+>  #define arch_write_relax(lock)	__rw_yield(lock)
+> =20
+> diff --git a/arch/powerpc/include/asm/spinlock_types.h b/arch/powerpc/inc=
+lude/asm/spinlock_types.h
+> index 2351adc..bd7144e 100644
+> --- a/arch/powerpc/include/asm/spinlock_types.h
+> +++ b/arch/powerpc/include/asm/spinlock_types.h
+> @@ -5,11 +5,15 @@
+>  # error "please don't include this file directly"
+>  #endif
+> =20
+> +#ifdef CONFIG_QUEUED_SPINLOCKS
+> +#include <asm-generic/qspinlock_types.h>
+> +#else
+>  typedef struct {
+>  	volatile unsigned int slock;
+>  } arch_spinlock_t;
+> =20
+>  #define __ARCH_SPIN_LOCK_UNLOCKED	{ 0 }
+> +#endif
+> =20
+>  typedef struct {
+>  	volatile signed int lock;
+> diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+> index b7b1237..6574626 100644
+> --- a/arch/powerpc/lib/locks.c
+> +++ b/arch/powerpc/lib/locks.c
+> @@ -23,6 +23,7 @@
+>  #include <asm/hvcall.h>
+>  #include <asm/smp.h>
+> =20
+> +#ifndef CONFIG_QUEUED_SPINLOCKS
+>  void __spin_yield(arch_spinlock_t *lock)
+>  {
+>  	unsigned int lock_value, holder_cpu, yield_count;
+> @@ -42,6 +43,7 @@ void __spin_yield(arch_spinlock_t *lock)
+>  		get_hard_smp_processor_id(holder_cpu), yield_count);
+>  }
+>  EXPORT_SYMBOL_GPL(__spin_yield);
+> +#endif
+> =20
+>  /*
+>   * Waiting for a read lock or a write lock on a rwlock...
+> @@ -68,3 +70,60 @@ void __rw_yield(arch_rwlock_t *rw)
+>  		get_hard_smp_processor_id(holder_cpu), yield_count);
+>  }
+>  #endif
+> +
+> +#ifdef CONFIG_QUEUED_SPINLOCKS
+> +/*
+> + * This forbid we load an old value in another LL/SC. Because the SC her=
+e force
+> + * another LL/SC repeat. So we guarantee all loads in another LL and SC =
+will
+> + * read correct value.
+> + */
+> +static inline u32 atomic_read_sync(atomic_t *v)
+> +{
+> +	u32 val;
+> +
+> +	__asm__ __volatile__(
+> +"1:	" PPC_LWARX(%0, 0, %2, 0) "\n"
+> +"	stwcx. %0, 0, %2\n"
+> +"	bne- 1b\n"
+> +	: "=3D&r" (val), "+m" (*v)
+> +	: "r" (v)
+> +	: "cr0", "xer");
+> +
+> +	return val;
+> +}
+> +
+> +void queued_spin_unlock_wait(struct qspinlock *lock)
+> +{
+> +
+> +	u32 val;
+> +
+> +	smp_mb();
+> +
+> +	/*
+> +	 * copied from generic queue_spin_unlock_wait with little modification
+> +	 */
+> +	for (;;) {
+> +		/* need _sync, as we might race with another LL/SC in lock()*/
+> +		val =3D atomic_read_sync(&lock->val);
+> +
+> +		if (!val) /* not locked, we're done */
+> +			goto done;
+> +
+> +		if (val & _Q_LOCKED_MASK) /* locked, go wait for unlock */
+> +			break;
+> +
+> +		/* not locked, but pending, wait until we observe the lock */
+> +		cpu_relax();
+> +	}
+> +
+> +	/*
+> +	 * any unlock is good. And need not _sync, as ->val is set by the SC in
+> +	 * unlock(), any loads in lock() must see the correct value.
+> +	 */
 
-Test results at the end of this message, as usual.
+I don't think the comment here about _sync is correct. First, not all
+unlock() has a SC part, and for unlock_wait() case there is nothing to
+do with whether lock() see the correct value or not. The reason with
+_sync is not needed here is:
 
-The following changes since commit e7af7b15121ca08c31a0ab9df71a41b4c53365b4:
+/*
+ * _sync() is not needed here, because once we got here, we must already
+ * read the ->val as LOCKED via a _sync(). Combining the smp_mb()
+ * before, we guarantee that all the memory accesses before
+ * unlock_wait() must be observed by the next lock critical section.
+ */
 
-  Merge tag 'perf-core-for-mingo-20161201' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2016-12-02 10:08:03 +0100)
+Regards,
+Boqun
 
-are available in the git repository at:
+> +	while (atomic_read(&lock->val) & _Q_LOCKED_MASK)
+> +		cpu_relax();
+> +done:
+> +	smp_mb();
+> +}
+> +EXPORT_SYMBOL(queued_spin_unlock_wait);
+> +#endif
+> --=20
+> 2.4.11
+>=20
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-20161205
+--KdquIMZPjGJQvRdI
+Content-Type: application/pgp-signature; name="signature.asc"
 
-for you to fetch changes up to bec60e50af83741cde1786ab475d4bf472aed6f9:
+-----BEGIN PGP SIGNATURE-----
 
-  perf annotate: Show raw form for jump instruction with indirect target (2016-12-05 17:21:57 -0300)
+iQEcBAABCAAGBQJYRgqtAAoJEEl56MO1B/q4zsIH/2DFp++QFlWdX+oiE03bWKB+
+kHFGooQKf+BPDcfesroSG1u8qvxv2aFr/xhY4P5BdqOZ4UKo7pAFAhqIfBH5VsCD
+SFeSeq/WkRpa+7GFIzh2SIMGVbgV+TtfZHPwm7E0EFIW1vMC6HQB51ToHBltLWYj
+6UlJ1Ei2SAs2bwgVkUfDoKH36eQGUspsQ4d/Gx6YqU5oGwiQLLmjnMvcHGdlYZi8
+JWSHB+HZ1JAWIDo+dO7LG/tl9pl8PSHN4U9e9f1F0CM4THg8KBsBODoZGu5FuLDN
+IPU+MscmgZesY7rITp0fdM362ZVMsZEo+wBymx3Hm8cIJ5ViTdrqpYOwdHPI42U=
+=QjSx
+-----END PGP SIGNATURE-----
 
-----------------------------------------------------------------
-perf/core improvements and fixes:
-
-Fixes:
-
-- Do not show a bogus target address in 'perf annotate' for targetless powerpc
-  jump instructions such as 'bctr' (Ravi Bangoria)
-
-- tools/build fixes related to race conditions with the fixdep utility (Jiri Olsa)
-
-- Fix building objtool with clang (Peter Foley)
-
-Infrastructure:
-
-- Support linking perf with clang and LLVM libraries, initially statically, but
-  this limitation will be lifted and shared libraries, when available, will
-  be preferred to the static build, that should, as with other features, be
-  enabled explicitly (Wang Nan)
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-----------------------------------------------------------------
-Jiri Olsa (7):
-      tools build: Make fixdep parsing wait for last target
-      tools build: Make the .cmd file more readable
-      tools build: Move tabs to spaces where suitable
-      perf tools: Move install-gtk target into rules area
-      perf tools: Move python/perf.so target into rules area
-      perf tools: Cleanup build directory before each test
-      perf tools: Add non config targets
-
-Peter Foley (1):
-      tools build: Fix objtool build with clang
-
-Ravi Bangoria (1):
-      perf annotate: Show raw form for jump instruction with indirect target
-
-Wang Nan (11):
-      perf tools: Pass context to perf hook functions
-      perf llvm: Extract helpers in llvm-utils.c
-      tools build: Add feature detection for LLVM
-      tools build: Add feature detection for clang
-      perf build: Add clang and llvm compile and linking support
-      perf clang: Add builtin clang support ant test case
-      perf clang: Use real file system for #include
-      perf clang: Allow passing CFLAGS to builtin clang
-      perf clang: Update test case to use real BPF script
-      perf clang: Support compile IR to BPF object and add testcase
-      perf clang: Compile BPF script using builtin clang support
-
- tools/build/Build.include          |  20 ++--
- tools/build/Makefile.feature       | 138 +++++++++++++-------------
- tools/build/feature/Makefile       | 120 +++++++++++++----------
- tools/build/feature/test-clang.cpp |  21 ++++
- tools/build/feature/test-llvm.cpp  |   8 ++
- tools/build/fixdep.c               |   5 +-
- tools/perf/Makefile.config         |  62 +++++++++---
- tools/perf/Makefile.perf           |  56 +++++++----
- tools/perf/tests/Build             |   1 +
- tools/perf/tests/builtin-test.c    |   9 ++
- tools/perf/tests/clang.c           |  46 +++++++++
- tools/perf/tests/llvm.h            |   7 ++
- tools/perf/tests/make              |   4 +-
- tools/perf/tests/perf-hooks.c      |  14 ++-
- tools/perf/tests/tests.h           |   3 +
- tools/perf/util/Build              |   2 +
- tools/perf/util/annotate.c         |   3 +
- tools/perf/util/bpf-loader.c       |  19 +++-
- tools/perf/util/c++/Build          |   2 +
- tools/perf/util/c++/clang-c.h      |  43 ++++++++
- tools/perf/util/c++/clang-test.cpp |  62 ++++++++++++
- tools/perf/util/c++/clang.cpp      | 195 +++++++++++++++++++++++++++++++++++++
- tools/perf/util/c++/clang.h        |  26 +++++
- tools/perf/util/llvm-utils.c       |  76 +++++++++++----
- tools/perf/util/llvm-utils.h       |   6 ++
- tools/perf/util/perf-hooks.c       |  10 +-
- tools/perf/util/perf-hooks.h       |   6 +-
- tools/perf/util/util-cxx.h         |  26 +++++
- 28 files changed, 795 insertions(+), 195 deletions(-)
- create mode 100644 tools/build/feature/test-clang.cpp
- create mode 100644 tools/build/feature/test-llvm.cpp
- create mode 100644 tools/perf/tests/clang.c
- create mode 100644 tools/perf/util/c++/Build
- create mode 100644 tools/perf/util/c++/clang-c.h
- create mode 100644 tools/perf/util/c++/clang-test.cpp
- create mode 100644 tools/perf/util/c++/clang.cpp
- create mode 100644 tools/perf/util/c++/clang.h
- create mode 100644 tools/perf/util/util-cxx.h
-
-  # uname -a
-  Linux jouet 4.8.8-300.fc25.x86_64 #1 SMP Tue Nov 15 18:10:06 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux
-  # perf test
-   1: vmlinux symtab matches kallsyms            : Ok
-   2: Detect openat syscall event                : Ok
-   3: Detect openat syscall event on all cpus    : Ok
-   4: Read samples using the mmap interface      : Ok
-   5: Parse event definition strings             : Ok
-   6: PERF_RECORD_* events & perf_sample fields  : Ok
-   7: Parse perf pmu format                      : Ok
-   8: DSO data read                              : Ok
-   9: DSO data cache                             : Ok
-  10: DSO data reopen                            : Ok
-  11: Roundtrip evsel->name                      : Ok
-  12: Parse sched tracepoints fields             : Ok
-  13: syscalls:sys_enter_openat event fields     : Ok
-  14: Setup struct perf_event_attr               : Ok
-  15: Match and link multiple hists              : Ok
-  16: 'import perf' in python                    : Ok
-  17: Breakpoint overflow signal handler         : Ok
-  18: Breakpoint overflow sampling               : Ok
-  19: Number of exit events of a simple workload : Ok
-  20: Software clock events period values        : Ok
-  21: Object code reading                        : Ok
-  22: Sample parsing                             : Ok
-  23: Use a dummy software event to keep tracking: Ok
-  24: Parse with no sample_id_all bit set        : Ok
-  25: Filter hist entries                        : Ok
-  26: Lookup mmap thread                         : Ok
-  27: Share thread mg                            : Ok
-  28: Sort output of hist entries                : Ok
-  29: Cumulate child hist entries                : Ok
-  30: Track with sched_switch                    : Ok
-  31: Filter fds with revents mask in a fdarray  : Ok
-  32: Add fd to a fdarray, making it autogrow    : Ok
-  33: kmod_path__parse                           : Ok
-  34: Thread map                                 : Ok
-  35: LLVM search and compile                    :
-  35.1: Basic BPF llvm compile                    : Ok
-  35.2: kbuild searching                          : Ok
-  35.3: Compile source for BPF prologue generation: Ok
-  35.4: Compile source for BPF relocation         : Ok
-  36: Session topology                           : Ok
-  37: BPF filter                                 :
-  37.1: Basic BPF filtering                      : Ok
-  37.2: BPF prologue generation                  : Ok
-  37.3: BPF relocation checker                   : Ok
-  38: Synthesize thread map                      : Ok
-  39: Synthesize cpu map                         : Ok
-  40: Synthesize stat config                     : Ok
-  41: Synthesize stat                            : Ok
-  42: Synthesize stat round                      : Ok
-  43: Synthesize attr update                     : Ok
-  44: Event times                                : Ok
-  45: Read backward ring buffer                  : Ok
-  46: Print cpu map                              : Ok
-  47: Probe SDT events                           : Ok
-  48: is_printable_array                         : Ok
-  49: Print bitmap                               : Ok
-  50: perf hooks                                 : Ok
-  51: builtin clang support                      : Skip (not compiled in)
-  52: x86 rdpmc                                  : Ok
-  53: Convert perf time to TSC                   : Ok
-  54: DWARF unwind                               : Ok
-  55: x86 instruction decoder - new instructions : Ok
-  56: Intel cqm nmi context read                 : Skip
-  # 
-  # time dm
-   1 alpine:3.4: Ok
-   2 android-ndk:r12b-arm: Ok
-   3 archlinux:latest: Ok
-   4 centos:5: Ok
-   5 centos:6: Ok
-   6 centos:7: Ok
-   7 debian:7: Ok
-   8 debian:8: Ok
-   9 debian:experimental: Ok
-  10 fedora:20: Ok
-  11 fedora:21: Ok
-  12 fedora:22: Ok
-  13 fedora:23: Ok
-  14 fedora:24: Ok
-  15 fedora:24-x-ARC-uClibc: Ok
-  16 fedora:25: Ok
-  17 fedora:rawhide: Ok
-  18 mageia:5: Ok
-  19 opensuse:13.2: Ok
-  20 opensuse:42.1: Ok
-  21 opensuse:tumbleweed: Ok
-  22 ubuntu:12.04.5: Ok
-  23 ubuntu:14.04.4-x-linaro-arm64: Ok
-  24 ubuntu:16.04: Ok
-  25 ubuntu:16.04-x-arm: Ok
-  26 ubuntu:16.04-x-arm64: Ok
-  27 ubuntu:16.04-x-powerpc: Ok
-  28 ubuntu:16.04-x-powerpc64: Ok
-  29 ubuntu:16.04-x-powerpc64el: Ok
-  30 ubuntu:16.04-x-s390: Ok
-  31 ubuntu:16.10: Ok
-  #
-  $ make -C tools/perf build-test
-  make: Entering directory '/home/acme/git/linux/tools/perf'
-  - tarpkg: ./tests/perf-targz-src-pkg .
-           make_no_backtrace_O: make NO_BACKTRACE=1
-                make_no_gtk2_O: make NO_GTK2=1
-                 make_static_O: make LDFLAGS=-static
-             make_no_scripts_O: make NO_LIBPYTHON=1 NO_LIBPERL=1
-                  make_no_ui_O: make NO_NEWT=1 NO_SLANG=1 NO_GTK2=1
-                 make_perf_o_O: make perf.o
-               make_no_slang_O: make NO_SLANG=1
-         make_install_prefix_O: make install prefix=/tmp/krava
-           make_no_libpython_O: make NO_LIBPYTHON=1
-                make_no_newt_O: make NO_NEWT=1
-                  make_debug_O: make DEBUG=1
-                   make_tags_O: make tags
-           make_no_libbionic_O: make NO_LIBBIONIC=1
-                   make_help_O: make help
-                make_install_O: make install
-           make_no_libunwind_O: make NO_LIBUNWIND=1
-                   make_pure_O: make
-                make_minimal_O: make NO_LIBPERL=1 NO_LIBPYTHON=1 NO_NEWT=1 NO_GTK2=1 NO_DEMANGLE=1 NO_LIBELF=1 NO_LIBUNWIND=1 NO_BACKTRACE=1 NO_LIBNUMA=1 NO_LIBAUDIT=1 NO_LIBBIONIC=1 NO_LIBDW_DWARF_UNWIND=1 NO_AUXTRACE=1 NO_LIBBPF=1 NO_LIBCRYPTO=1 NO_SDT=1 NO_JVMTI=1
-             make_no_libperl_O: make NO_LIBPERL=1
-              make_no_libbpf_O: make NO_LIBBPF=1
-  make_no_libdw_dwarf_unwind_O: make NO_LIBDW_DWARF_UNWIND=1
-                    make_doc_O: make doc
-            make_no_libaudit_O: make NO_LIBAUDIT=1
-              make_clean_all_O: make clean all
-        make_with_babeltrace_O: make LIBBABELTRACE=1
-             make_no_libnuma_O: make NO_LIBNUMA=1
-             make_util_map_o_O: make util/map.o
-            make_install_bin_O: make install-bin
-            make_no_demangle_O: make NO_DEMANGLE=1
-              make_no_libelf_O: make NO_LIBELF=1
-            make_no_auxtrace_O: make NO_AUXTRACE=1
-       make_util_pmu_bison_o_O: make util/pmu-bison.o
-   make_install_prefix_slash_O: make install prefix=/tmp/krava/
-         make_with_clangllvm_O: make LIBCLANGLLVM=1
-  OK
-  make: Leaving directory '/home/acme/git/linux/tools/perf'
-  $
+--KdquIMZPjGJQvRdI--
