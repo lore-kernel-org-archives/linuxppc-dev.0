@@ -1,44 +1,22 @@
-Return-Path: <mukesh02@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXsPR2CnpzDw8K
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:37:31 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB66Xtru025011
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 01:37:28 -0500
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0b-001b2d01.pphosted.com with ESMTP id 275ht2qkra-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 01:37:28 -0500
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
- Tue, 6 Dec 2016 12:07:24 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 56F72125805B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 12:08:28 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB66bK6V39321654
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 12:07:20 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB66bJ79026887
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 12:07:19 +0530
-Subject: Re: [PATCH 1/2] powerpc/powernv/opal-dump : Handles opal_dump_info
- properly
-References: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-Date: Tue, 6 Dec 2016 12:07:02 +0530
+Return-Path: <alexander.stein@systec-electronic.com>
+Received: from webbox1416.server-home.net (webbox1416.server-home.net
+ [77.236.96.61])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tXtjS4GdSzDvkb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 18:36:27 +1100 (AEDT)
+From: Alexander Stein <alexander.stein@systec-electronic.com>
+To: Timur Tabi <timur@tabi.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org
+Subject: Re: [PATCH 1/1] serial/uuc_uart: Set shutdown timeout to CONFIG_HZ
+ independent 2ms
+Date: Tue, 06 Dec 2016 08:36:22 +0100
+Message-ID: <18303458.zhjk47K7B1@ws-stein>
+In-Reply-To: <5845900B.5010108@tabi.org>
+References: <1480953058-4958-1-git-send-email-alexander.stein@systec-electronic.com>
+ <5845900B.5010108@tabi.org>
 MIME-Version: 1.0
-In-Reply-To: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <9be9fb54-9143-dfa0-5e8a-fdccde251627@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,48 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Monday 05 December 2016 10:04:27, Timur Tabi wrote:
+> Alexander Stein wrote:
+> > -		schedule_timeout(2);
+> > +		schedule_timeout(msecs_to_jiffies(2));
+> 
+> NACK.
+> 
+> So I don't remember why I wrote this code, but I don't think I was
+> expecting it to be 2ms.  Instead, I think I just wanted it to be some
+> delay, but I believed that schedule_timeout(1) was too short or would be
+> "optimized" out somehow.
+> 
+> Note that right below this, I do:
+> 
+> 	if (qe_port->wait_closing) {
+> 		/* Wait a bit longer */
+> 		set_current_state(TASK_UNINTERRUPTIBLE);
+> 		schedule_timeout(qe_port->wait_closing);
+> 	}
+> 
+> And wait_closing is a number of jiffies, so I knew that
+> schedule_timeout() took jiffies as a parameter.
+> 
+> So I think I'm going to NACK this patch, since I believe I knew what I
+> was doing when I wrote it five years ago.
 
-Can you please have a look at this patchset as there is no
+Okay, I was just wondering why the timeout is dependant on the timer tick. 
+That didn't seem obvious to me.
+Rethinking about this, I would rather replace those lines with msleep instead.
 
-functional changes involve with this?
-
-Thanks,
-Mukesh
-
-
-
-
-On Thursday 01 December 2016 02:38 PM, Mukesh Ojha wrote:
-> Moves the return value check of 'opal_dump_info' to a proper place which
-> was previously unnecessarily filling all the dump info even on failure.
->
-> Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/opal-dump.c | 9 ++++++---
->   1 file changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
-> index 4c82782..ae32212 100644
-> --- a/arch/powerpc/platforms/powernv/opal-dump.c
-> +++ b/arch/powerpc/platforms/powernv/opal-dump.c
-> @@ -225,13 +225,16 @@ static int64_t dump_read_info(uint32_t *dump_id, uint32_t *dump_size, uint32_t *
->   	if (rc == OPAL_PARAMETER)
->   		rc = opal_dump_info(&id, &size);
->
-> +	if (rc) {
-> +		pr_warn("%s: Failed to get dump info (%d)\n",
-> +			__func__, rc);
-> +		return rc;
-> +	}
-> +
->   	*dump_id = be32_to_cpu(id);
->   	*dump_size = be32_to_cpu(size);
->   	*dump_type = be32_to_cpu(type);
->
-> -	if (rc)
-> -		pr_warn("%s: Failed to get dump info (%d)\n",
-> -			__func__, rc);
->   	return rc;
->   }
->
+Best regards,
+Alexander
