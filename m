@@ -1,45 +1,44 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <mukesh02@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXsNT2nrczDw55
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:36:41 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXsPR2CnpzDw8K
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:37:31 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB66XogC100224
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 01:36:39 -0500
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2756tfdnya-1
+ uB66Xtru025011
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 01:37:28 -0500
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 275ht2qkra-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 01:36:38 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 01:37:28 -0500
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 6 Dec 2016 16:36:35 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D42302BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:36:32 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB66aWVr6160454
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 17:36:32 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB66aVSM023918
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 17:36:32 +1100
-Date: Tue, 6 Dec 2016 12:06:28 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] PPC: sstep.c: Add modsw, moduw instruction emulation
-References: <20161204165521.10045-1-prasannatsmkumar@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
+ Tue, 6 Dec 2016 12:07:24 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 56F72125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 12:08:28 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uB66bK6V39321654
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 12:07:20 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uB66bJ79026887
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 12:07:19 +0530
+Subject: Re: [PATCH 1/2] powerpc/powernv/opal-dump : Handles opal_dump_info
+ properly
+References: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+Date: Tue, 6 Dec 2016 12:07:02 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161204165521.10045-1-prasannatsmkumar@gmail.com>
-Message-Id: <20161206063628.GF3450@naverao1-tp.localdomain>
+In-Reply-To: <1480583289-6380-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <9be9fb54-9143-dfa0-5e8a-fdccde251627@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,14 +48,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By the way, I missed mentioning previously: please use 'powerpc: ' 
-prefix for the subject, rather than PPC.
+Hi Michael,
+
+Can you please have a look at this patchset as there is no
+
+functional changes involve with this?
+
+Thanks,
+Mukesh
 
 
-On 2016/12/04 10:25PM, PrasannaKumar Muralidharan wrote:
-> Add modsw and moduw instruction emulation support to analyse_instr.
 
-And, it will be better if you can briefly describe what these functions 
-do for the benefit of others.
 
-- Naveen
+On Thursday 01 December 2016 02:38 PM, Mukesh Ojha wrote:
+> Moves the return value check of 'opal_dump_info' to a proper place which
+> was previously unnecessarily filling all the dump info even on failure.
+>
+> Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/platforms/powernv/opal-dump.c | 9 ++++++---
+>   1 file changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+> index 4c82782..ae32212 100644
+> --- a/arch/powerpc/platforms/powernv/opal-dump.c
+> +++ b/arch/powerpc/platforms/powernv/opal-dump.c
+> @@ -225,13 +225,16 @@ static int64_t dump_read_info(uint32_t *dump_id, uint32_t *dump_size, uint32_t *
+>   	if (rc == OPAL_PARAMETER)
+>   		rc = opal_dump_info(&id, &size);
+>
+> +	if (rc) {
+> +		pr_warn("%s: Failed to get dump info (%d)\n",
+> +			__func__, rc);
+> +		return rc;
+> +	}
+> +
+>   	*dump_id = be32_to_cpu(id);
+>   	*dump_size = be32_to_cpu(size);
+>   	*dump_type = be32_to_cpu(type);
+>
+> -	if (rc)
+> -		pr_warn("%s: Failed to get dump info (%d)\n",
+> -			__func__, rc);
+>   	return rc;
+>   }
+>
