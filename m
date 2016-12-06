@@ -1,39 +1,22 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tXrmC51p6zDvxT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:08:43 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB663cbx098418
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Dec 2016 01:08:41 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 275pymb282-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Dec 2016 01:08:40 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Mon, 5 Dec 2016 23:08:40 -0700
-Subject: Re: [PATCH v8 2/3] perf annotate: Support jump instruction with
- target as second operand
-To: acme@kernel.org, kim.phillips@arm.com
-References: <1480953407-7605-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1480953407-7605-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, alexander.shishkin@linux.intel.com,
- chris.ryder@arm.com, mhiramat@kernel.org, treeze.taeung@gmail.com,
- markus@trippelsdorf.de, naveen.n.rao@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Tue, 6 Dec 2016 11:38:28 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tXs6Q6jXbzDvxY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2016 17:24:30 +1100 (AEDT)
+Date: Tue, 6 Dec 2016 17:09:07 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Alexander Graf <agraf@suse.com>, kvm-ppc@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] KVM: PPC: Book3S: Change interrupt call to reduce
+ scratch space use on HV
+Message-ID: <20161206060907.GA25458@fergus.ozlabs.ibm.com>
+References: <20161201071812.23258-1-npiggin@gmail.com>
+ <20161201071812.23258-2-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1480953407-7605-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <584655DC.5030502@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20161201071812.23258-2-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,101 +26,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnaldo,
+On Thu, Dec 01, 2016 at 06:18:10PM +1100, Nicholas Piggin wrote:
+> Change the calling convention to put the trap number together with
+> CR in two halves of r12, which frees up HSTATE_SCRATCH2 in the HV
+> handler, and r9 free.
 
-Hmm, so it's difficult to find example of this when we use debuginfo.
-Because...
+Cute idea!  Some comments below...
 
-Jump__parse tries to look for two things 'offset' and 'target address'.
-
-objdump with debuginfo will include offset in assembly f.e. annotate of
-'smp_call_function_single' with perf.data and vmlinux I shared.
-
-       │c00000000016d6ac:   cmpwi  cr7,r9,0                                                    ▒
-       │c00000000016d6b0: ↑ bne    cr7,c00000000016d59c <.smp_call_function_single+0x8c>       ▒
-       │c00000000016d6b4:   addis  r10,r2,-15                                                  ▒
-
-objdump of same function with kcore.
-
-       │c00000000016d6ac:   cmpwi  cr7,r9,0                                                    ▒
-       │c00000000016d6b0: ↓ bne    cr7,0xc00000000016d59c                                      ▒
-       │c00000000016d6b4:   addis  r10,r2,-15                                                  ▒
-
-Annotating in first case won't show any issue because we directly get
-offset. But in this case as well, we are parsing wrong target address
-in ops->target.addr
-
-While we don't have offset in second case, we use target address to
-find it. And thus it shows wrong o/p something like:
-
-       │       cmpwi  cr7,r9,0                                                                 ▒
-       │     ↓ bne    3fffffffffe92afc                                                         ▒
-       │       addis  r10,r2,-15                                                               ▒
-
-BTW, we have lot of such instructions in kernel.
-
-Thanks,
--Ravi
-
-
-On Monday 05 December 2016 09:26 PM, Ravi Bangoria wrote:
-> Arch like powerpc has jump instructions that includes target address
-> as second operand. For example, 'bne  cr7,0xc0000000000f6154'. Add
-> support for such instruction in perf annotate.
->
-> objdump o/p:
->   c0000000000f6140:   ld     r9,1032(r31)
->   c0000000000f6144:   cmpdi  cr7,r9,0
->   c0000000000f6148:   bne    cr7,0xc0000000000f6154
->   c0000000000f614c:   ld     r9,2312(r30)
->   c0000000000f6150:   std    r9,1032(r31)
->   c0000000000f6154:   ld     r9,88(r31)
->
-> Corresponding perf annotate o/p:
->
-> Before patch:
->          ld     r9,1032(r31)
->          cmpdi  cr7,r9,0
->       v  bne    3ffffffffff09f2c
->          ld     r9,2312(r30)
->          std    r9,1032(r31)
->   74:    ld     r9,88(r31)
->
-> After patch:
->          ld     r9,1032(r31)
->          cmpdi  cr7,r9,0
->       v  bne    74
->          ld     r9,2312(r30)
->          std    r9,1032(r31)
->   74:    ld     r9,88(r31)
->
-> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+> The 64-bit PR handler entry translates the calling convention back
+> to match the previous call convention (i.e., shared with 32-bit), for
+> simplicity.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
-> Changes in v8:
->   - v7: https://lkml.org/lkml/2016/9/21/436
->   - Rebase to acme/perf/core
->   - Little change in patch description.
->   - No logical changes. (Cross arch annotate patches are in. This patch
->     is for hardening annotate for powerpc.)
->
->  tools/perf/util/annotate.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
->
-> diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
-> index ea7e0de..590244e 100644
-> --- a/tools/perf/util/annotate.c
-> +++ b/tools/perf/util/annotate.c
-> @@ -223,8 +223,12 @@ bool ins__is_call(const struct ins *ins)
->  static int jump__parse(struct arch *arch __maybe_unused, struct ins_operands *ops, struct map *map __maybe_unused)
->  {
->  	const char *s = strchr(ops->raw, '+');
-> +	const char *c = strchr(ops->raw, ',');
->
-> -	ops->target.addr = strtoull(ops->raw, NULL, 16);
-> +	if (c++ != NULL)
-> +		ops->target.addr = strtoull(c, NULL, 16);
-> +	else
-> +		ops->target.addr = strtoull(ops->raw, NULL, 16);
->
->  	if (s++ != NULL)
->  		ops->target.offset = strtoull(s, NULL, 16);
+>  arch/powerpc/include/asm/exception-64s.h | 28 +++++++++++++++-------------
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 15 +++++++--------
+>  arch/powerpc/kvm/book3s_segment.S        | 27 ++++++++++++++++++++-------
+>  3 files changed, 42 insertions(+), 28 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+> index 9a3eee6..bc8fc45 100644
+> --- a/arch/powerpc/include/asm/exception-64s.h
+> +++ b/arch/powerpc/include/asm/exception-64s.h
+> @@ -233,7 +233,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+>  
+>  #endif
+>  
+> -#define __KVM_HANDLER_PROLOG(area, n)					\
+> +#define __KVM_HANDLER(area, h, n)					\
+>  	BEGIN_FTR_SECTION_NESTED(947)					\
+>  	ld	r10,area+EX_CFAR(r13);					\
+>  	std	r10,HSTATE_CFAR(r13);					\
+> @@ -243,30 +243,32 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+>  	std	r10,HSTATE_PPR(r13);					\
+>  	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
+>  	ld	r10,area+EX_R10(r13);					\
+> -	stw	r9,HSTATE_SCRATCH1(r13);				\
+> -	ld	r9,area+EX_R9(r13);					\
+>  	std	r12,HSTATE_SCRATCH0(r13);				\
+> -
+> -#define __KVM_HANDLER(area, h, n)					\
+> -	__KVM_HANDLER_PROLOG(area, n)					\
+> -	li	r12,n;							\
+> +	li	r12,(n);						\
+> +	sldi	r12,r12,32;						\
+> +	or	r12,r12,r9;						\
+
+Did you consider doing it the other way around, i.e. with r12
+containing (cr << 32) | trap?  That would save 1 instruction in each
+handler:
+
++	sldi	r12,r9,32;						\
++	ori	r12,r12,(n);						\
+
+> +	ld	r9,area+EX_R9(r13);					\
+> +	std	r9,HSTATE_SCRATCH1(r13);				\
+
+Why not put this std in kvmppc_interrupt[_hv] rather than in each
+handler?
+
+>  	b	kvmppc_interrupt
+>  
+>  #define __KVM_HANDLER_SKIP(area, h, n)					\
+>  	cmpwi	r10,KVM_GUEST_MODE_SKIP;				\
+> -	ld	r10,area+EX_R10(r13);					\
+>  	beq	89f;							\
+> -	stw	r9,HSTATE_SCRATCH1(r13);				\
+>  	BEGIN_FTR_SECTION_NESTED(948)					\
+> -	ld	r9,area+EX_PPR(r13);					\
+> -	std	r9,HSTATE_PPR(r13);					\
+> +	ld	r10,area+EX_PPR(r13);					\
+> +	std	r10,HSTATE_PPR(r13);					\
+>  	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
+> -	ld	r9,area+EX_R9(r13);					\
+> +	ld	r10,area+EX_R10(r13);					\
+>  	std	r12,HSTATE_SCRATCH0(r13);				\
+> -	li	r12,n;							\
+> +	li	r12,(n);						\
+> +	sldi	r12,r12,32;						\
+> +	or	r12,r12,r9;						\
+> +	ld	r9,area+EX_R9(r13);					\
+> +	std	r9,HSTATE_SCRATCH1(r13);				\
+
+Same comment again, of course.
+
+>  	b	kvmppc_interrupt;					\
+>  89:	mtocrf	0x80,r9;						\
+>  	ld	r9,area+EX_R9(r13);					\
+> +	ld	r10,area+EX_R10(r13);					\
+>  	b	kvmppc_skip_##h##interrupt
+>  
+>  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index c3c1d1b..0536c73 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1043,19 +1043,18 @@ hdec_soon:
+>  kvmppc_interrupt_hv:
+>  	/*
+>  	 * Register contents:
+> -	 * R12		= interrupt vector
+> +	 * R12		= (interrupt vector << 32) | guest CR
+>  	 * R13		= PACA
+> -	 * guest CR, R12 saved in shadow VCPU SCRATCH1/0
+> +	 * R9		= unused
+> +	 * guest R12, R9 saved in shadow VCPU SCRATCH0/1 respectively
+>  	 * guest R13 saved in SPRN_SCRATCH0
+>  	 */
+> -	std	r9, HSTATE_SCRATCH2(r13)
+> -
+>  	lbz	r9, HSTATE_IN_GUEST(r13)
+>  	cmpwi	r9, KVM_GUEST_MODE_HOST_HV
+>  	beq	kvmppc_bad_host_intr
+>  #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+>  	cmpwi	r9, KVM_GUEST_MODE_GUEST
+> -	ld	r9, HSTATE_SCRATCH2(r13)
+> +	ld	r9, HSTATE_SCRATCH1(r13)
+>  	beq	kvmppc_interrupt_pr
+>  #endif
+>  	/* We're now back in the host but in guest MMU context */
+> @@ -1075,14 +1074,13 @@ kvmppc_interrupt_hv:
+>  	std	r6, VCPU_GPR(R6)(r9)
+>  	std	r7, VCPU_GPR(R7)(r9)
+>  	std	r8, VCPU_GPR(R8)(r9)
+> -	ld	r0, HSTATE_SCRATCH2(r13)
+> +	ld	r0, HSTATE_SCRATCH1(r13)
+>  	std	r0, VCPU_GPR(R9)(r9)
+>  	std	r10, VCPU_GPR(R10)(r9)
+>  	std	r11, VCPU_GPR(R11)(r9)
+>  	ld	r3, HSTATE_SCRATCH0(r13)
+> -	lwz	r4, HSTATE_SCRATCH1(r13)
+>  	std	r3, VCPU_GPR(R12)(r9)
+> -	stw	r4, VCPU_CR(r9)
+> +	stw	r12, VCPU_CR(r9)	/* CR is in the low half of r12 */
+
+This would then need to be srdi r4, r12, 32; stw r4, VCPU_CR(r9)
+
+>  BEGIN_FTR_SECTION
+>  	ld	r3, HSTATE_CFAR(r13)
+>  	std	r3, VCPU_CFAR(r9)
+> @@ -1100,6 +1098,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>  	mfspr	r11, SPRN_SRR1
+>  	std	r10, VCPU_SRR0(r9)
+>  	std	r11, VCPU_SRR1(r9)
+> +	srdi	r12, r12, 32		/* trap is in the high half of r12 */
+
+and this would become clrldi r12,r12,32 though arguably that's not
+totally necessary since we always do cmpwi/stw/lwz on r12 (but I'd
+feel safer with the clrldi in place).
+
+Cheers,
+Paul.
