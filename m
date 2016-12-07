@@ -1,26 +1,19 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYGmZ1GL3zDvkB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 09:40:29 +1100 (AEDT)
-Subject: Re: next-20161206 WARN@ mm/hugetlb.c:2918 during boot
-To: Balbir Singh <bsingharora@gmail.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-References: <70A62042-92E6-414D-8FBD-BA0F5308944B@linux.vnet.ibm.com>
- <20161207092721.270fbc43@canb.auug.org.au>
- <CAKTCnzmxjf+v3t-o7GwZkWp1Wrff+o0B6CAt0Ehp8gv3pdQTOA@mail.gmail.com>
-Cc: Sachin Sant <sachinp@linux.vnet.ibm.com>,
- linux-next <linux-next@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-From: Dave Hansen <dave.hansen@intel.com>
-Message-ID: <ef890d7f-2918-4848-e77d-b10f528b7afe@intel.com>
-Date: Tue, 6 Dec 2016 14:40:25 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYKrh3FbFzDvyN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 11:59:16 +1100 (AEDT)
+Date: Tue, 6 Dec 2016 18:59:04 -0600
+From: Scott Wood <oss@buserror.net>
+To: Madalin Bucur <madalin.bucur@nxp.com>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-ID: <20161207005904.GA12811@home.buserror.net>
+References: <1481030019-31854-2-git-send-email-madalin.bucur@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnzmxjf+v3t-o7GwZkWp1Wrff+o0B6CAt0Ehp8gv3pdQTOA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1481030019-31854-2-git-send-email-madalin.bucur@nxp.com>
+Subject: Re: [v2, 2/3] powerpc/fsl/dts: add QMan and BMan portal nodes on t1024
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/06/2016 02:37 PM, Balbir Singh wrote:
-> I think Michael found this as well, its related to adding our gigantic
-> page to the hugetlb list
-> and the WARN_ON that Dave Hansen added (commit
-> a3a18061c987aa9da4f5d3cbb31a9e71e9d7191d)
-> 
-> I've not looked at this issue yet, Aneesh is aware of the issue as well
+On Tue, Dec 06, 2016 at 03:13:38PM +0200, Madalin Bucur wrote:
+> Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/t1024qds.dts | 29 +++++++++++++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/t1024rdb.dts | 33 +++++++++++++++++++++++++++++++++
+>  2 files changed, 62 insertions(+)
 
-It's harmless, and I believe Andrew pulled it out of -mm.  So, just
-ignore it for now.
+So, in patch 1/3 you add qman and bman nodes to t1023si-post.dtsi and
+call it "add QMan and BMan portal nodes on t1023rdb" as if it were
+board-specific (the only board-specific part is the reserved-memory
+nodes, not the portals).
 
-Thanks for the report, though.
+Then, in this patch you only touch board-specific files, and label it
+"add QMan and BMan portal nodes on t1024"...
+
+> diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+> index 302cdd2..73a6453 100644
+> --- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+> +++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+> @@ -41,6 +41,31 @@
+>  	#size-cells = <2>;
+>  	interrupt-parent = <&mpic>;
+>  
+> +	aliases {
+> +		sg_2500_aqr105_phy4 = &sg_2500_aqr105_phy4;
+> +	};
+
+What does this have to do with the qman and bman portal nodes?  Why is
+this alias needed?
+
+-Scott
