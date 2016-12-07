@@ -1,21 +1,20 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0040.outbound.protection.outlook.com [104.47.42.40])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <prasannatsmkumar@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYhrG4ZrmzDvxh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 02:15:10 +1100 (AEDT)
-From: Madalin Bucur <madalin.bucur@nxp.com>
-To: <devicetree@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>, <oss@buserror.net>
-Subject: [PATCH v3 4/4] powerpc/fsl/dts: add FMan node for t1042d4rdb
-Date: Wed, 7 Dec 2016 17:14:56 +0200
-Message-ID: <1481123696-21028-4-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1481123696-21028-1-git-send-email-madalin.bucur@nxp.com>
-References: <1481123696-21028-1-git-send-email-madalin.bucur@nxp.com>
-Reply-To: <madalin.bucur@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYmCF02XszDw2b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 04:46:48 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id c4so20928286pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 09:46:48 -0800 (PST)
+From: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ naveen.n.rao@linux.vnet.ibm.com, ananth@in.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+Subject: [PATCH v2] powerpc: sstep.c: Add modsw, moduw instruction emulation
+Date: Wed,  7 Dec 2016 23:15:15 +0530
+Message-Id: <20161207174515.7628-1-prasannatsmkumar@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,73 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
----
- arch/powerpc/boot/dts/fsl/t1042d4rdb.dts | 52 ++++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
+Add modsw and moduw instruction emulation support to analyse_instr.
+modsw is an x-form instruction that calculates signed modulo of values
+stored in registers. moduw is similar to modsw but it works with
+unsigned values.
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts b/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
-index 2a5a90d..fcd2aeb 100644
---- a/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1042d4rdb.dts
-@@ -48,6 +48,58 @@
- 					"fsl,deepsleep-cpld";
- 		};
- 	};
+Changes in v2:
+Don't update CR register as the instruction does not touch that
+Arrange extended opcode in numerical order
+
+Signed-off-by: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+---
+ arch/powerpc/lib/sstep.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 9c78a9c..b0acdbc 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1128,6 +1128,11 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 		case 266:	/* add */
+ 			regs->gpr[rd] = regs->gpr[ra] + regs->gpr[rb];
+ 			goto arith_done;
 +
-+	soc: soc@ffe000000 {
-+		fman0: fman@400000 {
-+			ethernet@e0000 {
-+				phy-handle = <&phy_sgmii_0>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e2000 {
-+				phy-handle = <&phy_sgmii_1>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e4000 {
-+				phy-handle = <&phy_sgmii_2>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e6000 {
-+				phy-handle = <&phy_rgmii_0>;
-+				phy-connection-type = "rgmii";
-+			};
-+
-+			ethernet@e8000 {
-+				phy-handle = <&phy_rgmii_1>;
-+				phy-connection-type = "rgmii";
-+			};
-+
-+			mdio0: mdio@fc000 {
-+				phy_sgmii_0: ethernet-phy@02 {
-+					reg = <0x02>;
-+				};
-+
-+				phy_sgmii_1: ethernet-phy@03 {
-+					reg = <0x03>;
-+				};
-+
-+				phy_sgmii_2: ethernet-phy@01 {
-+					reg = <0x01>;
-+				};
-+
-+				phy_rgmii_0: ethernet-phy@04 {
-+					reg = <0x04>;
-+				};
-+
-+				phy_rgmii_1: ethernet-phy@05 {
-+					reg = <0x05>;
-+				};
-+			};
-+		};
-+	};
-+
- };
++		case 267:	/* moduw */
++			regs->gpr[rd] = (unsigned int) regs->gpr[ra] %
++				(unsigned int) regs->gpr[rb];
++			goto instr_done;
+ #ifdef __powerpc64__
+ 		case 457:	/* divdu */
+ 			regs->gpr[rd] = regs->gpr[ra] / regs->gpr[rb];
+@@ -1148,6 +1153,10 @@ int __kprobes analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+ 				(int) regs->gpr[rb];
+ 			goto arith_done;
  
- #include "t1042si-post.dtsi"
++		case 779:	/* modsw */
++			regs->gpr[rd] = (int) regs->gpr[ra] %
++				(int) regs->gpr[rb];
++			goto instr_done;
+ 
+ /*
+  * Logical instructions
 -- 
-2.1.0
+2.9.3
