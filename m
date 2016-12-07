@@ -3,36 +3,36 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYVBL5JJVzDvxf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:15:06 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB77Ddw4064912
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 02:15:04 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 275u7wjhb8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYVBg4FfczDw2D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:15:23 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB77DcMh146701
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 02:15:21 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 276dpegdh1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 02:15:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 02:15:21 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 7 Dec 2016 00:15:03 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1F41A19D803F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:14:19 -0700 (MST)
-Subject: [PATCH V9 4/8] pseries/hotplug init: Convert new DRC memory
- property for hotplug runtime
+ Wed, 7 Dec 2016 00:15:19 -0700
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7EB3E19D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:14:36 -0700 (MST)
+Subject: [PATCH V9 5/8] pseries/drc-info: Search new DRC properties for CPU
+ indexes
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Cc: nfont@linux.vnet.ibm.com
-Date: Wed, 07 Dec 2016 01:14:58 -0600
+Date: Wed, 07 Dec 2016 01:15:15 -0600
 In-Reply-To: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
 References: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <148109488672.193207.10452460636222047460.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <148109490324.193207.10527500975481096079.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,157 +42,263 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hotplug_init: Simplify the code needed for runtime memory hotplug and
-maintenance with a conversion routine that transforms the compressed
-property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
-a single set of routines should be required at runtime to parse, edit,
-and manipulate the memory representation in the device tree.  Similarly,
-any userspace applications that need this information will only need
-to recognize the older format to be able to continue to operate.
+pseries/drc-info: Provide parallel routines to convert between
+drc_index and CPU numbers at runtime, using the older device-tree
+properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
 Changes in V9:
-  - Remove unnecessary field initialization in allocated memory block
+  -- Correct cpu-to-thread calculation for drc-info structs in function
+     drc_index_to_cpu
+  -- Change OR operators in WARN_ON test
 ---
- arch/powerpc/platforms/pseries/Makefile         |    4 +
- arch/powerpc/platforms/pseries/hotplug-memory.c |   92 +++++++++++++++++++++++
- 2 files changed, 94 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/pseries_energy.c |  202 ++++++++++++++++++++---
+ 1 file changed, 176 insertions(+), 26 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index fedc2ccf0..e74cf6c 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -5,14 +5,14 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   of_helpers.o \
- 			   setup.o iommu.o event_sources.o ras.o \
- 			   firmware.o power.o dlpar.o mobility.o rng.o \
--			   pci.o pci_dlpar.o eeh_pseries.o msi.o
-+			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
-+			   hotplug-memory.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
- obj-$(CONFIG_KEXEC)	+= kexec.o
- obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
+diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+index 164a13d..549efdb 100644
+--- a/arch/powerpc/platforms/pseries/pseries_energy.c
++++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+@@ -35,10 +35,73 @@
  
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
--obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
+ /* Helper Routines to convert between drc_index to cpu numbers */
  
- obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
- obj-$(CONFIG_HVCS)		+= hvcserver.o
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 76ec104..7b63639 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -24,6 +24,8 @@
- #include <asm/sparsemem.h>
- #include "pseries.h"
- 
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+
- static bool rtas_hp_event;
- 
- unsigned long pseries_memory_block_size(void)
-@@ -887,11 +889,101 @@ static int pseries_memory_notifier(struct notifier_block *nb,
- static struct notifier_block pseries_mem_nb = {
- 	.notifier_call = pseries_memory_notifier,
- };
-+#endif /* CONFIG_MEMORY_HOTPLUG */
-+
-+static int pseries_rewrite_dynamic_memory_v2(void)
++void read_one_drc_info(int **info, char **dtype, char **dname,
++			unsigned long int *drc_index_start_p,
++			unsigned long int *num_sequential_elems_p,
++			unsigned long int *sequential_inc_p,
++			unsigned long int *last_drc_index_p)
 +{
-+	unsigned long memblock_size;
-+	struct device_node *dn;
-+	struct property *prop, *prop_v2;
-+	__be32 *p;
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmb_desc_sets, num_lmbs;
-+	int i, j, k;
++	char *drc_type, *drc_name_prefix, *pc;
++	u32 drc_index_start, num_sequential_elems;
++	u32 sequential_inc, last_drc_index;
 +
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		return -EINVAL;
++	drc_index_start = num_sequential_elems = 0;
++	sequential_inc = last_drc_index = 0;
 +
-+	prop_v2 = of_find_property(dn, "ibm,dynamic-memory-v2", NULL);
-+	if (!prop_v2)
-+		return -EINVAL;
++	/* Get drc-type:encode-string */
++	pc = (char *)info;
++	drc_type = pc;
++	pc += (strlen(drc_type) + 1);
 +
-+	memblock_size = pseries_memory_block_size();
-+	if (!memblock_size)
-+		return -EINVAL;
++	/* Get drc-name-prefix:encode-string */
++	drc_name_prefix = (char *)pc;
++	pc += (strlen(drc_name_prefix) + 1);
 +
-+	/* The first int of the property is the number of lmb sets
-+	 * described by the property.
-+	 */
-+	p = (__be32 *)prop_v2->value;
-+	num_lmb_desc_sets = be32_to_cpu(*p++);
++	/* Get drc-index-start:encode-int */
++	memcpy(&drc_index_start, pc, 4);
++	drc_index_start = be32_to_cpu(drc_index_start);
++	pc += 4;
 +
-+	/* Count the number of LMBs for generating the alternate format
-+	 */
-+	for (i = 0, num_lmbs = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
++	/* Get/skip drc-name-suffix-start:encode-int */
++	pc += 4;
 +
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+		num_lmbs += drmem.num_seq_lmbs;
-+	}
++	/* Get number-sequential-elements:encode-int */
++	memcpy(&num_sequential_elems, pc, 4);
++	num_sequential_elems = be32_to_cpu(num_sequential_elems);
++	pc += 4;
 +
-+	/* Create an empty copy of the new 'ibm,dynamic-memory' property
-+	 */
-+	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-+	if (!prop)
-+		return -ENOMEM;
-+	prop->name = kstrdup("ibm,dynamic-memory", GFP_KERNEL);
-+	prop->length = dyn_mem_v2_len(num_lmbs);
-+	prop->value = kzalloc(prop->length, GFP_KERNEL);
++	/* Get sequential-increment:encode-int */
++	memcpy(&sequential_inc, pc, 4);
++	sequential_inc = be32_to_cpu(sequential_inc);
++	pc += 4;
 +
-+	/* Copy/expand the ibm,dynamic-memory-v2 format to produce the
-+	 * ibm,dynamic-memory format.
-+	 */
-+	p = (__be32 *)prop->value;
-+	*p = cpu_to_be32(num_lmbs);
-+	p++;
-+	lmbs = (struct of_drconf_cell *)p;
++	/* Get/skip drc-power-domain:encode-int */
++	pc += 4;
 +
-+	p = (__be32 *)prop_v2->value;
-+	p++;
++	/* Should now know end of current entry */
++	last_drc_index = drc_index_start +
++			((num_sequential_elems-1)*sequential_inc);
 +
-+	for (i = 0, k = 0; i < num_lmb_desc_sets; i++) {
-+		struct of_drconf_cell_v2 drmem;
++	(*info) = (int *)pc;
 +
-+		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-+
-+		for (j = 0; j < drmem.num_seq_lmbs; j++) {
-+			lmbs[k+j].base_addr = be64_to_cpu(drmem.base_addr);
-+			lmbs[k+j].drc_index = be32_to_cpu(drmem.drc_index);
-+			lmbs[k+j].aa_index  = be32_to_cpu(drmem.aa_index);
-+			lmbs[k+i].flags     = be32_to_cpu(drmem.flags);
-+
-+			drmem.base_addr += memblock_size;
-+			drmem.drc_index++;
-+		}
-+
-+		k += drmem.num_seq_lmbs;
-+	}
-+
-+	of_remove_property(dn, prop_v2);
-+
-+	of_add_property(dn, prop);
-+
-+	/* And disable feature flag since the property has gone away */
-+	powerpc_firmware_features &= ~FW_FEATURE_DYN_MEM_V2;
-+
-+	return 0;
++	if (dtype)
++		*dtype = drc_type;
++	if (dname)
++		*dname = drc_name_prefix;
++	if (drc_index_start_p)
++		*drc_index_start_p = drc_index_start;
++	if (num_sequential_elems_p)
++		*num_sequential_elems_p = num_sequential_elems;
++	if (sequential_inc_p)
++		*sequential_inc_p = sequential_inc;
++	if (last_drc_index_p)
++		*last_drc_index_p = last_drc_index;
 +}
- 
- static int __init pseries_memory_hotplug_init(void)
++EXPORT_SYMBOL(read_one_drc_info);
++
+ static u32 cpu_to_drc_index(int cpu)
  {
-+	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
-+		pseries_rewrite_dynamic_memory_v2();
-+#ifdef CONFIG_MEMORY_HOTPLUG
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		of_reconfig_notifier_register(&pseries_mem_nb);
-+#endif /* CONFIG_MEMORY_HOTPLUG */
+ 	struct device_node *dn = NULL;
+-	const int *indexes;
+ 	int i;
+ 	int rc = 1;
+ 	u32 ret = 0;
+@@ -46,18 +109,60 @@ static u32 cpu_to_drc_index(int cpu)
+ 	dn = of_find_node_by_path("/cpus");
+ 	if (dn == NULL)
+ 		goto err;
+-	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+-	if (indexes == NULL)
+-		goto err_of_node_put;
++
+ 	/* Convert logical cpu number to core number */
+ 	i = cpu_core_index_of_thread(cpu);
+-	/*
+-	 * The first element indexes[0] is the number of drc_indexes
+-	 * returned in the list.  Hence i+1 will get the drc_index
+-	 * corresponding to core number i.
+-	 */
+-	WARN_ON(i > indexes[0]);
+-	ret = indexes[i + 1];
++
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
++		int *info = (int *)4;
++		unsigned long int num_set_entries, j, check_val = i;
++		unsigned long int drc_index_start = 0;
++		unsigned long int last_drc_index = 0;
++		unsigned long int num_sequential_elems = 0;
++		unsigned long int sequential_inc = 0;
++		char *dtype;
++		char *dname;
++
++		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
++		if (info == NULL)
++			goto err_of_node_put;
++
++		num_set_entries = be32_to_cpu(*info++);
++
++		for (j = 0; j < num_set_entries; j++) {
++
++			read_one_drc_info(&info, &dtype, &dname,
++					&drc_index_start,
++					&num_sequential_elems,
++					&sequential_inc, &last_drc_index);
++			if (strcmp(dtype, "CPU"))
++				goto err;
++
++			if (check_val < last_drc_index)
++				break;
++
++			WARN_ON(((check_val-drc_index_start)%
++					sequential_inc) != 0);
++		}
++		WARN_ON((num_sequential_elems == 0) || (sequential_inc == 0));
++
++		ret = last_drc_index + (check_val*sequential_inc);
++	} else {
++		const int *indexes;
++
++		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
++		if (indexes == NULL)
++			goto err_of_node_put;
++
++		/*
++		 * The first element indexes[0] is the number of drc_indexes
++		 * returned in the list.  Hence i+1 will get the drc_index
++		 * corresponding to core number i.
++		 */
++		WARN_ON(i > indexes[0]);
++		ret = indexes[i + 1];
++	}
++
+ 	rc = 0;
  
- 	return 0;
+ err_of_node_put:
+@@ -72,34 +177,79 @@ static int drc_index_to_cpu(u32 drc_index)
+ {
+ 	struct device_node *dn = NULL;
+ 	const int *indexes;
+-	int i, cpu = 0;
++	int thread = 0, cpu = 0;
+ 	int rc = 1;
+ 
+ 	dn = of_find_node_by_path("/cpus");
+ 	if (dn == NULL)
+ 		goto err;
+-	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+-	if (indexes == NULL)
+-		goto err_of_node_put;
+-	/*
+-	 * First element in the array is the number of drc_indexes
+-	 * returned.  Search through the list to find the matching
+-	 * drc_index and get the core number
+-	 */
+-	for (i = 0; i < indexes[0]; i++) {
+-		if (indexes[i + 1] == drc_index)
++
++	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
++		int *info = (int *)dn;
++		unsigned long int num_set_entries, j;
++		unsigned long int drc_index_start = 0;
++		unsigned long int last_drc_index = 0;
++		unsigned long int num_sequential_elems = 0;
++		unsigned long int sequential_inc = 0;
++		char *dtype, *dname;
++
++		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
++		if (info == NULL)
++			goto err_of_node_put;
++
++		num_set_entries = be32_to_cpu(*info++);
++
++		for (j = 0; j < num_set_entries; j++) {
++			read_one_drc_info(&info, &dtype, &dname,
++					&drc_index_start,
++					&num_sequential_elems,
++					&sequential_inc, &last_drc_index);
++			if (strcmp(dtype, "CPU"))
++				goto err;
++
++			WARN_ON(drc_index < drc_index_start);
++			WARN_ON(((drc_index-drc_index_start)%
++					sequential_inc) != 0);
++
++			if (drc_index > last_drc_index) {
++				cpu += ((last_drc_index-drc_index_start)/
++					sequential_inc);
++				continue;
++			} else {
++				cpu += ((drc_index-drc_index_start)/
++					sequential_inc);
++			}
++
++			thread = cpu_first_thread_of_core(cpu);
++			rc = 0;
+ 			break;
++		}
++	} else {
++		unsigned long int i;
++
++		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
++		if (indexes == NULL)
++			goto err_of_node_put;
++		/*
++		 * First element in the array is the number of drc_indexes
++		 * returned.  Search through the list to find the matching
++		 * drc_index and get the core number
++		 */
++		for (i = 0; i < indexes[0]; i++) {
++			if (indexes[i + 1] == drc_index)
++				break;
++		}
++		/* Convert core number to logical cpu number */
++		thread = cpu_first_thread_of_core(i);
++		rc = 0;
+ 	}
+-	/* Convert core number to logical cpu number */
+-	cpu = cpu_first_thread_of_core(i);
+-	rc = 0;
+ 
+ err_of_node_put:
+ 	of_node_put(dn);
+ err:
+ 	if (rc)
+ 		printk(KERN_WARNING "drc_index_to_cpu(%d) failed", drc_index);
+-	return cpu;
++	return thread;
  }
+ 
+ /*
