@@ -1,38 +1,37 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYVCF5lD0zDvk7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:15:53 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYVCY3tL4zDw5P
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:16:09 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB77Dchd146670
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 02:15:52 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 276dpege31-1
+ uB77Ekcj022213
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 02:16:07 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27685hxeus-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 02:15:51 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 02:16:07 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 7 Dec 2016 00:15:50 -0700
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E35A919D801C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 00:15:08 -0700 (MST)
-Subject: [PATCH V9 7/8] powerpc: Check arch.vec earlier during boot for
- memory features
+ Wed, 7 Dec 2016 02:16:06 -0500
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 63C50C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 02:15:47 -0500 (EST)
+Subject: [PATCH V9 8/8] powerpc: Enable support for new DRC devtree properties
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Cc: nfont@linux.vnet.ibm.com
-Date: Wed, 07 Dec 2016 01:15:47 -0600
+Date: Wed, 07 Dec 2016 01:16:03 -0600
 In-Reply-To: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
 References: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <148109493640.193207.4066849658518994363.stgit@powerkvm6.aus.stglabs.ibm.com>
+Message-Id: <148109495293.193207.8739036690257904427.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,39 +41,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-architecture.vec5 features: The boot-time memory management needs to
-know the form of the "ibm,dynamic-memory-v2" property early during
-scanning of the flattened device tree.  This patch moves execution of
-the function pseries_probe_fw_features() early enough to be before
-the scanning of the memory properties in the device tree to allow
-recognition of the supported properties.
+prom_init.c: Enable support for new DRC device tree properties
+"ibm,drc-info" and "ibm,dynamic-memory-v2" in initial handshake
+between the Linux kernel and the front end processor.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/prom.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/prom_init.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 2d49887..bd07157 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -759,6 +759,9 @@ void __init early_init_devtree(void *params)
- 	 */
- 	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 88ac964..6e6454f 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -696,7 +696,7 @@ static void __init early_cmdline_parse(void)
+ 	OV4_MIN_ENT_CAP,		/* minimum VP entitled capacity */
  
-+	/* Now try to figure out if we are running on LPAR and so on */
-+	pseries_probe_fw_features();
-+
- 	/* Scan memory nodes and rebuild MEMBLOCKs */
- 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
- 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
-@@ -826,9 +829,6 @@ void __init early_init_devtree(void *params)
- #endif
- 	epapr_paravirt_early_init();
+ 	/* option vector 5: PAPR/OF options */
+-	VECTOR_LENGTH(21),		/* length */
++	VECTOR_LENGTH(22),		/* length */
+ 	0,				/* don't ignore, don't halt */
+ 	OV5_FEAT(OV5_LPAR) | OV5_FEAT(OV5_SPLPAR) | OV5_FEAT(OV5_LARGE_PAGES) |
+ 	OV5_FEAT(OV5_DRCONF_MEMORY) | OV5_FEAT(OV5_DONATE_DEDICATE_CPU) |
+@@ -732,6 +732,7 @@ static void __init early_cmdline_parse(void)
+ 	0,							/* Byte 19 */
+ 	0,							/* Byte 20 */
+ 	OV5_FEAT(OV5_SUB_PROCESSORS),				/* Byte 21 */
++	OV5_FEAT(OV5_DYN_MEM_V2) | OV5_FEAT(OV5_DRC_INFO),	/* Byte 22 */
  
--	/* Now try to figure out if we are running on LPAR and so on */
--	pseries_probe_fw_features();
--
- #ifdef CONFIG_PPC_PS3
- 	/* Identify PS3 firmware */
- 	if (of_flat_dt_is_compatible(of_get_flat_dt_root(), "sony,ps3"))
+ 	/* option vector 6: IBM PAPR hints */
+ 	VECTOR_LENGTH(3),		/* length */
