@@ -1,25 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0064.outbound.protection.outlook.com [104.47.2.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYTsk0vGvzDvQl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:00:42 +1100 (AEDT)
-Subject: Re: [PATCH v3 2/3] powerpc: get hugetlbpage handling more generic
-To: Scott Wood <oss@buserror.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <cover.1474441301.git.christophe.leroy@c-s.fr>
- <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
- <1480987116.32531.17.camel@buserror.net>
- <f4f6dfc6-92e5-fa98-6dcf-6da0bf8aa5e3@c-s.fr>
- <1481072799.32531.23.camel@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <d13b5ce5-7915-e39d-ce07-4ee6b760eef1@c-s.fr>
-Date: Wed, 7 Dec 2016 07:59:07 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYV7l6WYfzDvRX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:12:51 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+To: Scott Wood <oss@buserror.net>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [v2, 2/3] powerpc/fsl/dts: add QMan and BMan portal nodes on t1024
+Date: Wed, 7 Dec 2016 07:12:45 +0000
+Message-ID: <AM4PR04MB1604989338D17E495C655320EC850@AM4PR04MB1604.eurprd04.prod.outlook.com>
+References: <1481030019-31854-2-git-send-email-madalin.bucur@nxp.com>
+ <20161207005904.GA12811@home.buserror.net>
+In-Reply-To: <20161207005904.GA12811@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1481072799.32531.23.camel@buserror.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,68 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> From: Scott Wood [mailto:oss@buserror.net]
+> Sent: Wednesday, December 07, 2016 2:59 AM
+>=20
+> On Tue, Dec 06, 2016 at 03:13:38PM +0200, Madalin Bucur wrote:
+> > Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+> > ---
+> >  arch/powerpc/boot/dts/fsl/t1024qds.dts | 29
+> +++++++++++++++++++++++++++++
+> >  arch/powerpc/boot/dts/fsl/t1024rdb.dts | 33
+> +++++++++++++++++++++++++++++++++
+> >  2 files changed, 62 insertions(+)
+>=20
+> So, in patch 1/3 you add qman and bman nodes to t1023si-post.dtsi and
+> call it "add QMan and BMan portal nodes on t1023rdb" as if it were
+> board-specific (the only board-specific part is the reserved-memory
+> nodes, not the portals).
+>=20
+> Then, in this patch you only touch board-specific files, and label it
+> "add QMan and BMan portal nodes on t1024"...
 
+That needs fixing...
 
-Le 07/12/2016 à 02:06, Scott Wood a écrit :
-> On Tue, 2016-12-06 at 07:34 +0100, Christophe LEROY wrote:
->>
->> Le 06/12/2016 à 02:18, Scott Wood a écrit :
->>>
->>> On Wed, 2016-09-21 at 10:11 +0200, Christophe Leroy wrote:
->>>>
->>>> Today there are two implementations of hugetlbpages which are managed
->>>> by exclusive #ifdefs:
->>>> * FSL_BOOKE: several directory entries points to the same single
->>>> hugepage
->>>> * BOOK3S: one upper level directory entry points to a table of hugepages
->>>>
->>>> In preparation of implementation of hugepage support on the 8xx, we
->>>> need a mix of the two above solutions, because the 8xx needs both cases
->>>> depending on the size of pages:
->>>> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
->>>> that 2 PGD entries will be necessary to cover an 8M hugepage while a
->>>> single PGD entry will cover 8x 512k hugepages.
->>>> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
->>>> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
->>>> hugepages will be covers by one PGD entry.
->>>>
->>>> This patch:
->>>> * removes #ifdefs in favor of if/else based on the range sizes
->>>> * merges the two huge_pte_alloc() functions as they are pretty similar
->>>> * merges the two hugetlbpage_init() functions as they are pretty similar
->>> [snip]
->>>>
->>>> @@ -860,16 +803,34 @@ static int __init hugetlbpage_init(void)
->>>>  		 * if we have pdshift and shift value same, we don't
->>>>  		 * use pgt cache for hugepd.
->>>>  		 */
->>>> -		if (pdshift != shift) {
->>>> +		if (pdshift > shift) {
->>>>  			pgtable_cache_add(pdshift - shift, NULL);
->>>>  			if (!PGT_CACHE(pdshift - shift))
->>>>  				panic("hugetlbpage_init(): could not
->>>> create
->>>> "
->>>>  				      "pgtable cache for %d bit
->>>> pagesize\n", shift);
->>>>  		}
->>>> +#ifdef CONFIG_PPC_FSL_BOOK3E
->>>> +		else if (!hugepte_cache) {
->>> This else never triggers on book3e, because the way this function
->>> calculates
->>> pdshift is wrong for book3e (it uses PyD_SHIFT instead of
->>> HUGEPD_PxD_SHIFT).
->>>  We later get OOMs because huge_pte_alloc() calculates pdshift correctly,
->>> tries to use hugepte_cache, and fails.
->> Ok, I'll check it again, I was expecting it to still work properly on
->> book3e, because after applying patch 3 it works properly on the 8xx.
->
-> On 8xx you probably happen to have a page size that yields "pdshift <= shift"
-> even with the incorrect pdshift calculation, causing hugepte_cache to be
-> allocated.  The smallest hugepage size on 8xx is 512k compared to 4M on fsl-
-> book3e.
->
+> > diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+> b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+> > index 302cdd2..73a6453 100644
+> > --- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+> > +++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+> > @@ -41,6 +41,31 @@
+> >  	#size-cells =3D <2>;
+> >  	interrupt-parent =3D <&mpic>;
+> >
+> > +	aliases {
+> > +		sg_2500_aqr105_phy4 =3D &sg_2500_aqr105_phy4;
+> > +	};
+>=20
+> What does this have to do with the qman and bman portal nodes?  Why is
+> this alias needed?
+>=20
+> -Scott
 
-Indeed it works because on 8xx, PUD_SHIFT == PMD_SHIFT == PGDIR_SHIFT
+It's needed by u-boot, should be a separate patch.
+I'll resend.
 
-Christophe
+Madalin
