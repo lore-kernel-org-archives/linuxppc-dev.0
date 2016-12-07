@@ -1,22 +1,33 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0064.outbound.protection.outlook.com [104.47.2.64])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYV7l6WYfzDvRX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:12:51 +1100 (AEDT)
-From: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
-To: Scott Wood <oss@buserror.net>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [v2, 2/3] powerpc/fsl/dts: add QMan and BMan portal nodes on t1024
-Date: Wed, 7 Dec 2016 07:12:45 +0000
-Message-ID: <AM4PR04MB1604989338D17E495C655320EC850@AM4PR04MB1604.eurprd04.prod.outlook.com>
-References: <1481030019-31854-2-git-send-email-madalin.bucur@nxp.com>
- <20161207005904.GA12811@home.buserror.net>
-In-Reply-To: <20161207005904.GA12811@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYV8z3T6BzDvhn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:13:55 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB77DdbM064941
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 02:13:51 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 275u7wjg4x-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 02:13:51 -0500
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 7 Dec 2016 00:13:50 -0700
+Subject: [PATCH V9 0/8] powerpc/devtree: Add support for 2 new DRC properties
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.orgltc-virtual-io,
+ ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ ""@lists.linux.ibm.com
+Cc: nfont@linux.vnet.ibm.com
+Date: Wed, 07 Dec 2016 01:13:46 -0600
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: Scott Wood [mailto:oss@buserror.net]
-> Sent: Wednesday, December 07, 2016 2:59 AM
->=20
-> On Tue, Dec 06, 2016 at 03:13:38PM +0200, Madalin Bucur wrote:
-> > Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
-> > ---
-> >  arch/powerpc/boot/dts/fsl/t1024qds.dts | 29
-> +++++++++++++++++++++++++++++
-> >  arch/powerpc/boot/dts/fsl/t1024rdb.dts | 33
-> +++++++++++++++++++++++++++++++++
-> >  2 files changed, 62 insertions(+)
->=20
-> So, in patch 1/3 you add qman and bman nodes to t1023si-post.dtsi and
-> call it "add QMan and BMan portal nodes on t1023rdb" as if it were
-> board-specific (the only board-specific part is the reserved-memory
-> nodes, not the portals).
->=20
-> Then, in this patch you only touch board-specific files, and label it
-> "add QMan and BMan portal nodes on t1024"...
+Several properties in the DRC device tree format are replaced by
+more compact representations to allow, for example, for the encoding
+of vast amounts of memory, and or reduced duplication of information
+in related data structures.
 
-That needs fixing...
+"ibm,drc-info": This property, when present, replaces the following
+four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains".  This property is defined for all
+dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
+are intended to provide a more compact representation, and reduce some
+search overhead.
 
-> > diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-> b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-> > index 302cdd2..73a6453 100644
-> > --- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-> > +++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-> > @@ -41,6 +41,31 @@
-> >  	#size-cells =3D <2>;
-> >  	interrupt-parent =3D <&mpic>;
-> >
-> > +	aliases {
-> > +		sg_2500_aqr105_phy4 =3D &sg_2500_aqr105_phy4;
-> > +	};
->=20
-> What does this have to do with the qman and bman portal nodes?  Why is
-> this alias needed?
->=20
-> -Scott
+"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
+node representation within the "ibm,dynamic-reconfiguration-memory"
+property provided by the BMC.  This element format is intended to provide
+a more compact representation of memory, especially, for systems with
+massive amounts of RAM.  To simplify portability, this property is
+converted to the "ibm,dynamic-memory" property during system boot.
 
-It's needed by u-boot, should be a separate patch.
-I'll resend.
+"ibm,architecture.vec": Bidirectional communication mechanism between
+the host system and the front end processor indicating what features
+the host system supports and what features the front end processor will
+actually provide.  In this case, we are indicating that the host system
+can support the new device tree structures "ibm,drc-info" and
+"ibm,dynamic-memory-v2".
 
-Madalin
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
+Michael Bringmann (8):
+  powerpc/firmware: Add definitions for new firmware features.
+  powerpc/memory: Parse new memory property to register blocks.
+  powerpc/memory: Parse new memory property to initialize structures.
+  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
+  pseries/drc-info: Search new DRC properties for CPU indexes
+  hotplug/drc-info: Add code to search new devtree properties
+  powerpc: Check arch.vec earlier during boot for memory features
+  powerpc: Enable support for new DRC devtree properties
+---
+Changes in V9:
+  -- Various code cleanup measures
+
+ arch/powerpc/include/asm/firmware.h             |    5 -
+ arch/powerpc/include/asm/prom.h                 |   38 ++++
+ arch/powerpc/kernel/prom.c                      |  103 ++++++++++--
+ arch/powerpc/kernel/prom_init.c                 |    3 
+ arch/powerpc/mm/numa.c                          |  168 ++++++++++++++++---
+ arch/powerpc/platforms/pseries/firmware.c       |    2 
+ arch/powerpc/platforms/pseries/pseries_energy.c |  202 ++++++++++++++++++++---
+ drivers/pci/hotplug/rpadlpar_core.c             |   13 +
+ drivers/pci/hotplug/rpaphp.h                    |    4 
+ drivers/pci/hotplug/rpaphp_core.c               |  108 +++++++++---
+ 10 files changed, 543 insertions(+), 103 deletions(-)
