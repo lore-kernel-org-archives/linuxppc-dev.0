@@ -1,49 +1,25 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYSHy20d0zDvj3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 16:49:50 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB75mcjg080713
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 00:49:48 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2763yc660b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 00:49:48 -0500
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 7 Dec 2016 15:49:45 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9670C357805A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 16:49:42 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB75ngaL1311138
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 16:49:42 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB75nfTx020636
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Dec 2016 16:49:42 +1100
-Subject: Re: [PATCH 3/3] powerpc: enable support for GCC plugins
-To: Emese Revfy <re.emese@gmail.com>
-References: <20161206062800.21800-1-andrew.donnellan@au1.ibm.com>
- <20161206062800.21800-3-andrew.donnellan@au1.ibm.com>
- <20161206222520.7fb37896488eff1b299eb3db@gmail.com>
-Cc: spender@grsecurity.net, keescook@chromium.org,
- linux-kbuild@vger.kernel.org, kernel-hardening@lists.openwall.com,
- linux-kernel@vger.kernel.org, mmarek@suse.com, pageexec@freemail.hu,
- linuxppc-dev@lists.ozlabs.org
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 7 Dec 2016 16:49:41 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYTsk0vGvzDvQl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Dec 2016 18:00:42 +1100 (AEDT)
+Subject: Re: [PATCH v3 2/3] powerpc: get hugetlbpage handling more generic
+To: Scott Wood <oss@buserror.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <cover.1474441301.git.christophe.leroy@c-s.fr>
+ <69b1226ce134761fd7ab81a498bdb85cd737280f.1474441302.git.christophe.leroy@c-s.fr>
+ <1480987116.32531.17.camel@buserror.net>
+ <f4f6dfc6-92e5-fa98-6dcf-6da0bf8aa5e3@c-s.fr>
+ <1481072799.32531.23.camel@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <d13b5ce5-7915-e39d-ce07-4ee6b760eef1@c-s.fr>
+Date: Wed, 7 Dec 2016 07:59:07 +0100
 MIME-Version: 1.0
-In-Reply-To: <20161206222520.7fb37896488eff1b299eb3db@gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <f32f62b8-dc38-6f0b-e7b7-1f85e504df5d@au1.ibm.com>
+In-Reply-To: <1481072799.32531.23.camel@buserror.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,36 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/12/16 08:25, Emese Revfy wrote:
-> What are these missing headers? Because if they aren't necessary then they can
-> be removed from gcc-common.h. There were missing headers on arm/arm64 and these
-> archs are supported. I think this version check is unnecessary because
-> gcc-plugin.sh also checks the missing headers.
 
-rs6000-cpus.def, included via tm.h - see 
-https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66840
 
-I realise gcc-plugin.sh does detect this, but the point of the 
-additional version check is to provide somewhat more helpful advice to 
-the user.
+Le 07/12/2016 à 02:06, Scott Wood a écrit :
+> On Tue, 2016-12-06 at 07:34 +0100, Christophe LEROY wrote:
+>>
+>> Le 06/12/2016 à 02:18, Scott Wood a écrit :
+>>>
+>>> On Wed, 2016-09-21 at 10:11 +0200, Christophe Leroy wrote:
+>>>>
+>>>> Today there are two implementations of hugetlbpages which are managed
+>>>> by exclusive #ifdefs:
+>>>> * FSL_BOOKE: several directory entries points to the same single
+>>>> hugepage
+>>>> * BOOK3S: one upper level directory entry points to a table of hugepages
+>>>>
+>>>> In preparation of implementation of hugepage support on the 8xx, we
+>>>> need a mix of the two above solutions, because the 8xx needs both cases
+>>>> depending on the size of pages:
+>>>> * In 4k page size mode, each PGD entry covers a 4M bytes area. It means
+>>>> that 2 PGD entries will be necessary to cover an 8M hugepage while a
+>>>> single PGD entry will cover 8x 512k hugepages.
+>>>> * In 16 page size mode, each PGD entry covers a 64M bytes area. It means
+>>>> that 8x 8M hugepages will be covered by one PGD entry and 64x 512k
+>>>> hugepages will be covers by one PGD entry.
+>>>>
+>>>> This patch:
+>>>> * removes #ifdefs in favor of if/else based on the range sizes
+>>>> * merges the two huge_pte_alloc() functions as they are pretty similar
+>>>> * merges the two hugetlbpage_init() functions as they are pretty similar
+>>> [snip]
+>>>>
+>>>> @@ -860,16 +803,34 @@ static int __init hugetlbpage_init(void)
+>>>>  		 * if we have pdshift and shift value same, we don't
+>>>>  		 * use pgt cache for hugepd.
+>>>>  		 */
+>>>> -		if (pdshift != shift) {
+>>>> +		if (pdshift > shift) {
+>>>>  			pgtable_cache_add(pdshift - shift, NULL);
+>>>>  			if (!PGT_CACHE(pdshift - shift))
+>>>>  				panic("hugetlbpage_init(): could not
+>>>> create
+>>>> "
+>>>>  				      "pgtable cache for %d bit
+>>>> pagesize\n", shift);
+>>>>  		}
+>>>> +#ifdef CONFIG_PPC_FSL_BOOK3E
+>>>> +		else if (!hugepte_cache) {
+>>> This else never triggers on book3e, because the way this function
+>>> calculates
+>>> pdshift is wrong for book3e (it uses PyD_SHIFT instead of
+>>> HUGEPD_PxD_SHIFT).
+>>>  We later get OOMs because huge_pte_alloc() calculates pdshift correctly,
+>>> tries to use hugepte_cache, and fails.
+>> Ok, I'll check it again, I was expecting it to still work properly on
+>> book3e, because after applying patch 3 it works properly on the 8xx.
+>
+> On 8xx you probably happen to have a page size that yields "pdshift <= shift"
+> even with the incorrect pdshift calculation, causing hugepte_cache to be
+> allocated.  The smallest hugepage size on 8xx is 512k compared to 4M on fsl-
+> book3e.
+>
 
-> What is the problem on gcc-4.5/gcc-4.6?
+Indeed it works because on 8xx, PUD_SHIFT == PMD_SHIFT == PGDIR_SHIFT
 
-On 4.6.4, c-family/c-common.h:
-
-/scratch/ajd/gcc-test-v2/kernel/scripts/gcc-plugins/gcc-common.h:60:31: 
-fatal error: c-family/c-common.h: No such file or directory
-
-ajd@ka1:/scratch/ajd/tmp/cross/gcc-4.6.4-nolibc/powerpc64-linux$ find 
--name c-common.*
-./lib/gcc/powerpc64-linux/4.6.4/plugin/include/c-common.h
-./lib/gcc/powerpc64-linux/4.6.4/plugin/include/c-family/c-common.def
-
-Are we sure the version check in gcc-common.h:59 is correct, or is this 
-just a peculiarity of my particular toolchain?
-
-I need to build another 4.5 toolchain, I'll try to do that this week.
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Christophe
