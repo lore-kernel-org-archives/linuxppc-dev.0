@@ -2,20 +2,21 @@ Return-Path: <jthumshirn@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ8Yt39cFzDw01
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 20:04:17 +1100 (AEDT)
-Date: Thu, 8 Dec 2016 10:04:06 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ8Z02RCjzDw55
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 20:04:24 +1100 (AEDT)
+Date: Thu, 8 Dec 2016 10:04:19 +0100
 From: Johannes Thumshirn <jthumshirn@suse.de>
 To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Cc: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com,
  linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] ibmvscsi: add vscsi hosts to global list_head
-Message-ID: <20161208090406.GA4789@linux-x5ow.site>
+Subject: Re: [PATCH 2/2] ibmvscsi: log bad SRP response opcode in hex format
+Message-ID: <20161208090419.GB4789@linux-x5ow.site>
 References: <1481148276-5083-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1481148276-5083-2-git-send-email-tyreld@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1481148276-5083-1-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1481148276-5083-2-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,11 +26,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 07, 2016 at 04:04:35PM -0600, Tyrel Datwyler wrote:
-> Add each vscsi host adatper to a new global list_head named
-> ibmvscsi_head. There is no functional change. This is meant primarily
-> as a convience for locating adatpers from within the debugger or crash
-> utility.
+On Wed, Dec 07, 2016 at 04:04:36PM -0600, Tyrel Datwyler wrote:
+> An unrecogonized or unsupported SRP response has its opcode currently
+> logged in decimal format. Log it in hex format instead so it can easily
+> be validated against the SRP specs values which are in hex.
 > 
 > Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 > ---
