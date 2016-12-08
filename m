@@ -2,16 +2,17 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ3RW3RVWzDvhR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ3RW5QpLzDw1f
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 16:13:27 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: michael@ellerman.id.au,
 	paulus@samba.org
 Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 4/6] pseries: Add support for hash table resizing
-Date: Thu,  8 Dec 2016 16:13:19 +1100
-Message-Id: <20161208051321.31446-5-david@gibson.dropbear.id.au>
+Subject: [PATCH 3/6] pseries: Add hypercall wrappers for hash page table
+ resizing
+Date: Thu,  8 Dec 2016 16:13:18 +1100
+Message-Id: <20161208051321.31446-4-david@gibson.dropbear.id.au>
 In-Reply-To: <20161208051321.31446-1-david@gibson.dropbear.id.au>
 References: <20161208051321.31446-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,216 +24,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds support for using experimental hypercalls to change the size
-of the main hash page table while running as a PAPR guest.  For now these
-hypercalls are only in experimental qemu versions.
+This adds the hypercall numbers and wrapper functions for the hash page
+table resizing hypercalls.
 
-The interface is two part: first H_RESIZE_HPT_PREPARE is used to allocate
-and prepare the new hash table.  This may be slow, but can be done
-asynchronously.  Then, H_RESIZE_HPT_COMMIT is used to switch to the new
-hash table.  This requires that no CPUs be concurrently updating the HPT,
-and so must be run under stop_machine().
+These are experimental "platform specific" values for now, until we have a
+formal PAPR update.
 
-This also adds a debugfs file which can be used to manually control
-HPT resizing or testing purposes.
+It also adds a new firmware feature flag to track the presence of the
+HPT resizing calls.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
- arch/powerpc/mm/hash_utils_64.c               |  28 +++++++
- arch/powerpc/platforms/pseries/lpar.c         | 110 ++++++++++++++++++++++++++
- 3 files changed, 139 insertions(+)
+ arch/powerpc/include/asm/firmware.h       |  5 +++--
+ arch/powerpc/include/asm/hvcall.h         |  4 +++-
+ arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
+ arch/powerpc/platforms/pseries/firmware.c |  1 +
+ 4 files changed, 19 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index e407af2..efba649 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -153,6 +153,7 @@ struct mmu_hash_ops {
- 					       unsigned long addr,
- 					       unsigned char *hpte_slot_array,
- 					       int psize, int ssize, int local);
-+	int		(*resize_hpt)(unsigned long shift);
- 	/*
- 	 * Special for kexec.
- 	 * To be called in real mode with interrupts disabled. No locks are
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 78dabf06..474da2e 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -35,6 +35,7 @@
- #include <linux/memblock.h>
- #include <linux/context_tracking.h>
- #include <linux/libfdt.h>
-+#include <linux/debugfs.h>
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 1e0b5a5..8645897 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -42,7 +42,7 @@
+ #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
+ #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
+ #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+-/* Free				ASM_CONST(0x0000000001000000) */
++#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
+ #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
+ #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
+ #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
+@@ -66,7 +66,8 @@ enum {
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+-		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
++		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
++		FW_FEATURE_HPT_RESIZE,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 708edeb..9b7ff7c 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -275,7 +275,9 @@
+ #define H_COP			0x304
+ #define H_GET_MPP_X		0x314
+ #define H_SET_MODE		0x31C
+-#define MAX_HCALL_OPCODE	H_SET_MODE
++#define H_RESIZE_HPT_PREPARE	0x36C
++#define H_RESIZE_HPT_COMMIT	0x370
++#define MAX_HCALL_OPCODE	H_RESIZE_HPT_COMMIT
  
- #include <asm/processor.h>
- #include <asm/pgtable.h>
-@@ -1815,3 +1816,30 @@ void hash__setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	/* Finally limit subsequent allocations */
- 	memblock_set_current_limit(ppc64_rma_size);
+ /* H_VIOCTL functions */
+ #define H_GET_VIOA_DUMP_SIZE	0x01
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 1b39424..b7ee6d9 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -242,6 +242,18 @@ static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
+ 	return plpar_hcall_norets(H_PROTECT, flags, ptex, avpn);
  }
-+
-+static int ppc64_pft_size_get(void *data, u64 *val)
-+{
-+	*val = ppc64_pft_size;
-+	return 0;
-+}
-+
-+static int ppc64_pft_size_set(void *data, u64 val)
-+{
-+	if (!mmu_hash_ops.resize_hpt)
-+		return -ENODEV;
-+	return mmu_hash_ops.resize_hpt(val);
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_ppc64_pft_size,
-+			ppc64_pft_size_get, ppc64_pft_size_set,	"%llu\n");
-+
-+static int __init hash64_debugfs(void)
-+{
-+	if (!debugfs_create_file("pft-size", 0600, powerpc_debugfs_root,
-+				 NULL, &fops_ppc64_pft_size)) {
-+		pr_err("lpar: unable to create ppc64_pft_size debugsfs file\n");
-+	}
-+
-+	return 0;
-+}
-+machine_device_initcall(pseries, hash64_debugfs);
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index aa35245..5f0cee3 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -27,6 +27,8 @@
- #include <linux/console.h>
- #include <linux/export.h>
- #include <linux/jump_label.h>
-+#include <linux/delay.h>
-+#include <linux/stop_machine.h>
- #include <asm/processor.h>
- #include <asm/mmu.h>
- #include <asm/page.h>
-@@ -589,6 +591,113 @@ static int __init disable_bulk_remove(char *str)
  
- __setup("bulk_remove=", disable_bulk_remove);
- 
-+#define HPT_RESIZE_TIMEOUT	10000 /* ms */
-+
-+struct hpt_resize_state {
-+	unsigned long shift;
-+	int commit_rc;
-+};
-+
-+static int pseries_lpar_resize_hpt_commit(void *data)
++static inline long plpar_resize_hpt_prepare(unsigned long flags,
++					    unsigned long shift)
 +{
-+	struct hpt_resize_state *state = data;
-+
-+	state->commit_rc = plpar_resize_hpt_commit(0, state->shift);
-+	if (state->commit_rc != H_SUCCESS)
-+		return -EIO;
-+
-+	/* Hypervisor has transitioned the HTAB, update our globals */
-+	ppc64_pft_size = state->shift;
-+	htab_size_bytes = 1UL << ppc64_pft_size;
-+	htab_hash_mask = (htab_size_bytes >> 7) - 1;
-+
-+	return 0;
++	return plpar_hcall_norets(H_RESIZE_HPT_PREPARE, flags, shift);
 +}
 +
-+/* Must be called in user context */
-+static int pseries_lpar_resize_hpt(unsigned long shift)
++static inline long plpar_resize_hpt_commit(unsigned long flags,
++					   unsigned long shift)
 +{
-+	struct hpt_resize_state state = {
-+		.shift = shift,
-+		.commit_rc = H_FUNCTION,
-+	};
-+	unsigned int delay, total_delay = 0;
-+	int rc;
-+	ktime_t t0, t1, t2;
-+
-+	might_sleep();
-+
-+	if (!firmware_has_feature(FW_FEATURE_HPT_RESIZE))
-+		return -ENODEV;
-+
-+	printk(KERN_INFO "lpar: Attempting to resize HPT to shift %lu\n",
-+	       shift);
-+
-+	t0 = ktime_get();
-+
-+	rc = plpar_resize_hpt_prepare(0, shift);
-+	while (H_IS_LONG_BUSY(rc)) {
-+		delay = get_longbusy_msecs(rc);
-+		total_delay += delay;
-+		if (total_delay > HPT_RESIZE_TIMEOUT) {
-+			/* prepare call with shift==0 cancels an
-+			 * in-progress resize */
-+			rc = plpar_resize_hpt_prepare(0, 0);
-+			if (rc != H_SUCCESS)
-+				printk(KERN_WARNING
-+				       "lpar: Unexpected error %d cancelling timed out HPT resize\n",
-+				       rc);
-+			return -ETIMEDOUT;
-+		}
-+		msleep(delay);
-+		rc = plpar_resize_hpt_prepare(0, shift);
-+	};
-+
-+	switch (rc) {
-+	case H_SUCCESS:
-+		/* Continue on */
-+		break;
-+
-+	case H_PARAMETER:
-+		return -EINVAL;
-+	case H_RESOURCE:
-+		return -EPERM;
-+	default:
-+		printk(KERN_WARNING
-+		       "lpar: Unexpected error %d from H_RESIZE_HPT_PREPARE\n",
-+		       rc);
-+		return -EIO;
-+	}
-+
-+	t1 = ktime_get();
-+
-+	rc = stop_machine(pseries_lpar_resize_hpt_commit, &state, NULL);
-+
-+	t2 = ktime_get();
-+
-+	if (rc != 0) {
-+		switch (state.commit_rc) {
-+		case H_PTEG_FULL:
-+			printk(KERN_WARNING
-+			       "lpar: Hash collision while resizing HPT\n");
-+			return -ENOSPC;
-+
-+		default:
-+			printk(KERN_WARNING
-+			       "lpar: Unexpected error %d from H_RESIZE_HPT_COMMIT\n",
-+			       state.commit_rc);
-+			return -EIO;
-+		};
-+	}
-+
-+	printk(KERN_INFO
-+	       "lpar: HPT resize to shift %lu complete (%lld ms / %lld ms)\n",
-+	       shift, (long long) ktime_ms_delta(t1, t0),
-+	       (long long) ktime_ms_delta(t2, t1));
-+
-+	return 0;
++	return plpar_hcall_norets(H_RESIZE_HPT_COMMIT, flags, shift);
 +}
 +
- void __init hpte_init_pseries(void)
+ static inline long plpar_tce_get(unsigned long liobn, unsigned long ioba,
+ 		unsigned long *tce_ret)
  {
- 	mmu_hash_ops.hpte_invalidate	 = pSeries_lpar_hpte_invalidate;
-@@ -600,6 +709,7 @@ void __init hpte_init_pseries(void)
- 	mmu_hash_ops.flush_hash_range	 = pSeries_lpar_flush_hash_range;
- 	mmu_hash_ops.hpte_clear_all      = pSeries_lpar_hptab_clear;
- 	mmu_hash_ops.hugepage_invalidate = pSeries_lpar_hugepage_invalidate;
-+	mmu_hash_ops.resize_hpt		 = pseries_lpar_resize_hpt;
- }
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index ea7f09b..658c02d 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -64,6 +64,7 @@ hypertas_fw_features_table[] = {
+ 	{FW_FEATURE_VPHN,		"hcall-vphn"},
+ 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
+ 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
++	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
+ };
  
- #ifdef CONFIG_PPC_SMLPAR
+ /* Build up the firmware features bitmask using the contents of
 -- 
 2.9.3
