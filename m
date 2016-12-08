@@ -1,18 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ3RW5QpLzDw1f
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 16:13:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ3RX0YvDzDvHy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 16:13:28 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: michael@ellerman.id.au,
 	paulus@samba.org
 Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 3/6] pseries: Add hypercall wrappers for hash page table
- resizing
-Date: Thu,  8 Dec 2016 16:13:18 +1100
-Message-Id: <20161208051321.31446-4-david@gibson.dropbear.id.au>
+Subject: [PATCH 5/6] pseries: Advertise HPT resizing support via CAS
+Date: Thu,  8 Dec 2016 16:13:20 +1100
+Message-Id: <20161208051321.31446-6-david@gibson.dropbear.id.au>
 In-Reply-To: <20161208051321.31446-1-david@gibson.dropbear.id.au>
 References: <20161208051321.31446-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,96 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the hypercall numbers and wrapper functions for the hash page
-table resizing hypercalls.
+The hypervisor needs to know a guest is capable of using the HPT resizing
+PAPR extension in order to make full advantage of it for memory hotplug.
 
-These are experimental "platform specific" values for now, until we have a
-formal PAPR update.
+If the hypervisor knows the guest is HPT resize aware, it can size the
+initial HPT based on the initial guest RAM size, relying on the guest to
+resize the HPT when more memory is hot-added.  Without this, the hypervisor
+must size the HPT for the maximum possible guest RAM, which can lead to
+a huge waste of space if the guest never actually expends to that maximum
+size.
 
-It also adds a new firmware feature flag to track the presence of the
-HPT resizing calls.
+This patch advertises the guest's support for HPT resizing via the
+ibm,client-architecture-support OF interface.  We use bit 5 of byte 6 of
+option vector 5 for this purpose (tentatively assigned in in-progress PAPR
+change request).
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Reviewed-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/include/asm/firmware.h       |  5 +++--
- arch/powerpc/include/asm/hvcall.h         |  4 +++-
- arch/powerpc/include/asm/plpar_wrappers.h | 12 ++++++++++++
- arch/powerpc/platforms/pseries/firmware.c |  1 +
- 4 files changed, 19 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/prom.h | 1 +
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 1e0b5a5..8645897 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -42,7 +42,7 @@
- #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
- #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
- #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
--/* Free				ASM_CONST(0x0000000001000000) */
-+#define FW_FEATURE_HPT_RESIZE	ASM_CONST(0x0000000001000000)
- #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
- #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
- #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
-@@ -66,7 +66,8 @@ enum {
- 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
- 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
- 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
--		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
-+		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
-+		FW_FEATURE_HPT_RESIZE,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 708edeb..9b7ff7c 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -275,7 +275,9 @@
- #define H_COP			0x304
- #define H_GET_MPP_X		0x314
- #define H_SET_MODE		0x31C
--#define MAX_HCALL_OPCODE	H_SET_MODE
-+#define H_RESIZE_HPT_PREPARE	0x36C
-+#define H_RESIZE_HPT_COMMIT	0x370
-+#define MAX_HCALL_OPCODE	H_RESIZE_HPT_COMMIT
- 
- /* H_VIOCTL functions */
- #define H_GET_VIOA_DUMP_SIZE	0x01
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index 1b39424..b7ee6d9 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -242,6 +242,18 @@ static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
- 	return plpar_hcall_norets(H_PROTECT, flags, ptex, avpn);
- }
- 
-+static inline long plpar_resize_hpt_prepare(unsigned long flags,
-+					    unsigned long shift)
-+{
-+	return plpar_hcall_norets(H_RESIZE_HPT_PREPARE, flags, shift);
-+}
-+
-+static inline long plpar_resize_hpt_commit(unsigned long flags,
-+					   unsigned long shift)
-+{
-+	return plpar_hcall_norets(H_RESIZE_HPT_COMMIT, flags, shift);
-+}
-+
- static inline long plpar_tce_get(unsigned long liobn, unsigned long ioba,
- 		unsigned long *tce_ret)
- {
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index ea7f09b..658c02d 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -64,6 +64,7 @@ hypertas_fw_features_table[] = {
- 	{FW_FEATURE_VPHN,		"hcall-vphn"},
- 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
- 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
-+	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
- };
- 
- /* Build up the firmware features bitmask using the contents of
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f436ba..94c92bb 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -151,6 +151,7 @@ struct of_drconf_cell {
+ #define OV5_XCMO		0x0440	/* Page Coalescing */
+ #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
+ #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
++#define OV5_RESIZE_HPT		0x0601	/* Hash Page Table resizing */
+ #define OV5_PFO_HW_RNG		0x0E80	/* PFO Random Number Generator */
+ #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 88ac964..9942d9f 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -713,7 +713,7 @@ unsigned char ibm_architecture_vec[] = {
+ 	0,
+ #endif
+ 	OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
+-	0,
++	OV5_FEAT(OV5_RESIZE_HPT),
+ 	0,
+ 	0,
+ 	/* WARNING: The offset of the "number of cores" field below
 -- 
 2.9.3
