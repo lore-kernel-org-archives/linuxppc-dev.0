@@ -1,31 +1,23 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x22b.google.com (mail-io0-x22b.google.com
- [IPv6:2607:f8b0:4001:c06::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZNc357pCzDw5q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 05:06:59 +1100 (AEDT)
-Received: by mail-io0-x22b.google.com with SMTP id d9so14060250ioe.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Dec 2016 10:06:59 -0800 (PST)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <5849716A.32374.136DAAC@pageexec.freemail.hu>
-References: <20161206062800.21800-1-andrew.donnellan@au1.ibm.com>
- <20161206062800.21800-3-andrew.donnellan@au1.ibm.com>
- <5849716A.32374.136DAAC@pageexec.freemail.hu>
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 8 Dec 2016 10:06:55 -0800
-Message-ID: <CAGXu5jKrU5GR3KDb9M-vtSpY+aRm2B0vGpahVYLtFTWs=g7Big@mail.gmail.com>
-Subject: Re: [PATCH 3/3] powerpc: enable support for GCC plugins
-To: PaX Team <pageexec@freemail.hu>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- Emese Revfy <re.emese@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- Brad Spengler <spender@grsecurity.net>, Michal Marek <mmarek@suse.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZNkN4szJzDw5r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 05:12:28 +1100 (AEDT)
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>
+Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH v3 00/15] livepatch: hybrid consistency model
+Date: Thu,  8 Dec 2016 12:08:25 -0600
+Message-Id: <cover.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,54 +27,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 8, 2016 at 6:42 AM, PaX Team <pageexec@freemail.hu> wrote:
-> On 6 Dec 2016 at 17:28, Andrew Donnellan wrote:
->
->> Enable support for GCC plugins on powerpc.
->>
->> Add an additional version check in gcc-plugins-check to advise users to
->> upgrade to gcc 5.2+ on powerpc to avoid issues with header files (gcc <=
->> 4.6) or missing copies of rs6000-cpus.def (4.8 to 5.1 on 64-bit targets).
->
-> i don't think that this is the right approach. there's a general and a special
-> issue here, both of which need different handling.
->
-> the general problem is to detect problems related to gcc plugin headers and
-> notify the users about solutions. emitting various messages from a Makefile
-> is certainly not a scalable approach, just imagine how it will look when the
-> other 30+ archs begin to add their own special cases... if anything, they
-> should be documented in Documentation/gcc-plugins.txt (or a new doc if it
-> grows too big) and the Makefile message should just point at it.
->
-> as for the solutions, the general advice should enable the use of otherwise
-> failing gcc versions instead of forcing updating to new ones (though the
-> latter is advisable for other reasons but not everyone's in the position to
-> do so easily). in my experience all one needs to do is manually install the
-> missing files from the gcc sources (ideally distros would take care of it).
->
-> the specific problem addressed here can (and IMHO should) be solved in
-> another way: remove the inclusion of the offending headers in gcc-common.h
-> as neither tm.h nor c-common.h are needed by existing plugins. for background,
-> i created gcc-common.h to simplify plugin development across all supportable
-> gcc versions i came across over the years, so it follows the 'everything but
-> the kitchen sink' approach. that isn't necessarily what the kernel and other
-> projects need so they should just use my version as a basis and fork/simplify
-> it (even i maintain private forks of the public version).
+Dusting the cobwebs off the consistency model again.  This is based on
+linux-next/master.
 
-If removing those will lower the requirement for PPC, that would be
-ideal. Otherwise, I'd like to take the practical approach of making
-the plugins available on PPC right now, with an eye towards relaxing
-the version requirement as people need it.
+v1 was posted on 2015-02-09:
 
-> as for the location of c-common.h, upstream gcc moved it under c-family in
-> 2010 after the release of 4.5, so it should be where gcc-common.h expects
-> it and i'm not sure how it ended up at its old location for you.
+  https://lkml.kernel.org/r/cover.1423499826.git.jpoimboe@redhat.com
 
-That is rather odd. What distro was the PPC test done on? (Or were
-these manually built gcc versions?)
+v2 was posted on 2016-04-28:
 
--Kees
+  https://lkml.kernel.org/r/cover.1461875890.git.jpoimboe@redhat.com
+
+The biggest issue from v2 was finding a decent way to detect preemption
+and page faults on the stack of a sleeping task.  That problem was
+solved by rewriting the x86 stack unwinder.  The new unwinder helps
+detect such cases by finding all pt_regs on the stack.  When
+preemption/page faults are detected, the stack is considered unreliable
+and the patching of the task is deferred.
+
+For more details about the consistency model, see patch 13/15.
+
+---
+
+v3:
+- rebase on new x86 unwinder
+- force !HAVE_RELIABLE_STACKTRACE arches to use patch->immediate for
+  now, because we don't have a way to transition kthreads otherwise
+- rebase s390 TIF_PATCH_PENDING patch onto latest entry code
+- update barrier comments and move barrier from the end of
+  klp_init_transition() to its callers
+- "klp_work" -> "klp_transition_work"
+- "klp_patch_task()" -> "klp_update_patch_state()"
+- explicit _TIF_ALLWORK_MASK
+- change klp_reverse_transition() to not try to complete transition.
+  instead modify the work queue delay to zero.
+- get rid of klp_schedule_work() in favor of calling
+  schedule_delayed_work() directly with a KLP_TRANSITION_DELAY
+- initialize klp_target_state to KLP_UNDEFINED
+- move klp_target_state assignment to before patch->immediate check in
+  klp_init_transition()
+- rcu_read_lock() in klp_update_patch_state(), test the thread flag in
+  patch task, synchronize_rcu() in klp_complete_transition()
+- use kstrtobool() in enabled_store()
+- change task_rq_lock() argument type to struct rq_flags
+- add several WARN_ON_ONCE assertions for klp_target_state and
+  task->patch_state
+
+v2:
+- "universe" -> "patch state"
+- rename klp_update_task_universe() -> klp_patch_task()
+- add preempt IRQ tracking (TF_PREEMPT_IRQ)
+- fix print_context_stack_reliable() bug
+- improve print_context_stack_reliable() comments
+- klp_ftrace_handler comment fixes
+- add "patch_state" proc file to tid_base_stuff
+- schedule work even for !RELIABLE_STACKTRACE
+- forked child inherits patch state from parent
+- add detailed comment to livepatch.h klp_func definition about the
+  klp_func patched/transition state transitions
+- update exit_to_usermode_loop() comment
+- clear all TIF_KLP_NEED_UPDATE flags in klp_complete_transition()
+- remove unnecessary function externs
+- add livepatch documentation, sysfs documentation, /proc documentation
+- /proc/pid/patch_state: -1 means no patch is currently being applied/reverted
+- "TIF_KLP_NEED_UPDATE" -> "TIF_PATCH_PENDING"
+- support for s390 and powerpc-le
+- don't assume stacks with dynamic ftrace trampolines are reliable
+- add _TIF_ALLWORK_MASK info to commit log
+
+v1.9:
+- revive from the dead and rebased
+- reliable stacks!
+- add support for immediate consistency model
+- add a ton of comments
+- fix up memory barriers
+- remove "allow patch modules to be removed" patch for now, it still 
+  needs more discussion and thought - it can be done with something
+- "proc/pid/universe" -> "proc/pid/patch_status"
+- remove WARN_ON_ONCE from !func condition in ftrace handler -- can
+  happen because of RCU
+- keep klp_mutex private by putting the work_fn in core.c
+- convert states from int to boolean
+- remove obsolete '@state' comments
+- several header file and include improvements suggested by Jiri S
+- change kallsyms_lookup_size_offset() errors from EINVAL -> ENOENT
+- change proc file permissions S_IRUGO -> USR
+- use klp_for_each_object/func helpers
+
+---
+
+Jiri Slaby (1):
+  livepatch/s390: reorganize TIF thread flag bits
+
+Josh Poimboeuf (12):
+  stacktrace/x86: add function for detecting reliable stack traces
+  x86/entry: define _TIF_ALLWORK_MASK flags explicitly
+  livepatch: temporary stubs for klp_patch_pending() and
+    klp_update_patch_state()
+  livepatch/x86: add TIF_PATCH_PENDING thread flag
+  livepatch/powerpc: add TIF_PATCH_PENDING thread flag
+  livepatch: separate enabled and patched states
+  livepatch: remove unnecessary object loaded check
+  livepatch: move patching functions into patch.c
+  livepatch: use kstrtobool() in enabled_store()
+  livepatch: store function sizes
+  livepatch: change to a per-task consistency model
+  livepatch: add /proc/<pid>/patch_state
+
+Miroslav Benes (2):
+  livepatch/s390: add TIF_PATCH_PENDING thread flag
+  livepatch: allow removal of a disabled patch
+
+ Documentation/ABI/testing/sysfs-kernel-livepatch |   8 +
+ Documentation/filesystems/proc.txt               |  18 +
+ Documentation/livepatch/livepatch.txt            | 156 ++++++--
+ arch/Kconfig                                     |   6 +
+ arch/powerpc/include/asm/thread_info.h           |   4 +-
+ arch/powerpc/kernel/signal.c                     |   4 +
+ arch/s390/include/asm/thread_info.h              |  24 +-
+ arch/s390/kernel/entry.S                         |  31 +-
+ arch/x86/Kconfig                                 |   1 +
+ arch/x86/entry/common.c                          |   9 +-
+ arch/x86/include/asm/thread_info.h               |  11 +-
+ arch/x86/include/asm/unwind.h                    |   6 +
+ arch/x86/kernel/stacktrace.c                     |  59 ++-
+ arch/x86/kernel/unwind_frame.c                   |   1 +
+ fs/proc/base.c                                   |  15 +
+ include/linux/init_task.h                        |   9 +
+ include/linux/livepatch.h                        |  66 ++-
+ include/linux/sched.h                            |   3 +
+ include/linux/stacktrace.h                       |   8 +-
+ kernel/fork.c                                    |   3 +
+ kernel/livepatch/Makefile                        |   2 +-
+ kernel/livepatch/core.c                          | 446 +++++++++------------
+ kernel/livepatch/patch.c                         | 261 ++++++++++++
+ kernel/livepatch/patch.h                         |  33 ++
+ kernel/livepatch/transition.c                    | 487 +++++++++++++++++++++++
+ kernel/livepatch/transition.h                    |  14 +
+ kernel/sched/idle.c                              |   4 +
+ kernel/stacktrace.c                              |  12 +-
+ samples/livepatch/livepatch-sample.c             |   8 +-
+ 29 files changed, 1367 insertions(+), 342 deletions(-)
+ create mode 100644 kernel/livepatch/patch.c
+ create mode 100644 kernel/livepatch/patch.h
+ create mode 100644 kernel/livepatch/transition.c
+ create mode 100644 kernel/livepatch/transition.h
 
 -- 
-Kees Cook
-Nexus Security
+2.7.4
