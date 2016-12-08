@@ -1,27 +1,21 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <hejianet@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYzr55wRzzDt1Y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 13:31:01 +1100 (AEDT)
-Subject: Re: linux-next: Tree for Dec 7 (kallsyms failure)
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20161207172432.184970d7@canb.auug.org.au>
- <13d83759-40d3-593b-b53f-f3e75fb05b7a@infradead.org>
- <20161208105607.68810cae@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, Nicholas Piggin
- <npiggin@gmail.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <90c66e73-f7c9-3d48-04b7-0985cce53382@infradead.org>
-Date: Wed, 7 Dec 2016 18:30:57 -0800
-MIME-Version: 1.0
-In-Reply-To: <20161208105607.68810cae@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ17l1TlnzDw2d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 14:29:39 +1100 (AEDT)
+Received: by mail-qt0-x241.google.com with SMTP id m48so47393897qta.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 19:29:39 -0800 (PST)
+From: Jia He <hejianet@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ aneesh.kumar@linux.vnet.ibm.com, mikey@neuling.org, cyrilbur@gmail.com,
+ shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ Jia He <hejianet@gmail.com>
+Subject: [PATCH] powerpc: Fix LPCR_VRMASD definition
+Date: Thu,  8 Dec 2016 11:29:30 +0800
+Message-Id: <1481167770-7042-1-git-send-email-hejianet@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,35 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/07/16 15:56, Stephen Rothwell wrote:
-> Hi Randy,
-> 
-> On Wed, 7 Dec 2016 15:42:32 -0800 Randy Dunlap <rdunlap@infradead.org> wrote:
->>
->> I started seeing this yesterday (2016-1206).
->> This is on x86_64.
->>
->> Anybody know about it?
->>
->> kallsyms failure: relative symbol value 0xffffffff81000000 out of range in relative mode
-> 
-> I got a similar failure starting a few days ago on my powerpc
-> allyesconfig build.  I was assuming that it was PowerPC specific, but
-> noone has found a cause yet.
-> 
+Fixes: a4b349540a ("powerpc/mm: Cleanup LPCR defines")
+Signed-off-by: Jia He <hejianet@gmail.com>
+---
+ arch/powerpc/include/asm/reg.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-It may just be an invalid randconfig.  I modified scripts/kallsyms.c and
-I see this message:
-kallsyms failure: relative symbol value 0xffffffff81000000 [symbol: Tstartup_64] out of range in relative mode
-
-and it makes sense that startup_64 would (or could) be at 0xffffffff81000000...
-especially since CONFIG_PHYSICAL_START=0x1000000 and
-(from Documentation/x86/x86_64/mm.txt)
-ffffffff80000000 - ffffffff9fffffff (=512 MB)  kernel text mapping, from phys 0
-
-
-Ard, what do you think about this?
-
-thanks,
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 9e1499f..93ec25e 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -337,7 +337,7 @@
+ #define   LPCR_DPFD_SH		52
+ #define   LPCR_DPFD		(ASM_CONST(7) << LPCR_DPFD_SH)
+ #define   LPCR_VRMASD_SH	47
+-#define   LPCR_VRMASD		(ASM_CONST(1) << LPCR_VRMASD_SH)
++#define   LPCR_VRMASD		(ASM_CONST(0x1f) << LPCR_VRMASD_SH)
+ #define   LPCR_VRMA_L		ASM_CONST(0x0008000000000000)
+ #define   LPCR_VRMA_LP0		ASM_CONST(0x0001000000000000)
+ #define   LPCR_VRMA_LP1		ASM_CONST(0x0000800000000000)
 -- 
-~Randy
+2.5.5
