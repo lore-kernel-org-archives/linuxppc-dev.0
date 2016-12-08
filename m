@@ -1,20 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tZ7bs6mzqzDw5N
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 19:20:57 +1100 (AEDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: [PATCH kernel 7/9] KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64
- permanently
-Date: Thu,  8 Dec 2016 19:19:54 +1100
-Message-Id: <20161208081956.26221-8-aik@ozlabs.ru>
-In-Reply-To: <20161208081956.26221-1-aik@ozlabs.ru>
-References: <20161208081956.26221-1-aik@ozlabs.ru>
+Return-Path: <jthumshirn@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZ8Yt39cFzDw01
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 20:04:17 +1100 (AEDT)
+Date: Thu, 8 Dec 2016 10:04:06 +0100
+From: Johannes Thumshirn <jthumshirn@suse.de>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] ibmvscsi: add vscsi hosts to global list_head
+Message-ID: <20161208090406.GA4789@linux-x5ow.site>
+References: <1481148276-5083-1-git-send-email-tyreld@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1481148276-5083-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It does not make much sense to have KVM in book3s-64 and
-not to have IOMMU bits for PCI pass through support as it costs little
-and allows VFIO to function on book3s KVM.
+On Wed, Dec 07, 2016 at 04:04:35PM -0600, Tyrel Datwyler wrote:
+> Add each vscsi host adatper to a new global list_head named
+> ibmvscsi_head. There is no functional change. This is meant primarily
+> as a convience for locating adatpers from within the debugger or crash
+> utility.
+> 
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> ---
 
-Having IOMMU_API always enabled makes it unnecessary to have a lot of
-"#ifdef IOMMU_API" in arch/powerpc/kvm/book3s_64_vio*. With those
-ifdef's we could have only user space emulated devices accelerated
-(but not VFIO) which do not seem to be very useful.
+Looks good,
+Reviewed-by: Johannes Thumshirn <jthumshirn@suse.de>
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/kvm/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index 029be26b5a17..65a471de96de 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -67,6 +67,7 @@ config KVM_BOOK3S_64
- 	select KVM_BOOK3S_64_HANDLER
- 	select KVM
- 	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
-+	select SPAPR_TCE_IOMMU if IOMMU_SUPPORT
- 	---help---
- 	  Support running unmodified book3s_64 and book3s_32 guest kernels
- 	  in virtual machines on book3s_64 host processors.
 -- 
-2.11.0
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
