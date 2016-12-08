@@ -1,23 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tYwPM5DfwzDw2n
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 10:56:07 +1100 (AEDT)
-Date: Thu, 8 Dec 2016 10:56:07 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Sachin Sant
- <sachinp@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt  <benh@kernel.crashing.org>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>, Nicholas  Piggin <npiggin@gmail.com>
-Subject: Re: linux-next: Tree for Dec 7 (kallsyms failure)
-Message-ID: <20161208105607.68810cae@canb.auug.org.au>
-In-Reply-To: <13d83759-40d3-593b-b53f-f3e75fb05b7a@infradead.org>
-References: <20161207172432.184970d7@canb.auug.org.au>
- <13d83759-40d3-593b-b53f-f3e75fb05b7a@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tYzMM690NzDw2d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2016 13:09:35 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id c4so21383928pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Dec 2016 18:09:35 -0800 (PST)
+Subject: Re: -next build failure with gcc 5.2.1
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>, linux-next@vger.kernel.org
+References: <8BC02969-0A0D-4C59-8E5E-31F5FC2B1391@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <798a8079-6d96-6a9c-b413-21e46f0fcbb0@gmail.com>
+Date: Thu, 8 Dec 2016 13:09:27 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <8BC02969-0A0D-4C59-8E5E-31F5FC2B1391@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Randy,
-
-On Wed, 7 Dec 2016 15:42:32 -0800 Randy Dunlap <rdunlap@infradead.org> wrote:
+On 12/07/2016 07:26 PM, Sachin Sant wrote:
+> next tree fails to build on a ppc64le box with following message
 >
-> I started seeing this yesterday (2016-1206).
-> This is on x86_64.
-> 
-> Anybody know about it?
-> 
-> kallsyms failure: relative symbol value 0xffffffff81000000 out of range in relative mode
+>   LD      init/built-in.o
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: modpost: Found 3 section mismatch(es).
+> To see full details build your kernel with:
+> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>   KSYM    .tmp_kallsyms1.o
+> kallsyms failure: relative symbol value 0xc000000000000000 out of range in relative mode
+> Makefile:969: recipe for target 'vmlinux' failed
+> make: *** [vmlinux] Error 1
+>
+> GCC version is : gcc version 5.2.1 20151010 (Ubuntu 5.2.1-22ubuntu2)
+>
+> Have attached kernel config file.
+>
 
-I got a similar failure starting a few days ago on my powerpc
-allyesconfig build.  I was assuming that it was PowerPC specific, but
-noone has found a cause yet.
+Thanks, would you be in a position to bisect?
 
--- 
-Cheers,
-Stephen Rothwell
+Balbir Singh.
