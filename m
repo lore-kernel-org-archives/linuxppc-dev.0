@@ -1,35 +1,24 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pageexec@freemail.hu>
+Received: from r00tworld.com (r00tworld.com [212.85.137.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZHc1021vzDw3q
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 01:21:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB8E5l1d098205
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Dec 2016 09:21:33 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2775ruued7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Dec 2016 09:21:33 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Thu, 8 Dec 2016 07:21:32 -0700
-Subject: Re: [PATCH] ibmvscsi: add write memory barrier to CRQ processing
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- james.bottomley@hansenpartnership.com
-References: <1481153486-5185-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 8 Dec 2016 08:21:12 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZKGd0dd6zDw4G
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 02:36:39 +1100 (AEDT)
+From: "PaX Team" <pageexec@freemail.hu>
+To: linuxppc-dev@lists.ozlabs.org, kernel-hardening@lists.openwall.com,
+ keescook@chromium.org, re.emese@gmail.com,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 08 Dec 2016 15:42:50 +0100
 MIME-Version: 1.0
-In-Reply-To: <1481153486-5185-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <fdbc8042-fa0b-9dd3-e951-8fbdca8f586e@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] powerpc: enable support for GCC plugins
+Reply-to: pageexec@freemail.hu
+CC: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ spender@grsecurity.net, mmarek@suse.com
+Message-ID: <5849716A.32374.136DAAC@pageexec.freemail.hu>
+In-reply-to: <20161206062800.21800-3-andrew.donnellan@au1.ibm.com>
+References: <20161206062800.21800-1-andrew.donnellan@au1.ibm.com>,
+ <20161206062800.21800-3-andrew.donnellan@au1.ibm.com>
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,9 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+On 6 Dec 2016 at 17:28, Andrew Donnellan wrote:
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+> Enable support for GCC plugins on powerpc.
+> 
+> Add an additional version check in gcc-plugins-check to advise users to
+> upgrade to gcc 5.2+ on powerpc to avoid issues with header files (gcc <=
+> 4.6) or missing copies of rs6000-cpus.def (4.8 to 5.1 on 64-bit targets).
+
+i don't think that this is the right approach. there's a general and a special
+issue here, both of which need different handling.
+
+the general problem is to detect problems related to gcc plugin headers and
+notify the users about solutions. emitting various messages from a Makefile
+is certainly not a scalable approach, just imagine how it will look when the
+other 30+ archs begin to add their own special cases... if anything, they
+should be documented in Documentation/gcc-plugins.txt (or a new doc if it
+grows too big) and the Makefile message should just point at it.
+
+as for the solutions, the general advice should enable the use of otherwise
+failing gcc versions instead of forcing updating to new ones (though the
+latter is advisable for other reasons but not everyone's in the position to
+do so easily). in my experience all one needs to do is manually install the
+missing files from the gcc sources (ideally distros would take care of it).
+
+the specific problem addressed here can (and IMHO should) be solved in
+another way: remove the inclusion of the offending headers in gcc-common.h
+as neither tm.h nor c-common.h are needed by existing plugins. for background,
+i created gcc-common.h to simplify plugin development across all supportable
+gcc versions i came across over the years, so it follows the 'everything but
+the kitchen sink' approach. that isn't necessarily what the kernel and other
+projects need so they should just use my version as a basis and fork/simplify
+it (even i maintain private forks of the public version).
+
+as for the location of c-common.h, upstream gcc moved it under c-family in
+2010 after the release of 4.5, so it should be where gcc-common.h expects
+it and i'm not sure how it ended up at its old location for you.
+
+cheers,
+ PaX Team
