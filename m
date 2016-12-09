@@ -1,45 +1,27 @@
-Return-Path: <sachinp@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pageexec@freemail.hu>
+Received: from r00tworld.com (r00tworld.com [212.85.137.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZq2f0NMKzDw7l
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 21:58:01 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB9AoPSU144352
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 05:57:59 -0500
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- by mx0b-001b2d01.pphosted.com with ESMTP id 277rtj76rq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Dec 2016 05:57:58 -0500
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sachinp@linux.vnet.ibm.com>;
- Fri, 9 Dec 2016 16:27:55 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id EBA2BE005E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 16:28:23 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB9AvpK642074306
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 16:27:51 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB9AvoYl016726
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 16:27:50 +0530
-Content-Type: text/plain; charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 10.1 \(3251\))
-Subject: Re: 4.9.0-rc8 - rcutorture test failure
-From: Sachin Sant <sachinp@linux.vnet.ibm.com>
-In-Reply-To: <20161208113747.GC3924@linux.vnet.ibm.com>
-Date: Fri, 9 Dec 2016 16:27:42 +0530
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <53527A2F-3F17-460F-87DE-67034A5325B8@linux.vnet.ibm.com>
- <20161208113747.GC3924@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Message-Id: <CDF45845-385E-454E-9C25-004F76C4E41E@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZq5F10z2zDw7l
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 22:00:15 +1100 (AEDT)
+From: "PaX Team" <pageexec@freemail.hu>
+To: Kees Cook <keescook@chromium.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 09 Dec 2016 11:59:42 +0100
+MIME-Version: 1.0
+Subject: Re: [PATCH 3/3] powerpc: enable support for GCC plugins
+Reply-to: pageexec@freemail.hu
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Emese Revfy <re.emese@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>,
+ Brad Spengler <spender@grsecurity.net>, Michal Marek <mmarek@suse.com>
+Message-ID: <584A8E9E.22035.590FC72@pageexec.freemail.hu>
+In-reply-to: <f5ea8825-532c-93bd-d51d-6ec1e541fae6@au1.ibm.com>
+References: <20161206062800.21800-1-andrew.donnellan@au1.ibm.com>,
+ <CAGXu5jKrU5GR3KDb9M-vtSpY+aRm2B0vGpahVYLtFTWs=g7Big@mail.gmail.com>,
+ <f5ea8825-532c-93bd-d51d-6ec1e541fae6@au1.ibm.com>
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,56 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> But I am not seeing this as a failure.  The last status print from the
-> log you attached is as follows:
->=20
-> 07:58:25 [ 2778.876118] rcu-torture: rtc:           (null) ver: 24968 =
-tfle: 0 rta: 24968 rtaf: 0 rtf: 24959 rtmbe: 0 rtbe: 0 rtbke: 0 rtbre: 0 =
-rtbf: 0 rtb: 0 nt: 10218404 onoff: 0/0:0/0 -1,0:-1,0 0:0 (HZ=3D250) =
-barrier: 0/0:0 cbflood: 22703
-> 07:58:25 [ 2778.876251] rcu-torture: Reader Pipe:  161849976604 399197 =
-0 0 0 0 0 0 0 0 0
-> 07:58:25 [ 2778.876438] rcu-torture: Reader Batch:  145090807711 =
-16759538163 0 0 0 0 0 0 0 0 0
-> 07:58:25 [ 2778.876625] rcu-torture: Free-Block Circulation:  24967 =
-24967 24966 24965 24964 24963 24962 24961 24960 24959 0
-> 07:58:25 [ 2778.876829] rcu-torture:--- End of test: SUCCESS: =
-nreaders=3D79 nfakewriters=3D4 stat_interval=3D60 verbose=3D1 =
-test_no_idle_hz=3D1 shuffle_interval=3D3 stutter=3D5 irqreader=3D1 =
-fqs_duration=3D0 fqs_holdoff=3D0 fqs_stutter=3D3 test_boost=3D1/0 =
-test_boost_interval=3D7 test_boost_duration=3D4 shutdown_secs=3D0 =
-stall_cpu=3D0 stall_cpu_holdoff=3D10 n_barrier_cbs=3D0 onoff_interval=3D0 =
-onoff_holdoff=3D0
->=20
-> The "SUCCESS" indicates that rcutorture thought that it succeeded.
-> Also, in the "Reader Pipe" and "Reader Batch" lines, only the first =
-two
-> numbers in the series at the end of each line are non-zero, which also
-> indicates a non-broken RCU.
->=20
-> So could you please let me know what your scripting didn't like about
-> this log?
->=20
+On 9 Dec 2016 at 13:48, Andrew Donnellan wrote:
 
-The test case has following piece of code which prints the failure
-message during result analysis.
+> >> as for the solutions, the general advice should enable the use of otherwise
+> >> failing gcc versions instead of forcing updating to new ones (though the
+> >> latter is advisable for other reasons but not everyone's in the position to
+> >> do so easily). in my experience all one needs to do is manually install the
+> >> missing files from the gcc sources (ideally distros would take care of it).
+> 
+> If someone else is willing to write up that advice, then great.
+> 
+> >> the specific problem addressed here can (and IMHO should) be solved in
+> >> another way: remove the inclusion of the offending headers in gcc-common.h
+> >> as neither tm.h nor c-common.h are needed by existing plugins. for background,
+> 
+> We can't build without tm.h: http://pastebin.com/W0azfCr0
 
-Checks for known bugs
-"""
-utils.system('dmesg -c  > /dev/null')
-pipe1 =3D [r for r in self.results if "!!! Reader Pipe:" in r]
-if len(pipe1) !=3D 0:
-     raise error.TestError('\nBUG: grace-period failure !=E2=80=99)
-     sys.exit(0)
+you'll need to repeat the removal of dependent headers. based on a quick
+test here across gcc 4.5-6.2, if you remove rtl.h, tm_p.h, hard-reg-set.h
+and emit-rtl.h in addition to tm.h, the plugins should build fine.
 
-pipe2 =3D [r for r in self.results if "Reader Pipe" in r]
-for p in pipe2:
-      nmiss =3D p.split(" ")[7]
-      if int(nmiss):
-          raise error.TestError('\nBUG: rcutorture tests failed !')
-          sys.exit(0)
+> And we get warnings without c-common.h: http://pastebin.com/Aw8CAj10
 
-I will double check on this.
+that's not due to c-common.h. gcc versions 4.5-4.6 are compiled as a C program
+and gcc 4.7 can be compiled both as a C and a C++ program (IIRC, distros opted
+for the latter, i forget what manually built versions default to but i guess you
+went with the C compilation for your gcc anyway). couple that with -Wmissing-prototypes
+and you get that warning regardless of c-common.h being included. something like
+this should fix it:
 
-Thanks
--Sachin=
+--- a/scripts/gcc-plugins/gcc-generate-gimple-pass.h 2016-12-06 01:01:54.521724573 +0100
++++ b/scripts/gcc-plugins/gcc-generate-gimple-pass.h      2016-12-09 11:43:32.225226164 +0100
+@@ -136,6 +136,7 @@
+        return new _PASS_NAME_PASS();
+ }
+ #else
++struct opt_pass *_MAKE_PASS_NAME_PASS(void);
+ struct opt_pass *_MAKE_PASS_NAME_PASS(void)
+ {
+        return &_PASS_NAME_PASS.pass;
+
+> These were all manually built using a script running on a Debian box. 
+> Installing precompiled distro versions of rather old gccs would have 
+> been somewhat challenging. I've just rebuilt 4.6.4 to double check that 
+> I wasn't just seeing things, but it seems that it definitely is still 
+> putting c-common.h in the old location.
+
+for reference, this is the git commit that did the move:
+
+commit 7bedc3a05d34cd81e4835a2d3ff8c0ec7108eeb5
+Author: steven <steven@138bc75d-0d04-0410-961f-82ee72b054a4>
+Date:   Sat Jun 5 20:33:22 2010 +0000
+
+    gcc/ChangeLog:
+            * c-common.c: Move to c-family/.
+            * c-common.def: Likewise.
+            * c-common.h: Likewise.
