@@ -1,27 +1,37 @@
-Return-Path: <turtle.in.the.kernel@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZcGb2nl3zDw6h
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 13:52:39 +1100 (AEDT)
-Received: by mail-qk0-x243.google.com with SMTP id y205so620647qkb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Dec 2016 18:52:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZcLz4styzDw6j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 13:56:27 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uB92tjsA138716
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Dec 2016 21:56:22 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 277gu3batm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Dec 2016 21:56:22 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 8 Dec 2016 21:56:21 -0500
 Subject: Re: [PATCH] ibmvscsi: add write memory barrier to CRQ processing
-To: Paolo Bonzini <pbonzini@redhat.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- james.bottomley@hansenpartnership.com
+To: Johannes Thumshirn <jthumshirn@suse.de>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 References: <1481153486-5185-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <272a1724-be64-9e5f-c5bb-3b71f389f029@redhat.com>
-Cc: brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
- martin.petersen@oracle.com
-From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
-Message-ID: <7be3f12a-3d21-9160-983b-d794c77a07ad@gmail.com>
-Date: Thu, 8 Dec 2016 18:52:34 -0800
+ <20161208090643.GC4789@linux-x5ow.site>
+Cc: james.bottomley@hansenpartnership.com, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Thu, 8 Dec 2016 18:56:14 -0800
 MIME-Version: 1.0
-In-Reply-To: <272a1724-be64-9e5f-c5bb-3b71f389f029@redhat.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20161208090643.GC4789@linux-x5ow.site>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <94f1d954-a47c-3354-c1c8-fc79a82eaa77@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,10 +41,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/08/2016 03:29 PM, Paolo Bonzini wrote:
-> 
-> 
-> On 08/12/2016 00:31, Tyrel Datwyler wrote:
+On 12/08/2016 01:06 AM, Johannes Thumshirn wrote:
+> On Wed, Dec 07, 2016 at 05:31:26PM -0600, Tyrel Datwyler wrote:
 >> The first byte of each CRQ entry is used to indicate whether an entry is
 >> a valid response or free for the VIOS to use. After processing a
 >> response the driver sets the valid byte to zero to indicate the entry is
@@ -63,17 +71,22 @@ On 12/08/2016 03:29 PM, Paolo Bonzini wrote:
 >>  			ibmvscsi_handle_crq(crq, hostdata);
 >>  			crq->valid = VIOSRP_CRQ_FREE;
 >> +			wmb();
+>>  		} else {
+>>  			done = 1;
+>>  		}
 > 
-> Should this driver use virt_wmb instead?
+> Is this something you have seen in the wild or just a "better save than sorry"
+> barrier?
 
-Both virt_wmb and wmb reduce to a lwsync instruction under PowerPC.
+I myself have not observed or heard of anybody hitting an issue here.
+However, based on conversation with the VIOS developers, who have
+indicated it is required, this is a "better safe than sorry" scenario.
+Further, it matches what we already do in the ibmvfc driver for the CRQ
+processing logic.
 
 -Tyrel
 
 > 
-> Paolo
+> Thanks,
+> 	Johannes
 > 
->>  		} else {
->>  			done = 1;
->>  		}
->>
