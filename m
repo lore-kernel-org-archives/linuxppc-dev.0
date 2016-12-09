@@ -2,16 +2,18 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZXcJ2GfTzDw6F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 11:07:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZXcK0h07zDw6M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 11:07:45 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: michael@ellerman.id.au,
 	paulus@samba.org
 Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCHv2 0/4] Hash Page Table resizing for PAPR guests
-Date: Fri,  9 Dec 2016 11:07:34 +1100
-Message-Id: <20161209000738.8984-1-david@gibson.dropbear.id.au>
+Subject: [PATCHv2 3/4] pseries: Advertise HPT resizing support via CAS
+Date: Fri,  9 Dec 2016 11:07:37 +1100
+Message-Id: <20161209000738.8984-4-david@gibson.dropbear.id.au>
+In-Reply-To: <20161209000738.8984-1-david@gibson.dropbear.id.au>
+References: <20161209000738.8984-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,67 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series implements the guest side of a PAPR ACR which allows a
-POWER guest's Hashed Page Table (HPT) to be resized at runtime.  This
-is useful when a guest has a very large theoretical maximum RAM, but
-is likely to only ever be expanded to a modest amount of RAM in
-practice.  Without resizing the HPT has to be sized for the maximum
-possible guest RAM, which can be very wasteful if that maximum is
-never reached.
+The hypervisor needs to know a guest is capable of using the HPT resizing
+PAPR extension in order to make full advantage of it for memory hotplug.
 
-To use this requires a hypervisor/host which also supports the PAPR
-extension.  The only implementation so far is my qemu branch at
-    https://github.com/dgibson/qemu/tree/upstream/hpt-resize
+If the hypervisor knows the guest is HPT resize aware, it can size the
+initial HPT based on the initial guest RAM size, relying on the guest to
+resize the HPT when more memory is hot-added.  Without this, the hypervisor
+must size the HPT for the maximum possible guest RAM, which can lead to
+a huge waste of space if the guest never actually expends to that maximum
+size.
 
-I expect to merge that code to upstream qemu for qemu-2.9.  Note that
-HPT resizing will so far only work for TCG guests, KVM support is in
-the works.  The guest side code here will not require changing for
-KVM, however.
+This patch advertises the guest's support for HPT resizing via the
+ibm,client-architecture-support OF interface.  We use bit 5 of byte 6 of
+option vector 5 for this purpose (tentatively assigned in in-progress PAPR
+change request).
 
-An HPT resize can be triggered in one of two ways:
-    * /sys/kernel/debug/powerpc/pft-size
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/prom.h | 1 +
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-        This debugfs file contains the current size of the HPT (as
-        encoded in the ibm,pft-size) device tree property.  Writing to
-        it will cause the guest to attempt an HPT resize to the given
-        value.  Note that the current qemu implementation will not
-        allow the guest to resize the HPT to more than 1/64th of guest
-        RAM size.
-
-    * Automatically on memory hotplug / unplug
-
-        With these patches applied, the guest will automatically
-        attempt to resize its HPT when its RAM size changes due to
-        hotplug events.  (When hot adding RAM qemu considers the new
-        size for purposes of the limit mentioned above, so this method
-        can lift the HPT size larger than the former).
-
-Changes since v1:
-  * Remove two patches which belong with the (upcoming) host side
-    support rather than guest side (and therefore also should go via
-    the kvm tree instead of the powerpc tree)
-  * Protected the debugfs code with #ifdef CONFIG_DEBUG_FS.  Couldn't
-    actually get a compile error myself, but the KVM buildbot did get
-    one.
-
-David Gibson (4):
-  pseries: Add hypercall wrappers for hash page table resizing
-  pseries: Add support for hash table resizing
-  pseries: Advertise HPT resizing support via CAS
-  pseries: Automatically resize HPT for memory hot add/remove
-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |   1 +
- arch/powerpc/include/asm/firmware.h           |   5 +-
- arch/powerpc/include/asm/hvcall.h             |   4 +-
- arch/powerpc/include/asm/plpar_wrappers.h     |  12 +++
- arch/powerpc/include/asm/prom.h               |   1 +
- arch/powerpc/include/asm/sparsemem.h          |   1 +
- arch/powerpc/kernel/prom_init.c               |   2 +-
- arch/powerpc/mm/hash_utils_64.c               |  61 ++++++++++++++
- arch/powerpc/mm/mem.c                         |   4 +
- arch/powerpc/platforms/pseries/firmware.c     |   1 +
- arch/powerpc/platforms/pseries/lpar.c         | 110 ++++++++++++++++++++++++++
- 11 files changed, 198 insertions(+), 4 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f436ba..94c92bb 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -151,6 +151,7 @@ struct of_drconf_cell {
+ #define OV5_XCMO		0x0440	/* Page Coalescing */
+ #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
+ #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
++#define OV5_RESIZE_HPT		0x0601	/* Hash Page Table resizing */
+ #define OV5_PFO_HW_RNG		0x0E80	/* PFO Random Number Generator */
+ #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 88ac964..9942d9f 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -713,7 +713,7 @@ unsigned char ibm_architecture_vec[] = {
+ 	0,
+ #endif
+ 	OV5_FEAT(OV5_TYPE1_AFFINITY) | OV5_FEAT(OV5_PRRN),
+-	0,
++	OV5_FEAT(OV5_RESIZE_HPT),
+ 	0,
+ 	0,
+ 	/* WARNING: The offset of the "number of cores" field below
 -- 
 2.9.3
