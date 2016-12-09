@@ -1,42 +1,40 @@
-Return-Path: <ego@linux.vnet.ibm.com>
+Return-Path: <paulmck@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZtSy5j4pzDw7l
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2016 00:32:34 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZtmj0gWJzDw2w
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2016 00:46:12 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB9DUOul020472
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 08:32:25 -0500
+ uB9DhwZc108034
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 08:46:10 -0500
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 277rtm7pxh-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 277wcj1qbs-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Dec 2016 08:32:25 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Dec 2016 08:46:10 -0500
 Received: from localhost
  by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 9 Dec 2016 06:32:24 -0700
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Subject: [PATCH v4 0/4] powernv:stop: Use psscr_val,mask provided by firmware
-Date: Fri,  9 Dec 2016 19:01:59 +0530
-Message-Id: <cover.1481288905.git.ego@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Fri, 9 Dec 2016 06:46:09 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 928E91FF0021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 06:45:46 -0700 (MST)
+Date: Fri, 9 Dec 2016 05:46:16 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: 4.9.0-rc8 - rcutorture test failure
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <53527A2F-3F17-460F-87DE-67034A5325B8@linux.vnet.ibm.com>
+ <20161208113747.GC3924@linux.vnet.ibm.com>
+ <CDF45845-385E-454E-9C25-004F76C4E41E@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CDF45845-385E-454E-9C25-004F76C4E41E@linux.vnet.ibm.com>
+Message-Id: <20161209134616.GW3924@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,96 +44,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Fri, Dec 09, 2016 at 04:27:42PM +0530, Sachin Sant wrote:
+> > But I am not seeing this as a failure.  The last status print from the
+> > log you attached is as follows:
+> > 
+> > 07:58:25 [ 2778.876118] rcu-torture: rtc:           (null) ver: 24968 tfle: 0 rta: 24968 rtaf: 0 rtf: 24959 rtmbe: 0 rtbe: 0 rtbke: 0 rtbre: 0 rtbf: 0 rtb: 0 nt: 10218404 onoff: 0/0:0/0 -1,0:-1,0 0:0 (HZ=250) barrier: 0/0:0 cbflood: 22703
+> > 07:58:25 [ 2778.876251] rcu-torture: Reader Pipe:  161849976604 399197 0 0 0 0 0 0 0 0 0
+> > 07:58:25 [ 2778.876438] rcu-torture: Reader Batch:  145090807711 16759538163 0 0 0 0 0 0 0 0 0
+> > 07:58:25 [ 2778.876625] rcu-torture: Free-Block Circulation:  24967 24967 24966 24965 24964 24963 24962 24961 24960 24959 0
+> > 07:58:25 [ 2778.876829] rcu-torture:--- End of test: SUCCESS: nreaders=79 nfakewriters=4 stat_interval=60 verbose=1 test_no_idle_hz=1 shuffle_interval=3 stutter=5 irqreader=1 fqs_duration=0 fqs_holdoff=0 fqs_stutter=3 test_boost=1/0 test_boost_interval=7 test_boost_duration=4 shutdown_secs=0 stall_cpu=0 stall_cpu_holdoff=10 n_barrier_cbs=0 onoff_interval=0 onoff_holdoff=0
+> > 
+> > The "SUCCESS" indicates that rcutorture thought that it succeeded.
+> > Also, in the "Reader Pipe" and "Reader Batch" lines, only the first two
+> > numbers in the series at the end of each line are non-zero, which also
+> > indicates a non-broken RCU.
+> > 
+> > So could you please let me know what your scripting didn't like about
+> > this log?
+> > 
+> 
+> The test case has following piece of code which prints the failure
+> message during result analysis.
+> 
+> Checks for known bugs
+> """
+> utils.system('dmesg -c  > /dev/null')
+> pipe1 = [r for r in self.results if "!!! Reader Pipe:" in r]
+> if len(pipe1) != 0:
+>      raise error.TestError('\nBUG: grace-period failure !’)
+>      sys.exit(0)
+> 
+> pipe2 = [r for r in self.results if "Reader Pipe" in r]
+> for p in pipe2:
+>       nmiss = p.split(" ")[7]
+>       if int(nmiss):
+>           raise error.TestError('\nBUG: rcutorture tests failed !')
+>           sys.exit(0)
+> 
+> I will double check on this.
 
-This is the fourth iteration of the patchset to use the psscr_val and
-psscr_mask provided by the firmware for each of the stop states.
+I suggest using this script in the Linux kernel source as a guide:
 
-The previous version can be found here:
+	tools/testing/selftests/rcutorture/bin/parse-console.sh
 
-[v3]: https://lkml.org/lkml/2016/11/10/37
-[v2]: https://lkml.org/lkml/2016/10/27/143
-[v1]: https://lkml.org/lkml/2016/9/29/45
-
-This version fixes some of the coding style issues pointed out by
-Michael Ellerman in v3. This version also documents the device-tree
-bindings defining the properties under the @power-mgt node in the
-device tree describing the idle states for Linux running on baremetal
-POWER servers.
-
-Synopsis
-==========
-In the current implementation, the code for ISA
-v3.0 stop implementation has a couple of shortcomings.
-
-a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
-   uses only the RL field from the firmware. While this is not
-   incorrect, since the hand-coded values are legitimate, it is not a
-   very flexible design since the firmware has the capability to
-   communicate these values via the "ibm,cpu-idle-state-psscr" and
-   "ibm,cpu-idle-state-psscr-mask" properties. In case where the
-   firmware provides values for these fields that is different from
-   the hand-coded values, the current code will not work as intended.
-
-b) Due to issue a), the current code assumes that ESL=EC=1 for all the
-   stop states and hence the wakeup from the stop instruction will
-   happen at 0x100, the system-reset vector. However, the ISA v3.0
-   allows the ESL=EC=0 behaviour where the corresponding stop-state
-   loses no state and wakes up from the subsequent instruction. The
-   current code doesn't handle this case.
-   
-This patch series addresses these issues.
-
-The first patch in the series renames the existing
-IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
-the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
-up at the subsequent instruction.
-
-The second patch adds a helper function in cpuidle-powernv.c for
-initializing entries of the powernv_states[] table that is passed to
-the cpu-idle core. This eliminates some of the code duplication in the
-function that discovers and initializes the stop states.
-
-The third patch in the series fixes issues a) and b) by ensuring that
-the psscr-value and the psscr-mask provided by the firmware are what
-will be used to set a particular stop state. It also adds support for
-handling wake-up from stop states which were entered with ESL=EC=0.
-
-The third patch also handles the older firmware which sets only the
-Requested Level (RL) field in the psscr and psscr-mask exposed in the
-device tree. In the presence of such older firmware, this patch will
-set the default sane values for for remaining PSSCR fields (i.e PSLL,
-MTL, ESL, EC, and TR).
-
-The fourth patch provides the documentation for the device-tree
-bindings describing the idle state properties under the @power-mgt
-node in the device-tree.
-
-The skiboot patch populates all the relevant fields in the PSSCR
-values and the mask for all the stop states can be found here:
-https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-
-The patches are based on top of
-git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
-
-Gautham R. Shenoy (4):
-  powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
-  cpuidle:powernv: Add helper function to populate powernv idle states.
-  powernv: Pass PSSCR value and mask to power9_idle_stop
-  Documentation:powerpc: Add device-tree bindings for power-mgt
-
- .../devicetree/bindings/powerpc/opal/power-mgt.txt | 123 +++++++++++++++++++++
- arch/powerpc/include/asm/cpuidle.h                 |  46 +++++++-
- arch/powerpc/include/asm/processor.h               |   3 +-
- arch/powerpc/kernel/exceptions-64s.S               |   6 +-
- arch/powerpc/kernel/idle_book3s.S                  |  41 ++++---
- arch/powerpc/platforms/powernv/idle.c              |  81 +++++++++++---
- arch/powerpc/platforms/powernv/powernv.h           |   3 +-
- arch/powerpc/platforms/powernv/smp.c               |  14 ++-
- drivers/cpuidle/cpuidle-powernv.c                  | 113 ++++++++++++-------
- include/linux/cpuidle.h                            |   1 +
- 10 files changed, 348 insertions(+), 83 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
-
--- 
-1.9.4
+							Thanx, Paul
