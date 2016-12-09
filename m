@@ -1,42 +1,25 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tZhrv0CvJzDw7f
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 17:19:10 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uB96DrNg079668
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 01:19:07 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 277gu4ff3u-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Dec 2016 01:19:07 -0500
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 9 Dec 2016 16:19:04 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DF1C12BB0059
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 17:19:00 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uB96J0iV18743418
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 17:19:00 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uB96J0ag030075
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Dec 2016 17:19:00 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: ukrishn@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
- imunsie@au1.ibm.com, fbarrat@linux.vnet.ibm.com
-Subject: [PATCH v2] cxl: prevent read/write to AFU config space while AFU not
- configured
-Date: Fri,  9 Dec 2016 17:18:50 +1100
-Message-Id: <20161209061850.23281-1-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tZkyB5q0PzDw7h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2016 18:53:54 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id i88so776672pfk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Dec 2016 23:53:54 -0800 (PST)
+Subject: Re: [PATCH kernel 9/9] KVM: PPC: Add in-kernel acceleration for VFIO
+To: Alex Williamson <alex.williamson@redhat.com>
+References: <20161208081956.26221-1-aik@ozlabs.ru>
+ <20161208081956.26221-10-aik@ozlabs.ru> <20161208105524.40e437a8@t450s.home>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, Paul Mackerras <paulus@samba.org>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <09cc1079-ec44-7f04-8750-72ab7220b25b@ozlabs.ru>
+Date: Fri, 9 Dec 2016 18:53:43 +1100
+MIME-Version: 1.0
+In-Reply-To: <20161208105524.40e437a8@t450s.home>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,188 +29,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During EEH recovery, we deconfigure all AFUs whilst leaving the
-corresponding vPHB and virtual PCI device in place.
+On 09/12/16 04:55, Alex Williamson wrote:
+> On Thu,  8 Dec 2016 19:19:56 +1100
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> 
+>> This allows the host kernel to handle H_PUT_TCE, H_PUT_TCE_INDIRECT
+>> and H_STUFF_TCE requests targeted an IOMMU TCE table used for VFIO
+>> without passing them to user space which saves time on switching
+>> to user space and back.
+>>
+>> This adds H_PUT_TCE/H_PUT_TCE_INDIRECT/H_STUFF_TCE handlers to KVM.
+>> KVM tries to handle a TCE request in the real mode, if failed
+>> it passes the request to the virtual mode to complete the operation.
+>> If it a virtual mode handler fails, the request is passed to
+>> the user space; this is not expected to happen though.
+>>
+>> To avoid dealing with page use counters (which is tricky in real mode),
+>> this only accelerates SPAPR TCE IOMMU v2 clients which are required
+>> to pre-register the userspace memory. The very first TCE request will
+>> be handled in the VFIO SPAPR TCE driver anyway as the userspace view
+>> of the TCE table (iommu_table::it_userspace) is not allocated till
+>> the very first mapping happens and we cannot call vmalloc in real mode.
+>>
+>> This adds new attribute - KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE - to
+>> the VFIO KVM device. It takes a VFIO group fd and SPAPR TCE table fd
+>> and associates a physical IOMMU table with the SPAPR TCE table (which
+>> is a guest view of the hardware IOMMU table). The iommu_table object
+>> is referenced so we do not have to retrieve in real mode when hypercall
+>> happens.
+>>
+>> This does not implement the UNSET counterpart as there is no use for it -
+>> once the acceleration is enabled, the existing userspace won't
+>> disable it unless a VFIO container is detroyed so this adds necessary
+>> cleanup to the KVM_DEV_VFIO_GROUP_DEL handler.
+>>
+>> This uses the kvm->lock mutex to protect against a race between
+>> the VFIO KVM device's kvm_vfio_destroy() and SPAPR TCE table fd's
+>> release() callback.
+>>
+>> This advertises the new KVM_CAP_SPAPR_TCE_VFIO capability to the user
+>> space.
+>>
+>> This finally makes use of vfio_external_user_iommu_id() which was
+>> introduced quite some time ago and was considered for removal.
+>>
+>> Tests show that this patch increases transmission speed from 220MB/s
+>> to 750..1020MB/s on 10Gb network (Chelsea CXGB3 10Gb ethernet card).
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  Documentation/virtual/kvm/devices/vfio.txt |  21 +-
+>>  arch/powerpc/include/asm/kvm_host.h        |   8 +
+>>  arch/powerpc/include/asm/kvm_ppc.h         |   5 +
+>>  include/uapi/linux/kvm.h                   |   8 +
+>>  arch/powerpc/kvm/book3s_64_vio.c           | 302 +++++++++++++++++++++++++++++
+>>  arch/powerpc/kvm/book3s_64_vio_hv.c        | 178 +++++++++++++++++
+>>  arch/powerpc/kvm/powerpc.c                 |   2 +
+>>  virt/kvm/vfio.c                            | 108 +++++++++++
+>>  8 files changed, 630 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/Documentation/virtual/kvm/devices/vfio.txt b/Documentation/virtual/kvm/devices/vfio.txt
+>> index ef51740c67ca..ddb5a6512ab3 100644
+>> --- a/Documentation/virtual/kvm/devices/vfio.txt
+>> +++ b/Documentation/virtual/kvm/devices/vfio.txt
+>> @@ -16,7 +16,24 @@ Groups:
+>>  
+>>  KVM_DEV_VFIO_GROUP attributes:
+>>    KVM_DEV_VFIO_GROUP_ADD: Add a VFIO group to VFIO-KVM device tracking
+>> +	kvm_device_attr.addr points to an int32_t file descriptor
+>> +	for the VFIO group.
+>>    KVM_DEV_VFIO_GROUP_DEL: Remove a VFIO group from VFIO-KVM device tracking
+>> +	kvm_device_attr.addr points to an int32_t file descriptor
+>> +	for the VFIO group.
+>> +  KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE: attaches a guest visible TCE table
+>> +	allocated by sPAPR KVM.
+>> +	kvm_device_attr.addr points to a struct:
+>>  
+>> -For each, kvm_device_attr.addr points to an int32_t file descriptor
+>> -for the VFIO group.
+>> +	struct kvm_vfio_spapr_tce {
+>> +		__u32	argsz;
+>> +		__s32	groupfd;
+>> +		__s32	tablefd;
+>> +		__u8	pad[4];
+>> +	};
+>> +
+>> +	where
+>> +	@argsz is the size of kvm_vfio_spapr_tce_liobn;
+>> +	@groupfd is a file descriptor for a VFIO group;
+>> +	@tablefd is a file descriptor for a TCE table allocated via
+>> +		KVM_CREATE_SPAPR_TCE.
+>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+>> index 28350a294b1e..94774503c70d 100644
+>> --- a/arch/powerpc/include/asm/kvm_host.h
+>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>> @@ -191,6 +191,13 @@ struct kvmppc_pginfo {
+>>  	atomic_t refcnt;
+>>  };
+>>  
+>> +struct kvmppc_spapr_tce_iommu_table {
+>> +	struct rcu_head rcu;
+>> +	struct list_head next;
+>> +	struct iommu_table *tbl;
+>> +	atomic_t refs;
+>> +};
+>> +
+>>  struct kvmppc_spapr_tce_table {
+>>  	struct list_head list;
+>>  	struct kvm *kvm;
+>> @@ -199,6 +206,7 @@ struct kvmppc_spapr_tce_table {
+>>  	u32 page_shift;
+>>  	u64 offset;		/* in pages */
+>>  	u64 size;		/* window size in pages */
+>> +	struct list_head iommu_tables;
+>>  	struct page *pages[0];
+>>  };
+>>  
+>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+>> index 0a21c8503974..17b947a0060d 100644
+>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>> @@ -163,6 +163,11 @@ extern long kvmppc_prepare_vrma(struct kvm *kvm,
+>>  extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
+>>  			struct kvm_memory_slot *memslot, unsigned long porder);
+>>  extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+>> +extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm,
+>> +				int tablefd,
+>> +				struct iommu_group *grp);
+>> +extern void kvm_spapr_tce_detach_iommu_group(struct kvm *kvm,
+>> +				struct iommu_group *grp);
+>>  
+>>  extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>>  				struct kvm_create_spapr_tce_64 *args);
+>> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+>> index 810f74317987..9e4025724e28 100644
+>> --- a/include/uapi/linux/kvm.h
+>> +++ b/include/uapi/linux/kvm.h
+>> @@ -1068,6 +1068,7 @@ struct kvm_device_attr {
+>>  #define  KVM_DEV_VFIO_GROUP			1
+>>  #define   KVM_DEV_VFIO_GROUP_ADD			1
+>>  #define   KVM_DEV_VFIO_GROUP_DEL			2
+>> +#define   KVM_DEV_VFIO_GROUP_SET_SPAPR_TCE		3
+>>  
+>>  enum kvm_device_type {
+>>  	KVM_DEV_TYPE_FSL_MPIC_20	= 1,
+>> @@ -1089,6 +1090,13 @@ enum kvm_device_type {
+>>  	KVM_DEV_TYPE_MAX,
+>>  };
+>>  
+>> +struct kvm_vfio_spapr_tce {
+>> +	__u32	argsz;
+>> +	__s32	groupfd;
+>> +	__s32	tablefd;
+>> +	__u8	pad[4];
+>> +};
+> 
+> I assume you're implementing argsz and padding for future expansion,
+> but it doesn't really work.  Presumably argsz would be set to 16, so
+> the only way that the kernel will ever know something has changed would
+> be to make it bigger, so the padding bytes are really reserved, and
+> then it's not clear why we have padding at all.  If you replaced the
+> padding with a __u32 flags, then we could actually have some room to
+> architect expansion, but as it is we might as well drop both argsz and
+> padding.
 
-If something attempts to interact with the AFU's PCI config space (e.g.
-running lspci) after the AFU has been deconfigured and before it's
-reconfigured, cxl_pcie_{read,write}_config() will read invalid values from
-the deconfigured struct cxl_afu and proceed to Oops when they try to
-dereference pointers that have been set to NULL during deconfiguration.
+Ah, right, sorry, did not pay attention to this bit this time. I'll replace
+pad with flags and move to argsz.
 
-Add a rwsem to struct cxl_afu so we can prevent interaction with config
-space while the AFU is deconfigured.
 
-Reported-by: Pradipta Ghosh <pradghos@in.ibm.com>
-Suggested-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org # v4.9+
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> 
+>> +
+>>  /*
+>>   * ioctls for VM fds
+>>   */
+> ...
+>> --- a/virt/kvm/vfio.c
+>> +++ b/virt/kvm/vfio.c
+>> @@ -20,6 +20,10 @@
+>>  #include <linux/vfio.h>
+>>  #include "vfio.h"
+>>  
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +#include <asm/kvm_ppc.h>
+>> +#endif
+>> +
+>>  struct kvm_vfio_group {
+>>  	struct list_head node;
+>>  	struct vfio_group *vfio_group;
+>> @@ -76,6 +80,22 @@ static bool kvm_vfio_group_is_coherent(struct vfio_group *vfio_group)
+>>  	return ret > 0;
+>>  }
+>>  
+>> +static int kvm_vfio_external_user_iommu_id(struct vfio_group *vfio_group)
+>> +{
+>> +	int (*fn)(struct vfio_group *);
+>> +	int ret = -1;
+>> +
+>> +	fn = symbol_get(vfio_external_user_iommu_id);
+>> +	if (!fn)
+>> +		return ret;
+>> +
+>> +	ret = fn(vfio_group);
+>> +
+>> +	symbol_put(vfio_external_user_iommu_id);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>>  /*
+>>   * Groups can use the same or different IOMMU domains.  If the same then
+>>   * adding a new group may change the coherency of groups we've previously
+>> @@ -110,6 +130,22 @@ static void kvm_vfio_update_coherency(struct kvm_device *dev)
+>>  	mutex_unlock(&kv->lock);
+>>  }
+>>  
+>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>> +static void kvm_vfio_spapr_detach_iommu_group(struct kvm *kvm,
+>> +		struct vfio_group *vfio_group)
+>> +{
+>> +	int group_id;
+>> +	struct iommu_group *grp;
+>> +
+>> +	group_id = kvm_vfio_external_user_iommu_id(vfio_group);
+>> +	grp = iommu_group_get_by_id(group_id);
+>> +	if (grp) {
+>> +		kvm_spapr_tce_detach_iommu_group(kvm, grp);
+>> +		iommu_group_put(grp);
+>> +	}
+>> +}
+>> +#endif
+> 
+> 
+> I wonder if you could use the new vfio group notifier to avoid tainting
+> this code with SPAPR_TCE #ifdefs.  Thanks,
 
----
+I cannot see how... The new notifier sets kvm to a group, I need the
+opposite - attach a group to kvm and not just to KVM but to a specific KVM
+SPAPR TCE fd (which is a child object of KVM and which owns a LIOBN bus id).
 
-v1 -> v2:
+The only way I see how I can avoid tainting this code is adding another
+ioctl() to PPC KVM (or its child object - SPAPR TCE object), and I tried
+that few years ago and I was told to add a KVM device or even reuse VFIO
+KVM device.
 
-* Refactored to avoid locking over function boundaries - we now both lock
-and unlock in cxl_pcie_{read,write}_config(), rather than locking in
-cxl_pcie_config_info() and unlocking from the caller. Thanks Vaibhav.
+What am I missing here?
 
-* Changed the stable tag to 4.9 rather than 4.4 - by the time this is
-merged, 4.9 will have landed, and I'll need to manually backport this for
-4.4.
----
- drivers/misc/cxl/cxl.h  |  2 ++
- drivers/misc/cxl/main.c |  3 ++-
- drivers/misc/cxl/pci.c  |  2 ++
- drivers/misc/cxl/vphb.c | 51 ++++++++++++++++++++++++++++---------------------
- 4 files changed, 35 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index a144073..379c463 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -418,6 +418,8 @@ struct cxl_afu {
- 	struct dentry *debugfs;
- 	struct mutex contexts_lock;
- 	spinlock_t afu_cntl_lock;
-+	/* Used to block access to AFU config space while deconfigured */
-+	struct rw_semaphore configured_rwsem;
- 
- 	/* AFU error buffer fields and bin attribute for sysfs */
- 	u64 eb_len, eb_offset;
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 62e0dfb..2a6bf1d 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -268,7 +268,8 @@ struct cxl_afu *cxl_alloc_afu(struct cxl *adapter, int slice)
- 	idr_init(&afu->contexts_idr);
- 	mutex_init(&afu->contexts_lock);
- 	spin_lock_init(&afu->afu_cntl_lock);
--
-+	init_rwsem(&afu->configured_rwsem);
-+	down_write(&afu->configured_rwsem);
- 	afu->prefault_mode = CXL_PREFAULT_NONE;
- 	afu->irqs_max = afu->adapter->user_irqs;
- 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index c4d79b5d..c7b2121 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1129,6 +1129,7 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 	if ((rc = cxl_native_register_psl_irq(afu)))
- 		goto err2;
- 
-+	up_write(&afu->configured_rwsem);
- 	return 0;
- 
- err2:
-@@ -1141,6 +1142,7 @@ static int pci_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pc
- 
- static void pci_deconfigure_afu(struct cxl_afu *afu)
- {
-+	down_write(&afu->configured_rwsem);
- 	cxl_native_release_psl_irq(afu);
- 	if (afu->adapter->native->sl_ops->release_serr_irq)
- 		afu->adapter->native->sl_ops->release_serr_irq(afu);
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index 3519ace..639a343 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -76,23 +76,22 @@ static int cxl_pcie_cfg_record(u8 bus, u8 devfn)
- 	return (bus << 8) + devfn;
- }
- 
--static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
--				struct cxl_afu **_afu, int *_record)
-+static inline struct cxl_afu *pci_bus_to_afu(struct pci_bus *bus)
- {
--	struct pci_controller *phb;
--	struct cxl_afu *afu;
--	int record;
-+	struct pci_controller *phb = bus ? pci_bus_to_host(bus) : NULL;
- 
--	phb = pci_bus_to_host(bus);
--	if (phb == NULL)
--		return PCIBIOS_DEVICE_NOT_FOUND;
-+	return phb ? phb->private_data : NULL;
-+}
-+
-+static inline int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
-+				       struct cxl_afu *afu, int *_record)
-+{
-+	int record;
- 
--	afu = (struct cxl_afu *)phb->private_data;
- 	record = cxl_pcie_cfg_record(bus->number, devfn);
- 	if (record > afu->crs_num)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
--	*_afu = afu;
- 	*_record = record;
- 	return 0;
- }
-@@ -106,9 +105,14 @@ static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
- 	u16 val16;
- 	u32 val32;
- 
--	rc = cxl_pcie_config_info(bus, devfn, &afu, &record);
-+	afu = pci_bus_to_afu(bus);
-+	/* Grab a reader lock on afu. */
-+	if (afu == NULL || !down_read_trylock(&afu->configured_rwsem))
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	rc = cxl_pcie_config_info(bus, devfn, afu, &record);
- 	if (rc)
--		return rc;
-+		goto out;
- 
- 	switch (len) {
- 	case 1:
-@@ -127,10 +131,9 @@ static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
- 		WARN_ON(1);
- 	}
- 
--	if (rc)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--
--	return PCIBIOS_SUCCESSFUL;
-+out:
-+	up_read(&afu->configured_rwsem);
-+	return rc ? PCIBIOS_DEVICE_NOT_FOUND : PCIBIOS_SUCCESSFUL;
- }
- 
- static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
-@@ -139,9 +142,14 @@ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
- 	int rc, record;
- 	struct cxl_afu *afu;
- 
--	rc = cxl_pcie_config_info(bus, devfn, &afu, &record);
-+	afu = pci_bus_to_afu(bus);
-+	/* Grab a reader lock on afu. */
-+	if (afu == NULL || !down_read_trylock(&afu->configured_rwsem))
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	rc = cxl_pcie_config_info(bus, devfn, afu, &record);
- 	if (rc)
--		return rc;
-+		goto out;
- 
- 	switch (len) {
- 	case 1:
-@@ -157,10 +165,9 @@ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
- 		WARN_ON(1);
- 	}
- 
--	if (rc)
--		return PCIBIOS_SET_FAILED;
--
--	return PCIBIOS_SUCCESSFUL;
-+out:
-+	up_read(&afu->configured_rwsem);
-+	return rc ? PCIBIOS_SET_FAILED : PCIBIOS_SUCCESSFUL;
- }
- 
- static struct pci_ops cxl_pcie_pci_ops =
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Alexey
