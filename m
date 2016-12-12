@@ -1,30 +1,38 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tcl216c62zDvk7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 01:04:09 +1100 (AEDT)
-Date: Mon, 12 Dec 2016 08:04:05 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-kernel@vger.kernel.org, Andy Lutomirski <luto@kernel.org>,
- live-patching@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- Chris J Arges <chris.j.arges@canonical.com>
-Subject: Re: [PATCH v3 00/15] livepatch: hybrid consistency model
-Message-ID: <20161212140405.ai5hpgwqqvlataey@treble>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <1481348777.28041.1.camel@gmail.com>
- <20161210171707.cpupmxyuhob4tc3i@treble>
- <aac5fa04-c15c-5210-bce7-c72e16373964@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tcmjV5bJHzDvkP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 02:19:58 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBCFEDKo082181
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 10:19:55 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 279u71ep9w-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 10:19:55 -0500
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 12 Dec 2016 08:19:53 -0700
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 578F23E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 08:19:51 -0700 (MST)
+Subject: Re: [PATCH V9 1/8] powerpc/firmware: Add definitions for new firmware
+ features.
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
+ <148109483155.193207.7458792041495158698.stgit@powerkvm6.aus.stglabs.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 12 Dec 2016 09:19:49 -0600
 MIME-Version: 1.0
+In-Reply-To: <148109483155.193207.7458792041495158698.stgit@powerkvm6.aus.stglabs.ibm.com>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <aac5fa04-c15c-5210-bce7-c72e16373964@gmail.com>
+Message-Id: <8d021d3e-f83c-11d1-712f-9ee48e5fa3d3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,84 +42,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 11, 2016 at 01:08:33PM +1100, Balbir Singh wrote:
+On 12/07/2016 01:14 AM, Michael Bringmann wrote:
+> Firmware Features: Define new bit flags representing the presence of
+> new device tree properties "ibm,drc-info", and "ibm,dynamic-memory-v2".
+> These flags are used to tell the front end processor when the Linux
+> kernel supports the new properties, and by the front end processor to
+> tell the Linux kernel that the new properties are present in the devie
+> tree.
 > 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
+Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+
+> ---
+>  arch/powerpc/include/asm/firmware.h       |    5 ++++-
+>  arch/powerpc/include/asm/prom.h           |    2 ++
+>  arch/powerpc/platforms/pseries/firmware.c |    2 ++
+>  3 files changed, 8 insertions(+), 1 deletion(-)
 > 
-> On 11/12/16 04:17, Josh Poimboeuf wrote:
-> > On Sat, Dec 10, 2016 at 04:46:17PM +1100, Balbir Singh wrote:
-> >> On Thu, 2016-12-08 at 12:08 -0600, Josh Poimboeuf wrote:
-> >>> Dusting the cobwebs off the consistency model again.  This is based on
-> >>> linux-next/master.
-> >>>  
-> >>> v1 was posted on 2015-02-09:
-> >>>  
-> >>>   https://lkml.kernel.org/r/cover.1423499826.git.jpoimboe@redhat.com
-> >>>  
-> >>> v2 was posted on 2016-04-28:
-> >>>  
-> >>>   https://lkml.kernel.org/r/cover.1461875890.git.jpoimboe@redhat.com
-> >>>  
-> >>> The biggest issue from v2 was finding a decent way to detect preemption
-> >>> and page faults on the stack of a sleeping task.  
-> >>
-> >> Could you please elaborate on this? Preemption of a sleeping task and
-> >> faults as in the future (time) preemption and faults?
-> > 
-> > The normal way for a task to go to sleep is to call schedule().  objtool
-> > ensures the stack trace is reliable in that case, by making sure that
-> > all functions save the frame pointer on the stack before calling out to
-> > another function.
-> > 
-> > But a task can also go to sleep in a few other ways.  One way is by
-> > preemption, where an interrupt handler interrupts the task and calls
-> > preempt_schedule_irq().
+> diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+> index 1e0b5a5..6b5cf38 100644
+> --- a/arch/powerpc/include/asm/firmware.h
+> +++ b/arch/powerpc/include/asm/firmware.h
+> @@ -51,6 +51,8 @@
+>  #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
+>  #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
+>  #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
+> +#define FW_FEATURE_DYN_MEM_V2	ASM_CONST(0x0000000400000000)
+> +#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
 > 
-> It's preempted, not sleeping. It's on_rq but not on_cpu.
-
-You're right, I used the word "sleeping" when I meant "not currently
-executing on a CPU".  (Peter Z also pointed that out.)
-
->   Another way is by a page fault exception.  In
-> > both cases, there's no guarantee that the interrupted function saved the
-> > frame pointer on the stack beforehand.  So the stack trace might be
-> > unreliable.  Fortunately, interrupts and exceptions leave evidence
-> > behind on the stack.  So when walking the stack of a sleeping task, we
-> > can detect when an IRQ or exception occurred, and consider such a stack
-> > unreliable.
-> > 
+>  #ifndef __ASSEMBLY__
 > 
-> Thanks for the explanation. I presume a whole lot of this is arch specific
-> code? I'll look at the patches as well
-
-Most of the new livepatch code is arch-independent, but the consistency
-model part of it (i.e., !klp_patch.immediate) is currently only
-supported by x86_64.
-
-For adding support for other architectures, there are a few options:
-
-1) Add CONFIG_HAVE_RELIABLE_STACKTRACE.  This means porting objtool, and
-   for non-DWARF unwinders, also making sure there's a way for the stack
-   tracing code to detect interrupts on the stack.
-
-2) Alternatively, figure out a way to patch kthreads without stack
-   checking.  If all kthreads sleep in the same place, then we can
-   designate that place as a patching point.  I think Petr M has been
-   working on that?  In that case, arches without
-   HAVE_RELIABLE_STACKTRACE would still be able to use the
-   non-stack-checking parts of the consistency model:
-
-   a) patching user tasks when they cross the kernel/user space
-      boundary; and
-
-   b) patching kthreads and idle tasks at their designated patch points.
-
-   This option isn't as good as option 1 because it requires signaling
-   most of the tasks to patch them.  But it could still be a good backup
-   option for those architectures which don't have reliable stack traces
-   yet.
-
-In the meantime, other architectures can keep today's behavior by
-setting klp_patch.immediate to true.
-
--- 
-Josh
+> @@ -66,7 +68,8 @@ enum {
+>  		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+>  		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+>  		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+> -		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
+> +		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
+> +		FW_FEATURE_DYN_MEM_V2 | FW_FEATURE_DRC_INFO,
+>  	FW_FEATURE_PSERIES_ALWAYS = 0,
+>  	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+>  	FW_FEATURE_POWERNV_ALWAYS = 0,
+> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> index 7f436ba..bc7c4b5 100644
+> --- a/arch/powerpc/include/asm/prom.h
+> +++ b/arch/powerpc/include/asm/prom.h
+> @@ -155,6 +155,8 @@ struct of_drconf_cell {
+>  #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+>  #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+>  #define OV5_SUB_PROCESSORS	0x0F01	/* 1,2,or 4 Sub-Processors supported */
+> +#define OV5_DYN_MEM_V2		0x1680	/* Redef Prop Structures: dyn-mem-v2 */
+> +#define OV5_DRC_INFO		0x1640	/* Redef Prop Structures: drc-info   */
+> 
+>  /* Option Vector 6: IBM PAPR hints */
+>  #define OV6_LINUX		0x02	/* Linux is our OS */
+> diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+> index ea7f09b..d2d23f5 100644
+> --- a/arch/powerpc/platforms/pseries/firmware.c
+> +++ b/arch/powerpc/platforms/pseries/firmware.c
+> @@ -113,6 +113,8 @@ struct vec5_fw_feature {
+>  vec5_fw_features_table[] = {
+>  	{FW_FEATURE_TYPE1_AFFINITY,	OV5_TYPE1_AFFINITY},
+>  	{FW_FEATURE_PRRN,		OV5_PRRN},
+> +	{FW_FEATURE_DYN_MEM_V2,		OV5_DYN_MEM_V2},
+> +	{FW_FEATURE_DRC_INFO,		OV5_DRC_INFO},
+>  };
+> 
+>  static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
+> 
