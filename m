@@ -3,36 +3,36 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tcmps2LKHzDvkV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 02:24:37 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tcmth4FCVzDqW1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 02:27:56 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBCFNrD9043747
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 10:24:34 -0500
+ uBCFO1iU051588
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 10:27:54 -0500
 Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 279wcxdn23-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 279vb52syq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 10:24:34 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 10:27:53 -0500
 Received: from localhost
  by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 12 Dec 2016 08:24:33 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 234521FF0025
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 08:24:10 -0700 (MST)
-Subject: Re: [PATCH V9 2/8] powerpc/memory: Parse new memory property to
- register blocks.
+ Mon, 12 Dec 2016 08:27:52 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9CA0419D801C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 08:27:09 -0700 (MST)
+Subject: Re: [PATCH V9 3/8] powerpc/memory: Parse new memory property to
+ initialize structures.
 To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
- <148109484885.193207.6776530976129708881.stgit@powerkvm6.aus.stglabs.ibm.com>
+ <148109486562.193207.8867609910385873069.stgit@powerkvm6.aus.stglabs.ibm.com>
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Mon, 12 Dec 2016 09:24:30 -0600
+Date: Mon, 12 Dec 2016 09:27:49 -0600
 MIME-Version: 1.0
-In-Reply-To: <148109484885.193207.6776530976129708881.stgit@powerkvm6.aus.stglabs.ibm.com>
+In-Reply-To: <148109486562.193207.8867609910385873069.stgit@powerkvm6.aus.stglabs.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <d13dcb75-12cd-8fb4-e4fb-991b9f26be48@linux.vnet.ibm.com>
+Message-Id: <682edec3-cab0-1740-09ab-16ee9aec20d6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,233 +45,259 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On 12/07/2016 01:14 AM, Michael Bringmann wrote:
 > powerpc/memory: Add parallel routines to parse the new property
 > "ibm,dynamic-memory-v2" property when it is present, and then to
-> register the relevant memory blocks with the operating system.
-> This property format is intended to provide a more compact
-> representation of memory when communicating with the front end
-> processor, especially when describing vast amounts of RAM.
+> finish initialization of the relevant memory structures with the
+> operating system.  This code is shared between the boot-time
+> initialization functions and the runtime functions for memory
+> hotplug, so it needs to be able to handle both formats.
 > 
 > Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Reviewd-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
 > ---
->  arch/powerpc/include/asm/prom.h |   24 ++++++++--
->  arch/powerpc/kernel/prom.c      |   97 ++++++++++++++++++++++++++++++++++++---
->  arch/powerpc/mm/numa.c          |   22 ++++++++-
->  3 files changed, 129 insertions(+), 14 deletions(-)
+> Changes in V9:
+>  - Remove unnecessary multiplier from a property length calculation
+> ---
+>  arch/powerpc/include/asm/prom.h |   12 +++
+>  arch/powerpc/mm/numa.c          |  146 +++++++++++++++++++++++++++++++++------
+>  2 files changed, 135 insertions(+), 23 deletions(-)
 > 
 > diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-> index bc7c4b5..43a002b 100644
+> index 43a002b..01842a7 100644
 > --- a/arch/powerpc/include/asm/prom.h
 > +++ b/arch/powerpc/include/asm/prom.h
-> @@ -69,6 +69,8 @@ struct boot_param_header {
->   * OF address retreival & translation
->   */
+> @@ -110,6 +110,18 @@ struct of_drconf_cell_v2 {
+>  extern void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem,
+>  				const __be32 **cellp);
 > 
-> +extern int n_mem_addr_cells;
+> +extern void read_one_drc_info(int **info, char **drc_type, char **drc_name,
+> +			unsigned long int *fdi_p, unsigned long int *nsl_p,
+> +			unsigned long int *si_p, unsigned long int *ldi_p);
 > +
->  /* Parse the ibm,dma-window property of an OF node into the busno, phys and
->   * size parameters.
->   */
-> @@ -81,8 +83,9 @@ void of_parse_dma_window(struct device_node *dn, const __be32 *dma_window,
->  extern int of_get_ibm_chip_id(struct device_node *np);
-> 
->  /* The of_drconf_cell struct defines the layout of the LMB array
-> - * specified in the device tree property
-> - * ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
-> + * specified in the device tree properties,
-> + *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
-> + *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory-v2
->   */
->  struct of_drconf_cell {
->  	u64	base_addr;
-> @@ -92,9 +95,20 @@ struct of_drconf_cell {
->  	u32	flags;
->  };
-> 
-> -#define DRCONF_MEM_ASSIGNED	0x00000008
-> -#define DRCONF_MEM_AI_INVALID	0x00000040
-> -#define DRCONF_MEM_RESERVED	0x00000080
-> +#define DRCONF_MEM_ASSIGNED		0x00000008
-> +#define DRCONF_MEM_AI_INVALID		0x00000040
-> +#define DRCONF_MEM_RESERVED		0x00000080
-> +
-> +struct of_drconf_cell_v2 {
-> +	u32	num_seq_lmbs;
-> +	u64	base_addr;
-> +	u32	drc_index;
-> +	u32	aa_index;
-> +	u32	flags;
-> +} __attribute__((packed));
-> +
-> +extern void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem,
-> +				const __be32 **cellp);
-> 
->  /*
->   * There are two methods for telling firmware what our capabilities are.
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index b0245be..2d49887 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -443,23 +443,34 @@ static int __init early_init_dt_scan_chosen_ppc(unsigned long node,
-> 
->  #ifdef CONFIG_PPC_PSERIES
->  /*
-> - * Interpret the ibm,dynamic-memory property in the
-> - * /ibm,dynamic-reconfiguration-memory node.
-> + * Retrieve and validate the ibm,lmb-size property for drconf memory
-> + * from the flattened device tree.
-> + */
-> +static u64 __init get_lmb_size(unsigned long node)
+> +static inline int dyn_mem_v2_len(int entries)
 > +{
-> +	const __be32 *ls;
-> +	int len;
-> +	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
-> +	if (!ls || len < dt_root_size_cells * sizeof(__be32))
-> +		return 0;
-> +	return dt_mem_next_cell(dt_root_size_cells, &ls);
+> +	/* Calculate for counter + number of cells that follow */
+> +	int drconf_v2_cells = (n_mem_addr_cells + 4);
+> +	int drconf_v2_cells_len = (drconf_v2_cells * sizeof(unsigned int));
+> +	return (((entries) * drconf_v2_cells_len) + sizeof(unsigned int));
 > +}
 > +
-> +/*
-> + * Interpret the ibm,dynamic-memory property/ibm,dynamic-memory-v2
-> + * in the /ibm,dynamic-reconfiguration-memory node.
->   * This contains a list of memory blocks along with NUMA affinity
->   * information.
+>  /*
+>   * There are two methods for telling firmware what our capabilities are.
+>   * Newer machines have an "ibm,client-architecture-support" method on the
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 67dc989..4cbcae8 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -427,30 +427,55 @@ void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem, const __be32 **cellp)
+>  EXPORT_SYMBOL(read_drconf_cell_v2);
+> 
+>  /*
+> - * Retrieve and validate the ibm,dynamic-memory property of the device tree.
+> + * Retrieve and validate the ibm,dynamic-memory[-v2] property of the
+> + * device tree.
+> + *
+> + * The layout of the ibm,dynamic-memory property is a number N of memory
+> + * block description list entries followed by N memory block description
+> + * list entries.  Each memory block description list entry contains
+> + * information as laid out in the of_drconf_cell struct above.
+>   *
+> - * The layout of the ibm,dynamic-memory property is a number N of memblock
+> - * list entries followed by N memblock list entries.  Each memblock list entry
+> - * contains information as laid out in the of_drconf_cell struct above.
+> + * The layout of the ibm,dynamic-memory-v2 property is a number N of memory
+> + * block set description list entries, followed by N memory block set
+> + * description set entries.
 >   */
-> -static int __init early_init_dt_scan_drconf_memory(unsigned long node)
-> +static int __init early_init_dt_scan_drconf_memory_v1(unsigned long node)
+>  static int of_get_drconf_memory(struct device_node *memory, const __be32 **dm)
 >  {
-> -	const __be32 *dm, *ls, *usm;
-> +	const __be32 *dm, *usm;
->  	int l;
->  	unsigned long n, flags;
->  	u64 base, size, memblock_size;
->  	unsigned int is_kexec_kdump = 0, rngs;
+>  	const __be32 *prop;
+>  	u32 len, entries;
 > 
-> -	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
-> -	if (ls == NULL || l < dt_root_size_cells * sizeof(__be32))
+> -	prop = of_get_property(memory, "ibm,dynamic-memory", &len);
+> -	if (!prop || len < sizeof(unsigned int))
 > -		return 0;
-> -	memblock_size = dt_mem_next_cell(dt_root_size_cells, &ls);
-> +	memblock_size = get_lmb_size(node);
+> +	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2)) {
 > 
->  	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &l);
->  	if (dm == NULL || l < sizeof(__be32))
-> @@ -518,6 +529,76 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
->  	memblock_dump_all();
->  	return 0;
+> -	entries = of_read_number(prop++, 1);
+> +		prop = of_get_property(memory, "ibm,dynamic-memory-v2", &len);
+> +		if (!prop || len < sizeof(unsigned int))
+> +			return 0;
+> 
+> -	/* Now that we know the number of entries, revalidate the size
+> -	 * of the property read in to ensure we have everything
+> -	 */
+> -	if (len < (entries * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int))
+> -		return 0;
+> +		entries = of_read_number(prop++, 1);
+> +
+> +		/* Now that we know the number of set entries, revalidate the
+> +		 * size of the property read in to ensure we have everything.
+> +		 */
+> +		if (len < dyn_mem_v2_len(entries))
+> +			return 0;
+> +
+> +		*dm = prop;
+> +	} else {
+> +		prop = of_get_property(memory, "ibm,dynamic-memory", &len);
+> +		if (!prop || len < sizeof(unsigned int))
+> +			return 0;
+> +
+> +		entries = of_read_number(prop++, 1);
+> +
+> +		/* Now that we know the number of entries, revalidate the size
+> +		 * of the property read in to ensure we have everything
+> +		 */
+> +		if (len < (entries * (n_mem_addr_cells + 4) + 1) *
+> +			   sizeof(unsigned int))
+> +			return 0;
+> +
+> +		*dm = prop;
+> +	}
+> 
+> -	*dm = prop;
+>  	return entries;
 >  }
-> +
-> +static int __init early_init_dt_scan_drconf_memory_v2(unsigned long node)
+> 
+> @@ -513,7 +538,7 @@ static int of_get_assoc_arrays(struct device_node *memory,
+>   * This is like of_node_to_nid_single() for memory represented in the
+>   * ibm,dynamic-reconfiguration-memory node.
+>   */
+> -static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
+> +static int of_drconf_to_nid_single(u32 drmem_flags, u32 drmem_aa_index,
+>  				   struct assoc_arrays *aa)
+>  {
+>  	int default_nid = 0;
+> @@ -521,16 +546,16 @@ static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
+>  	int index;
+> 
+>  	if (min_common_depth > 0 && min_common_depth <= aa->array_sz &&
+> -	    !(drmem->flags & DRCONF_MEM_AI_INVALID) &&
+> -	    drmem->aa_index < aa->n_arrays) {
+> -		index = drmem->aa_index * aa->array_sz + min_common_depth - 1;
+> +	    !(drmem_flags & DRCONF_MEM_AI_INVALID) &&
+> +	    drmem_aa_index < aa->n_arrays) {
+> +		index = drmem_aa_index * aa->array_sz + min_common_depth - 1;
+>  		nid = of_read_number(&aa->arrays[index], 1);
+> 
+>  		if (nid == 0xffff || nid >= MAX_NUMNODES)
+>  			nid = default_nid;
+> 
+>  		if (nid > 0) {
+> -			index = drmem->aa_index * aa->array_sz;
+> +			index = drmem_aa_index * aa->array_sz;
+>  			initialize_distance_lookup_table(nid,
+>  							&aa->arrays[index]);
+>  		}
+> @@ -665,7 +690,7 @@ static inline int __init read_usm_ranges(const __be32 **usm)
+>   * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
+>   * node.  This assumes n_mem_{addr,size}_cells have been set.
+>   */
+> -static void __init parse_drconf_memory(struct device_node *memory)
+> +static void __init parse_drconf_memory_v1(struct device_node *memory)
+>  {
+>  	const __be32 *uninitialized_var(dm), *usm;
+>  	unsigned int n, rc, ranges, is_kexec_kdump = 0;
+> @@ -715,7 +740,8 @@ static void __init parse_drconf_memory(struct device_node *memory)
+>  				base = read_n_cells(n_mem_addr_cells, &usm);
+>  				size = read_n_cells(n_mem_size_cells, &usm);
+>  			}
+> -			nid = of_drconf_to_nid_single(&drmem, &aa);
+> +			nid = of_drconf_to_nid_single(drmem.flags,
+> +							drmem.aa_index, &aa);
+>  			fake_numa_create_new_node(
+>  				((base + size) >> PAGE_SHIFT),
+>  					   &nid);
+> @@ -728,6 +754,80 @@ static void __init parse_drconf_memory(struct device_node *memory)
+>  	}
+>  }
+> 
+> +static void __init parse_drconf_memory_v2(struct device_node *memory)
 > +{
-> +	const __be32 *dm;
-> +	int l;
-> +	unsigned long num_sets;
-> +	u64 size, base, memblock_size;
+> +	const __be32 *uninitialized_var(dm);
+> +	unsigned int num_lmb_sets, rc;
+> +	unsigned long lmb_size, base;
+> +	unsigned long size, sz;
+> +	int nid;
+> +	struct assoc_arrays aa = { .arrays = NULL };
+> +	const __be32 *prop;
+> +	u32	len;
 > +
-> +	memblock_size = get_lmb_size(node);
+> +	prop = of_get_property(memory, "ibm,dynamic-memory-v2", &len);
+> +	if (!prop)
+> +		return;
 > +
-> +	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2", &l);
-> +	if (dm == NULL || l < sizeof(__be32))
-> +		return 0;
+> +	num_lmb_sets = of_get_drconf_memory(memory, &dm);
+> +	if (!num_lmb_sets)
+> +		return;
 > +
-> +	/* Verify expected length of the array of ibm,dynamic-memory-v2
-> +	 * structs fits in the actual size of the property data.
-> +	 */
-> +	num_sets = of_read_number(dm++, 1);
-> +	if (l < (num_sets * (dt_root_addr_cells + 4) + 1) * sizeof(__be32))
-> +		return 0;
+> +	lmb_size = of_get_lmb_size(memory);
+> +	if (!lmb_size)
+> +		return;
 > +
-> +	if (n_mem_addr_cells == 0)
-> +		n_mem_addr_cells = dt_root_addr_cells;
+> +	rc = of_get_assoc_arrays(memory, &aa);
+> +	if (rc)
+> +		return;
 > +
-> +	for (; num_sets != 0; --num_sets) {
+> +	for (; num_lmb_sets != 0; num_lmb_sets--) {
 > +		struct of_drconf_cell_v2 drmem;
 > +		unsigned long nsl;
 > +
+> +		/* Get the current LMB set */
 > +		read_drconf_cell_v2(&drmem, &dm);
 > +		base = drmem.base_addr;
 > +		nsl = drmem.num_seq_lmbs;
-> +		size = memblock_size;
 > +
-> +		/* SKip this block if the reserved bit is set in flags
-> +		 * or if the block is not assigned to this partition
+> +		/* Skip this block if the reserved bit is set in
+> +		 * flags (0x80) or if the block is not assigned
+> +		 * to this partition (0x8)
 > +		 */
-> +		if ((drmem.flags & DRCONF_MEM_RESERVED) ||
-> +		    !(drmem.flags & DRCONF_MEM_ASSIGNED))
+> +		if ((drmem.flags & DRCONF_MEM_RESERVED)
+> +		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
 > +			continue;
 > +
 > +		for (; nsl != 0; nsl--) {
-> +			size = memblock_size;
+> +			size = lmb_size;
 > +
-> +			if (iommu_is_off) {
-> +				if (base >= 0x80000000ul)
-> +					continue;
-> +				if ((base + size) > 0x80000000ul)
-> +					size = 0x80000000ul - base;
-> +			}
-> +			memblock_add(base, size);
+> +			nid = of_drconf_to_nid_single(drmem.flags,
+> +						drmem.aa_index, &aa);
+> +			fake_numa_create_new_node(
+> +					((base + size) >> PAGE_SHIFT),
+> +					&nid);
+> +			node_set_online(nid);
+> +			sz = numa_enforce_memory_limit(base, size);
+> +			if (sz)
+> +				memblock_set_node(base, sz,
+> +						&memblock.memory, nid);
 > +
-> +			base += size;
+> +			base += sz;
 > +		}
 > +	}
-> +
-> +	memblock_dump_all();
-> +	return 0;
 > +}
 > +
-> +static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+> +static void __init parse_drconf_memory(struct device_node *memory)
 > +{
-> +	const __be32 *dm;
-> +	int l;
-> +	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2", &l);
-> +	if (dm == NULL || l < sizeof(__be32))
-> +		return early_init_dt_scan_drconf_memory_v1(node);
+> +	const __be32 *prop;
+> +	int len;
+> +	prop = of_get_property(memory, "ibm,dynamic-memory-v2", &len);
+> +	if (!prop || len < sizeof(unsigned int))
+> +		parse_drconf_memory_v1(memory);
 > +	else
-> +		return early_init_dt_scan_drconf_memory_v2(node);
+> +		parse_drconf_memory_v2(memory);
 > +}
 > +
->  #else
->  #define early_init_dt_scan_drconf_memory(node)	0
->  #endif /* CONFIG_PPC_PSERIES */
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index a51c188..67dc989 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -57,8 +57,10 @@
->  EXPORT_SYMBOL(node_data);
+>  static int __init parse_numa_properties(void)
+>  {
+>  	struct device_node *memory;
+> @@ -1046,8 +1146,8 @@ static int hot_add_drconf_scn_to_nid(struct device_node *memory,
+>  		if ((scn_addr < drmem.base_addr)
+>  		    || (scn_addr >= (drmem.base_addr + lmb_size)))
+>  			continue;
+> -
+> -		nid = of_drconf_to_nid_single(&drmem, &aa);
+> +		nid = of_drconf_to_nid_single(drmem.flags,
+> +						drmem.aa_index, &aa);
+>  		break;
+>  	}
 > 
->  static int min_common_depth;
-> -static int n_mem_addr_cells, n_mem_size_cells;
-> +int n_mem_addr_cells;
-> +static int n_mem_size_cells;
->  static int form1_affinity;
-> +EXPORT_SYMBOL(n_mem_addr_cells);
-> 
->  #define MAX_DISTANCE_REF_POINTS 4
->  static int distance_ref_points_depth;
-> @@ -405,6 +407,24 @@ static void read_drconf_cell(struct of_drconf_cell *drmem, const __be32 **cellp)
-> 
->  	*cellp = cp + 4;
->  }
-> + 
-> + /*
-> + * Retrieve and validate the ibm,dynamic-memory property of the device tree.
-> + * Read the next memory block set entry from the ibm,dynamic-memory-v2 property
-> + * and return the information in the provided of_drconf_cell_v2 structure.
-> + */
-> +void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem, const __be32 **cellp)
-> +{
-> +	const __be32 *cp = (const __be32 *)*cellp;
-> +	drmem->num_seq_lmbs = be32_to_cpu(*cp++);
-> +	drmem->base_addr = read_n_cells(n_mem_addr_cells, &cp);
-> +	drmem->drc_index = be32_to_cpu(*cp++);
-> +	drmem->aa_index = be32_to_cpu(*cp++);
-> +	drmem->flags = be32_to_cpu(*cp++);
-> +
-> +	*cellp = cp;
-> +}
-> +EXPORT_SYMBOL(read_drconf_cell_v2);
-> 
->  /*
->   * Retrieve and validate the ibm,dynamic-memory property of the device tree.
 > 
