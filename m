@@ -1,30 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tckJW2z7vzDvk0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 00:31:39 +1100 (AEDT)
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tckJV1TQHz9sdn
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2016 00:31:38 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id i88so539380pfk.2
- for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2016 05:31:38 -0800 (PST)
-Date: Mon, 12 Dec 2016 23:31:11 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tcl216c62zDvk7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 01:04:09 +1100 (AEDT)
+Date: Mon, 12 Dec 2016 08:04:05 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
 To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [powerpc/nmi: RFC 2/2] Keep interrupts enabled even on soft
- disable
-Message-ID: <20161212233111.1712ba79@roar.ozlabs.ibm.com>
-In-Reply-To: <20161212095003.1885-3-bsingharora@gmail.com>
-References: <20161212095003.1885-1-bsingharora@gmail.com>
- <20161212095003.1885-3-bsingharora@gmail.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-kernel@vger.kernel.org, Andy Lutomirski <luto@kernel.org>,
+ live-patching@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Chris J Arges <chris.j.arges@canonical.com>
+Subject: Re: [PATCH v3 00/15] livepatch: hybrid consistency model
+Message-ID: <20161212140405.ai5hpgwqqvlataey@treble>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <1481348777.28041.1.camel@gmail.com>
+ <20161210171707.cpupmxyuhob4tc3i@treble>
+ <aac5fa04-c15c-5210-bce7-c72e16373964@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <aac5fa04-c15c-5210-bce7-c72e16373964@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,115 +34,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 12 Dec 2016 20:50:03 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
-
-> This patch removes the disabling of interrupts
-> in soft-disable mode, when interrupts are received
-> (in lazy mode). The new scheme keeps the interrupts
-> enabled when we receive an interrupt and does the
-> following
+On Sun, Dec 11, 2016 at 01:08:33PM +1100, Balbir Singh wrote:
 > 
-> a. On decrementer interrupt, instead of setting
-> dec to maximum and returning, we do the following
->   i. Call a function handle_nmi_dec, which in
->      turn calls handle_soft_nmi
->   ii. handle_soft_nmi sets the decrementer value
->       to 1 second and checks if more than 30
->       seconds have passed since starting it. If
->       so it calls BUG_ON(1), we can do an NMI
->       panic as well.
-> b. When an external interrupt is received, we
->    store the interrupt in local_paca via
->    ppc_md.get_irq(). Later when interrupts are
->    enabled and replayed, we reuse the stored
->    interrupt and process it via generic_handle_irq
-
-This seems pretty good. My NMI handler should plug in just
-the same to the masked decrementer, so that wouldn't be a
-problem.
-
 > 
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
+> On 11/12/16 04:17, Josh Poimboeuf wrote:
+> > On Sat, Dec 10, 2016 at 04:46:17PM +1100, Balbir Singh wrote:
+> >> On Thu, 2016-12-08 at 12:08 -0600, Josh Poimboeuf wrote:
+> >>> Dusting the cobwebs off the consistency model again.  This is based on
+> >>> linux-next/master.
+> >>>  
+> >>> v1 was posted on 2015-02-09:
+> >>>  
+> >>>   https://lkml.kernel.org/r/cover.1423499826.git.jpoimboe@redhat.com
+> >>>  
+> >>> v2 was posted on 2016-04-28:
+> >>>  
+> >>>   https://lkml.kernel.org/r/cover.1461875890.git.jpoimboe@redhat.com
+> >>>  
+> >>> The biggest issue from v2 was finding a decent way to detect preemption
+> >>> and page faults on the stack of a sleeping task.  
+> >>
+> >> Could you please elaborate on this? Preemption of a sleeping task and
+> >> faults as in the future (time) preemption and faults?
+> > 
+> > The normal way for a task to go to sleep is to call schedule().  objtool
+> > ensures the stack trace is reliable in that case, by making sure that
+> > all functions save the frame pointer on the stack before calling out to
+> > another function.
+> > 
+> > But a task can also go to sleep in a few other ways.  One way is by
+> > preemption, where an interrupt handler interrupts the task and calls
+> > preempt_schedule_irq().
 > 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> ---
->  arch/powerpc/include/asm/paca.h      |  1 +
->  arch/powerpc/kernel/exceptions-64s.S | 17 ++++++++++-------
->  arch/powerpc/kernel/irq.c            | 21 ++++++++++++++++++++-
->  arch/powerpc/kernel/time.c           | 27 ++++++++++++++++++++++++++-
->  4 files changed, 57 insertions(+), 9 deletions(-)
+> It's preempted, not sleeping. It's on_rq but not on_cpu.
+
+You're right, I used the word "sleeping" when I meant "not currently
+executing on a CPU".  (Peter Z also pointed that out.)
+
+>   Another way is by a page fault exception.  In
+> > both cases, there's no guarantee that the interrupted function saved the
+> > frame pointer on the stack beforehand.  So the stack trace might be
+> > unreliable.  Fortunately, interrupts and exceptions leave evidence
+> > behind on the stack.  So when walking the stack of a sleeping task, we
+> > can detect when an IRQ or exception occurred, and consider such a stack
+> > unreliable.
+> > 
 > 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index 6a6792b..091af5c 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -158,6 +158,7 @@ struct paca_struct {
->  	u8 irq_happened;		/* irq happened while soft-disabled */
->  	u8 io_sync;			/* writel() needs spin_unlock sync */
->  	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
-> +	u32 irq;			/* IRQ pending */
->  	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
->  	u64 sprg_vdso;			/* Saved user-visible sprg */
+> Thanks for the explanation. I presume a whole lot of this is arch specific
+> code? I'll look at the patches as well
 
-Can you avoid some padding if you move it to below irq_happened?
+Most of the new livepatch code is arch-independent, but the consistency
+model part of it (i.e., !klp_patch.immediate) is currently only
+supported by x86_64.
 
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index d39d611..2620a90 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1287,23 +1287,23 @@ EXC_VIRT_NONE(0x5800, 0x5900)
->  #define MASKED_INTERRUPT(_H)				\
->  masked_##_H##interrupt:					\
->  	std	r11,PACA_EXGEN+EX_R11(r13);		\
-> +	std	r12,PACA_EXGEN+EX_R12(r13);		\
->  	lbz	r11,PACAIRQHAPPENED(r13);		\
->  	or	r11,r11,r10;				\
->  	stb	r11,PACAIRQHAPPENED(r13);		\
->  	cmpwi	r10,PACA_IRQ_DEC;			\
->  	bne	1f;					\
-> -	lis	r10,0x7fff;				\
-> -	ori	r10,r10,0xffff;				\
-> -	mtspr	SPRN_DEC,r10;				\
-> +	GET_SCRATCH0(r10);				\
-> +	std	r13,PACA_EXGEN+EX_R13(r13);		\
-> +	EXCEPTION_PROLOG_PSERIES_1(handle_nmi_dec, _H);	\
->  	b	2f;					\
->  1:	cmpwi	r10,PACA_IRQ_DBELL;			\
->  	beq	2f;					\
->  	cmpwi	r10,PACA_IRQ_HMI;			\
->  	beq	2f;					\
-> -	mfspr	r10,SPRN_##_H##SRR1;			\
-> -	rldicl	r10,r10,48,1; /* clear MSR_EE */	\
-> -	rotldi	r10,r10,16;				\
-> -	mtspr	SPRN_##_H##SRR1,r10;			\
-> +	GET_SCRATCH0(r10);				\
-> +	std	r13,PACA_EXGEN+EX_R13(r13);		\
-> +	EXCEPTION_PROLOG_PSERIES_1(elevate_save_irq, _H);\
->  2:	mtcrf	0x80,r9;				\
->  	ld	r9,PACA_EXGEN+EX_R9(r13);		\
->  	ld	r10,PACA_EXGEN+EX_R10(r13);		\
-> @@ -1321,6 +1321,9 @@ USE_FIXED_SECTION(virt_trampolines)
->  	MASKED_INTERRUPT()
->  	MASKED_INTERRUPT(H)
->  
-> +EXC_COMMON(handle_nmi_dec, 0x900, handle_soft_nmi)
-> +EXC_COMMON(elevate_save_irq, 0x500, handle_elevated_irq)
+For adding support for other architectures, there are a few options:
 
-I wonder if the name should match the type of interrupt rather than
-implementation detail (elevated?), and match the existing handlers
-e.g, hardware_interrupt_masked common handler could call do_IRQ_masked.
+1) Add CONFIG_HAVE_RELIABLE_STACKTRACE.  This means porting objtool, and
+   for non-DWARF unwinders, also making sure there's a way for the stack
+   tracing code to detect interrupts on the stack.
 
-As for the NMI, I would prefer just to keep it out of the timer path
-completely and schedule a Linux timer for it as I had.
+2) Alternatively, figure out a way to patch kthreads without stack
+   checking.  If all kthreads sleep in the same place, then we can
+   designate that place as a patching point.  I think Petr M has been
+   working on that?  In that case, arches without
+   HAVE_RELIABLE_STACKTRACE would still be able to use the
+   non-stack-checking parts of the consistency model:
 
-Otherwise, this looks nice if it does the right thing with the interrupt
-controller. It hasn't taken a lot of lines to implement which is very
-cool.
+   a) patching user tasks when they cross the kernel/user space
+      boundary; and
 
-Thanks,
-Nick
+   b) patching kthreads and idle tasks at their designated patch points.
+
+   This option isn't as good as option 1 because it requires signaling
+   most of the tasks to patch them.  But it could still be a good backup
+   option for those architectures which don't have reliable stack traces
+   yet.
+
+In the meantime, other architectures can keep today's behavior by
+setting klp_patch.immediate to true.
+
+-- 
+Josh
