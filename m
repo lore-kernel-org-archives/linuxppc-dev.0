@@ -1,30 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
+Return-Path: <npiggin@gmail.com>
 Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
  [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tbqCG6Nm3zDvk4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Dec 2016 13:08:58 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id 3so6667870pgd.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Dec 2016 18:08:58 -0800 (PST)
-Subject: Re: [PATCH v3 00/15] livepatch: hybrid consistency model
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <1481348777.28041.1.camel@gmail.com> <20161210171707.cpupmxyuhob4tc3i@treble>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Andy Lutomirski <luto@kernel.org>, live-patching@vger.kernel.org,
- Jiri Slaby <jslaby@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>, Chris J Arges <chris.j.arges@canonical.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <aac5fa04-c15c-5210-bce7-c72e16373964@gmail.com>
-Date: Sun, 11 Dec 2016 13:08:33 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tcTqk2tXhzDvtw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 15:09:22 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id x23so9515167pgx.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Dec 2016 20:09:22 -0800 (PST)
+Date: Mon, 12 Dec 2016 14:09:04 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/64: pseudo-NMI/SMP watchdog
+Message-ID: <20161212140904.7a3fe955@roar.ozlabs.ibm.com>
+In-Reply-To: <5f861916-f96a-484b-4d34-5253285086bd@gmail.com>
+References: <20161209155252.31381-1-npiggin@gmail.com>
+ <5f861916-f96a-484b-4d34-5253285086bd@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20161210171707.cpupmxyuhob4tc3i@treble>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,49 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, 10 Dec 2016 23:24:59 +1100
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-
-On 11/12/16 04:17, Josh Poimboeuf wrote:
-> On Sat, Dec 10, 2016 at 04:46:17PM +1100, Balbir Singh wrote:
->> On Thu, 2016-12-08 at 12:08 -0600, Josh Poimboeuf wrote:
->>> Dusting the cobwebs off the consistency model again.  This is based on
->>> linux-next/master.
->>>  
->>> v1 was posted on 2015-02-09:
->>>  
->>>   https://lkml.kernel.org/r/cover.1423499826.git.jpoimboe@redhat.com
->>>  
->>> v2 was posted on 2016-04-28:
->>>  
->>>   https://lkml.kernel.org/r/cover.1461875890.git.jpoimboe@redhat.com
->>>  
->>> The biggest issue from v2 was finding a decent way to detect preemption
->>> and page faults on the stack of a sleeping task.  
->>
->> Could you please elaborate on this? Preemption of a sleeping task and
->> faults as in the future (time) preemption and faults?
+> > @@ -1295,7 +1295,7 @@ masked_##_H##interrupt:					\
+> >  	lis	r10,0x7fff;				\
+> >  	ori	r10,r10,0xffff;				\
+> >  	mtspr	SPRN_DEC,r10;				\
+> > -	b	2f;					\
+> > +	b	masked_decrementer_##_H##interrupt;	\
+> >  1:	cmpwi	r10,PACA_IRQ_DBELL;			\
+> >  	beq	2f;					\
+> >  	cmpwi	r10,PACA_IRQ_HMI;			\
+> > @@ -1312,6 +1312,16 @@ masked_##_H##interrupt:					\
+> >  	##_H##rfid;					\
+> >  	b	.
+> >  
+> > +#define MASKED_NMI(_H)					\
+> > +masked_decrementer_##_H##interrupt:			\
+> > +	std	r12,PACA_EXGEN+EX_R12(r13);		\
+> > +	GET_SCRATCH0(r10);				\
+> > +	std	r10,PACA_EXGEN+EX_R13(r13);		\
+> > +	EXCEPTION_PROLOG_PSERIES_1(soft_nmi_common, _H)
+> > +  
 > 
-> The normal way for a task to go to sleep is to call schedule().  objtool
-> ensures the stack trace is reliable in that case, by making sure that
-> all functions save the frame pointer on the stack before calling out to
-> another function.
-> 
-> But a task can also go to sleep in a few other ways.  One way is by
-> preemption, where an interrupt handler interrupts the task and calls
-> preempt_schedule_irq().
+> This bit a little confusing, we are already handling an exception
+> do a masked_##_H##interrupt check and we redo the exception prolog?
 
-It's preempted, not sleeping. It's on_rq but not on_cpu.
+The soft mask test is done halfway thought EXCEPTION_PROLOG_1, so I think
+we have to finish that then continue with PROLOG_PSERIES_1 to get into
+"common" code.
 
-  Another way is by a page fault exception.  In
-> both cases, there's no guarantee that the interrupted function saved the
-> frame pointer on the stack beforehand.  So the stack trace might be
-> unreliable.  Fortunately, interrupts and exceptions leave evidence
-> behind on the stack.  So when walking the stack of a sleeping task, we
-> can detect when an IRQ or exception occurred, and consider such a stack
-> unreliable.
-> 
+That's the main tricky part of the code, so I'll have to go back and
+step through the asm and comment better, but it looked about right when
+I wrote it (famous last words).
 
-Thanks for the explanation. I presume a whole lot of this is arch specific
-code? I'll look at the patches as well
-
-Balbir
+Thanks,
+Nick
