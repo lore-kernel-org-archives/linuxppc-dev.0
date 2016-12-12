@@ -1,25 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tcV3K0kfrzDvjh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 15:19:25 +1100 (AEDT)
-Date: Mon, 12 Dec 2016 15:18:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Subject: Re: [PATCH kernel 3/9] powerpc/vfio_spapr_tce: Add reference
- counting to iommu_table
-Message-ID: <20161212041842.GE31441@umbus.fritz.box>
-References: <20161208081956.26221-1-aik@ozlabs.ru>
- <20161208081956.26221-4-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tcbLK3Ch3zDvhD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Dec 2016 19:17:44 +1100 (AEDT)
+Date: Mon, 12 Dec 2016 02:17:31 -0600
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
+Message-ID: <20161212081731.GA31497@home.buserror.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="fWddYNRDgTk9wQGZ"
-In-Reply-To: <20161208081956.26221-4-aik@ozlabs.ru>
+Content-Type: text/plain; charset=us-ascii
+Subject: Pull request: scottwood/linux.git next
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,294 +21,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Highlights include 8xx hugepage support, qbman fixes/cleanup, device
+tree updates, and some misc cleanup.
 
---fWddYNRDgTk9wQGZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following changes since commit 555c16328ae6d75a90e234eac9b51998d68f185b:
 
-On Thu, Dec 08, 2016 at 07:19:50PM +1100, Alexey Kardashevskiy wrote:
-> So far iommu_table obejcts were only used in virtual mode and had
-> a single owner. We are going to change this by implementing in-kernel
-> acceleration of DMA mapping requests. The proposed acceleration
-> will handle requests in real mode and KVM will keep references to tables.
->=20
-> This adds a kref to iommu_table and defines new helpers to update it.
-> This replaces iommu_free_table() with iommu_table_put() and makes
-> iommu_free_table() static. iommu_table_get() is not used in this patch
-> but it will be in the following patch.
->=20
-> Since this touches prototypes, this also removes @node_name parameter as
-> it has never been really useful on powernv and carrying it for
-> the pseries platform code to iommu_free_table() seems to be quite
-> useless as well.
->=20
-> This should cause no behavioral change.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+  powerpc/mm: Correct process and partition table max size (2016-11-17 17:11:53 +1100)
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+are available in the git repository at:
 
-> ---
->  arch/powerpc/include/asm/iommu.h          |  5 +++--
->  arch/powerpc/kernel/iommu.c               | 24 +++++++++++++++++++-----
->  arch/powerpc/platforms/powernv/pci-ioda.c | 14 +++++++-------
->  arch/powerpc/platforms/powernv/pci.c      |  1 +
->  arch/powerpc/platforms/pseries/iommu.c    |  3 ++-
->  arch/powerpc/platforms/pseries/vio.c      |  2 +-
->  drivers/vfio/vfio_iommu_spapr_tce.c       |  2 +-
->  7 files changed, 34 insertions(+), 17 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/=
-iommu.h
-> index 2c1d50792944..9de8bad1fdf9 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -114,6 +114,7 @@ struct iommu_table {
->  	struct list_head it_group_list;/* List of iommu_table_group_link */
->  	unsigned long *it_userspace; /* userspace view of the table */
->  	struct iommu_table_ops *it_ops;
-> +	struct kref    it_kref;
->  };
-> =20
->  #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
-> @@ -146,8 +147,8 @@ static inline void *get_iommu_table_base(struct devic=
-e *dev)
-> =20
->  extern int dma_iommu_dma_supported(struct device *dev, u64 mask);
-> =20
-> -/* Frees table for an individual device node */
-> -extern void iommu_free_table(struct iommu_table *tbl, const char *node_n=
-ame);
-> +extern void iommu_table_get(struct iommu_table *tbl);
-> +extern void iommu_table_put(struct iommu_table *tbl);
-> =20
->  /* Initializes an iommu_table based in values set in the passed-in
->   * structure
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index 6744a2771769..d12496889ce9 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -711,13 +711,13 @@ struct iommu_table *iommu_init_table(struct iommu_t=
-able *tbl, int nid)
->  	return tbl;
->  }
-> =20
-> -void iommu_free_table(struct iommu_table *tbl, const char *node_name)
-> +static void iommu_table_free(struct kref *kref)
->  {
->  	unsigned long bitmap_sz;
->  	unsigned int order;
-> +	struct iommu_table *tbl;
-> =20
-> -	if (!tbl)
-> -		return;
-> +	tbl =3D container_of(kref, struct iommu_table, it_kref);
-> =20
->  	if (tbl->it_ops->free)
->  		tbl->it_ops->free(tbl);
-> @@ -736,7 +736,7 @@ void iommu_free_table(struct iommu_table *tbl, const =
-char *node_name)
-> =20
->  	/* verify that table contains no entries */
->  	if (!bitmap_empty(tbl->it_map, tbl->it_size))
-> -		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
-> +		pr_warn("%s: Unexpected TCEs\n", __func__);
-> =20
->  	/* calculate bitmap size in bytes */
->  	bitmap_sz =3D BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
-> @@ -748,7 +748,21 @@ void iommu_free_table(struct iommu_table *tbl, const=
- char *node_name)
->  	/* free table */
->  	kfree(tbl);
->  }
-> -EXPORT_SYMBOL_GPL(iommu_free_table);
-> +
-> +void iommu_table_get(struct iommu_table *tbl)
-> +{
-> +	kref_get(&tbl->it_kref);
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_table_get);
-> +
-> +void iommu_table_put(struct iommu_table *tbl)
-> +{
-> +	if (!tbl)
-> +		return;
-> +
-> +	kref_put(&tbl->it_kref, iommu_table_free);
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_table_put);
-> =20
->  /* Creates TCEs for a user provided buffer.  The user buffer must be
->   * contiguous real kernel storage (not vmalloc).  The address passed here
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-> index c4f9e812ca6c..ea181f02bebd 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1422,7 +1422,7 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci=
-_dev *dev, struct pnv_ioda_pe
->  		iommu_group_put(pe->table_group.group);
->  		BUG_ON(pe->table_group.group);
->  	}
-> -	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
-> +	iommu_table_put(tbl);
->  }
-> =20
->  static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
-> @@ -2197,7 +2197,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_p=
-hb *phb,
->  		__free_pages(tce_mem, get_order(tce32_segsz * segs));
->  	if (tbl) {
->  		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
-> -		iommu_free_table(tbl, "pnv");
-> +		iommu_table_put(tbl);
->  	}
->  }
-> =20
-> @@ -2291,7 +2291,7 @@ static long pnv_pci_ioda2_create_table(struct iommu=
-_table_group *table_group,
->  			bus_offset, page_shift, window_size,
->  			levels, tbl);
->  	if (ret) {
-> -		iommu_free_table(tbl, "pnv");
-> +		iommu_table_put(tbl);
->  		return ret;
->  	}
-> =20
-> @@ -2337,7 +2337,7 @@ static long pnv_pci_ioda2_setup_default_config(stru=
-ct pnv_ioda_pe *pe)
->  	if (rc) {
->  		pe_err(pe, "Failed to configure 32-bit TCE table, err %ld\n",
->  				rc);
-> -		iommu_free_table(tbl, "");
-> +		iommu_table_put(tbl);
->  		return rc;
->  	}
-> =20
-> @@ -2423,7 +2423,7 @@ static void pnv_ioda2_take_ownership(struct iommu_t=
-able_group *table_group)
-> =20
->  	pnv_pci_ioda2_set_bypass(pe, false);
->  	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
-> -	iommu_free_table(tbl, "pnv");
-> +	iommu_table_put(tbl);
->  }
-> =20
->  static void pnv_ioda2_release_ownership(struct iommu_table_group *table_=
-group)
-> @@ -3393,7 +3393,7 @@ static void pnv_pci_ioda1_release_pe_dma(struct pnv=
-_ioda_pe *pe)
->  	}
-> =20
->  	free_pages(tbl->it_base, get_order(tbl->it_size << 3));
-> -	iommu_free_table(tbl, "pnv");
-> +	iommu_table_put(tbl);
->  }
-> =20
->  static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe)
-> @@ -3420,7 +3420,7 @@ static void pnv_pci_ioda2_release_pe_dma(struct pnv=
-_ioda_pe *pe)
->  	}
-> =20
->  	pnv_pci_ioda2_table_free_pages(tbl);
-> -	iommu_free_table(tbl, "pnv");
-> +	iommu_table_put(tbl);
->  }
-> =20
->  static void pnv_ioda_free_pe_seg(struct pnv_ioda_pe *pe,
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platform=
-s/powernv/pci.c
-> index c6d554fe585c..471210913e42 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -767,6 +767,7 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
-> =20
->  	tbl =3D kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, nid);
->  	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
-> +	kref_init(&tbl->it_kref);
-> =20
->  	return tbl;
->  }
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platfo=
-rms/pseries/iommu.c
-> index dc2577fc5fbb..47f0501a94f9 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -74,6 +74,7 @@ static struct iommu_table_group *iommu_pseries_alloc_gr=
-oup(int node)
->  		goto fail_exit;
-> =20
->  	INIT_LIST_HEAD_RCU(&tbl->it_group_list);
-> +	kref_init(&tbl->it_kref);
->  	tgl->table_group =3D table_group;
->  	list_add_rcu(&tgl->next, &tbl->it_group_list);
-> =20
-> @@ -115,7 +116,7 @@ static void iommu_pseries_free_group(struct iommu_tab=
-le_group *table_group,
->  		BUG_ON(table_group->group);
->  	}
->  #endif
-> -	iommu_free_table(tbl, node_name);
-> +	iommu_table_put(tbl);
-> =20
->  	kfree(table_group);
->  }
-> diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platform=
-s/pseries/vio.c
-> index 2c8fb3ec989e..41e8aa5c0d6a 100644
-> --- a/arch/powerpc/platforms/pseries/vio.c
-> +++ b/arch/powerpc/platforms/pseries/vio.c
-> @@ -1318,7 +1318,7 @@ static void vio_dev_release(struct device *dev)
->  	struct iommu_table *tbl =3D get_iommu_table_base(dev);
-> =20
->  	if (tbl)
-> -		iommu_free_table(tbl, of_node_full_name(dev->of_node));
-> +		iommu_table_put(tbl);
->  	of_node_put(dev->of_node);
->  	kfree(to_vio_dev(dev));
->  }
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index cbac08af400e..be37905012f0 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -677,7 +677,7 @@ static void tce_iommu_free_table(struct tce_container=
- *container,
->  	unsigned long pages =3D tbl->it_allocated_size >> PAGE_SHIFT;
-> =20
->  	tce_iommu_userspace_view_free(tbl, container->mm);
-> -	iommu_free_table(tbl, "");
-> +	iommu_table_put(tbl);
->  	decrement_locked_vm(container->mm, pages);
->  }
-> =20
+  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+for you to fetch changes up to baae856ebdeeaefbadd4a02cdb54b7c2277ff4dd:
 
---fWddYNRDgTk9wQGZ
-Content-Type: application/pgp-signature; name="signature.asc"
+  powerpc/fsl/dts: add FMan node for t1042d4rdb (2016-12-09 23:11:17 -0600)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+----------------------------------------------------------------
+Andy Fleming (1):
+      powerpc/85xx: Enable gpio power/reset driver
 
-iQIcBAEBCAAGBQJYTiUiAAoJEGw4ysog2bOSYtEP/iVJVYdLu+9/0oX/4ch9uc7h
-zk78JNIewM4Td1CBYxuxAOu5QfKS3PrwLy/+jM1ysFdjH8yjoMS8TcxvzwjpiAh+
-Xits9+8K9sgDACp/Q/2l3LJYhZEbjeH5YRfSKguHoRimaoRy1isWexa0FdPFM/KE
-bUmzjZLPCmAaj7dXkLuwsXnXj6Bgwme4nssZHtOsuaxeKNK9H5k5TavPghGy7oEQ
-AQnTvViHt9YGLCYIBDW4fN9ecgyKxZLdyEK7xeyQc+C4YAlx++LssYPN/Co/AF55
-/lpiRs5JK+sS57P5+e7N0EFC6xC84uUtV1ioQIWjyd8/cZ3sX7odZ9eqFUplle6V
-aBFRwthhv/rgMbsHWhDLQwEJyfwxbUMyzSu9wL4tkEABEE+aBTMY2HlTLHW8GwgM
-VKMj+taPHw+tjI8P4VUmBUef4ImsrBJyhMyT4oQXCQbDWwncf9WYc/s2rxt4nvky
-eGCctPlmncMp4IcWhiJTAY13qge8UHwNhZuQUSyPdRjfjKvSkcN8a1qwyfdfSOTF
-aqQBZpz2mVRBRd/jCw22dRlDHFGXwDYQfL0Y6F6SnDbp2wvuAeVO1b7Zog+jjh19
-6UdiZvfOYYwyuXBaTfNO+bfny5z7T5ASkyTFqFNEtkzwtIj9Hp8y4hqXj2sgWcA3
-xdhRAXk+2AwePSeETJl0
-=ORJz
------END PGP SIGNATURE-----
+Christophe Leroy (3):
+      powerpc: port 64 bits pgtable_cache to 32 bits
+      powerpc: get hugetlbpage handling more generic
+      powerpc/8xx: Implement support of hugepages
 
---fWddYNRDgTk9wQGZ--
+Claudiu Manoil (15):
+      soc/qman: Fix h/w resource cleanup error path handling
+      soc/qbman: Fix resource leak on portal probing error path
+      soc/qman: Fix struct qm_fqd set accessor for context_a
+      soc/qman: Fix direct access to fd's addr_lo, use proper accesor
+      soc/qman: test: Fix implementation of fd_cmp()
+      soc/qman: Don't add a new platform device for dma mapping
+      soc/qman: test: Don't use dummy platform device for dma mapping
+      soc/qman: Remove redundant checks from qman_create_cgr()
+      soc/qman: Remove unused struct qm_mcc* layouts
+      soc/qman: Fix accesses to fqid, cleanup
+      soc/qman: Drop unused field from eqcr/dqrr descriptors
+      soc/qbman: Handle endianness of qm/bm_in/out()
+      soc/qman: Change remaining contextB into context_b
+      soc/qman: Clean up CGR CSCN target update operations
+      soc/qman: Handle endianness of h/w descriptors
+
+Colin Ian King (1):
+      soc/fsl: fix spelling mistakes in critical error messages
+
+David Engraf (1):
+      powerpc/85xx/qemu: Enable CONFIG_E500 and CONFIG_PPC_E500MC
+
+Fabian Frederick (2):
+      powerpc/fsl-lbc: use DEFINE_SPINLOCK()
+      soc/fsl/qman: test: use DEFINE_SPINLOCK()
+
+Florian Larysch (2):
+      DT: i2c: W83793 is a trivial device
+      powerpc/dts: add device tree entry for W83793 on T4240RDB
+
+Geliang Tang (3):
+      powerpc/83xx/suspend: use builtin_platform_driver
+      powerpc/fsl_pmc: use builtin_platform_driver
+      soc/fsl/qe: use builtin_platform_driver
+
+Heiner Kallweit (3):
+      powerpc/fsl_soc: improve and simplify fsl_get_sys_freq
+      powerpc/fsl_soc: improve and simplify get_brgfreq
+      powerpc/fsl_soc: improve and simplify get_baudrate
+
+Madalin Bucur (6):
+      soc/qman: Check ioremap return value
+      soc/qman: Replace of_get_property() with portable equivalent
+      powerpc/fsl/dts: add QMan and BMan nodes on t1023
+      powerpc/fsl/dts: add QMan and BMan nodes on t1024
+      powerpc/fsl/dts: add sg_2500_aqr105_phy4 alias on t1024rdb
+      powerpc/fsl/dts: add FMan node for t1042d4rdb
+
+Wei Yongjun (1):
+      soc/fsl/bman: Use resource_size instead of computation
+
+ .../devicetree/bindings/i2c/trivial-devices.txt    |   1 +
+ arch/powerpc/boot/dts/fsl/t1023rdb.dts             |  29 +++
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi        | 103 +++++++++
+ arch/powerpc/boot/dts/fsl/t1024qds.dts             |  29 +++
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts             |  33 +++
+ arch/powerpc/boot/dts/fsl/t1042d4rdb.dts           |  52 +++++
+ arch/powerpc/boot/dts/fsl/t4240rdb.dts             |   4 +
+ arch/powerpc/configs/fsl-emb-nonhw.config          |   6 +
+ arch/powerpc/include/asm/book3s/32/pgalloc.h       |  44 +++-
+ arch/powerpc/include/asm/book3s/32/pgtable.h       |  40 ++--
+ arch/powerpc/include/asm/book3s/64/pgtable.h       |   3 -
+ arch/powerpc/include/asm/hugetlb.h                 |  19 +-
+ arch/powerpc/include/asm/mmu-8xx.h                 |  35 ++++
+ arch/powerpc/include/asm/mmu.h                     |  23 +-
+ arch/powerpc/include/asm/nohash/32/pgalloc.h       |  44 +++-
+ arch/powerpc/include/asm/nohash/32/pgtable.h       |  42 ++--
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h       |   1 +
+ arch/powerpc/include/asm/nohash/64/pgtable.h       |   2 -
+ arch/powerpc/include/asm/nohash/pgtable.h          |   4 +
+ arch/powerpc/include/asm/pgtable.h                 |   2 +
+ arch/powerpc/include/asm/reg_8xx.h                 |   2 +-
+ arch/powerpc/kernel/head_8xx.S                     | 119 ++++++++++-
+ arch/powerpc/mm/Makefile                           |   3 +-
+ arch/powerpc/mm/hugetlbpage.c                      | 216 +++++++++----------
+ arch/powerpc/mm/init-common.c                      | 107 ++++++++++
+ arch/powerpc/mm/init_64.c                          |  77 -------
+ arch/powerpc/mm/pgtable_32.c                       |  37 ----
+ arch/powerpc/mm/tlb_nohash.c                       |  21 +-
+ arch/powerpc/platforms/83xx/suspend.c              |   6 +-
+ arch/powerpc/platforms/85xx/Kconfig                |   2 +
+ arch/powerpc/platforms/8xx/Kconfig                 |   1 +
+ arch/powerpc/platforms/Kconfig.cputype             |   1 +
+ arch/powerpc/sysdev/fsl_lbc.c                      |   2 +-
+ arch/powerpc/sysdev/fsl_pmc.c                      |   6 +-
+ arch/powerpc/sysdev/fsl_soc.c                      |  48 ++---
+ drivers/soc/fsl/qbman/bman.c                       |   8 +-
+ drivers/soc/fsl/qbman/bman_ccsr.c                  |   3 +-
+ drivers/soc/fsl/qbman/bman_portal.c                |  17 +-
+ drivers/soc/fsl/qbman/dpaa_sys.h                   |   1 +
+ drivers/soc/fsl/qbman/qman.c                       | 233 ++++++++++-----------
+ drivers/soc/fsl/qbman/qman_ccsr.c                  |   3 +
+ drivers/soc/fsl/qbman/qman_portal.c                |  41 +++-
+ drivers/soc/fsl/qbman/qman_priv.h                  |  17 +-
+ drivers/soc/fsl/qbman/qman_test_api.c              |  27 +--
+ drivers/soc/fsl/qbman/qman_test_stash.c            |  38 ++--
+ drivers/soc/fsl/qe/qe.c                            |   6 +-
+ include/soc/fsl/qman.h                             |  62 +++---
+ 47 files changed, 1040 insertions(+), 580 deletions(-)
+ create mode 100644 arch/powerpc/mm/init-common.c
