@@ -1,27 +1,33 @@
-Return-Path: <mirq@rere.qmqm.pl>
-Received: from rere.qmqm.pl (rere6.qmqm.pl [IPv6:2001:6a0:181::1])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3td0gM2VhhzDvh9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 11:18:55 +1100 (AEDT)
-Message-Id: <e21e4fae330ecdde5bfc651ab0ae490d37002bcc.1481586602.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1481586602.git.mirq-linux@rere.qmqm.pl>
-References: <cover.1481586602.git.mirq-linux@rere.qmqm.pl>
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH net-next 21/27] net/bpf_jit: PPC: split VLAN_PRESENT bit
- handling from VLAN_TCI
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-To: netdev@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FOR
- POWERPC (32-BIT AND 64-BIT)),
- Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC (32-BIT AND
- 64-BIT)),
- Michael Ellerman <mpe@ellerman.id.au> (supporter:LINUX FOR POWERPC (32-BIT AND
- 64-BIT), commit_signer:2/5=40%),
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
- 64-BIT))
-Date: Tue, 13 Dec 2016 01:12:39 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3td4sr4pPmzDvk4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 14:28:16 +1100 (AEDT)
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3td4sr0yKQz9t2p
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2016 14:28:16 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id x23so2975167pgx.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2016 19:28:16 -0800 (PST)
+Message-ID: <1481599689.8786.2.camel@gmail.com>
+Subject: Re: [powerpc/nmi: RFC 2/2] Keep interrupts enabled even on soft
+ disable
+From: Balbir Singh <bsingharora@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Nicholas Piggin
+ <npiggin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>, Paul
+ Mackerras <paulus@samba.org>
+Date: Tue, 13 Dec 2016 14:28:09 +1100
+In-Reply-To: <1481556264.17253.57.camel@kernel.crashing.org>
+References: <20161212095003.1885-1-bsingharora@gmail.com>
+ <20161212095003.1885-3-bsingharora@gmail.com>
+ <20161212233111.1712ba79@roar.ozlabs.ibm.com>
+ <1481556264.17253.57.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
- arch/powerpc/net/bpf_jit_comp.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+On Mon, 2016-12-12 at 09:24 -0600, Benjamin Herrenschmidt wrote:
+> On Mon, 2016-12-12 at 23:31 +1000, Nicholas Piggin wrote:
+> > Otherwise, this looks nice if it does the right thing with the
+> > interrupt
+> > controller. It hasn't taken a lot of lines to implement which is
+> > very
+> > cool.
+> 
+> We might want to be a bit careful. It will work with XICS fine, but
+> it
+> might be trickier with a controller that needs explicit masking
+> of the just received interrupts like some of the old mac ones. Or
+> MPIC
+> that you haven't modified to flatten the priorities etc....
+> 
+> Also lazy masking is ppc64 only but irc.c and time.c are shared.
+> 
+> I think we need to make this an "opt-in" based on some bit set by the
+> platform or the PIC, possibly in ppc_md.
+> 
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 7e706f3..22ae63f 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -377,18 +377,19 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 							  hash));
- 			break;
- 		case BPF_ANC | SKF_AD_VLAN_TAG:
--		case BPF_ANC | SKF_AD_VLAN_TAG_PRESENT:
- 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, vlan_tci) != 2);
--			BUILD_BUG_ON(VLAN_TAG_PRESENT != 0x1000);
- 
- 			PPC_LHZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,
- 							  vlan_tci));
--			if (code == (BPF_ANC | SKF_AD_VLAN_TAG)) {
--				PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
--			} else {
--				PPC_ANDI(r_A, r_A, VLAN_TAG_PRESENT);
--				PPC_SRWI(r_A, r_A, 12);
--			}
-+#ifdef VLAN_TAG_PRESENT
-+			PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
-+#endif
-+			break;
-+		case BPF_ANC | SKF_AD_VLAN_TAG_PRESENT:
-+			PPC_LBZ_OFFS(r_A, r_skb, PKT_VLAN_PRESENT_OFFSET());
-+			if (PKT_VLAN_PRESENT_BIT)
-+				PPC_SRWI(r_A, r_A, PKT_VLAN_PRESENT_BIT);
-+			PPC_ANDI(r_A, r_A, 1);
- 			break;
- 		case BPF_ANC | SKF_AD_QUEUE:
- 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff,
--- 
-2.10.2
+Even though I'm using ppc_md.get_irq() the routine is called
+only from exception64s.S, I can make the code conditional on
+PPC_XICS. When we exploit the xive bits, we can add support for
+that as well.
+
+> Also note that there's already a PACA field to "recover" an interrupt
+> snatched by KVM, though it's XICS specific, while your approach is
+> more
+> generic, you may want to merge the two. Talk to Paulus.
+>
+
+That is specific to KVM for kvm_interrupt_hv and kvm has a referecne to
+the xics as well and within it, saved_xirr is tracked
+
+Thanks for the reviews,
+Balbir 
