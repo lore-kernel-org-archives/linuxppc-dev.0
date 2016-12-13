@@ -1,21 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tdSfW2LFNzDw4j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 05:19:47 +1100 (AEDT)
-Message-Id: <8f8cb2298b929e0db5181c273b638ea6f5bf41e0.1481652710.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1481652710.git.christophe.leroy@c-s.fr>
-References: <cover.1481652710.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC 2/2] powerpc/8xx: Perf events on PPC 8xx
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Date: Tue, 13 Dec 2016 19:19:43 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tdT020lqGzDt3c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 05:34:57 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBDIYjKe123309
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 13:34:56 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27ahmr387b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 13:34:54 -0500
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 13 Dec 2016 11:34:50 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Scott Wood <oss@buserror.net>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Pull request: scottwood/linux.git next
+In-Reply-To: <87lgvjrfqj.fsf@linux.vnet.ibm.com>
+References: <20161212081731.GA31497@home.buserror.net>
+ <87lgvjrfqj.fsf@linux.vnet.ibm.com>
+Date: Wed, 14 Dec 2016 00:04:44 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <874m27d6ez.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,370 +38,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 8xx has no PMU, however some events can be emulated by other means.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-This patch implements the following 4 events:
-  cpu-cycles OR cycles                               [Hardware event]
-  instructions                                       [Hardware event]
-  dTLB-load-misses                                   [Hardware cache event]
-  iTLB-load-misses                                   [Hardware cache event]
+> Scott Wood <oss@buserror.net> writes:
+>
+>> Highlights include 8xx hugepage support, qbman fixes/cleanup, device
+>> tree updates, and some misc cleanup.
+>>
+>> The following changes since commit 555c16328ae6d75a90e234eac9b51998d68f185b:
+>>
+>>   powerpc/mm: Correct process and partition table max size (2016-11-17 17:11:53 +1100)
+>>
+>> are available in the git repository at:
+>>
+>>   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+>>
+>> for you to fetch changes up to baae856ebdeeaefbadd4a02cdb54b7c2277ff4dd:
+>>
+>>   powerpc/fsl/dts: add FMan node for t1042d4rdb (2016-12-09 23:11:17 -0600)
+>>
+>> ----------------------------------------------------------------
+>> Andy Fleming (1):
+>>       powerpc/85xx: Enable gpio power/reset driver
+>>
+>> Christophe Leroy (3):
+>>       powerpc: port 64 bits pgtable_cache to 32 bits
+>>       powerpc: get hugetlbpage handling more generic
+>>       powerpc/8xx: Implement support of hugepages
+>
+>
+> So i guess it got pulled into linux-next and 4k page size boot on ppc64.
+> That is easy to fix such as doing something below.
+>  
+> -       if (PMD_INDEX_SIZE && !PGT_CACHE(PMD_INDEX_SIZE))
+> +       if (PMD_CACHE_INDEX && !PGT_CACHE(PMD_CACHE_INDEX)) {
+>                 pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
+> +       }
+>
+> But then we also have crashes when using hugetlb 
+>
+> [   59.089441] Unable to handle kernel paging request for data at address 0xe8dc493a00000000
+> [   59.089591] Faulting instruction address: 0xc000000000054da0
+> [   59.089685] Oops: Kernel access of bad area, sig: 11 [#2]
+> [   59.089753] SMP NR_CPUS=2048 
+> [   59.089797] NUMA 
+> [   59.089817] pSeries
+> [   59.089840] Modules linked in:
+> [   59.089904] CPU: 1 PID: 3689 Comm: hugepage-mmap Tainted: G      D         4.9.0-next-20161213-11823-gff9fa2f-dirty #6
+> [   59.090058] task: c00000003efbc900 task.stack: c000000038d5c000
+> [   59.090145] NIP: c000000000054da0 LR: c000000000262e38 CTR: 0000000000000000
+> NIP: c000000000054da0 LR: c000000000262e38 CTR: 0000000000000000
+> REGS: c000000038d5f3b0 TRAP: 0380   Tainted: G      D          (4.9.0-next-20161213-11823-gff9fa2f-dirty)
+> MSR: 8000000000001033 <SF,ME,IR,DR,RI,LE>  CR: 28002422  XER: 20000000
+> CFAR: c000000000054ebc SOFTE: 0 
+> GPR00: 0000000000000007 c000000038d5f630 c000000000de2600 c000000000000000 
+> GPR04: 00003efff0000000 0000000000000000 0000000000000000 0000000000000015 
+> GPR08: 000000000000007f 0000000000000000 e8dc493a00000000 0000000000000000 
+> GPR12: 0000000000000009 c00000000fe00400 00003efff0000000 0000000000000001 
+> GPR16: 00003efff0000000 0000000000001000 c00000003ee70eb8 0000000000000000 
+> GPR20: 0000000000000000 c00000003e956508 0000000000000000 c000000000ea7478 
+> GPR24: c000000038d5f7d0 c1fffffffffff7ff 0000000000000000 00003f0000000000 
+> GPR28: 0000000001000000 c00000003ee70a00 0000000000000009 0000000000000010 
+> NIP [c000000000054da0] __find_linux_pte_or_hugepte+0x1c0/0x380
+> LR [c000000000262e38] __unmap_hugepage_range+0x198/0x6d0
+> Call Trace:
+> [c000000038d5f630] [c000000000262d80] __unmap_hugepage_range+0xe0/0x6d0 (unreliable)
+> [c000000038d5f6f0] [c000000000263390] __unmap_hugepage_range_final+0x20/0x50
+> [c000000038d5f720] [c0000000002344fc] unmap_single_vma+0xcc/0x120
+> [c000000038d5f760] [c000000000234954] unmap_vmas+0x84/0x120
+> [c000000038d5f7b0] [c000000000241438] exit_mmap+0xd8/0x190
+> [c000000038d5f870] [c0000000000acf3c] mmput+0x6c/0x1d0
+> [c000000038d5f8a0] [c0000000000b6b64] do_exit+0x324/0xcd0
+> [c000000038d5f960] [c000000000023900] oops_end+0x150/0x1f0
+> [c000000038d5f9e0] [c000000000047118] bad_page_fault+0xd8/0x150
+> [c000000038d5fa50] [c000000000025330] slb_miss_bad_addr+0x30/0x70
+> [c000000038d5fa70] [c000000000008c38] bad_addr_slb+0x158/0x160
+>
+> I will see if this is easy to fix. But just want to update the list.
 
-'cycles' event is implemented using the timebase clock. Timebase clock
-corresponds to CPU clock divided by 16, so number of cycles is
-approximatly 16 times the number of TB ticks
+Ok this turned out to be not related to this series. Our 4k page size
+little endian config had broken hugetlb for a long time. But we still
+need the PMD_CACHE_INDEX changes around code.
 
-'instructions' is calculated by using instruction watchpoint counter.
-We set counter A to count instructions at address greater than 0,
-hence we count all instructions executed while MSR RI bit is set.
-The counter is set to the maximum which is 0xffff. Every 65535
-instructions, debug instruction breakpoint exception fires. The
-exception handler increments a counter in memory which then
-represent the upper part of the instruction counter.
+I will send the patches after more testing/cross build
 
-On the 8xx, TLB misses are handled by software. It is therefore
-easy to count all TLB misses.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/reg.h         |   2 +
- arch/powerpc/include/asm/reg_8xx.h     |   3 +
- arch/powerpc/kernel/head_8xx.S         |  45 +++++++-
- arch/powerpc/perf/8xx-pmu.c            | 181 +++++++++++++++++++++++++++++++++
- arch/powerpc/perf/Makefile             |   2 +
- arch/powerpc/platforms/Kconfig.cputype |   7 ++
- 6 files changed, 237 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/perf/8xx-pmu.c
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 0d4531a..9098b35 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -548,7 +548,9 @@
- #define SPRN_IBAT7U	0x236		/* Instruction BAT 7 Upper Register */
- #define SPRN_ICMP	0x3D5		/* Instruction TLB Compare Register */
- #define SPRN_ICTC	0x3FB	/* Instruction Cache Throttling Control Reg */
-+#ifndef SPRN_ICTRL
- #define SPRN_ICTRL	0x3F3	/* 1011 7450 icache and interrupt ctrl */
-+#endif
- #define ICTRL_EICE	0x08000000	/* enable icache parity errs */
- #define ICTRL_EDC	0x04000000	/* enable dcache parity errs */
- #define ICTRL_EICP	0x00000100	/* enable icache par. check */
-diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
-index 52f3684..ae16fef 100644
---- a/arch/powerpc/include/asm/reg_8xx.h
-+++ b/arch/powerpc/include/asm/reg_8xx.h
-@@ -31,10 +31,13 @@
- #define SPRN_NRI	82	/* Non recoverable interrupt (EE=0, RI=0) */
- 
- /* Debug registers */
-+#define SPRN_CMPA	144
-+#define SPRN_COUNTA	150
- #define SPRN_CMPE	152
- #define SPRN_CMPF	153
- #define SPRN_LCTRL1	156
- #define SPRN_LCTRL2	157
-+#define SPRN_ICTRL	158
- #define SPRN_BAR	159
- 
- /* Commands.  Only the first few are available to the instruction cache.
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 5fcbd79..253a2ef 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -329,6 +329,12 @@ InstructionTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH2, r3
- #endif
- 	EXCEPTION_PROLOG_0
-+#ifdef CONFIG_PPC_8xx_PERF_EVENT
-+	lis	r10, (itlb_miss_counter - PAGE_OFFSET)@ha
-+	lwz	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
-+	addi	r11, r11, 1
-+	stw	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
-+#endif
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
-@@ -430,6 +436,12 @@ DataStoreTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH2, r3
- 	EXCEPTION_PROLOG_0
- 	mfcr	r3
-+#ifdef CONFIG_PPC_8xx_PERF_EVENT
-+	lis	r10, (dtlb_miss_counter - PAGE_OFFSET)@ha
-+	lwz	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
-+	addi	r11, r11, 1
-+	stw	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
-+#endif
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
-@@ -625,7 +637,21 @@ DataBreakpoint:
- 	EXCEPTION_EPILOG_0
- 	rfi
- 
--	EXCEPTION(0x1d00, Trap_1d, unknown_exception, EXC_XFER_EE)
-+	. = 0x1d00
-+InstructionBreakpoint:
-+	EXCEPTION_PROLOG_0
-+#ifdef CONFIG_PPC_8xx_PERF_EVENT
-+	lis	r10, (instruction_counter - PAGE_OFFSET)@ha
-+	lwz	r11, (instruction_counter - PAGE_OFFSET)@l(r10)
-+	addi	r11, r11, 1
-+	stw	r11, (instruction_counter - PAGE_OFFSET)@l(r10)
-+	lis	r10, 0xffff
-+	ori	r10, r10, 0x01
-+	mtspr	SPRN_COUNTA, r10
-+#endif
-+	EXCEPTION_EPILOG_0
-+	rfi
-+
- 	EXCEPTION(0x1e00, Trap_1e, unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x1f00, Trap_1f, unknown_exception, EXC_XFER_EE)
- 
-@@ -999,9 +1025,9 @@ initial_mmu:
- 	lis	r8, IDC_ENABLE@h
- 	mtspr	SPRN_DC_CST, r8
- #endif
--	/* Disable debug mode entry on data breakpoints */
-+	/* Disable debug mode entry on breakpoints */
- 	mfspr	r8, SPRN_DER
--	rlwinm	r8, r8, 0, ~0x8
-+	rlwinm	r8, r8, 0, ~0xc
- 	mtspr	SPRN_DER, r8
- 	blr
- 
-@@ -1036,3 +1062,16 @@ cpu6_errata_word:
- 	.space	16
- #endif
- 
-+#ifdef CONFIG_PPC_8xx_PERF_EVENT
-+	.globl	itlb_miss_counter
-+itlb_miss_counter:
-+	.space	4
-+
-+	.globl	dtlb_miss_counter
-+dtlb_miss_counter:
-+	.space	4
-+
-+	.globl	instruction_counter
-+instruction_counter:
-+	.space	4
-+#endif
-diff --git a/arch/powerpc/perf/8xx-pmu.c b/arch/powerpc/perf/8xx-pmu.c
-new file mode 100644
-index 0000000..0988b6d
---- /dev/null
-+++ b/arch/powerpc/perf/8xx-pmu.c
-@@ -0,0 +1,181 @@
-+/*
-+ * Performance event support - PPC 8xx
-+ *
-+ * Copyright 2016 Christophe Leroy, CS Systemes d'Information
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/perf_event.h>
-+#include <linux/percpu.h>
-+#include <linux/hardirq.h>
-+#include <asm/pmc.h>
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
-+#include <asm/ptrace.h>
-+
-+#define PERF_8xx_ID_CPU_CYCLES		1
-+#define PERF_8xx_ID_HW_INSTRUCTIONS	2
-+#define PERF_8xx_ID_ITLB_LOAD_MISS	3
-+#define PERF_8xx_ID_DTLB_LOAD_MISS	4
-+
-+#define C(x)	PERF_COUNT_HW_CACHE_##x
-+#define DTLB_LOAD_MISS	(C(DTLB) | (C(OP_READ) << 8) | (C(RESULT_MISS) << 16))
-+#define ITLB_LOAD_MISS	(C(ITLB) | (C(OP_READ) << 8) | (C(RESULT_MISS) << 16))
-+
-+extern unsigned long itlb_miss_counter, dtlb_miss_counter, instruction_counter;
-+
-+int event_type(struct perf_event *event)
-+{
-+	switch (event->attr.type) {
-+	case PERF_TYPE_HARDWARE:
-+		if (event->attr.config == PERF_COUNT_HW_CPU_CYCLES)
-+			return PERF_8xx_ID_CPU_CYCLES;
-+		if (event->attr.config == PERF_COUNT_HW_INSTRUCTIONS)
-+			return PERF_8xx_ID_HW_INSTRUCTIONS;
-+		break;
-+
-+	case PERF_TYPE_HW_CACHE:
-+		if (event->attr.config == ITLB_LOAD_MISS)
-+			return PERF_8xx_ID_ITLB_LOAD_MISS;
-+		if (event->attr.config == DTLB_LOAD_MISS)
-+			return PERF_8xx_ID_DTLB_LOAD_MISS;
-+		break;
-+
-+	case PERF_TYPE_RAW:
-+		break;
-+
-+	default:
-+		return -ENOENT;
-+	}
-+	return -EOPNOTSUPP;
-+}
-+
-+
-+int mpc8xx_pmu_event_init(struct perf_event *event)
-+{
-+	int type = event_type(event);
-+
-+	switch (type) {
-+	case PERF_8xx_ID_CPU_CYCLES:
-+	case PERF_8xx_ID_ITLB_LOAD_MISS:
-+	case PERF_8xx_ID_DTLB_LOAD_MISS:
-+		break;
-+	case PERF_8xx_ID_HW_INSTRUCTIONS:
-+		mtspr(SPRN_CMPA, 0);
-+		break;
-+	default:
-+		return type;
-+	}
-+	return 0;
-+}
-+
-+int mpc8xx_pmu_add(struct perf_event *event, int flags)
-+{
-+	int type = event_type(event);
-+	s64 val;
-+
-+	switch (type) {
-+	case PERF_8xx_ID_CPU_CYCLES:
-+		val = get_tb();
-+		break;
-+	case PERF_8xx_ID_HW_INSTRUCTIONS:
-+		val = (instruction_counter << 16) | 0xffff;
-+		mtspr(SPRN_COUNTA, 0xffff0001);
-+		mtspr(SPRN_ICTRL, 0xc0080007);
-+		break;
-+	case PERF_8xx_ID_ITLB_LOAD_MISS:
-+		val = itlb_miss_counter;
-+		break;
-+	case PERF_8xx_ID_DTLB_LOAD_MISS:
-+		val = dtlb_miss_counter;
-+		break;
-+	default:
-+		break;
-+	}
-+	local64_set(&event->hw.prev_count, val);
-+	return 0;
-+}
-+
-+void mpc8xx_pmu_read(struct perf_event *event)
-+{
-+	int type = event_type(event);
-+	s64 prev, val, delta;
-+
-+	prev = local64_read(&event->hw.prev_count);
-+	switch (type) {
-+	case PERF_8xx_ID_CPU_CYCLES:
-+		val = get_tb();
-+		delta = 16 * (val - prev);
-+		break;
-+	case PERF_8xx_ID_HW_INSTRUCTIONS:
-+		mtspr(SPRN_ICTRL, 7);
-+		val = (instruction_counter << 16) | (0xffff - (mfspr(SPRN_COUNTA) >> 16));
-+		mtspr(SPRN_ICTRL, 0xc0080007);
-+		delta = val - prev;
-+		break;
-+	case PERF_8xx_ID_ITLB_LOAD_MISS:
-+		val = itlb_miss_counter;
-+		delta = val - prev;
-+		break;
-+	case PERF_8xx_ID_DTLB_LOAD_MISS:
-+		val = dtlb_miss_counter;
-+		delta = val - prev;
-+		break;
-+	default:
-+		break;
-+	}
-+	local64_set(&event->hw.prev_count, val);
-+	local64_add(delta, &event->count);
-+}
-+
-+void mpc8xx_pmu_del(struct perf_event *event, int flags)
-+{
-+	int type = event_type(event);
-+	s64 prev, val;
-+
-+	prev = local64_read(&event->hw.prev_count);
-+	switch (type) {
-+	case PERF_8xx_ID_HW_INSTRUCTIONS:
-+		mtspr(SPRN_ICTRL, 7);
-+		val = (instruction_counter << 16) | (0xffff - (mfspr(SPRN_COUNTA) >> 16));
-+		local64_add(val - prev, &event->count);
-+		break;
-+	case PERF_8xx_ID_CPU_CYCLES:
-+	case PERF_8xx_ID_ITLB_LOAD_MISS:
-+	case PERF_8xx_ID_DTLB_LOAD_MISS:
-+		mpc8xx_pmu_read(event);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+void mpc8xx_pmu_start(struct perf_event *event, int flags)
-+{
-+}
-+
-+void mpc8xx_pmu_stop(struct perf_event *event, int flags)
-+{
-+}
-+
-+static struct pmu mpc8xx_pmu = {
-+	.event_init	= mpc8xx_pmu_event_init,
-+	.add		= mpc8xx_pmu_add,
-+	.del		= mpc8xx_pmu_del,
-+	.start		= mpc8xx_pmu_start,
-+	.stop		= mpc8xx_pmu_stop,
-+	.read		= mpc8xx_pmu_read,
-+};
-+
-+static int init_mpc8xx_pmu(void)
-+{
-+	return perf_pmu_register(&mpc8xx_pmu, "cpu", PERF_TYPE_RAW);
-+}
-+
-+early_initcall(init_mpc8xx_pmu);
-diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index f102d53..4d606b9 100644
---- a/arch/powerpc/perf/Makefile
-+++ b/arch/powerpc/perf/Makefile
-@@ -13,5 +13,7 @@ obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
- 
- obj-$(CONFIG_HV_PERF_CTRS) += hv-24x7.o hv-gpci.o hv-common.o
- 
-+obj-$(CONFIG_PPC_8xx_PERF_EVENT) += 8xx-pmu.o
-+
- obj-$(CONFIG_PPC64)		+= $(obj64-y)
- obj-$(CONFIG_PPC32)		+= $(obj32-y)
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 6e89e5a..99b0ae8 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -172,6 +172,13 @@ config PPC_FPU
- 	bool
- 	default y if PPC64
- 
-+config PPC_8xx_PERF_EVENT
-+	bool "PPC 8xx perf events"
-+	depends on PPC_8xx && PERF_EVENTS
-+	help
-+	  This is Performance Events support for PPC 8xx. The 8xx doesn't
-+	  have a PMU but some events are emulated using 8xx features.
-+
- config FSL_EMB_PERFMON
- 	bool "Freescale Embedded Perfmon"
- 	depends on E500 || PPC_83xx
--- 
-2.10.1
+-aneesh
