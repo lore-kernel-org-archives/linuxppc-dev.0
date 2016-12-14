@@ -1,29 +1,45 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tdtvr5GplzDvwx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 22:02:48 +1100 (AEDT)
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tdtvr18msz9t3K
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2016 22:02:48 +1100 (AEDT)
-Date: Wed, 14 Dec 2016 03:02:56 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Joel Stanley <joel@jms.id.au>
-Cc: Michael Ellerman <patch-notifications@ellerman.id.au>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- linuxppc-dev@ozlabs.org, markus@trippelsdorf.de, amodra@gmail.com
-Subject: Re: powerpc: cmp -> cmpd for 64-bit
-Message-ID: <20161214110256.GB5664@kroah.com>
-References: <551528846e6a2783184ba8a4228348a2fc9786bd.1475761214.git.segher@kernel.crashing.org>
- <3t3mJS0hfYz9sxS@ozlabs.org>
- <CACPK8Xf3X=bEj-EUXezYYEKNJwkqW4O0RiM2FcCtH4cNNxA-qw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tf1wW0j8WzDsxZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 03:18:50 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBEGEhuT132613
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 11:18:47 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27b887dgh8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 11:18:46 -0500
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Thu, 15 Dec 2016 02:18:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 11A8D2CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 03:18:42 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uBEGIgPn65601728
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 03:18:42 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uBEGIfc1030987
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 03:18:41 +1100
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, mahesh@linux.vnet.ibm.com, mhiramat@kernel.org,
+ anju@linux.vnet.ibm.com
+Subject: [PATCH V2 0/4] OPTPROBES for powerpc
+Date: Wed, 14 Dec 2016 21:48:26 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CACPK8Xf3X=bEj-EUXezYYEKNJwkqW4O0RiM2FcCtH4cNNxA-qw@mail.gmail.com>
+Content-Type: text/plain; charset=y
+Message-Id: <1481732310-7779-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +49,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 14, 2016 at 02:01:50PM +1030, Joel Stanley wrote:
-> On Wed, Oct 26, 2016 at 8:51 PM, Michael Ellerman
-> <patch-notifications@ellerman.id.au> wrote:
-> > On Thu, 2016-06-10 at 13:42:19 UTC, Segher Boessenkool wrote:
-> >> PowerPC's "cmp" instruction has four operands.  Normally people write
-> >> "cmpw" or "cmpd" for the second cmp operand 0 or 1.  But, frequently
-> >> people forget, and write "cmp" with just three operands.
-> >>
-> >> With older binutils this is silently accepted as if this was "cmpw",
-> >> while often "cmpd" is wanted.  With newer binutils GAS will complain
-> >> about this for 64-bit code.  For 32-bit code it still silently assumes
-> >> "cmpw" is what is meant.
-> >>
-> >> Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
-> >
-> > Applied to powerpc fixes, thanks.
-> >
-> > I added:
-> >   Fixes: 948cf67c4726 ("powerpc: Add NAP mode support on Power7 in HV mode")
-> >   Cc: stable@vger.kernel.org # v3.0
-> >
-> > https://git.kernel.org/powerpc/c/80f23935cadb1c654e81951f5a8b7c
-> 
-> This one made it into 4.9-rc3 as "powerpc: Convert cmp to cmpd in idle
-> enter sequence". We need it to build the 4.4 kernel with GCC 6.2, so
-> my OpenPower firmware builds are failing.
-> 
-> The patch won't backport directly as in 4.4 the macro is in
-> arch/powerpc/kernel/idle_power7.S.
-> 
-> Greg, is this one in your queue? Do we need to send a patch to stable
-> that backports cleanly?
+This is the V2 patchset of the kprobes jump optimization
+(a.k.a OPTPROBES)for powerpc. Kprobe being an inevitable tool
+for kernel developers, enhancing the performance of kprobe has
+got much importance.
 
-I need a clean backport, that is why it never showed up in 4.4-stable.
+Currently kprobes inserts a trap instruction to probe a running kernel.
+Jump optimization allows kprobes to replace the trap with a branch,
+reducing the probe overhead drastically.
 
-thanks,
+In this series, conditional branch instructions are not considered for
+optimization as they have to be assessed carefully in SMP systems.
 
-greg k-h
+The kprobe placed on the kretprobe_trampoline during boot time, is also
+optimized in this series. Patch 4/4 furnishes this.
+
+The first two patches can go independently of the series. The helper 
+functions in these patches are invoked in patch 3/4.
+
+Performance:
+============
+An optimized kprobe in powerpc is 1.05 to 4.7 times faster than a kprobe.
+ 
+Example:
+ 
+Placed a probe at an offset 0x50 in _do_fork().
+*Time Diff here is, difference in time before hitting the probe and
+after the probed instruction. mftb() is employed in kernel/fork.c for
+this purpose.
+ 
+# echo 0 > /proc/sys/debug/kprobes-optimization
+Kprobes globally unoptimized
+ [  233.607120] Time Diff = 0x1f0
+ [  233.608273] Time Diff = 0x1ee
+ [  233.609228] Time Diff = 0x203
+ [  233.610400] Time Diff = 0x1ec
+ [  233.611335] Time Diff = 0x200
+ [  233.612552] Time Diff = 0x1f0
+ [  233.613386] Time Diff = 0x1ee
+ [  233.614547] Time Diff = 0x212
+ [  233.615570] Time Diff = 0x206
+ [  233.616819] Time Diff = 0x1f3
+ [  233.617773] Time Diff = 0x1ec
+ [  233.618944] Time Diff = 0x1fb
+ [  233.619879] Time Diff = 0x1f0
+ [  233.621066] Time Diff = 0x1f9
+ [  233.621999] Time Diff = 0x283
+ [  233.623281] Time Diff = 0x24d
+ [  233.624172] Time Diff = 0x1ea
+ [  233.625381] Time Diff = 0x1f0
+ [  233.626358] Time Diff = 0x200
+ [  233.627572] Time Diff = 0x1ed
+ 
+# echo 1 > /proc/sys/debug/kprobes-optimization
+Kprobes globally optimized
+ [   70.797075] Time Diff = 0x103
+ [   70.799102] Time Diff = 0x181
+ [   70.801861] Time Diff = 0x15e
+ [   70.803466] Time Diff = 0xf0
+ [   70.804348] Time Diff = 0xd0
+ [   70.805653] Time Diff = 0xad
+ [   70.806477] Time Diff = 0xe0
+ [   70.807725] Time Diff = 0xbe
+ [   70.808541] Time Diff = 0xc3
+ [   70.810191] Time Diff = 0xc7
+ [   70.811007] Time Diff = 0xc0
+ [   70.812629] Time Diff = 0xc0
+ [   70.813640] Time Diff = 0xda
+ [   70.814915] Time Diff = 0xbb
+ [   70.815726] Time Diff = 0xc4
+ [   70.816955] Time Diff = 0xc0
+ [   70.817778] Time Diff = 0xcd
+ [   70.818999] Time Diff = 0xcd
+ [   70.820099] Time Diff = 0xcb
+ [   70.821333] Time Diff = 0xf0
+
+Implementation:
+===================
+ 
+The trap instruction is replaced by a branch to a detour buffer. To address
+the limitation of branch instruction in power architecture, detour buffer
+slot is allocated from a reserved area . This will ensure that the branch
+is within ± 32 MB range. The current kprobes insn caches allocate memory 
+area for insn slots with module_alloc(). This will always be beyond 
+± 32MB range.
+ 
+The detour buffer contains a call to optimized_callback() which in turn
+call the pre_handler(). Once the pre-handler is run, the original
+instruction is emulated from the detour buffer itself. Also the detour
+buffer is equipped with a branch back to the normal work flow after the
+probed instruction is emulated. Before preparing optimization, Kprobes
+inserts original(breakpoint instruction)kprobe on the specified address.
+So, even if the kprobe is not possible to be optimized, it just uses a
+normal kprobe.
+ 
+Limitations:
+==============
+- Number of probes which can be optimized is limited by the size of the
+  area reserved.
+- Currently instructions which can be emulated using analyse_instr() are 
+  the only candidates for optimization.
+- Conditional branch instructions are not optimized.
+- Probes on kernel module region are not considered for optimization now.
+ 
+Link for the V1 patchset: 
+			https://lkml.org/lkml/2016/9/7/171
+			https://lkml.org/lkml/2016/9/7/174
+			https://lkml.org/lkml/2016/9/7/172
+			https://lkml.org/lkml/2016/9/7/173
+
+Changes from v1:
+
+- Merged the three patches in V1 into a single patch.
+- Comments by Masami are addressed.
+- Some helper functions are implemented in separate patches.
+- Optimization for kprobe placed on the kretprobe_trampoline during
+  boot time is implemented.
+
+
+Kindly let me know your suggestions and comments.
+
+Thanks,
+-Anju
+
+
+Anju T Sudhakar (2):
+  arch/powerpc: Implement Optprobes
+  arch/powerpc: Optimize kprobe in kretprobe_trampoline
+
+Naveen N. Rao (2):
+  powerpc: asm/ppc-opcode.h: introduce __PPC_SH64()
+  powerpc: add helper to check if offset is within rel branch range
+
+ .../features/debug/optprobes/arch-support.txt      |   2 +-
+ arch/powerpc/Kconfig                               |   1 +
+ arch/powerpc/include/asm/code-patching.h           |   1 +
+ arch/powerpc/include/asm/kprobes.h                 |  23 +-
+ arch/powerpc/include/asm/ppc-opcode.h              |   1 +
+ arch/powerpc/include/asm/sstep.h                   |   1 +
+ arch/powerpc/kernel/Makefile                       |   1 +
+ arch/powerpc/kernel/kprobes.c                      |   8 +
+ arch/powerpc/kernel/optprobes.c                    | 332 +++++++++++++++++++++
+ arch/powerpc/kernel/optprobes_head.S               | 135 +++++++++
+ arch/powerpc/lib/code-patching.c                   |  24 +-
+ arch/powerpc/lib/sstep.c                           |  22 ++
+ arch/powerpc/net/bpf_jit.h                         |  11 +-
+ 13 files changed, 553 insertions(+), 9 deletions(-)
+ create mode 100644 arch/powerpc/kernel/optprobes.c
+ create mode 100644 arch/powerpc/kernel/optprobes_head.S
+
+-- 
+2.7.4
