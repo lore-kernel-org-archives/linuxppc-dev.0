@@ -1,28 +1,31 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tdk6L4CwszDvhR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 15:26:18 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tdk6K2mlgz9t0H
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2016 15:26:16 +1100 (AEDT)
-Date: Tue, 13 Dec 2016 22:25:46 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Joel Stanley <joel@jms.id.au>
-Cc: Michael Ellerman <patch-notifications@ellerman.id.au>,
- gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- markus@trippelsdorf.de, amodra@gmail.com
-Subject: Re: powerpc: cmp -> cmpd for 64-bit
-Message-ID: <20161214042546.GQ30845@gate.crashing.org>
-References: <551528846e6a2783184ba8a4228348a2fc9786bd.1475761214.git.segher@kernel.crashing.org>
- <3t3mJS0hfYz9sxS@ozlabs.org>
- <CACPK8Xf3X=bEj-EUXezYYEKNJwkqW4O0RiM2FcCtH4cNNxA-qw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CACPK8Xf3X=bEj-EUXezYYEKNJwkqW4O0RiM2FcCtH4cNNxA-qw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tdkHJ6Qq7zDvhR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 15:34:04 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBE4XjKE112437
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 23:34:02 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27arrpxhe3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 23:34:02 -0500
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 13 Dec 2016 21:34:01 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm: Fix panic on boot with 4K page size
+Date: Wed, 14 Dec 2016 10:03:49 +0530
+Message-Id: <20161214043349.23677-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +35,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 14, 2016 at 02:01:50PM +1030, Joel Stanley wrote:
-> >> With older binutils this is silently accepted as if this was "cmpw",
-> >> while often "cmpd" is wanted.  With newer binutils GAS will complain
-> >> about this for 64-bit code.  For 32-bit code it still silently assumes
-> >> "cmpw" is what is meant.
+For transparent hugepage config, we need to use double the size
+of the pmd. Hence we should use PMD_CACHE_INDEX when allocating
+pagetable cache. For all configs other than book3s 64k this value
+is same as PMD_INDEX_SIZE. With 4k, since we don't support
+transparent hugepage in hash mode, we can use PMD_INDEX_SIZE even
+though CONFIG_TRANSPARENT_HUGEPAGE is defined. With book3s 4k
+THP is only supported in radix mode.
 
-> This one made it into 4.9-rc3 as "powerpc: Convert cmp to cmpd in idle
-> enter sequence". We need it to build the 4.4 kernel with GCC 6.2, so
-> my OpenPower firmware builds are failing.
+Fixes:"powerpc: port 64 bits pgtable_cache to 32 bits"
 
-The GCC version does not matter; the binutils version does, however.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/hash.h | 4 ++--
+ arch/powerpc/mm/init-common.c             | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-
-Segher
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index f61cad3de4e6..e95148c72916 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -33,9 +33,9 @@
+ 				 H_PUD_INDEX_SIZE + H_PGD_INDEX_SIZE + PAGE_SHIFT)
+ #define H_PGTABLE_RANGE		(ASM_CONST(1) << H_PGTABLE_EADDR_SIZE)
+ 
+-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++#if defined(CONFIG_TRANSPARENT_HUGEPAGE) &&  !defined(CONFIG_PPC_4K_PAGES)
+ /*
+- * only with hash we need to use the second half of pmd page table
++ * only with hash 64k we need to use the second half of pmd page table
+  * to store pointer to deposited pgtable_t
+  */
+ #define H_PMD_CACHE_INDEX	(H_PMD_INDEX_SIZE + 1)
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index a175cd82ae8c..e733cf4d3401 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -88,7 +88,7 @@ void pgtable_cache_init(void)
+ {
+ 	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
+ 
+-	if (PMD_INDEX_SIZE && !PGT_CACHE(PMD_INDEX_SIZE))
++	if (PMD_CACHE_INDEX && !PGT_CACHE(PMD_CACHE_INDEX))
+ 		pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
+ 	/*
+ 	 * In all current configs, when the PUD index exists it's the
+@@ -100,7 +100,7 @@ void pgtable_cache_init(void)
+ 
+ 	if (!PGT_CACHE(PGD_INDEX_SIZE))
+ 		panic("Couldn't allocate pgd cache");
+-	if (PMD_INDEX_SIZE && !PGT_CACHE(PMD_INDEX_SIZE))
++	if (PMD_CACHE_INDEX && !PGT_CACHE(PMD_CACHE_INDEX))
+ 		panic("Couldn't allocate pmd pgtable caches");
+ 	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
+ 		panic("Couldn't allocate pud pgtable caches");
+-- 
+2.10.2
