@@ -1,34 +1,17 @@
-Return-Path: <bsingharora@gmail.com>
+Return-Path: <alistair@popple.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tdd704LmGzDt1T
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 11:41:32 +1100 (AEDT)
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3tdd6z5w1qz9t37
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2016 11:41:31 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id p66so405097pga.2
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Dec 2016 16:41:31 -0800 (PST)
-Subject: Re: [powerpc/nmi: RFC 2/2] Keep interrupts enabled even on soft
- disable
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nicholas Piggin <npiggin@gmail.com>
-References: <20161212095003.1885-1-bsingharora@gmail.com>
- <20161212095003.1885-3-bsingharora@gmail.com>
- <20161212233111.1712ba79@roar.ozlabs.ibm.com>
- <1481607371.11971.1.camel@gmail.com>
- <1481642851.17253.72.camel@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <b1455ef8-7583-bafb-fce9-0c2829d87c0b@gmail.com>
-Date: Wed, 14 Dec 2016 11:41:15 +1100
-MIME-Version: 1.0
-In-Reply-To: <1481642851.17253.72.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tdghF5RgwzDvjg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 13:37:01 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev
+Cc: aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ stewart@linux.vnet.ibm.com, bsingharora@gmail.com,
+ Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH v3] powerpc/powernv: Initialise nest mmu
+Date: Wed, 14 Dec 2016 13:36:51 +1100
+Message-Id: <1481683011-12819-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,54 +21,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+POWER9 contains an off core mmu called the nest mmu (NMMU). This is
+used by other hardware units on the chip to translate virtual
+addresses into real addresses. The unit attempting an address
+translation provides the majority of the context required for the
+translation request except for the base address of the partition table
+(ie. the PTCR) which needs to be programmed into the NMMU.
 
+This patch adds a call to OPAL to set the PTCR for the nest mmu in
+opal_init().
 
-On 14/12/16 02:27, Benjamin Herrenschmidt wrote:
-> On Tue, 2016-12-13 at 16:36 +1100, Balbir Singh wrote:
->> Yep, although the code works for PPC_XICS only which is good for now.
->> When we do XIVE, we can add more bits
-> 
-> We may want to do XIVE differently, dunno. On XIVE we can just poke the
-> processor priority with a single MMIO store, so we don't actually need
-> to "fetch" the interrupt and we can continue doing separate priorities.
-> 
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
 
-It would be good to have it be uniform, where the CPPR can be set to
-the level of the current IRQ being processed (as seen from the controller)
-but not yet finished via EOI. I've not looked at the CPPR/Context/Queue/Ring
-details of the XIVE. But I'll let you provide the expertise on IRQ
-handling
+Differences from v2:
+ * Rename powernv_set_ptcr() to powernv_set_nmmu_ptcr() as suggested by Aneesh
+ * Fix a logic error/typo when checking the opal call return code
 
-> Note that raising the priority would work on XICS in *theory* as well
-> but HW bugs get in the way if we do that.
-> 
+Michael the skiboot fix to stop this breaking in mambo has been posted
+(see http://patchwork.ozlabs.org/patch/702564/). Will let you know
+when it has gone upstream.
 
-Yep, I am not using the MFRR. Right now, I notice the CPPR is set to the
-priority of the acked interrupt when we do a read of XIRR. Which works
-well when we have just one priority at the moment.
+ arch/powerpc/include/asm/opal-api.h            |  3 ++-
+ arch/powerpc/include/asm/opal.h                |  1 +
+ arch/powerpc/mm/pgtable-radix.c                |  8 ++++++--
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/opal.c          | 11 +++++++++++
+ arch/powerpc/platforms/powernv/powernv.h       |  6 ++++++
+ 6 files changed, 27 insertions(+), 3 deletions(-)
 
-> We also need to make sure you either adjust MPIC and all other PICs
-> potentially used on ppc64 to do this "only one priority" thing or you
-> disable that new mechanism on all those PICs.
-> 
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0e2e57b..a0aa285 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -167,7 +167,8 @@
+ #define OPAL_INT_EOI				124
+ #define OPAL_INT_SET_MFRR			125
+ #define OPAL_PCI_TCE_KILL			126
+-#define OPAL_LAST				126
++#define OPAL_NMMU_SET_PTCR			127
++#define OPAL_LAST				127
 
-I was planning to skipping other IRQ chips for now and support just
-XICS/XIVE with BOOK3S and PPC64. But we can discuss this.
+ /* Device tree flags */
 
-> That's why I mentioned opt-in. Maybe make it conditional on a global
-> boolean that gets enabled by the PIC itself, or make it an enum
-> 
-> enum lazy_irq_masking_mode {
-> 	lazy_irq_mask_ee,	/* Use CPU EE bit (default) */
-> 	lazy_irq_mask_fetch,	/* Fetch the interrupt and stash it away */
-> 	lazy_irq_mask_prio	/* Change processor priority */
-> };
-> 
-> For the latter we'd need a ppc_md. hook to do the priority change
-> which xive (and potentially others like MPIC) could use.
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index e958b70..b61c3d3 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -229,6 +229,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ 			     uint32_t pe_num, uint32_t tce_size,
+ 			     uint64_t dma_addr, uint32_t npages);
++int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
 
-We have set_cpu_priority for XICS, which sets the base_priority
-only for the CPPR at the moment. It can be extended
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 688b545..d5e868b 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -18,6 +18,7 @@
+ #include <asm/machdep.h>
+ #include <asm/mmu.h>
+ #include <asm/firmware.h>
++#include <platforms/powernv/powernv.h>
 
-Thanks for the comments,
-Balbir
+ #include <trace/events/thp.h>
+
+@@ -177,7 +178,7 @@ static void __init radix_init_pgtable(void)
+
+ static void __init radix_init_partition_table(void)
+ {
+-	unsigned long rts_field;
++	unsigned long rts_field, ptcr;
+
+ 	rts_field = radix__get_tree_size();
+
+@@ -193,7 +194,9 @@ static void __init radix_init_partition_table(void)
+ 	 * update partition table control register,
+ 	 * 64 K size.
+ 	 */
+-	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
++	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
++	mtspr(SPRN_PTCR, ptcr);
++	powernv_set_nmmu_ptcr(ptcr);
+ }
+
+ void __init radix_init_native(void)
+@@ -408,6 +411,7 @@ void radix__mmu_cleanup_all(void)
+ 		lpcr = mfspr(SPRN_LPCR);
+ 		mtspr(SPRN_LPCR, lpcr & ~LPCR_UPRT);
+ 		mtspr(SPRN_PTCR, 0);
++		powernv_set_nmmu_ptcr(0);
+ 		radix__flush_tlb_all();
+ 	}
+ }
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 44d2d84..894639b 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -308,4 +308,5 @@ OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
+ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+ OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+ OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
++OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
+ OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 6c9a65b..773077e 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -885,6 +885,17 @@ int opal_error_code(int rc)
+ 	}
+ }
+
++void powernv_set_nmmu_ptcr(unsigned long ptcr)
++{
++	int rc;
++
++	if (firmware_has_feature(FW_FEATURE_OPAL)) {
++		rc = opal_nmmu_set_ptcr(-1UL, ptcr);
++		if (rc != OPAL_SUCCESS && rc != OPAL_UNSUPPORTED)
++			pr_warn("%s: Unable to set nest mmu ptcr\n", __func__);
++	}
++}
++
+ EXPORT_SYMBOL_GPL(opal_poll_events);
+ EXPORT_SYMBOL_GPL(opal_rtc_read);
+ EXPORT_SYMBOL_GPL(opal_rtc_write);
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index da7c843..c49a2b0 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -9,6 +9,12 @@ static inline void pnv_smp_init(void) { }
+
+ struct pci_dev;
+
++#ifdef CONFIG_PPC_POWERNV
++extern void powernv_set_nmmu_ptcr(unsigned long ptcr);
++#else
++static inline void powernv_set_nmmu_ptcr(unsigned long ptcr) { }
++#endif
++
+ #ifdef CONFIG_PCI
+ extern void pnv_pci_init(void);
+ extern void pnv_pci_shutdown(void);
+--
+2.1.4
