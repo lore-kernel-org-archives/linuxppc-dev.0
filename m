@@ -1,30 +1,49 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tdkQ45NK9zDvwx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 15:39:56 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tdmzx4rtzzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 17:35:57 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBE4daBd126420
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 23:39:54 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27axsxhuxk-1
+ uBE6XqoL055742
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 01:35:55 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27auqym697-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Dec 2016 23:39:54 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2016 01:35:55 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 13 Dec 2016 21:39:53 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: Remove the debug hugepd_ok check
-Date: Wed, 14 Dec 2016 10:09:45 +0530
-Message-Id: <20161214043945.26549-1-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 13 Dec 2016 23:35:54 -0700
+Date: Wed, 14 Dec 2016 12:05:45 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v4 1/4] powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1481288905.git.ego@linux.vnet.ibm.com>
+ <0947ced2f87c68a0a10ede8e1aaf39838a6f8d52.1481288905.git.ego@linux.vnet.ibm.com>
+ <f1bc3387-1118-6fd7-8e1b-2e59bfabdad1@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f1bc3387-1118-6fd7-8e1b-2e59bfabdad1@gmail.com>
+Message-Id: <20161214063545.GA26271@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,66 +53,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We don't do this for other page table entries. So lets keep this simple
-and always return false for hugepd check on a 64K page size config.
+Hi Balbir,
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable-64k.h |  5 -----
- arch/powerpc/mm/hugetlbpage-hash64.c             | 21 ---------------------
- 2 files changed, 26 deletions(-)
+On Tue, Dec 13, 2016 at 09:13:26PM +1100, Balbir Singh wrote:
+> 
+> 
+> On 10/12/16 00:32, Gautham R. Shenoy wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> > index 3919332..0a3255b 100644
+> > --- a/arch/powerpc/include/asm/cpuidle.h
+> > +++ b/arch/powerpc/include/asm/cpuidle.h
+> > @@ -21,7 +21,7 @@
+> >  
+> >  /* Idle state entry routines */
+> >  #ifdef	CONFIG_PPC_P7_NAP
+> > -#define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
+> > +#define IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
+> >  	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
+> >  	std	r0,0(r1);					\
+> >  	ptesync;						\
+> > @@ -29,6 +29,9 @@
+> >  1:	cmpd	cr0,r0,r0;					\
+> >  	bne	1b;						\
+> >  	IDLE_INST;						\
+> > +
+> 
+> Is the power saving magic sequence the same as before for power 9
+> as well?
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-index 0d2845b44763..198aff33c380 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-@@ -35,10 +35,6 @@ static inline int pgd_huge(pgd_t pgd)
- }
- #define pgd_huge pgd_huge
- 
--#ifdef CONFIG_DEBUG_VM
--extern int hugepd_ok(hugepd_t hpd);
--#define is_hugepd(hpd)               (hugepd_ok(hpd))
--#else
- /*
-  * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
-  * need to setup hugepage directory for them. Our pte and page directory format
-@@ -49,7 +45,6 @@ static inline int hugepd_ok(hugepd_t hpd)
- 	return 0;
- }
- #define is_hugepd(pdep)			0
--#endif /* CONFIG_DEBUG_VM */
- 
- #endif /* CONFIG_HUGETLB_PAGE */
- 
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 37b5f91e381b..a84bb44497f9 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -116,24 +116,3 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
- }
--
--#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_DEBUG_VM)
--/*
-- * This enables us to catch the wrong page directory format
-- * Moved here so that we can use WARN() in the call.
-- */
--int hugepd_ok(hugepd_t hpd)
--{
--	bool is_hugepd;
--	unsigned long hpdval;
--
--	hpdval = hpd_val(hpd);
--
--	/*
--	 * We should not find this format in page directory, warn otherwise.
--	 */
--	is_hugepd = (((hpdval & 0x3) == 0x0) && ((hpdval & HUGEPD_SHIFT_MASK) != 0));
--	WARN(is_hugepd, "Found wrong page directory format\n");
--	return 0;
--}
--#endif
--- 
-2.10.2
+Yes, this is the same magic sequence for POWER9.
+
+--
+Thanks and Regards
+gautham.
