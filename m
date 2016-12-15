@@ -1,22 +1,31 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0074.outbound.protection.outlook.com [104.47.40.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfZq70ncSzDw3P
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:01:06 +1100 (AEDT)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "oss@buserror.net" <oss@buserror.net>, "valentin.longchamp@keymile.com"
- <valentin.longchamp@keymile.com>
-Subject: Re: [PATCH 3/3] powerpc/corenet: add support for the kmcent2 board
-Date: Thu, 15 Dec 2016 14:00:58 +0000
-Message-ID: <1481810456.3878.18.camel@infinera.com>
-References: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
- <1481808148-16840-4-git-send-email-valentin.longchamp@keymile.com>
-In-Reply-To: <1481808148-16840-4-git-send-email-valentin.longchamp@keymile.com>
-Content-Type: text/plain; charset="iso-8859-15"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfcT62hNTzDw6J
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 02:15:38 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3tfcT54pdqz9sCN
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Dec 2016 02:15:37 +1100 (AEDT)
+Message-ID: <1481814929.17253.106.camel@kernel.crashing.org>
+Subject: Re: [powerpc/nmi: RFC 2/2] Keep interrupts enabled even on soft
+ disable
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>, Paul
+ Mackerras <paulus@samba.org>
+Date: Thu, 15 Dec 2016 09:15:29 -0600
+In-Reply-To: <b1455ef8-7583-bafb-fce9-0c2829d87c0b@gmail.com>
+References: <20161212095003.1885-1-bsingharora@gmail.com>
+ <20161212095003.1885-3-bsingharora@gmail.com>
+ <20161212233111.1712ba79@roar.ozlabs.ibm.com>
+ <1481607371.11971.1.camel@gmail.com>
+ <1481642851.17253.72.camel@kernel.crashing.org>
+ <b1455ef8-7583-bafb-fce9-0c2829d87c0b@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-12-15 at 14:22 +0100, Valentin Longchamp wrote:
-> This board is built around Freescale's T1040 SoC.
->=20
-> The peripherals used by this design are:
-> - DDR3 RAM with SPD support
-> - parallel NOR Flash as boot medium
-> - 1 PCIe bus (PCIe1 x1)
-> - 3 FMAN Ethernet devices (FMAN1 DTSEC1/2/5)
-> - 4 IFC bus devices:
-> =A0 - NOR flash
-> =A0 - NAND flash
-> =A0 - QRIO reset/power mgmt CPLD
-> =A0 - BFTIC chassis management CPLD
-> - 2 I2C buses
-> - 1 SPI bus
-> - HDLC bus with the QE's UCC1
-> - last but not least, the mandatory serial port
->=20
-> The board can be used with the corenet32_smp_defconfig.
->=20
-> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
-> ---
-> =A0arch/powerpc/boot/dts/fsl/kmcent2.dts=A0=A0=A0=A0=A0=A0=A0=A0=A0| 303 =
-++++++++++++++++++++++++++
-> =A0arch/powerpc/platforms/85xx/corenet_generic.c |=A0=A0=A01 +
-> =A02 files changed, 304 insertions(+)
-> =A0create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
->=20
-> diff --git a/arch/powerpc/boot/dts/fsl/kmcent2.dts b/arch/powerpc/boot/dt=
-s/fsl/kmcent2.dts
-> new file mode 100644
-> index 0000000..47afa43
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/kmcent2.dts
-> @@ -0,0 +1,303 @@
-> +/*
-> + * Keymile kmcent2 Device Tree Source, based on T1040RDB DTS
-> + *
-> + * (C) Copyright 2016
-> + * Valentin Longchamp, Keymile AG, valentin.longchamp@keymile.com
-> + *
-> + * Copyright 2014 - 2015 Freescale Semiconductor Inc.
-> + *
-> + * This program is free software; you can redistribute=A0=A0it and/or mo=
-dify it
-> + * under=A0=A0the terms of=A0=A0the GNU General=A0=A0Public License as p=
-ublished by the
-> + * Free Software Foundation;=A0=A0either version 2 of the=A0=A0License, =
-or (at your
-> + * option) any later version.
-> + */
-> +
+On Wed, 2016-12-14 at 11:41 +1100, Balbir Singh wrote:
+> I was planning to skipping other IRQ chips for now and support just
+> XICS/XIVE with BOOK3S and PPC64. But we can discuss this.
 
-[SNIP]
+Well you still need to make sure you don't do your lazy stuff on
+them and actually mask EE.
 
-> +
-> +		ucc_hdlc: ucc@2000 {
-> +			device_type =3D "hdlc";
-> +			compatible =3D "fsl,ucc-hdlc";
-> +			rx-clock-name =3D "clk9";
-> +			tx-clock-name =3D "clk9";
+> > That's why I mentioned opt-in. Maybe make it conditional on a
+> > global
+> > boolean that gets enabled by the PIC itself, or make it an enum
+> > 
+> > enum lazy_irq_masking_mode {
+> >        lazy_irq_mask_ee,       /* Use CPU EE bit (default) */
+> >        lazy_irq_mask_fetch,    /* Fetch the interrupt and stash it
+> > away */
+> >        lazy_irq_mask_prio      /* Change processor priority */
+> > };
+> > 
+> > For the latter we'd need a ppc_md. hook to do the priority change
+> > which xive (and potentially others like MPIC) could use.
+> 
+> We have set_cpu_priority for XICS, which sets the base_priority
+> only for the CPPR at the moment. It can be extended
 
-Should it be clk9 on both tx and rx clock?
+Well, that's what I said earlier. XICS can do that in *theory* but it's
+broken in HW. There's a race condition or two, if you whack the CPPR in
+a way that causes a pending interrupt to be rejected, there's a timing
+window where the ICP can wedge itself or the interrupt be lost, I don't
+remember.
 
- Jocke=
+The only safe way on XICS is to fetch the interrupt (which implicitly
+raises the CPPR) and lower it using EOI.
+
+Cheers,
+Ben.
