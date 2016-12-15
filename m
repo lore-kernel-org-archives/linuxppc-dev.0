@@ -1,17 +1,22 @@
-Return-Path: <valentin.longchamp@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0074.outbound.protection.outlook.com [104.47.40.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfZ5B04ckzDw9Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 00:28:13 +1100 (AEDT)
-From: Valentin Longchamp <valentin.longchamp@keymile.com>
-To: oss@buserror.net, linuxppc-dev@lists.ozlabs.org
-Cc: Valentin Longchamp <valentin.longchamp@keymile.com>
-Subject: [PATCH 3/3] powerpc/corenet: add support for the kmcent2 board
-Date: Thu, 15 Dec 2016 14:22:28 +0100
-Message-Id: <1481808148-16840-4-git-send-email-valentin.longchamp@keymile.com>
-In-Reply-To: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfZq70ncSzDw3P
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:01:06 +1100 (AEDT)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "oss@buserror.net" <oss@buserror.net>, "valentin.longchamp@keymile.com"
+ <valentin.longchamp@keymile.com>
+Subject: Re: [PATCH 3/3] powerpc/corenet: add support for the kmcent2 board
+Date: Thu, 15 Dec 2016 14:00:58 +0000
+Message-ID: <1481810456.3878.18.camel@infinera.com>
 References: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
+ <1481808148-16840-4-git-send-email-valentin.longchamp@keymile.com>
+In-Reply-To: <1481808148-16840-4-git-send-email-valentin.longchamp@keymile.com>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,352 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This board is built around Freescale's T1040 SoC.
+On Thu, 2016-12-15 at 14:22 +0100, Valentin Longchamp wrote:
+> This board is built around Freescale's T1040 SoC.
+>=20
+> The peripherals used by this design are:
+> - DDR3 RAM with SPD support
+> - parallel NOR Flash as boot medium
+> - 1 PCIe bus (PCIe1 x1)
+> - 3 FMAN Ethernet devices (FMAN1 DTSEC1/2/5)
+> - 4 IFC bus devices:
+> =A0 - NOR flash
+> =A0 - NAND flash
+> =A0 - QRIO reset/power mgmt CPLD
+> =A0 - BFTIC chassis management CPLD
+> - 2 I2C buses
+> - 1 SPI bus
+> - HDLC bus with the QE's UCC1
+> - last but not least, the mandatory serial port
+>=20
+> The board can be used with the corenet32_smp_defconfig.
+>=20
+> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+> ---
+> =A0arch/powerpc/boot/dts/fsl/kmcent2.dts=A0=A0=A0=A0=A0=A0=A0=A0=A0| 303 =
+++++++++++++++++++++++++++
+> =A0arch/powerpc/platforms/85xx/corenet_generic.c |=A0=A0=A01 +
+> =A02 files changed, 304 insertions(+)
+> =A0create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
+>=20
+> diff --git a/arch/powerpc/boot/dts/fsl/kmcent2.dts b/arch/powerpc/boot/dt=
+s/fsl/kmcent2.dts
+> new file mode 100644
+> index 0000000..47afa43
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/fsl/kmcent2.dts
+> @@ -0,0 +1,303 @@
+> +/*
+> + * Keymile kmcent2 Device Tree Source, based on T1040RDB DTS
+> + *
+> + * (C) Copyright 2016
+> + * Valentin Longchamp, Keymile AG, valentin.longchamp@keymile.com
+> + *
+> + * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute=A0=A0it and/or mo=
+dify it
+> + * under=A0=A0the terms of=A0=A0the GNU General=A0=A0Public License as p=
+ublished by the
+> + * Free Software Foundation;=A0=A0either version 2 of the=A0=A0License, =
+or (at your
+> + * option) any later version.
+> + */
+> +
 
-The peripherals used by this design are:
-- DDR3 RAM with SPD support
-- parallel NOR Flash as boot medium
-- 1 PCIe bus (PCIe1 x1)
-- 3 FMAN Ethernet devices (FMAN1 DTSEC1/2/5)
-- 4 IFC bus devices:
-  - NOR flash
-  - NAND flash
-  - QRIO reset/power mgmt CPLD
-  - BFTIC chassis management CPLD
-- 2 I2C buses
-- 1 SPI bus
-- HDLC bus with the QE's UCC1
-- last but not least, the mandatory serial port
+[SNIP]
 
-The board can be used with the corenet32_smp_defconfig.
+> +
+> +		ucc_hdlc: ucc@2000 {
+> +			device_type =3D "hdlc";
+> +			compatible =3D "fsl,ucc-hdlc";
+> +			rx-clock-name =3D "clk9";
+> +			tx-clock-name =3D "clk9";
 
-Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
----
- arch/powerpc/boot/dts/fsl/kmcent2.dts         | 303 ++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
- 2 files changed, 304 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
+Should it be clk9 on both tx and rx clock?
 
-diff --git a/arch/powerpc/boot/dts/fsl/kmcent2.dts b/arch/powerpc/boot/dts/fsl/kmcent2.dts
-new file mode 100644
-index 0000000..47afa43
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/kmcent2.dts
-@@ -0,0 +1,303 @@
-+/*
-+ * Keymile kmcent2 Device Tree Source, based on T1040RDB DTS
-+ *
-+ * (C) Copyright 2016
-+ * Valentin Longchamp, Keymile AG, valentin.longchamp@keymile.com
-+ *
-+ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/include/ "t104xsi-pre.dtsi"
-+
-+/ {
-+	model = "keymile,kmcent2";
-+	compatible = "keymile,kmcent2";
-+
-+	aliases {
-+		front_phy = &front_phy;
-+	};
-+
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		bman_fbpr: bman-fbpr {
-+			size = <0 0x1000000>;
-+			alignment = <0 0x1000000>;
-+		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
-+	};
-+
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x04000000
-+			  1 0 0xf 0xfa000000 0x00010000
-+			  2 0 0xf 0xfb000000 0x00010000
-+			  4 0 0xf 0xc0000000 0x08000000
-+			  6 0 0xf 0xd0000000 0x08000000
-+			  7 0 0xf 0xd8000000 0x08000000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x04000000>;
-+			bank-width = <2>;
-+			device-width = <2>;
-+		};
-+
-+		nand@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,ifc-nand";
-+			reg = <0x1 0x0 0x10000>;
-+		};
-+
-+		board-control@2,0 {
-+			compatible = "keymile,qriox";
-+			reg = <0x2 0x0 0x80>;
-+		};
-+
-+		chassis-mgmt@6,0 {
-+			compatible = "keymile,bfticu";
-+			reg = <6 0 0x100>;
-+			interrupt-controller;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <11 1 0 0>;
-+			#interrupt-cells = <1>;
-+		};
-+
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	bportals: bman-portals@ff4000000 {
-+		ranges = <0x0 0xf 0xf4000000 0x2000000>;
-+	};
-+
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+
-+		spi@110000 {
-+			network-clock@1 {
-+				compatible = "zarlink,zl30364";
-+				reg = <1>;
-+				spi-max-frequency = <1000000>;
-+			};
-+		};
-+
-+		sdhc@114000 {
-+			status = "disabled";
-+		};
-+
-+		i2c@118000 {
-+			clock-frequency = <100000>;
-+
-+			mux@70 {
-+				compatible = "nxp,pca9547";
-+				reg = <0x70>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				i2c-mux-idle-disconnect;
-+
-+				i2c@0 {
-+					reg = <0>;
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+
-+					eeprom@54 {
-+						compatible = "24c02";
-+						reg = <0x54>;
-+						pagesize = <2>;
-+						read-only;
-+						label = "ddr3-spd";
-+					};
-+				};
-+
-+				i2c@7 {
-+					reg = <7>;
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+
-+					temp-sensor@48 {
-+						compatible = "national,lm75";
-+						reg = <0x48>;
-+						label = "SENSOR_0";
-+					};
-+					temp-sensor@4a {
-+						compatible = "national,lm75";
-+						reg = <0x4a>;
-+						label = "SENSOR_2";
-+					};
-+					temp-sensor@4b {
-+						compatible = "national,lm75";
-+						reg = <0x4b>;
-+						label = "SENSOR_3";
-+					};
-+				};
-+			};
-+		};
-+
-+		i2c@118100 {
-+			clock-frequency = <100000>;
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c08";
-+				reg = <0x50>;
-+				pagesize = <16>;
-+			};
-+
-+			eeprom@54 {
-+				compatible = "atmel,24c08";
-+				reg = <0x54>;
-+				pagesize = <16>;
-+			};
-+		};
-+
-+		i2c@119000 {
-+			status = "disabled";
-+		};
-+
-+		i2c@119100 {
-+			status = "disabled";
-+		};
-+
-+		serial2: serial@11d500 {
-+			status = "disabled";
-+		};
-+
-+		serial3: serial@11d600 {
-+			status = "disabled";
-+		};
-+
-+		usb0: usb@210000 {
-+			status = "disabled";
-+		};
-+		usb1: usb@211000 {
-+			status = "disabled";
-+		};
-+
-+		display@180000 {
-+			status = "disabled";
-+		};
-+
-+		sata@220000 {
-+			status = "disabled";
-+		};
-+		sata@221000 {
-+			status = "disabled";
-+		};
-+
-+		fman@400000 {
-+			ethernet@e0000 {
-+				fixed-link = <0 1 1000 0 0>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e2000 {
-+				fixed-link = <1 1 1000 0 0>;
-+				phy-connection-type = "sgmii";
-+			};
-+
-+			ethernet@e4000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e6000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e8000 {
-+				phy-handle = <&front_phy>;
-+				phy-connection-type = "rgmii";
-+			};
-+
-+			mdio0: mdio@fc000 {
-+				front_phy: ethernet-phy@11 {
-+					reg = <0x11>;
-+				};
-+			};
-+		};
-+	};
-+
-+
-+	pci0: pcie@ffe240000 {
-+		reg = <0xf 0xfe240000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe250000 {
-+		status = "disabled";
-+	};
-+
-+	pci2: pcie@ffe260000 {
-+		status = "disabled";
-+	};
-+
-+	pci3: pcie@ffe270000 {
-+		status = "disabled";
-+	};
-+
-+	qe: qe@ffe140000 {
-+		ranges = <0x0 0xf 0xfe140000 0x40000>;
-+		reg = <0xf 0xfe140000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+
-+		si1: si@700 {
-+			compatible = "fsl,t1040-qe-si";
-+			reg = <0x700 0x80>;
-+		};
-+
-+		siram1: siram@1000 {
-+			compatible = "fsl,t1040-qe-siram";
-+			reg = <0x1000 0x800>;
-+		};
-+
-+		ucc_hdlc: ucc@2000 {
-+			device_type = "hdlc";
-+			compatible = "fsl,ucc-hdlc";
-+			rx-clock-name = "clk9";
-+			tx-clock-name = "clk9";
-+			fsl,tx-timeslot-mask = <0xfffffffe>;
-+			fsl,rx-timeslot-mask = <0xfffffffe>;
-+			fsl,siram-entry-id = <0>;
-+		};
-+	};
-+};
-+
-+#include "t1040si-post.dtsi"
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index 1179115..2d28907 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -160,6 +160,7 @@ int __init corenet_gen_publish_devices(void)
- 	"fsl,T1040RDB",
- 	"fsl,T1042RDB",
- 	"fsl,T1042RDB_PI",
-+	"keymile,kmcent2",
- 	"keymile,kmcoge4",
- 	"varisys,CYRUS",
- 	NULL
--- 
-1.8.3.1
+ Jocke=
