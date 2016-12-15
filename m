@@ -2,14 +2,16 @@ Return-Path: <valentin.longchamp@keymile.com>
 Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfZ526KsKzDsxq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 00:28:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfZ562rLRzDt0b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 00:28:10 +1100 (AEDT)
 From: Valentin Longchamp <valentin.longchamp@keymile.com>
 To: oss@buserror.net, linuxppc-dev@lists.ozlabs.org
 Cc: Valentin Longchamp <valentin.longchamp@keymile.com>
-Subject: [PATCH 0/3] powerpc: update for the Keymile QorIQ boards
-Date: Thu, 15 Dec 2016 14:22:25 +0100
-Message-Id: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
+Subject: [PATCH 2/3] powerpc/85xx: remove the kmp204x_defconfig
+Date: Thu, 15 Dec 2016 14:22:27 +0100
+Message-Id: <1481808148-16840-3-git-send-email-valentin.longchamp@keymile.com>
+In-Reply-To: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
+References: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,23 +21,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series contains some updates for the Keymile QorIQ boards.
-There is a small fix for the kmcoge4 board DTS, the removal of the
-kmp204x_defconfig file which is unmaintained (corenet32_smp_defconfig
-can be used instead) and the addition of the kmcent2 board.
+It is not maintained and thus obsolete. corenet32_smp_defconfig can be
+used as reference for the kmcoge4/kmp204x boards.
 
-Valentin Longchamp (3):
-  powerpc/corenet: explicitly disable the SDHC controller on kmcoge4
-  powerpc/85xx: remove the kmp204x_defconfig
-  powerpc/corenet: add support for the kmcent2 board
-
- arch/powerpc/boot/dts/fsl/kmcent2.dts         | 303 ++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/kmcoge4.dts         |   4 +
- arch/powerpc/configs/85xx/kmp204x_defconfig   | 220 -------------------
- arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
- 4 files changed, 308 insertions(+), 220 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
+Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+---
+ arch/powerpc/configs/85xx/kmp204x_defconfig | 220 ----------------------------
+ 1 file changed, 220 deletions(-)
  delete mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
 
+diff --git a/arch/powerpc/configs/85xx/kmp204x_defconfig b/arch/powerpc/configs/85xx/kmp204x_defconfig
+deleted file mode 100644
+index aaaaa60..0000000
+--- a/arch/powerpc/configs/85xx/kmp204x_defconfig
++++ /dev/null
+@@ -1,220 +0,0 @@
+-CONFIG_PPC_85xx=y
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=8
+-CONFIG_SYSVIPC=y
+-CONFIG_POSIX_MQUEUE=y
+-CONFIG_AUDIT=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_BSD_PROCESS_ACCT=y
+-CONFIG_IKCONFIG=y
+-CONFIG_IKCONFIG_PROC=y
+-CONFIG_LOG_BUF_SHIFT=14
+-CONFIG_CGROUPS=y
+-CONFIG_CGROUP_SCHED=y
+-CONFIG_RELAY=y
+-CONFIG_BLK_DEV_INITRD=y
+-CONFIG_KALLSYMS_ALL=y
+-CONFIG_EMBEDDED=y
+-CONFIG_PERF_EVENTS=y
+-CONFIG_SLAB=y
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODULE_FORCE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-# CONFIG_BLK_DEV_BSG is not set
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+-CONFIG_CORENET_GENERIC=y
+-CONFIG_MPIC_MSGR=y
+-CONFIG_HIGHMEM=y
+-# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+-CONFIG_BINFMT_MISC=m
+-CONFIG_KEXEC=y
+-CONFIG_FORCE_MAX_ZONEORDER=13
+-CONFIG_PCI=y
+-CONFIG_PCIEPORTBUS=y
+-# CONFIG_PCIEASPM is not set
+-CONFIG_PCI_MSI=y
+-CONFIG_ADVANCED_OPTIONS=y
+-CONFIG_LOWMEM_SIZE_BOOL=y
+-CONFIG_LOWMEM_SIZE=0x20000000
+-CONFIG_NET=y
+-CONFIG_PACKET=y
+-CONFIG_UNIX=y
+-CONFIG_XFRM_USER=y
+-CONFIG_XFRM_SUB_POLICY=y
+-CONFIG_XFRM_STATISTICS=y
+-CONFIG_NET_KEY=y
+-CONFIG_NET_KEY_MIGRATE=y
+-CONFIG_INET=y
+-CONFIG_IP_MULTICAST=y
+-CONFIG_IP_ADVANCED_ROUTER=y
+-CONFIG_IP_MULTIPLE_TABLES=y
+-CONFIG_IP_ROUTE_MULTIPATH=y
+-CONFIG_IP_ROUTE_VERBOSE=y
+-CONFIG_IP_PNP=y
+-CONFIG_IP_PNP_DHCP=y
+-CONFIG_IP_PNP_BOOTP=y
+-CONFIG_IP_PNP_RARP=y
+-CONFIG_NET_IPIP=y
+-CONFIG_IP_MROUTE=y
+-CONFIG_IP_PIMSM_V1=y
+-CONFIG_IP_PIMSM_V2=y
+-CONFIG_INET_AH=y
+-CONFIG_INET_ESP=y
+-CONFIG_INET_IPCOMP=y
+-CONFIG_IPV6=y
+-CONFIG_IP_SCTP=m
+-CONFIG_TIPC=y
+-CONFIG_NET_SCHED=y
+-CONFIG_NET_SCH_CBQ=y
+-CONFIG_NET_SCH_HTB=y
+-CONFIG_NET_SCH_HFSC=y
+-CONFIG_NET_SCH_PRIO=y
+-CONFIG_NET_SCH_MULTIQ=y
+-CONFIG_NET_SCH_RED=y
+-CONFIG_NET_SCH_SFQ=y
+-CONFIG_NET_SCH_TEQL=y
+-CONFIG_NET_SCH_TBF=y
+-CONFIG_NET_SCH_GRED=y
+-CONFIG_NET_CLS_BASIC=y
+-CONFIG_NET_CLS_TCINDEX=y
+-CONFIG_NET_CLS_U32=y
+-CONFIG_CLS_U32_PERF=y
+-CONFIG_CLS_U32_MARK=y
+-CONFIG_NET_CLS_FLOW=y
+-CONFIG_NET_CLS_CGROUP=y
+-CONFIG_UEVENT_HELPER_PATH="/sbin/mdev"
+-CONFIG_DEVTMPFS=y
+-CONFIG_MTD=y
+-CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_BLOCK=y
+-CONFIG_MTD_CFI=y
+-CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_PHYSMAP_OF=y
+-CONFIG_MTD_PHRAM=y
+-CONFIG_MTD_NAND=y
+-CONFIG_MTD_NAND_ECC_BCH=y
+-CONFIG_MTD_NAND_FSL_ELBC=y
+-CONFIG_MTD_UBI=y
+-CONFIG_MTD_UBI_GLUEBI=y
+-CONFIG_BLK_DEV_LOOP=y
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_COUNT=2
+-CONFIG_BLK_DEV_RAM_SIZE=2048
+-CONFIG_EEPROM_AT24=y
+-CONFIG_SCSI=y
+-CONFIG_BLK_DEV_SD=y
+-CONFIG_CHR_DEV_ST=y
+-CONFIG_BLK_DEV_SR=y
+-CONFIG_CHR_DEV_SG=y
+-CONFIG_SCSI_LOGGING=y
+-CONFIG_SCSI_SYM53C8XX_2=y
+-CONFIG_NETDEVICES=y
+-# CONFIG_NET_VENDOR_3COM is not set
+-# CONFIG_NET_VENDOR_ADAPTEC is not set
+-# CONFIG_NET_VENDOR_ALTEON is not set
+-# CONFIG_NET_VENDOR_AMD is not set
+-# CONFIG_NET_VENDOR_ATHEROS is not set
+-# CONFIG_NET_VENDOR_BROADCOM is not set
+-# CONFIG_NET_VENDOR_BROCADE is not set
+-# CONFIG_NET_VENDOR_CHELSIO is not set
+-# CONFIG_NET_VENDOR_CISCO is not set
+-# CONFIG_NET_VENDOR_DEC is not set
+-# CONFIG_NET_VENDOR_DLINK is not set
+-# CONFIG_NET_VENDOR_EMULEX is not set
+-# CONFIG_NET_VENDOR_EXAR is not set
+-CONFIG_FSL_PQ_MDIO=y
+-CONFIG_FSL_XGMAC_MDIO=y
+-# CONFIG_NET_VENDOR_HP is not set
+-# CONFIG_NET_VENDOR_INTEL is not set
+-# CONFIG_NET_VENDOR_MARVELL is not set
+-# CONFIG_NET_VENDOR_MELLANOX is not set
+-# CONFIG_NET_VENDOR_MICREL is not set
+-# CONFIG_NET_VENDOR_MICROCHIP is not set
+-# CONFIG_NET_VENDOR_MYRI is not set
+-# CONFIG_NET_VENDOR_NATSEMI is not set
+-# CONFIG_NET_VENDOR_NVIDIA is not set
+-# CONFIG_NET_VENDOR_OKI is not set
+-# CONFIG_NET_PACKET_ENGINE is not set
+-# CONFIG_NET_VENDOR_QLOGIC is not set
+-# CONFIG_NET_VENDOR_REALTEK is not set
+-# CONFIG_NET_VENDOR_RDC is not set
+-# CONFIG_NET_VENDOR_SEEQ is not set
+-# CONFIG_NET_VENDOR_SILAN is not set
+-# CONFIG_NET_VENDOR_SIS is not set
+-# CONFIG_NET_VENDOR_SMSC is not set
+-# CONFIG_NET_VENDOR_STMICRO is not set
+-# CONFIG_NET_VENDOR_SUN is not set
+-# CONFIG_NET_VENDOR_TEHUTI is not set
+-# CONFIG_NET_VENDOR_TI is not set
+-# CONFIG_NET_VENDOR_VIA is not set
+-# CONFIG_NET_VENDOR_WIZNET is not set
+-# CONFIG_NET_VENDOR_XILINX is not set
+-CONFIG_MARVELL_PHY=y
+-CONFIG_VITESSE_PHY=y
+-CONFIG_FIXED_PHY=y
+-# CONFIG_WLAN is not set
+-# CONFIG_INPUT_MOUSEDEV is not set
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-CONFIG_SERIO_LIBPS2=y
+-# CONFIG_LEGACY_PTYS is not set
+-CONFIG_PPC_EPAPR_HV_BYTECHAN=y
+-CONFIG_SERIAL_8250=y
+-CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_MANY_PORTS=y
+-CONFIG_SERIAL_8250_DETECT_IRQ=y
+-CONFIG_SERIAL_8250_RSA=y
+-CONFIG_NVRAM=y
+-CONFIG_I2C=y
+-CONFIG_I2C_CHARDEV=y
+-CONFIG_I2C_MUX=y
+-CONFIG_I2C_MUX_PCA954x=y
+-CONFIG_I2C_MPC=y
+-CONFIG_SPI=y
+-CONFIG_SPI_FSL_SPI=y
+-CONFIG_SPI_FSL_ESPI=y
+-CONFIG_SPI_SPIDEV=m
+-CONFIG_PTP_1588_CLOCK=y
+-# CONFIG_HWMON is not set
+-# CONFIG_USB_SUPPORT is not set
+-CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+-CONFIG_EDAC_MPC85XX=y
+-CONFIG_RTC_CLASS=y
+-CONFIG_RTC_DRV_DS3232=y
+-CONFIG_RTC_DRV_CMOS=y
+-CONFIG_UIO=y
+-CONFIG_STAGING=y
+-CONFIG_CLK_QORIQ=y
+-CONFIG_EXT2_FS=y
+-CONFIG_NTFS_FS=y
+-CONFIG_PROC_KCORE=y
+-CONFIG_TMPFS=y
+-CONFIG_JFFS2_FS=y
+-CONFIG_UBIFS_FS=y
+-CONFIG_CRAMFS=y
+-CONFIG_SQUASHFS=y
+-CONFIG_SQUASHFS_XZ=y
+-CONFIG_NFS_FS=y
+-CONFIG_NFS_V4=y
+-CONFIG_ROOT_NFS=y
+-CONFIG_NLS_ISO8859_1=y
+-CONFIG_NLS_UTF8=m
+-CONFIG_CRC_ITU_T=m
+-CONFIG_DEBUG_INFO=y
+-CONFIG_MAGIC_SYSRQ=y
+-CONFIG_DEBUG_SHIRQ=y
+-CONFIG_DETECT_HUNG_TASK=y
+-CONFIG_SCHEDSTATS=y
+-CONFIG_RCU_TRACE=y
+-CONFIG_UPROBE_EVENT=y
+-CONFIG_CRYPTO_NULL=y
+-CONFIG_CRYPTO_PCBC=m
+-CONFIG_CRYPTO_MD4=y
+-CONFIG_CRYPTO_SHA256=y
+-CONFIG_CRYPTO_SHA512=y
+-# CONFIG_CRYPTO_ANSI_CPRNG is not set
+-CONFIG_CRYPTO_DEV_FSL_CAAM=y
 -- 
 1.8.3.1
