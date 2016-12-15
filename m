@@ -1,21 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfN6b00GlzDvk5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 16:58:47 +1100 (AEDT)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: paulus@samba.org
-Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
- thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 11/11] powerpc/kvm: Advertise availablity of HPT resizing on
- KVM HV
-Date: Thu, 15 Dec 2016 16:54:04 +1100
-Message-Id: <20161215055404.29351-12-david@gibson.dropbear.id.au>
-In-Reply-To: <20161215055404.29351-1-david@gibson.dropbear.id.au>
-References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfSBm2sM7zDw5P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 20:02:40 +1100 (AEDT)
+Date: Thu, 15 Dec 2016 09:54:56 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, gabriel@krisman.be,
+ hch@lst.de, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, stable@vger.kernel.org.#.v4.9+
+Subject: Re: [PATCH] genirq/affinity: fix node generation from cpumask
+Message-ID: <20161215085456.GA2864@lst.de>
+References: <1481738472-2671-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1481738472-2671-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This updates the KVM_CAP_SPAPR_RESIZE_HPT capability to advertise the
-presence of in-kernel HPT resizing on KVM HV.  In fact the HPT resizing
-isn't fully implemented, but this allows us to experiment with what's
-there.
+Looks fine:
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/kvm/powerpc.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index bb23923..965d26b 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -606,7 +606,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		r = 1;
- 		break;
- 	case KVM_CAP_SPAPR_RESIZE_HPT:
--		r = 1; /* resize allowed only if HPT is outside kernel */
-+		if (hv_enabled)
-+			r = 2; /* In-kernel resize implementation */
-+		else
-+			r = 1; /* outside kernel resize allowed */
- 		break;
- #endif
- 	case KVM_CAP_PPC_HTM:
--- 
-2.9.3
+(but I agree with the bracing nitpick from Gavin)
