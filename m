@@ -1,24 +1,24 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfT1X2wK6zDw5T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 20:39:44 +1100 (AEDT)
-Date: Thu, 15 Dec 2016 10:36:52 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-cc: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, linuxppc-dev@lists.ozlabs.org,
- gabriel@krisman.be
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfXvJ3y3nzDw5V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 23:34:36 +1100 (AEDT)
+Received: by mail-pg0-x244.google.com with SMTP id x23so6116380pgx.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 04:34:36 -0800 (PST)
 Subject: Re: [PATCH] genirq/affinity: fix node generation from cpumask
-In-Reply-To: <20161214232425.GA13182@gwshan>
-Message-ID: <alpine.DEB.2.20.1612151036340.3470@nanos>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>, tglx@linutronix.de,
+ linux-kernel@vger.kernel.org
 References: <1481738472-2671-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20161214232425.GA13182@gwshan>
+Cc: linux-pci@vger.kernel.org, hch@lst.de, linuxppc-dev@lists.ozlabs.org,
+ gabriel@krisman.be
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <d637847f-52c8-1b55-80e2-1b4d4523fa8a@gmail.com>
+Date: Thu, 15 Dec 2016 23:34:21 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1481738472-2671-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 Dec 2016, Gavin Shan wrote:
-> > static int get_nodes_in_cpumask(const struct cpumask *mask, nodemask_t *nodemsk)
-> > {
-> >-	int n, nodes;
-> >+	int n, nodes = 0;
-> >
-> > 	/* Calculate the number of nodes in the supplied affinity mask */
-> >-	for (n = 0, nodes = 0; n < num_online_nodes(); n++) {
-> >+	for_each_online_node(n)
-> > 		if (cpumask_intersects(mask, cpumask_of_node(n))) {
-> > 			node_set(n, *nodemsk);
-> > 			nodes++;
-> > 		}
-> >-	}
-> >+
+
+
+On 15/12/16 05:01, Guilherme G. Piccoli wrote:
+> Commit 34c3d9819fda ("genirq/affinity: Provide smarter irq spreading
+> infrastructure") introduced a better IRQ spreading mechanism, taking
+> account of the available NUMA nodes in the machine.
 > 
-> It'd better to keep the brackets so that we needn't add them when adding
-> more code into the block next time.
+> Problem is that the algorithm of retrieving the nodemask iterates
+> "linearly" based on the number of online nodes - some architectures
+> present non-linear node distribution among the nodemask, like PowerPC.
+> If this is the case, the algorithm lead to a wrong node count number
+> and therefore to a bad/incomplete IRQ affinity distribution.
+> 
+> For example, this problem were found in a machine with 128 CPUs and two
+> nodes, namely nodes 0 and 8 (instead of 0 and 1, if it was linearly
+> distributed). This led to a wrong affinity distribution which then led to
+> a bad mq allocation for nvme driver.
+> 
+> Finally, we take the opportunity to fix a comment regarding the affinity
+> distribution when we have _more_ nodes than vectors.
 
-Removing the brackets is outright wrong. See:
-  https://marc.info/?l=linux-kernel&m=147351236615103
+Very good catch! 
 
-I'll fix that up when applying the patch.
-
-Thanks,
-
-	tglx
+Acked-by: Balbir Singh <bsingharora@gmail.com>
