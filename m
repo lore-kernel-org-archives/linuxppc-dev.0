@@ -1,33 +1,35 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <jallen@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfkZh5czwzDw63
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 06:50:51 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBFJn6rW081156
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 14:50:50 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27bv3m10nr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfnmH3tZ6zDw6F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 09:14:23 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBFMDn8I080887
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 17:14:20 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27c3n6gern-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 14:50:49 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 17:14:19 -0500
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Thu, 15 Dec 2016 12:50:48 -0700
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Alistair Popple <apopple@au1.ibm.com>
-Subject: [PATCH v3 0/5] powerpc/mm: enable memory hotplug on radix
-Date: Thu, 15 Dec 2016 13:50:38 -0600
-Message-Id: <1481831443-22761-1-git-send-email-arbab@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.vnet.ibm.com>;
+ Thu, 15 Dec 2016 15:14:19 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4559419D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 15:13:36 -0700 (MST)
+To: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
+From: John Allen <jallen@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/3] powerpc/pseries: Perform PRRN topology updates in
+ kernel
+Date: Thu, 15 Dec 2016 16:14:16 -0600
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Message-Id: <ef5af85a-5692-6a2b-8fae-5500d3880336@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,52 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory hotplug is leading to hash page table calls, even on radix:
+Formerly, when we received a PRRN rtas event, device tree updating was
+performed in the kernel and the actual topology updating was performed in
+userspace. This was necessary as in order to update the topology for memory,
+we must perform a hot remove and a subsequent hot add and until recently,
+memory hotplug was not included in the kernel. Since memory hotplug is now
+available, this patchset moves the PRRN topology updating into the kernel.
 
-...
-        arch_add_memory
-                create_section_mapping
-                        htab_bolt_mapping
-                                BUG_ON(!ppc_md.hpte_insert);
+Changes from v1:
+-Introduce patch to separate the acquire and release drc from existing
+ memory hotplug
+-Create new function "dlpar_memory_readd_by_index" that consolidates the
+ necessary steps of memory hot remove and hot add into a single function
+-Remove conversion of phandle to BE
+-Since error messages are already generated in the memory hotplug code,
+ remove redundant error messages in pseries_prrn_update_node. Since we no
+ longer use the return code from the hotplug event, remove the
+ wait_for_completion infrastructure.
 
-To fix, refactor {create,remove}_section_mapping() into hash__ and radix__
-variants. Implement the radix versions by borrowing from existing vmemmap
-and x86 code.
+John Allen (3):
+      powerpc/pseries: Make the acquire/release of the drc for memory a seperate step
+      powerpc/pseries: Introduce memory hotplug READD operation
+      powerpc/pseries: Update affinity for memory and cpus specified in a PRRN event
 
-This passes basic verification of plugging and removing memory, but this 
-stuff is tricky and I'd appreciate extra scrutiny of the series for 
-correctness--in particular, the adaptation of remove_pagetable() from x86.
-
-/* changelog */
-
-v3:
-* Port remove_pagetable() et al. from x86 for unmapping.
-
-* [RFC] -> [PATCH]
-
-v2:
-* https://lkml.kernel.org/r/1471449083-15931-1-git-send-email-arbab@linux.vnet.ibm.com
-
-* Do not simply fall through to vmemmap_{create,remove}_mapping(). As Aneesh
-  and Michael pointed out, they are tied to CONFIG_SPARSEMEM_VMEMMAP and only
-  did what I needed by luck anyway.
-
-v1:
-* https://lkml.kernel.org/r/1466699962-22412-1-git-send-email-arbab@linux.vnet.ibm.com
-
-Reza Arbab (5):
-  powerpc/mm: set the radix linear page mapping size
-  powerpc/mm: refactor {create,remove}_section_mapping()
-  powerpc/mm: add radix__create_section_mapping()
-  powerpc/mm: add radix__remove_section_mapping()
-  powerpc/mm: unstub radix__vmemmap_remove_mapping()
-
- arch/powerpc/include/asm/book3s/64/hash.h  |   5 +
- arch/powerpc/include/asm/book3s/64/radix.h |   5 +
- arch/powerpc/mm/hash_utils_64.c            |   4 +-
- arch/powerpc/mm/pgtable-book3s64.c         |  18 +++
- arch/powerpc/mm/pgtable-radix.c            | 207 ++++++++++++++++++++++++++++-
- 5 files changed, 236 insertions(+), 3 deletions(-)
-
--- 
-1.8.3.1
+ arch/powerpc/include/asm/rtas.h                 |    1
+ arch/powerpc/kernel/rtasd.c                     |    7 ++
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   75 +++++++++++++++++++----
+ arch/powerpc/platforms/pseries/mobility.c       |   32 ++++++++++
+ 4 files changed, 102 insertions(+), 13 deletions(-)
