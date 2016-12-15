@@ -1,17 +1,18 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0077.outbound.protection.outlook.com [104.47.42.77])
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0062.outbound.protection.outlook.com [104.47.40.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfYly41NDzDw65
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 00:13:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfYm03x6pzDw62
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 00:13:20 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: <netdev@vger.kernel.org>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <davem@davemloft.net>
-Subject: [PATCH net 2/3] dpaa_eth: remove redundant dependency on FSL_SOC
-Date: Thu, 15 Dec 2016 15:13:05 +0200
-Message-ID: <1481807586-4798-3-git-send-email-madalin.bucur@nxp.com>
+Subject: [PATCH net 3/3] MAINTAINERS: net: add entry for Freescale QorIQ DPAA
+ Ethernet driver
+Date: Thu, 15 Dec 2016 15:13:06 +0200
+Message-ID: <1481807586-4798-4-git-send-email-madalin.bucur@nxp.com>
 In-Reply-To: <1481807586-4798-1-git-send-email-madalin.bucur@nxp.com>
 References: <1481807586-4798-1-git-send-email-madalin.bucur@nxp.com>
 Reply-To: <madalin.bucur@nxp.com>
@@ -26,22 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add record for Freescale QORIQ DPAA Ethernet driver adding myself as
+maintainer.
+
 Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 ---
- drivers/net/ethernet/freescale/dpaa/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ MAINTAINERS | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/Kconfig b/drivers/net/ethernet/freescale/dpaa/Kconfig
-index f3a3454..a654736 100644
---- a/drivers/net/ethernet/freescale/dpaa/Kconfig
-+++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
-@@ -1,6 +1,6 @@
- menuconfig FSL_DPAA_ETH
- 	tristate "DPAA Ethernet"
--	depends on FSL_SOC && FSL_DPAA && FSL_FMAN
-+	depends on FSL_DPAA && FSL_FMAN
- 	select PHYLIB
- 	select FSL_FMAN_MAC
- 	---help---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e2463ba..0ff9757 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5058,6 +5058,12 @@ S:	Maintained
+ F:	drivers/net/ethernet/freescale/fman
+ F:	Documentation/devicetree/bindings/powerpc/fsl/fman.txt
+ 
++FREESCALE QORIQ DPAA ETHERNET DRIVER
++M:	Madalin Bucur <madalin.bucur@nxp.com>
++L:	netdev@vger.kernel.org
++S:	Maintained
++F:	drivers/net/ethernet/freescale/dpaa
++
+ FREESCALE QUICC ENGINE LIBRARY
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Orphan
 -- 
 2.1.0
