@@ -1,18 +1,18 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfN6X5rdCzDvjw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 16:58:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfN6Y1jDQzDw3P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 16:58:45 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org
 Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
  thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 02/11] powerpc/kvm: Rename kvm_alloc_hpt() for clarity
-Date: Thu, 15 Dec 2016 16:53:55 +1100
-Message-Id: <20161215055404.29351-3-david@gibson.dropbear.id.au>
+Subject: [PATCH 04/11] powerpc/kvm: Don't store values derivable from HPT order
+Date: Thu, 15 Dec 2016 16:53:57 +1100
+Message-Id: <20161215055404.29351-5-david@gibson.dropbear.id.au>
 In-Reply-To: <20161215055404.29351-1-david@gibson.dropbear.id.au>
 References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,96 +24,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The difference between kvm_alloc_hpt() and kvmppc_alloc_hpt() is not at
-all obvious from the name.  In practice kvmppc_alloc_hpt() allocates an HPT
-by whatever means, and calls kvm_alloc_hpt() which will attempt to allocate
-it with CMA only.
-
-To make this less confusing, rename kvm_alloc_hpt() to kvm_alloc_hpt_cma().
-Similarly, kvm_release_hpt() is renamed kvm_free_hpt_cma().
+Currently the kvm_hpt_info structure stores the hashed page table's order,
+and also the number of HPTEs it contains and a mask for its size.  The
+last two can be easily derived from the order, so remove them and just
+calculate them as necessary with a couple of helper inlines.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/kvm_ppc.h   | 4 ++--
- arch/powerpc/kvm/book3s_64_mmu_hv.c  | 8 ++++----
- arch/powerpc/kvm/book3s_hv_builtin.c | 8 ++++----
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h | 12 ++++++++++++
+ arch/powerpc/include/asm/kvm_host.h      |  2 --
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      | 28 +++++++++++++---------------
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      | 18 +++++++++---------
+ 4 files changed, 34 insertions(+), 26 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 2da67bf..3db6be9 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -186,8 +186,8 @@ extern long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
- 		unsigned long tce_value, unsigned long npages);
- extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 			     unsigned long ioba);
--extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
--extern void kvm_release_hpt(struct page *page, unsigned long nr_pages);
-+extern struct page *kvm_alloc_hpt_cma(unsigned long nr_pages);
-+extern void kvm_free_hpt_cma(struct page *page, unsigned long nr_pages);
- extern int kvmppc_core_init_vm(struct kvm *kvm);
- extern void kvmppc_core_destroy_vm(struct kvm *kvm);
- extern void kvmppc_core_free_memslot(struct kvm *kvm,
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 8482921..8810327 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -350,6 +350,18 @@ extern void kvmppc_mmu_debugfs_init(struct kvm *kvm);
+ 
+ extern void kvmhv_rm_send_ipi(int cpu);
+ 
++static inline unsigned long kvmppc_hpt_npte(struct kvm_hpt_info *hpt)
++{
++	/* HPTEs are 2**4 bytes long */
++	return 1UL << (hpt->order - 4);
++}
++
++static inline unsigned long kvmppc_hpt_mask(struct kvm_hpt_info *hpt)
++{
++	/* 128 (2**7) bytes in each HPTEG */
++	return (1UL << (hpt->order - 7)) - 1;
++}
++
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+ 
+ #endif /* __ASM_KVM_BOOK3S_64_H__ */
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 2673271..3900f63 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -244,8 +244,6 @@ struct kvm_arch_memory_slot {
+ struct kvm_hpt_info {
+ 	unsigned long virt;
+ 	struct revmap_entry *rev;
+-	unsigned long npte;
+-	unsigned long mask;
+ 	u32 order;
+ 	int cma;
+ };
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index b795dd1..ae17cdd 100644
+index b5799d1..fe88132 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -62,7 +62,7 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
+@@ -83,15 +83,11 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
+ 
+ 	kvm->arch.hpt.virt = hpt;
+ 	kvm->arch.hpt.order = order;
+-	/* HPTEs are 2**4 bytes long */
+-	kvm->arch.hpt.npte = 1ul << (order - 4);
+-	/* 128 (2**7) bytes in each HPTEG */
+-	kvm->arch.hpt.mask = (1ul << (order - 7)) - 1;
+ 
+ 	atomic64_set(&kvm->arch.mmio_update, 0);
+ 
+ 	/* Allocate reverse map array */
+-	rev = vmalloc(sizeof(struct revmap_entry) * kvm->arch.hpt.npte);
++	rev = vmalloc(sizeof(struct revmap_entry) * kvmppc_hpt_npte(&kvm->arch.hpt));
+ 	if (!rev) {
+ 		pr_err("kvmppc_alloc_hpt: Couldn't alloc reverse map array\n");
+ 		goto out_freehpt;
+@@ -194,8 +190,8 @@ void kvmppc_map_vrma(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 	if (npages > 1ul << (40 - porder))
+ 		npages = 1ul << (40 - porder);
+ 	/* Can't use more than 1 HPTE per HPTEG */
+-	if (npages > kvm->arch.hpt.mask + 1)
+-		npages = kvm->arch.hpt.mask + 1;
++	if (npages > kvmppc_hpt_mask(&kvm->arch.hpt) + 1)
++		npages = kvmppc_hpt_mask(&kvm->arch.hpt) + 1;
+ 
+ 	hp0 = HPTE_V_1TB_SEG | (VRMA_VSID << (40 - 16)) |
+ 		HPTE_V_BOLTED | hpte0_pgsize_encoding(psize);
+@@ -205,7 +201,8 @@ void kvmppc_map_vrma(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 	for (i = 0; i < npages; ++i) {
+ 		addr = i << porder;
+ 		/* can't use hpt_hash since va > 64 bits */
+-		hash = (i ^ (VRMA_VSID ^ (VRMA_VSID << 25))) & kvm->arch.hpt.mask;
++		hash = (i ^ (VRMA_VSID ^ (VRMA_VSID << 25)))
++			& kvmppc_hpt_mask(&kvm->arch.hpt);
+ 		/*
+ 		 * We assume that the hash table is empty and no
+ 		 * vcpus are using it at this stage.  Since we create
+@@ -1306,7 +1303,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 
+ 		/* Skip uninteresting entries, i.e. clean on not-first pass */
+ 		if (!first_pass) {
+-			while (i < kvm->arch.hpt.npte &&
++			while (i < kvmppc_hpt_npte(&kvm->arch.hpt) &&
+ 			       !hpte_dirty(revp, hptp)) {
+ 				++i;
+ 				hptp += 2;
+@@ -1316,7 +1313,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 		hdr.index = i;
+ 
+ 		/* Grab a series of valid entries */
+-		while (i < kvm->arch.hpt.npte &&
++		while (i < kvmppc_hpt_npte(&kvm->arch.hpt) &&
+ 		       hdr.n_valid < 0xffff &&
+ 		       nb + HPTE_SIZE < count &&
+ 		       record_hpte(flags, hptp, hpte, revp, 1, first_pass)) {
+@@ -1332,7 +1329,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 			++revp;
+ 		}
+ 		/* Now skip invalid entries while we can */
+-		while (i < kvm->arch.hpt.npte &&
++		while (i < kvmppc_hpt_npte(&kvm->arch.hpt) &&
+ 		       hdr.n_invalid < 0xffff &&
+ 		       record_hpte(flags, hptp, hpte, revp, 0, first_pass)) {
+ 			/* found an invalid entry */
+@@ -1353,7 +1350,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
+ 		}
+ 
+ 		/* Check if we've wrapped around the hash table */
+-		if (i >= kvm->arch.hpt.npte) {
++		if (i >= kvmppc_hpt_npte(&kvm->arch.hpt)) {
+ 			i = 0;
+ 			ctx->first_pass = 0;
+ 			break;
+@@ -1412,8 +1409,8 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+ 
+ 		err = -EINVAL;
+ 		i = hdr.index;
+-		if (i >= kvm->arch.hpt.npte ||
+-		    i + hdr.n_valid + hdr.n_invalid > kvm->arch.hpt.npte)
++		if (i >= kvmppc_hpt_npte(&kvm->arch.hpt) ||
++		    i + hdr.n_valid + hdr.n_invalid > kvmppc_hpt_npte(&kvm->arch.hpt))
+ 			break;
+ 
+ 		hptp = (__be64 *)(kvm->arch.hpt.virt + (i * HPTE_SIZE));
+@@ -1604,7 +1601,8 @@ static ssize_t debugfs_htab_read(struct file *file, char __user *buf,
+ 	kvm = p->kvm;
+ 	i = p->hpt_index;
+ 	hptp = (__be64 *)(kvm->arch.hpt.virt + (i * HPTE_SIZE));
+-	for (; len != 0 && i < kvm->arch.hpt.npte; ++i, hptp += 2) {
++	for (; len != 0 && i < kvmppc_hpt_npte(&kvm->arch.hpt);
++	     ++i, hptp += 2) {
+ 		if (!(be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT)))
+ 			continue;
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 7e2b048..4ef3561 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -283,7 +283,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 
+ 	/* Find and lock the HPTEG slot to use */
+  do_insert:
+-	if (pte_index >= kvm->arch.hpt.npte)
++	if (pte_index >= kvmppc_hpt_npte(&kvm->arch.hpt))
+ 		return H_PARAMETER;
+ 	if (likely((flags & H_EXACT) == 0)) {
+ 		pte_index &= ~7UL;
+@@ -458,7 +458,7 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
+ 	struct revmap_entry *rev;
+ 	u64 pte, orig_pte, pte_r;
+ 
+-	if (pte_index >= kvm->arch.hpt.npte)
++	if (pte_index >= kvmppc_hpt_npte(&kvm->arch.hpt))
+ 		return H_PARAMETER;
+ 	hpte = (__be64 *)(kvm->arch.hpt.virt + (pte_index << 4));
+ 	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
+@@ -544,7 +544,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
+ 				break;
+ 			}
+ 			if (req != 1 || flags == 3 ||
+-			    pte_index >= kvm->arch.hpt.npte) {
++			    pte_index >= kvmppc_hpt_npte(&kvm->arch.hpt)) {
+ 				/* parameter error */
+ 				args[j] = ((0xa0 | flags) << 56) + pte_index;
+ 				ret = H_PARAMETER;
+@@ -642,7 +642,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	unsigned long v, r, rb, mask, bits;
+ 	u64 pte_v, pte_r;
+ 
+-	if (pte_index >= kvm->arch.hpt.npte)
++	if (pte_index >= kvmppc_hpt_npte(&kvm->arch.hpt))
+ 		return H_PARAMETER;
+ 
+ 	hpte = (__be64 *)(kvm->arch.hpt.virt + (pte_index << 4));
+@@ -711,7 +711,7 @@ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	int i, n = 1;
+ 	struct revmap_entry *rev = NULL;
+ 
+-	if (pte_index >= kvm->arch.hpt.npte)
++	if (pte_index >= kvmppc_hpt_npte(&kvm->arch.hpt))
+ 		return H_PARAMETER;
+ 	if (flags & H_READ_4) {
+ 		pte_index &= ~3;
+@@ -750,7 +750,7 @@ long kvmppc_h_clear_ref(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	unsigned long *rmap;
+ 	long ret = H_NOT_FOUND;
+ 
+-	if (pte_index >= kvm->arch.hpt.npte)
++	if (pte_index >= kvmppc_hpt_npte(&kvm->arch.hpt))
+ 		return H_PARAMETER;
+ 
+ 	rev = real_vmalloc_addr(&kvm->arch.hpt.rev[pte_index]);
+@@ -796,7 +796,7 @@ long kvmppc_h_clear_mod(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	unsigned long *rmap;
+ 	long ret = H_NOT_FOUND;
+ 
+-	if (pte_index >= kvm->arch.hpt.npte)
++	if (pte_index >= kvmppc_hpt_npte(&kvm->arch.hpt))
+ 		return H_PARAMETER;
+ 
+ 	rev = real_vmalloc_addr(&kvm->arch.hpt.rev[pte_index]);
+@@ -949,7 +949,7 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
+ 		somask = (1UL << 28) - 1;
+ 		vsid = (slb_v & ~SLB_VSID_B) >> SLB_VSID_SHIFT;
  	}
+-	hash = (vsid ^ ((eaddr & somask) >> pshift)) & kvm->arch.hpt.mask;
++	hash = (vsid ^ ((eaddr & somask) >> pshift)) & kvmppc_hpt_mask(&kvm->arch.hpt);
+ 	avpn = slb_v & ~(somask >> 16);	/* also includes B */
+ 	avpn |= (eaddr & somask) >> 16;
  
- 	kvm->arch.hpt_cma_alloc = 0;
--	page = kvm_alloc_hpt(1ul << (order - PAGE_SHIFT));
-+	page = kvm_alloc_hpt_cma(1ul << (order - PAGE_SHIFT));
- 	if (page) {
- 		hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
- 		memset((void *)hpt, 0, (1ul << order));
-@@ -108,7 +108,7 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
- 
-  out_freehpt:
- 	if (kvm->arch.hpt_cma_alloc)
--		kvm_release_hpt(page, 1 << (order - PAGE_SHIFT));
-+		kvm_free_hpt_cma(page, 1 << (order - PAGE_SHIFT));
- 	else
- 		free_pages(hpt, order - PAGE_SHIFT);
- 	return -ENOMEM;
-@@ -155,8 +155,8 @@ void kvmppc_free_hpt(struct kvm *kvm)
- 	kvmppc_free_lpid(kvm->arch.lpid);
- 	vfree(kvm->arch.revmap);
- 	if (kvm->arch.hpt_cma_alloc)
--		kvm_release_hpt(virt_to_page(kvm->arch.hpt_virt),
--				1 << (kvm->arch.hpt_order - PAGE_SHIFT));
-+		kvm_free_hpt_cma(virt_to_page(kvm->arch.hpt_virt),
-+				 1 << (kvm->arch.hpt_order - PAGE_SHIFT));
- 	else
- 		free_pages(kvm->arch.hpt_virt,
- 			   kvm->arch.hpt_order - PAGE_SHIFT);
-diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-index 5bb24be..4c4aa47 100644
---- a/arch/powerpc/kvm/book3s_hv_builtin.c
-+++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-@@ -52,19 +52,19 @@ static int __init early_parse_kvm_cma_resv(char *p)
+@@ -996,7 +996,7 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
+ 		if (val & HPTE_V_SECONDARY)
+ 			break;
+ 		val |= HPTE_V_SECONDARY;
+-		hash = hash ^ kvm->arch.hpt.mask;
++		hash = hash ^ kvmppc_hpt_mask(&kvm->arch.hpt);
+ 	}
+ 	return -1;
  }
- early_param("kvm_cma_resv_ratio", early_parse_kvm_cma_resv);
- 
--struct page *kvm_alloc_hpt(unsigned long nr_pages)
-+struct page *kvm_alloc_hpt_cma(unsigned long nr_pages)
- {
- 	VM_BUG_ON(order_base_2(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
- 
- 	return cma_alloc(kvm_cma, nr_pages, order_base_2(HPT_ALIGN_PAGES));
- }
--EXPORT_SYMBOL_GPL(kvm_alloc_hpt);
-+EXPORT_SYMBOL_GPL(kvm_alloc_hpt_cma);
- 
--void kvm_release_hpt(struct page *page, unsigned long nr_pages)
-+void kvm_free_hpt_cma(struct page *page, unsigned long nr_pages)
- {
- 	cma_release(kvm_cma, page, nr_pages);
- }
--EXPORT_SYMBOL_GPL(kvm_release_hpt);
-+EXPORT_SYMBOL_GPL(kvm_free_hpt_cma);
- 
- /**
-  * kvm_cma_reserve() - reserve area for kvm hash pagetable
 -- 
 2.9.3
