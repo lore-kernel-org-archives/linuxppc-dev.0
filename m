@@ -1,8 +1,8 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tfN6Z0mDqzDvjw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tfN6Z27D0zDvk5
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2016 16:58:46 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org
@@ -10,9 +10,9 @@ Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
  thuth@redhat.com, lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 08/11] powerpc/kvm: KVM-HV HPT resizing stub implementation
-Date: Thu, 15 Dec 2016 16:54:01 +1100
-Message-Id: <20161215055404.29351-9-david@gibson.dropbear.id.au>
+Subject: [PATCH 07/11] powerpc/kvm: Create kvmppc_unmap_hpte_helper()
+Date: Thu, 15 Dec 2016 16:54:00 +1100
+Message-Id: <20161215055404.29351-8-david@gibson.dropbear.id.au>
 In-Reply-To: <20161215055404.29351-1-david@gibson.dropbear.id.au>
 References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,90 +24,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a stub (always failing) implementation of the ioctl()s
-for the HPT resizing PAPR extension.
+The kvm_unmap_rmapp() function, called from certain MMU notifiers, is used
+to force all guest mappings of a particular host page to be set ABSENT, and
+removed from the reverse mappings.
+
+For HPT resizing, we will have some cases where we want to set just a
+single guest HPTE ABSENT and remove its reverse mappings.  To prepare with
+this, we split out the logic from kvm_unmap_rmapp() to evict a single HPTE,
+moving it to a new helper function.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/kvm_ppc.h  |  4 ++++
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 16 ++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c        | 22 ++++++++++++++++++++++
- 3 files changed, 42 insertions(+)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 77 +++++++++++++++++++++----------------
+ 1 file changed, 44 insertions(+), 33 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 3b837bc..f8eaed0 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -215,6 +215,10 @@ extern void kvmppc_bookehv_exit(void);
- extern int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu);
- 
- extern int kvm_vm_ioctl_get_htab_fd(struct kvm *kvm, struct kvm_get_htab_fd *);
-+extern long kvm_vm_ioctl_resize_hpt_prepare(struct kvm *kvm,
-+					    struct kvm_ppc_resize_hpt *rhpt);
-+extern long kvm_vm_ioctl_resize_hpt_commit(struct kvm *kvm,
-+					   struct kvm_ppc_resize_hpt *rhpt);
- 
- int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu, struct kvm_interrupt *irq);
- 
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index cd145eb..ac0f18b 100644
+index 8e5ac2f..cd145eb 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -1160,6 +1160,22 @@ void kvmppc_unpin_guest_page(struct kvm *kvm, void *va, unsigned long gpa,
+@@ -740,13 +740,53 @@ static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
+ 	return kvm_handle_hva_range(kvm, hva, hva + 1, handler);
  }
  
- /*
-+ * HPT resizing
-+ */
-+
-+long kvm_vm_ioctl_resize_hpt_prepare(struct kvm *kvm,
-+				     struct kvm_ppc_resize_hpt *rhpt)
++/* Must be called with both HPTE and rmap locked */
++static void kvmppc_unmap_hpte(struct kvm *kvm, unsigned long i,
++			      unsigned long *rmapp, unsigned long gfn)
 +{
-+	return -EIO;
++	__be64 *hptep = (__be64 *) (kvm->arch.hpt.virt + (i << 4));
++	struct revmap_entry *rev = kvm->arch.hpt.rev;
++	unsigned long j, h;
++	unsigned long ptel, psize, rcbits;
++
++	j = rev[i].forw;
++	if (j == i) {
++		/* chain is now empty */
++		*rmapp &= ~(KVMPPC_RMAP_PRESENT | KVMPPC_RMAP_INDEX);
++	} else {
++		/* remove i from chain */
++		h = rev[i].back;
++		rev[h].forw = j;
++		rev[j].back = h;
++		rev[i].forw = rev[i].back = i;
++		*rmapp = (*rmapp & ~KVMPPC_RMAP_INDEX) | j;
++	}
++
++	/* Now check and modify the HPTE */
++	ptel = rev[i].guest_rpte;
++	psize = hpte_page_size(be64_to_cpu(hptep[0]), ptel);
++	if ((be64_to_cpu(hptep[0]) & HPTE_V_VALID) &&
++	    hpte_rpn(ptel, psize) == gfn) {
++		hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
++		kvmppc_invalidate_hpte(kvm, hptep, i);
++		hptep[1] &= ~cpu_to_be64(HPTE_R_KEY_HI | HPTE_R_KEY_LO);
++		/* Harvest R and C */
++		rcbits = be64_to_cpu(hptep[1]) & (HPTE_R_R | HPTE_R_C);
++		*rmapp |= rcbits << KVMPPC_RMAP_RC_SHIFT;
++		if (rcbits & HPTE_R_C)
++			kvmppc_update_rmap_change(rmapp, psize);
++		if (rcbits & ~rev[i].guest_rpte) {
++			rev[i].guest_rpte = ptel | rcbits;
++			note_hpte_modification(kvm, &rev[i]);
++		}
++	}	
 +}
 +
-+long kvm_vm_ioctl_resize_hpt_commit(struct kvm *kvm,
-+				    struct kvm_ppc_resize_hpt *rhpt)
-+{
-+	return -EIO;
-+}
-+
-+/*
-  * Functions for reading and writing the hash table via reads and
-  * writes on a file descriptor.
-  *
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 957e473..d022322 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3617,6 +3617,28 @@ static long kvm_arch_vm_ioctl_hv(struct file *filp,
- 		break;
- 	}
+ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 			   unsigned long gfn)
+ {
+-	struct revmap_entry *rev = kvm->arch.hpt.rev;
+-	unsigned long h, i, j;
++	unsigned long i;
+ 	__be64 *hptep;
+-	unsigned long ptel, psize, rcbits;
  
-+	case KVM_PPC_RESIZE_HPT_PREPARE: {
-+		struct kvm_ppc_resize_hpt rhpt;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&rhpt, argp, sizeof(rhpt)))
-+			break;
-+
-+		r = kvm_vm_ioctl_resize_hpt_prepare(kvm, &rhpt);
-+		break;
-+	}
-+
-+	case KVM_PPC_RESIZE_HPT_COMMIT: {
-+		struct kvm_ppc_resize_hpt rhpt;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&rhpt, argp, sizeof(rhpt)))
-+			break;
-+
-+		r = kvm_vm_ioctl_resize_hpt_commit(kvm, &rhpt);
-+		break;
-+	}
-+
- 	default:
- 		r = -ENOTTY;
+ 	for (;;) {
+ 		lock_rmap(rmapp);
+@@ -769,37 +809,8 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 				cpu_relax();
+ 			continue;
+ 		}
+-		j = rev[i].forw;
+-		if (j == i) {
+-			/* chain is now empty */
+-			*rmapp &= ~(KVMPPC_RMAP_PRESENT | KVMPPC_RMAP_INDEX);
+-		} else {
+-			/* remove i from chain */
+-			h = rev[i].back;
+-			rev[h].forw = j;
+-			rev[j].back = h;
+-			rev[i].forw = rev[i].back = i;
+-			*rmapp = (*rmapp & ~KVMPPC_RMAP_INDEX) | j;
+-		}
+ 
+-		/* Now check and modify the HPTE */
+-		ptel = rev[i].guest_rpte;
+-		psize = hpte_page_size(be64_to_cpu(hptep[0]), ptel);
+-		if ((be64_to_cpu(hptep[0]) & HPTE_V_VALID) &&
+-		    hpte_rpn(ptel, psize) == gfn) {
+-			hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
+-			kvmppc_invalidate_hpte(kvm, hptep, i);
+-			hptep[1] &= ~cpu_to_be64(HPTE_R_KEY_HI | HPTE_R_KEY_LO);
+-			/* Harvest R and C */
+-			rcbits = be64_to_cpu(hptep[1]) & (HPTE_R_R | HPTE_R_C);
+-			*rmapp |= rcbits << KVMPPC_RMAP_RC_SHIFT;
+-			if (rcbits & HPTE_R_C)
+-				kvmppc_update_rmap_change(rmapp, psize);
+-			if (rcbits & ~rev[i].guest_rpte) {
+-				rev[i].guest_rpte = ptel | rcbits;
+-				note_hpte_modification(kvm, &rev[i]);
+-			}
+-		}
++		kvmppc_unmap_hpte(kvm, i, rmapp, gfn);
+ 		unlock_rmap(rmapp);
+ 		__unlock_hpte(hptep, be64_to_cpu(hptep[0]));
  	}
 -- 
 2.9.3
