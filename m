@@ -1,22 +1,28 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgDss3cz6zDwCD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 02:35:45 +1100 (AEDT)
-Subject: Re: [PATCH 08/11] powerpc/kvm: KVM-HV HPT resizing stub implementation
-To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org
-References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
- <20161215055404.29351-9-david@gibson.dropbear.id.au>
-Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
- lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <b4128be7-2e3d-f483-7d33-ab23ed70c0cf@redhat.com>
-Date: Fri, 16 Dec 2016 16:35:39 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgDyg6GG7zDsgv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 02:39:55 +1100 (AEDT)
+Date: Fri, 16 Dec 2016 16:39:49 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 04/15] livepatch/x86: add TIF_PATCH_PENDING thread flag
+Message-ID: <20161216153949.GF393@pathway.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <b7bbfce2330e61329056e4567c68be8e4c55fb5b.1481220077.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20161215055404.29351-9-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b7bbfce2330e61329056e4567c68be8e4c55fb5b.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15.12.2016 06:54, David Gibson wrote:
-> This patch adds a stub (always failing) implementation of the ioctl()s
-> for the HPT resizing PAPR extension.
+On Thu 2016-12-08 12:08:29, Josh Poimboeuf wrote:
+> Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
+> per-task consistency model for x86_64.  The bit getting set indicates
+> the thread has a pending patch which needs to be applied when the thread
+> exits the kernel.
 > 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/include/asm/kvm_ppc.h  |  4 ++++
->  arch/powerpc/kvm/book3s_64_mmu_hv.c | 16 ++++++++++++++++
->  arch/powerpc/kvm/book3s_hv.c        | 22 ++++++++++++++++++++++
->  3 files changed, 42 insertions(+)
+> The bit is placed in the _TIF_ALLWORK_MASK macro, which results in
+> exit_to_usermode_loop() calling klp_update_patch_state() when it's set.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
-I think I'd just squash this with the patch where you do the real
-implementation.
+Reviewed-by: Petr Mladek <pmladek@suse.com>
 
- Thomas
+Best Regards,
+Petr
