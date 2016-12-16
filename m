@@ -1,29 +1,23 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tg9b56184zDwBB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 00:07:45 +1100 (AEDT)
-Date: Fri, 16 Dec 2016 14:07:39 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 01/15] stacktrace/x86: add function for detecting
- reliable stack traces
-Message-ID: <20161216130739.GB393@pathway.suse.cz>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tg9m852bszDwBC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 00:15:36 +1100 (AEDT)
+Subject: Re: [PATCH 01/11] powerpc/kvm: Reserve capabilities and ioctls for
+ HPT resizing
+To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org
+References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
+ <20161215055404.29351-2-david@gibson.dropbear.id.au>
+Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
+ lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <8e032a54-de3d-b3dc-527e-a58f4874e6fe@redhat.com>
+Date: Fri, 16 Dec 2016 14:15:30 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
+In-Reply-To: <20161215055404.29351-2-david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,107 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2016-12-08 12:08:26, Josh Poimboeuf wrote:
-> For live patching and possibly other use cases, a stack trace is only
-> useful if it can be assured that it's completely reliable.  Add a new
-> save_stack_trace_tsk_reliable() function to achieve that.
+On 15.12.2016 06:53, David Gibson wrote:
+> This adds a new powerpc-specific KVM_CAP_SPAPR_RESIZE_HPT capability to
+> advertise whether KVM is capable of handling the PAPR extensions for
+> resizing the hashed page table during guest runtime.
 > 
-> Scenarios which indicate that a stack trace may be unreliable:
+> At present, HPT resizing is possible with KVM PR without kernel
+> modification, since the HPT is managed within qemu.  It's not possible yet
+> with KVM HV, because the HPT is managed by KVM.  At present, qemu has to
+> use other capabilities which (by accident) reveal whether PR or HV is in
+> use to know if it can advertise HPT resizing capability to the guest.
 > 
-> - running task
-
-It seems that this has to be enforced by save_stack_trace_tsk_reliable()
-caller. It should be mentioned in the function description.
-
-
-> - interrupt stack
-
-I guess that it is detected by saved regs on the stack. And it covers
-also dynamic changes like kprobes. Do I get it correctly, please? 
-
-What about ftrace? Is ftrace without regs safe and detected?
-
-
-> - preemption
-
-I wonder if some very active kthreads might almost always be
-preempted using irq in preemptive kernel. Then they block
-the conversion with the non-reliable stacks. Have you noticed
-such problems, please?
-
-
-> - corrupted stack data
-> - stack grows the wrong way
-
-This is detected in unwind_next_frame() and passed via state->error.
-Am I right?
-
-
-> - stack walk doesn't reach the bottom
-> - user didn't provide a large enough entries array
+> To avoid ambiguity with existing kernels, the encoding is a bit odd.
+>     0 means "unknown" since that's what previous kernels will return
+>     1 means "HPT resize possible if available if and only if the HPT is allocated in
+>       userspace, rather than in the kernel".  Userspace can check
+>       KVM_CAP_PPC_ALLOC_HTAB to determine if that's the case.  In practice
+>       this will give the same results as userspace's fallback check.
+>     2 will mean "HPT resize available and implemented via ioctl()s
+>       KVM_PPC_RESIZE_HPT_PREPARE and KVM_PPC_RESIZE_HPT_COMMIT"
 > 
-> Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
-> determine at build time whether the function is implemented.
+> For now we always return 1, but the intention is to return 2 once HPT
+> resize is implemented for KVM HV.
 > 
-> diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
-> index 0653788..3e0cf5e 100644
-> --- a/arch/x86/kernel/stacktrace.c
-> +++ b/arch/x86/kernel/stacktrace.c
-> @@ -74,6 +74,64 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
->  }
->  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+>  arch/powerpc/kvm/powerpc.c |  3 +++
+>  include/uapi/linux/kvm.h   | 10 ++++++++++
+>  2 files changed, 13 insertions(+)
+> 
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index efd1183..bb23923 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -605,6 +605,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>  	case KVM_CAP_SPAPR_MULTITCE:
+>  		r = 1;
+>  		break;
+> +	case KVM_CAP_SPAPR_RESIZE_HPT:
+> +		r = 1; /* resize allowed only if HPT is outside kernel */
+> +		break;
+>  #endif
+>  	case KVM_CAP_PPC_HTM:
+>  		r = cpu_has_feature(CPU_FTR_TM_COMP) &&
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index cac48ed..904afe0 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -685,6 +685,12 @@ struct kvm_ppc_smmu_info {
+>  	struct kvm_ppc_one_seg_page_size sps[KVM_PPC_PAGE_SIZES_MAX_SZ];
+>  };
 >  
-> +#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
-> +static int __save_stack_trace_reliable(struct stack_trace *trace,
-> +				       struct task_struct *task)
-> +{
-> +	struct unwind_state state;
-> +	struct pt_regs *regs;
-> +	unsigned long addr;
-> +
-> +	for (unwind_start(&state, task, NULL, NULL); !unwind_done(&state);
-> +	     unwind_next_frame(&state)) {
-> +
-> +		regs = unwind_get_entry_regs(&state);
-> +		if (regs) {
-> +			/*
-> +			 * Preemption and page faults on the stack can make
-> +			 * frame pointers unreliable.
-> +			 */
-> +			if (!user_mode(regs))
-> +				return -1;
+> +/* for KVM_PPC_RESIZE_HPT_{PREPARE,COMMIT} */
+> +struct kvm_ppc_resize_hpt {
+> +	__u64 flags;
+> +	__u32 shift;
+> +};
 
-By other words, it we find regs on the stack, it almost always mean
-a non-reliable stack. The only exception is when we are in the
-userspace mode. Do I get it correctly, please?
+I think you should also add a final "__u32 pad" to that struct to make
+sure that it is naturally aligned (like it is done with struct
+kvm_coalesced_mmio_zone already for example).
 
-> +
-> +			/*
-> +			 * This frame contains the (user mode) pt_regs at the
-> +			 * end of the stack.  Finish the unwind.
-> +			 */
-> +			unwind_next_frame(&state);
-> +			break;
-> +		}
-> +
-> +		addr = unwind_get_return_address(&state);
-> +		if (!addr || save_stack_address(trace, addr, false))
-> +			return -1;
-> +	}
-> +
-> +	if (!unwind_done(&state) || unwind_error(&state))
-> +		return -1;
-> +
-> +	if (trace->nr_entries < trace->max_entries)
-> +		trace->entries[trace->nr_entries++] = ULONG_MAX;
-> +
-> +	return 0;
-> +}
-
-Great work! I am surprised that it looks so straightforward.
-
-I still have to think and investigate it more. But it looks
-very promissing.
-
-Best Regards,
-Petr
+ Thomas
