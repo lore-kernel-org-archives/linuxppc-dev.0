@@ -1,27 +1,29 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgCcG6grSzDwBr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 01:38:54 +1100 (AEDT)
-Received: by mail-pg0-x244.google.com with SMTP id a1so2879863pgf.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 06:38:54 -0800 (PST)
-Subject: Re: [PATCH v3 0/5] powerpc/mm: enable memory hotplug on radix
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <1481831443-22761-1-git-send-email-arbab@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <3aac2741-998f-88f0-29bf-eb2bb117a0d6@gmail.com>
-Date: Sat, 17 Dec 2016 01:38:40 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgCgx6ttPzDwBr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 01:42:05 +1100 (AEDT)
+Date: Fri, 16 Dec 2016 15:41:59 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 03/15] livepatch: temporary stubs for
+ klp_patch_pending() and klp_update_patch_state()
+Message-ID: <20161216144159.GE393@pathway.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <26bb2315093328bf31e94fdd6eec61c341a6e924.1481220077.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <1481831443-22761-1-git-send-email-arbab@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <26bb2315093328bf31e94fdd6eec61c341a6e924.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 16/12/16 06:50, Reza Arbab wrote:
-> Memory hotplug is leading to hash page table calls, even on radix:
+On Thu 2016-12-08 12:08:28, Josh Poimboeuf wrote:
+> Create temporary stubs for klp_patch_pending() and
+> klp_update_patch_state() so we can add TIF_PATCH_PENDING to different
+> architectures in separate patches without breaking build bisectability.
 > 
-> ...
->         arch_add_memory
->                 create_section_mapping
->                         htab_bolt_mapping
->                                 BUG_ON(!ppc_md.hpte_insert);
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> ---
+>  include/linux/livepatch.h | 7 ++++++-
+>  kernel/livepatch/core.c   | 3 +++
+>  2 files changed, 9 insertions(+), 1 deletion(-)
 > 
-> To fix, refactor {create,remove}_section_mapping() into hash__ and radix__
-> variants. Implement the radix versions by borrowing from existing vmemmap
-> and x86 code.
-> 
-> This passes basic verification of plugging and removing memory, but this 
-> stuff is tricky and I'd appreciate extra scrutiny of the series for 
-> correctness--in particular, the adaptation of remove_pagetable() from x86.
+> diff --git a/include/linux/livepatch.h b/include/linux/livepatch.h
+> index 9072f04..60558d8 100644
+> --- a/include/linux/livepatch.h
+> +++ b/include/linux/livepatch.h
+> @@ -123,10 +123,15 @@ void arch_klp_init_object_loaded(struct klp_patch *patch,
+>  int klp_module_coming(struct module *mod);
+>  void klp_module_going(struct module *mod);
+>  
+> +static inline bool klp_patch_pending(struct task_struct *task) { return false; }
 
-On quick glance everything seemed alright to me. I'll review each patch and Ack/provide comments.
-Do we care about alt maps yet?
+I was curious about this. It is implemented correctly in the 13th
+patch and it is never used until 13th patch.
 
-Balbir Singh.
+> +void klp_update_patch_state(struct task_struct *task);
+
+It seems that the stub for this function is enough.
+
+Well, the extra function is just a cosmetic problem. If it could be
+fixed, it would be great. But the patch makes sense:
+
+Reviewed-by: Petr Mladek <pmladek@suse.com>
+
+Best Regards,
+Petr
