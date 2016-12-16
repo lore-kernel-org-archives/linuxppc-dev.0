@@ -1,22 +1,22 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tg98m3JslzDt0Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 23:48:24 +1100 (AEDT)
-Subject: Re: [PATCH 07/11] powerpc/kvm: Create kvmppc_unmap_hpte_helper()
-To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org
-References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
- <20161215055404.29351-8-david@gibson.dropbear.id.au>
-Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
- lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <c17a2bed-049b-c0cc-2bfe-28aa42ab98db@redhat.com>
-Date: Fri, 16 Dec 2016 13:48:18 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tg9BY61tvzDwBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 23:49:57 +1100 (AEDT)
+Subject: Re: [PATCH 3/3] powerpc/corenet: add support for the kmcent2 board
+To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "oss@buserror.net" <oss@buserror.net>
+References: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
+ <1481808148-16840-4-git-send-email-valentin.longchamp@keymile.com>
+ <1481810456.3878.18.camel@infinera.com>
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
+Message-ID: <6434e151-6f35-d11c-c7aa-f221279fd6c8@keymile.com>
+Date: Fri, 16 Dec 2016 13:49:43 +0100
 MIME-Version: 1.0
-In-Reply-To: <20161215055404.29351-8-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1481810456.3878.18.camel@infinera.com>
+Content-Type: text/plain; charset="iso-8859-15"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15.12.2016 06:54, David Gibson wrote:
-> The kvm_unmap_rmapp() function, called from certain MMU notifiers, is used
-> to force all guest mappings of a particular host page to be set ABSENT, and
-> removed from the reverse mappings.
+On 15/12/16 15:00, Joakim Tjernlund wrote:
+> On Thu, 2016-12-15 at 14:22 +0100, Valentin Longchamp wrote:
+>> This board is built around Freescale's T1040 SoC.
+>>
+>> The peripherals used by this design are:
+>> - DDR3 RAM with SPD support
+>> - parallel NOR Flash as boot medium
+>> - 1 PCIe bus (PCIe1 x1)
+>> - 3 FMAN Ethernet devices (FMAN1 DTSEC1/2/5)
+>> - 4 IFC bus devices:
+>>   - NOR flash
+>>   - NAND flash
+>>   - QRIO reset/power mgmt CPLD
+>>   - BFTIC chassis management CPLD
+>> - 2 I2C buses
+>> - 1 SPI bus
+>> - HDLC bus with the QE's UCC1
+>> - last but not least, the mandatory serial port
+>>
+>> The board can be used with the corenet32_smp_defconfig.
+>>
+>> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+>> ---
+>>  arch/powerpc/boot/dts/fsl/kmcent2.dts         | 303 ++++++++++++++++++++++++++
+>>  arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
+>>  2 files changed, 304 insertions(+)
+>>  create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
+>>
+>> diff --git a/arch/powerpc/boot/dts/fsl/kmcent2.dts b/arch/powerpc/boot/dts/fsl/kmcent2.dts
+>> new file mode 100644
+>> index 0000000..47afa43
+>> --- /dev/null
+>> +++ b/arch/powerpc/boot/dts/fsl/kmcent2.dts
+>> @@ -0,0 +1,303 @@
+>> +/*
+>> + * Keymile kmcent2 Device Tree Source, based on T1040RDB DTS
+>> + *
+>> + * (C) Copyright 2016
+>> + * Valentin Longchamp, Keymile AG, valentin.longchamp@keymile.com
+>> + *
+>> + * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+>> + *
+>> + * This program is free software; you can redistribute  it and/or modify it
+>> + * under  the terms of  the GNU General  Public License as published by the
+>> + * Free Software Foundation;  either version 2 of the  License, or (at your
+>> + * option) any later version.
+>> + */
+>> +
 > 
-> For HPT resizing, we will have some cases where we want to set just a
-> single guest HPTE ABSENT and remove its reverse mappings.  To prepare with
-> this, we split out the logic from kvm_unmap_rmapp() to evict a single HPTE,
-> moving it to a new helper function.
+> [SNIP]
 > 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/kvm/book3s_64_mmu_hv.c | 77 +++++++++++++++++++++----------------
->  1 file changed, 44 insertions(+), 33 deletions(-)
+>> +
+>> +		ucc_hdlc: ucc@2000 {
+>> +			device_type = "hdlc";
+>> +			compatible = "fsl,ucc-hdlc";
+>> +			rx-clock-name = "clk9";
+>> +			tx-clock-name = "clk9";
 > 
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index 8e5ac2f..cd145eb 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -740,13 +740,53 @@ static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
->  	return kvm_handle_hva_range(kvm, hva, hva + 1, handler);
->  }
->  
-> +/* Must be called with both HPTE and rmap locked */
-> +static void kvmppc_unmap_hpte(struct kvm *kvm, unsigned long i,
-> +			      unsigned long *rmapp, unsigned long gfn)
-> +{
-> +	__be64 *hptep = (__be64 *) (kvm->arch.hpt.virt + (i << 4));
-> +	struct revmap_entry *rev = kvm->arch.hpt.rev;
-> +	unsigned long j, h;
-> +	unsigned long ptel, psize, rcbits;
-> +
-> +	j = rev[i].forw;
-> +	if (j == i) {
-> +		/* chain is now empty */
-> +		*rmapp &= ~(KVMPPC_RMAP_PRESENT | KVMPPC_RMAP_INDEX);
-> +	} else {
-> +		/* remove i from chain */
-> +		h = rev[i].back;
-> +		rev[h].forw = j;
-> +		rev[j].back = h;
-> +		rev[i].forw = rev[i].back = i;
-> +		*rmapp = (*rmapp & ~KVMPPC_RMAP_INDEX) | j;
-> +	}
-> +
-> +	/* Now check and modify the HPTE */
-> +	ptel = rev[i].guest_rpte;
-> +	psize = hpte_page_size(be64_to_cpu(hptep[0]), ptel);
-> +	if ((be64_to_cpu(hptep[0]) & HPTE_V_VALID) &&
-> +	    hpte_rpn(ptel, psize) == gfn) {
-> +		hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
-> +		kvmppc_invalidate_hpte(kvm, hptep, i);
-> +		hptep[1] &= ~cpu_to_be64(HPTE_R_KEY_HI | HPTE_R_KEY_LO);
-> +		/* Harvest R and C */
-> +		rcbits = be64_to_cpu(hptep[1]) & (HPTE_R_R | HPTE_R_C);
-> +		*rmapp |= rcbits << KVMPPC_RMAP_RC_SHIFT;
-> +		if (rcbits & HPTE_R_C)
-> +			kvmppc_update_rmap_change(rmapp, psize);
-> +		if (rcbits & ~rev[i].guest_rpte) {
-> +			rev[i].guest_rpte = ptel | rcbits;
-> +			note_hpte_modification(kvm, &rev[i]);
-> +		}
-> +	}	
+> Should it be clk9 on both tx and rx clock?
+> 
 
-Superfluous TAB at the end of above line.
-
-Apart from that, the patch looks fine to me.
-
- Thomas
+Yeah, why not ? The bus clock is generated somewhere else and is connected to
+the clk9 input. Or maybe have I not understood your question ?
