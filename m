@@ -1,22 +1,29 @@
-Return-Path: <valentin.longchamp@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tg9BY61tvzDwBZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 23:49:57 +1100 (AEDT)
-Subject: Re: [PATCH 3/3] powerpc/corenet: add support for the kmcent2 board
-To: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "oss@buserror.net" <oss@buserror.net>
-References: <1481808148-16840-1-git-send-email-valentin.longchamp@keymile.com>
- <1481808148-16840-4-git-send-email-valentin.longchamp@keymile.com>
- <1481810456.3878.18.camel@infinera.com>
-From: Valentin Longchamp <valentin.longchamp@keymile.com>
-Message-ID: <6434e151-6f35-d11c-c7aa-f221279fd6c8@keymile.com>
-Date: Fri, 16 Dec 2016 13:49:43 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tg9b56184zDwBB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 00:07:45 +1100 (AEDT)
+Date: Fri, 16 Dec 2016 14:07:39 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+Message-ID: <20161216130739.GB393@pathway.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <1481810456.3878.18.camel@infinera.com>
-Content-Type: text/plain; charset="iso-8859-15"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,66 +33,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/12/16 15:00, Joakim Tjernlund wrote:
-> On Thu, 2016-12-15 at 14:22 +0100, Valentin Longchamp wrote:
->> This board is built around Freescale's T1040 SoC.
->>
->> The peripherals used by this design are:
->> - DDR3 RAM with SPD support
->> - parallel NOR Flash as boot medium
->> - 1 PCIe bus (PCIe1 x1)
->> - 3 FMAN Ethernet devices (FMAN1 DTSEC1/2/5)
->> - 4 IFC bus devices:
->>   - NOR flash
->>   - NAND flash
->>   - QRIO reset/power mgmt CPLD
->>   - BFTIC chassis management CPLD
->> - 2 I2C buses
->> - 1 SPI bus
->> - HDLC bus with the QE's UCC1
->> - last but not least, the mandatory serial port
->>
->> The board can be used with the corenet32_smp_defconfig.
->>
->> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
->> ---
->>  arch/powerpc/boot/dts/fsl/kmcent2.dts         | 303 ++++++++++++++++++++++++++
->>  arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
->>  2 files changed, 304 insertions(+)
->>  create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
->>
->> diff --git a/arch/powerpc/boot/dts/fsl/kmcent2.dts b/arch/powerpc/boot/dts/fsl/kmcent2.dts
->> new file mode 100644
->> index 0000000..47afa43
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/fsl/kmcent2.dts
->> @@ -0,0 +1,303 @@
->> +/*
->> + * Keymile kmcent2 Device Tree Source, based on T1040RDB DTS
->> + *
->> + * (C) Copyright 2016
->> + * Valentin Longchamp, Keymile AG, valentin.longchamp@keymile.com
->> + *
->> + * Copyright 2014 - 2015 Freescale Semiconductor Inc.
->> + *
->> + * This program is free software; you can redistribute  it and/or modify it
->> + * under  the terms of  the GNU General  Public License as published by the
->> + * Free Software Foundation;  either version 2 of the  License, or (at your
->> + * option) any later version.
->> + */
->> +
+On Thu 2016-12-08 12:08:26, Josh Poimboeuf wrote:
+> For live patching and possibly other use cases, a stack trace is only
+> useful if it can be assured that it's completely reliable.  Add a new
+> save_stack_trace_tsk_reliable() function to achieve that.
 > 
-> [SNIP]
+> Scenarios which indicate that a stack trace may be unreliable:
 > 
->> +
->> +		ucc_hdlc: ucc@2000 {
->> +			device_type = "hdlc";
->> +			compatible = "fsl,ucc-hdlc";
->> +			rx-clock-name = "clk9";
->> +			tx-clock-name = "clk9";
-> 
-> Should it be clk9 on both tx and rx clock?
-> 
+> - running task
 
-Yeah, why not ? The bus clock is generated somewhere else and is connected to
-the clk9 input. Or maybe have I not understood your question ?
+It seems that this has to be enforced by save_stack_trace_tsk_reliable()
+caller. It should be mentioned in the function description.
+
+
+> - interrupt stack
+
+I guess that it is detected by saved regs on the stack. And it covers
+also dynamic changes like kprobes. Do I get it correctly, please? 
+
+What about ftrace? Is ftrace without regs safe and detected?
+
+
+> - preemption
+
+I wonder if some very active kthreads might almost always be
+preempted using irq in preemptive kernel. Then they block
+the conversion with the non-reliable stacks. Have you noticed
+such problems, please?
+
+
+> - corrupted stack data
+> - stack grows the wrong way
+
+This is detected in unwind_next_frame() and passed via state->error.
+Am I right?
+
+
+> - stack walk doesn't reach the bottom
+> - user didn't provide a large enough entries array
+> 
+> Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
+> determine at build time whether the function is implemented.
+> 
+> diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+> index 0653788..3e0cf5e 100644
+> --- a/arch/x86/kernel/stacktrace.c
+> +++ b/arch/x86/kernel/stacktrace.c
+> @@ -74,6 +74,64 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+>  }
+>  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+>  
+> +#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
+> +static int __save_stack_trace_reliable(struct stack_trace *trace,
+> +				       struct task_struct *task)
+> +{
+> +	struct unwind_state state;
+> +	struct pt_regs *regs;
+> +	unsigned long addr;
+> +
+> +	for (unwind_start(&state, task, NULL, NULL); !unwind_done(&state);
+> +	     unwind_next_frame(&state)) {
+> +
+> +		regs = unwind_get_entry_regs(&state);
+> +		if (regs) {
+> +			/*
+> +			 * Preemption and page faults on the stack can make
+> +			 * frame pointers unreliable.
+> +			 */
+> +			if (!user_mode(regs))
+> +				return -1;
+
+By other words, it we find regs on the stack, it almost always mean
+a non-reliable stack. The only exception is when we are in the
+userspace mode. Do I get it correctly, please?
+
+> +
+> +			/*
+> +			 * This frame contains the (user mode) pt_regs at the
+> +			 * end of the stack.  Finish the unwind.
+> +			 */
+> +			unwind_next_frame(&state);
+> +			break;
+> +		}
+> +
+> +		addr = unwind_get_return_address(&state);
+> +		if (!addr || save_stack_address(trace, addr, false))
+> +			return -1;
+> +	}
+> +
+> +	if (!unwind_done(&state) || unwind_error(&state))
+> +		return -1;
+> +
+> +	if (trace->nr_entries < trace->max_entries)
+> +		trace->entries[trace->nr_entries++] = ULONG_MAX;
+> +
+> +	return 0;
+> +}
+
+Great work! I am surprised that it looks so straightforward.
+
+I still have to think and investigate it more. But it looks
+very promissing.
+
+Best Regards,
+Petr
