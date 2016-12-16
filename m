@@ -1,48 +1,38 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <anju@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgH9l2dyxzDw6F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 04:19:38 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgHyg3JSYzDt2L
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 04:55:07 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBGHJ2mo090109
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 12:19:34 -0500
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27cjd1fnen-1
+ uBGHiLB8145711
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 12:55:04 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27cknt501a-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 12:19:34 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 12:55:04 -0500
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 16 Dec 2016 22:49:26 +0530
-Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 71D0FE005A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 22:50:02 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uBGHIiNS24903786
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 22:48:44 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uBGHJLDS002701
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 22:49:23 +0530
-Date: Fri, 16 Dec 2016 22:49:16 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, srikar@linux.vnet.ibm.com,
- mahesh@linux.vnet.ibm.com, paulus@samba.org, mhiramat@kernel.org,
- ananth@in.ibm.com
-Subject: Re: [PATCH V2 0/4] OPTPROBES for powerpc
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Fri, 16 Dec 2016 10:55:03 -0700
+Subject: Re: [PATCH V2 3/4] arch/powerpc: Implement Optprobes
+To: Masami Hiramatsu <mhiramat@kernel.org>
 References: <1481732310-7779-1-git-send-email-anju@linux.vnet.ibm.com>
- <fd268944-5f8e-9815-6fef-e7d9d5191044@gmail.com>
+ <1481732310-7779-2-git-send-email-anju@linux.vnet.ibm.com>
+ <20161216230256.89472387164de66c3a6888f5@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, mahesh@linux.vnet.ibm.com
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Date: Fri, 16 Dec 2016 23:24:54 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <fd268944-5f8e-9815-6fef-e7d9d5191044@gmail.com>
-Message-Id: <20161216171916.GH4109@naverao1-tp.localdomain>
+In-Reply-To: <20161216230256.89472387164de66c3a6888f5@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Message-Id: <5350c197-f279-3cc4-bce4-a5f08b7485ee@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,131 +42,681 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/12/17 01:46AM, Balbir Singh wrote:
-> 
-> 
-> On 15/12/16 03:18, Anju T Sudhakar wrote:
-> > This is the V2 patchset of the kprobes jump optimization
-> > (a.k.a OPTPROBES)for powerpc. Kprobe being an inevitable tool
-> > for kernel developers, enhancing the performance of kprobe has
-> > got much importance.
-> > 
-> > Currently kprobes inserts a trap instruction to probe a running kernel.
-> > Jump optimization allows kprobes to replace the trap with a branch,
-> > reducing the probe overhead drastically.
-> > 
-> > In this series, conditional branch instructions are not considered for
-> > optimization as they have to be assessed carefully in SMP systems.
-> > 
-> > The kprobe placed on the kretprobe_trampoline during boot time, is also
-> > optimized in this series. Patch 4/4 furnishes this.
-> > 
-> > The first two patches can go independently of the series. The helper 
-> > functions in these patches are invoked in patch 3/4.
-> > 
-> > Performance:
-> > ============
-> > An optimized kprobe in powerpc is 1.05 to 4.7 times faster than a kprobe.
-> >  
-> > Example:
-> >  
-> > Placed a probe at an offset 0x50 in _do_fork().
-> > *Time Diff here is, difference in time before hitting the probe and
-> > after the probed instruction. mftb() is employed in kernel/fork.c for
-> > this purpose.
-> >  
-> > # echo 0 > /proc/sys/debug/kprobes-optimization
-> > Kprobes globally unoptimized
-> >  [  233.607120] Time Diff = 0x1f0
-> >  [  233.608273] Time Diff = 0x1ee
-> >  [  233.609228] Time Diff = 0x203
-> >  [  233.610400] Time Diff = 0x1ec
-> >  [  233.611335] Time Diff = 0x200
-> >  [  233.612552] Time Diff = 0x1f0
-> >  [  233.613386] Time Diff = 0x1ee
-> >  [  233.614547] Time Diff = 0x212
-> >  [  233.615570] Time Diff = 0x206
-> >  [  233.616819] Time Diff = 0x1f3
-> >  [  233.617773] Time Diff = 0x1ec
-> >  [  233.618944] Time Diff = 0x1fb
-> >  [  233.619879] Time Diff = 0x1f0
-> >  [  233.621066] Time Diff = 0x1f9
-> >  [  233.621999] Time Diff = 0x283
-> >  [  233.623281] Time Diff = 0x24d
-> >  [  233.624172] Time Diff = 0x1ea
-> >  [  233.625381] Time Diff = 0x1f0
-> >  [  233.626358] Time Diff = 0x200
-> >  [  233.627572] Time Diff = 0x1ed
-> >  
-> > # echo 1 > /proc/sys/debug/kprobes-optimization
-> > Kprobes globally optimized
-> >  [   70.797075] Time Diff = 0x103
-> >  [   70.799102] Time Diff = 0x181
-> >  [   70.801861] Time Diff = 0x15e
-> >  [   70.803466] Time Diff = 0xf0
-> >  [   70.804348] Time Diff = 0xd0
-> >  [   70.805653] Time Diff = 0xad
-> >  [   70.806477] Time Diff = 0xe0
-> >  [   70.807725] Time Diff = 0xbe
-> >  [   70.808541] Time Diff = 0xc3
-> >  [   70.810191] Time Diff = 0xc7
-> >  [   70.811007] Time Diff = 0xc0
-> >  [   70.812629] Time Diff = 0xc0
-> >  [   70.813640] Time Diff = 0xda
-> >  [   70.814915] Time Diff = 0xbb
-> >  [   70.815726] Time Diff = 0xc4
-> >  [   70.816955] Time Diff = 0xc0
-> >  [   70.817778] Time Diff = 0xcd
-> >  [   70.818999] Time Diff = 0xcd
-> >  [   70.820099] Time Diff = 0xcb
-> >  [   70.821333] Time Diff = 0xf0
-> > 
-> > Implementation:
-> > ===================
-> >  
-> > The trap instruction is replaced by a branch to a detour buffer. To address
-> > the limitation of branch instruction in power architecture, detour buffer
-> > slot is allocated from a reserved area . This will ensure that the branch
-> > is within ± 32 MB range. The current kprobes insn caches allocate memory 
-> > area for insn slots with module_alloc(). This will always be beyond 
-> > ± 32MB range.
-> >  
-> 
-> The paragraph is a little confusing. We need the detour buffer to be within
-> +-32 MB, but then you say we always get memory from module_alloc() beyond
-> 32MB.
+Hi Masami,
 
-Yes, I think it can be described better. What Anju is mentioning is that 
-the existing generic approach for kprobes insn cache uses module_alloc() 
-which is not suitable for us due to the 32MB range limit with relative 
-branches on powerpc.
 
-Instead, we reserve a 64k block within .text and allocate the detour 
-buffer from that area. This puts the detour buffer in range for most of 
-the symbols and should be a good start.
 
-> 
-> > The detour buffer contains a call to optimized_callback() which in turn
-> > call the pre_handler(). Once the pre-handler is run, the original
-> > instruction is emulated from the detour buffer itself. Also the detour
-> > buffer is equipped with a branch back to the normal work flow after the
-> > probed instruction is emulated.
-> 
-> Does the branch itself use registers that need to be saved? I presume
+On Friday 16 December 2016 07:32 PM, Masami Hiramatsu wrote:
+> On Wed, 14 Dec 2016 21:48:27 +0530
+> Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
+>
+>> Detour buffer contains instructions to create an in memory pt_regs.
+>> After the execution of the pre-handler, a call is made for instruction emulation.
+>> The NIP is determined in advanced through dummy instruction emulation and a branch
+>> instruction is created to the NIP at the end of the trampoline.
+>>
+>> Instruction slot for detour buffer is allocated from the reserved area.
+>> For the time being, 64KB is reserved in memory for this purpose.
+>>
+>> Instructions which can be emulated using analyse_instr() are suppliants
+>> for optimization. Before optimization ensure that the address range
+>> between the detour buffer allocated and the instruction being probed
+>> is within Â± 32MB.
+> Thank you for updating!
+> I think this has no critical issue, but I have some comments on it.
+> (just cleanup and hardenings)
+> Please see below.
+>
+>> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+>> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+>> ---
+>>   .../features/debug/optprobes/arch-support.txt      |   2 +-
+>>   arch/powerpc/Kconfig                               |   1 +
+>>   arch/powerpc/include/asm/kprobes.h                 |  23 +-
+>>   arch/powerpc/include/asm/sstep.h                   |   1 +
+>>   arch/powerpc/kernel/Makefile                       |   1 +
+>>   arch/powerpc/kernel/optprobes.c                    | 333 +++++++++++++++++++++
+>>   arch/powerpc/kernel/optprobes_head.S               | 135 +++++++++
+>>   arch/powerpc/lib/sstep.c                           |  22 ++
+>>   8 files changed, 516 insertions(+), 2 deletions(-)
+>>   create mode 100644 arch/powerpc/kernel/optprobes.c
+>>   create mode 100644 arch/powerpc/kernel/optprobes_head.S
+>>
+>> diff --git a/Documentation/features/debug/optprobes/arch-support.txt b/Documentation/features/debug/optprobes/arch-support.txt
+>> index b8999d8..45bc99d 100644
+>> --- a/Documentation/features/debug/optprobes/arch-support.txt
+>> +++ b/Documentation/features/debug/optprobes/arch-support.txt
+>> @@ -27,7 +27,7 @@
+>>       |       nios2: | TODO |
+>>       |    openrisc: | TODO |
+>>       |      parisc: | TODO |
+>> -    |     powerpc: | TODO |
+>> +    |     powerpc: |  ok  |
+>>       |        s390: | TODO |
+>>       |       score: | TODO |
+>>       |          sh: | TODO |
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index c7f120a..d563f0a 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -98,6 +98,7 @@ config PPC
+>>   	select HAVE_IOREMAP_PROT
+>>   	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
+>>   	select HAVE_KPROBES
+>> +	select HAVE_OPTPROBES if PPC64
+>>   	select HAVE_ARCH_KGDB
+>>   	select HAVE_KRETPROBES
+>>   	select HAVE_ARCH_TRACEHOOK
+>> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+>> index 2c9759bd..739ddc5 100644
+>> --- a/arch/powerpc/include/asm/kprobes.h
+>> +++ b/arch/powerpc/include/asm/kprobes.h
+>> @@ -38,7 +38,22 @@ struct pt_regs;
+>>   struct kprobe;
+>>   
+>>   typedef ppc_opcode_t kprobe_opcode_t;
+>> -#define MAX_INSN_SIZE 1
+>> +
+>> +extern kprobe_opcode_t optinsn_slot;
+>> +
+>> +/* Optinsn template address */
+>> +extern kprobe_opcode_t optprobe_template_entry[];
+>> +extern kprobe_opcode_t optprobe_template_op_address[];
+>> +extern kprobe_opcode_t optprobe_template_call_handler[];
+>> +extern kprobe_opcode_t optprobe_template_insn[];
+>> +extern kprobe_opcode_t optprobe_template_call_emulate[];
+>> +extern kprobe_opcode_t optprobe_template_ret[];
+>> +extern kprobe_opcode_t optprobe_template_end[];
+>> +
+>> +#define MAX_INSN_SIZE		1
+>> +#define MAX_OPTIMIZED_LENGTH	4
+>> +#define MAX_OPTINSN_SIZE	(optprobe_template_end - optprobe_template_entry)
+>> +#define RELATIVEJUMP_SIZE	4
+> These size/length macros seems a bit odd. I guess MAX_INSN_SIZE
+> is based on sizeof(MAX_INSN_SIZE), but others are in byte.
+> Could you fix that? For example, define it with
+> sizeof(kprobe_opcode_t), and add comments on it, etc.
 
-No, we use immediate values to encode the relative address.
+Sure. I will look into this and define it in  a consistent way.
 
-> we are going to rely on the +-32MB, what are the guarantees of success
-> of such a mechanism?
+>>   
+>>   #ifdef PPC64_ELF_ABI_v2
+>>   /* PPC64 ABIv2 needs local entry point */
+>> @@ -124,6 +139,12 @@ struct kprobe_ctlblk {
+>>   	struct prev_kprobe prev_kprobe;
+>>   };
+>>   
+>> +struct arch_optimized_insn {
+>> +	kprobe_opcode_t copied_insn[1];
+>> +	/* detour buffer */
+>> +	kprobe_opcode_t *insn;
+>> +};
+>> +
+>>   extern int kprobe_exceptions_notify(struct notifier_block *self,
+>>   					unsigned long val, void *data);
+>>   extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+>> diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+>> index d3a42cc..f7ad425 100644
+>> --- a/arch/powerpc/include/asm/sstep.h
+>> +++ b/arch/powerpc/include/asm/sstep.h
+>> @@ -87,3 +87,4 @@ struct instruction_op {
+>>   
+>>   extern int analyse_instr(struct instruction_op *op, struct pt_regs *regs,
+>>   			 unsigned int instr);
+>> +extern bool is_conditional_branch(unsigned int instr);
+>> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+>> index 1925341..54f0f47 100644
+>> --- a/arch/powerpc/kernel/Makefile
+>> +++ b/arch/powerpc/kernel/Makefile
+>> @@ -98,6 +98,7 @@ obj-$(CONFIG_KGDB)		+= kgdb.o
+>>   obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+>>   obj-$(CONFIG_SMP)		+= smp.o
+>>   obj-$(CONFIG_KPROBES)		+= kprobes.o
+>> +obj-$(CONFIG_OPTPROBES)		+= optprobes.o optprobes_head.o
+>>   obj-$(CONFIG_UPROBES)		+= uprobes.o
+>>   obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
+>>   obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+>> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+>> new file mode 100644
+>> index 0000000..ecba221
+>> --- /dev/null
+>> +++ b/arch/powerpc/kernel/optprobes.c
+>> @@ -0,0 +1,333 @@
+>> +/*
+>> + * Code for Kernel probes Jump optimization.
+>> + *
+>> + * Copyright 2016, Anju T, IBM Corp.
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the License, or (at your option) any later version.
+>> + */
+>> +
+>> +#include <linux/kprobes.h>
+>> +#include <linux/jump_label.h>
+>> +#include <linux/types.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/list.h>
+>> +#include <asm/kprobes.h>
+>> +#include <asm/ptrace.h>
+>> +#include <asm/cacheflush.h>
+>> +#include <asm/code-patching.h>
+>> +#include <asm/sstep.h>
+>> +#include <asm/ppc-opcode.h>
+>> +
+>> +#define TMPL_CALL_HDLR_IDX	\
+>> +	(optprobe_template_call_handler - optprobe_template_entry)
+>> +#define TMPL_EMULATE_IDX	\
+>> +	(optprobe_template_call_emulate - optprobe_template_entry)
+>> +#define TMPL_RET_IDX		\
+>> +	(optprobe_template_ret - optprobe_template_entry)
+>> +#define TMPL_OP_IDX		\
+>> +	(optprobe_template_op_address - optprobe_template_entry)
+>> +#define TMPL_INSN_IDX		\
+>> +	(optprobe_template_insn - optprobe_template_entry)
+>> +#define TMPL_END_IDX		\
+>> +	(optprobe_template_end - optprobe_template_entry)
+>> +
+>> +DEFINE_INSN_CACHE_OPS(ppc_optinsn);
+>> +
+>> +static bool insn_page_in_use;
+>> +
+>> +static void *__ppc_alloc_insn_page(void)
+>> +{
+>> +	if (insn_page_in_use)
+>> +		return NULL;
+>> +	insn_page_in_use = true;
+>> +	return &optinsn_slot;
+>> +}
+>> +
+>> +static void __ppc_free_insn_page(void *page __maybe_unused)
+>> +{
+>> +	insn_page_in_use = false;
+>> +}
+>> +
+>> +struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
+>> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
+>> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
+>> +	/* insn_size initialized later */
+>> +	.alloc = __ppc_alloc_insn_page,
+>> +	.free = __ppc_free_insn_page,
+>> +	.nr_garbage = 0,
+>> +};
+>> +
+>> +/*
+>> + * Check if we can optimize this probe. Returns NIP post-emulation if this can
+>> + * be optimized and 0 otherwise.
+>> + */
+>> +static unsigned long can_optimize(struct kprobe *p)
+>> +{
+>> +	struct pt_regs regs;
+>> +	struct instruction_op op;
+>> +	unsigned long nip = 0;
+>> +
+>> +	/*
+>> +	 * kprobe placed for kretprobe during boot time
+>> +	 * is not optimizing now.
+>> +	 *
+>> +	 * TODO: Optimize kprobe in kretprobe_trampoline
+>> +	 */
+>> +	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
+>> +		return 0;
+>> +
+>> +	/*
+>> +	 * We only support optimizing kernel addresses, but not
+>> +	 * module addresses.
+>> +	 */
+>> +	if (!is_kernel_addr((unsigned long)p->addr))
+>> +		return 0;
+>> +
+>> +	regs.nip = (unsigned long)p->addr;
+>> +	regs.trap = 0x0;
+>> +	regs.msr = MSR_KERNEL;
+>> +
+>> +	/*
+>> +	 * Ensure that the instruction is not a conditional branch,
+>> +	 * and that can be emulated.
+>> +	 */
+>> +	if (!is_conditional_branch(*p->ainsn.insn) &&
+>> +			analyse_instr(&op, &regs, *p->ainsn.insn))
+>> +		nip = regs.nip;
+>> +
+>> +	return nip;
+>> +}
+>> +
+>> +static void optimized_callback(struct optimized_kprobe *op,
+>> +			       struct pt_regs *regs)
+>> +{
+>> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+>> +	unsigned long flags;
+>> +
+>> +	/* This is possible if op is under delayed unoptimizing */
+>> +	if (kprobe_disabled(&op->kp))
+>> +		return;
+>> +
+>> +	local_irq_save(flags);
+>> +
+>> +	if (kprobe_running()) {
+>> +		kprobes_inc_nmissed_count(&op->kp);
+>> +	} else {
+>> +		__this_cpu_write(current_kprobe, &op->kp);
+>> +		regs->nip = (unsigned long)op->kp.addr;
+>> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+>> +		opt_pre_handler(&op->kp, regs);
+>> +		__this_cpu_write(current_kprobe, NULL);
+>> +	}
+>> +	local_irq_restore(flags);
+>> +}
+>> +NOKPROBE_SYMBOL(optimized_callback);
+>> +
+>> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	if (op->optinsn.insn) {
+>> +		free_ppc_optinsn_slot(op->optinsn.insn, 1);
+>> +		op->optinsn.insn = NULL;
+>> +	}
+>> +}
+>> +
+>> +/*
+>> + * emulate_step() requires insn to be emulated as
+>> + * second parameter. Load register 'r4' with the
+>> + * instruction.
+>> + */
+>> +void patch_imm32_load_insns(unsigned int val, kprobe_opcode_t *addr)
+>> +{
+>> +	/* addis r4,0,(insn)@h */
+>> +	*addr++ = PPC_INST_ADDIS | ___PPC_RT(4) |
+>> +		  ((val >> 16) & 0xffff);
+>> +
+>> +	/* ori r4,r4,(insn)@l */
+>> +	*addr = PPC_INST_ORI | ___PPC_RA(4) | ___PPC_RS(4) |
+>> +		(val & 0xffff);
+>> +}
+>> +
+>> +/*
+>> + * Generate instructions to load provided immediate 64-bit value
+>> + * to register 'r3' and patch these instructions at 'addr'.
+>> + */
+>> +void patch_imm64_load_insns(unsigned long val, kprobe_opcode_t *addr)
+>> +{
+>> +	/* lis r3,(op)@highest */
+>> +	*addr++ = PPC_INST_ADDIS | ___PPC_RT(3) |
+>> +		  ((val >> 48) & 0xffff);
+>> +
+>> +	/* ori r3,r3,(op)@higher */
+>> +	*addr++ = PPC_INST_ORI | ___PPC_RA(3) | ___PPC_RS(3) |
+>> +		  ((val >> 32) & 0xffff);
+>> +
+>> +	/* rldicr r3,r3,32,31 */
+>> +	*addr++ = PPC_INST_RLDICR | ___PPC_RA(3) | ___PPC_RS(3) |
+>> +		  __PPC_SH64(32) | __PPC_ME64(31);
+>> +
+>> +	/* oris r3,r3,(op)@h */
+>> +	*addr++ = PPC_INST_ORIS | ___PPC_RA(3) | ___PPC_RS(3) |
+>> +		  ((val >> 16) & 0xffff);
+>> +
+>> +	/* ori r3,r3,(op)@l */
+>> +	*addr = PPC_INST_ORI | ___PPC_RA(3) | ___PPC_RS(3) |
+>> +		(val & 0xffff);
+>> +}
+> I need another PPC maintainer review for these.
 
-We explicitly ensure that the return branch is within range as well 
-during registration. In fact, this is one of the reasons why we can't 
-optimize conditional branches - we can't know in advance where we need 
-to jump back.
+ok.
+>> +
+>> +int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+>> +{
+>> +	kprobe_opcode_t *buff, branch_op_callback, branch_emulate_step;
+>> +	kprobe_opcode_t *op_callback_addr, *emulate_step_addr;
+>> +	long b_offset;
+>> +	unsigned long nip;
+>> +
+>> +	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
+>> +
+>> +	nip = can_optimize(p);
+>> +	if (!nip)
+>> +		return -EILSEQ;
+>> +
+>> +	/* Allocate instruction slot for detour buffer */
+>> +	buff = get_ppc_optinsn_slot();
+>> +	if (!buff)
+>> +		return -ENOMEM;
+>> +
+>> +	/*
+>> +	 * OPTPROBE uses 'b' instruction to branch to optinsn.insn.
+>> +	 *
+>> +	 * The target address has to be relatively nearby, to permit use
+>> +	 * of branch instruction in powerpc, because the address is specified
+>> +	 * in an immediate field in the instruction opcode itself, ie 24 bits
+>> +	 * in the opcode specify the address. Therefore the address should
+>> +	 * be within 32MB on either side of the current instruction.
+>> +	 */
+>> +	b_offset = (unsigned long)buff - (unsigned long)p->addr;
+>> +	if (!is_offset_in_branch_range(b_offset)) {
+>> +		free_ppc_optinsn_slot(buff, 0);
+>> +		return -ERANGE;
+>> +	}
+>> +
+>> +	/* Check if the return address is also within 32MB range */
+>> +	b_offset = (unsigned long)(buff + TMPL_RET_IDX) -
+>> +			(unsigned long)nip;
+>> +	if (!is_offset_in_branch_range(b_offset)) {
+>> +		free_ppc_optinsn_slot(buff, 0);
+>> +		return -ERANGE;
+>> +	}
+>> +
+>> +	/* Setup template */
+>> +	memcpy(buff, optprobe_template_entry,
+>> +			TMPL_END_IDX * sizeof(kprobe_opcode_t));
+>> +
+>> +	/*
+>> +	 * Fixup the template with instructions to:
+>> +	 * 1. load the address of the actual probepoint
+>> +	 */
+>> +	patch_imm64_load_insns((unsigned long)op, buff + TMPL_OP_IDX);
+>> +
+>> +	/*
+>> +	 * 2. branch to optimized_callback() and emulate_step()
+>> +	 */
+>> +	kprobe_lookup_name("optimized_callback", op_callback_addr);
+>> +	kprobe_lookup_name("emulate_step", emulate_step_addr);
+>> +	if (!op_callback_addr || !emulate_step_addr) {
+>> +		free_ppc_optinsn_slot(buff, 0);
+>> +		WARN(1, "kprobe_lookup_name() failed\n");
+>> +		return -ENOENT;
+>> +	}
+>> +
+>> +	branch_op_callback = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
+>> +				(unsigned long)op_callback_addr,
+>> +				BRANCH_SET_LINK);
+>> +
+>> +	branch_emulate_step = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
+>> +				(unsigned long)emulate_step_addr,
+>> +				BRANCH_SET_LINK);
+>> +
+>> +	if (!branch_op_callback || !branch_emulate_step) {
+>> +		free_ppc_optinsn_slot(buff, 0);
+>> +		return -ERANGE;
+> Since there are 4 free_ppc_optinsn_slot(buff, 0) and return error pattarns,
+> I recommend you to consolidate it by using "goto error".
 
-> 
-> Balbir Singh.
-> 
+Ah, nice suggestion. Will change this. Thanks!
+>> +	}
+>> +
+>> +	buff[TMPL_CALL_HDLR_IDX] = branch_op_callback;
+>> +	buff[TMPL_EMULATE_IDX] = branch_emulate_step;
+>> +
+>> +	/*
+>> +	 * 3. load instruction to be emulated into relevant register, and
+>> +	 */
+>> +	patch_imm32_load_insns(*p->ainsn.insn, buff + TMPL_INSN_IDX);
+>> +
+>> +	/*
+>> +	 * 4. branch back from trampoline
+>> +	 */
+>> +	buff[TMPL_RET_IDX] = create_branch((unsigned int *)buff + TMPL_RET_IDX,
+>> +				(unsigned long)nip, 0);
+>> +
+>> +	flush_icache_range((unsigned long)buff,
+>> +			   (unsigned long)(&buff[TMPL_END_IDX]));
+>> +
+>> +	op->optinsn.insn = buff;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
+>> +{
+>> +	return optinsn->insn != NULL;
+>> +}
+>> +
+>> +/*
+>> + * On powerpc, Optprobes always replaces one instruction (4 bytes
+>> + * aligned and 4 bytes long). It is impossible to encounter another
+>> + * kprobe in this address range. So always return 0.
+>> + */
+>> +int arch_check_optimized_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	return 0;
+>> +}
+>> +
+>> +void arch_optimize_kprobes(struct list_head *oplist)
+>> +{
+>> +	struct optimized_kprobe *op;
+>> +	struct optimized_kprobe *tmp;
+>> +
+>> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+>> +		/*
+>> +		 * Backup instructions which will be replaced
+>> +		 * by jump address
+>> +		 */
+>> +		memcpy(op->optinsn.copied_insn, op->kp.addr,
+>> +					       RELATIVEJUMP_SIZE);
+>> +		patch_instruction(op->kp.addr,
+>> +			create_branch((unsigned int *)op->kp.addr,
+>> +				      (unsigned long)op->optinsn.insn, 0));
+> Would you be sure that create_branch doesn't fail?
 
-Thanks,
-- Naveen
+
+
+The b_offset check we did, before optimizing the kprobe will guarantee 
+that the branch will be in +/- 32MB range. So create_branch will not fail.
+
+
+>
+>> +		list_del_init(&op->list);
+>> +	}
+>> +}
+>> +
+>> +void arch_unoptimize_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	arch_arm_kprobe(&op->kp);
+>> +}
+>> +
+>> +void arch_unoptimize_kprobes(struct list_head *oplist,
+>> +			     struct list_head *done_list)
+>> +{
+>> +	struct optimized_kprobe *op;
+>> +	struct optimized_kprobe *tmp;
+>> +
+>> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+>> +		arch_unoptimize_kprobe(op);
+>> +		list_move(&op->list, done_list);
+>> +	}
+>> +}
+>> +
+>> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+>> +				 unsigned long addr)
+>> +{
+>> +	return ((unsigned long)op->kp.addr <= addr &&
+>> +		(unsigned long)op->kp.addr + RELATIVEJUMP_SIZE > addr);
+>> +}
+>> diff --git a/arch/powerpc/kernel/optprobes_head.S b/arch/powerpc/kernel/optprobes_head.S
+>> new file mode 100644
+>> index 0000000..c86976b
+>> --- /dev/null
+>> +++ b/arch/powerpc/kernel/optprobes_head.S
+>> @@ -0,0 +1,135 @@
+>> +/*
+>> + * Code to prepare detour buffer for optprobes in Kernel.
+>> + *
+>> + * Copyright 2016, Anju T, IBM Corp.
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the License, or (at your option) any later version.
+>> + */
+>> +
+>> +#include <asm/ppc_asm.h>
+>> +#include <asm/ptrace.h>
+>> +#include <asm/asm-offsets.h>
+>> +
+>> +#define	OPT_SLOT_SIZE	65536
+>> +
+>> +	.balign	4
+>> +
+>> +	/*
+>> +	 * Reserve an area to allocate slots for detour buffer.
+>> +	 * This is part of .text section (rather than vmalloc area)
+>> +	 * as this needs to be within 32MB of the probed address.
+>> +	 */
+>> +	.global optinsn_slot
+>> +optinsn_slot:
+>> +	.space	OPT_SLOT_SIZE
+>> +
+>> +	/*
+>> +	 * Optprobe template:
+>> +	 * This template gets copied into one of the slots in optinsn_slot
+>> +	 * and gets fixed up with real optprobe structures et al.
+>> +	 */
+>> +	.global optprobe_template_entry
+>> +optprobe_template_entry:
+>> +	/* Create an in-memory pt_regs */
+>> +	stdu	r1,-INT_FRAME_SIZE(r1)
+>> +	SAVE_GPR(0,r1)
+>> +	/* Save the previous SP into stack */
+>> +	addi	r0,r1,INT_FRAME_SIZE
+>> +	std	r0,GPR1(r1)
+>> +	SAVE_10GPRS(2,r1)
+>> +	SAVE_10GPRS(12,r1)
+>> +	SAVE_10GPRS(22,r1)
+>> +	/* Save SPRS */
+>> +	mfmsr	r5
+>> +	std	r5,_MSR(r1)
+>> +	li	r5,0x700
+>> +	std	r5,_TRAP(r1)
+>> +	li	r5,0
+>> +	std	r5,ORIG_GPR3(r1)
+>> +	std	r5,RESULT(r1)
+>> +	mfctr	r5
+>> +	std	r5,_CTR(r1)
+>> +	mflr	r5
+>> +	std	r5,_LINK(r1)
+>> +	mfspr	r5,SPRN_XER
+>> +	std	r5,_XER(r1)
+>> +	mfcr	r5
+>> +	std	r5,_CCR(r1)
+>> +	lbz     r5,PACASOFTIRQEN(r13)
+>> +	std     r5,SOFTE(r1)
+>> +	mfdar	r5
+>> +	std	r5,_DAR(r1)
+>> +	mfdsisr	r5
+>> +	std	r5,_DSISR(r1)
+>> +
+>> +	.global optprobe_template_op_address
+>> +optprobe_template_op_address:
+>> +	/*
+>> +	 * Parameters to optimized_callback():
+>> +	 * 1. optimized_kprobe structure in r3
+>> +	 */
+>> +	nop
+>> +	nop
+>> +	nop
+>> +	nop
+>> +	nop
+>> +	/* 2. pt_regs pointer in r4 */
+>> +	addi	r4,r1,STACK_FRAME_OVERHEAD
+>> +
+>> +	.global optprobe_template_call_handler
+>> +optprobe_template_call_handler:
+>> +	/* Branch to optimized_callback() */
+>> +	nop
+>> +
+>> +	/*
+>> +	 * Parameters for instruction emulation:
+>> +	 * 1. Pass SP in register r3.
+>> +	 */
+>> +	addi	r3,r1,STACK_FRAME_OVERHEAD
+>> +
+>> +	.global optprobe_template_insn
+>> +optprobe_template_insn:
+>> +	/* 2, Pass instruction to be emulated in r4 */
+>> +	nop
+>> +	nop
+>> +
+>> +	.global optprobe_template_call_emulate
+>> +optprobe_template_call_emulate:
+>> +	/* Branch to emulate_step()  */
+>> +	nop
+>> +
+>> +	/*
+>> +	 * All done.
+>> +	 * Now, restore the registers...
+>> +	 */
+>> +	ld	r5,_MSR(r1)
+>> +	mtmsr	r5
+>> +	ld	r5,_CTR(r1)
+>> +	mtctr	r5
+>> +	ld	r5,_LINK(r1)
+>> +	mtlr	r5
+>> +	ld	r5,_XER(r1)
+>> +	mtxer	r5
+>> +	ld	r5,_CCR(r1)
+>> +	mtcr	r5
+>> +	ld	r5,_DAR(r1)
+>> +	mtdar	r5
+>> +	ld	r5,_DSISR(r1)
+>> +	mtdsisr	r5
+>> +	REST_GPR(0,r1)
+>> +	REST_10GPRS(2,r1)
+>> +	REST_10GPRS(12,r1)
+>> +	REST_10GPRS(22,r1)
+>> +	/* Restore the previous SP */
+>> +	addi	r1,r1,INT_FRAME_SIZE
+>> +
+>> +	.global optprobe_template_ret
+>> +optprobe_template_ret:
+>> +	/* ... and jump back from trampoline */
+>> +	nop
+>> +
+>> +	.global optprobe_template_end
+>> +optprobe_template_end:
+>> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+>> index 3362299..0c6c2b0 100644
+>> --- a/arch/powerpc/lib/sstep.c
+>> +++ b/arch/powerpc/lib/sstep.c
+>> @@ -618,6 +618,27 @@ static int __kprobes trap_compare(long v1, long v2)
+>>   }
+>>   
+>>   /*
+>> + * Helper to check if a given instruction is a conditional branch
+>> + * Derived from the conditional checks in analyse_instr()
+>> + */
+>> +bool __kprobes is_conditional_branch(unsigned int instr)
+>> +{
+>> +	unsigned int opcode = instr >> 26;
+>> +
+>> +	if (opcode == 16)	/* bc, bca, bcl, bcla */
+>> +		return true;
+>> +	if (opcode == 19) {
+>> +		switch ((instr >> 1) & 0x3ff) {
+>> +		case 16:	/* bclr, bclrl */
+>> +		case 528:	/* bcctr, bcctrl */
+>> +		case 560:	/* bctar, bctarl */
+>> +			return true;
+>> +		}
+>> +	}
+>> +	return false;
+>> +}
+>> +
+>> +/*
+>>    * Elements of 32-bit rotate and mask instructions.
+>>    */
+>>   #define MASK32(mb, me)	((0xffffffffUL >> (mb)) + \
+>> @@ -2018,3 +2039,4 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+>>   	regs->nip = truncate_if_32bit(regs->msr, regs->nip + 4);
+>>   	return 1;
+>>   }
+>> +
+> This seems unneeded linefeed :)
+
+
+  :-) I will remove the extra line.
+
+
+
+Thanks and Regards,
+Anju
+> Thank you,
+>
