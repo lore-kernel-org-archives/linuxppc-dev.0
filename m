@@ -2,9 +2,9 @@ Return-Path: <pmladek@suse.com>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgDyg6GG7zDsgv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 02:39:55 +1100 (AEDT)
-Date: Fri, 16 Dec 2016 16:39:49 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgFR41mXSzDsxq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 03:01:02 +1100 (AEDT)
+Date: Fri, 16 Dec 2016 17:00:57 +0100
 From: Petr Mladek <pmladek@suse.com>
 To: Josh Poimboeuf <jpoimboe@redhat.com>
 Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
@@ -16,13 +16,14 @@ Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Chris J Arges <chris.j.arges@canonical.com>,
  Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
  Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 04/15] livepatch/x86: add TIF_PATCH_PENDING thread flag
-Message-ID: <20161216153949.GF393@pathway.suse.cz>
+Subject: Re: [PATCH v3 05/15] livepatch/powerpc: add TIF_PATCH_PENDING thread
+ flag
+Message-ID: <20161216160057.GG393@pathway.suse.cz>
 References: <cover.1481220077.git.jpoimboe@redhat.com>
- <b7bbfce2330e61329056e4567c68be8e4c55fb5b.1481220077.git.jpoimboe@redhat.com>
+ <e675e8f368e7d580d7dc0fb7022fea49e55eb1cf.1481220077.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b7bbfce2330e61329056e4567c68be8e4c55fb5b.1481220077.git.jpoimboe@redhat.com>
+In-Reply-To: <e675e8f368e7d580d7dc0fb7022fea49e55eb1cf.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,14 +33,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2016-12-08 12:08:29, Josh Poimboeuf wrote:
+On Thu 2016-12-08 12:08:30, Josh Poimboeuf wrote:
 > Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
-> per-task consistency model for x86_64.  The bit getting set indicates
+> per-task consistency model for powerpc.  The bit getting set indicates
 > the thread has a pending patch which needs to be applied when the thread
 > exits the kernel.
 > 
-> The bit is placed in the _TIF_ALLWORK_MASK macro, which results in
-> exit_to_usermode_loop() calling klp_update_patch_state() when it's set.
+> The bit is included in the _TIF_USER_WORK_MASK macro so that
+> do_notify_resume() and klp_update_patch_state() get called when the bit
+> is set.
 > 
 > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
