@@ -1,28 +1,26 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR03-DB5-obe.outbound.protection.outlook.com
+ (mail-eopbgr40086.outbound.protection.outlook.com [40.107.4.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgGfW6dZCzDqcx
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 03:56:03 +1100 (AEDT)
-Date: Fri, 16 Dec 2016 17:55:55 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 11/15] livepatch: use kstrtobool() in enabled_store()
-Message-ID: <20161216165555.GK393@pathway.suse.cz>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <50c4817cbccd6e6cfd0c85c96bf127f84ee79cc8.1481220077.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgGn74FyhzDw57
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 04:01:47 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+To: Scott Wood <scott.wood@nxp.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
+Subject: RE: [upstream-release] [PATCH net 2/4] fsl/fman: arm: call
+ of_platform_populate() for arm64 platfrom
+Date: Fri, 16 Dec 2016 17:01:41 +0000
+Message-ID: <AM4PR04MB16048BC5546038190CFDBF2BEC9C0@AM4PR04MB1604.eurprd04.prod.outlook.com>
+References: <1481807497-4724-1-git-send-email-madalin.bucur@nxp.com>
+ <1481807497-4724-3-git-send-email-madalin.bucur@nxp.com>
+ <DB5PR0401MB1928F163614C64900D1458ED919D0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+In-Reply-To: <DB5PR0401MB1928F163614C64900D1458ED919D0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50c4817cbccd6e6cfd0c85c96bf127f84ee79cc8.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +30,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2016-12-08 12:08:36, Josh Poimboeuf wrote:
-> The sysfs enabled value is a boolean, so kstrtobool() is a better fit
-> for parsing the input string since it does the range checking for us.
-> 
-> Suggested-by: Petr Mladek <pmladek@suse.com>
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> ---
->  kernel/livepatch/core.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
-> 
-> diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-> index 6a137e1..8ca8a0e 100644
-> --- a/kernel/livepatch/core.c
-> +++ b/kernel/livepatch/core.c
-> @@ -408,26 +408,23 @@ static ssize_t enabled_store(struct kobject *kobj, struct kobj_attribute *attr,
->  {
->  	struct klp_patch *patch;
->  	int ret;
-> -	unsigned long val;
-> +	bool enabled;
->  
-> -	ret = kstrtoul(buf, 10, &val);
-> +	ret = kstrtobool(buf, &enabled);
->  	if (ret)
->  		return -EINVAL;
+> From: Scott Wood
+> Sent: Thursday, December 15, 2016 8:42 PM
+>=20
+> On 12/15/2016 07:11 AM, Madalin Bucur wrote:
+> > From: Igal Liberman <igal.liberman@freescale.com>
+> >
+> > Signed-off-by: Igal Liberman <igal.liberman@freescale.com>
+> > ---
+> >  drivers/net/ethernet/freescale/fman/fman.c | 10 ++++++++++
+> >  1 file changed, 10 insertions(+)
+> >
+> > diff --git a/drivers/net/ethernet/freescale/fman/fman.c
+> b/drivers/net/ethernet/freescale/fman/fman.c
+> > index dafd9e1..f36b4eb 100644
+> > --- a/drivers/net/ethernet/freescale/fman/fman.c
+> > +++ b/drivers/net/ethernet/freescale/fman/fman.c
+> > @@ -2868,6 +2868,16 @@ static struct fman *read_dts_node(struct
+> platform_device *of_dev)
+> >
+> >  	fman->dev =3D &of_dev->dev;
+> >
+> > +#ifdef CONFIG_ARM64
+> > +	/* call of_platform_populate in order to probe sub-nodes on arm64 */
+> > +	err =3D of_platform_populate(fm_node, NULL, NULL, &of_dev->dev);
+> > +	if (err) {
+> > +		dev_err(&of_dev->dev, "%s: of_platform_populate() failed\n",
+> > +			__func__);
+> > +		goto fman_free;
+> > +	}
+> > +#endif
+>=20
+> Should we remove fsl,fman from the PPC of_device_ids[], so this doesn't
+> need an ifdef?
+>=20
+> Why is it #ifdef CONFIG_ARM64 rather than #ifndef CONFIG_PPC?
+>=20
+> -Scott
 
-I would return "ret" here. It is -EINVAL as well but... ;-)
+Igal was working on adding ARM64 support when this patch was created, thus =
+the
+choice of #ifdef CONFIG_ARM64. Unifying this for PPC and ARM64 by always ca=
+lling
+of_platform_populate() sounds like the best approach. I would need to synch=
+ronize
+the introduction of this code with the removal of the fsl,fman entry from t=
+he
+of_device_ids[] array.
 
-Anyway, feel free to use:
+Dave, Michael, Scott, is it ok to add to v2 of this patch set the patch tha=
+t removes
+the compatible "fsl,fman" from arch/powerpc/platforms/85xx/corenet_generic.=
+c?
 
-Reviewed-by: Petr Mladek <pmladek@suse.com>
-
-Best Regards,
-Petr
+Thanks,
+Madalin
