@@ -2,9 +2,9 @@ Return-Path: <pmladek@suse.com>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgFt93vRYzDwBJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 03:21:05 +1100 (AEDT)
-Date: Fri, 16 Dec 2016 17:21:00 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgG0l3T0tzDwBk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 03:26:47 +1100 (AEDT)
+Date: Fri, 16 Dec 2016 17:26:42 +0100
 From: Petr Mladek <pmladek@suse.com>
 To: Josh Poimboeuf <jpoimboe@redhat.com>
 Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
@@ -16,13 +16,13 @@ Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Chris J Arges <chris.j.arges@canonical.com>,
  Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
  Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 08/15] livepatch: separate enabled and patched states
-Message-ID: <20161216162100.GH393@pathway.suse.cz>
+Subject: Re: [PATCH v3 09/15] livepatch: remove unnecessary object loaded check
+Message-ID: <20161216162642.GI393@pathway.suse.cz>
 References: <cover.1481220077.git.jpoimboe@redhat.com>
- <de700cbd87b4157b0152c7293558a27deaf0a37b.1481220077.git.jpoimboe@redhat.com>
+ <f6bedf84258006261fd2bb632e13d1d1904cda93.1481220077.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <de700cbd87b4157b0152c7293558a27deaf0a37b.1481220077.git.jpoimboe@redhat.com>
+In-Reply-To: <f6bedf84258006261fd2bb632e13d1d1904cda93.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2016-12-08 12:08:33, Josh Poimboeuf wrote:
-> Once we have a consistency model, patches and their objects will be
-> enabled and disabled at different times.  For example, when a patch is
-> disabled, its loaded objects' funcs can remain registered with ftrace
-> indefinitely until the unpatching operation is complete and they're no
-> longer in use.
+On Thu 2016-12-08 12:08:34, Josh Poimboeuf wrote:
+> klp_patch_object()'s callers already ensure that the object is loaded,
+> so its call to klp_is_object_loaded() is unnecessary.
 > 
-> It's less confusing if we give them different names: patches can be
-> enabled or disabled; objects (and their funcs) can be patched or
-> unpatched:
-> 
-> - Enabled means that a patch is logically enabled (but not necessarily
->   fully applied).
-> 
-> - Patched means that an object's funcs are registered with ftrace and
->   added to the klp_ops func stack.
-> 
-> Also, since these states are binary, represent them with booleans
-> instead of ints.
-> 
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> This will also make it possible to move the patching code into a
+> separate file.
 
-Makes sense. The patch is pretty straightforward.
+Fair enough.
+
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
 Reviewed-by: Petr Mladek <pmladek@suse.com>
 
