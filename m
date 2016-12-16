@@ -1,23 +1,44 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tg6J4647SzDwDm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 21:39:32 +1100 (AEDT)
-Subject: Re: [PATCH 04/11] powerpc/kvm: Don't store values derivable from HPT
- order
-To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org
-References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
- <20161215055404.29351-5-david@gibson.dropbear.id.au>
-Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
- lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <db1ccf7b-7355-e0d4-ac36-26cc9c833105@redhat.com>
-Date: Fri, 16 Dec 2016 11:39:26 +0100
-MIME-Version: 1.0
-In-Reply-To: <20161215055404.29351-5-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tg73J6xH7zDw6F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 22:13:31 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBGBA7wt000959
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 06:13:29 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27cbb2atqq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 06:13:29 -0500
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Fri, 16 Dec 2016 21:13:26 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5A4882BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 22:13:24 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uBGBDOiQ51904700
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 22:13:24 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uBGBDNmN025540
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 22:13:24 +1100
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, svaidy@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Add boost files to export ultra-turbo
+ frequencies
+Date: Fri, 16 Dec 2016 16:43:08 +0530
+Message-Id: <1481886788-25324-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,93 +48,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15.12.2016 06:53, David Gibson wrote:
-> Currently the kvm_hpt_info structure stores the hashed page table's order,
-> and also the number of HPTEs it contains and a mask for its size.  The
-> last two can be easily derived from the order, so remove them and just
-> calculate them as necessary with a couple of helper inlines.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
-[...]
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index b5799d1..fe88132 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -83,15 +83,11 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
->  
->  	kvm->arch.hpt.virt = hpt;
->  	kvm->arch.hpt.order = order;
-> -	/* HPTEs are 2**4 bytes long */
-> -	kvm->arch.hpt.npte = 1ul << (order - 4);
-> -	/* 128 (2**7) bytes in each HPTEG */
-> -	kvm->arch.hpt.mask = (1ul << (order - 7)) - 1;
->  
->  	atomic64_set(&kvm->arch.mmio_update, 0);
->  
->  	/* Allocate reverse map array */
-> -	rev = vmalloc(sizeof(struct revmap_entry) * kvm->arch.hpt.npte);
-> +	rev = vmalloc(sizeof(struct revmap_entry) * kvmppc_hpt_npte(&kvm->arch.hpt));
->  	if (!rev) {
->  		pr_err("kvmppc_alloc_hpt: Couldn't alloc reverse map array\n");
->  		goto out_freehpt;
-> @@ -194,8 +190,8 @@ void kvmppc_map_vrma(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
->  	if (npages > 1ul << (40 - porder))
->  		npages = 1ul << (40 - porder);
->  	/* Can't use more than 1 HPTE per HPTEG */
-> -	if (npages > kvm->arch.hpt.mask + 1)
-> -		npages = kvm->arch.hpt.mask + 1;
-> +	if (npages > kvmppc_hpt_mask(&kvm->arch.hpt) + 1)
-> +		npages = kvmppc_hpt_mask(&kvm->arch.hpt) + 1;
->  
->  	hp0 = HPTE_V_1TB_SEG | (VRMA_VSID << (40 - 16)) |
->  		HPTE_V_BOLTED | hpte0_pgsize_encoding(psize);
-> @@ -205,7 +201,8 @@ void kvmppc_map_vrma(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
->  	for (i = 0; i < npages; ++i) {
->  		addr = i << porder;
->  		/* can't use hpt_hash since va > 64 bits */
-> -		hash = (i ^ (VRMA_VSID ^ (VRMA_VSID << 25))) & kvm->arch.hpt.mask;
-> +		hash = (i ^ (VRMA_VSID ^ (VRMA_VSID << 25)))
-> +			& kvmppc_hpt_mask(&kvm->arch.hpt);
->  		/*
->  		 * We assume that the hash table is empty and no
->  		 * vcpus are using it at this stage.  Since we create
+In P8+, Workload Optimized Frequency(WOF) provides the capability to
+boost the cpu frequency based on the utilization of the other cpus
+running in the chip. The On-Chip-Controller(OCC) firmware will control
+the achievability of these frequencies depending on the power headroom
+available in the chip. Currently the ultra-turbo frequencies provided
+by this feature are exported along with the turbo and sub-turbo
+frequencies as scaling_available_frequencies. This patch will export
+the ultra-turbo frequencies separately as scaling_boost_frequencies in
+WOF enabled systems. This patch will add the boost sysfs file which
+can be used to disable/enable ultra-turbo frequencies.
 
-kvmppc_hpt_mask() is now called three times in kvmppc_map_vrma() ... you
-could use a local variable to store the value so that the calculation
-has only be done once here.
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 48 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 45 insertions(+), 3 deletions(-)
 
-> @@ -1306,7 +1303,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
->  
->  		/* Skip uninteresting entries, i.e. clean on not-first pass */
->  		if (!first_pass) {
-> -			while (i < kvm->arch.hpt.npte &&
-> +			while (i < kvmppc_hpt_npte(&kvm->arch.hpt) &&
->  			       !hpte_dirty(revp, hptp)) {
->  				++i;
->  				hptp += 2;
-> @@ -1316,7 +1313,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
->  		hdr.index = i;
->  
->  		/* Grab a series of valid entries */
-> -		while (i < kvm->arch.hpt.npte &&
-> +		while (i < kvmppc_hpt_npte(&kvm->arch.hpt) &&
->  		       hdr.n_valid < 0xffff &&
->  		       nb + HPTE_SIZE < count &&
->  		       record_hpte(flags, hptp, hpte, revp, 1, first_pass)) {
-> @@ -1332,7 +1329,7 @@ static ssize_t kvm_htab_read(struct file *file, char __user *buf,
->  			++revp;
->  		}
->  		/* Now skip invalid entries while we can */
-> -		while (i < kvm->arch.hpt.npte &&
-> +		while (i < kvmppc_hpt_npte(&kvm->arch.hpt) &&
->  		       hdr.n_invalid < 0xffff &&
->  		       record_hpte(flags, hptp, hpte, revp, 0, first_pass)) {
->  			/* found an invalid entry */
-
-Dito, you could use a local variable to store the value from
-kvmppc_hpt_npte()
-
-Anyway, apart from these nits, patch looks fine to me, so:
-
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 37671b5..56dfd91 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -144,6 +144,7 @@ enum throttle_reason_type {
+ 	unsigned int max;
+ 	unsigned int nominal;
+ 	unsigned int nr_pstates;
++	bool wof_enabled;
+ } powernv_pstate_info;
+ 
+ /* Use following macros for conversions between pstate_id and index */
+@@ -203,6 +204,7 @@ static int init_powernv_pstates(void)
+ 	const __be32 *pstate_ids, *pstate_freqs;
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
++	u32 pstate_turbo, pstate_ultra_turbo;
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -225,6 +227,25 @@ static int init_powernv_pstates(void)
+ 		pr_warn("ibm,pstate-nominal not found\n");
+ 		return -ENODEV;
+ 	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
++				 &pstate_ultra_turbo)) {
++		powernv_pstate_info.wof_enabled = false;
++		goto next;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-turbo",
++				 &pstate_turbo)) {
++		powernv_pstate_info.wof_enabled = false;
++		goto next;
++	}
++
++	if (pstate_turbo == pstate_ultra_turbo)
++		powernv_pstate_info.wof_enabled = false;
++	else
++		powernv_pstate_info.wof_enabled = true;
++
++next:
+ 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+ 		pstate_nominal, pstate_max);
+ 
+@@ -268,6 +289,13 @@ static int init_powernv_pstates(void)
+ 			powernv_pstate_info.nominal = i;
+ 		else if (id == pstate_min)
+ 			powernv_pstate_info.min = i;
++
++		if (powernv_pstate_info.wof_enabled && id == pstate_turbo) {
++			int j;
++
++			for (j = i - 1; j >= (int)powernv_pstate_info.max; j--)
++				powernv_freqs[j].flags = CPUFREQ_BOOST_FREQ;
++		}
+ 	}
+ 
+ 	/* End of list marker entry */
+@@ -305,9 +333,12 @@ static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
+ struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
+ 	__ATTR_RO(cpuinfo_nominal_freq);
+ 
++#define SCALING_BOOST_FREQS_ATTR_INDEX		2
++
+ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	&cpufreq_freq_attr_cpuinfo_nominal_freq,
++	&cpufreq_freq_attr_scaling_boost_freqs,
+ 	NULL,
+ };
+ 
+@@ -1013,11 +1044,22 @@ static int __init powernv_cpufreq_init(void)
+ 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
+ 
++	if (powernv_pstate_info.wof_enabled)
++		powernv_cpufreq_driver.boost_enabled = true;
++	else
++		powernv_cpu_freq_attr[SCALING_BOOST_FREQS_ATTR_INDEX] = NULL;
++
+ 	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
+-	if (!rc)
+-		return 0;
++	if (rc) {
++		pr_info("Failed to register the cpufreq driver (%d)\n", rc);
++		goto clean_notifiers;
++	}
+ 
+-	pr_info("Failed to register the cpufreq driver (%d)\n", rc);
++	if (powernv_pstate_info.wof_enabled)
++		cpufreq_enable_boost_support();
++
++	return 0;
++clean_notifiers:
+ 	unregister_all_notifiers();
+ 	clean_chip_info();
+ out:
+-- 
+1.8.3.1
