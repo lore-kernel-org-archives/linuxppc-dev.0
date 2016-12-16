@@ -1,24 +1,29 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgByF6WT9zDw9T
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 01:09:25 +1100 (AEDT)
-Date: Fri, 16 Dec 2016 23:09:14 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
- mahesh@linux.vnet.ibm.com, mhiramat@kernel.org
-Subject: Re: [PATCH V2 4/4] arch/powerpc: Optimize kprobe in
- kretprobe_trampoline
-Message-Id: <20161216230914.1d5817b0e7f2813b108ac8ee@kernel.org>
-In-Reply-To: <1481732310-7779-3-git-send-email-anju@linux.vnet.ibm.com>
-References: <1481732310-7779-1-git-send-email-anju@linux.vnet.ibm.com>
- <1481732310-7779-3-git-send-email-anju@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgC7m6qZ4zDwBc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 01:17:40 +1100 (AEDT)
+Date: Fri, 16 Dec 2016 15:17:35 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 02/15] x86/entry: define _TIF_ALLWORK_MASK flags
+ explicitly
+Message-ID: <20161216141735.GD393@pathway.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <b03212d03f5f112ffa778c30012c7f8301f64929.1481220077.git.jpoimboe@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b03212d03f5f112ffa778c30012c7f8301f64929.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,75 +33,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 14 Dec 2016 21:48:28 +0530
-Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
-
-> Kprobe placed on the  kretprobe_trampoline during boot time can be 
-> optimized, since the instruction at probe point is a 'nop'.
+On Thu 2016-12-08 12:08:27, Josh Poimboeuf wrote:
+> The _TIF_ALLWORK_MASK macro automatically includes the least-significant
+> 16 bits of the thread_info flags, which is less than obvious and tends
+> to create confusion and surprises when reading or modifying the code.
 > 
-
-How simple & clever way! ;)
-
-Acked-by: Masami Hiramatsu <mhiramat@kernel.org>
-
-Thank you!
-
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Define the flags explicitly.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 > ---
->  arch/powerpc/kernel/kprobes.c   | 8 ++++++++
->  arch/powerpc/kernel/optprobes.c | 7 +++----
->  2 files changed, 11 insertions(+), 4 deletions(-)
+>  arch/x86/include/asm/thread_info.h | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index e785cc9..5b0fd07 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -282,6 +282,7 @@ asm(".global kretprobe_trampoline\n"
->  	".type kretprobe_trampoline, @function\n"
->  	"kretprobe_trampoline:\n"
->  	"nop\n"
-> +	"blr\n"
->  	".size kretprobe_trampoline, .-kretprobe_trampoline\n");
->  
->  /*
-> @@ -334,6 +335,13 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
->  
->  	kretprobe_assert(ri, orig_ret_address, trampoline_address);
->  	regs->nip = orig_ret_address;
-> +	/*
-> +	 * Make LR point to the orig_ret_address.
-> +	 * When the 'nop' inside the kretprobe_trampoline
-> +	 * is optimized, we can do a 'blr' after executing the
-> +	 * detour buffer code.
-> +	 */
-> +	regs->link = orig_ret_address;
->  
->  	reset_current_kprobe();
->  	kretprobe_hash_unlock(current, &flags);
-> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-> index ecba221..5e4c254 100644
-> --- a/arch/powerpc/kernel/optprobes.c
-> +++ b/arch/powerpc/kernel/optprobes.c
-> @@ -72,12 +72,11 @@ static unsigned long can_optimize(struct kprobe *p)
->  
->  	/*
->  	 * kprobe placed for kretprobe during boot time
-> -	 * is not optimizing now.
-> -	 *
-> -	 * TODO: Optimize kprobe in kretprobe_trampoline
-> +	 * has a 'nop' instruction, which can be emulated.
-> +	 * So further checks can be skipped.
->  	 */
->  	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
-> -		return 0;
-> +		return (unsigned long)p->addr + sizeof(kprobe_opcode_t);
->  
->  	/*
->  	 * We only support optimizing kernel addresses, but not
-> -- 
-> 2.7.4
-> 
+> diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+> index ad6f5eb0..1fe6043 100644
+> --- a/arch/x86/include/asm/thread_info.h
+> +++ b/arch/x86/include/asm/thread_info.h
+> @@ -73,9 +73,6 @@ struct thread_info {
+>   * thread information flags
+>   * - these are process state flags that various assembly files
+>   *   may need to access
+> - * - pending work-to-be-done flags are in LSW
 
+Yup, this is not true because also some flags from the most
+significant bits are in the _TIF_ALLWORK_MASK.
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+> - * - other flags in MSW
+> - * Warning: layout of LSW is hardcoded in entry.S
+>   */
+>  #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
+>  #define TIF_NOTIFY_RESUME	1	/* callback before returning to user */
+> @@ -133,8 +130,10 @@ struct thread_info {
+>  
+>  /* work to do on any return to user space */
+>  #define _TIF_ALLWORK_MASK						\
+> -	((0x0000FFFF & ~_TIF_SECCOMP) | _TIF_SYSCALL_TRACEPOINT |	\
+> -	_TIF_NOHZ)
+> +	(_TIF_SYSCALL_TRACE | _TIF_NOTIFY_RESUME | _TIF_SIGPENDING |	\
+> +	 _TIF_SINGLESTEP | _TIF_NEED_RESCHED | _TIF_SYSCALL_EMU |	\
+> +	 _TIF_SYSCALL_AUDIT | _TIF_USER_RETURN_NOTIFY | _TIF_UPROBE |	\
+> +	 _TIF_SYSCALL_TRACEPOINT | _TIF_NOHZ)
+
+All flags are sorted by the number except for
+_TIF_SINGLESTEP and _TIF_NEED_RESCHED  ;-)
+
+The patch does not change the existing behavior. The same
+existing flags are listed.
+
+Reviewed-by: Petr Mladek <pmladek@suse.com>
+
+Best Regards,
+Petr
