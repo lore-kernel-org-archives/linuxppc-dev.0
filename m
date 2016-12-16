@@ -1,44 +1,52 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
+Return-Path: <hbathini@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tg0Qk6z5bzDwB1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tg0wv19BxzDw5V
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:37:34 +1100 (AEDT)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBG6DhkJ043337
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:14:52 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27c81eu660-1
+ uBG6YHOP087612
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:37:32 -0500
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27c81evh2t-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:14:52 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:37:32 -0500
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Fri, 16 Dec 2016 16:14:49 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B08FB2CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:47 +1100 (EST)
+ for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 16 Dec 2016 16:37:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5298C2CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:37:28 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uBG6Elur32309440
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:47 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uBG6bSWW2097596
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:37:28 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uBG6EkqD029893
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:47 +1100
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Jessica Yu <jeyu@redhat.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
- linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org,
- linux-kernel@vger.kernel.org, Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH] powerpc/livepatch: Remove klp_write_module_reloc() stub
-Date: Fri, 16 Dec 2016 11:44:24 +0530
-Message-Id: <1481868864-27283-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ uBG6bR5F031181
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:37:28 +1100
+Subject: Re: [PATCH v2 2/5] ia64: reuse append_elf_note() and final_note()
+ functions
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+References: <148007477669.1053.4107773905913128028.stgit@hbathini.in.ibm.com>
+ <148007484315.1053.12317233313990302812.stgit@hbathini.in.ibm.com>
+ <20161201045653.GA13670@dhcp-128-65.nay.redhat.com>
+ <fe3784de-a68b-5d6e-a9ab-f77a7da781a8@linux.vnet.ibm.com>
+ <87mvge16gw.fsf@xmission.com>
+Cc: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Dave Young <dyoung@redhat.com>,
+ vgoyal@redhat.com
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Fri, 16 Dec 2016 12:07:23 +0530
+MIME-Version: 1.0
+In-Reply-To: <87mvge16gw.fsf@xmission.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <34293693-5424-9bdc-c693-dc385a5935e3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,34 +56,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 425595a7fc20 ("livepatch: reuse module loader code
-to write relocations") offloads livepatch module relocation
-write to arch specific module loader code.
 
-Remove unused klp_write_module_reloc() function stub.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/livepatch.h | 7 -------
- 1 file changed, 7 deletions(-)
+On Saturday 03 December 2016 12:52 AM, Eric W. Biederman wrote:
+> Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+>
+>> Hi Dave,
+>>
+>>
+>> Thanks for the review.
+>>
+>>
+>> On Thursday 01 December 2016 10:26 AM, Dave Young wrote:
+>>> Hi Hari
+>>>
+>>> Personally I like V1 more, but split the patch 2 is easier for ia64
+>>> people to reivew.  I did basic x86 testing, it runs ok.
+>>>
+>>> On 11/25/16 at 05:24pm, Hari Bathini wrote:
+>>>> Get rid of multiple definitions of append_elf_note() & final_note()
+>>>> functions. Reuse these functions compiled under CONFIG_CRASH_CORE.
+>>>>
+>>>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+>>>> ---
+>>>>    arch/ia64/kernel/crash.c   |   22 ----------------------
+>>>>    include/linux/crash_core.h |    4 ++++
+>>>>    kernel/crash_core.c        |    6 +++---
+>>>>    kernel/kexec_core.c        |   28 ----------------------------
+>>>>    4 files changed, 7 insertions(+), 53 deletions(-)
+>>>>
+>>>> diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
+>>>> index 2955f35..75859a0 100644
+>>>> --- a/arch/ia64/kernel/crash.c
+>>>> +++ b/arch/ia64/kernel/crash.c
+>>>> @@ -27,28 +27,6 @@ static int kdump_freeze_monarch;
+>>>>    static int kdump_on_init = 1;
+>>>>    static int kdump_on_fatal_mca = 1;
+>>>>    -static inline Elf64_Word
+>>>> -*append_elf_note(Elf64_Word *buf, char *name, unsigned type, void *data,
+>>>> -		size_t data_len)
+>>>> -{
+>>>> -	struct elf_note *note = (struct elf_note *)buf;
+>>>> -	note->n_namesz = strlen(name) + 1;
+>>>> -	note->n_descsz = data_len;
+>>>> -	note->n_type   = type;
+>>>> -	buf += (sizeof(*note) + 3)/4;
+>>>> -	memcpy(buf, name, note->n_namesz);
+>>>> -	buf += (note->n_namesz + 3)/4;
+>>>> -	memcpy(buf, data, data_len);
+>>>> -	buf += (data_len + 3)/4;
+>>>> -	return buf;
+>>>> -}
+>>>> -
+>>>> -static void
+>>>> -final_note(void *buf)
+>>>> -{
+>>>> -	memset(buf, 0, sizeof(struct elf_note));
+>>>> -}
+>>>> -
+>>> The above IA64 version looks better than the functions in kexec_core.c
+>>> about the Elf64_Word type usage and the simpler final_note function.
+>> Hmmm.. Is void* better over Elf64_Word* to be agnostic of Elf32 or
+>> Elf64 type?
+> Both Elf64_Word and Elf32_Word result in a u32.  So I expect the right
+> solution is to add a definition of Elf_Word to include/linux/elf.h
+> and to make the buffer "Elf_Word *buf".
+>
+> That way we preserve the alignment knowledge, while making the code
+> depend on 32bit or 64bit.
+>
+> Eric
+>
 
-diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
-index a402f7f..47a03b9 100644
---- a/arch/powerpc/include/asm/livepatch.h
-+++ b/arch/powerpc/include/asm/livepatch.h
-@@ -28,13 +28,6 @@ static inline int klp_check_compiler_support(void)
- 	return 0;
- }
- 
--static inline int klp_write_module_reloc(struct module *mod, unsigned long
--		type, unsigned long loc, unsigned long value)
--{
--	/* This requires infrastructure changes; we need the loadinfos. */
--	return -ENOSYS;
--}
--
- static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
- {
- 	regs->nip = ip;
--- 
-2.7.4
+Thanks for the review, Eric. Will address this in the next version.
+
+As some recent changes in powerpc tree may cause merger conflicts,
+I will wait for those changes to get into linus's tree and rebase the
+next version on top of that..
+
+Thanks
+Hari
