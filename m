@@ -1,25 +1,30 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tgMNf0bCjzDwDb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 07:29:20 +1100 (AEDT)
-Date: Sat, 17 Dec 2016 07:27:54 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Cc: acme@kernel.org, chris.ryder@arm.com, peterz@infradead.org,
- linux-kernel@vger.kernel.org, npiggin@gmail.com,
- alexander.shishkin@linux.intel.com, mingo@redhat.com, paulus@samba.org,
- mhiramat@kernel.org, linuxppc-dev@lists.ozlabs.org, Michael Ellerman
- <mpe@ellerman.id.au>, Madhavan Srinivasan <masriniv@in.ibm.com>
-Subject: Re: [PATCH] perf TUI: Don't throw error for zero length symbols
-Message-ID: <20161217072754.32e6f492@kryten>
-In-Reply-To: <5853C42B.9050402@linux.vnet.ibm.com>
-References: <20161121172818.161639c2@kryten>
- <1479804050-5028-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <5853C42B.9050402@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tgPcd2zGZzDw5Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2016 09:09:52 +1100 (AEDT)
+Date: Fri, 16 Dec 2016 16:09:47 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+Message-ID: <20161216220947.j7bzbttaqklqic37@treble>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
+ <20161216130739.GB393@pathway.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20161216130739.GB393@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +34,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ravi,
-
-> > perf report (with TUI) exits with error when it finds a sample of
-> > zero length symbol(i.e. addr == sym->start == sym->end). Actually
-> > these are valid samples. Don't exit TUI and show report with such
-> > symbols.
-> >
-> > Link: https://lkml.org/lkml/2016/10/8/189
-
-You can add:
-
-Tested-by: Anton Blanchard <anton@samba.org>
-
-Also, since this issue makes perf report pretty much useless on
-ppc64, can we mark it for stable@, at least to get it into 4.9 where
-the ppc64 kernel changes that triggered this appeared?
-
-Anton
-
-> > Reported-by: Anton Blanchard <anton@samba.org>
-> > Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-> > ---
-> >  tools/perf/util/annotate.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
-> > index aeb5a44..430d039 100644
-> > --- a/tools/perf/util/annotate.c
-> > +++ b/tools/perf/util/annotate.c
-> > @@ -593,7 +593,8 @@ static int __symbol__inc_addr_samples(struct
-> > symbol *sym, struct map *map,
-> >
-> >  	pr_debug3("%s: addr=%#" PRIx64 "\n", __func__,
-> > map->unmap_ip(map, addr));
-> >
-> > -	if (addr < sym->start || addr >= sym->end) {
-> > +	if ((addr < sym->start || addr >= sym->end) &&
-> > +	    (addr != sym->end || sym->start != sym->end)) {
-> >  		pr_debug("%s(%d): ERANGE! sym->name=%s, start=%#"
-> > PRIx64 ", addr=%#" PRIx64 ", end=%#" PRIx64 "\n", __func__,
-> > __LINE__, sym->name, sym->start, addr, sym->end); return -ERANGE;  
+On Fri, Dec 16, 2016 at 02:07:39PM +0100, Petr Mladek wrote:
+> On Thu 2016-12-08 12:08:26, Josh Poimboeuf wrote:
+> > For live patching and possibly other use cases, a stack trace is only
+> > useful if it can be assured that it's completely reliable.  Add a new
+> > save_stack_trace_tsk_reliable() function to achieve that.
+> > 
+> > Scenarios which indicate that a stack trace may be unreliable:
+> > 
+> > - running task
 > 
+> It seems that this has to be enforced by save_stack_trace_tsk_reliable()
+> caller. It should be mentioned in the function description.
+
+Agreed.
+
+> > - interrupt stack
+> 
+> I guess that it is detected by saved regs on the stack. And it covers
+> also dynamic changes like kprobes. Do I get it correctly, please? 
+
+Right.
+
+> What about ftrace? Is ftrace without regs safe and detected?
+
+Yes, it's safe because the mcount code does the right thing with respect
+to frame pointers.  See save_mcount_regs().
+
+> > - preemption
+> 
+> I wonder if some very active kthreads might almost always be
+> preempted using irq in preemptive kernel. Then they block
+> the conversion with the non-reliable stacks. Have you noticed
+> such problems, please?
+
+I haven't seen such a case and I think it would be quite rare for a
+kthread to be CPU-bound like that.
+
+> > - corrupted stack data
+> > - stack grows the wrong way
+> 
+> This is detected in unwind_next_frame() and passed via state->error.
+> Am I right?
+
+Right.  I'll add more details to the commit message for all of these.
+> 
+> 
+> > - stack walk doesn't reach the bottom
+> > - user didn't provide a large enough entries array
+> > 
+> > Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
+> > determine at build time whether the function is implemented.
+> > 
+> > diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+> > index 0653788..3e0cf5e 100644
+> > --- a/arch/x86/kernel/stacktrace.c
+> > +++ b/arch/x86/kernel/stacktrace.c
+> > @@ -74,6 +74,64 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+> >  }
+> >  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+> >  
+> > +#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
+> > +static int __save_stack_trace_reliable(struct stack_trace *trace,
+> > +				       struct task_struct *task)
+> > +{
+> > +	struct unwind_state state;
+> > +	struct pt_regs *regs;
+> > +	unsigned long addr;
+> > +
+> > +	for (unwind_start(&state, task, NULL, NULL); !unwind_done(&state);
+> > +	     unwind_next_frame(&state)) {
+> > +
+> > +		regs = unwind_get_entry_regs(&state);
+> > +		if (regs) {
+> > +			/*
+> > +			 * Preemption and page faults on the stack can make
+> > +			 * frame pointers unreliable.
+> > +			 */
+> > +			if (!user_mode(regs))
+> > +				return -1;
+> 
+> By other words, it we find regs on the stack, it almost always mean
+> a non-reliable stack. The only exception is when we are in the
+> userspace mode. Do I get it correctly, please?
+
+Right.
+
+> > +
+> > +			/*
+> > +			 * This frame contains the (user mode) pt_regs at the
+> > +			 * end of the stack.  Finish the unwind.
+> > +			 */
+> > +			unwind_next_frame(&state);
+> > +			break;
+> > +		}
+> > +
+> > +		addr = unwind_get_return_address(&state);
+> > +		if (!addr || save_stack_address(trace, addr, false))
+> > +			return -1;
+> > +	}
+> > +
+> > +	if (!unwind_done(&state) || unwind_error(&state))
+> > +		return -1;
+> > +
+> > +	if (trace->nr_entries < trace->max_entries)
+> > +		trace->entries[trace->nr_entries++] = ULONG_MAX;
+> > +
+> > +	return 0;
+> > +}
+> 
+> Great work! I am surprised that it looks so straightforward.
+> 
+> I still have to think and investigate it more. But it looks
+> very promissing.
+> 
+> Best Regards,
+> Petr
+
+-- 
+Josh
