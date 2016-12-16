@@ -1,18 +1,44 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
- [150.101.137.145])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tfzQ26TQQzDw9y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 16:29:14 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: stewart@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v3] powerpc/powernv: Initialise nest mmu
-Date: Fri, 16 Dec 2016 16:28:44 +1100
-Message-ID: <3905650.0fiA5qTRiH@new-mexico>
-In-Reply-To: <1481683011-12819-1-git-send-email-alistair@popple.id.au>
-References: <1481683011-12819-1-git-send-email-alistair@popple.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tg0Qk6z5bzDwB1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:54 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBG6DhkJ043337
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:14:52 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27c81eu660-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 01:14:52 -0500
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Fri, 16 Dec 2016 16:14:49 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B08FB2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:47 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uBG6Elur32309440
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:47 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uBG6EkqD029893
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 17:14:47 +1100
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Jessica Yu <jeyu@redhat.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH] powerpc/livepatch: Remove klp_write_module_reloc() stub
+Date: Fri, 16 Dec 2016 11:44:24 +0530
+Message-Id: <1481868864-27283-1-git-send-email-kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,137 +48,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Michael the skiboot fix to stop this breaking in mambo has been posted
-> (see http://patchwork.ozlabs.org/patch/702564/). Will let you know
-> when it has gone upstream.
+commit 425595a7fc20 ("livepatch: reuse module loader code
+to write relocations") offloads livepatch module relocation
+write to arch specific module loader code.
 
-Upstream in skiboot master as of 9418533911728f6d8bb7aa647033c317772ddb97.
+Remove unused klp_write_module_reloc() function stub.
 
-Thanks!
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/livepatch.h | 7 -------
+ 1 file changed, 7 deletions(-)
 
-> 
->  arch/powerpc/include/asm/opal-api.h            |  3 ++-
->  arch/powerpc/include/asm/opal.h                |  1 +
->  arch/powerpc/mm/pgtable-radix.c                |  8 ++++++--
->  arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
->  arch/powerpc/platforms/powernv/opal.c          | 11 +++++++++++
->  arch/powerpc/platforms/powernv/powernv.h       |  6 ++++++
->  6 files changed, 27 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 0e2e57b..a0aa285 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -167,7 +167,8 @@
->  #define OPAL_INT_EOI				124
->  #define OPAL_INT_SET_MFRR			125
->  #define OPAL_PCI_TCE_KILL			126
-> -#define OPAL_LAST				126
-> +#define OPAL_NMMU_SET_PTCR			127
-> +#define OPAL_LAST				127
-> 
->  /* Device tree flags */
-> 
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index e958b70..b61c3d3 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -229,6 +229,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
->  int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
->  			     uint32_t pe_num, uint32_t tce_size,
->  			     uint64_t dma_addr, uint32_t npages);
-> +int64_t opal_nmmu_set_ptcr(uint64_t chip_id, uint64_t ptcr);
-> 
->  /* Internal functions */
->  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-> index 688b545..d5e868b 100644
-> --- a/arch/powerpc/mm/pgtable-radix.c
-> +++ b/arch/powerpc/mm/pgtable-radix.c
-> @@ -18,6 +18,7 @@
->  #include <asm/machdep.h>
->  #include <asm/mmu.h>
->  #include <asm/firmware.h>
-> +#include <platforms/powernv/powernv.h>
-> 
->  #include <trace/events/thp.h>
-> 
-> @@ -177,7 +178,7 @@ static void __init radix_init_pgtable(void)
-> 
->  static void __init radix_init_partition_table(void)
->  {
-> -	unsigned long rts_field;
-> +	unsigned long rts_field, ptcr;
-> 
->  	rts_field = radix__get_tree_size();
-> 
-> @@ -193,7 +194,9 @@ static void __init radix_init_partition_table(void)
->  	 * update partition table control register,
->  	 * 64 K size.
->  	 */
-> -	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-> +	ptcr = __pa(partition_tb) | (PATB_SIZE_SHIFT - 12);
-> +	mtspr(SPRN_PTCR, ptcr);
-> +	powernv_set_nmmu_ptcr(ptcr);
->  }
-> 
->  void __init radix_init_native(void)
-> @@ -408,6 +411,7 @@ void radix__mmu_cleanup_all(void)
->  		lpcr = mfspr(SPRN_LPCR);
->  		mtspr(SPRN_LPCR, lpcr & ~LPCR_UPRT);
->  		mtspr(SPRN_PTCR, 0);
-> +		powernv_set_nmmu_ptcr(0);
->  		radix__flush_tlb_all();
->  	}
->  }
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index 44d2d84..894639b 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -308,4 +308,5 @@ OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
->  OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
->  OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
->  OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
-> +OPAL_CALL(opal_nmmu_set_ptcr,			OPAL_NMMU_SET_PTCR);
->  OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 6c9a65b..773077e 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -885,6 +885,17 @@ int opal_error_code(int rc)
->  	}
->  }
-> 
-> +void powernv_set_nmmu_ptcr(unsigned long ptcr)
-> +{
-> +	int rc;
-> +
-> +	if (firmware_has_feature(FW_FEATURE_OPAL)) {
-> +		rc = opal_nmmu_set_ptcr(-1UL, ptcr);
-> +		if (rc != OPAL_SUCCESS && rc != OPAL_UNSUPPORTED)
-> +			pr_warn("%s: Unable to set nest mmu ptcr\n", __func__);
-> +	}
-> +}
-> +
->  EXPORT_SYMBOL_GPL(opal_poll_events);
->  EXPORT_SYMBOL_GPL(opal_rtc_read);
->  EXPORT_SYMBOL_GPL(opal_rtc_write);
-> diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-> index da7c843..c49a2b0 100644
-> --- a/arch/powerpc/platforms/powernv/powernv.h
-> +++ b/arch/powerpc/platforms/powernv/powernv.h
-> @@ -9,6 +9,12 @@ static inline void pnv_smp_init(void) { }
-> 
->  struct pci_dev;
-> 
-> +#ifdef CONFIG_PPC_POWERNV
-> +extern void powernv_set_nmmu_ptcr(unsigned long ptcr);
-> +#else
-> +static inline void powernv_set_nmmu_ptcr(unsigned long ptcr) { }
-> +#endif
-> +
->  #ifdef CONFIG_PCI
->  extern void pnv_pci_init(void);
->  extern void pnv_pci_shutdown(void);
-> --
-> 2.1.4
+diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
+index a402f7f..47a03b9 100644
+--- a/arch/powerpc/include/asm/livepatch.h
++++ b/arch/powerpc/include/asm/livepatch.h
+@@ -28,13 +28,6 @@ static inline int klp_check_compiler_support(void)
+ 	return 0;
+ }
+ 
+-static inline int klp_write_module_reloc(struct module *mod, unsigned long
+-		type, unsigned long loc, unsigned long value)
+-{
+-	/* This requires infrastructure changes; we need the loadinfos. */
+-	return -ENOSYS;
+-}
+-
+ static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+ {
+ 	regs->nip = ip;
+-- 
+2.7.4
