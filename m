@@ -2,21 +2,21 @@ Return-Path: <thuth@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tg4dM4NfczDw5v
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 20:24:23 +1100 (AEDT)
-Subject: Re: [PATCH 03/11] powerpc/kvm: Gather HPT related variables into
- sub-structure
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tg4gF6pXxzDsyf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Dec 2016 20:26:01 +1100 (AEDT)
+Subject: Re: [PATCH 01/11] powerpc/kvm: Reserve capabilities and ioctls for
+ HPT resizing
 To: David Gibson <david@gibson.dropbear.id.au>, paulus@samba.org
 References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
- <20161215055404.29351-4-david@gibson.dropbear.id.au>
+ <20161215055404.29351-2-david@gibson.dropbear.id.au>
 Cc: michael@ellerman.id.au, benh@kernel.crashing.org, sjitindarsingh@gmail.com,
  lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, kvm@vger.kernel.org
 From: Thomas Huth <thuth@redhat.com>
-Message-ID: <c797b46a-60af-b860-4bfe-3a1c1d75c974@redhat.com>
-Date: Fri, 16 Dec 2016 10:24:17 +0100
+Message-ID: <25bcced1-4903-2cf7-6a56-14c3ced5cd28@redhat.com>
+Date: Fri, 16 Dec 2016 10:25:55 +0100
 MIME-Version: 1.0
-In-Reply-To: <20161215055404.29351-4-david@gibson.dropbear.id.au>
+In-Reply-To: <20161215055404.29351-2-david@gibson.dropbear.id.au>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,40 +28,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 15.12.2016 06:53, David Gibson wrote:
-> Currently, the powerpc kvm_arch structure contains a number of variables
-> tracking the state of the guest's hashed page table (HPT) in KVM HV.  This
-> patch gathers them all together into a single kvm_hpt_info substructure.
-> This makes life more convenient for the upcoming HPT resizing
-> implementation.
+> This adds a new powerpc-specific KVM_CAP_SPAPR_RESIZE_HPT capability to
+> advertise whether KVM is capable of handling the PAPR extensions for
+> resizing the hashed page table during guest runtime.
 > 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->  arch/powerpc/include/asm/kvm_host.h | 16 ++++---
->  arch/powerpc/kvm/book3s_64_mmu_hv.c | 90 ++++++++++++++++++-------------------
->  arch/powerpc/kvm/book3s_hv.c        |  2 +-
->  arch/powerpc/kvm/book3s_hv_rm_mmu.c | 62 ++++++++++++-------------
->  4 files changed, 87 insertions(+), 83 deletions(-)
+> At present, HPT resizing is possible with KVM PR without kernel
+> modification, since the HPT is managed within qemu.  It's not possible yet
+> with KVM HV, because the HPT is managed by KVM.  At present, qemu has to
+> use other capabilities which (by accident) reveal whether PR or HV is in
+> use to know if it can advertise HPT resizing capability to the guest.
 > 
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index e59b172..2673271 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -241,12 +241,20 @@ struct kvm_arch_memory_slot {
->  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
->  };
->  
-> +struct kvm_hpt_info {
-> +	unsigned long virt;
-> +	struct revmap_entry *rev;
-> +	unsigned long npte;
-> +	unsigned long mask;
-> +	u32 order;
-> +	int cma;
-> +};
+> To avoid ambiguity with existing kernels, the encoding is a bit odd.
+>     0 means "unknown" since that's what previous kernels will return
+>     1 means "HPT resize possible if available if and only if the HPT is allocated in
+>       userspace, rather than in the kernel".  Userspace can check
+>       KVM_CAP_PPC_ALLOC_HTAB to determine if that's the case.  In practice
+>       this will give the same results as userspace's fallback check.
+>     2 will mean "HPT resize available and implemented via ioctl()s
+>       KVM_PPC_RESIZE_HPT_PREPARE and KVM_PPC_RESIZE_HPT_COMMIT"
 
-While you're at it, it would be really great if you could add a comment
-at the end of each line with a short description of what the variables
-are about. E.g. if I just read "virt" and do not have much clue of the
-code yet, I have a hard time to figure out what this means...
+This encoding IMHO clearly needs some proper documentation in
+Documentation/virtual/kvm/api.txt ... and maybe also some dedicated
+#defines in an uapi header file.
 
  Thomas
