@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3th60h0lBRzDwGV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Dec 2016 12:29:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3th60h6cpCzDwGb
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Dec 2016 12:29:40 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,12 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v2 00/11] powerpc/kvm/vfio: Enable in-kernel
- acceleration
-Date: Sun, 18 Dec 2016 12:28:49 +1100
-Message-Id: <20161218012900.18142-1-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 09/11] vfio iommu: Add helpers to (un)register
+ blocking notifiers per group
+Date: Sun, 18 Dec 2016 12:28:58 +1100
+Message-Id: <20161218012900.18142-10-aik@ozlabs.ru>
+In-Reply-To: <20161218012900.18142-1-aik@ozlabs.ru>
+References: <20161218012900.18142-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +24,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is my current queue of patches to add acceleration of TCE
-updates in KVM.
+c086de81 "vfio iommu: Add blocking notifier to notify DMA_UNMAP" added
+notifiers to a VFIO group. However even though the code underneath
+uses groups, the API takes device struct pointers.
 
-This is based on a merge of the "next" branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
-and the "next" of https://github.com/awilliam/linux-vfio.git
-and pushed to https://github.com/aik/linux.git , vfio-kvm-next branch.
+This adds helpers which do the same thing but take IOMMU groups instead.
 
-Changes:
-v2:
-* 11/11 reworked to use new notifiers, it is rather RFC as it still has
-a issue;
-* got 09/11, 10/11 to use notifiers in 11/11;
-* added rb: David to most of patches and added a comment in 05/11.
+This adds vfio_iommu_group_set_kvm() which is a wrapper on top of
+vfio_group_set_kvm() but also takes an iommu_group.
 
-Please comment. Thanks.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ include/linux/vfio.h |  6 +++++
+ drivers/vfio/vfio.c  | 76 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 82 insertions(+)
 
-Alexey Kardashevskiy (11):
-  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
-  powerpc/iommu: Cleanup iommu_table disposal
-  powerpc/vfio_spapr_tce: Add reference counting to iommu_table
-  powerpc/mmu: Add real mode support for IOMMU preregistered memory
-  KVM: PPC: Use preregistered memory API to access TCE list
-  powerpc/powernv/iommu: Add real mode version of
-    iommu_table_ops::exchange()
-  KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
-  KVM: PPC: Pass kvm* to kvmppc_find_table()
-  vfio iommu: Add helpers to (un)register blocking notifiers per group
-  vfio: Check for unregistered notifiers when group is actually released
-  KVM: PPC: Add in-kernel acceleration for VFIO
-
- Documentation/virtual/kvm/devices/vfio.txt |  22 +-
- arch/powerpc/include/asm/iommu.h           |  12 +-
- arch/powerpc/include/asm/kvm_host.h        |  11 +
- arch/powerpc/include/asm/kvm_ppc.h         |   6 +-
- arch/powerpc/include/asm/mmu_context.h     |   4 +
- include/linux/vfio.h                       |   6 +
- include/uapi/linux/kvm.h                   |   9 +
- arch/powerpc/kernel/iommu.c                |  49 +++-
- arch/powerpc/kvm/book3s_64_vio.c           | 359 ++++++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_64_vio_hv.c        | 256 ++++++++++++++++++--
- arch/powerpc/kvm/powerpc.c                 |   2 +
- arch/powerpc/mm/mmu_context_iommu.c        |  39 ++++
- arch/powerpc/platforms/powernv/pci-ioda.c  |  42 +++-
- arch/powerpc/platforms/powernv/pci.c       |   1 +
- arch/powerpc/platforms/pseries/iommu.c     |   3 +-
- arch/powerpc/platforms/pseries/vio.c       |   2 +-
- drivers/vfio/vfio.c                        |  81 ++++++-
- drivers/vfio/vfio_iommu_spapr_tce.c        |   2 +-
- virt/kvm/vfio.c                            |  82 +++++++
- arch/powerpc/kvm/Kconfig                   |   1 +
- 20 files changed, 939 insertions(+), 50 deletions(-)
-
+diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+index edf9b2cad277..8a3488ba4732 100644
+--- a/include/linux/vfio.h
++++ b/include/linux/vfio.h
+@@ -127,9 +127,15 @@ extern int vfio_register_notifier(struct device *dev,
+ extern int vfio_unregister_notifier(struct device *dev,
+ 				    enum vfio_notify_type type,
+ 				    struct notifier_block *nb);
++extern int vfio_iommu_group_register_notifier(struct iommu_group *grp,
++		enum vfio_notify_type type, unsigned long *events,
++		struct notifier_block *nb);
++extern int vfio_iommu_group_unregister_notifier(struct iommu_group *grp,
++		enum vfio_notify_type type, struct notifier_block *nb);
+ 
+ struct kvm;
+ extern void vfio_group_set_kvm(struct vfio_group *group, struct kvm *kvm);
++extern void vfio_iommu_group_set_kvm(struct iommu_group *grp, struct kvm *kvm);
+ 
+ /*
+  * Sub-module helpers
+diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+index 9901c4671e2f..6b9a98508939 100644
+--- a/drivers/vfio/vfio.c
++++ b/drivers/vfio/vfio.c
+@@ -2077,6 +2077,23 @@ void vfio_group_set_kvm(struct vfio_group *group, struct kvm *kvm)
+ }
+ EXPORT_SYMBOL_GPL(vfio_group_set_kvm);
+ 
++void vfio_iommu_group_set_kvm(struct iommu_group *grp, struct kvm *kvm)
++{
++	struct vfio_group *group;
++
++	if (!grp)
++		return;
++
++	group = vfio_group_get_from_iommu(grp);
++	if (!group)
++		return;
++
++	vfio_group_set_kvm(group, kvm);
++
++	vfio_group_put(group);
++}
++EXPORT_SYMBOL_GPL(vfio_iommu_group_set_kvm);
++
+ static int vfio_register_group_notifier(struct vfio_group *group,
+ 					unsigned long *events,
+ 					struct notifier_block *nb)
+@@ -2197,6 +2214,65 @@ int vfio_unregister_notifier(struct device *dev, enum vfio_notify_type type,
+ }
+ EXPORT_SYMBOL(vfio_unregister_notifier);
+ 
++int vfio_iommu_group_register_notifier(struct iommu_group *iommugroup,
++		enum vfio_notify_type type,
++		unsigned long *events, struct notifier_block *nb)
++{
++	struct vfio_group *group;
++	int ret;
++
++	if (!iommugroup || !nb || !events || (*events == 0))
++		return -EINVAL;
++
++	group = vfio_group_get_from_iommu(iommugroup);
++	if (!group)
++		return -ENODEV;
++
++	switch (type) {
++	case VFIO_IOMMU_NOTIFY:
++		ret = vfio_register_iommu_notifier(group, events, nb);
++		break;
++	case VFIO_GROUP_NOTIFY:
++		ret = vfio_register_group_notifier(group, events, nb);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	vfio_group_put(group);
++	return ret;
++}
++EXPORT_SYMBOL(vfio_iommu_group_register_notifier);
++
++int vfio_iommu_group_unregister_notifier(struct iommu_group *grp,
++		enum vfio_notify_type type, struct notifier_block *nb)
++{
++	struct vfio_group *group;
++	int ret;
++
++	if (!grp || !nb)
++		return -EINVAL;
++
++	group = vfio_group_get_from_iommu(grp);
++	if (!group)
++		return -ENODEV;
++
++	switch (type) {
++	case VFIO_IOMMU_NOTIFY:
++		ret = vfio_unregister_iommu_notifier(group, nb);
++		break;
++	case VFIO_GROUP_NOTIFY:
++		ret = vfio_unregister_group_notifier(group, nb);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	vfio_group_put(group);
++	return ret;
++}
++EXPORT_SYMBOL(vfio_iommu_group_unregister_notifier);
++
+ /**
+  * Module/class support
+  */
 -- 
 2.11.0
