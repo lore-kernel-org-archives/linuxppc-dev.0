@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3th60M231pzDwFP
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Dec 2016 12:29:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3th60f5mshzDwGV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Dec 2016 12:29:38 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v2 04/11] powerpc/mmu: Add real mode support for IOMMU
- preregistered memory
-Date: Sun, 18 Dec 2016 12:28:53 +1100
-Message-Id: <20161218012900.18142-5-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 08/11] KVM: PPC: Pass kvm* to kvmppc_find_table()
+Date: Sun, 18 Dec 2016 12:28:57 +1100
+Message-Id: <20161218012900.18142-9-aik@ozlabs.ru>
 In-Reply-To: <20161218012900.18142-1-aik@ozlabs.ru>
 References: <20161218012900.18142-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,103 +23,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes mm_iommu_lookup() able to work in realmode by replacing
-list_for_each_entry_rcu() (which can do debug stuff which can fail in
-real mode) with list_for_each_entry_lockless().
-
-This adds realmode version of mm_iommu_ua_to_hpa() which adds
-explicit vmalloc'd-to-linear address conversion.
-Unlike mm_iommu_ua_to_hpa(), mm_iommu_ua_to_hpa_rm() can fail.
-
-This changes mm_iommu_preregistered() to receive @mm as in real mode
-@current does not always have a correct pointer.
-
-This adds realmode version of mm_iommu_lookup() which receives @mm
-(for the same reason as for mm_iommu_preregistered()) and uses
-lockless version of list_for_each_entry_rcu().
+The guest view TCE tables are per KVM anyway (not per VCPU) so pass kvm*
+there. This will be used in the following patches where we will be
+attaching VFIO containers to LIOBNs via ioctl() to KVM (rather than
+to VCPU).
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/mmu_context.h |  4 ++++
- arch/powerpc/mm/mmu_context_iommu.c    | 39 ++++++++++++++++++++++++++++++++++
- 2 files changed, 43 insertions(+)
+ arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
+ arch/powerpc/kvm/book3s_64_vio.c    |  7 ++++---
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 13 +++++++------
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index b9e3f0aca261..c70c8272523d 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -29,10 +29,14 @@ extern void mm_iommu_init(struct mm_struct *mm);
- extern void mm_iommu_cleanup(struct mm_struct *mm);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
- 		unsigned long ua, unsigned long size);
-+extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
-+		struct mm_struct *mm, unsigned long ua, unsigned long size);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries);
- extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned long *hpa);
-+extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
-+		unsigned long ua, unsigned long *hpa);
- extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
- #endif
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 104bad029ce9..631d32f5937b 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -314,6 +314,25 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
- }
- EXPORT_SYMBOL_GPL(mm_iommu_lookup);
- 
-+struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
-+		unsigned long ua, unsigned long size)
-+{
-+	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
-+
-+	list_for_each_entry_lockless(mem, &mm->context.iommu_group_mem_list,
-+			next) {
-+		if ((mem->ua <= ua) &&
-+				(ua + size <= mem->ua +
-+				 (mem->entries << PAGE_SHIFT))) {
-+			ret = mem;
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_lookup_rm);
-+
- struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries)
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index f6e49640dbe1..0a21c8503974 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -167,7 +167,7 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce_64 *args);
+ extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
+-		struct kvm_vcpu *vcpu, unsigned long liobn);
++		struct kvm *kvm, unsigned long liobn);
+ extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+ 		unsigned long ioba, unsigned long npages);
+ extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index c379ff5a4438..15df8ae627d9 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -212,12 +212,13 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba, unsigned long tce)
  {
-@@ -345,6 +364,26 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- }
- EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
  
-+long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
-+		unsigned long ua, unsigned long *hpa)
-+{
-+	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
-+	void *va = &mem->hpas[entry];
-+	unsigned long *pa;
-+
-+	if (entry >= mem->entries)
-+		return -EFAULT;
-+
-+	pa = (void *) vmalloc_to_phys(va);
-+	if (!pa)
-+		return -EFAULT;
-+
-+	*hpa = *pa | (ua & ~PAGE_MASK);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa_rm);
-+
- long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+ 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
+ 	/* 	    liobn, ioba, tce); */
+ 
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -245,7 +246,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	u64 __user *tces;
+ 	u64 tce;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -299,7 +300,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index a3be4bd6188f..8a6834e6e1c8 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -49,10 +49,9 @@
+  * WARNING: This will be called in real or virtual mode on HV KVM and virtual
+  *          mode on PR KVM
+  */
+-struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
++struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
+ 		unsigned long liobn)
  {
- 	if (atomic64_inc_not_zero(&mem->mapped))
+-	struct kvm *kvm = vcpu->kvm;
+ 	struct kvmppc_spapr_tce_table *stt;
+ 
+ 	list_for_each_entry_lockless(stt, &kvm->arch.spapr_tce_tables, list)
+@@ -194,12 +193,13 @@ static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
+ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		unsigned long ioba, unsigned long tce)
+ {
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
+ 
+ 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
+ 	/* 	    liobn, ioba, tce); */
+ 
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -252,7 +252,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	unsigned long tces, entry, ua = 0;
+ 	unsigned long *rmap = NULL;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -335,7 +335,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret;
+ 
+-	stt = kvmppc_find_table(vcpu, liobn);
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
+@@ -356,12 +356,13 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba)
+ {
+-	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
++	struct kvmppc_spapr_tce_table *stt;
+ 	long ret;
+ 	unsigned long idx;
+ 	struct page *page;
+ 	u64 *tbl;
+ 
++	stt = kvmppc_find_table(vcpu->kvm, liobn);
+ 	if (!stt)
+ 		return H_TOO_HARD;
+ 
 -- 
 2.11.0
