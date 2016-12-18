@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3th60f5mshzDwGV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Dec 2016 12:29:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3th60h0lBRzDwGV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Dec 2016 12:29:39 +1100 (AEDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,11 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel v2 08/11] KVM: PPC: Pass kvm* to kvmppc_find_table()
-Date: Sun, 18 Dec 2016 12:28:57 +1100
-Message-Id: <20161218012900.18142-9-aik@ozlabs.ru>
-In-Reply-To: <20161218012900.18142-1-aik@ozlabs.ru>
-References: <20161218012900.18142-1-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 00/11] powerpc/kvm/vfio: Enable in-kernel
+ acceleration
+Date: Sun, 18 Dec 2016 12:28:49 +1100
+Message-Id: <20161218012900.18142-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,132 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The guest view TCE tables are per KVM anyway (not per VCPU) so pass kvm*
-there. This will be used in the following patches where we will be
-attaching VFIO containers to LIOBNs via ioctl() to KVM (rather than
-to VCPU).
+This is my current queue of patches to add acceleration of TCE
+updates in KVM.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
- arch/powerpc/kvm/book3s_64_vio.c    |  7 ++++---
- arch/powerpc/kvm/book3s_64_vio_hv.c | 13 +++++++------
- 3 files changed, 12 insertions(+), 10 deletions(-)
+This is based on a merge of the "next" branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+and the "next" of https://github.com/awilliam/linux-vfio.git
+and pushed to https://github.com/aik/linux.git , vfio-kvm-next branch.
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index f6e49640dbe1..0a21c8503974 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -167,7 +167,7 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
- extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 				struct kvm_create_spapr_tce_64 *args);
- extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
--		struct kvm_vcpu *vcpu, unsigned long liobn);
-+		struct kvm *kvm, unsigned long liobn);
- extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
- 		unsigned long ioba, unsigned long npages);
- extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index c379ff5a4438..15df8ae627d9 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -212,12 +212,13 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 		      unsigned long ioba, unsigned long tce)
- {
--	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
-+	struct kvmppc_spapr_tce_table *stt;
- 	long ret;
- 
- 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
- 	/* 	    liobn, ioba, tce); */
- 
-+	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
- 		return H_TOO_HARD;
- 
-@@ -245,7 +246,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	u64 __user *tces;
- 	u64 tce;
- 
--	stt = kvmppc_find_table(vcpu, liobn);
-+	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
- 		return H_TOO_HARD;
- 
-@@ -299,7 +300,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
- 	struct kvmppc_spapr_tce_table *stt;
- 	long i, ret;
- 
--	stt = kvmppc_find_table(vcpu, liobn);
-+	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
- 		return H_TOO_HARD;
- 
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index a3be4bd6188f..8a6834e6e1c8 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -49,10 +49,9 @@
-  * WARNING: This will be called in real or virtual mode on HV KVM and virtual
-  *          mode on PR KVM
-  */
--struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
-+struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
- 		unsigned long liobn)
- {
--	struct kvm *kvm = vcpu->kvm;
- 	struct kvmppc_spapr_tce_table *stt;
- 
- 	list_for_each_entry_lockless(stt, &kvm->arch.spapr_tce_tables, list)
-@@ -194,12 +193,13 @@ static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
- long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 		unsigned long ioba, unsigned long tce)
- {
--	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
-+	struct kvmppc_spapr_tce_table *stt;
- 	long ret;
- 
- 	/* udbg_printf("H_PUT_TCE(): liobn=0x%lx ioba=0x%lx, tce=0x%lx\n", */
- 	/* 	    liobn, ioba, tce); */
- 
-+	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
- 		return H_TOO_HARD;
- 
-@@ -252,7 +252,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	unsigned long tces, entry, ua = 0;
- 	unsigned long *rmap = NULL;
- 
--	stt = kvmppc_find_table(vcpu, liobn);
-+	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
- 		return H_TOO_HARD;
- 
-@@ -335,7 +335,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
- 	struct kvmppc_spapr_tce_table *stt;
- 	long i, ret;
- 
--	stt = kvmppc_find_table(vcpu, liobn);
-+	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
- 		return H_TOO_HARD;
- 
-@@ -356,12 +356,13 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
- long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 		      unsigned long ioba)
- {
--	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
-+	struct kvmppc_spapr_tce_table *stt;
- 	long ret;
- 	unsigned long idx;
- 	struct page *page;
- 	u64 *tbl;
- 
-+	stt = kvmppc_find_table(vcpu->kvm, liobn);
- 	if (!stt)
- 		return H_TOO_HARD;
- 
+Changes:
+v2:
+* 11/11 reworked to use new notifiers, it is rather RFC as it still has
+a issue;
+* got 09/11, 10/11 to use notifiers in 11/11;
+* added rb: David to most of patches and added a comment in 05/11.
+
+Please comment. Thanks.
+
+Alexey Kardashevskiy (11):
+  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
+  powerpc/iommu: Cleanup iommu_table disposal
+  powerpc/vfio_spapr_tce: Add reference counting to iommu_table
+  powerpc/mmu: Add real mode support for IOMMU preregistered memory
+  KVM: PPC: Use preregistered memory API to access TCE list
+  powerpc/powernv/iommu: Add real mode version of
+    iommu_table_ops::exchange()
+  KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
+  KVM: PPC: Pass kvm* to kvmppc_find_table()
+  vfio iommu: Add helpers to (un)register blocking notifiers per group
+  vfio: Check for unregistered notifiers when group is actually released
+  KVM: PPC: Add in-kernel acceleration for VFIO
+
+ Documentation/virtual/kvm/devices/vfio.txt |  22 +-
+ arch/powerpc/include/asm/iommu.h           |  12 +-
+ arch/powerpc/include/asm/kvm_host.h        |  11 +
+ arch/powerpc/include/asm/kvm_ppc.h         |   6 +-
+ arch/powerpc/include/asm/mmu_context.h     |   4 +
+ include/linux/vfio.h                       |   6 +
+ include/uapi/linux/kvm.h                   |   9 +
+ arch/powerpc/kernel/iommu.c                |  49 +++-
+ arch/powerpc/kvm/book3s_64_vio.c           | 359 ++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c        | 256 ++++++++++++++++++--
+ arch/powerpc/kvm/powerpc.c                 |   2 +
+ arch/powerpc/mm/mmu_context_iommu.c        |  39 ++++
+ arch/powerpc/platforms/powernv/pci-ioda.c  |  42 +++-
+ arch/powerpc/platforms/powernv/pci.c       |   1 +
+ arch/powerpc/platforms/pseries/iommu.c     |   3 +-
+ arch/powerpc/platforms/pseries/vio.c       |   2 +-
+ drivers/vfio/vfio.c                        |  81 ++++++-
+ drivers/vfio/vfio_iommu_spapr_tce.c        |   2 +-
+ virt/kvm/vfio.c                            |  82 +++++++
+ arch/powerpc/kvm/Kconfig                   |   1 +
+ 20 files changed, 939 insertions(+), 50 deletions(-)
+
 -- 
 2.11.0
