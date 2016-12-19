@@ -1,31 +1,18 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tj8Rc58HnzDwNp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 05:23:08 +1100 (AEDT)
-Date: Mon, 19 Dec 2016 19:23:01 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 01/15] stacktrace/x86: add function for detecting
- reliable stack traces
-In-Reply-To: <20161219172549.mjm4c2midvkumqxb@treble>
-Message-ID: <alpine.LSU.2.20.1612191919580.4153@pobox.suse.cz>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
- <alpine.LSU.2.20.1612191712530.6638@pobox.suse.cz>
- <20161219172549.mjm4c2midvkumqxb@treble>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tj8c36R8wzDwKh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 05:30:27 +1100 (AEDT)
+Received: by mail-pf0-x244.google.com with SMTP id i88so7844102pfk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2016 10:30:27 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 00/10] Improving debugging with NMIs
+Date: Tue, 20 Dec 2016 04:30:01 +1000
+Message-Id: <20161219183011.28310-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,63 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 19 Dec 2016, Josh Poimboeuf wrote:
+Hi,
 
-> On Mon, Dec 19, 2016 at 05:25:19PM +0100, Miroslav Benes wrote:
-> > On Thu, 8 Dec 2016, Josh Poimboeuf wrote:
-> > 
-> > > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > > index 215612c..b4a6663 100644
-> > > --- a/arch/x86/Kconfig
-> > > +++ b/arch/x86/Kconfig
-> > > @@ -155,6 +155,7 @@ config X86
-> > >  	select HAVE_PERF_REGS
-> > >  	select HAVE_PERF_USER_STACK_DUMP
-> > >  	select HAVE_REGS_AND_STACK_ACCESS_API
-> > > +	select HAVE_RELIABLE_STACKTRACE		if X86_64 && FRAME_POINTER && STACK_VALIDATION
-> > 
-> > Tests to measure possible performance penalty of frame pointers were done 
-> > by Mel Gorman. The outcome was quite clear. There IS a measurable 
-> > impact. The percentage depends on the workflow but I think it is safe to 
-> > say that FP usually takes 5-10 percents.
-> > 
-> > If my understanding is correct there is no single culprit. Register 
-> > pressure is definitely not a problem. We ran simple benchmarks while 
-> > taking a register away from GCC (RBP or a common one). The impact is a 
-> > combination of more cacheline pressure, more memory accesses and the fact 
-> > that the kernel contains a lot of small functions.
-> > 
-> > Thus, I think that DWARF should be the way to go here.
-> > 
-> > Other than that the patch looks good to me.
-> 
-> I agree that DWARF is generally a good idea, and I'm working toward it.
-> However there's still quite a bit of work to get there.
-> 
-> For this consistency model to work with DWARF on x86, we would need:
-> 
-> 1) a reliable x86 DWARF unwinder with Linus's blessing
-> 2) objtool DWARF support (I'm working on this at the moment)
-> 3) probably some kind of runtime NMI stack checking feature to
->    complement objtool, along with a lot of burn time to ensure there are
->    no issues, particularly in entry code
-> 4) port save_stack_trace_tsk_reliable() to work with DWARF
+These patches have been posted a few times before. Since then
+I've split them up and tried to simplify the NMI IPI stuff as
+much as possible.
 
-Yes, this is a lot of work to do.
- 
-> DWARF will be nice to have, but it's definitely not required before
-> merging this consistency model.
+I've been testing using David Gibson's QEMU branch ppc-for-2.9,
+which implements the required hcall.
 
-Oh, I didn't mean it to be done before merging this patch set. Sorry for 
-the confusion. The point was that as long as the performance is involved 
-FP does not look that promising and DWARF could be better (but who knows, 
-right?).
+Thanks,
+Nick
 
-> Also I doubt we'll ever be able to drop frame pointer support
-> completely.  Some embedded systems may not want the overhead of the
-> DWARF metadata.
+Nicholas Piggin (10):
+  powerpc/64s: add exception macro that does not enable RI
+  powerpc/64s: exception macro for stack frame and initial register save
+  powerpc/64s: fix system reset vs general interrupt reentrancy
+  powerpc/64s: disallow system reset vs system reset reentrancy
+  powerpc/64s: dedicated system reset interrupt stack
+  powerpc: nmi_enter for system reset
+  powerpc: add NMI IPI infrastructure
+  powerpc: add struct smp_ops_t.cause_nmi_ipi operation
+  powerpc/pseries: implement NMI IPI with H_SIGNAL_SYS_RESET
+  powerpc: xmon wait for secondaries before sending IPI
 
-True. There should be a choice in this respect.
+ arch/powerpc/Kconfig                      |   5 +
+ arch/powerpc/include/asm/exception-64s.h  |  69 +++++++--
+ arch/powerpc/include/asm/paca.h           |  14 +-
+ arch/powerpc/include/asm/smp.h            |  15 +-
+ arch/powerpc/kernel/asm-offsets.c         |   5 +-
+ arch/powerpc/kernel/exceptions-64s.S      |  72 +++++----
+ arch/powerpc/kernel/setup_64.c            |   5 +
+ arch/powerpc/kernel/smp.c                 | 250 +++++++++++++++++++++++++-----
+ arch/powerpc/kernel/traps.c               |  19 ++-
+ arch/powerpc/platforms/85xx/smp.c         |   1 +
+ arch/powerpc/platforms/86xx/mpc86xx_smp.c |   1 +
+ arch/powerpc/platforms/cell/interrupt.c   |   2 +-
+ arch/powerpc/platforms/chrp/smp.c         |   1 +
+ arch/powerpc/platforms/powermac/smp.c     |   1 +
+ arch/powerpc/platforms/powernv/smp.c      |   1 +
+ arch/powerpc/platforms/ps3/smp.c          |   4 +-
+ arch/powerpc/platforms/pseries/ras.c      |   4 +
+ arch/powerpc/platforms/pseries/smp.c      |  22 +++
+ arch/powerpc/xmon/xmon.c                  |  15 +-
+ 19 files changed, 418 insertions(+), 88 deletions(-)
 
-Regards,
-Miroslav
+-- 
+2.11.0
