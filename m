@@ -1,25 +1,24 @@
-Return-Path: <jike.song@intel.com>
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3thyCb38vvzDwLF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2016 21:42:02 +1100 (AEDT)
-Message-ID: <5857B941.2060805@intel.com>
-Date: Mon, 19 Dec 2016 18:41:05 +0800
-From: Jike Song <jike.song@intel.com>
-MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-CC: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel v2 10/11] vfio: Check for unregistered notifiers
- when group is actually released
-References: <20161218012900.18142-1-aik@ozlabs.ru>
- <20161218012900.18142-11-aik@ozlabs.ru>
-In-Reply-To: <20161218012900.18142-11-aik@ozlabs.ru>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjCnv68ZrzDxcZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 07:54:11 +1100 (AEDT)
+Message-ID: <1482180827.15937.30.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3 1/5] powerpc/mm: set the radix linear page mapping size
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Reza Arbab
+ <arbab@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul
+ Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
+ Alistair Popple <apopple@au1.ibm.com>
+Date: Tue, 20 Dec 2016 07:53:47 +1100
+In-Reply-To: <8760mguwfx.fsf@linux.vnet.ibm.com>
+References: <1481831443-22761-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1481831443-22761-2-git-send-email-arbab@linux.vnet.ibm.com>
+ <8760mguwfx.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/18/2016 09:28 AM, Alexey Kardashevskiy wrote:
-> This moves a check for unregistered notifiers from fops release
-> callback to the place where the group will actually be released.
+On Mon, 2016-12-19 at 14:28 +0530, Aneesh Kumar K.V wrote:
+> Reza Arbab <arbab@linux.vnet.ibm.com> writes:
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
+> > This was defaulting to 4K, regardless of PAGE_SIZE.
+> > 
+> > Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/mm/pgtable-radix.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/mm/pgtable-radix.c
+> > b/arch/powerpc/mm/pgtable-radix.c
+> > index 623a0dc..54bd70e 100644
+> > --- a/arch/powerpc/mm/pgtable-radix.c
+> > +++ b/arch/powerpc/mm/pgtable-radix.c
+> > @@ -351,8 +351,10 @@ void __init radix__early_init_mmu(void)
+> >  #ifdef CONFIG_PPC_64K_PAGES
+> >  	/* PAGE_SIZE mappings */
+> >  	mmu_virtual_psize = MMU_PAGE_64K;
+> > +	mmu_linear_psize = MMU_PAGE_64K;
 > 
-> This is going to be used in the following patch in cleanup
-> path. Since the next patch is RFC, this one might not be needed.
-
-Hi Alexey,
-
-I didn't find any use in the following patch 11/11, did you mean
-something else?
-
-BTW the warning in vfio_group_release seems too late, the user
-should actually unregister everything by close()?
-
---
-Thanks,
-Jike
-
-> ---
->  drivers/vfio/vfio.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+> That is not clearly correct, we map the linear address with either
+> 64K,
+> 2M or 1G depending on the memory available. Take a look at
+> static void __init radix_init_pgtable(void)
 > 
-> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> index 6b9a98508939..083b581e87c0 100644
-> --- a/drivers/vfio/vfio.c
-> +++ b/drivers/vfio/vfio.c
-> @@ -403,6 +403,8 @@ static void vfio_group_release(struct kref *kref)
->  	struct iommu_group *iommu_group = group->iommu_group;
->  
->  	WARN_ON(!list_empty(&group->device_list));
-> +	/* Any user didn't unregister? */
-> +	WARN_ON(group->notifier.head);
->  
->  	list_for_each_entry_safe(unbound, tmp,
->  				 &group->unbound_list, unbound_next) {
-> @@ -1584,9 +1586,6 @@ static int vfio_group_fops_release(struct inode *inode, struct file *filep)
->  
->  	filep->private_data = NULL;
->  
-> -	/* Any user didn't unregister? */
-> -	WARN_ON(group->notifier.head);
-> -
->  	vfio_group_try_dissolve_container(group);
->  
->  	atomic_dec(&group->opened);
+
+So should we fix that initialization regardless or take it out ?
 > 
+> >  #else
+> >  	mmu_virtual_psize = MMU_PAGE_4K;
+> > +	mmu_linear_psize = MMU_PAGE_4K;
+> >  #endif
+> > 
+> >  #ifdef CONFIG_SPARSEMEM_VMEMMAP
+> > -- 
+> > 1.8.3.1
