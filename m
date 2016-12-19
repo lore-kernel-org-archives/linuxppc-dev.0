@@ -1,18 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tj8c4411qzDwNl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 05:30:28 +1100 (AEDT)
-Received: by mail-pg0-x242.google.com with SMTP id p66so19205092pga.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2016 10:30:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tj8c66lLCzDwKh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 05:30:30 +1100 (AEDT)
+Received: by mail-pg0-x243.google.com with SMTP id p66so19205173pga.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2016 10:30:30 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 01/10] powerpc/64s: add exception macro that does not enable RI
-Date: Tue, 20 Dec 2016 04:30:02 +1000
-Message-Id: <20161219183011.28310-2-npiggin@gmail.com>
+Subject: [PATCH 02/10] powerpc/64s: exception macro for stack frame and
+ initial register save
+Date: Tue, 20 Dec 2016 04:30:03 +1000
+Message-Id: <20161219183011.28310-3-npiggin@gmail.com>
 In-Reply-To: <20161219183011.28310-1-npiggin@gmail.com>
 References: <20161219183011.28310-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,71 +25,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Subsequent patches will add more non-RI variant exceptions, so
-create a macro for it rather than open-code it.
+This code is common to a few exceptions, and another user will be added.
+This causes a trivial change to generated code:
 
-This does not change generated instructions.
+-     604: std     r9,416(r1)
+-     608: mfspr   r11,314
+-     60c: std     r11,368(r1)
+-     610: mfspr   r12,315
++     604: mfspr   r11,314
++     608: mfspr   r12,315
++     60c: std     r9,416(r1)
++     610: std     r11,368(r1)
+
+machine_check_powernv_early could also use this, but that requires non
+trivial changes to generated code, so that's for another patch.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/exception-64s.h | 15 +++++++++++++++
- arch/powerpc/kernel/exceptions-64s.S     | 17 ++++-------------
- 2 files changed, 19 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 16 ++++++++++------
+ arch/powerpc/kernel/exceptions-64s.S     | 13 ++++---------
+ 2 files changed, 14 insertions(+), 15 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 9a3eee661297..b261fb4658b4 100644
+index b261fb4658b4..1e985382a73a 100644
 --- a/arch/powerpc/include/asm/exception-64s.h
 +++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -194,6 +194,21 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- #define EXCEPTION_PROLOG_PSERIES_1(label, h)				\
- 	__EXCEPTION_PROLOG_PSERIES_1(label, h)
+@@ -297,6 +297,15 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
  
-+/* _NORI variant keeps MSR_RI clear */
-+#define __EXCEPTION_PROLOG_PSERIES_1_NORI(label, h)			\
-+	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
-+	xori	r10,r10,MSR_RI;		/* Clear MSR_RI */		\
-+	mfspr	r11,SPRN_##h##SRR0;	/* save SRR0 */			\
-+	LOAD_HANDLER(r12,label)						\
-+	mtspr	SPRN_##h##SRR0,r12;					\
-+	mfspr	r12,SPRN_##h##SRR1;	/* and SRR1 */			\
-+	mtspr	SPRN_##h##SRR1,r10;					\
-+	h##rfid;							\
-+	b	.	/* prevent speculative execution */
+ #define NOTEST(n)
+ 
++#define EXCEPTION_PROLOG_COMMON_1()					   \
++	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
++	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
++	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
++	std	r10,0(r1);		/* make stack chain pointer	*/ \
++	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
++	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
 +
-+#define EXCEPTION_PROLOG_PSERIES_1_NORI(label, h)			\
-+	__EXCEPTION_PROLOG_PSERIES_1_NORI(label, h)
 +
- #define EXCEPTION_PROLOG_PSERIES(area, label, h, extra, vec)		\
- 	EXCEPTION_PROLOG_0(area);					\
- 	EXCEPTION_PROLOG_1(area, extra, vec);				\
+ /*
+  * The common exception prolog is used for all except a few exceptions
+  * such as a segment miss on a kernel address.  We have to be prepared
+@@ -321,12 +330,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+ 	addi	r3,r13,area;		/* r3 -> where regs are saved*/	   \
+ 	RESTORE_CTR(r1, area);						   \
+ 	b	bad_stack;						   \
+-3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
+-	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
+-	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
+-	std	r10,0(r1);		/* make stack chain pointer	*/ \
+-	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
+-	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
++3:	EXCEPTION_PROLOG_COMMON_1();					   \
+ 	beq	4f;			/* if from kernel mode		*/ \
+ 	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				   \
+ 	SAVE_PPR(area, r9, r10);					   \
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index d39d6118c6e9..ceff7d6c0518 100644
+index ceff7d6c0518..4573853dfff7 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -268,20 +268,11 @@ machine_check_fwnmi:
- machine_check_pSeries_0:
- 	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
- 	/*
--	 * The following is essentially EXCEPTION_PROLOG_PSERIES_1 with the
--	 * difference that MSR_RI is not enabled, because PACA_EXMC is being
--	 * used, so nested machine check corrupts it. machine_check_common
--	 * enables MSR_RI.
-+	 * MSR_RI is not enabled, because PACA_EXMC is being used, so a
-+	 * nested machine check corrupts it. machine_check_common enables
-+	 * MSR_RI.
- 	 */
--	ld	r10,PACAKMSR(r13)
--	xori	r10,r10,MSR_RI
--	mfspr	r11,SPRN_SRR0
--	LOAD_HANDLER(r12, machine_check_common)
--	mtspr	SPRN_SRR0,r12
--	mfspr	r12,SPRN_SRR1
--	mtspr	SPRN_SRR1,r10
--	rfid
--	b	.	/* prevent speculative execution */
-+	EXCEPTION_PROLOG_PSERIES_1_NORI(machine_check_common, EXC_STD)
- 
- TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
- 
+@@ -956,17 +956,12 @@ EXC_VIRT_NONE(0x4e60, 0x4e80)
+ TRAMP_KVM_HV(PACA_EXGEN, 0xe60)
+ TRAMP_REAL_BEGIN(hmi_exception_early)
+ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_HV, 0xe60)
+-	mr	r10,r1			/* Save r1			*/
+-	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
++	mr	r10,r1			/* Save r1 */
++	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack for realmode */
+ 	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
+-	std	r9,_CCR(r1)		/* save CR in stackframe	*/
+ 	mfspr	r11,SPRN_HSRR0		/* Save HSRR0 */
+-	std	r11,_NIP(r1)		/* save HSRR0 in stackframe	*/
+-	mfspr	r12,SPRN_HSRR1		/* Save SRR1 */
+-	std	r12,_MSR(r1)		/* save SRR1 in stackframe	*/
+-	std	r10,0(r1)		/* make stack chain pointer	*/
+-	std	r0,GPR0(r1)		/* save r0 in stackframe	*/
+-	std	r10,GPR1(r1)		/* save r1 in stackframe	*/
++	mfspr	r12,SPRN_HSRR1		/* Save HSRR1 */
++	EXCEPTION_PROLOG_COMMON_1()
+ 	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
+ 	EXCEPTION_PROLOG_COMMON_3(0xe60)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
 -- 
 2.11.0
