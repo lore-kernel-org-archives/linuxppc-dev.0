@@ -1,20 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tj8cT5TPvzDwPx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 05:30:49 +1100 (AEDT)
-Received: by mail-pg0-x243.google.com with SMTP id w68so3191609pgw.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2016 10:30:49 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 10/10] powerpc: xmon wait for secondaries before sending IPI
-Date: Tue, 20 Dec 2016 04:30:11 +1000
-Message-Id: <20161219183011.28310-11-npiggin@gmail.com>
-In-Reply-To: <20161219183011.28310-1-npiggin@gmail.com>
-References: <20161219183011.28310-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjBHw67D8zDwVl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 06:46:36 +1100 (AEDT)
+Message-ID: <1482176783.32531.28.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: madalin.bucur@nxp.com, netdev@vger.kernel.org
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, davem@davemloft.net
+Date: Mon, 19 Dec 2016 13:46:23 -0600
+In-Reply-To: <1482164013-6111-3-git-send-email-madalin.bucur@nxp.com>
+References: <1482164013-6111-1-git-send-email-madalin.bucur@nxp.com>
+ <1482164013-6111-3-git-send-email-madalin.bucur@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [upstream-release] [PATCH net v3 2/4] powerpc: fsl/fman: remove
+ fsl, fman from of_device_ids[]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An externally triggered system reset (e.g., via QEMU nmi command, or
-pseries reset button) can cause system reset interrupts on all CPUs.
-In case this causes xmon to be entered, it is undesirable for the primary
-(first) CPU into xmon to trigger an NMI IPI to others, because this may
-cause a nested system reset interrupt.
+On Mon, 2016-12-19 at 18:13 +0200, Madalin Bucur wrote:
+> The fsl/fman drivers will use of_platform_populate() on all
+> supported platforms. Call of_platform_populate() to probe the
+> FMan sub-nodes.
+> 
+> Signed-off-by: Igal Liberman <igal.liberman@freescale.com>
+> Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+> ---
+>  arch/powerpc/platforms/85xx/corenet_generic.c | 3 ---
+>  drivers/net/ethernet/freescale/fman/fman.c    | 8 ++++++++
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c
+> b/arch/powerpc/platforms/85xx/corenet_generic.c
+> index 1179115..824b7f1 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> @@ -117,9 +117,6 @@ static const struct of_device_id of_device_ids[] = {
+>  	{
+>  		.compatible	= "fsl,qe",
+>  	},
+> -	{
+> -		.compatible    = "fsl,fman",
+> -	},
+>  	/* The following two are for the Freescale hypervisor */
+>  	{
+>  		.name		= "hypervisor",
 
-So spin for a time waiting for secondaries to join xmon before performing
-the NMI IPI, similarly to what the crash dump code does.
+For this part:
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/xmon/xmon.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+Acked-by: Scott Wood <oss@buserror.net>
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 77a88319f494..9f88ec4af0b3 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -516,14 +516,25 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
- 		xmon_owner = cpu;
- 		mb();
- 		if (ncpus > 1) {
-+			/*
-+			 * system resets can be triggered on all CPUs, so
-+			 * wait for others to come in and avoid the IPI. This
-+			 * is similar to crash_kexec_secondary()
-+			 */
-+			for (timeout = 100000000; timeout != 0; --timeout) {
-+				if (cpumask_weight(&cpus_in_xmon) >= ncpus)
-+					goto got_cpus;
-+				barrier();
-+			}
- 			smp_send_debugger_break();
- 			/* wait for other cpus to come in */
- 			for (timeout = 100000000; timeout != 0; --timeout) {
- 				if (cpumask_weight(&cpus_in_xmon) >= ncpus)
--					break;
-+					goto got_cpus;
- 				barrier();
- 			}
- 		}
-+got_cpus:
- 		remove_bpts();
- 		disable_surveillance();
- 		/* for breakpoint or single step, print the current instr. */
--- 
-2.11.0
+> diff --git a/drivers/net/ethernet/freescale/fman/fman.c
+> b/drivers/net/ethernet/freescale/fman/fman.c
+> index dafd9e1..0b7f711 100644
+> --- a/drivers/net/ethernet/freescale/fman/fman.c
+> +++ b/drivers/net/ethernet/freescale/fman/fman.c
+> @@ -2868,6 +2868,14 @@ static struct fman *read_dts_node(struct
+> platform_device *of_dev)
+>  
+>  	fman->dev = &of_dev->dev;
+>  
+> +	/* call of_platform_populate in order to probe sub-nodes on arm64
+> */
+> +	err = of_platform_populate(fm_node, NULL, NULL, &of_dev->dev);
+> +	if (err) {
+> +		dev_err(&of_dev->dev, "%s: of_platform_populate()
+> failed\n",
+> +			__func__);
+> +		goto fman_free;
+> +	}
+
+The "on arm64" comment is no longer accurate (and the rest of the comment
+seems unnecessary).
+
+-Scott
