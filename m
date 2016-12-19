@@ -1,22 +1,26 @@
 Return-Path: <madalin.bucur@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0067.outbound.protection.outlook.com [104.47.37.67])
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0087.outbound.protection.outlook.com [104.47.2.87])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjCY32FrGzDxcb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 07:43:03 +1100 (AEDT)
-From: Madalin Bucur <madalin.bucur@nxp.com>
-To: <netdev@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <davem@davemloft.net>, <scott.wood@nxp.com>, <mpe@ellerman.id.au>
-Subject: [PATCH net v4 4/4] fsl/fman: enable compilation on ARM64
-Date: Mon, 19 Dec 2016 22:42:46 +0200
-Message-ID: <1482180166-10677-5-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1482180166-10677-1-git-send-email-madalin.bucur@nxp.com>
-References: <1482180166-10677-1-git-send-email-madalin.bucur@nxp.com>
-Reply-To: <madalin.bucur@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjCZ15fqBzDxsx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 07:43:53 +1100 (AEDT)
+From: Madalin-Cristian Bucur <madalin.bucur@nxp.com>
+To: Scott Wood <oss@buserror.net>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+CC: "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "davem@davemloft.net" <davem@davemloft.net>
+Subject: RE: [upstream-release] [PATCH net v3 2/4] powerpc: fsl/fman: remove
+ fsl, fman from of_device_ids[]
+Date: Mon, 19 Dec 2016 20:43:47 +0000
+Message-ID: <AM4PR04MB1604BE848D97584625016728EC910@AM4PR04MB1604.eurprd04.prod.outlook.com>
+References: <1482164013-6111-1-git-send-email-madalin.bucur@nxp.com>
+ <1482164013-6111-3-git-send-email-madalin.bucur@nxp.com>
+ <1482176783.32531.28.camel@buserror.net>
+In-Reply-To: <1482176783.32531.28.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
----
- drivers/net/ethernet/freescale/fman/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/freescale/fman/Kconfig b/drivers/net/ethernet/freescale/fman/Kconfig
-index 79b7c84..dc0850b 100644
---- a/drivers/net/ethernet/freescale/fman/Kconfig
-+++ b/drivers/net/ethernet/freescale/fman/Kconfig
-@@ -1,6 +1,6 @@
- config FSL_FMAN
- 	tristate "FMan support"
--	depends on FSL_SOC || COMPILE_TEST
-+	depends on FSL_SOC || ARCH_LAYERSCAPE || COMPILE_TEST
- 	select GENERIC_ALLOCATOR
- 	select PHYLIB
- 	default n
--- 
-2.1.0
+PiBGcm9tOiBTY290dCBXb29kIFttYWlsdG86b3NzQGJ1c2Vycm9yLm5ldF0NCj4gU2VudDogTW9u
+ZGF5LCBEZWNlbWJlciAxOSwgMjAxNiA5OjQ2IFBNDQo+IA0KPiBPbiBNb24sIDIwMTYtMTItMTkg
+YXQgMTg6MTMgKzAyMDAsIE1hZGFsaW4gQnVjdXIgd3JvdGU6DQo+ID4gVGhlIGZzbC9mbWFuIGRy
+aXZlcnMgd2lsbCB1c2Ugb2ZfcGxhdGZvcm1fcG9wdWxhdGUoKSBvbiBhbGwNCj4gPiBzdXBwb3J0
+ZWQgcGxhdGZvcm1zLiBDYWxsIG9mX3BsYXRmb3JtX3BvcHVsYXRlKCkgdG8gcHJvYmUgdGhlDQo+
+ID4gRk1hbiBzdWItbm9kZXMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBJZ2FsIExpYmVybWFu
+IDxpZ2FsLmxpYmVybWFuQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogTWFkYWxp
+biBCdWN1ciA8bWFkYWxpbi5idWN1ckBueHAuY29tPg0KPiA+IC0tLQ0KPiA+IMKgYXJjaC9wb3dl
+cnBjL3BsYXRmb3Jtcy84NXh4L2NvcmVuZXRfZ2VuZXJpYy5jIHwgMyAtLS0NCj4gPiDCoGRyaXZl
+cnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9mbWFuL2ZtYW4uY8KgwqDCoMKgfCA4ICsrKysrKysr
+DQo+ID4gwqAyIGZpbGVzIGNoYW5nZWQsIDggaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkN
+Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvY29yZW5l
+dF9nZW5lcmljLmMNCj4gPiBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9jb3JlbmV0X2dl
+bmVyaWMuYw0KPiA+IGluZGV4IDExNzkxMTUuLjgyNGI3ZjEgMTAwNjQ0DQo+ID4gLS0tIGEvYXJj
+aC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2NvcmVuZXRfZ2VuZXJpYy5jDQo+ID4gKysrIGIvYXJj
+aC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2NvcmVuZXRfZ2VuZXJpYy5jDQo+ID4gQEAgLTExNyw5
+ICsxMTcsNiBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBvZl9kZXZpY2VfaWRz
+W10gPSB7DQo+ID4gwqAJew0KPiA+IMKgCQkuY29tcGF0aWJsZQk9ICJmc2wscWUiLA0KPiA+IMKg
+CX0sDQo+ID4gLQl7DQo+ID4gLQkJLmNvbXBhdGlibGXCoMKgwqDCoD0gImZzbCxmbWFuIiwNCj4g
+PiAtCX0sDQo+ID4gwqAJLyogVGhlIGZvbGxvd2luZyB0d28gYXJlIGZvciB0aGUgRnJlZXNjYWxl
+IGh5cGVydmlzb3IgKi8NCj4gPiDCoAl7DQo+ID4gwqAJCS5uYW1lCQk9ICJoeXBlcnZpc29yIiwN
+Cj4gDQo+IEZvciB0aGlzIHBhcnQ6DQo+IA0KPiBBY2tlZC1ieTogU2NvdHQgV29vZCA8b3NzQGJ1
+c2Vycm9yLm5ldD4NCg0KVGhhbmsgeW91LCBhZGRlZCB0byB2NC4NCg0KPiA+IGRpZmYgLS1naXQg
+YS9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9mbWFuLmMNCj4gPiBiL2RyaXZl
+cnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9mbWFuL2ZtYW4uYw0KPiA+IGluZGV4IGRhZmQ5ZTEu
+LjBiN2Y3MTEgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxl
+L2ZtYW4vZm1hbi5jDQo+ID4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2Zt
+YW4vZm1hbi5jDQo+ID4gQEAgLTI4NjgsNiArMjg2OCwxNCBAQCBzdGF0aWMgc3RydWN0IGZtYW4g
+KnJlYWRfZHRzX25vZGUoc3RydWN0DQo+ID4gcGxhdGZvcm1fZGV2aWNlICpvZl9kZXYpDQo+ID4N
+Cj4gPiDCoAlmbWFuLT5kZXYgPSAmb2ZfZGV2LT5kZXY7DQo+ID4NCj4gPiArCS8qIGNhbGwgb2Zf
+cGxhdGZvcm1fcG9wdWxhdGUgaW4gb3JkZXIgdG8gcHJvYmUgc3ViLW5vZGVzIG9uIGFybTY0DQo+
+ID4gKi8NCj4gPiArCWVyciA9IG9mX3BsYXRmb3JtX3BvcHVsYXRlKGZtX25vZGUsIE5VTEwsIE5V
+TEwsICZvZl9kZXYtPmRldik7DQo+ID4gKwlpZiAoZXJyKSB7DQo+ID4gKwkJZGV2X2Vycigmb2Zf
+ZGV2LT5kZXYsICIlczogb2ZfcGxhdGZvcm1fcG9wdWxhdGUoKQ0KPiA+IGZhaWxlZFxuIiwNCj4g
+PiArCQkJX19mdW5jX18pOw0KPiA+ICsJCWdvdG8gZm1hbl9mcmVlOw0KPiA+ICsJfQ0KPiANCj4g
+VGhlICJvbiBhcm02NCIgY29tbWVudCBpcyBubyBsb25nZXIgYWNjdXJhdGUgKGFuZCB0aGUgcmVz
+dCBvZiB0aGUgY29tbWVudA0KPiBzZWVtcyB1bm5lY2Vzc2FyeSkuDQo+IA0KPiAtU2NvdHQNCg0K
+UmVtb3ZlZCBpbiB2NC4NCg==
