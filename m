@@ -1,27 +1,31 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tj8Gt0p0YzDwLR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 05:15:33 +1100 (AEDT)
-Date: Mon, 19 Dec 2016 15:15:17 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>, chris.ryder@arm.com,
- peterz@infradead.org, linux-kernel@vger.kernel.org,
- npiggin@gmail.com, alexander.shishkin@linux.intel.com,
- mingo@redhat.com, paulus@samba.org, mhiramat@kernel.org,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <masriniv@in.ibm.com>
-Subject: Re: [PATCH] perf TUI: Don't throw error for zero length symbols
-Message-ID: <20161219181517.GA551@kernel.org>
-References: <20161121172818.161639c2@kryten>
- <1479804050-5028-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <5853C42B.9050402@linux.vnet.ibm.com>
- <20161217072754.32e6f492@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tj8Rc58HnzDwNp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 05:23:08 +1100 (AEDT)
+Date: Mon, 19 Dec 2016 19:23:01 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+In-Reply-To: <20161219172549.mjm4c2midvkumqxb@treble>
+Message-ID: <alpine.LSU.2.20.1612191919580.4153@pobox.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
+ <alpine.LSU.2.20.1612191712530.6638@pobox.suse.cz>
+ <20161219172549.mjm4c2midvkumqxb@treble>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161217072754.32e6f492@kryten>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Sat, Dec 17, 2016 at 07:27:54AM +1100, Anton Blanchard escreveu:
-> Hi Ravi,
-> 
-> > > perf report (with TUI) exits with error when it finds a sample of
-> > > zero length symbol(i.e. addr == sym->start == sym->end). Actually
-> > > these are valid samples. Don't exit TUI and show report with such
-> > > symbols.
-> > >
-> > > Link: https://lkml.org/lkml/2016/10/8/189
-> 
-> You can add:
-> 
-> Tested-by: Anton Blanchard <anton@samba.org>
-> 
-> Also, since this issue makes perf report pretty much useless on
-> ppc64, can we mark it for stable@, at least to get it into 4.9 where
-> the ppc64 kernel changes that triggered this appeared?
+On Mon, 19 Dec 2016, Josh Poimboeuf wrote:
 
-Ok, added it, will be in the next pull req to Ingo.
-
-- Arnaldo
- 
-> Anton
-> 
-> > > Reported-by: Anton Blanchard <anton@samba.org>
-> > > Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-> > > ---
-> > >  tools/perf/util/annotate.c | 3 ++-
-> > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
-> > > index aeb5a44..430d039 100644
-> > > --- a/tools/perf/util/annotate.c
-> > > +++ b/tools/perf/util/annotate.c
-> > > @@ -593,7 +593,8 @@ static int __symbol__inc_addr_samples(struct
-> > > symbol *sym, struct map *map,
-> > >
-> > >  	pr_debug3("%s: addr=%#" PRIx64 "\n", __func__,
-> > > map->unmap_ip(map, addr));
-> > >
-> > > -	if (addr < sym->start || addr >= sym->end) {
-> > > +	if ((addr < sym->start || addr >= sym->end) &&
-> > > +	    (addr != sym->end || sym->start != sym->end)) {
-> > >  		pr_debug("%s(%d): ERANGE! sym->name=%s, start=%#"
-> > > PRIx64 ", addr=%#" PRIx64 ", end=%#" PRIx64 "\n", __func__,
-> > > __LINE__, sym->name, sym->start, addr, sym->end); return -ERANGE;  
+> On Mon, Dec 19, 2016 at 05:25:19PM +0100, Miroslav Benes wrote:
+> > On Thu, 8 Dec 2016, Josh Poimboeuf wrote:
 > > 
+> > > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> > > index 215612c..b4a6663 100644
+> > > --- a/arch/x86/Kconfig
+> > > +++ b/arch/x86/Kconfig
+> > > @@ -155,6 +155,7 @@ config X86
+> > >  	select HAVE_PERF_REGS
+> > >  	select HAVE_PERF_USER_STACK_DUMP
+> > >  	select HAVE_REGS_AND_STACK_ACCESS_API
+> > > +	select HAVE_RELIABLE_STACKTRACE		if X86_64 && FRAME_POINTER && STACK_VALIDATION
+> > 
+> > Tests to measure possible performance penalty of frame pointers were done 
+> > by Mel Gorman. The outcome was quite clear. There IS a measurable 
+> > impact. The percentage depends on the workflow but I think it is safe to 
+> > say that FP usually takes 5-10 percents.
+> > 
+> > If my understanding is correct there is no single culprit. Register 
+> > pressure is definitely not a problem. We ran simple benchmarks while 
+> > taking a register away from GCC (RBP or a common one). The impact is a 
+> > combination of more cacheline pressure, more memory accesses and the fact 
+> > that the kernel contains a lot of small functions.
+> > 
+> > Thus, I think that DWARF should be the way to go here.
+> > 
+> > Other than that the patch looks good to me.
+> 
+> I agree that DWARF is generally a good idea, and I'm working toward it.
+> However there's still quite a bit of work to get there.
+> 
+> For this consistency model to work with DWARF on x86, we would need:
+> 
+> 1) a reliable x86 DWARF unwinder with Linus's blessing
+> 2) objtool DWARF support (I'm working on this at the moment)
+> 3) probably some kind of runtime NMI stack checking feature to
+>    complement objtool, along with a lot of burn time to ensure there are
+>    no issues, particularly in entry code
+> 4) port save_stack_trace_tsk_reliable() to work with DWARF
+
+Yes, this is a lot of work to do.
+ 
+> DWARF will be nice to have, but it's definitely not required before
+> merging this consistency model.
+
+Oh, I didn't mean it to be done before merging this patch set. Sorry for 
+the confusion. The point was that as long as the performance is involved 
+FP does not look that promising and DWARF could be better (but who knows, 
+right?).
+
+> Also I doubt we'll ever be able to drop frame pointer support
+> completely.  Some embedded systems may not want the overhead of the
+> DWARF metadata.
+
+True. There should be a choice in this respect.
+
+Regards,
+Miroslav
