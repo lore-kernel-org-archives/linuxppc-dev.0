@@ -1,10 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3thtrC30S3zDwMS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3thtrC1rmVzDwM6
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2016 19:10:03 +1100 (AEDT)
-Date: Mon, 19 Dec 2016 17:37:18 +1100
+Date: Mon, 19 Dec 2016 17:36:14 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Thomas Huth <thuth@redhat.com>
 Cc: paulus@samba.org, michael@ellerman.id.au, benh@kernel.crashing.org,
@@ -13,14 +13,14 @@ Cc: paulus@samba.org, michael@ellerman.id.au, benh@kernel.crashing.org,
  kvm@vger.kernel.org
 Subject: Re: [PATCH 01/11] powerpc/kvm: Reserve capabilities and ioctls for
  HPT resizing
-Message-ID: <20161219063718.GB23176@umbus.fritz.box>
+Message-ID: <20161219063614.GA23176@umbus.fritz.box>
 References: <20161215055404.29351-1-david@gibson.dropbear.id.au>
  <20161215055404.29351-2-david@gibson.dropbear.id.au>
- <8e032a54-de3d-b3dc-527e-a58f4874e6fe@redhat.com>
+ <25bcced1-4903-2cf7-6a56-14c3ced5cd28@redhat.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="St7VIuEGZ6dlpu13"
-In-Reply-To: <8e032a54-de3d-b3dc-527e-a58f4874e6fe@redhat.com>
+ protocol="application/pgp-signature"; boundary="cNdxnHkX5QqsyA0e"
+In-Reply-To: <25bcced1-4903-2cf7-6a56-14c3ced5cd28@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,12 +31,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---St7VIuEGZ6dlpu13
+--cNdxnHkX5QqsyA0e
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Dec 16, 2016 at 02:15:30PM +0100, Thomas Huth wrote:
+On Fri, Dec 16, 2016 at 10:25:55AM +0100, Thomas Huth wrote:
 > On 15.12.2016 06:53, David Gibson wrote:
 > > This adds a new powerpc-specific KVM_CAP_SPAPR_RESIZE_HPT capability to
 > > advertise whether KVM is capable of handling the PAPR extensions for
@@ -59,50 +59,14 @@ ice
 > >       this will give the same results as userspace's fallback check.
 > >     2 will mean "HPT resize available and implemented via ioctl()s
 > >       KVM_PPC_RESIZE_HPT_PREPARE and KVM_PPC_RESIZE_HPT_COMMIT"
-> >=20
-> > For now we always return 1, but the intention is to return 2 once HPT
-> > resize is implemented for KVM HV.
-> >=20
-> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> > ---
-> >  arch/powerpc/kvm/powerpc.c |  3 +++
-> >  include/uapi/linux/kvm.h   | 10 ++++++++++
-> >  2 files changed, 13 insertions(+)
-> >=20
-> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> > index efd1183..bb23923 100644
-> > --- a/arch/powerpc/kvm/powerpc.c
-> > +++ b/arch/powerpc/kvm/powerpc.c
-> > @@ -605,6 +605,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, l=
-ong ext)
-> >  	case KVM_CAP_SPAPR_MULTITCE:
-> >  		r =3D 1;
-> >  		break;
-> > +	case KVM_CAP_SPAPR_RESIZE_HPT:
-> > +		r =3D 1; /* resize allowed only if HPT is outside kernel */
-> > +		break;
-> >  #endif
-> >  	case KVM_CAP_PPC_HTM:
-> >  		r =3D cpu_has_feature(CPU_FTR_TM_COMP) &&
-> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> > index cac48ed..904afe0 100644
-> > --- a/include/uapi/linux/kvm.h
-> > +++ b/include/uapi/linux/kvm.h
-> > @@ -685,6 +685,12 @@ struct kvm_ppc_smmu_info {
-> >  	struct kvm_ppc_one_seg_page_size sps[KVM_PPC_PAGE_SIZES_MAX_SZ];
-> >  };
-> > =20
-> > +/* for KVM_PPC_RESIZE_HPT_{PREPARE,COMMIT} */
-> > +struct kvm_ppc_resize_hpt {
-> > +	__u64 flags;
-> > +	__u32 shift;
-> > +};
 >=20
-> I think you should also add a final "__u32 pad" to that struct to make
-> sure that it is naturally aligned (like it is done with struct
-> kvm_coalesced_mmio_zone already for example).
+> This encoding IMHO clearly needs some proper documentation in
+> Documentation/virtual/kvm/api.txt ... and maybe also some dedicated
+> #defines in an uapi header file.
 
-Seems reasonable; done.
+Ah, yeah.  Actually I'm talking to paulus again to see if we can come
+up with a way to encode the necessary facts without something as weird
+as this one.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -110,25 +74,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---St7VIuEGZ6dlpu13
+--cNdxnHkX5QqsyA0e
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJYV4AdAAoJEGw4ysog2bOS2s0P/2ov/ehWqZ0lovWp7W4slANj
-e41H0mTqK3y6VRRdnVp725YXgPWXkCpeRNB6yqS7oydLrxM6Rs4cx+9VGZRQ4/5a
-5YnjJVTgAabxHGftqhTgSJgmpJG71kjyTLSKNGke/kIl9KtRUjtX2BDawXo3QHe5
-+YTNNGHv7K3qPzGG6SPmYITyZY6bRKvXH+XW5ygV8TvEgzH3pfZDf5Rye2LPQ6I2
-+7olyD//518hOhjQJgGxQb4ym0b3OqpGX2tIySLnoQ2R2Cfj7w714m85j1nttknp
-7ITf2M9iPy7MUCMsQAnu871Tk5kLO0yua5Sx1FtIya77+Uil40gKsYu6YDTLVkdz
-odw8gDEes423szqz0E0SSX0Hdp2+KPZ5LgRa7w7dlB81DMR/x909ut6kZT4H1mwB
-XYM5Q26h0b10gA+VIrEpZJL86iIJiDMUKhiFfu5MsbGztmEMxnCORPbP3cFP0GLm
-7bad0lGJLr44YZvDPb9P/N24PmFbVr9BowPMQh5/SSAfR00XkJLDZXQBzKlI9cNl
-wH+6GNSdtpgvBU5Ap5tNhyWoZbgbdDK11SOQXOzQ0ijtk0lgIRNzukFOcPPtfHKt
-+geTPSxGqNZ8IF0VETpGadybBsGsE1Q/LLTDSGI4fVWZ//frWbGHXjZxYKz7t8AL
-6uC34q/ciK2QDfW+Thor
-=+Xum
+iQIcBAEBCAAGBQJYV3/cAAoJEGw4ysog2bOSKMoQAIDPdMvxya660/rLCTjLfbBB
+qsCeiRngpkhVfBIN8Klr05ofOLqwe/G5qIN+3r9aDziHFuAknZpjRr5k9rkFCK/z
+LGJyKj3EP8Rb6rwq2Bhe+kEIAuaEaXdbDoqXCAm7R3sf2GUY2o7mHhru0DaiEHLG
+fTqC21/oTCXiHzpzQIdtzEVxqA7rBbiaTeIOdaSL9JfOIcqf3H51s2dVCCMxi3hN
+A2y5fcSlEjPqsW0gWd1QBlxgytOjipie8HxESYxc26ZI3k5EOJ0XbOCaCMRtjDU6
+VCXHJfi6vuMvQTETyj3nXajeis3k+BZf8hH2E9LAhpQ4ddNM41/q0MtdgLTuKQgE
+UdqznBCuHxWgKcKgGAc0fcjMk3+op6cunhL5jwZRUljwoMLs+ktfAwsB5x9vUEqh
+O2a2SfiHjiMqPFlFsm4sa6mjFRNVyDrIwpMrEPuSbUlmLnNN1gE4ga6DP+2NQtoP
+srIp5ZMXVktJ3maz7SJklpVwFs0smPCZ2hjrFqFAwSnt0oP1HaIPyZ6NU4xtI5PE
+9BtxF5Lx91vbakOhZx4BLrxCPEdxALbUx+S/7dKnZUEj2Su+BNKzJaIj4C28tsfv
+O8Lo5q3BWP6ooSHiLrxH2SH10aHPNfNIHhvv8aU+FWjRe5Wp+V4vK8S34pzCIzQ+
+TtaK3co+XK6RVYXXYrgN
+=+g1N
 -----END PGP SIGNATURE-----
 
---St7VIuEGZ6dlpu13--
+--cNdxnHkX5QqsyA0e--
