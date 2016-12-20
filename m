@@ -1,23 +1,21 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-io0-x22b.google.com (mail-io0-x22b.google.com
- [IPv6:2607:f8b0:4001:c06::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nm@ti.com>
+Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjNZh0trlzDwLZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 14:30:04 +1100 (AEDT)
-Received: by mail-io0-x22b.google.com with SMTP id p42so169806053ioo.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Dec 2016 19:30:04 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjNFY0QvpzDwH8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 14:15:11 +1100 (AEDT)
+From: Nishanth Menon <nm@ti.com>
+To: Jiri Slaby <jslaby@suse.com>
+CC: Timur Tabi <timur@codeaurora.org>, Christopher Covington
+ <cov@codeaurora.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ <linux-arm-kernel@lists.infradead.org>, Nishanth Menon <nm@ti.com>
+Subject: [PATCH] tty: hvc_dcc: Add basic early_con support
+Date: Mon, 19 Dec 2016 18:23:36 -0600
+Message-ID: <20161220002336.28733-1-nm@ti.com>
 MIME-Version: 1.0
-In-Reply-To: <CAOMqctQJaLO_2_XhE7SGLyvQYvUEgxSNoussEiPvdpS2cDRc5w@mail.gmail.com>
-References: <CAFgQCTv4SmBdp91BNKiy6PzijLCzyYHFoezZeqBVbJPwCP=PkA@mail.gmail.com>
- <CAOMqctQJaLO_2_XhE7SGLyvQYvUEgxSNoussEiPvdpS2cDRc5w@mail.gmail.com>
-From: Liu ping fan <kernelfans@gmail.com>
-Date: Tue, 20 Dec 2016 11:30:01 +0800
-Message-ID: <CAFgQCTum4X2np+dV3-hkQ8MzvSwEEg-u7ZfCrZxDetdh9hOAgw@mail.gmail.com>
-Subject: Re: a question about powervm
-To: Michal Suchanek <hramrach@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 19, 2016 at 5:58 PM, Michal Suchanek <hramrach@gmail.com> wrote:
-> Hello,
->
-> On 19 December 2016 at 10:09, Liu ping fan <kernelfans@gmail.com> wrote:
->> Hi guys,
->>
->> I am using a pSeries. It runs on powerVM.
->> My question is whether the cpuX under /sys/devices/system/cpu
->> corresponds to a real cpu or not.
->> I think it is not the same as the cpu on kvm-guest, which is emulated
->> by a linux process.
->
-> In general the hypervisor (powerVM or KVM) needs to disable access of
-> the guest to some CPU features in order to manage multiple guests. So
-> some CPU features are either disabled or emulated by the hypervisor to
-> prevent the guest from interfering with isolation of the guests from
-> each other and the host. On the other hand, emulating the whole CPU is
-> ineffective so to achieve reasonable guest speed it must run on a real
-> CPU most of the time. That means that in most cases the CPU you see in
-> the guest will have a subset of the features of the CPU the host sees.
->
-Thank you for the explanation. And sorry not to explain my question clearly.
-I wonders about the mapping between guest-CPU and physical cpu. On
-powerVM, except the feature exposed by host, it is 1:1 map right?
+In some cases, earlycon can help catch errors with kernel boot prior to
+standard console is available.
 
-> Some virtualization solutions allow to overcommit CPU time so you can
-> allocate more CPUs to guests than you physically have. Then when
-> running the guest will use an actual physical CPU but when it is
-> sleeping other guest may use the CPU.
->
-Yes, agree.
+Example bootargs: console=hvc0 earlycon=hvcdcc
 
-Thanks!
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+Based on: v4.9 tag
+Also applies on: next-20161219
+Tested on Simulation environment (which did not have serial console option)
+
+ drivers/tty/hvc/hvc_dcc.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+
+diff --git a/drivers/tty/hvc/hvc_dcc.c b/drivers/tty/hvc/hvc_dcc.c
+index 82f240fb98f0..1ec06e550656 100644
+--- a/drivers/tty/hvc/hvc_dcc.c
++++ b/drivers/tty/hvc/hvc_dcc.c
+@@ -10,7 +10,9 @@
+  * GNU General Public License for more details.
+  */
+ 
++#include <linux/console.h>
+ #include <linux/init.h>
++#include <linux/serial_core.h>
+ 
+ #include <asm/dcc.h>
+ #include <asm/processor.h>
+@@ -94,3 +96,45 @@ static int __init hvc_dcc_init(void)
+ 	return PTR_ERR_OR_ZERO(p);
+ }
+ device_initcall(hvc_dcc_init);
++
++static int hvc_dcc_earlyputc(int c)
++{
++	unsigned long count = 0xFFFFFFFF;
++	static bool dead_dcc_earlycon;
++
++	if (dead_dcc_earlycon)
++		return -EBUSY;
++
++	while (count--) {
++		if (!(__dcc_getstatus() & DCC_STATUS_TX))
++			break;
++	}
++	if (!count) {
++		dead_dcc_earlycon = true;
++		return -EBUSY;
++	}
++	__dcc_putchar(c);
++	return 0;
++}
++
++static void hvc_dcc_earlywrite(struct console *con, const char *s,
++			       unsigned int n)
++{
++	int r;
++
++	while (n--) {
++		r = hvc_dcc_earlyputc(*s);
++		if (r)
++			break;
++		s++;
++	}
++}
++
++static int
++__init early_hvc_dcc_setup(struct earlycon_device *device, const char *opt)
++{
++	device->con->write = hvc_dcc_earlywrite;
++	return 0;
++}
++
++EARLYCON_DECLARE(hvcdcc, early_hvc_dcc_setup);
+-- 
+2.11.0.65.geff96d7
