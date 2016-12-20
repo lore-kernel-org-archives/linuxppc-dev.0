@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjSpp5TzlzDwPD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:50 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjSps39k5zDwNw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:53 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBK6cUG7024994
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:48 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27ewnjevny-1
+ uBK6cU1g085285
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:51 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27evdv36fm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:48 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:51 -0500
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Tue, 20 Dec 2016 16:40:46 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0FA103578052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:43 +1100 (EST)
+ Tue, 20 Dec 2016 16:40:49 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2328A2CE805A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:47 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uBK6ehWe53608668
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:43 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uBK6elRl43909278
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:47 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uBK6efGm006998
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:42 +1100
+ uBK6ek0U007123
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:46 +1100
 From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
@@ -40,11 +40,11 @@ Cc: linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
  Michael Neuling <mikey@neuling.org>,
  Stewart Smith <stewart@linux.vnet.ibm.com>,
  Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>
-Subject: [PATCH v3 5/6] powerpc/perf: Generic imc pmu event functions
-Date: Tue, 20 Dec 2016 12:09:45 +0530
+Subject: [PATCH v3 6/6] powerpc/perf: IMC pmu cpumask and cpu hotplug support
+Date: Tue, 20 Dec 2016 12:09:46 +0530
 In-Reply-To: <1482215986-11783-1-git-send-email-hemant@linux.vnet.ibm.com>
 References: <1482215986-11783-1-git-send-email-hemant@linux.vnet.ibm.com>
-Message-Id: <1482215986-11783-6-git-send-email-hemant@linux.vnet.ibm.com>
+Message-Id: <1482215986-11783-7-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,13 +54,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since, the IMC counters' data are periodically fed to a memory location,
-the functions to read/update, start/stop, add/del can be generic and can
-be used by all IMC PMU units.
+Adds cpumask attribute to be used by each IMC pmu. Only one cpu (any
+online CPU) from each chip for nest PMUs is designated to read counters.
 
-This patch adds a set of generic imc pmu related event functions to be
-used  by each imc pmu unit. Add code to setup format attribute and to
-register imc pmus. Add a event_init function for nest_imc events.
+On CPU hotplug, dying CPU is checked to see whether it is one of the
+designated cpus, if yes, next online cpu from the same chip (for nest
+units) is designated as new cpu to read counters.
 
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -74,236 +73,253 @@ Cc: Daniel Axtens <dja@axtens.net>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/imc-pmu.h        |   1 +
- arch/powerpc/perf/imc-pmu.c               | 122 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-imc.c |  29 ++++++-
- 3 files changed, 148 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/opal-api.h            |   3 +-
+ arch/powerpc/include/asm/opal.h                |   2 +
+ arch/powerpc/perf/imc-pmu.c                    | 167 ++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ 4 files changed, 171 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
-index 911d837..ceb6b1f 100644
---- a/arch/powerpc/include/asm/imc-pmu.h
-+++ b/arch/powerpc/include/asm/imc-pmu.h
-@@ -70,4 +70,5 @@ struct imc_pmu {
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0e2e57b..48e1d3e 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -167,7 +167,8 @@
+ #define OPAL_INT_EOI				124
+ #define OPAL_INT_SET_MFRR			125
+ #define OPAL_PCI_TCE_KILL			126
+-#define OPAL_LAST				126
++#define OPAL_NEST_IMC_COUNTERS_CONTROL          128
++#define OPAL_LAST				128
  
- #define UNKNOWN_DOMAIN		-1
+ /* Device tree flags */
  
-+int imc_get_domain(struct device_node *pmu_dev);
- #endif /* PPC_POWERNV_IMC_PMU_DEF_H */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index e958b70..fe72b57 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -229,6 +229,8 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ 			     uint32_t pe_num, uint32_t tce_size,
+ 			     uint64_t dma_addr, uint32_t npages);
++int64_t opal_nest_imc_counters_control(uint64_t mode, uint64_t value1,
++				  uint64_t value2, uint64_t value3);
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
 diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 7b6ce50..f12ece8 100644
+index f12ece8..49f6486 100644
 --- a/arch/powerpc/perf/imc-pmu.c
 +++ b/arch/powerpc/perf/imc-pmu.c
-@@ -17,6 +17,117 @@
+@@ -16,6 +16,7 @@
+ 
  struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
  struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
++static cpumask_t nest_imc_cpumask;
  
-+/* Needed for sanity check */
-+extern u64 nest_max_offset;
+ /* Needed for sanity check */
+ extern u64 nest_max_offset;
+@@ -31,6 +32,164 @@ static struct attribute_group imc_format_group = {
+ 	.attrs = imc_format_attrs,
+ };
+ 
++/* Get the cpumask printed to a buffer "buf" */
++static ssize_t imc_pmu_cpumask_get_attr(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	cpumask_t *active_mask;
 +
-+PMU_FORMAT_ATTR(event, "config:0-20");
-+static struct attribute *imc_format_attrs[] = {
-+	&format_attr_event.attr,
++	active_mask = &nest_imc_cpumask;
++	return cpumap_print_to_pagebuf(true, buf, active_mask);
++}
++
++static DEVICE_ATTR(cpumask, S_IRUGO, imc_pmu_cpumask_get_attr, NULL);
++
++static struct attribute *imc_pmu_cpumask_attrs[] = {
++	&dev_attr_cpumask.attr,
 +	NULL,
 +};
 +
-+static struct attribute_group imc_format_group = {
-+	.name = "format",
-+	.attrs = imc_format_attrs,
++static struct attribute_group imc_pmu_cpumask_attr_group = {
++	.attrs = imc_pmu_cpumask_attrs,
 +};
 +
-+static int nest_imc_event_init(struct perf_event *event)
++/*
++ * nest_init : Initializes the nest imc engine for the current chip.
++ */
++static void nest_init(int *loc)
 +{
-+	int chip_id;
-+	u32 config = event->attr.config;
-+	struct perchip_nest_info *pcni;
++	int rc;
 +
-+	if (event->attr.type != event->pmu->type)
-+		return -ENOENT;
++	rc = opal_nest_imc_counters_control(NEST_IMC_PRODUCTION_MODE,
++					    NEST_IMC_ENGINE_START, 0, 0);
++	if (rc)
++		loc[smp_processor_id()] = 1;
++}
 +
-+	/* Sampling not supported */
-+	if (event->hw.sample_period)
-+		return -EINVAL;
++static void nest_change_cpu_context(int old_cpu, int new_cpu)
++{
++	int i;
 +
-+	/* unsupported modes and filters */
-+	if (event->attr.exclude_user   ||
-+	    event->attr.exclude_kernel ||
-+	    event->attr.exclude_hv     ||
-+	    event->attr.exclude_idle   ||
-+	    event->attr.exclude_host   ||
-+	    event->attr.exclude_guest)
-+		return -EINVAL;
++	for (i = 0;
++	     (per_nest_pmu_arr[i] != NULL) && (i < IMC_MAX_PMUS); i++)
++		perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
++							old_cpu, new_cpu);
++}
 +
-+	if (event->cpu < 0)
-+		return -EINVAL;
++static int ppc_nest_imc_cpu_online(unsigned int cpu)
++{
++	int nid, fcpu, ncpu;
++	struct cpumask *l_cpumask, tmp_mask;
 +
-+	/* Sanity check for config (event offset) */
-+	if (config > nest_max_offset)
-+		return -EINVAL;
++	/* Fint the cpumask of this node */
++	nid = cpu_to_node(cpu);
++	l_cpumask = cpumask_of_node(nid);
 +
-+	chip_id = topology_physical_package_id(event->cpu);
-+	pcni = &nest_perchip_info[chip_id];
-+	event->hw.event_base = pcni->vbase[config/PAGE_SIZE] +
-+							(config & ~PAGE_MASK);
++	/*
++	 * If any of the cpu from this node is already present in the mask,
++	 * just return, if not, then set this cpu in the mask.
++	 */
++	if (!cpumask_and(&tmp_mask, l_cpumask, &nest_imc_cpumask)) {
++		cpumask_set_cpu(cpu, &nest_imc_cpumask);
++		return 0;
++	}
++
++	fcpu = cpumask_first(l_cpumask);
++	ncpu = cpumask_next(cpu, l_cpumask);
++	if (cpu == fcpu) {
++		if (cpumask_test_and_clear_cpu(ncpu, &nest_imc_cpumask)) {
++			cpumask_set_cpu(cpu, &nest_imc_cpumask);
++			nest_change_cpu_context(ncpu, cpu);
++		}
++	}
 +
 +	return 0;
 +}
 +
-+static void imc_read_counter(struct perf_event *event)
++static int ppc_nest_imc_cpu_offline(unsigned int cpu)
 +{
-+	u64 *addr, data;
++	int nid, target = -1;
++	struct cpumask *l_cpumask;
 +
-+	addr = (u64 *)event->hw.event_base;
-+	data = __be64_to_cpu(*addr);
-+	local64_set(&event->hw.prev_count, data);
-+}
++	/*
++	 * Check in the designated list for this cpu. Dont bother
++	 * if not one of them.
++	 */
++	if (!cpumask_test_and_clear_cpu(cpu, &nest_imc_cpumask))
++		return 0;
 +
-+static void imc_perf_event_update(struct perf_event *event)
-+{
-+	u64 counter_prev, counter_new, final_count, *addr;
++	/*
++	 * Now that this cpu is one of the designated,
++	 * find a next cpu a) which is online and b) in same chip.
++	 */
++	nid = cpu_to_node(cpu);
++	l_cpumask = cpumask_of_node(nid);
++	target = cpumask_next(cpu, l_cpumask);
 +
-+	addr = (u64 *)event->hw.event_base;
-+	counter_prev = local64_read(&event->hw.prev_count);
-+	counter_new = __be64_to_cpu(*addr);
-+	final_count = counter_new - counter_prev;
-+
-+	local64_set(&event->hw.prev_count, counter_new);
-+	local64_add(final_count, &event->count);
-+}
-+
-+static void imc_event_start(struct perf_event *event, int flags)
-+{
-+	imc_read_counter(event);
-+}
-+
-+static void imc_event_stop(struct perf_event *event, int flags)
-+{
-+	if (flags & PERF_EF_UPDATE)
-+		imc_perf_event_update(event);
-+}
-+
-+static int imc_event_add(struct perf_event *event, int flags)
-+{
-+	if (flags & PERF_EF_START)
-+		imc_event_start(event, flags);
-+
++	/*
++	 * Update the cpumask with the target cpu and
++	 * migrate the context if needed
++	 */
++	if (target >= 0 && target <= nr_cpu_ids) {
++		cpumask_set_cpu(target, &nest_imc_cpumask);
++		nest_change_cpu_context(cpu, target);
++	}
 +	return 0;
 +}
 +
-+/* update_pmu_ops : Populate the appropriate operations for "pmu" */
-+static int update_pmu_ops(struct imc_pmu *pmu)
++static int nest_pmu_cpumask_init(void)
 +{
-+	if (!pmu)
-+		return -EINVAL;
++	const struct cpumask *l_cpumask;
++	int cpu, nid;
++	int *cpus_opal_rc;
 +
-+	pmu->pmu.task_ctx_nr = perf_invalid_context;
-+	pmu->pmu.event_init = nest_imc_event_init;
-+	pmu->pmu.add = imc_event_add;
-+	pmu->pmu.del = imc_event_stop;
-+	pmu->pmu.start = imc_event_start;
-+	pmu->pmu.stop = imc_event_stop;
-+	pmu->pmu.read = imc_perf_event_update;
-+	pmu->attr_groups[1] = &imc_format_group;
-+	pmu->pmu.attr_groups = pmu->attr_groups;
++	if (!cpumask_empty(&nest_imc_cpumask))
++		return 0;
 +
++	cpu_notifier_register_begin();
++
++	/*
++	 * Nest PMUs are per-chip counters. So designate a cpu
++	 * from each chip for counter collection.
++	 */
++	for_each_online_node(nid) {
++		l_cpumask = cpumask_of_node(nid);
++
++		/* designate first online cpu in this node */
++		cpu = cpumask_first(l_cpumask);
++		cpumask_set_cpu(cpu, &nest_imc_cpumask);
++	}
++
++	/*
++	 * Memory for OPAL call return value.
++	 */
++	cpus_opal_rc = kzalloc((sizeof(int) * nr_cpu_ids), GFP_KERNEL);
++	if (!cpus_opal_rc)
++		goto fail;
++
++	/* Initialize Nest PMUs in each node using designated cpus */
++	on_each_cpu_mask(&nest_imc_cpumask, (smp_call_func_t)nest_init,
++						(void *)cpus_opal_rc, 1);
++
++	/* Check return value array for any OPAL call failure */
++	for_each_cpu(cpu, &nest_imc_cpumask) {
++		if (cpus_opal_rc[cpu])
++			goto fail;
++	}
++
++	cpuhp_setup_state(CPUHP_AP_PERF_ONLINE,
++			  "POWER_NEST_IMC_ONLINE",
++			  ppc_nest_imc_cpu_online,
++			  ppc_nest_imc_cpu_offline);
++
++	cpu_notifier_register_done();
 +	return 0;
++
++fail:
++	cpu_notifier_register_done();
++	return -ENODEV;
 +}
 +
- /* dev_str_attr : Populate event "name" and string "str" in attribute */
- static struct attribute *dev_str_attr(const char *name, const char *str)
+ static int nest_imc_event_init(struct perf_event *event)
  {
-@@ -83,6 +194,17 @@ int init_imc_pmu(struct imc_events *events, int idx,
+ 	int chip_id;
+@@ -63,7 +222,7 @@ static int nest_imc_event_init(struct perf_event *event)
+ 	chip_id = topology_physical_package_id(event->cpu);
+ 	pcni = &nest_perchip_info[chip_id];
+ 	event->hw.event_base = pcni->vbase[config/PAGE_SIZE] +
+-							(config & ~PAGE_MASK);
++		(config & ~PAGE_MASK);
+ 
+ 	return 0;
+ }
+@@ -123,6 +282,7 @@ static int update_pmu_ops(struct imc_pmu *pmu)
+ 	pmu->pmu.stop = imc_event_stop;
+ 	pmu->pmu.read = imc_perf_event_update;
+ 	pmu->attr_groups[1] = &imc_format_group;
++	pmu->attr_groups[2] = &imc_pmu_cpumask_attr_group;
+ 	pmu->pmu.attr_groups = pmu->attr_groups;
+ 
+ 	return 0;
+@@ -190,6 +350,11 @@ int init_imc_pmu(struct imc_events *events, int idx,
+ {
+ 	int ret = -ENODEV;
+ 
++	/* Add cpumask and register for hotplug notification */
++	ret = nest_pmu_cpumask_init();
++	if (ret)
++		return ret;
++
+ 	ret = update_events_in_group(events, idx, pmu_ptr);
  	if (ret)
  		goto err_free;
- 
-+	ret = update_pmu_ops(pmu_ptr);
-+	if (ret)
-+		goto err_free;
-+
-+	ret = perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
-+	if (ret)
-+		goto err_free;
-+
-+	pr_info("%s performance monitor hardware support registered\n",
-+		pmu_ptr->pmu.name);
-+
- 	return 0;
- 
- err_free:
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index 7870401..a2ca8e4 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -36,6 +36,7 @@ extern struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
- 
- extern int init_imc_pmu(struct imc_events *events,
- 			int idx, struct imc_pmu *pmu_ptr);
-+u64 nest_max_offset;
- 
- static int imc_event_info(char *name, struct imc_events *events)
- {
-@@ -68,8 +69,25 @@ static int imc_event_info_str(struct property *pp, char *name,
- 	return 0;
- }
- 
-+/*
-+ * Updates the maximum offset for an event in the pmu with domain
-+ * "pmu_domain". Right now, only nest domain is supported.
-+ */
-+static void update_max_value(u32 value, int pmu_domain)
-+{
-+	switch (pmu_domain) {
-+	case IMC_DOMAIN_NEST:
-+		if (nest_max_offset < value)
-+			nest_max_offset = value;
-+		break;
-+	default:
-+		/* Unknown domain, return */
-+		return;
-+	}
-+}
-+
- static int imc_event_info_val(char *name, u32 val,
--			      struct imc_events *events)
-+			      struct imc_events *events, int pmu_domain)
- {
- 	int ret;
- 
-@@ -77,6 +95,7 @@ static int imc_event_info_val(char *name, u32 val,
- 	if (ret)
- 		return ret;
- 	sprintf(events->ev_value, "event=0x%x", val);
-+	update_max_value(val, pmu_domain);
- 
- 	return 0;
- }
-@@ -111,7 +130,8 @@ static int set_event_property(struct property *pp, char *event_prop,
- static int imc_events_node_parser(struct device_node *dev,
- 				  struct imc_events *events,
- 				  struct property *event_scale,
--				  struct property *event_unit)
-+				  struct property *event_unit,
-+				  int pmu_domain)
- {
- 	struct property *name, *pp;
- 	char *ev_name;
-@@ -153,7 +173,8 @@ static int imc_events_node_parser(struct device_node *dev,
- 		 */
- 		if (strncmp(pp->name, "reg", 3) == 0) {
- 			of_property_read_u32(dev, pp->name, &val);
--			ret = imc_event_info_val(ev_name, val, &events[idx]);
-+			ret = imc_event_info_val(ev_name, val, &events[idx],
-+				pmu_domain);
- 			if (ret) {
- 				kfree(events[idx].ev_name);
- 				kfree(events[idx].ev_value);
-@@ -322,7 +343,7 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index)
- 	/* Loop through event nodes */
- 	for_each_child_of_node(parent, ev_node) {
- 		ret = imc_events_node_parser(ev_node, &events[idx], scale_pp,
--					     unit_pp);
-+					     unit_pp, pmu_ptr->domain);
- 		if (ret < 0) {
- 			/* Unable to parse this event */
- 			if (ret == -ENOMEM)
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 44d2d84..c615990 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -309,3 +309,4 @@ OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
+ OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+ OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
+ OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
++OPAL_CALL(opal_nest_imc_counters_control,	OPAL_NEST_IMC_COUNTERS_CONTROL);
 -- 
 2.7.4
