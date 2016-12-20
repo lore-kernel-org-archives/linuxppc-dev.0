@@ -1,39 +1,28 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <BATV+f4a4347667329d2fa7ab+4867+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjhcb3BDhzDwTH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 02:32:47 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBKFTIfj007774
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 10:32:45 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27f6s2anry-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 10:32:45 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Tue, 20 Dec 2016 08:32:44 -0700
-Date: Tue, 20 Dec 2016 09:32:39 -0600
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Alistair Popple <apopple@au1.ibm.com>
-Subject: Re: [PATCH v3 3/5] powerpc/mm: add radix__create_section_mapping()
-References: <1481831443-22761-1-git-send-email-arbab@linux.vnet.ibm.com>
- <1481831443-22761-4-git-send-email-arbab@linux.vnet.ibm.com>
- <42967170-8b23-4682-ea44-4df0b1b205fd@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <42967170-8b23-4682-ea44-4df0b1b205fd@gmail.com>
-Message-Id: <20161220153238.mndybchlz3cts7co@arbab-laptop.austin.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjkfF4j0qzDwTb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 04:04:21 +1100 (AEDT)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Chris Riyder <chris.ryder@arm.com>, Kim Phillips <kim.phillips@arm.com>,
+ Markus Trippelsdorf <markus@trippelsdorf.de>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Taeung Song <treeze.taeung@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 14/29] perf annotate: Support jump instruction with target as
+ second operand
+Date: Tue, 20 Dec 2016 14:03:43 -0300
+Message-Id: <20161220170358.4350-15-acme@kernel.org>
+In-Reply-To: <20161220170358.4350-1-acme@kernel.org>
+References: <20161220170358.4350-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,15 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 20, 2016 at 05:28:40PM +1100, Balbir Singh wrote:
->>+#ifdef CONFIG_MEMORY_HOTPLUG
->>+int radix__create_section_mapping(unsigned long start, unsigned long end)
->>+{
->>+	unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
->
->Can we refactor bits from radix_init_pgtable() and reuse?
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
 
-Yes, that's my plan for v4.
+Architectures like PowerPC have jump instructions that includes a target
+address as a second operand. For example, 'bne cr7,0xc0000000000f6154'.
+Add support for such instruction in perf annotate.
 
+objdump o/p:
+  c0000000000f6140:   ld     r9,1032(r31)
+  c0000000000f6144:   cmpdi  cr7,r9,0
+  c0000000000f6148:   bne    cr7,0xc0000000000f6154
+  c0000000000f614c:   ld     r9,2312(r30)
+  c0000000000f6150:   std    r9,1032(r31)
+  c0000000000f6154:   ld     r9,88(r31)
+
+Corresponding perf annotate o/p:
+
+Before patch:
+         ld     r9,1032(r31)
+         cmpdi  cr7,r9,0
+      v  bne    3ffffffffff09f2c
+         ld     r9,2312(r30)
+         std    r9,1032(r31)
+  74:    ld     r9,88(r31)
+
+After patch:
+         ld     r9,1032(r31)
+         cmpdi  cr7,r9,0
+      v  bne    74
+         ld     r9,2312(r30)
+         std    r9,1032(r31)
+  74:    ld     r9,88(r31)
+
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Chris Riyder <chris.ryder@arm.com>
+Cc: Kim Phillips <kim.phillips@arm.com>
+Cc: Markus Trippelsdorf <markus@trippelsdorf.de>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Taeung Song <treeze.taeung@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/1480953407-7605-2-git-send-email-ravi.bangoria@linux.vnet.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/annotate.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
+index ea7e0de4b9c1..590244e5781e 100644
+--- a/tools/perf/util/annotate.c
++++ b/tools/perf/util/annotate.c
+@@ -223,8 +223,12 @@ bool ins__is_call(const struct ins *ins)
+ static int jump__parse(struct arch *arch __maybe_unused, struct ins_operands *ops, struct map *map __maybe_unused)
+ {
+ 	const char *s = strchr(ops->raw, '+');
++	const char *c = strchr(ops->raw, ',');
+ 
+-	ops->target.addr = strtoull(ops->raw, NULL, 16);
++	if (c++ != NULL)
++		ops->target.addr = strtoull(c, NULL, 16);
++	else
++		ops->target.addr = strtoull(ops->raw, NULL, 16);
+ 
+ 	if (s++ != NULL)
+ 		ops->target.offset = strtoull(s, NULL, 16);
 -- 
-Reza Arbab
+2.9.3
