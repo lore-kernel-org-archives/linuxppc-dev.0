@@ -1,20 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjr5c46x2zDwH1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 08:09:56 +1100 (AEDT)
-Date: Wed, 21 Dec 2016 08:09:53 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64: Don't try to use radix MMU under a hypervisor
-Message-ID: <20161220210953.GB19107@fergus.ozlabs.ibm.com>
-References: <20161220114002.GA19107@fergus.ozlabs.ibm.com>
- <87lgvau04h.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjrM91cr2zDwKG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 08:21:41 +1100 (AEDT)
+Date: Tue, 20 Dec 2016 15:21:36 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Miroslav Benes <mbenes@suse.cz>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+Message-ID: <20161220212136.gdy4zof4qlvi6vhi@treble>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
+ <alpine.LSU.2.20.1612191712530.6638@pobox.suse.cz>
+ <20161219172549.mjm4c2midvkumqxb@treble>
+ <20161220093916.GA14894@pathway.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87lgvau04h.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20161220093916.GA14894@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 20, 2016 at 08:19:02PM +0530, Aneesh Kumar K.V wrote:
-> Paul Mackerras <paulus@ozlabs.org> writes:
+On Tue, Dec 20, 2016 at 10:39:16AM +0100, Petr Mladek wrote:
+> On Mon 2016-12-19 11:25:49, Josh Poimboeuf wrote:
+> > 3) probably some kind of runtime NMI stack checking feature to
+> >    complement objtool, along with a lot of burn time to ensure there are
+> >    no issues, particularly in entry code
 > 
-> > Currently, if the kernel is running on a POWER9 processor under a
-> > hypervisor, it will try to use the radix MMU even though it doesn't
-> > have the necessary code to use radix under a hypervisor (it doesn't
-> > negotiate use of radix, and it doesn't do the H_REGISTER_PROC_TBL
-> > hcall).  The result is that the guest kernel will crash when it tries
-> > to turn on the MMU, because it will still actually be using the HPT
-> > MMU, but it won't have set up any SLB or HPT entries.  It does this
-> > because the only thing that the kernel looks at in deciding to use
-> > radix, on any platform, is the ibm,pa-features property on the cpu
-> > device nodes.
-> >
-> > This fixes it by looking for the /chosen/ibm,architecture-vec-5
-> > property, and if it exists, clearing the radix MMU feature bit.
-> > We do this before we decide whether to initialize for radix or HPT.
-> > This property is created by the hypervisor as a result of the guest
-> > calling the ibm,client-architecture-support method to indicate
-> > its capabilities, so it only exists on systems with a hypervisor.
-> > The reason for using this property is that in future, when we
-> > have support for using radix under a hypervisor, we will need
-> > to check this property to see whether the hypervisor agreed to
-> > us using radix.
-> 
-> Hypervisor that doesn't support radix should clear the ibm,pa-features
-> radix feature bit right ? We look at that before setting
-> MMU_FTR_TYPE_RADIX. So how did we end up enabling radix in the above
-> case ?
+> Could you please provide more details about this NMI stack checking?
+> What is it supposed to protect that objtool could not?
+> Will it run regularly or will it be just a random check?
 
-Two points in response:
+save_stack_trace_tsk_reliable(current) would be called periodically from
+an NMI handler, and a warning would be printed if it ever doesn't reach
+the "end" of the stack (i.e., user-mode pt_regs).  Due to the
+performance impact it would probably only be a debug option.
 
-1. The ibm,pa-features property specifies the capabilities of the
-processor, not the platform.  The radix bit would be set on POWER9
-even if the hypervisor doesn't support radix.
+It would verify the special hand-coded areas which objtool isn't smart
+enough to understand, like entry code, ftrace, kprobes, bpf.  It would
+also make sure that objtool itself didn't missing anything.
 
-2. The hypervisor might well support radix, but the kernel definitely
-cannot operate with radix under a hypervisor, because it doesn't put
-the necessary things in the ibm,client-architecture support call, and
-it doesn't call the H_REGISTER_PROC_TBL hcall.  That means that the
-CPU has no way to find our 1st level (process scoped) radix trees even
-if the partition was in radix mode.  Most likely the hypervisor will
-put the partition into HPT mode because the kernel didn't ask for
-radix in the CAS call, but even if the hypervisor put the partition
-into radix mode, it still wouldn't work.
-
-Paul.
+-- 
+Josh
