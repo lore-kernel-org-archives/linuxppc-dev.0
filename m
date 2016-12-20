@@ -1,31 +1,18 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjXms3T2yzDwTT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 20:39:24 +1100 (AEDT)
-Date: Tue, 20 Dec 2016 10:39:16 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Miroslav Benes <mbenes@suse.cz>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 01/15] stacktrace/x86: add function for detecting
- reliable stack traces
-Message-ID: <20161220093916.GA14894@pathway.suse.cz>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <0315b36c08c104d56a4b43537fb300d200418996.1481220077.git.jpoimboe@redhat.com>
- <alpine.LSU.2.20.1612191712530.6638@pobox.suse.cz>
- <20161219172549.mjm4c2midvkumqxb@treble>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjbS9505RzDwPJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 22:40:09 +1100 (AEDT)
+Date: Tue, 20 Dec 2016 22:40:02 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/64: Don't try to use radix MMU under a hypervisor
+Message-ID: <20161220114002.GA19107@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161219172549.mjm4c2midvkumqxb@treble>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,55 +22,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 2016-12-19 11:25:49, Josh Poimboeuf wrote:
-> On Mon, Dec 19, 2016 at 05:25:19PM +0100, Miroslav Benes wrote:
-> > On Thu, 8 Dec 2016, Josh Poimboeuf wrote:
-> > 
-> > > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > > index 215612c..b4a6663 100644
-> > > --- a/arch/x86/Kconfig
-> > > +++ b/arch/x86/Kconfig
-> > > @@ -155,6 +155,7 @@ config X86
-> > >  	select HAVE_PERF_REGS
-> > >  	select HAVE_PERF_USER_STACK_DUMP
-> > >  	select HAVE_REGS_AND_STACK_ACCESS_API
-> > > +	select HAVE_RELIABLE_STACKTRACE		if X86_64 && FRAME_POINTER && STACK_VALIDATION
-> > 
-> > Tests to measure possible performance penalty of frame pointers were done 
-> > by Mel Gorman. The outcome was quite clear. There IS a measurable 
-> > impact. The percentage depends on the workflow but I think it is safe to 
-> > say that FP usually takes 5-10 percents.
-> > 
-> > If my understanding is correct there is no single culprit. Register 
-> > pressure is definitely not a problem. We ran simple benchmarks while 
-> > taking a register away from GCC (RBP or a common one). The impact is a 
-> > combination of more cacheline pressure, more memory accesses and the fact 
-> > that the kernel contains a lot of small functions.
-> > 
-> > Thus, I think that DWARF should be the way to go here.
-> > 
-> > Other than that the patch looks good to me.
-> 
-> I agree that DWARF is generally a good idea, and I'm working toward it.
-> However there's still quite a bit of work to get there.
-> 
-> For this consistency model to work with DWARF on x86, we would need:
-> 
-> 1) a reliable x86 DWARF unwinder with Linus's blessing
-> 2) objtool DWARF support (I'm working on this at the moment)
-> 3) probably some kind of runtime NMI stack checking feature to
->    complement objtool, along with a lot of burn time to ensure there are
->    no issues, particularly in entry code
+Currently, if the kernel is running on a POWER9 processor under a
+hypervisor, it will try to use the radix MMU even though it doesn't
+have the necessary code to use radix under a hypervisor (it doesn't
+negotiate use of radix, and it doesn't do the H_REGISTER_PROC_TBL
+hcall).  The result is that the guest kernel will crash when it tries
+to turn on the MMU, because it will still actually be using the HPT
+MMU, but it won't have set up any SLB or HPT entries.  It does this
+because the only thing that the kernel looks at in deciding to use
+radix, on any platform, is the ibm,pa-features property on the cpu
+device nodes.
 
-Could you please provide more details about this NMI stack checking?
-What is it supposed to protect that objtool could not?
-Will it run regularly or will it be just a random check?
+This fixes it by looking for the /chosen/ibm,architecture-vec-5
+property, and if it exists, clearing the radix MMU feature bit.
+We do this before we decide whether to initialize for radix or HPT.
+This property is created by the hypervisor as a result of the guest
+calling the ibm,client-architecture-support method to indicate
+its capabilities, so it only exists on systems with a hypervisor.
+The reason for using this property is that in future, when we
+have support for using radix under a hypervisor, we will need
+to check this property to see whether the hypervisor agreed to
+us using radix.
 
-The other points are obvious. But I do not know what to
-think about this NMI thing. And so I am curious :-)
+Fixes: 17a3dd2f5fc7 ("powerpc/mm/radix: Use firmware feature to enable Radix MMU")
+Cc: stable@vger.kernel.org # v4.7+
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/mm/init_64.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-
-> 4) port save_stack_trace_tsk_reliable() to work with DWARF
-
-Best Regards,
-Petr
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a000c35..098531d 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -42,6 +42,8 @@
+ #include <linux/memblock.h>
+ #include <linux/hugetlb.h>
+ #include <linux/slab.h>
++#include <linux/of_fdt.h>
++#include <linux/libfdt.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/page.h>
+@@ -344,6 +346,28 @@ static int __init parse_disable_radix(char *p)
+ }
+ early_param("disable_radix", parse_disable_radix);
+ 
++/*
++ * If we're running under a hypervisor, we currently can't do radix
++ * since we don't have the code to do the H_REGISTER_PROC_TBL hcall.
++ * We tell that we're running under a hypervisor by looking for the
++ * /chosen/ibm,architecture-vec-5 property.
++ */
++static void early_check_vec5(void)
++{
++	unsigned long root, chosen;
++	int size;
++	const u8 *vec5;
++
++	root = of_get_flat_dt_root();
++	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
++	if (chosen == -FDT_ERR_NOTFOUND)
++		return;
++	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", &size);
++	if (!vec5)
++		return;
++	cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
++}
++
+ void __init mmu_early_init_devtree(void)
+ {
+ 	/* Disable radix mode based on kernel command line. */
+@@ -351,6 +375,9 @@ void __init mmu_early_init_devtree(void)
+ 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+ 
+ 	if (early_radix_enabled())
++		early_check_vec5();
++
++	if (early_radix_enabled())
+ 		radix__early_init_devtree();
+ 	else
+ 		hash__early_init_devtree();
+-- 
+2.7.4
