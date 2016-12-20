@@ -1,34 +1,34 @@
 Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjSph0MWpzDwPJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:43 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBK6cWn4056613
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:41 -0500
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27erfj6pcc-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjSpk1ltZzDwQ4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:46 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBK6cUfi085320
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:44 -0500
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27evdv365h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:41 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 01:40:44 -0500
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Tue, 20 Dec 2016 16:40:37 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 436CC2BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:34 +1100 (EST)
+ Tue, 20 Dec 2016 16:40:41 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 949112CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:38 +1100 (EST)
 Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uBK6eYvh55771350
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:34 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uBK6ed8856688668
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:39 +1100
 Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
  by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uBK6eXcQ006799
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:33 +1100
+ uBK6ebaF006907
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 17:40:38 +1100
 From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
@@ -40,12 +40,11 @@ Cc: linux-kernel@vger.kernel.org, Hemant Kumar <hemant@linux.vnet.ibm.com>,
  Michael Neuling <mikey@neuling.org>,
  Stewart Smith <stewart@linux.vnet.ibm.com>,
  Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>
-Subject: [PATCH v3 3/6] powerpc/powernv: Detect supported IMC units and its
- events
-Date: Tue, 20 Dec 2016 12:09:43 +0530
+Subject: [PATCH v3 4/6] powerpc/perf: Add event attribute and group to IMC pmus
+Date: Tue, 20 Dec 2016 12:09:44 +0530
 In-Reply-To: <1482215986-11783-1-git-send-email-hemant@linux.vnet.ibm.com>
 References: <1482215986-11783-1-git-send-email-hemant@linux.vnet.ibm.com>
-Message-Id: <1482215986-11783-4-git-send-email-hemant@linux.vnet.ibm.com>
+Message-Id: <1482215986-11783-5-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,26 +54,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Parse device tree to detect IMC units. Traverse through each IMC unit
-node to find supported events and corresponding unit/scale files (if any).
+Device tree IMC driver code parses the IMC units and their events. It
+passes the information to IMC pmu code which is placed in powerpc/perf
+as "imc-pmu.c".
 
-Right now, only nest IMC units are supported.
-The nest IMC unit event node from device tree will contain the offset in
-the reserved memory region to get the counter data for a given
-event. The offsets for the nest events are contained in the "reg"
-property of the event "node".
-
-Kernel code uses this offset as event configuration value.
-
-Device tree parser code also looks for scale/unit property in the event
-node and passes on the value as an event attr for perf interface to use
-in the post processing by the perf tool. Some PMUs may have common scale
-and unit properties which implies that all events supported by this PMU
-inherit the scale and unit properties of the PMU itself. For those
-events, we need to set the common unit and scale values.
-
-For failure to initialize any unit or any event, disable that unit and
-continue setting up the rest of them.
+This patch creates only event attributes and attribute groups for the
+IMC pmus.
 
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -88,358 +73,163 @@ Cc: Daniel Axtens <dja@axtens.net>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal-imc.c | 332 ++++++++++++++++++++++++++++++
- 1 file changed, 332 insertions(+)
+ arch/powerpc/perf/Makefile                |  6 +-
+ arch/powerpc/perf/imc-pmu.c               | 96 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-imc.c | 12 +++-
+ 3 files changed, 111 insertions(+), 3 deletions(-)
+ create mode 100644 arch/powerpc/perf/imc-pmu.c
 
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index ee2ae45..5ee93402 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -32,6 +32,337 @@
- #include <asm/imc-pmu.h>
+diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+index f102d53..6f1d0ac 100644
+--- a/arch/powerpc/perf/Makefile
++++ b/arch/powerpc/perf/Makefile
+@@ -2,10 +2,14 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
  
- struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
+ obj-$(CONFIG_PERF_EVENTS)	+= callchain.o perf_regs.o
+ 
++imc-$(CONFIG_PPC_POWERNV)       += imc-pmu.o
++
+ obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
+ obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
+ 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
+-				   isa207-common.o power8-pmu.o power9-pmu.o
++				   isa207-common.o power8-pmu.o power9-pmu.o \
++				   $(imc-y)
++
+ obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
+ 
+ obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+new file mode 100644
+index 0000000..7b6ce50
+--- /dev/null
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -0,0 +1,96 @@
++/*
++ * Nest Performance Monitor counter support.
++ *
++ * Copyright (C) 2016 Madhavan Srinivasan, IBM Corporation.
++ *	     (C) 2016 Hemant K Shaw, IBM Corporation.
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++#include <linux/perf_event.h>
++#include <linux/slab.h>
++#include <asm/opal.h>
++#include <asm/imc-pmu.h>
++#include <asm/cputhreads.h>
++#include <linux/string.h>
++
++struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
 +struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
 +
-+static int imc_event_info(char *name, struct imc_events *events)
++/* dev_str_attr : Populate event "name" and string "str" in attribute */
++static struct attribute *dev_str_attr(const char *name, const char *str)
 +{
-+	char *buf;
++	struct perf_pmu_events_attr *attr;
 +
-+	/* memory for content */
-+	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
++	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
 +
-+	events->ev_name = name;
-+	events->ev_value = buf;
-+	return 0;
-+}
++	sysfs_attr_init(&attr->attr.attr);
 +
-+static int imc_event_info_str(struct property *pp, char *name,
-+			       struct imc_events *events)
-+{
-+	int ret;
++	attr->event_str = str;
++	attr->attr.attr.name = name;
++	attr->attr.attr.mode = 0444;
++	attr->attr.show = perf_event_sysfs_show;
 +
-+	ret = imc_event_info(name, events);
-+	if (ret)
-+		return ret;
-+
-+	if (!pp->value || (strnlen(pp->value, pp->length) == pp->length) ||
-+	   (pp->length > IMC_MAX_PMU_NAME_LEN))
-+		return -EINVAL;
-+	strncpy(events->ev_value, (const char *)pp->value, pp->length);
-+
-+	return 0;
-+}
-+
-+static int imc_event_info_val(char *name, u32 val,
-+			      struct imc_events *events)
-+{
-+	int ret;
-+
-+	ret = imc_event_info(name, events);
-+	if (ret)
-+		return ret;
-+	sprintf(events->ev_value, "event=0x%x", val);
-+
-+	return 0;
-+}
-+
-+static int set_event_property(struct property *pp, char *event_prop,
-+			      struct imc_events *events, char *ev_name)
-+{
-+	char *buf;
-+	int ret;
-+
-+	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	sprintf(buf, "%s.%s", ev_name, event_prop);
-+	ret = imc_event_info_str(pp, buf, events);
-+	if (ret) {
-+		kfree(events->ev_name);
-+		kfree(events->ev_value);
-+	}
-+
-+	return ret;
++	return &attr->attr.attr;
 +}
 +
 +/*
-+ * imc_events_node_parser: Parse the event node "dev" and assign the parsed
-+ *                         information to event "events".
-+ *
-+ * Parses the "reg" property of this event. "reg" gives us the event offset.
-+ * Also, parse the "scale" and "unit" properties, if any.
++ * update_events_in_group: Update the "events" information in an attr_group
++ *                         and assign the attr_group to the pmu "pmu".
 + */
-+static int imc_events_node_parser(struct device_node *dev,
-+				  struct imc_events *events,
-+				  struct property *event_scale,
-+				  struct property *event_unit)
++static int update_events_in_group(struct imc_events *events,
++				  int idx, struct imc_pmu *pmu)
 +{
-+	struct property *name, *pp;
-+	char *ev_name;
-+	u32 val;
-+	int idx = 0, ret;
-+
-+	if (!dev)
-+		return -EINVAL;
-+
-+	/*
-+	 * Loop through each property of an event node
-+	 */
-+	name = of_find_property(dev, "event-name", NULL);
-+	if (!name)
-+		return -ENODEV;
-+
-+	if (!name->value ||
-+	  (strnlen(name->value, name->length) == name->length) ||
-+	  (name->length > IMC_MAX_PMU_NAME_LEN))
-+		return -EINVAL;
-+
-+	ev_name = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
-+	if (!ev_name)
-+		return -ENOMEM;
-+
-+	strncpy(ev_name, name->value, name->length);
-+
-+	/*
-+	 * Parse each property of this event node "dev". Property "reg" has
-+	 * the offset which is assigned to the event name. Other properties
-+	 * like "scale" and "unit" are assigned to event.scale and event.unit
-+	 * accordingly.
-+	 */
-+	for_each_property_of_node(dev, pp) {
-+		/*
-+		 * If there is an issue in parsing a single property of
-+		 * this event, we just clean up the buffers, but we still
-+		 * continue to parse.
-+		 */
-+		if (strncmp(pp->name, "reg", 3) == 0) {
-+			of_property_read_u32(dev, pp->name, &val);
-+			ret = imc_event_info_val(ev_name, val, &events[idx]);
-+			if (ret) {
-+				kfree(events[idx].ev_name);
-+				kfree(events[idx].ev_value);
-+				continue;
-+			}
-+			/*
-+			 * If the common scale and unit properties available,
-+			 * then, assign them to this event
-+			 */
-+			if (event_scale) {
-+				idx++;
-+				ret = set_event_property(event_scale, "scale",
-+							 &events[idx],
-+							 ev_name);
-+				if (ret)
-+					continue;
-+				idx++;
-+			}
-+			if (event_unit) {
-+				ret = set_event_property(event_unit, "unit",
-+							 &events[idx],
-+							 ev_name);
-+				if (ret)
-+					continue;
-+			}
-+			idx++;
-+		} else if (strncmp(pp->name, "unit", 4) == 0) {
-+			ret = set_event_property(pp, "unit", &events[idx],
-+						 ev_name);
-+			if (ret)
-+				continue;
-+			idx++;
-+		} else if (strncmp(pp->name, "scale", 5) == 0) {
-+			ret = set_event_property(pp, "scale", &events[idx],
-+						 ev_name);
-+			if (ret)
-+				continue;
-+			idx++;
-+		}
-+	}
-+
-+	return idx;
-+}
-+
-+/*
-+ * imc_get_domain : Returns the domain for pmu "pmu_dev".
-+ */
-+int imc_get_domain(struct device_node *pmu_dev)
-+{
-+	if (of_device_is_compatible(pmu_dev, IMC_DTB_NEST_COMPAT))
-+		return IMC_DOMAIN_NEST;
-+	else
-+		return UNKNOWN_DOMAIN;
-+}
-+
-+/*
-+ * get_nr_children : Returns the number of children for a pmu device node.
-+ */
-+static int get_nr_children(struct device_node *pmu_node)
-+{
-+	struct device_node *child;
-+	int i = 0;
-+
-+	for_each_child_of_node(pmu_node, child)
-+		i++;
-+	return i;
-+}
-+
-+/*
-+ * imc_free_events : Cleanup the "events" list having "nr_entries" entries.
-+ */
-+static void imc_free_events(struct imc_events *events, int nr_entries)
-+{
++	struct attribute_group *attr_group;
++	struct attribute **attrs;
 +	int i;
 +
-+	/* Nothing to clean, return */
-+	if (!events)
-+		return;
-+	for (i = 0; i < nr_entries; i++) {
-+		kfree(events[i].ev_name);
-+		kfree(events[i].ev_value);
++	/* Allocate memory for attribute group */
++	attr_group = kzalloc(sizeof(*attr_group), GFP_KERNEL);
++	if (!attr_group)
++		return -ENOMEM;
++
++	/* Allocate memory for attributes */
++	attrs = kzalloc((sizeof(struct attribute *) * (idx + 1)), GFP_KERNEL);
++	if (!attrs) {
++		kfree(attr_group);
++		return -ENOMEM;
 +	}
 +
-+	kfree(events);
++	attr_group->name = "events";
++	attr_group->attrs = attrs;
++	for (i = 0; i < idx; i++, events++) {
++		attrs[i] = dev_str_attr((char *)events->ev_name,
++					(char *)events->ev_value);
++	}
++
++	pmu->attr_groups[0] = attr_group;
++	return 0;
 +}
 +
 +/*
-+ * imc_pmu_create : Takes the parent device which is the pmu unit and a
-+ *                  pmu_index as the inputs.
-+ * Allocates memory for the pmu, sets up its domain (NEST or CORE), and
-+ * allocates memory for the events supported by this pmu. Assigns a name for
-+ * the pmu. Calls imc_events_node_parser() to setup the individual events.
-+ * If everything goes fine, it calls, init_imc_pmu() to setup the pmu device
-+ * and register it.
++ * init_imc_pmu : Setup the IMC pmu device in "pmu_ptr" and its events
++ *                "events".
++ * Setup the cpu mask information for these pmus and setup the state machine
++ * hotplug notifiers as well.
 + */
-+static int imc_pmu_create(struct device_node *parent, int pmu_index)
++int init_imc_pmu(struct imc_events *events, int idx,
++		 struct imc_pmu *pmu_ptr)
 +{
-+	struct device_node *ev_node;
-+	struct imc_events *events;
-+	struct imc_pmu *pmu_ptr;
-+	struct property *pp, *scale_pp, *unit_pp;
-+	char *buf;
-+	int idx = 0, ret, nr_children = 0;
++	int ret = -ENODEV;
 +
-+	if (!parent)
-+		return -EINVAL;
-+
-+	/* memory for pmu */
-+	pmu_ptr = kzalloc(sizeof(struct imc_pmu), GFP_KERNEL);
-+	if (!pmu_ptr)
-+		return -ENOMEM;
-+
-+	pmu_ptr->domain = imc_get_domain(parent);
-+	if (pmu_ptr->domain == UNKNOWN_DOMAIN)
-+		goto free_pmu;
-+
-+	/* Needed for hotplug/migration */
-+	per_nest_pmu_arr[pmu_index] = pmu_ptr;
-+
-+	/*
-+	 * Get the maximum no. of events in this node.
-+	 * Multiply by 3 to account for .scale and .unit properties
-+	 * This number suggests the amount of memory needed to setup the
-+	 * events for this pmu.
-+	 */
-+	nr_children = get_nr_children(parent) * 3;
-+
-+	/* memory for pmu events */
-+	events = kzalloc((sizeof(struct imc_events) * nr_children),
-+			 GFP_KERNEL);
-+	if (!events) {
-+		ret = -ENOMEM;
-+		goto free_pmu;
-+	}
-+
-+	pp = of_find_property(parent, "name", NULL);
-+	if (!pp) {
-+		ret = -ENODEV;
-+		goto free_events;
-+	}
-+
-+	if (!pp->value ||
-+	  (strnlen(pp->value, pp->length) == pp->length) ||
-+	    (pp->length > IMC_MAX_PMU_NAME_LEN)) {
-+		ret = -EINVAL;
-+		goto free_events;
-+	}
-+
-+	buf = kzalloc(IMC_MAX_PMU_NAME_LEN, GFP_KERNEL);
-+	if (!buf) {
-+		ret = -ENOMEM;
-+		goto free_events;
-+	}
-+
-+	/* Save the name to register it later */
-+	sprintf(buf, "nest_%s", (char *)pp->value);
-+	pmu_ptr->pmu.name = (char *)buf;
-+
-+	/*
-+	 * Check if there is a common "scale" and "unit" properties inside
-+	 * the PMU node for all the events supported by this PMU.
-+	 */
-+	scale_pp = of_find_property(parent, "scale", NULL);
-+	unit_pp = of_find_property(parent, "unit", NULL);
-+
-+	/* Loop through event nodes */
-+	for_each_child_of_node(parent, ev_node) {
-+		ret = imc_events_node_parser(ev_node, &events[idx], scale_pp,
-+					     unit_pp);
-+		if (ret < 0) {
-+			/* Unable to parse this event */
-+			if (ret == -ENOMEM)
-+				goto free_events;
-+			continue;
-+		}
-+
-+		/*
-+		 * imc_event_node_parser will return number of
-+		 * event entries created for this. This could include
-+		 * event scale and unit files also.
-+		 */
-+		idx += ret;
-+	}
++	ret = update_events_in_group(events, idx, pmu_ptr);
++	if (ret)
++		goto err_free;
 +
 +	return 0;
 +
-+free_events:
-+	imc_free_events(events, idx);
-+free_pmu:
-+	kfree(pmu_ptr);
++err_free:
++	/* Only free the attr_groups which are dynamically allocated  */
++	if (pmu_ptr->attr_groups[0]) {
++		kfree(pmu_ptr->attr_groups[0]->attrs);
++		kfree(pmu_ptr->attr_groups[0]);
++	}
++
 +	return ret;
 +}
-+
-+/*
-+ * imc_pmu_setup : Setup the IMC PMUs (children of "parent").
-+ */
-+static void imc_pmu_setup(struct device_node *parent)
-+{
-+	struct device_node *child;
-+	int pmu_count = 0, rc = 0;
-+
-+	if (!parent)
-+		return;
-+
-+	/* Setup all the IMC pmus */
-+	for_each_child_of_node(parent, child) {
-+		imc_pmu_create(child, pmu_count);
-+		if (rc)
-+			return;
-+		pmu_count++;
-+	}
-+}
+diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
+index 5ee93402..7870401 100644
+--- a/arch/powerpc/platforms/powernv/opal-imc.c
++++ b/arch/powerpc/platforms/powernv/opal-imc.c
+@@ -31,8 +31,11 @@
+ #include <asm/cputable.h>
+ #include <asm/imc-pmu.h>
  
- static int opal_imc_counters_probe(struct platform_device *pdev)
+-struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
+-struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
++extern struct perchip_nest_info nest_perchip_info[IMC_MAX_CHIPS];
++extern struct imc_pmu *per_nest_pmu_arr[IMC_MAX_PMUS];
++
++extern int init_imc_pmu(struct imc_events *events,
++			int idx, struct imc_pmu *pmu_ptr);
+ 
+ static int imc_event_info(char *name, struct imc_events *events)
  {
-@@ -93,6 +424,7 @@ static int opal_imc_counters_probe(struct platform_device *pdev)
- 		} while (i < (pcni->size / PAGE_SIZE));
+@@ -335,6 +338,11 @@ static int imc_pmu_create(struct device_node *parent, int pmu_index)
+ 		idx += ret;
  	}
  
-+	imc_pmu_setup(imc_dev);
++	ret = init_imc_pmu(events, idx, pmu_ptr);
++	if (ret) {
++		pr_err("IMC PMU %s Register failed\n", pmu_ptr->pmu.name);
++		goto free_events;
++	}
  	return 0;
- err:
- 	return -ENODEV;
+ 
+ free_events:
 -- 
 2.7.4
