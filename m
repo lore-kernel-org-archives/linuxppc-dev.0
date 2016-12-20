@@ -1,36 +1,28 @@
-Return-Path: <BATV+db733a0251b4e1030805+4867+infradead.org+acme@merlin.srs.infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjkfj5nmBzDwVh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 04:04:45 +1100 (AEDT)
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Alexei Starovoitov <ast@fb.com>, Andi Kleen <andi@firstfloor.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Riyder <chris.ryder@arm.com>, Daniel Borkmann <daniel@iogearbox.net>,
- David Ahern <dsahern@gmail.com>, Davidlohr Bueso <dbueso@suse.de>,
- Jiri Olsa <jolsa@redhat.com>, Joe Stringer <joe@ovn.org>,
- Kan Liang <kan.liang@intel.com>, Kim Phillips <kim.phillips@arm.com>,
- Kyle McMartin <kyle@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Markus Trippelsdorf <markus@trippelsdorf.de>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Minchan Kim <minchan@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Taeung Song <treeze.taeung@gmail.com>, Wang Nan <wangnan0@huawei.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [GIT PULL 00/29] perf/core improvements and fixes
-Date: Tue, 20 Dec 2016 14:03:29 -0300
-Message-Id: <20161220170358.4350-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjlH75nHXzDwTS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 04:32:51 +1100 (AEDT)
+Date: Tue, 20 Dec 2016 18:32:46 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 13/15] livepatch: change to a per-task consistency model
+Message-ID: <20161220173246.GC25166@pathway.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <eeda3a8cf83bcbb569db4774c646ad739b8db415.1481220077.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <eeda3a8cf83bcbb569db4774c646ad739b8db415.1481220077.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,323 +32,720 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+On Thu 2016-12-08 12:08:38, Josh Poimboeuf wrote:
+> Change livepatch to use a basic per-task consistency model.  This is the
+> foundation which will eventually enable us to patch those ~10% of
+> security patches which change function or data semantics.  This is the
+> biggest remaining piece needed to make livepatch more generally useful.
+> 
+> [1] https://lkml.kernel.org/r/20141107140458.GA21774@suse.cz
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> ---
+> diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
+> index 6c43f6e..f87e742 100644
+> --- a/Documentation/livepatch/livepatch.txt
+> +++ b/Documentation/livepatch/livepatch.txt
 
-        Please consider pulling, I had most of this queued before your first
-pull req to Linus for 4.10, most are fixes, with 'perf sched timehist --idle'
-as a followup new feature to the 'perf sched timehist' command introduced in
-this window.
-	
-	One other thing that delayed this was the samples/bpf/ switch to
-tools/lib/bpf/ that involved fixing up merge clashes with net.git and also
-to properly test it, after more rounds than antecipated, but all seems ok
-now and would be good to get this merge issues past us ASAP.
+I like the description.
 
-- Arnaldo
+Just a note that we will also need to review the section about
+limitations. But I am not sure that we want to do it in this patch.
+It might open a long discussion on its own.
 
-Test results at the end of this message, as usual.
+> diff --git a/include/linux/livepatch.h b/include/linux/livepatch.h
+> index 1a5a93c..8e06fe5 100644
+> --- a/include/linux/livepatch.h
+> +++ b/include/linux/livepatch.h
+> @@ -28,18 +28,40 @@
+>  
+>  #include <asm/livepatch.h>
+>  
+> +/* task patch states */
+> +#define KLP_UNDEFINED	-1
+> +#define KLP_UNPATCHED	 0
+> +#define KLP_PATCHED	 1
+> +
+>  /**
+>   * struct klp_func - function structure for live patching
+>   * @old_name:	name of the function to be patched
+>   * @new_func:	pointer to the patched function code
+>   * @old_sympos: a hint indicating which symbol position the old function
+>   *		can be found (optional)
+> + * @immediate:  patch the func immediately, bypassing backtrace safety checks
 
-The following changes since commit e7aa8c2eb11ba69b1b69099c3c7bd6be3087b0ba:
+There are more checks possible. I would use the same description
+as for klp_object.
 
-  Merge tag 'docs-4.10' of git://git.lwn.net/linux (2016-12-12 21:58:13 -0800)
 
-are available in the git repository at:
+>   * @old_addr:	the address of the function being patched
+>   * @kobj:	kobject for sysfs resources
+>   * @stack_node:	list node for klp_ops func_stack list
+>   * @old_size:	size of the old function
+>   * @new_size:	size of the new function
+>   * @patched:	the func has been added to the klp_ops list
+> + * @transition:	the func is currently being applied or reverted
+> + *
+> @@ -86,6 +110,7 @@ struct klp_object {
+>   * struct klp_patch - patch structure for live patching
+>   * @mod:	reference to the live patch module
+>   * @objs:	object entries for kernel objects to be patched
+> + * @immediate:  patch all funcs immediately, bypassing safety mechanisms
+>   * @list:	list node for global list of registered patches
+>   * @kobj:	kobject for sysfs resources
+>   * @enabled:	the patch is enabled (but operation may be incomplete)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-20161220
+[...]
 
-for you to fetch changes up to 9899694a7f67714216665b87318eb367e2c5c901:
+> diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+> index fc160c6..22c0c01 100644
+> --- a/kernel/livepatch/core.c
+> +++ b/kernel/livepatch/core.c
+> @@ -424,7 +477,10 @@ static ssize_t enabled_store(struct kobject *kobj, struct kobj_attribute *attr,
+>  		goto err;
+>  	}
+>  
+> -	if (enabled) {
+> +	if (patch == klp_transition_patch) {
+> +		klp_reverse_transition();
+> +		mod_delayed_work(system_wq, &klp_transition_work, 0);
 
-  samples/bpf: Move open_raw_sock to separate header (2016-12-20 12:00:40 -0300)
+I would put this mod_delayed_work() into klp_reverse_transition().
+Also I would put that schedule_delayed_work() into
+klp_try_complete_transition().
 
-----------------------------------------------------------------
-perf/core improvements and fixes:
+If I did not miss anything, it will allow to move the
+klp_transition_work code to transition.c where it logically
+belongs.
 
-New features:
+> +	} else if (enabled) {
+>  		ret = __klp_enable_patch(patch);
+>  		if (ret)
+>  			goto err;
 
-- Introduce 'perf sched timehist --idle', to analyse processes
-  going to/from idle state (Namhyung Kim)
+[...]
 
-Fixes:
+> diff --git a/kernel/livepatch/patch.c b/kernel/livepatch/patch.c
+> index 5efa262..e79ebb5 100644
+> --- a/kernel/livepatch/patch.c
+> +++ b/kernel/livepatch/patch.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/bug.h>
+>  #include <linux/printk.h>
+>  #include "patch.h"
+> +#include "transition.h"
+>  
+>  static LIST_HEAD(klp_ops);
+>  
+> @@ -54,15 +55,53 @@ static void notrace klp_ftrace_handler(unsigned long ip,
+>  {
+>  	struct klp_ops *ops;
+>  	struct klp_func *func;
+> +	int patch_state;
+>  
+>  	ops = container_of(fops, struct klp_ops, fops);
+>  
+>  	rcu_read_lock();
+> +
+>  	func = list_first_or_null_rcu(&ops->func_stack, struct klp_func,
+>  				      stack_node);
+> -	if (WARN_ON_ONCE(!func))
+> +
+> +	if (!func)
+>  		goto unlock;
 
-- Allow 'perf record -u user' to continue when facing races with threads
-  going away after having scanned them via /proc (Jiri Olsa)
+Why do you removed the WARN_ON_ONCE(), please?
 
-- Fix 'perf mem' --all-user/--all-kernel options (Jiri Olsa)
+We still add the function on the stack before registering
+the ftrace handler. Also we unregister the ftrace handler
+before removing the the last entry from the stack.
 
-- Support jumps with multiple arguments (Ravi Bangoria)
+AFAIK, unregister_ftrace_function() calls rcu_synchronize()'
+to make sure that no-one is inside the handler once finished.
+Mirek knows more about it.
 
-- Fix jumps to before the function where they are located (Ravi
-Bangoria)
+If this is not true, we have a problem. For example,
+we call kfree(ops) after unregister_ftrace_function();
 
-- Fix lock-pi help string (Davidlohr Bueso)
+BTW: I thought that this change was really needed because of
+klp_try_complete_transition(). But I think that the WARN
+could and should stay after all. See below.
 
-- Fix build of 'perf trace' in odd systems such as a RHEL PPC one (Jiri Olsa)
 
-- Do not overwrite valid build id in 'perf diff' (Kan Liang)
+> +	/*
+> +	 * Enforce the order of the ops->func_stack and func->transition reads.
+> +	 * The corresponding write barrier is in __klp_enable_patch().
+> +	 */
+> +	smp_rmb();
+> +
+> +	if (unlikely(func->transition)) {
+> +
+> +		/*
+> +		 * Enforce the order of the func->transition and
+> +		 * current->patch_state reads.  Otherwise we could read an
+> +		 * out-of-date task state and pick the wrong function.  The
+> +		 * corresponding write barriers are in klp_init_transition()
+> +		 * and __klp_disable_patch().
+> +		 */
+> +		smp_rmb();
+> +
+> +		patch_state = current->patch_state;
+> +
+> +		WARN_ON_ONCE(patch_state == KLP_UNDEFINED);
+> +
+> +		if (patch_state == KLP_UNPATCHED) {
+> +			/*
+> +			 * Use the previously patched version of the function.
+> +			 * If no previous patches exist, use the original
+> +			 * function.
 
-- Don't throw error for zero length symbols, allowing the use of the TUI
-  in PowerPC, where such symbols became more common recently (Ravi Bangoria)
+s/use the original/continue with the original/  ?
 
-Infrastructure:
+> +			 */
+> +			func = list_entry_rcu(func->stack_node.next,
+> +					      struct klp_func, stack_node);
+> +
+> +			if (&func->stack_node == &ops->func_stack)
+> +				goto unlock;
+> +		}
+> +	}
+> +
+>  	klp_arch_set_pc(regs, (unsigned long)func->new_func);
+>  unlock:
+>  	rcu_read_unlock();
+> @@ -211,3 +250,12 @@ int klp_patch_object(struct klp_object *obj)
+>  
+>  	return 0;
+>  }
+> +
+> +void klp_unpatch_objects(struct klp_patch *patch)
+> +{
+> +	struct klp_object *obj;
+> +
+> +	klp_for_each_object(patch, obj)
+> +		if (obj->patched)
+> +			klp_unpatch_object(obj);
+> +}
+> --- /dev/null
+> +++ b/kernel/livepatch/transition.c
+> @@ -0,0 +1,479 @@
+> +/*
+> + * transition.c - Kernel Live Patching transition functions
+> + *
+> + * Copyright (C) 2015-2016 Josh Poimboeuf <jpoimboe@redhat.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version 2
+> + * of the License, or (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, see <http://www.gnu.org/licenses/>.
+> + */
+> +
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+> +#include <linux/cpu.h>
+> +#include <linux/stacktrace.h>
+> +#include "patch.h"
+> +#include "transition.h"
+> +#include "../sched/sched.h"
 
-- Switch of samples/bpf/ to use tools/lib/bpf, removing libbpf
-  duplication (Joe Stringer)
+Is this acceptable for the scheduler guys? 
 
-- Move headers check into bash script (Jiri Olsa)
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> +#define MAX_STACK_ENTRIES 100
+> +
+> +struct klp_patch *klp_transition_patch;
+> +
+> +static int klp_target_state = KLP_UNDEFINED;
+> +
+> +/* called from copy_process() during fork */
+> +void klp_copy_process(struct task_struct *child)
+> +{
+> +	child->patch_state = current->patch_state;
+> +
+> +	/* TIF_PATCH_PENDING gets copied in setup_thread_stack() */
+> +}
+> +
+> +/*
+> + * klp_update_patch_state() - change the patched state of a task
+> + * @task:	The task to change
+> + *
+> + * Switches the patched state of the task to the set of functions in the target
+> + * patch state.
+> + */
 
-----------------------------------------------------------------
-Arnaldo Carvalho de Melo (3):
-      perf tools: Remove some needless __maybe_unused
-      samples/bpf: Make perf_event_read() static
-      samples/bpf: Be consistent with bpf_load_program bpf_insn parameter
+Please, add here some warning. Something like:
 
-Davidlohr Bueso (1):
-      perf bench futex: Fix lock-pi help string
+ * This function must never be called in parallel with
+ * klp_ftrace_handler(). Otherwise, the handler might do random
+ * decisions and break the consistency.
+ *
+ * By other words, call this function only by the @task itself
+ * or make sure that it is not running.
 
-Jiri Olsa (7):
-      perf tools: Move headers check into bash script
-      perf mem: Fix --all-user/--all-kernel options
-      perf evsel: Use variable instead of repeating lengthy FD macro
-      perf thread_map: Add thread_map__remove function
-      perf evsel: Allow to ignore missing pid
-      perf record: Force ignore_missing_thread for uid option
-      perf trace: Check if MAP_32BIT is defined (again)
+> +void klp_update_patch_state(struct task_struct *task)
+> +{
+> +	/*
+> +	 * The synchronize_rcu() call in klp_try_complete_transition() ensures
+> +	 * this critical section completes before the global patch transition
+> +	 * is considered complete so we don't have spurious patch_state updates
+> +	 * afterwards.
+> +	 */
+> +	rcu_read_lock();
+> +
+> +	/*
+> +	 * This test_and_clear_tsk_thread_flag() call also serves as a read
+> +	 * barrier to enforce the order of the TIF_PATCH_PENDING and
+> +	 * klp_target_state reads.  The corresponding write barriers are in
+> +	 * __klp_disable_patch() and klp_reverse_transition().
+> +	 */
+> +	if (test_and_clear_tsk_thread_flag(task, TIF_PATCH_PENDING))
+> +		task->patch_state = READ_ONCE(klp_target_state);
+> +
+> +	rcu_read_unlock();
+> +}
+> +
+> +/*
+> + * Initialize the global target patch state and all tasks to the initial patch
+> + * state, and initialize all function transition states to true in preparation
+> + * for patching or unpatching.
+> + */
+> +void klp_init_transition(struct klp_patch *patch, int state)
+> +{
+> +	struct task_struct *g, *task;
+> +	unsigned int cpu;
+> +	struct klp_object *obj;
+> +	struct klp_func *func;
+> +	int initial_state = !state;
+> +
+> +	WARN_ON_ONCE(klp_target_state != KLP_UNDEFINED);
+> +
+> +	klp_transition_patch = patch;
+> +
+> +	/*
+> +	 * Set the global target patch state which tasks will switch to.  This
+> +	 * has no effect until the TIF_PATCH_PENDING flags get set later.
+> +	 */
+> +	klp_target_state = state;
+> +
+> +	/*
+> +	 * If the patch can be applied or reverted immediately, skip the
+> +	 * per-task transitions.
+> +	 */
+> +	if (patch->immediate)
+> +		return;
+> +
+> +	/*
+> +	 * Initialize all tasks to the initial patch state to prepare them for
+> +	 * switching to the target state.
+> +	 */
+> +	read_lock(&tasklist_lock);
+> +	for_each_process_thread(g, task) {
+> +		WARN_ON_ONCE(task->patch_state != KLP_UNDEFINED);
+> +		task->patch_state = initial_state;
+> +	}
+> +	read_unlock(&tasklist_lock);
+> +
+> +	/*
+> +	 * Ditto for the idle "swapper" tasks.
+> +	 */
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu) {
+> +		task = idle_task(cpu);
+> +		WARN_ON_ONCE(task->patch_state != KLP_UNDEFINED);
+> +		task->patch_state = initial_state;
+> +	}
+> +	put_online_cpus();
 
-Joe Stringer (8):
-      tools lib bpf: Sync {tools,}/include/uapi/linux/bpf.h
-      tools lib bpf: use __u32 from linux/types.h
-      tools lib bpf: Add flags to bpf_create_map()
-      samples/bpf: Make samples more libbpf-centric
-      samples/bpf: Switch over to libbpf
-      tools lib bpf: Add bpf_prog_{attach,detach}
-      samples/bpf: Remove perf_event_open() declaration
-      samples/bpf: Move open_raw_sock to separate header
+We allow to add/remove CPUs here. I am afraid that we will also need
+to add a cpu coming/going handler that will set the task->patch_state
+the right way. We must not set the klp_target_state until all ftrace
+handlers are ready.
 
-Kan Liang (1):
-      perf diff: Do not overwrite valid build id
+> +	/*
+> +	 * Enforce the order of the task->patch_state initializations and the
+> +	 * func->transition updates to ensure that, in the enable path,
+> +	 * klp_ftrace_handler() doesn't see a func in transition with a
+> +	 * task->patch_state of KLP_UNDEFINED.
+> +	 */
+> +	smp_wmb();
+> +
+> +	/*
+> +	 * Set the func transition states so klp_ftrace_handler() will know to
+> +	 * switch to the transition logic.
+> +	 *
+> +	 * When patching, the funcs aren't yet in the func_stack and will be
+> +	 * made visible to the ftrace handler shortly by the calls to
+> +	 * klp_patch_object().
+> +	 *
+> +	 * When unpatching, the funcs are already in the func_stack and so are
+> +	 * already visible to the ftrace handler.
+> +	 */
+> +	klp_for_each_object(patch, obj)
+> +		klp_for_each_func(obj, func)
+> +			func->transition = true;
+> +}
+> +
+> +/*
+> + * Start the transition to the specified target patch state so tasks can begin
+> + * switching to it.
+> + */
+> +void klp_start_transition(void)
+> +{
+> +	struct task_struct *g, *task;
+> +	unsigned int cpu;
+> +
+> +	WARN_ON_ONCE(klp_target_state == KLP_UNDEFINED);
+> +
+> +	pr_notice("'%s': %s...\n", klp_transition_patch->mod->name,
+> +		  klp_target_state == KLP_PATCHED ? "patching" : "unpatching");
+> +
+> +	/*
+> +	 * If the patch can be applied or reverted immediately, skip the
+> +	 * per-task transitions.
+> +	 */
+> +	if (klp_transition_patch->immediate)
+> +		return;
+> +
+> +	/*
+> +	 * Mark all normal tasks as needing a patch state update.  As they pass
+> +	 * through the syscall barrier they'll switch over to the target state
+> +	 * (unless we switch them in klp_try_complete_transition() first).
+> +	 */
+> +	read_lock(&tasklist_lock);
+> +	for_each_process_thread(g, task)
+> +		set_tsk_thread_flag(task, TIF_PATCH_PENDING);
 
-Namhyung Kim (6):
-      perf sched timehist: Split is_idle_sample()
-      perf sched timehist: Introduce struct idle_time_data
-      perf sched timehist: Save callchain when entering idle
-      perf sched timehist: Skip non-idle events when necessary
-      perf sched timehist: Add -I/--idle-hist option
-      perf sched timehist: Show callchains for idle stat
+This is called also from klp_reverse_transition(). We should set it
+only when the task need migration. Also we should clear it when
+the task is in the right state already.
 
-Ravi Bangoria (3):
-      perf annotate: Support jump instruction with target as second operand
-      perf annotate: Fix jump target outside of function address range
-      perf annotate: Don't throw error for zero length symbols
+It is not only optimization. It actually solves a race between
+klp_complete_transition() and klp_update_patch_state(), see below.
 
- samples/bpf/Makefile                              |  70 +--
- samples/bpf/README.rst                            |   4 +-
- samples/bpf/bpf_load.c                            |  21 +-
- samples/bpf/bpf_load.h                            |   3 +
- samples/bpf/fds_example.c                         |  13 +-
- samples/bpf/lathist_user.c                        |   2 +-
- samples/bpf/libbpf.c                              | 176 -------
- samples/bpf/libbpf.h                              |  28 +-
- samples/bpf/lwt_len_hist_user.c                   |   6 +-
- samples/bpf/offwaketime_user.c                    |   8 +-
- samples/bpf/sampleip_user.c                       |   7 +-
- samples/bpf/sock_example.c                        |  14 +-
- samples/bpf/sock_example.h                        |  35 ++
- samples/bpf/sockex1_user.c                        |   7 +-
- samples/bpf/sockex2_user.c                        |   5 +-
- samples/bpf/sockex3_user.c                        |   5 +-
- samples/bpf/spintest_user.c                       |   8 +-
- samples/bpf/tc_l2_redirect_user.c                 |   4 +-
- samples/bpf/test_cgrp2_array_pin.c                |   4 +-
- samples/bpf/test_cgrp2_attach.c                   |  12 +-
- samples/bpf/test_cgrp2_attach2.c                  |   8 +-
- samples/bpf/test_cgrp2_sock.c                     |   7 +-
- samples/bpf/test_current_task_under_cgroup_user.c |   8 +-
- samples/bpf/test_lru_dist.c                       |  32 +-
- samples/bpf/test_probe_write_user_user.c          |   2 +-
- samples/bpf/trace_event_user.c                    |  23 +-
- samples/bpf/trace_output_user.c                   |   7 +-
- samples/bpf/tracex2_user.c                        |  10 +-
- samples/bpf/tracex3_user.c                        |   4 +-
- samples/bpf/tracex4_user.c                        |   4 +-
- samples/bpf/tracex6_user.c                        |   5 +-
- samples/bpf/xdp1_user.c                           |   2 +-
- samples/bpf/xdp_tx_iptunnel_user.c                |   6 +-
- tools/include/uapi/linux/bpf.h                    | 593 +++++++++++++---------
- tools/lib/bpf/bpf.c                               |  30 +-
- tools/lib/bpf/bpf.h                               |   9 +-
- tools/lib/bpf/libbpf.c                            |   3 +-
- tools/perf/Documentation/perf-sched.txt           |   4 +
- tools/perf/Makefile.perf                          |  94 +---
- tools/perf/bench/futex-lock-pi.c                  |   2 +-
- tools/perf/builtin-c2c.c                          |  13 +-
- tools/perf/builtin-mem.c                          |   4 +-
- tools/perf/builtin-record.c                       |   3 +
- tools/perf/builtin-report.c                       |   2 +-
- tools/perf/builtin-sched.c                        | 261 ++++++++--
- tools/perf/builtin-stat.c                         |   6 +-
- tools/perf/check-headers.sh                       |  59 +++
- tools/perf/perf.h                                 |   1 +
- tools/perf/tests/builtin-test.c                   |   4 +
- tools/perf/tests/tests.h                          |   1 +
- tools/perf/tests/thread-map.c                     |  44 ++
- tools/perf/trace/beauty/mmap.c                    |   2 +
- tools/perf/ui/browsers/annotate.c                 |   5 +-
- tools/perf/util/annotate.c                        |  23 +-
- tools/perf/util/annotate.h                        |   5 +-
- tools/perf/util/evsel.c                           |  61 ++-
- tools/perf/util/evsel.h                           |   1 +
- tools/perf/util/symbol.c                          |   3 +-
- tools/perf/util/thread_map.c                      |  22 +
- tools/perf/util/thread_map.h                      |   1 +
- 60 files changed, 1075 insertions(+), 731 deletions(-)
- delete mode 100644 samples/bpf/libbpf.c
- create mode 100644 samples/bpf/sock_example.h
- create mode 100755 tools/perf/check-headers.sh
 
-  [root@jouet ~]# uname -a
-  Linux jouet 4.9.0+ #1 SMP Mon Dec 19 15:44:52 BRT 2016 x86_64 x86_64 x86_64 GNU/Linux
-  [root@jouet ~]# perf test
-   1: vmlinux symtab matches kallsyms            : Ok
-   2: Detect openat syscall event                : Ok
-   3: Detect openat syscall event on all cpus    : Ok
-   4: Read samples using the mmap interface      : Ok
-   5: Parse event definition strings             : Ok
-   6: PERF_RECORD_* events & perf_sample fields  : Ok
-   7: Parse perf pmu format                      : Ok
-   8: DSO data read                              : Ok
-   9: DSO data cache                             : Ok
-  10: DSO data reopen                            : Ok
-  11: Roundtrip evsel->name                      : Ok
-  12: Parse sched tracepoints fields             : Ok
-  13: syscalls:sys_enter_openat event fields     : Ok
-  14: Setup struct perf_event_attr               : Ok
-  15: Match and link multiple hists              : Ok
-  16: 'import perf' in python                    : Ok
-  17: Breakpoint overflow signal handler         : Ok
-  18: Breakpoint overflow sampling               : Ok
-  19: Number of exit events of a simple workload : Ok
-  20: Software clock events period values        : Ok
-  21: Object code reading                        : Ok
-  22: Sample parsing                             : Ok
-  23: Use a dummy software event to keep tracking: Ok
-  24: Parse with no sample_id_all bit set        : Ok
-  25: Filter hist entries                        : Ok
-  26: Lookup mmap thread                         : Ok
-  27: Share thread mg                            : Ok
-  28: Sort output of hist entries                : Ok
-  29: Cumulate child hist entries                : Ok
-  30: Track with sched_switch                    : Ok
-  31: Filter fds with revents mask in a fdarray  : Ok
-  32: Add fd to a fdarray, making it autogrow    : Ok
-  33: kmod_path__parse                           : Ok
-  34: Thread map                                 : Ok
-  35: LLVM search and compile                    :
-  35.1: Basic BPF llvm compile                    : Ok
-  35.2: kbuild searching                          : Ok
-  35.3: Compile source for BPF prologue generation: Ok
-  35.4: Compile source for BPF relocation         : Ok
-  36: Session topology                           : Ok
-  37: BPF filter                                 :
-  37.1: Basic BPF filtering                      : Ok
-  37.2: BPF prologue generation                  : Ok
-  37.3: BPF relocation checker                   : Ok
-  38: Synthesize thread map                      : Ok
-  39: Remove thread map                          : Ok
-  40: Synthesize cpu map                         : Ok
-  41: Synthesize stat config                     : Ok
-  42: Synthesize stat                            : Ok
-  43: Synthesize stat round                      : Ok
-  44: Synthesize attr update                     : Ok
-  45: Event times                                : Ok
-  46: Read backward ring buffer                  : Ok
-  47: Print cpu map                              : Ok
-  48: Probe SDT events                           : Ok
-  49: is_printable_array                         : Ok
-  50: Print bitmap                               : Ok
-  51: perf hooks                                 : Ok
-  52: builtin clang support                      : Skip (not compiled in)
-  53: x86 rdpmc                                  : Ok
-  54: Convert perf time to TSC                   : Ok
-  55: DWARF unwind                               : Ok
-  56: x86 instruction decoder - new instructions : Ok
-  57: Intel cqm nmi context read                 : Skip
-  [root@jouet ~]# 
+> +	read_unlock(&tasklist_lock);
+> +
+> +	/*
+> +	 * Ditto for the idle "swapper" tasks, though they never cross the
+> +	 * syscall barrier.  Instead they switch over in cpu_idle_loop().
+> +	 */
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu)
+> +		set_tsk_thread_flag(idle_task(cpu), TIF_PATCH_PENDING);
+> +	put_online_cpus();
 
-  # time dm
-   1 alpine:3.4: Ok
-   2 android-ndk:r12b-arm: Ok
-   3 archlinux:latest: Ok
-   4 centos:5: Ok
-   5 centos:6: Ok
-   6 centos:7: Ok
-   7 debian:7: Ok
-   8 debian:8: Ok
-   9 debian:experimental: Ok
-  10 debian:experimental-x-mips64: Ok
-  11 fedora:20: Ok
-  12 fedora:21: Ok
-  13 fedora:22: Ok
-  14 fedora:23: Ok
-  15 fedora:24: Ok
-  16 fedora:24-x-ARC-uClibc: Ok
-  17 fedora:25: Ok
-  18 fedora:rawhide: Ok
-  19 mageia:5: Ok
-  20 opensuse:13.2: Ok
-  21 opensuse:42.1: Ok
-  22 opensuse:tumbleweed: Ok
-  23 ubuntu:12.04.5: Ok
-  24 ubuntu:14.04.4-x-linaro-arm64: Ok
-  25 ubuntu:16.04: Ok
-  26 ubuntu:16.04-x-arm: Ok
-  27 ubuntu:16.04-x-arm64: Ok
-  28 ubuntu:16.04-x-powerpc: Ok
-  29 ubuntu:16.04-x-powerpc64: Ok
-  30 ubuntu:16.04-x-powerpc64el: Ok
-  31 ubuntu:16.04-x-s390: Ok
-  32 ubuntu:16.10: Ok
-  #
+Also this stage need to be somehow handled by CPU coming/going
+handlers.
 
-  $ make -C tools/perf build-test
-  make: Entering directory `/home/acme/git/linux/tools/perf'
-  - tarpkg: ./tests/perf-targz-src-pkg .
-                make_minimal_O: cd . && make NO_LIBPERL=1 NO_LIBPYTHON=1 NO_NEWT=1 NO_GTK2=1 NO_DEMANGLE=1 NO_LIBELF=1 NO_LIBUNWIND=1 NO_BACKTRACE=1 NO_LIBNUMA=1 NO_LIBAUDIT=1 NO_LIBBIONIC=1 NO_LIBDW_DWARF_UNWIND=1 NO_AUXTRACE=1 NO_LIBBPF=1 NO_LIBCRYPTO=1 NO_SDT=1 NO_JVMTI=1
-              make_clean_all_O: cd . && make clean all
-            make_no_demangle_O: cd . && make NO_DEMANGLE=1
-            make_no_auxtrace_O: cd . && make NO_AUXTRACE=1
-         make_with_clangllvm_O: cd . && make LIBCLANGLLVM=1
-                 make_static_O: cd . && make LDFLAGS=-static
-                 make_cscope_O: cd . && make cscope
-                  make_no_ui_O: cd . && make NO_NEWT=1 NO_SLANG=1 NO_GTK2=1
-   make_install_prefix_slash_O: cd . && make install prefix=/tmp/krava/
-       make_util_pmu_bison_o_O: cd . && make util/pmu-bison.o
-        make_with_babeltrace_O: cd . && make LIBBABELTRACE=1
-             make_no_libnuma_O: cd . && make NO_LIBNUMA=1
-                make_no_gtk2_O: cd . && make NO_GTK2=1
-           make_no_libbionic_O: cd . && make NO_LIBBIONIC=1
-                  make_debug_O: cd . && make DEBUG=1
-                   make_tags_O: cd . && make tags
-             make_no_libperl_O: cd . && make NO_LIBPERL=1
-               make_no_slang_O: cd . && make NO_SLANG=1
-             make_util_map_o_O: cd . && make util/map.o
-           make_no_backtrace_O: cd . && make NO_BACKTRACE=1
-                    make_doc_O: cd . && make doc
-         make_install_prefix_O: cd . && make install prefix=/tmp/krava
-             make_no_scripts_O: cd . && make NO_LIBPYTHON=1 NO_LIBPERL=1
-                 make_perf_o_O: cd . && make perf.o
-            make_install_bin_O: cd . && make install-bin
-              make_no_libbpf_O: cd . && make NO_LIBBPF=1
-           make_no_libunwind_O: cd . && make NO_LIBUNWIND=1
-                   make_help_O: cd . && make help
-            make_no_libaudit_O: cd . && make NO_LIBAUDIT=1
-              make_no_libelf_O: cd . && make NO_LIBELF=1
-           make_no_libpython_O: cd . && make NO_LIBPYTHON=1
-  make_no_libdw_dwarf_unwind_O: cd . && make NO_LIBDW_DWARF_UNWIND=1
-                make_no_newt_O: cd . && make NO_NEWT=1
-                   make_pure_O: cd . && make
-                make_install_O: cd . && make install
-  OK
-  make: Leaving directory `/home/acme/git/linux/tools/perf'
-  $
+
+> +}
+> +
+> +/*
+> + * The transition to the target patch state is complete.  Clean up the data
+> + * structures.
+> + */
+> +void klp_complete_transition(void)
+> +{
+> +	struct klp_object *obj;
+> +	struct klp_func *func;
+> +	struct task_struct *g, *task;
+> +	unsigned int cpu;
+> +
+> +	if (klp_transition_patch->immediate)
+> +		goto done;
+> +
+> +	klp_for_each_object(klp_transition_patch, obj)
+> +		klp_for_each_func(obj, func)
+> +			func->transition = false;
+
+We should call rcu_synchronize() here. Otherwise, there
+might be a race, see below:
+
+CPU1					CPU2
+
+klp_ftrace_handler()
+  if (unlikely(func->transition))
+	// still true
+
+					klp_complete_transition()
+					  func->transition = false;
+					  task->patch_state =
+					      KLP_UNDEFINED;
+
+     patch_state = current->patch_state;
+
+     WARN_ON(patch_state == KLP_UNDEFINED);
+
+BANG!: We print the warning.
+
+Note that that smp_wmb() is enough in klp_init_transition()
+but it is not enough here. We need to wait longer once
+someone might be inside the if (true) code.
+
+> +	read_lock(&tasklist_lock);
+> +	for_each_process_thread(g, task) {
+> +		clear_tsk_thread_flag(task, TIF_PATCH_PENDING);
+> +		task->patch_state = KLP_UNDEFINED;
+> +	}
+> +	read_unlock(&tasklist_lock);
+> +
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu) {
+> +		task = idle_task(cpu);
+> +		clear_tsk_thread_flag(task, TIF_PATCH_PENDING);
+
+If TIF_PATCH_PENDING flag is set here it means that
+klp_update_patch_state() might get triggered and it might
+put wrong value into task->patch_state.
+
+We must make sure that all task have this cleared before
+calling this function. This is another reason why
+klp_init_transition() should set the flag only when
+transition is needed.
+
+We should only check the state here.
+
+It still might make sense to clear it when it is set wrongly.
+But the question is if it is really safe to continue. I am
+afraid that it is not. It would mean that the consistency
+model is broken and we are in strange state.
+
+
+> +		task->patch_state = KLP_UNDEFINED;
+> +	}
+> +	put_online_cpus();
+> +
+> +done:
+> +	klp_target_state = KLP_UNDEFINED;
+> +	klp_transition_patch = NULL;
+> +}
+
+[...]
+
+> +
+> +/*
+> + * Try to switch all remaining tasks to the target patch state by walking the
+> + * stacks of sleeping tasks and looking for any to-be-patched or
+> + * to-be-unpatched functions.  If such functions are found, the task can't be
+> + * switched yet.
+> + *
+> + * If any tasks are still stuck in the initial patch state, schedule a retry.
+> + */
+> +bool klp_try_complete_transition(void)
+> +{
+> +	unsigned int cpu;
+> +	struct task_struct *g, *task;
+> +	bool complete = true;
+> +
+> +	WARN_ON_ONCE(klp_target_state == KLP_UNDEFINED);
+> +
+> +	/*
+> +	 * If the patch can be applied or reverted immediately, skip the
+> +	 * per-task transitions.
+> +	 */
+> +	if (klp_transition_patch->immediate)
+> +		goto success;
+> +
+> +	/*
+> +	 * Try to switch the tasks to the target patch state by walking their
+> +	 * stacks and looking for any to-be-patched or to-be-unpatched
+> +	 * functions.  If such functions are found on a stack, or if the stack
+> +	 * is deemed unreliable, the task can't be switched yet.
+> +	 *
+> +	 * Usually this will transition most (or all) of the tasks on a system
+> +	 * unless the patch includes changes to a very common function.
+> +	 */
+> +	read_lock(&tasklist_lock);
+> +	for_each_process_thread(g, task)
+> +		if (!klp_try_switch_task(task))
+> +			complete = false;
+> +	read_unlock(&tasklist_lock);
+> +
+> +	/*
+> +	 * Ditto for the idle "swapper" tasks.
+> +	 */
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu)
+> +		if (!klp_try_switch_task(idle_task(cpu)))
+> +			complete = false;
+> +	put_online_cpus();
+> +
+> +	/*
+> +	 * Some tasks weren't able to be switched over.  Try again later and/or
+> +	 * wait for other methods like syscall barrier switching.
+> +	 */
+> +	if (!complete)
+> +		return false;
+> +
+> +success:
+> +
+> +	/*
+> +	 * When unpatching, all tasks have transitioned to KLP_UNPATCHED so we
+> +	 * can now remove the new functions from the func_stack.
+> +	 */
+> +	if (klp_target_state == KLP_UNPATCHED)
+> +		klp_unpatch_objects(klp_transition_patch);
+> +
+> +	/*
+> +	 * Wait for all RCU read-side critical sections to complete.
+> +	 *
+> +	 * This has two purposes:
+> +	 *
+> +	 * 1) Ensure all existing critical sections in klp_update_patch_state()
+> +	 *    complete, so task->patch_state won't be unexpectedly updated
+> +	 *    later.
+
+We should not be here if anyone still might be in klp_update_patch_state().
+
+> +	 *
+> +	 * 2) When unpatching, don't allow any existing instances of
+> +	 *    klp_ftrace_handler() to access any obsolete funcs before we reset
+> +	 *    the func transition states to false.  Otherwise the handler may
+> +	 *    see the deleted "new" func, see that it's not in transition, and
+> +	 *    wrongly pick the new version of the function.
+> +	 */
+
+This makes sense but it too me long time to understand. I wonder if
+this might be better:
+
+	/*
+	 * Make sure that the function is removed from ops->func_stack
+	 * before we clear func->transition. Otherwise the handler may
+	 * pick the wrong version.
+	 */
+
+And I would call this only when the patch is being removed
+
+	if (klp_target_state = KLP_UNPATCHED)
+		synchronize_rcu();
+
+I think that this was the reason to remove WARN_ON_ONCE(!func)
+in klp_ftrace_handler(). But this is not related. If this was
+the last entry in the list, we removed the ftrace_handler
+before removing the last entry. And unregister_ftrace_function()
+calls rcu_synchronize() to prevent calling the handler later.
+
+
+> +	synchronize_rcu();
+> +
+> +	pr_notice("'%s': %s complete\n", klp_transition_patch->mod->name,
+> +		  klp_target_state == KLP_PATCHED ? "patching" : "unpatching");
+> +
+> +	/* we're done, now cleanup the data structures */
+> +	klp_complete_transition();
+> +
+> +	return true;
+> +}
+> +
+> +/*
+> + * This function can be called in the middle of an existing transition to
+> + * reverse the direction of the target patch state.  This can be done to
+> + * effectively cancel an existing enable or disable operation if there are any
+> + * tasks which are stuck in the initial patch state.
+> + */
+> +void klp_reverse_transition(void)
+> +{
+> +	klp_transition_patch->enabled = !klp_transition_patch->enabled;
+> +
+> +	klp_target_state = !klp_target_state;
+> +
+> +	/*
+> +	 * Enforce the order of the write to klp_target_state above and the
+> +	 * TIF_PATCH_PENDING writes in klp_start_transition() to ensure that
+> +	 * klp_update_patch_state() doesn't set a wrong task->patch_state.
+> +	 */
+> +	smp_wmb();
+
+I would call rcu_synchronize() here to make sure that
+klp_update_patch_state() calls will not set
+an outdated task->patch_state.
+
+Note that smp_wmb() is not enough. We do not check TIF_PATCH_PENDING
+in klp_try_switch_task(). There is a tiny race:
+
+CPU1					CPU2
+
+klp_update_patch_state()
+
+	if (test_and clear(task, TIF)
+	     READ_ONCE(klp_target_state);
+
+					mutex_lock(klp_lock);
+
+					klp_reverse_transition()
+					  klp_target_state =
+					      !klp_target_state;
+
+					  klp_start_transition()
+
+					mutex_unlock(klp_lock);
+
+					 <switch to another process>
+
+					 klp_transition_work_fn()
+					   mutex_lock(klp_lock);
+					   klp_try_complete_transition()
+					     klp_try_switch_task()
+					       if (task->patch_state ==
+						   klp_target_state)
+						  return true;
+
+	    task->patch_state = <outdated_value>;
+
+	 klp_ftrace_handler()
+
+BANG: klp_ftrace_handler() will use wrong implementation according
+      to the outdated task->patch_state. At the same time,
+      klp_transition() is not blocked by the task because it thinks
+      that it has a correct state.
+
+> +
+> +	klp_start_transition();
+> +}
+> +
+> diff --git a/samples/livepatch/livepatch-sample.c b/samples/livepatch/livepatch-sample.c
+> index e34f871..bb61c65 100644
+> --- a/samples/livepatch/livepatch-sample.c
+> +++ b/samples/livepatch/livepatch-sample.c
+> @@ -17,6 +17,8 @@
+>   * along with this program; if not, see <http://www.gnu.org/licenses/>.
+>   */
+>  
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+>  #include <linux/livepatch.h>
+> @@ -69,6 +71,11 @@ static int livepatch_init(void)
+>  {
+>  	int ret;
+>  
+> +	if (!klp_have_reliable_stack() && !patch.immediate) {
+> +		pr_notice("disabling consistency model!\n");
+> +		patch.immediate = true;
+> +	}
+
+I am scared to have this in the sample module. It makes sense
+to use the consistency model even for immediate patches because
+it allows to remove them. But this must not be used for patches
+that really require the consistency model. We should add
+a big fat warning at least.
+
+> +
+>  	ret = klp_register_patch(&patch);
+>  	if (ret)
+>  		return ret;
+
+I like the patch. All the problems that I found look solvable.
+I think that we are on the right way.
+
+Best Regards,
+Petr
