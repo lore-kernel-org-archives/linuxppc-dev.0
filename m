@@ -1,41 +1,20 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wj0-x242.google.com (mail-wj0-x242.google.com
- [IPv6:2a00:1450:400c:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjnYW0S6gzDwWH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 06:15:27 +1100 (AEDT)
-Received: by mail-wj0-x242.google.com with SMTP id j10so29087030wjb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 11:15:26 -0800 (PST)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Tue, 20 Dec 2016 20:15:20 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Alexei Starovoitov <ast@fb.com>, Andi Kleen <andi@firstfloor.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Riyder <chris.ryder@arm.com>, Daniel Borkmann <daniel@iogearbox.net>,
- David Ahern <dsahern@gmail.com>, Davidlohr Bueso <dbueso@suse.de>,
- Jiri Olsa <jolsa@redhat.com>, Joe Stringer <joe@ovn.org>,
- Kan Liang <kan.liang@intel.com>, Kim Phillips <kim.phillips@arm.com>,
- Kyle McMartin <kyle@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Markus Trippelsdorf <markus@trippelsdorf.de>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Minchan Kim <minchan@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- netdev@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- Taeung Song <treeze.taeung@gmail.com>, Wang Nan <wangnan0@huawei.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [GIT PULL 00/29] perf/core improvements and fixes
-Message-ID: <20161220191520.GA16888@gmail.com>
-References: <20161220170358.4350-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjr5c46x2zDwH1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 08:09:56 +1100 (AEDT)
+Date: Wed, 21 Dec 2016 08:09:53 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64: Don't try to use radix MMU under a hypervisor
+Message-ID: <20161220210953.GB19107@fergus.ozlabs.ibm.com>
+References: <20161220114002.GA19107@fergus.ozlabs.ibm.com>
+ <87lgvau04h.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161220170358.4350-1-acme@kernel.org>
+In-Reply-To: <87lgvau04h.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,184 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Dec 20, 2016 at 08:19:02PM +0530, Aneesh Kumar K.V wrote:
+> Paul Mackerras <paulus@ozlabs.org> writes:
+> 
+> > Currently, if the kernel is running on a POWER9 processor under a
+> > hypervisor, it will try to use the radix MMU even though it doesn't
+> > have the necessary code to use radix under a hypervisor (it doesn't
+> > negotiate use of radix, and it doesn't do the H_REGISTER_PROC_TBL
+> > hcall).  The result is that the guest kernel will crash when it tries
+> > to turn on the MMU, because it will still actually be using the HPT
+> > MMU, but it won't have set up any SLB or HPT entries.  It does this
+> > because the only thing that the kernel looks at in deciding to use
+> > radix, on any platform, is the ibm,pa-features property on the cpu
+> > device nodes.
+> >
+> > This fixes it by looking for the /chosen/ibm,architecture-vec-5
+> > property, and if it exists, clearing the radix MMU feature bit.
+> > We do this before we decide whether to initialize for radix or HPT.
+> > This property is created by the hypervisor as a result of the guest
+> > calling the ibm,client-architecture-support method to indicate
+> > its capabilities, so it only exists on systems with a hypervisor.
+> > The reason for using this property is that in future, when we
+> > have support for using radix under a hypervisor, we will need
+> > to check this property to see whether the hypervisor agreed to
+> > us using radix.
+> 
+> Hypervisor that doesn't support radix should clear the ibm,pa-features
+> radix feature bit right ? We look at that before setting
+> MMU_FTR_TYPE_RADIX. So how did we end up enabling radix in the above
+> case ?
 
-* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
+Two points in response:
 
-> Hi Ingo,
-> 
->         Please consider pulling, I had most of this queued before your first
-> pull req to Linus for 4.10, most are fixes, with 'perf sched timehist --idle'
-> as a followup new feature to the 'perf sched timehist' command introduced in
-> this window.
-> 	
-> 	One other thing that delayed this was the samples/bpf/ switch to
-> tools/lib/bpf/ that involved fixing up merge clashes with net.git and also
-> to properly test it, after more rounds than antecipated, but all seems ok
-> now and would be good to get this merge issues past us ASAP.
-> 
-> - Arnaldo
-> 
-> Test results at the end of this message, as usual.
-> 
-> The following changes since commit e7aa8c2eb11ba69b1b69099c3c7bd6be3087b0ba:
-> 
->   Merge tag 'docs-4.10' of git://git.lwn.net/linux (2016-12-12 21:58:13 -0800)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-20161220
-> 
-> for you to fetch changes up to 9899694a7f67714216665b87318eb367e2c5c901:
-> 
->   samples/bpf: Move open_raw_sock to separate header (2016-12-20 12:00:40 -0300)
-> 
-> ----------------------------------------------------------------
-> perf/core improvements and fixes:
-> 
-> New features:
-> 
-> - Introduce 'perf sched timehist --idle', to analyse processes
->   going to/from idle state (Namhyung Kim)
-> 
-> Fixes:
-> 
-> - Allow 'perf record -u user' to continue when facing races with threads
->   going away after having scanned them via /proc (Jiri Olsa)
-> 
-> - Fix 'perf mem' --all-user/--all-kernel options (Jiri Olsa)
-> 
-> - Support jumps with multiple arguments (Ravi Bangoria)
-> 
-> - Fix jumps to before the function where they are located (Ravi
-> Bangoria)
-> 
-> - Fix lock-pi help string (Davidlohr Bueso)
-> 
-> - Fix build of 'perf trace' in odd systems such as a RHEL PPC one (Jiri Olsa)
-> 
-> - Do not overwrite valid build id in 'perf diff' (Kan Liang)
-> 
-> - Don't throw error for zero length symbols, allowing the use of the TUI
->   in PowerPC, where such symbols became more common recently (Ravi Bangoria)
-> 
-> Infrastructure:
-> 
-> - Switch of samples/bpf/ to use tools/lib/bpf, removing libbpf
->   duplication (Joe Stringer)
-> 
-> - Move headers check into bash script (Jiri Olsa)
-> 
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> ----------------------------------------------------------------
-> Arnaldo Carvalho de Melo (3):
->       perf tools: Remove some needless __maybe_unused
->       samples/bpf: Make perf_event_read() static
->       samples/bpf: Be consistent with bpf_load_program bpf_insn parameter
-> 
-> Davidlohr Bueso (1):
->       perf bench futex: Fix lock-pi help string
-> 
-> Jiri Olsa (7):
->       perf tools: Move headers check into bash script
->       perf mem: Fix --all-user/--all-kernel options
->       perf evsel: Use variable instead of repeating lengthy FD macro
->       perf thread_map: Add thread_map__remove function
->       perf evsel: Allow to ignore missing pid
->       perf record: Force ignore_missing_thread for uid option
->       perf trace: Check if MAP_32BIT is defined (again)
-> 
-> Joe Stringer (8):
->       tools lib bpf: Sync {tools,}/include/uapi/linux/bpf.h
->       tools lib bpf: use __u32 from linux/types.h
->       tools lib bpf: Add flags to bpf_create_map()
->       samples/bpf: Make samples more libbpf-centric
->       samples/bpf: Switch over to libbpf
->       tools lib bpf: Add bpf_prog_{attach,detach}
->       samples/bpf: Remove perf_event_open() declaration
->       samples/bpf: Move open_raw_sock to separate header
-> 
-> Kan Liang (1):
->       perf diff: Do not overwrite valid build id
-> 
-> Namhyung Kim (6):
->       perf sched timehist: Split is_idle_sample()
->       perf sched timehist: Introduce struct idle_time_data
->       perf sched timehist: Save callchain when entering idle
->       perf sched timehist: Skip non-idle events when necessary
->       perf sched timehist: Add -I/--idle-hist option
->       perf sched timehist: Show callchains for idle stat
-> 
-> Ravi Bangoria (3):
->       perf annotate: Support jump instruction with target as second operand
->       perf annotate: Fix jump target outside of function address range
->       perf annotate: Don't throw error for zero length symbols
-> 
->  samples/bpf/Makefile                              |  70 +--
->  samples/bpf/README.rst                            |   4 +-
->  samples/bpf/bpf_load.c                            |  21 +-
->  samples/bpf/bpf_load.h                            |   3 +
->  samples/bpf/fds_example.c                         |  13 +-
->  samples/bpf/lathist_user.c                        |   2 +-
->  samples/bpf/libbpf.c                              | 176 -------
->  samples/bpf/libbpf.h                              |  28 +-
->  samples/bpf/lwt_len_hist_user.c                   |   6 +-
->  samples/bpf/offwaketime_user.c                    |   8 +-
->  samples/bpf/sampleip_user.c                       |   7 +-
->  samples/bpf/sock_example.c                        |  14 +-
->  samples/bpf/sock_example.h                        |  35 ++
->  samples/bpf/sockex1_user.c                        |   7 +-
->  samples/bpf/sockex2_user.c                        |   5 +-
->  samples/bpf/sockex3_user.c                        |   5 +-
->  samples/bpf/spintest_user.c                       |   8 +-
->  samples/bpf/tc_l2_redirect_user.c                 |   4 +-
->  samples/bpf/test_cgrp2_array_pin.c                |   4 +-
->  samples/bpf/test_cgrp2_attach.c                   |  12 +-
->  samples/bpf/test_cgrp2_attach2.c                  |   8 +-
->  samples/bpf/test_cgrp2_sock.c                     |   7 +-
->  samples/bpf/test_current_task_under_cgroup_user.c |   8 +-
->  samples/bpf/test_lru_dist.c                       |  32 +-
->  samples/bpf/test_probe_write_user_user.c          |   2 +-
->  samples/bpf/trace_event_user.c                    |  23 +-
->  samples/bpf/trace_output_user.c                   |   7 +-
->  samples/bpf/tracex2_user.c                        |  10 +-
->  samples/bpf/tracex3_user.c                        |   4 +-
->  samples/bpf/tracex4_user.c                        |   4 +-
->  samples/bpf/tracex6_user.c                        |   5 +-
->  samples/bpf/xdp1_user.c                           |   2 +-
->  samples/bpf/xdp_tx_iptunnel_user.c                |   6 +-
->  tools/include/uapi/linux/bpf.h                    | 593 +++++++++++++---------
->  tools/lib/bpf/bpf.c                               |  30 +-
->  tools/lib/bpf/bpf.h                               |   9 +-
->  tools/lib/bpf/libbpf.c                            |   3 +-
->  tools/perf/Documentation/perf-sched.txt           |   4 +
->  tools/perf/Makefile.perf                          |  94 +---
->  tools/perf/bench/futex-lock-pi.c                  |   2 +-
->  tools/perf/builtin-c2c.c                          |  13 +-
->  tools/perf/builtin-mem.c                          |   4 +-
->  tools/perf/builtin-record.c                       |   3 +
->  tools/perf/builtin-report.c                       |   2 +-
->  tools/perf/builtin-sched.c                        | 261 ++++++++--
->  tools/perf/builtin-stat.c                         |   6 +-
->  tools/perf/check-headers.sh                       |  59 +++
->  tools/perf/perf.h                                 |   1 +
->  tools/perf/tests/builtin-test.c                   |   4 +
->  tools/perf/tests/tests.h                          |   1 +
->  tools/perf/tests/thread-map.c                     |  44 ++
->  tools/perf/trace/beauty/mmap.c                    |   2 +
->  tools/perf/ui/browsers/annotate.c                 |   5 +-
->  tools/perf/util/annotate.c                        |  23 +-
->  tools/perf/util/annotate.h                        |   5 +-
->  tools/perf/util/evsel.c                           |  61 ++-
->  tools/perf/util/evsel.h                           |   1 +
->  tools/perf/util/symbol.c                          |   3 +-
->  tools/perf/util/thread_map.c                      |  22 +
->  tools/perf/util/thread_map.h                      |   1 +
->  60 files changed, 1075 insertions(+), 731 deletions(-)
->  delete mode 100644 samples/bpf/libbpf.c
->  create mode 100644 samples/bpf/sock_example.h
->  create mode 100755 tools/perf/check-headers.sh
+1. The ibm,pa-features property specifies the capabilities of the
+processor, not the platform.  The radix bit would be set on POWER9
+even if the hypervisor doesn't support radix.
 
-Pulled, thanks a lot Arnaldo!
+2. The hypervisor might well support radix, but the kernel definitely
+cannot operate with radix under a hypervisor, because it doesn't put
+the necessary things in the ibm,client-architecture support call, and
+it doesn't call the H_REGISTER_PROC_TBL hcall.  That means that the
+CPU has no way to find our 1st level (process scoped) radix trees even
+if the partition was in radix mode.  Most likely the hypervisor will
+put the partition into HPT mode because the kernel didn't ask for
+radix in the CAS call, but even if the hypervisor put the partition
+into radix mode, it still wouldn't work.
 
-	Ingo
+Paul.
