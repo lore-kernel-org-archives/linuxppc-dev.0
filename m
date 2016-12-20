@@ -1,8 +1,8 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjRgD14b6zDwRk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjRgD0mCtzDwRZ
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 16:49:12 +1100 (AEDT)
 From: David Gibson <david@gibson.dropbear.id.au>
 To: paulus@samba.org,
@@ -10,9 +10,10 @@ To: paulus@samba.org,
 Cc: benh@kernel.crashing.org, thuth@redhat.com, lvivier@redhat.com,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCHv2 10/11] powerpc/kvm: KVM-HV HPT resizing implementation
-Date: Tue, 20 Dec 2016 16:49:06 +1100
-Message-Id: <20161220054907.9204-11-david@gibson.dropbear.id.au>
+Subject: [PATCHv2 07/11] powerpc/kvm: Allow KVM_PPC_ALLOCATE_HTAB ioctl() to
+ change HPT size
+Date: Tue, 20 Dec 2016 16:49:03 +1100
+Message-Id: <20161220054907.9204-8-david@gibson.dropbear.id.au>
 In-Reply-To: <20161220054907.9204-1-david@gibson.dropbear.id.au>
 References: <20161220054907.9204-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,235 +25,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the "guts" of the implementation for the HPT resizing PAPR
-extension.  It has the code to allocate and clear a new HPT, rehash an
-existing HPT's entries into it, and accomplish the switchover for a
-KVM guest from the old HPT to the new one.
+The KVM_PPC_ALLOCATE_HTAB ioctl() is used to set the size of hashed page
+table (HPT) that userspace expects a guest VM to have, and is also used to
+clear that HPT when necessary (e.g. guest reboot).
+
+At present, once the ioctl() is called for the first time, the HPT size can
+never be changed thereafter - it will be cleared but always sized as from
+the first call.
+
+With upcoming HPT resize implementation, we're going to need to allow
+userspace to resize the HPT at reset (to change it back to the default size
+if the guest changed it).
+
+So, we need to allow this ioctl() to change the HPT size.
+
+This patch also updates Documentation/virtual/kvm/api.txt to reflect
+the new behaviour.  In fact the documentation was already slightly
+incorrect since 572abd5 "KVM: PPC: Book3S HV: Don't fall back to
+smaller HPT size in allocation ioctl"
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 188 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 187 insertions(+), 1 deletion(-)
+ Documentation/virtual/kvm/api.txt   | 14 ++++++++------
+ arch/powerpc/include/asm/kvm_ppc.h  |  2 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 29 ++++++++++++++++-------------
+ arch/powerpc/kvm/book3s_hv.c        |  5 +----
+ 4 files changed, 26 insertions(+), 24 deletions(-)
 
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index f452c72..c12da23 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -2443,18 +2443,20 @@ are, it will do nothing and return an EBUSY error.
+ The parameter is a pointer to a 32-bit unsigned integer variable
+ containing the order (log base 2) of the desired size of the hash
+ table, which must be between 18 and 46.  On successful return from the
+-ioctl, it will have been updated with the order of the hash table that
+-was allocated.
++ioctl, the value will not be changed by the kernel.
+ 
+ If no hash table has been allocated when any vcpu is asked to run
+ (with the KVM_RUN ioctl), the host kernel will allocate a
+ default-sized hash table (16 MB).
+ 
+ If this ioctl is called when a hash table has already been allocated,
+-the kernel will clear out the existing hash table (zero all HPTEs) and
+-return the hash table order in the parameter.  (If the guest is using
+-the virtualized real-mode area (VRMA) facility, the kernel will
+-re-create the VMRA HPTEs on the next KVM_RUN of any vcpu.)
++with a different order from the existing hash table, the existing hash
++table will be freed and a new one allocated.  If this is ioctl is
++called when a hash table has already been allocated of the same order
++as specified, the kernel will clear out the existing hash table (zero
++all HPTEs).  In either case, if the guest is using the virtualized
++real-mode area (VRMA) facility, the kernel will re-create the VMRA
++HPTEs on the next KVM_RUN of any vcpu.
+ 
+ 4.77 KVM_S390_INTERRUPT
+ 
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 41575b8..3b837bc 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -157,7 +157,7 @@ extern void kvmppc_map_magic(struct kvm_vcpu *vcpu);
+ 
+ extern int kvmppc_allocate_hpt(struct kvm_hpt_info *info, u32 order);
+ extern void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info);
+-extern long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp);
++extern long kvmppc_alloc_reset_hpt(struct kvm *kvm, int order);
+ extern void kvmppc_free_hpt(struct kvm_hpt_info *info);
+ extern long kvmppc_prepare_vrma(struct kvm *kvm,
+ 				struct kvm_userspace_memory_region *mem);
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 86a1bcb..e22776e 100644
+index 4683d87..2765d04 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -66,6 +66,10 @@ struct kvm_resize_hpt {
- 	/* These fields protected by kvm->lock */
- 	int error;
- 	bool prepare_done;
-+
-+	/* Private to the work thread, until prepare_done is true,
-+	 * then protected by kvm->resize_hpt_sem */
-+	struct kvm_hpt_info hpt;
- };
- 
- static void kvmppc_rmap_reset(struct kvm *kvm);
-@@ -1187,21 +1191,203 @@ void kvmppc_unpin_guest_page(struct kvm *kvm, void *va, unsigned long gpa,
-  */
- static int resize_hpt_allocate(struct kvm_resize_hpt *resize)
- {
-+	int rc;
-+
-+	rc = kvmppc_allocate_hpt(&resize->hpt, resize->order);
-+	if (rc < 0)
-+		return rc;
-+
-+	resize_hpt_debug(resize, "resize_hpt_allocate(): HPT @ 0x%lx\n",
-+			 resize->hpt.virt);
-+
- 	return 0;
+@@ -102,10 +102,10 @@ void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info)
+ 		info->virt, (long)info->order, kvm->arch.lpid);
  }
  
-+static unsigned long resize_hpt_rehash_hpte(struct kvm_resize_hpt *resize,
-+					    unsigned long idx)
-+{
-+	struct kvm *kvm = resize->kvm;
-+	struct kvm_hpt_info *old = &kvm->arch.hpt;
-+	struct kvm_hpt_info *new = &resize->hpt;
-+	unsigned long old_hash_mask = (1ULL << (old->order - 7)) - 1;
-+	unsigned long new_hash_mask = (1ULL << (new->order - 7)) - 1;
-+	__be64 *hptep, *new_hptep;
-+	unsigned long vpte, rpte, guest_rpte;
-+	int ret;
-+	struct revmap_entry *rev;
-+	unsigned long apsize, psize, avpn, pteg, hash;
-+	unsigned long new_idx, new_pteg, replace_vpte;
+-long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
++long kvmppc_alloc_reset_hpt(struct kvm *kvm, int order)
+ {
+ 	long err = -EBUSY;
+-	long order;
++	struct kvm_hpt_info info;
+ 
+ 	mutex_lock(&kvm->lock);
+ 	if (kvm->arch.hpte_setup_done) {
+@@ -117,8 +117,9 @@ long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
+ 			goto out;
+ 		}
+ 	}
+-	if (kvm->arch.hpt.virt) {
+-		order = kvm->arch.hpt.order;
++	if (kvm->arch.hpt.order == order) {
++		/* We already have a suitable HPT */
 +
-+	hptep = (__be64 *)(old->virt + (idx << 4));
-+
-+	/* Guest is stopped, so new HPTEs can't be added or faulted
-+	 * in, only unmapped or altered by host actions.  So, it's
-+	 * safe to check this before we take the HPTE lock */
-+	vpte = be64_to_cpu(hptep[0]);
-+	if (!(vpte & HPTE_V_VALID) && !(vpte & HPTE_V_ABSENT))
-+		return 0; /* nothing to do */
-+
-+	while (!try_lock_hpte(hptep, HPTE_V_HVLOCK))
-+		cpu_relax();
-+
-+	vpte = be64_to_cpu(hptep[0]);
-+
-+	ret = 0;
-+	if (!(vpte & HPTE_V_VALID) && !(vpte & HPTE_V_ABSENT))
-+		/* Nothing to do */
+ 		/* Set the entire HPT to 0, i.e. invalid HPTEs */
+ 		memset((void *)kvm->arch.hpt.virt, 0, 1ul << order);
+ 		/*
+@@ -127,17 +128,19 @@ long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
+ 		kvmppc_rmap_reset(kvm);
+ 		/* Ensure that each vcpu will flush its TLB on next entry. */
+ 		cpumask_setall(&kvm->arch.need_tlb_flush);
+-		*htab_orderp = order;
+ 		err = 0;
+-	} else {
+-		struct kvm_hpt_info info;
+-
+-		err = kvmppc_allocate_hpt(&info, *htab_orderp);
+-		if (err < 0)
+-			goto out;
+-		kvmppc_set_hpt(kvm, &info);
 +		goto out;
+ 	}
+- out:
 +
-+	/* Unmap */
-+	rev = &old->rev[idx];
-+	guest_rpte = rev->guest_rpte;
++	if (kvm->arch.hpt.virt)
++		kvmppc_free_hpt(&kvm->arch.hpt);
 +
-+	ret = -EIO;
-+	apsize = hpte_page_size(vpte, guest_rpte);
-+	if (!apsize)
++	err = kvmppc_allocate_hpt(&info, order);
++	if (err < 0)
 +		goto out;
-+
-+	if (vpte & HPTE_V_VALID) {
-+		unsigned long gfn = hpte_rpn(guest_rpte, apsize);
-+		int srcu_idx = srcu_read_lock(&kvm->srcu);
-+		struct kvm_memory_slot *memslot =
-+			__gfn_to_memslot(kvm_memslots(kvm), gfn);
-+
-+		if (memslot) {
-+			unsigned long *rmapp;
-+			rmapp = &memslot->arch.rmap[gfn - memslot->base_gfn];
-+
-+			lock_rmap(rmapp);
-+			kvmppc_unmap_hpte(kvm, idx, rmapp, gfn);
-+			unlock_rmap(rmapp);
-+		}
-+
-+		srcu_read_unlock(&kvm->srcu, srcu_idx);
-+	}
-+
-+	/* Reload PTE after unmap */
-+	vpte = be64_to_cpu(hptep[0]);
-+
-+	BUG_ON(vpte & HPTE_V_VALID);
-+	BUG_ON(!(vpte & HPTE_V_ABSENT));
-+
-+	ret = 0;
-+	if (!(vpte & HPTE_V_BOLTED))
-+		goto out;
-+
-+	rpte = be64_to_cpu(hptep[1]);
-+	psize = hpte_base_page_size(vpte, rpte);
-+	avpn = HPTE_V_AVPN_VAL(vpte) & ~((psize - 1) >> 23);
-+	pteg = idx / HPTES_PER_GROUP;
-+	if (vpte & HPTE_V_SECONDARY)
-+		pteg = ~pteg;
-+
-+	if (!(vpte & HPTE_V_1TB_SEG)) {
-+		unsigned long offset, vsid;
-+
-+		/* We only have 28 - 23 bits of offset in avpn */
-+		offset = (avpn & 0x1f) << 23;
-+		vsid = avpn >> 5;
-+		/* We can find more bits from the pteg value */
-+		if (psize < (1ULL << 23))
-+			offset |= ((vsid ^ pteg) & old_hash_mask) * psize;
-+
-+		hash = vsid ^ (offset / psize);
-+	} else {
-+		unsigned long offset, vsid;
-+
-+		/* We only have 40 - 23 bits of seg_off in avpn */
-+		offset = (avpn & 0x1ffff) << 23;
-+		vsid = avpn >> 17;
-+		if (psize < (1ULL << 23))
-+			offset |= ((vsid ^ (vsid << 25) ^ pteg) & old_hash_mask) * psize;
-+
-+		hash = vsid ^ (vsid << 25) ^ (offset / psize);
-+	}
-+
-+	new_pteg = hash & new_hash_mask;
-+	if (vpte & HPTE_V_SECONDARY) {
-+		BUG_ON(~pteg != (hash & old_hash_mask));
-+		new_pteg = ~new_pteg;
-+	} else {
-+		BUG_ON(pteg != (hash & old_hash_mask));
-+	}
-+
-+	new_idx = new_pteg * HPTES_PER_GROUP + (idx % HPTES_PER_GROUP);
-+	new_hptep = (__be64 *)(new->virt + (new_idx << 4));
-+
-+	replace_vpte = be64_to_cpu(new_hptep[0]);
-+
-+	if (replace_vpte & (HPTE_V_VALID | HPTE_V_ABSENT)) {
-+		BUG_ON(new->order >= old->order);
-+
-+		if (replace_vpte & HPTE_V_BOLTED) {
-+			if (vpte & HPTE_V_BOLTED)
-+				/* Bolted collision, nothing we can do */
-+				ret = -ENOSPC;
-+			/* Discard the new HPTE */
-+			goto out;
-+		}
-+
-+		/* Discard the previous HPTE */
-+	}
-+
-+	new_hptep[1] = cpu_to_be64(rpte);
-+	new->rev[new_idx].guest_rpte = guest_rpte;
-+	/* No need for a barrier, since new HPT isn't active */
-+	new_hptep[0] = cpu_to_be64(vpte);
-+	unlock_hpte(new_hptep, vpte);
++	kvmppc_set_hpt(kvm, &info);
 +
 +out:
-+	unlock_hpte(hptep, vpte);
-+	return ret;
-+}
-+
- static int resize_hpt_rehash(struct kvm_resize_hpt *resize)
- {
--	return -EIO;
-+	struct kvm *kvm = resize->kvm;
-+	unsigned  long i;
-+	int rc;
-+
-+	for (i = 0; i < kvmppc_hpt_npte(&kvm->arch.hpt); i++) {
-+		rc = resize_hpt_rehash_hpte(resize, i);
-+		if (rc != 0)
-+			return rc;
-+	}
-+
-+	return 0;
+ 	mutex_unlock(&kvm->lock);
+ 	return err;
  }
- 
- static void resize_hpt_pivot(struct kvm_resize_hpt *resize)
- {
-+	struct kvm *kvm = resize->kvm;
-+	struct kvm_hpt_info hpt_tmp;
-+
-+	/* Exchange the pending tables in the resize structure with
-+	 * the active tables */
-+
-+	resize_hpt_debug(resize, "resize_hpt_pivot()\n");
-+
-+	spin_lock(&kvm->mmu_lock);
-+	asm volatile("ptesync" : : : "memory");
-+
-+	hpt_tmp = kvm->arch.hpt;
-+	kvmppc_set_hpt(kvm, &resize->hpt);
-+	resize->hpt = hpt_tmp;
-+
-+	spin_unlock(&kvm->mmu_lock);
-+
-+	synchronize_srcu_expedited(&kvm->srcu);
-+
-+	resize_hpt_debug(resize, "resize_hpt_pivot() done\n");
- }
- 
- static void resize_hpt_release(struct kvm *kvm, struct kvm_resize_hpt *resize)
- {
- 	BUG_ON(kvm->arch.resize_hpt != resize);
-+
-+	if (resize->hpt.virt)
-+		kvmppc_free_hpt(&resize->hpt);
-+
- 	kvm->arch.resize_hpt = NULL;
- 	kfree(resize);
- }
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 436508e..9ebb9e6 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -3600,12 +3600,9 @@ static long kvm_arch_vm_ioctl_hv(struct file *filp,
+ 		r = -EFAULT;
+ 		if (get_user(htab_order, (u32 __user *)argp))
+ 			break;
+-		r = kvmppc_alloc_reset_hpt(kvm, &htab_order);
++		r = kvmppc_alloc_reset_hpt(kvm, htab_order);
+ 		if (r)
+ 			break;
+-		r = -EFAULT;
+-		if (put_user(htab_order, (u32 __user *)argp))
+-			break;
+ 		r = 0;
+ 		break;
+ 	}
 -- 
 2.9.3
