@@ -1,37 +1,20 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tkMHx6Y2RzDwXT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2016 04:35:41 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBLHYQHS100275
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 12:35:38 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27fts7cetu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 12:35:37 -0500
-Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 21 Dec 2016 10:35:37 -0700
-Subject: Re: [PATCH] ibmvscsi: add write memory barrier to CRQ processing
-To: benh@au1.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- james.bottomley@hansenpartnership.com
-References: <1481153486-5185-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1481318452.17253.27.camel@au1.ibm.com>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- brking@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tkNVH1Z7dzDt0L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2016 05:29:43 +1100 (AEDT)
+Received: by mail-pf0-x241.google.com with SMTP id i88so11221780pfk.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 10:29:43 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Alexander Graf <agraf@suse.com>,
+ kvm-ppc@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Wed, 21 Dec 2016 09:35:30 -0800
-MIME-Version: 1.0
-In-Reply-To: <1481318452.17253.27.camel@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <f39396cb-995e-acbb-5a17-e67924adfaa9@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/3] KVM: PPC: Book3S: 64-bit CONFIG_RELOCATABLE fixes
+Date: Thu, 22 Dec 2016 04:29:24 +1000
+Message-Id: <20161221182927.24562-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,70 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/09/2016 01:20 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2016-12-07 at 17:31 -0600, Tyrel Datwyler wrote:
->> The first byte of each CRQ entry is used to indicate whether an entry is
->> a valid response or free for the VIOS to use. After processing a
->> response the driver sets the valid byte to zero to indicate the entry is
->> now free to be reused. Add a memory barrier after this write to ensure
->> no other stores are reordered when updating the valid byte.
-> 
-> Which "other stores" specifically ? This smells fishy without that
-> precision. It's important to always understand what exactly barriers
-> order with.
+Hi,
 
-So, this patch initially came about while chasing a data integrity issue
-based on the observation that we were already doing this same write
-barrier in the virtual fibre channel driver.
+I took into account the feedback from last time. I was sceptical at
+first about moving the store to save r9 from the KVM test to the
+KVM handler. After implementing it, it actually worked well.
 
-However, the more I stare at it I agree it does seem fishy and I can't
-see any other stores that we need to order with here. In terms of the
-16byte CRQ entries we only ever write to the first byte as a sort of
-doorbell to tell the VIOS that we have processed the data and the entry
-is free to be re-used. The remainder of the CRQ is only ever read from.
+Thanks,
+Nick
 
-The wmb() in the ibmvfc driver was part of a commit from Brian that also
-involved a necessary rmb() that prevented stale data from load
-re-ordering by ensuring that a read from the first byte completed and
-contained a valid value prior to doing any other reads of the CRQ entry.
+Nicholas Piggin (3):
+  KVM: PPC: Book3S: Change interrupt call to reduce scratch space use on HV
+  KVM: PPC: Book3S: Move 64-bit KVM interrupt handler out from alt section
+  KVM: PPC: Book3S: 64-bit CONFIG_RELOCATABLE support for interrupts
 
-I'd have to defer to Brian as to whether he remembers a legitimate
-reason for the wmb().
+ arch/powerpc/include/asm/exception-64s.h | 63 ++++++++++++++++++++++++--------
+ arch/powerpc/include/asm/head-64.h       |  2 +-
+ arch/powerpc/kernel/exceptions-64s.S     | 10 ++---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 15 ++++++--
+ arch/powerpc/kvm/book3s_segment.S        | 32 ++++++++++++----
+ 5 files changed, 89 insertions(+), 33 deletions(-)
 
--Tyrel
-
-> 
-> Cheers,
-> Ben.
-> 
->> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
->> ---
->>  drivers/scsi/ibmvscsi/ibmvscsi.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
->> index d9534ee..2f5b07e 100644
->> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
->> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
->> @@ -232,6 +232,7 @@ static void ibmvscsi_task(void *data)
->>>  		while ((crq = crq_queue_next_crq(&hostdata->queue)) != NULL) {
->>>  			ibmvscsi_handle_crq(crq, hostdata);
->>>  			crq->valid = VIOSRP_CRQ_FREE;
->>> +			wmb();
->>>  		}
->>  
->>>  		vio_enable_interrupts(vdev);
->> @@ -240,6 +241,7 @@ static void ibmvscsi_task(void *data)
->>>  			vio_disable_interrupts(vdev);
->>>  			ibmvscsi_handle_crq(crq, hostdata);
->>>  			crq->valid = VIOSRP_CRQ_FREE;
->>> +			wmb();
->>>  		} else {
->>>  			done = 1;
->>>  		}
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+-- 
+2.11.0
