@@ -1,48 +1,20 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjthq23JxzDwVY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 10:07:06 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBKN4St8017340
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 18:07:03 -0500
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27fbstwu5r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 18:07:03 -0500
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 21 Dec 2016 09:07:00 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B6ED12CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 10:06:58 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uBKN6wp753936224
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 10:06:58 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uBKN6waU004521
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 10:06:58 +1100
-Date: Wed, 21 Dec 2016 10:06:57 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, #v4.9+@gwshan.ozlabs.ibm.com
-Subject: Re: [PATCH] drivers/pci/hotplug: Handle presence detection change
- properly
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1482216573-21487-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20161220093709.GA12938@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161220093709.GA12938@kroah.com>
-Message-Id: <20161220230657.GA7066@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tjwvS6bXYzDwW7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 11:46:28 +1100 (AEDT)
+Message-ID: <1482281181.3391.4.camel@gmail.com>
+Subject: Re: [PATCH] powerpc/64: Don't try to use radix MMU under a hypervisor
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
+Cc: Michael Ellerman <michael@ellerman.id.au>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 21 Dec 2016 11:46:21 +1100
+In-Reply-To: <20161220114002.GA19107@fergus.ozlabs.ibm.com>
+References: <20161220114002.GA19107@fergus.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,52 +24,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 20, 2016 at 10:37:09AM +0100, Greg KH wrote:
->On Tue, Dec 20, 2016 at 05:49:33PM +1100, Gavin Shan wrote:
->> The surprise hotplug is driven by interrupt in PowerNV PCI hotplug
->> driver. In the interrupt handler, pnv_php_interrupt(), we bail when
->> pnv_pci_get_presence_state() returns zero wrongly. It causes the
->> presence change event is always ignored incorrectly.
->> 
->> This fixes the issue by bailing on error (non-zero value) returned
->> from pnv_pci_get_presence_state().
->> 
->> Fixes: 360aebd85a4 ("drivers/pci/hotplug: Support surprise hotplug in powernv driver")
->> Cc: stable@vger.kernel.org #v4.9+
->> Reported-by: Hank Chang <hankmax0000@gmail.com>
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> Tested-by: Willie Liauw <williel@supermicro.com.tw>
->> ---
->>  drivers/pci/hotplug/pnv_php.c | 6 +++++-
->>  1 file changed, 5 insertions(+), 1 deletion(-)
->> 
->> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
->> index 56efaf7..38a2309 100644
->> --- a/drivers/pci/hotplug/pnv_php.c
->> +++ b/drivers/pci/hotplug/pnv_php.c
->> @@ -707,8 +707,12 @@ static irqreturn_t pnv_php_interrupt(int irq, void *data)
->>  		added = !!(lsts & PCI_EXP_LNKSTA_DLLLA);
->>  	} else if (sts & PCI_EXP_SLTSTA_PDC) {
->>  		ret = pnv_pci_get_presence_state(php_slot->id, &presence);
->> -		if (!ret)
->> +		if (ret) {
->> +			dev_warn(&pdev->dev, "PCI slot [%s] error %d handling PDC event (0x%04x)\n",
->> +				php_slot->name, ret, sts);
->
->What can a user do with this warning?
->
+On Tue, 2016-12-20 at 22:40 +1100, Paul Mackerras wrote:
+> Currently, if the kernel is running on a POWER9 processor under a
+> hypervisor, it will try to use the radix MMU even though it doesn't
+> have the necessary code to use radix under a hypervisor (it doesn't
+> negotiate use of radix, and it doesn't do the H_REGISTER_PROC_TBL
+> hcall).  The result is that the guest kernel will crash when it tries
+> to turn on the MMU, because it will still actually be using the HPT
+> MMU, but it won't have set up any SLB or HPT entries.  It does this
+> because the only thing that the kernel looks at in deciding to use
+> radix, on any platform, is the ibm,pa-features property on the cpu
+> device nodes.
+> 
+> This fixes it by looking for the /chosen/ibm,architecture-vec-5
+> property, and if it exists, clearing the radix MMU feature bit.
+> We do this before we decide whether to initialize for radix or HPT.
+> This property is created by the hypervisor as a result of the guest
+> calling the ibm,client-architecture-support method to indicate
+> its capabilities, so it only exists on systems with a hypervisor.
+> The reason for using this property is that in future, when we
+> have support for using radix under a hypervisor, we will need
+> to check this property to see whether the hypervisor agreed to
+> us using radix.
+> 
+> Fixes: 17a3dd2f5fc7 ("powerpc/mm/radix: Use firmware feature to
+> enable Radix MMU")
+> Cc: stable@vger.kernel.org # v4.7+
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> ---
+>  arch/powerpc/mm/init_64.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index a000c35..098531d 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -42,6 +42,8 @@
+>  #include <linux/memblock.h>
+>  #include <linux/hugetlb.h>
+>  #include <linux/slab.h>
+> +#include <linux/of_fdt.h>
+> +#include <linux/libfdt.h>
+>  
+>  #include <asm/pgalloc.h>
+>  #include <asm/page.h>
+> @@ -344,6 +346,28 @@ static int __init parse_disable_radix(char *p)
+>  }
+>  early_param("disable_radix", parse_disable_radix);
+>  
+> +/*
+> + * If we're running under a hypervisor, we currently can't do radix
+> + * since we don't have the code to do the H_REGISTER_PROC_TBL hcall.
+> + * We tell that we're running under a hypervisor by looking for the
+> + * /chosen/ibm,architecture-vec-5 property.
+> + */
+> +static void early_check_vec5(void)
+> +{
+> +	unsigned long root, chosen;
+> +	int size;
+> +	const u8 *vec5;
+> +
+> +	root = of_get_flat_dt_root();
+> +	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
+> +	if (chosen == -FDT_ERR_NOTFOUND)
+> +		return;
+> +	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", 
+> &size);
+> +	if (!vec5)
+> +		return;
+> +	cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+> +}
+> +
+Given that currently radix guest support doesn't exist upstream, it's
+sufficient to check for the existence of the vec5 node to determine
+that we are a guest and thus can't run radix.
 
-This warning is to catch developer's attention only. It's very
-rare for pnv_pci_get_presence_state() to fail as it simply checks
-hardware regiter bit (from Slot Status regsiter in PCIe capability
-or PHB's Hotplug Override register) in the skiboot firmware.
-
-User needs to retry the operation (hot-add or hot-remove) when
-seeing this warning. Greg, please let me know if below message
-is better?
-
-dev_warn(&pdev->dev, "PCI slot [%s] error %d getting presence status on event 0x%04x, to retry the operation.\n",
-         php_slot->name, ret, sts);
-
-Thanks,
-Gavin
+Is it worth checking the specific radix feature bit of the vec5 node so
+that this code is still correct for determining the lack of radix
+support by the host platform once guest radix kernels are (in the
+future) supported?
+>  void __init mmu_early_init_devtree(void)
+>  {
+>  	/* Disable radix mode based on kernel command line. */
+> @@ -351,6 +375,9 @@ void __init mmu_early_init_devtree(void)
+>  		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
+>  
+>  	if (early_radix_enabled())
+> +		early_check_vec5();
+> +
+> +	if (early_radix_enabled())
+>  		radix__early_init_devtree();
+>  	else
+>  		hash__early_init_devtree();
