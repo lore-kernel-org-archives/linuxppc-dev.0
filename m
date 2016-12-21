@@ -3,19 +3,19 @@ Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
  [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tkNVS47flzDwKl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2016 05:29:52 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id g1so15362381pgn.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 10:29:52 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tkNVY0Ty6zDwQb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2016 05:29:57 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id g1so15362523pgn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 10:29:56 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>
 Cc: Nicholas Piggin <npiggin@gmail.com>, Alexander Graf <agraf@suse.com>,
  kvm-ppc@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] KVM: PPC: Book3S: Change interrupt call to reduce scratch
- space use on HV
-Date: Thu, 22 Dec 2016 04:29:25 +1000
-Message-Id: <20161221182927.24562-2-npiggin@gmail.com>
+Subject: [PATCH 2/3] KVM: PPC: Book3S: Move 64-bit KVM interrupt handler out
+ from alt section
+Date: Thu, 22 Dec 2016 04:29:26 +1000
+Message-Id: <20161221182927.24562-3-npiggin@gmail.com>
 In-Reply-To: <20161221182927.24562-1-npiggin@gmail.com>
 References: <20161221182927.24562-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,171 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change the calling convention to put the trap number together with
-CR in two halves of r12, which frees up HSTATE_SCRATCH2 in the HV
-handler.
+A subsequent patch to make KVM handlers relocation-safe makes them
+unusable from within alt section "else" cases (due to the way fixed
+addresses are taken from within fixed section head code).
 
-The 64-bit PR handler entry translates the calling convention back
-to match the previous call convention (i.e., shared with 32-bit), for
-simplicity.
+Stop open-coding the KVM handlers, and add them both as normal. A more
+optimal fix may be to allow some level of alternate feature patching in
+the exception macros themselves, but for now this will do.
+
+The TRAMP_KVM handlers must be moved to the "virt" fixed section area
+(name is arbitrary) in order to be closer to .text and avoid the dreaded
+"relocation truncated to fit" error.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/exception-64s.h | 24 +++++++++++-------------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 16 +++++++++-------
- arch/powerpc/kvm/book3s_segment.S        | 25 ++++++++++++++++++-------
- 3 files changed, 38 insertions(+), 27 deletions(-)
+ arch/powerpc/include/asm/head-64.h   | 2 +-
+ arch/powerpc/kernel/exceptions-64s.S | 6 ++----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 9a3eee661297..a02a268bde6b 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -233,7 +233,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 
- #endif
- 
--#define __KVM_HANDLER_PROLOG(area, n)					\
-+#define __KVM_HANDLER(area, h, n)					\
- 	BEGIN_FTR_SECTION_NESTED(947)					\
- 	ld	r10,area+EX_CFAR(r13);					\
- 	std	r10,HSTATE_CFAR(r13);					\
-@@ -243,30 +243,28 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	std	r10,HSTATE_PPR(r13);					\
- 	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
- 	ld	r10,area+EX_R10(r13);					\
--	stw	r9,HSTATE_SCRATCH1(r13);				\
--	ld	r9,area+EX_R9(r13);					\
- 	std	r12,HSTATE_SCRATCH0(r13);				\
--
--#define __KVM_HANDLER(area, h, n)					\
--	__KVM_HANDLER_PROLOG(area, n)					\
--	li	r12,n;							\
-+	sldi	r12,r9,32;						\
-+	ori	r12,r12,(n);						\
-+	ld	r9,area+EX_R9(r13);					\
- 	b	kvmppc_interrupt
- 
- #define __KVM_HANDLER_SKIP(area, h, n)					\
- 	cmpwi	r10,KVM_GUEST_MODE_SKIP;				\
--	ld	r10,area+EX_R10(r13);					\
- 	beq	89f;							\
--	stw	r9,HSTATE_SCRATCH1(r13);				\
- 	BEGIN_FTR_SECTION_NESTED(948)					\
--	ld	r9,area+EX_PPR(r13);					\
--	std	r9,HSTATE_PPR(r13);					\
-+	ld	r10,area+EX_PPR(r13);					\
-+	std	r10,HSTATE_PPR(r13);					\
- 	END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,948);	\
--	ld	r9,area+EX_R9(r13);					\
-+	ld	r10,area+EX_R10(r13);					\
- 	std	r12,HSTATE_SCRATCH0(r13);				\
--	li	r12,n;							\
-+	sldi	r12,r9,32;						\
-+	ori	r12,r12,(n);						\
-+	ld	r9,area+EX_R9(r13);					\
- 	b	kvmppc_interrupt;					\
- 89:	mtocrf	0x80,r9;						\
- 	ld	r9,area+EX_R9(r13);					\
-+	ld	r10,area+EX_R10(r13);					\
- 	b	kvmppc_skip_##h##interrupt
+diff --git a/arch/powerpc/include/asm/head-64.h b/arch/powerpc/include/asm/head-64.h
+index fca7033839a9..9bd81619d090 100644
+--- a/arch/powerpc/include/asm/head-64.h
++++ b/arch/powerpc/include/asm/head-64.h
+@@ -218,7 +218,7 @@ end_##sname:
  
  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 9338a818e05c..11882aac8216 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1057,19 +1057,18 @@ hdec_soon:
- kvmppc_interrupt_hv:
- 	/*
- 	 * Register contents:
--	 * R12		= interrupt vector
-+	 * R12		= (guest CR << 32) | interrupt vector
- 	 * R13		= PACA
--	 * guest CR, R12 saved in shadow VCPU SCRATCH1/0
-+	 * guest R12 saved in shadow VCPU SCRATCH0
- 	 * guest R13 saved in SPRN_SCRATCH0
- 	 */
--	std	r9, HSTATE_SCRATCH2(r13)
--
-+	std	r9, HSTATE_SCRATCH1(r13)
- 	lbz	r9, HSTATE_IN_GUEST(r13)
- 	cmpwi	r9, KVM_GUEST_MODE_HOST_HV
- 	beq	kvmppc_bad_host_intr
- #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
- 	cmpwi	r9, KVM_GUEST_MODE_GUEST
--	ld	r9, HSTATE_SCRATCH2(r13)
-+	ld	r9, HSTATE_SCRATCH1(r13)
- 	beq	kvmppc_interrupt_pr
+ #define TRAMP_KVM_BEGIN(name)						\
+-	TRAMP_REAL_BEGIN(name)
++	TRAMP_VIRT_BEGIN(name)
+ #else
+ #define TRAMP_KVM_BEGIN(name)
  #endif
- 	/* We're now back in the host but in guest MMU context */
-@@ -1089,13 +1088,14 @@ kvmppc_interrupt_hv:
- 	std	r6, VCPU_GPR(R6)(r9)
- 	std	r7, VCPU_GPR(R7)(r9)
- 	std	r8, VCPU_GPR(R8)(r9)
--	ld	r0, HSTATE_SCRATCH2(r13)
-+	ld	r0, HSTATE_SCRATCH1(r13)
- 	std	r0, VCPU_GPR(R9)(r9)
- 	std	r10, VCPU_GPR(R10)(r9)
- 	std	r11, VCPU_GPR(R11)(r9)
- 	ld	r3, HSTATE_SCRATCH0(r13)
--	lwz	r4, HSTATE_SCRATCH1(r13)
- 	std	r3, VCPU_GPR(R12)(r9)
-+	/* CR is in the high half of r12 */
-+	srdi	r4, r12, 32
- 	stw	r4, VCPU_CR(r9)
- BEGIN_FTR_SECTION
- 	ld	r3, HSTATE_CFAR(r13)
-@@ -1114,6 +1114,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	mfspr	r11, SPRN_SRR1
- 	std	r10, VCPU_SRR0(r9)
- 	std	r11, VCPU_SRR1(r9)
-+	/* trap is in the low half of r12, clear CR from the high half */
-+	clrldi	r12, r12, 32
- 	andi.	r0, r12, 2		/* need to read HSRR0/1? */
- 	beq	1f
- 	mfspr	r10, SPRN_HSRR0
-diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-index ca8f174289bb..68e45080cf93 100644
---- a/arch/powerpc/kvm/book3s_segment.S
-+++ b/arch/powerpc/kvm/book3s_segment.S
-@@ -167,20 +167,31 @@ kvmppc_handler_trampoline_enter_end:
-  *                                                                            *
-  *****************************************************************************/
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index d39d6118c6e9..89b4f122aec6 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -717,13 +717,9 @@ hardware_interrupt_hv:
+ 	BEGIN_FTR_SECTION
+ 		_MASKABLE_EXCEPTION_PSERIES(0x500, hardware_interrupt_common,
+ 					    EXC_HV, SOFTEN_TEST_HV)
+-do_kvm_H0x500:
+-		KVM_HANDLER(PACA_EXGEN, EXC_HV, 0x502)
+ 	FTR_SECTION_ELSE
+ 		_MASKABLE_EXCEPTION_PSERIES(0x500, hardware_interrupt_common,
+ 					    EXC_STD, SOFTEN_TEST_PR)
+-do_kvm_0x500:
+-		KVM_HANDLER(PACA_EXGEN, EXC_STD, 0x500)
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ EXC_REAL_END(hardware_interrupt, 0x500, 0x600)
  
--.global kvmppc_handler_trampoline_exit
--kvmppc_handler_trampoline_exit:
--
- .global kvmppc_interrupt_pr
- kvmppc_interrupt_pr:
-+	/* 64-bit entry. Register usage at this point:
-+	 *
-+	 * SPRG_SCRATCH0   = guest R13
-+	 * R12             = (guest CR << 32) | exit handler id
-+	 * R13             = PACA
-+	 * HSTATE.SCRATCH0 = guest R12
-+	 */
-+#ifdef CONFIG_PPC64
-+	/* Match 32-bit entry */
-+	rotldi	r12, r12, 32		  /* Flip R12 halves for stw */
-+	stw	r12, HSTATE_SCRATCH1(r13) /* CR is now in the low half */
-+	srdi	r12, r12, 32		  /* shift trap into low half */
-+#endif
+@@ -737,6 +733,8 @@ hardware_interrupt_relon_hv:
+ 	ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+ EXC_VIRT_END(hardware_interrupt, 0x4500, 0x4600)
  
-+.global kvmppc_handler_trampoline_exit
-+kvmppc_handler_trampoline_exit:
- 	/* Register usage at this point:
- 	 *
--	 * SPRG_SCRATCH0  = guest R13
--	 * R12            = exit handler id
--	 * R13            = shadow vcpu (32-bit) or PACA (64-bit)
-+	 * SPRG_SCRATCH0   = guest R13
-+	 * R12             = exit handler id
-+	 * R13             = shadow vcpu (32-bit) or PACA (64-bit)
- 	 * HSTATE.SCRATCH0 = guest R12
- 	 * HSTATE.SCRATCH1 = guest CR
--	 *
- 	 */
++TRAMP_KVM(PACA_EXGEN, 0x500)
++TRAMP_KVM_HV(PACA_EXGEN, 0x500)
+ EXC_COMMON_ASYNC(hardware_interrupt_common, 0x500, do_IRQ)
  
- 	/* Save registers */
+ 
 -- 
 2.11.0
