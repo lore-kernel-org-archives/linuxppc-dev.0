@@ -1,30 +1,25 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tk7nf4gnpzDwSh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 19:57:10 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id i5so5961955pgh.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 00:57:09 -0800 (PST)
-Subject: Re: [PATCH kernel v2 05/11] KVM: PPC: Use preregistered memory API to
- access TCE list
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <20161218012900.18142-1-aik@ozlabs.ru>
- <20161218012900.18142-6-aik@ozlabs.ru>
- <20161221040843.GD13024@umbus.fritz.box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tk97Q0cGFzDwRy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 20:57:38 +1100 (AEDT)
+Date: Wed, 21 Dec 2016 17:04:18 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <ef7b6306-a403-390f-ac25-5cffd546d66b@ozlabs.ru>
-Date: Wed, 21 Dec 2016 19:57:01 +1100
+Subject: Re: [PATCH kernel v2 09/11] vfio iommu: Add helpers to (un)register
+ blocking notifiers per group
+Message-ID: <20161221060418.GF13024@umbus.fritz.box>
+References: <20161218012900.18142-1-aik@ozlabs.ru>
+ <20161218012900.18142-10-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20161221040843.GD13024@umbus.fritz.box>
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="kMq54SRX3fn2WJu4Kwg7lCiN86rpc5hPS"
+ protocol="application/pgp-signature"; boundary="tmoQ0UElFV5VgXgH"
+In-Reply-To: <20161218012900.18142-10-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,255 +29,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---kMq54SRX3fn2WJu4Kwg7lCiN86rpc5hPS
-Content-Type: multipart/mixed; boundary="p0k6DDq4kpxpMbf2hI1KFRTllLkH6kP9o";
- protected-headers="v1"
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-Message-ID: <ef7b6306-a403-390f-ac25-5cffd546d66b@ozlabs.ru>
-Subject: Re: [PATCH kernel v2 05/11] KVM: PPC: Use preregistered memory API to
- access TCE list
-References: <20161218012900.18142-1-aik@ozlabs.ru>
- <20161218012900.18142-6-aik@ozlabs.ru>
- <20161221040843.GD13024@umbus.fritz.box>
-In-Reply-To: <20161221040843.GD13024@umbus.fritz.box>
 
---p0k6DDq4kpxpMbf2hI1KFRTllLkH6kP9o
-Content-Type: text/plain; charset=koi8-r
+--tmoQ0UElFV5VgXgH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 21/12/16 15:08, David Gibson wrote:
-> On Sun, Dec 18, 2016 at 12:28:54PM +1100, Alexey Kardashevskiy wrote:
->> VFIO on sPAPR already implements guest memory pre-registration
->> when the entire guest RAM gets pinned. This can be used to translate
->> the physical address of a guest page containing the TCE list
->> from H_PUT_TCE_INDIRECT.
->>
->> This makes use of the pre-registrered memory API to access TCE list
->> pages in order to avoid unnecessary locking on the KVM memory
->> reverse map as we know that all of guest memory is pinned and
->> we have a flat array mapping GPA to HPA which makes it simpler and
->> quicker to index into that array (even with looking up the
->> kernel page tables in vmalloc_to_phys) than it is to find the memslot,=
-
->> lock the rmap entry, look up the user page tables, and unlock the rmap=
-
->> entry. Note that the rmap pointer is initialized to NULL
->> where declared (not in this patch).
->>
->> If a requested chunk of memory has not been preregistered,
->> this will fail with H_TOO_HARD so the virtual mode handle can
->> handle the request.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> Changes:
->> v2:
->> * updated the commit log with David's comment
->> ---
->>  arch/powerpc/kvm/book3s_64_vio_hv.c | 65 ++++++++++++++++++++++++++++=
----------
->>  1 file changed, 49 insertions(+), 16 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/bo=
-ok3s_64_vio_hv.c
->> index d461c440889a..a3be4bd6188f 100644
->> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
->> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
->> @@ -180,6 +180,17 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned l=
-ong gpa,
->>  EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
->> =20
->>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->> +static inline bool kvmppc_preregistered(struct kvm_vcpu *vcpu)
->> +{
->> +	return mm_iommu_preregistered(vcpu->kvm->mm);
->> +}
->> +
->> +static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
->> +		struct kvm_vcpu *vcpu, unsigned long ua, unsigned long size)
->> +{
->> +	return mm_iommu_lookup_rm(vcpu->kvm->mm, ua, size);
->> +}
+On Sun, Dec 18, 2016 at 12:28:58PM +1100, Alexey Kardashevskiy wrote:
+> c086de81 "vfio iommu: Add blocking notifier to notify DMA_UNMAP" added
+> notifiers to a VFIO group. However even though the code underneath
+> uses groups, the API takes device struct pointers.
 >=20
-> I don't see that there's much point to these inlines.
+> This adds helpers which do the same thing but take IOMMU groups instead.
 >=20
->>  long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>  		unsigned long ioba, unsigned long tce)
->>  {
->> @@ -260,23 +271,44 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcp=
-u *vcpu,
->>  	if (ret !=3D H_SUCCESS)
->>  		return ret;
->> =20
->> -	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
->> -		return H_TOO_HARD;
->> +	if (kvmppc_preregistered(vcpu)) {
->> +		/*
->> +		 * We get here if guest memory was pre-registered which
->> +		 * is normally VFIO case and gpa->hpa translation does not
->> +		 * depend on hpt.
->> +		 */
->> +		struct mm_iommu_table_group_mem_t *mem;
->> =20
->> -	rmap =3D (void *) vmalloc_to_phys(rmap);
->> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
->> +			return H_TOO_HARD;
->> =20
->> -	/*
->> -	 * Synchronize with the MMU notifier callbacks in
->> -	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
->> -	 * While we have the rmap lock, code running on other CPUs
->> -	 * cannot finish unmapping the host real page that backs
->> -	 * this guest real page, so we are OK to access the host
->> -	 * real page.
->> -	 */
->> -	lock_rmap(rmap);
->> -	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
->> -		ret =3D H_TOO_HARD;
->> -		goto unlock_exit;
->> +		mem =3D kvmppc_rm_iommu_lookup(vcpu, ua, IOMMU_PAGE_SIZE_4K);
->> +		if (!mem || mm_iommu_ua_to_hpa_rm(mem, ua, &tces))
->> +			return H_TOO_HARD;
->> +	} else {
->> +		/*
->> +		 * This is emulated devices case.
->> +		 * We do not require memory to be preregistered in this case
->> +		 * so lock rmap and do __find_linux_pte_or_hugepte().
->> +		 */
+> This adds vfio_iommu_group_set_kvm() which is a wrapper on top of
+> vfio_group_set_kvm() but also takes an iommu_group.
 >=20
-> Hmm.  So this isn't wrong as such, but the logic and comments are
-> both misleading.  The 'if' here isn't really about VFIO vs. emulated -
-> it's about whether the mm has *any* preregistered chunks, without any
-> regard to which particular device you're talking about.  For example
-> if your guest has two PHBs, one with VFIO devices and the other with
-> emulated devices, then the emulated devices will still go through the
-> "VFIO" case here.
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-kvmppc_preregistered() checks for a single pointer, kvmppc_rm_ua_to_hpa()=
+Adding a second interface in parallel seems dubious.
 
-goes through __find_linux_pte_or_hugepte() which is unnecessary
-complication here.
+Should the existing interface just be replaced with this one?
 
-s/emulated devices case/case of a guest with emulated devices only/ ?
+Or can the existing interface be re-implemented in terms of this one?
 
-
-> Really what you have here is a fast case when the tce_list is in
-> preregistered memory, and a fallback case when it isn't.  But that's
-> obscured by the fact that if for whatever reason you have some
-> preregistered memory but it doesn't cover the tce_list, then you don't
-> go to the fallback case here, but instead fall right back to the
-> virtual mode handler.
-
-This is purely acceleration, I am trying to make obvious cases faster, an=
-d
-other cases safer. If some chunk is not preregistered but others are and
-there is H_PUT_TCE_INDIRECT with tce_list from non-preregistered memory,
-then I have no idea what this userspace is and what it is doing, so I jus=
-t
-do not want to accelerate anything for it in real mode (I have poor
-imagination and since I cannot test it - I better drop it).
-
-
-> So, I think you should either:
->     1) Fallback to the code below whenever you can't access the
->        tce_list via prereg memory, regardless of whether there's any
->        _other_ prereg memory
-
-Using prereg was the entire point here as if something goes wrong (i.e.
-some TCE fails to translate), I may stop in a middle of TCE list and will=
-
-have to do complicated rollback to pass the request in the virtual mode t=
-o
-finish processing (note that there is nothing to revert when it is
-emulated-devices-only-guest).
-
-
-> or
->     2) Drop the code below entirely and always return H_TOO_HARD if
->        you can't get the tce_list from prereg.
-
-This path cannot fail for emulated device and it is really fast path, why=
-
-to drop it?
-
-
-I am _really_ confused now. In few last respins this was not a concern, n=
-ow
-it is - is the patch this bad and 100% needs to be reworked? I am trying =
-to
-push it last 3 years now :(
-
-
-
+> ---
+>  include/linux/vfio.h |  6 +++++
+>  drivers/vfio/vfio.c  | 76 ++++++++++++++++++++++++++++++++++++++++++++++=
+++++++
+>  2 files changed, 82 insertions(+)
 >=20
->> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
->> +			return H_TOO_HARD;
->> +
->> +		rmap =3D (void *) vmalloc_to_phys(rmap);
->> +
->> +		/*
->> +		 * Synchronize with the MMU notifier callbacks in
->> +		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
->> +		 * While we have the rmap lock, code running on other CPUs
->> +		 * cannot finish unmapping the host real page that backs
->> +		 * this guest real page, so we are OK to access the host
->> +		 * real page.
->> +		 */
->> +		lock_rmap(rmap);
->> +		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
->> +			ret =3D H_TOO_HARD;
->> +			goto unlock_exit;
->> +		}
->>  	}
->> =20
->>  	for (i =3D 0; i < npages; ++i) {
->> @@ -290,7 +322,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu =
-*vcpu,
->>  	}
->> =20
->>  unlock_exit:
->> -	unlock_rmap(rmap);
->> +	if (rmap)
->> +		unlock_rmap(rmap);
->> =20
->>  	return ret;
->>  }
->=20
-
+> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+> index edf9b2cad277..8a3488ba4732 100644
+> --- a/include/linux/vfio.h
+> +++ b/include/linux/vfio.h
+> @@ -127,9 +127,15 @@ extern int vfio_register_notifier(struct device *dev,
+>  extern int vfio_unregister_notifier(struct device *dev,
+>  				    enum vfio_notify_type type,
+>  				    struct notifier_block *nb);
+> +extern int vfio_iommu_group_register_notifier(struct iommu_group *grp,
+> +		enum vfio_notify_type type, unsigned long *events,
+> +		struct notifier_block *nb);
+> +extern int vfio_iommu_group_unregister_notifier(struct iommu_group *grp,
+> +		enum vfio_notify_type type, struct notifier_block *nb);
+> =20
+>  struct kvm;
+>  extern void vfio_group_set_kvm(struct vfio_group *group, struct kvm *kvm=
+);
+> +extern void vfio_iommu_group_set_kvm(struct iommu_group *grp, struct kvm=
+ *kvm);
+> =20
+>  /*
+>   * Sub-module helpers
+> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+> index 9901c4671e2f..6b9a98508939 100644
+> --- a/drivers/vfio/vfio.c
+> +++ b/drivers/vfio/vfio.c
+> @@ -2077,6 +2077,23 @@ void vfio_group_set_kvm(struct vfio_group *group, =
+struct kvm *kvm)
+>  }
+>  EXPORT_SYMBOL_GPL(vfio_group_set_kvm);
+> =20
+> +void vfio_iommu_group_set_kvm(struct iommu_group *grp, struct kvm *kvm)
+> +{
+> +	struct vfio_group *group;
+> +
+> +	if (!grp)
+> +		return;
+> +
+> +	group =3D vfio_group_get_from_iommu(grp);
+> +	if (!group)
+> +		return;
+> +
+> +	vfio_group_set_kvm(group, kvm);
+> +
+> +	vfio_group_put(group);
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_iommu_group_set_kvm);
+> +
+>  static int vfio_register_group_notifier(struct vfio_group *group,
+>  					unsigned long *events,
+>  					struct notifier_block *nb)
+> @@ -2197,6 +2214,65 @@ int vfio_unregister_notifier(struct device *dev, e=
+num vfio_notify_type type,
+>  }
+>  EXPORT_SYMBOL(vfio_unregister_notifier);
+> =20
+> +int vfio_iommu_group_register_notifier(struct iommu_group *iommugroup,
+> +		enum vfio_notify_type type,
+> +		unsigned long *events, struct notifier_block *nb)
+> +{
+> +	struct vfio_group *group;
+> +	int ret;
+> +
+> +	if (!iommugroup || !nb || !events || (*events =3D=3D 0))
+> +		return -EINVAL;
+> +
+> +	group =3D vfio_group_get_from_iommu(iommugroup);
+> +	if (!group)
+> +		return -ENODEV;
+> +
+> +	switch (type) {
+> +	case VFIO_IOMMU_NOTIFY:
+> +		ret =3D vfio_register_iommu_notifier(group, events, nb);
+> +		break;
+> +	case VFIO_GROUP_NOTIFY:
+> +		ret =3D vfio_register_group_notifier(group, events, nb);
+> +		break;
+> +	default:
+> +		ret =3D -EINVAL;
+> +	}
+> +
+> +	vfio_group_put(group);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(vfio_iommu_group_register_notifier);
+> +
+> +int vfio_iommu_group_unregister_notifier(struct iommu_group *grp,
+> +		enum vfio_notify_type type, struct notifier_block *nb)
+> +{
+> +	struct vfio_group *group;
+> +	int ret;
+> +
+> +	if (!grp || !nb)
+> +		return -EINVAL;
+> +
+> +	group =3D vfio_group_get_from_iommu(grp);
+> +	if (!group)
+> +		return -ENODEV;
+> +
+> +	switch (type) {
+> +	case VFIO_IOMMU_NOTIFY:
+> +		ret =3D vfio_unregister_iommu_notifier(group, nb);
+> +		break;
+> +	case VFIO_GROUP_NOTIFY:
+> +		ret =3D vfio_unregister_group_notifier(group, nb);
+> +		break;
+> +	default:
+> +		ret =3D -EINVAL;
+> +	}
+> +
+> +	vfio_group_put(group);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(vfio_iommu_group_unregister_notifier);
+> +
+>  /**
+>   * Module/class support
+>   */
 
 --=20
-Alexey
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-
---p0k6DDq4kpxpMbf2hI1KFRTllLkH6kP9o--
-
---kMq54SRX3fn2WJu4Kwg7lCiN86rpc5hPS
+--tmoQ0UElFV5VgXgH
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIrBAEBCAAVBQJYWkPdDhxhaWtAb3psYWJzLnJ1AAoJEIYTPdgrwSC5Fw0P/0tu
-/WXovx6mJ2QLRbUBzv4++WXqriJMBdtuRqOZjOgXVSB4aegEfRZiINNSGnIiG79n
-ESI/xVxKSsYLA9hE7STh5ggDmgZdvNXlUUV+sfbEUdlVeOS/G6sQg3tJ7UZ6dr/v
-I7JK2jzDW3MV4EDO+ckGAV8Awrp/Ryi/g8M5YjzZfQn9/4rGVW54WwMECapUQoZ6
-vWOy1oGa29q6Zmv2NpnfcHYMQyASC3H/sK80N/e3WuZ8QyfwotxT40pPPb3bVu70
-NsakEOGcHygcKo6W2ADsABLwISPnIywdRBo68M+VF+n9Qrv1tEnMtPnCzUSBPeX9
-QPpb91IvucsTDs1my8xTcB2ikst+upqMi9+LrAxD+IFIJ0xiW6eUFdDYbL/O5fU/
-Xm1DdsfMHavBVnnyF3itJqL377E1qFt9TGVQXU/iNXvt9ccwN4FzzqfSwDfK6fUd
-L8CdN0f9fZJfhnPl3966CQLXLxKHiWqRH3UpHrEO6HoUuDUnCR7cZendWZBSlqi4
-Au45eV04413ur0ehFirigO3Ti6nk0N3w8CR8yvfR+aDEBst+Q1+xc9nw8+JQV9v2
-/B4qzIZiGBpm7dABzJoliD2DES3g4sDFoR21f4Dr7Ux36YZP5Cm1kMT61cYcYohY
-taaDphjy08kqwlQzI0gZqoGYP0+0vxtOtcHFCv/t
-=gB7f
+iQIcBAEBCAAGBQJYWhtgAAoJEGw4ysog2bOSKEcQAJJwnIFySN3dTvczPcZtAC8S
+AMtUWuy7bWp6XXaynBbf99qd78yCwbsWOJkbKOCi7aG8UPqyTdA5CRqjJxFUr1R2
+so+dIrPA617IyPrU/zNJ/6KbJN7GNP8YbZ8ELQnp6I8s1TDtGMdIK09PA1ElllWD
+DI1LqEfm0bxNuOCwyag48Xbx+iEMxbJ/GgimH5EibFrQxIzFa7+6AMuuSuQhzRvd
+F/LegximnS9kIUfXQaY1O3BU277FpZmoGaCe/nPMkMSPG2VnqFUlczTH1HXmX3gM
+TS7Rhw6GwLeJgox6BvY8CEv3ggYvLIpMZsxT/4YKtOKWu1an3mBWg8UW9J/lUwi3
+q4v+yOzsz3AM0AbJGXViWEUPQbpF1JYlNJ9qUYmqdqs8jyeJf2nF2GSLGA7uXy1Q
+v6dnq44SwzkPehWY9tDubbgGskkMIQyEPYIqryJYXjiOcQ+rB5FGbr0uADLsLXqo
+EU2vjw8AhfHdaYOMOYmnpyhGydOcO/KVkwrRRbxey20nhR6gfR3kX+bD3aaUzD7a
+591OnxysRM/ZmXqhzxxbNIg2PlnzQ4DR3O698qr+xE279UDQq4RtCavK8Aboz21V
+mG3Qn0pMLxmKbSvwT6pnWzx/TkPAnU0CAXtXFBGrCYn25lGpKtflJYqEhlWV0baM
+Kx/q7OXzEVVw3VwV/fV5
+=y4iB
 -----END PGP SIGNATURE-----
 
---kMq54SRX3fn2WJu4Kwg7lCiN86rpc5hPS--
+--tmoQ0UElFV5VgXgH--
