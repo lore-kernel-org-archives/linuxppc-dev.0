@@ -1,20 +1,48 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tjwvS6bXYzDwW7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 11:46:28 +1100 (AEDT)
-Message-ID: <1482281181.3391.4.camel@gmail.com>
-Subject: Re: [PATCH] powerpc/64: Don't try to use radix MMU under a hypervisor
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
-Cc: Michael Ellerman <michael@ellerman.id.au>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 21 Dec 2016 11:46:21 +1100
-In-Reply-To: <20161220114002.GA19107@fergus.ozlabs.ibm.com>
-References: <20161220114002.GA19107@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tk0MN74NLzDwVk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 14:22:24 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBL3JDEW091621
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 22:22:22 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27fcudf3sh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2016 22:22:21 -0500
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 21 Dec 2016 13:22:16 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A0E412BB0061
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 14:22:12 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ uBL3MCA031785000
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 14:22:12 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ uBL3MBnT002017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 14:22:12 +1100
+Subject: Re: [PATCH v4 01/12] powerpc: Add #defs for paca->soft_enabled flags
+To: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au
+References: <1482134828-18811-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1482134828-18811-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <f69a3c42-b795-0c14-f812-0ff45489146f@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, anton@samba.org,
+ npiggin@gmail.com
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Wed, 21 Dec 2016 08:52:09 +0530
+MIME-Version: 1.0
+In-Reply-To: <f69a3c42-b795-0c14-f812-0ff45489146f@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <7fabbd11-7001-4397-fdea-c1863a0e1c76@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,95 +52,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-12-20 at 22:40 +1100, Paul Mackerras wrote:
-> Currently, if the kernel is running on a POWER9 processor under a
-> hypervisor, it will try to use the radix MMU even though it doesn't
-> have the necessary code to use radix under a hypervisor (it doesn't
-> negotiate use of radix, and it doesn't do the H_REGISTER_PROC_TBL
-> hcall).  The result is that the guest kernel will crash when it tries
-> to turn on the MMU, because it will still actually be using the HPT
-> MMU, but it won't have set up any SLB or HPT entries.  It does this
-> because the only thing that the kernel looks at in deciding to use
-> radix, on any platform, is the ibm,pa-features property on the cpu
-> device nodes.
-> 
-> This fixes it by looking for the /chosen/ibm,architecture-vec-5
-> property, and if it exists, clearing the radix MMU feature bit.
-> We do this before we decide whether to initialize for radix or HPT.
-> This property is created by the hypervisor as a result of the guest
-> calling the ibm,client-architecture-support method to indicate
-> its capabilities, so it only exists on systems with a hypervisor.
-> The reason for using this property is that in future, when we
-> have support for using radix under a hypervisor, we will need
-> to check this property to see whether the hypervisor agreed to
-> us using radix.
-> 
-> Fixes: 17a3dd2f5fc7 ("powerpc/mm/radix: Use firmware feature to
-> enable Radix MMU")
-> Cc: stable@vger.kernel.org # v4.7+
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> ---
->  arch/powerpc/mm/init_64.c | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
-> 
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index a000c35..098531d 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -42,6 +42,8 @@
->  #include <linux/memblock.h>
->  #include <linux/hugetlb.h>
->  #include <linux/slab.h>
-> +#include <linux/of_fdt.h>
-> +#include <linux/libfdt.h>
->  
->  #include <asm/pgalloc.h>
->  #include <asm/page.h>
-> @@ -344,6 +346,28 @@ static int __init parse_disable_radix(char *p)
->  }
->  early_param("disable_radix", parse_disable_radix);
->  
-> +/*
-> + * If we're running under a hypervisor, we currently can't do radix
-> + * since we don't have the code to do the H_REGISTER_PROC_TBL hcall.
-> + * We tell that we're running under a hypervisor by looking for the
-> + * /chosen/ibm,architecture-vec-5 property.
-> + */
-> +static void early_check_vec5(void)
-> +{
-> +	unsigned long root, chosen;
-> +	int size;
-> +	const u8 *vec5;
-> +
-> +	root = of_get_flat_dt_root();
-> +	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
-> +	if (chosen == -FDT_ERR_NOTFOUND)
-> +		return;
-> +	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", 
-> &size);
-> +	if (!vec5)
-> +		return;
-> +	cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-> +}
-> +
-Given that currently radix guest support doesn't exist upstream, it's
-sufficient to check for the existence of the vec5 node to determine
-that we are a guest and thus can't run radix.
 
-Is it worth checking the specific radix feature bit of the vec5 node so
-that this code is still correct for determining the lack of radix
-support by the host platform once guest radix kernels are (in the
-future) supported?
->  void __init mmu_early_init_devtree(void)
->  {
->  	/* Disable radix mode based on kernel command line. */
-> @@ -351,6 +375,9 @@ void __init mmu_early_init_devtree(void)
->  		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
->  
->  	if (early_radix_enabled())
-> +		early_check_vec5();
-> +
-> +	if (early_radix_enabled())
->  		radix__early_init_devtree();
->  	else
->  		hash__early_init_devtree();
+
+On Tuesday 20 December 2016 01:01 PM, Balbir Singh wrote:
+> <snip>
+>>
+>> +/*
+>> + * flags for paca->soft_enabled
+>> + */
+>> +#define IRQ_DISABLE_MASK_NONE    1
+>> +#define IRQ_DISABLE_MASK_LINUX    0
+>> +
+>
+> Isn't one just the complement of the other?
+>
+Yes. But these are initial cleanup patchs and in subsequent
+patches we will reuse these as mask bits instead of flag.
+
+Maddy
+
+
+> Balbir
+>
