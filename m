@@ -1,48 +1,13 @@
-Return-Path: <mukesh02@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tk3480v1PzDwT9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 16:24:23 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBL5O6iY004009
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 00:24:21 -0500
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27fgs51x87-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 00:24:21 -0500
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mukesh02@linux.vnet.ibm.com>;
- Wed, 21 Dec 2016 15:24:19 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0FBDB3578053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 16:24:16 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uBL5OFYn49217776
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 16:24:15 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uBL5OFgD004701
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 16:24:15 +1100
-Received: from [9.124.35.243] (mukesh-thinkpad-t450.in.ibm.com [9.124.35.243])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- uBL5OEAF004673
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Dec 2016 16:24:15 +1100
-Subject: Re: [PATCH] powernv/opal: Handle OPAL_WRONG_STATE error from OPAL
- fails
-To: linuxppc-dev@lists.ozlabs.org
-References: <1482243419-23041-1-git-send-email-vipin@linux.vnet.ibm.com>
-From: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-Date: Wed, 21 Dec 2016 10:54:09 +0530
-MIME-Version: 1.0
-In-Reply-To: <1482243419-23041-1-git-send-email-vipin@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <6343cad1-6fb5-8013-1229-e2a73afd019f@linux.vnet.ibm.com>
+Return-Path: <oohall@gmail.com>
+From: Oliver O'Halloran <oohall@gmail.com>
+To: skiboot@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Oliver O'Halloran <oohall@gmail.com>
+Subject: [RFC PATCH] powerpc/powernv: report error messages from opal
+Date: Wed, 21 Dec 2016 16:52:59 +1100
+Message-Id: <1482299579-21599-1-git-send-email-oohall@gmail.com>
+In-Reply-To: <1482298544-8418-1-git-send-email-oohall@gmail.com>
+References: <1482298544-8418-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,39 +17,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Recent versions of skiboot will raise an OPAL event (read: interrupt)
+when firmware writes an error message to its internal console. In
+conjunction they provide an OPAL call that the kernel can use to extract
+these messages from the OPAL log to allow them to be written into the
+kernel's log buffer where someone will (hopefully) look at them.
 
+For the companion skiboot patches see:
 
-On Tuesday 20 December 2016 07:46 PM, Vipin K Parashar wrote:
-> Added check for OPAL_WRONG_STATE error code returned from OPAL.
-> Currently Linux flashes "unexpected error" over console for this
-> error. This will avoid throwing such message and return I/O error
-> for such OPAL failures.
->
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/opal.c | 7 ++++---
->   1 file changed, 4 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 2822935..ab91d53 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -866,9 +866,10 @@ int opal_error_code(int rc)
->   	case OPAL_NO_MEM:		return -ENOMEM;
->   	case OPAL_PERMISSION:		return -EPERM;
->
-> -	case OPAL_UNSUPPORTED:		return -EIO;
-> -	case OPAL_HARDWARE:		return -EIO;
-> -	case OPAL_INTERNAL_ERROR:	return -EIO;
-> +	case OPAL_UNSUPPORTED:
-> +	case OPAL_HARDWARE:
-> +	case OPAL_INTERNAL_ERROR:
-> +	case OPAL_WRONG_STATE:		return -EIO;
+	https://lists.ozlabs.org/pipermail/skiboot/2016-December/005861.html
 
-Looks good.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/include/asm/opal-api.h            |  5 +++-
+ arch/powerpc/include/asm/opal.h                |  1 +
+ arch/powerpc/platforms/powernv/opal-msglog.c   | 41 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ 4 files changed, 47 insertions(+), 1 deletion(-)
 
-Reviewed-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-
->   	default:
->   		pr_err("%s: unexpected OPAL error %d\n", __func__, rc);
->   		return -EIO;
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0e2e57bcab50..cb9c0e6afb33 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -167,7 +167,8 @@
+ #define OPAL_INT_EOI				124
+ #define OPAL_INT_SET_MFRR			125
+ #define OPAL_PCI_TCE_KILL			126
+-#define OPAL_LAST				126
++#define OPAL_SCRAPE_LOG				128
++#define OPAL_LAST				128
+ 
+ /* Device tree flags */
+ 
+@@ -288,6 +289,7 @@ enum OpalPendingState {
+ 	OPAL_EVENT_PCI_ERROR	   = 0x200,
+ 	OPAL_EVENT_DUMP_AVAIL	   = 0x400,
+ 	OPAL_EVENT_MSG_PENDING	   = 0x800,
++	OPAL_EVENT_LOG_PENDING	   = 0x1000,
+ };
+ 
+ enum OpalThreadStatus {
+@@ -406,6 +408,7 @@ enum opal_msg_type {
+ 	OPAL_MSG_DPO		= 5,
+ 	OPAL_MSG_PRD		= 6,
+ 	OPAL_MSG_OCC		= 7,
++	OPAL_MSG_LOG		= 8,
+ 	OPAL_MSG_TYPE_MAX,
+ };
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 5c7db0f1a708..2b3bd3219fb4 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -232,6 +232,7 @@ int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
+ 			     uint32_t pe_num, uint32_t tce_size,
+ 			     uint64_t dma_addr, uint32_t npages);
++int64_t opal_scrape_log(int64_t *offset, char *buf, int64_t len, int64_t *lvl);
+ 
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/platforms/powernv/opal-msglog.c b/arch/powerpc/platforms/powernv/opal-msglog.c
+index 39d6ff9e5630..78168f66fb24 100644
+--- a/arch/powerpc/platforms/powernv/opal-msglog.c
++++ b/arch/powerpc/platforms/powernv/opal-msglog.c
+@@ -15,6 +15,7 @@
+ #include <linux/of.h>
+ #include <linux/types.h>
+ #include <asm/barrier.h>
++#include <linux/interrupt.h>
+ 
+ /* OPAL in-memory console. Defined in OPAL source at core/console.c */
+ struct memcons {
+@@ -102,8 +103,36 @@ static struct bin_attribute opal_msglog_attr = {
+ 	.read = opal_msglog_read
+ };
+ 
++static char *log_levels[] = { "Emergency", "Alert", "Critical", "Error", "Warning" };
++static int64_t offset = -1;
++
++static irqreturn_t opal_print_log(int irq, void *data)
++{
++	int64_t rc, log_lvl;
++	char buffer[320];
++
++	/*
++	 * only print one message per invokation of the IRQ handler
++	 */
++
++	rc = opal_scrape_log(&offset, buffer, sizeof(buffer), &log_lvl);
++
++	if (rc == OPAL_SUCCESS || rc == OPAL_PARTIAL) {
++		log_lvl = be64_to_cpu(log_lvl);
++		if (log_lvl > 4)
++			log_lvl = 4;
++
++		printk_emit(0, log_lvl, NULL, 0, "OPAL %s: %s%s\r\n",
++			log_levels[log_lvl], buffer,
++			rc == OPAL_PARTIAL ? "<truncated>" : "");
++	}
++
++	return IRQ_HANDLED;
++}
++
+ void __init opal_msglog_init(void)
+ {
++	int virq, rc = -1;
+ 	u64 mcaddr;
+ 	struct memcons *mc;
+ 
+@@ -123,6 +152,18 @@ void __init opal_msglog_init(void)
+ 		return;
+ 	}
+ 
++	virq = opal_event_request(ilog2(OPAL_EVENT_LOG_PENDING));
++	if (virq) {
++		rc = request_irq(virq, opal_print_log,
++			IRQF_TRIGGER_HIGH, "opal memcons", NULL);
++
++		if (rc)
++			irq_dispose_mapping(virq);
++	}
++
++	if (!virq || rc)
++		pr_warn("Unable to register OPAL log event handler\n");
++
+ 	opal_memcons = mc;
+ }
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 3aa40f1b20f5..c59d7da3fd1a 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -312,3 +312,4 @@ OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
+ OPAL_CALL_REAL(opal_rm_int_set_mfrr,		OPAL_INT_SET_MFRR);
+ OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
+ OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
++OPAL_CALL(opal_scrape_log,			OPAL_SCRAPE_LOG);
+-- 
+2.7.4
