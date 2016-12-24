@@ -1,42 +1,23 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mrahul.krishnan@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tlvrn1pZwzDw3s
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 17:06:01 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- uBO63hPv069095
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 01:05:58 -0500
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27h8web1y6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 01:05:58 -0500
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Sat, 24 Dec 2016 11:35:55 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id EC6DE125805F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 11:37:12 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- uBO65rFD28377324
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 11:35:53 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- uBO65qQv004303
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 11:35:53 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/perf: use is_kernel_addr macro in
- perf_get_misc_flags()
-Date: Sat, 24 Dec 2016 11:35:49 +0530
-Message-Id: <1482559549-22273-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tm0YZ2H2xzDw7g
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 20:38:10 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id c4so14943199pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Dec 2016 01:38:10 -0800 (PST)
+Date: Sat, 24 Dec 2016 15:08:00 +0530
+From: Rahul Krishnan <mrahul.krishnan@gmail.com>
+To: benh@kernel.crashing.org
+Cc: paulus@samba.org, mpe@ellerman.id.au, bhelgaas@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v2] pci: hotplug: This patch removes unnecessary return
+ statement using spatch tool
+Message-ID: <20161224093800.GA24893@rahul>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,25 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cleanup to use is_kernel_addr macro.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+This patch removes unnecessary return statement using spatch tool
+
+Signed-off-by: Rahul Krishnan <mrahul.krishnan@gmail.com>
 ---
- arch/powerpc/perf/core-book3s.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/hotplug/rpadlpar_core.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 2cdf2647cdb0..d9c74fd1b37b 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -243,7 +243,7 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
- 	 */
- 	if (ppmu->flags & PPMU_NO_SIPR) {
- 		unsigned long siar = mfspr(SPRN_SIAR);
--		if (siar >= PAGE_OFFSET)
-+		if (is_kernel_addr(siar))
- 			return PERF_RECORD_MISC_KERNEL;
- 		return PERF_RECORD_MISC_USER;
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index dc67f39..78ce2c7 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -455,7 +455,6 @@ static inline int is_dlpar_capable(void)
+ 
+ int __init rpadlpar_io_init(void)
+ {
+-	int rc = 0;
+ 
+ 	if (!is_dlpar_capable()) {
+ 		printk(KERN_WARNING "%s: partition not DLPAR capable\n",
+@@ -463,8 +462,7 @@ int __init rpadlpar_io_init(void)
+ 		return -EPERM;
  	}
+ 
+-	rc = dlpar_sysfs_init();
+-	return rc;
++	return dlpar_sysfs_init();
+ }
+ 
+ void rpadlpar_io_exit(void)
 -- 
 2.7.4
