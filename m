@@ -1,18 +1,22 @@
 Return-Path: <qiang.zhao@nxp.com>
 Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0054.outbound.protection.outlook.com [104.47.33.54])
+ (mail-bn3nam01on0602.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe41::602])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tnCJ83pqfzDqB8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2016 19:45:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tnCJL5qsQzDqD7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2016 19:45:54 +1100 (AEDT)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <oss@buserror.net>, <marc.zyngier@arm.com>
 CC: <jason@lakedaemon.net>, <xiaobo.xie@nxp.com>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang
  <qiang.zhao@nxp.com>
-Subject: [Patch V7 1/4] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-Date: Mon, 26 Dec 2016 16:32:43 +0800
-Message-ID: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
+Subject: [Patch V7 2/4] irqchip/qeic: merge qeic init code from platforms to a
+ common function
+Date: Mon, 26 Dec 2016 16:32:44 +0800
+Message-ID: <1482741166-33164-2-git-send-email-qiang.zhao@nxp.com>
+In-Reply-To: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
+References: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,1289 +28,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-move the driver from drivers/soc/fsl/qe to drivers/irqchip,
-merge qe_ic.h and qe_ic.c into irq-qeic.c.
+The codes of qe_ic init from a variety of platforms are redundant,
+merge them to a common function and put it to irqchip/irq-qeic.c
+
+For non-p1021_mds mpc85xx_mds boards, use "qe_ic_init(np, 0,
+qe_ic_cascade_low_mpic, qe_ic_cascade_high_mpic);" instead of
+"qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);".
+
+qe_ic_cascade_muxed_mpic was used for boards has the same interrupt
+number for low interrupt and high interrupt, qe_ic_init has checked
+if "low interrupt == high interrupt"
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 ---
 Changes for v2:
-	- modify the subject and commit msg
+	- modify subject and commit msg
+	- add check for qeic by type
 Changes for v3:
-	- merge .h file to .c, rename it with irq-qeic.c
+	- na
 Changes for v4:
-	- modify comments
+	- na
 Changes for v5:
-	- disable rename detection
+	- na
 Changes for v6:
 	- rebase
 Changes for v7:
 	- na
 
- drivers/irqchip/Makefile    |   1 +
- drivers/irqchip/irq-qeic.c  | 601 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/soc/fsl/qe/Makefile |   2 +-
- drivers/soc/fsl/qe/qe_ic.c  | 512 -------------------------------------
- drivers/soc/fsl/qe/qe_ic.h  | 103 --------
- 5 files changed, 603 insertions(+), 616 deletions(-)
- create mode 100644 drivers/irqchip/irq-qeic.c
- delete mode 100644 drivers/soc/fsl/qe/qe_ic.c
- delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
+ arch/powerpc/platforms/83xx/misc.c            | 15 ---------------
+ arch/powerpc/platforms/85xx/corenet_generic.c |  9 ---------
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c     | 14 --------------
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c     | 16 ----------------
+ arch/powerpc/platforms/85xx/twr_p102x.c       | 14 --------------
+ drivers/irqchip/irq-qeic.c                    | 16 ++++++++++++++++
+ 6 files changed, 16 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 4c203b6..face608 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -71,3 +71,4 @@ obj-$(CONFIG_MVEBU_ODMI)		+= irq-mvebu-odmi.o
- obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
- obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
- obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o
-+obj-$(CONFIG_QUICC_ENGINE)		+= irq-qeic.o
+diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+index d75c981..c09a135 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -93,24 +93,9 @@ void __init mpc83xx_ipic_init_IRQ(void)
+ }
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-void __init mpc83xx_qe_init_IRQ(void)
+-{
+-	struct device_node *np;
+-
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+-	if (!np) {
+-		np = of_find_node_by_type(NULL, "qeic");
+-		if (!np)
+-			return;
+-	}
+-	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
+-	of_node_put(np);
+-}
+-
+ void __init mpc83xx_ipic_and_qe_init_IRQ(void)
+ {
+ 	mpc83xx_ipic_init_IRQ();
+-	mpc83xx_qe_init_IRQ();
+ }
+ #endif /* CONFIG_QUICC_ENGINE */
+ 
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 1179115..1d96c3f 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -41,8 +41,6 @@ void __init corenet_gen_pic_init(void)
+ 	unsigned int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
+ 		MPIC_NO_RESET;
+ 
+-	struct device_node *np;
+-
+ 	if (ppc_md.get_irq == mpic_get_coreint_irq)
+ 		flags |= MPIC_ENABLE_COREINT;
+ 
+@@ -50,13 +48,6 @@ void __init corenet_gen_pic_init(void)
+ 	BUG_ON(mpic == NULL);
+ 
+ 	mpic_init(mpic);
+-
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+-	if (np) {
+-		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+-				qe_ic_cascade_high_mpic);
+-		of_node_put(np);
+-	}
+ }
+ 
+ /*
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index d7e440e..06f34a9 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -283,20 +283,6 @@ static void __init mpc85xx_mds_qeic_init(void)
+ 		of_node_put(np);
+ 		return;
+ 	}
+-
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+-	if (!np) {
+-		np = of_find_node_by_type(NULL, "qeic");
+-		if (!np)
+-			return;
+-	}
+-
+-	if (machine_is(p1021_mds))
+-		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+-				qe_ic_cascade_high_mpic);
+-	else
+-		qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);
+-	of_node_put(np);
+ }
+ #else
+ static void __init mpc85xx_mds_qe_init(void) { }
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index 1006950..000d385 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -48,10 +48,6 @@ void __init mpc85xx_rdb_pic_init(void)
+ {
+ 	struct mpic *mpic;
+ 
+-#ifdef CONFIG_QUICC_ENGINE
+-	struct device_node *np;
+-#endif
+-
+ 	if (of_machine_is_compatible("fsl,MPC85XXRDB-CAMP")) {
+ 		mpic = mpic_alloc(NULL, 0, MPIC_NO_RESET |
+ 			MPIC_BIG_ENDIAN |
+@@ -66,18 +62,6 @@ void __init mpc85xx_rdb_pic_init(void)
+ 
+ 	BUG_ON(mpic == NULL);
+ 	mpic_init(mpic);
+-
+-#ifdef CONFIG_QUICC_ENGINE
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+-	if (np) {
+-		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+-				qe_ic_cascade_high_mpic);
+-		of_node_put(np);
+-
+-	} else
+-		pr_err("%s: Could not find qe-ic node\n", __func__);
+-#endif
+-
+ }
+ 
+ /*
+diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
+index 360f625..6be9b33 100644
+--- a/arch/powerpc/platforms/85xx/twr_p102x.c
++++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+@@ -35,26 +35,12 @@ static void __init twr_p1025_pic_init(void)
+ {
+ 	struct mpic *mpic;
+ 
+-#ifdef CONFIG_QUICC_ENGINE
+-	struct device_node *np;
+-#endif
+-
+ 	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
+ 			MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " OpenPIC  ");
+ 
+ 	BUG_ON(mpic == NULL);
+ 	mpic_init(mpic);
+-
+-#ifdef CONFIG_QUICC_ENGINE
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+-	if (np) {
+-		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+-				qe_ic_cascade_high_mpic);
+-		of_node_put(np);
+-	} else
+-		pr_err("Could not find qe-ic node\n");
+-#endif
+ }
+ 
+ /* ************************************************************************
 diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
-new file mode 100644
-index 0000000..48ceded
---- /dev/null
+index 48ceded..1463731 100644
+--- a/drivers/irqchip/irq-qeic.c
 +++ b/drivers/irqchip/irq-qeic.c
-@@ -0,0 +1,601 @@
-+/*
-+ * drivers/irqchip/irq-qeic.c
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.  All rights reserved.
-+ *
-+ * Author: Li Yang <leoli@freescale.com>
-+ * Based on code from Shlomi Gridish <gridish@freescale.com>
-+ *
-+ * QUICC ENGINE Interrupt Controller
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/of_irq.h>
-+#include <linux/of_address.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/slab.h>
-+#include <linux/stddef.h>
-+#include <linux/sched.h>
-+#include <linux/signal.h>
-+#include <linux/device.h>
-+#include <linux/spinlock.h>
-+#include <asm/irq.h>
-+#include <asm/io.h>
-+#include <soc/fsl/qe/qe_ic.h>
-+
-+#define NR_QE_IC_INTS		64
-+
-+/* QE IC registers offset */
-+#define QEIC_CICR		0x00
-+#define QEIC_CIVEC		0x04
-+#define QEIC_CRIPNR		0x08
-+#define QEIC_CIPNR		0x0c
-+#define QEIC_CIPXCC		0x10
-+#define QEIC_CIPYCC		0x14
-+#define QEIC_CIPWCC		0x18
-+#define QEIC_CIPZCC		0x1c
-+#define QEIC_CIMR		0x20
-+#define QEIC_CRIMR		0x24
-+#define QEIC_CICNR		0x28
-+#define QEIC_CIPRTA		0x30
-+#define QEIC_CIPRTB		0x34
-+#define QEIC_CRICR		0x3c
-+#define QEIC_CHIVEC		0x60
-+
-+/* Interrupt priority registers */
-+#define CIPCC_SHIFT_PRI0	29
-+#define CIPCC_SHIFT_PRI1	26
-+#define CIPCC_SHIFT_PRI2	23
-+#define CIPCC_SHIFT_PRI3	20
-+#define CIPCC_SHIFT_PRI4	13
-+#define CIPCC_SHIFT_PRI5	10
-+#define CIPCC_SHIFT_PRI6	7
-+#define CIPCC_SHIFT_PRI7	4
-+
-+/* CICR priority modes */
-+#define CICR_GWCC		0x00040000
-+#define CICR_GXCC		0x00020000
-+#define CICR_GYCC		0x00010000
-+#define CICR_GZCC		0x00080000
-+#define CICR_GRTA		0x00200000
-+#define CICR_GRTB		0x00400000
-+#define CICR_HPIT_SHIFT		8
-+#define CICR_HPIT_MASK		0x00000300
-+#define CICR_HP_SHIFT		24
-+#define CICR_HP_MASK		0x3f000000
-+
-+/* CICNR */
-+#define CICNR_WCC1T_SHIFT	20
-+#define CICNR_ZCC1T_SHIFT	28
-+#define CICNR_YCC1T_SHIFT	12
-+#define CICNR_XCC1T_SHIFT	4
-+
-+/* CRICR */
-+#define CRICR_RTA1T_SHIFT	20
-+#define CRICR_RTB1T_SHIFT	28
-+
-+/* Signal indicator */
-+#define SIGNAL_MASK		3
-+#define SIGNAL_HIGH		2
-+#define SIGNAL_LOW		0
-+
-+struct qe_ic {
-+	/* Control registers offset */
-+	volatile u32 __iomem *regs;
-+
-+	/* The remapper for this QEIC */
-+	struct irq_domain *irqhost;
-+
-+	/* The "linux" controller struct */
-+	struct irq_chip hc_irq;
-+
-+	/* VIRQ numbers of QE high/low irqs */
-+	unsigned int virq_high;
-+	unsigned int virq_low;
-+};
-+
-+/*
-+ * QE interrupt controller internal structure
-+ */
-+struct qe_ic_info {
-+	/* location of this source at the QIMR register. */
-+	u32	mask;
-+
-+	/* Mask register offset */
-+	u32	mask_reg;
-+
-+	/*
-+	 * for grouped interrupts sources - the interrupt
-+	 * code as appears at the group priority register
-+	 */
-+	u8	pri_code;
-+
-+	/* Group priority register offset */
-+	u32	pri_reg;
-+};
-+
-+static DEFINE_RAW_SPINLOCK(qe_ic_lock);
-+
-+static struct qe_ic_info qe_ic_info[] = {
-+	[1] = {
-+	       .mask = 0x00008000,
-+	       .mask_reg = QEIC_CIMR,
-+	       .pri_code = 0,
-+	       .pri_reg = QEIC_CIPWCC,
-+	       },
-+	[2] = {
-+	       .mask = 0x00004000,
-+	       .mask_reg = QEIC_CIMR,
-+	       .pri_code = 1,
-+	       .pri_reg = QEIC_CIPWCC,
-+	       },
-+	[3] = {
-+	       .mask = 0x00002000,
-+	       .mask_reg = QEIC_CIMR,
-+	       .pri_code = 2,
-+	       .pri_reg = QEIC_CIPWCC,
-+	       },
-+	[10] = {
-+		.mask = 0x00000040,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 1,
-+		.pri_reg = QEIC_CIPZCC,
-+		},
-+	[11] = {
-+		.mask = 0x00000020,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 2,
-+		.pri_reg = QEIC_CIPZCC,
-+		},
-+	[12] = {
-+		.mask = 0x00000010,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 3,
-+		.pri_reg = QEIC_CIPZCC,
-+		},
-+	[13] = {
-+		.mask = 0x00000008,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 4,
-+		.pri_reg = QEIC_CIPZCC,
-+		},
-+	[14] = {
-+		.mask = 0x00000004,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 5,
-+		.pri_reg = QEIC_CIPZCC,
-+		},
-+	[15] = {
-+		.mask = 0x00000002,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 6,
-+		.pri_reg = QEIC_CIPZCC,
-+		},
-+	[20] = {
-+		.mask = 0x10000000,
-+		.mask_reg = QEIC_CRIMR,
-+		.pri_code = 3,
-+		.pri_reg = QEIC_CIPRTA,
-+		},
-+	[25] = {
-+		.mask = 0x00800000,
-+		.mask_reg = QEIC_CRIMR,
-+		.pri_code = 0,
-+		.pri_reg = QEIC_CIPRTB,
-+		},
-+	[26] = {
-+		.mask = 0x00400000,
-+		.mask_reg = QEIC_CRIMR,
-+		.pri_code = 1,
-+		.pri_reg = QEIC_CIPRTB,
-+		},
-+	[27] = {
-+		.mask = 0x00200000,
-+		.mask_reg = QEIC_CRIMR,
-+		.pri_code = 2,
-+		.pri_reg = QEIC_CIPRTB,
-+		},
-+	[28] = {
-+		.mask = 0x00100000,
-+		.mask_reg = QEIC_CRIMR,
-+		.pri_code = 3,
-+		.pri_reg = QEIC_CIPRTB,
-+		},
-+	[32] = {
-+		.mask = 0x80000000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 0,
-+		.pri_reg = QEIC_CIPXCC,
-+		},
-+	[33] = {
-+		.mask = 0x40000000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 1,
-+		.pri_reg = QEIC_CIPXCC,
-+		},
-+	[34] = {
-+		.mask = 0x20000000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 2,
-+		.pri_reg = QEIC_CIPXCC,
-+		},
-+	[35] = {
-+		.mask = 0x10000000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 3,
-+		.pri_reg = QEIC_CIPXCC,
-+		},
-+	[36] = {
-+		.mask = 0x08000000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 4,
-+		.pri_reg = QEIC_CIPXCC,
-+		},
-+	[40] = {
-+		.mask = 0x00800000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 0,
-+		.pri_reg = QEIC_CIPYCC,
-+		},
-+	[41] = {
-+		.mask = 0x00400000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 1,
-+		.pri_reg = QEIC_CIPYCC,
-+		},
-+	[42] = {
-+		.mask = 0x00200000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 2,
-+		.pri_reg = QEIC_CIPYCC,
-+		},
-+	[43] = {
-+		.mask = 0x00100000,
-+		.mask_reg = QEIC_CIMR,
-+		.pri_code = 3,
-+		.pri_reg = QEIC_CIPYCC,
-+		},
-+};
-+
-+static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
+@@ -598,4 +598,20 @@ static int __init init_qe_ic_sysfs(void)
+ 	return 0;
+ }
+ 
++static int __init qeic_of_init(void)
 +{
-+	return in_be32(base + (reg >> 2));
-+}
++	struct device_node *np;
 +
-+static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
-+			       u32 value)
-+{
-+	out_be32(base + (reg >> 2), value);
-+}
-+
-+static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
-+{
-+	return irq_get_chip_data(virq);
-+}
-+
-+static inline struct qe_ic *qe_ic_from_irq_data(struct irq_data *d)
-+{
-+	return irq_data_get_irq_chip_data(d);
-+}
-+
-+static void qe_ic_unmask_irq(struct irq_data *d)
-+{
-+	struct qe_ic *qe_ic = qe_ic_from_irq_data(d);
-+	unsigned int src = irqd_to_hwirq(d);
-+	unsigned long flags;
-+	u32 temp;
-+
-+	raw_spin_lock_irqsave(&qe_ic_lock, flags);
-+
-+	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
-+	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
-+		    temp | qe_ic_info[src].mask);
-+
-+	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
-+}
-+
-+static void qe_ic_mask_irq(struct irq_data *d)
-+{
-+	struct qe_ic *qe_ic = qe_ic_from_irq_data(d);
-+	unsigned int src = irqd_to_hwirq(d);
-+	unsigned long flags;
-+	u32 temp;
-+
-+	raw_spin_lock_irqsave(&qe_ic_lock, flags);
-+
-+	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
-+	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
-+		    temp & ~qe_ic_info[src].mask);
-+
-+	/* Flush the above write before enabling interrupts; otherwise,
-+	 * spurious interrupts will sometimes happen.  To be 100% sure
-+	 * that the write has reached the device before interrupts are
-+	 * enabled, the mask register would have to be read back; however,
-+	 * this is not required for correctness, only to avoid wasting
-+	 * time on a large number of spurious interrupts.  In testing,
-+	 * a sync reduced the observed spurious interrupts to zero.
-+	 */
-+	mb();
-+
-+	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
-+}
-+
-+static struct irq_chip qe_ic_irq_chip = {
-+	.name = "QEIC",
-+	.irq_unmask = qe_ic_unmask_irq,
-+	.irq_mask = qe_ic_mask_irq,
-+	.irq_mask_ack = qe_ic_mask_irq,
-+};
-+
-+static int qe_ic_host_match(struct irq_domain *h, struct device_node *node,
-+			    enum irq_domain_bus_token bus_token)
-+{
-+	/* Exact match, unless qe_ic node is NULL */
-+	struct device_node *of_node = irq_domain_get_of_node(h);
-+	return of_node == NULL || of_node == node;
-+}
-+
-+static int qe_ic_host_map(struct irq_domain *h, unsigned int virq,
-+			  irq_hw_number_t hw)
-+{
-+	struct qe_ic *qe_ic = h->host_data;
-+	struct irq_chip *chip;
-+
-+	if (hw >= ARRAY_SIZE(qe_ic_info)) {
-+		pr_err("%s: Invalid hw irq number for QEIC\n", __func__);
-+		return -EINVAL;
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (!np) {
++		np = of_find_node_by_type(NULL, "qeic");
++		if (!np)
++			return;
 +	}
-+
-+	if (qe_ic_info[hw].mask == 0) {
-+		printk(KERN_ERR "Can't map reserved IRQ\n");
-+		return -EINVAL;
-+	}
-+	/* Default chip */
-+	chip = &qe_ic->hc_irq;
-+
-+	irq_set_chip_data(virq, qe_ic);
-+	irq_set_status_flags(virq, IRQ_LEVEL);
-+
-+	irq_set_chip_and_handler(virq, chip, handle_level_irq);
-+
-+	return 0;
++	qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
++		   qe_ic_cascade_high_mpic);
++	of_node_put(np);
 +}
 +
-+static const struct irq_domain_ops qe_ic_host_ops = {
-+	.match = qe_ic_host_match,
-+	.map = qe_ic_host_map,
-+	.xlate = irq_domain_xlate_onetwocell,
-+};
-+
-+/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
-+{
-+	int irq;
-+
-+	BUG_ON(qe_ic == NULL);
-+
-+	/* get the interrupt source vector. */
-+	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
-+
-+	if (irq == 0)
-+		return NO_IRQ;
-+
-+	return irq_linear_revmap(qe_ic->irqhost, irq);
-+}
-+
-+/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
-+{
-+	int irq;
-+
-+	BUG_ON(qe_ic == NULL);
-+
-+	/* get the interrupt source vector. */
-+	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
-+
-+	if (irq == 0)
-+		return NO_IRQ;
-+
-+	return irq_linear_revmap(qe_ic->irqhost, irq);
-+}
-+
-+void __init qe_ic_init(struct device_node *node, unsigned int flags,
-+		       void (*low_handler)(struct irq_desc *desc),
-+		       void (*high_handler)(struct irq_desc *desc))
-+{
-+	struct qe_ic *qe_ic;
-+	struct resource res;
-+	u32 temp = 0, ret, high_active = 0;
-+
-+	ret = of_address_to_resource(node, 0, &res);
-+	if (ret)
-+		return;
-+
-+	qe_ic = kzalloc(sizeof(*qe_ic), GFP_KERNEL);
-+	if (qe_ic == NULL)
-+		return;
-+
-+	qe_ic->irqhost = irq_domain_add_linear(node, NR_QE_IC_INTS,
-+					       &qe_ic_host_ops, qe_ic);
-+	if (qe_ic->irqhost == NULL) {
-+		kfree(qe_ic);
-+		return;
-+	}
-+
-+	qe_ic->regs = ioremap(res.start, resource_size(&res));
-+
-+	qe_ic->hc_irq = qe_ic_irq_chip;
-+
-+	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
-+	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
-+
-+	if (qe_ic->virq_low == NO_IRQ) {
-+		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
-+		kfree(qe_ic);
-+		return;
-+	}
-+
-+	/* default priority scheme is grouped. If spread mode is    */
-+	/* required, configure cicr accordingly.                    */
-+	if (flags & QE_IC_SPREADMODE_GRP_W)
-+		temp |= CICR_GWCC;
-+	if (flags & QE_IC_SPREADMODE_GRP_X)
-+		temp |= CICR_GXCC;
-+	if (flags & QE_IC_SPREADMODE_GRP_Y)
-+		temp |= CICR_GYCC;
-+	if (flags & QE_IC_SPREADMODE_GRP_Z)
-+		temp |= CICR_GZCC;
-+	if (flags & QE_IC_SPREADMODE_GRP_RISCA)
-+		temp |= CICR_GRTA;
-+	if (flags & QE_IC_SPREADMODE_GRP_RISCB)
-+		temp |= CICR_GRTB;
-+
-+	/* choose destination signal for highest priority interrupt */
-+	if (flags & QE_IC_HIGH_SIGNAL) {
-+		temp |= (SIGNAL_HIGH << CICR_HPIT_SHIFT);
-+		high_active = 1;
-+	}
-+
-+	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
-+
-+	irq_set_handler_data(qe_ic->virq_low, qe_ic);
-+	irq_set_chained_handler(qe_ic->virq_low, low_handler);
-+
-+	if (qe_ic->virq_high != NO_IRQ &&
-+			qe_ic->virq_high != qe_ic->virq_low) {
-+		irq_set_handler_data(qe_ic->virq_high, qe_ic);
-+		irq_set_chained_handler(qe_ic->virq_high, high_handler);
-+	}
-+}
-+
-+void qe_ic_set_highest_priority(unsigned int virq, int high)
-+{
-+	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
-+	unsigned int src = virq_to_hw(virq);
-+	u32 temp = 0;
-+
-+	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
-+
-+	temp &= ~CICR_HP_MASK;
-+	temp |= src << CICR_HP_SHIFT;
-+
-+	temp &= ~CICR_HPIT_MASK;
-+	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << CICR_HPIT_SHIFT;
-+
-+	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
-+}
-+
-+/* Set Priority level within its group, from 1 to 8 */
-+int qe_ic_set_priority(unsigned int virq, unsigned int priority)
-+{
-+	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
-+	unsigned int src = virq_to_hw(virq);
-+	u32 temp;
-+
-+	if (priority > 8 || priority == 0)
-+		return -EINVAL;
-+	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
-+		      "%s: Invalid hw irq number for QEIC\n", __func__))
-+		return -EINVAL;
-+	if (qe_ic_info[src].pri_reg == 0)
-+		return -EINVAL;
-+
-+	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].pri_reg);
-+
-+	if (priority < 4) {
-+		temp &= ~(0x7 << (32 - priority * 3));
-+		temp |= qe_ic_info[src].pri_code << (32 - priority * 3);
-+	} else {
-+		temp &= ~(0x7 << (24 - priority * 3));
-+		temp |= qe_ic_info[src].pri_code << (24 - priority * 3);
-+	}
-+
-+	qe_ic_write(qe_ic->regs, qe_ic_info[src].pri_reg, temp);
-+
-+	return 0;
-+}
-+
-+/* Set a QE priority to use high irq, only priority 1~2 can use high irq */
-+int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
-+{
-+	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
-+	unsigned int src = virq_to_hw(virq);
-+	u32 temp, control_reg = QEIC_CICNR, shift = 0;
-+
-+	if (priority > 2 || priority == 0)
-+		return -EINVAL;
-+	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
-+		      "%s: Invalid hw irq number for QEIC\n", __func__))
-+		return -EINVAL;
-+
-+	switch (qe_ic_info[src].pri_reg) {
-+	case QEIC_CIPZCC:
-+		shift = CICNR_ZCC1T_SHIFT;
-+		break;
-+	case QEIC_CIPWCC:
-+		shift = CICNR_WCC1T_SHIFT;
-+		break;
-+	case QEIC_CIPYCC:
-+		shift = CICNR_YCC1T_SHIFT;
-+		break;
-+	case QEIC_CIPXCC:
-+		shift = CICNR_XCC1T_SHIFT;
-+		break;
-+	case QEIC_CIPRTA:
-+		shift = CRICR_RTA1T_SHIFT;
-+		control_reg = QEIC_CRICR;
-+		break;
-+	case QEIC_CIPRTB:
-+		shift = CRICR_RTB1T_SHIFT;
-+		control_reg = QEIC_CRICR;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	shift += (2 - priority) * 2;
-+	temp = qe_ic_read(qe_ic->regs, control_reg);
-+	temp &= ~(SIGNAL_MASK << shift);
-+	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << shift;
-+	qe_ic_write(qe_ic->regs, control_reg, temp);
-+
-+	return 0;
-+}
-+
-+static struct bus_type qe_ic_subsys = {
-+	.name = "qe_ic",
-+	.dev_name = "qe_ic",
-+};
-+
-+static struct device device_qe_ic = {
-+	.id = 0,
-+	.bus = &qe_ic_subsys,
-+};
-+
-+static int __init init_qe_ic_sysfs(void)
-+{
-+	int rc;
-+
-+	printk(KERN_DEBUG "Registering qe_ic with sysfs...\n");
-+
-+	rc = subsys_system_register(&qe_ic_subsys, NULL);
-+	if (rc) {
-+		printk(KERN_ERR "Failed registering qe_ic sys class\n");
-+		return -ENODEV;
-+	}
-+	rc = device_register(&device_qe_ic);
-+	if (rc) {
-+		printk(KERN_ERR "Failed registering qe_ic sys device\n");
-+		return -ENODEV;
-+	}
-+	return 0;
-+}
-+
-+subsys_initcall(init_qe_ic_sysfs);
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-index 2031d38..51e4726 100644
---- a/drivers/soc/fsl/qe/Makefile
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the linux ppc-specific parts of QE
- #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
-+obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
- obj-$(CONFIG_CPM)	+= qe_common.o
- obj-$(CONFIG_UCC)	+= ucc.o
- obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
-deleted file mode 100644
-index ec2ca86..0000000
---- a/drivers/soc/fsl/qe/qe_ic.c
-+++ /dev/null
-@@ -1,512 +0,0 @@
--/*
-- * arch/powerpc/sysdev/qe_lib/qe_ic.c
-- *
-- * Copyright (C) 2006 Freescale Semiconductor, Inc.  All rights reserved.
-- *
-- * Author: Li Yang <leoli@freescale.com>
-- * Based on code from Shlomi Gridish <gridish@freescale.com>
-- *
-- * QUICC ENGINE Interrupt Controller
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--#include <linux/of_irq.h>
--#include <linux/of_address.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
--#include <linux/slab.h>
--#include <linux/stddef.h>
--#include <linux/sched.h>
--#include <linux/signal.h>
--#include <linux/device.h>
--#include <linux/spinlock.h>
--#include <asm/irq.h>
--#include <asm/io.h>
--#include <soc/fsl/qe/qe_ic.h>
--
--#include "qe_ic.h"
--
--static DEFINE_RAW_SPINLOCK(qe_ic_lock);
--
--static struct qe_ic_info qe_ic_info[] = {
--	[1] = {
--	       .mask = 0x00008000,
--	       .mask_reg = QEIC_CIMR,
--	       .pri_code = 0,
--	       .pri_reg = QEIC_CIPWCC,
--	       },
--	[2] = {
--	       .mask = 0x00004000,
--	       .mask_reg = QEIC_CIMR,
--	       .pri_code = 1,
--	       .pri_reg = QEIC_CIPWCC,
--	       },
--	[3] = {
--	       .mask = 0x00002000,
--	       .mask_reg = QEIC_CIMR,
--	       .pri_code = 2,
--	       .pri_reg = QEIC_CIPWCC,
--	       },
--	[10] = {
--		.mask = 0x00000040,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 1,
--		.pri_reg = QEIC_CIPZCC,
--		},
--	[11] = {
--		.mask = 0x00000020,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 2,
--		.pri_reg = QEIC_CIPZCC,
--		},
--	[12] = {
--		.mask = 0x00000010,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 3,
--		.pri_reg = QEIC_CIPZCC,
--		},
--	[13] = {
--		.mask = 0x00000008,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 4,
--		.pri_reg = QEIC_CIPZCC,
--		},
--	[14] = {
--		.mask = 0x00000004,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 5,
--		.pri_reg = QEIC_CIPZCC,
--		},
--	[15] = {
--		.mask = 0x00000002,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 6,
--		.pri_reg = QEIC_CIPZCC,
--		},
--	[20] = {
--		.mask = 0x10000000,
--		.mask_reg = QEIC_CRIMR,
--		.pri_code = 3,
--		.pri_reg = QEIC_CIPRTA,
--		},
--	[25] = {
--		.mask = 0x00800000,
--		.mask_reg = QEIC_CRIMR,
--		.pri_code = 0,
--		.pri_reg = QEIC_CIPRTB,
--		},
--	[26] = {
--		.mask = 0x00400000,
--		.mask_reg = QEIC_CRIMR,
--		.pri_code = 1,
--		.pri_reg = QEIC_CIPRTB,
--		},
--	[27] = {
--		.mask = 0x00200000,
--		.mask_reg = QEIC_CRIMR,
--		.pri_code = 2,
--		.pri_reg = QEIC_CIPRTB,
--		},
--	[28] = {
--		.mask = 0x00100000,
--		.mask_reg = QEIC_CRIMR,
--		.pri_code = 3,
--		.pri_reg = QEIC_CIPRTB,
--		},
--	[32] = {
--		.mask = 0x80000000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 0,
--		.pri_reg = QEIC_CIPXCC,
--		},
--	[33] = {
--		.mask = 0x40000000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 1,
--		.pri_reg = QEIC_CIPXCC,
--		},
--	[34] = {
--		.mask = 0x20000000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 2,
--		.pri_reg = QEIC_CIPXCC,
--		},
--	[35] = {
--		.mask = 0x10000000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 3,
--		.pri_reg = QEIC_CIPXCC,
--		},
--	[36] = {
--		.mask = 0x08000000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 4,
--		.pri_reg = QEIC_CIPXCC,
--		},
--	[40] = {
--		.mask = 0x00800000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 0,
--		.pri_reg = QEIC_CIPYCC,
--		},
--	[41] = {
--		.mask = 0x00400000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 1,
--		.pri_reg = QEIC_CIPYCC,
--		},
--	[42] = {
--		.mask = 0x00200000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 2,
--		.pri_reg = QEIC_CIPYCC,
--		},
--	[43] = {
--		.mask = 0x00100000,
--		.mask_reg = QEIC_CIMR,
--		.pri_code = 3,
--		.pri_reg = QEIC_CIPYCC,
--		},
--};
--
--static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
--{
--	return in_be32(base + (reg >> 2));
--}
--
--static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
--			       u32 value)
--{
--	out_be32(base + (reg >> 2), value);
--}
--
--static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
--{
--	return irq_get_chip_data(virq);
--}
--
--static inline struct qe_ic *qe_ic_from_irq_data(struct irq_data *d)
--{
--	return irq_data_get_irq_chip_data(d);
--}
--
--static void qe_ic_unmask_irq(struct irq_data *d)
--{
--	struct qe_ic *qe_ic = qe_ic_from_irq_data(d);
--	unsigned int src = irqd_to_hwirq(d);
--	unsigned long flags;
--	u32 temp;
--
--	raw_spin_lock_irqsave(&qe_ic_lock, flags);
--
--	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
--	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
--		    temp | qe_ic_info[src].mask);
--
--	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
--}
--
--static void qe_ic_mask_irq(struct irq_data *d)
--{
--	struct qe_ic *qe_ic = qe_ic_from_irq_data(d);
--	unsigned int src = irqd_to_hwirq(d);
--	unsigned long flags;
--	u32 temp;
--
--	raw_spin_lock_irqsave(&qe_ic_lock, flags);
--
--	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
--	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
--		    temp & ~qe_ic_info[src].mask);
--
--	/* Flush the above write before enabling interrupts; otherwise,
--	 * spurious interrupts will sometimes happen.  To be 100% sure
--	 * that the write has reached the device before interrupts are
--	 * enabled, the mask register would have to be read back; however,
--	 * this is not required for correctness, only to avoid wasting
--	 * time on a large number of spurious interrupts.  In testing,
--	 * a sync reduced the observed spurious interrupts to zero.
--	 */
--	mb();
--
--	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
--}
--
--static struct irq_chip qe_ic_irq_chip = {
--	.name = "QEIC",
--	.irq_unmask = qe_ic_unmask_irq,
--	.irq_mask = qe_ic_mask_irq,
--	.irq_mask_ack = qe_ic_mask_irq,
--};
--
--static int qe_ic_host_match(struct irq_domain *h, struct device_node *node,
--			    enum irq_domain_bus_token bus_token)
--{
--	/* Exact match, unless qe_ic node is NULL */
--	struct device_node *of_node = irq_domain_get_of_node(h);
--	return of_node == NULL || of_node == node;
--}
--
--static int qe_ic_host_map(struct irq_domain *h, unsigned int virq,
--			  irq_hw_number_t hw)
--{
--	struct qe_ic *qe_ic = h->host_data;
--	struct irq_chip *chip;
--
--	if (hw >= ARRAY_SIZE(qe_ic_info)) {
--		pr_err("%s: Invalid hw irq number for QEIC\n", __func__);
--		return -EINVAL;
--	}
--
--	if (qe_ic_info[hw].mask == 0) {
--		printk(KERN_ERR "Can't map reserved IRQ\n");
--		return -EINVAL;
--	}
--	/* Default chip */
--	chip = &qe_ic->hc_irq;
--
--	irq_set_chip_data(virq, qe_ic);
--	irq_set_status_flags(virq, IRQ_LEVEL);
--
--	irq_set_chip_and_handler(virq, chip, handle_level_irq);
--
--	return 0;
--}
--
--static const struct irq_domain_ops qe_ic_host_ops = {
--	.match = qe_ic_host_match,
--	.map = qe_ic_host_map,
--	.xlate = irq_domain_xlate_onetwocell,
--};
--
--/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
--unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
--{
--	int irq;
--
--	BUG_ON(qe_ic == NULL);
--
--	/* get the interrupt source vector. */
--	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
--
--	if (irq == 0)
--		return NO_IRQ;
--
--	return irq_linear_revmap(qe_ic->irqhost, irq);
--}
--
--/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
--unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
--{
--	int irq;
--
--	BUG_ON(qe_ic == NULL);
--
--	/* get the interrupt source vector. */
--	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
--
--	if (irq == 0)
--		return NO_IRQ;
--
--	return irq_linear_revmap(qe_ic->irqhost, irq);
--}
--
--void __init qe_ic_init(struct device_node *node, unsigned int flags,
--		       void (*low_handler)(struct irq_desc *desc),
--		       void (*high_handler)(struct irq_desc *desc))
--{
--	struct qe_ic *qe_ic;
--	struct resource res;
--	u32 temp = 0, ret, high_active = 0;
--
--	ret = of_address_to_resource(node, 0, &res);
--	if (ret)
--		return;
--
--	qe_ic = kzalloc(sizeof(*qe_ic), GFP_KERNEL);
--	if (qe_ic == NULL)
--		return;
--
--	qe_ic->irqhost = irq_domain_add_linear(node, NR_QE_IC_INTS,
--					       &qe_ic_host_ops, qe_ic);
--	if (qe_ic->irqhost == NULL) {
--		kfree(qe_ic);
--		return;
--	}
--
--	qe_ic->regs = ioremap(res.start, resource_size(&res));
--
--	qe_ic->hc_irq = qe_ic_irq_chip;
--
--	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
--	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
--
--	if (qe_ic->virq_low == NO_IRQ) {
--		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
--		kfree(qe_ic);
--		return;
--	}
--
--	/* default priority scheme is grouped. If spread mode is    */
--	/* required, configure cicr accordingly.                    */
--	if (flags & QE_IC_SPREADMODE_GRP_W)
--		temp |= CICR_GWCC;
--	if (flags & QE_IC_SPREADMODE_GRP_X)
--		temp |= CICR_GXCC;
--	if (flags & QE_IC_SPREADMODE_GRP_Y)
--		temp |= CICR_GYCC;
--	if (flags & QE_IC_SPREADMODE_GRP_Z)
--		temp |= CICR_GZCC;
--	if (flags & QE_IC_SPREADMODE_GRP_RISCA)
--		temp |= CICR_GRTA;
--	if (flags & QE_IC_SPREADMODE_GRP_RISCB)
--		temp |= CICR_GRTB;
--
--	/* choose destination signal for highest priority interrupt */
--	if (flags & QE_IC_HIGH_SIGNAL) {
--		temp |= (SIGNAL_HIGH << CICR_HPIT_SHIFT);
--		high_active = 1;
--	}
--
--	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
--
--	irq_set_handler_data(qe_ic->virq_low, qe_ic);
--	irq_set_chained_handler(qe_ic->virq_low, low_handler);
--
--	if (qe_ic->virq_high != NO_IRQ &&
--			qe_ic->virq_high != qe_ic->virq_low) {
--		irq_set_handler_data(qe_ic->virq_high, qe_ic);
--		irq_set_chained_handler(qe_ic->virq_high, high_handler);
--	}
--}
--
--void qe_ic_set_highest_priority(unsigned int virq, int high)
--{
--	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
--	u32 temp = 0;
--
--	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
--
--	temp &= ~CICR_HP_MASK;
--	temp |= src << CICR_HP_SHIFT;
--
--	temp &= ~CICR_HPIT_MASK;
--	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << CICR_HPIT_SHIFT;
--
--	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
--}
--
--/* Set Priority level within its group, from 1 to 8 */
--int qe_ic_set_priority(unsigned int virq, unsigned int priority)
--{
--	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
--	u32 temp;
--
--	if (priority > 8 || priority == 0)
--		return -EINVAL;
--	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
--		      "%s: Invalid hw irq number for QEIC\n", __func__))
--		return -EINVAL;
--	if (qe_ic_info[src].pri_reg == 0)
--		return -EINVAL;
--
--	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].pri_reg);
--
--	if (priority < 4) {
--		temp &= ~(0x7 << (32 - priority * 3));
--		temp |= qe_ic_info[src].pri_code << (32 - priority * 3);
--	} else {
--		temp &= ~(0x7 << (24 - priority * 3));
--		temp |= qe_ic_info[src].pri_code << (24 - priority * 3);
--	}
--
--	qe_ic_write(qe_ic->regs, qe_ic_info[src].pri_reg, temp);
--
--	return 0;
--}
--
--/* Set a QE priority to use high irq, only priority 1~2 can use high irq */
--int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
--{
--	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
--	u32 temp, control_reg = QEIC_CICNR, shift = 0;
--
--	if (priority > 2 || priority == 0)
--		return -EINVAL;
--	if (WARN_ONCE(src >= ARRAY_SIZE(qe_ic_info),
--		      "%s: Invalid hw irq number for QEIC\n", __func__))
--		return -EINVAL;
--
--	switch (qe_ic_info[src].pri_reg) {
--	case QEIC_CIPZCC:
--		shift = CICNR_ZCC1T_SHIFT;
--		break;
--	case QEIC_CIPWCC:
--		shift = CICNR_WCC1T_SHIFT;
--		break;
--	case QEIC_CIPYCC:
--		shift = CICNR_YCC1T_SHIFT;
--		break;
--	case QEIC_CIPXCC:
--		shift = CICNR_XCC1T_SHIFT;
--		break;
--	case QEIC_CIPRTA:
--		shift = CRICR_RTA1T_SHIFT;
--		control_reg = QEIC_CRICR;
--		break;
--	case QEIC_CIPRTB:
--		shift = CRICR_RTB1T_SHIFT;
--		control_reg = QEIC_CRICR;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	shift += (2 - priority) * 2;
--	temp = qe_ic_read(qe_ic->regs, control_reg);
--	temp &= ~(SIGNAL_MASK << shift);
--	temp |= (high ? SIGNAL_HIGH : SIGNAL_LOW) << shift;
--	qe_ic_write(qe_ic->regs, control_reg, temp);
--
--	return 0;
--}
--
--static struct bus_type qe_ic_subsys = {
--	.name = "qe_ic",
--	.dev_name = "qe_ic",
--};
--
--static struct device device_qe_ic = {
--	.id = 0,
--	.bus = &qe_ic_subsys,
--};
--
--static int __init init_qe_ic_sysfs(void)
--{
--	int rc;
--
--	printk(KERN_DEBUG "Registering qe_ic with sysfs...\n");
--
--	rc = subsys_system_register(&qe_ic_subsys, NULL);
--	if (rc) {
--		printk(KERN_ERR "Failed registering qe_ic sys class\n");
--		return -ENODEV;
--	}
--	rc = device_register(&device_qe_ic);
--	if (rc) {
--		printk(KERN_ERR "Failed registering qe_ic sys device\n");
--		return -ENODEV;
--	}
--	return 0;
--}
--
--subsys_initcall(init_qe_ic_sysfs);
-diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
-deleted file mode 100644
-index 926a2ed..0000000
---- a/drivers/soc/fsl/qe/qe_ic.h
-+++ /dev/null
-@@ -1,103 +0,0 @@
--/*
-- * drivers/soc/fsl/qe/qe_ic.h
-- *
-- * QUICC ENGINE Interrupt Controller Header
-- *
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-- *
-- * Author: Li Yang <leoli@freescale.com>
-- * Based on code from Shlomi Gridish <gridish@freescale.com>
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--#ifndef _POWERPC_SYSDEV_QE_IC_H
--#define _POWERPC_SYSDEV_QE_IC_H
--
--#include <soc/fsl/qe/qe_ic.h>
--
--#define NR_QE_IC_INTS		64
--
--/* QE IC registers offset */
--#define QEIC_CICR		0x00
--#define QEIC_CIVEC		0x04
--#define QEIC_CRIPNR		0x08
--#define QEIC_CIPNR		0x0c
--#define QEIC_CIPXCC		0x10
--#define QEIC_CIPYCC		0x14
--#define QEIC_CIPWCC		0x18
--#define QEIC_CIPZCC		0x1c
--#define QEIC_CIMR		0x20
--#define QEIC_CRIMR		0x24
--#define QEIC_CICNR		0x28
--#define QEIC_CIPRTA		0x30
--#define QEIC_CIPRTB		0x34
--#define QEIC_CRICR		0x3c
--#define QEIC_CHIVEC		0x60
--
--/* Interrupt priority registers */
--#define CIPCC_SHIFT_PRI0	29
--#define CIPCC_SHIFT_PRI1	26
--#define CIPCC_SHIFT_PRI2	23
--#define CIPCC_SHIFT_PRI3	20
--#define CIPCC_SHIFT_PRI4	13
--#define CIPCC_SHIFT_PRI5	10
--#define CIPCC_SHIFT_PRI6	7
--#define CIPCC_SHIFT_PRI7	4
--
--/* CICR priority modes */
--#define CICR_GWCC		0x00040000
--#define CICR_GXCC		0x00020000
--#define CICR_GYCC		0x00010000
--#define CICR_GZCC		0x00080000
--#define CICR_GRTA		0x00200000
--#define CICR_GRTB		0x00400000
--#define CICR_HPIT_SHIFT		8
--#define CICR_HPIT_MASK		0x00000300
--#define CICR_HP_SHIFT		24
--#define CICR_HP_MASK		0x3f000000
--
--/* CICNR */
--#define CICNR_WCC1T_SHIFT	20
--#define CICNR_ZCC1T_SHIFT	28
--#define CICNR_YCC1T_SHIFT	12
--#define CICNR_XCC1T_SHIFT	4
--
--/* CRICR */
--#define CRICR_RTA1T_SHIFT	20
--#define CRICR_RTB1T_SHIFT	28
--
--/* Signal indicator */
--#define SIGNAL_MASK		3
--#define SIGNAL_HIGH		2
--#define SIGNAL_LOW		0
--
--struct qe_ic {
--	/* Control registers offset */
--	volatile u32 __iomem *regs;
--
--	/* The remapper for this QEIC */
--	struct irq_domain *irqhost;
--
--	/* The "linux" controller struct */
--	struct irq_chip hc_irq;
--
--	/* VIRQ numbers of QE high/low irqs */
--	unsigned int virq_high;
--	unsigned int virq_low;
--};
--
--/*
-- * QE interrupt controller internal structure
-- */
--struct qe_ic_info {
--	u32	mask;	  /* location of this source at the QIMR register. */
--	u32	mask_reg; /* Mask register offset */
--	u8	pri_code; /* for grouped interrupts sources - the interrupt
--			     code as appears at the group priority register */
--	u32	pri_reg;  /* Group priority register offset */
--};
--
--#endif /* _POWERPC_SYSDEV_QE_IC_H */
++subsys_initcall(qeic_of_init);
+ subsys_initcall(init_qe_ic_sysfs);
 -- 
 2.1.0.27.g96db324
