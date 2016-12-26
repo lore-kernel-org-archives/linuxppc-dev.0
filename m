@@ -1,18 +1,18 @@
 Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0059.outbound.protection.outlook.com [104.47.36.59])
+Received: from NAM01-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam01on0063.outbound.protection.outlook.com [104.47.32.63])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tnCJQ42GBzDqCM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2016 19:45:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tnCJZ3G9zzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2016 19:46:06 +1100 (AEDT)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <oss@buserror.net>, <marc.zyngier@arm.com>
 CC: <jason@lakedaemon.net>, <xiaobo.xie@nxp.com>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang
  <qiang.zhao@nxp.com>
-Subject: [Patch V7 3/4] irqchip/qeic: merge qeic_of_init into qe_ic_init
-Date: Mon, 26 Dec 2016 16:32:45 +0800
-Message-ID: <1482741166-33164-3-git-send-email-qiang.zhao@nxp.com>
+Subject: [Patch V7 4/4] irqchip/qeic: remove PPCisms for QEIC
+Date: Mon, 26 Dec 2016 16:32:46 +0800
+Message-ID: <1482741166-33164-4-git-send-email-qiang.zhao@nxp.com>
 In-Reply-To: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
 References: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
@@ -26,197 +26,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-qeic_of_init just get device_node of qeic from dtb and call qe_ic_init,
-pass the device_node to qe_ic_init.
-So merge qeic_of_init into qe_ic_init to get the qeic node in
-qe_ic_init.
+QEIC was supported on PowerPC, and dependent on PPC,
+Now it is supported on other platforms, so remove PPCisms.
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 ---
-Changes for v2:
-	- modify subject and commit msg
-	- return 0 and add put node when return in qe_ic_init
-Changes for v3:
-	- na
-Changes for v4:
-	- na
-Changes for v5:
-	- na
 Changes for v6:
-	- rebase
-Changes for v6:
-	- na
+	- new added
+Changes for v7:
+	- fix warning
 
- drivers/irqchip/irq-qeic.c | 91 +++++++++++++++++++++++++---------------------
- include/soc/fsl/qe/qe_ic.h |  7 ----
- 2 files changed, 50 insertions(+), 48 deletions(-)
+ drivers/irqchip/irq-qeic.c | 34 ++++++++++++++++++++--------------
+ include/soc/fsl/qe/qe_ic.h | 12 ++++++------
+ 2 files changed, 26 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
-index 1463731..4f49d4b 100644
+index 4f49d4b..957ea5b 100644
 --- a/drivers/irqchip/irq-qeic.c
 +++ b/drivers/irqchip/irq-qeic.c
-@@ -406,27 +406,38 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+@@ -18,7 +18,10 @@
+ #include <linux/of_address.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <linux/irqdomain.h>
+ #include <linux/errno.h>
++#include <linux/of_address.h>
++#include <linux/of_irq.h>
+ #include <linux/reboot.h>
+ #include <linux/slab.h>
+ #include <linux/stddef.h>
+@@ -88,7 +91,7 @@
+ 
+ struct qe_ic {
+ 	/* Control registers offset */
+-	volatile u32 __iomem *regs;
++	u32 __iomem *regs;
+ 
+ 	/* The remapper for this QEIC */
+ 	struct irq_domain *irqhost;
+@@ -264,15 +267,15 @@ static struct qe_ic_info qe_ic_info[] = {
+ 		},
+ };
+ 
+-static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
++static inline u32 qe_ic_read(__be32  __iomem * base, unsigned int reg)
+ {
+-	return in_be32(base + (reg >> 2));
++	return ioread32be(base + (reg >> 2));
+ }
+ 
+-static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
++static inline void qe_ic_write(__be32  __iomem * base, unsigned int reg,
+ 			       u32 value)
+ {
+-	out_be32(base + (reg >> 2), value);
++	iowrite32be(value, base + (reg >> 2));
+ }
+ 
+ static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
+@@ -374,7 +377,7 @@ static const struct irq_domain_ops qe_ic_host_ops = {
+ 	.xlate = irq_domain_xlate_onetwocell,
+ };
+ 
+-/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
++/* Return an interrupt vector or 0 if no interrupt is pending. */
+ unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
+ {
+ 	int irq;
+@@ -385,12 +388,12 @@ unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
+ 	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
+ 
+ 	if (irq == 0)
+-		return NO_IRQ;
++		return 0;
+ 
  	return irq_linear_revmap(qe_ic->irqhost, irq);
  }
  
--void __init qe_ic_init(struct device_node *node, unsigned int flags,
--		       void (*low_handler)(struct irq_desc *desc),
--		       void (*high_handler)(struct irq_desc *desc))
-+static int __init qe_ic_init(unsigned int flags)
+-/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
++/* Return an interrupt vector or 0 if no interrupt is pending. */
+ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
  {
-+	struct device_node *node;
- 	struct qe_ic *qe_ic;
- 	struct resource res;
--	u32 temp = 0, ret, high_active = 0;
-+	u32 temp = 0, high_active = 0;
-+	int ret = 0;
-+
-+	node = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (!node) {
-+		node = of_find_node_by_type(NULL, "qeic");
-+		if (!node)
-+			return -ENODEV;
-+	}
+ 	int irq;
+@@ -401,7 +404,7 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+ 	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
  
- 	ret = of_address_to_resource(node, 0, &res);
--	if (ret)
--		return;
-+	if (ret) {
-+		ret = -ENODEV;
-+		goto err_put_node;
-+	}
+ 	if (irq == 0)
+-		return NO_IRQ;
++		return 0;
  
- 	qe_ic = kzalloc(sizeof(*qe_ic), GFP_KERNEL);
--	if (qe_ic == NULL)
--		return;
-+	if (qe_ic == NULL) {
-+		ret = -ENOMEM;
-+		goto err_put_node;
-+	}
- 
- 	qe_ic->irqhost = irq_domain_add_linear(node, NR_QE_IC_INTS,
- 					       &qe_ic_host_ops, qe_ic);
- 	if (qe_ic->irqhost == NULL) {
--		kfree(qe_ic);
--		return;
-+		ret = -ENOMEM;
-+		goto err_free_qe_ic;
- 	}
- 
- 	qe_ic->regs = ioremap(res.start, resource_size(&res));
-@@ -437,9 +448,9 @@ void __init qe_ic_init(struct device_node *node, unsigned int flags,
+ 	return irq_linear_revmap(qe_ic->irqhost, irq);
+ }
+@@ -447,7 +450,7 @@ static int __init qe_ic_init(unsigned int flags)
+ 	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
  	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
  
- 	if (qe_ic->virq_low == NO_IRQ) {
--		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
--		kfree(qe_ic);
--		return;
-+		pr_err("Failed to map QE_IC low IRQ\n");
-+		ret = -ENOMEM;
-+		goto err_domain_remove;
- 	}
- 
- 	/* default priority scheme is grouped. If spread mode is    */
-@@ -466,13 +477,24 @@ void __init qe_ic_init(struct device_node *node, unsigned int flags,
- 	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
- 
+-	if (qe_ic->virq_low == NO_IRQ) {
++	if (qe_ic->virq_low == 0) {
+ 		pr_err("Failed to map QE_IC low IRQ\n");
+ 		ret = -ENOMEM;
+ 		goto err_domain_remove;
+@@ -479,7 +482,7 @@ static int __init qe_ic_init(unsigned int flags)
  	irq_set_handler_data(qe_ic->virq_low, qe_ic);
--	irq_set_chained_handler(qe_ic->virq_low, low_handler);
-+	irq_set_chained_handler(qe_ic->virq_low, qe_ic_cascade_low_mpic);
+ 	irq_set_chained_handler(qe_ic->virq_low, qe_ic_cascade_low_mpic);
  
- 	if (qe_ic->virq_high != NO_IRQ &&
+-	if (qe_ic->virq_high != NO_IRQ &&
++	if (qe_ic->virq_high != 0 &&
  			qe_ic->virq_high != qe_ic->virq_low) {
  		irq_set_handler_data(qe_ic->virq_high, qe_ic);
--		irq_set_chained_handler(qe_ic->virq_high, high_handler);
-+		irq_set_chained_handler(qe_ic->virq_high,
-+					qe_ic_cascade_high_mpic);
- 	}
-+	of_node_put(node);
-+	return 0;
-+
-+err_domain_remove:
-+	irq_domain_remove(qe_ic->irqhost);
-+err_free_qe_ic:
-+	kfree(qe_ic);
-+err_put_node:
-+	of_node_put(node);
-+	return ret;
- }
- 
+ 		irq_set_chained_handler(qe_ic->virq_high,
+@@ -500,7 +503,8 @@ err_put_node:
  void qe_ic_set_highest_priority(unsigned int virq, int high)
-@@ -579,39 +601,26 @@ static struct device device_qe_ic = {
- 	.bus = &qe_ic_subsys,
- };
- 
--static int __init init_qe_ic_sysfs(void)
-+static int __init init_qe_ic(void)
  {
--	int rc;
-+	int ret;
+ 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
++	struct irq_data *irq_data = irq_get_irq_data(virq);
++	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
+ 	u32 temp = 0;
  
--	printk(KERN_DEBUG "Registering qe_ic with sysfs...\n");
-+	ret = qe_ic_init(0);
-+	if (ret)
-+		return ret;
+ 	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
+@@ -518,7 +522,8 @@ void qe_ic_set_highest_priority(unsigned int virq, int high)
+ int qe_ic_set_priority(unsigned int virq, unsigned int priority)
+ {
+ 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
++	struct irq_data *irq_data = irq_get_irq_data(virq);
++	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
+ 	u32 temp;
  
--	rc = subsys_system_register(&qe_ic_subsys, NULL);
--	if (rc) {
--		printk(KERN_ERR "Failed registering qe_ic sys class\n");
-+	ret = subsys_system_register(&qe_ic_subsys, NULL);
-+	if (ret) {
-+		pr_err("Failed registering qe_ic sys class\n");
- 		return -ENODEV;
- 	}
--	rc = device_register(&device_qe_ic);
--	if (rc) {
--		printk(KERN_ERR "Failed registering qe_ic sys device\n");
-+	ret = device_register(&device_qe_ic);
-+	if (ret) {
-+		pr_err("Failed registering qe_ic sys device\n");
- 		return -ENODEV;
- 	}
--	return 0;
--}
--
--static int __init qeic_of_init(void)
--{
--	struct device_node *np;
+ 	if (priority > 8 || priority == 0)
+@@ -548,7 +553,8 @@ int qe_ic_set_priority(unsigned int virq, unsigned int priority)
+ int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
+ {
+ 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
+-	unsigned int src = virq_to_hw(virq);
++	struct irq_data *irq_data = irq_get_irq_data(virq);
++	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
+ 	u32 temp, control_reg = QEIC_CICNR, shift = 0;
  
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
--	if (!np) {
--		np = of_find_node_by_type(NULL, "qeic");
--		if (!np)
--			return;
--	}
--	qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
--		   qe_ic_cascade_high_mpic);
--	of_node_put(np);
-+	return 0;
- }
- 
--subsys_initcall(qeic_of_init);
--subsys_initcall(init_qe_ic_sysfs);
-+subsys_initcall(init_qe_ic);
+ 	if (priority > 2 || priority == 0)
 diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
-index 1e155ca..6113699 100644
+index 6113699..863cfec 100644
 --- a/include/soc/fsl/qe/qe_ic.h
 +++ b/include/soc/fsl/qe/qe_ic.h
-@@ -58,16 +58,9 @@ enum qe_ic_grp_id {
- };
+@@ -76,7 +76,7 @@ static inline void qe_ic_cascade_low_ipic(struct irq_desc *desc)
+ 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
+ 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
  
- #ifdef CONFIG_QUICC_ENGINE
--void qe_ic_init(struct device_node *node, unsigned int flags,
--		void (*low_handler)(struct irq_desc *desc),
--		void (*high_handler)(struct irq_desc *desc));
- unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic);
- unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic);
- #else
--static inline void qe_ic_init(struct device_node *node, unsigned int flags,
--		void (*low_handler)(struct irq_desc *desc),
--		void (*high_handler)(struct irq_desc *desc))
--{}
- static inline unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
- { return 0; }
- static inline unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+-	if (cascade_irq != NO_IRQ)
++	if (cascade_irq != 0)
+ 		generic_handle_irq(cascade_irq);
+ }
+ 
+@@ -85,7 +85,7 @@ static inline void qe_ic_cascade_high_ipic(struct irq_desc *desc)
+ 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
+ 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
+ 
+-	if (cascade_irq != NO_IRQ)
++	if (cascade_irq != 0)
+ 		generic_handle_irq(cascade_irq);
+ }
+ 
+@@ -95,7 +95,7 @@ static inline void qe_ic_cascade_low_mpic(struct irq_desc *desc)
+ 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 
+-	if (cascade_irq != NO_IRQ)
++	if (cascade_irq != 0)
+ 		generic_handle_irq(cascade_irq);
+ 
+ 	chip->irq_eoi(&desc->irq_data);
+@@ -107,7 +107,7 @@ static inline void qe_ic_cascade_high_mpic(struct irq_desc *desc)
+ 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 
+-	if (cascade_irq != NO_IRQ)
++	if (cascade_irq != 0)
+ 		generic_handle_irq(cascade_irq);
+ 
+ 	chip->irq_eoi(&desc->irq_data);
+@@ -120,10 +120,10 @@ static inline void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 
+ 	cascade_irq = qe_ic_get_high_irq(qe_ic);
+-	if (cascade_irq == NO_IRQ)
++	if (cascade_irq == 0)
+ 		cascade_irq = qe_ic_get_low_irq(qe_ic);
+ 
+-	if (cascade_irq != NO_IRQ)
++	if (cascade_irq != 0)
+ 		generic_handle_irq(cascade_irq);
+ 
+ 	chip->irq_eoi(&desc->irq_data);
 -- 
 2.1.0.27.g96db324
