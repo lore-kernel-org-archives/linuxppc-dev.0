@@ -1,22 +1,35 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0063.outbound.protection.outlook.com [104.47.32.63])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tnCJZ3G9zzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Dec 2016 19:46:06 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <oss@buserror.net>, <marc.zyngier@arm.com>
-CC: <jason@lakedaemon.net>, <xiaobo.xie@nxp.com>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [Patch V7 4/4] irqchip/qeic: remove PPCisms for QEIC
-Date: Mon, 26 Dec 2016 16:32:46 +0800
-Message-ID: <1482741166-33164-4-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
-References: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tp9cg5x1GzDq9r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2016 09:33:23 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ uBRMOAjM041027
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2016 17:33:19 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27ku9vbh1y-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2016 17:33:19 -0500
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Tue, 27 Dec 2016 15:33:18 -0700
+Subject: Re: [PATCH v2] pci: hotplug: This patch removes unnecessary return
+ statement using spatch tool
+To: Rahul Krishnan <mrahul.krishnan@gmail.com>, benh@kernel.crashing.org
+References: <20161224093800.GA24893@rahul>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, linux-pci@vger.kernel.org,
+ bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Tue, 27 Dec 2016 14:33:13 -0800
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20161224093800.GA24893@rahul>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <a90f4dce-ab69-d5ea-5c03-4a3a5b1ad164@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,197 +39,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QEIC was supported on PowerPC, and dependent on PPC,
-Now it is supported on other platforms, so remove PPCisms.
+On 12/24/2016 01:38 AM, Rahul Krishnan wrote:
+> 
+> This patch removes unnecessary return statement using spatch tool
+> 
+> Signed-off-by: Rahul Krishnan <mrahul.krishnan@gmail.com>
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
----
-Changes for v6:
-	- new added
-Changes for v7:
-	- fix warning
+Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
- drivers/irqchip/irq-qeic.c | 34 ++++++++++++++++++++--------------
- include/soc/fsl/qe/qe_ic.h | 12 ++++++------
- 2 files changed, 26 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
-index 4f49d4b..957ea5b 100644
---- a/drivers/irqchip/irq-qeic.c
-+++ b/drivers/irqchip/irq-qeic.c
-@@ -18,7 +18,10 @@
- #include <linux/of_address.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/irqdomain.h>
- #include <linux/errno.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
- #include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/stddef.h>
-@@ -88,7 +91,7 @@
- 
- struct qe_ic {
- 	/* Control registers offset */
--	volatile u32 __iomem *regs;
-+	u32 __iomem *regs;
- 
- 	/* The remapper for this QEIC */
- 	struct irq_domain *irqhost;
-@@ -264,15 +267,15 @@ static struct qe_ic_info qe_ic_info[] = {
- 		},
- };
- 
--static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
-+static inline u32 qe_ic_read(__be32  __iomem * base, unsigned int reg)
- {
--	return in_be32(base + (reg >> 2));
-+	return ioread32be(base + (reg >> 2));
- }
- 
--static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
-+static inline void qe_ic_write(__be32  __iomem * base, unsigned int reg,
- 			       u32 value)
- {
--	out_be32(base + (reg >> 2), value);
-+	iowrite32be(value, base + (reg >> 2));
- }
- 
- static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
-@@ -374,7 +377,7 @@ static const struct irq_domain_ops qe_ic_host_ops = {
- 	.xlate = irq_domain_xlate_onetwocell,
- };
- 
--/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+/* Return an interrupt vector or 0 if no interrupt is pending. */
- unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
- {
- 	int irq;
-@@ -385,12 +388,12 @@ unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
- 	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
- 
- 	if (irq == 0)
--		return NO_IRQ;
-+		return 0;
- 
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
- }
- 
--/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+/* Return an interrupt vector or 0 if no interrupt is pending. */
- unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
- {
- 	int irq;
-@@ -401,7 +404,7 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
- 	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
- 
- 	if (irq == 0)
--		return NO_IRQ;
-+		return 0;
- 
- 	return irq_linear_revmap(qe_ic->irqhost, irq);
- }
-@@ -447,7 +450,7 @@ static int __init qe_ic_init(unsigned int flags)
- 	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
- 	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
- 
--	if (qe_ic->virq_low == NO_IRQ) {
-+	if (qe_ic->virq_low == 0) {
- 		pr_err("Failed to map QE_IC low IRQ\n");
- 		ret = -ENOMEM;
- 		goto err_domain_remove;
-@@ -479,7 +482,7 @@ static int __init qe_ic_init(unsigned int flags)
- 	irq_set_handler_data(qe_ic->virq_low, qe_ic);
- 	irq_set_chained_handler(qe_ic->virq_low, qe_ic_cascade_low_mpic);
- 
--	if (qe_ic->virq_high != NO_IRQ &&
-+	if (qe_ic->virq_high != 0 &&
- 			qe_ic->virq_high != qe_ic->virq_low) {
- 		irq_set_handler_data(qe_ic->virq_high, qe_ic);
- 		irq_set_chained_handler(qe_ic->virq_high,
-@@ -500,7 +503,8 @@ err_put_node:
- void qe_ic_set_highest_priority(unsigned int virq, int high)
- {
- 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
- 	u32 temp = 0;
- 
- 	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
-@@ -518,7 +522,8 @@ void qe_ic_set_highest_priority(unsigned int virq, int high)
- int qe_ic_set_priority(unsigned int virq, unsigned int priority)
- {
- 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
- 	u32 temp;
- 
- 	if (priority > 8 || priority == 0)
-@@ -548,7 +553,8 @@ int qe_ic_set_priority(unsigned int virq, unsigned int priority)
- int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
- {
- 	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
--	unsigned int src = virq_to_hw(virq);
-+	struct irq_data *irq_data = irq_get_irq_data(virq);
-+	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
- 	u32 temp, control_reg = QEIC_CICNR, shift = 0;
- 
- 	if (priority > 2 || priority == 0)
-diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
-index 6113699..863cfec 100644
---- a/include/soc/fsl/qe/qe_ic.h
-+++ b/include/soc/fsl/qe/qe_ic.h
-@@ -76,7 +76,7 @@ static inline void qe_ic_cascade_low_ipic(struct irq_desc *desc)
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- }
- 
-@@ -85,7 +85,7 @@ static inline void qe_ic_cascade_high_ipic(struct irq_desc *desc)
- 	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- }
- 
-@@ -95,7 +95,7 @@ static inline void qe_ic_cascade_low_mpic(struct irq_desc *desc)
- 	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- 
- 	chip->irq_eoi(&desc->irq_data);
-@@ -107,7 +107,7 @@ static inline void qe_ic_cascade_high_mpic(struct irq_desc *desc)
- 	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- 
- 	chip->irq_eoi(&desc->irq_data);
-@@ -120,10 +120,10 @@ static inline void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
- 
- 	cascade_irq = qe_ic_get_high_irq(qe_ic);
--	if (cascade_irq == NO_IRQ)
-+	if (cascade_irq == 0)
- 		cascade_irq = qe_ic_get_low_irq(qe_ic);
- 
--	if (cascade_irq != NO_IRQ)
-+	if (cascade_irq != 0)
- 		generic_handle_irq(cascade_irq);
- 
- 	chip->irq_eoi(&desc->irq_data);
--- 
-2.1.0.27.g96db324
+> ---
+>  drivers/pci/hotplug/rpadlpar_core.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+> index dc67f39..78ce2c7 100644
+> --- a/drivers/pci/hotplug/rpadlpar_core.c
+> +++ b/drivers/pci/hotplug/rpadlpar_core.c
+> @@ -455,7 +455,6 @@ static inline int is_dlpar_capable(void)
+> 
+>  int __init rpadlpar_io_init(void)
+>  {
+> -	int rc = 0;
+> 
+>  	if (!is_dlpar_capable()) {
+>  		printk(KERN_WARNING "%s: partition not DLPAR capable\n",
+> @@ -463,8 +462,7 @@ int __init rpadlpar_io_init(void)
+>  		return -EPERM;
+>  	}
+> 
+> -	rc = dlpar_sysfs_init();
+> -	return rc;
+> +	return dlpar_sysfs_init();
+>  }
+> 
+>  void rpadlpar_io_exit(void)
+> 
