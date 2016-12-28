@@ -1,26 +1,25 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tpbRN1KqCzDq8G
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Dec 2016 01:56:47 +1100 (AEDT)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: "Harisangam\, Sharvari \(S.\)" <sharvari.harisangam@visteon.com>
-Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- "Xiubo Li" <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.de>,
- "alsa-devel\@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tpcbS1h2mzDq8M
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Dec 2016 02:48:51 +1100 (AEDT)
 Subject: Re: [PATCH] ASoC : fsl_ssi : Correct the condition to check AC97 mode
-References: <20161228110636.GA14768@ubuntu>
-Date: Wed, 28 Dec 2016 15:50:57 +0100
-In-Reply-To: <20161228110636.GA14768@ubuntu> (Sharvari Harisangam's message of
- "Wed, 28 Dec 2016 11:06:44 +0000")
-Message-ID: <87inq4f6pa.fsf@linux-m68k.org>
+To: Andreas Schwab <schwab@linux-m68k.org>,
+ "Harisangam, Sharvari (S.)" <sharvari.harisangam@visteon.com>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20161228110636.GA14768@ubuntu> <87inq4f6pa.fsf@linux-m68k.org>
+From: Timur Tabi <timur@tabi.org>
+Message-ID: <9ebb798c-6040-9262-9625-ddcebd05a188@tabi.org>
+Date: Wed, 28 Dec 2016 09:48:42 -0600
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87inq4f6pa.fsf@linux-m68k.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,16 +29,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Dez 28 2016, "Harisangam, Sharvari (S.)" <sharvari.harisangam@visteon.com> wrote:
+Andreas Schwab wrote:
+>> > +	return !!(ssi_private->dai_fmt & SND_SOC_DAIFMT_AC97) ==
+>> > +		SND_SOC_DAIFMT_AC97;
+> This is never true.
 
-> +	return !!(ssi_private->dai_fmt & SND_SOC_DAIFMT_AC97) ==
-> +		SND_SOC_DAIFMT_AC97;
-
-This is never true.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I think the right parenthesis should be at the end of the expression.
