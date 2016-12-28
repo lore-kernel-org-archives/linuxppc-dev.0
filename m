@@ -1,27 +1,29 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <festevam@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tpf1M0f0XzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Dec 2016 03:52:54 +1100 (AEDT)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Timur Tabi <timur@tabi.org>
-Cc: "Harisangam\, Sharvari \(S.\)" <sharvari.harisangam@visteon.com>,
- "alsa-devel\@alsa-project.org" <alsa-devel@alsa-project.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.de>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] ASoC : fsl_ssi : Correct the condition to check AC97 mode
-References: <20161228110636.GA14768@ubuntu> <87inq4f6pa.fsf@linux-m68k.org>
- <9ebb798c-6040-9262-9625-ddcebd05a188__32955.7460187518$1482940206$gmane$org@tabi.org>
-Date: Wed, 28 Dec 2016 17:52:43 +0100
-In-Reply-To: <9ebb798c-6040-9262-9625-ddcebd05a188__32955.7460187518$1482940206$gmane$org@tabi.org>
- (Timur Tabi's message of "Wed, 28 Dec 2016 09:48:42 -0600")
-Message-ID: <87eg0sf12c.fsf@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tpgLs523tzDq8X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Dec 2016 04:53:09 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id u15so52021348oie.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2016 09:53:09 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20161228110636.GA14768@ubuntu>
+References: <20161228110636.GA14768@ubuntu>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 28 Dec 2016 15:53:07 -0200
+Message-ID: <CAOMZO5DgtyJrFwa0-VZmXZYQVbMxtsHRuoRbAHw5CX2K7aVMkQ@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC : fsl_ssi : Correct the condition to
+ check AC97 mode
+To: "Harisangam, Sharvari (S.)" <sharvari.harisangam@visteon.com>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.de>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Dez 28 2016, Timur Tabi <timur@tabi.org> wrote:
-
-> Andreas Schwab wrote:
->>> > +	return !!(ssi_private->dai_fmt & SND_SOC_DAIFMT_AC97) ==
->>> > +		SND_SOC_DAIFMT_AC97;
->> This is never true.
+On Wed, Dec 28, 2016 at 9:06 AM, Harisangam, Sharvari (S.)
+<sharvari.harisangam@visteon.com> wrote:
+>  Corrected the condition to check if ssi is configured for AC97
+>  mode. Other modes like dsp_a also satisfy the ANDing condition.
 >
-> I think the right parenthesis should be at the end of the expression.
+> Signed-off-by: Sharvari Harisangam <sharvari.harisangam@visteon.com>
 
-That would still test the wrong bitfield.
+This has been fixed in 4.3 kernel by commit:
 
-And all that is obsolete anyway since commit 5b64c173cd (of Sep 2015).
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+5b64c173cdea211 ("ASoC: fsl_ssi: Fix checking of dai format for AC97 mode")
