@@ -1,16 +1,18 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 3trhbw69ThzDq8b
+ by lists.ozlabs.org (Postfix) with ESMTP id 3trhbw6PVVzDqCj
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jan 2017 11:56:28 +1100 (AEDT)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Message-Id: <cover.1483055859.git.fthain@telegraphics.com.au>
+Message-Id: <0f17040d7530acb6f3ebd7b592cca8dfb21d2b64.1483055859.git.fthain@telegraphics.com.au>
+In-Reply-To: <cover.1483055859.git.fthain@telegraphics.com.au>
+References: <cover.1483055859.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH RESEND 00/10] Replace via-maciisi with via-cuda driver
+Subject: [PATCH RESEND 04/10] via-cuda: Prevent read buffer overflow
 Date: Sat, 31 Dec 2016 19:56:26 -0500 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,38 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series has some improvements for the the Cuda driver: cleanup,
-bug fixes and new functionality.
+If the Cuda driver does not enter the 'read_done' state for some
+reason, it may continue in the 'reading' state until the buffer
+overflows. Add a bounds check to prevent this.
 
-The broken via-maciisi driver is then replaced by via-cuda. This
-eliminates over 600 LoC.
+Tested-by: Stan Johnson <userm57@yahoo.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+---
+ drivers/macintosh/via-cuda.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Thanks to Stan Johnson for testing these patches on a Mac LC III and
-a PowerMac G3.
-
-
-Finn Thain (10):
-  via-cuda: Cleanup printk calls
-  via-cuda: Remove redundant temporary variable
-  via-cuda: Add TREQ, TIP and TACK signal helpers
-  via-cuda: Prevent read buffer overflow
-  via-cuda: Fix re-initialization of reply_ptr and reading_reply
-  via-cuda: Avoid TREQ race condition
-  via-cuda: Use spinlock_irq_save/restore instead of enable/disable_irq
-  via-cuda: Initialize data_index early and increment consistently
-  via-cuda: Add support for Egret system controller
-  m68k/mac: Replace via-maciisi driver with via-cuda driver
-
- arch/m68k/include/asm/macintosh.h |   2 +-
- arch/m68k/mac/config.c            |  18 +-
- arch/m68k/mac/misc.c              |  72 +---
- drivers/macintosh/Kconfig         |  24 +-
- drivers/macintosh/Makefile        |   1 -
- drivers/macintosh/adb.c           |   4 -
- drivers/macintosh/via-cuda.c      | 294 ++++++++++++-----
- drivers/macintosh/via-maciisi.c   | 677 --------------------------------------
- 8 files changed, 235 insertions(+), 857 deletions(-)
- delete mode 100644 drivers/macintosh/via-maciisi.c
-
+diff --git a/drivers/macintosh/via-cuda.c b/drivers/macintosh/via-cuda.c
+index 64a04af..1cf1467 100644
+--- a/drivers/macintosh/via-cuda.c
++++ b/drivers/macintosh/via-cuda.c
+@@ -470,6 +470,8 @@ cuda_poll(void)
+ }
+ EXPORT_SYMBOL(cuda_poll);
+ 
++#define ARRAY_FULL(a, p)	((p) - (a) == ARRAY_SIZE(a))
++
+ static irqreturn_t
+ cuda_interrupt(int irq, void *arg)
+ {
+@@ -558,7 +560,11 @@ cuda_interrupt(int irq, void *arg)
+ 	break;
+ 
+     case reading:
+-	*reply_ptr++ = in_8(&via[SR]);
++	if (reading_reply ? ARRAY_FULL(current_req->reply, reply_ptr)
++	                  : ARRAY_FULL(cuda_rbuf, reply_ptr))
++	    (void)in_8(&via[SR]);
++	else
++	    *reply_ptr++ = in_8(&via[SR]);
+ 	if (!TREQ_asserted(status)) {
+ 	    /* that's all folks */
+ 	    negate_TIP_and_TACK();
 -- 
 2.10.2
