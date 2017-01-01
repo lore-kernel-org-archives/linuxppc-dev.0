@@ -1,42 +1,17 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-ua0-x22a.google.com (mail-ua0-x22a.google.com
- [IPv6:2607:f8b0:400c:c08::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tr5Y23LSwzDq9r
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Dec 2016 12:36:53 +1100 (AEDT)
-Received: by mail-ua0-x22a.google.com with SMTP id i68so160173539uad.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Dec 2016 17:36:53 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20161230155634.8692-2-dsafonov@virtuozzo.com>
-References: <20161230155634.8692-1-dsafonov@virtuozzo.com>
- <20161230155634.8692-2-dsafonov@virtuozzo.com>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 30 Dec 2016 17:36:31 -0800
-Message-ID: <CALCETrVsjDqWpF2E4gZKMx4EEFHLYSR+AOX_3BcV3FNPe13pkg@mail.gmail.com>
-Subject: Re: [RFC 1/4] mm: remove unused TASK_SIZE_OF()
-To: Dmitry Safonov <dsafonov@virtuozzo.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Dmitry Safonov <0x7f454c46@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, Peter Zijlstra <peterz@infradead.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-parisc@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- X86 ML <x86@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3trhbw69ThzDq8b
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jan 2017 11:56:28 +1100 (AEDT)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Message-Id: <cover.1483055859.git.fthain@telegraphics.com.au>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH RESEND 00/10] Replace via-maciisi with via-cuda driver
+Date: Sat, 31 Dec 2016 19:56:26 -0500 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,14 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 30, 2016 at 7:56 AM, Dmitry Safonov <dsafonov@virtuozzo.com> wrote:
-> All users of TASK_SIZE_OF(tsk) have migrated to mm->task_size or
-> TASK_SIZE_MAX since:
-> commit d696ca016d57 ("x86/fsgsbase/64: Use TASK_SIZE_MAX for
-> FSBASE/GSBASE upper limits"),
-> commit a06db751c321 ("pagemap: check permissions and capabilities at
-> open time"),
+This patch series has some improvements for the the Cuda driver: cleanup,
+bug fixes and new functionality.
 
-I like this.
+The broken via-maciisi driver is then replaced by via-cuda. This
+eliminates over 600 LoC.
 
-Reviewed-by: Andy Lutomirski <luto@kernel.org> # for x86
+Thanks to Stan Johnson for testing these patches on a Mac LC III and
+a PowerMac G3.
+
+
+Finn Thain (10):
+  via-cuda: Cleanup printk calls
+  via-cuda: Remove redundant temporary variable
+  via-cuda: Add TREQ, TIP and TACK signal helpers
+  via-cuda: Prevent read buffer overflow
+  via-cuda: Fix re-initialization of reply_ptr and reading_reply
+  via-cuda: Avoid TREQ race condition
+  via-cuda: Use spinlock_irq_save/restore instead of enable/disable_irq
+  via-cuda: Initialize data_index early and increment consistently
+  via-cuda: Add support for Egret system controller
+  m68k/mac: Replace via-maciisi driver with via-cuda driver
+
+ arch/m68k/include/asm/macintosh.h |   2 +-
+ arch/m68k/mac/config.c            |  18 +-
+ arch/m68k/mac/misc.c              |  72 +---
+ drivers/macintosh/Kconfig         |  24 +-
+ drivers/macintosh/Makefile        |   1 -
+ drivers/macintosh/adb.c           |   4 -
+ drivers/macintosh/via-cuda.c      | 294 ++++++++++++-----
+ drivers/macintosh/via-maciisi.c   | 677 --------------------------------------
+ 8 files changed, 235 insertions(+), 857 deletions(-)
+ delete mode 100644 drivers/macintosh/via-maciisi.c
+
+-- 
+2.10.2
