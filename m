@@ -1,36 +1,35 @@
 Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tsfG44QZszDqHj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 01:14:20 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v02EDeuw142535
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jan 2017 09:14:18 -0500
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27qh1r51r9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tsfGK0WpdzDqHf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 01:14:32 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v02EDfMt072536
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jan 2017 09:14:31 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27qphnur59-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jan 2017 09:14:17 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jan 2017 09:14:30 -0500
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Tue, 3 Jan 2017 00:14:15 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id F0A382CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 01:14:11 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v02EEBSY1114520
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 01:14:11 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v02EEBuK024758
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 01:14:11 +1100
-Subject: [PATCH v3 2/5] ia64: reuse append_elf_note() and final_note()
- functions
+ Tue, 3 Jan 2017 00:14:28 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6DB952CE805A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 01:14:26 +1100 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v02EEQ3H4063550
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 01:14:26 +1100
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v02EEPHL020149
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 01:14:26 +1100
+Subject: [PATCH v3 3/5] powerpc/fadump: remove dependency with CONFIG_KEXEC
 From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
@@ -38,12 +37,12 @@ Cc: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
  Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, ebiederm@xmission.com,
  Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
  vgoyal@redhat.com
-Date: Mon, 02 Jan 2017 19:44:07 +0530
+Date: Mon, 02 Jan 2017 19:44:20 +0530
 In-Reply-To: <148336637462.25358.5151364413645288219.stgit@hbathini.in.ibm.com>
 References: <148336637462.25358.5151364413645288219.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <148336643571.25358.4153205698324983035.stgit@hbathini.in.ibm.com>
+Message-Id: <148336645665.25358.13912177725556749845.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,107 +52,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Get rid of multiple definitions of append_elf_note() & final_note()
-functions. Reuse these functions compiled under CONFIG_CRASH_CORE
-Also, define Elf_Word and use it instead of generic u32 or the more
-specific Elf64_Word.
+Now that crashkernel parameter parsing and vmcoreinfo related code is
+moved under CONFIG_CRASH_CORE instead of CONFIG_KEXEC_CORE, remove
+dependency with CONFIG_KEXEC for CONFIG_FA_DUMP. While here, get rid
+of definitions of fadump_append_elf_note() & fadump_final_note()
+functions to reuse similar functions compiled under CONFIG_CRASH_CORE.
 
 Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 ---
+ arch/powerpc/Kconfig               |   10 ++++++----
+ arch/powerpc/include/asm/fadump.h  |    2 ++
+ arch/powerpc/kernel/crash.c        |    2 --
+ arch/powerpc/kernel/fadump.c       |   34 +++-------------------------------
+ arch/powerpc/kernel/setup-common.c |    5 +++++
+ 5 files changed, 16 insertions(+), 37 deletions(-)
 
-Changes from v2:
-* Added a definition for Elf_Word.
-* Used IA64 version of append_elf_note() and final_note() functions.
-
-
- arch/ia64/kernel/crash.c   |   22 ----------------------
- include/linux/crash_core.h |    4 ++++
- include/linux/elf.h        |    2 ++
- kernel/crash_core.c        |   34 ++++++++++++++--------------------
- kernel/kexec_core.c        |   28 ----------------------------
- 5 files changed, 20 insertions(+), 70 deletions(-)
-
-diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
-index 2955f35..75859a0 100644
---- a/arch/ia64/kernel/crash.c
-+++ b/arch/ia64/kernel/crash.c
-@@ -27,28 +27,6 @@ static int kdump_freeze_monarch;
- static int kdump_on_init = 1;
- static int kdump_on_fatal_mca = 1;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a8ee573..b9726be 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -513,21 +513,23 @@ config RELOCATABLE_TEST
+ 	  relocation code.
  
--static inline Elf64_Word
--*append_elf_note(Elf64_Word *buf, char *name, unsigned type, void *data,
--		size_t data_len)
--{
--	struct elf_note *note = (struct elf_note *)buf;
--	note->n_namesz = strlen(name) + 1;
--	note->n_descsz = data_len;
--	note->n_type   = type;
--	buf += (sizeof(*note) + 3)/4;
--	memcpy(buf, name, note->n_namesz);
--	buf += (note->n_namesz + 3)/4;
--	memcpy(buf, data, data_len);
--	buf += (data_len + 3)/4;
--	return buf;
--}
--
--static void
--final_note(void *buf)
--{
--	memset(buf, 0, sizeof(struct elf_note));
--}
--
- extern void ia64_dump_cpu_regs(void *);
+ config CRASH_DUMP
+-	bool "Build a kdump crash kernel"
++	bool "Build a dump capture kernel"
+ 	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
+ 	select RELOCATABLE if (PPC64 && !COMPILE_TEST) || 44x || FSL_BOOKE
+ 	help
+-	  Build a kernel suitable for use as a kdump capture kernel.
++	  Build a kernel suitable for use as a dump capture kernel.
+ 	  The same kernel binary can be used as production kernel and dump
+ 	  capture kernel.
  
- static DEFINE_PER_CPU(struct elf_prstatus, elf_prstatus);
-diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
-index 18d0f94..541a197 100644
---- a/include/linux/crash_core.h
-+++ b/include/linux/crash_core.h
-@@ -55,6 +55,10 @@ extern u32 vmcoreinfo_note[VMCOREINFO_NOTE_SIZE/4];
- extern size_t vmcoreinfo_size;
- extern size_t vmcoreinfo_max_size;
+ config FA_DUMP
+ 	bool "Firmware-assisted dump"
+-	depends on PPC64 && PPC_RTAS && CRASH_DUMP && KEXEC_CORE
++	depends on PPC64 && PPC_RTAS
++	select CRASH_CORE
++	select CRASH_DUMP
+ 	help
+ 	  A robust mechanism to get reliable kernel crash dump with
+ 	  assistance from firmware. This approach does not use kexec,
+-	  instead firmware assists in booting the kdump kernel
++	  instead firmware assists in booting the capture kernel
+ 	  while preserving memory contents. Firmware-assisted dump
+ 	  is meant to be a kdump replacement offering robustness and
+ 	  speed not possible without system firmware assistance.
+diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+index 0031806..60b9108 100644
+--- a/arch/powerpc/include/asm/fadump.h
++++ b/arch/powerpc/include/asm/fadump.h
+@@ -73,6 +73,8 @@
+ 	reg_entry++;							\
+ })
  
-+Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
-+			  void *data, size_t data_len);
-+void final_note(Elf_Word *buf);
++extern int crashing_cpu;
 +
- int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
- 		unsigned long long *crash_size, unsigned long long *crash_base);
- int parse_crashkernel_high(char *cmdline, unsigned long long system_ram,
-diff --git a/include/linux/elf.h b/include/linux/elf.h
-index 20fa8d8..ba069e8 100644
---- a/include/linux/elf.h
-+++ b/include/linux/elf.h
-@@ -29,6 +29,7 @@ extern Elf32_Dyn _DYNAMIC [];
- #define elf_note	elf32_note
- #define elf_addr_t	Elf32_Off
- #define Elf_Half	Elf32_Half
-+#define Elf_Word	Elf32_Word
+ /* Kernel Dump section info */
+ struct fadump_section {
+ 	__be32	request_flag;
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index 47b63de..cbabb5a 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -43,8 +43,6 @@
+ #define IPI_TIMEOUT		10000
+ #define REAL_MODE_TIMEOUT	10000
  
- #else
+-/* This keeps a track of which one is the crashing cpu. */
+-int crashing_cpu = -1;
+ static int time_to_dump;
  
-@@ -39,6 +40,7 @@ extern Elf64_Dyn _DYNAMIC [];
- #define elf_note	elf64_note
- #define elf_addr_t	Elf64_Off
- #define Elf_Half	Elf64_Half
-+#define Elf_Word	Elf64_Word
- 
- #endif
- 
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index 212c705..3ac172c 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -291,32 +291,26 @@ int __init parse_crashkernel_low(char *cmdline,
- 				"crashkernel=", suffix_tbl[SUFFIX_LOW]);
+ #define CRASH_HANDLER_MAX 3
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 8f0c7c5..db0b339 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -486,34 +486,6 @@ fadump_read_registers(struct fadump_reg_entry *reg_entry, struct pt_regs *regs)
+ 	return reg_entry;
  }
  
--static u32 *append_elf_note(u32 *buf, char *name, unsigned int type,
--			    void *data, size_t data_len)
-+Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
-+			  void *data, size_t data_len)
- {
+-static u32 *fadump_append_elf_note(u32 *buf, char *name, unsigned type,
+-						void *data, size_t data_len)
+-{
 -	struct elf_note note;
 -
 -	note.n_namesz = strlen(name) + 1;
@@ -165,69 +147,56 @@ index 212c705..3ac172c 100644
 -	buf += (note.n_namesz + 3)/4;
 -	memcpy(buf, data, note.n_descsz);
 -	buf += (note.n_descsz + 3)/4;
-+	struct elf_note *note = (struct elf_note *)buf;
-+
-+	note->n_namesz = strlen(name) + 1;
-+	note->n_descsz = data_len;
-+	note->n_type   = type;
-+	buf += (sizeof(*note) + 3)/4;
-+	memcpy(buf, name, note->n_namesz);
-+	buf += (note->n_namesz + 3)/4;
-+	memcpy(buf, data, data_len);
-+	buf += (data_len + 3)/4;
- 
+-
+-	return buf;
+-}
+-
+-static void fadump_final_note(u32 *buf)
+-{
+-	struct elf_note note;
+-
+-	note.n_namesz = 0;
+-	note.n_descsz = 0;
+-	note.n_type   = 0;
+-	memcpy(buf, &note, sizeof(note));
+-}
+-
+ static u32 *fadump_regs_to_elf_notes(u32 *buf, struct pt_regs *regs)
+ {
+ 	struct elf_prstatus prstatus;
+@@ -524,8 +496,8 @@ static u32 *fadump_regs_to_elf_notes(u32 *buf, struct pt_regs *regs)
+ 	 * prstatus.pr_pid = ????
+ 	 */
+ 	elf_core_copy_kernel_regs(&prstatus.pr_reg, regs);
+-	buf = fadump_append_elf_note(buf, KEXEC_CORE_NOTE_NAME, NT_PRSTATUS,
+-				&prstatus, sizeof(prstatus));
++	buf = append_elf_note(buf, CRASH_CORE_NOTE_NAME, NT_PRSTATUS,
++			      &prstatus, sizeof(prstatus));
  	return buf;
  }
  
--static void final_note(u32 *buf)
-+void final_note(Elf_Word *buf)
- {
--	struct elf_note note;
--
--	note.n_namesz = 0;
--	note.n_descsz = 0;
--	note.n_type   = 0;
--	memcpy(buf, &note, sizeof(note));
-+	memset(buf, 0, sizeof(struct elf_note));
- }
+@@ -666,7 +638,7 @@ static int __init fadump_build_cpu_notes(const struct fadump_mem_struct *fdm)
+ 			note_buf = fadump_regs_to_elf_notes(note_buf, &regs);
+ 		}
+ 	}
+-	fadump_final_note(note_buf);
++	final_note(note_buf);
  
- static void update_vmcoreinfo_note(void)
-diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index 2179a16..263d764 100644
---- a/kernel/kexec_core.c
-+++ b/kernel/kexec_core.c
-@@ -990,34 +990,6 @@ int crash_shrink_memory(unsigned long new_size)
- 	return ret;
- }
+ 	if (fdh) {
+ 		pr_debug("Updating elfcore header (%llx) with cpu notes\n",
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index f516ac5..60badb1 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -116,6 +116,11 @@ int ppc_do_canonicalize_irqs;
+ EXPORT_SYMBOL(ppc_do_canonicalize_irqs);
+ #endif
  
--static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
--			    size_t data_len)
--{
--	struct elf_note note;
--
--	note.n_namesz = strlen(name) + 1;
--	note.n_descsz = data_len;
--	note.n_type   = type;
--	memcpy(buf, &note, sizeof(note));
--	buf += (sizeof(note) + 3)/4;
--	memcpy(buf, name, note.n_namesz);
--	buf += (note.n_namesz + 3)/4;
--	memcpy(buf, data, note.n_descsz);
--	buf += (note.n_descsz + 3)/4;
--
--	return buf;
--}
--
--static void final_note(u32 *buf)
--{
--	struct elf_note note;
--
--	note.n_namesz = 0;
--	note.n_descsz = 0;
--	note.n_type   = 0;
--	memcpy(buf, &note, sizeof(note));
--}
--
- void crash_save_cpu(struct pt_regs *regs, int cpu)
++#ifdef CONFIG_CRASH_CORE
++/* This keeps a track of which one is the crashing cpu. */
++int crashing_cpu = -1;
++#endif
++
+ /* also used by kexec */
+ void machine_shutdown(void)
  {
- 	struct elf_prstatus prstatus;
