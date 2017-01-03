@@ -1,26 +1,17 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pg0-x232.google.com (mail-pg0-x232.google.com
- [IPv6:2607:f8b0:400e:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [IPv6:2a03:3680:0:3::67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttB5r3Y9kzDqDx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 22:09:04 +1100 (AEDT)
-Received: by mail-pg0-x232.google.com with SMTP id y62so161907827pgy.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 03:09:04 -0800 (PST)
-Date: Tue, 3 Jan 2017 16:38:59 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, ego@linux.vnet.ibm.com,
- akshay.adiga@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- svaidy@linux.vnet.ibm.com
-Subject: Re: [PATCH V2] cpufreq: powernv: Add boost files to export
- ultra-turbo frequencies
-Message-ID: <20170103110859.GB14137@vireshk-i7>
-References: <1483441560-11957-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttHzw16NZzDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 02:34:20 +1100 (AEDT)
+Date: Tue, 3 Jan 2017 07:25:16 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
+Message-ID: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1483441560-11957-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03-01-17, 16:36, Shilpasri G Bhat wrote:
-> In P8+, Workload Optimized Frequency(WOF) provides the capability to
-> boost the cpu frequency based on the utilization of the other cpus
-> running in the chip. The On-Chip-Controller(OCC) firmware will control
-> the achievability of these frequencies depending on the power headroom
-> available in the chip. Currently the ultra-turbo frequencies provided
-> by this feature are exported along with the turbo and sub-turbo
-> frequencies as scaling_available_frequencies. This patch will export
-> the ultra-turbo frequencies separately as scaling_boost_frequencies in
-> WOF enabled systems. This patch will add the boost sysfs file which
-> can be used to disable/enable ultra-turbo frequencies.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
-> Changes from v1:
-> - Print if WOF is enabled
-> - s/clean_notifiers/cleanup_notifiers
-> 
->  drivers/cpufreq/powernv-cpufreq.c | 50 ++++++++++++++++++++++++++++++++++++---
->  1 file changed, 47 insertions(+), 3 deletions(-)
+Hi,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+when compiling v4.10-rc2 with CONFIG_CC_STACKPROTECTOR_STRONG=y, the 
+linker fails with:
 
+================================
++ ld -EB -m elf32ppc -Bstatic --build-id -X -o .tmp_vmlinux1 -T 
+./arch/powerpc/kernel/vmlinux.lds arch/powerpc/kernel/head_32.o 
+arch/powerpc/kernel/fpu.o arch/powerpc/kernel/vector.o 
+arch/powerpc/kernel/prom_init.o init/built-in.o --start-group 
+usr/built-in.o arch/powerpc/kernel/built-in.o arch/powerpc/mm/built-in.o 
+arch/powerpc/lib/built-in.o arch/powerpc/sysdev/built-in.o 
+arch/powerpc/platforms/built-in.o arch/powerpc/math-emu/built-in.o 
+arch/powerpc/crypto/built-in.o arch/powerpc/net/built-in.o 
+kernel/built-in.o certs/built-in.o mm/built-in.o fs/built-in.o 
+ipc/built-in.o security/built-in.o crypto/built-in.o block/built-in.o 
+lib/lib.a lib/built-in.o drivers/built-in.o sound/built-in.o 
+firmware/built-in.o net/built-in.o virt/built-in.o --end-group
+arch/powerpc/platforms/built-in.o: In function `bootx_printf':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
+arch/powerpc/platforms/built-in.o: In function `bootx_add_display_props':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:211: undefined reference to `__stack_chk_fail_local'
+arch/powerpc/platforms/built-in.o: In function 
+`bootx_scan_dt_build_struct':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:350: undefined reference to `__stack_chk_fail_local'
+arch/powerpc/platforms/built-in.o: In function `bootx_init':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:596: undefined reference to `__stack_chk_fail_local'
+/usr/bin/ld.bfd.real: .tmp_vmlinux1: hidden symbol `__stack_chk_fail_local' isn't defined
+/usr/bin/ld.bfd.real: final link failed: Bad value
+================================
+
+
+$ ld --version | head -1
+GNU ld (GNU Binutils for Debian) 2.25
+
+$ gcc --version | head -1
+gcc-4.9.real (Debian 4.9.2-10) 4.9.2
+
+
+I'm regularly compiling userspace programs with -fstack-protector w/o 
+problems. I suspect it's either 6533b7c16ee5712041b4e324100550e02a9a5dda 
+("powerpc: Initial stack protector (-fstack-protector) support") or 
+902e06eb86cd62753974c249bd1dedae2825b430 ("powerpc/32: Change the stack 
+protector canary value per task") or both but I haven't started the 
+bisection yet.
+
+Any other ideas?
+
+Thanks,
+Christian.
 -- 
-viresh
+BOFH excuse #220:
+
+Someone thought The Big Red Button was a light switch.
