@@ -1,23 +1,24 @@
-Return-Path: <ccrome@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mirq@rere.qmqm.pl>
+Received: from rere.qmqm.pl (unknown [IPv6:2001:6a0:181::1])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttMl82pvzzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 05:23:32 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id y68so25969256pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 10:23:32 -0800 (PST)
-From: Caleb Crome <ccrome@gmail.com>
-To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Arnaud Mouiche <arnaud.mouiche@invoxia.com>
-Cc: Caleb Crome <caleb@crome.org>
-Subject: [PATCH] fsl_ssi: set fifo watermark to more reliable value
-Date: Tue,  3 Jan 2017 10:22:57 -0800
-Message-Id: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttR3d5g4HzDq7s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 07:53:01 +1100 (AEDT)
+Message-Id: <719ecd1e2cb20316daf110de4dc865593c7bed9d.1483475202.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1483475202.git.mirq-linux@rere.qmqm.pl>
+References: <cover.1483475202.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Subject: [PATCH net-next v2 18/27] net/skbuff: add macros for VLAN_PRESENT bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+To: netdev@vger.kernel.org
+Cc: Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
+Date: Tue,  3 Jan 2017 21:52:38 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,140 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Caleb Crome <caleb@crome.org>
-
-The fsl_ssi fifo watermark is by default set to 2 free spaces (i.e.
-activate DMA on FIFO when only 2 spaces are left.)  This means the
-DMA must service the fifo within 2 audio samples, which is just not
-enough time  for many use cases with high data rate.  In many
-configurations the audio channel slips (causing l/r swap in stereo
-configurations, or channel slipping in multi-channel configurations).
-
-This patch gives more breathing room and allows the SSI to operate
-reliably by changing the fifio refill watermark to 8.
-
-There is no change in behavior for older chips (with an 8-deep fifo).
-Only the newer chips with a 15-deep fifo get the new behavior. I
-suspect a new fifo depth setting could be optimized on the older
-chips too, but I have not tested.
-
-Signed-off-by: Caleb Crome <caleb@crome.org>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
- sound/soc/fsl/fsl_ssi.c | 74 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 53 insertions(+), 21 deletions(-)
+ include/linux/skbuff.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index bedec4a..56245e6 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -224,6 +224,12 @@ struct fsl_ssi_soc_data {
-  * @dbg_stats: Debugging statistics
-  *
-  * @soc: SoC specific data
-+ *
-+ * @fifo_watermark: the FIFO watermark setting.  Notifies DMA when
-+ *             there are @fifo_watermark or fewer words in TX fifo or
-+ *             @fifo_watermark or more empty words in RX fifo.
-+ * @dma_maxburst: max number of words to transfer in one go.  So far,
-+ *             this is always the same as fifo_watermark.
-  */
- struct fsl_ssi_private {
- 	struct regmap *regs;
-@@ -263,6 +269,9 @@ struct fsl_ssi_private {
- 
- 	const struct fsl_ssi_soc_data *soc;
- 	struct device *dev;
-+
-+	u32 fifo_watermark;
-+	u32 dma_maxburst;
- };
- 
- /*
-@@ -1051,21 +1060,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 	regmap_write(regs, CCSR_SSI_SRCR, srcr);
- 	regmap_write(regs, CCSR_SSI_SCR, scr);
- 
--	/*
--	 * Set the watermark for transmit FIFI 0 and receive FIFO 0. We don't
--	 * use FIFO 1. We program the transmit water to signal a DMA transfer
--	 * if there are only two (or fewer) elements left in the FIFO. Two
--	 * elements equals one frame (left channel, right channel). This value,
--	 * however, depends on the depth of the transmit buffer.
--	 *
--	 * We set the watermark on the same level as the DMA burstsize.  For
--	 * fiq it is probably better to use the biggest possible watermark
--	 * size.
--	 */
--	if (ssi_private->use_dma)
--		wm = ssi_private->fifo_depth - 2;
--	else
--		wm = ssi_private->fifo_depth;
-+	wm = ssi_private->fifo_watermark;
- 
- 	regmap_write(regs, CCSR_SSI_SFCSR,
- 			CCSR_SSI_SFCSR_TFWM0(wm) | CCSR_SSI_SFCSR_RFWM0(wm) |
-@@ -1373,12 +1368,8 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 		dev_dbg(&pdev->dev, "could not get baud clock: %ld\n",
- 			 PTR_ERR(ssi_private->baudclk));
- 
--	/*
--	 * We have burstsize be "fifo_depth - 2" to match the SSI
--	 * watermark setting in fsl_ssi_startup().
--	 */
--	ssi_private->dma_params_tx.maxburst = ssi_private->fifo_depth - 2;
--	ssi_private->dma_params_rx.maxburst = ssi_private->fifo_depth - 2;
-+	ssi_private->dma_params_tx.maxburst = ssi_private->dma_maxburst;
-+	ssi_private->dma_params_rx.maxburst = ssi_private->dma_maxburst;
- 	ssi_private->dma_params_tx.addr = ssi_private->ssi_phys + CCSR_SSI_STX0;
- 	ssi_private->dma_params_rx.addr = ssi_private->ssi_phys + CCSR_SSI_SRX0;
- 
-@@ -1543,6 +1534,47 @@ static int fsl_ssi_probe(struct platform_device *pdev)
-                 /* Older 8610 DTs didn't have the fifo-depth property */
- 		ssi_private->fifo_depth = 8;
- 
-+	/*
-+	 * Set the watermark for transmit FIFO 0 and receive FIFO 0. We don't
-+	 * use FIFO 1 but set the watermark appropriately nontheless.
-+	 * We program the transmit water to signal a DMA transfer
-+	 * if there are N elements left in the FIFO. For chips with 15-deep
-+	 * FIFOs, set watermark to 8.  This allows the SSI to operate at a
-+	 * high data rate without channel slipping. Behavior is unchanged
-+	 * for the older chips with a fifo depth of only 8.  A value of 4
-+	 * might be appropriate for the older chips, but is left at
-+	 * fifo_depth-2 until sombody has a chance to test.
-+	 *
-+	 * We set the watermark on the same level as the DMA burstsize.  For
-+	 * fiq it is probably better to use the biggest possible watermark
-+	 * size.
-+	 */
-+	switch (ssi_private->fifo_depth) {
-+	case 15:
-+		/*
-+		 * 2 samples is not enough when running at high data
-+		 * rates (like 48kHz @ 16 bits/channel, 16 channels)
-+		 * 8 seems to split things evenly and leave enough time
-+		 * for the DMA to fill the FIFO before it's over/under
-+		 * run.
-+		 */
-+		ssi_private->fifo_watermark = 8;
-+		ssi_private->dma_maxburst = 8;
-+		break;
-+	case 8:
-+	default:
-+		/*
-+		 * maintain old behavior for older chips.
-+		 * Keeping it the same because I don't have an older
-+		 * board to test with.
-+		 * I suspect this could be changed to be something to
-+		 * leave some more space in the fifo.
-+		 */
-+		ssi_private->fifo_watermark = ssi_private->fifo_depth - 2;
-+		ssi_private->dma_maxburst = ssi_private->fifo_depth - 2;
-+		break;
-+	}
-+
- 	dev_set_drvdata(&pdev->dev, ssi_private);
- 
- 	if (ssi_private->soc->imx) {
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index b53c0cfd417e..168c3e486bd4 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -768,6 +768,12 @@ struct sk_buff {
+ 	__u32			priority;
+ 	int			skb_iif;
+ 	__u32			hash;
++#define PKT_VLAN_PRESENT_BIT	4	// CFI (12-th bit) in TCI
++#ifdef __BIG_ENDIAN
++#define PKT_VLAN_PRESENT_OFFSET()	offsetof(struct sk_buff, vlan_tci)
++#else
++#define PKT_VLAN_PRESENT_OFFSET()	(offsetof(struct sk_buff, vlan_tci) + 1)
++#endif
+ 	__be16			vlan_proto;
+ 	__u16			vlan_tci;
+ #if defined(CONFIG_NET_RX_BUSY_POLL) || defined(CONFIG_XPS)
 -- 
-2.7.4
+2.11.0
