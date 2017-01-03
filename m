@@ -1,22 +1,30 @@
-Return-Path: <mirq@rere.qmqm.pl>
-Received: from rere.qmqm.pl (unknown [IPv6:2001:6a0:181::1])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <festevam@gmail.com>
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttR3d5KCszDq68
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 07:53:01 +1100 (AEDT)
-Message-Id: <9523dd0fbc0856093f31c743781c779355e54918.1483475202.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1483475202.git.mirq-linux@rere.qmqm.pl>
-References: <cover.1483475202.git.mirq-linux@rere.qmqm.pl>
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH net-next v2 21/27] net/bpf_jit: PPC: split VLAN_PRESENT bit
- handling from VLAN_TCI
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttRQ02X86zDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 08:08:56 +1100 (AEDT)
+Received: by mail-oi0-x241.google.com with SMTP id 3so43147281oih.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 13:08:56 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
+References: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Tue, 3 Jan 2017 19:08:53 -0200
+Message-ID: <CAOMZO5AS7TPu1PmdNUZuSEJQO2C7L+7Kn2wpetoxHCzwHiyokg@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH] fsl_ssi: set fifo watermark to more reliable
+ value
+To: Caleb Crome <ccrome@gmail.com>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Arnaud Mouiche <arnaud.mouiche@invoxia.com>, Caleb Crome <caleb@crome.org>
 Content-Type: text/plain; charset=UTF-8
-To: netdev@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue,  3 Jan 2017 21:52:39 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
- arch/powerpc/net/bpf_jit_comp.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+On Tue, Jan 3, 2017 at 4:22 PM, Caleb Crome <ccrome@gmail.com> wrote:
+> From: Caleb Crome <caleb@crome.org>
+>
+> The fsl_ssi fifo watermark is by default set to 2 free spaces (i.e.
+> activate DMA on FIFO when only 2 spaces are left.)  This means the
+> DMA must service the fifo within 2 audio samples, which is just not
+> enough time  for many use cases with high data rate.  In many
+> configurations the audio channel slips (causing l/r swap in stereo
+> configurations, or channel slipping in multi-channel configurations).
+>
+> This patch gives more breathing room and allows the SSI to operate
+> reliably by changing the fifio refill watermark to 8.
+>
+> There is no change in behavior for older chips (with an 8-deep fifo).
+> Only the newer chips with a 15-deep fifo get the new behavior. I
+> suspect a new fifo depth setting could be optimized on the older
+> chips too, but I have not tested.
+>
+> Signed-off-by: Caleb Crome <caleb@crome.org>
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 7e706f36e364..22ae63fb9b7d 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -377,18 +377,19 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 							  hash));
- 			break;
- 		case BPF_ANC | SKF_AD_VLAN_TAG:
--		case BPF_ANC | SKF_AD_VLAN_TAG_PRESENT:
- 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, vlan_tci) != 2);
--			BUILD_BUG_ON(VLAN_TAG_PRESENT != 0x1000);
- 
- 			PPC_LHZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,
- 							  vlan_tci));
--			if (code == (BPF_ANC | SKF_AD_VLAN_TAG)) {
--				PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
--			} else {
--				PPC_ANDI(r_A, r_A, VLAN_TAG_PRESENT);
--				PPC_SRWI(r_A, r_A, 12);
--			}
-+#ifdef VLAN_TAG_PRESENT
-+			PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
-+#endif
-+			break;
-+		case BPF_ANC | SKF_AD_VLAN_TAG_PRESENT:
-+			PPC_LBZ_OFFS(r_A, r_skb, PKT_VLAN_PRESENT_OFFSET());
-+			if (PKT_VLAN_PRESENT_BIT)
-+				PPC_SRWI(r_A, r_A, PKT_VLAN_PRESENT_BIT);
-+			PPC_ANDI(r_A, r_A, 1);
- 			break;
- 		case BPF_ANC | SKF_AD_QUEUE:
- 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff,
--- 
-2.11.0
+Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
