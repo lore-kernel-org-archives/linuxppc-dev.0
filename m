@@ -1,35 +1,23 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ccrome@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttQs673VQzDqHq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 07:43:54 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v03KhqGV080288
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 15:43:52 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27r5kbtyef-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 15:43:52 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Tue, 3 Jan 2017 15:43:43 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Alistair Popple <apopple@au1.ibm.com>
-Subject: [PATCH v4 4/4] powerpc/mm: unstub radix__vmemmap_remove_mapping()
-Date: Tue,  3 Jan 2017 14:43:38 -0600
-In-Reply-To: <1483476218-17271-1-git-send-email-arbab@linux.vnet.ibm.com>
-References: <1483476218-17271-1-git-send-email-arbab@linux.vnet.ibm.com>
-Message-Id: <1483476218-17271-5-git-send-email-arbab@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttMl82pvzzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 05:23:32 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id y68so25969256pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 10:23:32 -0800 (PST)
+From: Caleb Crome <ccrome@gmail.com>
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Arnaud Mouiche <arnaud.mouiche@invoxia.com>
+Cc: Caleb Crome <caleb@crome.org>
+Subject: [PATCH] fsl_ssi: set fifo watermark to more reliable value
+Date: Tue,  3 Jan 2017 10:22:57 -0800
+Message-Id: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,87 +27,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use remove_pagetable() and friends for radix vmemmap removal.
+From: Caleb Crome <caleb@crome.org>
 
-We do not require the special-case handling of vmemmap done in the x86
-versions of these functions. This is because vmemmap_free() has already
-freed the mapped pages, and calls us with an aligned address range.
+The fsl_ssi fifo watermark is by default set to 2 free spaces (i.e.
+activate DMA on FIFO when only 2 spaces are left.)  This means the
+DMA must service the fifo within 2 audio samples, which is just not
+enough time  for many use cases with high data rate.  In many
+configurations the audio channel slips (causing l/r swap in stereo
+configurations, or channel slipping in multi-channel configurations).
 
-So, add a few failsafe WARNs, but otherwise the code to remove physical
-mappings is already sufficient for vmemmap.
+This patch gives more breathing room and allows the SSI to operate
+reliably by changing the fifio refill watermark to 8.
 
-Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+There is no change in behavior for older chips (with an 8-deep fifo).
+Only the newer chips with a 15-deep fifo get the new behavior. I
+suspect a new fifo depth setting could be optimized on the older
+chips too, but I have not tested.
+
+Signed-off-by: Caleb Crome <caleb@crome.org>
 ---
- arch/powerpc/mm/pgtable-radix.c | 29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+ sound/soc/fsl/fsl_ssi.c | 74 +++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 53 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index f7a8e625..bada0d9 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -517,6 +517,15 @@ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
- 		if (!pte_present(*pte))
- 			continue;
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index bedec4a..56245e6 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -224,6 +224,12 @@ struct fsl_ssi_soc_data {
+  * @dbg_stats: Debugging statistics
+  *
+  * @soc: SoC specific data
++ *
++ * @fifo_watermark: the FIFO watermark setting.  Notifies DMA when
++ *             there are @fifo_watermark or fewer words in TX fifo or
++ *             @fifo_watermark or more empty words in RX fifo.
++ * @dma_maxburst: max number of words to transfer in one go.  So far,
++ *             this is always the same as fifo_watermark.
+  */
+ struct fsl_ssi_private {
+ 	struct regmap *regs;
+@@ -263,6 +269,9 @@ struct fsl_ssi_private {
  
-+		if (!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(next)) {
-+			/*
-+			 * The vmemmap_free() and remove_section_mapping()
-+			 * codepaths call us with aligned addresses.
-+			 */
-+			WARN_ONCE(1, "%s: unaligned range\n", __func__);
-+			continue;
-+		}
+ 	const struct fsl_ssi_soc_data *soc;
+ 	struct device *dev;
 +
- 		pte_clear(&init_mm, addr, pte);
- 	}
- }
-@@ -536,6 +545,12 @@ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
- 			continue;
++	u32 fifo_watermark;
++	u32 dma_maxburst;
+ };
  
- 		if (pmd_huge(*pmd)) {
-+			if (!IS_ALIGNED(addr, PMD_SIZE) ||
-+			    !IS_ALIGNED(next, PMD_SIZE)) {
-+				WARN_ONCE(1, "%s: unaligned range\n", __func__);
-+				continue;
-+			}
-+
- 			pte_clear(&init_mm, addr, (pte_t *)pmd);
- 			continue;
- 		}
-@@ -561,6 +576,12 @@ static void remove_pud_table(pud_t *pud_start, unsigned long addr,
- 			continue;
+ /*
+@@ -1051,21 +1060,7 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 	regmap_write(regs, CCSR_SSI_SRCR, srcr);
+ 	regmap_write(regs, CCSR_SSI_SCR, scr);
  
- 		if (pud_huge(*pud)) {
-+			if (!IS_ALIGNED(addr, PUD_SIZE) ||
-+			    !IS_ALIGNED(next, PUD_SIZE)) {
-+				WARN_ONCE(1, "%s: unaligned range\n", __func__);
-+				continue;
-+			}
-+
- 			pte_clear(&init_mm, addr, (pte_t *)pud);
- 			continue;
- 		}
-@@ -587,6 +608,12 @@ static void remove_pagetable(unsigned long start, unsigned long end)
- 			continue;
+-	/*
+-	 * Set the watermark for transmit FIFI 0 and receive FIFO 0. We don't
+-	 * use FIFO 1. We program the transmit water to signal a DMA transfer
+-	 * if there are only two (or fewer) elements left in the FIFO. Two
+-	 * elements equals one frame (left channel, right channel). This value,
+-	 * however, depends on the depth of the transmit buffer.
+-	 *
+-	 * We set the watermark on the same level as the DMA burstsize.  For
+-	 * fiq it is probably better to use the biggest possible watermark
+-	 * size.
+-	 */
+-	if (ssi_private->use_dma)
+-		wm = ssi_private->fifo_depth - 2;
+-	else
+-		wm = ssi_private->fifo_depth;
++	wm = ssi_private->fifo_watermark;
  
- 		if (pgd_huge(*pgd)) {
-+			if (!IS_ALIGNED(addr, PGDIR_SIZE) ||
-+			    !IS_ALIGNED(next, PGDIR_SIZE)) {
-+				WARN_ONCE(1, "%s: unaligned range\n", __func__);
-+				continue;
-+			}
+ 	regmap_write(regs, CCSR_SSI_SFCSR,
+ 			CCSR_SSI_SFCSR_TFWM0(wm) | CCSR_SSI_SFCSR_RFWM0(wm) |
+@@ -1373,12 +1368,8 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+ 		dev_dbg(&pdev->dev, "could not get baud clock: %ld\n",
+ 			 PTR_ERR(ssi_private->baudclk));
+ 
+-	/*
+-	 * We have burstsize be "fifo_depth - 2" to match the SSI
+-	 * watermark setting in fsl_ssi_startup().
+-	 */
+-	ssi_private->dma_params_tx.maxburst = ssi_private->fifo_depth - 2;
+-	ssi_private->dma_params_rx.maxburst = ssi_private->fifo_depth - 2;
++	ssi_private->dma_params_tx.maxburst = ssi_private->dma_maxburst;
++	ssi_private->dma_params_rx.maxburst = ssi_private->dma_maxburst;
+ 	ssi_private->dma_params_tx.addr = ssi_private->ssi_phys + CCSR_SSI_STX0;
+ 	ssi_private->dma_params_rx.addr = ssi_private->ssi_phys + CCSR_SSI_SRX0;
+ 
+@@ -1543,6 +1534,47 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+                 /* Older 8610 DTs didn't have the fifo-depth property */
+ 		ssi_private->fifo_depth = 8;
+ 
++	/*
++	 * Set the watermark for transmit FIFO 0 and receive FIFO 0. We don't
++	 * use FIFO 1 but set the watermark appropriately nontheless.
++	 * We program the transmit water to signal a DMA transfer
++	 * if there are N elements left in the FIFO. For chips with 15-deep
++	 * FIFOs, set watermark to 8.  This allows the SSI to operate at a
++	 * high data rate without channel slipping. Behavior is unchanged
++	 * for the older chips with a fifo depth of only 8.  A value of 4
++	 * might be appropriate for the older chips, but is left at
++	 * fifo_depth-2 until sombody has a chance to test.
++	 *
++	 * We set the watermark on the same level as the DMA burstsize.  For
++	 * fiq it is probably better to use the biggest possible watermark
++	 * size.
++	 */
++	switch (ssi_private->fifo_depth) {
++	case 15:
++		/*
++		 * 2 samples is not enough when running at high data
++		 * rates (like 48kHz @ 16 bits/channel, 16 channels)
++		 * 8 seems to split things evenly and leave enough time
++		 * for the DMA to fill the FIFO before it's over/under
++		 * run.
++		 */
++		ssi_private->fifo_watermark = 8;
++		ssi_private->dma_maxburst = 8;
++		break;
++	case 8:
++	default:
++		/*
++		 * maintain old behavior for older chips.
++		 * Keeping it the same because I don't have an older
++		 * board to test with.
++		 * I suspect this could be changed to be something to
++		 * leave some more space in the fifo.
++		 */
++		ssi_private->fifo_watermark = ssi_private->fifo_depth - 2;
++		ssi_private->dma_maxburst = ssi_private->fifo_depth - 2;
++		break;
++	}
 +
- 			pte_clear(&init_mm, addr, (pte_t *)pgd);
- 			continue;
- 		}
-@@ -627,7 +654,7 @@ int __meminit radix__vmemmap_create_mapping(unsigned long start,
- #ifdef CONFIG_MEMORY_HOTPLUG
- void radix__vmemmap_remove_mapping(unsigned long start, unsigned long page_size)
- {
--	/* FIXME!! intel does more. We should free page tables mapping vmemmap ? */
-+	remove_pagetable(start, start + page_size);
- }
- #endif
- #endif
+ 	dev_set_drvdata(&pdev->dev, ssi_private);
+ 
+ 	if (ssi_private->soc->imx) {
 -- 
-1.8.3.1
+2.7.4
