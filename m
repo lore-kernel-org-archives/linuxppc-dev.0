@@ -1,18 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttNWh30NGzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 05:58:40 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id b1so34338369pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 10:58:40 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc: implement clear_bit_unlock_is_negative_byte()
-Date: Wed,  4 Jan 2017 04:58:28 +1000
-Message-Id: <20170103185828.31311-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttP0R27jczDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 06:20:07 +1100 (AEDT)
+Date: Tue, 3 Jan 2017 11:20:01 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
+In-Reply-To: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
+Message-ID: <alpine.DEB.2.20.99.1701031118180.31470@trent.utfs.org>
+References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,89 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit b91e1302ad9b8 ("mm: optimize PageWaiters bit use for
-unlock_page()") added a special bitop function to speed up
-unlock_page(). Implement this for powerpc.
+On Tue, 3 Jan 2017, Christian Kujau wrote:
+> when compiling v4.10-rc2 with CONFIG_CC_STACKPROTECTOR_STRONG=y, the 
+> linker fails with:
 
-This improves the unlock_page() core code from this:
+FWIW, compiling with CONFIG_CC_STACKPROTECTOR_REGULAR=y instead works 
+just fine.
 
-	li	9,1
-	lwsync
-1:	ldarx	10,0,3,0
-	andc	10,10,9
-	stdcx.	10,0,3
-	bne-	1b
-	ori	2,2,0
-	ld	9,0(3)
-	andi.	10,9,0x80
-	beqlr
-	li	4,0
-	b	wake_up_page_bit
+C.
 
-To this:
+> 
+> ================================
+> + ld -EB -m elf32ppc -Bstatic --build-id -X -o .tmp_vmlinux1 -T 
+> ./arch/powerpc/kernel/vmlinux.lds arch/powerpc/kernel/head_32.o 
+> arch/powerpc/kernel/fpu.o arch/powerpc/kernel/vector.o 
+> arch/powerpc/kernel/prom_init.o init/built-in.o --start-group 
+> usr/built-in.o arch/powerpc/kernel/built-in.o arch/powerpc/mm/built-in.o 
+> arch/powerpc/lib/built-in.o arch/powerpc/sysdev/built-in.o 
+> arch/powerpc/platforms/built-in.o arch/powerpc/math-emu/built-in.o 
+> arch/powerpc/crypto/built-in.o arch/powerpc/net/built-in.o 
+> kernel/built-in.o certs/built-in.o mm/built-in.o fs/built-in.o 
+> ipc/built-in.o security/built-in.o crypto/built-in.o block/built-in.o 
+> lib/lib.a lib/built-in.o drivers/built-in.o sound/built-in.o 
+> firmware/built-in.o net/built-in.o virt/built-in.o --end-group
+> arch/powerpc/platforms/built-in.o: In function `bootx_printf':
+> /usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
+> arch/powerpc/platforms/built-in.o: In function `bootx_add_display_props':
+> /usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:211: undefined reference to `__stack_chk_fail_local'
+> arch/powerpc/platforms/built-in.o: In function 
+> `bootx_scan_dt_build_struct':
+> /usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:350: undefined reference to `__stack_chk_fail_local'
+> arch/powerpc/platforms/built-in.o: In function `bootx_init':
+> /usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:596: undefined reference to `__stack_chk_fail_local'
+> /usr/bin/ld.bfd.real: .tmp_vmlinux1: hidden symbol `__stack_chk_fail_local' isn't defined
+> /usr/bin/ld.bfd.real: final link failed: Bad value
+> ================================
+> 
+> 
+> $ ld --version | head -1
+> GNU ld (GNU Binutils for Debian) 2.25
+> 
+> $ gcc --version | head -1
+> gcc-4.9.real (Debian 4.9.2-10) 4.9.2
+> 
+> 
+> I'm regularly compiling userspace programs with -fstack-protector w/o 
+> problems. I suspect it's either 6533b7c16ee5712041b4e324100550e02a9a5dda 
+> ("powerpc: Initial stack protector (-fstack-protector) support") or 
+> 902e06eb86cd62753974c249bd1dedae2825b430 ("powerpc/32: Change the stack 
+> protector canary value per task") or both but I haven't started the 
+> bisection yet.
+> 
+> Any other ideas?
+> 
+> Thanks,
+> Christian.
+> -- 
+> BOFH excuse #220:
+> 
+> Someone thought The Big Red Button was a light switch.
+> 
 
-	li	10,1
-	lwsync
-1:	ldarx	9,0,3,0
-	andc	9,9,10
-	stdcx.	9,0,3
-	bne-	1b
-	andi.	10,9,0x80
-	beqlr
-	li	4,0
-	b	wake_up_page_bit
-
-In a test of elapsed time for dd writing into 16GB of already-dirty
-pagecache on a POWER8 with 4K pages, which has one unlock_page per 4kB
-this patch reduced overhead by 1.1%:
-
-    N           Min           Max        Median           Avg        Stddev
-x  19         2.578         2.619         2.594         2.595         0.011
-+  19         2.552         2.592         2.564         2.565         0.008
-Difference at 95.0% confidence
-	-0.030  +/- 0.006
-	-1.142% +/- 0.243%
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/bitops.h | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 59abc620f8e8..9add12ee13dd 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -154,6 +154,31 @@ static __inline__ int test_and_change_bit(unsigned long nr,
- 	return test_and_change_bits(BIT_MASK(nr), addr + BIT_WORD(nr)) != 0;
- }
- 
-+static __inline__ unsigned long clear_bit_unlock_return_word(int nr,
-+						volatile unsigned long *addr)
-+{
-+	unsigned long old, t;
-+	unsigned long *p = (unsigned long *)addr + BIT_WORD(nr);
-+	unsigned long mask = BIT_MASK(nr);
-+
-+	__asm__ __volatile__ (
-+	PPC_RELEASE_BARRIER
-+"1:"	PPC_LLARX(%0,0,%3,0) "\n"
-+	"andc %1,%0,%2\n"
-+	PPC405_ERR77(0,%3)
-+	PPC_STLCX "%1,0,%3\n"
-+	"bne- 1b\n"
-+	: "=&r" (old), "=&r" (t)
-+	: "r" (mask), "r" (p)
-+	: "cc", "memory");
-+
-+	return old;
-+}
-+
-+/* This is a special function for mm/filemap.c */
-+#define clear_bit_unlock_is_negative_byte(nr, addr)			\
-+	(clear_bit_unlock_return_word(nr, addr) & BIT_MASK(PG_waiters))
-+
- #include <asm-generic/bitops/non-atomic.h>
- 
- static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long *addr)
 -- 
-2.11.0
+BOFH excuse #413:
+
+Cow-tippers tipped a cow onto the server.
