@@ -1,23 +1,23 @@
 Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttQs36L2WzDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 07:43:51 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v03KhnUc060483
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 15:43:50 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27rcgt2ha8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttQs673VQzDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 07:43:54 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v03KhqGV080288
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 15:43:52 -0500
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27r5kbtyef-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 15:43:50 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 15:43:52 -0500
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Tue, 3 Jan 2017 13:43:43 -0700
+ Tue, 3 Jan 2017 15:43:43 -0500
 From: Reza Arbab <arbab@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -25,11 +25,11 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Balbir Singh <bsingharora@gmail.com>, Alistair Popple <apopple@au1.ibm.com>
-Subject: [PATCH v4 1/4] powerpc/mm: refactor radix physical page mapping
-Date: Tue,  3 Jan 2017 14:43:35 -0600
+Subject: [PATCH v4 4/4] powerpc/mm: unstub radix__vmemmap_remove_mapping()
+Date: Tue,  3 Jan 2017 14:43:38 -0600
 In-Reply-To: <1483476218-17271-1-git-send-email-arbab@linux.vnet.ibm.com>
 References: <1483476218-17271-1-git-send-email-arbab@linux.vnet.ibm.com>
-Message-Id: <1483476218-17271-2-git-send-email-arbab@linux.vnet.ibm.com>
+Message-Id: <1483476218-17271-5-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,107 +39,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the page mapping code in radix_init_pgtable() into a separate
-function that will also be used for memory hotplug.
+Use remove_pagetable() and friends for radix vmemmap removal.
 
-The current goto loop progressively decreases its mapping size as it
-covers the tail of a range whose end is unaligned. Change this to a for
-loop which can do the same for both ends of the range.
+We do not require the special-case handling of vmemmap done in the x86
+versions of these functions. This is because vmemmap_free() has already
+freed the mapped pages, and calls us with an aligned address range.
+
+So, add a few failsafe WARNs, but otherwise the code to remove physical
+mappings is already sufficient for vmemmap.
 
 Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/pgtable-radix.c | 69 ++++++++++++++++++-----------------------
- 1 file changed, 31 insertions(+), 38 deletions(-)
+ arch/powerpc/mm/pgtable-radix.c | 29 ++++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 623a0dc..5cee6d1 100644
+index f7a8e625..bada0d9 100644
 --- a/arch/powerpc/mm/pgtable-radix.c
 +++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -107,54 +107,47 @@ int radix__map_kernel_page(unsigned long ea, unsigned long pa,
- 	return 0;
+@@ -517,6 +517,15 @@ static void remove_pte_table(pte_t *pte_start, unsigned long addr,
+ 		if (!pte_present(*pte))
+ 			continue;
+ 
++		if (!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(next)) {
++			/*
++			 * The vmemmap_free() and remove_section_mapping()
++			 * codepaths call us with aligned addresses.
++			 */
++			WARN_ONCE(1, "%s: unaligned range\n", __func__);
++			continue;
++		}
++
+ 		pte_clear(&init_mm, addr, pte);
+ 	}
  }
+@@ -536,6 +545,12 @@ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
+ 			continue;
  
-+static int __meminit create_physical_mapping(unsigned long start,
-+					     unsigned long end)
-+{
-+	unsigned long mapping_size;
+ 		if (pmd_huge(*pmd)) {
++			if (!IS_ALIGNED(addr, PMD_SIZE) ||
++			    !IS_ALIGNED(next, PMD_SIZE)) {
++				WARN_ONCE(1, "%s: unaligned range\n", __func__);
++				continue;
++			}
 +
-+	start = _ALIGN_UP(start, PAGE_SIZE);
-+	for (; start < end; start += mapping_size) {
-+		unsigned long gap = end - start;
-+		int rc;
+ 			pte_clear(&init_mm, addr, (pte_t *)pmd);
+ 			continue;
+ 		}
+@@ -561,6 +576,12 @@ static void remove_pud_table(pud_t *pud_start, unsigned long addr,
+ 			continue;
+ 
+ 		if (pud_huge(*pud)) {
++			if (!IS_ALIGNED(addr, PUD_SIZE) ||
++			    !IS_ALIGNED(next, PUD_SIZE)) {
++				WARN_ONCE(1, "%s: unaligned range\n", __func__);
++				continue;
++			}
 +
-+		if (IS_ALIGNED(start, PUD_SIZE) && gap >= PUD_SIZE &&
-+		    mmu_psize_defs[MMU_PAGE_1G].shift)
-+			mapping_size = PUD_SIZE;
-+		else if (IS_ALIGNED(start, PMD_SIZE) && gap >= PMD_SIZE &&
-+			 mmu_psize_defs[MMU_PAGE_2M].shift)
-+			mapping_size = PMD_SIZE;
-+		else
-+			mapping_size = PAGE_SIZE;
+ 			pte_clear(&init_mm, addr, (pte_t *)pud);
+ 			continue;
+ 		}
+@@ -587,6 +608,12 @@ static void remove_pagetable(unsigned long start, unsigned long end)
+ 			continue;
+ 
+ 		if (pgd_huge(*pgd)) {
++			if (!IS_ALIGNED(addr, PGDIR_SIZE) ||
++			    !IS_ALIGNED(next, PGDIR_SIZE)) {
++				WARN_ONCE(1, "%s: unaligned range\n", __func__);
++				continue;
++			}
 +
-+		rc = radix__map_kernel_page((unsigned long)__va(start), start,
-+					    PAGE_KERNEL_X, mapping_size);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	return 0;
-+}
-+
- static void __init radix_init_pgtable(void)
+ 			pte_clear(&init_mm, addr, (pte_t *)pgd);
+ 			continue;
+ 		}
+@@ -627,7 +654,7 @@ int __meminit radix__vmemmap_create_mapping(unsigned long start,
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ void radix__vmemmap_remove_mapping(unsigned long start, unsigned long page_size)
  {
--	int loop_count;
--	u64 base, end, start_addr;
- 	unsigned long rts_field;
- 	struct memblock_region *reg;
--	unsigned long linear_page_size;
- 
- 	/* We don't support slb for radix */
- 	mmu_slb_size = 0;
- 	/*
- 	 * Create the linear mapping, using standard page size for now
- 	 */
--	loop_count = 0;
--	for_each_memblock(memory, reg) {
--
--		start_addr = reg->base;
--
--redo:
--		if (loop_count < 1 && mmu_psize_defs[MMU_PAGE_1G].shift)
--			linear_page_size = PUD_SIZE;
--		else if (loop_count < 2 && mmu_psize_defs[MMU_PAGE_2M].shift)
--			linear_page_size = PMD_SIZE;
--		else
--			linear_page_size = PAGE_SIZE;
--
--		base = _ALIGN_UP(start_addr, linear_page_size);
--		end = _ALIGN_DOWN(reg->base + reg->size, linear_page_size);
--
--		pr_info("Mapping range 0x%lx - 0x%lx with 0x%lx\n",
--			(unsigned long)base, (unsigned long)end,
--			linear_page_size);
--
--		while (base < end) {
--			radix__map_kernel_page((unsigned long)__va(base),
--					      base, PAGE_KERNEL_X,
--					      linear_page_size);
--			base += linear_page_size;
--		}
--		/*
--		 * map the rest using lower page size
--		 */
--		if (end < reg->base + reg->size) {
--			start_addr = end;
--			loop_count++;
--			goto redo;
--		}
--	}
-+	for_each_memblock(memory, reg)
-+		WARN_ON(create_physical_mapping(reg->base,
-+						reg->base + reg->size));
- 	/*
- 	 * Allocate Partition table and process table for the
- 	 * host.
+-	/* FIXME!! intel does more. We should free page tables mapping vmemmap ? */
++	remove_pagetable(start, start + page_size);
+ }
+ #endif
+ #endif
 -- 
 1.8.3.1
