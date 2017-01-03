@@ -1,20 +1,21 @@
-Return-Path: <gregory.0xf0@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tsxZ46L4bzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 12:44:12 +1100 (AEDT)
-Received: by mail-qt0-x242.google.com with SMTP id 41so32927758qtn.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jan 2017 17:44:12 -0800 (PST)
-MIME-Version: 1.0
-From: Gregory Fong <gregory.0xf0@gmail.com>
-Date: Mon, 2 Jan 2017 17:43:36 -0800
-Message-ID: <CADtm3G6VVthsOX7d_LHNtFdCvw+oiku=ATL8J-cBHBpLTVrpyg@mail.gmail.com>
-Subject: mpic IRQ_TYPE_BOTH handling
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tt5GT73ydzDqDT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 18:31:13 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id n5so32726642pgh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jan 2017 23:31:13 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+Subject: [RFC v2 0/3] Support Soft NMI
+Date: Tue,  3 Jan 2017 18:30:55 +1100
+Message-Id: <20170103073058.30066-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+This patch is based on suggestions from paulus and benh.
+The bugs are all mine. The idea was to implement soft
+NMI(s) by keeping interrupts enabled in the soft-disabled
+state, but to use the interrupt controller to gate posting
+of new interrupts to the processor. This is still work in
+progress and a preliminary RFC that needs testing.
 
-In arch/powerpc/sysdev/mpic.c , it looks like IRQ_TYPE_EDGE_BOTH is
-handled the same way as IRQ_TYPE_EDGE_FALLING:
+Nick posted a more comprehensive version for soft NMI at
+https://patchwork.ozlabs.org/patch/704605/, but it does
+not work when interrupts are disabled
 
-static unsigned int mpic_type_to_vecpri(struct mpic *mpic, unsigned int type)
-{
-        /* Now convert sense value */
-        switch(type & IRQ_TYPE_SENSE_MASK) {
-        case IRQ_TYPE_EDGE_RISING:
-                return MPIC_INFO(VECPRI_SENSE_EDGE) |
-                       MPIC_INFO(VECPRI_POLARITY_POSITIVE);
-        case IRQ_TYPE_EDGE_FALLING:
-        case IRQ_TYPE_EDGE_BOTH:
-                return MPIC_INFO(VECPRI_SENSE_EDGE) |
-                       MPIC_INFO(VECPRI_POLARITY_NEGATIVE);
-        case IRQ_TYPE_LEVEL_HIGH:
-                return MPIC_INFO(VECPRI_SENSE_LEVEL) |
-                       MPIC_INFO(VECPRI_POLARITY_POSITIVE);
-        case IRQ_TYPE_LEVEL_LOW:
-        default:
-                return MPIC_INFO(VECPRI_SENSE_LEVEL) |
-                       MPIC_INFO(VECPRI_POLARITY_NEGATIVE);
-        }
-}
+TODOs:
+	1. Integrate on top of
+		https://patchwork.ozlabs.org/patch/706983/
 
-If IRQ_TYPE_EDGE_BOTH is unsupported, shouldn't we be returning an
-error, instead of silently setting to use IRQ_TYPE_EDGE_FALLING?
-Something like the following (sorry if the diff wraps weirdly, on
-webmail at the moment):
 
-----8<----
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index b9aac95..5867ea2 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -876,6 +876,9 @@ int mpic_set_irq_type(struct irq_data *d, unsigned
-int flow_type)
-        if (src >= mpic->num_sources)
-                return -EINVAL;
+Changelog v2:
+ - Rename functions as suggested by Nick
+ - Move irq in paca down for better alignment
+ - Break the patches up further into interrupt disabling
+   and soft nmi patches
+ - Support only PPC_XICS for now
 
-+       if (flow_type & IRQ_TYPE_SENSE_MASK == IRQ_TYPE_EDGE_BOTH)
-+               return -EINVAL;
-+
-        vold = mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI));
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 
-        /* We don't support "none" type */
----->8----
+Balbir Singh (3):
+  Merge IPI and DEFAULT priorities
+  Keep interrupts enabled even on soft disable
+  Enable soft nmi handler
 
-Thanks,
-Gregory
+ arch/powerpc/include/asm/paca.h      |  1 +
+ arch/powerpc/include/asm/xics.h      |  8 ++----
+ arch/powerpc/kernel/exceptions-64s.S | 33 +++++++++++++++++------
+ arch/powerpc/kernel/irq.c            | 52 +++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/time.c           | 27 ++++++++++++++++++-
+ 5 files changed, 105 insertions(+), 16 deletions(-)
+
+-- 
+2.9.3
