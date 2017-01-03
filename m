@@ -1,23 +1,20 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tsvzT2dKszDqDN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 11:32:37 +1100 (AEDT)
-Date: Tue, 3 Jan 2017 11:33:21 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-m68k@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND 10/10] m68k/mac: Replace via-maciisi driver with
- via-cuda driver
-In-Reply-To: <CAMuHMdWFaaZdKa7+T6nruEv1sB8yYAm9yZLgy-UwefxM4b8MaA@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1701031010300.20542@nippy.intranet>
-References: <cover.1483055859.git.fthain@telegraphics.com.au>
- <b44eec45f78cd84d9e3d6ff6c2d303ced19b0eca.1483055859.git.fthain@telegraphics.com.au>
- <CAMuHMdWFaaZdKa7+T6nruEv1sB8yYAm9yZLgy-UwefxM4b8MaA@mail.gmail.com>
+Return-Path: <gregory.0xf0@gmail.com>
+Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
+ [IPv6:2607:f8b0:400d:c0d::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tsxZ46L4bzDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2017 12:44:12 +1100 (AEDT)
+Received: by mail-qt0-x242.google.com with SMTP id 41so32927758qtn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jan 2017 17:44:12 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Gregory Fong <gregory.0xf0@gmail.com>
+Date: Mon, 2 Jan 2017 17:43:36 -0800
+Message-ID: <CADtm3G6VVthsOX7d_LHNtFdCvw+oiku=ATL8J-cBHBpLTVrpyg@mail.gmail.com>
+Subject: mpic IRQ_TYPE_BOTH handling
+To: linuxppc-dev@lists.ozlabs.org
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
-On Mon, 2 Jan 2017, Geert Uytterhoeven wrote:
+In arch/powerpc/sysdev/mpic.c , it looks like IRQ_TYPE_EDGE_BOTH is
+handled the same way as IRQ_TYPE_EDGE_FALLING:
 
-> Hi Finn, Ben,
-> 
-> On Sun, Jan 1, 2017 at 1:56 AM, Finn Thain <fthain@telegraphics.com.au> 
-> wrote:
-> > Change the device probe test in the via-cuda.c driver so it will load 
-> > on Egret-based machines too. Remove the now redundant via-maciisi.c 
-> > driver.
-> >
-> > Tested-by: Stan Johnson <userm57@yahoo.com> Signed-off-by: Finn Thain 
-> > <fthain@telegraphics.com.au>
-> 
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
+static unsigned int mpic_type_to_vecpri(struct mpic *mpic, unsigned int type)
+{
+        /* Now convert sense value */
+        switch(type & IRQ_TYPE_SENSE_MASK) {
+        case IRQ_TYPE_EDGE_RISING:
+                return MPIC_INFO(VECPRI_SENSE_EDGE) |
+                       MPIC_INFO(VECPRI_POLARITY_POSITIVE);
+        case IRQ_TYPE_EDGE_FALLING:
+        case IRQ_TYPE_EDGE_BOTH:
+                return MPIC_INFO(VECPRI_SENSE_EDGE) |
+                       MPIC_INFO(VECPRI_POLARITY_NEGATIVE);
+        case IRQ_TYPE_LEVEL_HIGH:
+                return MPIC_INFO(VECPRI_SENSE_LEVEL) |
+                       MPIC_INFO(VECPRI_POLARITY_POSITIVE);
+        case IRQ_TYPE_LEVEL_LOW:
+        default:
+                return MPIC_INFO(VECPRI_SENSE_LEVEL) |
+                       MPIC_INFO(VECPRI_POLARITY_NEGATIVE);
+        }
+}
 
-Thanks for your review.
+If IRQ_TYPE_EDGE_BOTH is unsupported, shouldn't we be returning an
+error, instead of silently setting to use IRQ_TYPE_EDGE_FALLING?
+Something like the following (sorry if the diff wraps weirdly, on
+webmail at the moment):
 
-> I guess this will go in with the rest of the series through Ben's 
-> macintosh tree?
-> 
+----8<----
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index b9aac95..5867ea2 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -876,6 +876,9 @@ int mpic_set_irq_type(struct irq_data *d, unsigned
+int flow_type)
+        if (src >= mpic->num_sources)
+                return -EINVAL;
 
-Most of the recent patches in drivers/macintosh, including my 2015 
-submission, commit 2dc710e93c ("macintosh/nvram: Remove as unused"), went 
-through Michael's tree. But either tree would be fine with me.
++       if (flow_type & IRQ_TYPE_SENSE_MASK == IRQ_TYPE_EDGE_BOTH)
++               return -EINVAL;
++
+        vold = mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI));
 
-BTW, to my knowledge there is no programmer's reference material for Cuda 
-or Egret system controllers (excepting that which seems to be confined to 
-Apple Inc). AIUI, Cuda was not part of CHRP. But one could observe all of 
-the signalling between CPU and MCU by tracing the VIA I/O lines or doing 
-the equivalent in a good emulator -- theoretically, of course. Would this 
-be useful to reviewers?
+        /* We don't support "none" type */
+---->8----
 
--- 
-
-> > ---
-> >  arch/m68k/include/asm/macintosh.h |   2 +-
-> >  arch/m68k/mac/config.c            |  18 +-
-> >  arch/m68k/mac/misc.c              |  72 +---
-> >  drivers/macintosh/Kconfig         |  24 +-
-> >  drivers/macintosh/Makefile        |   1 -
-> >  drivers/macintosh/adb.c           |   4 -
-> >  drivers/macintosh/via-cuda.c      |   8 +-
-> >  drivers/macintosh/via-maciisi.c   | 677 --------------------------------------
-> >  8 files changed, 30 insertions(+), 776 deletions(-)
-> >  delete mode 100644 drivers/macintosh/via-maciisi.c
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+Thanks,
+Gregory
