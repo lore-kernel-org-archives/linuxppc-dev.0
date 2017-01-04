@@ -1,47 +1,29 @@
-Return-Path: <tuliom@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttrcV3DNpzDqHv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 00:04:26 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v04D4LBJ040965
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 08:04:24 -0500
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27ry40nqmk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 08:04:24 -0500
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tuliom@linux.vnet.ibm.com>;
- Wed, 4 Jan 2017 11:04:21 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.18.232.42])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 3C0BC1DC0074
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 08:04:20 -0500 (EST)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v04D4I4W32964634
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 11:04:18 -0200
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v04D4IFS027495
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 11:04:18 -0200
-From: "Tulio Magno Quites Machado Filho" <tuliom@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Steven Munroe <munroesj@linux.vnet.ibm.com>
-Cc: 
-Subject: Re: [PATCH 9/9] powerpc: A new cache shape aux vectors
-In-Reply-To: <20170104051535.9454-9-benh@kernel.crashing.org>
-References: <20170104051535.9454-1-benh@kernel.crashing.org>
- <20170104051535.9454-9-benh@kernel.crashing.org>
-Date: Wed, 04 Jan 2017 11:04:07 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttsWB0jqTzDqLy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 00:44:53 +1100 (AEDT)
+Date: Wed, 4 Jan 2017 14:44:47 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 13/15] livepatch: change to a per-task consistency model
+In-Reply-To: <eeda3a8cf83bcbb569db4774c646ad739b8db415.1481220077.git.jpoimboe@redhat.com>
+Message-ID: <alpine.LSU.2.20.1701041423100.6852@pobox.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <eeda3a8cf83bcbb569db4774c646ad739b8db415.1481220077.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87lgurkmd4.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,57 +33,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Thu, 8 Dec 2016, Josh Poimboeuf wrote:
 
-
-> diff --git a/arch/powerpc/include/uapi/asm/auxvec.h b/arch/powerpc/include/uapi/asm/auxvec.h
-> index ce17d2c..79183d2 100644
-> --- a/arch/powerpc/include/uapi/asm/auxvec.h
-> +++ b/arch/powerpc/include/uapi/asm/auxvec.h
-> @@ -16,6 +16,37 @@
->   */
->  #define AT_SYSINFO_EHDR		33
->
-> -#define AT_VECTOR_SIZE_ARCH 6 /* entries in ARCH_DLINFO */
-> +/*
-> + * AT_*CACHEBSIZE above represent the cache *block* size which is
-> + * the size that is affected by the cache management instructions.
-> + *
-> + * It doesn't nececssarily matches the cache *line* size which is
-> + * more of a performance tuning hint. Additionally the latter can
-> + * be different for the different cache levels.
-> + *
-> + * The set of entries below represent more extensive information
-> + * about the caches, in the form of two entry per cache type,
-> + * one entry containing the cache size in bytes, and the other
-> + * containing the cache line size in bytes in the bottom 16 bits
-> + * and the cache associativity in the next 16 bits.
-> + *
-> + * The associativity is such that if N is the 16-bit value, the
-> + * cache is N way set associative. A value if 0xffff means fully
-> + * associative, a value of 1 means directly mapped.
-> + *
-> + * For all these fields, a value of 0 means that the information
-> + * is not known.
-> + */
+> +void klp_start_transition(void)
+> +{
+> +	struct task_struct *g, *task;
+> +	unsigned int cpu;
 > +
-> +#define AT_L1I_CACHESIZE	40
-> +#define AT_L1I_CACHESHAPE	41
-> +#define AT_L1D_CACHESIZE	42
-> +#define AT_L1D_CACHESHAPE	43
-> +#define AT_L2_CACHESIZE		44
-> +#define AT_L2_CACHESHAPE	45
-> +#define AT_L3_CACHESIZE		46
-> +#define AT_L3_CACHESHAPE	47
+> +	WARN_ON_ONCE(klp_target_state == KLP_UNDEFINED);
+> +
+> +	pr_notice("'%s': %s...\n", klp_transition_patch->mod->name,
+> +		  klp_target_state == KLP_PATCHED ? "patching" : "unpatching");
+> +
+> +	/*
+> +	 * If the patch can be applied or reverted immediately, skip the
+> +	 * per-task transitions.
+> +	 */
+> +	if (klp_transition_patch->immediate)
+> +		return;
+> +
+> +	/*
+> +	 * Mark all normal tasks as needing a patch state update.  As they pass
+> +	 * through the syscall barrier they'll switch over to the target state
+> +	 * (unless we switch them in klp_try_complete_transition() first).
+> +	 */
+> +	read_lock(&tasklist_lock);
+> +	for_each_process_thread(g, task)
+> +		set_tsk_thread_flag(task, TIF_PATCH_PENDING);
+> +	read_unlock(&tasklist_lock);
+> +
+> +	/*
+> +	 * Ditto for the idle "swapper" tasks, though they never cross the
+> +	 * syscall barrier.  Instead they switch over in cpu_idle_loop().
 
-These names will clash with the other ones defined by alpha and sh:
+...or we switch them in klp_try_complete_transition() first by looking at 
+their stacks, right? I would add it to the comment.
 
-/* Shapes of the caches.  Bits 0-3 contains associativity; bits 4-7 contains
-   log2 of line size; mask those to get cache size.  */
-#define AT_L1I_CACHESHAPE	34
-#define AT_L1D_CACHESHAPE	35
-#define AT_L2_CACHESHAPE	36
-#define AT_L3_CACHESHAPE	37
+> +	 */
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu)
+> +		set_tsk_thread_flag(idle_task(cpu), TIF_PATCH_PENDING);
+> +	put_online_cpus();
+> +}
 
--- 
-Tulio Magno
+[...]
+
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/mm.h>
+>  #include <linux/stackprotector.h>
+>  #include <linux/suspend.h>
+> +#include <linux/livepatch.h>
+>  
+>  #include <asm/tlb.h>
+>  
+> @@ -264,6 +265,9 @@ static void do_idle(void)
+>  
+>  	sched_ttwu_pending();
+>  	schedule_preempt_disabled();
+> +
+> +	if (unlikely(klp_patch_pending(current)))
+> +		klp_update_patch_state(current);
+>  }
+
+I think that (theoretically) this is not sufficient, if we patch a 
+function present on an idle task's stack and one of the two following 
+scenarios happen.
+
+1. there is nothing to schedule on a cpu and an idle task does not leave a 
+loop in do_idle() for some time. It may be a nonsense practically and if 
+it is not we could solve with schedule_on_each_cpu() on an empty stub 
+somewhere in our code.
+
+2. there is a cpu-bound process running on one of the cpus. No chance of 
+going to do_idle() there at all and the idle task would block the 
+patching. We ran into it in kGraft and I tried to solve it with this new 
+hunk in pick_next_task()...
+
++       /*
++        * Patching is in progress, schedule an idle task to migrate it
++        */
++       if (kgr_in_progress_branch()) {
++               if (!test_bit(0, kgr_immutable) &&
++                   klp_kgraft_task_in_progress(rq->idle)) {
++                       p = idle_sched_class.pick_next_task(rq, prev);
++
++                       return p;
++               }
++       }
+
+(kgr_in_progress_branch() is a static key basically. kgr_immutable flag 
+solves something we don't have a problem with in upstream livepatch thanks 
+to a combination of task->patch_state and klp_func->transition. 
+klp_kgraft_task_in_progress() checks the livepatching TIF of a task.)
+
+It is not tested properly and it is a hack as hell so take it as that. 
+Also note that the problem in kGraft is more serious as we don't have a 
+stack checking there. So any livepatch could cause the issue easily.
+
+I can imagine even crazier solutions but nothing nice and pretty (which is 
+probably impossible because the whole idea to deliberately schedule an 
+idle task is not nice and pretty).
+
+Otherwise the patch looks good to me. I don't understand how Petr found 
+those races there.
+
+Regards,
+Miroslav
