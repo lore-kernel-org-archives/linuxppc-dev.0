@@ -1,22 +1,22 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mirq@rere.qmqm.pl>
+Received: from rere.qmqm.pl (rere.qmqm.pl [84.10.57.10])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttWdH3LnxzDqGL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 11:18:59 +1100 (AEDT)
-Message-ID: <1483489137.6577.11.camel@neuling.org>
-Subject: Re: [PATCH] powerpc/mm/hugetlb: Don't panic if we don't find the
- default huge page size
-From: Michael Neuling <mikey@neuling.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, Chris Smart
- <csmart@ozlabs.au.ibm.com>, Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 04 Jan 2017 11:18:57 +1100
-In-Reply-To: <20161213140411.20633-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20161213140411.20633-1-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttXy22xMMzDqG9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 12:18:32 +1100 (AEDT)
+Message-Id: <e15c116d1c4ffeeab51dd611f64404cd6556cde1.1483492355.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1483492355.git.mirq-linux@rere.qmqm.pl>
+References: <cover.1483492355.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Subject: [PATCH net-next 4/6] net/bpf_jit: PPC: split VLAN_PRESENT bit
+ handling from VLAN_TCI
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+To: netdev@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed,  4 Jan 2017 02:18:27 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-12-13 at 19:34 +0530, Aneesh Kumar K.V wrote:
-> generic hugetlbfs can handle that condition correctly. With HPAGE_SHIFT =
-=3D 0
-> we get
-> [0.241333] hugetlbfs: disabling because there are no supported hugepage s=
-izes
->=20
-> bash-4.2# echo 30 > /proc/sys/vm/nr_hugepages
-> bash: echo: write error: Operation not supported
->=20
-> Fixes: "powerpc: get hugetlbpage handling more generic"
-> Reported-by: Chris Smart <csmart@ozlabs.au.ibm.com>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/powerpc/net/bpf_jit_comp.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-Acked-By: Michael Neuling <mikey@neuling.org>
-
-> ---
-> =C2=A0arch/powerpc/mm/hugetlbpage.c | 3 ---
-> =C2=A01 file changed, 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.=
-c
-> index 289df38fb7e0..e46bbd716832 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -852,9 +852,6 @@ static int __init hugetlbpage_init(void)
-> =C2=A0	else if (mmu_psize_defs[MMU_PAGE_2M].shift)
-> =C2=A0		HPAGE_SHIFT =3D mmu_psize_defs[MMU_PAGE_2M].shift;
-> =C2=A0#endif
-> -	else
-> -		panic("%s: Unable to set default huge page size\n",
-> __func__);
-> -
-> =C2=A0	return 0;
-> =C2=A0}
-> =C2=A0
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 7e706f36e364..22ae63fb9b7d 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -377,18 +377,19 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 							  hash));
+ 			break;
+ 		case BPF_ANC | SKF_AD_VLAN_TAG:
+-		case BPF_ANC | SKF_AD_VLAN_TAG_PRESENT:
+ 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff, vlan_tci) != 2);
+-			BUILD_BUG_ON(VLAN_TAG_PRESENT != 0x1000);
+ 
+ 			PPC_LHZ_OFFS(r_A, r_skb, offsetof(struct sk_buff,
+ 							  vlan_tci));
+-			if (code == (BPF_ANC | SKF_AD_VLAN_TAG)) {
+-				PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
+-			} else {
+-				PPC_ANDI(r_A, r_A, VLAN_TAG_PRESENT);
+-				PPC_SRWI(r_A, r_A, 12);
+-			}
++#ifdef VLAN_TAG_PRESENT
++			PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
++#endif
++			break;
++		case BPF_ANC | SKF_AD_VLAN_TAG_PRESENT:
++			PPC_LBZ_OFFS(r_A, r_skb, PKT_VLAN_PRESENT_OFFSET());
++			if (PKT_VLAN_PRESENT_BIT)
++				PPC_SRWI(r_A, r_A, PKT_VLAN_PRESENT_BIT);
++			PPC_ANDI(r_A, r_A, 1);
+ 			break;
+ 		case BPF_ANC | SKF_AD_QUEUE:
+ 			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff,
+-- 
+2.11.0
