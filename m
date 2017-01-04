@@ -1,38 +1,38 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tv1Mw4C5XzDqK9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 06:39:08 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tv3kY3mZKzDqKW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 08:25:25 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v04JclLB100905
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 14:39:04 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27s3tv8tcv-1
+ v04LDb4N035426
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 16:25:22 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27s259930j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 14:39:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 16:25:22 -0500
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 4 Jan 2017 12:39:03 -0700
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CE98D19D8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 12:38:18 -0700 (MST)
-Subject: Re: [PATCH v2 3/3] powerpc/pseries: Update affinity for memory and
- cpus specified in a PRRN event
-To: John Allen <jallen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <ef5af85a-5692-6a2b-8fae-5500d3880336@linux.vnet.ibm.com>
- <f535217c-c8ce-5b7e-a5d4-9f4570ad25a6@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 4 Jan 2017 13:39:00 -0600
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Wed, 4 Jan 2017 14:25:22 -0700
+Date: Wed, 4 Jan 2017 15:25:15 -0600
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Balbir Singh <bsingharora@gmail.com>, Alistair Popple <apopple@au1.ibm.com>
+Subject: Re: [PATCH v4 1/4] powerpc/mm: refactor radix physical page mapping
+References: <1483476218-17271-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1483476218-17271-2-git-send-email-arbab@linux.vnet.ibm.com>
+ <878tqr76w6.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <f535217c-c8ce-5b7e-a5d4-9f4570ad25a6@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <82e5fce6-fd7d-81db-e132-4cce0b361c82@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <878tqr76w6.fsf@linux.vnet.ibm.com>
+Message-Id: <20170104212515.7dibsrkqf7fuf63x@arbab-laptop.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,112 +42,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/15/2016 04:22 PM, John Allen wrote:
-> Extend the existing PRRN infrastructure to perform the actual affinity
-> updating for cpus and memory in addition to the device tree updating. For
-> cpus, dynamic affinity updating already appears to exist in the kernel in
-> the form of arch_update_cpu_topology. For memory, we must place a READD
-> operation on the hotplug queue for any phandle included in the PRRN event
-> that is determined to be an LMB.
-> 
-> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
-> ---
-> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-> index a26a020..8836130 100644
-> --- a/arch/powerpc/kernel/rtasd.c
-> +++ b/arch/powerpc/kernel/rtasd.c
-> @@ -21,6 +21,7 @@
->  #include <linux/cpu.h>
->  #include <linux/workqueue.h>
->  #include <linux/slab.h>
-> +#include <linux/topology.h>
-> 
->  #include <asm/uaccess.h>
->  #include <asm/io.h>
-> @@ -282,6 +283,7 @@ static void prrn_work_fn(struct work_struct *work)
->  	 * the RTAS event.
->  	 */
->  	pseries_devicetree_update(-prrn_update_scope);
-> +	arch_update_cpu_topology();
->  }
-> 
->  static DECLARE_WORK(prrn_work, prrn_work_fn);
-> @@ -434,7 +436,10 @@ static void do_event_scan(void)
->  		}
-> 
->  		if (error == 0) {
-> -			pSeries_log_error(logdata, ERR_TYPE_RTAS_LOG, 0);
-> +			if (rtas_error_type((struct rtas_error_log *)logdata) !=
-> +			    RTAS_TYPE_PRRN)
-> +				pSeries_log_error(logdata, ERR_TYPE_RTAS_LOG,
-> +						  0);
->  			handle_rtas_event((struct rtas_error_log *)logdata);
->  		}
-> 
-> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> index a560a98..d62d48a 100644
-> --- a/arch/powerpc/platforms/pseries/mobility.c
-> +++ b/arch/powerpc/platforms/pseries/mobility.c
-> @@ -39,6 +39,7 @@ struct update_props_workarea {
->  #define ADD_DT_NODE	0x03000000
-> 
->  #define MIGRATION_SCOPE	(1)
-> +#define PRRN_SCOPE -2
-> 
->  static int mobility_rtas_call(int token, char *buf, s32 scope)
->  {
-> @@ -236,6 +237,33 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
->  	return rc;
->  }
-> 
-> +void pseries_prrn_update_node(__be32 phandle)
-> +{
-> +	struct pseries_hp_errorlog *hp_elog;
-> +	struct device_node *dn;
-> +
-> +	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
-> +	if (!hp_elog)
-> +		return;
-> +
-> +	dn = of_find_node_by_phandle(be32_to_cpu(phandle));
+On Wed, Jan 04, 2017 at 10:34:25AM +0530, Aneesh Kumar K.V wrote:
+>We lost the below in the change.
+>
+>		pr_info("Mapping range 0x%lx - 0x%lx with 0x%lx\n",
+>			(unsigned long)base, (unsigned long)end,
+>			linear_page_size);
+>
+>
+>Is there a way to dump the range and the size with which we mapped that
+>range ?
 
-You should check for the presence of the device node prior to doing the
-kzalloc, this way you can avoid the alloc/free calls in cases where it
-is not needed.
+Sure. It's a little more difficult than before, because the mapping size 
+is now reselected in each iteration of the loop, but a similar print can 
+be done.
 
-Also, you do need to do a of_node_put() on the device node if it is found.
-
--Nathan
- 
-> +
-> +	/*
-> +	 * If the phandle was not found, assume phandle is the drc index of
-> +	 * an LMB.
-> +	 */
-> +	if (!dn) {
-> +		hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
-> +		hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
-> +		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
-> +		hp_elog->_drc_u.drc_index = phandle;
-> +
-> +		queue_hotplug_event(hp_elog, NULL, NULL);
-> +	}
-> +
-> +	kfree(hp_elog);
-> +}
-> +
->  int pseries_devicetree_update(s32 scope)
->  {
->  	char *rtas_buf;
-> @@ -274,6 +302,10 @@ int pseries_devicetree_update(s32 scope)
->  					break;
->  				case UPDATE_DT_NODE:
->  					update_dt_node(phandle, scope);
-> +
-> +					if (scope == PRRN_SCOPE)
-> +						pseries_prrn_update_node(phandle);
-> +
->  					break;
->  				case ADD_DT_NODE:
->  					drc_index = *data++;
-> 
+-- 
+Reza Arbab
