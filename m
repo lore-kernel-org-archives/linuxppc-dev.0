@@ -1,22 +1,29 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttzvp4BFkzDqQ9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 05:33:10 +1100 (AEDT)
-Date: Wed, 4 Jan 2017 10:33:05 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
-In-Reply-To: <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
-Message-ID: <alpine.DEB.2.20.99.1701040957380.31470@trent.utfs.org>
-References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
- <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttzzp1pyDzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 05:36:38 +1100 (AEDT)
+Date: Wed, 4 Jan 2017 18:35:50 +0000
+From: Mark Brown <broonie@kernel.org>
+To: ccrome <ccrome@gmail.com>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Arnaud Mouiche <arnaud.mouiche@invoxia.com>
+Message-ID: <20170104183550.wxaz7ny5gvr7uxwz@sirena.org.uk>
+References: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
+ <20170104182712.d3vv47g4v5ylis5e@sirena.org.uk>
+ <CAG5mAdzxUhhwjBLWZw6aX_--oAOB0Mbc3+Do-TpNRPqGcC8YVQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="js7rpck5t4ylo6re"
+In-Reply-To: <CAG5mAdzxUhhwjBLWZw6aX_--oAOB0Mbc3+Do-TpNRPqGcC8YVQ@mail.gmail.com>
+Subject: Re: [PATCH] fsl_ssi: set fifo watermark to more reliable value
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 4 Jan 2017, Christophe LEROY wrote:
-> Using GCC 5.4.0, I don't have that issue. bootx_init.o only contains reference
-> to __stack_chk_fail
 
-FWIW, building with a GCC 5.2 crosscompiler succeeds (with 
-CONFIG_CC_STACKPROTECTOR_STRONG=y), but I don't know if it will boot 
-though, see my other mail in this thread:
+--js7rpck5t4ylo6re
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-January/152623.html
+On Wed, Jan 04, 2017 at 10:31:42AM -0800, ccrome wrote:
 
-So, would the following be sufficient? It compiles, but I haven't had a 
-chance to boot yet.
+> The subject should be
+>=20
+> [PATCH] ASoC: fsl_ssi: set fifo watermark to more reliable value
+>=20
+> Correct?
 
+Yes.
 
-diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
-index 1eb7b45..c7dcab9 100644
---- a/arch/powerpc/platforms/powermac/Makefile
-+++ b/arch/powerpc/platforms/powermac/Makefile
-@@ -1,4 +1,4 @@
--CFLAGS_bootx_init.o  		+= -fPIC
-+CFLAGS_bootx_init.o  		+= -fPIC -fno-stack-protector
- 
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace early boot code
+> Should I re-submit?
 
+No, it's fine - if I'm sending one of those mails it'll be fine as I've
+actually seen the mail to reply to it, the problem is if I don't see the
+mail.
 
-Thanks,
-Christian.
--- 
-BOFH excuse #156:
+--js7rpck5t4ylo6re
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Zombie processes haunting the computer
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlhtQIUACgkQJNaLcl1U
+h9BL/wf9FmlKVrOqaGfR7S/ACZ415QM3cazZkyhjxJLTduXOC+//oCcUeB6pV86Z
+pLzo4mdgVO3cSST30Gy62XtdBbfOnuwxZOF7CzwyRcDql/65ZPYdusHrbV1grDp7
+CsiyMmn1rdKiapnJ8VKo7x9byuPPDhjQRjAUyuTCGD6HzS+J6aEG/++PBpVyvm9W
+8uO1acZoeHYIJdJboQ02uGdc5w0RxS1HgSLixlsf5F7vQVyLiyzF2kOkqit+FEPL
+9auqpkH9y7gDohibLMTxulovGh7tPg+op/PoskwVhdbE8kCG6JYl9CYjdid+i2sD
+1sucAM07GNVkrfB8p+Z7HkqW0KSWJQ==
+=NMAY
+-----END PGP SIGNATURE-----
+
+--js7rpck5t4ylo6re--
