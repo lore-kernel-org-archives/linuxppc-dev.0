@@ -1,28 +1,23 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
+ [209.85.218.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tttz2044qzDqMC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 01:50:36 +1100 (AEDT)
-Date: Wed, 4 Jan 2017 15:50:31 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 14/15] livepatch: add /proc/<pid>/patch_state
-In-Reply-To: <10fff91bf4c6c6bd180a2aad9c5ef41a91dd1462.1481220077.git.jpoimboe@redhat.com>
-Message-ID: <alpine.LSU.2.20.1701041549000.6852@pobox.suse.cz>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <10fff91bf4c6c6bd180a2aad9c5ef41a91dd1462.1481220077.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttv1463wmzDqMF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 01:52:24 +1100 (AEDT)
+Received: by mail-oi0-f66.google.com with SMTP id v84so74613787oie.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 06:52:24 -0800 (PST)
+Date: Wed, 4 Jan 2017 08:52:21 -0600
+From: Rob Herring <robh@kernel.org>
+To: Madalin Bucur <madalin.bucur@nxp.com>
+Cc: mark.rutland@arm.com, oss@buserror.net, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] dt-bindings: qman: Remove pool channel node
+Message-ID: <20170104145221.dl472qqys6bz3jfa@rob-hp-laptop>
+References: <1483527829-8369-1-git-send-email-madalin.bucur@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1483527829-8369-1-git-send-email-madalin.bucur@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,13 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 8 Dec 2016, Josh Poimboeuf wrote:
-
-> Expose the per-task patch state value so users can determine which tasks
-> are holding up completion of a patching operation.
+On Wed, Jan 04, 2017 at 01:03:49PM +0200, Madalin Bucur wrote:
+> From: Scott Wood <oss@buserror.net>
 > 
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> No device tree has these, nor does any driver look for them.
+> 
+> Signed-off-by: Scott Wood <oss@buserror.net>
+> ---
+>  .../devicetree/bindings/soc/fsl/qman-portals.txt     | 20 --------------------
+>  1 file changed, 20 deletions(-)
 
-Reviewed-by: Miroslav Benes <mbenes@suse.cz>
+Applied, thanks.
 
-Miroslav
+Rob
+
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/qman-portals.txt b/Documentation/devicetree/bindings/soc/fsl/qman-portals.txt
+> index 47e46cc..5a34f3a 100644
+> --- a/Documentation/devicetree/bindings/soc/fsl/qman-portals.txt
+> +++ b/Documentation/devicetree/bindings/soc/fsl/qman-portals.txt
+> @@ -5,7 +5,6 @@ Copyright (C) 2008 - 2014 Freescale Semiconductor Inc.
+>  CONTENTS
+>  
+>  	- QMan Portal
+> -	- QMan Pool Channel
+>  	- Example
+>  
+>  QMan Portal Node
+> @@ -82,25 +81,6 @@ These subnodes should have the following properties:
+>  	Definition:	The phandle to the particular hardware device that this
+>  			portal is connected to.
+>  
+> -DPAA QMan Pool Channel Nodes
+> -
+> -Pool Channels are defined with the following properties.
+> -
+> -PROPERTIES
+> -
+> -- compatible
+> -	Usage:		Required
+> -	Value type:	<stringlist>
+> -	Definition:	Must include "fsl,qman-pool-channel"
+> -			May include "fsl,<SoC>-qman-pool-channel"
+> -
+> -- fsl,qman-channel-id
+> -	Usage:		Required
+> -	Value type:	<u32>
+> -	Definition:	The hardware index of the channel. This can also be
+> -			determined by dividing any of the channel's 8 work queue
+> -			IDs by 8
+> -
+>  EXAMPLE
+>  
+>  The example below shows a (P4080) QMan portals container/bus node with two portals
+> -- 
+> 2.1.0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
