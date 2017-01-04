@@ -1,27 +1,20 @@
-Return-Path: <intermediadc@hotmail.com>
-Received: from COL004-OMC4S17.hotmail.com (col004-omc4s17.hotmail.com
- [65.55.34.219])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttjPb6bvTzDqHD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 18:39:31 +1100 (AEDT)
-From: luigi burdo <intermediadc@hotmail.com>
-To: Anton Blanchard <anton@samba.org>, "jack@suse.cz" <jack@suse.cz>, "Michael
- Ellerman" <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Stephen
- Rothwell" <sfr@canb.auug.org.au>, "axboe@fb.com" <axboe@fb.com>
-CC: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: ext4 filesystem corruption with 4.10-rc2 on ppc64le
-Date: Wed, 4 Jan 2017 07:34:00 +0000
-Message-ID: <HE1PR01MB1548C63C28DE2F5F06A0EBECC8610@HE1PR01MB1548.eurprd01.prod.exchangelabs.com>
-References: <20170104161808.5ad7b4fd@kryten>
-In-Reply-To: <20170104161808.5ad7b4fd@kryten>
-Content-Type: multipart/alternative;
- boundary="_000_HE1PR01MB1548C63C28DE2F5F06A0EBECC8610HE1PR01MB1548eurp_"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttkNp3ptVzDqHf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 19:23:54 +1100 (AEDT)
+Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
+To: benh@au1.ibm.com, Christian Kujau <lists@nerdbynature.de>
+References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
+ <1483483841.15843.4.camel@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <ca802791-9a7d-90b4-2025-852517225f14@c-s.fr>
+Date: Wed, 4 Jan 2017 09:23:47 +0100
 MIME-Version: 1.0
+In-Reply-To: <1483483841.15843.4.camel@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,124 +24,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_HE1PR01MB1548C63C28DE2F5F06A0EBECC8610HE1PR01MB1548eurp_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-it is present on ppc not le too.
-
-found it on Ubuntu Mate 16.10 PPC with kernel 4.9 rc6 PPC64 on P5020/P5040
 
 
-Thanks
+Le 03/01/2017 à 23:50, Benjamin Herrenschmidt a écrit :
+> On Tue, 2017-01-03 at 07:25 -0800, Christian Kujau wrote:
+>> Hi,
+>>
+>> when compiling v4.10-rc2 with CONFIG_CC_STACKPROTECTOR_STRONG=y, the
+>> linker fails with:
+>
+> The way gcc implements the stack protector has some serious
+> incompatibilities with the way the Linux kernel uses r13, I wouldn't
+> even try until we sort that out...
 
-Luigi
+Yes indeed, it looks like recent versions of GCC don't use anymore the 
+global __stack_chk_guard variable but a hard coded offset relative to r2 
+or r13:
 
+On 32 bits, it uses -7008(r2)
+On 64 bits, it uses -7010(r13)
 
-________________________________
-Da: Linuxppc-dev <linuxppc-dev-bounces+intermediadc=3Dhotmail.com@lists.ozl=
-abs.org> per conto di Anton Blanchard <anton@samba.org>
-Inviato: mercoled=EC 4 gennaio 2017 06.18
-A: jack@suse.cz; Michael Ellerman; Benjamin Herrenschmidt; Paul Mackerras; =
-Stephen Rothwell; axboe@fb.com
-Cc: linux-fsdevel@vger.kernel.org; linux-ext4@vger.kernel.org; linuxppc-dev=
-@lists.ozlabs.org; linux-kernel@vger.kernel.org
-Oggetto: ext4 filesystem corruption with 4.10-rc2 on ppc64le
+On 32 bits, r2 points to current struct, which contains the stack_canary 
+value for the task. I have tried to alter get_current() in order to 
+define it as an offset to r2 so that current->stack_canary is at 
+-7008(r2), but I end up with circular cross references in header files 
+and still have task_struct undefined when get_current() needs it to 
+calculate offset of stack_canary within the structure.
 
-Hi,
+When CONFIG_CC_STACKPROTECTOR is active, would it be feasible to get the 
+pointer to current from the stack using the thread_info instead of using 
+r2 reg ? That way we could keep r2 to point to current->stack_canary + 
+0x7008
 
-I'm consistently seeing ext4 filesystem corruption using a mainline
-kernel. It doesn't take much to trigger it - download a ppc64le Ubuntu
-cloud image, boot it in KVM and run:
+Christophe
 
-sudo apt-get update
-sudo apt-get dist-upgrade
-sudo reboot
-
-And it never makes it back up, dying with rather severe filesystem
-corruption.
-
-I've narrowed it down to:
-
-64e1c57fa474 ("ext4: Use clean_bdev_aliases() instead of iteration")
-e64855c6cfaa ("fs: Add helper to clean bdev aliases under a bh and use it")
-ce98321bf7d2 ("fs: Remove unmap_underlying_metadata")
-
-Backing these patches out fixes the issue.
-
-Anton
-
---_000_HE1PR01MB1548C63C28DE2F5F06A0EBECC8610HE1PR01MB1548eurp_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
-1">
-<style type=3D"text/css" style=3D"display:none;"><!-- P {margin-top:0;margi=
-n-bottom:0;} --></style>
-</head>
-<body dir=3D"ltr">
-<div id=3D"divtagdefaultwrapper" style=3D"font-size:12pt;color:#000000;font=
--family:Calibri,Arial,Helvetica,sans-serif;" dir=3D"ltr">
-<p>Hi,</p>
-<p>it is present on ppc not le too.&nbsp;</p>
-<p>found it on Ubuntu Mate 16.10 PPC with kernel 4.9 rc6 PPC64&nbsp;on P502=
-0/P5040&nbsp;</p>
-<p><br>
-</p>
-<p>Thanks</p>
-<p>Luigi&nbsp;</p>
-<br>
-<br>
-<div style=3D"color: rgb(0, 0, 0);">
-<div>
-<hr tabindex=3D"-1" style=3D"display:inline-block; width:98%">
-<div id=3D"x_divRplyFwdMsg" dir=3D"ltr"><font face=3D"Calibri, sans-serif" =
-color=3D"#000000" style=3D"font-size:11pt"><b>Da:</b> Linuxppc-dev &lt;linu=
-xppc-dev-bounces&#43;intermediadc=3Dhotmail.com@lists.ozlabs.org&gt; per co=
-nto di Anton Blanchard &lt;anton@samba.org&gt;<br>
-<b>Inviato:</b> mercoled=EC 4 gennaio 2017 06.18<br>
-<b>A:</b> jack@suse.cz; Michael Ellerman; Benjamin Herrenschmidt; Paul Mack=
-erras; Stephen Rothwell; axboe@fb.com<br>
-<b>Cc:</b> linux-fsdevel@vger.kernel.org; linux-ext4@vger.kernel.org; linux=
-ppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org<br>
-<b>Oggetto:</b> ext4 filesystem corruption with 4.10-rc2 on ppc64le</font>
-<div>&nbsp;</div>
-</div>
-</div>
-<font size=3D"2"><span style=3D"font-size:10pt;">
-<div class=3D"PlainText">Hi,<br>
-<br>
-I'm consistently seeing ext4 filesystem corruption using a mainline<br>
-kernel. It doesn't take much to trigger it - download a ppc64le Ubuntu<br>
-cloud image, boot it in KVM and run:<br>
-<br>
-sudo apt-get update<br>
-sudo apt-get dist-upgrade<br>
-sudo reboot<br>
-<br>
-And it never makes it back up, dying with rather severe filesystem<br>
-corruption.<br>
-<br>
-I've narrowed it down to:<br>
-<br>
-64e1c57fa474 (&quot;ext4: Use clean_bdev_aliases() instead of iteration&quo=
-t;)<br>
-e64855c6cfaa (&quot;fs: Add helper to clean bdev aliases under a bh and use=
- it&quot;)<br>
-ce98321bf7d2 (&quot;fs: Remove unmap_underlying_metadata&quot;)<br>
-<br>
-Backing these patches out fixes the issue.<br>
-<br>
-Anton<br>
-</div>
-</span></font></div>
-</div>
-</body>
-</html>
-
---_000_HE1PR01MB1548C63C28DE2F5F06A0EBECC8610HE1PR01MB1548eurp_--
+>
+> Cheers,
+> Ben.
+>>
+>> ================================
+>> + ld -EB -m elf32ppc -Bstatic --build-id -X -o .tmp_vmlinux1 -T
+>> ./arch/powerpc/kernel/vmlinux.lds arch/powerpc/kernel/head_32.o
+>> arch/powerpc/kernel/fpu.o arch/powerpc/kernel/vector.o
+>> arch/powerpc/kernel/prom_init.o init/built-in.o --start-group
+>> usr/built-in.o arch/powerpc/kernel/built-in.o arch/powerpc/mm/built-
+>> in.o
+>> arch/powerpc/lib/built-in.o arch/powerpc/sysdev/built-in.o
+>> arch/powerpc/platforms/built-in.o arch/powerpc/math-emu/built-in.o
+>> arch/powerpc/crypto/built-in.o arch/powerpc/net/built-in.o
+>> kernel/built-in.o certs/built-in.o mm/built-in.o fs/built-in.o
+>> ipc/built-in.o security/built-in.o crypto/built-in.o block/built-
+>> in.o
+>> lib/lib.a lib/built-in.o drivers/built-in.o sound/built-in.o
+>> firmware/built-in.o net/built-in.o virt/built-in.o --end-group
+>> arch/powerpc/platforms/built-in.o: In function `bootx_printf':
+>> /usr/local/src/linux-
+>> git/arch/powerpc/platforms/powermac/bootx_init.c:88: undefined
+>> reference to `__stack_chk_fail_local'
+>> arch/powerpc/platforms/built-in.o: In function
+>> `bootx_add_display_props':
+>> /usr/local/src/linux-
+>> git/arch/powerpc/platforms/powermac/bootx_init.c:211: undefined
+>> reference to `__stack_chk_fail_local'
+>> arch/powerpc/platforms/built-in.o: In function
+>> `bootx_scan_dt_build_struct':
+>> /usr/local/src/linux-
+>> git/arch/powerpc/platforms/powermac/bootx_init.c:350: undefined
+>> reference to `__stack_chk_fail_local'
+>> arch/powerpc/platforms/built-in.o: In function `bootx_init':
+>> /usr/local/src/linux-
+>> git/arch/powerpc/platforms/powermac/bootx_init.c:596: undefined
+>> reference to `__stack_chk_fail_local'
+>> /usr/bin/ld.bfd.real: .tmp_vmlinux1: hidden symbol
+>> `__stack_chk_fail_local' isn't defined
+>> /usr/bin/ld.bfd.real: final link failed: Bad value
+>> ================================
+>>
+>>
+>> $ ld --version | head -1
+>> GNU ld (GNU Binutils for Debian) 2.25
+>>
+>> $ gcc --version | head -1
+>> gcc-4.9.real (Debian 4.9.2-10) 4.9.2
+>>
+>>
+>> I'm regularly compiling userspace programs with -fstack-protector
+>> w/o
+>> problems. I suspect it's either
+>> 6533b7c16ee5712041b4e324100550e02a9a5dda
+>> ("powerpc: Initial stack protector (-fstack-protector) support") or
+>> 902e06eb86cd62753974c249bd1dedae2825b430 ("powerpc/32: Change the
+>> stack
+>> protector canary value per task") or both but I haven't started the
+>> bisection yet.
+>>
+>> Any other ideas?
+>>
+>> Thanks,
+>> Christian.
