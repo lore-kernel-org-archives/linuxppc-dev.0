@@ -3,42 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttpzJ0Rx2zDqNJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 22:50:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttpzJ73ckzDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 22:50:36 +1100 (AEDT)
 Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v04BmVgv054063
+ v04BmWJk054218
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 06:50:34 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27s07d0maw-1
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27s07d0m8n-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 06:50:33 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 06:50:34 -0500
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 4 Jan 2017 21:50:31 +1000
+ Wed, 4 Jan 2017 21:50:27 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 21E403578057
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 22:50:28 +1100 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6EE3F3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 22:50:25 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v04BoSq149021124
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 22:50:28 +1100
+ v04BoPcZ50397268
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 22:50:25 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v04BoRKp011097
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 22:50:27 +1100
+ v04BoOer011060
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 22:50:24 +1100
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, mpe@ellerman.id.au
 Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
  linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v5 10/12] powerpc: Add new set of soft_enabled_ functions
-Date: Wed,  4 Jan 2017 17:19:48 +0530
+Subject: [PATCH v5 09/12] powerpc:Add new kconfig IRQ_DEBUG_SUPPORT
+Date: Wed,  4 Jan 2017 17:19:47 +0530
 In-Reply-To: <1483530590-30274-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1483530590-30274-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1483530590-30274-11-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1483530590-30274-10-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,122 +48,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To support disabling and enabling of irq with PMI, set of
-new powerpc_local_irq_pmu_save() and powerpc_local_irq_restore()
-functions are added. And powerpc_local_irq_save() implemented,
-by adding a new soft_enabled manipulation function soft_enabled_or_return().
-Local_irq_pmu_* macros are provided to access these powerpc_local_irq_pmu*
-functions which includes trace_hardirqs_on|off() to match what we
-have in include/linux/irqflags.h.
+New Kconfig is added "CONFIG_IRQ_DEBUG_SUPPORT" to add warn_on
+to alert the invalid transitions. Also moved the code under
+the CONFIG_TRACE_IRQFLAGS in arch_local_irq_restore() to new Kconfig.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/hw_irq.h | 62 ++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/kernel/irq.c         |  4 +++
- 2 files changed, 65 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig      | 4 ++++
+ arch/powerpc/kernel/irq.c | 4 ++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index cf517b5dbb6b..4b326e173030 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -91,6 +91,20 @@ static inline notrace unsigned long soft_enabled_set_return(unsigned long enable
- 	return flags;
- }
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a8ee573fe610..333807caf822 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -46,6 +46,10 @@ config TRACE_IRQFLAGS_SUPPORT
+ 	bool
+ 	default y
  
-+static inline notrace unsigned long soft_enabled_or_return(unsigned long enable)
-+{
-+	unsigned long flags, zero;
++config IRQ_DEBUG_SUPPORT
++	bool
++	default n
 +
-+	asm volatile(
-+		"mr %1,%3; lbz %0,%2(13); or %1,%0,%1; stb %1,%2(13)"
-+		: "=r" (flags), "=&r"(zero)
-+		: "i" (offsetof(struct paca_struct, soft_enabled)),\
-+		 "r" (enable)
-+		: "memory");
-+
-+	return flags;
-+}
-+
- static inline unsigned long arch_local_save_flags(void)
- {
- 	return soft_enabled_return();
-@@ -115,7 +129,7 @@ static inline unsigned long arch_local_irq_save(void)
- 
- static inline bool arch_irqs_disabled_flags(unsigned long flags)
- {
--	return flags == IRQ_DISABLE_MASK_LINUX;
-+	return flags & IRQ_DISABLE_MASK_LINUX;
- }
- 
- static inline bool arch_irqs_disabled(void)
-@@ -123,6 +137,52 @@ static inline bool arch_irqs_disabled(void)
- 	return arch_irqs_disabled_flags(arch_local_save_flags());
- }
- 
-+/*
-+ * To support disabling and enabling of irq with PMI, set of
-+ * new powerpc_local_irq_pmu_save() and powerpc_local_irq_restore()
-+ * functions are added. These macros are implemented using generic
-+ * linux local_irq_* code from include/linux/irqflags.h.
-+ */
-+#define raw_local_irq_pmu_save(flags)					\
-+	do {								\
-+		typecheck(unsigned long, flags);			\
-+		flags = soft_enabled_or_return(IRQ_DISABLE_MASK_LINUX | \
-+				IRQ_DISABLE_MASK_PMU);			\
-+	} while(0)
-+
-+#define raw_local_irq_pmu_restore(flags)				\
-+	do {								\
-+		typecheck(unsigned long, flags);			\
-+		arch_local_irq_restore(flags);				\
-+	} while(0)
-+
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+#define powerpc_local_irq_pmu_save(flags)			\
-+	 do {							\
-+		raw_local_irq_pmu_save(flags);			\
-+		trace_hardirqs_off();				\
-+	} while(0)
-+#define powerpc_local_irq_pmu_restore(flags)			\
-+	do {							\
-+		if (raw_irqs_disabled_flags(flags)) {		\
-+			raw_local_irq_pmu_restore(flags);	\
-+			trace_hardirqs_off();			\
-+		} else {					\
-+			trace_hardirqs_on();			\
-+			raw_local_irq_pmu_restore(flags);	\
-+		}						\
-+	} while(0)
-+#else
-+#define powerpc_local_irq_pmu_save(flags)			\
-+	do {							\
-+		raw_local_irq_pmu_save(flags);			\
-+	} while(0)
-+#define powerpc_local_irq_pmu_restore(flags)			\
-+	do {							\
-+		raw_local_irq_pmu_restore(flags);		\
-+	} while (0)
-+#endif  /* CONFIG_TRACE_IRQFLAGS */
-+
- #ifdef CONFIG_PPC_BOOK3E
- #define __hard_irq_enable()	asm volatile("wrteei 1" : : : "memory")
- #define __hard_irq_disable()	asm volatile("wrteei 0" : : : "memory")
+ config LOCKDEP_SUPPORT
+ 	bool
+ 	default y
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index ae7edfd4ba9b..886d372af1d9 100644
+index da538ec0fd47..ae7edfd4ba9b 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -227,6 +227,10 @@ notrace void arch_local_irq_restore(unsigned long en)
- 	unsigned char irq_happened;
- 	unsigned int replay;
- 
+@@ -263,7 +263,7 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 	 */
+ 	if (unlikely(irq_happened != PACA_IRQ_HARD_DIS))
+ 		__hard_irq_disable();
+-#ifdef CONFIG_TRACE_IRQFLAGS
 +#ifdef CONFIG_IRQ_DEBUG_SUPPORT
-+	WARN_ON(en & local_paca->soft_enabled & ~IRQ_DISABLE_MASK_LINUX);
-+#endif
-+
- 	/* Write the new soft-enabled value */
- 	soft_enabled_set(en);
+ 	else {
+ 		/*
+ 		 * We should already be hard disabled here. We had bugs
+@@ -274,7 +274,7 @@ notrace void arch_local_irq_restore(unsigned long en)
+ 		if (WARN_ON(mfmsr() & MSR_EE))
+ 			__hard_irq_disable();
+ 	}
+-#endif /* CONFIG_TRACE_IRQFLAGS */
++#endif /* CONFIG_IRQ_DEBUG_SUPPORT */
+ 
+ 	soft_enabled_set(IRQ_DISABLE_MASK_LINUX);
  
 -- 
 2.7.4
