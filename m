@@ -1,27 +1,38 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tv0k91hFGzDqJ1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 06:09:53 +1100 (AEDT)
-Date: Wed, 4 Jan 2017 18:27:12 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Caleb Crome <ccrome@gmail.com>
-Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Arnaud Mouiche <arnaud.mouiche@invoxia.com>,
- Caleb Crome <caleb@crome.org>
-Message-ID: <20170104182712.d3vv47g4v5ylis5e@sirena.org.uk>
-References: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tv1Mw4C5XzDqK9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 06:39:08 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v04JclLB100905
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jan 2017 14:39:04 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27s3tv8tcv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 14:39:04 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 4 Jan 2017 12:39:03 -0700
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CE98D19D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 12:38:18 -0700 (MST)
+Subject: Re: [PATCH v2 3/3] powerpc/pseries: Update affinity for memory and
+ cpus specified in a PRRN event
+To: John Allen <jallen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <ef5af85a-5692-6a2b-8fae-5500d3880336@linux.vnet.ibm.com>
+ <f535217c-c8ce-5b7e-a5d4-9f4570ad25a6@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 4 Jan 2017 13:39:00 -0600
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="qmg5drw7rxypz7xk"
-In-Reply-To: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
-Subject: Re: [PATCH] fsl_ssi: set fifo watermark to more reliable value
+In-Reply-To: <f535217c-c8ce-5b7e-a5d4-9f4570ad25a6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <82e5fce6-fd7d-81db-e132-4cce0b361c82@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +42,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/15/2016 04:22 PM, John Allen wrote:
+> Extend the existing PRRN infrastructure to perform the actual affinity
+> updating for cpus and memory in addition to the device tree updating. For
+> cpus, dynamic affinity updating already appears to exist in the kernel in
+> the form of arch_update_cpu_topology. For memory, we must place a READD
+> operation on the hotplug queue for any phandle included in the PRRN event
+> that is determined to be an LMB.
+> 
+> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
+> ---
+> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> index a26a020..8836130 100644
+> --- a/arch/powerpc/kernel/rtasd.c
+> +++ b/arch/powerpc/kernel/rtasd.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/cpu.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/slab.h>
+> +#include <linux/topology.h>
+> 
+>  #include <asm/uaccess.h>
+>  #include <asm/io.h>
+> @@ -282,6 +283,7 @@ static void prrn_work_fn(struct work_struct *work)
+>  	 * the RTAS event.
+>  	 */
+>  	pseries_devicetree_update(-prrn_update_scope);
+> +	arch_update_cpu_topology();
+>  }
+> 
+>  static DECLARE_WORK(prrn_work, prrn_work_fn);
+> @@ -434,7 +436,10 @@ static void do_event_scan(void)
+>  		}
+> 
+>  		if (error == 0) {
+> -			pSeries_log_error(logdata, ERR_TYPE_RTAS_LOG, 0);
+> +			if (rtas_error_type((struct rtas_error_log *)logdata) !=
+> +			    RTAS_TYPE_PRRN)
+> +				pSeries_log_error(logdata, ERR_TYPE_RTAS_LOG,
+> +						  0);
+>  			handle_rtas_event((struct rtas_error_log *)logdata);
+>  		}
+> 
+> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+> index a560a98..d62d48a 100644
+> --- a/arch/powerpc/platforms/pseries/mobility.c
+> +++ b/arch/powerpc/platforms/pseries/mobility.c
+> @@ -39,6 +39,7 @@ struct update_props_workarea {
+>  #define ADD_DT_NODE	0x03000000
+> 
+>  #define MIGRATION_SCOPE	(1)
+> +#define PRRN_SCOPE -2
+> 
+>  static int mobility_rtas_call(int token, char *buf, s32 scope)
+>  {
+> @@ -236,6 +237,33 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
+>  	return rc;
+>  }
+> 
+> +void pseries_prrn_update_node(__be32 phandle)
+> +{
+> +	struct pseries_hp_errorlog *hp_elog;
+> +	struct device_node *dn;
+> +
+> +	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
+> +	if (!hp_elog)
+> +		return;
+> +
+> +	dn = of_find_node_by_phandle(be32_to_cpu(phandle));
 
---qmg5drw7rxypz7xk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You should check for the presence of the device node prior to doing the
+kzalloc, this way you can avoid the alloc/free calls in cases where it
+is not needed.
 
-On Tue, Jan 03, 2017 at 10:22:57AM -0800, Caleb Crome wrote:
-> From: Caleb Crome <caleb@crome.org>
->=20
-> The fsl_ssi fifo watermark is by default set to 2 free spaces (i.e.
-> activate DMA on FIFO when only 2 spaces are left.)  This means the
+Also, you do need to do a of_node_put() on the device node if it is found.
 
-Please submit patches using subject lines reflecting the style for the
-subsystem.  This makes it easier for people to identify relevant
-patches.  Look at what existing commits in the area you're changing are
-doing and make sure your subject lines visually resemble what they're
-doing.
-
---qmg5drw7rxypz7xk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlhtPoAACgkQJNaLcl1U
-h9D8NQf8DSqdNWpOibOzR2x7529SOZk1AOONahxt2J/jm3a4b7mopt7pl2UPrezu
-8WuluhCG1cwqt98+y3xMEvV/7Ljo3dcKAC9E9STrE3xJDNtoShrSDCfFJtIlU4HP
-Dn+3aY2VthNpzzvlSd2xdoqWEZJdDaJ6CQEUn5JTwZRMf1FNd8xkrH0dYpCaLrR3
-1KVJxay19mccelg/mnJdi1Kwfno/zVYtKX37xgu5DRcw0ijGwIga+GXq+gdOWpz0
-ZaGAgpvQCpGb2oX7ExOL/2NnEjF+DI0yxz0QWK4326Oj6eLrnU+DmZnIxTpXNxSl
-cPvhUb7VE+cWvcXB24xGR5aKfNyt/A==
-=byx+
------END PGP SIGNATURE-----
-
---qmg5drw7rxypz7xk--
+-Nathan
+ 
+> +
+> +	/*
+> +	 * If the phandle was not found, assume phandle is the drc index of
+> +	 * an LMB.
+> +	 */
+> +	if (!dn) {
+> +		hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
+> +		hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
+> +		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+> +		hp_elog->_drc_u.drc_index = phandle;
+> +
+> +		queue_hotplug_event(hp_elog, NULL, NULL);
+> +	}
+> +
+> +	kfree(hp_elog);
+> +}
+> +
+>  int pseries_devicetree_update(s32 scope)
+>  {
+>  	char *rtas_buf;
+> @@ -274,6 +302,10 @@ int pseries_devicetree_update(s32 scope)
+>  					break;
+>  				case UPDATE_DT_NODE:
+>  					update_dt_node(phandle, scope);
+> +
+> +					if (scope == PRRN_SCOPE)
+> +						pseries_prrn_update_node(phandle);
+> +
+>  					break;
+>  				case ADD_DT_NODE:
+>  					drc_index = *data++;
+> 
