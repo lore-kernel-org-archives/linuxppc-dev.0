@@ -1,36 +1,29 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
+Return-Path: <caleb@crome.org>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttzNv6zmvzDqKN
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 05:09:51 +1100 (AEDT)
-Received: by mail-it0-x241.google.com with SMTP id c20so54427943itb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 10:09:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttztY4XcNzDqMC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 05:32:04 +1100 (AEDT)
+Received: by mail-oi0-x244.google.com with SMTP id v84so75498154oie.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 10:32:04 -0800 (PST)
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <dc15451c-3c5e-1f61-f108-cea3c08332a9@fb.com>
-References: <20170104161808.5ad7b4fd@kryten>
- <6085340.JSrffQ0Szo@localhost.localdomain>
- <20170104152837.wdh7cdncs7gyged7@thunk.org>
- <dc15451c-3c5e-1f61-f108-cea3c08332a9@fb.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 4 Jan 2017 10:09:48 -0800
-Message-ID: <CA+55aFzg5qR6DJvzrp+sreakzhPvT=txS-mo4OTrrwT0HVrKvw@mail.gmail.com>
-Subject: Re: ext4 filesystem corruption with 4.10-rc2 on ppc64le
-To: Jens Axboe <axboe@fb.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>,
- Chandan Rajendra <chandan@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, Jan Kara <jack@suse.cz>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- Jens Axboe <axboe@kernel.dk>
+Sender: caleb@crome.org
+In-Reply-To: <20170104182712.d3vv47g4v5ylis5e@sirena.org.uk>
+References: <1483467777-8651-1-git-send-email-caleb@signalessence.com>
+ <20170104182712.d3vv47g4v5ylis5e@sirena.org.uk>
+From: ccrome <ccrome@gmail.com>
+Date: Wed, 4 Jan 2017 10:31:42 -0800
+Message-ID: <CAG5mAdzxUhhwjBLWZw6aX_--oAOB0Mbc3+Do-TpNRPqGcC8YVQ@mail.gmail.com>
+Subject: Re: [PATCH] fsl_ssi: set fifo watermark to more reliable value
+To: Mark Brown <broonie@kernel.org>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Arnaud Mouiche <arnaud.mouiche@invoxia.com>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,15 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 4, 2017 at 8:23 AM, Jens Axboe <axboe@fb.com> wrote:
-> On 01/04/2017 08:28 AM, Theodore Ts'o wrote:
->>
->> Jens, could you expedite a pull request to Linus?  This is affecting
->> ext4 on 1k block file systems on x86/x86_64, so this is not a ppc-only
->> regression.
+On Wed, Jan 4, 2017 at 10:27 AM, Mark Brown <broonie@kernel.org> wrote:
 >
-> Yes, it'll go out this morning.
+> On Tue, Jan 03, 2017 at 10:22:57AM -0800, Caleb Crome wrote:
+> > From: Caleb Crome <caleb@crome.org>
+> >
+> > The fsl_ssi fifo watermark is by default set to 2 free spaces (i.e.
+> > activate DMA on FIFO when only 2 spaces are left.)  This means the
+>
+> Please submit patches using subject lines reflecting the style for the
+> subsystem.  This makes it easier for people to identify relevant
+> patches.  Look at what existing commits in the area you're changing are
+> doing and make sure your subject lines visually resemble what they're
+> doing.
 
-It's merged and out there in my tree now.
+Shoot, yes of course.  I forgot to check the subject format against
+extant patches.
 
-                 Linus
+The subject should be
+
+[PATCH] ASoC: fsl_ssi: set fifo watermark to more reliable value
+
+Correct?
+
+Should I re-submit?
+
+Thanks,
+ -Caleb
