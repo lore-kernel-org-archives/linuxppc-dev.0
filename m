@@ -1,35 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ttYzV18ClzDqGS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 13:04:52 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v04242mN091188
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jan 2017 21:04:50 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27rktsyt96-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jan 2017 21:04:50 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 3 Jan 2017 19:04:50 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: fix pgtable pmd cache init
-In-Reply-To: <20170103155517.24347-1-npiggin@gmail.com>
-References: <20170103155517.24347-1-npiggin@gmail.com>
-Date: Wed, 04 Jan 2017 07:34:41 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ttZ720WHxzDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2017 13:11:26 +1100 (AEDT)
+Date: Tue, 3 Jan 2017 18:11:20 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@lists.ozlabs.org
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>
+Subject: DEBUG_LOCKS_WARN_ON(1) / lockdep.c:3134 lockdep_init_map+0x1e8/0x1f0
+Message-ID: <alpine.DEB.2.20.99.1701031806120.31470@trent.utfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87eg0j7f7q.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,103 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi,
 
-> Commit 9b081e10805cd ("powerpc: port 64 bits pgtable_cache to 32 bits")
-> mixed up PMD_INDEX_SIZE and PMD_CACHE_INDEX a couple of times. This
-> resulted in 64s/hash/4k configs to panic at boot with a false positive
-> error check.
->
-> Fix that and simplify error handling by moving the check to the caller.
->
-> Fixes: 9b081e10805cd ("powerpc: port 64 bits pgtable_cache to 32 bits")
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Cc: Scott Wood <oss@buserror.net>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+booting v4.10-rc2 on this PowerPC G4 machine prints the following early 
+on, but then continues to boot and the machine is running fine so far:
 
-I did another fix here.
 
-https://lkml.kernel.org/r/20161214043349.23677-1-aneesh.kumar@linux.vnet.ibm.com
+BUG: key ef0ba7d0 not in .data!
+DEBUG_LOCKS_WARN_ON(1)
+------------[ cut here ]------------
+WARNING: CPU: 0 PID: 1 at 
+/usr/local/src/linux-git/kernel/locking/lockdep.c:3134 lockdep_init_map+0x1e8/0x1f0
+Modules linked in:
+CPU: 0 PID: 1 Comm: swapper Not tainted 4.10.0-rc2 #4
+task: ef04aa60 task.stack: ef042000
+NIP: c005eb78 LR: c005eb78 CTR: 00000000
+REGS: ef043d70 TRAP: 0700   Not tainted  (4.10.0-rc2)
+MSR: 02029032 <VEC,EE,ME,IR,DR,RI>
+  CR: 48000022  XER: 20000000
+GPR00: c005eb78 ef043e20 ef04aa60 00000016 00000001 c0068b24 00000000 00000001 
+GPR08: 00000000 00000000 00004ead 000000d6 28000024 00000000 c00047f0 00000000 
+GPR16: 00000000 00000000 c08b9280 effedfa0 c078d6ac c1070000 c078eddc c078ee14 
+GPR24: c078ed24 c078ee24 00000002 ef085a00 00000000 c08b0000 ef0ba7d0 ef0ba7b4 
+NIP [c005eb78] lockdep_init_map+0x1e8/0x1f0
+LR [c005eb78] lockdep_init_map+0x1e8/0x1f0
+Call Trace:
+[ef043e20] [c005eb78] lockdep_init_map+0x1e8/0x1f0 (unreliable)
+[ef043e40] [c083adb4] kw_i2c_add+0xc0/0x134
+[ef043e60] [c083b29c] pmac_i2c_init+0x3b8/0x518
+[ef043ea0] [c00040c0] do_one_initcall+0x40/0x174
+[ef043f00] [c0834064] kernel_init_freeable+0x134/0x1cc
+[ef043f30] [c0004808] kernel_init+0x18/0x110
+[ef043f40] [c0010ad8] ret_from_kernel_thread+0x5c/0x64
+Instruction dump:
+4837259d 2f830000 41befec0 3d20c08b 812953a0 2f890000 409efeb0 3c60c079 
+3c80c07b 3884b48c 3863f9e4 4860d52d <0fe00000> 4bfffe94 9421ff70 7c0802a6 
+---[ end trace 8a79d8041d87d000 ]---
 
-But this patch makes it much simpler. Hence.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Full dmesg and .config: http://nerdbynature.de/bits/4.10-rc2/
 
-There is this hunk in the patch I did.
 
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -33,9 +33,9 @@
-				 H_PUD_INDEX_SIZE + H_PGD_INDEX_SIZE + PAGE_SHIFT)
- #define H_PGTABLE_RANGE		(ASM_CONST(1) << H_PGTABLE_EADDR_SIZE)
+Thanks for listening,
+Christian.
+-- 
+BOFH excuse #409:
 
--#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+#if defined(CONFIG_TRANSPARENT_HUGEPAGE) &&  defined(CONFIG_PPC_64K_PAGES)
- /*
-- * only with hash we need to use the second half of pmd page table
-+ * only with hash 64k we need to use the second half of pmd page table
-  * to store pointer to deposited pgtable_t
-  */
- #define H_PMD_CACHE_INDEX	(H_PMD_INDEX_SIZE + 1)
-
-> ---
->  arch/powerpc/mm/hugetlbpage.c |  6 +-----
->  arch/powerpc/mm/init-common.c | 11 +++--------
->  2 files changed, 4 insertions(+), 13 deletions(-)
->
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 289df38fb7e0..f21f6b907d99 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -810,12 +810,8 @@ static int __init hugetlbpage_init(void)
->  		 * if we have pdshift and shift value same, we don't
->  		 * use pgt cache for hugepd.
->  		 */
-> -		if (pdshift > shift) {
-> +		if (pdshift > shift)
->  			pgtable_cache_add(pdshift - shift, NULL);
-> -			if (!PGT_CACHE(pdshift - shift))
-> -				panic("hugetlbpage_init(): could not create "
-> -				      "pgtable cache for %d bit pagesize\n", shift);
-> -		}
->  #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
->  		else if (!hugepte_cache) {
->  			/*
-> diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-> index a175cd82ae8c..1a3be5ae1d07 100644
-> --- a/arch/powerpc/mm/init-common.c
-> +++ b/arch/powerpc/mm/init-common.c
-> @@ -80,6 +80,8 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
->  	new = kmem_cache_create(name, table_size, align, 0, ctor);
->  	kfree(name);
->  	pgtable_cache[shift - 1] = new;
-> +	if (!new)
-> +		panic("Could not allocate pgtable cache for order %d", shift);
->  	pr_debug("Allocated pgtable cache for order %d\n", shift);
->  }
->
-> @@ -88,7 +90,7 @@ void pgtable_cache_init(void)
->  {
->  	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
->
-> -	if (PMD_INDEX_SIZE && !PGT_CACHE(PMD_INDEX_SIZE))
-> +	if (PMD_CACHE_INDEX && !PGT_CACHE(PMD_CACHE_INDEX))
->  		pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
->  	/*
->  	 * In all current configs, when the PUD index exists it's the
-> @@ -97,11 +99,4 @@ void pgtable_cache_init(void)
->  	 */
->  	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
->  		pgtable_cache_add(PUD_INDEX_SIZE, pud_ctor);
-> -
-> -	if (!PGT_CACHE(PGD_INDEX_SIZE))
-> -		panic("Couldn't allocate pgd cache");
-> -	if (PMD_INDEX_SIZE && !PGT_CACHE(PMD_INDEX_SIZE))
-> -		panic("Couldn't allocate pmd pgtable caches");
-> -	if (PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE))
-> -		panic("Couldn't allocate pud pgtable caches");
->  }
-> -- 
-> 2.11.0
+The vulcan-death-grip ping has been applied.
