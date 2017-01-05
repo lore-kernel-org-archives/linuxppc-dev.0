@@ -1,27 +1,41 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvPSx56NdzDqPK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 21:44:49 +1100 (AEDT)
-Date: Thu, 5 Jan 2017 21:44:10 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Theodore Ts'o <tytso@mit.edu>
-Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>, jack@suse.cz, Michael
- Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Stephen
- Rothwell <sfr@canb.auug.org.au>, axboe@fb.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org, Jens Axboe
- <axboe@kernel.dk>, torvalds@linux-foundation.org
-Subject: Re: ext4 filesystem corruption with 4.10-rc2 on ppc64le
-Message-ID: <20170105214410.0fc5cd58@kryten>
-In-Reply-To: <20170104152837.wdh7cdncs7gyged7@thunk.org>
-References: <20170104161808.5ad7b4fd@kryten>
- <6085340.JSrffQ0Szo@localhost.localdomain>
- <20170104152837.wdh7cdncs7gyged7@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvQ0D1DLXzDqN7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 22:08:27 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v05B5M5u043771
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 06:08:25 -0500
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27skwvu7ku-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 06:08:24 -0500
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 5 Jan 2017 21:08:22 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C57C42CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 22:08:19 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v05B8KC054853740
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 22:08:20 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v05B8JgE007202
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 22:08:19 +1100
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/xmon: Cleanup to use is_kernel_addr macro
+Date: Thu,  5 Jan 2017 16:38:15 +0530
+Message-Id: <1483614495-6189-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +45,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ted,
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/xmon/xmon.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-> Anton or Chandan, could you do me a favor and verify whether or not
-> 64k block sizes are working for you on ppcle on ext4 by running
-> xfstests?  Light duty testing works for me but when I stress ext4 with
-> pagesize==blocksize on ppcle64 via xfstests, it blows up.  I suspect
-> (but am not sure) it's due to (non-upstream) device driver issues, and
-> a verification that you can run xfstests on your ppcle64 systems using
-> standard upstream device drivers would be very helpful, since I don't
-> have easy console access on the machines I have access to at
-> $WORK.  :-(
-
-I fired off an xfstests run, and it looks good. There are 3 failures,
-but they seem to be setup issues on my part. I also double checked
-those same three failed on 4.8.
-
-Chandan has been running the test suite regularly, and plans to do a
-run against mainline too.
-
-Anton
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 9c0e17cf6886..a44b049b9cf6 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1403,7 +1403,7 @@ static void xmon_show_stack(unsigned long sp, unsigned long lr,
+ 	struct pt_regs regs;
+ 
+ 	while (max_to_print--) {
+-		if (sp < PAGE_OFFSET) {
++		if (!is_kernel_addr(sp)) {
+ 			if (sp != 0)
+ 				printf("SP (%lx) is in userspace\n", sp);
+ 			break;
+@@ -1431,12 +1431,12 @@ static void xmon_show_stack(unsigned long sp, unsigned long lr,
+ 				mread(newsp + LRSAVE_OFFSET, &nextip,
+ 				      sizeof(unsigned long));
+ 			if (lr == ip) {
+-				if (lr < PAGE_OFFSET
++				if (!is_kernel_addr(lr)
+ 				    || (fnstart <= lr && lr < fnend))
+ 					printip = 0;
+ 			} else if (lr == nextip) {
+ 				printip = 0;
+-			} else if (lr >= PAGE_OFFSET
++			} else if (is_kernel_addr(lr)
+ 				   && !(fnstart <= lr && lr < fnend)) {
+ 				printf("[link register   ] ");
+ 				xmon_print_symbol(lr, " ", "\n");
+@@ -1496,7 +1496,7 @@ static void print_bug_trap(struct pt_regs *regs)
+ 	if (regs->msr & MSR_PR)
+ 		return;		/* not in kernel */
+ 	addr = regs->nip;	/* address of trap instruction */
+-	if (addr < PAGE_OFFSET)
++	if (!is_kernel_addr(addr))
+ 		return;
+ 	bug = find_bug(regs->nip);
+ 	if (bug == NULL)
+-- 
+2.7.4
