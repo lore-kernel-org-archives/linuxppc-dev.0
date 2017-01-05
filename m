@@ -1,41 +1,20 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvVnN1fxLzDqQH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 01:44:23 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v05Eg8No103153
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 09:44:20 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27smdxkgxv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 09:44:20 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 5 Jan 2017 14:44:18 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4FEA6219005F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 14:43:24 +0000 (GMT)
-Subject: Re: [RESEND] cxl: Force psl data-cache flush during device shutdown
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20170104061852.18512-1-vaibhav@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- frederic.barrat@fr.ibm.com, Ian Munsie <ianmunsi@au1.ibm.com>,
- Andrew Donnellan <andonnel@au1.ibm.com>,
- Gregory Kurz <KURZGREG@fr.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Thu, 5 Jan 2017 15:44:12 +0100
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tvYnh2nvGzDqQJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 03:59:51 +1100 (AEDT)
+Subject: Re: [Patch V7 2/4] irqchip/qeic: merge qeic init code from platforms
+ to a common function
+To: Zhao Qiang <qiang.zhao@nxp.com>, oss@buserror.net
+References: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
+ <1482741166-33164-2-git-send-email-qiang.zhao@nxp.com>
+Cc: jason@lakedaemon.net, xiaobo.xie@nxp.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+From: Marc Zyngier <marc.zyngier@arm.com>
+Message-ID: <e8a862c2-3853-4188-8002-0f0790dfa7fa@arm.com>
+Date: Thu, 5 Jan 2017 16:59:45 +0000
 MIME-Version: 1.0
-In-Reply-To: <20170104061852.18512-1-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <e0f8afec-dc4e-b8f0-61b1-6298c2265d8a@linux.vnet.ibm.com>
+In-Reply-To: <1482741166-33164-2-git-send-email-qiang.zhao@nxp.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,39 +24,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 04/01/2017 à 07:18, Vaibhav Jain a écrit :
-> This change adds a force psl data cache flush during device shutdown
-> callback. This should reduce a possibility of psl holding a dirty
-> cache line while the CAPP is being reinitialized, which may result in
-> a UE [load/store] machine check error.
->
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+On 26/12/16 08:32, Zhao Qiang wrote:
+> The codes of qe_ic init from a variety of platforms are redundant,
+> merge them to a common function and put it to irqchip/irq-qeic.c
+> 
+> For non-p1021_mds mpc85xx_mds boards, use "qe_ic_init(np, 0,
+> qe_ic_cascade_low_mpic, qe_ic_cascade_high_mpic);" instead of
+> "qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);".
+> 
+> qe_ic_cascade_muxed_mpic was used for boards has the same interrupt
+> number for low interrupt and high interrupt, qe_ic_init has checked
+> if "low interrupt == high interrupt"
+> 
+> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 > ---
-
-Looks good to me, thanks!
-
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-> Resend: Fixed the author ident.
-> ---
->  drivers/misc/cxl/pci.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 80a87ab..73432e7 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -1610,6 +1610,9 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
->  	cxl_sysfs_adapter_remove(adapter);
->  	cxl_debugfs_adapter_remove(adapter);
->
-> +	/* Flush adapter datacache as its about to be removed */
-> +	cxl_data_cache_flush(adapter);
+> Changes for v2:
+> 	- modify subject and commit msg
+> 	- add check for qeic by type
+> Changes for v3:
+> 	- na
+> Changes for v4:
+> 	- na
+> Changes for v5:
+> 	- na
+> Changes for v6:
+> 	- rebase
+> Changes for v7:
+> 	- na
+> 
+>  arch/powerpc/platforms/83xx/misc.c            | 15 ---------------
+>  arch/powerpc/platforms/85xx/corenet_generic.c |  9 ---------
+>  arch/powerpc/platforms/85xx/mpc85xx_mds.c     | 14 --------------
+>  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     | 16 ----------------
+>  arch/powerpc/platforms/85xx/twr_p102x.c       | 14 --------------
+>  drivers/irqchip/irq-qeic.c                    | 16 ++++++++++++++++
+>  6 files changed, 16 insertions(+), 68 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+> index d75c981..c09a135 100644
+> --- a/arch/powerpc/platforms/83xx/misc.c
+> +++ b/arch/powerpc/platforms/83xx/misc.c
+> @@ -93,24 +93,9 @@ void __init mpc83xx_ipic_init_IRQ(void)
+>  }
+>  
+>  #ifdef CONFIG_QUICC_ENGINE
+> -void __init mpc83xx_qe_init_IRQ(void)
+> -{
+> -	struct device_node *np;
+> -
+> -	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> -	if (!np) {
+> -		np = of_find_node_by_type(NULL, "qeic");
+> -		if (!np)
+> -			return;
+> -	}
+> -	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
+> -	of_node_put(np);
+> -}
+> -
+>  void __init mpc83xx_ipic_and_qe_init_IRQ(void)
+>  {
+>  	mpc83xx_ipic_init_IRQ();
+> -	mpc83xx_qe_init_IRQ();
+>  }
+>  #endif /* CONFIG_QUICC_ENGINE */
+>  
+> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+> index 1179115..1d96c3f 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> @@ -41,8 +41,6 @@ void __init corenet_gen_pic_init(void)
+>  	unsigned int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
+>  		MPIC_NO_RESET;
+>  
+> -	struct device_node *np;
+> -
+>  	if (ppc_md.get_irq == mpic_get_coreint_irq)
+>  		flags |= MPIC_ENABLE_COREINT;
+>  
+> @@ -50,13 +48,6 @@ void __init corenet_gen_pic_init(void)
+>  	BUG_ON(mpic == NULL);
+>  
+>  	mpic_init(mpic);
+> -
+> -	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> -	if (np) {
+> -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> -				qe_ic_cascade_high_mpic);
+> -		of_node_put(np);
+> -	}
+>  }
+>  
+>  /*
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> index d7e440e..06f34a9 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> @@ -283,20 +283,6 @@ static void __init mpc85xx_mds_qeic_init(void)
+>  		of_node_put(np);
+>  		return;
+>  	}
+> -
+> -	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> -	if (!np) {
+> -		np = of_find_node_by_type(NULL, "qeic");
+> -		if (!np)
+> -			return;
+> -	}
+> -
+> -	if (machine_is(p1021_mds))
+> -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> -				qe_ic_cascade_high_mpic);
+> -	else
+> -		qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);
+> -	of_node_put(np);
+>  }
+>  #else
+>  static void __init mpc85xx_mds_qe_init(void) { }
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> index 1006950..000d385 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> @@ -48,10 +48,6 @@ void __init mpc85xx_rdb_pic_init(void)
+>  {
+>  	struct mpic *mpic;
+>  
+> -#ifdef CONFIG_QUICC_ENGINE
+> -	struct device_node *np;
+> -#endif
+> -
+>  	if (of_machine_is_compatible("fsl,MPC85XXRDB-CAMP")) {
+>  		mpic = mpic_alloc(NULL, 0, MPIC_NO_RESET |
+>  			MPIC_BIG_ENDIAN |
+> @@ -66,18 +62,6 @@ void __init mpc85xx_rdb_pic_init(void)
+>  
+>  	BUG_ON(mpic == NULL);
+>  	mpic_init(mpic);
+> -
+> -#ifdef CONFIG_QUICC_ENGINE
+> -	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> -	if (np) {
+> -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> -				qe_ic_cascade_high_mpic);
+> -		of_node_put(np);
+> -
+> -	} else
+> -		pr_err("%s: Could not find qe-ic node\n", __func__);
+> -#endif
+> -
+>  }
+>  
+>  /*
+> diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
+> index 360f625..6be9b33 100644
+> --- a/arch/powerpc/platforms/85xx/twr_p102x.c
+> +++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+> @@ -35,26 +35,12 @@ static void __init twr_p1025_pic_init(void)
+>  {
+>  	struct mpic *mpic;
+>  
+> -#ifdef CONFIG_QUICC_ENGINE
+> -	struct device_node *np;
+> -#endif
+> -
+>  	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
+>  			MPIC_SINGLE_DEST_CPU,
+>  			0, 256, " OpenPIC  ");
+>  
+>  	BUG_ON(mpic == NULL);
+>  	mpic_init(mpic);
+> -
+> -#ifdef CONFIG_QUICC_ENGINE
+> -	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> -	if (np) {
+> -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> -				qe_ic_cascade_high_mpic);
+> -		of_node_put(np);
+> -	} else
+> -		pr_err("Could not find qe-ic node\n");
+> -#endif
+>  }
+>  
+>  /* ************************************************************************
+> diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
+> index 48ceded..1463731 100644
+> --- a/drivers/irqchip/irq-qeic.c
+> +++ b/drivers/irqchip/irq-qeic.c
+> @@ -598,4 +598,20 @@ static int __init init_qe_ic_sysfs(void)
+>  	return 0;
+>  }
+>  
+> +static int __init qeic_of_init(void)
+> +{
+> +	struct device_node *np;
 > +
->  	cxl_deconfigure_adapter(adapter);
->
->  	device_unregister(&adapter->dev);
->
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> +	if (!np) {
+> +		np = of_find_node_by_type(NULL, "qeic");
+> +		if (!np)
+> +			return;
+> +	}
+> +	qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> +		   qe_ic_cascade_high_mpic);
+> +	of_node_put(np);
+> +}
+> +
+> +subsys_initcall(qeic_of_init);
+
+Why is it a subsys_initcall? Can't you use IRQCHIP_DECLARE(), like any
+other interrupt controller that is DT driven? irq-xilinx-intc.c is used
+on powerpc as well, and is using that infrastructure, so there must be a
+way for you to use it too.
+
+Also, please add a cover letter to your series and keep the changelog there.
+
+Thanks,
+
+	M.
+-- 
+Jazz is not dead. It just smells funny...
