@@ -3,39 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvRzd0DRrzDqP7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 23:38:04 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvRzh0QNVzDqQ0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 23:38:07 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v05CYKVU006587
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 07:38:02 -0500
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27sg761xdm-1
+ v05CYJkU119017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 07:38:05 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27sjbyuyrp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 07:38:02 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 07:38:04 -0500
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 5 Jan 2017 22:37:59 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 15CF53578057
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 23:37:58 +1100 (EST)
+ Thu, 5 Jan 2017 22:38:02 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A971C2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 23:38:00 +1100 (EST)
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v05CbwVA23330878
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 23:37:58 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v05Cc17U55574688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 23:38:01 +1100
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v05CbvSJ016548
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 23:37:57 +1100
+ v05Cc04M016714
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 23:38:00 +1100
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, khandual@linux.vnet.ibm.com,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH v2 1/2] powerpc/perf: Factor out bhrb functions
-Date: Thu,  5 Jan 2017 18:07:52 +0530
-Message-Id: <1483619873-13899-1-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/2] powerpc/perf: support new BHRB filtering modes
+Date: Thu,  5 Jan 2017 18:07:53 +0530
+In-Reply-To: <1483619873-13899-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1483619873-13899-1-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1483619873-13899-2-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,182 +47,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Factor out the bhrb functions to "isa207-common.c"
-to share with power9 DD1. Only code movement and no logic change
+Add support for new BHRB filtering modes in power9.
+Filtering modes restrict the type of branch
+instructions that can enter into the BHRB.
+
+The filtering criteria are defined using the following
+terminology, Call, Return, Jump, Conditional Branch,
+Unconditional Branch, Indirect Branch and Direct Branch.
+
+PowerISA v3.0 defines 5 new BHRB filtering bits
+in MMCRA[27:31] for the software to prevent various
+combinations of each of the above types of Branch
+instructions from being entered into the BHRB.
+
+Patch updates the branch types based on "Progrmming Note"
+information from PowerISA v3.0 "BHRB Filtering" section.
 
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
 Changelog v1:
-1)Updates to commit messages
+1) Added mode comments in code
+2) Updates to commit message
 
- arch/powerpc/perf/isa207-common.c | 41 ++++++++++++++++++++++++++++++++
- arch/powerpc/perf/isa207-common.h |  9 +++++++
- arch/powerpc/perf/power8-pmu.c    | 49 ++-------------------------------------
- arch/powerpc/perf/power9-pmu.c    |  4 ++--
- 4 files changed, 54 insertions(+), 49 deletions(-)
+ arch/powerpc/perf/power9-pmu.c | 53 +++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 47 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 50e598cf644b..ee4e3e89c04c 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -338,3 +338,44 @@ void isa207_disable_pmc(unsigned int pmc, unsigned long mmcr[])
- 	if (pmc <= 3)
- 		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SHIFT(pmc + 1));
- }
-+
-+u64 isa207_bhrb_filter_map(u64 branch_sample_type)
-+{
-+	u64 pmu_bhrb_filter = 0;
-+
-+	/* BHRB and regular PMU events share the same privilege state
-+	 * filter configuration. BHRB is always recorded along with a
-+	 * regular PMU event. As the privilege state filter is handled
-+	 * in the basic PMC configuration of the accompanying regular
-+	 * PMU event, we ignore any separate BHRB specific request.
-+	 */
-+
-+	/* No branch filter requested */
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
-+		return pmu_bhrb_filter;
-+
-+	/* Invalid branch filter options - HW does not support */
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
-+		return -1;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
-+		return -1;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_CALL)
-+		return -1;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
-+		pmu_bhrb_filter |= MMCRA_IFM1;
-+		return pmu_bhrb_filter;
-+	}
-+
-+	/* Every thing else is unsupported */
-+	return -1;
-+}
-+
-+void isa207_config_bhrb(u64 pmu_bhrb_filter)
-+{
-+	/* Enable BHRB filter in PMU */
-+	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
-+}
-+
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 90495f1580c7..e5e4182731da 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -244,6 +244,12 @@
- #define MMCRA_SDAR_MODE_TLB		(1ull << MMCRA_SDAR_MODE_SHIFT)
- #define MMCRA_IFM_SHIFT			30
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index 56ad09801fff..0d232916cab2 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -103,6 +103,31 @@ enum {
+ #define POWER9_MMCRA_IFM2		0x0000000080000000UL
+ #define POWER9_MMCRA_IFM3		0x00000000C0000000UL
  
-+/* MMCRA IFM bits */
-+#define MMCRA_IFM1		0x0000000040000000UL
-+#define MMCRA_IFM2		0x0000000080000000UL
-+#define MMCRA_IFM3		0x00000000C0000000UL
++/*
++ * BHRB Filtering mode FJ -- Filter Jump Instructions
++ */
++#define POWER9_MMCRA_FJ			0x0000000100000000UL
 +
++/*
++ * BHRB Filtering mode FR -- Filter Return Instructions
++ */
++#define POWER9_MMCRA_FR			0x0000000200000000UL
 +
- /* MMCR1 Threshold Compare bit constant for power9 */
- #define p9_MMCRA_THR_CMP_SHIFT	45
- 
-@@ -261,4 +267,7 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
- 				struct perf_event *pevents[]);
- void isa207_disable_pmc(unsigned int pmc, unsigned long mmcr[]);
- 
-+u64 isa207_bhrb_filter_map(u64 branch_sample_type);
-+void isa207_config_bhrb(u64 pmu_bhrb_filter);
++/*
++ * BHRB Filtering mode FC -- Filter Call Instructions
++ */
++#define POWER9_MMCRA_FC			0x0000000400000000UL
 +
- #endif
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index d07186382f3a..91120bec4173 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -25,11 +25,6 @@ enum {
- 
- #undef EVENT
- 
--/* MMCRA IFM bits - POWER8 */
--#define	POWER8_MMCRA_IFM1		0x0000000040000000UL
--#define	POWER8_MMCRA_IFM2		0x0000000080000000UL
--#define	POWER8_MMCRA_IFM3		0x00000000C0000000UL
--
++/*
++ * BHRB Filtering mode FU -- Filter Unconditional Branch Instructions
++ */
++#define POWER9_MMCRA_FU			0x0000000800000000UL
++
++/*
++ * BHRB Filtering mode FD -- Filter Direct Branch Instructions
++ */
++#define POWER9_MMCRA_FD			0x0000001000000000UL
++
  /* PowerISA v2.07 format attribute structure*/
  extern struct attribute_group isa207_pmu_format_group;
  
-@@ -195,46 +190,6 @@ static int power8_generic_events[] = {
- 	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
- };
+@@ -240,14 +265,30 @@ static u64 power9_bhrb_filter_map(u64 branch_sample_type)
+ 		return pmu_bhrb_filter;
  
--static u64 power8_bhrb_filter_map(u64 branch_sample_type)
--{
--	u64 pmu_bhrb_filter = 0;
--
--	/* BHRB and regular PMU events share the same privilege state
--	 * filter configuration. BHRB is always recorded along with a
--	 * regular PMU event. As the privilege state filter is handled
--	 * in the basic PMC configuration of the accompanying regular
--	 * PMU event, we ignore any separate BHRB specific request.
--	 */
--
--	/* No branch filter requested */
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
--		return pmu_bhrb_filter;
--
--	/* Invalid branch filter options - HW does not support */
+ 	/* Invalid branch filter options - HW does not support */
 -	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
 -		return -1;
--
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN) {
++		pmu_bhrb_filter = POWER9_MMCRA_FC | POWER9_MMCRA_FJ;
++		return pmu_bhrb_filter;
++	}
+ 
 -	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
 -		return -1;
--
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL) {
++		pmu_bhrb_filter = POWER9_MMCRA_FD | POWER9_MMCRA_FR | POWER9_MMCRA_FJ;
++		return pmu_bhrb_filter;
++	}
+ 
 -	if (branch_sample_type & PERF_SAMPLE_BRANCH_CALL)
 -		return -1;
--
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
--		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
--		return pmu_bhrb_filter;
--	}
--
--	/* Every thing else is unsupported */
--	return -1;
--}
--
--static void power8_config_bhrb(u64 pmu_bhrb_filter)
--{
--	/* Enable BHRB filter in PMU */
--	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
--}
--
- #define C(x)	PERF_COUNT_HW_CACHE_##x
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
++		pmu_bhrb_filter = POWER9_MMCRA_FU;
++		return pmu_bhrb_filter;
++	}
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_JUMP) {
++		pmu_bhrb_filter = POWER9_MMCRA_FD | POWER9_MMCRA_FC | POWER9_MMCRA_FR;
++		return pmu_bhrb_filter;
++	}
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_CALL) {
++		pmu_bhrb_filter = POWER9_MMCRA_FC;
++		return pmu_bhrb_filter;
++	}
  
- /*
-@@ -352,8 +307,8 @@ static struct power_pmu power8_pmu = {
- 	.add_fields		= ISA207_ADD_FIELDS,
- 	.test_adder		= ISA207_TEST_ADDER,
- 	.compute_mmcr		= isa207_compute_mmcr,
--	.config_bhrb		= power8_config_bhrb,
--	.bhrb_filter_map	= power8_bhrb_filter_map,
-+	.config_bhrb		= isa207_config_bhrb,
-+	.bhrb_filter_map	= isa207_bhrb_filter_map,
- 	.get_constraint		= isa207_get_constraint,
- 	.get_alternatives	= power8_get_alternatives,
- 	.disable_pmc		= isa207_disable_pmc,
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index 346010e8d463..56ad09801fff 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -380,8 +380,8 @@ static struct power_pmu power9_isa207_pmu = {
- 	.add_fields		= ISA207_ADD_FIELDS,
- 	.test_adder		= ISA207_TEST_ADDER,
- 	.compute_mmcr		= isa207_compute_mmcr,
--	.config_bhrb		= power9_config_bhrb,
--	.bhrb_filter_map	= power9_bhrb_filter_map,
-+	.config_bhrb		= isa207_config_bhrb,
-+	.bhrb_filter_map	= isa207_bhrb_filter_map,
- 	.get_constraint		= isa207_get_constraint,
- 	.disable_pmc		= isa207_disable_pmc,
- 	.flags			= PPMU_HAS_SIER | PPMU_ARCH_207S,
+ 	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
+ 		pmu_bhrb_filter |= POWER9_MMCRA_IFM1;
 -- 
 2.7.4
