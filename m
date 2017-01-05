@@ -1,9 +1,9 @@
 Return-Path: <>
-Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
+Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvgTT6pn1zDqQH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 08:16:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvgTp0PcMzDqRK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 08:16:29 +1100 (AEDT)
 From: "Andrew F. Davis" <afd@ti.com>
 To: Russell King <linux@armlinux.org.uk>, Miguel Ojeda Sandonis
  <miguel.ojeda.sandonis@gmail.com>,
@@ -17,12 +17,9 @@ To: Russell King <linux@armlinux.org.uk>, Miguel Ojeda Sandonis
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-media@vger.kernel.org>,
  <linux-wireless@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>
-Subject: [PATCH v2 2/6] amba: Only descend into amba directory when
- CONFIG_ARM_AMBA is set
-Date: Thu, 5 Jan 2017 15:01:54 -0600
-Message-ID: <20170105210158.14204-3-afd@ti.com>
-In-Reply-To: <20170105210158.14204-1-afd@ti.com>
-References: <20170105210158.14204-1-afd@ti.com>
+Subject: [PATCH v2 0/6] Remove unneeded build directory traversals
+Date: Thu, 5 Jan 2017 15:01:52 -0600
+Message-ID: <20170105210158.14204-1-afd@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,27 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_ARM_AMBA is not set make will still descend into the amba
-directory but nothing will be built. This produces unneeded build
-artifacts and messages in addition to slowing the build. Fix this here.
+Hello all,
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
----
- drivers/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I was building a kernel for x86 and noticed Make still descended into
+directories like drivers/gpu/drm/hisilicon, this seems kind of odd given
+nothing will be built here. It looks to be due to some directories being
+included in obj-y unconditionally instead of only when the relevant
+CONFIG_ is set.
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 0d0ed1b727d1..b3adeb421000 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -28,7 +28,7 @@ obj-$(CONFIG_SFI)		+= sfi/
- # PnP must come after ACPI since it will eventually need to check if acpi
- # was used and do nothing if so
- obj-$(CONFIG_PNP)		+= pnp/
--obj-y				+= amba/
-+obj-$(CONFIG_ARM_AMBA)		+= amba/
- 
- obj-y				+= clk/
- # Many drivers will want to use DMA so this has to be made available
+These patches are split by subsystem in-case, for some reason, a file in
+a directory does need to be built, I believe I have checked for all
+instances of this, but a quick review from some maintainers would be nice.
+
+Thanks,
+Andrew
+
+Changes from v1:
+ - Removed patches already taken by maintainers
+ - Rebased on v4.10-rc1 (no changes needed)
+
+Andrew F. Davis (6):
+  pwm: Only descend into pwm directory when CONFIG_PWM is set
+  amba: Only descend into amba directory when CONFIG_ARM_AMBA is set
+  NFC: Only descend into nfc directory when CONFIG_NFC is set
+  macintosh: Only descend into directory when CONFIG_MACINTOSH_DRIVERS
+    is set
+  auxdisplay: Only descend into directory when CONFIG_AUXDISPLAY is set
+  [media] Only descend into directory when CONFIG_MEDIA_SUPPORT is set
+
+ drivers/Makefile | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
 -- 
 2.11.0
