@@ -1,9 +1,9 @@
 Return-Path: <>
-Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
+Received: from lelnx193.ext.ti.com (lelnx193.ext.ti.com [198.47.27.77])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvgTp0PcMzDqRK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 08:16:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvgYm2S4nzDq5r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 08:19:56 +1100 (AEDT)
 From: "Andrew F. Davis" <afd@ti.com>
 To: Russell King <linux@armlinux.org.uk>, Miguel Ojeda Sandonis
  <miguel.ojeda.sandonis@gmail.com>,
@@ -17,9 +17,12 @@ To: Russell King <linux@armlinux.org.uk>, Miguel Ojeda Sandonis
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-media@vger.kernel.org>,
  <linux-wireless@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>
-Subject: [PATCH v2 0/6] Remove unneeded build directory traversals
-Date: Thu, 5 Jan 2017 15:01:52 -0600
-Message-ID: <20170105210158.14204-1-afd@ti.com>
+Subject: [PATCH v2 3/6] NFC: Only descend into nfc directory when CONFIG_NFC
+ is set
+Date: Thu, 5 Jan 2017 15:01:55 -0600
+Message-ID: <20170105210158.14204-4-afd@ti.com>
+In-Reply-To: <20170105210158.14204-1-afd@ti.com>
+References: <20170105210158.14204-1-afd@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,36 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello all,
+When CONFIG_NFC is not set make will still descend into the nfc
+directory but nothing will be built. This produces unneeded build
+artifacts and messages in addition to slowing the build. Fix this here.
 
-I was building a kernel for x86 and noticed Make still descended into
-directories like drivers/gpu/drm/hisilicon, this seems kind of odd given
-nothing will be built here. It looks to be due to some directories being
-included in obj-y unconditionally instead of only when the relevant
-CONFIG_ is set.
+Signed-off-by: Andrew F. Davis <afd@ti.com>
+---
+ drivers/Makefile | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-These patches are split by subsystem in-case, for some reason, a file in
-a directory does need to be built, I believe I have checked for all
-instances of this, but a quick review from some maintainers would be nice.
-
-Thanks,
-Andrew
-
-Changes from v1:
- - Removed patches already taken by maintainers
- - Rebased on v4.10-rc1 (no changes needed)
-
-Andrew F. Davis (6):
-  pwm: Only descend into pwm directory when CONFIG_PWM is set
-  amba: Only descend into amba directory when CONFIG_ARM_AMBA is set
-  NFC: Only descend into nfc directory when CONFIG_NFC is set
-  macintosh: Only descend into directory when CONFIG_MACINTOSH_DRIVERS
-    is set
-  auxdisplay: Only descend into directory when CONFIG_AUXDISPLAY is set
-  [media] Only descend into directory when CONFIG_MEDIA_SUPPORT is set
-
- drivers/Makefile | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
-
+diff --git a/drivers/Makefile b/drivers/Makefile
+index b3adeb421000..f47f23cf817a 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -66,7 +66,11 @@ obj-$(CONFIG_FB_INTEL)          += video/fbdev/intelfb/
+ 
+ obj-$(CONFIG_PARPORT)		+= parport/
+ obj-$(CONFIG_NVM)		+= lightnvm/
+-obj-y				+= base/ block/ misc/ mfd/ nfc/
++obj-y				+= base/
++obj-y				+= block/
++obj-y				+= misc/
++obj-y				+= mfd/
++obj-$(CONFIG_NFC)		+= nfc/
+ obj-$(CONFIG_LIBNVDIMM)		+= nvdimm/
+ obj-$(CONFIG_DEV_DAX)		+= dax/
+ obj-$(CONFIG_DMA_SHARED_BUFFER) += dma-buf/
 -- 
 2.11.0
