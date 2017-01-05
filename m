@@ -1,44 +1,34 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-ua0-x22d.google.com (mail-ua0-x22d.google.com
- [IPv6:2607:f8b0:400c:c08::22d])
+Return-Path: <k.kozlowski.k@gmail.com>
+Received: from mail-wm0-f65.google.com (mail-wm0-f65.google.com [74.125.82.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvb186S43zDqHq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 04:54:52 +1100 (AEDT)
-Received: by mail-ua0-x22d.google.com with SMTP id i68so280686677uad.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 09:54:52 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvbs10Y59zDqMC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 05:32:53 +1100 (AEDT)
+Received: by mail-wm0-f65.google.com with SMTP id u144so98188881wmu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 10:32:52 -0800 (PST)
+Date: Thu, 5 Jan 2017 20:32:42 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Javier Martinez Canillas <javier@osg.samsung.com>,
+ Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>,
+ Gregory Clement <gregory.clement@free-electrons.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Simon Horman <horms@verge.net.au>,
+ Magnus Damm <magnus.damm@gmail.com>, linaro-kernel@lists.linaro.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: Remove CONFIG_CPU_FREQ_STAT_DETAILS config option
+Message-ID: <20170105183242.cwyymvr37mdqb6mj@kozik-lap>
+References: <d4299228a500a889c2b4b9e305674f3d1ea9ae06.1483604760.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB0258289@AcuExch.aculab.com>
-References: <20161230155634.8692-1-dsafonov@virtuozzo.com>
- <20161230155634.8692-2-dsafonov@virtuozzo.com>
- <063D6719AE5E284EB5DD2968C1650D6DB0258289@AcuExch.aculab.com>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 5 Jan 2017 09:54:30 -0800
-Message-ID: <CALCETrXUB8AeEzJ-WtW3kW9c189AcOe+GBq8TE7GPE+xrvXS8g@mail.gmail.com>
-Subject: Re: [RFC 1/4] mm: remove unused TASK_SIZE_OF()
-To: David Laight <David.Laight@aculab.com>
-Cc: Dmitry Safonov <dsafonov@virtuozzo.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Will Deacon <will.deacon@arm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "0x7f454c46@gmail.com" <0x7f454c46@gmail.com>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <d4299228a500a889c2b4b9e305674f3d1ea9ae06.1483604760.git.viresh.kumar@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,19 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 5, 2017 at 1:51 AM, David Laight <David.Laight@aculab.com> wrote:
-> From: Dmitry Safonov
->> Sent: 30 December 2016 15:57
->> All users of TASK_SIZE_OF(tsk) have migrated to mm->task_size or
->> TASK_SIZE_MAX since:
->> commit d696ca016d57 ("x86/fsgsbase/64: Use TASK_SIZE_MAX for
->> FSBASE/GSBASE upper limits"),
->> commit a06db751c321 ("pagemap: check permissions and capabilities at
->> open time"),
-> ...
->> +#define TASK_SIZE            (current->thread.task_size)
->
-> I'm not sure I like he hidden 'current' argument to an
-> apparent constant.
+On Thu, Jan 05, 2017 at 01:57:41PM +0530, Viresh Kumar wrote:
+> This doesn't have any benefit apart from saving a small amount of memory
+> when it is disabled. The ifdef hackery in the code makes it dirty
+> unnecessarily.
+> 
+> Clean it up by removing the Kconfig option completely. Few defconfigs
+> are also updated and CONFIG_CPU_FREQ_STAT_DETAILS is replaced with
+> CONFIG_CPU_FREQ_STAT now in them, as users wanted stats to be enabled.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  arch/arm/configs/exynos_defconfig         |  2 +-
+>  arch/arm/configs/multi_v5_defconfig       |  2 +-
+>  arch/arm/configs/multi_v7_defconfig       |  2 +-
+>  arch/arm/configs/mvebu_v5_defconfig       |  2 +-
+>  arch/arm/configs/pxa_defconfig            |  2 +-
+>  arch/arm/configs/shmobile_defconfig       |  2 +-
+>  arch/mips/configs/lemote2f_defconfig      |  1 -
+>  arch/powerpc/configs/ppc6xx_defconfig     |  1 -
+>  arch/sh/configs/sh7785lcr_32bit_defconfig |  2 +-
+>  drivers/cpufreq/Kconfig                   |  8 --------
+>  drivers/cpufreq/cpufreq_stats.c           | 14 --------------
+>  11 files changed, 7 insertions(+), 31 deletions(-)
+> 
+> diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
+> index 79c415c33f69..809f0bf3042a 100644
+> --- a/arch/arm/configs/exynos_defconfig
+> +++ b/arch/arm/configs/exynos_defconfig
+> @@ -24,7 +24,7 @@ CONFIG_ARM_APPENDED_DTB=y
+>  CONFIG_ARM_ATAG_DTB_COMPAT=y
+>  CONFIG_CMDLINE="root=/dev/ram0 rw ramdisk=8192 initrd=0x41000000,8M console=ttySAC1,115200 init=/linuxrc mem=256M"
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+>  CONFIG_CPU_FREQ_GOV_USERSPACE=m
 
-Me neither.  But this patch is merely changing the implementation.
+For Exynos:
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Best regards,
+Krzysztof
