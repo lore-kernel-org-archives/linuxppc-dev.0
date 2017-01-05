@@ -1,27 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvHH91xKvzDqMh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 17:05:57 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id b1so39595165pgc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2017 22:05:57 -0800 (PST)
-Date: Thu, 5 Jan 2017 16:05:38 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 08/12] powerpc: Add support to mask perf interrupts
- and replay them
-Message-ID: <20170105160538.1fdb1b3c@roar.ozlabs.ibm.com>
-In-Reply-To: <fff30cf9-a589-2a6d-ec87-40a92fb084a2@linux.vnet.ibm.com>
-References: <1483530590-30274-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1483530590-30274-9-git-send-email-maddy@linux.vnet.ibm.com>
- <20170104223801.739a09a7@roar.ozlabs.ibm.com>
- <fff30cf9-a589-2a6d-ec87-40a92fb084a2@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvHXx0sZFzDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 17:17:53 +1100 (AEDT)
+Date: Thu, 5 Jan 2017 14:17:45 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, fenghua.yu@intel.com, tony.luck@intel.com,
+ linux-ia64@vger.kernel.org, kexec@lists.infradead.org,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, ebiederm@xmission.com,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ vgoyal@redhat.com
+Subject: Re: [PATCH v3 1/5] crash: move crashkernel parsing and vmcore
+ related code under CONFIG_CRASH_CORE
+Message-ID: <20170105061745.GA9679@dhcp-128-65.nay.redhat.com>
+References: <148336637462.25358.5151364413645288219.stgit@hbathini.in.ibm.com>
+ <148336641471.25358.1234744226675502511.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <148336641471.25358.1234744226675502511.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +29,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 4 Jan 2017 22:21:05 +0530
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+Hi, Hari
 
-> On Wednesday 04 January 2017 06:08 PM, Nicholas Piggin wrote:
-> > On Wed,  4 Jan 2017 17:19:46 +0530
-> > Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
-> >  
-> >> @@ -134,7 +137,7 @@ static inline bool arch_irqs_disabled(void)
-> >>   	_was_enabled = local_paca->soft_enabled;	\
-> >>   	local_paca->soft_enabled = IRQ_DISABLE_MASK_LINUX;\
-> >>   	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;	\
-> >> -	if (!(_was_enabled & IRQ_DISABLE_MASK_LINUX))	\
-> >> +	if (!(_was_enabled & IRQ_DISABLE_MASK_ALL))	\
-> >>   		trace_hardirqs_off();			\
-> >>   } while(0)  
-> > Hang on, maybe there's some confusion about this. trace_hardirqs_off() is
-> > for Linux irqs (i.e., local_irq_disable()), so that should continue to
-> > test just the LINUX mask I think. Otherwise this
-> >
-> >      powerpc_local_pmu_disable();
-> >      hard_irq_disable();  
+On 01/02/17 at 07:43pm, Hari Bathini wrote:
+> Traditionally, kdump is used to save vmcore in case of a crash. Some
+> architectures like powerpc can save vmcore using architecture specific
+> support instead of kexec/kdump mechanism. Such architecture specific
+> support also needs to reserve memory, to be used by dump capture kernel.
+> crashkernel parameter can be a reused, for memory reservation, by such
+> architecture specific infrastructure.
 > 
-> Currently we set both bits for pmu soft disable
+> But currently, code related to vmcoreinfo and parsing of crashkernel
+> parameter is built under CONFIG_KEXEC_CORE. This patch introduces
+> CONFIG_CRASH_CORE and moves the above mentioned code under this config,
+> allowing code reuse without dependency on CONFIG_KEXEC. There is no
+> functional change with this patch.
 > 
->                  flags = 
-> soft_disabled_mask_or_return(IRQ_DISABLE_MASK_LINUX | \
-> IRQ_DISABLE_MASK_PMU);                  \
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> ---
 > 
-> So yes in the above seq, we will miss the pmu bit. But since 
-> trace_hardirqs_off()
-> is for _LINUX, instead will it not be safer to OR it?
+> Changes from v2:
+> * Used CONFIG_CRASH_CORE instead of CONFIG_KEXEC_CORE at
+>   appropriate places in printk and ksysfs.
 > 
->          local_paca->soft_disabled_mask |= IRQ_DISABLE_MASK_LINUX;\
+> 
+>  arch/Kconfig               |    4 
+>  include/linux/crash_core.h |   65 ++++++
+>  include/linux/kexec.h      |   57 ------
+>  include/linux/printk.h     |    4 
+>  kernel/Makefile            |    1 
+>  kernel/crash_core.c        |  445 ++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/kexec_core.c        |  404 ----------------------------------------
+>  kernel/ksysfs.c            |    8 +
+>  kernel/printk/printk.c     |    6 -
+>  9 files changed, 531 insertions(+), 463 deletions(-)
+>  create mode 100644 include/linux/crash_core.h
+>  create mode 100644 kernel/crash_core.c
+> 
 
-I would just say set all unconditionally. Despite "Linux" IRQs being the
-special case, I would much prefer it to be written as much as possible
-with all mask bits being equal, and then cases where LINUX bits need to
-be handled differently built on that.
+[snip]
 
-We might end up adding more bits, or even splitting the current single
-LINUX bit into several others.
+>  #ifndef CONFIG_TINY_RCU
+> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+> index 8b26964..d0dfebd 100644
+> --- a/kernel/printk/printk.c
+> +++ b/kernel/printk/printk.c
+> @@ -32,7 +32,7 @@
+>  #include <linux/bootmem.h>
+>  #include <linux/memblock.h>
+>  #include <linux/syscalls.h>
+> -#include <linux/kexec.h>
+> +#include <linux/crash_core.h>
+>  #include <linux/kdb.h>
+>  #include <linux/ratelimit.h>
+>  #include <linux/kmsg_dump.h>
+> @@ -951,7 +951,7 @@ const struct file_operations kmsg_fops = {
+>  	.release = devkmsg_release,
+>  };
+>  
+> -#ifdef CONFIG_KEXEC_CORE
+> +#ifdef CONFIG_CRASH_CORE
+>  /*
+>   * This appends the listed symbols to /proc/vmcore
+>   *
+> @@ -960,7 +960,7 @@ const struct file_operations kmsg_fops = {
+>   * symbols are specifically used so that utilities can access and extract the
+>   * dmesg log from a vmcore file after a crash.
+>   */
+> -void log_buf_kexec_setup(void)
+> +void log_buf_crash_setup(void)
 
-hard disable effectively masks all the interrupts, so then it seems we
-should set them all in the disabled mask rather than just one. The
-special case would then be just the test for the LINUX bit when deciding
-whether to call trace_hardirqs_off().
+I can not think of any better name about the CONFIG_CRASH_CORE though I
+feel it is not excellent so personally I can live with it.
 
-Thanks,
-Nick
+But for this function name log_buf_crash_setup is too general, I can not get
+what it is doing from the name, how about change it to log_buf_vmcoreinfo_setup
+
+>  {
+>  	VMCOREINFO_SYMBOL(log_buf);
+>  	VMCOREINFO_SYMBOL(log_buf_len);
+> 
+
+Thanks
+Dave
