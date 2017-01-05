@@ -1,19 +1,47 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tvYvK10LlzDqN3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 04:04:44 +1100 (AEDT)
-Subject: Re: [Patch V7 4/4] irqchip/qeic: remove PPCisms for QEIC
-To: Zhao Qiang <qiang.zhao@nxp.com>, oss@buserror.net
-References: <1482741166-33164-1-git-send-email-qiang.zhao@nxp.com>
- <1482741166-33164-4-git-send-email-qiang.zhao@nxp.com>
-Cc: jason@lakedaemon.net, xiaobo.xie@nxp.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-From: Marc Zyngier <marc.zyngier@arm.com>
-Message-ID: <0f4093fe-41ad-444d-235a-637ef2fa71d7@arm.com>
-Date: Thu, 5 Jan 2017 17:04:40 +0000
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvZRN1tpXzDqPG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 04:29:03 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v05HSl6E018619
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 12:29:00 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27st3vhf19-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 12:29:00 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 6 Jan 2017 03:28:58 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B1E6E3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 04:28:55 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v05HSvq249742076
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jan 2017 04:28:57 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v05HStVK010825
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jan 2017 04:28:55 +1100
+Subject: [PATCH v4 0/5] kexec/fadump: remove dependency with CONFIG_KEXEC
+ and reuse crashkernel parameter for fadump
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+ dyoung@redhat.com, kexec@lists.infradead.org,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, ebiederm@xmission.com,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ vgoyal@redhat.com
+Date: Thu, 05 Jan 2017 22:58:42 +0530
 MIME-Version: 1.0
-In-Reply-To: <1482741166-33164-4-git-send-email-qiang.zhao@nxp.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <148363729327.11570.6244765717789390817.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,213 +51,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/12/16 08:32, Zhao Qiang wrote:
-> QEIC was supported on PowerPC, and dependent on PPC,
-> Now it is supported on other platforms, so remove PPCisms.
-> 
-> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> ---
-> Changes for v6:
-> 	- new added
-> Changes for v7:
-> 	- fix warning
-> 
->  drivers/irqchip/irq-qeic.c | 34 ++++++++++++++++++++--------------
->  include/soc/fsl/qe/qe_ic.h | 12 ++++++------
->  2 files changed, 26 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
-> index 4f49d4b..957ea5b 100644
-> --- a/drivers/irqchip/irq-qeic.c
-> +++ b/drivers/irqchip/irq-qeic.c
-> @@ -18,7 +18,10 @@
->  #include <linux/of_address.h>
->  #include <linux/kernel.h>
->  #include <linux/init.h>
-> +#include <linux/irqdomain.h>
->  #include <linux/errno.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
->  #include <linux/reboot.h>
->  #include <linux/slab.h>
->  #include <linux/stddef.h>
-> @@ -88,7 +91,7 @@
->  
->  struct qe_ic {
->  	/* Control registers offset */
-> -	volatile u32 __iomem *regs;
-> +	u32 __iomem *regs;
->  
->  	/* The remapper for this QEIC */
->  	struct irq_domain *irqhost;
-> @@ -264,15 +267,15 @@ static struct qe_ic_info qe_ic_info[] = {
->  		},
->  };
->  
-> -static inline u32 qe_ic_read(volatile __be32  __iomem * base, unsigned int reg)
-> +static inline u32 qe_ic_read(__be32  __iomem * base, unsigned int reg)
->  {
-> -	return in_be32(base + (reg >> 2));
-> +	return ioread32be(base + (reg >> 2));
->  }
->  
-> -static inline void qe_ic_write(volatile __be32  __iomem * base, unsigned int reg,
-> +static inline void qe_ic_write(__be32  __iomem * base, unsigned int reg,
->  			       u32 value)
->  {
-> -	out_be32(base + (reg >> 2), value);
-> +	iowrite32be(value, base + (reg >> 2));
->  }
->  
->  static inline struct qe_ic *qe_ic_from_irq(unsigned int virq)
-> @@ -374,7 +377,7 @@ static const struct irq_domain_ops qe_ic_host_ops = {
->  	.xlate = irq_domain_xlate_onetwocell,
->  };
->  
-> -/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-> +/* Return an interrupt vector or 0 if no interrupt is pending. */
->  unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
+Traditionally, kdump is used to save vmcore in case of a crash. Some
+architectures like powerpc can save vmcore using architecture specific
+support instead of kexec/kdump mechanism. Such architecture specific
+support also needs to reserve memory, to be used by dump capture kernel.
+crashkernel parameter can be a reused, for memory reservation, by such
+architecture specific infrastructure.
 
-Why isn't this static?
+This patchset removes dependency with CONFIG_KEXEC for crashkernel parameter
+and vmcoreinfo related code as it can be reused without kexec support. Also,
+crashkernel parameter is reused instead of fadump_reserve_mem to reserve
+memory for fadump.
 
->  {
->  	int irq;
-> @@ -385,12 +388,12 @@ unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
->  	irq = qe_ic_read(qe_ic->regs, QEIC_CIVEC) >> 26;
->  
->  	if (irq == 0)
-> -		return NO_IRQ;
-> +		return 0;
->  
->  	return irq_linear_revmap(qe_ic->irqhost, irq);
->  }
->  
-> -/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-> +/* Return an interrupt vector or 0 if no interrupt is pending. */
->  unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+The first patch moves crashkernel parameter parsing and vmcoreinfo related
+code under CONFIG_CRASH_CORE instead of CONFIG_KEXEC_CORE. The second patch
+reuses the definitions of append_elf_note() & final_note() functions under
+CONFIG_CRASH_CORE in IA64 arch code. The third patch removes dependency on
+CONFIG_KEXEC for firmware-assisted dump (fadump) in powerpc. The next patch
+reuses crashkernel parameter for reserving memory for fadump, instead of the
+fadump_reserve_mem parameter. This has the advantage of using all syntaxes
+crashkernel parameter supports, for fadump as well. The last patch updates
+fadump kernel documentation about use of crashkernel parameter.
 
-and this ? And all the functions in that file while you're at it?
+---
 
->  {
->  	int irq;
-> @@ -401,7 +404,7 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
->  	irq = qe_ic_read(qe_ic->regs, QEIC_CHIVEC) >> 26;
->  
->  	if (irq == 0)
-> -		return NO_IRQ;
-> +		return 0;
->  
->  	return irq_linear_revmap(qe_ic->irqhost, irq);
->  }
-> @@ -447,7 +450,7 @@ static int __init qe_ic_init(unsigned int flags)
->  	qe_ic->virq_high = irq_of_parse_and_map(node, 0);
->  	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
->  
-> -	if (qe_ic->virq_low == NO_IRQ) {
-> +	if (qe_ic->virq_low == 0) {
->  		pr_err("Failed to map QE_IC low IRQ\n");
->  		ret = -ENOMEM;
->  		goto err_domain_remove;
-> @@ -479,7 +482,7 @@ static int __init qe_ic_init(unsigned int flags)
->  	irq_set_handler_data(qe_ic->virq_low, qe_ic);
->  	irq_set_chained_handler(qe_ic->virq_low, qe_ic_cascade_low_mpic);
->  
-> -	if (qe_ic->virq_high != NO_IRQ &&
-> +	if (qe_ic->virq_high != 0 &&
->  			qe_ic->virq_high != qe_ic->virq_low) {
->  		irq_set_handler_data(qe_ic->virq_high, qe_ic);
->  		irq_set_chained_handler(qe_ic->virq_high,
-> @@ -500,7 +503,8 @@ err_put_node:
->  void qe_ic_set_highest_priority(unsigned int virq, int high)
->  {
->  	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
-> -	unsigned int src = virq_to_hw(virq);
-> +	struct irq_data *irq_data = irq_get_irq_data(virq);
-> +	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
->  	u32 temp = 0;
->  
->  	temp = qe_ic_read(qe_ic->regs, QEIC_CICR);
-> @@ -518,7 +522,8 @@ void qe_ic_set_highest_priority(unsigned int virq, int high)
->  int qe_ic_set_priority(unsigned int virq, unsigned int priority)
->  {
->  	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
-> -	unsigned int src = virq_to_hw(virq);
-> +	struct irq_data *irq_data = irq_get_irq_data(virq);
-> +	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
->  	u32 temp;
->  
->  	if (priority > 8 || priority == 0)
-> @@ -548,7 +553,8 @@ int qe_ic_set_priority(unsigned int virq, unsigned int priority)
->  int qe_ic_set_high_priority(unsigned int virq, unsigned int priority, int high)
->  {
->  	struct qe_ic *qe_ic = qe_ic_from_irq(virq);
-> -	unsigned int src = virq_to_hw(virq);
-> +	struct irq_data *irq_data = irq_get_irq_data(virq);
-> +	irq_hw_number_t src = WARN_ON(!irq_data) ? 0 : irq_data->hwirq;
->  	u32 temp, control_reg = QEIC_CICNR, shift = 0;
->  
->  	if (priority > 2 || priority == 0)
-> diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
-> index 6113699..863cfec 100644
-> --- a/include/soc/fsl/qe/qe_ic.h
-> +++ b/include/soc/fsl/qe/qe_ic.h
-> @@ -76,7 +76,7 @@ static inline void qe_ic_cascade_low_ipic(struct irq_desc *desc)
+Hari Bathini (5):
+      crash: move crashkernel parsing and vmcore related code under CONFIG_CRASH_CORE
+      ia64: reuse append_elf_note() and final_note() functions
+      powerpc/fadump: remove dependency with CONFIG_KEXEC
+      powerpc/fadump: reuse crashkernel parameter for fadump memory reservation
+      powerpc/fadump: update documentation about crashkernel parameter reuse
 
-Why do we have a bunch of static inline functions here? Why do have that
-file at all?
 
->  	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
->  	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
->  
-> -	if (cascade_irq != NO_IRQ)
-> +	if (cascade_irq != 0)
->  		generic_handle_irq(cascade_irq);
->  }
->  
-> @@ -85,7 +85,7 @@ static inline void qe_ic_cascade_high_ipic(struct irq_desc *desc)
->  	struct qe_ic *qe_ic = irq_desc_get_handler_data(desc);
->  	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
->  
-> -	if (cascade_irq != NO_IRQ)
-> +	if (cascade_irq != 0)
->  		generic_handle_irq(cascade_irq);
->  }
->  
-> @@ -95,7 +95,7 @@ static inline void qe_ic_cascade_low_mpic(struct irq_desc *desc)
->  	unsigned int cascade_irq = qe_ic_get_low_irq(qe_ic);
->  	struct irq_chip *chip = irq_desc_get_chip(desc);
->  
-> -	if (cascade_irq != NO_IRQ)
-> +	if (cascade_irq != 0)
->  		generic_handle_irq(cascade_irq);
->  
->  	chip->irq_eoi(&desc->irq_data);
-> @@ -107,7 +107,7 @@ static inline void qe_ic_cascade_high_mpic(struct irq_desc *desc)
->  	unsigned int cascade_irq = qe_ic_get_high_irq(qe_ic);
->  	struct irq_chip *chip = irq_desc_get_chip(desc);
->  
-> -	if (cascade_irq != NO_IRQ)
-> +	if (cascade_irq != 0)
->  		generic_handle_irq(cascade_irq);
->  
->  	chip->irq_eoi(&desc->irq_data);
-> @@ -120,10 +120,10 @@ static inline void qe_ic_cascade_muxed_mpic(struct irq_desc *desc)
->  	struct irq_chip *chip = irq_desc_get_chip(desc);
->  
->  	cascade_irq = qe_ic_get_high_irq(qe_ic);
-> -	if (cascade_irq == NO_IRQ)
-> +	if (cascade_irq == 0)
->  		cascade_irq = qe_ic_get_low_irq(qe_ic);
->  
-> -	if (cascade_irq != NO_IRQ)
-> +	if (cascade_irq != 0)
->  		generic_handle_irq(cascade_irq);
->  
->  	chip->irq_eoi(&desc->irq_data);
-> 
-
-Thanks,
-
-	M.
--- 
-Jazz is not dead. It just smells funny...
+ Documentation/powerpc/firmware-assisted-dump.txt |   23 +
+ arch/Kconfig                                     |    4 
+ arch/ia64/kernel/crash.c                         |   22 -
+ arch/powerpc/Kconfig                             |   10 -
+ arch/powerpc/include/asm/fadump.h                |    2 
+ arch/powerpc/kernel/crash.c                      |    2 
+ arch/powerpc/kernel/fadump.c                     |   57 +--
+ arch/powerpc/kernel/setup-common.c               |    5 
+ include/linux/crash_core.h                       |   69 +++
+ include/linux/elf.h                              |    2 
+ include/linux/kexec.h                            |   57 ---
+ include/linux/printk.h                           |    4 
+ kernel/Makefile                                  |    1 
+ kernel/crash_core.c                              |  439 ++++++++++++++++++++++
+ kernel/kexec_core.c                              |  432 ----------------------
+ kernel/ksysfs.c                                  |    8 
+ kernel/printk/printk.c                           |    6 
+ 17 files changed, 572 insertions(+), 571 deletions(-)
+ create mode 100644 include/linux/crash_core.h
+ create mode 100644 kernel/crash_core.c
