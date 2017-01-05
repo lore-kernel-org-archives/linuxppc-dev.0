@@ -1,46 +1,49 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
+Return-Path: <tuliom@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tvQ131S4wzDqWF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 22:09:10 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v05B8o2C054284
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 06:09:09 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27skwvu8q5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tvQ8r6w0KzDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 22:15:56 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v05BDtcV079297
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 06:15:54 -0500
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27sfvhq4w3-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 06:09:08 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jan 2017 06:15:53 -0500
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 5 Jan 2017 21:09:05 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 595042CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 22:09:04 +1100 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v05B96Xp53608528
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 22:09:06 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v05B93tO008173
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 22:09:04 +1100
-Subject: Re: [PATCH] powerpc/perf: use is_kernel_addr macro in
- perf_get_misc_flags()
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, mpe@ellerman.id.au
-References: <1482559549-22273-1-git-send-email-maddy@linux.vnet.ibm.com>
- <58609956.3040204@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Thu, 5 Jan 2017 16:39:01 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <tuliom@linux.vnet.ibm.com>;
+ Thu, 5 Jan 2017 09:15:52 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 245DA3520068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2017 06:15:19 -0500 (EST)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v05BFnkx4345964
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 09:15:49 -0200
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v05BFmkM017281
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jan 2017 09:15:48 -0200
+From: "Tulio Magno Quites Machado Filho" <tuliom@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Steven Munroe <munroesj@linux.vnet.ibm.com>, wschmidt@us.ibm.com
+Cc: 
+Subject: Re: [PATCH 9/9] powerpc: A new cache shape aux vectors
+In-Reply-To: <1483567434.15843.28.camel@kernel.crashing.org>
+References: <20170104051535.9454-1-benh@kernel.crashing.org>
+ <20170104051535.9454-9-benh@kernel.crashing.org>
+ <87lgurkmd4.fsf@linux.vnet.ibm.com>
+ <1483567434.15843.28.camel@kernel.crashing.org>
+Date: Thu, 05 Jan 2017 09:15:47 -0200
 MIME-Version: 1.0
-In-Reply-To: <58609956.3040204@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <92cebe39-8ad1-7d5f-0521-24cbdd4cccbb@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <87inptlpuk.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,36 +53,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
+> On Wed, 2017-01-04 at 11:04 -0200, Tulio Magno Quites Machado Filho
+>
+>> > +#define AT_L1I_CACHESIZE	40
+>> > +#define AT_L1I_CACHESHAPE	41
+>> > +#define AT_L1D_CACHESIZE	42
+>> > +#define AT_L1D_CACHESHAPE	43
+>> > +#define AT_L2_CACHESIZE		44
+>> > +#define AT_L2_CACHESHAPE	45
+>> > +#define AT_L3_CACHESIZE		46
+>> > +#define AT_L3_CACHESHAPE	47
+>>=20
+>> These names will clash with the other ones defined by alpha and sh:
+>>=20
+>> /* Shapes of the caches.=C2=A0=C2=A0Bits 0-3 contains associativity; bit=
+s 4-7
+>> contains
+>> =C2=A0=C2=A0=C2=A0log2 of line size; mask those to get cache size.=C2=A0=
+=C2=A0*/
+>> #define AT_L1I_CACHESHAPE	34
+>> #define AT_L1D_CACHESHAPE	35
+>> #define AT_L2_CACHESHAPE	36
+>> #define AT_L3_CACHESHAPE	37
+>
+> Is this a problem though ? In the kernel at least these are defined in
+> arch specific headers so there is no clash.
 
-On Monday 26 December 2016 09:45 AM, Anshuman Khandual wrote:
-> On 12/24/2016 11:35 AM, Madhavan Srinivasan wrote:
->> Cleanup to use is_kernel_addr macro.
->>
->> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/perf/core-book3s.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
->> index 2cdf2647cdb0..d9c74fd1b37b 100644
->> --- a/arch/powerpc/perf/core-book3s.c
->> +++ b/arch/powerpc/perf/core-book3s.c
->> @@ -243,7 +243,7 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
->>   	 */
->>   	if (ppmu->flags & PPMU_NO_SIPR) {
->>   		unsigned long siar = mfspr(SPRN_SIAR);
->> -		if (siar >= PAGE_OFFSET)
->> +		if (is_kernel_addr(siar))
->>   			return PERF_RECORD_MISC_KERNEL;
->>   		return PERF_RECORD_MISC_USER;
->>   	}
-> While you are at this, why not also clean up these in the xmon code
-> as well.
-Yes. Have handled this in a separate patch.
+It could become a problem if an architecture tries to use both of these
+types.
 
-Maddy
-> arch/powerpc/xmon/xmon.c:		if (sp < PAGE_OFFSET) {
-> arch/powerpc/xmon/xmon.c:				if (lr < PAGE_OFFSET
-> arch/powerpc/xmon/xmon.c:			} else if (lr >= PAGE_OFFSET
-> arch/powerpc/xmon/xmon.c:	if (addr < PAGE_OFFSET)
+glibc doesn't distinct between them:
+https://sourceware.org/git/?p=3Dglibc.git;a=3Dblob;f=3Delf/elf.h#l1113
+
+> Otherwise, I can change them to *_CACHEGEOMETRY, is that ok ?
+
+Looks good to me.
+
+--=20
+Tulio Magno
