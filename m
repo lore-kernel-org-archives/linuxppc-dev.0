@@ -1,14 +1,11 @@
-Return-Path: <Raghavan.Anurag@in.bosch.com>
-Received: from imta22.fe.bosch.de (imta22.fe.bosch.de [139.15.243.26])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tw0nQ05nnzDqSD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 21:16:09 +1100 (AEDT)
-Received: from smtp6-v.fe.bosch.de (imta24.fe.bosch.de [139.15.243.27])
- by imta22.fe.bosch.de (Postfix) with ESMTP id A74A6840470
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 11:07:46 +0100 (CET)
-From: "Anurag Raghavan (RBEI/ETW11)" <Raghavan.Anurag@in.bosch.com>
-To: Nicolas Dichtel <nicolas.dichtel@6wind.com>, "arnd@arndb.de"
+Return-Path: <boris.brezillon@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3tw2W76n47zDqQG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 22:33:55 +1100 (AEDT)
+Date: Fri, 6 Jan 2017 12:30:53 +0100
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+To: "Anurag Raghavan (RBEI/ETW11)" <Raghavan.Anurag@in.bosch.com>
+Cc: Nicolas Dichtel <nicolas.dichtel@6wind.com>, "arnd@arndb.de"
  <arnd@arndb.de>, "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
  "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
  "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
@@ -51,11 +48,12 @@ To: Nicolas Dichtel <nicolas.dichtel@6wind.com>, "arnd@arndb.de"
  "nios2-dev@lists.rocketboards.org" <nios2-dev@lists.rocketboards.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "davem@davemloft.net" <davem@davemloft.net>
-Subject: ubi_io_read: error -74 (ECC error) 
-Date: Fri, 6 Jan 2017 10:07:29 +0000
-Message-ID: <38f0cfac3dbe4ea89da84c7fbf667833@SGPMBX1023.APAC.bosch.com>
-Content-Type: text/plain; charset="us-ascii"
+Subject: Re: ubi_io_read: error -74 (ECC error)
+Message-ID: <20170106123053.4a5ffabc@bbrezillon>
+In-Reply-To: <38f0cfac3dbe4ea89da84c7fbf667833@SGPMBX1023.APAC.bosch.com>
+References: <38f0cfac3dbe4ea89da84c7fbf667833@SGPMBX1023.APAC.bosch.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,37 +63,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+Hi Raghavan,
 
-My appdata partition could not be mounted or where the partition was not ab=
-le to be used. Anyone can help me to find out the root cause of this. What =
-are the possibilities of this ubifs corruption. Any patched are available t=
-o fix this issue.
+On Fri, 6 Jan 2017 10:07:29 +0000
+"Anurag Raghavan (RBEI/ETW11)" <Raghavan.Anurag@in.bosch.com> wrote:
 
-I am using the kernel version-30.3.5
-Any kernel patches are available to solve this issue...??
+> Hi All,
+> 
+> My appdata partition could not be mounted or where the partition was not able to be used. Anyone can help me to find out the root cause of this. What are the possibilities of this ubifs corruption. Any patched are available to fix this issue.
 
-Error logs:
+Can you please stop sending over and over the same message in the hope
+that someone will magically solve the problem for you. Pinging
+maintainers is accepted but not 3 times in 2 days.
 
-[    1.797141] UBI error: ubi_io_read: error -74 (ECC error) while reading =
-253952 bytes from PEB 445:8192, read 253952 bytes
-[    1.808274] UBIFS error (pid 491): ubifs_scan: corrupt empty space at LE=
-B 489:233760
-[    1.816037] UBIFS error (pid 491): ubifs_scanned_corruption: corruption =
-at LEB 489:233760
-[    1.828660] UBIFS error (pid 491): ubifs_scan: LEB 489 scanning failed
-[    1.835215] UBIFS warning (pid 491): ubifs_ro_mode: switched to read-onl=
-y mode, error -117
-[    1.843502] UBIFS error (pid 491): make_reservation: cannot reserve 58 b=
-ytes in jhead 2, error -117
-[    1.852569] UBIFS error (pid 491): do_writepage: cannot write page 0 of =
-inode 76584, error -117
-dpkg: error: unable to sync new file '/var/lib/dpkg/arch-new': Structure ne=
-eds cleaning
+> 
+> I am using the kernel version-30.3.5
 
-Best regards
+It's not even a valid kernel version (probably a kerne, and we'll need a
+lot more than the 10 lines of log you provided to help you debug your
+driver, like the boot logs, a reference to the kernel sources you're
+using, after how much time this problem occurred...
 
-Raghavan Anurag
-RBEI/ETW1 =20
+> Any kernel patches are available to solve this issue...??
 
-Tel. +91(422)667-4001 | Mobil 9986968950
+What's your NAND controller? It seems related to a NAND driver issue.
+
+Regards,
+
+Boris
+
+> 
+> Error logs:
+> 
+> [    1.797141] UBI error: ubi_io_read: error -74 (ECC error) while reading 253952 bytes from PEB 445:8192, read 253952 bytes
+> [    1.808274] UBIFS error (pid 491): ubifs_scan: corrupt empty space at LEB 489:233760
+> [    1.816037] UBIFS error (pid 491): ubifs_scanned_corruption: corruption at LEB 489:233760
+> [    1.828660] UBIFS error (pid 491): ubifs_scan: LEB 489 scanning failed
+> [    1.835215] UBIFS warning (pid 491): ubifs_ro_mode: switched to read-only mode, error -117
+> [    1.843502] UBIFS error (pid 491): make_reservation: cannot reserve 58 bytes in jhead 2, error -117
+> [    1.852569] UBIFS error (pid 491): do_writepage: cannot write page 0 of inode 76584, error -117
+> dpkg: error: unable to sync new file '/var/lib/dpkg/arch-new': Structure needs cleaning
+> 
+> Best regards
+> 
+> Raghavan Anurag
+> RBEI/ETW1  
+> 
+> Tel. +91(422)667-4001 | Mobil 9986968950
+> 
+> ______________________________________________________
+> Linux MTD discussion mailing list
+> http://lists.infradead.org/mailman/listinfo/linux-mtd/
