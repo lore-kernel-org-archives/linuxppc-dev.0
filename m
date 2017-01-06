@@ -1,41 +1,36 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tw3g735mszDqQh
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jan 2017 23:25:55 +1100 (AEDT)
-Date: Fri, 6 Jan 2017 13:14:46 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Cc: arnd@arndb.de, mmarek@suse.com, linux-kbuild@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
- uclinux-h8-devel@lists.sourceforge.jp,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, linux-am33-list@redhat.com,
- nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-arch@vger.kernel.org, dri-devel@lists.freedesktop.org,
- netdev@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mmc@vger.kernel.org, netfilter-devel@vger.kernel.org,
- coreteam@netfilter.org, linux-nfs@vger.kernel.org,
- linux-raid@vger.kernel.org, linux-spi@vger.kernel.org,
- linux-mtd@lists.infradead.org, linux-rdma@vger.kernel.org,
- fcoe-devel@open-fcoe.org, alsa-devel@alsa-project.org,
- linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org,
- airlied@linux.ie, davem@davemloft.net
-Subject: Re: [PATCH v2 4/7] x86: put msr-index.h in uapi
-Message-ID: <20170106121446.aizmoxons5gpecnc@pd.tnic>
-References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
- <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
- <1483695839-18660-5-git-send-email-nicolas.dichtel@6wind.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1483695839-18660-5-git-send-email-nicolas.dichtel@6wind.com>
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tw5s014M5zDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jan 2017 01:04:35 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v06E3atA021883
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jan 2017 09:04:33 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27ta9ddbk9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Jan 2017 09:04:33 -0500
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Fri, 6 Jan 2017 07:04:32 -0700
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH 0/4] cxlflash: Enhancements, cleanup and fixes
+Date: Fri,  6 Jan 2017 08:02:59 -0600
+Message-Id: <1483711379-18188-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,16 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 06, 2017 at 10:43:56AM +0100, Nicolas Dichtel wrote:
-> This header file is exported, thus move it to uapi.
+This patch series includes an enhancement to support a new command queuing
+model and also cleans up prints throughout the driver. The last patch in
+the series fixes a racing issue.
 
-It should rather not be exported - please remove it from
-arch/x86/include/uapi/asm/Kbuild instead.
+The series is based upon v4.10-rc2, intended for 4.11 and is bisectable.
 
-Thanks.
+Matthew R. Ochs (3):
+  cxlflash: Refactor context reset to share reset logic
+  cxlflash: Support SQ Command Mode
+  cxlflash: Cleanup prints
+
+Uma Krishnan (1):
+  cxlflash: Cancel scheduled workers before stopping AFU
+
+ drivers/scsi/cxlflash/common.h     |  32 ++-
+ drivers/scsi/cxlflash/lunmgt.c     |  31 +--
+ drivers/scsi/cxlflash/main.c       | 465 +++++++++++++++++++++----------------
+ drivers/scsi/cxlflash/sislite.h    |  19 +-
+ drivers/scsi/cxlflash/superpipe.c  | 183 ++++++++-------
+ drivers/scsi/cxlflash/vlun.c       | 169 +++++++-------
+ include/uapi/scsi/cxlflash_ioctl.h |   1 +
+ 7 files changed, 518 insertions(+), 382 deletions(-)
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+2.1.0
