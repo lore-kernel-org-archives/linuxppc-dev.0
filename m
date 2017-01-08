@@ -1,32 +1,28 @@
-Return-Path: <chandan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from mail-pg0-x22d.google.com (mail-pg0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c05::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3txLjh53CGzDqWR
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 01:47:36 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v08EiVYS079900
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Jan 2017 09:47:33 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27tvgyqq11-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2017 09:47:33 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.vnet.ibm.com>;
- Sun, 8 Jan 2017 07:47:32 -0700
-From: Chandan Rajendra <chandan@linux.vnet.ibm.com>
-To: axboe@kernel.dk, jack@suse.cz
-Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>, linux-block@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
- anton@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] do_direct_IO: Use inode->i_blkbits to compute block count to
- be cleaned
-Date: Sun,  8 Jan 2017 20:17:10 +0530
-Message-Id: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3txV6v6DJwzDqW4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 07:21:27 +1100 (AEDT)
+Received: by mail-pg0-x22d.google.com with SMTP id 204so14861060pge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2017 12:21:27 -0800 (PST)
+Date: Sun, 8 Jan 2017 12:21:16 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+cc: Hugh Dickins <hughd@google.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] mm: stop leaking PageTables
+In-Reply-To: <87mvf2kpfa.fsf@linux.vnet.ibm.com>
+Message-ID: <alpine.LSU.2.11.1701081209550.3615@eggly.anvils>
+References: <alpine.LSU.2.11.1701071526090.1130@eggly.anvils>
+ <87mvf2kpfa.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The code currently uses sdio->blkbits to compute the number of blocks to
-be cleaned. However sdio->blkbits is derived from the logical block size
-of the underlying block device (Refer to the definition of
-do_blockdev_direct_IO()). Due to this, generic/299 test would rarely
-fail when executed on an ext4 filesystem with 64k as the block size and
-when using a virtio based disk (having 512 byte as the logical block
-size) inside a kvm guest.
+On Sun, 8 Jan 2017, Aneesh Kumar K.V wrote:
+> Hugh Dickins <hughd@google.com> writes:
+> 
+> > And fix a separate pagetable leak, or crash, introduced by the same
+> > change, that could only show up on some ppc64: why does do_set_pmd()'s
+> > failure case attempt to withdraw a pagetable when it never deposited
+> > one, at the same time overwriting (so leaking) the vmf->prealloc_pte?
+> > Residue of an earlier implementation, perhaps?  Delete it.
+> 
+> That change is part of -mm tree.
+> 
+> https://lkml.kernel.org/r/20161212163428.6780-1-aneesh.kumar@linux.vnet.ibm.com
 
-This commit fixes the bug by using inode->i_blkbits to compute the
-number of blocks to be cleaned.
+Ah, so it is, I hadn't looked there.  That's reassuring,
+I'm glad to know you reached the same conclusion on that piece of code.
 
-Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
----
- fs/direct-io.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+It still worried me that the fix is languishing in mmotm, but it looks
+not lost: akpm would have sent it in a couple of days anyway, and only
+affected ppc64 (like the related khugepaged patch you have queued there).
 
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index aeae8c0..b20adf9 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -905,6 +905,7 @@ static inline void dio_zero_block(struct dio *dio, struct dio_submit *sdio,
- static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
- 			struct buffer_head *map_bh)
- {
-+	const unsigned i_blkbits = dio->inode->i_blkbits;
- 	const unsigned blkbits = sdio->blkbits;
- 	int ret = 0;
- 
-@@ -949,7 +950,7 @@ static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
- 					clean_bdev_aliases(
- 						map_bh->b_bdev,
- 						map_bh->b_blocknr,
--						map_bh->b_size >> blkbits);
-+						map_bh->b_size >> i_blkbits);
- 				}
- 
- 				if (!sdio->blkfactor)
--- 
-2.5.5
+> 
+> >
+> > Fixes: 953c66c2b22a ("mm: THP page cache support for ppc64")
+> > Signed-off-by: Hugh Dickins <hughd@google.com>
+> 
+> 
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+Thanks, and to Linus, who already has this in for -rc3: so akpm can drop
+mm-thp-pagecache-only-withdraw-page-table-after-a-successful-deposit.patch
+and then later send in your
+mm-thp-pagecache-collapse-free-the-pte-page-table-on-collapse-for-thp-page-cache.patch
+
+Hugh
