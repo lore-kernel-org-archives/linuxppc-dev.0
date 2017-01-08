@@ -1,27 +1,19 @@
-Return-Path: <kirill@shutemov.name>
-Received: from mail-wj0-x241.google.com (mail-wj0-x241.google.com
- [IPv6:2a00:1450:400c:c01::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3txZHZ3MBLzDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 10:29:12 +1100 (AEDT)
-Received: by mail-wj0-x241.google.com with SMTP id kp2so83376563wjc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2017 15:29:12 -0800 (PST)
-Date: Mon, 9 Jan 2017 02:29:04 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Hugh Dickins <hughd@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] mm: stop leaking PageTables
-Message-ID: <20170108232904.GA17681@node.shutemov.name>
-References: <alpine.LSU.2.11.1701071526090.1130@eggly.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LSU.2.11.1701071526090.1130@eggly.anvils>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3txZM02mv4zDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 10:32:12 +1100 (AEDT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Steven Munroe <munroesj@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 5/9] powerpc/64: Retrieve number of L1 cache sets from
+ device-tree
+Date: Sun,  8 Jan 2017 17:31:46 -0600
+Message-Id: <20170108233150.15353-5-benh@kernel.crashing.org>
+In-Reply-To: <20170108233150.15353-1-benh@kernel.crashing.org>
+References: <20170108233150.15353-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,34 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jan 07, 2017 at 03:37:31PM -0800, Hugh Dickins wrote:
-> 4.10-rc loadtest (even on x86, even without THPCache) fails with
-> "fork: Cannot allocate memory" or some such; and /proc/meminfo
-> shows PageTables growing.
-> 
-> rc1 removed the freeing of an unused preallocated pagetable after
-> do_fault_around() has called map_pages(): which is usually a good
-> optimization, so that the followup doesn't have to reallocate one;
-> but it's not sufficient to shift the freeing into alloc_set_pte(),
-> since there are failure cases (most commonly VM_FAULT_RETRY) which
-> never reach finish_fault().
-> 
-> Check and free it at the outer level in do_fault(), then we don't
-> need to worry in alloc_set_pte(), and can restore that to how it was
-> (I cannot find any reason to pte_free() under lock as it was doing).
-> 
-> And fix a separate pagetable leak, or crash, introduced by the same
-> change, that could only show up on some ppc64: why does do_set_pmd()'s
-> failure case attempt to withdraw a pagetable when it never deposited
-> one, at the same time overwriting (so leaking) the vmf->prealloc_pte?
-> Residue of an earlier implementation, perhaps?  Delete it.
-> 
-> Fixes: 953c66c2b22a ("mm: THP page cache support for ppc64")
-> Signed-off-by: Hugh Dickins <hughd@google.com>
+It will be used to calculate the associativity
 
-Sorry, that I missed this initially.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/cache.h |  2 ++
+ arch/powerpc/kernel/setup_64.c   | 27 +++++++++++++++++++++++++--
+ 2 files changed, 27 insertions(+), 2 deletions(-)
 
-Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index c74ebc2..ceb1244 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -33,11 +33,13 @@ struct ppc64_caches {
+ 	u32	dblock_size;		/* L1 d-cache block size */
+ 	u32	log_dblock_size;
+ 	u32	dblocks_per_page;
++	u32	dsets;
+ 	u32	isize;			/* L1 i-cache size */
+ 	u32	iline_size;		/* L1 d-cache line size	*/
+ 	u32	iblock_size;		/* L1 i-cache block size */
+ 	u32	log_iblock_size;
+ 	u32	iblocks_per_page;
++	u32	isets;
+ };
+ 
+ extern struct ppc64_caches ppc64_caches;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index e7e5c1b..d36b6f4 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -404,14 +404,18 @@ void __init initialize_cache_info(void)
+ 		 * d-cache and i-cache sizes... -Peter
+ 		 */
+ 		if (num_cpus == 1) {
+-			const __be32 *sizep, *lsizep, *bsizep;
+-			u32 size, lsize, bsize;
++			const __be32 *sizep, *lsizep, *bsizep, *setsp;
++			u32 size, lsize, bsize, sets;
+ 
+ 			size = 0;
++			sets = -1u;
+ 			lsize = bsize = cur_cpu_spec->dcache_bsize;
+ 			sizep = of_get_property(np, "d-cache-size", NULL);
+ 			if (sizep != NULL)
+ 				size = be32_to_cpu(*sizep);
++			setsp = of_get_property(np, "d-cache-sets", NULL);
++			if (setsp != NULL)
++				sets = be32_to_cpu(*setsp);
+ 			bsizep = of_get_property(np, "d-cache-block-size",
+ 						 NULL);
+ 			lsizep = of_get_property(np, "d-cache-line-size",
+@@ -427,17 +431,31 @@ void __init initialize_cache_info(void)
+ 				    "sizep: %p, bsizep: %p, lsizep: %p\n",
+ 				    sizep, bsizep, lsizep);
+ 
++			/* OF is weird .. it represents fully associative caches
++			 * as "1 way" which doesn't make much sense and doesn't
++			 * leave room for direct mapped. We'll assume that 0
++			 * in OF means direct mapped for that reason.
++			 */
++			if (sets == 1)
++				sets = 0;
++			else if (sets == 0)
++				sets = 1;
+ 			ppc64_caches.dsize = size;
++			ppc64_caches.dsets = sets;
+ 			ppc64_caches.dline_size = lsize;
+ 			ppc64_caches.dblock_size = bsize;
+ 			ppc64_caches.log_dblock_size = __ilog2(bsize);
+ 			ppc64_caches.dblocks_per_page = PAGE_SIZE / bsize;
+ 
+ 			size = 0;
++			sets = -1u;
+ 			lsize = bsize = cur_cpu_spec->icache_bsize;
+ 			sizep = of_get_property(np, "i-cache-size", NULL);
+ 			if (sizep != NULL)
+ 				size = be32_to_cpu(*sizep);
++			setsp = of_get_property(np, "i-cache-sets", NULL);
++			if (setsp != NULL)
++				sets = be32_to_cpu(*setsp);
+ 			bsizep = of_get_property(np, "i-cache-block-size",
+ 						 NULL);
+ 			lsizep = of_get_property(np, "i-cache-line-size",
+@@ -453,7 +471,12 @@ void __init initialize_cache_info(void)
+ 				    "sizep: %p, bsizep: %p, lsizep: %p\n",
+ 				    sizep, bsizep, lsizep);
+ 
++			if (sets == 1)
++				sets = 0;
++			else if (sets == 0)
++				sets = 1;
+ 			ppc64_caches.isize = size;
++			ppc64_caches.isets = sets;
+ 			ppc64_caches.iline_size = lsize;
+ 			ppc64_caches.iblock_size = bsize;
+ 			ppc64_caches.log_iblock_size = __ilog2(bsize);
 -- 
- Kirill A. Shutemov
+2.9.3
