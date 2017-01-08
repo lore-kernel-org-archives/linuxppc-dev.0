@@ -1,37 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <chandan@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tx8Kh0JzczDqZ8
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2017 17:59:35 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3txLjh53CGzDqWR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 01:47:36 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v086xVY4008851
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Jan 2017 01:59:31 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27tuhj7ham-1
+ v08EiVYS079900
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Jan 2017 09:47:33 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27tvgyqq11-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2017 01:59:30 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2017 09:47:33 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 7 Jan 2017 23:59:30 -0700
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Hugh Dickins <hughd@google.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] mm: stop leaking PageTables
-In-Reply-To: <alpine.LSU.2.11.1701071526090.1130@eggly.anvils>
-References: <alpine.LSU.2.11.1701071526090.1130@eggly.anvils>
-Date: Sun, 08 Jan 2017 12:29:21 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87mvf2kpfa.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.vnet.ibm.com>;
+ Sun, 8 Jan 2017 07:47:32 -0700
+From: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+To: axboe@kernel.dk, jack@suse.cz
+Cc: Chandan Rajendra <chandan@linux.vnet.ibm.com>, linux-block@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+ anton@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] do_direct_IO: Use inode->i_blkbits to compute block count to
+ be cleaned
+Date: Sun,  8 Jan 2017 20:17:10 +0530
+Message-Id: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,131 +36,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hugh Dickins <hughd@google.com> writes:
+The code currently uses sdio->blkbits to compute the number of blocks to
+be cleaned. However sdio->blkbits is derived from the logical block size
+of the underlying block device (Refer to the definition of
+do_blockdev_direct_IO()). Due to this, generic/299 test would rarely
+fail when executed on an ext4 filesystem with 64k as the block size and
+when using a virtio based disk (having 512 byte as the logical block
+size) inside a kvm guest.
 
-> 4.10-rc loadtest (even on x86, even without THPCache) fails with
-> "fork: Cannot allocate memory" or some such; and /proc/meminfo
-> shows PageTables growing.
->
-> rc1 removed the freeing of an unused preallocated pagetable after
-> do_fault_around() has called map_pages(): which is usually a good
-> optimization, so that the followup doesn't have to reallocate one;
-> but it's not sufficient to shift the freeing into alloc_set_pte(),
-> since there are failure cases (most commonly VM_FAULT_RETRY) which
-> never reach finish_fault().
->
-> Check and free it at the outer level in do_fault(), then we don't
-> need to worry in alloc_set_pte(), and can restore that to how it was
-> (I cannot find any reason to pte_free() under lock as it was doing).
->
-> And fix a separate pagetable leak, or crash, introduced by the same
-> change, that could only show up on some ppc64: why does do_set_pmd()'s
-> failure case attempt to withdraw a pagetable when it never deposited
-> one, at the same time overwriting (so leaking) the vmf->prealloc_pte?
-> Residue of an earlier implementation, perhaps?  Delete it.
+This commit fixes the bug by using inode->i_blkbits to compute the
+number of blocks to be cleaned.
 
-That change is part of -mm tree.
+Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+---
+ fs/direct-io.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-https://lkml.kernel.org/r/20161212163428.6780-1-aneesh.kumar@linux.vnet.ibm.com
-
->
-> Fixes: 953c66c2b22a ("mm: THP page cache support for ppc64")
-> Signed-off-by: Hugh Dickins <hughd@google.com>
-
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-> ---
->
->  mm/memory.c |   47 ++++++++++++++++++++---------------------------
->  1 file changed, 20 insertions(+), 27 deletions(-)
->
-> --- 4.10-rc2/mm/memory.c	2016-12-25 18:40:50.830453384 -0800
-> +++ linux/mm/memory.c	2017-01-07 13:34:29.373381551 -0800
-> @@ -3008,13 +3008,6 @@ static int do_set_pmd(struct vm_fault *v
->  	ret = 0;
->  	count_vm_event(THP_FILE_MAPPED);
->  out:
-> -	/*
-> -	 * If we are going to fallback to pte mapping, do a
-> -	 * withdraw with pmd lock held.
-> -	 */
-> -	if (arch_needs_pgtable_deposit() && ret == VM_FAULT_FALLBACK)
-> -		vmf->prealloc_pte = pgtable_trans_huge_withdraw(vma->vm_mm,
-> -								vmf->pmd);
->  	spin_unlock(vmf->ptl);
->  	return ret;
->  }
-> @@ -3055,20 +3048,18 @@ int alloc_set_pte(struct vm_fault *vmf,
->
->  		ret = do_set_pmd(vmf, page);
->  		if (ret != VM_FAULT_FALLBACK)
-> -			goto fault_handled;
-> +			return ret;
->  	}
->
->  	if (!vmf->pte) {
->  		ret = pte_alloc_one_map(vmf);
->  		if (ret)
-> -			goto fault_handled;
-> +			return ret;
->  	}
->
->  	/* Re-check under ptl */
-> -	if (unlikely(!pte_none(*vmf->pte))) {
-> -		ret = VM_FAULT_NOPAGE;
-> -		goto fault_handled;
-> -	}
-> +	if (unlikely(!pte_none(*vmf->pte)))
-> +		return VM_FAULT_NOPAGE;
->
->  	flush_icache_page(vma, page);
->  	entry = mk_pte(page, vma->vm_page_prot);
-> @@ -3088,15 +3079,8 @@ int alloc_set_pte(struct vm_fault *vmf,
->
->  	/* no need to invalidate: a not-present page won't be cached */
->  	update_mmu_cache(vma, vmf->address, vmf->pte);
-> -	ret = 0;
->
-> -fault_handled:
-> -	/* preallocated pagetable is unused: free it */
-> -	if (vmf->prealloc_pte) {
-> -		pte_free(vmf->vma->vm_mm, vmf->prealloc_pte);
-> -		vmf->prealloc_pte = 0;
-> -	}
-> -	return ret;
-> +	return 0;
->  }
->
->
-> @@ -3360,15 +3344,24 @@ static int do_shared_fault(struct vm_fau
->  static int do_fault(struct vm_fault *vmf)
->  {
->  	struct vm_area_struct *vma = vmf->vma;
-> +	int ret;
->
->  	/* The VMA was not fully populated on mmap() or missing VM_DONTEXPAND */
->  	if (!vma->vm_ops->fault)
-> -		return VM_FAULT_SIGBUS;
-> -	if (!(vmf->flags & FAULT_FLAG_WRITE))
-> -		return do_read_fault(vmf);
-> -	if (!(vma->vm_flags & VM_SHARED))
-> -		return do_cow_fault(vmf);
-> -	return do_shared_fault(vmf);
-> +		ret = VM_FAULT_SIGBUS;
-> +	else if (!(vmf->flags & FAULT_FLAG_WRITE))
-> +		ret = do_read_fault(vmf);
-> +	else if (!(vma->vm_flags & VM_SHARED))
-> +		ret = do_cow_fault(vmf);
-> +	else
-> +		ret = do_shared_fault(vmf);
-> +
-> +	/* preallocated pagetable is unused: free it */
-> +	if (vmf->prealloc_pte) {
-> +		pte_free(vma->vm_mm, vmf->prealloc_pte);
-> +		vmf->prealloc_pte = 0;
-> +	}
-> +	return ret;
->  }
->
->  static int numa_migrate_prep(struct page *page, struct vm_area_struct *vma,
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index aeae8c0..b20adf9 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -905,6 +905,7 @@ static inline void dio_zero_block(struct dio *dio, struct dio_submit *sdio,
+ static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
+ 			struct buffer_head *map_bh)
+ {
++	const unsigned i_blkbits = dio->inode->i_blkbits;
+ 	const unsigned blkbits = sdio->blkbits;
+ 	int ret = 0;
+ 
+@@ -949,7 +950,7 @@ static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
+ 					clean_bdev_aliases(
+ 						map_bh->b_bdev,
+ 						map_bh->b_blocknr,
+-						map_bh->b_size >> blkbits);
++						map_bh->b_size >> i_blkbits);
+ 				}
+ 
+ 				if (!sdio->blkfactor)
+-- 
+2.5.5
