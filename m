@@ -2,15 +2,15 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3txZML3GdMzDqZ9
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 10:32:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3txZMN1XylzDqSY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 10:32:31 +1100 (AEDT)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Steven Munroe <munroesj@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 8/9] powerpc/64: Hard code cache geometry on POWER8
-Date: Sun,  8 Jan 2017 17:31:49 -0600
-Message-Id: <20170108233150.15353-8-benh@kernel.crashing.org>
+Subject: [PATCH 9/9] powerpc: A new cache geometry aux vectors
+Date: Sun,  8 Jan 2017 17:31:50 -0600
+Message-Id: <20170108233150.15353-9-benh@kernel.crashing.org>
 In-Reply-To: <20170108233150.15353-1-benh@kernel.crashing.org>
 References: <20170108233150.15353-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,87 +22,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All shipping firmware versions have it wrong in the device-tree
+This adds AUX vectors for the L1I,D, L2 and L3 cache levels
+providing for each cache level the size of the cache in bytes
+and the geometry (line size and number of ways).
+
+We chose to not use the existing alpha/sh definition which
+packs all the information in a single entry per cache level as
+it is too restricted to represent some of the geometries used
+on POWER.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_64.c | 52 +++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 49 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/cache.h       |  1 +
+ arch/powerpc/include/asm/elf.h         | 17 ++++++++++++++++-
+ arch/powerpc/include/uapi/asm/auxvec.h | 33 ++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/setup-common.c     |  5 ++++-
+ arch/powerpc/kernel/setup_64.c         |  4 ++++
+ 5 files changed, 57 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index 3987bd9..1557d26 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -35,6 +35,7 @@ struct ppc_cache_info {
+ 	u32 log_block_size;
+ 	u32 blocks_per_page;
+ 	u32 sets;
++	u32 assoc;
+ };
+ 
+ struct ppc64_caches {
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 730c27e..a128836 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -108,13 +108,17 @@ do {								\
+  */
+ # define elf_read_implies_exec(ex, exec_stk) (is_32bit_task() ? \
+ 		(exec_stk == EXSTACK_DEFAULT) : 0)
+-#else 
++#else
+ # define elf_read_implies_exec(ex, exec_stk) (exec_stk == EXSTACK_DEFAULT)
+ #endif /* __powerpc64__ */
+ 
+ extern int dcache_bsize;
+ extern int icache_bsize;
+ extern int ucache_bsize;
++extern long il1cache_shape;
++extern long dl1cache_shape;
++extern long l2cache_shape;
++extern long l3cache_shape;
+ 
+ /* vDSO has arch_setup_additional_pages */
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
+@@ -136,6 +140,9 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+ 
+ #endif /* CONFIG_SPU_BASE */
+ 
++#define get_cache_shape(level) \
++	(ppc64_caches.level.assoc << 16 | ppc64_caches.level.line_size)
++
+ /*
+  * The requirements here are:
+  * - keep the final alignment of sp (sp & 0xf)
+@@ -156,6 +163,14 @@ do {									\
+ 	NEW_AUX_ENT(AT_ICACHEBSIZE, icache_bsize);			\
+ 	NEW_AUX_ENT(AT_UCACHEBSIZE, ucache_bsize);			\
+ 	VDSO_AUX_ENT(AT_SYSINFO_EHDR, current->mm->context.vdso_base);	\
++	NEW_AUX_ENT(AT_L1I_CACHESIZE, ppc64_caches.l1i.size);		\
++	NEW_AUX_ENT(AT_L1I_CACHEGEOMETRY, get_cache_shape(l1i));	\
++	NEW_AUX_ENT(AT_L1D_CACHESIZE, ppc64_caches.l1i.size);		\
++	NEW_AUX_ENT(AT_L1D_CACHEGEOMETRY, get_cache_shape(l1i));	\
++	NEW_AUX_ENT(AT_L2_CACHESIZE, ppc64_caches.l2.size);		\
++	NEW_AUX_ENT(AT_L2_CACHEGEOMETRY, get_cache_shape(l2));		\
++	NEW_AUX_ENT(AT_L3_CACHESIZE, ppc64_caches.l3.size);		\
++	NEW_AUX_ENT(AT_L3_CACHEGEOMETRY, get_cache_shape(l3));		\
+ } while (0)
+ 
+ #endif /* _ASM_POWERPC_ELF_H */
+diff --git a/arch/powerpc/include/uapi/asm/auxvec.h b/arch/powerpc/include/uapi/asm/auxvec.h
+index ce17d2c..be6e94e 100644
+--- a/arch/powerpc/include/uapi/asm/auxvec.h
++++ b/arch/powerpc/include/uapi/asm/auxvec.h
+@@ -16,6 +16,37 @@
+  */
+ #define AT_SYSINFO_EHDR		33
+ 
+-#define AT_VECTOR_SIZE_ARCH 6 /* entries in ARCH_DLINFO */
++/*
++ * AT_*CACHEBSIZE above represent the cache *block* size which is
++ * the size that is affected by the cache management instructions.
++ *
++ * It doesn't nececssarily matches the cache *line* size which is
++ * more of a performance tuning hint. Additionally the latter can
++ * be different for the different cache levels.
++ *
++ * The set of entries below represent more extensive information
++ * about the caches, in the form of two entry per cache type,
++ * one entry containing the cache size in bytes, and the other
++ * containing the cache line size in bytes in the bottom 16 bits
++ * and the cache associativity in the next 16 bits.
++ *
++ * The associativity is such that if N is the 16-bit value, the
++ * cache is N way set associative. A value if 0xffff means fully
++ * associative, a value of 1 means directly mapped.
++ *
++ * For all these fields, a value of 0 means that the information
++ * is not known.
++ */
++
++#define AT_L1I_CACHESIZE	40
++#define AT_L1I_CACHEGEOMETRY	41
++#define AT_L1D_CACHESIZE	42
++#define AT_L1D_CACHEGEOMETRY	43
++#define AT_L2_CACHESIZE		44
++#define AT_L2_CACHEGEOMETRY	45
++#define AT_L3_CACHESIZE		46
++#define AT_L3_CACHEGEOMETRY	47
++
++#define AT_VECTOR_SIZE_ARCH	14 /* entries in ARCH_DLINFO */
+ 
+ #endif
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index e0eeed4..cfa2a06 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -94,7 +94,10 @@ EXPORT_SYMBOL_GPL(boot_cpuid);
+ int dcache_bsize;
+ int icache_bsize;
+ int ucache_bsize;
+-
++long il1cache_shape = -1;
++long dl1cache_shape = -1;
++long l2cache_shape = -1;
++long l3cache_shape = -1;
+ 
+ unsigned long klimit = (unsigned long) _end;
+ 
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 216e305..b3c93d8 100644
+index b3c93d8..16cb0b7 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -255,7 +255,7 @@ static void cpu_ready_for_interrupts(void)
+@@ -451,6 +451,10 @@ static bool __init parse_cache_info(struct device_node *np,
+ 	info->block_size = bsize;
+ 	info->log_block_size = __ilog2(bsize);
+ 	info->blocks_per_page = PAGE_SIZE / bsize;
++	if (sets == 0)
++		info->assoc = 0xffff;
++	else
++		info->assoc = size / (sets * lsize);
  
- void __init early_setup(unsigned long dt_ptr)
- {
--	static __initdata struct paca_struct boot_paca;
-+	static struct paca_struct boot_paca __initdata ;
- 
- 	/* -------- printk is _NOT_ safe to use here ! ------- */
- 
-@@ -455,13 +455,59 @@ static bool __init parse_cache_info(struct device_node *np,
  	return success;
  }
- 
-+static void __init populate_p8_cache_info(void)
-+{
-+	static const struct ppc_cache_info p8_l1i __initconst  = {
-+		.size = 0x8000,
-+		.line_size = 128,
-+		.block_size = 128,
-+		.log_block_size = 7,
-+		.blocks_per_page = PAGE_SIZE / 128,
-+		.sets = 32
-+	};
-+	static const struct ppc_cache_info p8_l1d __initconst  = {
-+		.size = 0x10000,
-+		.line_size = 128,
-+		.block_size = 128,
-+		.log_block_size = 7,
-+		.blocks_per_page = PAGE_SIZE / 128,
-+		.sets = 64
-+	};
-+	static const struct ppc_cache_info p8_l2 __initconst  = {
-+		.size = 0x80000,
-+		.line_size = 128,
-+		.sets = 512
-+	};
-+	static const struct ppc_cache_info p8_l3 __initconst  = {
-+		.size = 0x800000,
-+		.line_size = 128,
-+		.sets = 8192
-+	};
-+	ppc64_caches.l1i = p8_l1i;
-+	ppc64_caches.l1d = p8_l1d;
-+	ppc64_caches.l2 = p8_l2;
-+	ppc64_caches.l3 = p8_l3;
-+}
-+
- void __init initialize_cache_info(void)
- {
--	struct device_node *cpu, *l2, *l3 = NULL;
-+	struct device_node *cpu = NULL, *l2, *l3 = NULL;
-+	u32 pvr;
- 
- 	DBG(" -> initialize_cache_info()\n");
- 
--	cpu = of_find_node_by_type(NULL, "cpu");
-+	/*
-+	 * All shipping POWER8 machines have a firmware bug that
-+	 * puts incorrect information in the device-tree. This will
-+	 * be (hopefully) fixed for future chips but for now hard
-+	 * code the values if we are running on one of these
-+	 */
-+	pvr = PVR_VER(mfspr(SPRN_PVR));
-+	if (pvr == PVR_POWER8 || pvr == PVR_POWER8E ||
-+	    pvr == PVR_POWER8NVL)
-+		populate_p8_cache_info();
-+	else
-+		cpu = of_find_node_by_type(NULL, "cpu");
- 
- 	/*
- 	 * We're assuming *all* of the CPUs have the same
 -- 
 2.9.3
