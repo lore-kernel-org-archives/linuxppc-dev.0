@@ -1,22 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3ty1rY3vvWzDqTB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 04:10:53 +1100 (AEDT)
-Date: Mon, 09 Jan 2017 12:10:51 -0500 (EST)
-Message-Id: <20170109.121051.996723005103082118.davem@davemloft.net>
-To: tremyfr@gmail.com
-Cc: tlfalcon@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: ibm: ibmvnic: use new api
- ethtool_{get|set}_link_ksettings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1483825049-7501-1-git-send-email-tremyfr@gmail.com>
-References: <1483825049-7501-1-git-send-email-tremyfr@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <jack@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ty63C3CBLzDqMB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 07:20:23 +1100 (AEDT)
+Date: Mon, 9 Jan 2017 21:20:18 +0100
+From: Jan Kara <jack@suse.cz>
+To: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+Cc: axboe@kernel.dk, jack@suse.cz, linux-block@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+ anton@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] do_direct_IO: Use inode->i_blkbits to compute block
+ count to be cleaned
+Message-ID: <20170109202018.GD18524@quack2.suse.cz>
+References: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,12 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Philippe Reynes <tremyfr@gmail.com>
-Date: Sat,  7 Jan 2017 22:37:29 +0100
-
-> The ethtool api {get|set}_settings is deprecated.
-> We move this driver to new api {get|set}_link_ksettings.
+On Sun 08-01-17 20:17:10, Chandan Rajendra wrote:
+> The code currently uses sdio->blkbits to compute the number of blocks to
+> be cleaned. However sdio->blkbits is derived from the logical block size
+> of the underlying block device (Refer to the definition of
+> do_blockdev_direct_IO()). Due to this, generic/299 test would rarely
+> fail when executed on an ext4 filesystem with 64k as the block size and
+> when using a virtio based disk (having 512 byte as the logical block
+> size) inside a kvm guest.
 > 
-> Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+> This commit fixes the bug by using inode->i_blkbits to compute the
+> number of blocks to be cleaned.
 
-Applied.
+Ah, good catch. You can add:
+
+Reviewed-by: Jan Kara <jack@suse.cz>
+
+								Honza
+
+> Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+> ---
+>  fs/direct-io.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/fs/direct-io.c b/fs/direct-io.c
+> index aeae8c0..b20adf9 100644
+> --- a/fs/direct-io.c
+> +++ b/fs/direct-io.c
+> @@ -905,6 +905,7 @@ static inline void dio_zero_block(struct dio *dio, struct dio_submit *sdio,
+>  static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
+>  			struct buffer_head *map_bh)
+>  {
+> +	const unsigned i_blkbits = dio->inode->i_blkbits;
+>  	const unsigned blkbits = sdio->blkbits;
+>  	int ret = 0;
+>  
+> @@ -949,7 +950,7 @@ static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
+>  					clean_bdev_aliases(
+>  						map_bh->b_bdev,
+>  						map_bh->b_blocknr,
+> -						map_bh->b_size >> blkbits);
+> +						map_bh->b_size >> i_blkbits);
+>  				}
+>  
+>  				if (!sdio->blkfactor)
+> -- 
+> 2.5.5
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
