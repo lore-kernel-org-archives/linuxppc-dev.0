@@ -1,38 +1,38 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ty10K4PgpzDqT5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 03:32:33 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v09GFGuw037774
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jan 2017 11:32:31 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27vc3666vb-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ty10x2fvrzDqdy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 03:33:05 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v09GF84N102693
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jan 2017 11:33:02 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27vcdmn3kq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2017 11:32:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2017 11:33:02 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 9 Jan 2017 09:32:30 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5B1E73E4005E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 09:32:27 -0700 (MST)
-Subject: Re: [PATCH v3 2/3] powerpc/pseries: Introduce memory hotplug READD
- operation
+ Mon, 9 Jan 2017 09:33:01 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 173FA19D8045
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 09:32:17 -0700 (MST)
+Subject: Re: [PATCH v3 3/3] powerpc/pseries: Update affinity for memory and
+ cpus specified in a PRRN event
 To: John Allen <jallen@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <a4c3e5c2-18d8-0f01-272b-a3ae23318469@linux.vnet.ibm.com>
- <9a232a88-7418-8365-4e15-13b13542be26@linux.vnet.ibm.com>
+ <262afdff-fa55-7f8c-f0f1-2d50324d9e09@linux.vnet.ibm.com>
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Mon, 9 Jan 2017 10:32:26 -0600
+Date: Mon, 9 Jan 2017 10:32:59 -0600
 MIME-Version: 1.0
-In-Reply-To: <9a232a88-7418-8365-4e15-13b13542be26@linux.vnet.ibm.com>
+In-Reply-To: <262afdff-fa55-7f8c-f0f1-2d50324d9e09@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <1b0aa019-ab4d-5d4f-ce5e-36715ac6a076@linux.vnet.ibm.com>
+Message-Id: <25b6a8c9-7b70-92fd-8c31-6f9db6ffd348@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,90 +42,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/06/2017 01:27 PM, John Allen wrote:
-> Currently, memory must be hot removed and subsequently re-added in order
-> to dynamically update the affinity of LMBs specified by a PRRN event.
-> Earlier implementations of the PRRN event handler ran into issues in which
-> the hot remove would occur successfully, but a hotplug event would be
-> initiated from another source and grab the hotplug lock preventing the hot
-> add from occurring. To prevent this situation, this patch introduces the
-> notion of a hot "readd" action for memory which atomizes a hot remove and
-> a hot add into a single, serialized operation on the hotplug queue.
+On 01/06/2017 01:28 PM, John Allen wrote:
+> Extend the existing PRRN infrastructure to perform the actual affinity
+> updating for cpus and memory in addition to the device tree updating. For
+> cpus, dynamic affinity updating already appears to exist in the kernel in
+> the form of arch_update_cpu_topology. For memory, we must place a READD
+> operation on the hotplug queue for any phandle included in the PRRN event
+> that is determined to be an LMB.
 > 
 > Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
 
 Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
 > ---
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index 9c23baa..076b892 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -318,6 +318,7 @@ struct pseries_hp_errorlog {
+> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> index a26a020..8836130 100644
+> --- a/arch/powerpc/kernel/rtasd.c
+> +++ b/arch/powerpc/kernel/rtasd.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/cpu.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/slab.h>
+> +#include <linux/topology.h>
 > 
->  #define PSERIES_HP_ELOG_ACTION_ADD	1
->  #define PSERIES_HP_ELOG_ACTION_REMOVE	2
-> +#define PSERIES_HP_ELOG_ACTION_READD	3
+>  #include <asm/uaccess.h>
+>  #include <asm/io.h>
+> @@ -282,6 +283,7 @@ static void prrn_work_fn(struct work_struct *work)
+>  	 * the RTAS event.
+>  	 */
+>  	pseries_devicetree_update(-prrn_update_scope);
+> +	arch_update_cpu_topology();
+>  }
 > 
->  #define PSERIES_HP_ELOG_ID_DRC_NAME	1
->  #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 0eb4b1d..06f10a8 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -560,6 +560,44 @@ static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
+>  static DECLARE_WORK(prrn_work, prrn_work_fn);
+> @@ -434,7 +436,10 @@ static void do_event_scan(void)
+>  		}
+> 
+>  		if (error == 0) {
+> -			pSeries_log_error(logdata, ERR_TYPE_RTAS_LOG, 0);
+> +			if (rtas_error_type((struct rtas_error_log *)logdata) !=
+> +			    RTAS_TYPE_PRRN)
+> +				pSeries_log_error(logdata, ERR_TYPE_RTAS_LOG,
+> +						  0);
+>  			handle_rtas_event((struct rtas_error_log *)logdata);
+>  		}
+> 
+> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+> index a560a98..9230be5 100644
+> --- a/arch/powerpc/platforms/pseries/mobility.c
+> +++ b/arch/powerpc/platforms/pseries/mobility.c
+> @@ -39,6 +39,7 @@ struct update_props_workarea {
+>  #define ADD_DT_NODE	0x03000000
+> 
+>  #define MIGRATION_SCOPE	(1)
+> +#define PRRN_SCOPE -2
+> 
+>  static int mobility_rtas_call(int token, char *buf, s32 scope)
+>  {
+> @@ -236,6 +237,35 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
 >  	return rc;
 >  }
 > 
-> +static int dlpar_memory_readd_by_index(u32 drc_index, struct property *prop)
+> +void pseries_prrn_update_node(__be32 phandle)
 > +{
-> +	struct of_drconf_cell *lmbs;
-> +	u32 num_lmbs, *p;
-> +	int lmb_found;
-> +	int i, rc;
+> +	struct pseries_hp_errorlog *hp_elog;
+> +	struct device_node *dn;
 > +
-> +	pr_info("Attempting to update LMB, drc index %x\n", drc_index);
-> +
-> +	p = prop->value;
-> +	num_lmbs = *p++;
-> +	lmbs = (struct of_drconf_cell *)p;
-> +
-> +	lmb_found = 0;
-> +	for (i = 0; i < num_lmbs; i++) {
-> +		if (lmbs[i].drc_index == drc_index) {
-> +			lmb_found = 1;
-> +			rc = dlpar_remove_lmb(&lmbs[i]);
-> +			if (!rc) {
-> +				rc = dlpar_add_lmb(&lmbs[i]);
-> +				if (rc)
-> +					dlpar_release_drc(lmbs[i].drc_index);
-> +			}
-> +			break;
-> +		}
+> +	/*
+> + 	 * If a node is found from a the given phandle, the phandle does not
+> +	 * represent the drc index of an LMB and we can ignore.
+> +	 */
+> +	dn = of_find_node_by_phandle(be32_to_cpu(phandle));
+> +	if (dn) {
+> +		of_node_put(dn);
+> +		return;
 > +	}
 > +
-> +	if (!lmb_found)
-> +		rc = -EINVAL;
+> +	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
+> +	if(!hp_elog)
+> +		return;
 > +
-> +	if (rc)
-> +		pr_info("Failed to update memory at %llx\n",
-> +			lmbs[i].base_addr);
-> +	else
-> +		pr_info("Memory at %llx was updated\n", lmbs[i].base_addr);
+> +	hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
+> +	hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
+> +	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+> +	hp_elog->_drc_u.drc_index = phandle;
 > +
-> +	return rc;
+> +	queue_hotplug_event(hp_elog, NULL, NULL);
+> +
+> +	kfree(hp_elog);
 > +}
->  #else
->  static inline int pseries_remove_memblock(unsigned long base,
->  					  unsigned int memblock_size)
-> @@ -776,6 +814,9 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  		else
->  			rc = -EINVAL;
->  		break;
-> +	case PSERIES_HP_ELOG_ACTION_READD:
-> +		rc = dlpar_memory_readd_by_index(drc_index, prop);
-> +		break;
->  	default:
->  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
->  		rc = -EINVAL;
+> +
+>  int pseries_devicetree_update(s32 scope)
+>  {
+>  	char *rtas_buf;
+> @@ -274,6 +304,10 @@ int pseries_devicetree_update(s32 scope)
+>  					break;
+>  				case UPDATE_DT_NODE:
+>  					update_dt_node(phandle, scope);
+> +
+> +					if (scope == PRRN_SCOPE)
+> +						pseries_prrn_update_node(phandle);
+> +
+>  					break;
+>  				case ADD_DT_NODE:
+>  					drc_index = *data++;
 > 
