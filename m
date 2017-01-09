@@ -1,18 +1,53 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <chandan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3txZMN1XylzDqSY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 10:32:31 +1100 (AEDT)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Steven Munroe <munroesj@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 9/9] powerpc: A new cache geometry aux vectors
-Date: Sun,  8 Jan 2017 17:31:50 -0600
-Message-Id: <20170108233150.15353-9-benh@kernel.crashing.org>
-In-Reply-To: <20170108233150.15353-1-benh@kernel.crashing.org>
-References: <20170108233150.15353-1-benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3txhXV27XnzDqVR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 15:10:49 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v09492LZ041369
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 Jan 2017 23:10:47 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27uvjjvj4c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2017 23:10:47 -0500
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.vnet.ibm.com>;
+ Mon, 9 Jan 2017 14:10:44 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7F7E92BB005A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2017 15:10:42 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v094AgXm328178
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jan 2017 15:10:42 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v094AfKK025784
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jan 2017 15:10:42 +1100
+From: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Anton Blanchard <anton@samba.org>, jack@suse.cz,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, axboe@fb.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Jens Axboe <axboe@kernel.dk>, torvalds@linux-foundation.org
+Subject: Re: ext4 filesystem corruption with 4.10-rc2 on ppc64le
+Date: Mon, 09 Jan 2017 09:40:29 +0530
+In-Reply-To: <20170104152837.wdh7cdncs7gyged7@thunk.org>
+References: <20170104161808.5ad7b4fd@kryten>
+ <6085340.JSrffQ0Szo@localhost.localdomain>
+ <20170104152837.wdh7cdncs7gyged7@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <14716846.DtMXVimRBg@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,157 +57,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds AUX vectors for the L1I,D, L2 and L3 cache levels
-providing for each cache level the size of the cache in bytes
-and the geometry (line size and number of ways).
+On Wednesday, January 04, 2017 10:28:37 AM Theodore Ts'o wrote:
+> On Wed, Jan 04, 2017 at 11:32:42AM +0530, Chandan Rajendra wrote:
+> > On Wednesday, January 04, 2017 04:18:08 PM Anton Blanchard wrote:
+> > > I'm consistently seeing ext4 filesystem corruption using a mainline
+> > > kernel. It doesn't take much to trigger it - download a ppc64le Ubuntu
+> > > cloud image, boot it in KVM and run:
+> > > 
+> > > sudo apt-get update
+> > > sudo apt-get dist-upgrade
+> > > sudo reboot
+> > > 
+> > > And it never makes it back up, dying with rather severe filesystem
+> > > corruption.
+> > 
+> > The patch at https://patchwork.kernel.org/patch/9488235/ should fix the
+> > bug.
+> 
+> It looks like this patch is already queued up on the "for-linus"
+> branch on the linux-block.git tree.
+> 
+> Chandra, thanks for pointing this out!  I had missed your e-mail from
+> Christmas day, and it was on my todo list to figure out why I was
+> seeing lots of 1k block regressions on gce-xfstests post-merge window
+> that wasn't showing up on the ext4.git tree before I sent my pull
+> request to Linus.
+> 
+> Jens, could you expedite a pull request to Linus?  This is affecting
+> ext4 on 1k block file systems on x86/x86_64, so this is not a ppc-only
+> regression.  
+> 
+> Anton or Chandan, could you do me a favor and verify whether or not
+> 64k block sizes are working for you on ppcle on ext4 by running
+> xfstests?  Light duty testing works for me but when I stress ext4 with
+> pagesize==blocksize on ppcle64 via xfstests, it blows up.  I suspect
+> (but am not sure) it's due to (non-upstream) device driver issues, and
+> a verification that you can run xfstests on your ppcle64 systems using
+> standard upstream device drivers would be very helpful, since I don't
+> have easy console access on the machines I have access to at $WORK.  :-(
 
-We chose to not use the existing alpha/sh definition which
-packs all the information in a single entry per cache level as
-it is too restricted to represent some of the geometries used
-on POWER.
+Hi Ted,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/cache.h       |  1 +
- arch/powerpc/include/asm/elf.h         | 17 ++++++++++++++++-
- arch/powerpc/include/uapi/asm/auxvec.h | 33 ++++++++++++++++++++++++++++++++-
- arch/powerpc/kernel/setup-common.c     |  5 ++++-
- arch/powerpc/kernel/setup_64.c         |  4 ++++
- 5 files changed, 57 insertions(+), 3 deletions(-)
+I found one regression w.r.t 64k blocksize. I posted a patch
+(http://marc.info/?l=linux-block&m=148388687722745&w=2) to fix the issue. 
 
-diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-index 3987bd9..1557d26 100644
---- a/arch/powerpc/include/asm/cache.h
-+++ b/arch/powerpc/include/asm/cache.h
-@@ -35,6 +35,7 @@ struct ppc_cache_info {
- 	u32 log_block_size;
- 	u32 blocks_per_page;
- 	u32 sets;
-+	u32 assoc;
- };
- 
- struct ppc64_caches {
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 730c27e..a128836 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -108,13 +108,17 @@ do {								\
-  */
- # define elf_read_implies_exec(ex, exec_stk) (is_32bit_task() ? \
- 		(exec_stk == EXSTACK_DEFAULT) : 0)
--#else 
-+#else
- # define elf_read_implies_exec(ex, exec_stk) (exec_stk == EXSTACK_DEFAULT)
- #endif /* __powerpc64__ */
- 
- extern int dcache_bsize;
- extern int icache_bsize;
- extern int ucache_bsize;
-+extern long il1cache_shape;
-+extern long dl1cache_shape;
-+extern long l2cache_shape;
-+extern long l3cache_shape;
- 
- /* vDSO has arch_setup_additional_pages */
- #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
-@@ -136,6 +140,9 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- 
- #endif /* CONFIG_SPU_BASE */
- 
-+#define get_cache_shape(level) \
-+	(ppc64_caches.level.assoc << 16 | ppc64_caches.level.line_size)
-+
- /*
-  * The requirements here are:
-  * - keep the final alignment of sp (sp & 0xf)
-@@ -156,6 +163,14 @@ do {									\
- 	NEW_AUX_ENT(AT_ICACHEBSIZE, icache_bsize);			\
- 	NEW_AUX_ENT(AT_UCACHEBSIZE, ucache_bsize);			\
- 	VDSO_AUX_ENT(AT_SYSINFO_EHDR, current->mm->context.vdso_base);	\
-+	NEW_AUX_ENT(AT_L1I_CACHESIZE, ppc64_caches.l1i.size);		\
-+	NEW_AUX_ENT(AT_L1I_CACHEGEOMETRY, get_cache_shape(l1i));	\
-+	NEW_AUX_ENT(AT_L1D_CACHESIZE, ppc64_caches.l1i.size);		\
-+	NEW_AUX_ENT(AT_L1D_CACHEGEOMETRY, get_cache_shape(l1i));	\
-+	NEW_AUX_ENT(AT_L2_CACHESIZE, ppc64_caches.l2.size);		\
-+	NEW_AUX_ENT(AT_L2_CACHEGEOMETRY, get_cache_shape(l2));		\
-+	NEW_AUX_ENT(AT_L3_CACHESIZE, ppc64_caches.l3.size);		\
-+	NEW_AUX_ENT(AT_L3_CACHEGEOMETRY, get_cache_shape(l3));		\
- } while (0)
- 
- #endif /* _ASM_POWERPC_ELF_H */
-diff --git a/arch/powerpc/include/uapi/asm/auxvec.h b/arch/powerpc/include/uapi/asm/auxvec.h
-index ce17d2c..be6e94e 100644
---- a/arch/powerpc/include/uapi/asm/auxvec.h
-+++ b/arch/powerpc/include/uapi/asm/auxvec.h
-@@ -16,6 +16,37 @@
-  */
- #define AT_SYSINFO_EHDR		33
- 
--#define AT_VECTOR_SIZE_ARCH 6 /* entries in ARCH_DLINFO */
-+/*
-+ * AT_*CACHEBSIZE above represent the cache *block* size which is
-+ * the size that is affected by the cache management instructions.
-+ *
-+ * It doesn't nececssarily matches the cache *line* size which is
-+ * more of a performance tuning hint. Additionally the latter can
-+ * be different for the different cache levels.
-+ *
-+ * The set of entries below represent more extensive information
-+ * about the caches, in the form of two entry per cache type,
-+ * one entry containing the cache size in bytes, and the other
-+ * containing the cache line size in bytes in the bottom 16 bits
-+ * and the cache associativity in the next 16 bits.
-+ *
-+ * The associativity is such that if N is the 16-bit value, the
-+ * cache is N way set associative. A value if 0xffff means fully
-+ * associative, a value of 1 means directly mapped.
-+ *
-+ * For all these fields, a value of 0 means that the information
-+ * is not known.
-+ */
-+
-+#define AT_L1I_CACHESIZE	40
-+#define AT_L1I_CACHEGEOMETRY	41
-+#define AT_L1D_CACHESIZE	42
-+#define AT_L1D_CACHEGEOMETRY	43
-+#define AT_L2_CACHESIZE		44
-+#define AT_L2_CACHEGEOMETRY	45
-+#define AT_L3_CACHESIZE		46
-+#define AT_L3_CACHEGEOMETRY	47
-+
-+#define AT_VECTOR_SIZE_ARCH	14 /* entries in ARCH_DLINFO */
- 
- #endif
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index e0eeed4..cfa2a06 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -94,7 +94,10 @@ EXPORT_SYMBOL_GPL(boot_cpuid);
- int dcache_bsize;
- int icache_bsize;
- int ucache_bsize;
--
-+long il1cache_shape = -1;
-+long dl1cache_shape = -1;
-+long l2cache_shape = -1;
-+long l3cache_shape = -1;
- 
- unsigned long klimit = (unsigned long) _end;
- 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index b3c93d8..16cb0b7 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -451,6 +451,10 @@ static bool __init parse_cache_info(struct device_node *np,
- 	info->block_size = bsize;
- 	info->log_block_size = __ilog2(bsize);
- 	info->blocks_per_page = PAGE_SIZE / bsize;
-+	if (sets == 0)
-+		info->assoc = 0xffff;
-+	else
-+		info->assoc = size / (sets * lsize);
- 
- 	return success;
- }
 -- 
-2.9.3
+chandan
