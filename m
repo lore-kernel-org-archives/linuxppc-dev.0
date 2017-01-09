@@ -1,24 +1,23 @@
-Return-Path: <axboe@kernel.dk>
-Received: from mail-pg0-x22c.google.com (mail-pg0-x22c.google.com
- [IPv6:2607:f8b0:400e:c05::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jmoyer@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3txzgc2lCczDqRH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 02:32:58 +1100 (AEDT)
-Received: by mail-pg0-x22c.google.com with SMTP id f188so275870133pgc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2017 07:32:58 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ty0Ml3jnHzDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 03:04:18 +1100 (AEDT)
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+Cc: axboe@kernel.dk, jack@suse.cz, linux-block@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+ anton@samba.org, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH] do_direct_IO: Use inode->i_blkbits to compute block count
  to be cleaned
-To: Chandan Rajendra <chandan@linux.vnet.ibm.com>, jack@suse.cz
 References: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
-Cc: linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
-From: Jens Axboe <axboe@kernel.dk>
-Message-ID: <25f09398-7750-19ce-8fa9-15e229aad498@kernel.dk>
-Date: Mon, 9 Jan 2017 08:32:55 -0700
-MIME-Version: 1.0
+Date: Mon, 09 Jan 2017 11:04:15 -0500
 In-Reply-To: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ (Chandan Rajendra's message of "Sun, 8 Jan 2017 20:17:10 +0530")
+Message-ID: <x49fuksi5j4.fsf@segfault.boston.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,7 +27,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/08/2017 07:47 AM, Chandan Rajendra wrote:
+Chandan Rajendra <chandan@linux.vnet.ibm.com> writes:
+
 > The code currently uses sdio->blkbits to compute the number of blocks to
 > be cleaned. However sdio->blkbits is derived from the logical block size
 > of the underlying block device (Refer to the definition of
@@ -36,11 +36,33 @@ On 01/08/2017 07:47 AM, Chandan Rajendra wrote:
 > fail when executed on an ext4 filesystem with 64k as the block size and
 > when using a virtio based disk (having 512 byte as the logical block
 > size) inside a kvm guest.
-> 
+>
 > This commit fixes the bug by using inode->i_blkbits to compute the
 > number of blocks to be cleaned.
+>
+> Signed-off-by: Chandan Rajendra <chandan@linux.vnet.ibm.com>
+> ---
+>  fs/direct-io.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/fs/direct-io.c b/fs/direct-io.c
+> index aeae8c0..b20adf9 100644
+> --- a/fs/direct-io.c
+> +++ b/fs/direct-io.c
+> @@ -905,6 +905,7 @@ static inline void dio_zero_block(struct dio *dio, struct dio_submit *sdio,
+>  static int do_direct_IO(struct dio *dio, struct dio_submit *sdio,
+>  			struct buffer_head *map_bh)
+>  {
+> +	const unsigned i_blkbits = dio->inode->i_blkbits;
 
-Thanks, added for 4.10.
+NAK.  Please see commit ab73857e354 ("direct-io: don't read
+inode->i_blkbits multiple times").
 
--- 
-Jens Axboe
+I think you want:
+
+	const unsigned i_blkbits = sdio->blkbits + sdio->blkfactor;
+
+as is used elsewhere in the code.
+
+Cheers,
+Jeff
