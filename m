@@ -1,23 +1,24 @@
-Return-Path: <BATV+346223d864736513bcc6+4887+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-pg0-x22c.google.com (mail-pg0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3txxRt4gf4zDsYM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 00:52:42 +1100 (AEDT)
-Date: Mon, 9 Jan 2017 05:52:38 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Chandan Rajendra <chandan@linux.vnet.ibm.com>
-Cc: axboe@kernel.dk, jack@suse.cz, linux-block@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
- anton@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] do_direct_IO: Use inode->i_blkbits to compute block
- count to be cleaned
-Message-ID: <20170109135238.GA17003@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3txzgc2lCczDqRH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 02:32:58 +1100 (AEDT)
+Received: by mail-pg0-x22c.google.com with SMTP id f188so275870133pgc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2017 07:32:58 -0800 (PST)
+Subject: Re: [PATCH] do_direct_IO: Use inode->i_blkbits to compute block count
+ to be cleaned
+To: Chandan Rajendra <chandan@linux.vnet.ibm.com>, jack@suse.cz
 References: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
+Cc: linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <25f09398-7750-19ce-8fa9-15e229aad498@kernel.dk>
+Date: Mon, 9 Jan 2017 08:32:55 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1483886830-23878-1-git-send-email-chandan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,7 +28,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 08, 2017 at 08:17:10PM +0530, Chandan Rajendra wrote:
+On 01/08/2017 07:47 AM, Chandan Rajendra wrote:
 > The code currently uses sdio->blkbits to compute the number of blocks to
 > be cleaned. However sdio->blkbits is derived from the logical block size
 > of the underlying block device (Refer to the definition of
@@ -39,6 +40,7 @@ On Sun, Jan 08, 2017 at 08:17:10PM +0530, Chandan Rajendra wrote:
 > This commit fixes the bug by using inode->i_blkbits to compute the
 > number of blocks to be cleaned.
 
-Looks fine,
+Thanks, added for 4.10.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+-- 
+Jens Axboe
