@@ -1,55 +1,42 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
+Return-Path: <ego@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tyQgy54xXzDqGh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 19:49:50 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tyR4V2Y4mzDqHm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 20:07:38 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0A8n8tL058236
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 03:49:48 -0500
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27vv8hrdu9-1
+ v0A943GU075722
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 04:07:35 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27vcdnkn0p-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 03:49:47 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 04:07:35 -0500
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 10 Jan 2017 14:19:44 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0241AE005B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 14:20:42 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0A8neCm39321796
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 14:19:40 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0A8nbrL018389
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 14:19:40 +0530
-Subject: Re: [PATCH v3 02/15] x86/entry: define _TIF_ALLWORK_MASK flags
- explicitly
-To: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- Petr Mladek <pmladek@suse.com>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <b03212d03f5f112ffa778c30012c7f8301f64929.1481220077.git.jpoimboe@redhat.com>
-Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Tue, 10 Jan 2017 14:19:31 +0530
-MIME-Version: 1.0
-In-Reply-To: <b03212d03f5f112ffa778c30012c7f8301f64929.1481220077.git.jpoimboe@redhat.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <7315bfd9-f6aa-9cf9-b262-da1a600a65be@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 10 Jan 2017 02:07:32 -0700
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, <mark.rutland@arm.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v5 0/5] powernv:stop: Use psscr_val,mask provided by firmware
+Date: Tue, 10 Jan 2017 14:36:59 +0530
+Message-Id: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,20 +46,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 08 December 2016 11:38 PM, Josh Poimboeuf wrote:
-> The _TIF_ALLWORK_MASK macro automatically includes the least-significant
-> 16 bits of the thread_info flags, which is less than obvious and tends
-> to create confusion and surprises when reading or modifying the code.
->
-> Define the flags explicitly.
->
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-For the version with swapped _TIF_SINGLESTEP and _TIF_NEED_RESCHED
-flags.
+This is the fifth iteration of the patchset to use the psscr_val and
+psscr_mask provided by the firmware for each of the stop states.
 
-Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+The previous versions can be found here:
+[v4]: https://lkml.org/lkml/2016/12/9/288
+[v3]: https://lkml.org/lkml/2016/11/10/37
+[v2]: https://lkml.org/lkml/2016/10/27/143
+[v1]: https://lkml.org/lkml/2016/9/29/45
+
+This version addresses the feedback provided by Balbir and Vaidy to
+v4. The key changes are:
+
+- The current code had some functions/variables names containing
+  arch300_* while others had power9*_. Uniformly rename this to arch300_*.
+
+- Add a comment for POWERNV_THRESHOLD_LATENCY_NS.
+
+- In case of a new firmware, validate that the PSSCR values provided
+  by the firmware preserves the following invariants as required by the ISA:
+    a) While running in Hypervisor mode (HV=1), EC bit must have the
+    same value as ESL bit.
+    b) For deep stop states that result in state-loss, ESL bit must be set.
+
+- Optimize the sequence of instructions before executing stop with
+  ESL=EC=0. Reduce one instruction.
+
+- Fixed the typos in the Documentation for the device-tree bindings
+  describing the stop-states exposed by the firmware.
+
+Synopsis
+==========
+In the current implementation, the code for ISA
+v3.0 stop implementation has a couple of shortcomings.
+
+a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
+   uses only the RL field from the firmware. While this is not
+   incorrect, since the hand-coded values are legitimate, it is not a
+   very flexible design since the firmware has the capability to
+   communicate these values via the "ibm,cpu-idle-state-psscr" and
+   "ibm,cpu-idle-state-psscr-mask" properties. In case where the
+   firmware provides values for these fields that is different from
+   the hand-coded values, the current code will not work as intended.
+
+b) Due to issue a), the current code assumes that ESL=EC=1 for all the
+   stop states and hence the wakeup from the stop instruction will
+   happen at 0x100, the system-reset vector. However, the ISA v3.0
+   allows the ESL=EC=0 behaviour where the corresponding stop-state
+   loses no state and wakes up from the subsequent instruction. The
+   current code doesn't handle this case.
+   
+This patch series addresses these issues.
+
+The first patch in the series renames the existing
+IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
+the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
+up at the subsequent instruction.
+
+The second patch in the series uniformly renames all occurences of "power9"
+to "arch300" thereby making the variable/function names consistent.
+
+The third patch adds a helper function in cpuidle-powernv.c for
+initializing entries of the powernv_states[] table that is passed to
+the cpu-idle core. This eliminates some of the code duplication in the
+function that discovers and initializes the stop states.
+
+The fourth patch in the series fixes issues a) and b) by ensuring that
+the psscr-value and the psscr-mask provided by the firmware are what
+will be used to set a particular stop state. It also adds support for
+handling wake-up from stop states which were entered with ESL=EC=0.
+It validates hat the psscr values exposed by the firmware maintains
+the invariants mentioned in the ISA.
+
+The fourth patch also handles the older firmware which sets only the
+Requested Level (RL) field in the psscr and psscr-mask exposed in the
+device tree. In the presence of such older firmware, this patch will
+set the default sane values for for remaining PSSCR fields (i.e PSLL,
+MTL, ESL, EC, and TR).
+
+The fifth patch provides the documentation for the device-tree
+bindings describing the idle state properties under the @power-mgt
+node in the device-tree.
+
+The skiboot patch populates all the relevant fields in the PSSCR
+values and the mask for all the stop states can be found here:
+https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+
+Gautham R. Shenoy (5):
+  powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+  powernv:stop: Uniformly rename power9 to arch300
+  cpuidle:powernv: Add helper function to populate powernv idle states.
+  powernv: Pass PSSCR value and mask to power9_idle_stop
+  Documentation:powerpc: Add device-tree bindings for power-mgt
+
+ .../devicetree/bindings/powerpc/opal/power-mgt.txt | 125 ++++++++++++++++++
+ arch/powerpc/include/asm/cpuidle.h                 |  49 ++++++-
+ arch/powerpc/include/asm/processor.h               |   3 +-
+ arch/powerpc/kernel/exceptions-64s.S               |   6 +-
+ arch/powerpc/kernel/idle_book3s.S                  |  53 ++++----
+ arch/powerpc/platforms/powernv/idle.c              | 142 ++++++++++++++++++---
+ arch/powerpc/platforms/powernv/powernv.h           |   3 +-
+ arch/powerpc/platforms/powernv/smp.c               |  14 +-
+ drivers/cpuidle/cpuidle-powernv.c                  | 129 +++++++++++++------
+ include/linux/cpuidle.h                            |   1 +
+ 10 files changed, 435 insertions(+), 90 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
 
 -- 
-cheers,
-Kamalesh.
+1.9.4
