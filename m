@@ -1,49 +1,16 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tyJyh1DYDzDqN4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 15:32:11 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0A4SfV1092882
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jan 2017 23:32:09 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27vmy4xrfm-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2017 23:32:09 -0500
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 10 Jan 2017 14:32:06 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C90963578052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 15:32:04 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0A4W4sq3932426
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 15:32:04 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0A4W4Xb010249
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 15:32:04 +1100
-Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Christian Kujau <lists@nerdbynature.de>, Christophe LEROY
- <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 09 Jan 2017 22:32:02 -0600
-In-Reply-To: <alpine.DEB.2.20.999.1701091739320.5450@trent.utfs.org>
-References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
- <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
- <alpine.DEB.2.20.99.1701040957380.31470@trent.utfs.org>
- <alpine.DEB.2.20.999.1701091739320.5450@trent.utfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1484022722.21117.8.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tyK9r29xGzDqN4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 15:41:52 +1100 (AEDT)
+From: Alistair Popple <alistair@popple.id.au>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, ruscur@russell.cc,
+ bsingharora@gmail.com, Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH] powerpc/powernv: Use OPAL call for TCE kill on NVLink2
+Date: Tue, 10 Jan 2017 15:41:44 +1100
+Message-Id: <1484023304-17244-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,11 +20,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-01-09 at 18:11 -0800, Christian Kujau wrote:
-> So, with -fno-stack-protector my GCC 4.9.2 compiles with 
-> CC_STACKPROTECTOR_STRONG=y but panics during boot:
+Add detection of NPU2 PHBs. NPU2/NVLink2 has a different register
+layout for the TCE kill register therefore TCE invalidation should be
+done via the OPAL call rather than using the register directly as it
+is for PHB3 and NVLink1. This changes TCE invalidation to use the OPAL
+call in the case of a NPU2 PHB model.
 
-How can it make any sense to have -fno-stack-protector and
-CC_STACKPROTECTOR_STRONG=y at the same time ?
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 9 ++++++++-
+ arch/powerpc/platforms/powernv/pci.c      | 7 +++++++
+ arch/powerpc/platforms/powernv/pci.h      | 1 +
+ 3 files changed, 16 insertions(+), 1 deletion(-)
 
-Ben.
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index d4b33dd..5908c37 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1950,7 +1950,12 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+ 		struct pnv_phb *phb = pe->phb;
+ 		unsigned int shift = tbl->it_page_shift;
+ 
+-		if (phb->type == PNV_PHB_NPU) {
++		/*
++		 * NVLink1 can use the TCE kill register directly as
++		 * it's the same as PHB3. NVLink2 is different and
++		 * should go via the OPAL call.
++		 */
++		if (phb->model == PNV_PHB_MODEL_NPU) {
+ 			/*
+ 			 * The NVLink hardware does not support TCE kill
+ 			 * per TCE entry so we have to invalidate
+@@ -3671,6 +3676,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 		phb->model = PNV_PHB_MODEL_PHB3;
+ 	else if (of_device_is_compatible(np, "ibm,power8-npu-pciex"))
+ 		phb->model = PNV_PHB_MODEL_NPU;
++	else if (of_device_is_compatible(np, "ibm,power9-npu-pciex"))
++		phb->model = PNV_PHB_MODEL_NPU2;
+ 	else
+ 		phb->model = PNV_PHB_MODEL_UNKNOWN;
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index db7b802..4b22fde 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -940,6 +940,13 @@ void __init pnv_pci_init(void)
+ 	for_each_compatible_node(np, NULL, "ibm,ioda2-npu-phb")
+ 		pnv_pci_init_npu_phb(np);
+ 
++	/*
++	 * Look for NPU2 PHBs which we treat mostly as NPU PHBs with
++	 * the exception of TCE kill which requires an OPAL call.
++	 */
++	for_each_compatible_node(np, NULL, "ibm,ioda2-npu2-phb")
++		pnv_pci_init_npu_phb(np);
++
+ 	/* Configure IOMMU DMA hooks */
+ 	set_pci_dma_ops(&dma_iommu_ops);
+ }
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index e64df78..e1d3e55 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -19,6 +19,7 @@ enum pnv_phb_model {
+ 	PNV_PHB_MODEL_P7IOC,
+ 	PNV_PHB_MODEL_PHB3,
+ 	PNV_PHB_MODEL_NPU,
++	PNV_PHB_MODEL_NPU2,
+ };
+ 
+ #define PNV_PCI_DIAG_BUF_SIZE	8192
+-- 
+2.1.4
