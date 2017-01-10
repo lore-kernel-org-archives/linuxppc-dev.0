@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tyR4b2YzqzDqNX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tyR4b5nGWzDqNf
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 20:07:43 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0A942dH004390
+ v0A945Lm124806
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 04:07:41 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27vvk7radr-1
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27vv7ah4gh-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 04:07:41 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 10 Jan 2017 02:07:38 -0700
+ Tue, 10 Jan 2017 04:07:40 -0500
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -34,12 +34,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, <mark.rutland@arm.com>,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v5 3/5] cpuidle:powernv: Add helper function to populate
- powernv idle states.
-Date: Tue, 10 Jan 2017 14:37:02 +0530
+Subject: [PATCH v5 5/5] Documentation:powerpc: Add device-tree bindings for
+ power-mgt
+Date: Tue, 10 Jan 2017 14:37:04 +0530
 In-Reply-To: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1484039224-5630-4-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1484039224-5630-6-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,172 +51,148 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-In the current code for powernv_add_idle_states, there is a lot of code
-duplication while initializing an idle state in powernv_states table.
-
-Add an inline helper function to populate the powernv_states[] table
-for a given idle state. Invoke this for populating the "Nap",
-"Fastsleep" and the stop states in powernv_add_idle_states.
+Document the device-tree bindings defining the the properties under
+the @power-mgt node in the device tree that describe the idle states
+for Linux running on baremetal POWER servers.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
-[v4] --> [v5] : Added a comment above POWERNV_THRESHOLD_LATENCY_NS
+[v4]-> [v5]: Fixed a couple of typos.
 
- drivers/cpuidle/cpuidle-powernv.c | 89 +++++++++++++++++++++++----------------
- include/linux/cpuidle.h           |  1 +
- 2 files changed, 54 insertions(+), 36 deletions(-)
+ .../devicetree/bindings/powerpc/opal/power-mgt.txt | 125 +++++++++++++++++++++
+ 1 file changed, 125 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index a7f6528..a21f1f0 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -20,6 +20,10 @@
- #include <asm/opal.h>
- #include <asm/runlatch.h>
- 
-+/*
-+ * Expose only those Hardware idle states via the cpuidle framework
-+ * that have latency value below POWERNV_THRESHOLD_LATENCY_NS.
-+ */
- #define POWERNV_THRESHOLD_LATENCY_NS 200000
- 
- struct cpuidle_driver powernv_idle_driver = {
-@@ -167,6 +171,24 @@ static int powernv_cpuidle_driver_init(void)
- 	return 0;
- }
- 
-+static inline void add_powernv_state(int index, const char *name,
-+				     unsigned int flags,
-+				     int (*idle_fn)(struct cpuidle_device *,
-+						    struct cpuidle_driver *,
-+						    int),
-+				     unsigned int target_residency,
-+				     unsigned int exit_latency,
-+				     u64 psscr_val)
-+{
-+	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
-+	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
-+	powernv_states[index].flags = flags;
-+	powernv_states[index].target_residency = target_residency;
-+	powernv_states[index].exit_latency = exit_latency;
-+	powernv_states[index].enter = idle_fn;
-+	stop_psscr_table[index] = psscr_val;
-+}
+diff --git a/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt b/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+new file mode 100644
+index 0000000..4967831
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+@@ -0,0 +1,125 @@
++IBM Power-Management Bindings
++=============================
 +
- static int powernv_add_idle_states(void)
- {
- 	struct device_node *power_mgt;
-@@ -236,6 +258,7 @@ static int powernv_add_idle_states(void)
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
- 
- 	for (i = 0; i < dt_idle_states; i++) {
-+		unsigned int exit_latency, target_residency;
- 		/*
- 		 * If an idle state has exit latency beyond
- 		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
-@@ -243,28 +266,33 @@ static int powernv_add_idle_states(void)
- 		 */
- 		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
- 			continue;
-+		/*
-+		 * Firmware passes residency and latency values in ns.
-+		 * cpuidle expects it in us.
-+		 */
-+		exit_latency = latency_ns[i] / 1000;
-+		if (!rc)
-+			target_residency = residency_ns[i] / 1000;
-+		else
-+			target_residency = 0;
- 
- 		/*
--		 * Cpuidle accepts exit_latency and target_residency in us.
--		 * Use default target_residency values if f/w does not expose it.
-+		 * For nap and fastsleep, use default target_residency
-+		 * values if f/w does not expose it.
- 		 */
- 		if (flags[i] & OPAL_PM_NAP_ENABLED) {
-+			if (!rc)
-+				target_residency = 100;
- 			/* Add NAP state */
--			strcpy(powernv_states[nr_idle_states].name, "Nap");
--			strcpy(powernv_states[nr_idle_states].desc, "Nap");
--			powernv_states[nr_idle_states].flags = 0;
--			powernv_states[nr_idle_states].target_residency = 100;
--			powernv_states[nr_idle_states].enter = nap_loop;
-+			add_powernv_state(nr_idle_states, "Nap",
-+					  CPUIDLE_FLAG_NONE, nap_loop,
-+					  target_residency, exit_latency, 0);
- 		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
- 				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
--			strncpy(powernv_states[nr_idle_states].name,
--				names[i], CPUIDLE_NAME_LEN);
--			strncpy(powernv_states[nr_idle_states].desc,
--				names[i], CPUIDLE_NAME_LEN);
--			powernv_states[nr_idle_states].flags = 0;
--
--			powernv_states[nr_idle_states].enter = stop_loop;
--			stop_psscr_table[nr_idle_states] = psscr_val[i];
-+			add_powernv_state(nr_idle_states, names[i],
-+					  CPUIDLE_FLAG_NONE, stop_loop,
-+					  target_residency, exit_latency,
-+					  psscr_val[i]);
- 		}
- 
- 		/*
-@@ -274,32 +302,21 @@ static int powernv_add_idle_states(void)
- #ifdef CONFIG_TICK_ONESHOT
- 		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
- 			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
-+			if (!rc)
-+				target_residency = 300000;
- 			/* Add FASTSLEEP state */
--			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
--			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
--			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].target_residency = 300000;
--			powernv_states[nr_idle_states].enter = fastsleep_loop;
-+			add_powernv_state(nr_idle_states, "FastSleep",
-+					  CPUIDLE_FLAG_TIMER_STOP,
-+					  fastsleep_loop,
-+					  target_residency, exit_latency, 0);
- 		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
- 				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
--			strncpy(powernv_states[nr_idle_states].name,
--				names[i], CPUIDLE_NAME_LEN);
--			strncpy(powernv_states[nr_idle_states].desc,
--				names[i], CPUIDLE_NAME_LEN);
--
--			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].enter = stop_loop;
--			stop_psscr_table[nr_idle_states] = psscr_val[i];
-+			add_powernv_state(nr_idle_states, names[i],
-+					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
-+					  target_residency, exit_latency,
-+					  psscr_val[i]);
- 		}
- #endif
--		powernv_states[nr_idle_states].exit_latency =
--				((unsigned int)latency_ns[i]) / 1000;
--
--		if (!rc) {
--			powernv_states[nr_idle_states].target_residency =
--				((unsigned int)residency_ns[i]) / 1000;
--		}
--
- 		nr_idle_states++;
- 	}
- out:
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index bb31373..c4e10f8 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -62,6 +62,7 @@ struct cpuidle_state {
- };
- 
- /* Idle State Flags */
-+#define CPUIDLE_FLAG_NONE       (0x00)
- #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
- #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
- 
++Linux running on baremetal POWER machines has access to the processor
++idle states. The description of these idle states is exposed via the
++node @power-mgt in the device-tree by the firmware.
++
++Definitions:
++----------------
++Typically each idle state has the following associated properties:
++
++- name: The name of the idle state as defined by the firmware.
++
++- flags: indicating some aspects of this idle states such as the
++         extent of state-loss, whether timebase is stopped on this
++         idle states and so on. The flag bits are as follows:
++
++- exit-latency: The latency involved in transitioning the state of the
++		CPU from idle to running.
++
++- target-residency: The minimum time that the CPU needs to reside in
++		    this idle state in order to accrue power-savings
++		    benefit.
++
++Properties
++----------------
++The following properties provide details about the idle states. These
++properties are optional unless mentioned otherwise below.
++
++- ibm,cpu-idle-state-names:
++	Array of strings containing the names of the idle states.
++
++- ibm,cpu-idle-state-flags:
++	Array of unsigned 32-bit values containing the values of the
++	flags associated with the the aforementioned idle-states. This
++	property is required on POWER9 whenever
++	ibm,cpu-idle-state-names is defined and the length of this
++	property array should be the same as
++	ibm,-cpu-idle-state-names.The flag bits are as follows:
++		0x00000001 /* Decrementer would stop */
++		0x00000002 /* Needs timebase restore */
++		0x00001000 /* Restore GPRs like nap */
++		0x00002000 /* Restore hypervisor resource from PACA pointer */
++		0x00004000 /* Program PORE to restore PACA pointer */
++		0x00010000 /* This is a nap state */
++		0x00020000 /* This is a fast-sleep state */
++		0x00040000 /* This is a winkle state */
++		0x00080000 /* This is a fast-sleep state which requires a */
++			   /* software workaround for restoring the timebase*/
++		0x00800000 /* This state uses SPR PMICR instruction */
++		0x00100000 /* This is a fast stop state */
++		0x00200000 /* This is a deep-stop state */
++
++- ibm,cpu-idle-state-latencies-ns:
++	Array of unsigned 32-bit values containing the values of the
++	exit-latencies (in ns) for the idle states in
++	ibm,cpu-idle-state-names. This property is required whenever
++	ibm,cpu-idle-state-names is defined and the length of this
++	property array should be the same as
++	ibm,-cpu-idle-state-names.
++
++- ibm,cpu-idle-state-residency-ns:
++	Array of unsigned 32-bit values containing the values of the
++	target-residency (in ns) for the idle states in
++	ibm,cpu-idle-state-names. On POWER8 this is an optional
++	property. If the property is absent, the target residency for
++	the "Nap", "FastSleep" are defined to 10000 and 300000000
++	respectively. On POWER9 this property must be defined if
++	ibm,cpu-idle-state-names is defined and the length should be
++	same as that of ibm,cpu-idle-state-names.
++
++- ibm,cpu-idle-state-psscr:
++	Array of unsigned 64-bit values containing the values for the
++	PSSCR for each of the idle states in ibm,cpu-idle-state-names.
++	This property is required on POWER9 whenever
++	ibm,cpu-idle-state-names is defined and the length of this
++	property array should be the same as
++	ibm,cpu-idle-state-names.
++
++- ibm,cpu-idle-state-psscr-mask:
++	Array of unsigned 64-bit values containing the masks
++	indicating which psscr fields are set in the corresponding
++	entries of ibm,cpu-idle-state-psscr.  This property is
++	required on POWER9 whenever ibm,cpu-idle-state-names is
++	defined and the length of this property array should be the
++	same as ibm,cpu-idle-state-names.
++
++	Whenever the firmware sets an entry in
++	ibm,cpu-idle-state-psscr-mask value to 0xf, it implies that
++	only the Requested Level (RL) field of the corresponding entry
++	in ibm,cpu-idle-state-psscr should be considered by the
++	kernel. For such idle states, the kernel would set the
++	remaining fields of the psscr to the following sane-default
++	values.
++
++		- ESL and EC bits are to 1. So wakeup from any stop
++		  state will be at vector 0x100.
++
++		- MTL and PSLL are set to the maximum allowed value as
++		  per the ISA, i.e. 15.
++
++		- The Transition Rate, TR is set to the Maximum value
++                  3.
++
++	For all the other values of the entry in
++	ibm,cpu-idle-state-psscr-mask, the Kernel expects all the
++	psscr fields of the corresponding entry in
++	ibm,cpu-idle-state-psscr to be correctly set by the firmware.
++
++- ibm,cpu-idle-state-pmicr:
++	Array of unsigned 64-bit values containing the pmicr values
++	for the idle states in ibm,cpu-idle-state-names. This 64-bit
++	register value is to be set in pmicr for the corresponding
++	state if the flag indicates that pmicr SPR should be set. This
++	is an optional property on POWER8 and is absent on
++	POWER9. When present on POWER8, the length of this property
++	array should be the same as ibm,cpu-idle-state-names.
++
++- ibm,cpu-idle-state-pmicr:-mask
++	Array of unsigned 64-bit values containing the mask indicating
++	which of the fields of the PMICR are set in the corresponding
++	entries in ibm,cpu-idle-state-pmicr. This is an optional
++	property on POWER8 and is absent on POWER9. When present on
++	POWER8, the length of this property array should be the same
++	as ibm,cpu-idle-state-names.
 -- 
 1.9.4
