@@ -1,16 +1,28 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tyK9r29xGzDqN4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 15:41:52 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, ruscur@russell.cc,
- bsingharora@gmail.com, Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH] powerpc/powernv: Use OPAL call for TCE kill on NVLink2
-Date: Tue, 10 Jan 2017 15:41:44 +1100
-Message-Id: <1484023304-17244-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tyKc42rQszDqHy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 16:01:07 +1100 (AEDT)
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/4] cxlflash: Enhancements, cleanup and fixes
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1483711379-18188-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Tue, 10 Jan 2017 00:00:55 -0500
+In-Reply-To: <1483711379-18188-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ (Uma Krishnan's message of "Fri, 6 Jan 2017 08:02:59 -0600")
+Message-ID: <yq1ziizbjaw.fsf@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,75 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add detection of NPU2 PHBs. NPU2/NVLink2 has a different register
-layout for the TCE kill register therefore TCE invalidation should be
-done via the OPAL call rather than using the register directly as it
-is for PHB3 and NVLink1. This changes TCE invalidation to use the OPAL
-call in the case of a NPU2 PHB model.
+>>>>> "Uma" == Uma Krishnan <ukrishn@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 9 ++++++++-
- arch/powerpc/platforms/powernv/pci.c      | 7 +++++++
- arch/powerpc/platforms/powernv/pci.h      | 1 +
- 3 files changed, 16 insertions(+), 1 deletion(-)
+Uma,
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index d4b33dd..5908c37 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1950,7 +1950,12 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
- 		struct pnv_phb *phb = pe->phb;
- 		unsigned int shift = tbl->it_page_shift;
- 
--		if (phb->type == PNV_PHB_NPU) {
-+		/*
-+		 * NVLink1 can use the TCE kill register directly as
-+		 * it's the same as PHB3. NVLink2 is different and
-+		 * should go via the OPAL call.
-+		 */
-+		if (phb->model == PNV_PHB_MODEL_NPU) {
- 			/*
- 			 * The NVLink hardware does not support TCE kill
- 			 * per TCE entry so we have to invalidate
-@@ -3671,6 +3676,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 		phb->model = PNV_PHB_MODEL_PHB3;
- 	else if (of_device_is_compatible(np, "ibm,power8-npu-pciex"))
- 		phb->model = PNV_PHB_MODEL_NPU;
-+	else if (of_device_is_compatible(np, "ibm,power9-npu-pciex"))
-+		phb->model = PNV_PHB_MODEL_NPU2;
- 	else
- 		phb->model = PNV_PHB_MODEL_UNKNOWN;
- 
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index db7b802..4b22fde 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -940,6 +940,13 @@ void __init pnv_pci_init(void)
- 	for_each_compatible_node(np, NULL, "ibm,ioda2-npu-phb")
- 		pnv_pci_init_npu_phb(np);
- 
-+	/*
-+	 * Look for NPU2 PHBs which we treat mostly as NPU PHBs with
-+	 * the exception of TCE kill which requires an OPAL call.
-+	 */
-+	for_each_compatible_node(np, NULL, "ibm,ioda2-npu2-phb")
-+		pnv_pci_init_npu_phb(np);
-+
- 	/* Configure IOMMU DMA hooks */
- 	set_pci_dma_ops(&dma_iommu_ops);
- }
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index e64df78..e1d3e55 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -19,6 +19,7 @@ enum pnv_phb_model {
- 	PNV_PHB_MODEL_P7IOC,
- 	PNV_PHB_MODEL_PHB3,
- 	PNV_PHB_MODEL_NPU,
-+	PNV_PHB_MODEL_NPU2,
- };
- 
- #define PNV_PCI_DIAG_BUF_SIZE	8192
+Uma> This patch series includes an enhancement to support a new command
+Uma> queuing model and also cleans up prints throughout the driver. The
+Uma> last patch in the series fixes a racing issue.
+
+Uma> The series is based upon v4.10-rc2, intended for 4.11 and is
+Uma> bisectable.
+
+Uma> Matthew R. Ochs (3):
+Uma>   cxlflash: Refactor context reset to share reset logic cxlflash:
+Uma>   Support SQ Command Mode cxlflash: Cleanup prints
+
+The first three patches in the series were submitted by you but do not
+carry your Signed-off-by:...
+
 -- 
-2.1.4
+Martin K. Petersen	Oracle Linux Engineering
