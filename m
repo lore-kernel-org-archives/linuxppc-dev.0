@@ -1,54 +1,34 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tyRFh6FpBzDqpH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 20:15:36 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0A9FKKr086115
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 04:15:34 -0500
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27vv5w9g4u-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 04:15:26 -0500
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 10 Jan 2017 19:14:37 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 92E4D2CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 20:14:35 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0A9EbEm37290046
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 20:14:37 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0A9EYtx001621
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 20:14:35 +1100
-Subject: Re: [PATCH v3 09/15] livepatch: remove unnecessary object loaded check
-To: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- Petr Mladek <pmladek@suse.com>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <f6bedf84258006261fd2bb632e13d1d1904cda93.1481220077.git.jpoimboe@redhat.com>
-Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tyT7M29B3zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2017 21:40:15 +1100 (AEDT)
+Date: Tue, 10 Jan 2017 11:40:04 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Miroslav Benes <mbenes@suse.cz>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
  Chris J Arges <chris.j.arges@canonical.com>,
  Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
  Peter Zijlstra <peterz@infradead.org>
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date: Tue, 10 Jan 2017 14:44:28 +0530
+Subject: Re: [PATCH v3 13/15] livepatch: change to a per-task consistency model
+Message-ID: <20170110104004.GG20785@pathway.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <eeda3a8cf83bcbb569db4774c646ad739b8db415.1481220077.git.jpoimboe@redhat.com>
+ <20161220173246.GC25166@pathway.suse.cz>
+ <20161221212505.dbxeddu2skmjmwiq@treble>
+ <alpine.LSU.2.20.1612231013470.5990@pobox.suse.cz>
+ <20161223101803.GB2541@linux.suse>
+ <20170106200734.d7wvry4upz2ffwem@treble>
 MIME-Version: 1.0
-In-Reply-To: <f6bedf84258006261fd2bb632e13d1d1904cda93.1481220077.git.jpoimboe@redhat.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <dc02faac-d138-ffc6-11e1-e141ac9b593a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170106200734.d7wvry4upz2ffwem@treble>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,17 +38,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 08 December 2016 11:38 PM, Josh Poimboeuf wrote:
-> klp_patch_object()'s callers already ensure that the object is loaded,
-> so its call to klp_is_object_loaded() is unnecessary.
->
-> This will also make it possible to move the patching code into a
-> separate file.
->
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+On Fri 2017-01-06 14:07:34, Josh Poimboeuf wrote:
+> On Fri, Dec 23, 2016 at 11:18:03AM +0100, Petr Mladek wrote:
+> > On Fri 2016-12-23 10:24:35, Miroslav Benes wrote:
+> > > > > > diff --git a/kernel/livepatch/patch.c b/kernel/livepatch/patch.c
+> > > > > > index 5efa262..e79ebb5 100644
+> > > > > > --- a/kernel/livepatch/patch.c
+> > > > > > +++ b/kernel/livepatch/patch.c
+> > > > > > @@ -29,6 +29,7 @@
+> > > > > >  #include <linux/bug.h>
+> > > > > >  #include <linux/printk.h>
+> > > > > >  #include "patch.h"
+> > > > > > +#include "transition.h"
+> > > > > >  
+> > > > > >  static LIST_HEAD(klp_ops);
+> > > > > >  
+> > > > > > @@ -54,15 +55,53 @@ static void notrace klp_ftrace_handler(unsigned long ip,
+> > > > > >  {
+> > > > > >  	struct klp_ops *ops;
+> > > > > >  	struct klp_func *func;
+> > > > > > +	int patch_state;
+> > > > > >  
+> > > > > >  	ops = container_of(fops, struct klp_ops, fops);
+> > > > > >  
+> > > > > >  	rcu_read_lock();
+> > > > > > +
+> > > > > >  	func = list_first_or_null_rcu(&ops->func_stack, struct klp_func,
+> > > > > >  				      stack_node);
+> > > > > > -	if (WARN_ON_ONCE(!func))
+> > > > > > +
+> > > > > > +	if (!func)
+> > > > > >  		goto unlock;
+> > > > > 
+ 
+> Yeah, I'm thinking we should keep the warning to catch any bugs in case
+> any of our ftrace assumptions change.  Maybe I should add a comment:
+> 
+> 	/*
+> 	 * func can never be NULL because preemption should be disabled
+> 	 * here and unregister_ftrace_function() does the equivalent of
+> 	 * a synchronize_sched() before the func_stack removal.
+> 	 */
+> 	if (WARN_ON_ONCE(!func))
+> 		goto unlock;
 
-Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Sounds reasonable to me.
 
--- 
-cheers,
-Kamalesh.
+Best Regards,
+Petr
