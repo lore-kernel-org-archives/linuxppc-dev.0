@@ -1,45 +1,69 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Bart.VanAssche@sandisk.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0052.outbound.protection.outlook.com [104.47.42.52])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzFl10v1kzDqFt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 04:10:19 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0BH9Tnu136247
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:14 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27wkk7fdy6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:14 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 11 Jan 2017 10:10:13 -0700
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 0A3C11FF0028
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 10:09:49 -0700 (MST)
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0BHA9YI37355546
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 17:10:10 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C4DAF28048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:10 -0500 (EST)
-Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id A18072803F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:10 -0500 (EST)
-Subject: [PATCH] powerpc/pseries: Report DLPAR capabilities
-To: linuxppc-dev@lists.ozlabs.org
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 11 Jan 2017 12:00:58 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzGxD04zRzDqKW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 05:04:15 +1100 (AEDT)
+From: Bart Van Assche <Bart.VanAssche@sandisk.com>
+To: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+CC: "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "ysato@users.sourceforge.jp" <ysato@users.sourceforge.jp>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "jesper.nilsson@axis.com" <jesper.nilsson@axis.com>, "mulix@mulix.org"
+ <mulix@mulix.org>, "hpa@zytor.com" <hpa@zytor.com>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "uclinux-h8-devel@lists.sourceforge.jp"
+ <uclinux-h8-devel@lists.sourceforge.jp>, "linux-hexagon@vger.kernel.org"
+ <linux-hexagon@vger.kernel.org>, "geoff@infradead.org" <geoff@infradead.org>,
+ "jcmvbkbc@gmail.com" <jcmvbkbc@gmail.com>, "linux@armlinux.org.uk"
+ <linux@armlinux.org.uk>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "linux-c6x-dev@linux-c6x.org"
+ <linux-c6x-dev@linux-c6x.org>, "linux-am33-list@redhat.com"
+ <linux-am33-list@redhat.com>, "linux-ia64@vger.kernel.org"
+ <linux-ia64@vger.kernel.org>, "linux-cris-kernel@axis.com"
+ <linux-cris-kernel@axis.com>, "linux-mips@linux-mips.org"
+ <linux-mips@linux-mips.org>, "linux-m68k@lists.linux-m68k.org"
+ <linux-m68k@lists.linux-m68k.org>, "a-jacquiot@ti.com" <a-jacquiot@ti.com>,
+ "dalias@libc.org" <dalias@libc.org>, "linux-metag@vger.kernel.org"
+ <linux-metag@vger.kernel.org>, "nios2-dev@lists.rocketboards.org"
+ <nios2-dev@lists.rocketboards.org>, "linux-sh@vger.kernel.org"
+ <linux-sh@vger.kernel.org>, "shorne@gmail.com" <shorne@gmail.com>,
+ "lftan@altera.com" <lftan@altera.com>, "deller@gmx.de" <deller@gmx.de>,
+ "jdmason@kudzu.us" <jdmason@kudzu.us>, "linux-alpha@vger.kernel.org"
+ <linux-alpha@vger.kernel.org>, "openrisc@lists.librecores.org"
+ <openrisc@lists.librecores.org>, "sparclinux@vger.kernel.org"
+ <sparclinux@vger.kernel.org>, "chris@zankel.net" <chris@zankel.net>,
+ "davem@davemloft.net" <davem@davemloft.net>, "joro@8bytes.org"
+ <joro@8bytes.org>, "tglx@linutronix.de" <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>, "fenghua.yu@intel.com"
+ <fenghua.yu@intel.com>, "jejb@parisc-linux.org" <jejb@parisc-linux.org>,
+ "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
+ "msalter@redhat.com" <msalter@redhat.com>, "dledford@redhat.com"
+ <dledford@redhat.com>, "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "starvik@axis.com"
+ <starvik@axis.com>, "dhowells@redhat.com" <dhowells@redhat.com>,
+ "hskinnemoen@gmail.com" <hskinnemoen@gmail.com>, "mingo@redhat.com"
+ <mingo@redhat.com>, "stefan.kristiansson@saunalahti.fi"
+ <stefan.kristiansson@saunalahti.fi>, "tony.luck@intel.com"
+ <tony.luck@intel.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "jonas@southpole.se" <jonas@southpole.se>,
+ "geert@linux-m68k.org" <geert@linux-m68k.org>, "egtvedt@samfundet.no"
+ <egtvedt@samfundet.no>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>
+Subject: Re: [PATCH 2/9] Move dma_ops from archdata into struct device
+Date: Wed, 11 Jan 2017 18:03:15 +0000
+Message-ID: <1484157772.2619.12.camel@sandisk.com>
+References: <20170111005648.14988-1-bart.vanassche@sandisk.com>
+ <20170111005648.14988-3-bart.vanassche@sandisk.com>
+ <20170111064624.GA26893@kroah.com>
+In-Reply-To: <20170111064624.GA26893@kroah.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20170111170058.10550.91156.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,32 +73,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As we add the ability to do DLPAR of additional devices through
-the sysfs interface we need to know which devices are supported.
-This adds the reporting of supported devices with a comma separated
-list reported in the existing /sys/kernel/dlpar.
+On Wed, 2017-01-11 at 07:46 +0100, Greg Kroah-Hartman wrote:
+> On Tue, Jan 10, 2017 at 04:56:41PM -0800, Bart Van Assche wrote:
+> > Several RDMA drivers, e.g. drivers/infiniband/hw/qib, use the CPU to
+> > transfer data between memory and PCIe adapter. Because of performance
+> > reasons it is important that the CPU cache is not flushed when such
+> > drivers transfer data. Make this possible by allowing these drivers to
+> > override the dma_map_ops pointer. Additionally, introduce the function
+> > set_dma_ops() that will be used by a later patch in this series.
+> >=20
+> > Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
+> > Cc: [ ... ]
+>=20
+> That's a crazy cc: list, you should break this up into smaller pieces,
+> otherwise it's going to bounce...
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+That's a subset of what scripts/get_maintainer.pl came up with. Suggestions
+for a more appropriate cc-list for a patch like this that touches all
+architectures would be welcome.
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 76caa4a..1152590 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -551,7 +551,13 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
- 	return rc ? rc : count;
- }
- 
--static CLASS_ATTR(dlpar, S_IWUSR, NULL, dlpar_store);
-+static ssize_t dlpar_show(struct class *class, struct class_attribute *attr,
-+			  char *buf)
-+{
-+	return sprintf(buf, "%s\n", "memory,cpu");
-+}
-+
-+static CLASS_ATTR(dlpar, S_IWUSR | S_IRUSR, dlpar_show, dlpar_store);
- 
- static int __init pseries_dlpar_init(void)
- {
+> > diff --git a/include/linux/device.h b/include/linux/device.h
+> > index 491b4c0ca633..c7cb225d36b0 100644
+> > --- a/include/linux/device.h
+> > +++ b/include/linux/device.h
+> > @@ -885,6 +885,8 @@ struct dev_links_info {
+> > =A0 * a higher-level representation of the device.
+> > =A0 */
+> > =A0struct device {
+> > +	const struct dma_map_ops *dma_ops; /* See also get_dma_ops() */
+> > +
+> > =A0	struct device		*parent;
+> > =A0
+> > =A0	struct device_private	*p;
+>=20
+> Why not put this new pointer down with the other dma fields in this
+> structure?=A0=A0Any specific reason it needs to be first?
+
+Are there CPU architectures for which access to the first member of a
+structure can be encoded and/or executed more efficiently than access to
+other members of a structure? If not, I'm fine with moving the new pointer
+further down.
+
+Bart.=
