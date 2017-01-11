@@ -1,55 +1,54 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tyzwc5HfXzDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 17:47:44 +1100 (AEDT)
-Date: Wed, 11 Jan 2017 07:48:03 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Bart Van Assche <bart.vanassche@sandisk.com>
-Cc: Doug Ledford <dledford@redhat.com>, linux-rdma@vger.kernel.org,
- linux-kernel@vger.kernel.org, Aurelien Jacquiot <a-jacquiot@ti.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Chris Zankel <chris@zankel.net>,
- David Howells <dhowells@redhat.com>,
- "David S . Miller" <davem@davemloft.net>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Geoff Levand <geoff@infradead.org>, "H . Peter Anvin" <hpa@zytor.com>,
- Haavard Skinnemoen <hskinnemoen@gmail.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>,
- Helge Deller <deller@gmx.de>, Ingo Molnar <mingo@redhat.com>,
- "James E . J . Bottomley" <jejb@parisc-linux.org>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Joerg Roedel <joro@8bytes.org>, Jon Mason <jdmason@kudzu.us>,
- Jonas Bonn <jonas@southpole.se>, Ley Foon Tan <lftan@altera.com>,
- Mark Salter <msalter@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Mikael Starvik <starvik@axis.com>,
- Muli Ben-Yehuda <mulix@mulix.org>, Rich Felker <dalias@libc.org>,
- Russell King <linux@armlinux.org.uk>, Stafford Horne <shorne@gmail.com>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, Will Deacon <will.deacon@arm.com>,
- x86@kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- adi-buildroot-devel@lists.sourceforge.net,
- iommu@lists.linux-foundation.org, linux-alpha@vger.kernel.org,
- linux-am33-list@redhat.com, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, linuxppc-dev@lists.ozlabs.org,
- nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
- sparclinux@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp
-Subject: Re: [PATCH 2/9] Move dma_ops from archdata into struct device
-Message-ID: <20170111064803.GB26893@kroah.com>
-References: <20170111005648.14988-1-bart.vanassche@sandisk.com>
- <20170111005648.14988-3-bart.vanassche@sandisk.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tz0L96D0czDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 18:06:25 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v0B74Fdv137754
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 02:06:23 -0500
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27wfkes4un-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 02:06:23 -0500
+Received: from localhost
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Wed, 11 Jan 2017 12:36:19 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id C98CBE006A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:37:17 +0530 (IST)
+Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v0B75Rrl22347938
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:35:27 +0530
+Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
+ by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v0B76EiN005370
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:36:15 +0530
+Subject: Re: [PATCH v3 04/15] livepatch/x86: add TIF_PATCH_PENDING thread flag
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
+ Petr Mladek <pmladek@suse.com>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <b7bbfce2330e61329056e4567c68be8e4c55fb5b.1481220077.git.jpoimboe@redhat.com>
+Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Wed, 11 Jan 2017 12:36:07 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170111005648.14988-3-bart.vanassche@sandisk.com>
+In-Reply-To: <b7bbfce2330e61329056e4567c68be8e4c55fb5b.1481220077.git.jpoimboe@redhat.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <f3e38a07-c53b-3860-a59e-2d6f69a2e700@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,22 +58,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 10, 2017 at 04:56:41PM -0800, Bart Van Assche wrote:
-> Several RDMA drivers, e.g. drivers/infiniband/hw/qib, use the CPU to
-> transfer data between memory and PCIe adapter. Because of performance
-> reasons it is important that the CPU cache is not flushed when such
-> drivers transfer data. Make this possible by allowing these drivers to
-> override the dma_map_ops pointer. Additionally, introduce the function
-> set_dma_ops() that will be used by a later patch in this series.
+On Thursday 08 December 2016 11:38 PM, Josh Poimboeuf wrote:
+> Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
+> per-task consistency model for x86_64.  The bit getting set indicates
+> the thread has a pending patch which needs to be applied when the thread
+> exits the kernel.
+>
+> The bit is placed in the _TIF_ALLWORK_MASK macro, which results in
+> exit_to_usermode_loop() calling klp_update_patch_state() when it's set.
+>
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
-When you say things like "additionally", that's a huge flag that this
-needs to be split up into multiple patches.  No need to add
-set_dma_ops() here in this patch.
+Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-And I'd argue that it should be dma_ops_set(), and dma_ops_get(), just
-to keep the namespace sane, but that's probably a different set of
-patches...
-
-thanks,
-
-greg k-h
+-- 
+cheers,
+Kamalesh.
