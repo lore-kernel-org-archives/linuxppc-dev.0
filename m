@@ -1,35 +1,45 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzCRV1VngzDqL4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 02:26:46 +1100 (AEDT)
-Date: Wed, 11 Jan 2017 09:26:39 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 13/15] livepatch: change to a per-task consistency model
-Message-ID: <20170111152639.l6ehubjuys66if4l@treble>
-References: <cover.1481220077.git.jpoimboe@redhat.com>
- <eeda3a8cf83bcbb569db4774c646ad739b8db415.1481220077.git.jpoimboe@redhat.com>
- <20161220173246.GC25166@pathway.suse.cz>
- <20161221212505.dbxeddu2skmjmwiq@treble>
- <20161222143452.GK25166@pathway.suse.cz>
- <20161222183137.sdfsiv5dpi7po6zk@treble>
- <20170110130058.GH20785@pathway.suse.cz>
- <20170110204646.a4wughlsu6atxu2i@treble>
- <20170111151828.GJ20785@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzFl10v1kzDqFt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 04:10:19 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v0BH9Tnu136247
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:14 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 27wkk7fdy6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:14 -0500
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 11 Jan 2017 10:10:13 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 0A3C11FF0028
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 10:09:49 -0700 (MST)
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v0BHA9YI37355546
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 17:10:10 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C4DAF28048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:10 -0500 (EST)
+Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id A18072803F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 12:10:10 -0500 (EST)
+Subject: [PATCH] powerpc/pseries: Report DLPAR capabilities
+To: linuxppc-dev@lists.ozlabs.org
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 11 Jan 2017 12:00:58 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20170111151828.GJ20785@pathway.suse.cz>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20170111170058.10550.91156.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,147 +49,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 11, 2017 at 04:18:28PM +0100, Petr Mladek wrote:
-> On Tue 2017-01-10 14:46:46, Josh Poimboeuf wrote:
-> > On Tue, Jan 10, 2017 at 02:00:58PM +0100, Petr Mladek wrote:
-> > > On Thu 2016-12-22 12:31:37, Josh Poimboeuf wrote:
-> > > > On Thu, Dec 22, 2016 at 03:34:52PM +0100, Petr Mladek wrote:
-> > > > > On Wed 2016-12-21 15:25:05, Josh Poimboeuf wrote:
-> > > > > > On Tue, Dec 20, 2016 at 06:32:46PM +0100, Petr Mladek wrote:
-> > > > > > > On Thu 2016-12-08 12:08:38, Josh Poimboeuf wrote:
-> > > > > > > > +	read_unlock(&tasklist_lock);
-> > > > > > > > +
-> > > > > > > > +	/*
-> > > > > > > > +	 * Ditto for the idle "swapper" tasks, though they never cross the
-> > > > > > > > +	 * syscall barrier.  Instead they switch over in cpu_idle_loop().
-> > > > > > > > +	 */
-> > > > > > > > +	get_online_cpus();
-> > > > > > > > +	for_each_online_cpu(cpu)
-> > > > > > > > +		set_tsk_thread_flag(idle_task(cpu), TIF_PATCH_PENDING);
-> > > > > > > > +	put_online_cpus();
-> > > > > > > 
-> > > > > > > Also this stage need to be somehow handled by CPU coming/going
-> > > > > > > handlers.
-> > > > > > 
-> > > > > > Here I think we could automatically switch any offline CPUs' idle tasks.
-> > > > > > And something similar in klp_try_complete_transition().
-> > > > > 
-> > > > > We still need to make sure to do not race with the cpu_up()/cpu_down()
-> > > > > calls.
-> > > > 
-> > > > Hm, maybe we'd need to call cpu_hotplug_disable() before switching the
-> > > > offline idle tasks?
-> > > > 
-> > > > > I would use here the trick with for_each_possible_cpu() and let
-> > > > > the migration for the stack check.
-> > > > 
-> > > > There are a few issues with that:
-> > > > 
-> > > > 1) The idle task of a missing CPU doesn't *have* a stack, so it doesn't
-> > > >    make much sense to try to check it.
-> > > > 
-> > > > 2) We can't rely *only* on the stack check, because not all arches have
-> > > >    it.  The other way to migrate idle tasks is from the idle loop switch
-> > > >    point.  But if the task's CPU is down, its idle loop isn't running so
-> > > >    it can't migrate.
-> > > > 
-> > > >    (Note this is currently a theoretical point: we currently don't allow
-> > > >    such arches to use the consistency model anyway because there's no
-> > > >    way for them to migrate kthreads.)
-> > > 
-> > > Good points. My only concern is that the transaction might take a long
-> > > or even forever. I am not sure if it is wise to disable cpu_hotplug
-> > > for the entire transaction.
-> > > 
-> > > A compromise might be to disable cpu hotplug only when the task
-> > > state is manipulated a more complex way. Hmm, cpu_hotplug_disable()
-> > > looks like a rather costly function. We should not call it in
-> > > klp_try_complete_transition(). But we could do:
-> > > 
-> > >   1. When the patch is being enabled, disable cpu hotplug,
-> > >      go through each_possible_cpu and setup the transaction
-> > >      only for CPUs that are online. Then we could enable
-> > >      the hotplug again.
-> > > 
-> > >   2. Check only each_online_cpu in klp_try_complete_transition().
-> > >      If all tasks are migrated, disable cpu hotplug and re-check
-> > >      idle tasks on online CPUs. If any is not migrated, enable
-> > >      hotplug and return failure. Othewise, continue with
-> > >      completion of the transaction. [*]
-> > > 
-> > >   3. In klp_complete_transition, update all tasks including
-> > >      the offline CPUs and enable cpu hotplug again.
-> > > 
-> > > If the re-check in the 2nd step looks ugly, we could add some hotlug
-> > > notifiers to make sure that enabled/disabled CPUs are in a reasonable
-> > > state. We still should disable the hotplug in the 1st and 3rd step.
-> > > 
-> > > BTW: There is a new API for the cpu hotplug callbacks. I was involved
-> > > in one conversion. You might take inspiration in
-> > > drivers/thermal/intel_powerclamp.c. See cpuhp_setup_state_nocalls()
-> > > there.
-> > 
-> > Backing up a bit, although I brought up cpu_hotplug_disable(), I think I
-> > misunderstood the race you mentioned.  I actually don't think
-> > cpu_hotplug_disable() is necessary.
-> 
-> Great backing! You made me to study the difference. If I get it
-> correctly:
-> 
->   + cpu_hotplug_disable() works like a writer lock. It gets
->     exclusive access via cpu_hotplug_begin(). A side effect
->     is that do_cpu_up() and do_cpu_down() do not wait. They
->     return -EBUSY if hotplug is disabled.
-> 
->   + get_online_cpus() is kind of reader lock. It makes sure
->     that all the hotplug operations are finished and "softly"
->     blocks other further operation. By "softly" I mean that
->     the operations wait for the exclusive (write) access
->     in cpu_hotplug_begin().
-> 
-> IMHO, we really have to use get_online_cpus() and avoid the
-> the "hard" blocking.
-> 
-> 
-> > What do you think about something like the following:
->  
-> > In klp_start_transition:
-> > 
-> > 	get_online_cpus();
-> > 	for_each_possible_cpu(cpu)
-> > 		set_tsk_thread_flag(idle_task(cpu), TIF_PATCH_PENDING);
-> > 	put_online_cpus();
-> >
-> > In klp_try_complete_transition:
-> > 
-> > 	get_online_cpus();
-> > 	for_each_possible_cpu(cpu) {
-> > 		task = idle_task(cpu);
-> > 		if (cpu_online(cpu)) {
-> > 			if (!klp_try_switch_task(task))
-> > 				complete = false;
-> > 		} else if (task->patch_state != klp_target_state) {
-> > 			/* offline CPU idle tasks can be switched immediately */
-> > 			clear_tsk_thread_flag(task, TIF_PATCH_PENDING);
-> > 			task->patch_state = klp_target_state;
-> > 		}
-> > 	}
-> > 	put_online_cpus();
-> 
-> I like the idea. You are right that it is enough to always get/put
-> CPUs only when a state of the per-CPU idle tasks are manipulated.
-> In the meantime, we are safe because of the consistency model
-> (clever ftrace handler).
-> 
-> Note that we have to use for_each_possible_cpu() everywhere,
-> e.g. in klp_init_transition(), klp_complete_transition().
-> Otherwise, we might see an inconsistent state.
-> 
-> For example, klp_ftrace_handler() might see KLP_UNDEFINED state
-> if we do not set a valid one in klp_init_transition() and a CPU
-> gets online.
+As we add the ability to do DLPAR of additional devices through
+the sysfs interface we need to know which devices are supported.
+This adds the reporting of supported devices with a comma separated
+list reported in the existing /sys/kernel/dlpar.
 
-Agreed!  I will try to have v4 soon-ish.
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
--- 
-Josh
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 76caa4a..1152590 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -551,7 +551,13 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+ 	return rc ? rc : count;
+ }
+ 
+-static CLASS_ATTR(dlpar, S_IWUSR, NULL, dlpar_store);
++static ssize_t dlpar_show(struct class *class, struct class_attribute *attr,
++			  char *buf)
++{
++	return sprintf(buf, "%s\n", "memory,cpu");
++}
++
++static CLASS_ATTR(dlpar, S_IWUSR | S_IRUSR, dlpar_show, dlpar_store);
+ 
+ static int __init pseries_dlpar_init(void)
+ {
