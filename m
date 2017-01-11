@@ -1,41 +1,34 @@
-Return-Path: <jesper.nilsson@axis.com>
-Received: from bastet.se.axis.com (bastet.se.axis.com [195.60.68.11])
- by lists.ozlabs.org (Postfix) with ESMTP id 3tz7xV0Jd5zDqKN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 23:49:01 +1100 (AEDT)
-Date: Wed, 11 Jan 2017 13:42:02 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org,
- Nicolas Dichtel <nicolas.dichtel@6wind.com>,
- linux-mips@linux-mips.org, alsa-devel@alsa-project.org,
- linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org,
- airlied@linux.ie, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-am33-list@redhat.com,
- linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
- coreteam@netfilter.org, fcoe-devel@open-fcoe.org,
- xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org,
- linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- netdev@vger.kernel.org, linux-mmc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org,
- mmarek@suse.com, netfilter-devel@vger.kernel.org,
- linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
- davem@davemloft.net
-Subject: Re: [PATCH v2 0/7] uapi: export all headers under uapi directories
-Message-ID: <20170111124202.GD7275@axis.com>
-References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
- <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
- <3131144.4Ej3KFWRbz@wuerfel>
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzCG256dKzDqKj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 02:18:34 +1100 (AEDT)
+Date: Wed, 11 Jan 2017 16:18:28 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 13/15] livepatch: change to a per-task consistency model
+Message-ID: <20170111151828.GJ20785@pathway.suse.cz>
+References: <cover.1481220077.git.jpoimboe@redhat.com>
+ <eeda3a8cf83bcbb569db4774c646ad739b8db415.1481220077.git.jpoimboe@redhat.com>
+ <20161220173246.GC25166@pathway.suse.cz>
+ <20161221212505.dbxeddu2skmjmwiq@treble>
+ <20161222143452.GK25166@pathway.suse.cz>
+ <20161222183137.sdfsiv5dpi7po6zk@treble>
+ <20170110130058.GH20785@pathway.suse.cz>
+ <20170110204646.a4wughlsu6atxu2i@treble>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3131144.4Ej3KFWRbz@wuerfel>
+In-Reply-To: <20170110204646.a4wughlsu6atxu2i@treble>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,81 +38,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 09, 2017 at 12:33:58PM +0100, Arnd Bergmann wrote:
-> On Friday, January 6, 2017 10:43:52 AM CET Nicolas Dichtel wrote:
-> > Here is the v2 of this series. The first 5 patches are just cleanup: some
-> > exported headers were still under a non-uapi directory.
-> 
-> Since this is meant as a cleanup, I commented on this to point out a cleaner
-> way to do the same.
-> 
-> > The patch 6 was spotted by code review: there is no in-tree user of this
-> > functionality.
-> > The last patch remove the use of header-y. Now all files under an uapi
-> > directory are exported.
-> 
-> Very nice!
-> 
-> > asm is a bit special, most of architectures export asm/<arch>/include/uapi/asm
-> > only, but there is two exceptions:
-> >  - cris which exports arch/cris/include/uapi/arch-v[10|32];
-> 
-> This is interesting, though not your problem. Maybe someone who understands
-> cris better can comment on this: How is the decision made about which of
-> the arch/user.h headers gets used? I couldn't find that in the sources,
-> but it appears to be based on kernel compile-time settings, which is
-> wrong for user space header files that should be independent of the kernel
-> config.
-
-I believe it's since the CRISv10 and CRISv32 are very different beasts,
-and that is selected via kernel config...
-
-This part of the CRIS port has been transformed a couple of times from
-the original layout without uapi, and there's still some legacy silliness,
-where some files might have been exported but never used from userspace
-except for some corner cases.
-
-> >  - tile which exports arch/tile/include/uapi/arch.
-> > Because I don't know if the output of 'make headers_install_all' can be changed,
-> > I introduce subdir-y in Kbuild file. The headers_install_all target copies all
-> > asm/<arch>/include/uapi/asm to usr/include/asm-<arch> but
-> > arch/cris/include/uapi/arch-v[10|32] and arch/tile/include/uapi/arch are not
-> > prefixed (they are put asis in usr/include/). If it's acceptable to modify the
-> > output of 'make headers_install_all' to export asm headers in
-> > usr/include/asm-<arch>/asm, then I could remove this new subdir-y and exports
-> > everything under arch/<arch>/include/uapi/.
-> 
-> I don't know if anyone still uses "make headers_install_all", I suspect
-> distros these days all use "make headers_install", so it probably
-> doesn't matter much.
-> 
-> In case of cris, it should be easy enough to move all the contents of the
-> uapi/arch-*/*.h headers into the respective uapi/asm/*.h headers, they
-> only seem to be referenced from there.
-
-This would seem to be a reasonable change.
-
-> For tile, I suspect that would not work as the arch/*.h headers are
-> apparently defined as interfaces for both user space and kernel.
-> 
-> > Note also that exported files for asm are a mix of files listed by:
-> >  - include/uapi/asm-generic/Kbuild.asm;
-> >  - arch/x86/include/uapi/asm/Kbuild;
-> >  - arch/x86/include/asm/Kbuild.
-> > This complicates a lot the processing (arch/x86/include/asm/Kbuild is also
-> > used by scripts/Makefile.asm-generic).
+On Tue 2017-01-10 14:46:46, Josh Poimboeuf wrote:
+> On Tue, Jan 10, 2017 at 02:00:58PM +0100, Petr Mladek wrote:
+> > On Thu 2016-12-22 12:31:37, Josh Poimboeuf wrote:
+> > > On Thu, Dec 22, 2016 at 03:34:52PM +0100, Petr Mladek wrote:
+> > > > On Wed 2016-12-21 15:25:05, Josh Poimboeuf wrote:
+> > > > > On Tue, Dec 20, 2016 at 06:32:46PM +0100, Petr Mladek wrote:
+> > > > > > On Thu 2016-12-08 12:08:38, Josh Poimboeuf wrote:
+> > > > > > > +	read_unlock(&tasklist_lock);
+> > > > > > > +
+> > > > > > > +	/*
+> > > > > > > +	 * Ditto for the idle "swapper" tasks, though they never cross the
+> > > > > > > +	 * syscall barrier.  Instead they switch over in cpu_idle_loop().
+> > > > > > > +	 */
+> > > > > > > +	get_online_cpus();
+> > > > > > > +	for_each_online_cpu(cpu)
+> > > > > > > +		set_tsk_thread_flag(idle_task(cpu), TIF_PATCH_PENDING);
+> > > > > > > +	put_online_cpus();
+> > > > > > 
+> > > > > > Also this stage need to be somehow handled by CPU coming/going
+> > > > > > handlers.
+> > > > > 
+> > > > > Here I think we could automatically switch any offline CPUs' idle tasks.
+> > > > > And something similar in klp_try_complete_transition().
+> > > > 
+> > > > We still need to make sure to do not race with the cpu_up()/cpu_down()
+> > > > calls.
+> > > 
+> > > Hm, maybe we'd need to call cpu_hotplug_disable() before switching the
+> > > offline idle tasks?
+> > > 
+> > > > I would use here the trick with for_each_possible_cpu() and let
+> > > > the migration for the stack check.
+> > > 
+> > > There are a few issues with that:
+> > > 
+> > > 1) The idle task of a missing CPU doesn't *have* a stack, so it doesn't
+> > >    make much sense to try to check it.
+> > > 
+> > > 2) We can't rely *only* on the stack check, because not all arches have
+> > >    it.  The other way to migrate idle tasks is from the idle loop switch
+> > >    point.  But if the task's CPU is down, its idle loop isn't running so
+> > >    it can't migrate.
+> > > 
+> > >    (Note this is currently a theoretical point: we currently don't allow
+> > >    such arches to use the consistency model anyway because there's no
+> > >    way for them to migrate kthreads.)
 > > 
-> > This series has been tested with a 'make headers_install' on x86 and a
-> > 'make headers_install_all'. I've checked the result of both commands.
+> > Good points. My only concern is that the transaction might take a long
+> > or even forever. I am not sure if it is wise to disable cpu_hotplug
+> > for the entire transaction.
 > > 
-> > This patch is built against linus tree. I don't know if it should be
-> > made against antoher tree.
+> > A compromise might be to disable cpu hotplug only when the task
+> > state is manipulated a more complex way. Hmm, cpu_hotplug_disable()
+> > looks like a rather costly function. We should not call it in
+> > klp_try_complete_transition(). But we could do:
+> > 
+> >   1. When the patch is being enabled, disable cpu hotplug,
+> >      go through each_possible_cpu and setup the transaction
+> >      only for CPUs that are online. Then we could enable
+> >      the hotplug again.
+> > 
+> >   2. Check only each_online_cpu in klp_try_complete_transition().
+> >      If all tasks are migrated, disable cpu hotplug and re-check
+> >      idle tasks on online CPUs. If any is not migrated, enable
+> >      hotplug and return failure. Othewise, continue with
+> >      completion of the transaction. [*]
+> > 
+> >   3. In klp_complete_transition, update all tasks including
+> >      the offline CPUs and enable cpu hotplug again.
+> > 
+> > If the re-check in the 2nd step looks ugly, we could add some hotlug
+> > notifiers to make sure that enabled/disabled CPUs are in a reasonable
+> > state. We still should disable the hotplug in the 1st and 3rd step.
+> > 
+> > BTW: There is a new API for the cpu hotplug callbacks. I was involved
+> > in one conversion. You might take inspiration in
+> > drivers/thermal/intel_powerclamp.c. See cpuhp_setup_state_nocalls()
+> > there.
 > 
-> The series should probably get merged through the kbuild tree, but testing
-> it on mainline is fine here.
-> 
-> 	Arnd
+> Backing up a bit, although I brought up cpu_hotplug_disable(), I think I
+> misunderstood the race you mentioned.  I actually don't think
+> cpu_hotplug_disable() is necessary.
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Great backing! You made me to study the difference. If I get it
+correctly:
+
+  + cpu_hotplug_disable() works like a writer lock. It gets
+    exclusive access via cpu_hotplug_begin(). A side effect
+    is that do_cpu_up() and do_cpu_down() do not wait. They
+    return -EBUSY if hotplug is disabled.
+
+  + get_online_cpus() is kind of reader lock. It makes sure
+    that all the hotplug operations are finished and "softly"
+    blocks other further operation. By "softly" I mean that
+    the operations wait for the exclusive (write) access
+    in cpu_hotplug_begin().
+
+IMHO, we really have to use get_online_cpus() and avoid the
+the "hard" blocking.
+
+
+> What do you think about something like the following:
+ 
+> In klp_start_transition:
+> 
+> 	get_online_cpus();
+> 	for_each_possible_cpu(cpu)
+> 		set_tsk_thread_flag(idle_task(cpu), TIF_PATCH_PENDING);
+> 	put_online_cpus();
+>
+> In klp_try_complete_transition:
+> 
+> 	get_online_cpus();
+> 	for_each_possible_cpu(cpu) {
+> 		task = idle_task(cpu);
+> 		if (cpu_online(cpu)) {
+> 			if (!klp_try_switch_task(task))
+> 				complete = false;
+> 		} else if (task->patch_state != klp_target_state) {
+> 			/* offline CPU idle tasks can be switched immediately */
+> 			clear_tsk_thread_flag(task, TIF_PATCH_PENDING);
+> 			task->patch_state = klp_target_state;
+> 		}
+> 	}
+> 	put_online_cpus();
+
+I like the idea. You are right that it is enough to always get/put
+CPUs only when a state of the per-CPU idle tasks are manipulated.
+In the meantime, we are safe because of the consistency model
+(clever ftrace handler).
+
+Note that we have to use for_each_possible_cpu() everywhere,
+e.g. in klp_init_transition(), klp_complete_transition().
+Otherwise, we might see an inconsistent state.
+
+For example, klp_ftrace_handler() might see KLP_UNDEFINED state
+if we do not set a valid one in klp_init_transition() and a CPU
+gets online.
+
+Best Regards,
+Petr
