@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBk2ClPzDqbm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBl3fVfzDqc3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:35 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,10 +13,9 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 04/37] PCI: dwc: designware: Move the register defines to
- designware header file
-Date: Thu, 12 Jan 2017 15:55:53 +0530
-Message-ID: <1484216786-17292-5-git-send-email-kishon@ti.com>
+Subject: [PATCH 15/37] Documentation: PCI: Guide to use PCI Endpoint Core Layer
+Date: Thu, 12 Jan 2017 15:56:04 +0530
+Message-ID: <1484216786-17292-16-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -30,181 +29,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-No functional change. Move the register defines and other macros from
-pcie-designware.c to pcie-designware.h. This is in preparation to
-split the pcie-designware.c file into designware core file and host
-specific file.
-
-While at that also fix a checkpatch warning.
+Add Documentation to help users use endpoint library to enable endpoint
+mode in the PCI controller and add new PCI endpoint functions.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- drivers/pci/dwc/pcie-designware.c |   70 ------------------------------------
- drivers/pci/dwc/pcie-designware.h |   71 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 71 insertions(+), 70 deletions(-)
+ Documentation/PCI/00-INDEX                  |    2 +
+ Documentation/PCI/endpoint/pci-endpoint.txt |  190 +++++++++++++++++++++++++++
+ 2 files changed, 192 insertions(+)
+ create mode 100644 Documentation/PCI/endpoint/pci-endpoint.txt
 
-diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
-index d68bc7b..0b928dc 100644
---- a/drivers/pci/dwc/pcie-designware.c
-+++ b/drivers/pci/dwc/pcie-designware.c
-@@ -25,76 +25,6 @@
- 
- #include "pcie-designware.h"
- 
--/* Parameters for the waiting for link up routine */
--#define LINK_WAIT_MAX_RETRIES		10
--#define LINK_WAIT_USLEEP_MIN		90000
--#define LINK_WAIT_USLEEP_MAX		100000
--
--/* Parameters for the waiting for iATU enabled routine */
--#define LINK_WAIT_MAX_IATU_RETRIES	5
--#define LINK_WAIT_IATU_MIN		9000
--#define LINK_WAIT_IATU_MAX		10000
--
--/* Synopsys-specific PCIe configuration registers */
--#define PCIE_PORT_LINK_CONTROL		0x710
--#define PORT_LINK_MODE_MASK		(0x3f << 16)
--#define PORT_LINK_MODE_1_LANES		(0x1 << 16)
--#define PORT_LINK_MODE_2_LANES		(0x3 << 16)
--#define PORT_LINK_MODE_4_LANES		(0x7 << 16)
--#define PORT_LINK_MODE_8_LANES		(0xf << 16)
--
--#define PCIE_LINK_WIDTH_SPEED_CONTROL	0x80C
--#define PORT_LOGIC_SPEED_CHANGE		(0x1 << 17)
--#define PORT_LOGIC_LINK_WIDTH_MASK	(0x1f << 8)
--#define PORT_LOGIC_LINK_WIDTH_1_LANES	(0x1 << 8)
--#define PORT_LOGIC_LINK_WIDTH_2_LANES	(0x2 << 8)
--#define PORT_LOGIC_LINK_WIDTH_4_LANES	(0x4 << 8)
--#define PORT_LOGIC_LINK_WIDTH_8_LANES	(0x8 << 8)
--
--#define PCIE_MSI_ADDR_LO		0x820
--#define PCIE_MSI_ADDR_HI		0x824
--#define PCIE_MSI_INTR0_ENABLE		0x828
--#define PCIE_MSI_INTR0_MASK		0x82C
--#define PCIE_MSI_INTR0_STATUS		0x830
--
--#define PCIE_ATU_VIEWPORT		0x900
--#define PCIE_ATU_REGION_INBOUND		(0x1 << 31)
--#define PCIE_ATU_REGION_OUTBOUND	(0x0 << 31)
--#define PCIE_ATU_REGION_INDEX2		(0x2 << 0)
--#define PCIE_ATU_REGION_INDEX1		(0x1 << 0)
--#define PCIE_ATU_REGION_INDEX0		(0x0 << 0)
--#define PCIE_ATU_CR1			0x904
--#define PCIE_ATU_TYPE_MEM		(0x0 << 0)
--#define PCIE_ATU_TYPE_IO		(0x2 << 0)
--#define PCIE_ATU_TYPE_CFG0		(0x4 << 0)
--#define PCIE_ATU_TYPE_CFG1		(0x5 << 0)
--#define PCIE_ATU_CR2			0x908
--#define PCIE_ATU_ENABLE			(0x1 << 31)
--#define PCIE_ATU_BAR_MODE_ENABLE	(0x1 << 30)
--#define PCIE_ATU_LOWER_BASE		0x90C
--#define PCIE_ATU_UPPER_BASE		0x910
--#define PCIE_ATU_LIMIT			0x914
--#define PCIE_ATU_LOWER_TARGET		0x918
--#define PCIE_ATU_BUS(x)			(((x) & 0xff) << 24)
--#define PCIE_ATU_DEV(x)			(((x) & 0x1f) << 19)
--#define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
--#define PCIE_ATU_UPPER_TARGET		0x91C
--
--/*
-- * iATU Unroll-specific register definitions
-- * From 4.80 core version the address translation will be made by unroll
-- */
--#define PCIE_ATU_UNR_REGION_CTRL1	0x00
--#define PCIE_ATU_UNR_REGION_CTRL2	0x04
--#define PCIE_ATU_UNR_LOWER_BASE		0x08
--#define PCIE_ATU_UNR_UPPER_BASE		0x0C
--#define PCIE_ATU_UNR_LIMIT		0x10
--#define PCIE_ATU_UNR_LOWER_TARGET	0x14
--#define PCIE_ATU_UNR_UPPER_TARGET	0x18
--
--/* Register address builder */
--#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region)  ((0x3 << 20) | (region << 9))
--
- /* PCIe Port Logic registers */
- #define PLR_OFFSET			0x700
- #define PCIE_PHY_DEBUG_R1		(PLR_OFFSET + 0x2c)
-diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-index 32f4602..a6cf9262 100644
---- a/drivers/pci/dwc/pcie-designware.h
-+++ b/drivers/pci/dwc/pcie-designware.h
-@@ -14,6 +14,77 @@
- #ifndef _PCIE_DESIGNWARE_H
- #define _PCIE_DESIGNWARE_H
- 
-+/* Parameters for the waiting for link up routine */
-+#define LINK_WAIT_MAX_RETRIES		10
-+#define LINK_WAIT_USLEEP_MIN		90000
-+#define LINK_WAIT_USLEEP_MAX		100000
+diff --git a/Documentation/PCI/00-INDEX b/Documentation/PCI/00-INDEX
+index 147231f..ba950b2 100644
+--- a/Documentation/PCI/00-INDEX
++++ b/Documentation/PCI/00-INDEX
+@@ -12,3 +12,5 @@ pci.txt
+ 	- info on the PCI subsystem for device driver authors
+ pcieaer-howto.txt
+ 	- the PCI Express Advanced Error Reporting Driver Guide HOWTO
++endpoint/pci-endpoint.txt
++	- guide to add endpoint controller driver and endpoint function driver.
+diff --git a/Documentation/PCI/endpoint/pci-endpoint.txt b/Documentation/PCI/endpoint/pci-endpoint.txt
+new file mode 100644
+index 0000000..68a7839
+--- /dev/null
++++ b/Documentation/PCI/endpoint/pci-endpoint.txt
+@@ -0,0 +1,190 @@
++			    PCI ENDPOINT FRAMEWORK
++		    Kishon Vijay Abraham I <kishon@ti.com>
 +
-+/* Parameters for the waiting for iATU enabled routine */
-+#define LINK_WAIT_MAX_IATU_RETRIES	5
-+#define LINK_WAIT_IATU_MIN		9000
-+#define LINK_WAIT_IATU_MAX		10000
++This document is a guide to use the PCI Endpoint Framework in order to create
++endpoint controller driver, endpoint function driver and using configfs
++interface to bind the function driver to the controller driver.
 +
-+/* Synopsys-specific PCIe configuration registers */
-+#define PCIE_PORT_LINK_CONTROL		0x710
-+#define PORT_LINK_MODE_MASK		(0x3f << 16)
-+#define PORT_LINK_MODE_1_LANES		(0x1 << 16)
-+#define PORT_LINK_MODE_2_LANES		(0x3 << 16)
-+#define PORT_LINK_MODE_4_LANES		(0x7 << 16)
-+#define PORT_LINK_MODE_8_LANES		(0xf << 16)
++1. Introduction
 +
-+#define PCIE_LINK_WIDTH_SPEED_CONTROL	0x80C
-+#define PORT_LOGIC_SPEED_CHANGE		(0x1 << 17)
-+#define PORT_LOGIC_LINK_WIDTH_MASK	(0x1f << 8)
-+#define PORT_LOGIC_LINK_WIDTH_1_LANES	(0x1 << 8)
-+#define PORT_LOGIC_LINK_WIDTH_2_LANES	(0x2 << 8)
-+#define PORT_LOGIC_LINK_WIDTH_4_LANES	(0x4 << 8)
-+#define PORT_LOGIC_LINK_WIDTH_8_LANES	(0x8 << 8)
++*Linux* has a comprehensive PCI subsystem to support PCI controllers that
++operates in Root Complex mode. The subsystem has capability to scan PCI bus,
++assign memory resources and irq resources, load PCI driver (based on
++vendorid, deviceid), support other services like hot-plug, power management,
++advanced error reporting and virtual channels.
 +
-+#define PCIE_MSI_ADDR_LO		0x820
-+#define PCIE_MSI_ADDR_HI		0x824
-+#define PCIE_MSI_INTR0_ENABLE		0x828
-+#define PCIE_MSI_INTR0_MASK		0x82C
-+#define PCIE_MSI_INTR0_STATUS		0x830
++However PCI controller IPs integrated in certain SoC is capable of operating
++either in Root Complex mode or Endpoint mode. PCI Endpoint Framework will
++add endpoint mode support in *Linux*. This will help to run Linux in an
++EP system which can have a wide variety of use cases from testing or
++validation, co-processor accelerator etc..
 +
-+#define PCIE_ATU_VIEWPORT		0x900
-+#define PCIE_ATU_REGION_INBOUND		(0x1 << 31)
-+#define PCIE_ATU_REGION_OUTBOUND	(0x0 << 31)
-+#define PCIE_ATU_REGION_INDEX2		(0x2 << 0)
-+#define PCIE_ATU_REGION_INDEX1		(0x1 << 0)
-+#define PCIE_ATU_REGION_INDEX0		(0x0 << 0)
-+#define PCIE_ATU_CR1			0x904
-+#define PCIE_ATU_TYPE_MEM		(0x0 << 0)
-+#define PCIE_ATU_TYPE_IO		(0x2 << 0)
-+#define PCIE_ATU_TYPE_CFG0		(0x4 << 0)
-+#define PCIE_ATU_TYPE_CFG1		(0x5 << 0)
-+#define PCIE_ATU_CR2			0x908
-+#define PCIE_ATU_ENABLE			(0x1 << 31)
-+#define PCIE_ATU_BAR_MODE_ENABLE	(0x1 << 30)
-+#define PCIE_ATU_LOWER_BASE		0x90C
-+#define PCIE_ATU_UPPER_BASE		0x910
-+#define PCIE_ATU_LIMIT			0x914
-+#define PCIE_ATU_LOWER_TARGET		0x918
-+#define PCIE_ATU_BUS(x)			(((x) & 0xff) << 24)
-+#define PCIE_ATU_DEV(x)			(((x) & 0x1f) << 19)
-+#define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
-+#define PCIE_ATU_UPPER_TARGET		0x91C
++2. PCI Endpoint Core
 +
-+/*
-+ * iATU Unroll-specific register definitions
-+ * From 4.80 core version the address translation will be made by unroll
-+ */
-+#define PCIE_ATU_UNR_REGION_CTRL1	0x00
-+#define PCIE_ATU_UNR_REGION_CTRL2	0x04
-+#define PCIE_ATU_UNR_LOWER_BASE		0x08
-+#define PCIE_ATU_UNR_UPPER_BASE		0x0C
-+#define PCIE_ATU_UNR_LIMIT		0x10
-+#define PCIE_ATU_UNR_LOWER_TARGET	0x14
-+#define PCIE_ATU_UNR_UPPER_TARGET	0x18
++The PCI Endpoint Core layer comprises of 3 components: the Endpoint Controller
++library, the Endpoint Function library and the configfs layer to bind the
++endpoint function with the endpoint controller.
 +
-+/* Register address builder */
-+#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region)	\
-+			((0x3 << 20) | ((region) << 9))
++2.1 PCI Endpoint Controller(EPC) Library
 +
- /*
-  * Maximum number of MSI IRQs can be 256 per controller. But keep
-  * it 32 as of now. Probably we will never need more than 32. If needed,
++The EPC library provides APIs to be used by the controller that can operate
++in endpoint mode. It also provides APIs to be used by function driver/library
++in order to implement a particular endpoint function.
++
++2.1.1 APIs for the PCI controller Driver
++
++This section lists the APIs that the PCI Endpoint core provides to be used
++by the PCI controller driver.
++
++*) devm_pci_epc_create()/pci_epc_create()
++
++   The PCI controller driver should implement the following ops:
++	 * write_header: ops to populate configuration space header
++	 * set_bar: ops to configure the BAR
++	 * clear_bar: ops to reset the BAR
++	 * alloc_addr_space: ops to allocate *in* PCI controller address space
++	 * free_addr_space: ops to free the allocated address space
++	 * raise_irq: ops to raise a legacy or MSI interrupt
++	 * start: ops to start the PCI link
++	 * stop: ops to stop the PCI link
++
++   The PCI controller driver can then create a new EPC device by invoking
++   devm_pci_epc_create/pci_epc_create.
++
++*) devm_pci_epc_destroy()/pci_epc_destroy()
++
++   The PCI controller driver can destroy the EPC device created by either
++   devm_pci_epc_create or pci_epc_create using devm_pci_epc_destroy() or
++   /pci_epc_destroy()
++
++2.1.2 APIs for the PCI Endpoint Function Driver
++
++This section lists the APIs that the PCI Endpoint core provides to be used
++by the PCI endpoint function driver.
++
++*) pci_epc_write_header()
++
++   The PCI endpoint function driver should use pci_epc_write_header() to
++   write the standard configuration header to the endpoint controller.
++
++*) pci_epc_set_bar()
++
++   The PCI endpoint function driver should use pci_epc_set_bar() to configure
++   the Base Address Register in order for the host to assign PCI addr space.
++   Register space of the function driver is usually configured
++   using this API.
++
++*) pci_epc_clear_bar()
++
++   The PCI endpoint function driver should use pci_epc_clear_bar() to reset
++   the BAR.
++
++*) pci_epc_raise_irq()
++
++   The PCI endpoint function driver should use pci_epc_raise_irq() to raise
++   Legacy Interrupt or MSI Interrupt.
++
++*) pci_epc_start()
++
++   The PCI endpoint function driver should invoke pci_epc_start() once it
++   has configured the endpoint function and wants to start the PCI link.
++
++*) pci_epc_stop()
++
++   The PCI endpoint function driver should invoke pci_epc_stop() to stop
++   the PCI LINK.
++
++2.1.3 Other APIs
++
++There are other APIs provided by the EPC library. These are used for binding
++the epf device with epc device. pci-ep-cfs.c can be used as reference for
++using these APIs.
++
++*) pci_epc_get()
++
++   Get a reference to the pci endpoint controller based on the device name of
++   the controller.
++
++*) pci_epc_put()
++
++   Release the reference to the pci endpoint controller obtained using
++   pci_epc_get()
++
++*) pci_epc_add_epf()
++
++   Add a pci endpoint function to a pci endpoint controller. A pcie device
++   can have upto 8 functions according to the specification.
++
++*) pci_epc_remove_epf()
++
++   Remove the pci endpoint function from pci endpoint controller.
++
++2.2 PCI Endpoint Function(EPF) Library
++
++The EPF library provides APIs to be used by the function driver and the EPC
++library in order to provide endpoint mode functionality.
++
++2.2.1 APIs for the PCI Endpoint Function Driver
++
++This section lists the APIs that the PCI Endpoint core provides to be used
++by the PCI endpoint function driver.
++
++*) pci_epf_register_driver()
++
++   The PCI Endpoint Function driver should implement the following ops:
++	 * bind: ops to perform when a EPC device has been bound to EPF device
++	 * unbind: ops to perform when a binding has been lost between a EPC
++	   device and EPF device
++	 * linkup: ops to perform when the EPC device has established a
++	   connection with a host system
++
++  The PCI Function driver can then register the PCI EPF driver by using
++  pci_epf_register_driver().
++
++*) pci_epf_unregister_driver()
++
++  The PCI Function driver can unregister the PCI EPF driver by using
++  pci_epf_unregister_driver().
++
++*) pci_epf_alloc_space()
++
++  The PCI Function driver can allocate space for a particular BAR using
++  pci_epf_alloc_space().
++
++*) pci_epf_free_space()
++
++  The PCI Function driver can free the allocated space
++  (using pci_epf_alloc_space) by invoking pci_epf_free_space().
++
++2.2.2 APIs for the PCI Endpoint Controller Library
++This section lists the APIs that the PCI Endpoint core provides to be used
++by the PCI endpoint controller library.
++
++*) pci_epf_linkup()
++
++   The PCI endpoint controller library invokes pci_epf_linkup() when the
++   EPC device has established the connection to the host.
++
++2.2.2 Other APIs
++There are other APIs provided by the EPF library. These are used to notify
++the function driver when the EPF device is bound to the EPC device.
++pci-ep-cfs.c can be used as reference for using these APIs.
++
++*) pci_epf_create()
++
++   Create a new PCI EPF device by passing the name of the PCI EPF device.
++   This name will be used to bind the the EPF device to a EPF driver.
++
++*) pci_epf_destroy()
++
++   Destroy the created PCI EPF device.
++
++*) pci_epf_bind()
++
++   pci_epf_bind() should be invoked when the EPF device has been bound to
++   a EPC device.
++
++*) pci_epf_unbind()
++
++   pci_epf_unbind() should be invoked when the binding between EPC device
++   and EPF device is lost.
 -- 
 1.7.9.5
