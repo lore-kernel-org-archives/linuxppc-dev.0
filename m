@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzSZV4vlVzDqNL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 12:18:42 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzSbN6vcFzDqZc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 12:19:28 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0C0xI2u082665
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:18:40 -0500
+ v0C1J8of147427
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:19:27 -0500
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27wrqm11ex-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27wswqwn0j-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:18:40 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:19:26 -0500
 Received: from localhost
  by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Wed, 11 Jan 2017 18:18:39 -0700
+ Wed, 11 Jan 2017 18:19:26 -0700
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -28,9 +28,11 @@ Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/4] cxlflash: Enhancements, cleanup and fixes
-Date: Wed, 11 Jan 2017 19:18:18 -0600
-Message-Id: <1484183898-22714-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/4] cxlflash: Refactor context reset to share reset logic
+Date: Wed, 11 Jan 2017 19:19:08 -0600
+In-Reply-To: <1484183898-22714-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+References: <1484183898-22714-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1484183948-22786-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,31 +42,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series includes an enhancement to support a new command queuing
-model and also cleans up prints throughout the driver. The last patch in
-the series fixes a racing issue.
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 
-The series is based upon v4.10-rc2, intended for 4.11 and is bisectable.
+As staging for supporting hardware with different context reset
+registers but a similar reset procedure, refactor the existing context
+reset routine to move the reset logic to a common routine. This will
+allow hardware with a different reset register to leverage existing
+code.
 
-v2 Changes:
-- Fixed SOBs for all the submitted patches
+Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+---
+ drivers/scsi/cxlflash/main.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-Matthew R. Ochs (3):
-  cxlflash: Refactor context reset to share reset logic
-  cxlflash: Support SQ Command Mode
-  cxlflash: Cleanup prints
-
-Uma Krishnan (1):
-  cxlflash: Cancel scheduled workers before stopping AFU
-
- drivers/scsi/cxlflash/common.h     |  32 ++-
- drivers/scsi/cxlflash/lunmgt.c     |  31 +--
- drivers/scsi/cxlflash/main.c       | 465 +++++++++++++++++++++----------------
- drivers/scsi/cxlflash/sislite.h    |  19 +-
- drivers/scsi/cxlflash/superpipe.c  | 183 ++++++++-------
- drivers/scsi/cxlflash/vlun.c       | 169 +++++++-------
- include/uapi/scsi/cxlflash_ioctl.h |   1 +
- 7 files changed, 518 insertions(+), 382 deletions(-)
-
+diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+index b17ebf6..a990efb 100644
+--- a/drivers/scsi/cxlflash/main.c
++++ b/drivers/scsi/cxlflash/main.c
+@@ -188,10 +188,11 @@ static void cmd_complete(struct afu_cmd *cmd)
+ }
+ 
+ /**
+- * context_reset_ioarrin() - reset command owner context via IOARRIN register
++ * context_reset() - reset command owner context via specified register
+  * @cmd:	AFU command that timed out.
++ * @reset_reg:	MMIO register to perform reset.
+  */
+-static void context_reset_ioarrin(struct afu_cmd *cmd)
++static void context_reset(struct afu_cmd *cmd, __be64 __iomem *reset_reg)
+ {
+ 	int nretry = 0;
+ 	u64 rrin = 0x1;
+@@ -201,9 +202,9 @@ static void context_reset_ioarrin(struct afu_cmd *cmd)
+ 
+ 	pr_debug("%s: cmd=%p\n", __func__, cmd);
+ 
+-	writeq_be(rrin, &afu->host_map->ioarrin);
++	writeq_be(rrin, reset_reg);
+ 	do {
+-		rrin = readq_be(&afu->host_map->ioarrin);
++		rrin = readq_be(reset_reg);
+ 		if (rrin != 0x1)
+ 			break;
+ 		/* Double delay each time */
+@@ -215,6 +216,17 @@ static void context_reset_ioarrin(struct afu_cmd *cmd)
+ }
+ 
+ /**
++ * context_reset_ioarrin() - reset command owner context via IOARRIN register
++ * @cmd:	AFU command that timed out.
++ */
++static void context_reset_ioarrin(struct afu_cmd *cmd)
++{
++	struct afu *afu = cmd->parent;
++
++	context_reset(cmd, &afu->host_map->ioarrin);
++}
++
++/**
+  * send_cmd_ioarrin() - sends an AFU command via IOARRIN register
+  * @afu:	AFU associated with the host.
+  * @cmd:	AFU command to send.
 -- 
 2.1.0
