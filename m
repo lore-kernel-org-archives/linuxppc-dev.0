@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBj15mBzDqb5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBk2ClPzDqbm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:34 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,10 +13,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 12/37] PCI: dwc: Create a new config symbol to enable pci dwc
- host
-Date: Thu, 12 Jan 2017 15:56:01 +0530
-Message-ID: <1484216786-17292-13-git-send-email-kishon@ti.com>
+Subject: [PATCH 04/37] PCI: dwc: designware: Move the register defines to
+ designware header file
+Date: Thu, 12 Jan 2017 15:55:53 +0530
+Message-ID: <1484216786-17292-5-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -30,183 +30,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that pci designware host has a separate file, create a new
-config symbol to select the host only driver. This is in preparation
-to enable endpoint support to designware driver.
+No functional change. Move the register defines and other macros from
+pcie-designware.c to pcie-designware.h. This is in preparation to
+split the pcie-designware.c file into designware core file and host
+specific file.
+
+While at that also fix a checkpatch warning.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- drivers/pci/dwc/Kconfig           |   26 +++++++++++++++-----------
- drivers/pci/dwc/Makefile          |    3 ++-
- drivers/pci/dwc/pcie-designware.h |   29 +++++++++++++++++++++++++----
- 3 files changed, 42 insertions(+), 16 deletions(-)
+ drivers/pci/dwc/pcie-designware.c |   70 ------------------------------------
+ drivers/pci/dwc/pcie-designware.h |   71 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/pci/dwc/Kconfig b/drivers/pci/dwc/Kconfig
-index 8b08519..d0bdfb5 100644
---- a/drivers/pci/dwc/Kconfig
-+++ b/drivers/pci/dwc/Kconfig
-@@ -3,13 +3,17 @@ menu "DesignWare PCI Core Support"
+diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
+index d68bc7b..0b928dc 100644
+--- a/drivers/pci/dwc/pcie-designware.c
++++ b/drivers/pci/dwc/pcie-designware.c
+@@ -25,76 +25,6 @@
  
- config PCIE_DW
- 	bool
-+
-+config PCIE_DW_HOST
-+        bool
- 	depends on PCI_MSI_IRQ_DOMAIN
-+        select PCIE_DW
+ #include "pcie-designware.h"
  
- config PCI_DRA7XX
- 	bool "TI DRA7xx PCIe controller"
- 	depends on OF && HAS_IOMEM && TI_PIPE3
- 	depends on PCI_MSI_IRQ_DOMAIN
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	 Enables support for the PCIe controller in the DRA7xx SoC.  There
- 	 are two instances of PCIe controller in DRA7xx.  This controller can
-@@ -18,7 +22,7 @@ config PCI_DRA7XX
- config PCIE_DW_PLAT
- 	bool "Platform bus based DesignWare PCIe Controller"
- 	depends on PCI_MSI_IRQ_DOMAIN
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	---help---
- 	 This selects the DesignWare PCIe controller support. Select this if
- 	 you have a PCIe controller on Platform bus.
-@@ -32,21 +36,21 @@ config PCI_EXYNOS
- 	depends on SOC_EXYNOS5440 || COMPILE_TEST
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 
- config PCI_IMX6
- 	bool "Freescale i.MX6 PCIe controller"
- 	depends on SOC_IMX6Q || COMPILE_TEST
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 
- config PCIE_SPEAR13XX
- 	bool "STMicroelectronics SPEAr PCIe controller"
- 	depends on ARCH_SPEAR13XX || COMPILE_TEST
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	  Say Y here if you want PCIe support on SPEAr13XX SoCs.
- 
-@@ -55,7 +59,7 @@ config PCI_KEYSTONE
- 	depends on ARCH_KEYSTONE || COMPILE_TEST
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	  Say Y here if you want to enable PCI controller support on Keystone
- 	  SoCs. The PCI controller on Keystone is based on Designware hardware
-@@ -67,7 +71,7 @@ config PCI_LAYERSCAPE
- 	depends on OF && (ARM || ARCH_LAYERSCAPE || COMPILE_TEST)
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select MFD_SYSCON
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	  Say Y here if you want PCIe controller support on Layerscape SoCs.
- 
-@@ -76,7 +80,7 @@ config PCI_HISI
- 	bool "HiSilicon Hip05 and Hip06 SoCs PCIe controllers"
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	  Say Y here if you want PCIe controller support on HiSilicon
- 	  Hip05 and Hip06 SoCs
-@@ -86,7 +90,7 @@ config PCIE_QCOM
- 	depends on (ARCH_QCOM || COMPILE_TEST) && OF
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	  Say Y here to enable PCIe controller support on Qualcomm SoCs. The
- 	  PCIe controller uses the Designware core plus Qualcomm-specific
-@@ -97,7 +101,7 @@ config PCIE_ARMADA_8K
- 	depends on ARCH_MVEBU || COMPILE_TEST
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	  Say Y here if you want to enable PCIe controller support on
- 	  Armada-8K SoCs. The PCIe controller on Armada-8K is based on
-@@ -109,7 +113,7 @@ config PCIE_ARTPEC6
- 	depends on MACH_ARTPEC6 || COMPILE_TEST
- 	depends on PCI_MSI_IRQ_DOMAIN
- 	select PCIEPORTBUS
--	select PCIE_DW
-+	select PCIE_DW_HOST
- 	help
- 	  Say Y here to enable PCIe controller support on Axis ARTPEC-6
- 	  SoCs.  This PCIe controller uses the DesignWare core.
-diff --git a/drivers/pci/dwc/Makefile b/drivers/pci/dwc/Makefile
-index 3b57e55..a2df13c 100644
---- a/drivers/pci/dwc/Makefile
-+++ b/drivers/pci/dwc/Makefile
-@@ -1,4 +1,5 @@
--obj-$(CONFIG_PCIE_DW) += pcie-designware.o pcie-designware-host.o
-+obj-$(CONFIG_PCIE_DW) += pcie-designware.o
-+obj-$(CONFIG_PCIE_DW_HOST) += pcie-designware-host.o
- obj-$(CONFIG_PCIE_DW_PLAT) += pcie-designware-plat.o
- obj-$(CONFIG_PCI_DRA7XX) += pci-dra7xx.o
- obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
+-/* Parameters for the waiting for link up routine */
+-#define LINK_WAIT_MAX_RETRIES		10
+-#define LINK_WAIT_USLEEP_MIN		90000
+-#define LINK_WAIT_USLEEP_MAX		100000
+-
+-/* Parameters for the waiting for iATU enabled routine */
+-#define LINK_WAIT_MAX_IATU_RETRIES	5
+-#define LINK_WAIT_IATU_MIN		9000
+-#define LINK_WAIT_IATU_MAX		10000
+-
+-/* Synopsys-specific PCIe configuration registers */
+-#define PCIE_PORT_LINK_CONTROL		0x710
+-#define PORT_LINK_MODE_MASK		(0x3f << 16)
+-#define PORT_LINK_MODE_1_LANES		(0x1 << 16)
+-#define PORT_LINK_MODE_2_LANES		(0x3 << 16)
+-#define PORT_LINK_MODE_4_LANES		(0x7 << 16)
+-#define PORT_LINK_MODE_8_LANES		(0xf << 16)
+-
+-#define PCIE_LINK_WIDTH_SPEED_CONTROL	0x80C
+-#define PORT_LOGIC_SPEED_CHANGE		(0x1 << 17)
+-#define PORT_LOGIC_LINK_WIDTH_MASK	(0x1f << 8)
+-#define PORT_LOGIC_LINK_WIDTH_1_LANES	(0x1 << 8)
+-#define PORT_LOGIC_LINK_WIDTH_2_LANES	(0x2 << 8)
+-#define PORT_LOGIC_LINK_WIDTH_4_LANES	(0x4 << 8)
+-#define PORT_LOGIC_LINK_WIDTH_8_LANES	(0x8 << 8)
+-
+-#define PCIE_MSI_ADDR_LO		0x820
+-#define PCIE_MSI_ADDR_HI		0x824
+-#define PCIE_MSI_INTR0_ENABLE		0x828
+-#define PCIE_MSI_INTR0_MASK		0x82C
+-#define PCIE_MSI_INTR0_STATUS		0x830
+-
+-#define PCIE_ATU_VIEWPORT		0x900
+-#define PCIE_ATU_REGION_INBOUND		(0x1 << 31)
+-#define PCIE_ATU_REGION_OUTBOUND	(0x0 << 31)
+-#define PCIE_ATU_REGION_INDEX2		(0x2 << 0)
+-#define PCIE_ATU_REGION_INDEX1		(0x1 << 0)
+-#define PCIE_ATU_REGION_INDEX0		(0x0 << 0)
+-#define PCIE_ATU_CR1			0x904
+-#define PCIE_ATU_TYPE_MEM		(0x0 << 0)
+-#define PCIE_ATU_TYPE_IO		(0x2 << 0)
+-#define PCIE_ATU_TYPE_CFG0		(0x4 << 0)
+-#define PCIE_ATU_TYPE_CFG1		(0x5 << 0)
+-#define PCIE_ATU_CR2			0x908
+-#define PCIE_ATU_ENABLE			(0x1 << 31)
+-#define PCIE_ATU_BAR_MODE_ENABLE	(0x1 << 30)
+-#define PCIE_ATU_LOWER_BASE		0x90C
+-#define PCIE_ATU_UPPER_BASE		0x910
+-#define PCIE_ATU_LIMIT			0x914
+-#define PCIE_ATU_LOWER_TARGET		0x918
+-#define PCIE_ATU_BUS(x)			(((x) & 0xff) << 24)
+-#define PCIE_ATU_DEV(x)			(((x) & 0x1f) << 19)
+-#define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
+-#define PCIE_ATU_UPPER_TARGET		0x91C
+-
+-/*
+- * iATU Unroll-specific register definitions
+- * From 4.80 core version the address translation will be made by unroll
+- */
+-#define PCIE_ATU_UNR_REGION_CTRL1	0x00
+-#define PCIE_ATU_UNR_REGION_CTRL2	0x04
+-#define PCIE_ATU_UNR_LOWER_BASE		0x08
+-#define PCIE_ATU_UNR_UPPER_BASE		0x0C
+-#define PCIE_ATU_UNR_LIMIT		0x10
+-#define PCIE_ATU_UNR_LOWER_TARGET	0x14
+-#define PCIE_ATU_UNR_UPPER_TARGET	0x18
+-
+-/* Register address builder */
+-#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region)  ((0x3 << 20) | (region << 9))
+-
+ /* PCIe Port Logic registers */
+ #define PLR_OFFSET			0x700
+ #define PCIE_PHY_DEBUG_R1		(PLR_OFFSET + 0x2c)
 diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-index 808d17b..8f3dcb2 100644
+index 32f4602..a6cf9262 100644
 --- a/drivers/pci/dwc/pcie-designware.h
 +++ b/drivers/pci/dwc/pcie-designware.h
-@@ -162,10 +162,6 @@ struct dw_pcie {
+@@ -14,6 +14,77 @@
+ #ifndef _PCIE_DESIGNWARE_H
+ #define _PCIE_DESIGNWARE_H
  
- int dw_pcie_read(void __iomem *addr, int size, u32 *val);
- int dw_pcie_write(void __iomem *addr, int size, u32 val);
--irqreturn_t dw_handle_msi_irq(struct pcie_port *pp);
--void dw_pcie_msi_init(struct pcie_port *pp);
--void dw_pcie_setup_rc(struct pcie_port *pp);
--int dw_pcie_host_init(struct pcie_port *pp);
- 
- u32 dw_pcie_readl_dbi(struct dw_pcie *pci, u32 reg);
- void dw_pcie_writel_dbi(struct dw_pcie *pci, u32 reg, u32 val);
-@@ -175,4 +171,29 @@ void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
- 			       int type, u64 cpu_addr, u64 pci_addr,
- 			       u32 size);
- void dw_pcie_setup(struct dw_pcie *pci);
++/* Parameters for the waiting for link up routine */
++#define LINK_WAIT_MAX_RETRIES		10
++#define LINK_WAIT_USLEEP_MIN		90000
++#define LINK_WAIT_USLEEP_MAX		100000
 +
-+#ifdef CONFIG_PCIE_DW_HOST
-+irqreturn_t dw_handle_msi_irq(struct pcie_port *pp);
-+void dw_pcie_msi_init(struct pcie_port *pp);
-+void dw_pcie_setup_rc(struct pcie_port *pp);
-+int dw_pcie_host_init(struct pcie_port *pp);
-+#else
-+static inline irqreturn_t dw_handle_msi_irq(struct pcie_port *pp)
-+{
-+	return IRQ_NONE;
-+}
++/* Parameters for the waiting for iATU enabled routine */
++#define LINK_WAIT_MAX_IATU_RETRIES	5
++#define LINK_WAIT_IATU_MIN		9000
++#define LINK_WAIT_IATU_MAX		10000
 +
-+static inline void dw_pcie_msi_init(struct pcie_port *pp)
-+{
-+}
++/* Synopsys-specific PCIe configuration registers */
++#define PCIE_PORT_LINK_CONTROL		0x710
++#define PORT_LINK_MODE_MASK		(0x3f << 16)
++#define PORT_LINK_MODE_1_LANES		(0x1 << 16)
++#define PORT_LINK_MODE_2_LANES		(0x3 << 16)
++#define PORT_LINK_MODE_4_LANES		(0x7 << 16)
++#define PORT_LINK_MODE_8_LANES		(0xf << 16)
 +
-+static inline void dw_pcie_setup_rc(struct pcie_port *pp)
-+{
-+}
++#define PCIE_LINK_WIDTH_SPEED_CONTROL	0x80C
++#define PORT_LOGIC_SPEED_CHANGE		(0x1 << 17)
++#define PORT_LOGIC_LINK_WIDTH_MASK	(0x1f << 8)
++#define PORT_LOGIC_LINK_WIDTH_1_LANES	(0x1 << 8)
++#define PORT_LOGIC_LINK_WIDTH_2_LANES	(0x2 << 8)
++#define PORT_LOGIC_LINK_WIDTH_4_LANES	(0x4 << 8)
++#define PORT_LOGIC_LINK_WIDTH_8_LANES	(0x8 << 8)
 +
-+static inline int dw_pcie_host_init(struct pcie_port *pp)
-+{
-+	return 0;
-+}
-+#endif
- #endif /* _PCIE_DESIGNWARE_H */
++#define PCIE_MSI_ADDR_LO		0x820
++#define PCIE_MSI_ADDR_HI		0x824
++#define PCIE_MSI_INTR0_ENABLE		0x828
++#define PCIE_MSI_INTR0_MASK		0x82C
++#define PCIE_MSI_INTR0_STATUS		0x830
++
++#define PCIE_ATU_VIEWPORT		0x900
++#define PCIE_ATU_REGION_INBOUND		(0x1 << 31)
++#define PCIE_ATU_REGION_OUTBOUND	(0x0 << 31)
++#define PCIE_ATU_REGION_INDEX2		(0x2 << 0)
++#define PCIE_ATU_REGION_INDEX1		(0x1 << 0)
++#define PCIE_ATU_REGION_INDEX0		(0x0 << 0)
++#define PCIE_ATU_CR1			0x904
++#define PCIE_ATU_TYPE_MEM		(0x0 << 0)
++#define PCIE_ATU_TYPE_IO		(0x2 << 0)
++#define PCIE_ATU_TYPE_CFG0		(0x4 << 0)
++#define PCIE_ATU_TYPE_CFG1		(0x5 << 0)
++#define PCIE_ATU_CR2			0x908
++#define PCIE_ATU_ENABLE			(0x1 << 31)
++#define PCIE_ATU_BAR_MODE_ENABLE	(0x1 << 30)
++#define PCIE_ATU_LOWER_BASE		0x90C
++#define PCIE_ATU_UPPER_BASE		0x910
++#define PCIE_ATU_LIMIT			0x914
++#define PCIE_ATU_LOWER_TARGET		0x918
++#define PCIE_ATU_BUS(x)			(((x) & 0xff) << 24)
++#define PCIE_ATU_DEV(x)			(((x) & 0x1f) << 19)
++#define PCIE_ATU_FUNC(x)		(((x) & 0x7) << 16)
++#define PCIE_ATU_UPPER_TARGET		0x91C
++
++/*
++ * iATU Unroll-specific register definitions
++ * From 4.80 core version the address translation will be made by unroll
++ */
++#define PCIE_ATU_UNR_REGION_CTRL1	0x00
++#define PCIE_ATU_UNR_REGION_CTRL2	0x04
++#define PCIE_ATU_UNR_LOWER_BASE		0x08
++#define PCIE_ATU_UNR_UPPER_BASE		0x0C
++#define PCIE_ATU_UNR_LIMIT		0x10
++#define PCIE_ATU_UNR_LOWER_TARGET	0x14
++#define PCIE_ATU_UNR_UPPER_TARGET	0x18
++
++/* Register address builder */
++#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region)	\
++			((0x3 << 20) | ((region) << 9))
++
+ /*
+  * Maximum number of MSI IRQs can be 256 per controller. But keep
+  * it 32 as of now. Probably we will never need more than 32. If needed,
 -- 
 1.7.9.5
