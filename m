@@ -1,21 +1,37 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzsD544jRzDqTp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 03:49:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzssg0pRPzDqPQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 04:18:15 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id b22so4323697pfd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 09:18:14 -0800 (PST)
 From: Balbir Singh <bsingharora@gmail.com>
-Date: Thu, 12 Jan 2017 22:18:59 +0530
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 01/18] powerpc/64: Don't try to use radix MMU under a
- hypervisor
-Message-ID: <20170112164859.GA7027@localhost.localdomain>
-References: <1484212046-29591-1-git-send-email-paulus@ozlabs.org>
- <1484212046-29591-2-git-send-email-paulus@ozlabs.org>
+Date: Thu, 12 Jan 2017 22:48:02 +0530
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ mark.rutland@arm.com
+Subject: Re: [PATCH v5 4/5] powernv: Pass PSSCR value and mask to
+ power9_idle_stop
+Message-ID: <20170112171802.GB7027@localhost.localdomain>
+References: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1484039224-5630-5-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1484212046-29591-2-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1484039224-5630-5-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,101 +41,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 12, 2017 at 08:07:09PM +1100, Paul Mackerras wrote:
-> Currently, if the kernel is running on a POWER9 processor under a
-> hypervisor, it will try to use the radix MMU even though it doesn't
-> have the necessary code to use radix under a hypervisor (it doesn't
-> negotiate use of radix, and it doesn't do the H_REGISTER_PROC_TBL
-
-						H_REGISTER_PROCESS_TABLE
-for consistency
-
-> hcall).  The result is that the guest kernel will crash when it tries
-> to turn on the MMU.
+On Tue, Jan 10, 2017 at 02:37:03PM +0530, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> This fixes it by looking for the /chosen/ibm,architecture-vec-5
-> property, and if it exists, clears the radix MMU feature bit,
-> before we decide whether to initialize for radix or HPT.  This
-> property is created by the hypervisor as a result of the guest
-> calling the ibm,client-architecture-support method to indicate
-> its capabilities, so it will indicate whether the hypervisor
-> agreed to us using radix.
+> The arch300_idle_stop method currently takes only the requested stop
+      power9_idle_stop (see subject :) and second paragraph)
+> level as a parameter and picks up the rest of the PSSCR bits from a
+> hand-coded macro. This is not a very flexible design, especially when
+> the firmware has the capability to communicate the psscr value and the
+> mask associated with a particular stop state via device tree.
 > 
-> Systems without a hypervisor may have this property also (for
-> example, skiboot creates it), so we check the HV bit in the MSR
-> to see whether we are running as a guest or not.  If we are in
-> hypervisor mode, then we can do whatever we like including
-> using the radix MMU.
+> This patch modifies the power9_idle_stop API to take as parameters the
+> PSSCR value and the PSSCR mask corresponding to the stop state that
+> needs to be set. These PSSCR value and mask are respectively obtained
+> by parsing the "ibm,cpu-idle-state-psscr" and
+> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
 > 
-> The reason for using this property is that in future, when we
-> have support for using radix under a hypervisor, we will need
-> to check this property to see whether the hypervisor agreed to
-> us using radix.
+> In addition to this, the patch adds support for handling stop states
+> for which ESL and EC bits in the PSSCR are zero. As per the
+> architecture, a wakeup from these stop states resumes execution from
+> the subsequent instruction as opposed to waking up at the System
+> Vector.
 > 
-> Cc: stable@vger.kernel.org # v4.8+
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> The older firmware sets only the Requested Level (RL) field in the
+> psscr and psscr-mask exposed in the device tree. For older firmware
+> where psscr-mask=0xf, this patch will set the default sane values that
+> the set for for remaining PSSCR fields (i.e PSLL, MTL, ESL, EC, and
+> TR). For the new firmware, the patch will validate that the invariants
+> required by the ISA for the psscr values are maintained by the
+> firmware.
+> 
+> This skiboot patch that exports fully populated PSSCR values and the
+> mask for all the stop states can be found here:
+> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+> 
+> [Optimize the number of instructions before entering STOP with
+> ESL=EC=0, validate the PSSCR values provided by the firimware
+> maintains the invariants required as per the ISA suggested by Balbir
+> Singh]
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/mm/init_64.c | 33 +++++++++++++++++++++++++++++++++
->  1 file changed, 33 insertions(+)
-> 
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index 93abf8a..4d9481e 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -42,6 +42,8 @@
->  #include <linux/memblock.h>
->  #include <linux/hugetlb.h>
->  #include <linux/slab.h>
-> +#include <linux/of_fdt.h>
-> +#include <linux/libfdt.h>
->  
->  #include <asm/pgalloc.h>
->  #include <asm/page.h>
-> @@ -344,12 +346,43 @@ static int __init parse_disable_radix(char *p)
->  }
->  early_param("disable_radix", parse_disable_radix);
->  
-> +/*
-> + * If we're running under a hypervisor, we currently can't do radix
-> + * since we don't have the code to do the H_REGISTER_PROC_TBL hcall.
-						       _PROCESS_TABLE
-> + * We tell that we're running under a hypervisor by looking for the
-> + * /chosen/ibm,architecture-vec-5 property.
-> + */
-> +static void early_check_vec5(void)
-> +{
 
-The function is called early_check, but it also disables MMU_FTR_TYPE_RADIX,
-should the disabling be moved out to the caller, since the check has
-nothing to do with disabling the feature?
-
-> +	unsigned long root, chosen;
-> +	int size;
-> +	const u8 *vec5;
-> +
-> +	root = of_get_flat_dt_root();
-> +	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
-> +	if (chosen == -FDT_ERR_NOTFOUND)
-> +		return;
-> +	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", &size);
-> +	if (!vec5)
-> +		return;
-> +	cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-> +}
-> +
->  void __init mmu_early_init_devtree(void)
->  {
->  	/* Disable radix mode based on kernel command line. */
->  	if (disable_radix)
->  		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
->  
-> +	/*
-> +	 * Check /chosen/ibm,architecture-vec-5 if running as a guest.
-> +	 * When running bare-metal, we can use radix if we like
-> +	 * even though the ibm,architecture-vec-5 property created by
-> +	 * skiboot doesn't have the necessary bits set.
-> +	 */
-> +	if (early_radix_enabled() && !(mfmsr() & MSR_HV))
-> +		early_check_vec5();
-
-Balbir Singh.
+Acked-by: Balbir Singh <bsingharora@gmail.com>
