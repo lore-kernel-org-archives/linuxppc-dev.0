@@ -1,18 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzfzc11YBzDqVc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 20:07:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzfzZ2tVRzDqVk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 20:07:38 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org,
 	kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH 05/18] powerpc/64: More definitions for POWER9
-Date: Thu, 12 Jan 2017 20:07:13 +1100
-Message-Id: <1484212046-29591-6-git-send-email-paulus@ozlabs.org>
-In-Reply-To: <1484212046-29591-1-git-send-email-paulus@ozlabs.org>
-References: <1484212046-29591-1-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 00/18] Support for radix guest and host on POWER9
+Date: Thu, 12 Jan 2017 20:07:08 +1100
+Message-Id: <1484212046-29591-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,61 +20,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds definitions for bits in the DSISR register which are used
-by POWER9 for various translation-related exception conditions, and
-for some more bits in the partition table entry that will be needed
-by KVM.
+The primary purpose of this patch series is to make it possible to run
+a guest on POWER9 using the radix MMU under a KVM host that also uses
+the radix MMU.  To do this, the guest needs to say that it supports
+radix in the ibm,client-architecture-support vector, and if the host
+agrees, the guest then needs to call the new H_REGISTER_PROCESS_TABLE
+hypercall to tell the hypervisor where its process table is (the
+process table contains pointers to the radix trees for each process).
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/include/asm/book3s/64/mmu.h | 12 +++++++++++-
- arch/powerpc/include/asm/reg.h           |  4 ++++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+On the host side, we add new KVM interfaces for userspace (e.g. QEMU)
+to use to know whether the host supports radix guest, HPT guests, or
+both, and for userspace to use to implement H_REGISTER_PROCESS_TABLE.
+There are two new capabilities and two new ioctls.  These are added in
+patch 9/18.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index e8cbdc0..d827825 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -44,10 +44,20 @@ struct patb_entry {
- };
- extern struct patb_entry *partition_tb;
- 
-+/* Bits in patb0 field */
- #define PATB_HR		(1UL << 63)
--#define PATB_GR		(1UL << 63)
- #define RPDB_MASK	0x0ffffffffffff00fUL
- #define RPDB_SHIFT	(1UL << 8)
-+#define RTS1_SHIFT	61		/* top 2 bits of radix tree size */
-+#define RTS1_MASK	(3UL << RTS1_SHIFT)
-+#define RTS2_SHIFT	5		/* bottom 3 bits of radix tree size */
-+#define RTS2_MASK	(7UL << RTS2_SHIFT)
-+#define RPDS_MASK	0x1f		/* root page dir. size field */
-+
-+/* Bits in patb1 field */
-+#define PATB_GR		(1UL << 63)	/* guest uses radix; must match HR */
-+#define PRTS_MASK	0x1f		/* process table size field */
-+
- /*
-  * Limit process table to PAGE_SIZE table. This
-  * also limit the max pid we can support.
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 0d4531a..aa44a83 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -274,10 +274,14 @@
- #define SPRN_DSISR	0x012	/* Data Storage Interrupt Status Register */
- #define   DSISR_NOHPTE		0x40000000	/* no translation found */
- #define   DSISR_PROTFAULT	0x08000000	/* protection fault */
-+#define   DSISR_BADACCESS	0x04000000	/* bad access to CI or G */
- #define   DSISR_ISSTORE		0x02000000	/* access was a store */
- #define   DSISR_DABRMATCH	0x00400000	/* hit data breakpoint */
- #define   DSISR_NOSEGMENT	0x00200000	/* SLB miss */
- #define   DSISR_KEYFAULT	0x00200000	/* Key fault */
-+#define   DSISR_UNSUPP_MMU	0x00080000	/* Unsupported MMU config */
-+#define   DSISR_SET_RC		0x00040000	/* Failed setting of R/C bits */
-+#define   DSISR_PGDIRFAULT      0x00020000      /* Fault on page directory */
- #define SPRN_TBRL	0x10C	/* Time Base Read Lower Register (user, R/O) */
- #define SPRN_TBRU	0x10D	/* Time Base Read Upper Register (user, R/O) */
- #define SPRN_CIR	0x11B	/* Chip Information Register (hyper, R/0) */
--- 
-2.7.4
+The host then needs to be able to construct the second-level radix
+tree ("partition-scoped" in architecturese) which maps guest real
+addresses to host real addresses.  We add PTEs to this table on
+hypervisor page faults and remove them in response to MMU notifier
+callbacks.
+
+The patch series also includes some improvements for HPT guests
+running under a HPT host.
+
+Currently, the MMU type of the guest (radix or HPT) must be the same
+as the host.  That is, if the host is booted in radix mode, it can
+only run radix guests.  If the host is booted in HPT mode (e.g. by
+putting "disable_radix" on the kernel command line), it can only run
+HPT guests.
+
+The patch series is against 4.10-rc3.
+
+Paul.
+
+ Documentation/virtual/kvm/api.txt         |  83 ++++
+ arch/powerpc/include/asm/book3s/64/mmu.h  |  14 +-
+ arch/powerpc/include/asm/hvcall.h         |  11 +
+ arch/powerpc/include/asm/kvm_book3s.h     |  26 +-
+ arch/powerpc/include/asm/kvm_book3s_64.h  |   6 +
+ arch/powerpc/include/asm/kvm_host.h       |   4 +
+ arch/powerpc/include/asm/kvm_ppc.h        |   2 +
+ arch/powerpc/include/asm/prom.h           |  17 +-
+ arch/powerpc/include/asm/reg.h            |   4 +
+ arch/powerpc/include/uapi/asm/kvm.h       |  20 +
+ arch/powerpc/kernel/asm-offsets.c         |   2 +
+ arch/powerpc/kernel/prom_init.c           |  18 +-
+ arch/powerpc/kvm/Makefile                 |   3 +-
+ arch/powerpc/kvm/book3s.c                 |   1 +
+ arch/powerpc/kvm/book3s_64_mmu_hv.c       | 110 +++--
+ arch/powerpc/kvm/book3s_64_mmu_radix.c    | 716 ++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv.c              | 168 +++++--
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c       |  14 +
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  66 ++-
+ arch/powerpc/kvm/powerpc.c                |  32 ++
+ arch/powerpc/mm/init-common.c             |   3 +-
+ arch/powerpc/mm/init_64.c                 |  35 ++
+ arch/powerpc/mm/pgtable-radix.c           |   2 +
+ arch/powerpc/mm/pgtable_64.c              |  16 +-
+ arch/powerpc/platforms/Kconfig.cputype    |   7 +-
+ arch/powerpc/platforms/pseries/firmware.c |   2 +-
+ arch/powerpc/platforms/pseries/lpar.c     |  29 ++
+ include/uapi/linux/kvm.h                  |   6 +
+ 28 files changed, 1318 insertions(+), 99 deletions(-)
