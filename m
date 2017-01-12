@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBb67hHzDqYw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBd09vPzDqYw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:28 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,9 +13,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 35/37] MAINTAINERS: add PCI EP maintainer
-Date: Thu, 12 Jan 2017 15:56:24 +0530
-Message-ID: <1484216786-17292-36-git-send-email-kishon@ti.com>
+Subject: [PATCH 36/37] ARM: DRA7: clockdomain: Change the CLKTRCTRL of
+ CM_PCIE_CLKSTCTRL to SW_WKUP
+Date: Thu, 12 Jan 2017 15:56:25 +0530
+Message-ID: <1484216786-17292-37-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -29,32 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add maintainer for the newly introduced PCI EP framework.
+The PCIe programming sequence in TRM suggests CLKSTCTRL of PCIe should
+be set to SW_WKUP. There are no issues when CLKSTCTRL is set to HW_AUTO
+in RC mode. However in EP mode, the host system is not able to access the
+MEMSPACE and setting the CLKSTCTRL to SW_WKUP fixes it.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- MAINTAINERS |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm/mach-omap2/clockdomains7xx_data.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8672f18..021f676 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9407,6 +9407,15 @@ F:	include/linux/pci*
- F:	arch/x86/pci/
- F:	arch/x86/kernel/quirks.c
+diff --git a/arch/arm/mach-omap2/clockdomains7xx_data.c b/arch/arm/mach-omap2/clockdomains7xx_data.c
+index 6c67965..67ebff8 100644
+--- a/arch/arm/mach-omap2/clockdomains7xx_data.c
++++ b/arch/arm/mach-omap2/clockdomains7xx_data.c
+@@ -524,7 +524,7 @@
+ 	.dep_bit	  = DRA7XX_PCIE_STATDEP_SHIFT,
+ 	.wkdep_srcs	  = pcie_wkup_sleep_deps,
+ 	.sleepdep_srcs	  = pcie_wkup_sleep_deps,
+-	.flags		  = CLKDM_CAN_HWSUP_SWSUP,
++	.flags		  = CLKDM_CAN_SWSUP,
+ };
  
-+PCI EP SUBSYSTEM
-+M:	Kishon Vijay Abraham I <kishon@ti.com>
-+L:	linux-pci@vger.kernel.org
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git
-+S:	Supported
-+F:	drivers/pci/endpoint/
-+F:	drivers/misc/pci_endpoint_test.c
-+F:	tools/pci/
-+
- PCI DRIVER FOR ALTERA PCIE IP
- M:	Ley Foon Tan <lftan@altera.com>
- L:	rfi@lists.rocketboards.org (moderated for non-subscribers)
+ static struct clockdomain atl_7xx_clkdm = {
 -- 
 1.7.9.5
