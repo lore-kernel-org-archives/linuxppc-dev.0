@@ -1,38 +1,24 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzScL0LcTzDqfP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 12:20:17 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0C1J8kS052844
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:20:15 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27wvdhyarb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:20:15 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Wed, 11 Jan 2017 20:20:14 -0500
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH v2 4/4] cxlflash: Cancel scheduled workers before stopping AFU
-Date: Wed, 11 Jan 2017 19:20:03 -0600
-In-Reply-To: <1484183898-22714-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1484183898-22714-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1484184003-22899-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzWBh0jk7zDqP8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 14:16:44 +1100 (AEDT)
+Date: Thu, 12 Jan 2017 14:16:32 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Cc: gleb@kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ paulus@ozlabs.org, linuxppc-dev@ozlabs.org, pbonzini@redhat.com,
+ mahesh@linux.vnet.ibm.com, mpe@ellerman.id.au, kvm@vger.kernel.org
+Subject: Re: [PATCH v4 2/2] KVM: PPC: Exit guest upon MCE when FWNMI
+ capability is enabled
+Message-ID: <20170112031632.GH14026@umbus.fritz.box>
+References: <148396203530.1471.16105350692124392705.stgit@aravinda>
+ <148396204569.1471.7515038338417988537.stgit@aravinda>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="rCwQ2Y43eQY6RBgR"
+In-Reply-To: <148396204569.1471.7515038338417988537.stgit@aravinda>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,188 +28,263 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When processing an AFU asynchronous interrupt, if the action results in an
-operation that requires off level processing (a link reset for example),
-the worker thread is scheduled. In the meantime a reset event (i.e.: EEH)
-could unmap the AFU to recover. This results in an Oops when the worker
-thread tries to access the AFU mapping.
 
-[c000000f17e03b90] d000000007cd5978 cxlflash_worker_thread+0x268/0x550
-[c000000f17e03c40] c00000000011883c process_one_work+0x1dc/0x680
-[c000000f17e03ce0] c000000000118e80 worker_thread+0x1a0/0x520
-[c000000f17e03d80] c000000000126174 kthread+0xf4/0x100
-[c000000f17e03e30] c00000000000a47c ret_from_kernel_thread+0x5c/0xe0
+--rCwQ2Y43eQY6RBgR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In an effort to avoid this, a mapcount was introduced in
-commit b45cdbaf9f7f ("cxlflash: Resolve oops in wait_port_offline")
-but due to the race condition described above, this solution is incomplete.
+On Mon, Jan 09, 2017 at 05:10:45PM +0530, Aravinda Prasad wrote:
+> Enhance KVM to cause a guest exit with KVM_EXIT_NMI
+> exit reason upon a machine check exception (MCE) in
+> the guest address space if the KVM_CAP_PPC_FWNMI
+> capability is enabled (instead of delivering a 0x200
+> interrupt to guest). This enables QEMU to build error
+> log and deliver machine check exception to guest via
+> guest registered machine check handler.
+>=20
+> This approach simplifies the delivery of machine
+> check exception to guest OS compared to the earlier
+> approach of KVM directly invoking 0x200 guest interrupt
+> vector.
+>=20
+> This design/approach is based on the feedback for the
+> QEMU patches to handle machine check exception. Details
+> of earlier approach of handling machine check exception
+> in QEMU and related discussions can be found at:
+>=20
+> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
+>=20
+> Note:
+>=20
+> This patch introduces a hook which is invoked at the time
+> of guest exit to facilitate the host-side handling of
+> machine check exception before the exception is passed
+> on to the guest. Hence, the host-side handling which was
+> performed earlier via machine_check_fwnmi is removed.
+>=20
+> The reasons for this approach is (i) it is not possible
+> to distinguish whether the exception occurred in the
+> guest or the host from the pt_regs passed on the
+> machine_check_exception(). Hence machine_check_exception()
+> calls panic, instead of passing on the exception to
+> the guest, if the machine check exception is not
+> recoverable. (ii) the approach introduced in this
+> patch gives opportunity to the host kernel to perform
+> actions in virtual mode before passing on the exception
+> to the guest. This approach does not require complex
+> tweaks to machine_check_fwnmi and friends.
+>=20
+> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
 
-In order to fully resolve this problem and to simplify things, this commit
-removes the mapcount solution. Instead, the scheduled worker thread is
-cancelled after interrupts have been disabled and prior to the mapping
-being freed.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Fixes: b45cdbaf9f7f ("cxlflash: Resolve oops in wait_port_offline")
-Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/common.h |  2 --
- drivers/scsi/cxlflash/main.c   | 34 ++++++----------------------------
- 2 files changed, 6 insertions(+), 30 deletions(-)
+> ---
+>  arch/powerpc/kvm/book3s_hv.c            |   27 +++++++++++++-----
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |   47 ++++++++++++++++---------=
+------
+>  arch/powerpc/platforms/powernv/opal.c   |   10 +++++++
+>  3 files changed, 54 insertions(+), 30 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 3686471..cae4921 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -123,6 +123,7 @@ MODULE_PARM_DESC(halt_poll_ns_shrink, "Factor halt po=
+ll time is shrunk by");
+> =20
+>  static void kvmppc_end_cede(struct kvm_vcpu *vcpu);
+>  static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu);
+> +static void kvmppc_machine_check_hook(void);
+> =20
+>  static inline struct kvm_vcpu *next_runnable_thread(struct kvmppc_vcore =
+*vc,
+>  		int *ip)
+> @@ -954,15 +955,14 @@ static int kvmppc_handle_exit_hv(struct kvm_run *ru=
+n, struct kvm_vcpu *vcpu,
+>  		r =3D RESUME_GUEST;
+>  		break;
+>  	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+> +		/* Exit to guest with KVM_EXIT_NMI as exit reason */
+> +		run->exit_reason =3D KVM_EXIT_NMI;
+> +		r =3D RESUME_HOST;
+>  		/*
+> -		 * Deliver a machine check interrupt to the guest.
+> -		 * We have to do this, even if the host has handled the
+> -		 * machine check, because machine checks use SRR0/1 and
+> -		 * the interrupt might have trashed guest state in them.
+> +		 * Invoke host-kernel handler to perform any host-side
+> +		 * handling before exiting the guest.
+>  		 */
+> -		kvmppc_book3s_queue_irqprio(vcpu,
+> -					    BOOK3S_INTERRUPT_MACHINE_CHECK);
+> -		r =3D RESUME_GUEST;
+> +		kvmppc_machine_check_hook();
+>  		break;
+>  	case BOOK3S_INTERRUPT_PROGRAM:
+>  	{
+> @@ -3491,6 +3491,19 @@ static void kvmppc_irq_bypass_del_producer_hv(stru=
+ct irq_bypass_consumer *cons,
+>  }
+>  #endif
+> =20
+> +/*
+> + * Hook to handle machine check exceptions occurred inside a guest.
+> + * This hook is invoked from host virtual mode from KVM before exiting
+> + * the guest with KVM_EXIT_NMI exit reason. This gives an opportunity
+> + * for the host to take action (if any) before passing on the machine
+> + * check exception to the guest kernel.
+> + */
+> +static void kvmppc_machine_check_hook(void)
+> +{
+> +	if (ppc_md.machine_check_exception)
+> +		ppc_md.machine_check_exception(NULL);
+> +}
+> +
+>  static long kvm_arch_vm_ioctl_hv(struct file *filp,
+>  				 unsigned int ioctl, unsigned long arg)
+>  {
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/b=
+ook3s_hv_rmhandlers.S
+> index c3c1d1b..9b41390 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -134,21 +134,18 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	stb	r0, HSTATE_HWTHREAD_REQ(r13)
+> =20
+>  	/*
+> -	 * For external and machine check interrupts, we need
+> -	 * to call the Linux handler to process the interrupt.
+> -	 * We do that by jumping to absolute address 0x500 for
+> -	 * external interrupts, or the machine_check_fwnmi label
+> -	 * for machine checks (since firmware might have patched
+> -	 * the vector area at 0x200).  The [h]rfid at the end of the
+> -	 * handler will return to the book3s_hv_interrupts.S code.
+> -	 * For other interrupts we do the rfid to get back
+> -	 * to the book3s_hv_interrupts.S code here.
+> +	 * For external interrupts we need to call the Linux
+> +	 * handler to process the interrupt. We do that by jumping
+> +	 * to absolute address 0x500 for external interrupts.
+> +	 * The [h]rfid at the end of the handler will return to
+> +	 * the book3s_hv_interrupts.S code. For other interrupts
+> +	 * we do the rfid to get back to the book3s_hv_interrupts.S
+> +	 * code here.
+>  	 */
+>  	ld	r8, 112+PPC_LR_STKOFF(r1)
+>  	addi	r1, r1, 112
+>  	ld	r7, HSTATE_HOST_MSR(r13)
+> =20
+> -	cmpwi	cr1, r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+>  	beq	11f
+>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DOORBELL
+> @@ -163,7 +160,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	mtmsrd	r6, 1			/* Clear RI in MSR */
+>  	mtsrr0	r8
+>  	mtsrr1	r7
+> -	beq	cr1, 13f		/* machine check */
+> +	/*
+> +	 * BOOK3S_INTERRUPT_MACHINE_CHECK is handled at the
+> +	 * time of guest exit
+> +	 */
+>  	RFI
+> =20
+>  	/* On POWER7, we have external interrupts set to use HSRR0/1 */
+> @@ -171,8 +171,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	mtspr	SPRN_HSRR1, r7
+>  	ba	0x500
+> =20
+> -13:	b	machine_check_fwnmi
+> -
+>  14:	mtspr	SPRN_HSRR0, r8
+>  	mtspr	SPRN_HSRR1, r7
+>  	b	hmi_exception_after_realmode
+> @@ -2338,15 +2336,13 @@ machine_check_realmode:
+>  	ld	r9, HSTATE_KVM_VCPU(r13)
+>  	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>  	/*
+> -	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
+> -	 * machine check interrupt (set HSRR0 to 0x200). And for handled
+> -	 * errors (no-fatal), just go back to guest execution with current
+> -	 * HSRR0 instead of exiting guest. This new approach will inject
+> -	 * machine check to guest for fatal error causing guest to crash.
+> -	 *
+> -	 * The old code used to return to host for unhandled errors which
+> -	 * was causing guest to hang with soft lockups inside guest and
+> -	 * makes it difficult to recover guest instance.
+> +	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest either
+> +	 * through machine check interrupt (set HSRR0 to 0x200) or by
+> +	 * exiting the guest with KVM_EXIT_NMI exit reason if guest is
+> +	 * FWNMI capable. For handled errors (no-fatal), just go back
+> +	 * to guest execution with current HSRR0. This new approach
+> +	 * injects machine check errors in guest address space to guest
+> +	 * enabling guest kernel to suitably handle such errors.
+>  	 *
+>  	 * if we receive machine check with MSR(RI=3D0) then deliver it to
+>  	 * guest as machine check causing guest to crash.
+> @@ -2360,7 +2356,12 @@ machine_check_realmode:
+>  	cmpdi	r3, 0		/* Did we handle MCE ? */
+>  	bne	2f	/* Continue guest execution. */
+>  	/* If not, deliver a machine check.  SRR0/1 are already set */
+> -1:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+> +	/* Check if guest is capable of handling NMI exit */
+> +1:	ld	r3, VCPU_KVM(r9)
+> +	lbz	r3, KVM_FWNMI(r3)
+> +	cmpdi	r3, 1       /* FWNMI capable? */
+> +	beq	mc_cont
+> +	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+>  	bl	kvmppc_msr_interrupt
+>  2:	b	fast_interrupt_c_return
+> =20
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platfor=
+ms/powernv/opal.c
+> index 6c9a65b..25749c6 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -446,6 +446,16 @@ int opal_machine_check(struct pt_regs *regs)
+>  	}
+>  	machine_check_print_event_info(&evt);
+> =20
+> +	/*
+> +	 * If regs is NULL, then the machine check exception occurred
+> +	 * in the guest. Currently no action is performed in the host
+> +	 * other than printing the event information. The machine check
+> +	 * exception is passed on to the guest kernel and the guest
+> +	 * kernel will attempt for recovery.
+> +	 */
+> +	if (!regs)
+> +		return 0;
+> +
+>  	if (opal_recover_mce(regs, &evt))
+>  		return 1;
+> =20
+>=20
 
-diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index dee8657..d11dcc5 100644
---- a/drivers/scsi/cxlflash/common.h
-+++ b/drivers/scsi/cxlflash/common.h
-@@ -174,8 +174,6 @@ struct afu {
- 	struct sisl_host_map __iomem *host_map;		/* MC host map */
- 	struct sisl_ctrl_map __iomem *ctrl_map;		/* MC control map */
- 
--	struct kref mapcount;
--
- 	ctx_hndl_t ctx_hndl;	/* master's context handle */
- 
- 	atomic_t hsq_credits;
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index ab38bca..7069639 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -419,16 +419,6 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	return rc;
- }
- 
--static void afu_unmap(struct kref *ref)
--{
--	struct afu *afu = container_of(ref, struct afu, mapcount);
--
--	if (likely(afu->afu_map)) {
--		cxl_psa_unmap((void __iomem *)afu->afu_map);
--		afu->afu_map = NULL;
--	}
--}
--
- /**
-  * cxlflash_driver_info() - information handler for this host driver
-  * @host:	SCSI host associated with device.
-@@ -459,7 +449,6 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 	ulong lock_flags;
- 	int nseg = 0;
- 	int rc = 0;
--	int kref_got = 0;
- 
- 	dev_dbg_ratelimited(dev, "%s: (scp=%p) %d/%d/%d/%llu "
- 			    "cdb=(%08x-%08x-%08x-%08x)\n",
-@@ -497,9 +486,6 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 		break;
- 	}
- 
--	kref_get(&cfg->afu->mapcount);
--	kref_got = 1;
--
- 	if (likely(sg)) {
- 		nseg = scsi_dma_map(scp);
- 		if (unlikely(nseg < 0)) {
-@@ -530,8 +516,6 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 	if (unlikely(rc))
- 		scsi_dma_unmap(scp);
- out:
--	if (kref_got)
--		kref_put(&afu->mapcount, afu_unmap);
- 	return rc;
- }
- 
-@@ -569,13 +553,15 @@ static void free_mem(struct cxlflash_cfg *cfg)
-  *
-  * Safe to call with AFU in a partially allocated/initialized state.
-  *
-- * Waits for any active internal AFU commands to timeout and then unmaps
-- * the MMIO space.
-+ * Cancels scheduled worker threads, waits for any active internal AFU
-+ * commands to timeout and then unmaps the MMIO space.
-  */
- static void stop_afu(struct cxlflash_cfg *cfg)
- {
- 	struct afu *afu = cfg->afu;
- 
-+	cancel_work_sync(&cfg->work_q);
-+
- 	if (likely(afu)) {
- 		while (atomic_read(&afu->cmds_active))
- 			ssleep(1);
-@@ -583,7 +569,6 @@ static void stop_afu(struct cxlflash_cfg *cfg)
- 			cxl_psa_unmap((void __iomem *)afu->afu_map);
- 			afu->afu_map = NULL;
- 		}
--		kref_put(&afu->mapcount, afu_unmap);
- 	}
- }
- 
-@@ -767,7 +752,6 @@ static void cxlflash_remove(struct pci_dev *pdev)
- 		scsi_remove_host(cfg->host);
- 		/* fall through */
- 	case INIT_STATE_AFU:
--		cancel_work_sync(&cfg->work_q);
- 		term_afu(cfg);
- 	case INIT_STATE_PCI:
- 		pci_disable_device(pdev);
-@@ -1277,7 +1261,6 @@ static irqreturn_t cxlflash_async_err_irq(int irq, void *data)
- 				__func__, port);
- 			cfg->lr_state = LINK_RESET_REQUIRED;
- 			cfg->lr_port = port;
--			kref_get(&cfg->afu->mapcount);
- 			schedule_work(&cfg->work_q);
- 		}
- 
-@@ -1298,7 +1281,6 @@ static irqreturn_t cxlflash_async_err_irq(int irq, void *data)
- 
- 		if (info->action & SCAN_HOST) {
- 			atomic_inc(&cfg->scan_host_needed);
--			kref_get(&cfg->afu->mapcount);
- 			schedule_work(&cfg->work_q);
- 		}
- 	}
-@@ -1704,7 +1686,6 @@ static int init_afu(struct cxlflash_cfg *cfg)
- 		rc = -ENOMEM;
- 		goto err1;
- 	}
--	kref_init(&afu->mapcount);
- 
- 	/* No byte reverse on reading afu_version or string will be backwards */
- 	reg = readq(&afu->afu_map->global.regs.afu_version);
-@@ -1716,7 +1697,7 @@ static int init_afu(struct cxlflash_cfg *cfg)
- 			"interface version %016llx\n", afu->version,
- 		       afu->interface_version);
- 		rc = -EINVAL;
--		goto err2;
-+		goto err1;
- 	}
- 
- 	if (afu_is_sq_cmd_mode(afu)) {
-@@ -1733,7 +1714,7 @@ static int init_afu(struct cxlflash_cfg *cfg)
- 	rc = start_afu(cfg);
- 	if (rc) {
- 		dev_err(dev, "%s: start_afu failed, rc=%d\n", __func__, rc);
--		goto err2;
-+		goto err1;
- 	}
- 
- 	afu_err_intr_init(cfg->afu);
-@@ -1746,8 +1727,6 @@ static int init_afu(struct cxlflash_cfg *cfg)
- 	dev_dbg(dev, "%s: returning rc=%d\n", __func__, rc);
- 	return rc;
- 
--err2:
--	kref_put(&afu->mapcount, afu_unmap);
- err1:
- 	term_intr(cfg, UNMAP_THREE);
- 	term_mc(cfg);
-@@ -2341,7 +2320,6 @@ static void cxlflash_worker_thread(struct work_struct *work)
- 
- 	if (atomic_dec_if_positive(&cfg->scan_host_needed) >= 0)
- 		scsi_scan_host(cfg->host);
--	kref_put(&afu->mapcount, afu_unmap);
- }
- 
- /**
--- 
-2.1.0
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--rCwQ2Y43eQY6RBgR
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYdvUPAAoJEGw4ysog2bOSrDsP/1dQiqSvdQH8FCadIUTLHG+I
+b30osOLARdV9JSPh9ZROUZRj4dEGLEsaB7gIhIogqLCAdZgx4K+UnuAKNUOV2K+H
+9aXYX2gRX5wndPi9t8UiY/+x+iJTwTKLuBCdOnVFivDKtmLvbnpDEtwwiHNrNbpn
+IShGs7FXhDl6Ja+t/IT9n686b8MZrYI28n3eRy1jjzX8rJ/h/K3FrfQeQkUM4Ld8
++oS5RXu/8LUoDgAEXiYVsHD96J/RogsFDz3ITHX3aDjIfP/7EGjwSPzw1uqfOzlK
+ziD+rKyFRKNNAmYd87Xp/UGFpIlgZ0kU/nzvs867i7JI+JUu6aOdGqdKGHtvwoWA
+QPrZe4vhS2tOWoXKmX7kyyeqLeQnxpccP/rrQRbGsnEgxRQpcBKnMbGWUUYMLCCF
+mzSihHdG8HLF9bQyrT6G2XbAN55PF1Cw7tor6F9zRPtGD1NSoZXHvLnDyS0xD/j7
+6+K+zMMiZla//Y0jrIidk55wQqW5AxAe3HNFVracjngQAn5hFF3gCml5qkOsMOWx
+7g8uZxmQ3t6tMuznNbWNdZ0t0H9qmD0G1956jbcXdu4oS/zVvrv846YRZr32kse1
+R7oZkaqpZw8BwGjWPja8cVvQ156MjZ3sSHLeBH7Z6GvAwiPznHGrQKy/zypTJjim
+reCgW8NwVnFaZtuajX7t
+=8QR+
+-----END PGP SIGNATURE-----
+
+--rCwQ2Y43eQY6RBgR--
