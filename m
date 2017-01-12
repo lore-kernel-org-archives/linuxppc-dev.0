@@ -1,27 +1,47 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nicolas.dichtel@6wind.com>
+Received: from mail-lf0-x233.google.com (mail-lf0-x233.google.com
+ [IPv6:2a00:1450:4010:c07::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzqGp13TBzDqSC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 02:21:21 +1100 (AEDT)
-Message-ID: <1484234447.2492.34.camel@kernel.crashing.org>
-Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, Segher Boessenkool
- <segher@kernel.crashing.org>
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 12 Jan 2017 09:20:47 -0600
-In-Reply-To: <7604032b-c9ae-e3ce-fcd5-d9e555559f52@c-s.fr>
-References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
- <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
- <alpine.DEB.2.20.99.1701040957380.31470@trent.utfs.org>
- <alpine.DEB.2.20.999.1701091739320.5450@trent.utfs.org>
- <d0e56084-49d7-2486-c2a6-de146331d1c7@c-s.fr>
- <20170111225440.GQ28613@gate.crashing.org>
- <1c81ce1a-33ca-7ba4-56f5-976935deb609@c-s.fr>
- <7604032b-c9ae-e3ce-fcd5-d9e555559f52@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzqzS3NmTzDqVH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 02:53:07 +1100 (AEDT)
+Received: by mail-lf0-x233.google.com with SMTP id m78so15867999lfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 07:53:07 -0800 (PST)
+Reply-To: nicolas.dichtel@6wind.com
+Subject: Re: [PATCH v2 7/7] uapi: export all headers under uapi directories
+References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
+ <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
+ <1483695839-18660-8-git-send-email-nicolas.dichtel@6wind.com>
+ <20170109125638.GA15506@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: arnd@arndb.de, mmarek@suse.com, linux-kbuild@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org,
+ linux-cris-kernel@axis.com, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-am33-list@redhat.com,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-arch@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ netdev@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mmc@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ coreteam@netfilter.org, linux-nfs@vger.kernel.org,
+ linux-raid@vger.kernel.org, linux-spi@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-rdma@vger.kernel.org,
+ fcoe-devel@open-fcoe.org, alsa-devel@alsa-project.org,
+ linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org,
+ airlied@linux.ie, davem@davemloft.net
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Message-ID: <464a1323-4450-e563-ff59-9e6d57b75959@6wind.com>
+Date: Thu, 12 Jan 2017 16:52:57 +0100
+MIME-Version: 1.0
+In-Reply-To: <20170109125638.GA15506@infradead.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,18 +51,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-01-12 at 15:42 +0100, Christophe LEROY wrote:
-> The 4.6.3 uses __stack_chk_guard, while the 4.4.4 and 4.8.3 use
-> -28680(r2)
+Le 09/01/2017 à 13:56, Christoph Hellwig a écrit :
+> On Fri, Jan 06, 2017 at 10:43:59AM +0100, Nicolas Dichtel wrote:
+>> Regularly, when a new header is created in include/uapi/, the developer
+>> forgets to add it in the corresponding Kbuild file. This error is usually
+>> detected after the release is out.
+>>
+>> In fact, all headers under uapi directories should be exported, thus it's
+>> useless to have an exhaustive list.
+>>
+>> After this patch, the following files, which were not exported, are now
+>> exported (with make headers_install_all):
 > 
-> Is it dependent on the way GCC is built ? Then do we have a way to
-> know,Â 
-> when we compile, which method GCC will use ?
+> ... snip ...
 > 
-> See details below for each of the 3 GCC versions.
+>> linux/genwqe/.install
+>> linux/genwqe/..install.cmd
+>> linux/cifs/.install
+>> linux/cifs/..install.cmd
+> 
+> I'm pretty sure these should not be exported!
+> 
+Those files are created in every directory:
+$ find usr/include/ -name '\.\.install.cmd' | wc -l
+71
+$ find usr/include/ -name '\.install' | wc -l
+71
 
-I think it depends if you built it along with glibc (so it can produce
-userspace binaries) or not.
+See also
+http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/scripts/Makefile.headersinst#n32
 
-Cheers,
-Ben.
+
+Thank you,
+Nicolas
