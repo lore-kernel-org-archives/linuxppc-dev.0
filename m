@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBd09vPzDqYw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBf6V1LzDqYw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:30 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,10 +13,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 36/37] ARM: DRA7: clockdomain: Change the CLKTRCTRL of
- CM_PCIE_CLKSTCTRL to SW_WKUP
-Date: Thu, 12 Jan 2017 15:56:25 +0530
-Message-ID: <1484216786-17292-37-git-send-email-kishon@ti.com>
+Subject: [PATCH 30/37] dt-bindings: PCI: dra7xx: Add dt bindings to enable
+ legacy mode
+Date: Thu, 12 Jan 2017 15:56:19 +0530
+Message-ID: <1484216786-17292-31-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -30,28 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PCIe programming sequence in TRM suggests CLKSTCTRL of PCIe should
-be set to SW_WKUP. There are no issues when CLKSTCTRL is set to HW_AUTO
-in RC mode. However in EP mode, the host system is not able to access the
-MEMSPACE and setting the CLKSTCTRL to SW_WKUP fixes it.
+Update device tree binding documentation of TI's dra7xx PCI
+controller to include property for enabling legacy mode.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- arch/arm/mach-omap2/clockdomains7xx_data.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/devicetree/bindings/pci/ti-pci.txt |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/clockdomains7xx_data.c b/arch/arm/mach-omap2/clockdomains7xx_data.c
-index 6c67965..67ebff8 100644
---- a/arch/arm/mach-omap2/clockdomains7xx_data.c
-+++ b/arch/arm/mach-omap2/clockdomains7xx_data.c
-@@ -524,7 +524,7 @@
- 	.dep_bit	  = DRA7XX_PCIE_STATDEP_SHIFT,
- 	.wkdep_srcs	  = pcie_wkup_sleep_deps,
- 	.sleepdep_srcs	  = pcie_wkup_sleep_deps,
--	.flags		  = CLKDM_CAN_HWSUP_SWSUP,
-+	.flags		  = CLKDM_CAN_SWSUP,
- };
+diff --git a/Documentation/devicetree/bindings/pci/ti-pci.txt b/Documentation/devicetree/bindings/pci/ti-pci.txt
+index 62f5f59..ed85e8e 100644
+--- a/Documentation/devicetree/bindings/pci/ti-pci.txt
++++ b/Documentation/devicetree/bindings/pci/ti-pci.txt
+@@ -39,6 +39,10 @@ DEVICE MODE
+  - interrupts : one interrupt entries must be specified for main interrupt.
+  - num-ib-windows : number of inbound address translation windows
+  - num-ob-windows : number of outbound address translation windows
++ - syscon-legacy-mode: phandle to the syscon dt node. The 1st argument should
++		       contain the register offset within syscon and the 2nd
++		       argument should contain the bit field for setting the
++		       legacy mode
  
- static struct clockdomain atl_7xx_clkdm = {
+ Optional Property:
+  - gpios : Should be added if a gpio line is required to drive PERST# line
 -- 
 1.7.9.5
