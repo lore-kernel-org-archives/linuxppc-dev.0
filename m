@@ -1,28 +1,26 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Bart.VanAssche@sandisk.com>
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0079.outbound.protection.outlook.com [104.47.34.79])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzv5Q0TDPzDqYp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 05:13:29 +1100 (AEDT)
-Date: Thu, 12 Jan 2017 12:07:14 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
-Message-ID: <20170112180713.GU28613@gate.crashing.org>
-References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
- <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
- <alpine.DEB.2.20.99.1701040957380.31470@trent.utfs.org>
- <alpine.DEB.2.20.999.1701091739320.5450@trent.utfs.org>
- <d0e56084-49d7-2486-c2a6-de146331d1c7@c-s.fr>
- <20170111225440.GQ28613@gate.crashing.org>
- <1c81ce1a-33ca-7ba4-56f5-976935deb609@c-s.fr>
- <7604032b-c9ae-e3ce-fcd5-d9e555559f52@c-s.fr>
- <1484234447.2492.34.camel@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1484234447.2492.34.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzwJW0yNtzDqYt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 06:08:10 +1100 (AEDT)
+From: Bart Van Assche <bart.vanassche@sandisk.com>
+To: Doug Ledford <dledford@redhat.com>
+CC: <linux-rdma@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>, Bart Van Assche
+ <bart.vanassche@sandisk.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Chris Metcalf <cmetcalf@mellanox.com>, "David
+ Woodhouse" <dwmw2@infradead.org>, <linux-arch@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>, Paul
+ Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>
+Subject: [PATCH v2 03/26] treewide: Consolidate set_dma_ops() implementations
+Date: Thu, 12 Jan 2017 11:06:55 -0800
+Message-ID: <20170112190718.6728-4-bart.vanassche@sandisk.com>
+In-Reply-To: <20170112190718.6728-1-bart.vanassche@sandisk.com>
+References: <20170112190718.6728-1-bart.vanassche@sandisk.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +30,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 12, 2017 at 09:20:47AM -0600, Benjamin Herrenschmidt wrote:
-> On Thu, 2017-01-12 at 15:42 +0100, Christophe LEROY wrote:
-> > The 4.6.3 uses __stack_chk_guard, while the 4.4.4 and 4.8.3 use
-> > -28680(r2)
-> > 
-> > Is it dependent on the way GCC is built ? Then do we have a way to
-> > know, 
-> > when we compile, which method GCC will use ?
-> > 
-> > See details below for each of the 3 GCC versions.
-> 
-> I think it depends if you built it along with glibc (so it can produce
-> userspace binaries) or not.
+Now that all set_dma_ops() implementations are identical (ignoring
+BUG_ON() statements), remove the architecture specific definitions
+and add a definition in <linux/dma-mapping.h>.
 
-Right.  Tony's compilers are built using a (modified version of) buildall,
-and buildall goes out of its way to build without libc whatsoever, even
-if the configuration (powerpc64-linux, for example) expects one.
+Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Chris Metcalf <cmetcalf@mellanox.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-arch@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Russell King <linux@armlinux.org.uk>
+---
+ arch/arm/include/asm/dma-mapping.h     | 6 ------
+ arch/powerpc/include/asm/dma-mapping.h | 5 -----
+ arch/tile/include/asm/dma-mapping.h    | 5 -----
+ include/linux/dma-mapping.h            | 5 +++++
+ 4 files changed, 5 insertions(+), 16 deletions(-)
 
-Which leads to TARGET_LIBC_PROVIDES_SSP being undefined (it would normally
-be true for glibc >= 2.4), and that is all.  Mystery solved.  Thanks!
-
-
-Segher
+diff --git a/arch/arm/include/asm/dma-mapping.h b/arch/arm/include/asm/dma-mapping.h
+index 312f4d0564d6..c7432d647e53 100644
+--- a/arch/arm/include/asm/dma-mapping.h
++++ b/arch/arm/include/asm/dma-mapping.h
+@@ -31,12 +31,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
+ 		return __generic_dma_ops(dev);
+ }
+ 
+-static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
+-{
+-	BUG_ON(!dev);
+-	dev->dma_ops = ops;
+-}
+-
+ #define HAVE_ARCH_DMA_SUPPORTED 1
+ extern int dma_supported(struct device *dev, u64 mask);
+ 
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 59fbd4abcbf8..8275603ba4d5 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -91,11 +91,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
+ 	return dev->dma_ops;
+ }
+ 
+-static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
+-{
+-	dev->dma_ops = ops;
+-}
+-
+ /*
+  * get_dma_offset()
+  *
+diff --git a/arch/tile/include/asm/dma-mapping.h b/arch/tile/include/asm/dma-mapping.h
+index c0620697eaad..2562995a6ac9 100644
+--- a/arch/tile/include/asm/dma-mapping.h
++++ b/arch/tile/include/asm/dma-mapping.h
+@@ -59,11 +59,6 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+ 
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+ 
+-static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
+-{
+-	dev->dma_ops = ops;
+-}
+-
+ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+ {
+ 	if (!dev->dma_mask)
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index f1da68b82c63..e97f23e8b2d9 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -164,6 +164,11 @@ int dma_mmap_from_coherent(struct device *dev, struct vm_area_struct *vma,
+ 
+ #ifdef CONFIG_HAS_DMA
+ #include <asm/dma-mapping.h>
++static inline void set_dma_ops(struct device *dev,
++			       const struct dma_map_ops *dma_ops)
++{
++	dev->dma_ops = dma_ops;
++}
+ #else
+ /*
+  * Define the dma api to allow compilation but not linking of
+-- 
+2.11.0
