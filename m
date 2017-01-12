@@ -1,17 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzfzc2zYrzDqVc
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzfzc6W0kzDqTs
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 20:07:40 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org,
 	kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH 06/18] powerpc/64: Export pgtable_cache and pgtable_cache_add
- for KVM
-Date: Thu, 12 Jan 2017 20:07:14 +1100
-Message-Id: <1484212046-29591-7-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH 07/18] powerpc/64: Make type of partition table flush depend
+ on partition type
+Date: Thu, 12 Jan 2017 20:07:15 +1100
+Message-Id: <1484212046-29591-8-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1484212046-29591-1-git-send-email-paulus@ozlabs.org>
 References: <1484212046-29591-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,35 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This exports the pgtable_cache array and the pgtable_cache_add
-function so that HV KVM can use them for allocating radix page
-tables for guests.
+When changing a partition table entry on POWER9, we do a particular
+form of the tlbie instruction which flushes all TLBs and caches of
+the partition table for a given logical partition ID (LPID).
+This instruction has a field in the instruction word, labelled R
+(radix), which should be 1 if the partition was previously a radix
+partition and 0 if it was a HPT partition.  This implements that
+logic.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/mm/init-common.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/pgtable_64.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index a175cd8..2be5dc2 100644
---- a/arch/powerpc/mm/init-common.c
-+++ b/arch/powerpc/mm/init-common.c
-@@ -41,6 +41,7 @@ static void pmd_ctor(void *addr)
- }
- 
- struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
-+EXPORT_SYMBOL_GPL(pgtable_cache);	/* used by kvm_hv module */
- 
- /*
-  * Create a kmem_cache() for pagetables.  This is not used for PTE
-@@ -82,7 +83,7 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
- 	pgtable_cache[shift - 1] = new;
- 	pr_debug("Allocated pgtable cache for order %d\n", shift);
- }
--
-+EXPORT_SYMBOL_GPL(pgtable_cache_add);	/* used by kvm_hv module */
- 
- void pgtable_cache_init(void)
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 8bca7f5..d6b5e5c 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -454,13 +454,23 @@ void __init mmu_partition_table_init(void)
+ void mmu_partition_table_set_entry(unsigned int lpid, unsigned long dw0,
+ 				   unsigned long dw1)
  {
++	unsigned long old = be64_to_cpu(partition_tb[lpid].patb0);
++
+ 	partition_tb[lpid].patb0 = cpu_to_be64(dw0);
+ 	partition_tb[lpid].patb1 = cpu_to_be64(dw1);
+ 
+-	/* Global flush of TLBs and partition table caches for this lpid */
++	/*
++	 * Global flush of TLBs and partition table caches for this lpid.
++	 * The type of flush (hash or radix) depends on what the previous
++	 * use of this partition ID was, not the new use.
++	 */
+ 	asm volatile("ptesync" : : : "memory");
+-	asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : :
+-		     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
++	if (old & PATB_HR)
++		asm volatile(PPC_TLBIE_5(%0,%1,2,0,1) : :
++			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
++	else
++		asm volatile(PPC_TLBIE_5(%0,%1,2,0,0) : :
++			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
+ 	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+ }
+ EXPORT_SYMBOL_GPL(mmu_partition_table_set_entry);
 -- 
 2.7.4
