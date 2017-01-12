@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBm4wM0zDqb6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBn6zCPzDqcc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:37 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,10 +13,9 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 16/37] PCI: endpoint: Introduce configfs entry for configuring
- EP functions
-Date: Thu, 12 Jan 2017 15:56:05 +0530
-Message-ID: <1484216786-17292-17-git-send-email-kishon@ti.com>
+Subject: [PATCH 19/37] PCI: endpoint: functions: Add an EP function to test PCI
+Date: Thu, 12 Jan 2017 15:56:08 +0530
+Message-ID: <1484216786-17292-20-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -30,51 +29,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a new configfs entry to configure the EP function (like
-configuring the standard configuration header entries) and to
-bind the EP function with EP controller.
+This adds a new endpoint function driver (to program the virtual
+test device) making use of the EP-core library.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- drivers/pci/endpoint/Kconfig      |    4 +-
- drivers/pci/endpoint/Makefile     |    2 +-
- drivers/pci/endpoint/pci-ep-cfs.c |  427 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 431 insertions(+), 2 deletions(-)
- create mode 100644 drivers/pci/endpoint/pci-ep-cfs.c
+ drivers/pci/endpoint/Kconfig                  |    2 +
+ drivers/pci/endpoint/Makefile                 |    3 +-
+ drivers/pci/endpoint/functions/Kconfig        |   12 +
+ drivers/pci/endpoint/functions/Makefile       |    5 +
+ drivers/pci/endpoint/functions/pci-epf-test.c |  513 +++++++++++++++++++++++++
+ 5 files changed, 534 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/pci/endpoint/functions/Kconfig
+ create mode 100644 drivers/pci/endpoint/functions/Makefile
+ create mode 100644 drivers/pci/endpoint/functions/pci-epf-test.c
 
 diff --git a/drivers/pci/endpoint/Kconfig b/drivers/pci/endpoint/Kconfig
-index 7eb1c79..930e87a 100644
+index 930e87a..4195481 100644
 --- a/drivers/pci/endpoint/Kconfig
 +++ b/drivers/pci/endpoint/Kconfig
-@@ -14,7 +14,9 @@ config PCI_ENDPOINT
- 
- 	   Enabling this option will build the endpoint library, which
- 	   includes endpoint controller library and endpoint function
--	   library.
-+	   library. This will also enable the configfs entry required to
-+	   configure the endpoint function and used to bind the
-+	   function with a endpoint controller.
+@@ -20,4 +20,6 @@ config PCI_ENDPOINT
  
  	   If in doubt, say "N" to disable Endpoint support.
  
++source "drivers/pci/endpoint/functions/Kconfig"
++
+ endmenu
 diff --git a/drivers/pci/endpoint/Makefile b/drivers/pci/endpoint/Makefile
-index eeef1b7..a599c18 100644
+index a599c18..cebe3d0 100644
 --- a/drivers/pci/endpoint/Makefile
 +++ b/drivers/pci/endpoint/Makefile
-@@ -3,4 +3,4 @@
+@@ -3,4 +3,5 @@
  #
  
  obj-$(CONFIG_PCI_ENDPOINT)		:= pci-epc-core.o pci-epf-core.o\
--					   pci-epc-mem.o
-+					   pci-epc-mem.o pci-ep-cfs.o
-diff --git a/drivers/pci/endpoint/pci-ep-cfs.c b/drivers/pci/endpoint/pci-ep-cfs.c
+-					   pci-epc-mem.o pci-ep-cfs.o
++					   pci-epc-mem.o pci-ep-cfs.o	\
++					   functions/
+diff --git a/drivers/pci/endpoint/functions/Kconfig b/drivers/pci/endpoint/functions/Kconfig
 new file mode 100644
-index 0000000..ed0f8c2
+index 0000000..175edad
 --- /dev/null
-+++ b/drivers/pci/endpoint/pci-ep-cfs.c
-@@ -0,0 +1,427 @@
++++ b/drivers/pci/endpoint/functions/Kconfig
+@@ -0,0 +1,12 @@
++#
++# PCI Endpoint Functions
++#
++
++config PCI_EPF_TEST
++	tristate "PCI Endpoint Test driver"
++	depends on PCI_ENDPOINT
++	help
++	   Enable this configuration option to enable the test driver
++	   for PCI Endpoint.
++
++	   If in doubt, say "N" to disable Endpoint test driver.
+diff --git a/drivers/pci/endpoint/functions/Makefile b/drivers/pci/endpoint/functions/Makefile
+new file mode 100644
+index 0000000..53c120e
+--- /dev/null
++++ b/drivers/pci/endpoint/functions/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for PCI Endpoint Functions
++#
++
++obj-$(CONFIG_PCI_EPF_TEST)		:= pci-epf-test.o
+diff --git a/drivers/pci/endpoint/functions/pci-epf-test.c b/drivers/pci/endpoint/functions/pci-epf-test.c
+new file mode 100644
+index 0000000..bbac323
+--- /dev/null
++++ b/drivers/pci/endpoint/functions/pci-epf-test.c
+@@ -0,0 +1,513 @@
 +/**
-+ * configfs to configure the PCI endpoint
++ * Test driver to test endpoint functionality
 + *
 + * Copyright (C) 2017 Texas Instruments
 + * Author: Kishon Vijay Abraham I <kishon@ti.com>
@@ -92,412 +120,498 @@ index 0000000..ed0f8c2
 + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+#include <linux/configfs.h>
++#include <linux/crc32.h>
++#include <linux/delay.h>
++#include <linux/io.h>
 +#include <linux/module.h>
 +#include <linux/slab.h>
++#include <linux/pci_ids.h>
++#include <linux/random.h>
 +
 +#include <linux/pci-epc.h>
 +#include <linux/pci-epf.h>
++#include <linux/pci_regs.h>
 +
-+struct pci_epf_info {
-+	struct config_group group;
-+	struct list_head list;
-+	struct pci_epf *epf;
++#define COMMAND_RAISE_LEGACY_IRQ	BIT(0)
++#define COMMAND_RAISE_MSI_IRQ		BIT(1)
++#define MSI_NUMBER_SHIFT		2
++#define MSI_NUMBER_MASK			(0x3f << MSI_NUMBER_SHIFT)
++#define COMMAND_READ			BIT(8)
++#define COMMAND_WRITE			BIT(9)
++#define COMMAND_COPY			BIT(10)
++
++#define STATUS_READ_SUCCESS		BIT(0)
++#define STATUS_READ_FAIL		BIT(1)
++#define STATUS_WRITE_SUCCESS		BIT(2)
++#define STATUS_WRITE_FAIL		BIT(3)
++#define STATUS_COPY_SUCCESS		BIT(4)
++#define STATUS_COPY_FAIL		BIT(5)
++#define STATUS_IRQ_RAISED		BIT(6)
++#define STATUS_SRC_ADDR_INVALID		BIT(7)
++#define STATUS_DST_ADDR_INVALID		BIT(8)
++
++#define TIMER_RESOLUTION		1
++
++static struct workqueue_struct *kpcitest_workqueue;
++
++struct pci_epf_test {
++	void			*reg[6];
++	struct pci_epf		*epf;
++	struct delayed_work	cmd_handler;
 +};
 +
-+struct pci_ep_info {
-+	struct config_group group;
-+	struct config_group pci_epf_group;
-+	/* mutex to protect pci_epf list */
-+	struct mutex lock;
-+	struct list_head pci_epf;
-+	const char *epc_name;
-+	struct pci_epc *epc;
++struct pci_epf_test_reg {
++	u32	magic;
++	u32	command;
++	u32	status;
++	u64	src_addr;
++	u64	dst_addr;
++	u32	size;
++	u32	checksum;
++} __packed;
++
++static struct pci_epf_header test_header = {
++	.vendorid	= PCI_ANY_ID,
++	.deviceid	= PCI_ANY_ID,
++	.baseclass_code = PCI_CLASS_OTHERS,
++	.interrupt_pin	= PCI_INTERRUPT_INTA,
 +};
 +
-+static inline struct pci_epf_info *to_pci_epf_info(struct config_item *item)
++static int bar_size[] = { 512, 1024, 16384, 131072, 1048576 };
++
++static int pci_epf_test_copy(struct pci_epf_test *epf_test)
 +{
-+	return container_of(to_config_group(item), struct pci_epf_info, group);
-+}
-+
-+static inline struct pci_ep_info *to_pci_ep_info(struct config_item *item)
-+{
-+	return container_of(to_config_group(item), struct pci_ep_info, group);
-+}
-+
-+#define PCI_EPF_HEADER_R(_name)						       \
-+static ssize_t pci_epf_##_name##_show(struct config_item *item,	char *page)    \
-+{									       \
-+	struct pci_epf *epf = to_pci_epf_info(item)->epf;		       \
-+	if (!epf->header) {						       \
-+		WARN_ON_ONCE("epf device not bound to function driver\n");     \
-+		return 0;						       \
-+	}								       \
-+	return sprintf(page, "0x%04x\n", epf->header->_name);		       \
-+}
-+
-+#define PCI_EPF_HEADER_W_u32(_name)					       \
-+static ssize_t pci_epf_##_name##_store(struct config_item *item,	       \
-+				       const char *page, size_t len)	       \
-+{									       \
-+	u32 val;							       \
-+	int ret;							       \
-+	struct pci_epf *epf = to_pci_epf_info(item)->epf;		       \
-+	if (!epf->header) {						       \
-+		WARN_ON_ONCE("epf device not bound to function driver\n");     \
-+		return 0;						       \
-+	}								       \
-+	ret = kstrtou32(page, 0, &val);					       \
-+	if (ret)							       \
-+		return ret;						       \
-+	epf->header->_name = val;					       \
-+	return len;							       \
-+}
-+
-+#define PCI_EPF_HEADER_W_u16(_name)					       \
-+static ssize_t pci_epf_##_name##_store(struct config_item *item,	       \
-+				       const char *page, size_t len)	       \
-+{									       \
-+	u16 val;							       \
-+	int ret;							       \
-+	struct pci_epf *epf = to_pci_epf_info(item)->epf;		       \
-+	if (!epf->header) {						       \
-+		WARN_ON_ONCE("epf device not bound to function driver\n");     \
-+		return 0;						       \
-+	}								       \
-+	ret = kstrtou16(page, 0, &val);					       \
-+	if (ret)							       \
-+		return ret;						       \
-+	epf->header->_name = val;					       \
-+	return len;							       \
-+}
-+
-+#define PCI_EPF_HEADER_W_u8(_name)					       \
-+static ssize_t pci_epf_##_name##_store(struct config_item *item,	       \
-+				       const char *page, size_t len)	       \
-+{									       \
-+	u8 val;								       \
-+	int ret;							       \
-+	struct pci_epf *epf = to_pci_epf_info(item)->epf;		       \
-+	if (!epf->header) {						       \
-+		WARN_ON_ONCE("epf device not bound to function driver\n");     \
-+		return 0;						       \
-+	}								       \
-+	ret = kstrtou8(page, 0, &val);					       \
-+	if (ret)							       \
-+		return ret;						       \
-+	epf->header->_name = val;					       \
-+	return len;							       \
-+}
-+
-+static ssize_t pci_epf_msi_interrupts_store(struct config_item *item,
-+					    const char *page, size_t len)
-+{
-+	u8 val;
 +	int ret;
++	void __iomem *src_addr;
++	void __iomem *dst_addr;
++	phys_addr_t src_phys_addr;
++	phys_addr_t dst_phys_addr;
++	struct pci_epf *epf = epf_test->epf;
++	struct device *dev = &epf->dev;
++	struct pci_epc *epc = epf->epc;
++	struct pci_epf_test_reg *reg = epf_test->reg[0];
 +
-+	ret = kstrtou8(page, 0, &val);
++	src_addr = pci_epc_mem_alloc_addr(epc, &src_phys_addr, reg->size);
++	if (!src_addr) {
++		dev_err(dev, "failed to allocate source address\n");
++		reg->status = STATUS_SRC_ADDR_INVALID;
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	ret = pci_epc_map_addr(epc, src_phys_addr, reg->src_addr, reg->size);
++	if (ret) {
++		dev_err(dev, "failed to map source address\n");
++		reg->status = STATUS_SRC_ADDR_INVALID;
++		goto err_src_addr;
++	}
++
++	dst_addr = pci_epc_mem_alloc_addr(epc, &dst_phys_addr, reg->size);
++	if (!dst_addr) {
++		dev_err(dev, "failed to allocate destination address\n");
++		reg->status = STATUS_DST_ADDR_INVALID;
++		ret = -ENOMEM;
++		goto err_src_map_addr;
++	}
++
++	ret = pci_epc_map_addr(epc, dst_phys_addr, reg->dst_addr, reg->size);
++	if (ret) {
++		dev_err(dev, "failed to map destination address\n");
++		reg->status = STATUS_DST_ADDR_INVALID;
++		goto err_dst_addr;
++	}
++
++	memcpy(dst_addr, src_addr, reg->size);
++
++	pci_epc_unmap_addr(epc, dst_phys_addr);
++
++err_dst_addr:
++	pci_epc_mem_free_addr(epc, dst_phys_addr, dst_addr, reg->size);
++
++err_src_map_addr:
++	pci_epc_unmap_addr(epc, src_phys_addr);
++
++err_src_addr:
++	pci_epc_mem_free_addr(epc, src_phys_addr, src_addr, reg->size);
++
++err:
++	return ret;
++}
++
++static int pci_epf_test_read(struct pci_epf_test *epf_test)
++{
++	int ret;
++	void __iomem *src_addr;
++	void *buf;
++	u32 crc32;
++	phys_addr_t phys_addr;
++	struct pci_epf *epf = epf_test->epf;
++	struct device *dev = &epf->dev;
++	struct pci_epc *epc = epf->epc;
++	struct pci_epf_test_reg *reg = epf_test->reg[0];
++
++	src_addr = pci_epc_mem_alloc_addr(epc, &phys_addr, reg->size);
++	if (!src_addr) {
++		dev_err(dev, "failed to allocate address\n");
++		reg->status = STATUS_SRC_ADDR_INVALID;
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	ret = pci_epc_map_addr(epc, phys_addr, reg->src_addr, reg->size);
++	if (ret) {
++		dev_err(dev, "failed to map address\n");
++		reg->status = STATUS_SRC_ADDR_INVALID;
++		goto err_addr;
++	}
++
++	buf = kzalloc(reg->size, GFP_KERNEL);
++	if (!buf) {
++		ret = -ENOMEM;
++		goto err_map_addr;
++	}
++
++	memcpy(buf, src_addr, reg->size);
++
++	crc32 = crc32_le(~0, buf, reg->size);
++	if (crc32 != reg->checksum)
++		ret = -EIO;
++
++	kfree(buf);
++
++err_map_addr:
++	pci_epc_unmap_addr(epc, phys_addr);
++
++err_addr:
++	pci_epc_mem_free_addr(epc, phys_addr, src_addr, reg->size);
++
++err:
++	return ret;
++}
++
++static int pci_epf_test_write(struct pci_epf_test *epf_test)
++{
++	int ret;
++	void __iomem *dst_addr;
++	void *buf;
++	phys_addr_t phys_addr;
++	struct pci_epf *epf = epf_test->epf;
++	struct device *dev = &epf->dev;
++	struct pci_epc *epc = epf->epc;
++	struct pci_epf_test_reg *reg = epf_test->reg[0];
++
++	dst_addr = pci_epc_mem_alloc_addr(epc, &phys_addr, reg->size);
++	if (!dst_addr) {
++		dev_err(dev, "failed to allocate address\n");
++		reg->status = STATUS_DST_ADDR_INVALID;
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	ret = pci_epc_map_addr(epc, phys_addr, reg->dst_addr, reg->size);
++	if (ret) {
++		dev_err(dev, "failed to map address\n");
++		reg->status = STATUS_DST_ADDR_INVALID;
++		goto err_addr;
++	}
++
++	buf = kzalloc(reg->size, GFP_KERNEL);
++	if (!buf) {
++		ret = -ENOMEM;
++		goto err_map_addr;
++	}
++
++	get_random_bytes(buf, reg->size);
++	reg->checksum = crc32_le(~0, buf, reg->size);
++
++	memcpy(dst_addr, buf, reg->size);
++
++	/*
++	 * wait 1ms inorder for the write to complete. Without this delay L3
++	 * error in observed in the host system.
++	 */
++	mdelay(1);
++
++	kfree(buf);
++
++err_map_addr:
++	pci_epc_unmap_addr(epc, phys_addr);
++
++err_addr:
++	pci_epc_mem_free_addr(epc, phys_addr, dst_addr, reg->size);
++
++err:
++	return ret;
++}
++
++static void pci_epf_test_raise_irq(struct pci_epf_test *epf_test)
++{
++	u8 irq;
++	u8 msi_count;
++	struct pci_epf *epf = epf_test->epf;
++	struct pci_epc *epc = epf->epc;
++	struct pci_epf_test_reg *reg = epf_test->reg[0];
++
++	reg->status |= STATUS_IRQ_RAISED;
++	msi_count = pci_epc_get_msi(epc);
++	irq = (reg->command & MSI_NUMBER_MASK) >> MSI_NUMBER_SHIFT;
++	if (irq > msi_count || msi_count <= 0)
++		pci_epc_raise_irq(epc, PCI_EPC_IRQ_LEGACY, 0);
++	else
++		pci_epc_raise_irq(epc, PCI_EPC_IRQ_MSI, irq);
++}
++
++static void pci_epf_test_cmd_handler(struct work_struct *work)
++{
++	int ret;
++	u8 irq;
++	u8 msi_count;
++	struct pci_epf_test *epf_test = container_of(work, struct pci_epf_test,
++						     cmd_handler.work);
++	struct pci_epf *epf = epf_test->epf;
++	struct pci_epc *epc = epf->epc;
++	struct pci_epf_test_reg *reg = epf_test->reg[0];
++
++	if (!reg->command)
++		goto reset_handler;
++
++	if (reg->command & COMMAND_RAISE_LEGACY_IRQ) {
++		reg->status = STATUS_IRQ_RAISED;
++		pci_epc_raise_irq(epc, PCI_EPC_IRQ_LEGACY, 0);
++		goto reset_handler;
++	}
++
++	if (reg->command & COMMAND_WRITE) {
++		ret = pci_epf_test_write(epf_test);
++		if (ret)
++			reg->status |= STATUS_WRITE_FAIL;
++		else
++			reg->status |= STATUS_WRITE_SUCCESS;
++		pci_epf_test_raise_irq(epf_test);
++		goto reset_handler;
++	}
++
++	if (reg->command & COMMAND_READ) {
++		ret = pci_epf_test_read(epf_test);
++		if (!ret)
++			reg->status |= STATUS_READ_SUCCESS;
++		else
++			reg->status |= STATUS_READ_FAIL;
++		pci_epf_test_raise_irq(epf_test);
++		goto reset_handler;
++	}
++
++	if (reg->command & COMMAND_COPY) {
++		ret = pci_epf_test_copy(epf_test);
++		if (!ret)
++			reg->status |= STATUS_COPY_SUCCESS;
++		else
++			reg->status |= STATUS_COPY_FAIL;
++		pci_epf_test_raise_irq(epf_test);
++		goto reset_handler;
++	}
++
++	if (reg->command & COMMAND_RAISE_MSI_IRQ) {
++		msi_count = pci_epc_get_msi(epc);
++		irq = (reg->command & MSI_NUMBER_MASK) >> MSI_NUMBER_SHIFT;
++		if (irq > msi_count || msi_count <= 0)
++			goto reset_handler;
++		reg->status = STATUS_IRQ_RAISED;
++		pci_epc_raise_irq(epc, PCI_EPC_IRQ_MSI, irq);
++		goto reset_handler;
++	}
++
++reset_handler:
++	reg->command = 0;
++
++	queue_delayed_work(kpcitest_workqueue, &epf_test->cmd_handler,
++			   msecs_to_jiffies(1));
++}
++
++static void pci_epf_test_linkup(struct pci_epf *epf)
++{
++	struct pci_epf_test *epf_test = epf_get_drvdata(epf);
++
++	queue_delayed_work(kpcitest_workqueue, &epf_test->cmd_handler,
++			   msecs_to_jiffies(1));
++}
++
++static void pci_epf_test_unbind(struct pci_epf *epf)
++{
++	struct pci_epf_test *epf_test = epf_get_drvdata(epf);
++	struct pci_epc *epc = epf->epc;
++	int bar;
++
++	cancel_delayed_work(&epf_test->cmd_handler);
++	pci_epc_stop(epc);
++	for (bar = BAR_0; bar <= BAR_5; bar++) {
++		if (epf_test->reg[bar]) {
++			pci_epf_free_space(epf, epf_test->reg[bar], bar);
++			pci_epc_clear_bar(epc, bar);
++		}
++	}
++}
++
++static int pci_epf_test_set_bar(struct pci_epf *epf)
++{
++	int flags;
++	int bar;
++	int ret;
++	struct pci_epf_bar *epf_bar;
++	struct pci_epc *epc = epf->epc;
++	struct device *dev = &epf->dev;
++	struct pci_epf_test *epf_test = epf_get_drvdata(epf);
++
++	flags = PCI_BASE_ADDRESS_SPACE_MEMORY | PCI_BASE_ADDRESS_MEM_TYPE_32;
++	if (sizeof(dma_addr_t) == 0x8)
++		flags |= PCI_BASE_ADDRESS_MEM_TYPE_64;
++
++	for (bar = BAR_0; bar <= BAR_5; bar++) {
++		epf_bar = &epf->bar[bar];
++		ret = pci_epc_set_bar(epc, bar, epf_bar->phys_addr,
++				      epf_bar->size, flags);
++		if (ret) {
++			pci_epf_free_space(epf, epf_test->reg[bar], bar);
++			dev_err(dev, "failed to set BAR%d\n", bar);
++			if (bar == BAR_0)
++				return ret;
++		}
++	}
++
++	return 0;
++}
++
++static int pci_epf_test_alloc_space(struct pci_epf *epf)
++{
++	struct pci_epf_test *epf_test = epf_get_drvdata(epf);
++	struct device *dev = &epf->dev;
++	void *base;
++	int bar;
++
++	base = pci_epf_alloc_space(epf, sizeof(struct pci_epf_test_reg),
++				   BAR_0);
++	if (!base) {
++		dev_err(dev, "failed to allocated register space\n");
++		return -ENOMEM;
++	}
++	epf_test->reg[0] = base;
++
++	for (bar = BAR_1; bar <= BAR_5; bar++) {
++		base = pci_epf_alloc_space(epf, bar_size[bar - 1], bar);
++		if (!base)
++			dev_err(dev, "failed to allocate space for BAR%d\n",
++				bar);
++		epf_test->reg[bar] = base;
++	}
++
++	return 0;
++}
++
++static int pci_epf_test_bind(struct pci_epf *epf)
++{
++	int ret;
++	struct pci_epf_header *header = epf->header;
++	struct pci_epc *epc = epf->epc;
++	struct device *dev = &epf->dev;
++
++	ret = pci_epc_write_header(epc, header);
++	if (ret) {
++		dev_err(dev, "configuration header write failed\n");
++		return ret;
++	}
++
++	ret = pci_epf_test_alloc_space(epf);
 +	if (ret)
 +		return ret;
 +
-+	to_pci_epf_info(item)->epf->msi_interrupts = val;
-+
-+	return len;
-+}
-+
-+static ssize_t pci_epf_msi_interrupts_show(struct config_item *item,
-+					   char *page)
-+{
-+	return sprintf(page, "%d\n",
-+		       to_pci_epf_info(item)->epf->msi_interrupts);
-+}
-+
-+static ssize_t pci_epf_function_show(struct config_item *item,
-+				     char *page)
-+{
-+	return sprintf(page, "%s\n",
-+		       to_pci_epf_info(item)->epf->name);
-+}
-+
-+PCI_EPF_HEADER_R(vendorid)
-+PCI_EPF_HEADER_W_u16(vendorid)
-+
-+PCI_EPF_HEADER_R(deviceid)
-+PCI_EPF_HEADER_W_u16(deviceid)
-+
-+PCI_EPF_HEADER_R(revid)
-+PCI_EPF_HEADER_W_u8(revid)
-+
-+PCI_EPF_HEADER_R(progif_code)
-+PCI_EPF_HEADER_W_u8(progif_code)
-+
-+PCI_EPF_HEADER_R(subclass_code)
-+PCI_EPF_HEADER_W_u8(subclass_code)
-+
-+PCI_EPF_HEADER_R(baseclass_code)
-+PCI_EPF_HEADER_W_u8(baseclass_code)
-+
-+PCI_EPF_HEADER_R(cache_line_size)
-+PCI_EPF_HEADER_W_u8(cache_line_size)
-+
-+PCI_EPF_HEADER_R(subsys_vendor_id)
-+PCI_EPF_HEADER_W_u16(subsys_vendor_id)
-+
-+PCI_EPF_HEADER_R(subsys_id)
-+PCI_EPF_HEADER_W_u16(subsys_id)
-+
-+PCI_EPF_HEADER_R(interrupt_pin)
-+PCI_EPF_HEADER_W_u8(interrupt_pin)
-+
-+CONFIGFS_ATTR(pci_epf_, vendorid);
-+CONFIGFS_ATTR(pci_epf_, deviceid);
-+CONFIGFS_ATTR(pci_epf_, revid);
-+CONFIGFS_ATTR(pci_epf_, progif_code);
-+CONFIGFS_ATTR(pci_epf_, subclass_code);
-+CONFIGFS_ATTR(pci_epf_, baseclass_code);
-+CONFIGFS_ATTR(pci_epf_, cache_line_size);
-+CONFIGFS_ATTR(pci_epf_, subsys_vendor_id);
-+CONFIGFS_ATTR(pci_epf_, subsys_id);
-+CONFIGFS_ATTR(pci_epf_, interrupt_pin);
-+CONFIGFS_ATTR(pci_epf_, msi_interrupts);
-+CONFIGFS_ATTR_RO(pci_epf_, function);
-+
-+static struct configfs_attribute *pci_epf_attrs[] = {
-+	&pci_epf_attr_vendorid,
-+	&pci_epf_attr_deviceid,
-+	&pci_epf_attr_revid,
-+	&pci_epf_attr_progif_code,
-+	&pci_epf_attr_subclass_code,
-+	&pci_epf_attr_baseclass_code,
-+	&pci_epf_attr_cache_line_size,
-+	&pci_epf_attr_subsys_vendor_id,
-+	&pci_epf_attr_subsys_id,
-+	&pci_epf_attr_interrupt_pin,
-+	&pci_epf_attr_msi_interrupts,
-+	&pci_epf_attr_function,
-+	NULL,
-+};
-+
-+static void pci_epf_release(struct config_item *item)
-+{
-+	struct pci_epf_info *epf_info = to_pci_epf_info(item);
-+
-+	pci_epf_destroy(epf_info->epf);
-+	kfree(epf_info);
-+}
-+
-+static struct configfs_item_operations pci_epf_ops = {
-+	.release		= pci_epf_release,
-+};
-+
-+static struct config_item_type pci_epf_type = {
-+	.ct_item_ops	= &pci_epf_ops,
-+	.ct_attrs	= pci_epf_attrs,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct config_group *pci_epf_make(struct config_group *group,
-+					 const char *name)
-+{
-+	struct pci_epf_info *epf_info;
-+	struct pci_ep_info *ep_info;
-+	struct pci_epf *epf;
-+
-+	epf_info = kzalloc(sizeof(*epf_info), GFP_KERNEL);
-+	if (!epf_info)
-+		return ERR_PTR(-ENOMEM);
-+
-+	config_group_init_type_name(&epf_info->group, name, &pci_epf_type);
-+
-+	epf = pci_epf_create(name);
-+	if (IS_ERR(epf)) {
-+		pr_err("failed to create endpoint function device\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	epf_info->epf = epf;
-+	ep_info = container_of(group, struct pci_ep_info, pci_epf_group);
-+
-+	mutex_lock(&ep_info->lock);
-+	list_add_tail(&epf_info->list, &ep_info->pci_epf);
-+	mutex_unlock(&ep_info->lock);
-+
-+	return &epf_info->group;
-+}
-+
-+static void pci_epf_drop(struct config_group *group, struct config_item *item)
-+{
-+	struct pci_ep_info *ep_info;
-+	struct pci_epf_info *epf_info = to_pci_epf_info(item);
-+
-+	ep_info = container_of(group, struct pci_ep_info, pci_epf_group);
-+
-+	pci_epf_unbind(epf_info->epf);
-+	pci_epc_remove_epf(ep_info->epc, epf_info->epf);
-+
-+	mutex_lock(&ep_info->lock);
-+	list_del(&epf_info->list);
-+	mutex_unlock(&ep_info->lock);
-+
-+	config_item_put(item);
-+}
-+
-+static struct configfs_group_operations pci_epfs_ops = {
-+	.make_group	= &pci_epf_make,
-+	.drop_item	= &pci_epf_drop,
-+};
-+
-+static struct config_item_type pci_epfs_type = {
-+	.ct_group_ops	= &pci_epfs_ops,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static ssize_t pci_ep_epc_store(struct config_item *item, const char *page,
-+				size_t len)
-+{
-+	int ret;
-+	u8 func_no = 0;
-+	char *epc_name;
-+	struct pci_epc *epc;
-+	struct pci_epf *epf;
-+	struct pci_epf_info *epf_info;
-+	struct pci_ep_info *ep_info = to_pci_ep_info(item);
-+
-+	epc_name = kstrdup(page, GFP_KERNEL);
-+	if (!epc_name)
-+		return -ENOMEM;
-+	if (epc_name[len - 1] == '\n')
-+		epc_name[len - 1] = '\0';
-+
-+	if (ep_info->epc) {
-+		ret = -EBUSY;
-+		goto err;
-+	}
-+
-+	epc = pci_epc_get(epc_name);
-+	if (IS_ERR(epc)) {
-+		ret = PTR_ERR(epc);
-+		goto err;
-+	}
-+
-+	ep_info->epc = epc;
-+	ep_info->epc_name = epc_name;
-+
-+	list_for_each_entry(epf_info, &ep_info->pci_epf, list) {
-+		epf = epf_info->epf;
-+		epf->func_no = func_no;
-+		epf->epc = epc;
-+		pci_epc_add_epf(epc, epf);
-+		pci_epf_bind(epf);
-+		func_no++;
-+	}
-+
-+	return len;
-+
-+err:
-+	kfree(epc_name);
-+	return ret;
-+}
-+
-+static ssize_t pci_ep_epc_show(struct config_item *item, char *page)
-+{
-+	return sprintf(page, "%s\n",
-+		       to_pci_ep_info(item)->epc_name);
-+}
-+
-+CONFIGFS_ATTR(pci_ep_, epc);
-+
-+static struct configfs_attribute *pci_ep_attrs[] = {
-+	&pci_ep_attr_epc,
-+	NULL,
-+};
-+
-+static void pci_ep_attr_release(struct config_item *item)
-+{
-+	struct pci_ep_info *ep_info = to_pci_ep_info(item);
-+
-+	pci_epc_put(ep_info->epc);
-+	kfree(ep_info->epc_name);
-+	kfree(ep_info);
-+}
-+
-+static struct configfs_item_operations pci_ep_device_ops = {
-+	.release	= pci_ep_attr_release,
-+};
-+
-+static struct config_item_type pci_ep_device_type = {
-+	.ct_item_ops	= &pci_ep_device_ops,
-+	.ct_attrs	= pci_ep_attrs,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct config_group *pci_ep_make(struct config_group *group,
-+					const char *name)
-+{
-+	struct pci_ep_info *ep_info;
-+
-+	ep_info = kzalloc(sizeof(*ep_info), GFP_KERNEL);
-+	if (!ep_info)
-+		return ERR_PTR(-ENOMEM);
-+
-+	config_group_init_type_name(&ep_info->group, name, &pci_ep_device_type);
-+	config_group_init_type_name(&ep_info->pci_epf_group,
-+				    "epf", &pci_epfs_type);
-+	configfs_add_default_group(&ep_info->pci_epf_group, &ep_info->group);
-+
-+	mutex_init(&ep_info->lock);
-+	INIT_LIST_HEAD(&ep_info->pci_epf);
-+
-+	return &ep_info->group;
-+}
-+
-+static void pci_ep_drop(struct config_group *group, struct config_item *item)
-+{
-+	config_item_put(item);
-+}
-+
-+static struct configfs_group_operations pci_ep_ops = {
-+	.make_group	= &pci_ep_make,
-+	.drop_item	= &pci_ep_drop,
-+};
-+
-+static struct config_item_type pci_ep_type = {
-+	.ct_group_ops	= &pci_ep_ops,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct configfs_subsystem pci_ep_cfs_subsys = {
-+	.su_group = {
-+		.cg_item = {
-+			.ci_namebuf = "pci_ep",
-+			.ci_type = &pci_ep_type,
-+		},
-+	},
-+	.su_mutex = __MUTEX_INITIALIZER(pci_ep_cfs_subsys.su_mutex),
-+};
-+
-+static int __init pci_ep_cfs_init(void)
-+{
-+	int ret;
-+
-+	config_group_init(&pci_ep_cfs_subsys.su_group);
-+
-+	ret = configfs_register_subsystem(&pci_ep_cfs_subsys);
++	ret = pci_epf_test_set_bar(epf);
 +	if (ret)
-+		pr_err("Error %d while registering subsystem %s\n",
-+		       ret, pci_ep_cfs_subsys.su_group.cg_item.ci_namebuf);
++		return ret;
 +
-+	return ret;
++	ret = pci_epc_set_msi(epc, epf->msi_interrupts);
++	if (ret)
++		return ret;
++
++	ret = pci_epc_start(epc);
++	if (ret) {
++		dev_err(dev, "failed to start endpoint controller\n");
++		return ret;
++	}
++
++	return 0;
 +}
-+module_init(pci_ep_cfs_init);
 +
-+static void __exit pci_ep_cfs_exit(void)
++static int pci_epf_test_probe(struct pci_epf *epf)
 +{
-+	configfs_unregister_subsystem(&pci_ep_cfs_subsys);
-+}
-+module_exit(pci_ep_cfs_exit);
++	struct pci_epf_test *epf_test;
++	struct device *dev = &epf->dev;
 +
-+MODULE_DESCRIPTION("PCI EP CONFIGFS");
++	epf_test = devm_kzalloc(dev, sizeof(*epf_test), GFP_KERNEL);
++	if (!epf)
++		return -ENOMEM;
++
++	epf->header = &test_header;
++	epf_test->epf = epf;
++
++	INIT_DELAYED_WORK(&epf_test->cmd_handler, pci_epf_test_cmd_handler);
++
++	epf_set_drvdata(epf, epf_test);
++	return 0;
++}
++
++static int pci_epf_test_remove(struct pci_epf *epf)
++{
++	struct pci_epf_test *epf_test = epf_get_drvdata(epf);
++
++	kfree(epf_test);
++	return 0;
++}
++
++static struct pci_epf_ops ops = {
++	.unbind	= pci_epf_test_unbind,
++	.bind	= pci_epf_test_bind,
++	.linkup = pci_epf_test_linkup,
++};
++
++static const struct pci_epf_device_id pci_epf_test_ids[] = {
++	{
++		.name = "pci_epf_test",
++	},
++	{},
++};
++
++static struct pci_epf_driver test_driver = {
++	.driver.name	= "pci_epf_test",
++	.probe		= pci_epf_test_probe,
++	.remove		= pci_epf_test_remove,
++	.id_table	= pci_epf_test_ids,
++	.ops		= &ops,
++	.owner		= THIS_MODULE,
++};
++
++static int __init pci_epf_test_init(void)
++{
++	int ret;
++
++	kpcitest_workqueue = alloc_workqueue("kpcitest",
++					     WQ_MEM_RECLAIM | WQ_HIGHPRI, 0);
++	ret = pci_epf_register_driver(&test_driver);
++	if (ret) {
++		pr_err("failed to register pci epf test driver --> %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++module_init(pci_epf_test_init);
++
++static void __exit pci_epf_test_exit(void)
++{
++	pci_epf_unregister_driver(&test_driver);
++}
++module_exit(pci_epf_test_exit);
++
++MODULE_DESCRIPTION("PCI EPF TEST DRIVER");
 +MODULE_AUTHOR("Kishon Vijay Abraham I <kishon@ti.com>");
 +MODULE_LICENSE("GPL v2");
 -- 
