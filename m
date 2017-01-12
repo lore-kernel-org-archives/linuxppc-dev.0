@@ -1,24 +1,36 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzPNf5QFWzDqNL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 09:54:58 +1100 (AEDT)
-Date: Wed, 11 Jan 2017 16:54:41 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Christian Kujau <lists@nerdbynature.de>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
-Message-ID: <20170111225440.GQ28613@gate.crashing.org>
-References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
- <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
- <alpine.DEB.2.20.99.1701040957380.31470@trent.utfs.org>
- <alpine.DEB.2.20.999.1701091739320.5450@trent.utfs.org>
- <d0e56084-49d7-2486-c2a6-de146331d1c7@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d0e56084-49d7-2486-c2a6-de146331d1c7@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzSZV4vlVzDqNL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 12:18:42 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
+ v0C0xI2u082665
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:18:40 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 27wrqm11ex-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2017 20:18:40 -0500
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Wed, 11 Jan 2017 18:18:39 -0700
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/4] cxlflash: Enhancements, cleanup and fixes
+Date: Wed, 11 Jan 2017 19:18:18 -0600
+Message-Id: <1484183898-22714-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 10, 2017 at 07:26:15AM +0100, Christophe LEROY wrote:
-> >Maybe ppc32 is not supposed to be built with CC_STACKPROTECTOR ?
-> 
-> Indeed, the latest versions of GCC don't use anymore the global variable 
-> __stack_chk_guard as canary value, but a value stored at -0x7008(r2). 
-> This is not compatible with the current implementation of  the kernel 
-> with uses r2 as a pointeur to current task struct.
-> So until we fix it, I don't think CC_STACKPROTECTOR is usable on PPC 
-> with modern versions of GCC.
+This patch series includes an enhancement to support a new command queuing
+model and also cleans up prints throughout the driver. The last patch in
+the series fixes a racing issue.
 
-I still wonder what changed.  Nothing relevant has changed for ten years
-or whatever as far as I see; unless it is just the -fstack-protector-strong
-that makes it fail now.  Curious.
+The series is based upon v4.10-rc2, intended for 4.11 and is bisectable.
 
+v2 Changes:
+- Fixed SOBs for all the submitted patches
 
-Segher
+Matthew R. Ochs (3):
+  cxlflash: Refactor context reset to share reset logic
+  cxlflash: Support SQ Command Mode
+  cxlflash: Cleanup prints
+
+Uma Krishnan (1):
+  cxlflash: Cancel scheduled workers before stopping AFU
+
+ drivers/scsi/cxlflash/common.h     |  32 ++-
+ drivers/scsi/cxlflash/lunmgt.c     |  31 +--
+ drivers/scsi/cxlflash/main.c       | 465 +++++++++++++++++++++----------------
+ drivers/scsi/cxlflash/sislite.h    |  19 +-
+ drivers/scsi/cxlflash/superpipe.c  | 183 ++++++++-------
+ drivers/scsi/cxlflash/vlun.c       | 169 +++++++-------
+ include/uapi/scsi/cxlflash_ioctl.h |   1 +
+ 7 files changed, 518 insertions(+), 382 deletions(-)
+
+-- 
+2.1.0
