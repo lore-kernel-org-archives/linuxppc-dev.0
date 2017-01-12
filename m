@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx210.ext.ti.com (fllnx210.ext.ti.com [198.47.19.17])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBq2yVKzDqZX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzlBy0PgKzDqdr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 23:17:45 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,10 +13,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 22/37] PCI: dwc: Modify dbi accessors to access data of 4/2/1
- bytes
-Date: Thu, 12 Jan 2017 15:56:11 +0530
-Message-ID: <1484216786-17292-23-git-send-email-kishon@ti.com>
+Subject: [PATCH 11/37] PCI: dwc: Split pcie-designware.c into host and core
+ files
+Date: Thu, 12 Jan 2017 15:56:00 +0530
+Message-ID: <1484216786-17292-12-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -30,726 +30,1345 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously dbi accessors can be used to access data of size 4
-bytes. But there might be situations (like accessing
-MSI_MESSAGE_CONTROL in order to set/get the number of required
-MSI interrupts in EP mode) where dbi accessors must
-be used to access data of size 2. This is in preparation for
-adding endpoint mode support to designware driver.
+Split pcie-designware.c into pcie-designware-host.c that contains
+the host specific parts of the driver and pcie-designware.c that
+contains the parts used by both host driver and endpoint driver.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- drivers/pci/dwc/pci-dra7xx.c           |    8 ++--
- drivers/pci/dwc/pci-exynos.c           |   16 +++----
- drivers/pci/dwc/pci-imx6.c             |   58 +++++++++++------------
- drivers/pci/dwc/pci-keystone-dw.c      |   13 +++---
- drivers/pci/dwc/pcie-armada8k.c        |   38 +++++++--------
- drivers/pci/dwc/pcie-artpec6.c         |    6 +--
- drivers/pci/dwc/pcie-designware-host.c |   16 +++----
- drivers/pci/dwc/pcie-designware.c      |   79 +++++++++++++++++++-------------
- drivers/pci/dwc/pcie-designware.h      |   14 +++---
- drivers/pci/dwc/pcie-hisi.c            |   14 +++---
- 10 files changed, 140 insertions(+), 122 deletions(-)
+ drivers/pci/dwc/Makefile               |    2 +-
+ drivers/pci/dwc/pcie-designware-host.c |  619 ++++++++++++++++++++++++++++++++
+ drivers/pci/dwc/pcie-designware.c      |  613 +------------------------------
+ drivers/pci/dwc/pcie-designware.h      |    8 +
+ 4 files changed, 634 insertions(+), 608 deletions(-)
+ create mode 100644 drivers/pci/dwc/pcie-designware-host.c
 
-diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
-index 76d0b40..8a1fccd 100644
---- a/drivers/pci/dwc/pci-dra7xx.c
-+++ b/drivers/pci/dwc/pci-dra7xx.c
-@@ -498,9 +498,9 @@ static int dra7xx_pcie_suspend(struct device *dev)
- 	u32 val;
- 
- 	/* clear MSE */
--	val = dw_pcie_readl_dbi(pci, base, PCI_COMMAND);
-+	val = dw_pcie_read_dbi(pci, base, PCI_COMMAND, 0x4);
- 	val &= ~PCI_COMMAND_MEMORY;
--	dw_pcie_writel_dbi(pci, base, PCI_COMMAND, val);
-+	dw_pcie_write_dbi(pci, base, PCI_COMMAND, 0x4, val);
- 
- 	return 0;
- }
-@@ -513,9 +513,9 @@ static int dra7xx_pcie_resume(struct device *dev)
- 	u32 val;
- 
- 	/* set MSE */
--	val = dw_pcie_readl_dbi(pci, base, PCI_COMMAND);
-+	val = dw_pcie_read_dbi(pci, base, PCI_COMMAND, 0x4);
- 	val |= PCI_COMMAND_MEMORY;
--	dw_pcie_writel_dbi(pci, base, PCI_COMMAND, val);
-+	dw_pcie_write_dbi(pci, base, PCI_COMMAND, 0x4, val);
- 
- 	return 0;
- }
-diff --git a/drivers/pci/dwc/pci-exynos.c b/drivers/pci/dwc/pci-exynos.c
-index a109cf0..f6beb05 100644
---- a/drivers/pci/dwc/pci-exynos.c
-+++ b/drivers/pci/dwc/pci-exynos.c
-@@ -405,25 +405,25 @@ static void exynos_pcie_enable_interrupts(struct exynos_pcie *exynos_pcie)
- 		exynos_pcie_msi_init(exynos_pcie);
- }
- 
--static u32 exynos_pcie_readl_dbi(struct dw_pcie *pci, void __iomem *base,
--				 u32 reg)
-+static u32 exynos_pcie_read_dbi(struct dw_pcie *pci, void __iomem *base,
-+				u32 reg, int size)
- {
- 	struct exynos_pcie *exynos_pcie = to_exynos_pcie(pci);
- 	u32 val;
- 
- 	exynos_pcie_sideband_dbi_r_mode(exynos_pcie, true);
--	val = readl(base + reg);
-+	dw_pcie_read(base + reg, size, &val);
- 	exynos_pcie_sideband_dbi_r_mode(exynos_pcie, false);
- 	return val;
- }
- 
--static void exynos_pcie_writel_dbi(struct dw_pcie *pci, void __iomem *base,
--				   u32 reg, u32 val)
-+static void exynos_pcie_write_dbi(struct dw_pcie *pci, void __iomem *base,
-+				  u32 reg, int size, u32 val)
- {
- 	struct exynos_pcie *exynos_pcie = to_exynos_pcie(pci);
- 
- 	exynos_pcie_sideband_dbi_w_mode(exynos_pcie, true);
--	writel(val, base + reg);
-+	dw_pcie_write(base + reg, size, val);
- 	exynos_pcie_sideband_dbi_w_mode(exynos_pcie, false);
- }
- 
-@@ -530,8 +530,8 @@ static int __init exynos_add_pcie_port(struct exynos_pcie *exynos_pcie,
- }
- 
- static const struct dw_pcie_ops dw_pcie_ops = {
--	.readl_dbi = exynos_pcie_readl_dbi,
--	.writel_dbi = exynos_pcie_writel_dbi,
-+	.read_dbi = exynos_pcie_read_dbi,
-+	.write_dbi = exynos_pcie_write_dbi,
- 	.link_up = exynos_pcie_link_up,
- };
- 
-diff --git a/drivers/pci/dwc/pci-imx6.c b/drivers/pci/dwc/pci-imx6.c
-index ecc8690..08ebe62 100644
---- a/drivers/pci/dwc/pci-imx6.c
-+++ b/drivers/pci/dwc/pci-imx6.c
-@@ -104,7 +104,7 @@ static int pcie_phy_poll_ack(struct imx6_pcie *imx6_pcie, int exp_val)
- 	u32 wait_counter = 0;
- 
- 	do {
--		val = dw_pcie_readl_dbi(pci, base, PCIE_PHY_STAT);
-+		val = dw_pcie_read_dbi(pci, base, PCIE_PHY_STAT, 0x4);
- 		val = (val >> PCIE_PHY_STAT_ACK_LOC) & 0x1;
- 		wait_counter++;
- 
-@@ -125,17 +125,17 @@ static int pcie_phy_wait_ack(struct imx6_pcie *imx6_pcie, int addr)
- 	int ret;
- 
- 	val = addr << PCIE_PHY_CTRL_DATA_LOC;
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, val);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, val);
- 
- 	val |= (0x1 << PCIE_PHY_CTRL_CAP_ADR_LOC);
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, val);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, val);
- 
- 	ret = pcie_phy_poll_ack(imx6_pcie, 1);
- 	if (ret)
- 		return ret;
- 
- 	val = addr << PCIE_PHY_CTRL_DATA_LOC;
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, val);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, val);
- 
- 	return pcie_phy_poll_ack(imx6_pcie, 0);
- }
-@@ -154,17 +154,17 @@ static int pcie_phy_read(struct imx6_pcie *imx6_pcie, int addr, int *data)
- 
- 	/* assert Read signal */
- 	phy_ctl = 0x1 << PCIE_PHY_CTRL_RD_LOC;
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, phy_ctl);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, phy_ctl);
- 
- 	ret = pcie_phy_poll_ack(imx6_pcie, 1);
- 	if (ret)
- 		return ret;
- 
--	val = dw_pcie_readl_dbi(pci, base, PCIE_PHY_STAT);
-+	val = dw_pcie_read_dbi(pci, base, PCIE_PHY_STAT, 0x4);
- 	*data = val & 0xffff;
- 
- 	/* deassert Read signal */
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, 0x00);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, 0x00);
- 
- 	return pcie_phy_poll_ack(imx6_pcie, 0);
- }
-@@ -183,11 +183,11 @@ static int pcie_phy_write(struct imx6_pcie *imx6_pcie, int addr, int data)
- 		return ret;
- 
- 	var = data << PCIE_PHY_CTRL_DATA_LOC;
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, var);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, var);
- 
- 	/* capture data */
- 	var |= (0x1 << PCIE_PHY_CTRL_CAP_DAT_LOC);
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, var);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, var);
- 
- 	ret = pcie_phy_poll_ack(imx6_pcie, 1);
- 	if (ret)
-@@ -195,7 +195,7 @@ static int pcie_phy_write(struct imx6_pcie *imx6_pcie, int addr, int data)
- 
- 	/* deassert cap data */
- 	var = data << PCIE_PHY_CTRL_DATA_LOC;
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, var);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, var);
- 
- 	/* wait for ack de-assertion */
- 	ret = pcie_phy_poll_ack(imx6_pcie, 0);
-@@ -204,7 +204,7 @@ static int pcie_phy_write(struct imx6_pcie *imx6_pcie, int addr, int data)
- 
- 	/* assert wr signal */
- 	var = 0x1 << PCIE_PHY_CTRL_WR_LOC;
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, var);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, var);
- 
- 	/* wait for ack */
- 	ret = pcie_phy_poll_ack(imx6_pcie, 1);
-@@ -213,14 +213,14 @@ static int pcie_phy_write(struct imx6_pcie *imx6_pcie, int addr, int data)
- 
- 	/* deassert wr signal */
- 	var = data << PCIE_PHY_CTRL_DATA_LOC;
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, var);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, var);
- 
- 	/* wait for ack de-assertion */
- 	ret = pcie_phy_poll_ack(imx6_pcie, 0);
- 	if (ret)
- 		return ret;
- 
--	dw_pcie_writel_dbi(pci, base, PCIE_PHY_CTRL, 0x0);
-+	dw_pcie_write_dbi(pci, base, PCIE_PHY_CTRL, 0x4, 0x0);
- 
- 	return 0;
- }
-@@ -289,10 +289,10 @@ static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
- 
- 		if ((gpr1 & IMX6Q_GPR1_PCIE_REF_CLK_EN) &&
- 		    (gpr12 & IMX6Q_GPR12_PCIE_CTL_2)) {
--			val = dw_pcie_readl_dbi(pci, base, PCIE_PL_PFLR);
-+			val = dw_pcie_read_dbi(pci, base, PCIE_PL_PFLR, 0x4);
- 			val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
- 			val |= PCIE_PL_PFLR_FORCE_LINK;
--			dw_pcie_writel_dbi(pci, base, PCIE_PL_PFLR, val);
-+			dw_pcie_write_dbi(pci, base, PCIE_PL_PFLR, 0x4, val);
- 
- 			regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
- 					   IMX6Q_GPR12_PCIE_CTL_2, 0 << 10);
-@@ -454,8 +454,8 @@ static int imx6_pcie_wait_for_link(struct imx6_pcie *imx6_pcie)
- 		return 0;
- 
- 	dev_dbg(dev, "DEBUG_R0: 0x%08x, DEBUG_R1: 0x%08x\n",
--		dw_pcie_readl_dbi(pci, base, PCIE_PHY_DEBUG_R0),
--		dw_pcie_readl_dbi(pci, base, PCIE_PHY_DEBUG_R1));
-+		dw_pcie_read_dbi(pci, base, PCIE_PHY_DEBUG_R0, 0x4),
-+		dw_pcie_read_dbi(pci, base, PCIE_PHY_DEBUG_R1, 0x4));
- 	return -ETIMEDOUT;
- }
- 
-@@ -468,8 +468,8 @@ static int imx6_pcie_wait_for_speed_change(struct imx6_pcie *imx6_pcie)
- 	unsigned int retries;
- 
- 	for (retries = 0; retries < 200; retries++) {
--		tmp = dw_pcie_readl_dbi(pci, base,
--					PCIE_LINK_WIDTH_SPEED_CONTROL);
-+		tmp = dw_pcie_read_dbi(pci, base,
-+				       PCIE_LINK_WIDTH_SPEED_CONTROL, 0x4);
- 		/* Test if the speed change finished. */
- 		if (!(tmp & PORT_LOGIC_SPEED_CHANGE))
- 			return 0;
-@@ -502,10 +502,10 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
- 	 * started in Gen2 mode, there is a possibility the devices on the
- 	 * bus will not be detected at all.  This happens with PCIe switches.
- 	 */
--	tmp = dw_pcie_readl_dbi(pci, base, PCIE_RC_LCR);
-+	tmp = dw_pcie_read_dbi(pci, base, PCIE_RC_LCR, 0x4);
- 	tmp &= ~PCIE_RC_LCR_MAX_LINK_SPEEDS_MASK;
- 	tmp |= PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN1;
--	dw_pcie_writel_dbi(pci, base, PCIE_RC_LCR, tmp);
-+	dw_pcie_write_dbi(pci, base, PCIE_RC_LCR, 0x4, tmp);
- 
- 	/* Start LTSSM. */
- 	regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
-@@ -519,10 +519,10 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
- 
- 	if (imx6_pcie->link_gen == 2) {
- 		/* Allow Gen2 mode after the link is up. */
--		tmp = dw_pcie_readl_dbi(pci, base, PCIE_RC_LCR);
-+		tmp = dw_pcie_read_dbi(pci, base, PCIE_RC_LCR, 0x4);
- 		tmp &= ~PCIE_RC_LCR_MAX_LINK_SPEEDS_MASK;
- 		tmp |= PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN2;
--		dw_pcie_writel_dbi(pci, base, PCIE_RC_LCR, tmp);
-+		dw_pcie_write_dbi(pci, base, PCIE_RC_LCR, 0x4, tmp);
- 	} else {
- 		dev_info(dev, "Link: Gen2 disabled\n");
- 	}
-@@ -531,9 +531,9 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
- 	 * Start Directed Speed Change so the best possible speed both link
- 	 * partners support can be negotiated.
- 	 */
--	tmp = dw_pcie_readl_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL);
-+	tmp = dw_pcie_read_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL, 0x4);
- 	tmp |= PORT_LOGIC_SPEED_CHANGE;
--	dw_pcie_writel_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL, tmp);
-+	dw_pcie_write_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL, 0x4, tmp);
- 
- 	ret = imx6_pcie_wait_for_speed_change(imx6_pcie);
- 	if (ret) {
-@@ -548,14 +548,14 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
- 		goto err_reset_phy;
- 	}
- 
--	tmp = dw_pcie_readl_dbi(pci, base, PCIE_RC_LCSR);
-+	tmp = dw_pcie_read_dbi(pci, base, PCIE_RC_LCSR, 0x4);
- 	dev_info(dev, "Link up, Gen%i\n", (tmp >> 16) & 0xf);
- 	return 0;
- 
- err_reset_phy:
- 	dev_dbg(dev, "PHY DEBUG_R0=0x%08x DEBUG_R1=0x%08x\n",
--		dw_pcie_readl_dbi(pci, base, PCIE_PHY_DEBUG_R0),
--		dw_pcie_readl_dbi(pci, base, PCIE_PHY_DEBUG_R1));
-+		dw_pcie_read_dbi(pci, base, PCIE_PHY_DEBUG_R0, 0x4),
-+		dw_pcie_read_dbi(pci, base, PCIE_PHY_DEBUG_R1, 0x4));
- 	imx6_pcie_reset_phy(imx6_pcie);
- 	return ret;
- }
-@@ -579,7 +579,7 @@ static int imx6_pcie_link_up(struct dw_pcie *pci)
- {
- 	void __iomem *base = pci->dbi_base;
- 
--	return dw_pcie_readl_dbi(pci, base, PCIE_PHY_DEBUG_R1) &
-+	return dw_pcie_read_dbi(pci, base, PCIE_PHY_DEBUG_R1, 0x4) &
- 			PCIE_PHY_DEBUG_R1_XMLH_LINK_UP;
- }
- 
-diff --git a/drivers/pci/dwc/pci-keystone-dw.c b/drivers/pci/dwc/pci-keystone-dw.c
-index 7220c04..8318efe 100644
---- a/drivers/pci/dwc/pci-keystone-dw.c
-+++ b/drivers/pci/dwc/pci-keystone-dw.c
-@@ -386,8 +386,8 @@ void ks_dw_pcie_setup_rc_app_regs(struct keystone_pcie *ks_pcie)
- 
- 	/* Disable BARs for inbound access */
- 	ks_dw_pcie_set_dbi_mode(ks_pcie);
--	dw_pcie_writel_dbi(pci, base, PCI_BASE_ADDRESS_0, 0);
--	dw_pcie_writel_dbi(pci, base, PCI_BASE_ADDRESS_1, 0);
-+	dw_pcie_write_dbi(pci, base, PCI_BASE_ADDRESS_0, 0x4, 0);
-+	dw_pcie_write_dbi(pci, base, PCI_BASE_ADDRESS_1, 0x4, 0);
- 	ks_dw_pcie_clear_dbi_mode(ks_pcie);
- 
- 	/* Set outbound translation size per window division */
-@@ -490,8 +490,8 @@ void ks_dw_pcie_v3_65_scan_bus(struct pcie_port *pp)
- 	ks_dw_pcie_set_dbi_mode(ks_pcie);
- 
- 	/* Enable BAR0 */
--	dw_pcie_writel_dbi(pci, base, PCI_BASE_ADDRESS_0, 1);
--	dw_pcie_writel_dbi(pci, base, PCI_BASE_ADDRESS_0, SZ_4K - 1);
-+	dw_pcie_write_dbi(pci, base, PCI_BASE_ADDRESS_0, 0x4, 1);
-+	dw_pcie_write_dbi(pci, base, PCI_BASE_ADDRESS_0, 0x4, SZ_4K - 1);
- 
- 	ks_dw_pcie_clear_dbi_mode(ks_pcie);
- 
-@@ -499,7 +499,8 @@ void ks_dw_pcie_v3_65_scan_bus(struct pcie_port *pp)
- 	  * For BAR0, just setting bus address for inbound writes (MSI) should
- 	  * be sufficient.  Use physical address to avoid any conflicts.
- 	  */
--	dw_pcie_writel_dbi(pci, base, PCI_BASE_ADDRESS_0, ks_pcie->app.start);
-+	dw_pcie_write_dbi(pci, base, PCI_BASE_ADDRESS_0, 0x4,
-+			  ks_pcie->app.start);
- }
- 
- /**
-@@ -510,7 +511,7 @@ int ks_dw_pcie_link_up(struct dw_pcie *pci)
- 	u32 val;
- 	void __iomem *base = pci->dbi_base;
- 
--	val = dw_pcie_readl_dbi(pci, base, DEBUG0);
-+	val = dw_pcie_read_dbi(pci, base, DEBUG0, 0x4);
- 	return (val & LTSSM_STATE_MASK) == LTSSM_STATE_L0;
- }
- 
-diff --git a/drivers/pci/dwc/pcie-armada8k.c b/drivers/pci/dwc/pcie-armada8k.c
-index 2656f86..6067749 100644
---- a/drivers/pci/dwc/pcie-armada8k.c
-+++ b/drivers/pci/dwc/pcie-armada8k.c
-@@ -75,7 +75,7 @@ static int armada8k_pcie_link_up(struct dw_pcie *pci)
- 	u32 mask = PCIE_GLB_STS_RDLH_LINK_UP | PCIE_GLB_STS_PHY_LINK_UP;
- 	void __iomem *base = pci->dbi_base;
- 
--	reg = dw_pcie_readl_dbi(pci, base, PCIE_GLOBAL_STATUS_REG);
-+	reg = dw_pcie_read_dbi(pci, base, PCIE_GLOBAL_STATUS_REG, 0x4);
- 
- 	if ((reg & mask) == mask)
- 		return 1;
-@@ -92,45 +92,45 @@ static void armada8k_pcie_establish_link(struct armada8k_pcie *pcie)
- 
- 	if (!dw_pcie_link_up(pci)) {
- 		/* Disable LTSSM state machine to enable configuration */
--		reg = dw_pcie_readl_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG);
-+		reg = dw_pcie_read_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, 0x4);
- 		reg &= ~(PCIE_APP_LTSSM_EN);
--		dw_pcie_writel_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, reg);
-+		dw_pcie_write_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, 0x4, reg);
- 	}
- 
- 	/* Set the device to root complex mode */
--	reg = dw_pcie_readl_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG);
-+	reg = dw_pcie_read_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, 0x4);
- 	reg &= ~(PCIE_DEVICE_TYPE_MASK << PCIE_DEVICE_TYPE_SHIFT);
- 	reg |= PCIE_DEVICE_TYPE_RC << PCIE_DEVICE_TYPE_SHIFT;
--	dw_pcie_writel_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, reg);
-+	dw_pcie_write_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, 0x4, reg);
- 
- 	/* Set the PCIe master AxCache attributes */
--	dw_pcie_writel_dbi(pci, base, PCIE_ARCACHE_TRC_REG,
--			   ARCACHE_DEFAULT_VALUE);
--	dw_pcie_writel_dbi(pci, base, PCIE_AWCACHE_TRC_REG,
--			   AWCACHE_DEFAULT_VALUE);
-+	dw_pcie_write_dbi(pci, base, PCIE_ARCACHE_TRC_REG, 0x4,
-+			  ARCACHE_DEFAULT_VALUE);
-+	dw_pcie_write_dbi(pci, base, PCIE_AWCACHE_TRC_REG, 0x4,
-+			  AWCACHE_DEFAULT_VALUE);
- 
- 	/* Set the PCIe master AxDomain attributes */
--	reg = dw_pcie_readl_dbi(pci, base, PCIE_ARUSER_REG);
-+	reg = dw_pcie_read_dbi(pci, base, PCIE_ARUSER_REG, 0x4);
- 	reg &= ~(AX_USER_DOMAIN_MASK << AX_USER_DOMAIN_SHIFT);
- 	reg |= DOMAIN_OUTER_SHAREABLE << AX_USER_DOMAIN_SHIFT;
--	dw_pcie_writel_dbi(pci, base, PCIE_ARUSER_REG, reg);
-+	dw_pcie_write_dbi(pci, base, PCIE_ARUSER_REG, 0x4, reg);
- 
--	reg = dw_pcie_readl_dbi(pci, base, PCIE_AWUSER_REG);
-+	reg = dw_pcie_read_dbi(pci, base, PCIE_AWUSER_REG, 0x4);
- 	reg &= ~(AX_USER_DOMAIN_MASK << AX_USER_DOMAIN_SHIFT);
- 	reg |= DOMAIN_OUTER_SHAREABLE << AX_USER_DOMAIN_SHIFT;
--	dw_pcie_writel_dbi(pci, base, PCIE_AWUSER_REG, reg);
-+	dw_pcie_write_dbi(pci, base, PCIE_AWUSER_REG, 0x4, reg);
- 
- 	/* Enable INT A-D interrupts */
--	reg = dw_pcie_readl_dbi(pci, base, PCIE_GLOBAL_INT_MASK1_REG);
-+	reg = dw_pcie_read_dbi(pci, base, PCIE_GLOBAL_INT_MASK1_REG, 0x4);
- 	reg |= PCIE_INT_A_ASSERT_MASK | PCIE_INT_B_ASSERT_MASK |
- 	       PCIE_INT_C_ASSERT_MASK | PCIE_INT_D_ASSERT_MASK;
--	dw_pcie_writel_dbi(pci, base, PCIE_GLOBAL_INT_MASK1_REG, reg);
-+	dw_pcie_write_dbi(pci, base, PCIE_GLOBAL_INT_MASK1_REG, 0x4, reg);
- 
- 	if (!dw_pcie_link_up(pci)) {
- 		/* Configuration done. Start LTSSM */
--		reg = dw_pcie_readl_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG);
-+		reg = dw_pcie_read_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, 0x4);
- 		reg |= PCIE_APP_LTSSM_EN;
--		dw_pcie_writel_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, reg);
-+		dw_pcie_write_dbi(pci, base, PCIE_GLOBAL_CONTROL_REG, 0x4, reg);
- 	}
- 
- 	/* Wait until the link becomes active again */
-@@ -159,8 +159,8 @@ static irqreturn_t armada8k_pcie_irq_handler(int irq, void *arg)
- 	 * PCI device. However, they are also latched into the PCIe
- 	 * controller, so we simply discard them.
- 	 */
--	val = dw_pcie_readl_dbi(pci, base, PCIE_GLOBAL_INT_CAUSE1_REG);
--	dw_pcie_writel_dbi(pci, base, PCIE_GLOBAL_INT_CAUSE1_REG, val);
-+	val = dw_pcie_read_dbi(pci, base, PCIE_GLOBAL_INT_CAUSE1_REG, 0x4);
-+	dw_pcie_write_dbi(pci, base, PCIE_GLOBAL_INT_CAUSE1_REG, 0x4, val);
- 
- 	return IRQ_HANDLED;
- }
-diff --git a/drivers/pci/dwc/pcie-artpec6.c b/drivers/pci/dwc/pcie-artpec6.c
-index 4c7820a..a00b703 100644
---- a/drivers/pci/dwc/pcie-artpec6.c
-+++ b/drivers/pci/dwc/pcie-artpec6.c
-@@ -141,7 +141,7 @@ static int artpec6_pcie_establish_link(struct artpec6_pcie *artpec6_pcie)
- 	 * Enable writing to config regs. This is required as the Synopsys
- 	 * driver changes the class code. That register needs DBI write enable.
- 	 */
--	dw_pcie_writel_dbi(pci, base, MISC_CONTROL_1_OFF, DBI_RO_WR_EN);
-+	dw_pcie_write_dbi(pci, base, MISC_CONTROL_1_OFF, 0x4, DBI_RO_WR_EN);
- 
- 	pp->io_base &= ARTPEC6_CPU_TO_BUS_ADDR;
- 	pp->mem_base &= ARTPEC6_CPU_TO_BUS_ADDR;
-@@ -161,8 +161,8 @@ static int artpec6_pcie_establish_link(struct artpec6_pcie *artpec6_pcie)
- 		return 0;
- 
- 	dev_dbg(pci->dev, "DEBUG_R0: 0x%08x, DEBUG_R1: 0x%08x\n",
--		dw_pcie_readl_dbi(pci, base, PCIE_PHY_DEBUG_R0),
--		dw_pcie_readl_dbi(pci, base, PCIE_PHY_DEBUG_R1));
-+		dw_pcie_read_dbi(pci, base, PCIE_PHY_DEBUG_R0, 0x4),
-+		dw_pcie_read_dbi(pci, base, PCIE_PHY_DEBUG_R1, 0x4));
- 
- 	return -ETIMEDOUT;
- }
+diff --git a/drivers/pci/dwc/Makefile b/drivers/pci/dwc/Makefile
+index 7d27c14..3b57e55 100644
+--- a/drivers/pci/dwc/Makefile
++++ b/drivers/pci/dwc/Makefile
+@@ -1,4 +1,4 @@
+-obj-$(CONFIG_PCIE_DW) += pcie-designware.o
++obj-$(CONFIG_PCIE_DW) += pcie-designware.o pcie-designware-host.o
+ obj-$(CONFIG_PCIE_DW_PLAT) += pcie-designware-plat.o
+ obj-$(CONFIG_PCI_DRA7XX) += pci-dra7xx.o
+ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
 diff --git a/drivers/pci/dwc/pcie-designware-host.c b/drivers/pci/dwc/pcie-designware-host.c
-index e3a5104..044fcda 100644
---- a/drivers/pci/dwc/pcie-designware-host.c
+new file mode 100644
+index 0000000..e7eb653
+--- /dev/null
 +++ b/drivers/pci/dwc/pcie-designware-host.c
-@@ -572,27 +572,27 @@ void dw_pcie_setup_rc(struct pcie_port *pp)
- 	dw_pcie_setup(pci);
- 
- 	/* setup RC BARs */
--	dw_pcie_writel_dbi(pci, base, PCI_BASE_ADDRESS_0, 0x00000004);
--	dw_pcie_writel_dbi(pci, base, PCI_BASE_ADDRESS_1, 0x00000000);
-+	dw_pcie_write_dbi(pci, base, PCI_BASE_ADDRESS_0, 0x4, 0x00000004);
-+	dw_pcie_write_dbi(pci, base, PCI_BASE_ADDRESS_1, 0x4, 0x00000000);
- 
- 	/* setup interrupt pins */
--	val = dw_pcie_readl_dbi(pci, base, PCI_INTERRUPT_LINE);
-+	val = dw_pcie_read_dbi(pci, base, PCI_INTERRUPT_LINE, 0x4);
- 	val &= 0xffff00ff;
- 	val |= 0x00000100;
--	dw_pcie_writel_dbi(pci, base, PCI_INTERRUPT_LINE, val);
-+	dw_pcie_write_dbi(pci, base, PCI_INTERRUPT_LINE, 0x4, val);
- 
- 	/* setup bus numbers */
--	val = dw_pcie_readl_dbi(pci, base, PCI_PRIMARY_BUS);
-+	val = dw_pcie_read_dbi(pci, base, PCI_PRIMARY_BUS, 0x4);
- 	val &= 0xff000000;
- 	val |= 0x00010100;
--	dw_pcie_writel_dbi(pci, base, PCI_PRIMARY_BUS, val);
-+	dw_pcie_write_dbi(pci, base, PCI_PRIMARY_BUS, 0x4, val);
- 
- 	/* setup command register */
--	val = dw_pcie_readl_dbi(pci, base, PCI_COMMAND);
-+	val = dw_pcie_read_dbi(pci, base, PCI_COMMAND, 0x4);
- 	val &= 0xffff0000;
- 	val |= PCI_COMMAND_IO | PCI_COMMAND_MEMORY |
- 		PCI_COMMAND_MASTER | PCI_COMMAND_SERR;
--	dw_pcie_writel_dbi(pci, base, PCI_COMMAND, val);
-+	dw_pcie_write_dbi(pci, base, PCI_COMMAND, 0x4, val);
- 
- 	/*
- 	 * If the platform provides ->rd_other_conf, it means the platform
-diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
-index db39f13..ef545e7 100644
---- a/drivers/pci/dwc/pcie-designware.c
-+++ b/drivers/pci/dwc/pcie-designware.c
-@@ -61,21 +61,35 @@ int dw_pcie_write(void __iomem *addr, int size, u32 val)
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--u32 dw_pcie_readl_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg)
-+u32 dw_pcie_read_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
-+		     int size)
- {
--	if (pci->ops->readl_dbi)
--		return pci->ops->readl_dbi(pci, base, reg);
-+	int ret;
-+	u32 val;
+@@ -0,0 +1,619 @@
++/*
++ * Synopsys Designware PCIe host controller driver
++ *
++ * Copyright (C) 2013 Samsung Electronics Co., Ltd.
++ *		http://www.samsung.com
++ *
++ * Author: Jingoo Han <jg1.han@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
 +
-+	if (pci->ops->read_dbi)
-+		return pci->ops->read_dbi(pci, base,  reg, size);
- 
--	return readl(base + reg);
-+	ret = dw_pcie_read(base + reg, size, &val);
-+	if (ret)
-+		dev_err(pci->dev, "read DBI address failed\n");
++#include <linux/irqdomain.h>
++#include <linux/of_address.h>
++#include <linux/of_pci.h>
++#include <linux/pci_regs.h>
++#include <linux/platform_device.h>
 +
-+	return val;
- }
- 
--void dw_pcie_writel_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
--			u32 val)
-+void dw_pcie_write_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
-+		       int size, u32 val)
- {
--	if (pci->ops->writel_dbi)
--		pci->ops->writel_dbi(pci, base, reg, val);
--	else
--		writel(val, base + reg);
-+	int ret;
++#include "pcie-designware.h"
 +
-+	if (pci->ops->write_dbi) {
-+		pci->ops->write_dbi(pci, base, reg, size, val);
-+		return;
++static struct pci_ops dw_pcie_ops;
++
++static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
++			       u32 *val)
++{
++	struct dw_pcie *pci;
++
++	if (pp->ops->rd_own_conf)
++		return pp->ops->rd_own_conf(pp, where, size, val);
++
++	pci = to_dw_pcie_from_pp(pp);
++	return dw_pcie_read(pci->dbi_base + where, size, val);
++}
++
++static int dw_pcie_wr_own_conf(struct pcie_port *pp, int where, int size,
++			       u32 val)
++{
++	struct dw_pcie *pci;
++
++	if (pp->ops->wr_own_conf)
++		return pp->ops->wr_own_conf(pp, where, size, val);
++
++	pci = to_dw_pcie_from_pp(pp);
++	return dw_pcie_write(pci->dbi_base + where, size, val);
++}
++
++static struct irq_chip dw_msi_irq_chip = {
++	.name = "PCI-MSI",
++	.irq_enable = pci_msi_unmask_irq,
++	.irq_disable = pci_msi_mask_irq,
++	.irq_mask = pci_msi_mask_irq,
++	.irq_unmask = pci_msi_unmask_irq,
++};
++
++/* MSI int handler */
++irqreturn_t dw_handle_msi_irq(struct pcie_port *pp)
++{
++	unsigned long val;
++	int i, pos, irq;
++	irqreturn_t ret = IRQ_NONE;
++
++	for (i = 0; i < MAX_MSI_CTRLS; i++) {
++		dw_pcie_rd_own_conf(pp, PCIE_MSI_INTR0_STATUS + i * 12, 4,
++				    (u32 *)&val);
++		if (val) {
++			ret = IRQ_HANDLED;
++			pos = 0;
++			while ((pos = find_next_bit(&val, 32, pos)) != 32) {
++				irq = irq_find_mapping(pp->irq_domain,
++						       i * 32 + pos);
++				dw_pcie_wr_own_conf(pp, PCIE_MSI_INTR0_STATUS +
++						    i * 12, 4, 1 << pos);
++				generic_handle_irq(irq);
++				pos++;
++			}
++		}
 +	}
 +
-+	ret = dw_pcie_write(base + reg, size, val);
++	return ret;
++}
++
++void dw_pcie_msi_init(struct pcie_port *pp)
++{
++	u64 msi_target;
++
++	pp->msi_data = __get_free_pages(GFP_KERNEL, 0);
++	msi_target = virt_to_phys((void *)pp->msi_data);
++
++	/* program the msi_data */
++	dw_pcie_wr_own_conf(pp, PCIE_MSI_ADDR_LO, 4,
++			    (u32)(msi_target & 0xffffffff));
++	dw_pcie_wr_own_conf(pp, PCIE_MSI_ADDR_HI, 4,
++			    (u32)(msi_target >> 32 & 0xffffffff));
++}
++
++static void dw_pcie_msi_clear_irq(struct pcie_port *pp, int irq)
++{
++	unsigned int res, bit, val;
++
++	res = (irq / 32) * 12;
++	bit = irq % 32;
++	dw_pcie_rd_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, &val);
++	val &= ~(1 << bit);
++	dw_pcie_wr_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, val);
++}
++
++static void clear_irq_range(struct pcie_port *pp, unsigned int irq_base,
++			    unsigned int nvec, unsigned int pos)
++{
++	unsigned int i;
++
++	for (i = 0; i < nvec; i++) {
++		irq_set_msi_desc_off(irq_base, i, NULL);
++		/* Disable corresponding interrupt on MSI controller */
++		if (pp->ops->msi_clear_irq)
++			pp->ops->msi_clear_irq(pp, pos + i);
++		else
++			dw_pcie_msi_clear_irq(pp, pos + i);
++	}
++
++	bitmap_release_region(pp->msi_irq_in_use, pos, order_base_2(nvec));
++}
++
++static void dw_pcie_msi_set_irq(struct pcie_port *pp, int irq)
++{
++	unsigned int res, bit, val;
++
++	res = (irq / 32) * 12;
++	bit = irq % 32;
++	dw_pcie_rd_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, &val);
++	val |= 1 << bit;
++	dw_pcie_wr_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, val);
++}
++
++static int assign_irq(int no_irqs, struct msi_desc *desc, int *pos)
++{
++	int irq, pos0, i;
++	struct pcie_port *pp;
++
++	pp = (struct pcie_port *)msi_desc_to_pci_sysdata(desc);
++	pos0 = bitmap_find_free_region(pp->msi_irq_in_use, MAX_MSI_IRQS,
++				       order_base_2(no_irqs));
++	if (pos0 < 0)
++		goto no_valid_irq;
++
++	irq = irq_find_mapping(pp->irq_domain, pos0);
++	if (!irq)
++		goto no_valid_irq;
++
++	/*
++	 * irq_create_mapping (called from dw_pcie_host_init) pre-allocates
++	 * descs so there is no need to allocate descs here. We can therefore
++	 * assume that if irq_find_mapping above returns non-zero, then the
++	 * descs are also successfully allocated.
++	 */
++
++	for (i = 0; i < no_irqs; i++) {
++		if (irq_set_msi_desc_off(irq, i, desc) != 0) {
++			clear_irq_range(pp, irq, i, pos0);
++			goto no_valid_irq;
++		}
++		/*Enable corresponding interrupt in MSI interrupt controller */
++		if (pp->ops->msi_set_irq)
++			pp->ops->msi_set_irq(pp, pos0 + i);
++		else
++			dw_pcie_msi_set_irq(pp, pos0 + i);
++	}
++
++	*pos = pos0;
++	desc->nvec_used = no_irqs;
++	desc->msi_attrib.multiple = order_base_2(no_irqs);
++
++	return irq;
++
++no_valid_irq:
++	*pos = pos0;
++	return -ENOSPC;
++}
++
++static void dw_msi_setup_msg(struct pcie_port *pp, unsigned int irq, u32 pos)
++{
++	struct msi_msg msg;
++	u64 msi_target;
++
++	if (pp->ops->get_msi_addr)
++		msi_target = pp->ops->get_msi_addr(pp);
++	else
++		msi_target = virt_to_phys((void *)pp->msi_data);
++
++	msg.address_lo = (u32)(msi_target & 0xffffffff);
++	msg.address_hi = (u32)(msi_target >> 32 & 0xffffffff);
++
++	if (pp->ops->get_msi_data)
++		msg.data = pp->ops->get_msi_data(pp, pos);
++	else
++		msg.data = pos;
++
++	pci_write_msi_msg(irq, &msg);
++}
++
++static int dw_msi_setup_irq(struct msi_controller *chip, struct pci_dev *pdev,
++			    struct msi_desc *desc)
++{
++	int irq, pos;
++	struct pcie_port *pp = pdev->bus->sysdata;
++
++	if (desc->msi_attrib.is_msix)
++		return -EINVAL;
++
++	irq = assign_irq(1, desc, &pos);
++	if (irq < 0)
++		return irq;
++
++	dw_msi_setup_msg(pp, irq, pos);
++
++	return 0;
++}
++
++static int dw_msi_setup_irqs(struct msi_controller *chip, struct pci_dev *pdev,
++			     int nvec, int type)
++{
++#ifdef CONFIG_PCI_MSI
++	int irq, pos;
++	struct msi_desc *desc;
++	struct pcie_port *pp = pdev->bus->sysdata;
++
++	/* MSI-X interrupts are not supported */
++	if (type == PCI_CAP_ID_MSIX)
++		return -EINVAL;
++
++	WARN_ON(!list_is_singular(&pdev->dev.msi_list));
++	desc = list_entry(pdev->dev.msi_list.next, struct msi_desc, list);
++
++	irq = assign_irq(nvec, desc, &pos);
++	if (irq < 0)
++		return irq;
++
++	dw_msi_setup_msg(pp, irq, pos);
++
++	return 0;
++#else
++	return -EINVAL;
++#endif
++}
++
++static void dw_msi_teardown_irq(struct msi_controller *chip, unsigned int irq)
++{
++	struct irq_data *data = irq_get_irq_data(irq);
++	struct msi_desc *msi = irq_data_get_msi_desc(data);
++	struct pcie_port *pp = (struct pcie_port *)msi_desc_to_pci_sysdata(msi);
++
++	clear_irq_range(pp, irq, 1, data->hwirq);
++}
++
++static struct msi_controller dw_pcie_msi_chip = {
++	.setup_irq = dw_msi_setup_irq,
++	.setup_irqs = dw_msi_setup_irqs,
++	.teardown_irq = dw_msi_teardown_irq,
++};
++
++static int dw_pcie_msi_map(struct irq_domain *domain, unsigned int irq,
++			   irq_hw_number_t hwirq)
++{
++	irq_set_chip_and_handler(irq, &dw_msi_irq_chip, handle_simple_irq);
++	irq_set_chip_data(irq, domain->host_data);
++
++	return 0;
++}
++
++static const struct irq_domain_ops msi_domain_ops = {
++	.map = dw_pcie_msi_map,
++};
++
++int dw_pcie_host_init(struct pcie_port *pp)
++{
++	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++	struct device *dev = pci->dev;
++	struct device_node *np = dev->of_node;
++	struct platform_device *pdev = to_platform_device(dev);
++	struct pci_bus *bus, *child;
++	struct resource *cfg_res;
++	int i, ret;
++	LIST_HEAD(res);
++	struct resource_entry *win, *tmp;
++
++	cfg_res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "config");
++	if (cfg_res) {
++		pp->cfg0_size = resource_size(cfg_res) / 2;
++		pp->cfg1_size = resource_size(cfg_res) / 2;
++		pp->cfg0_base = cfg_res->start;
++		pp->cfg1_base = cfg_res->start + pp->cfg0_size;
++	} else if (!pp->va_cfg0_base) {
++		dev_err(dev, "missing *config* reg space\n");
++	}
++
++	ret = of_pci_get_host_bridge_resources(np, 0, 0xff, &res, &pp->io_base);
 +	if (ret)
-+		dev_err(pci->dev, "write DBI address failed\n");
- }
++		return ret;
++
++	ret = devm_request_pci_bus_resources(dev, &res);
++	if (ret)
++		goto error;
++
++	/* Get the I/O and memory ranges from DT */
++	resource_list_for_each_entry_safe(win, tmp, &res) {
++		switch (resource_type(win->res)) {
++		case IORESOURCE_IO:
++			ret = pci_remap_iospace(win->res, pp->io_base);
++			if (ret) {
++				dev_warn(dev, "error %d: failed to map resource %pR\n",
++					 ret, win->res);
++				resource_list_destroy_entry(win);
++			} else {
++				pp->io = win->res;
++				pp->io->name = "I/O";
++				pp->io_size = resource_size(pp->io);
++				pp->io_bus_addr = pp->io->start - win->offset;
++			}
++			break;
++		case IORESOURCE_MEM:
++			pp->mem = win->res;
++			pp->mem->name = "MEM";
++			pp->mem_size = resource_size(pp->mem);
++			pp->mem_bus_addr = pp->mem->start - win->offset;
++			break;
++		case 0:
++			pp->cfg = win->res;
++			pp->cfg0_size = resource_size(pp->cfg) / 2;
++			pp->cfg1_size = resource_size(pp->cfg) / 2;
++			pp->cfg0_base = pp->cfg->start;
++			pp->cfg1_base = pp->cfg->start + pp->cfg0_size;
++			break;
++		case IORESOURCE_BUS:
++			pp->busn = win->res;
++			break;
++		}
++	}
++
++	if (!pci->dbi_base) {
++		pci->dbi_base = devm_ioremap(dev, pp->cfg->start,
++					     resource_size(pp->cfg));
++		if (!pci->dbi_base) {
++			dev_err(dev, "error with ioremap\n");
++			ret = -ENOMEM;
++			goto error;
++		}
++	}
++
++	pp->mem_base = pp->mem->start;
++
++	if (!pp->va_cfg0_base) {
++		pp->va_cfg0_base = devm_ioremap(dev, pp->cfg0_base,
++						pp->cfg0_size);
++		if (!pp->va_cfg0_base) {
++			dev_err(dev, "error with ioremap in function\n");
++			ret = -ENOMEM;
++			goto error;
++		}
++	}
++
++	if (!pp->va_cfg1_base) {
++		pp->va_cfg1_base = devm_ioremap(dev, pp->cfg1_base,
++						pp->cfg1_size);
++		if (!pp->va_cfg1_base) {
++			dev_err(dev, "error with ioremap\n");
++			ret = -ENOMEM;
++			goto error;
++		}
++	}
++
++	ret = of_property_read_u32(np, "num-viewport", &pci->num_viewport);
++	if (ret)
++		pci->num_viewport = 2;
++
++	if (IS_ENABLED(CONFIG_PCI_MSI)) {
++		if (!pp->ops->msi_host_init) {
++			pp->irq_domain = irq_domain_add_linear(dev->of_node,
++						MAX_MSI_IRQS, &msi_domain_ops,
++						&dw_pcie_msi_chip);
++			if (!pp->irq_domain) {
++				dev_err(dev, "irq domain init failed\n");
++				ret = -ENXIO;
++				goto error;
++			}
++
++			for (i = 0; i < MAX_MSI_IRQS; i++)
++				irq_create_mapping(pp->irq_domain, i);
++		} else {
++			ret = pp->ops->msi_host_init(pp, &dw_pcie_msi_chip);
++			if (ret < 0)
++				goto error;
++		}
++	}
++
++	if (pp->ops->host_init)
++		pp->ops->host_init(pp);
++
++	pp->root_bus_nr = pp->busn->start;
++	if (IS_ENABLED(CONFIG_PCI_MSI)) {
++		bus = pci_scan_root_bus_msi(dev, pp->root_bus_nr,
++					    &dw_pcie_ops, pp, &res,
++					    &dw_pcie_msi_chip);
++		dw_pcie_msi_chip.dev = dev;
++	} else
++		bus = pci_scan_root_bus(dev, pp->root_bus_nr, &dw_pcie_ops,
++					pp, &res);
++	if (!bus) {
++		ret = -ENOMEM;
++		goto error;
++	}
++
++	if (pp->ops->scan_bus)
++		pp->ops->scan_bus(pp);
++
++#ifdef CONFIG_ARM
++	/* support old dtbs that incorrectly describe IRQs */
++	pci_fixup_irqs(pci_common_swizzle, of_irq_parse_and_map_pci);
++#endif
++
++	pci_bus_size_bridges(bus);
++	pci_bus_assign_resources(bus);
++
++	list_for_each_entry(child, &bus->children, node)
++		pcie_bus_configure_settings(child);
++
++	pci_bus_add_devices(bus);
++	return 0;
++
++error:
++	pci_free_resource_list(&res);
++	return ret;
++}
++
++static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
++				 u32 devfn, int where, int size, u32 *val)
++{
++	int ret, type;
++	u32 busdev, cfg_size;
++	u64 cpu_addr;
++	void __iomem *va_cfg_base;
++	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++
++	if (pp->ops->rd_other_conf)
++		return pp->ops->rd_other_conf(pp, bus, devfn, where, size, val);
++
++	busdev = PCIE_ATU_BUS(bus->number) | PCIE_ATU_DEV(PCI_SLOT(devfn)) |
++		 PCIE_ATU_FUNC(PCI_FUNC(devfn));
++
++	if (bus->parent->number == pp->root_bus_nr) {
++		type = PCIE_ATU_TYPE_CFG0;
++		cpu_addr = pp->cfg0_base;
++		cfg_size = pp->cfg0_size;
++		va_cfg_base = pp->va_cfg0_base;
++	} else {
++		type = PCIE_ATU_TYPE_CFG1;
++		cpu_addr = pp->cfg1_base;
++		cfg_size = pp->cfg1_size;
++		va_cfg_base = pp->va_cfg1_base;
++	}
++
++	dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
++				  type, cpu_addr,
++				  busdev, cfg_size);
++	ret = dw_pcie_read(va_cfg_base + where, size, val);
++	if (pci->num_viewport <= 2)
++		dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
++					  PCIE_ATU_TYPE_IO, pp->io_base,
++					  pp->io_bus_addr, pp->io_size);
++
++	return ret;
++}
++
++static int dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
++				 u32 devfn, int where, int size, u32 val)
++{
++	int ret, type;
++	u32 busdev, cfg_size;
++	u64 cpu_addr;
++	void __iomem *va_cfg_base;
++	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++
++	if (pp->ops->wr_other_conf)
++		return pp->ops->wr_other_conf(pp, bus, devfn, where, size, val);
++
++	busdev = PCIE_ATU_BUS(bus->number) | PCIE_ATU_DEV(PCI_SLOT(devfn)) |
++		 PCIE_ATU_FUNC(PCI_FUNC(devfn));
++
++	if (bus->parent->number == pp->root_bus_nr) {
++		type = PCIE_ATU_TYPE_CFG0;
++		cpu_addr = pp->cfg0_base;
++		cfg_size = pp->cfg0_size;
++		va_cfg_base = pp->va_cfg0_base;
++	} else {
++		type = PCIE_ATU_TYPE_CFG1;
++		cpu_addr = pp->cfg1_base;
++		cfg_size = pp->cfg1_size;
++		va_cfg_base = pp->va_cfg1_base;
++	}
++
++	dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
++				  type, cpu_addr,
++				  busdev, cfg_size);
++	ret = dw_pcie_write(va_cfg_base + where, size, val);
++	if (pci->num_viewport <= 2)
++		dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
++					  PCIE_ATU_TYPE_IO, pp->io_base,
++					  pp->io_bus_addr, pp->io_size);
++
++	return ret;
++}
++
++static int dw_pcie_valid_device(struct pcie_port *pp, struct pci_bus *bus,
++				int dev)
++{
++	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++
++	/* If there is no link, then there is no device */
++	if (bus->number != pp->root_bus_nr) {
++		if (!dw_pcie_link_up(pci))
++			return 0;
++	}
++
++	/* access only one slot on each root port */
++	if (bus->number == pp->root_bus_nr && dev > 0)
++		return 0;
++
++	return 1;
++}
++
++static int dw_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
++			   int size, u32 *val)
++{
++	struct pcie_port *pp = bus->sysdata;
++
++	if (!dw_pcie_valid_device(pp, bus, PCI_SLOT(devfn))) {
++		*val = 0xffffffff;
++		return PCIBIOS_DEVICE_NOT_FOUND;
++	}
++
++	if (bus->number == pp->root_bus_nr)
++		return dw_pcie_rd_own_conf(pp, where, size, val);
++
++	return dw_pcie_rd_other_conf(pp, bus, devfn, where, size, val);
++}
++
++static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
++			   int where, int size, u32 val)
++{
++	struct pcie_port *pp = bus->sysdata;
++
++	if (!dw_pcie_valid_device(pp, bus, PCI_SLOT(devfn)))
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	if (bus->number == pp->root_bus_nr)
++		return dw_pcie_wr_own_conf(pp, where, size, val);
++
++	return dw_pcie_wr_other_conf(pp, bus, devfn, where, size, val);
++}
++
++static struct pci_ops dw_pcie_ops = {
++	.read = dw_pcie_rd_conf,
++	.write = dw_pcie_wr_conf,
++};
++
++void dw_pcie_setup_rc(struct pcie_port *pp)
++{
++	u32 val;
++	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++
++	dw_pcie_setup(pci);
++
++	/* setup RC BARs */
++	dw_pcie_writel_dbi(pci, PCI_BASE_ADDRESS_0, 0x00000004);
++	dw_pcie_writel_dbi(pci, PCI_BASE_ADDRESS_1, 0x00000000);
++
++	/* setup interrupt pins */
++	val = dw_pcie_readl_dbi(pci, PCI_INTERRUPT_LINE);
++	val &= 0xffff00ff;
++	val |= 0x00000100;
++	dw_pcie_writel_dbi(pci, PCI_INTERRUPT_LINE, val);
++
++	/* setup bus numbers */
++	val = dw_pcie_readl_dbi(pci, PCI_PRIMARY_BUS);
++	val &= 0xff000000;
++	val |= 0x00010100;
++	dw_pcie_writel_dbi(pci, PCI_PRIMARY_BUS, val);
++
++	/* setup command register */
++	val = dw_pcie_readl_dbi(pci, PCI_COMMAND);
++	val &= 0xffff0000;
++	val |= PCI_COMMAND_IO | PCI_COMMAND_MEMORY |
++		PCI_COMMAND_MASTER | PCI_COMMAND_SERR;
++	dw_pcie_writel_dbi(pci, PCI_COMMAND, val);
++
++	/*
++	 * If the platform provides ->rd_other_conf, it means the platform
++	 * uses its own address translation component rather than ATU, so
++	 * we should not program the ATU here.
++	 */
++	if (!pp->ops->rd_other_conf) {
++		dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX0,
++					  PCIE_ATU_TYPE_MEM, pp->mem_base,
++					  pp->mem_bus_addr, pp->mem_size);
++		if (pci->num_viewport > 2)
++			dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX2,
++						  PCIE_ATU_TYPE_IO, pp->io_base,
++						  pp->io_bus_addr, pp->io_size);
++	}
++
++	dw_pcie_wr_own_conf(pp, PCI_BASE_ADDRESS_0, 4, 0);
++
++	/* program correct class for RC */
++	dw_pcie_wr_own_conf(pp, PCI_CLASS_DEVICE, 2, PCI_CLASS_BRIDGE_PCI);
++
++	dw_pcie_rd_own_conf(pp, PCIE_LINK_WIDTH_SPEED_CONTROL, 4, &val);
++	val |= PORT_LOGIC_SPEED_CHANGE;
++	dw_pcie_wr_own_conf(pp, PCIE_LINK_WIDTH_SPEED_CONTROL, 4, val);
++}
+diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
+index ff04074..fb020ee 100644
+--- a/drivers/pci/dwc/pcie-designware.c
++++ b/drivers/pci/dwc/pcie-designware.c
+@@ -11,17 +11,9 @@
+  * published by the Free Software Foundation.
+  */
  
- static u32 dw_pcie_readl_unroll(struct dw_pcie *pci, void __iomem *base,
-@@ -83,7 +97,7 @@ static u32 dw_pcie_readl_unroll(struct dw_pcie *pci, void __iomem *base,
+-#include <linux/irq.h>
+-#include <linux/irqdomain.h>
+-#include <linux/kernel.h>
+-#include <linux/msi.h>
+-#include <linux/of_address.h>
+-#include <linux/of_pci.h>
+-#include <linux/pci.h>
+-#include <linux/pci_regs.h>
+-#include <linux/platform_device.h>
+-#include <linux/types.h>
+ #include <linux/delay.h>
++#include <linux/of.h>
++#include <linux/types.h>
+ 
+ #include "pcie-designware.h"
+ 
+@@ -31,8 +23,6 @@
+ #define PCIE_PHY_DEBUG_R1_LINK_UP	(0x1 << 4)
+ #define PCIE_PHY_DEBUG_R1_LINK_IN_TRAINING	(0x1 << 29)
+ 
+-static struct pci_ops dw_pcie_ops;
+-
+ int dw_pcie_read(void __iomem *addr, int size, u32 *val)
  {
- 	u32 offset = PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(index);
- 
--	return dw_pcie_readl_dbi(pci, base, offset + reg);
-+	return dw_pcie_read_dbi(pci, base, offset + reg, 0x4);
+ 	if ((uintptr_t)addr & (size - 1)) {
+@@ -102,33 +92,8 @@ static void dw_pcie_writel_unroll(struct dw_pcie *pci, u32 index, u32 reg,
+ 	dw_pcie_writel_dbi(pci, offset + reg, val);
  }
  
- static void dw_pcie_writel_unroll(struct dw_pcie *pci, void __iomem *base,
-@@ -91,7 +105,7 @@ static void dw_pcie_writel_unroll(struct dw_pcie *pci, void __iomem *base,
+-static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
+-			       u32 *val)
+-{
+-	struct dw_pcie *pci;
+-
+-	if (pp->ops->rd_own_conf)
+-		return pp->ops->rd_own_conf(pp, where, size, val);
+-
+-	pci = to_dw_pcie_from_pp(pp);
+-	return dw_pcie_read(pci->dbi_base + where, size, val);
+-}
+-
+-static int dw_pcie_wr_own_conf(struct pcie_port *pp, int where, int size,
+-			       u32 val)
+-{
+-	struct dw_pcie *pci;
+-
+-	if (pp->ops->wr_own_conf)
+-		return pp->ops->wr_own_conf(pp, where, size, val);
+-
+-	pci = to_dw_pcie_from_pp(pp);
+-	return dw_pcie_write(pci->dbi_base + where, size, val);
+-}
+-
+-static void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
+-				      int type, u64 cpu_addr, u64 pci_addr,
+-				      u32 size)
++void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index, int type,
++			       u64 cpu_addr, u64 pci_addr, u32 size)
  {
- 	u32 offset = PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(index);
+ 	u32 retries, val;
  
--	dw_pcie_writel_dbi(pci, base, offset + reg, val);
-+	dw_pcie_write_dbi(pci, base, offset + reg, 0x4, val);
+@@ -186,220 +151,6 @@ static void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
+ 	dev_err(pci->dev, "iATU is not being enabled\n");
  }
  
- void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index, int type,
-@@ -122,20 +136,21 @@ void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index, int type,
- 				      PCIE_ATU_UNR_REGION_CTRL2,
- 				      PCIE_ATU_ENABLE);
- 	} else {
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_VIEWPORT,
--				   PCIE_ATU_REGION_OUTBOUND | index);
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_LOWER_BASE,
--				   lower_32_bits(cpu_addr));
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_UPPER_BASE,
--				   upper_32_bits(cpu_addr));
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_LIMIT,
--				   lower_32_bits(cpu_addr + size - 1));
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_LOWER_TARGET,
--				   lower_32_bits(pci_addr));
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_UPPER_TARGET,
--				   upper_32_bits(pci_addr));
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_CR1, type);
--		dw_pcie_writel_dbi(pci, base, PCIE_ATU_CR2, PCIE_ATU_ENABLE);
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_VIEWPORT, 0x4,
-+				  PCIE_ATU_REGION_OUTBOUND | index);
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_LOWER_BASE, 0x4,
-+				  lower_32_bits(cpu_addr));
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_UPPER_BASE, 0x4,
-+				  upper_32_bits(cpu_addr));
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_LIMIT, 0x4,
-+				  lower_32_bits(cpu_addr + size - 1));
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_LOWER_TARGET, 0x4,
-+				  lower_32_bits(pci_addr));
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_UPPER_TARGET, 0x4,
-+				  upper_32_bits(pci_addr));
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_CR1, 0x4, type);
-+		dw_pcie_write_dbi(pci, base, PCIE_ATU_CR2, 0x4,
-+				  PCIE_ATU_ENABLE);
- 	}
+-static struct irq_chip dw_msi_irq_chip = {
+-	.name = "PCI-MSI",
+-	.irq_enable = pci_msi_unmask_irq,
+-	.irq_disable = pci_msi_mask_irq,
+-	.irq_mask = pci_msi_mask_irq,
+-	.irq_unmask = pci_msi_unmask_irq,
+-};
+-
+-/* MSI int handler */
+-irqreturn_t dw_handle_msi_irq(struct pcie_port *pp)
+-{
+-	unsigned long val;
+-	int i, pos, irq;
+-	irqreturn_t ret = IRQ_NONE;
+-
+-	for (i = 0; i < MAX_MSI_CTRLS; i++) {
+-		dw_pcie_rd_own_conf(pp, PCIE_MSI_INTR0_STATUS + i * 12, 4,
+-				    (u32 *)&val);
+-		if (val) {
+-			ret = IRQ_HANDLED;
+-			pos = 0;
+-			while ((pos = find_next_bit(&val, 32, pos)) != 32) {
+-				irq = irq_find_mapping(pp->irq_domain,
+-						       i * 32 + pos);
+-				dw_pcie_wr_own_conf(pp, PCIE_MSI_INTR0_STATUS +
+-						    i * 12, 4, 1 << pos);
+-				generic_handle_irq(irq);
+-				pos++;
+-			}
+-		}
+-	}
+-
+-	return ret;
+-}
+-
+-void dw_pcie_msi_init(struct pcie_port *pp)
+-{
+-	u64 msi_target;
+-
+-	pp->msi_data = __get_free_pages(GFP_KERNEL, 0);
+-	msi_target = virt_to_phys((void *)pp->msi_data);
+-
+-	/* program the msi_data */
+-	dw_pcie_wr_own_conf(pp, PCIE_MSI_ADDR_LO, 4,
+-			    (u32)(msi_target & 0xffffffff));
+-	dw_pcie_wr_own_conf(pp, PCIE_MSI_ADDR_HI, 4,
+-			    (u32)(msi_target >> 32 & 0xffffffff));
+-}
+-
+-static void dw_pcie_msi_clear_irq(struct pcie_port *pp, int irq)
+-{
+-	unsigned int res, bit, val;
+-
+-	res = (irq / 32) * 12;
+-	bit = irq % 32;
+-	dw_pcie_rd_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, &val);
+-	val &= ~(1 << bit);
+-	dw_pcie_wr_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, val);
+-}
+-
+-static void clear_irq_range(struct pcie_port *pp, unsigned int irq_base,
+-			    unsigned int nvec, unsigned int pos)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < nvec; i++) {
+-		irq_set_msi_desc_off(irq_base, i, NULL);
+-		/* Disable corresponding interrupt on MSI controller */
+-		if (pp->ops->msi_clear_irq)
+-			pp->ops->msi_clear_irq(pp, pos + i);
+-		else
+-			dw_pcie_msi_clear_irq(pp, pos + i);
+-	}
+-
+-	bitmap_release_region(pp->msi_irq_in_use, pos, order_base_2(nvec));
+-}
+-
+-static void dw_pcie_msi_set_irq(struct pcie_port *pp, int irq)
+-{
+-	unsigned int res, bit, val;
+-
+-	res = (irq / 32) * 12;
+-	bit = irq % 32;
+-	dw_pcie_rd_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, &val);
+-	val |= 1 << bit;
+-	dw_pcie_wr_own_conf(pp, PCIE_MSI_INTR0_ENABLE + res, 4, val);
+-}
+-
+-static int assign_irq(int no_irqs, struct msi_desc *desc, int *pos)
+-{
+-	int irq, pos0, i;
+-	struct pcie_port *pp;
+-
+-	pp  = (struct pcie_port *)msi_desc_to_pci_sysdata(desc);
+-	pos0 = bitmap_find_free_region(pp->msi_irq_in_use, MAX_MSI_IRQS,
+-				       order_base_2(no_irqs));
+-	if (pos0 < 0)
+-		goto no_valid_irq;
+-
+-	irq = irq_find_mapping(pp->irq_domain, pos0);
+-	if (!irq)
+-		goto no_valid_irq;
+-
+-	/*
+-	 * irq_create_mapping (called from dw_pcie_host_init) pre-allocates
+-	 * descs so there is no need to allocate descs here. We can therefore
+-	 * assume that if irq_find_mapping above returns non-zero, then the
+-	 * descs are also successfully allocated.
+-	 */
+-
+-	for (i = 0; i < no_irqs; i++) {
+-		if (irq_set_msi_desc_off(irq, i, desc) != 0) {
+-			clear_irq_range(pp, irq, i, pos0);
+-			goto no_valid_irq;
+-		}
+-		/*Enable corresponding interrupt in MSI interrupt controller */
+-		if (pp->ops->msi_set_irq)
+-			pp->ops->msi_set_irq(pp, pos0 + i);
+-		else
+-			dw_pcie_msi_set_irq(pp, pos0 + i);
+-	}
+-
+-	*pos = pos0;
+-	desc->nvec_used = no_irqs;
+-	desc->msi_attrib.multiple = order_base_2(no_irqs);
+-
+-	return irq;
+-
+-no_valid_irq:
+-	*pos = pos0;
+-	return -ENOSPC;
+-}
+-
+-static void dw_msi_setup_msg(struct pcie_port *pp, unsigned int irq, u32 pos)
+-{
+-	struct msi_msg msg;
+-	u64 msi_target;
+-
+-	if (pp->ops->get_msi_addr)
+-		msi_target = pp->ops->get_msi_addr(pp);
+-	else
+-		msi_target = virt_to_phys((void *)pp->msi_data);
+-
+-	msg.address_lo = (u32)(msi_target & 0xffffffff);
+-	msg.address_hi = (u32)(msi_target >> 32 & 0xffffffff);
+-
+-	if (pp->ops->get_msi_data)
+-		msg.data = pp->ops->get_msi_data(pp, pos);
+-	else
+-		msg.data = pos;
+-
+-	pci_write_msi_msg(irq, &msg);
+-}
+-
+-static int dw_msi_setup_irq(struct msi_controller *chip, struct pci_dev *pdev,
+-			    struct msi_desc *desc)
+-{
+-	int irq, pos;
+-	struct pcie_port *pp = pdev->bus->sysdata;
+-
+-	if (desc->msi_attrib.is_msix)
+-		return -EINVAL;
+-
+-	irq = assign_irq(1, desc, &pos);
+-	if (irq < 0)
+-		return irq;
+-
+-	dw_msi_setup_msg(pp, irq, pos);
+-
+-	return 0;
+-}
+-
+-static int dw_msi_setup_irqs(struct msi_controller *chip, struct pci_dev *pdev,
+-			     int nvec, int type)
+-{
+-#ifdef CONFIG_PCI_MSI
+-	int irq, pos;
+-	struct msi_desc *desc;
+-	struct pcie_port *pp = pdev->bus->sysdata;
+-
+-	/* MSI-X interrupts are not supported */
+-	if (type == PCI_CAP_ID_MSIX)
+-		return -EINVAL;
+-
+-	WARN_ON(!list_is_singular(&pdev->dev.msi_list));
+-	desc = list_entry(pdev->dev.msi_list.next, struct msi_desc, list);
+-
+-	irq = assign_irq(nvec, desc, &pos);
+-	if (irq < 0)
+-		return irq;
+-
+-	dw_msi_setup_msg(pp, irq, pos);
+-
+-	return 0;
+-#else
+-	return -EINVAL;
+-#endif
+-}
+-
+-static void dw_msi_teardown_irq(struct msi_controller *chip, unsigned int irq)
+-{
+-	struct irq_data *data = irq_get_irq_data(irq);
+-	struct msi_desc *msi = irq_data_get_msi_desc(data);
+-	struct pcie_port *pp = (struct pcie_port *)msi_desc_to_pci_sysdata(msi);
+-
+-	clear_irq_range(pp, irq, 1, data->hwirq);
+-}
+-
+-static struct msi_controller dw_pcie_msi_chip = {
+-	.setup_irq = dw_msi_setup_irq,
+-	.setup_irqs = dw_msi_setup_irqs,
+-	.teardown_irq = dw_msi_teardown_irq,
+-};
+-
+ int dw_pcie_wait_for_link(struct dw_pcie *pci)
+ {
+ 	int retries;
+@@ -430,19 +181,6 @@ int dw_pcie_link_up(struct dw_pcie *pci)
+ 		(!(val & PCIE_PHY_DEBUG_R1_LINK_IN_TRAINING)));
+ }
  
- 	/*
-@@ -147,7 +162,7 @@ void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index, int type,
- 			val = dw_pcie_readl_unroll(pci, base, index,
- 						   PCIE_ATU_UNR_REGION_CTRL2);
- 		else
--			val = dw_pcie_readl_dbi(pci, base, PCIE_ATU_CR2);
-+			val = dw_pcie_read_dbi(pci, base, PCIE_ATU_CR2, 0x4);
- 
- 		if (val == PCIE_ATU_ENABLE)
- 			return;
-@@ -192,7 +207,7 @@ static u8 dw_pcie_iatu_unroll_enabled(struct dw_pcie *pci)
+-static int dw_pcie_msi_map(struct irq_domain *domain, unsigned int irq,
+-			   irq_hw_number_t hwirq)
+-{
+-	irq_set_chip_and_handler(irq, &dw_msi_irq_chip, handle_simple_irq);
+-	irq_set_chip_data(irq, domain->host_data);
+-
+-	return 0;
+-}
+-
+-static const struct irq_domain_ops msi_domain_ops = {
+-	.map = dw_pcie_msi_map,
+-};
+-
+ static u8 dw_pcie_iatu_unroll_enabled(struct dw_pcie *pci)
+ {
  	u32 val;
- 	void __iomem *base = pci->dbi_base;
+@@ -454,303 +192,11 @@ static u8 dw_pcie_iatu_unroll_enabled(struct dw_pcie *pci)
+ 	return 0;
+ }
  
--	val = dw_pcie_readl_dbi(pci, base, PCIE_ATU_VIEWPORT);
-+	val = dw_pcie_read_dbi(pci, base, PCIE_ATU_VIEWPORT, 0x4);
- 	if (val == 0xffffffff)
- 		return 1;
+-int dw_pcie_host_init(struct pcie_port *pp)
+-{
+-	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+-	struct device *dev = pci->dev;
+-	struct device_node *np = dev->of_node;
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct pci_bus *bus, *child;
+-	struct resource *cfg_res;
+-	int i, ret;
+-	LIST_HEAD(res);
+-	struct resource_entry *win, *tmp;
+-
+-	cfg_res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "config");
+-	if (cfg_res) {
+-		pp->cfg0_size = resource_size(cfg_res) / 2;
+-		pp->cfg1_size = resource_size(cfg_res) / 2;
+-		pp->cfg0_base = cfg_res->start;
+-		pp->cfg1_base = cfg_res->start + pp->cfg0_size;
+-	} else if (!pp->va_cfg0_base) {
+-		dev_err(dev, "missing *config* reg space\n");
+-	}
+-
+-	ret = of_pci_get_host_bridge_resources(np, 0, 0xff, &res, &pp->io_base);
+-	if (ret)
+-		return ret;
+-
+-	ret = devm_request_pci_bus_resources(dev, &res);
+-	if (ret)
+-		goto error;
+-
+-	/* Get the I/O and memory ranges from DT */
+-	resource_list_for_each_entry_safe(win, tmp, &res) {
+-		switch (resource_type(win->res)) {
+-		case IORESOURCE_IO:
+-			ret = pci_remap_iospace(win->res, pp->io_base);
+-			if (ret) {
+-				dev_warn(dev, "error %d: failed to map resource %pR\n",
+-					 ret, win->res);
+-				resource_list_destroy_entry(win);
+-			} else {
+-				pp->io = win->res;
+-				pp->io->name = "I/O";
+-				pp->io_size = resource_size(pp->io);
+-				pp->io_bus_addr = pp->io->start - win->offset;
+-			}
+-			break;
+-		case IORESOURCE_MEM:
+-			pp->mem = win->res;
+-			pp->mem->name = "MEM";
+-			pp->mem_size = resource_size(pp->mem);
+-			pp->mem_bus_addr = pp->mem->start - win->offset;
+-			break;
+-		case 0:
+-			pp->cfg = win->res;
+-			pp->cfg0_size = resource_size(pp->cfg) / 2;
+-			pp->cfg1_size = resource_size(pp->cfg) / 2;
+-			pp->cfg0_base = pp->cfg->start;
+-			pp->cfg1_base = pp->cfg->start + pp->cfg0_size;
+-			break;
+-		case IORESOURCE_BUS:
+-			pp->busn = win->res;
+-			break;
+-		}
+-	}
+-
+-	if (!pp->dbi_base) {
+-		pp->dbi_base = devm_ioremap(dev, pp->cfg->start,
+-					resource_size(pp->cfg));
+-		if (!pp->dbi_base) {
+-			dev_err(dev, "error with ioremap\n");
+-			ret = -ENOMEM;
+-			goto error;
+-		}
+-	}
+-
+-	pp->mem_base = pp->mem->start;
+-
+-	if (!pp->va_cfg0_base) {
+-		pp->va_cfg0_base = devm_ioremap(dev, pp->cfg0_base,
+-						pp->cfg0_size);
+-		if (!pp->va_cfg0_base) {
+-			dev_err(dev, "error with ioremap in function\n");
+-			ret = -ENOMEM;
+-			goto error;
+-		}
+-	}
+-
+-	if (!pp->va_cfg1_base) {
+-		pp->va_cfg1_base = devm_ioremap(dev, pp->cfg1_base,
+-						pp->cfg1_size);
+-		if (!pp->va_cfg1_base) {
+-			dev_err(dev, "error with ioremap\n");
+-			ret = -ENOMEM;
+-			goto error;
+-		}
+-	}
+-
+-	ret = of_property_read_u32(np, "num-viewport", &pci->num_viewport);
+-	if (ret)
+-		pci->num_viewport = 2;
+-
+-	if (IS_ENABLED(CONFIG_PCI_MSI)) {
+-		if (!pp->ops->msi_host_init) {
+-			pp->irq_domain = irq_domain_add_linear(dev->of_node,
+-						MAX_MSI_IRQS, &msi_domain_ops,
+-						&dw_pcie_msi_chip);
+-			if (!pp->irq_domain) {
+-				dev_err(dev, "irq domain init failed\n");
+-				ret = -ENXIO;
+-				goto error;
+-			}
+-
+-			for (i = 0; i < MAX_MSI_IRQS; i++)
+-				irq_create_mapping(pp->irq_domain, i);
+-		} else {
+-			ret = pp->ops->msi_host_init(pp, &dw_pcie_msi_chip);
+-			if (ret < 0)
+-				goto error;
+-		}
+-	}
+-
+-	if (pp->ops->host_init)
+-		pp->ops->host_init(pp);
+-
+-	pp->root_bus_nr = pp->busn->start;
+-	if (IS_ENABLED(CONFIG_PCI_MSI)) {
+-		bus = pci_scan_root_bus_msi(dev, pp->root_bus_nr,
+-					    &dw_pcie_ops, pp, &res,
+-					    &dw_pcie_msi_chip);
+-		dw_pcie_msi_chip.dev = dev;
+-	} else
+-		bus = pci_scan_root_bus(dev, pp->root_bus_nr, &dw_pcie_ops,
+-					pp, &res);
+-	if (!bus) {
+-		ret = -ENOMEM;
+-		goto error;
+-	}
+-
+-	if (pp->ops->scan_bus)
+-		pp->ops->scan_bus(pp);
+-
+-#ifdef CONFIG_ARM
+-	/* support old dtbs that incorrectly describe IRQs */
+-	pci_fixup_irqs(pci_common_swizzle, of_irq_parse_and_map_pci);
+-#endif
+-
+-	pci_bus_size_bridges(bus);
+-	pci_bus_assign_resources(bus);
+-
+-	list_for_each_entry(child, &bus->children, node)
+-		pcie_bus_configure_settings(child);
+-
+-	pci_bus_add_devices(bus);
+-	return 0;
+-
+-error:
+-	pci_free_resource_list(&res);
+-	return ret;
+-}
+-
+-static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
+-				 u32 devfn, int where, int size, u32 *val)
+-{
+-	int ret, type;
+-	u32 busdev, cfg_size;
+-	u64 cpu_addr;
+-	void __iomem *va_cfg_base;
+-	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+-
+-	if (pp->ops->rd_other_conf)
+-		return pp->ops->rd_other_conf(pp, bus, devfn, where, size, val);
+-
+-	busdev = PCIE_ATU_BUS(bus->number) | PCIE_ATU_DEV(PCI_SLOT(devfn)) |
+-		 PCIE_ATU_FUNC(PCI_FUNC(devfn));
+-
+-	if (bus->parent->number == pp->root_bus_nr) {
+-		type = PCIE_ATU_TYPE_CFG0;
+-		cpu_addr = pp->cfg0_base;
+-		cfg_size = pp->cfg0_size;
+-		va_cfg_base = pp->va_cfg0_base;
+-	} else {
+-		type = PCIE_ATU_TYPE_CFG1;
+-		cpu_addr = pp->cfg1_base;
+-		cfg_size = pp->cfg1_size;
+-		va_cfg_base = pp->va_cfg1_base;
+-	}
+-
+-	dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
+-				  type, cpu_addr,
+-				  busdev, cfg_size);
+-	ret = dw_pcie_read(va_cfg_base + where, size, val);
+-	if (pci->num_viewport <= 2)
+-		dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
+-					  PCIE_ATU_TYPE_IO, pp->io_base,
+-					  pp->io_bus_addr, pp->io_size);
+-
+-	return ret;
+-}
+-
+-static int dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
+-				 u32 devfn, int where, int size, u32 val)
+-{
+-	int ret, type;
+-	u32 busdev, cfg_size;
+-	u64 cpu_addr;
+-	void __iomem *va_cfg_base;
+-	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+-
+-	if (pp->ops->wr_other_conf)
+-		return pp->ops->wr_other_conf(pp, bus, devfn, where, size, val);
+-
+-	busdev = PCIE_ATU_BUS(bus->number) | PCIE_ATU_DEV(PCI_SLOT(devfn)) |
+-		 PCIE_ATU_FUNC(PCI_FUNC(devfn));
+-
+-	if (bus->parent->number == pp->root_bus_nr) {
+-		type = PCIE_ATU_TYPE_CFG0;
+-		cpu_addr = pp->cfg0_base;
+-		cfg_size = pp->cfg0_size;
+-		va_cfg_base = pp->va_cfg0_base;
+-	} else {
+-		type = PCIE_ATU_TYPE_CFG1;
+-		cpu_addr = pp->cfg1_base;
+-		cfg_size = pp->cfg1_size;
+-		va_cfg_base = pp->va_cfg1_base;
+-	}
+-
+-	dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
+-				  type, cpu_addr,
+-				  busdev, cfg_size);
+-	ret = dw_pcie_write(va_cfg_base + where, size, val);
+-	if (pci->num_viewport <= 2)
+-		dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX1,
+-					  PCIE_ATU_TYPE_IO, pp->io_base,
+-					  pp->io_bus_addr, pp->io_size);
+-
+-	return ret;
+-}
+-
+-static int dw_pcie_valid_device(struct pcie_port *pp, struct pci_bus *bus,
+-				int dev)
+-{
+-	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
+-
+-	/* If there is no link, then there is no device */
+-	if (bus->number != pp->root_bus_nr) {
+-		if (!dw_pcie_link_up(pci))
+-			return 0;
+-	}
+-
+-	/* access only one slot on each root port */
+-	if (bus->number == pp->root_bus_nr && dev > 0)
+-		return 0;
+-
+-	return 1;
+-}
+-
+-static int dw_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
+-			   int size, u32 *val)
+-{
+-	struct pcie_port *pp = bus->sysdata;
+-
+-	if (!dw_pcie_valid_device(pp, bus, PCI_SLOT(devfn))) {
+-		*val = 0xffffffff;
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	}
+-
+-	if (bus->number == pp->root_bus_nr)
+-		return dw_pcie_rd_own_conf(pp, where, size, val);
+-
+-	return dw_pcie_rd_other_conf(pp, bus, devfn, where, size, val);
+-}
+-
+-static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
+-			   int where, int size, u32 val)
+-{
+-	struct pcie_port *pp = bus->sysdata;
+-
+-	if (!dw_pcie_valid_device(pp, bus, PCI_SLOT(devfn)))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	if (bus->number == pp->root_bus_nr)
+-		return dw_pcie_wr_own_conf(pp, where, size, val);
+-
+-	return dw_pcie_wr_other_conf(pp, bus, devfn, where, size, val);
+-}
+-
+-static struct pci_ops dw_pcie_ops = {
+-	.read = dw_pcie_rd_conf,
+-	.write = dw_pcie_wr_conf,
+-};
+-
+-void dw_pcie_setup_rc(struct pcie_port *pp)
++void dw_pcie_setup(struct dw_pcie *pci)
+ {
+ 	int ret;
+-	u32 lanes;
+ 	u32 val;
+-	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
++	u32 lanes;
+ 	struct device *dev = pci->dev;
+ 	struct device_node *np = dev->of_node;
  
-@@ -218,7 +233,7 @@ void dw_pcie_setup(struct dw_pcie *pci)
- 		lanes = 0;
- 
- 	/* set the number of lanes */
--	val = dw_pcie_readl_dbi(pci, base, PCIE_PORT_LINK_CONTROL);
-+	val = dw_pcie_read_dbi(pci, base, PCIE_PORT_LINK_CONTROL, 0x4);
- 	val &= ~PORT_LINK_MODE_MASK;
- 	switch (lanes) {
- 	case 1:
-@@ -237,10 +252,10 @@ void dw_pcie_setup(struct dw_pcie *pci)
- 		dev_err(pci->dev, "num-lanes %u: invalid value\n", lanes);
- 		return;
- 	}
--	dw_pcie_writel_dbi(pci, base, PCIE_PORT_LINK_CONTROL, val);
-+	dw_pcie_write_dbi(pci, base, PCIE_PORT_LINK_CONTROL, 0x4, val);
- 
- 	/* set link width speed control register */
--	val = dw_pcie_readl_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL);
-+	val = dw_pcie_read_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL, 0x4);
- 	val &= ~PORT_LOGIC_LINK_WIDTH_MASK;
- 	switch (lanes) {
- 	case 1:
-@@ -256,5 +271,5 @@ void dw_pcie_setup(struct dw_pcie *pci)
- 		val |= PORT_LOGIC_LINK_WIDTH_8_LANES;
+@@ -803,51 +249,4 @@ void dw_pcie_setup_rc(struct pcie_port *pp)
  		break;
  	}
--	dw_pcie_writel_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL, val);
-+	dw_pcie_write_dbi(pci, base, PCIE_LINK_WIDTH_SPEED_CONTROL, 0x4, val);
+ 	dw_pcie_writel_dbi(pci, PCIE_LINK_WIDTH_SPEED_CONTROL, val);
+-
+-	/* setup RC BARs */
+-	dw_pcie_writel_dbi(pci, PCI_BASE_ADDRESS_0, 0x00000004);
+-	dw_pcie_writel_dbi(pci, PCI_BASE_ADDRESS_1, 0x00000000);
+-
+-	/* setup interrupt pins */
+-	val = dw_pcie_readl_dbi(pci, PCI_INTERRUPT_LINE);
+-	val &= 0xffff00ff;
+-	val |= 0x00000100;
+-	dw_pcie_writel_dbi(pci, PCI_INTERRUPT_LINE, val);
+-
+-	/* setup bus numbers */
+-	val = dw_pcie_readl_dbi(pci, PCI_PRIMARY_BUS);
+-	val &= 0xff000000;
+-	val |= 0x00010100;
+-	dw_pcie_writel_dbi(pci, PCI_PRIMARY_BUS, val);
+-
+-	/* setup command register */
+-	val = dw_pcie_readl_dbi(pci, PCI_COMMAND);
+-	val &= 0xffff0000;
+-	val |= PCI_COMMAND_IO | PCI_COMMAND_MEMORY |
+-		PCI_COMMAND_MASTER | PCI_COMMAND_SERR;
+-	dw_pcie_writel_dbi(pci, PCI_COMMAND, val);
+-
+-	/*
+-	 * If the platform provides ->rd_other_conf, it means the platform
+-	 * uses its own address translation component rather than ATU, so
+-	 * we should not program the ATU here.
+-	 */
+-	if (!pp->ops->rd_other_conf) {
+-		dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX0,
+-					  PCIE_ATU_TYPE_MEM, pp->mem_base,
+-					  pp->mem_bus_addr, pp->mem_size);
+-		if (pci->num_viewport > 2)
+-			dw_pcie_prog_outbound_atu(pci, PCIE_ATU_REGION_INDEX2,
+-						  PCIE_ATU_TYPE_IO, pp->io_base,
+-						  pp->io_bus_addr, pp->io_size);
+-	}
+-
+-	dw_pcie_wr_own_conf(pp, PCI_BASE_ADDRESS_0, 4, 0);
+-
+-	/* program correct class for RC */
+-	dw_pcie_wr_own_conf(pp, PCI_CLASS_DEVICE, 2, PCI_CLASS_BRIDGE_PCI);
+-
+-	dw_pcie_rd_own_conf(pp, PCIE_LINK_WIDTH_SPEED_CONTROL, 4, &val);
+-	val |= PORT_LOGIC_SPEED_CHANGE;
+-	dw_pcie_wr_own_conf(pp, PCIE_LINK_WIDTH_SPEED_CONTROL, 4, val);
  }
 diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-index fe93f7f..0ef6ae7 100644
+index 491fbe3..808d17b 100644
 --- a/drivers/pci/dwc/pcie-designware.h
 +++ b/drivers/pci/dwc/pcie-designware.h
-@@ -144,9 +144,10 @@ struct pcie_port {
+@@ -14,6 +14,10 @@
+ #ifndef _PCIE_DESIGNWARE_H
+ #define _PCIE_DESIGNWARE_H
  
- struct dw_pcie_ops {
- 	u64	(*cpu_addr_fixup)(u64 cpu_addr);
--	u32	(*readl_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg);
--	void	(*writel_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg,
--			      u32 val);
-+	u32	(*read_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg,
-+			    int size);
-+	void	(*write_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg,
-+			     int size, u32 val);
- 	int	(*link_up)(struct dw_pcie *pcie);
- };
- 
-@@ -164,9 +165,10 @@ struct dw_pcie {
- int dw_pcie_read(void __iomem *addr, int size, u32 *val);
- int dw_pcie_write(void __iomem *addr, int size, u32 val);
- 
--u32 dw_pcie_readl_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg);
--void dw_pcie_writel_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
--			u32 val);
-+u32 dw_pcie_read_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
-+		     int size);
-+void dw_pcie_write_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
-+		       int size, u32 val);
++#include <linux/irq.h>
++#include <linux/msi.h>
++#include <linux/pci.h>
++
+ /* Parameters for the waiting for link up routine */
+ #define LINK_WAIT_MAX_RETRIES		10
+ #define LINK_WAIT_USLEEP_MIN		90000
+@@ -167,4 +171,8 @@ struct dw_pcie {
+ void dw_pcie_writel_dbi(struct dw_pcie *pci, u32 reg, u32 val);
  int dw_pcie_link_up(struct dw_pcie *pci);
  int dw_pcie_wait_for_link(struct dw_pcie *pci);
- void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
-diff --git a/drivers/pci/dwc/pcie-hisi.c b/drivers/pci/dwc/pcie-hisi.c
-index 560f6a4..f8f7d43 100644
---- a/drivers/pci/dwc/pcie-hisi.c
-+++ b/drivers/pci/dwc/pcie-hisi.c
-@@ -154,7 +154,7 @@ static int hisi_pcie_cfg_read(struct pcie_port *pp, int where, int size,
- 
- 	walker += (where & 0x3);
- 	reg = where & ~0x3;
--	reg_val = dw_pcie_readl_dbi(pci, base, reg);
-+	reg_val = dw_pcie_read_dbi(pci, base, reg, 0x4);
- 
- 	if (size == 1)
- 		*val = *(u8 __force *) walker;
-@@ -181,15 +181,15 @@ static int hisi_pcie_cfg_write(struct pcie_port *pp, int where, int  size,
- 	walker += (where & 0x3);
- 	reg = where & ~0x3;
- 	if (size == 4)
--		dw_pcie_writel_dbi(pci, base, reg, val);
-+		dw_pcie_write_dbi(pci, base, reg, 0x4, val);
- 	else if (size == 2) {
--		reg_val = dw_pcie_readl_dbi(pci, base, reg);
-+		reg_val = dw_pcie_read_dbi(pci, base, reg, 0x4);
- 		*(u16 __force *) walker = val;
--		dw_pcie_writel_dbi(pci, base, reg, reg_val);
-+		dw_pcie_write_dbi(pci, base, reg, 0x4, reg_val);
- 	} else if (size == 1) {
--		reg_val = dw_pcie_readl_dbi(pci, base, reg);
-+		reg_val = dw_pcie_read_dbi(pci, base, reg, 0x4);
- 		*(u8 __force *) walker = val;
--		dw_pcie_writel_dbi(pci, base, reg, reg_val);
-+		dw_pcie_write_dbi(pci, base, reg, 0x4, reg_val);
- 	} else
- 		return PCIBIOS_BAD_REGISTER_NUMBER;
- 
-@@ -212,7 +212,7 @@ static int hisi_pcie_link_up_hip06(struct hisi_pcie *hisi_pcie)
- 	void __iomem *base = pci->dbi_base;
- 	u32 val;
- 
--	val = dw_pcie_readl_dbi(pci, base, PCIE_SYS_STATE4);
-+	val = dw_pcie_read_dbi(pci, base, PCIE_SYS_STATE4, 0x4);
- 
- 	return ((val & PCIE_LTSSM_STATE_MASK) == PCIE_LTSSM_LINKUP_STATE);
- }
++void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
++			       int type, u64 cpu_addr, u64 pci_addr,
++			       u32 size);
++void dw_pcie_setup(struct dw_pcie *pci);
+ #endif /* _PCIE_DESIGNWARE_H */
 -- 
 1.7.9.5
