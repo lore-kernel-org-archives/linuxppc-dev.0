@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYs0HmkzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYt1jrHzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:05 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,9 +13,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 02/37] PCI: dwc: designware: Add new *ops* for cpu addr fixup
-Date: Thu, 12 Jan 2017 15:55:51 +0530
-Message-ID: <1484216786-17292-3-git-send-email-kishon@ti.com>
+Subject: [PATCH 25/37] dt-bindings: PCI: Add dt bindings for pci designware EP
+ mode
+Date: Thu, 12 Jan 2017 15:56:14 +0530
+Message-ID: <1484216786-17292-26-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -29,47 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some platforms (like dra7xx) require only the least 28 bits of the
-corresponding 32 bit CPU address to be programmed in the address
-translation unit. This modified address is stored in io_base/mem_base/
-cfg0_base/cfg1_base in dra7xx_pcie_host_init. While this is okay for
-host mode where the address range is fixed, device mode requires
-different addresses to be programmed based on the host buffer address.
-Add a new ops to get the least 28 bits of the corresponding 32 bit
-CPU address and invoke it before programming the address translation
-unit.
+Add device tree binding documentation for pci designware EP mode.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- drivers/pci/dwc/pcie-designware.c |    3 +++
- drivers/pci/dwc/pcie-designware.h |    1 +
- 2 files changed, 4 insertions(+)
+ .../devicetree/bindings/pci/designware-pcie.txt    |   26 ++++++++++++++------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
-index bed1999..d68bc7b 100644
---- a/drivers/pci/dwc/pcie-designware.c
-+++ b/drivers/pci/dwc/pcie-designware.c
-@@ -195,6 +195,9 @@ static void dw_pcie_prog_outbound_atu(struct pcie_port *pp, int index,
- {
- 	u32 retries, val;
+diff --git a/Documentation/devicetree/bindings/pci/designware-pcie.txt b/Documentation/devicetree/bindings/pci/designware-pcie.txt
+index 1392c70..b2480dd 100644
+--- a/Documentation/devicetree/bindings/pci/designware-pcie.txt
++++ b/Documentation/devicetree/bindings/pci/designware-pcie.txt
+@@ -6,30 +6,40 @@ Required properties:
+ - reg-names: Must be "config" for the PCIe configuration space.
+     (The old way of getting the configuration address space from "ranges"
+     is deprecated and should be avoided.)
++- num-lanes: number of lanes to use
++RC mode:
+ - #address-cells: set to <3>
+ - #size-cells: set to <2>
+ - device_type: set to "pci"
+ - ranges: ranges for the PCI memory and I/O regions
+ - #interrupt-cells: set to <1>
+-- interrupt-map-mask and interrupt-map: standard PCI properties
+-	to define the mapping of the PCIe interface to interrupt
++- interrupt-map-mask and interrupt-map: standard PCI
++	properties to define the mapping of the PCIe interface to interrupt
+ 	numbers.
+-- num-lanes: number of lanes to use
++EP mode:
++- num-ib-windows: number of inbound address translation
++        windows
++- num-ob-windows: number of outbound address translation
++        windows
  
-+	if (pp->ops->cpu_addr_fixup)
-+		cpu_addr = pp->ops->cpu_addr_fixup(cpu_addr);
-+
- 	if (pp->iatu_unroll_enabled) {
- 		dw_pcie_writel_unroll(pp, index, PCIE_ATU_UNR_LOWER_BASE,
- 			lower_32_bits(cpu_addr));
-diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-index a567ea2..32f4602 100644
---- a/drivers/pci/dwc/pcie-designware.h
-+++ b/drivers/pci/dwc/pcie-designware.h
-@@ -54,6 +54,7 @@ struct pcie_port {
- };
+ Optional properties:
+-- num-viewport: number of view ports configured in hardware.  If a platform
+-  does not specify it, the driver assumes 2.
+ - num-lanes: number of lanes to use (this property should be specified unless
+   the link is brought already up in BIOS)
+ - reset-gpio: gpio pin number of power good signal
+-- bus-range: PCI bus numbers covered (it is recommended for new devicetrees to
+-  specify this property, to keep backwards compatibility a range of 0x00-0xff
+-  is assumed if not present)
+ - clocks: Must contain an entry for each entry in clock-names.
+ 	See ../clocks/clock-bindings.txt for details.
+ - clock-names: Must include the following entries:
+ 	- "pcie"
+ 	- "pcie_bus"
++RC mode:
++- num-viewport: number of view ports configured in
++  hardware. If a platform does not specify it, the driver assumes 2.
++- bus-range: PCI bus numbers covered (it is recommended
++  for new devicetrees to specify this property, to keep backwards
++  compatibility a range of 0x00-0xff is assumed if not present)
++EP mode:
++- max-functions: maximum number of functions that can be
++  configured
  
- struct pcie_host_ops {
-+	u64 (*cpu_addr_fixup)(u64 cpu_addr);
- 	u32 (*readl_rc)(struct pcie_port *pp, u32 reg);
- 	void (*writel_rc)(struct pcie_port *pp, u32 reg, u32 val);
- 	int (*rd_own_conf)(struct pcie_port *pp, int where, int size, u32 *val);
+ Example configuration:
+ 
 -- 
 1.7.9.5
