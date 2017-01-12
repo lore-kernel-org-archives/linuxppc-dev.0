@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYx41jWzDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYy5kL3zDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:10 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,10 +13,9 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 18/37] Documentation: PCI: Add specification for the *pci
- test* function device
-Date: Thu, 12 Jan 2017 15:56:07 +0530
-Message-ID: <1484216786-17292-19-git-send-email-kishon@ti.com>
+Subject: [PATCH 17/37] Documentation: PCI: Guide to use pci endpoint configfs
+Date: Thu, 12 Jan 2017 15:56:06 +0530
+Message-ID: <1484216786-17292-18-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -30,98 +29,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add specification for the *pci test* virtual function device. The endpoint
-function driver and the host pci driver should be created based on this
-specification.
+Add Documentation to help users use pci endpoint to configure
+pci endpoint function and to bind the endpoint function
+with endpoint controller.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- Documentation/PCI/00-INDEX                       |    2 +
- Documentation/PCI/endpoint/pci-test-function.txt |   66 ++++++++++++++++++++++
- 2 files changed, 68 insertions(+)
- create mode 100644 Documentation/PCI/endpoint/pci-test-function.txt
+ Documentation/PCI/00-INDEX                      |    2 +
+ Documentation/PCI/endpoint/pci-endpoint-cfs.txt |   84 +++++++++++++++++++++++
+ 2 files changed, 86 insertions(+)
+ create mode 100644 Documentation/PCI/endpoint/pci-endpoint-cfs.txt
 
 diff --git a/Documentation/PCI/00-INDEX b/Documentation/PCI/00-INDEX
-index f84a23c..4e5a283 100644
+index ba950b2..f84a23c 100644
 --- a/Documentation/PCI/00-INDEX
 +++ b/Documentation/PCI/00-INDEX
-@@ -16,3 +16,5 @@ endpoint/pci-endpoint.txt
+@@ -14,3 +14,5 @@ pcieaer-howto.txt
+ 	- the PCI Express Advanced Error Reporting Driver Guide HOWTO
+ endpoint/pci-endpoint.txt
  	- guide to add endpoint controller driver and endpoint function driver.
- endpoint/pci-endpoint-cfs.txt
- 	- guide to use configfs to configure the pci endpoint function.
-+endpoint/pci-test-function.txt
-+	- specification of *pci test* function device.
-diff --git a/Documentation/PCI/endpoint/pci-test-function.txt b/Documentation/PCI/endpoint/pci-test-function.txt
++endpoint/pci-endpoint-cfs.txt
++	- guide to use configfs to configure the pci endpoint function.
+diff --git a/Documentation/PCI/endpoint/pci-endpoint-cfs.txt b/Documentation/PCI/endpoint/pci-endpoint-cfs.txt
 new file mode 100644
-index 0000000..1324376
+index 0000000..b1f1613
 --- /dev/null
-+++ b/Documentation/PCI/endpoint/pci-test-function.txt
-@@ -0,0 +1,66 @@
-+				PCI TEST
-+		    Kishon Vijay Abraham I <kishon@ti.com>
++++ b/Documentation/PCI/endpoint/pci-endpoint-cfs.txt
+@@ -0,0 +1,84 @@
++                   CONFIGURING PCI ENDPOINT USING CONFIGFS
++                    Kishon Vijay Abraham I <kishon@ti.com>
 +
-+Traditionally PCI RC has always been validated by using standard
-+PCI cards like ethernet PCI cards or USB PCI cards or SATA PCI cards.
-+However with the addition of EP-core in linux kernel, it is possible
-+to configure a PCI controller that can operate in EP mode to work as
-+a test device.
++The PCI Endpoint Core exposes configfs entry (pci_ep) in order to configure the
++PCI endpoint function and in order to bind the endpoint function
++with the endpoint controller. (For introducing other mechanisms to
++configure the PCI Endpoint Function refer [1]).
 +
-+The PCI endpoint test device is a virtual device (defined in software)
-+used to test the endpoint functionality and serve as a sample driver
-+for other PCI endpoint devices (to use the EP framework).
++*) Mounting configfs
 +
-+The PCI endpoint test device has the following registers:
++The PCI Endpoint Core layer creates pci_ep directory in the mounted configfs
++directory. configfs can be mounted using the following command.
 +
-+	1) PCI_ENDPOINT_TEST_MAGIC
-+	2) PCI_ENDPOINT_TEST_COMMAND
-+	3) PCI_ENDPOINT_TEST_STATUS
-+	4) PCI_ENDPOINT_TEST_SRC_ADDR
-+	5) PCI_ENDPOINT_TEST_DST_ADDR
-+	6) PCI_ENDPOINT_TEST_SIZE
-+	7) PCI_ENDPOINT_TEST_CHECKSUM
++	mount -t configfs none /sys/kernel/config
 +
-+*) PCI_ENDPOINT_TEST_MAGIC
++*) Directory Structure
 +
-+This register will be used to test BAR0. A known pattern will be written
-+and read back from MAGIC register to verify BAR0.
++The pci_ep configfs directory structure has been created to reflect the
++natural tree like structure of PCI devices. So every directory created
++inside pci_ep represents a EPC device and every directory created inside
++epf directory represents EPF device.
 +
-+*) PCI_ENDPOINT_TEST_COMMAND:
++/sys/kernel/config/pci_ep/
++			 | <dir>/ --------------------------------------> [2]
++				| epc
++				| epf/
++				     | <dir>/ --------------------------> [3]
++					    | vendorid
++					    | deviceid
++					    | revid
++					    | progif_code
++					    | subclass_code
++					    | baseclass_code
++					    | cache_line_size
++					    | subsys_vendor_id
++					    | subsys_id
++					    | interrupt_pin
++					    | function
 +
-+This register will be used by the host driver to indicate the function
-+that the endpoint device must perform.
++*) Creating configfs entry for EPC
 +
-+Bitfield Description:
-+  Bit 0		: raise legacy irq
-+  Bit 1		: raise MSI irq
-+  Bit 2 - 7	: MSI interrupt number
-+  Bit 8		: read command (read data from RC buffer)
-+  Bit 9		: write command (write data to RC buffer)
-+  Bit 10	: copy command (copy data from one RC buffer to another
-+		  RC buffer)
++Any directory created inside *pci_ep* represents an EPC device. In the above
++directory structure [2] represents an EPC device. It consists of
 +
-+*) PCI_ENDPOINT_TEST_STATUS
++	*) epc: Use it to associate the configfs entry to an actual EPC device.
++		The list of valid entries for this field can be obtained from
++			ls /sys/class/pci_epc/
 +
-+This register reflects the status of the PCI endpoint device.
++	*) epf: Directory that contains all the endpoint functions. The name
++		of the created directory determines the driver this particular
++		epf device will be bound to. The name can be obtained either
++		from the function binding documentation [4] or
++			ls /sys/bus/pci-epf/drivers
 +
-+Bitfield Description:
-+  Bit 0		: read success
-+  Bit 1		: read fail
-+  Bit 2		: write success
-+  Bit 3		: write fail
-+  Bit 4		: copy success
-+  Bit 5		: copy fail
-+  Bit 6		: irq raised
-+  Bit 7		: source address is invalid
-+  Bit 8		: destination address is invalid
++		If more than one endpoint function device has to be bound to
++		the same driver, then the directory should be created using
++		the following notation
++			mkdir <name>.<num>
 +
-+*) PCI_ENDPOINT_TEST_SRC_ADDR
++*) Creating configfs entry for EPF
 +
-+This register contains the source address (RC buffer address) for the
-+COPY/READ command.
++Any directory created inside *epf* directory represents an EPF device. In the
++above directory structure, [3] represents an EPF device. It consists of the
++following entries that can be used to configure the standard configuration
++header of the endpoint function. (These entries are created by the
++framework when any new directory is created inside epf directory.)
 +
-+*) PCI_ENDPOINT_TEST_DST_ADDR
++        | vendorid
++        | deviceid
++        | revid
++        | progif_code
++        | subclass_code
++        | baseclass_code
++        | cache_line_size
++        | subsys_vendor_id
++        | subsys_id
++        | interrupt_pin
 +
-+This register contains the destination address (RC buffer address) for
-+the COPY/WRITE command.
++The following entry identifies the function driver that is bound to the
++function device
++	| function
++
++[1] -> Documentation/PCI/endpoint/pci-endpoint.txt
++[4] -> Documentation/PCI/endpoint/function/binding/
 -- 
 1.7.9.5
