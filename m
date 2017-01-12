@@ -1,82 +1,25 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzcwX3yBmzDqQK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 18:34:51 +1100 (AEDT)
-Date: Thu, 12 Jan 2017 08:35:11 +0100
-From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-To: Bart Van Assche <Bart.VanAssche@sandisk.com>
-Cc: "geert@linux-m68k.org" <geert@linux-m68k.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "jesper.nilsson@axis.com" <jesper.nilsson@axis.com>,
- "mulix@mulix.org" <mulix@mulix.org>, "hpa@zytor.com" <hpa@zytor.com>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "geoff@infradead.org" <geoff@infradead.org>,
- "jcmvbkbc@gmail.com" <jcmvbkbc@gmail.com>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-am33-list@redhat.com" <linux-am33-list@redhat.com>,
- "linux-cris-kernel@axis.com" <linux-cris-kernel@axis.com>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "a-jacquiot@ti.com" <a-jacquiot@ti.com>,
- "dalias@libc.org" <dalias@libc.org>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "nios2-dev@lists.rocketboards.org" <nios2-dev@lists.rocketboards.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "shorne@gmail.com" <shorne@gmail.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "lftan@altera.com" <lftan@altera.com>, "deller@gmx.de" <deller@gmx.de>,
- "jdmason@kudzu.us" <jdmason@kudzu.us>,
- "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>,
- "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>,
- "chris@zankel.net" <chris@zankel.net>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
- "joro@8bytes.org" <joro@8bytes.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "fenghua.yu@intel.com" <fenghua.yu@intel.com>,
- "jejb@parisc-linux.org" <jejb@parisc-linux.org>,
- "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
- "msalter@redhat.com" <msalter@redhat.com>,
- "dledford@redhat.com" <dledford@redhat.com>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-metag@vger.kernel.org" <linux-metag@vger.kernel.org>,
- "ysato@users.sourceforge.jp" <ysato@users.sourceforge.jp>,
- "dhowells@redhat.com" <dhowells@redhat.com>,
- "starvik@axis.com" <starvik@axis.com>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "hskinnemoen@gmail.com" <hskinnemoen@gmail.com>,
- "tony.luck@intel.com" <tony.luck@intel.com>,
- "uclinux-h8-devel@lists.sourceforge.jp"
- <uclinux-h8-devel@lists.sourceforge.jp>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "stefan.kristiansson@saunalahti.fi" <stefan.kristiansson@saunalahti.fi>,
- "jonas@southpole.se" <jonas@southpole.se>,
- "egtvedt@samfundet.no" <egtvedt@samfundet.no>
-Subject: Re: [PATCH 2/9] Move dma_ops from archdata into struct device
-Message-ID: <20170112073511.GA23347@kroah.com>
-References: <20170111005648.14988-1-bart.vanassche@sandisk.com>
- <20170111005648.14988-3-bart.vanassche@sandisk.com>
- <20170111064803.GB26893@kroah.com>
- <1484158589.2619.14.camel@sandisk.com>
- <20170111203100.GB17895@kroah.com>
- <1484173670.2619.28.camel@sandisk.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzdJv3m0WzDqHn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 18:52:31 +1100 (AEDT)
+Subject: Re: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
+To: Segher Boessenkool <segher@kernel.crashing.org>
+References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
+ <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
+ <alpine.DEB.2.20.99.1701040957380.31470@trent.utfs.org>
+ <alpine.DEB.2.20.999.1701091739320.5450@trent.utfs.org>
+ <d0e56084-49d7-2486-c2a6-de146331d1c7@c-s.fr>
+ <20170111225440.GQ28613@gate.crashing.org>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <1c81ce1a-33ca-7ba4-56f5-976935deb609@c-s.fr>
+Date: Thu, 12 Jan 2017 08:52:25 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1484173670.2619.28.camel@sandisk.com>
+In-Reply-To: <20170111225440.GQ28613@gate.crashing.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -86,21 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 11, 2017 at 10:28:05PM +0000, Bart Van Assche wrote:
-> On Wed, 2017-01-11 at 21:31 +0100, gregkh@linuxfoundation.org wrote:
-> > That's a big sign that your patch series needs work.  Break it up into
-> > smaller pieces, it should be possible, which will make merges easier
-> > (well, different in a way.)
-> 
-> Hello Greg,
-> 
-> Can you have a look at the attached patches? These three patches are a
-> splitup of the single patch at the start of this e-mail thread.
 
-Please send them in the proper format (i.e. one patch per email), and I
-will be glad to review them.  Otherwise it's really hard to do so, would
-you want to review attachments?
 
-thanks,
+Le 11/01/2017 à 23:54, Segher Boessenkool a écrit :
+> On Tue, Jan 10, 2017 at 07:26:15AM +0100, Christophe LEROY wrote:
+>>> Maybe ppc32 is not supposed to be built with CC_STACKPROTECTOR ?
+>>
+>> Indeed, the latest versions of GCC don't use anymore the global variable
+>> __stack_chk_guard as canary value, but a value stored at -0x7008(r2).
+>> This is not compatible with the current implementation of  the kernel
+>> with uses r2 as a pointeur to current task struct.
+>> So until we fix it, I don't think CC_STACKPROTECTOR is usable on PPC
+>> with modern versions of GCC.
+>
+> I still wonder what changed.  Nothing relevant has changed for ten years
+> or whatever as far as I see; unless it is just the -fstack-protector-strong
+> that makes it fail now.  Curious.
+>
 
-greg k-h
+Yes, looks like it was changed from global to TLS in 2005 on powerpc. 
+Indeed when I implemented STACKPROTECTOR in Kernel on ppc I 
+copied/pasted it from ARM which is (still?) using the global 
+__stack_chk_guard, and at first it worked quite well on my powerpc.
+
+x86 has the following option on GCC. Couldn't we have it on powerpc too ?
+
+-mstack-protector-guard=guard
+Generate  stack  protection  code  using  canary  at
+guard.   Supported  locations are ‘ global ’ for global canary or ‘ tls
+’ for per-thread canary in the TLS block (the  default). This  option 
+has  effect  only  when  ‘-fstack-protector’  or ‘-fstack-protector-all’ 
+is specified.
+
+Christophe
