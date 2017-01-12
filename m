@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYv2Y57zDqPl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYw37tbzDqSj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:08 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,10 +13,9 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 09/37] PCI: dwc: designware: Parse *num-lanes* property in
- dw_pcie_setup_rc
-Date: Thu, 12 Jan 2017 15:55:58 +0530
-Message-ID: <1484216786-17292-10-git-send-email-kishon@ti.com>
+Subject: [PATCH 29/37] PCI: dwc: dra7xx: Workaround for errata id i870
+Date: Thu, 12 Jan 2017 15:56:18 +0530
+Message-ID: <1484216786-17292-30-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -30,90 +29,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-*num-lanes* dt property is parsed in dw_pcie_host_init. However
-*num-lanes* property is applicable to both root complex mode and
-endpoint mode. As a first step, move the parsing of this property
-outside dw_pcie_host_init. This is in preparation for splitting
-pcie-designware.c to pcie-designware.c and pcie-designware-host.c
+According to errata i870, access to the PCIe slave port
+that are not 32-bit aligned will result in incorrect mapping
+to TLP Address and Byte enable fields.
+
+Accessing non 32-bit aligned data causes incorrect data in the target
+buffer if memcpy is used. Implement the workaround for this
+errata here.
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- drivers/pci/dwc/pcie-designware.c |   18 +++++++++++-------
- drivers/pci/dwc/pcie-designware.h |    1 -
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ drivers/pci/dwc/pci-dra7xx.c |   50 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
-index 00a0fdc..89cdb6b 100644
---- a/drivers/pci/dwc/pcie-designware.c
-+++ b/drivers/pci/dwc/pcie-designware.c
-@@ -551,10 +551,6 @@ int dw_pcie_host_init(struct pcie_port *pp)
- 		}
- 	}
+diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
+index 333aa56..7666e3e 100644
+--- a/drivers/pci/dwc/pci-dra7xx.c
++++ b/drivers/pci/dwc/pci-dra7xx.c
+@@ -26,6 +26,8 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/resource.h>
+ #include <linux/types.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
  
--	ret = of_property_read_u32(np, "num-lanes", &pci->lanes);
--	if (ret)
--		pci->lanes = 0;
--
- 	ret = of_property_read_u32(np, "num-viewport", &pci->num_viewport);
- 	if (ret)
- 		pci->num_viewport = 2;
-@@ -751,18 +747,26 @@ static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
+ #include "pcie-designware.h"
  
- void dw_pcie_setup_rc(struct pcie_port *pp)
- {
+@@ -531,6 +533,48 @@ static int dra7xx_pcie_enable_phy(struct dra7xx_pcie *dra7xx)
+ 	{},
+ };
+ 
++/*
++ * dra7xx_pcie_ep_legacy_mode: workaround for AM572x/AM571x Errata i870
++ * @dra7xx: the dra7xx device where the workaround should be applied
++ *
++ * Access to the PCIe slave port that are not 32-bit aligned will result
++ * in incorrect mapping to TLP Address and Byte enable fields. Therefore,
++ * byte and half-word accesses are not possible to byte offset 0x1, 0x2, or
++ * 0x3.
++ *
++ * To avoid this issue set PCIE_SS1_AXI2OCP_LEGACY_MODE_ENABLE to 1.
++ */
++static int dra7xx_pcie_ep_legacy_mode(struct device *dev)
++{
 +	int ret;
-+	u32 lanes;
- 	u32 val;
- 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
-+	struct device *dev = pci->dev;
 +	struct device_node *np = dev->of_node;
- 
- 	/* get iATU unroll support */
- 	pci->iatu_unroll_enabled = dw_pcie_iatu_unroll_enabled(pci);
- 	dev_dbg(pci->dev, "iATU unroll: %s\n",
- 		pci->iatu_unroll_enabled ? "enabled" : "disabled");
- 
-+	ret = of_property_read_u32(np, "num-lanes", &lanes);
-+	if (ret)
-+		lanes = 0;
++	struct regmap *regmap;
++	unsigned int reg;
++	unsigned int field;
 +
- 	/* set the number of lanes */
- 	val = dw_pcie_readl_dbi(pci, PCIE_PORT_LINK_CONTROL);
- 	val &= ~PORT_LINK_MODE_MASK;
--	switch (pci->lanes) {
-+	switch (lanes) {
- 	case 1:
- 		val |= PORT_LINK_MODE_1_LANES;
- 		break;
-@@ -776,7 +780,7 @@ void dw_pcie_setup_rc(struct pcie_port *pp)
- 		val |= PORT_LINK_MODE_8_LANES;
- 		break;
- 	default:
--		dev_err(pci->dev, "num-lanes %u: invalid value\n", pci->lanes);
-+		dev_err(pci->dev, "num-lanes %u: invalid value\n", lanes);
- 		return;
- 	}
- 	dw_pcie_writel_dbi(pci, PCIE_PORT_LINK_CONTROL, val);
-@@ -784,7 +788,7 @@ void dw_pcie_setup_rc(struct pcie_port *pp)
- 	/* set link width speed control register */
- 	val = dw_pcie_readl_dbi(pci, PCIE_LINK_WIDTH_SPEED_CONTROL);
- 	val &= ~PORT_LOGIC_LINK_WIDTH_MASK;
--	switch (pci->lanes) {
-+	switch (lanes) {
- 	case 1:
- 		val |= PORT_LOGIC_LINK_WIDTH_1_LANES;
- 		break;
-diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-index d4b3d43..491fbe3 100644
---- a/drivers/pci/dwc/pcie-designware.h
-+++ b/drivers/pci/dwc/pcie-designware.h
-@@ -148,7 +148,6 @@ struct dw_pcie_ops {
- struct dw_pcie {
- 	struct device		*dev;
- 	void __iomem		*dbi_base;
--	u32			lanes;
- 	u32			num_viewport;
- 	u8			iatu_unroll_enabled;
- 	struct pcie_port	pp;
++	regmap = syscon_regmap_lookup_by_phandle(np, "syscon-legacy-mode");
++	if (IS_ERR(regmap)) {
++		dev_dbg(dev, "can't get syscon-legacy-mode\n");
++		return -EINVAL;
++	}
++
++	if (of_property_read_u32_index(np, "syscon-legacy-mode", 1, &reg)) {
++		dev_err(dev, "couldn't get legacy mode register offset\n");
++		return -EINVAL;
++	}
++
++	if (of_property_read_u32_index(np, "syscon-legacy-mode", 2, &field)) {
++		dev_err(dev, "can't get bit field for setting legacy mode\n");
++		return -EINVAL;
++	}
++
++	ret = regmap_update_bits(regmap, reg, field, field);
++	if (ret)
++		dev_err(dev, "failed to set legacy mode\n");
++
++	return ret;
++}
++
+ static int __init dra7xx_pcie_probe(struct platform_device *pdev)
+ {
+ 	u32 reg;
+@@ -643,6 +687,7 @@ static int __init dra7xx_pcie_probe(struct platform_device *pdev)
+ 	case DW_PCIE_RC_TYPE:
+ 		dra7xx_pcie_writel(dra7xx, PCIECTRL_TI_CONF_DEVICE_TYPE,
+ 				   DEVICE_TYPE_RC);
++
+ 		ret = dra7xx_add_pcie_port(dra7xx, pdev);
+ 		if (ret < 0)
+ 			goto err_gpio;
+@@ -650,6 +695,11 @@ static int __init dra7xx_pcie_probe(struct platform_device *pdev)
+ 	case DW_PCIE_EP_TYPE:
+ 		dra7xx_pcie_writel(dra7xx, PCIECTRL_TI_CONF_DEVICE_TYPE,
+ 				   DEVICE_TYPE_EP);
++
++		ret = dra7xx_pcie_ep_legacy_mode(dev);
++		if (ret)
++			goto err_gpio;
++
+ 		ret = dra7xx_add_pcie_ep(dra7xx, pdev);
+ 		if (ret < 0)
+ 			goto err_gpio;
 -- 
 1.7.9.5
