@@ -2,8 +2,8 @@ Return-Path: <kishon@ti.com>
 Received: from fllnx209.ext.ti.com (fllnx209.ext.ti.com [198.47.19.16])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYy5kL3zDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3tzkYz6QNtzDqVH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2017 22:49:11 +1100 (AEDT)
 From: Kishon Vijay Abraham I <kishon@ti.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
  Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
@@ -13,9 +13,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>, <kishon@ti.com>
-Subject: [PATCH 17/37] Documentation: PCI: Guide to use pci endpoint configfs
-Date: Thu, 12 Jan 2017 15:56:06 +0530
-Message-ID: <1484216786-17292-18-git-send-email-kishon@ti.com>
+Subject: [PATCH 07/37] PCI: dwc: designware: Get device pointer at the start
+ of dw_pcie_host_init
+Date: Thu, 12 Jan 2017 15:55:56 +0530
+Message-ID: <1484216786-17292-8-git-send-email-kishon@ti.com>
 In-Reply-To: <1484216786-17292-1-git-send-email-kishon@ti.com>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
@@ -29,116 +30,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add Documentation to help users use pci endpoint to configure
-pci endpoint function and to bind the endpoint function
-with endpoint controller.
+No functional change. Get device pointer at the beginning of
+dw_pcie_host_init instead of getting it all over dw_pcie_host_init.
+This is in preparation for splitting struct pcie_port into host and
+core structures (Once split pcie_port will not have device pointer).
 
 Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- Documentation/PCI/00-INDEX                      |    2 +
- Documentation/PCI/endpoint/pci-endpoint-cfs.txt |   84 +++++++++++++++++++++++
- 2 files changed, 86 insertions(+)
- create mode 100644 Documentation/PCI/endpoint/pci-endpoint-cfs.txt
+ drivers/pci/dwc/pcie-designware.c |   33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/PCI/00-INDEX b/Documentation/PCI/00-INDEX
-index ba950b2..f84a23c 100644
---- a/Documentation/PCI/00-INDEX
-+++ b/Documentation/PCI/00-INDEX
-@@ -14,3 +14,5 @@ pcieaer-howto.txt
- 	- the PCI Express Advanced Error Reporting Driver Guide HOWTO
- endpoint/pci-endpoint.txt
- 	- guide to add endpoint controller driver and endpoint function driver.
-+endpoint/pci-endpoint-cfs.txt
-+	- guide to use configfs to configure the pci endpoint function.
-diff --git a/Documentation/PCI/endpoint/pci-endpoint-cfs.txt b/Documentation/PCI/endpoint/pci-endpoint-cfs.txt
-new file mode 100644
-index 0000000..b1f1613
---- /dev/null
-+++ b/Documentation/PCI/endpoint/pci-endpoint-cfs.txt
-@@ -0,0 +1,84 @@
-+                   CONFIGURING PCI ENDPOINT USING CONFIGFS
-+                    Kishon Vijay Abraham I <kishon@ti.com>
-+
-+The PCI Endpoint Core exposes configfs entry (pci_ep) in order to configure the
-+PCI endpoint function and in order to bind the endpoint function
-+with the endpoint controller. (For introducing other mechanisms to
-+configure the PCI Endpoint Function refer [1]).
-+
-+*) Mounting configfs
-+
-+The PCI Endpoint Core layer creates pci_ep directory in the mounted configfs
-+directory. configfs can be mounted using the following command.
-+
-+	mount -t configfs none /sys/kernel/config
-+
-+*) Directory Structure
-+
-+The pci_ep configfs directory structure has been created to reflect the
-+natural tree like structure of PCI devices. So every directory created
-+inside pci_ep represents a EPC device and every directory created inside
-+epf directory represents EPF device.
-+
-+/sys/kernel/config/pci_ep/
-+			 | <dir>/ --------------------------------------> [2]
-+				| epc
-+				| epf/
-+				     | <dir>/ --------------------------> [3]
-+					    | vendorid
-+					    | deviceid
-+					    | revid
-+					    | progif_code
-+					    | subclass_code
-+					    | baseclass_code
-+					    | cache_line_size
-+					    | subsys_vendor_id
-+					    | subsys_id
-+					    | interrupt_pin
-+					    | function
-+
-+*) Creating configfs entry for EPC
-+
-+Any directory created inside *pci_ep* represents an EPC device. In the above
-+directory structure [2] represents an EPC device. It consists of
-+
-+	*) epc: Use it to associate the configfs entry to an actual EPC device.
-+		The list of valid entries for this field can be obtained from
-+			ls /sys/class/pci_epc/
-+
-+	*) epf: Directory that contains all the endpoint functions. The name
-+		of the created directory determines the driver this particular
-+		epf device will be bound to. The name can be obtained either
-+		from the function binding documentation [4] or
-+			ls /sys/bus/pci-epf/drivers
-+
-+		If more than one endpoint function device has to be bound to
-+		the same driver, then the directory should be created using
-+		the following notation
-+			mkdir <name>.<num>
-+
-+*) Creating configfs entry for EPF
-+
-+Any directory created inside *epf* directory represents an EPF device. In the
-+above directory structure, [3] represents an EPF device. It consists of the
-+following entries that can be used to configure the standard configuration
-+header of the endpoint function. (These entries are created by the
-+framework when any new directory is created inside epf directory.)
-+
-+        | vendorid
-+        | deviceid
-+        | revid
-+        | progif_code
-+        | subclass_code
-+        | baseclass_code
-+        | cache_line_size
-+        | subsys_vendor_id
-+        | subsys_id
-+        | interrupt_pin
-+
-+The following entry identifies the function driver that is bound to the
-+function device
-+	| function
-+
-+[1] -> Documentation/PCI/endpoint/pci-endpoint.txt
-+[4] -> Documentation/PCI/endpoint/function/binding/
+diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
+index d0ea310..330596b 100644
+--- a/drivers/pci/dwc/pcie-designware.c
++++ b/drivers/pci/dwc/pcie-designware.c
+@@ -449,8 +449,9 @@ static u8 dw_pcie_iatu_unroll_enabled(struct pcie_port *pp)
+ 
+ int dw_pcie_host_init(struct pcie_port *pp)
+ {
+-	struct device_node *np = pp->dev->of_node;
+-	struct platform_device *pdev = to_platform_device(pp->dev);
++	struct device *dev = pp->dev;
++	struct device_node *np = dev->of_node;
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct pci_bus *bus, *child;
+ 	struct resource *cfg_res;
+ 	int i, ret;
+@@ -464,14 +465,14 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 		pp->cfg0_base = cfg_res->start;
+ 		pp->cfg1_base = cfg_res->start + pp->cfg0_size;
+ 	} else if (!pp->va_cfg0_base) {
+-		dev_err(pp->dev, "missing *config* reg space\n");
++		dev_err(dev, "missing *config* reg space\n");
+ 	}
+ 
+ 	ret = of_pci_get_host_bridge_resources(np, 0, 0xff, &res, &pp->io_base);
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = devm_request_pci_bus_resources(&pdev->dev, &res);
++	ret = devm_request_pci_bus_resources(dev, &res);
+ 	if (ret)
+ 		goto error;
+ 
+@@ -481,7 +482,7 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 		case IORESOURCE_IO:
+ 			ret = pci_remap_iospace(win->res, pp->io_base);
+ 			if (ret) {
+-				dev_warn(pp->dev, "error %d: failed to map resource %pR\n",
++				dev_warn(dev, "error %d: failed to map resource %pR\n",
+ 					 ret, win->res);
+ 				resource_list_destroy_entry(win);
+ 			} else {
+@@ -511,10 +512,10 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 	}
+ 
+ 	if (!pp->dbi_base) {
+-		pp->dbi_base = devm_ioremap(pp->dev, pp->cfg->start,
++		pp->dbi_base = devm_ioremap(dev, pp->cfg->start,
+ 					resource_size(pp->cfg));
+ 		if (!pp->dbi_base) {
+-			dev_err(pp->dev, "error with ioremap\n");
++			dev_err(dev, "error with ioremap\n");
+ 			ret = -ENOMEM;
+ 			goto error;
+ 		}
+@@ -523,20 +524,20 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 	pp->mem_base = pp->mem->start;
+ 
+ 	if (!pp->va_cfg0_base) {
+-		pp->va_cfg0_base = devm_ioremap(pp->dev, pp->cfg0_base,
++		pp->va_cfg0_base = devm_ioremap(dev, pp->cfg0_base,
+ 						pp->cfg0_size);
+ 		if (!pp->va_cfg0_base) {
+-			dev_err(pp->dev, "error with ioremap in function\n");
++			dev_err(dev, "error with ioremap in function\n");
+ 			ret = -ENOMEM;
+ 			goto error;
+ 		}
+ 	}
+ 
+ 	if (!pp->va_cfg1_base) {
+-		pp->va_cfg1_base = devm_ioremap(pp->dev, pp->cfg1_base,
++		pp->va_cfg1_base = devm_ioremap(dev, pp->cfg1_base,
+ 						pp->cfg1_size);
+ 		if (!pp->va_cfg1_base) {
+-			dev_err(pp->dev, "error with ioremap\n");
++			dev_err(dev, "error with ioremap\n");
+ 			ret = -ENOMEM;
+ 			goto error;
+ 		}
+@@ -552,11 +553,11 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 
+ 	if (IS_ENABLED(CONFIG_PCI_MSI)) {
+ 		if (!pp->ops->msi_host_init) {
+-			pp->irq_domain = irq_domain_add_linear(pp->dev->of_node,
++			pp->irq_domain = irq_domain_add_linear(dev->of_node,
+ 						MAX_MSI_IRQS, &msi_domain_ops,
+ 						&dw_pcie_msi_chip);
+ 			if (!pp->irq_domain) {
+-				dev_err(pp->dev, "irq domain init failed\n");
++				dev_err(dev, "irq domain init failed\n");
+ 				ret = -ENXIO;
+ 				goto error;
+ 			}
+@@ -575,12 +576,12 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 
+ 	pp->root_bus_nr = pp->busn->start;
+ 	if (IS_ENABLED(CONFIG_PCI_MSI)) {
+-		bus = pci_scan_root_bus_msi(pp->dev, pp->root_bus_nr,
++		bus = pci_scan_root_bus_msi(dev, pp->root_bus_nr,
+ 					    &dw_pcie_ops, pp, &res,
+ 					    &dw_pcie_msi_chip);
+-		dw_pcie_msi_chip.dev = pp->dev;
++		dw_pcie_msi_chip.dev = dev;
+ 	} else
+-		bus = pci_scan_root_bus(pp->dev, pp->root_bus_nr, &dw_pcie_ops,
++		bus = pci_scan_root_bus(dev, pp->root_bus_nr, &dw_pcie_ops,
+ 					pp, &res);
+ 	if (!bus) {
+ 		ret = -ENOMEM;
 -- 
 1.7.9.5
