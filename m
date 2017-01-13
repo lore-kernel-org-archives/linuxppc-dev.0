@@ -1,28 +1,36 @@
-Return-Path: <Joao.Pinto@synopsys.com>
-Received: from smtprelay.synopsys.com (smtprelay.synopsys.com [198.182.47.9])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
+ [209.85.218.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v0T8C27BwzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 03:47:54 +1100 (AEDT)
-Subject: Re: [PATCH 06/37] PCI: dwc: Rename cfg_read/cfg_write to read/write
-To: Kishon Vijay Abraham I <kishon@ti.com>, Bjorn Helgaas
- <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto
- <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
-References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-7-git-send-email-kishon@ti.com>
-CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
- <nsekhar@ti.com>, Murali Karicheri <m-karicheri2@ti.com>, Stanimir Varbanov
- <svarbanov@mm-sol.com>, Pratyush Anand <pratyush.anand@gmail.com>
-From: Joao Pinto <Joao.Pinto@synopsys.com>
-Message-ID: <10242582-973f-4a23-7ab7-0a537352b9df@synopsys.com>
-Date: Fri, 13 Jan 2017 16:36:28 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v0TMZ6dv6zDqRs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 03:57:46 +1100 (AEDT)
+Received: by mail-oi0-f68.google.com with SMTP id x84so7485923oix.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 08:57:46 -0800 (PST)
+Date: Fri, 13 Jan 2017 10:57:43 -0600
+From: Rob Herring <robh@kernel.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Shreyas B. Prabhu" <shreyasbp@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, mark.rutland@arm.com
+Subject: Re: [PATCH v5 5/5] Documentation:powerpc: Add device-tree bindings
+ for power-mgt
+Message-ID: <20170113165743.nma5wbsw64tsjqdm@rob-hp-laptop>
+References: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1484039224-5630-6-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1484216786-17292-7-git-send-email-kishon@ti.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1484039224-5630-6-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,249 +40,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi,
-
-Às 10:25 AM de 1/12/2017, Kishon Vijay Abraham I escreveu:
-> No functional change. dw_pcie_cfg_read/dw_pcie_cfg_write doesn't do
-> anything specific to access configuration space. It can be just renamed
-> to dw_pcie_read/dw_pcie_write and used to read/write data to dbi space.
-> This is in preparation for added endpoint support to linux kernel.
+On Tue, Jan 10, 2017 at 02:37:04PM +0530, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Cc: Murali Karicheri <m-karicheri2@ti.com>
-> Cc: Joao Pinto <Joao.Pinto@synopsys.com>
-> Cc: Stanimir Varbanov <svarbanov@mm-sol.com>
-> Cc: Pratyush Anand <pratyush.anand@gmail.com>
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> Document the device-tree bindings defining the the properties under
+> the @power-mgt node in the device tree that describe the idle states
+> for Linux running on baremetal POWER servers.
+> 
+
+We have "common" idle state bindings. Perhaps some explanation why those 
+can't be used.
+
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 > ---
->  drivers/pci/dwc/pci-dra7xx.c      |   16 ++++++++--------
->  drivers/pci/dwc/pci-exynos.c      |    4 ++--
->  drivers/pci/dwc/pci-keystone-dw.c |    4 ++--
->  drivers/pci/dwc/pcie-designware.c |   12 ++++++------
->  drivers/pci/dwc/pcie-designware.h |    4 ++--
->  drivers/pci/dwc/pcie-qcom.c       |    2 +-
->  drivers/pci/dwc/pcie-spear13xx.c  |   24 ++++++++++++------------
->  7 files changed, 33 insertions(+), 33 deletions(-)
+> [v4]-> [v5]: Fixed a couple of typos.
 > 
-> diff --git a/drivers/pci/dwc/pci-dra7xx.c b/drivers/pci/dwc/pci-dra7xx.c
-> index aeeab74..38b0c9a 100644
-> --- a/drivers/pci/dwc/pci-dra7xx.c
-> +++ b/drivers/pci/dwc/pci-dra7xx.c
-> @@ -114,22 +114,22 @@ static int dra7xx_pcie_establish_link(struct dra7xx_pcie *dra7xx)
->  	}
->  
->  	if (dra7xx->link_gen == 1) {
-> -		dw_pcie_cfg_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCAP,
-> -				 4, &reg);
-> +		dw_pcie_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCAP,
-> +			     4, &reg);
->  		if ((reg & PCI_EXP_LNKCAP_SLS) != PCI_EXP_LNKCAP_SLS_2_5GB) {
->  			reg &= ~((u32)PCI_EXP_LNKCAP_SLS);
->  			reg |= PCI_EXP_LNKCAP_SLS_2_5GB;
-> -			dw_pcie_cfg_write(pp->dbi_base + exp_cap_off +
-> -					  PCI_EXP_LNKCAP, 4, reg);
-> +			dw_pcie_write(pp->dbi_base + exp_cap_off +
-> +				      PCI_EXP_LNKCAP, 4, reg);
->  		}
->  
-> -		dw_pcie_cfg_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCTL2,
-> -				 2, &reg);
-> +		dw_pcie_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCTL2,
-> +			     2, &reg);
->  		if ((reg & PCI_EXP_LNKCAP_SLS) != PCI_EXP_LNKCAP_SLS_2_5GB) {
->  			reg &= ~((u32)PCI_EXP_LNKCAP_SLS);
->  			reg |= PCI_EXP_LNKCAP_SLS_2_5GB;
-> -			dw_pcie_cfg_write(pp->dbi_base + exp_cap_off +
-> -					  PCI_EXP_LNKCTL2, 2, reg);
-> +			dw_pcie_write(pp->dbi_base + exp_cap_off +
-> +				      PCI_EXP_LNKCTL2, 2, reg);
->  		}
->  	}
->  
-> diff --git a/drivers/pci/dwc/pci-exynos.c b/drivers/pci/dwc/pci-exynos.c
-> index c179e7a..e3fbff4 100644
-> --- a/drivers/pci/dwc/pci-exynos.c
-> +++ b/drivers/pci/dwc/pci-exynos.c
-> @@ -429,7 +429,7 @@ static int exynos_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
->  	int ret;
->  
->  	exynos_pcie_sideband_dbi_r_mode(exynos_pcie, true);
-> -	ret = dw_pcie_cfg_read(pp->dbi_base + where, size, val);
-> +	ret = dw_pcie_read(pp->dbi_base + where, size, val);
->  	exynos_pcie_sideband_dbi_r_mode(exynos_pcie, false);
->  	return ret;
->  }
-> @@ -441,7 +441,7 @@ static int exynos_pcie_wr_own_conf(struct pcie_port *pp, int where, int size,
->  	int ret;
->  
->  	exynos_pcie_sideband_dbi_w_mode(exynos_pcie, true);
-> -	ret = dw_pcie_cfg_write(pp->dbi_base + where, size, val);
-> +	ret = dw_pcie_write(pp->dbi_base + where, size, val);
->  	exynos_pcie_sideband_dbi_w_mode(exynos_pcie, false);
->  	return ret;
->  }
-> diff --git a/drivers/pci/dwc/pci-keystone-dw.c b/drivers/pci/dwc/pci-keystone-dw.c
-> index 9397c46..4875334 100644
-> --- a/drivers/pci/dwc/pci-keystone-dw.c
-> +++ b/drivers/pci/dwc/pci-keystone-dw.c
-> @@ -444,7 +444,7 @@ int ks_dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
->  
->  	addr = ks_pcie_cfg_setup(ks_pcie, bus_num, devfn);
->  
-> -	return dw_pcie_cfg_read(addr + where, size, val);
-> +	return dw_pcie_read(addr + where, size, val);
->  }
->  
->  int ks_dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
-> @@ -456,7 +456,7 @@ int ks_dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
->  
->  	addr = ks_pcie_cfg_setup(ks_pcie, bus_num, devfn);
->  
-> -	return dw_pcie_cfg_write(addr + where, size, val);
-> +	return dw_pcie_write(addr + where, size, val);
->  }
->  
->  /**
-> diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
-> index 0b928dc..d0ea310 100644
-> --- a/drivers/pci/dwc/pcie-designware.c
-> +++ b/drivers/pci/dwc/pcie-designware.c
-> @@ -33,7 +33,7 @@
->  
->  static struct pci_ops dw_pcie_ops;
->  
-> -int dw_pcie_cfg_read(void __iomem *addr, int size, u32 *val)
-> +int dw_pcie_read(void __iomem *addr, int size, u32 *val)
->  {
->  	if ((uintptr_t)addr & (size - 1)) {
->  		*val = 0;
-> @@ -54,7 +54,7 @@ int dw_pcie_cfg_read(void __iomem *addr, int size, u32 *val)
->  	return PCIBIOS_SUCCESSFUL;
->  }
->  
-> -int dw_pcie_cfg_write(void __iomem *addr, int size, u32 val)
-> +int dw_pcie_write(void __iomem *addr, int size, u32 val)
->  {
->  	if ((uintptr_t)addr & (size - 1))
->  		return PCIBIOS_BAD_REGISTER_NUMBER;
-> @@ -108,7 +108,7 @@ static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
->  	if (pp->ops->rd_own_conf)
->  		return pp->ops->rd_own_conf(pp, where, size, val);
->  
-> -	return dw_pcie_cfg_read(pp->dbi_base + where, size, val);
-> +	return dw_pcie_read(pp->dbi_base + where, size, val);
->  }
->  
->  static int dw_pcie_wr_own_conf(struct pcie_port *pp, int where, int size,
-> @@ -117,7 +117,7 @@ static int dw_pcie_wr_own_conf(struct pcie_port *pp, int where, int size,
->  	if (pp->ops->wr_own_conf)
->  		return pp->ops->wr_own_conf(pp, where, size, val);
->  
-> -	return dw_pcie_cfg_write(pp->dbi_base + where, size, val);
-> +	return dw_pcie_write(pp->dbi_base + where, size, val);
->  }
->  
->  static void dw_pcie_prog_outbound_atu(struct pcie_port *pp, int index,
-> @@ -638,7 +638,7 @@ static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
->  	dw_pcie_prog_outbound_atu(pp, PCIE_ATU_REGION_INDEX1,
->  				  type, cpu_addr,
->  				  busdev, cfg_size);
-> -	ret = dw_pcie_cfg_read(va_cfg_base + where, size, val);
-> +	ret = dw_pcie_read(va_cfg_base + where, size, val);
->  	if (pp->num_viewport <= 2)
->  		dw_pcie_prog_outbound_atu(pp, PCIE_ATU_REGION_INDEX1,
->  					  PCIE_ATU_TYPE_IO, pp->io_base,
-> @@ -676,7 +676,7 @@ static int dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
->  	dw_pcie_prog_outbound_atu(pp, PCIE_ATU_REGION_INDEX1,
->  				  type, cpu_addr,
->  				  busdev, cfg_size);
-> -	ret = dw_pcie_cfg_write(va_cfg_base + where, size, val);
-> +	ret = dw_pcie_write(va_cfg_base + where, size, val);
->  	if (pp->num_viewport <= 2)
->  		dw_pcie_prog_outbound_atu(pp, PCIE_ATU_REGION_INDEX1,
->  					  PCIE_ATU_TYPE_IO, pp->io_base,
-> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-> index a6cf9262..b6ddb05 100644
-> --- a/drivers/pci/dwc/pcie-designware.h
-> +++ b/drivers/pci/dwc/pcie-designware.h
-> @@ -146,8 +146,8 @@ struct pcie_host_ops {
->  
->  u32 dw_pcie_readl_rc(struct pcie_port *pp, u32 reg);
->  void dw_pcie_writel_rc(struct pcie_port *pp, u32 reg, u32 val);
-> -int dw_pcie_cfg_read(void __iomem *addr, int size, u32 *val);
-> -int dw_pcie_cfg_write(void __iomem *addr, int size, u32 val);
-> +int dw_pcie_read(void __iomem *addr, int size, u32 *val);
-> +int dw_pcie_write(void __iomem *addr, int size, u32 val);
->  irqreturn_t dw_handle_msi_irq(struct pcie_port *pp);
->  void dw_pcie_msi_init(struct pcie_port *pp);
->  int dw_pcie_wait_for_link(struct pcie_port *pp);
-> diff --git a/drivers/pci/dwc/pcie-qcom.c b/drivers/pci/dwc/pcie-qcom.c
-> index 2c24c45..d75fc02 100644
-> --- a/drivers/pci/dwc/pcie-qcom.c
-> +++ b/drivers/pci/dwc/pcie-qcom.c
-> @@ -630,7 +630,7 @@ static int qcom_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
->  		return PCIBIOS_SUCCESSFUL;
->  	}
->  
-> -	return dw_pcie_cfg_read(pp->dbi_base + where, size, val);
-> +	return dw_pcie_read(pp->dbi_base + where, size, val);
->  }
->  
->  static struct pcie_host_ops qcom_pcie_dw_ops = {
-> diff --git a/drivers/pci/dwc/pcie-spear13xx.c b/drivers/pci/dwc/pcie-spear13xx.c
-> index 5970566..7acf91e 100644
-> --- a/drivers/pci/dwc/pcie-spear13xx.c
-> +++ b/drivers/pci/dwc/pcie-spear13xx.c
-> @@ -91,34 +91,34 @@ static int spear13xx_pcie_establish_link(struct spear13xx_pcie *spear13xx_pcie)
->  	 * default value in capability register is 512 bytes. So force
->  	 * it to 128 here.
->  	 */
-> -	dw_pcie_cfg_read(pp->dbi_base + exp_cap_off + PCI_EXP_DEVCTL, 2, &val);
-> +	dw_pcie_read(pp->dbi_base + exp_cap_off + PCI_EXP_DEVCTL, 2, &val);
->  	val &= ~PCI_EXP_DEVCTL_READRQ;
-> -	dw_pcie_cfg_write(pp->dbi_base + exp_cap_off + PCI_EXP_DEVCTL, 2, val);
-> +	dw_pcie_write(pp->dbi_base + exp_cap_off + PCI_EXP_DEVCTL, 2, val);
->  
-> -	dw_pcie_cfg_write(pp->dbi_base + PCI_VENDOR_ID, 2, 0x104A);
-> -	dw_pcie_cfg_write(pp->dbi_base + PCI_DEVICE_ID, 2, 0xCD80);
-> +	dw_pcie_write(pp->dbi_base + PCI_VENDOR_ID, 2, 0x104A);
-> +	dw_pcie_write(pp->dbi_base + PCI_DEVICE_ID, 2, 0xCD80);
->  
->  	/*
->  	 * if is_gen1 is set then handle it, so that some buggy card
->  	 * also works
->  	 */
->  	if (spear13xx_pcie->is_gen1) {
-> -		dw_pcie_cfg_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCAP,
-> -					4, &val);
-> +		dw_pcie_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCAP,
-> +			     4, &val);
->  		if ((val & PCI_EXP_LNKCAP_SLS) != PCI_EXP_LNKCAP_SLS_2_5GB) {
->  			val &= ~((u32)PCI_EXP_LNKCAP_SLS);
->  			val |= PCI_EXP_LNKCAP_SLS_2_5GB;
-> -			dw_pcie_cfg_write(pp->dbi_base + exp_cap_off +
-> -				PCI_EXP_LNKCAP, 4, val);
-> +			dw_pcie_write(pp->dbi_base + exp_cap_off +
-> +				      PCI_EXP_LNKCAP, 4, val);
->  		}
->  
-> -		dw_pcie_cfg_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCTL2,
-> -					2, &val);
-> +		dw_pcie_read(pp->dbi_base + exp_cap_off + PCI_EXP_LNKCTL2,
-> +			     2, &val);
->  		if ((val & PCI_EXP_LNKCAP_SLS) != PCI_EXP_LNKCAP_SLS_2_5GB) {
->  			val &= ~((u32)PCI_EXP_LNKCAP_SLS);
->  			val |= PCI_EXP_LNKCAP_SLS_2_5GB;
-> -			dw_pcie_cfg_write(pp->dbi_base + exp_cap_off +
-> -					PCI_EXP_LNKCTL2, 2, val);
-> +			dw_pcie_write(pp->dbi_base + exp_cap_off +
-> +				      PCI_EXP_LNKCTL2, 2, val);
->  		}
->  	}
->  
+>  .../devicetree/bindings/powerpc/opal/power-mgt.txt | 125 +++++++++++++++++++++
+>  1 file changed, 125 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
 > 
+> diff --git a/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt b/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+> new file mode 100644
+> index 0000000..4967831
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+> @@ -0,0 +1,125 @@
+> +IBM Power-Management Bindings
+> +=============================
+> +
+> +Linux running on baremetal POWER machines has access to the processor
+> +idle states. The description of these idle states is exposed via the
+> +node @power-mgt in the device-tree by the firmware.
+> +
+> +Definitions:
+> +----------------
+> +Typically each idle state has the following associated properties:
+> +
+> +- name: The name of the idle state as defined by the firmware.
+> +
+> +- flags: indicating some aspects of this idle states such as the
+> +         extent of state-loss, whether timebase is stopped on this
+> +         idle states and so on. The flag bits are as follows:
+> +
+> +- exit-latency: The latency involved in transitioning the state of the
+> +		CPU from idle to running.
+> +
+> +- target-residency: The minimum time that the CPU needs to reside in
+> +		    this idle state in order to accrue power-savings
+> +		    benefit.
+> +
+> +Properties
+> +----------------
+> +The following properties provide details about the idle states. These
+> +properties are optional unless mentioned otherwise below.
 
-Make sense.
+-names is optional but everything else seems to require it. It is not 
+clear what the binding looks like if -names is not present.
 
-Reviewed-By: Joao Pinto <jpinto@synopsys.com>
+> +
+> +- ibm,cpu-idle-state-names:
+> +	Array of strings containing the names of the idle states.
+> +
+> +- ibm,cpu-idle-state-flags:
+> +	Array of unsigned 32-bit values containing the values of the
+> +	flags associated with the the aforementioned idle-states. This
+> +	property is required on POWER9 whenever
+> +	ibm,cpu-idle-state-names is defined and the length of this
+> +	property array should be the same as
+> +	ibm,-cpu-idle-state-names.The flag bits are as follows:
+
+s/ibm,-cpu/ibm,cpu/
+
+Needs a space after the period.
+
+> +		0x00000001 /* Decrementer would stop */
+> +		0x00000002 /* Needs timebase restore */
+> +		0x00001000 /* Restore GPRs like nap */
+> +		0x00002000 /* Restore hypervisor resource from PACA pointer */
+> +		0x00004000 /* Program PORE to restore PACA pointer */
+> +		0x00010000 /* This is a nap state */
+> +		0x00020000 /* This is a fast-sleep state */
+> +		0x00040000 /* This is a winkle state */
+> +		0x00080000 /* This is a fast-sleep state which requires a */
+> +			   /* software workaround for restoring the timebase*/
+> +		0x00800000 /* This state uses SPR PMICR instruction */
+> +		0x00100000 /* This is a fast stop state */
+> +		0x00200000 /* This is a deep-stop state */
+> +
+> +- ibm,cpu-idle-state-latencies-ns:
+> +	Array of unsigned 32-bit values containing the values of the
+> +	exit-latencies (in ns) for the idle states in
+> +	ibm,cpu-idle-state-names. This property is required whenever
+> +	ibm,cpu-idle-state-names is defined and the length of this
+> +	property array should be the same as
+> +	ibm,-cpu-idle-state-names.
+
+Same typo.
+
+> +
+> +- ibm,cpu-idle-state-residency-ns:
+> +	Array of unsigned 32-bit values containing the values of the
+> +	target-residency (in ns) for the idle states in
+> +	ibm,cpu-idle-state-names. On POWER8 this is an optional
+> +	property. If the property is absent, the target residency for
+> +	the "Nap", "FastSleep" are defined to 10000 and 300000000
+> +	respectively. On POWER9 this property must be defined if
+> +	ibm,cpu-idle-state-names is defined and the length should be
+> +	same as that of ibm,cpu-idle-state-names.
+> +
+> +- ibm,cpu-idle-state-psscr:
+> +	Array of unsigned 64-bit values containing the values for the
+> +	PSSCR for each of the idle states in ibm,cpu-idle-state-names.
+> +	This property is required on POWER9 whenever
+> +	ibm,cpu-idle-state-names is defined and the length of this
+> +	property array should be the same as
+> +	ibm,cpu-idle-state-names.
+> +
+> +- ibm,cpu-idle-state-psscr-mask:
+> +	Array of unsigned 64-bit values containing the masks
+> +	indicating which psscr fields are set in the corresponding
+> +	entries of ibm,cpu-idle-state-psscr.  This property is
+> +	required on POWER9 whenever ibm,cpu-idle-state-names is
+> +	defined and the length of this property array should be the
+> +	same as ibm,cpu-idle-state-names.
+> +
+> +	Whenever the firmware sets an entry in
+> +	ibm,cpu-idle-state-psscr-mask value to 0xf, it implies that
+> +	only the Requested Level (RL) field of the corresponding entry
+> +	in ibm,cpu-idle-state-psscr should be considered by the
+> +	kernel. For such idle states, the kernel would set the
+> +	remaining fields of the psscr to the following sane-default
+> +	values.
+> +
+> +		- ESL and EC bits are to 1. So wakeup from any stop
+> +		  state will be at vector 0x100.
+> +
+> +		- MTL and PSLL are set to the maximum allowed value as
+> +		  per the ISA, i.e. 15.
+> +
+> +		- The Transition Rate, TR is set to the Maximum value
+> +                  3.
+> +
+> +	For all the other values of the entry in
+> +	ibm,cpu-idle-state-psscr-mask, the Kernel expects all the
+> +	psscr fields of the corresponding entry in
+> +	ibm,cpu-idle-state-psscr to be correctly set by the firmware.
+> +
+> +- ibm,cpu-idle-state-pmicr:
+> +	Array of unsigned 64-bit values containing the pmicr values
+> +	for the idle states in ibm,cpu-idle-state-names. This 64-bit
+> +	register value is to be set in pmicr for the corresponding
+> +	state if the flag indicates that pmicr SPR should be set. This
+> +	is an optional property on POWER8 and is absent on
+> +	POWER9. When present on POWER8, the length of this property
+> +	array should be the same as ibm,cpu-idle-state-names.
+> +
+> +- ibm,cpu-idle-state-pmicr:-mask
+> +	Array of unsigned 64-bit values containing the mask indicating
+> +	which of the fields of the PMICR are set in the corresponding
+> +	entries in ibm,cpu-idle-state-pmicr. This is an optional
+> +	property on POWER8 and is absent on POWER9. When present on
+> +	POWER8, the length of this property array should be the same
+> +	as ibm,cpu-idle-state-names.
+> -- 
+> 1.9.4
+> 
