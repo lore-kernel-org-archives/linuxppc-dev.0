@@ -1,33 +1,40 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.186])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v0MHB1DcQzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 23:23:33 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Christophe LEROY' <christophe.leroy@c-s.fr>, Segher Boessenkool
- <segher@kernel.crashing.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-CC: Christian Kujau <lists@nerdbynature.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
-Date: Fri, 13 Jan 2017 12:23:24 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB02621FA@AcuExch.aculab.com>
-References: <alpine.DEB.2.20.99.1701030715390.31470@trent.utfs.org>
- <81ef821b-8af2-0ee5-ab35-58639548dab7@c-s.fr>
- <alpine.DEB.2.20.99.1701040957380.31470@trent.utfs.org>
- <alpine.DEB.2.20.999.1701091739320.5450@trent.utfs.org>
- <d0e56084-49d7-2486-c2a6-de146331d1c7@c-s.fr>
- <20170111225440.GQ28613@gate.crashing.org>
- <1c81ce1a-33ca-7ba4-56f5-976935deb609@c-s.fr>
- <7604032b-c9ae-e3ce-fcd5-d9e555559f52@c-s.fr>
- <1484234447.2492.34.camel@kernel.crashing.org>
- <20170112180713.GU28613@gate.crashing.org>
- <ca5a9d35-3fe6-9fe3-b490-0fb667aa8c9f@c-s.fr>
-In-Reply-To: <ca5a9d35-3fe6-9fe3-b490-0fb667aa8c9f@c-s.fr>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v0RZH4ps3zDqVC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 02:36:54 +1100 (AEDT)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1484304406-10820-2-git-send-email-nicolas.dichtel@6wind.com>
+References: <1484304406-10820-2-git-send-email-nicolas.dichtel@6wind.com>
+ <3131144.4Ej3KFWRbz@wuerfel>
+ <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
+To: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Cc: dhowells@redhat.com, arnd@arndb.de, linux-mips@linux-mips.org,
+ linux-m68k@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-doc@vger.kernel.org, alsa-devel@alsa-project.org,
+ dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-am33-list@redhat.com,
+ linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux@armlinux.org.uk, coreteam@netfilter.org,
+ fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org,
+ linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
+ linux-kbuild@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org,
+ openrisc@lists.librecores.org, linux-fbdev@vger.kernel.org,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-nfs@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-cris-kernel@axis.com, linux-mmc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org,
+ netfilter-devel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ nio2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 13 Jan 2017 15:36:43 +0000
+Message-ID: <25063.1484321803@warthog.procyon.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,22 +44,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Christophe LEROY
-> Sent: 13 January 2017 12:15
-...
-> > Which leads to TARGET_LIBC_PROVIDES_SSP being undefined (it would norma=
-lly
-> > be true for glibc >=3D 2.4), and that is all.  Mystery solved.  Thanks!
-> >
->=20
-> Is there a way to know during compilation how the compiler will behave,
-> in order to select the correct method ?
->=20
-> I have drafted a new approach in the kernel that uses -0x7008(r2)
-> instead of the global __stack_chk_guard, but how can I select the proper
-> approach during kernel compilation in line with the selected GCC ?
+Nicolas Dichtel <nicolas.dichtel@6wind.com> wrote:
 
-Worse, how can you ensure that loadable modules are compiled with the
-same option as the rest of the kernel.
+> This header file is exported, thus move it to uapi.
 
-	David
+Exported how?
+
+> +#ifdef __INT32_TYPE__
+> +#undef __INT32_TYPE__
+> +#define __INT32_TYPE__		int
+> +#endif
+> +
+> +#ifdef __UINT32_TYPE__
+> +#undef __UINT32_TYPE__
+> +#define __UINT32_TYPE__	unsigned int
+> +#endif
+> +
+> +#ifdef __UINTPTR_TYPE__
+> +#undef __UINTPTR_TYPE__
+> +#define __UINTPTR_TYPE__	unsigned long
+> +#endif
+
+These weren't defined by the kernel before, so why do we need to define them
+now?
+
+Will defining __UINTPTR_TYPE__ cause problems in compiling libboost by
+changing the signature on C++ functions that use uintptr_t?
+
+David
