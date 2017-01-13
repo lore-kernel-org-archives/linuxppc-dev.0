@@ -1,16 +1,17 @@
 Return-Path: <Joao.Pinto@synopsys.com>
-Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
+Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
+ [198.182.47.9])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v0T2R0tYMzDqH1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 03:42:54 +1100 (AEDT)
-Subject: Re: [PATCH 02/37] PCI: dwc: designware: Add new *ops* for cpu addr
- fixup
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v0T8C27CCzDq7q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 03:47:54 +1100 (AEDT)
+Subject: Re: [PATCH 10/37] PCI: dwc: designware: Fix style errors in
+ pcie-designware.c
 To: Kishon Vijay Abraham I <kishon@ti.com>, Bjorn Helgaas
  <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto
  <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-3-git-send-email-kishon@ti.com>
+ <1484216786-17292-11-git-send-email-kishon@ti.com>
 CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
@@ -18,10 +19,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
  <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
  <nsekhar@ti.com>
 From: Joao Pinto <Joao.Pinto@synopsys.com>
-Message-ID: <68f59de0-104f-41aa-886d-52d43ecd8e6b@synopsys.com>
-Date: Fri, 13 Jan 2017 16:34:26 +0000
+Message-ID: <a138b0fb-f584-8953-658f-cf476e3d16e7@synopsys.com>
+Date: Fri, 13 Jan 2017 16:38:24 +0000
 MIME-Version: 1.0
-In-Reply-To: <1484216786-17292-3-git-send-email-kishon@ti.com>
+In-Reply-To: <1484216786-17292-11-git-send-email-kishon@ti.com>
 Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,56 +33,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi Kishon,
-
 Às 10:25 AM de 1/12/2017, Kishon Vijay Abraham I escreveu:
-> Some platforms (like dra7xx) require only the least 28 bits of the
-> corresponding 32 bit CPU address to be programmed in the address
-> translation unit. This modified address is stored in io_base/mem_base/
-> cfg0_base/cfg1_base in dra7xx_pcie_host_init. While this is okay for
-> host mode where the address range is fixed, device mode requires
-> different addresses to be programmed based on the host buffer address.
-> Add a new ops to get the least 28 bits of the corresponding 32 bit
-> CPU address and invoke it before programming the address translation
-> unit.
+> No functional change. Fix all checkpatch warnings and check errors
+> in pcie-designware.c
 > 
 > Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 > ---
->  drivers/pci/dwc/pcie-designware.c |    3 +++
->  drivers/pci/dwc/pcie-designware.h |    1 +
->  2 files changed, 4 insertions(+)
+>  drivers/pci/dwc/pcie-designware.c |   42 ++++++++++++++++++-------------------
+>  1 file changed, 21 insertions(+), 21 deletions(-)
 > 
 > diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
-> index bed1999..d68bc7b 100644
+> index 89cdb6b..ff04074 100644
 > --- a/drivers/pci/dwc/pcie-designware.c
 > +++ b/drivers/pci/dwc/pcie-designware.c
-> @@ -195,6 +195,9 @@ static void dw_pcie_prog_outbound_atu(struct pcie_port *pp, int index,
+> @@ -40,13 +40,13 @@ int dw_pcie_read(void __iomem *addr, int size, u32 *val)
+>  		return PCIBIOS_BAD_REGISTER_NUMBER;
+>  	}
+>  
+> -	if (size == 4)
+> +	if (size == 4) {
+>  		*val = readl(addr);
+> -	else if (size == 2)
+> +	} else if (size == 2) {
+>  		*val = readw(addr);
+> -	else if (size == 1)
+> +	} else if (size == 1) {
+>  		*val = readb(addr);
+> -	else {
+> +	} else {
+>  		*val = 0;
+>  		return PCIBIOS_BAD_REGISTER_NUMBER;
+>  	}
+> @@ -203,16 +203,15 @@ irqreturn_t dw_handle_msi_irq(struct pcie_port *pp)
+>  
+>  	for (i = 0; i < MAX_MSI_CTRLS; i++) {
+>  		dw_pcie_rd_own_conf(pp, PCIE_MSI_INTR0_STATUS + i * 12, 4,
+> -				(u32 *)&val);
+> +				    (u32 *)&val);
+>  		if (val) {
+>  			ret = IRQ_HANDLED;
+>  			pos = 0;
+>  			while ((pos = find_next_bit(&val, 32, pos)) != 32) {
+>  				irq = irq_find_mapping(pp->irq_domain,
+> -						i * 32 + pos);
+> -				dw_pcie_wr_own_conf(pp,
+> -						PCIE_MSI_INTR0_STATUS + i * 12,
+> -						4, 1 << pos);
+> +						       i * 32 + pos);
+> +				dw_pcie_wr_own_conf(pp, PCIE_MSI_INTR0_STATUS +
+> +						    i * 12, 4, 1 << pos);
+>  				generic_handle_irq(irq);
+>  				pos++;
+>  			}
+> @@ -278,8 +277,9 @@ static void dw_pcie_msi_set_irq(struct pcie_port *pp, int irq)
+>  static int assign_irq(int no_irqs, struct msi_desc *desc, int *pos)
 >  {
->  	u32 retries, val;
+>  	int irq, pos0, i;
+> -	struct pcie_port *pp = (struct pcie_port *) msi_desc_to_pci_sysdata(desc);
+> +	struct pcie_port *pp;
 >  
-> +	if (pp->ops->cpu_addr_fixup)
-> +		cpu_addr = pp->ops->cpu_addr_fixup(cpu_addr);
-> +
->  	if (pp->iatu_unroll_enabled) {
->  		dw_pcie_writel_unroll(pp, index, PCIE_ATU_UNR_LOWER_BASE,
->  			lower_32_bits(cpu_addr));
-> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-> index a567ea2..32f4602 100644
-> --- a/drivers/pci/dwc/pcie-designware.h
-> +++ b/drivers/pci/dwc/pcie-designware.h
-> @@ -54,6 +54,7 @@ struct pcie_port {
->  };
+> +	pp  = (struct pcie_port *)msi_desc_to_pci_sysdata(desc);
+>  	pos0 = bitmap_find_free_region(pp->msi_irq_in_use, MAX_MSI_IRQS,
+>  				       order_base_2(no_irqs));
+>  	if (pos0 < 0)
+> @@ -341,7 +341,7 @@ static void dw_msi_setup_msg(struct pcie_port *pp, unsigned int irq, u32 pos)
+>  }
 >  
->  struct pcie_host_ops {
-> +	u64 (*cpu_addr_fixup)(u64 cpu_addr);
->  	u32 (*readl_rc)(struct pcie_port *pp, u32 reg);
->  	void (*writel_rc)(struct pcie_port *pp, u32 reg, u32 val);
->  	int (*rd_own_conf)(struct pcie_port *pp, int where, int size, u32 *val);
+>  static int dw_msi_setup_irq(struct msi_controller *chip, struct pci_dev *pdev,
+> -			struct msi_desc *desc)
+> +			    struct msi_desc *desc)
+>  {
+>  	int irq, pos;
+>  	struct pcie_port *pp = pdev->bus->sysdata;
+> @@ -389,7 +389,7 @@ static void dw_msi_teardown_irq(struct msi_controller *chip, unsigned int irq)
+>  {
+>  	struct irq_data *data = irq_get_irq_data(irq);
+>  	struct msi_desc *msi = irq_data_get_msi_desc(data);
+> -	struct pcie_port *pp = (struct pcie_port *) msi_desc_to_pci_sysdata(msi);
+> +	struct pcie_port *pp = (struct pcie_port *)msi_desc_to_pci_sysdata(msi);
+>  
+>  	clear_irq_range(pp, irq, 1, data->hwirq);
+>  }
+> @@ -431,7 +431,7 @@ int dw_pcie_link_up(struct dw_pcie *pci)
+>  }
+>  
+>  static int dw_pcie_msi_map(struct irq_domain *domain, unsigned int irq,
+> -			irq_hw_number_t hwirq)
+> +			   irq_hw_number_t hwirq)
+>  {
+>  	irq_set_chip_and_handler(irq, &dw_msi_irq_chip, handle_simple_irq);
+>  	irq_set_chip_data(irq, domain->host_data);
+> @@ -468,8 +468,8 @@ int dw_pcie_host_init(struct pcie_port *pp)
+>  
+>  	cfg_res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "config");
+>  	if (cfg_res) {
+> -		pp->cfg0_size = resource_size(cfg_res)/2;
+> -		pp->cfg1_size = resource_size(cfg_res)/2;
+> +		pp->cfg0_size = resource_size(cfg_res) / 2;
+> +		pp->cfg1_size = resource_size(cfg_res) / 2;
+>  		pp->cfg0_base = cfg_res->start;
+>  		pp->cfg1_base = cfg_res->start + pp->cfg0_size;
+>  	} else if (!pp->va_cfg0_base) {
+> @@ -508,8 +508,8 @@ int dw_pcie_host_init(struct pcie_port *pp)
+>  			break;
+>  		case 0:
+>  			pp->cfg = win->res;
+> -			pp->cfg0_size = resource_size(pp->cfg)/2;
+> -			pp->cfg1_size = resource_size(pp->cfg)/2;
+> +			pp->cfg0_size = resource_size(pp->cfg) / 2;
+> +			pp->cfg1_size = resource_size(pp->cfg) / 2;
+>  			pp->cfg0_base = pp->cfg->start;
+>  			pp->cfg1_base = pp->cfg->start + pp->cfg0_size;
+>  			break;
+> @@ -615,7 +615,7 @@ int dw_pcie_host_init(struct pcie_port *pp)
+>  }
+>  
+>  static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
+> -		u32 devfn, int where, int size, u32 *val)
+> +				 u32 devfn, int where, int size, u32 *val)
+>  {
+>  	int ret, type;
+>  	u32 busdev, cfg_size;
+> @@ -654,7 +654,7 @@ static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
+>  }
+>  
+>  static int dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
+> -		u32 devfn, int where, int size, u32 val)
+> +				 u32 devfn, int where, int size, u32 val)
+>  {
+>  	int ret, type;
+>  	u32 busdev, cfg_size;
+> @@ -711,7 +711,7 @@ static int dw_pcie_valid_device(struct pcie_port *pp, struct pci_bus *bus,
+>  }
+>  
+>  static int dw_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
+> -			int size, u32 *val)
+> +			   int size, u32 *val)
+>  {
+>  	struct pcie_port *pp = bus->sysdata;
+>  
+> @@ -727,7 +727,7 @@ static int dw_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
+>  }
+>  
+>  static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
+> -			int where, int size, u32 val)
+> +			   int where, int size, u32 val)
+>  {
+>  	struct pcie_port *pp = bus->sysdata;
+>  
 > 
 
-I think this is an acceptable fixup, I am ok with it.
+Always good to make clean up! Thanks!
 
-Reviewed-By: Joao Pinto <jpinto@synopsys.com>
-
-Joao
+Acked-By: Joao Pinto <jpinto@synopsys.com>
