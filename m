@@ -1,25 +1,28 @@
-Return-Path: <tony@atomide.com>
-Received: from muru.com (muru.com [72.249.23.125])
- by lists.ozlabs.org (Postfix) with ESMTP id 3v0Tts0WtyzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:21:24 +1100 (AEDT)
-Date: Fri, 13 Jan 2017 09:15:37 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Kishon Vijay Abraham I <kishon@ti.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
- Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
-Subject: Re: [PATCH 36/37] ARM: DRA7: clockdomain: Change the CLKTRCTRL of
- CM_PCIE_CLKSTCTRL to SW_WKUP
-Message-ID: <20170113171537.GZ2630@atomide.com>
+Return-Path: <Joao.Pinto@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v0TxC1tswzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:23:26 +1100 (AEDT)
+Subject: Re: [PATCH 07/37] PCI: dwc: designware: Get device pointer at the
+ start of dw_pcie_host_init
+To: Kishon Vijay Abraham I <kishon@ti.com>, Bjorn Helgaas
+ <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto
+ <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
 References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-37-git-send-email-kishon@ti.com>
+ <1484216786-17292-8-git-send-email-kishon@ti.com>
+CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
+ <nsekhar@ti.com>
+From: Joao Pinto <Joao.Pinto@synopsys.com>
+Message-ID: <fbfa32a8-0897-9c8a-618c-bb41fa26c532@synopsys.com>
+Date: Fri, 13 Jan 2017 17:22:44 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1484216786-17292-37-git-send-email-kishon@ti.com>
+In-Reply-To: <1484216786-17292-8-git-send-email-kishon@ti.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Kishon Vijay Abraham I <kishon@ti.com> [170112 02:35]:
-> The PCIe programming sequence in TRM suggests CLKSTCTRL of PCIe should
-> be set to SW_WKUP. There are no issues when CLKSTCTRL is set to HW_AUTO
-> in RC mode. However in EP mode, the host system is not able to access the
-> MEMSPACE and setting the CLKSTCTRL to SW_WKUP fixes it.
 
-I guess ideally in the long run we would set this dynamically based on
-the selected mode, right?
+Hi!
 
-Regards,
-
-Tony
-
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-> ---
->  arch/arm/mach-omap2/clockdomains7xx_data.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Às 10:25 AM de 1/12/2017, Kishon Vijay Abraham I escreveu:
+> No functional change. Get device pointer at the beginning of
+> dw_pcie_host_init instead of getting it all over dw_pcie_host_init.
+> This is in preparation for splitting struct pcie_port into host and
+> core structures (Once split pcie_port will not have device pointer).
 > 
-> diff --git a/arch/arm/mach-omap2/clockdomains7xx_data.c b/arch/arm/mach-omap2/clockdomains7xx_data.c
-> index 6c67965..67ebff8 100644
-> --- a/arch/arm/mach-omap2/clockdomains7xx_data.c
-> +++ b/arch/arm/mach-omap2/clockdomains7xx_data.c
-> @@ -524,7 +524,7 @@
->  	.dep_bit	  = DRA7XX_PCIE_STATDEP_SHIFT,
->  	.wkdep_srcs	  = pcie_wkup_sleep_deps,
->  	.sleepdep_srcs	  = pcie_wkup_sleep_deps,
-> -	.flags		  = CLKDM_CAN_HWSUP_SWSUP,
-> +	.flags		  = CLKDM_CAN_SWSUP,
->  };
->  
->  static struct clockdomain atl_7xx_clkdm = {
-> -- 
-> 1.7.9.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+I think change should be condense with another patch to reduce the patch-set
+number and to give it real meaning. I understand why you are breaking so much
+the patch, it is has a lot of changes, but in my opinion is too much fragmented.
+
+Thanks
+Joao
