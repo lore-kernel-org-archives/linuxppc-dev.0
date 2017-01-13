@@ -1,26 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.181])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v0TpS35SdzDqqL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:17:36 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>, "mpe@ellerman.id.au"
- <mpe@ellerman.id.au>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "ast@fb.com" <ast@fb.com>,
- "daniel@iogearbox.net" <daniel@iogearbox.net>, "davem@davemloft.net"
- <davem@davemloft.net>
-Subject: RE: [PATCH 3/3] powerpc: bpf: implement in-register swap for 64-bit
- endian operations
-Date: Fri, 13 Jan 2017 17:17:26 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
-References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <tony@atomide.com>
+Received: from muru.com (muru.com [72.249.23.125])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3v0Tts0WtyzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:21:24 +1100 (AEDT)
+Date: Fri, 13 Jan 2017 09:15:37 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
+Subject: Re: [PATCH 36/37] ARM: DRA7: clockdomain: Change the CLKTRCTRL of
+ CM_PCIE_CLKSTCTRL to SW_WKUP
+Message-ID: <20170113171537.GZ2630@atomide.com>
+References: <1484216786-17292-1-git-send-email-kishon@ti.com>
+ <1484216786-17292-37-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1484216786-17292-37-git-send-email-kishon@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,16 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Naveen N. Rao
-> Sent: 13 January 2017 17:10
-> Generate instructions to perform the endian conversion using registers,
-> rather than generating two memory accesses.
->=20
-> The "way easier and faster" comment was obviously for the author, not
-> the processor.
+* Kishon Vijay Abraham I <kishon@ti.com> [170112 02:35]:
+> The PCIe programming sequence in TRM suggests CLKSTCTRL of PCIe should
+> be set to SW_WKUP. There are no issues when CLKSTCTRL is set to HW_AUTO
+> in RC mode. However in EP mode, the host system is not able to access the
+> MEMSPACE and setting the CLKSTCTRL to SW_WKUP fixes it.
 
-That rather depends on whether the processor has a store to load forwarder
-that will satisfy the read from the store buffer.
-I don't know about ppc, but at least some x86 will do that.
+I guess ideally in the long run we would set this dynamically based on
+the selected mode, right?
 
-	David
+Regards,
+
+Tony
+
+> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> ---
+>  arch/arm/mach-omap2/clockdomains7xx_data.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm/mach-omap2/clockdomains7xx_data.c b/arch/arm/mach-omap2/clockdomains7xx_data.c
+> index 6c67965..67ebff8 100644
+> --- a/arch/arm/mach-omap2/clockdomains7xx_data.c
+> +++ b/arch/arm/mach-omap2/clockdomains7xx_data.c
+> @@ -524,7 +524,7 @@
+>  	.dep_bit	  = DRA7XX_PCIE_STATDEP_SHIFT,
+>  	.wkdep_srcs	  = pcie_wkup_sleep_deps,
+>  	.sleepdep_srcs	  = pcie_wkup_sleep_deps,
+> -	.flags		  = CLKDM_CAN_HWSUP_SWSUP,
+> +	.flags		  = CLKDM_CAN_SWSUP,
+>  };
+>  
+>  static struct clockdomain atl_7xx_clkdm = {
+> -- 
+> 1.7.9.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
