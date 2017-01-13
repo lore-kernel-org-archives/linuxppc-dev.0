@@ -1,51 +1,28 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <BATV+6be4d56e4a565bfcc45d+4891+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v0VZQ31fhzDqVS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:52:14 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id
- v0DHnQL4101181
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 12:52:11 -0500
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 27y21h42wj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 12:52:11 -0500
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Sat, 14 Jan 2017 03:52:08 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D6B862BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:52:06 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0DHq60Y29163616
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:52:06 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0DHq505001948
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:52:06 +1100
-Date: Fri, 13 Jan 2017 23:22:01 +0530
-From: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "ast@fb.com" <ast@fb.com>, "daniel@iogearbox.net" <daniel@iogearbox.net>,
- "davem@davemloft.net" <davem@davemloft.net>
-Subject: Re: [PATCH 3/3] powerpc: bpf: implement in-register swap for 64-bit
- endian operations
-References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v0VtY18LyzDqRp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 05:06:13 +1100 (AEDT)
+Date: Fri, 13 Jan 2017 19:06:02 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
+Subject: Re: [PATCH 16/37] PCI: endpoint: Introduce configfs entry for
+ configuring EP functions
+Message-ID: <20170113180602.GA30346@infradead.org>
+References: <1484216786-17292-1-git-send-email-kishon@ti.com>
+ <1484216786-17292-17-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
-Message-Id: <20170113175201.GD3470@naverao1-tp.localdomain>
+In-Reply-To: <1484216786-17292-17-git-send-email-kishon@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,24 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/01/13 05:17PM, David Laight wrote:
-> From: Naveen N. Rao
-> > Sent: 13 January 2017 17:10
-> > Generate instructions to perform the endian conversion using registers,
-> > rather than generating two memory accesses.
-> > 
-> > The "way easier and faster" comment was obviously for the author, not
-> > the processor.
-> 
-> That rather depends on whether the processor has a store to load forwarder
-> that will satisfy the read from the store buffer.
-> I don't know about ppc, but at least some x86 will do that.
+Hi Kishon,
 
-Interesting - good to know that.
+a couple comments on the configfs layout based on my experiments with
+your previous drop to implement a NVMe device using it.
 
-However, I don't think powerpc does that and in-register swap is likely 
-faster regardless. Note also that gcc prefers this form at higher 
-optimization levels.
+I don't think most of these configfs files should be present here, as
+they are properties of the implemented PCIe devices.  E.g. for my
+NVMe device they will be sort of hardcoded most of the time, as they
+would be for other devices that would always have a fixed vendor/device/
+class ID, cacheline size, etc.
 
-Thanks,
-Naveen
+In the end what we'll to be able to do here is to be able to create
+a directory for each function driver, which then can create it's own
+attributes inside it.
