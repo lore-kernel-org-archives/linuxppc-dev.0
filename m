@@ -1,29 +1,47 @@
-Return-Path: <Joao.Pinto@synopsys.com>
-Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
- [198.182.60.111])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v0TPj1P61zDqZ1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 03:59:36 +1100 (AEDT)
-Subject: Re: [PATCH 11/37] PCI: dwc: Split pcie-designware.c into host and
- core files
-To: Kishon Vijay Abraham I <kishon@ti.com>, Bjorn Helgaas
- <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto
- <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
-References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-12-git-send-email-kishon@ti.com>
-CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
- <nsekhar@ti.com>
-From: Joao Pinto <Joao.Pinto@synopsys.com>
-Message-ID: <4a89fb45-af84-d660-5ef0-12227b141cda@synopsys.com>
-Date: Fri, 13 Jan 2017 16:49:44 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v0Tb11NRHzDqMg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 04:07:39 +1100 (AEDT)
+Date: Fri, 13 Jan 2017 17:06:10 +0000
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Cc: arnd@arndb.de, mmarek@suse.com, linux-kbuild@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
+ uclinux-h8-devel@lists.sourceforge.jp,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-am33-list@redhat.com,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-arch@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ netdev@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mmc@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ coreteam@netfilter.org, linux-nfs@vger.kernel.org,
+ linux-raid@vger.kernel.org, linux-spi@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-rdma@vger.kernel.org,
+ fcoe-devel@open-fcoe.org, alsa-devel@alsa-project.org,
+ linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org,
+ airlied@linux.ie, davem@davemloft.net, bp@alien8.de,
+ slash.tmp@free.fr, daniel.vetter@ffwll.ch, msalter@redhat.com,
+ jengelh@inai.de, hch@infradead.org
+Subject: Re: [PATCH v3 1/8] arm: put types.h in uapi
+Message-ID: <20170113170610.GV14217@n2100.armlinux.org.uk>
+References: <3131144.4Ej3KFWRbz@wuerfel>
+ <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
+ <1484304406-10820-2-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
-In-Reply-To: <1484216786-17292-12-git-send-email-kishon@ti.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1484304406-10820-2-git-send-email-nicolas.dichtel@6wind.com>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,102 +51,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Às 10:26 AM de 1/12/2017, Kishon Vijay Abraham I escreveu:
-> Split pcie-designware.c into pcie-designware-host.c that contains
-> the host specific parts of the driver and pcie-designware.c that
-> contains the parts used by both host driver and endpoint driver.
+On Fri, Jan 13, 2017 at 11:46:39AM +0100, Nicolas Dichtel wrote:
+> This header file is exported, thus move it to uapi.
+
+I'm taking this patch, but with the following commit log:
+
+  Due to the way kbuild works, this header was unintentionally exported
+  back in 2013 when it was created, despite it not being in a uapi/
+  directory.  This is very non-intuitive behaviour by Kbuild.
+
+  However, we've had this include exported to userland for almost four
+  years, and searching google for "ARM types.h __UINTPTR_TYPE__" gives
+  no hint that anyone has complained about it.  So, let's make it
+  officially exported in this state.
+
+If anyone has any objections, they better shout sooner rather than
+later.
+
 > 
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
 > ---
->  drivers/pci/dwc/Makefile               |    2 +-
->  drivers/pci/dwc/pcie-designware-host.c |  619 ++++++++++++++++++++++++++++++++
->  drivers/pci/dwc/pcie-designware.c      |  613 +------------------------------
->  drivers/pci/dwc/pcie-designware.h      |    8 +
->  4 files changed, 634 insertions(+), 608 deletions(-)
->  create mode 100644 drivers/pci/dwc/pcie-designware-host.c
+>  arch/arm/include/asm/types.h      | 40 ---------------------------------------
+>  arch/arm/include/uapi/asm/types.h | 40 +++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 40 insertions(+), 40 deletions(-)
+>  delete mode 100644 arch/arm/include/asm/types.h
+>  create mode 100644 arch/arm/include/uapi/asm/types.h
 > 
-> diff --git a/drivers/pci/dwc/Makefile b/drivers/pci/dwc/Makefile
-> index 7d27c14..3b57e55 100644
-> --- a/drivers/pci/dwc/Makefile
-> +++ b/drivers/pci/dwc/Makefile
-> @@ -1,4 +1,4 @@
-
-(snip...)
-
-> -static void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
-> -				      int type, u64 cpu_addr, u64 pci_addr,
-> -				      u32 size)
-> +void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index, int type,
-> +			       u64 cpu_addr, u64 pci_addr, u32 size)
->  {
->  	u32 retries, val;
->  
-> @@ -186,220 +151,6 @@ static void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
->  	dev_err(pci->dev, "iATU is not being enabled\n");
->  }
-
-Kishon, iATU only makes sense in The Root Complex (host), so it should be inside
-the pcie-designware-host.
-
->  
-> -static struct irq_chip dw_msi_irq_chip = {
-> -	.name = "PCI-MSI",
-> -	.irq_enable = pci_msi_unmask_irq,
-> -	.irq_disable = pci_msi_mask_irq,
-> -	.irq_mask = pci_msi_mask_irq,
-> -	.irq_unmask = pci_msi_unmask_irq,
-> -};
+> diff --git a/arch/arm/include/asm/types.h b/arch/arm/include/asm/types.h
+> deleted file mode 100644
+> index a53cdb8f068c..000000000000
+> --- a/arch/arm/include/asm/types.h
+> +++ /dev/null
+> @@ -1,40 +0,0 @@
+> -#ifndef _ASM_TYPES_H
+> -#define _ASM_TYPES_H
 > -
-
-(snip...)
-
+> -#include <asm-generic/int-ll64.h>
 > -
-> -static const struct irq_domain_ops msi_domain_ops = {
-> -	.map = dw_pcie_msi_map,
-> -};
+> -/*
+> - * The C99 types uintXX_t that are usually defined in 'stdint.h' are not as
+> - * unambiguous on ARM as you would expect. For the types below, there is a
+> - * difference on ARM between GCC built for bare metal ARM, GCC built for glibc
+> - * and the kernel itself, which results in build errors if you try to build with
+> - * -ffreestanding and include 'stdint.h' (such as when you include 'arm_neon.h'
+> - * in order to use NEON intrinsics)
+> - *
+> - * As the typedefs for these types in 'stdint.h' are based on builtin defines
+> - * supplied by GCC, we can tweak these to align with the kernel's idea of those
+> - * types, so 'linux/types.h' and 'stdint.h' can be safely included from the same
+> - * source file (provided that -ffreestanding is used).
+> - *
+> - *                    int32_t         uint32_t               uintptr_t
+> - * bare metal GCC     long            unsigned long          unsigned int
+> - * glibc GCC          int             unsigned int           unsigned int
+> - * kernel             int             unsigned int           unsigned long
+> - */
 > -
->  static u8 dw_pcie_iatu_unroll_enabled(struct dw_pcie *pci)
->  {
->  	u32 val;
-> @@ -454,303 +192,11 @@ static u8 dw_pcie_iatu_unroll_enabled(struct dw_pcie *pci)
->  	return 0;
->  }
-
-Kishon, iATU only makes sense in The Root Complex (host), so it should be inside
-the pcie-designware-host.
-
-(snip...)
-
-> diff --git a/drivers/pci/dwc/pcie-designware.h b/drivers/pci/dwc/pcie-designware.h
-> index 491fbe3..808d17b 100644
-> --- a/drivers/pci/dwc/pcie-designware.h
-> +++ b/drivers/pci/dwc/pcie-designware.h
-> @@ -14,6 +14,10 @@
->  #ifndef _PCIE_DESIGNWARE_H
->  #define _PCIE_DESIGNWARE_H
->  
-> +#include <linux/irq.h>
-> +#include <linux/msi.h>
-> +#include <linux/pci.h>
+> -#ifdef __INT32_TYPE__
+> -#undef __INT32_TYPE__
+> -#define __INT32_TYPE__		int
+> -#endif
+> -
+> -#ifdef __UINT32_TYPE__
+> -#undef __UINT32_TYPE__
+> -#define __UINT32_TYPE__	unsigned int
+> -#endif
+> -
+> -#ifdef __UINTPTR_TYPE__
+> -#undef __UINTPTR_TYPE__
+> -#define __UINTPTR_TYPE__	unsigned long
+> -#endif
+> -
+> -#endif /* _ASM_TYPES_H */
+> diff --git a/arch/arm/include/uapi/asm/types.h b/arch/arm/include/uapi/asm/types.h
+> new file mode 100644
+> index 000000000000..9435a42f575e
+> --- /dev/null
+> +++ b/arch/arm/include/uapi/asm/types.h
+> @@ -0,0 +1,40 @@
+> +#ifndef _UAPI_ASM_TYPES_H
+> +#define _UAPI_ASM_TYPES_H
 > +
->  /* Parameters for the waiting for link up routine */
->  #define LINK_WAIT_MAX_RETRIES		10
->  #define LINK_WAIT_USLEEP_MIN		90000
-> @@ -167,4 +171,8 @@ struct dw_pcie {
->  void dw_pcie_writel_dbi(struct dw_pcie *pci, u32 reg, u32 val);
->  int dw_pcie_link_up(struct dw_pcie *pci);
->  int dw_pcie_wait_for_link(struct dw_pcie *pci);
-> +void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
-> +			       int type, u64 cpu_addr, u64 pci_addr,
-> +			       u32 size);
-> +void dw_pcie_setup(struct dw_pcie *pci);
-
-
-Kishon, iATU only makes sense in The Root Complex (host), so it should be inside
-the pcie-designware-host as static.
-
->  #endif /* _PCIE_DESIGNWARE_H */
+> +#include <asm-generic/int-ll64.h>
+> +
+> +/*
+> + * The C99 types uintXX_t that are usually defined in 'stdint.h' are not as
+> + * unambiguous on ARM as you would expect. For the types below, there is a
+> + * difference on ARM between GCC built for bare metal ARM, GCC built for glibc
+> + * and the kernel itself, which results in build errors if you try to build with
+> + * -ffreestanding and include 'stdint.h' (such as when you include 'arm_neon.h'
+> + * in order to use NEON intrinsics)
+> + *
+> + * As the typedefs for these types in 'stdint.h' are based on builtin defines
+> + * supplied by GCC, we can tweak these to align with the kernel's idea of those
+> + * types, so 'linux/types.h' and 'stdint.h' can be safely included from the same
+> + * source file (provided that -ffreestanding is used).
+> + *
+> + *                    int32_t         uint32_t               uintptr_t
+> + * bare metal GCC     long            unsigned long          unsigned int
+> + * glibc GCC          int             unsigned int           unsigned int
+> + * kernel             int             unsigned int           unsigned long
+> + */
+> +
+> +#ifdef __INT32_TYPE__
+> +#undef __INT32_TYPE__
+> +#define __INT32_TYPE__		int
+> +#endif
+> +
+> +#ifdef __UINT32_TYPE__
+> +#undef __UINT32_TYPE__
+> +#define __UINT32_TYPE__	unsigned int
+> +#endif
+> +
+> +#ifdef __UINTPTR_TYPE__
+> +#undef __UINTPTR_TYPE__
+> +#define __UINTPTR_TYPE__	unsigned long
+> +#endif
+> +
+> +#endif /* _UAPI_ASM_TYPES_H */
+> -- 
+> 2.8.1
 > 
 
-Thanks,
-Joao
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
