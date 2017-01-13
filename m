@@ -1,22 +1,40 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v0FhK4GXgzDqWR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 19:11:29 +1100 (AEDT)
-Received: by mail-pf0-x243.google.com with SMTP id y143so7353209pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 00:11:29 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Fri, 13 Jan 2017 13:41:22 +0530
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Use octal numbers for file permissions
-Message-ID: <20170113081122.GA14043@localhost.localdomain>
-References: <20170112035413.26544-1-ruscur@russell.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170112035413.26544-1-ruscur@russell.cc>
+Return-Path: <root@6wind.com>
+Received: from proxy.6wind.com (host.76.145.23.62.rev.coltfrance.com
+ [62.23.145.76])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3v0K7w53vRzDqXB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2017 21:47:08 +1100 (AEDT)
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+To: arnd@arndb.de
+Cc: mmarek@suse.com, linux-kbuild@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org,
+ linux-cris-kernel@axis.com, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-am33-list@redhat.com,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-arch@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ netdev@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mmc@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ coreteam@netfilter.org, linux-nfs@vger.kernel.org,
+ linux-raid@vger.kernel.org, linux-spi@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-rdma@vger.kernel.org,
+ fcoe-devel@open-fcoe.org, alsa-devel@alsa-project.org,
+ linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org,
+ airlied@linux.ie, davem@davemloft.net, linux@armlinux.org.uk, bp@alien8.de,
+ slash.tmp@free.fr, daniel.vetter@ffwll.ch, rmk+kernel@armlinux.org.uk,
+ msalter@redhat.com, jengelh@inai.de, hch@infradead.org,
+ Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Subject: [PATCH v3 4/8] x86: stop exporting msr-index.h to userland
+Date: Fri, 13 Jan 2017 11:46:42 +0100
+Message-Id: <1484304406-10820-5-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
+References: <3131144.4Ej3KFWRbz@wuerfel>
+ <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 12, 2017 at 02:54:13PM +1100, Russell Currey wrote:
-> Symbolic macros are unintuitive and hard to read, whereas octal constants
-> are much easier to interpret.  Replace macros for the basic permission
-> flags (user/group/other read/write/execute) with numeric constants
-> instead, across the whole powerpc tree.
->
+Suggested-by: Borislav Petkov <bp@alien8.de>
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+---
+ arch/x86/include/uapi/asm/Kbuild | 1 -
+ 1 file changed, 1 deletion(-)
 
-I know Linus said otherwise, but I wonder if the churn is worth it.
-At user mode (do man 2 chmod), these constants are used frequently,
-even with chmod the command we use chmod a+r equivalents or chmod
-u+r. My big concern with numbers is how do you know you did not
-turn on the sticky bit for a file? Can you imagine if someone used
-0x644 or 0x444 would we catch it?
-
-Not resisting, but thinking if the churn and what follows might be
-OK.
-
-Balbir Singh.
+diff --git a/arch/x86/include/uapi/asm/Kbuild b/arch/x86/include/uapi/asm/Kbuild
+index 3dec769cadf7..1c532b3f18ea 100644
+--- a/arch/x86/include/uapi/asm/Kbuild
++++ b/arch/x86/include/uapi/asm/Kbuild
+@@ -27,7 +27,6 @@ header-y += ldt.h
+ header-y += mce.h
+ header-y += mman.h
+ header-y += msgbuf.h
+-header-y += msr-index.h
+ header-y += msr.h
+ header-y += mtrr.h
+ header-y += param.h
+-- 
+2.8.1
