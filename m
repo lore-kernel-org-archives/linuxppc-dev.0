@@ -1,43 +1,28 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
- by lists.ozlabs.org (Postfix) with ESMTP id 3v0Sxk0dwFzDqQ6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 03:38:48 +1100 (AEDT)
-Date: Fri, 13 Jan 2017 17:38:36 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Cc: David Howells <dhowells@redhat.com>, arnd@arndb.de,
- linux-kbuild@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
- uclinux-h8-devel@lists.sourceforge.jp,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-m68k@vger.kernel.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, linux-am33-list@redhat.com,
- nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-arch@vger.kernel.org, dri-devel@lists.freedesktop.org,
- netdev@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mmc@vger.kernel.org, netfilter-devel@vger.kernel.org,
- coreteam@netfilter.org, linux-nfs@vger.kernel.org,
- linux-raid@vger.kernel.org, linux-spi@vger.kernel.org,
- linux-mtd@lists.infradead.org, linux-rdma@vger.kernel.org,
- fcoe-devel@open-fcoe.org, alsa-devel@alsa-project.org,
- linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org,
- linux@armlinux.org.uk
-Subject: Re: [PATCH v3 4/8] x86: stop exporting msr-index.h to userland
-Message-ID: <20170113163836.jn3u6xyfcrbtynut@pd.tnic>
-References: <1484304406-10820-5-git-send-email-nicolas.dichtel@6wind.com>
- <3131144.4Ej3KFWRbz@wuerfel>
- <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
- <25483.1484322229@warthog.procyon.org.uk>
- <dd826bc7-e1ef-be29-e0c3-692afb346036@6wind.com>
+Return-Path: <Joao.Pinto@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v0T2R0p8JzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 03:42:54 +1100 (AEDT)
+Subject: Re: [PATCH 04/37] PCI: dwc: designware: Move the register defines to
+ designware header file
+To: Kishon Vijay Abraham I <kishon@ti.com>, Bjorn Helgaas
+ <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto
+ <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>
+References: <1484216786-17292-1-git-send-email-kishon@ti.com>
+ <1484216786-17292-5-git-send-email-kishon@ti.com>
+CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
+ <nsekhar@ti.com>
+From: Joao Pinto <Joao.Pinto@synopsys.com>
+Message-ID: <0913dcb3-ecb8-b926-981d-f5d3baa9d8b7@synopsys.com>
+Date: Fri, 13 Jan 2017 16:35:03 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <dd826bc7-e1ef-be29-e0c3-692afb346036@6wind.com>
+In-Reply-To: <1484216786-17292-5-git-send-email-kishon@ti.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,25 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 13, 2017 at 05:08:34PM +0100, Nicolas Dichtel wrote:
-> Le 13/01/2017 à 16:43, David Howells a écrit :
-> >> -header-y += msr-index.h
-> > 
-> > I see it on my desktop as /usr/include/asm/msr-index.h and it's been there at
-> > least four years - and as such it's part of the UAPI.  I don't think you can
-> > remove it unless you can guarantee there are no userspace users.
-> I keep it in the v2 of the series, but the maintainer, Borislav Petkov, asks me
-> to un-export it.
+
+�s 10:25 AM de 1/12/2017, Kishon Vijay Abraham I escreveu:
+> No functional change. Move the register defines and other macros from
+> pcie-designware.c to pcie-designware.h. This is in preparation to
+> split the pcie-designware.c file into designware core file and host
+> specific file.
 > 
-> I will follow the maintainer decision.
+> While at that also fix a checkpatch warning.
+> 
+> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> ---
+>  drivers/pci/dwc/pcie-designware.c |   70 ------------------------------------
+>  drivers/pci/dwc/pcie-designware.h |   71 +++++++++++++++++++++++++++++++++++++
+>  2 files changed, 71 insertions(+), 70 deletions(-)
+> 
+> diff --git a/drivers/pci/dwc/pcie-designware.c b/drivers/pci/dwc/pcie-designware.c
+> index d68bc7b..0b928dc 100644
+> --- a/drivers/pci/dwc/pcie-designware.c
+> +++ b/drivers/pci/dwc/pcie-designware.c
+> @@ -25,76 +25,6 @@
+>  
+>  #include "pcie-designware.h"
 
-I'm not the maintainer. I simply think that exporting that file was
-wrong because it if we change something in it, we will break userspace.
-And that should not happen - if userspace needs MSRs, it should do its
-own defines.
+Make sense.
 
--- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+Reviewed-By: Joao Pinto <jpinto@synopsys.com>
