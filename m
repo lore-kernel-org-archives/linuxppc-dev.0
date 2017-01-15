@@ -1,53 +1,21 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhumirks@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v1fh52jWJzDqTr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 02:01:09 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0FErxmd061504
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 10:01:06 -0500
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0b-001b2d01.pphosted.com with ESMTP id 27ymwjsq0y-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 10:01:05 -0500
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Mon, 16 Jan 2017 01:01:02 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0F6613578052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 02:01:00 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0FF12OM48955612
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 02:01:02 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0FF0wXq023328
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 02:00:59 +1100
-Subject: Re: [PATCH 3/3] powerpc: bpf: implement in-register swap for 64-bit
- endian operations
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>, David Laight
- <David.Laight@ACULAB.COM>
-Cc: "daniel@iogearbox.net" <daniel@iogearbox.net>, "ast@fb.com" <ast@fb.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
-Date: Sun, 15 Jan 2017 09:00:58 -0600
-In-Reply-To: <20170113175201.GD3470@naverao1-tp.localdomain>
-References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
- <20170113175201.GD3470@naverao1-tp.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1484492458.11927.17.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v1mKL03kbzDqQY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 06:15:18 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id 75so3445566pgf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 11:15:17 -0800 (PST)
+From: Bhumika Goyal <bhumirks@gmail.com>
+To: julia.lawall@lip6.fr, minyard@acm.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au,
+ openipmi-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
+Subject: [PATCH] char: ipmi: constify ipmi_smi_handlers structures
+Date: Mon, 16 Jan 2017 00:45:00 +0530
+Message-Id: <1484507700-28236-1-git-send-email-bhumirks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,23 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-01-13 at 23:22 +0530, 'Naveen N. Rao' wrote:
-> > That rather depends on whether the processor has a store to load forwarder
-> > that will satisfy the read from the store buffer.
-> > I don't know about ppc, but at least some x86 will do that.
-> 
-> Interesting - good to know that.
-> 
-> However, I don't think powerpc does that and in-register swap is likely 
-> faster regardless. Note also that gcc prefers this form at higher 
-> optimization levels.
+Declare ipmi_smi_handlers structures as const as they are only passed as
+an argument to the function ipmi_register_smi. This argument is of type
+const, so ipmi_smi_handlers structures having similar properties can be
+declared const too.
+Done using Coccinelle:
 
-Of course powerpc has a load-store forwarder these days, however, I
-wouldn't be surprised if the in-register form was still faster on some
-implementations, but this needs to be tested.
+@r1 disable optional_qualifier@
+identifier i;
+position p;
+@@
+static struct ipmi_smi_handlers i@p={...};
 
-Ideally, you'd want to try to "optimize" load+swap or swap+store
-though.
+@ok1@
+identifier r1.i;
+position p;
+@@
+ipmi_register_smi(&i@p,...)
 
-Cheers,
-Ben.
+@bad@
+position p!={r1.p,ok1.p};
+identifier r1.i;
+@@
+i@p
+
+@depends on !bad disable optional_qualifier@
+identifier r1.i;
+@@
++const
+struct ipmi_smi_handlers i;
+
+Size details after cross compiling the .o file for powerpc architecture
+
+File size before:
+  text	   data	    bss	    dec	    hex	filename
+  2777	    288	      0	   3065	    bf9	drivers/char/ipmi/ipmi_powernv.o
+
+File size after:
+  text	   data	    bss	    dec	    hex	filename
+   2873	    192	      0	   3065	    bf9	drivers/char/ipmi/ipmi_powernv.o
+
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+ drivers/char/ipmi/ipmi_powernv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
+index 6e658aa..b338a4b 100644
+--- a/drivers/char/ipmi/ipmi_powernv.c
++++ b/drivers/char/ipmi/ipmi_powernv.c
+@@ -196,7 +196,7 @@ static void ipmi_powernv_poll(void *send_info)
+ 	ipmi_powernv_recv(smi);
+ }
+ 
+-static struct ipmi_smi_handlers ipmi_powernv_smi_handlers = {
++static const struct ipmi_smi_handlers ipmi_powernv_smi_handlers = {
+ 	.owner			= THIS_MODULE,
+ 	.start_processing	= ipmi_powernv_start_processing,
+ 	.sender			= ipmi_powernv_send,
+-- 
+1.9.1
