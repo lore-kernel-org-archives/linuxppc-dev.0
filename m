@@ -1,21 +1,34 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v1PC93nFCzDqWR
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 15:53:41 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id y143so12034994pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 20:53:41 -0800 (PST)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, tyreld@linux.vnet.ibm.com, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, jejb@linux.vnet.ibm.com,
- martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] scsi: ibmvscsi: constify dev_pm_ops structures
-Date: Sun, 15 Jan 2017 10:23:17 +0530
-Message-Id: <1484455997-24400-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v1SG95cRrzDqTy
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 18:11:29 +1100 (AEDT)
+Received: by mail-wm0-x242.google.com with SMTP id c85so22310053wmi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2017 23:11:29 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Sun, 15 Jan 2017 08:11:23 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jiangshanlai@gmail.com,
+ dipankar@in.ibm.com, akpm@linux-foundation.org,
+ mathieu.desnoyers@efficios.com, josh@joshtriplett.org,
+ tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+ dhowells@redhat.com, edumazet@google.com, dvhart@linux.intel.com,
+ fweisbec@gmail.com, oleg@redhat.com, bobby.prani@gmail.com,
+ will.deacon@arm.com, boqun.feng@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH tip/core/rcu 2/3] srcu: Force full grace-period ordering
+Message-ID: <20170115071123.GB26581@gmail.com>
+References: <20170114091941.GA22961@linux.vnet.ibm.com>
+ <1484385601-23379-2-git-send-email-paulmck@linux.vnet.ibm.com>
+ <20170114093550.GB14970@gmail.com>
+ <20170114195417.GW5238@linux.vnet.ibm.com>
+ <20170114214159.GA7098@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170114214159.GA7098@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,85 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Declare dev_pm_ops structures as const as they are only stored in the pm
-field of a vio_driver structure. This field is of type const, so
-dev_pm_ops structures having similar properties can be declared const.
-Done using Coccinelle:
 
-@r1 disable optional_qualifier@
-identifier i;
-position p;
-@@
-static struct dev_pm_ops i@p={...};
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-@ok@
-identifier r1.i;
-position p;
-struct vio_driver x;
-@@
-x.pm=&i@p;
+> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> index 357b32aaea48..5fdfe874229e 100644
+> --- a/include/linux/rcupdate.h
+> +++ b/include/linux/rcupdate.h
+> @@ -1175,11 +1175,11 @@ do { \
+>   * if the UNLOCK and LOCK are executed by the same CPU or if the
+>   * UNLOCK and LOCK operate on the same lock variable.
+>   */
+> -#ifdef CONFIG_PPC
+> +#ifdef CONFIG_ARCH_WEAK_RELACQ
+>  #define smp_mb__after_unlock_lock()	smp_mb()  /* Full ordering for lock. */
+> -#else /* #ifdef CONFIG_PPC */
+> +#else /* #ifdef CONFIG_ARCH_WEAK_RELACQ */
+>  #define smp_mb__after_unlock_lock()	do { } while (0)
+> -#endif /* #else #ifdef CONFIG_PPC */
+> +#endif /* #else #ifdef CONFIG_ARCH_WEAK_RELACQ */
+>  
+>  
 
-@bad@
-position p!={r1.p,ok.p};
-identifier r1.i;
-@@
-i@p
+So at the risk of sounding totally pedantic, why not structure it like the 
+existing smp_mb__before/after*() primitives in barrier.h?
 
-@depends on !bad disable optional_qualifier@
-identifier r1.i;
-@@
-+const
-struct dev_pm_ops i;
+That allows asm-generic/barrier.h to pick up the definition - for example in the 
+case of smp_acquire__after_ctrl_dep() we do:
 
-File sizes after cross compiling the .o files for powerpc architecture.
+ #ifndef smp_acquire__after_ctrl_dep
+ #define smp_acquire__after_ctrl_dep()           smp_rmb()
+ #endif
 
-File size before:
-  text	   data	    bss	    dec	    hex	filename
-  57893	   5665	     20	  63578	   f85a	drivers/scsi/ibmvscsi/ibmvfc.o
+Which allows Tile to relax it:
 
-File size after:
-  text	   data	    bss	    dec	    hex	filename
-  58077	   5481	     20	  63578	   f85a	drivers/scsi/ibmvscsi/ibmvfc.o
+  arch/tile/include/asm/barrier.h:#define smp_acquire__after_ctrl_dep()   barrier()
 
-File size before:
-   text	   data	    bss	    dec	    hex	filenam
-  20990	   2816	     80	  23886	   5d4e	drivers/scsi/ibmvscsi/ibmvscsi.o
+I.e. I'd move the API definition out of rcupdate.h and into barrier.h - even 
+though tree-RCU is the only user of this barrier type.
 
-File size after:
-  text	   data	    bss	    dec	    hex	filename
-  21174	   2632	     80	  23886	   5d4e	drivers/scsi/ibmvscsi/ibmvscsi.o
+Thanks,
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- drivers/scsi/ibmvscsi/ibmvfc.c   | 2 +-
- drivers/scsi/ibmvscsi/ibmvscsi.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 78b72c2..1e1b343 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -4940,7 +4940,7 @@ static unsigned long ibmvfc_get_desired_dma(struct vio_dev *vdev)
- };
- MODULE_DEVICE_TABLE(vio, ibmvfc_device_table);
- 
--static struct dev_pm_ops ibmvfc_pm_ops = {
-+static const struct dev_pm_ops ibmvfc_pm_ops = {
- 	.resume = ibmvfc_resume
- };
- 
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 50cd011..b94e7b1 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -2335,7 +2335,7 @@ static int ibmvscsi_resume(struct device *dev)
- };
- MODULE_DEVICE_TABLE(vio, ibmvscsi_device_table);
- 
--static struct dev_pm_ops ibmvscsi_pm_ops = {
-+static const struct dev_pm_ops ibmvscsi_pm_ops = {
- 	.resume = ibmvscsi_resume
- };
- 
--- 
-1.9.1
+	Ingo
