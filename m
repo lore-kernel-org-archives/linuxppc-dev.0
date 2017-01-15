@@ -1,18 +1,19 @@
-Return-Path: <SRS0=TlCr=Y5=m4x.org=nicolas.iooss_linux@bounces.m4x.org>
-Received: from mx1.polytechnique.org (mx1.polytechnique.org [129.104.30.34])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v1bpf6FRMzDqTB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 23:51:38 +1100 (AEDT)
-From: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
-To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Nicolas Iooss <nicolas.iooss_linux@m4x.org>
-Subject: [PATCH 1/1] ASoC: fsl_asrc: use dma_transfer_direction enum when
- calling dmaengine_prep_dma_cyclic
-Date: Sun, 15 Jan 2017 13:43:31 +0100
-Message-Id: <20170115124331.3546-1-nicolas.iooss_linux@m4x.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v1qSg6LbwzDqVD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 08:36:51 +1100 (AEDT)
+Date: Mon, 16 Jan 2017 08:36:00 +1100
+From: Anton Blanchard <anton@samba.org>
+To: behanw@converseincode.com, ying.huang@intel.com, a.p.zijlstra@chello.nl,
+ akpm@linux-foundation.org, oleg@redhat.com, Segher Boessenkool
+ <segher@kernel.crashing.org>, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: llist code relies on undefined behaviour, upsets llvm/clang
+Message-ID: <20170116083600.47175073@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +23,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When fsl_asrc_dma_prepare_and_submit() calls
-dmaengine_prep_dma_cyclic(), it uses either DMA_TO_DEVICE or
-DMA_FROM_DEVICE. These values are both items of dma_data_direction enum,
-not of dma_data_direction enum, which is the type expected by
-dmaengine_prep_dma_cyclic().
+Hi,
 
-Replace DMA_TO_DEVICE with DMA_MEM_TO_DEV and DMA_FROM_DEVICE with
-DMA_DEV_TO_MEM to fix this type mismatch issue.
+I was debugging a hang on a ppc64le kernel built with clang, and it
+looks to be undefined behaviour with pointer wrapping in the llist code.
 
-Signed-off-by: Nicolas Iooss <nicolas.iooss_linux@m4x.org>
----
- sound/soc/fsl/fsl_asrc_dma.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+A test case is below. llist_for_each_entry() does container_of() on a
+NULL pointer, which wraps our pointer negative, then adds the same
+offset back in and expects to get back to NULL. Unfortunately clang
+decides that this can never be NULL and optimises it into an infinite
+loop.
 
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index dc30d780f874..282d841840b1 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -76,7 +76,7 @@ static int fsl_asrc_dma_prepare_and_submit(struct snd_pcm_substream *substream)
- 			pair->dma_chan[!dir], runtime->dma_addr,
- 			snd_pcm_lib_buffer_bytes(substream),
- 			snd_pcm_lib_period_bytes(substream),
--			dir == OUT ? DMA_TO_DEVICE : DMA_FROM_DEVICE, flags);
-+			dir == OUT ? DMA_MEM_TO_DEV : DMA_DEV_TO_MEM, flags);
- 	if (!pair->desc[!dir]) {
- 		dev_err(dev, "failed to prepare slave DMA for Front-End\n");
- 		return -ENOMEM;
--- 
-2.11.0
+Build with -DFIX, such that the llist_node has a zero offset from the
+start of the struct, and things work.
+
+Is anyone other than ppc64le building kernels with llvm/clang these
+days? This should reproduce on ARM64 and x86-64.
+
+Anton
+--
+
+#include <stdio.h>
+
+#define __compiler_offsetof(a, b)                                       \
+        __builtin_offsetof(a, b)
+
+#undef offsetof
+#ifdef __compiler_offsetof
+#define offsetof(TYPE, MEMBER)  __compiler_offsetof(TYPE, MEMBER)
+#else
+#define offsetof(TYPE, MEMBER)  ((size_t)&((TYPE *)0)->MEMBER)
+#endif
+
+struct llist_node {
+        struct llist_node *next;
+};
+
+#define container_of(ptr, type, member) ({                      \
+        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+        (type *)( (char *)__mptr - offsetof(type,member) );})
+
+#define llist_entry(ptr, type, member)          \
+        container_of(ptr, type, member)
+
+#define llist_for_each_entry(pos, node, member)                         \
+        for ((pos) = llist_entry((node), typeof(*(pos)), member);       \
+             &(pos)->member != NULL;                                    \
+             (pos) = llist_entry((pos)->member.next, typeof(*(pos)), member))
+
+struct foo {
+#ifndef FIX
+	unsigned long a;
+#endif
+	struct llist_node ll;
+};
+
+void working(void);
+
+struct llist_node *ptr;
+
+void bar(void)
+{
+	struct foo *f;
+
+	llist_for_each_entry(f, ptr, ll) {
+	}
+
+	working();
+}
