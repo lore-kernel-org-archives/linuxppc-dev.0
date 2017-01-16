@@ -1,24 +1,33 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-lf0-x22c.google.com (mail-lf0-x22c.google.com
- [IPv6:2a00:1450:4010:c07::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v2QLR3dx3zDqRN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 07:48:29 +1100 (AEDT)
-Received: by mail-lf0-x22c.google.com with SMTP id v186so92570106lfa.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 12:48:28 -0800 (PST)
-Subject: Re: [PATCH] net: constify mdiobb_ops structures
-To: Bhumika Goyal <bhumirks@gmail.com>, julia.lawall@lip6.fr,
- pantelis.antoniou@gmail.com, vbordug@ru.mvista.com, f.fainelli@gmail.com,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-renesas-soc@vger.kernel.org
-References: <1484330546-16569-1-git-send-email-bhumirks@gmail.com>
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Message-ID: <c12e3f5b-7fa6-fa61-d18b-a4069026a014@cogentembedded.com>
-Date: Mon, 16 Jan 2017 23:48:20 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v2RqC5dgVzDqSK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 08:55:03 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0GLs045041868
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 16:55:01 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28126f9a8a-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 16:55:01 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Mon, 16 Jan 2017 14:55:00 -0700
+Date: Mon, 16 Jan 2017 15:54:54 -0600
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Normal service will resume shortly ...
+References: <87pojncpt6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1484330546-16569-1-git-send-email-bhumirks@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <87pojncpt6.fsf@concordia.ellerman.id.au>
+Message-Id: <20170116215454.zdk5e3aownuomjij@arbab-vm>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +37,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+On Mon, Jan 16, 2017 at 08:33:09PM +1100, Michael Ellerman wrote:
+>If you've sent a fix that should go into 4.10 that hasn't been merged
+>yet, please feel free to reply to this message giving me a pointer to
+>it.
 
-On 01/13/2017 09:02 PM, Bhumika Goyal wrote:
+Welcome back!
 
-> Declare mdiobb_ops structures as const as they are only stored in the
-> ops field of mdiobb_ctrl structures. This field is of type const, so
-> mdiobb_ops structures having this property can be declared const too.
-> Done using Coccinelle:
+I think this should go into 4.10:
+https://lkml.kernel.org/r/1483475991-16999-1-git-send-email-arbab@linux.vnet.ibm.com
 
-[...]
+(aka http://patchwork.ozlabs.org/patch/710629/)
 
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
-[...]
-
-> diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
-> index 92d7692..1b0acd1 100644
-> --- a/drivers/net/ethernet/renesas/ravb_main.c
-> +++ b/drivers/net/ethernet/renesas/ravb_main.c
-> @@ -171,7 +171,7 @@ static int ravb_get_mdio_data(struct mdiobb_ctrl *ctrl)
->  }
->
->  /* MDIO bus control struct */
-> -static struct mdiobb_ops bb_ops = {
-> +static const struct mdiobb_ops bb_ops = {
->  	.owner = THIS_MODULE,
->  	.set_mdc = ravb_set_mdc,
->  	.set_mdio_dir = ravb_set_mdio_dir,
-> diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
-> index 00fafab..6ef5dd8 100644
-> --- a/drivers/net/ethernet/renesas/sh_eth.c
-> +++ b/drivers/net/ethernet/renesas/sh_eth.c
-> @@ -1052,7 +1052,7 @@ static void sh_mdc_ctrl(struct mdiobb_ctrl *ctrl, int bit)
->  }
->
->  /* mdio bus control struct */
-> -static struct mdiobb_ops bb_ops = {
-> +static const struct mdiobb_ops bb_ops = {
->  	.owner = THIS_MODULE,
->  	.set_mdc = sh_mdc_ctrl,
->  	.set_mdio_dir = sh_mmd_ctrl,
-[...]
-
-    For the above 2 drivers:
-
-Acked-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-
-MBR, Sergei
+-- 
+Reza Arbab
