@@ -1,25 +1,24 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
- [209.85.218.65])
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-lf0-x22c.google.com (mail-lf0-x22c.google.com
+ [IPv6:2a00:1450:4010:c07::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v2QBH0CckzDqRN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 07:41:27 +1100 (AEDT)
-Received: by mail-oi0-f65.google.com with SMTP id u143so13406430oif.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 12:41:26 -0800 (PST)
-From: Rob Herring <robh@kernel.org>
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Frank Rowand <frowand.list@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] of: Add function for generating a DT modalias with a
- newline
-Date: Mon, 16 Jan 2017 14:41:22 -0600
-Message-Id: <20170116204122.5858-2-robh@kernel.org>
-In-Reply-To: <20170116204122.5858-1-robh@kernel.org>
-References: <20170116204122.5858-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v2QLR3dx3zDqRN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 07:48:29 +1100 (AEDT)
+Received: by mail-lf0-x22c.google.com with SMTP id v186so92570106lfa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 12:48:28 -0800 (PST)
+Subject: Re: [PATCH] net: constify mdiobb_ops structures
+To: Bhumika Goyal <bhumirks@gmail.com>, julia.lawall@lip6.fr,
+ pantelis.antoniou@gmail.com, vbordug@ru.mvista.com, f.fainelli@gmail.com,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-renesas-soc@vger.kernel.org
+References: <1484330546-16569-1-git-send-email-bhumirks@gmail.com>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Message-ID: <c12e3f5b-7fa6-fa61-d18b-a4069026a014@cogentembedded.com>
+Date: Mon, 16 Jan 2017 23:48:20 +0300
+MIME-Version: 1.0
+In-Reply-To: <1484330546-16569-1-git-send-email-bhumirks@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,132 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The modalias sysfs attr is lacking a newline for DT aliases on platform
-devices. The macio and ibmebus correctly add the newline, but open code it.
-Introduce a new function, of_device_modalias(), that fills the buffer with
-the modalias including the newline and update users of the old
-of_device_get_modalias function.
+Hello!
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Frank Rowand <frowand.list@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/platforms/pseries/ibmebus.c |  5 +----
- drivers/base/platform.c                  |  2 +-
- drivers/macintosh/macio_sysfs.c          |  7 +------
- drivers/of/device.c                      | 16 +++++++++++++++-
- include/linux/of_device.h                |  7 +++----
- 5 files changed, 21 insertions(+), 16 deletions(-)
+On 01/13/2017 09:02 PM, Bhumika Goyal wrote:
 
-diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
-index 614c28537141..18f5a7a2896f 100644
---- a/arch/powerpc/platforms/pseries/ibmebus.c
-+++ b/arch/powerpc/platforms/pseries/ibmebus.c
-@@ -410,10 +410,7 @@ static ssize_t name_show(struct device *dev,
- static ssize_t modalias_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
--	ssize_t len = of_device_get_modalias(dev, buf, PAGE_SIZE - 2);
--	buf[len] = '\n';
--	buf[len+1] = 0;
--	return len+1;
-+	return of_device_modalias(dev, buf, PAGE_SIZE);
- }
- 
- static struct device_attribute ibmebus_bus_device_attrs[] = {
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index c4af00385502..d92f60d7f15d 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -837,7 +837,7 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *a,
- 	struct platform_device	*pdev = to_platform_device(dev);
- 	int len;
- 
--	len = of_device_get_modalias(dev, buf, PAGE_SIZE -1);
-+	len = of_device_modalias(dev, buf, PAGE_SIZE);
- 	if (len != -ENODEV)
- 		return len;
- 
-diff --git a/drivers/macintosh/macio_sysfs.c b/drivers/macintosh/macio_sysfs.c
-index 8eb40afbd0f5..0b1f9c76c68d 100644
---- a/drivers/macintosh/macio_sysfs.c
-+++ b/drivers/macintosh/macio_sysfs.c
-@@ -41,12 +41,7 @@ compatible_show (struct device *dev, struct device_attribute *attr, char *buf)
- static ssize_t modalias_show (struct device *dev, struct device_attribute *attr,
- 			      char *buf)
- {
--	int len = of_device_get_modalias(dev, buf, PAGE_SIZE - 2);
--
--	buf[len] = '\n';
--	buf[len+1] = 0;
--
--	return len+1;
-+	return of_device_modalias(dev, buf, PAGE_SIZE);
- }
- 
- static ssize_t devspec_show(struct device *dev,
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index bd620452f255..f3c3108d5a3a 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -176,7 +176,7 @@ const void *of_device_get_match_data(const struct device *dev)
- }
- EXPORT_SYMBOL(of_device_get_match_data);
- 
--ssize_t of_device_get_modalias(struct device *dev, char *str, ssize_t len)
-+static ssize_t of_device_get_modalias(struct device *dev, char *str, ssize_t len)
- {
- 	const char *compat;
- 	int cplen, i;
-@@ -227,6 +227,20 @@ ssize_t of_device_get_modalias(struct device *dev, char *str, ssize_t len)
- }
- 
- /**
-+ * of_device_modalias - Fill buffer with newline terminated modalias string
-+ */
-+ssize_t of_device_modalias(struct device *dev, char *str, ssize_t len)
-+{
-+	ssize_t sl = of_device_get_modalias(dev, str, len - 2);
-+	if (sl < 0)
-+		return sl;
-+
-+	str[sl++] = '\n';
-+	str[sl] = 0;
-+	return sl;
-+}
-+
-+/**
-  * of_device_uevent - Display OF related uevent information
-  */
- void of_device_uevent(struct device *dev, struct kobj_uevent_env *env)
-diff --git a/include/linux/of_device.h b/include/linux/of_device.h
-index cc7dd687a89d..971d7250a8a4 100644
---- a/include/linux/of_device.h
-+++ b/include/linux/of_device.h
-@@ -35,8 +35,7 @@ extern void of_device_unregister(struct platform_device *ofdev);
- 
- extern const void *of_device_get_match_data(const struct device *dev);
- 
--extern ssize_t of_device_get_modalias(struct device *dev,
--					char *str, ssize_t len);
-+extern ssize_t of_device_modalias(struct device *dev, char *str, ssize_t len);
- 
- extern void of_device_uevent(struct device *dev, struct kobj_uevent_env *env);
- extern int of_device_uevent_modalias(struct device *dev, struct kobj_uevent_env *env);
-@@ -72,8 +71,8 @@ static inline const void *of_device_get_match_data(const struct device *dev)
- 	return NULL;
- }
- 
--static inline int of_device_get_modalias(struct device *dev,
--				   char *str, ssize_t len)
-+static inline int of_device_modalias(struct device *dev,
-+				     char *str, ssize_t len)
- {
- 	return -ENODEV;
- }
--- 
-2.10.1
+> Declare mdiobb_ops structures as const as they are only stored in the
+> ops field of mdiobb_ctrl structures. This field is of type const, so
+> mdiobb_ops structures having this property can be declared const too.
+> Done using Coccinelle:
+
+[...]
+
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+[...]
+
+> diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
+> index 92d7692..1b0acd1 100644
+> --- a/drivers/net/ethernet/renesas/ravb_main.c
+> +++ b/drivers/net/ethernet/renesas/ravb_main.c
+> @@ -171,7 +171,7 @@ static int ravb_get_mdio_data(struct mdiobb_ctrl *ctrl)
+>  }
+>
+>  /* MDIO bus control struct */
+> -static struct mdiobb_ops bb_ops = {
+> +static const struct mdiobb_ops bb_ops = {
+>  	.owner = THIS_MODULE,
+>  	.set_mdc = ravb_set_mdc,
+>  	.set_mdio_dir = ravb_set_mdio_dir,
+> diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
+> index 00fafab..6ef5dd8 100644
+> --- a/drivers/net/ethernet/renesas/sh_eth.c
+> +++ b/drivers/net/ethernet/renesas/sh_eth.c
+> @@ -1052,7 +1052,7 @@ static void sh_mdc_ctrl(struct mdiobb_ctrl *ctrl, int bit)
+>  }
+>
+>  /* mdio bus control struct */
+> -static struct mdiobb_ops bb_ops = {
+> +static const struct mdiobb_ops bb_ops = {
+>  	.owner = THIS_MODULE,
+>  	.set_mdc = sh_mdc_ctrl,
+>  	.set_mdio_dir = sh_mmd_ctrl,
+[...]
+
+    For the above 2 drivers:
+
+Acked-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+
+MBR, Sergei
