@@ -1,30 +1,22 @@
-Return-Path: <BATV+5fcf32114b117cf6a01c+4894+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v2HlX5t5RzDqJ4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 02:51:20 +1100 (AEDT)
-Date: Mon, 16 Jan 2017 07:51:10 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Kishon Vijay Abraham I <kishon@ti.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Jingoo Han <jingoohan1@gmail.com>,
- Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
-Subject: Re: [PATCH 16/37] PCI: endpoint: Introduce configfs entry for
- configuring EP functions
-Message-ID: <20170116155110.GA13495@infradead.org>
-References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-17-git-send-email-kishon@ti.com>
- <20170113180602.GA30346@infradead.org> <587C61B3.3070107@ti.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v2J6v4FhqzDqSQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 03:08:07 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id y143so14392387pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 08:08:07 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Mon, 16 Jan 2017 21:37:59 +0530
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <pmac@au1.ibm.com>
+Subject: Re: [PATCH] powerpc/icp-opal: Fix missing KVM case and harden replay
+Message-ID: <20170116160759.GA31332@localhost.localdomain>
+References: <1484533171.11927.24.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <587C61B3.3070107@ti.com>
+In-Reply-To: <1484533171.11927.24.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 16, 2017 at 11:31:23AM +0530, Kishon Vijay Abraham I wrote:
-> Actually not all devices have hardcoded headers. E.g the platform I'm using
-> doesn't have hardcoded headers and it can be configured based on the function
-> the user would like to use. If the devices are hardcoded, then using configfs
-> can be skipped altogether. In such cases, APIs like pci_epf_create() can
-> directly be used by the drivers instead of going via configfs.
+On Sun, Jan 15, 2017 at 08:19:31PM -0600, Benjamin Herrenschmidt wrote:
+> The icp-opal call is missing the code from icp-native to recover
+> interrupts snatched by KVM. Without that, when running KVM, we can
+> get into a situation where an interrupt is lost and the CPU stuck
+> with an elevated CPPR.
+> 
+> Also harden replay by always checking the return from opal_int_eoi
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/sysdev/xics/icp-opal.c | 31 ++++++++++++++++++++++++-------
+>  1 file changed, 24 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/xics/icp-opal.c b/arch/powerpc/sysdev/xics/icp-opal.c
+> index d38e86f..60c5765 100644
+> --- a/arch/powerpc/sysdev/xics/icp-opal.c
+> +++ b/arch/powerpc/sysdev/xics/icp-opal.c
+> @@ -20,6 +20,7 @@
+>  #include 
+>  #include 
+>  #include 
+> +#include 
+>
 
-That's exactly what I meant - the IDs need to be set by the driver for
-the implemented PCI device, and it's not up to the gadget core to configur
-e them, it's up to the implementation of the PCIe device which PCI it
-exposes.
+??
+
+<snip>
+
+> @@ -39,7 +40,26 @@ static void icp_opal_flush_ipi(void)
+>  	 * Should we be flagging idle loop instead?
+>  	 * Or creating some task to be scheduled?
+>  	 */
+> -	opal_int_eoi((0x00 << 24) | XICS_IPI);
+> +	if (opal_int_eoi((0x00 << 24) | XICS_IPI) > 0)
+> +		force_external_irq_replay();
+> +}
+
+Shouldn't we also update kvm bits on icp_native_ipi_action
+and icp_native_cause_ipi?
+
+Balbir Singh.
