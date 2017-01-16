@@ -1,39 +1,18 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v23ts5bPKzDqZc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 17:56:53 +1100 (AEDT)
-Received: by mail-wm0-x241.google.com with SMTP id d140so12131702wmd.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 22:56:53 -0800 (PST)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Mon, 16 Jan 2017 07:56:47 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, jiangshanlai@gmail.com,
- dipankar@in.ibm.com, akpm@linux-foundation.org,
- mathieu.desnoyers@efficios.com, josh@joshtriplett.org,
- tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
- dhowells@redhat.com, edumazet@google.com, dvhart@linux.intel.com,
- fweisbec@gmail.com, oleg@redhat.com, bobby.prani@gmail.com,
- will.deacon@arm.com, boqun.feng@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH tip/core/rcu 2/3] srcu: Force full grace-period ordering
-Message-ID: <20170116065647.GA29538@gmail.com>
-References: <1484385601-23379-2-git-send-email-paulmck@linux.vnet.ibm.com>
- <20170114093550.GB14970@gmail.com>
- <20170114195417.GW5238@linux.vnet.ibm.com>
- <20170114214159.GA7098@linux.vnet.ibm.com>
- <20170115071123.GB26581@gmail.com>
- <20170115074034.GE5238@linux.vnet.ibm.com>
- <20170115075711.GA19506@gmail.com>
- <20170115092454.GF5238@linux.vnet.ibm.com>
- <20170115094058.GB28621@gmail.com>
- <20170115194526.GH5238@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170115194526.GH5238@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v26df3wZjzDqRV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 20:00:37 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH RFC] powerpc/32: fix handling of stack protector with recent
+ GCC
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, Christian Kujau <lists@nerdbynature.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20170116090031.4843668B50@localhost.localdomain>
+Date: Mon, 16 Jan 2017 10:00:31 +0100 (CET)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,53 +22,316 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Since 2005, powerpc GCC doesn't manage anymore __stack_chk_guard as
+a global variable but as some value located at -0x7008(r2)
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+In the Linux kernel, r2 is used as a pointer to current task struct.
 
-> On Sun, Jan 15, 2017 at 10:40:58AM +0100, Ingo Molnar wrote:
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > > [sounds of rummaging around in the Git tree]
-> > > > 
-> > > > I found this commit of yours from ancient history (more than a year ago!):
-> > > > 
-> > > >   commit 12d560f4ea87030667438a169912380be00cea4b
-> > > >   Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > >   Date:   Tue Jul 14 18:35:23 2015 -0700
-> > > > 
-> > > >     rcu,locking: Privatize smp_mb__after_unlock_lock()
-> > > >     
-> > > >     RCU is the only thing that uses smp_mb__after_unlock_lock(), and is
-> > > >     likely the only thing that ever will use it, so this commit makes this
-> > > >     macro private to RCU.
-> > > >     
-> > > >     Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > >     Cc: Will Deacon <will.deacon@arm.com>
-> > > >     Cc: Peter Zijlstra <peterz@infradead.org>
-> > > >     Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > >     Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-> > > > 
-> > > > So I concur and I'm fine with your patch - or with the status quo code as well.
-> > > 
-> > > I already have the patch queued, so how about I keep it if I get an ack
-> > > from the powerpc guys and drop it otherwise?
-> > 
-> > Yeah, sounds good! Your patch made me look up 'RelAcq' so it has documentation 
-> > value as well ;-)
-> 
-> ;-) ;-) ;-)
-> 
-> Looking forward, my guess would be that if some other code needs
-> smp_mb__after_unlock_lock() or if some other architecture needs
-> non-smb_mb() special handling, I should consider making it work the
-> same as smp_mb__after_atomic() and friends.  Does that seem like a
-> reasonable thought?
+This patch changes the meaning of r2 when stack protector
+is activated:
+- current is taken from thread_info and not kept in r2 anymore
+- r2 is set to current + offset of stack canary + 0x7008 so
+that -0x7008(r2) directly points to current->stack_canary
 
-Yeah, absolutely - it's just that the pattern triggered the 'this looks a bit too 
-specialized' response in me, but after seeing the details (again ...) I agree that 
-this time is different!
+current could have been more efficiently calculated from r2
+but some circular inclusion prevent inserting struct task_struct
+into arch/powerpc/include/asm/current.h so it is not possible
+to get offset of stack_canary within current task_struct from there.
 
-Thanks,
+fixes: 6533b7c16ee57 ("powerpc: Initial stack protector
+(-fstack-protector) support")
+Reported-by: Christian Kujau <lists@nerdbynature.de>
 
-	Ingo
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ Christian, can you test it ?
+
+ arch/powerpc/include/asm/current.h        | 12 +++++++++++-
+ arch/powerpc/include/asm/stackprotector.h | 13 +++++++++----
+ arch/powerpc/kernel/entry_32.S            | 19 +++++++++++++++----
+ arch/powerpc/kernel/head_32.S             |  7 +++++++
+ arch/powerpc/kernel/head_40x.S            |  4 ++++
+ arch/powerpc/kernel/head_44x.S            |  4 ++++
+ arch/powerpc/kernel/head_8xx.S            |  4 ++++
+ arch/powerpc/kernel/head_fsl_booke.S      |  7 +++++++
+ arch/powerpc/kernel/process.c             |  6 ------
+ 9 files changed, 61 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/current.h b/arch/powerpc/include/asm/current.h
+index e2c7f06..2f67f02 100644
+--- a/arch/powerpc/include/asm/current.h
++++ b/arch/powerpc/include/asm/current.h
+@@ -27,8 +27,16 @@ static inline struct task_struct *get_current(void)
+ }
+ #define current	get_current()
+ 
+-#else
++#else /* __powerpc64__ */
++#if defined(CONFIG_CC_STACKPROTECTOR)
++#include <linux/thread_info.h>
+ 
++static inline struct task_struct *get_current(void)
++{
++	return current_thread_info()->task;
++}
++#define current	get_current()
++#else
+ /*
+  * We keep `current' in r2 for speed.
+  */
+@@ -36,5 +44,7 @@ register struct task_struct *current asm ("r2");
+ 
+ #endif
+ 
++#endif /* __powerpc64__ */
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_CURRENT_H */
+diff --git a/arch/powerpc/include/asm/stackprotector.h b/arch/powerpc/include/asm/stackprotector.h
+index 6720190..bf30509 100644
+--- a/arch/powerpc/include/asm/stackprotector.h
++++ b/arch/powerpc/include/asm/stackprotector.h
+@@ -12,12 +12,18 @@
+ #ifndef _ASM_STACKPROTECTOR_H
+ #define _ASM_STACKPROTECTOR_H
+ 
++#ifdef CONFIG_PPC64
++#define SSP_OFFSET	0x7010
++#else
++#define SSP_OFFSET	0x7008
++#endif
++
++#ifndef __ASSEMBLY__
++
+ #include <linux/random.h>
+ #include <linux/version.h>
+ #include <asm/reg.h>
+ 
+-extern unsigned long __stack_chk_guard;
+-
+ /*
+  * Initialize the stackprotector canary value.
+  *
+@@ -34,7 +40,6 @@ static __always_inline void boot_init_stack_canary(void)
+ 	canary ^= LINUX_VERSION_CODE;
+ 
+ 	current->stack_canary = canary;
+-	__stack_chk_guard = current->stack_canary;
+ }
+-
++#endif /* __ASSEMBLY__ */
+ #endif	/* _ASM_STACKPROTECTOR_H */
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 5742dbd..b3a363c 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -34,6 +34,7 @@
+ #include <asm/ftrace.h>
+ #include <asm/ptrace.h>
+ #include <asm/export.h>
++#include <asm/stackprotector.h>
+ 
+ /*
+  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
+@@ -149,6 +150,9 @@ transfer_to_handler:
+ 	mfspr	r12,SPRN_SPRG_THREAD
+ 	addi	r2,r12,-THREAD
+ 	tovirt(r2,r2)			/* set r2 to current */
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 	beq	2f			/* if from user, fix up THREAD.regs */
+ 	addi	r11,r1,STACK_FRAME_OVERHEAD
+ 	stw	r11,PT_REGS(r12)
+@@ -385,6 +389,9 @@ syscall_exit_cont:
+ 	lwz	r3,GPR3(r1)
+ 1:
+ #endif /* CONFIG_TRACE_IRQFLAGS */
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	subi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+ 	/* If the process has its own DBCR0 value, load it up.  The internal
+ 	   debug mode bit tells us that dbcr0 should be loaded. */
+@@ -617,6 +624,9 @@ _GLOBAL(_switch)
+ 	stwu	r1,-INT_FRAME_SIZE(r1)
+ 	mflr	r0
+ 	stw	r0,INT_FRAME_SIZE+4(r1)
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	subi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 	/* r3-r12 are caller saved -- Cort */
+ 	SAVE_NVGPRS(r1)
+ 	stw	r0,_NIP(r1)	/* Return to switch caller */
+@@ -674,10 +684,8 @@ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_SPEFSCR,r0		/* restore SPEFSCR reg */
+ END_FTR_SECTION_IFSET(CPU_FTR_SPE)
+ #endif /* CONFIG_SPE */
+-#if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
+-	lwz	r0,TSK_STACK_CANARY(r2)
+-	lis	r4,__stack_chk_guard@ha
+-	stw	r0,__stack_chk_guard@l(r4)
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
+ #endif
+ 	lwz	r0,_CCR(r1)
+ 	mtcrf	0xFF,r0
+@@ -779,6 +787,9 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
+ 	bne	do_work
+ 
+ restore_user:
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	subi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+ 	/* Check whether this process has its own DBCR0 value.  The internal
+ 	   debug mode bit tells us that dbcr0 should be loaded. */
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 9d96354..bae9b83 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -35,6 +35,7 @@
+ #include <asm/bug.h>
+ #include <asm/kvm_book3s_asm.h>
+ #include <asm/export.h>
++#include <asm/stackprotector.h>
+ 
+ /* 601 only have IBAT; cr0.eq is set on 601 when using this macro */
+ #define LOAD_BAT(n, reg, RA, RB)	\
+@@ -864,6 +865,9 @@ __secondary_start:
+ 	tophys(r4,r2)
+ 	addi	r4,r4,THREAD	/* phys address of our thread_struct */
+ 	mtspr	SPRN_SPRG_THREAD,r4
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 	li	r3,0
+ 	mtspr	SPRN_SPRG_RTAS,r3	/* 0 => not in RTAS */
+ 
+@@ -950,6 +954,9 @@ start_here:
+ 	tophys(r4,r2)
+ 	addi	r4,r4,THREAD	/* init task's THREAD */
+ 	mtspr	SPRN_SPRG_THREAD,r4
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 	li	r3,0
+ 	mtspr	SPRN_SPRG_RTAS,r3	/* 0 => not in RTAS */
+ 
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 41374a4..20b1c31 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -42,6 +42,7 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/ptrace.h>
+ #include <asm/export.h>
++#include <asm/stackprotector.h>
+ 
+ /* As with the other PowerPC ports, it is expected that when code
+  * execution begins here, the following registers contain valid, yet
+@@ -835,6 +836,9 @@ start_here:
+ 	tophys(r4,r2)
+ 	addi	r4,r4,THREAD	/* init task's THREAD */
+ 	mtspr	SPRN_SPRG_THREAD,r4
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 
+ 	/* stack */
+ 	lis	r1,init_thread_union@ha
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 37e4a7c..753e2bf 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -40,6 +40,7 @@
+ #include <asm/ptrace.h>
+ #include <asm/synch.h>
+ #include <asm/export.h>
++#include <asm/stackprotector.h>
+ #include "head_booke.h"
+ 
+ 
+@@ -107,6 +108,9 @@ _ENTRY(_start);
+ 	/* ptr to current thread */
+ 	addi	r4,r2,THREAD	/* init task's THREAD */
+ 	mtspr	SPRN_SPRG_THREAD,r4
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 
+ 	/* stack */
+ 	lis	r1,init_thread_union@h
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 1a9c99d..49f9ce1 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -32,6 +32,7 @@
+ #include <asm/ptrace.h>
+ #include <asm/fixmap.h>
+ #include <asm/export.h>
++#include <asm/stackprotector.h>
+ 
+ /* Macro to make the code more readable. */
+ #ifdef CONFIG_8xx_CPU6
+@@ -820,6 +821,9 @@ start_here:
+ 	tophys(r4,r2)
+ 	addi	r4,r4,THREAD	/* init task's THREAD */
+ 	mtspr	SPRN_SPRG_THREAD,r4
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 
+ 	/* stack */
+ 	lis	r1,init_thread_union@ha
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index bf4c602..9634ac7 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -43,6 +43,7 @@
+ #include <asm/cache.h>
+ #include <asm/ptrace.h>
+ #include <asm/export.h>
++#include <asm/stackprotector.h>
+ #include "head_booke.h"
+ 
+ /* As with the other PowerPC ports, it is expected that when code
+@@ -235,6 +236,9 @@ set_ivor:
+ 	/* ptr to current thread */
+ 	addi	r4,r2,THREAD	/* init task's THREAD */
+ 	mtspr	SPRN_SPRG_THREAD,r4
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 
+ 	/* stack */
+ 	lis	r1,init_thread_union@h
+@@ -1086,6 +1090,9 @@ __secondary_start:
+ 	/* ptr to current thread */
+ 	addi	r4,r2,THREAD	/* address of our thread_struct */
+ 	mtspr	SPRN_SPRG_THREAD,r4
++#if defined(CONFIG_CC_STACKPROTECTOR)
++	addi	r2,r2,TSK_STACK_CANARY+SSP_OFFSET
++#endif
+ 
+ 	/* Setup the defaults for TLB entries */
+ 	li	r4,(MAS4_TSIZED(BOOK3E_PAGESZ_4K))@l
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 04885ce..5dd056d 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -64,12 +64,6 @@
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+ 
+-#ifdef CONFIG_CC_STACKPROTECTOR
+-#include <linux/stackprotector.h>
+-unsigned long __stack_chk_guard __read_mostly;
+-EXPORT_SYMBOL(__stack_chk_guard);
+-#endif
+-
+ /* Transactional Memory debug */
+ #ifdef TM_DEBUG_SW
+ #define TM_DEBUG(x...) printk(KERN_INFO x)
+-- 
+2.10.1
