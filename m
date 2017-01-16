@@ -1,48 +1,39 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v23t60LnxzDqSV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 17:56:13 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0G6s3Vf090035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 01:56:11 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 280bepw2bk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 01:56:11 -0500
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 16 Jan 2017 16:56:09 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 054F52CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 17:56:07 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0G6u65k36503624
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 17:56:06 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0G6u62O022378
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 17:56:06 +1100
-Subject: Re: [PATCH] powerpc/mm/hugetlb: Don't panic if we don't find the
- default huge page size
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Chris Smart <csmart@ozlabs.au.ibm.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>
-References: <20161213140411.20633-1-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Mon, 16 Jan 2017 12:25:53 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v23ts5bPKzDqZc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 17:56:53 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id d140so12131702wmd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2017 22:56:53 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Mon, 16 Jan 2017 07:56:47 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jiangshanlai@gmail.com,
+ dipankar@in.ibm.com, akpm@linux-foundation.org,
+ mathieu.desnoyers@efficios.com, josh@joshtriplett.org,
+ tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+ dhowells@redhat.com, edumazet@google.com, dvhart@linux.intel.com,
+ fweisbec@gmail.com, oleg@redhat.com, bobby.prani@gmail.com,
+ will.deacon@arm.com, boqun.feng@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH tip/core/rcu 2/3] srcu: Force full grace-period ordering
+Message-ID: <20170116065647.GA29538@gmail.com>
+References: <1484385601-23379-2-git-send-email-paulmck@linux.vnet.ibm.com>
+ <20170114093550.GB14970@gmail.com>
+ <20170114195417.GW5238@linux.vnet.ibm.com>
+ <20170114214159.GA7098@linux.vnet.ibm.com>
+ <20170115071123.GB26581@gmail.com>
+ <20170115074034.GE5238@linux.vnet.ibm.com>
+ <20170115075711.GA19506@gmail.com>
+ <20170115092454.GF5238@linux.vnet.ibm.com>
+ <20170115094058.GB28621@gmail.com>
+ <20170115194526.GH5238@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20161213140411.20633-1-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <4f38a92d-353f-d505-43c3-a2d752d22657@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170115194526.GH5238@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,18 +43,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/13/2016 07:34 PM, Aneesh Kumar K.V wrote:
-> generic hugetlbfs can handle that condition correctly. With HPAGE_SHIFT = 0
 
-Need to add some context here. "That condition" refers to something without
-first mentioning it.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> we get
-> [0.241333] hugetlbfs: disabling because there are no supported hugepage sizes
+> On Sun, Jan 15, 2017 at 10:40:58AM +0100, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > > [sounds of rummaging around in the Git tree]
+> > > > 
+> > > > I found this commit of yours from ancient history (more than a year ago!):
+> > > > 
+> > > >   commit 12d560f4ea87030667438a169912380be00cea4b
+> > > >   Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > >   Date:   Tue Jul 14 18:35:23 2015 -0700
+> > > > 
+> > > >     rcu,locking: Privatize smp_mb__after_unlock_lock()
+> > > >     
+> > > >     RCU is the only thing that uses smp_mb__after_unlock_lock(), and is
+> > > >     likely the only thing that ever will use it, so this commit makes this
+> > > >     macro private to RCU.
+> > > >     
+> > > >     Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > >     Cc: Will Deacon <will.deacon@arm.com>
+> > > >     Cc: Peter Zijlstra <peterz@infradead.org>
+> > > >     Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > >     Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
+> > > > 
+> > > > So I concur and I'm fine with your patch - or with the status quo code as well.
+> > > 
+> > > I already have the patch queued, so how about I keep it if I get an ack
+> > > from the powerpc guys and drop it otherwise?
+> > 
+> > Yeah, sounds good! Your patch made me look up 'RelAcq' so it has documentation 
+> > value as well ;-)
 > 
-> bash-4.2# echo 30 > /proc/sys/vm/nr_hugepages
-> bash: echo: write error: Operation not supported
+> ;-) ;-) ;-)
 > 
-> Fixes: "powerpc: get hugetlbpage handling more generic"
+> Looking forward, my guess would be that if some other code needs
+> smp_mb__after_unlock_lock() or if some other architecture needs
+> non-smb_mb() special handling, I should consider making it work the
+> same as smp_mb__after_atomic() and friends.  Does that seem like a
+> reasonable thought?
 
-Dont we need the commit SHA for the "Fixes" header ?
+Yeah, absolutely - it's just that the pattern triggered the 'this looks a bit too 
+specialized' response in me, but after seeing the details (again ...) I agree that 
+this time is different!
+
+Thanks,
+
+	Ingo
