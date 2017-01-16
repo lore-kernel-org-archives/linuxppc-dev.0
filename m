@@ -1,31 +1,26 @@
-Return-Path: <Joao.Pinto@synopsys.com>
-Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
- [198.182.60.111])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v2Dnz6S7NzDqNX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 00:38:15 +1100 (AEDT)
-Subject: Re: [PATCH 11/37] PCI: dwc: Split pcie-designware.c into host and
- core files
-To: Kishon Vijay Abraham I <kishon@ti.com>, Joao Pinto
- <Joao.Pinto@synopsys.com>, Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han
- <jingoohan1@gmail.com>, Arnd Bergmann <arnd@arndb.de>
-References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-12-git-send-email-kishon@ti.com>
- <4a89fb45-af84-d660-5ef0-12227b141cda@synopsys.com> <587C586C.6070003@ti.com>
- <0a16c862-312f-655e-3d66-bdb0c1f78584@synopsys.com> <587CAEBD.1010803@ti.com>
-CC: <linux-pci@vger.kernel.org>, <linux-doc@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-samsung-soc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@axis.com>, <linux-arm-msm@vger.kernel.org>,
- <nsekhar@ti.com>
-From: Joao Pinto <Joao.Pinto@synopsys.com>
-Message-ID: <018295b9-00a1-1164-8af1-a01924fa931e@synopsys.com>
-Date: Mon, 16 Jan 2017 13:38:07 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v2G3L1QHvzDqSQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 01:34:53 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Anton Blanchard' <anton@samba.org>, "behanw@converseincode.com"
+ <behanw@converseincode.com>, "ying.huang@intel.com" <ying.huang@intel.com>,
+ "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "oleg@redhat.com"
+ <oleg@redhat.com>, Segher Boessenkool <segher@kernel.crashing.org>,
+ "mingo@elte.hu" <mingo@elte.hu>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: llist code relies on undefined behaviour, upsets llvm/clang
+Date: Mon, 16 Jan 2017 14:34:43 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0264AA5@AcuExch.aculab.com>
+References: <20170116083600.47175073@kryten>
+In-Reply-To: <20170116083600.47175073@kryten>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <587CAEBD.1010803@ti.com>
-Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,70 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Às 11:30 AM de 1/16/2017, Kishon Vijay Abraham I escreveu:
-> Hi Joao,
-> 
-> On Monday 16 January 2017 03:57 PM, Joao Pinto wrote:
->>
->> Hi,
->>
->> Às 5:21 AM de 1/16/2017, Kishon Vijay Abraham I escreveu:
->>> Hi Joao,
->>>
->>> On Friday 13 January 2017 10:19 PM, Joao Pinto wrote:
->>>> Às 10:26 AM de 1/12/2017, Kishon Vijay Abraham I escreveu:
->>>>> Split pcie-designware.c into pcie-designware-host.c that contains
->>>>> the host specific parts of the driver and pcie-designware.c that
->>>>> contains the parts used by both host driver and endpoint driver.
->>>>>
->>>>> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
->>>>> ---
->>>>>  drivers/pci/dwc/Makefile               |    2 +-
->>>>>  drivers/pci/dwc/pcie-designware-host.c |  619 ++++++++++++++++++++++++++++++++
->>>>>  drivers/pci/dwc/pcie-designware.c      |  613 +------------------------------
->>>>>  drivers/pci/dwc/pcie-designware.h      |    8 +
->>>>>  4 files changed, 634 insertions(+), 608 deletions(-)
->>>>>  create mode 100644 drivers/pci/dwc/pcie-designware-host.c
->>>>>
->>>>> diff --git a/drivers/pci/dwc/Makefile b/drivers/pci/dwc/Makefile
->>>>> index 7d27c14..3b57e55 100644
->>>>> --- a/drivers/pci/dwc/Makefile
->>>>> +++ b/drivers/pci/dwc/Makefile
->>>>> @@ -1,4 +1,4 @@
->>>>
->>>> (snip...)
->>>>
->>>>> -static void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
->>>>> -				      int type, u64 cpu_addr, u64 pci_addr,
->>>>> -				      u32 size)
->>>>> +void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index, int type,
->>>>> +			       u64 cpu_addr, u64 pci_addr, u32 size)
->>>>>  {
->>>>>  	u32 retries, val;
->>>>>  
->>>>> @@ -186,220 +151,6 @@ static void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
->>>>>  	dev_err(pci->dev, "iATU is not being enabled\n");
->>>>>  }
->>>>
->>>> Kishon, iATU only makes sense in The Root Complex (host), so it should be inside
->>>> the pcie-designware-host.
->>>
->>> That is not true. Outbound ATU should be programmed to access host side buffers
->>> and inbound ATU should be programmed for the host to access EP mem space.
->>
->> Sorry, I was not clear enough. What I was trying to suggest is, since the ATU
->> programming is done by the host, wouldn't be better to include it in the
->> pcie-designware-host? It is just an architectural detail.
-> 
-> ATU programming is required in EP mode. See "[PATCH 24/37] PCI: dwc:
-> designware: Add EP mode support" in this patch series.
-> 
-> Anything that's required by both EP mode and RC mode, I've placed in
-> pcie-designware.c
+From: Anton Blanchard
+> Sent: 15 January 2017 21:36
+> I was debugging a hang on a ppc64le kernel built with clang, and it
+> looks to be undefined behaviour with pointer wrapping in the llist code.
+>=20
+> A test case is below. llist_for_each_entry() does container_of() on a
+> NULL pointer, which wraps our pointer negative, then adds the same
+> offset back in and expects to get back to NULL. Unfortunately clang
+> decides that this can never be NULL and optimises it into an infinite
+> loop.
+...
+> #define llist_for_each_entry(pos, node, member)                         \
+>         for ((pos) =3D llist_entry((node), typeof(*(pos)), member);      =
+ \
+>              &(pos)->member !=3D NULL;                                   =
+ \
+>              (pos) =3D llist_entry((pos)->member.next, typeof(*(pos)), me=
+mber))
 
-Agreed!
+Maybe the above could be rewritten as (untested):
+		for ((pos) =3D NULL; (!(pos) ? (node) : ((pos)->member.next) || (pos) =3D=
+ 0) && \
+			(((pos) =3D !(pos) ? llist_entry((node), typeof(*(pos)), member) \
+					: llist_entry((pos)->member.next, typeof(*(pos)), member)),1); )
+Provided the compiler assumes that the loop body is never executed with 'po=
+s =3D=3D 0'
+it should generate the same code.
 
-> 
-> Thanks
-> Kishon
-> 
+	David
