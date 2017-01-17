@@ -1,24 +1,33 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v2hYW1vZdzDqFW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 18:29:03 +1100 (AEDT)
-Received: by mail-pf0-x244.google.com with SMTP id f144so15664385pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2017 23:29:03 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 17 Jan 2017 12:58:55 +0530
-To: Russell Currey <ruscur@russell.cc>
-Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Use octal numbers for file permissions
-Message-ID: <20170117072855.GF8963@dhcp-9-109-223-248.in.ibm.com>
-References: <20170112035413.26544-1-ruscur@russell.cc>
- <20170113081122.GA14043@localhost.localdomain>
- <1484526112.2660.1.camel@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v2krL4YRCzDqRB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 20:12:02 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0H93jGB096116
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 04:11:59 -0500
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28126fwfu9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2017 04:11:59 -0500
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Tue, 17 Jan 2017 04:11:58 -0500
+Subject: Re: Normal service will resume shortly ...
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <87pojncpt6.fsf@concordia.ellerman.id.au>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 17 Jan 2017 14:41:48 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1484526112.2660.1.camel@russell.cc>
+In-Reply-To: <87pojncpt6.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <587DDFD4.1010204@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 16, 2017 at 11:21:52AM +1100, Russell Currey wrote:
-> On Fri, 2017-01-13 at 13:41 +0530, Balbir Singh wrote:
-> > On Thu, Jan 12, 2017 at 02:54:13PM +1100, Russell Currey wrote:
-> > > Symbolic macros are unintuitive and hard to read, whereas octal constants
-> > > are much easier to interpret.  Replace macros for the basic permission
-> > > flags (user/group/other read/write/execute) with numeric constants
-> > > instead, across the whole powerpc tree.
-> > > 
-> > 
-> > I know Linus said otherwise, but I wonder if the churn is worth it.
-> > At user mode (do man 2 chmod), these constants are used frequently,
-> > even with chmod the command we use chmod a+r equivalents or chmod
-> > u+r. My big concern with numbers is how do you know you did not
-> > turn on the sticky bit for a file? Can you imagine if someone used
-> > 0x644 or 0x444 would we catch it?
-> 
-> I would certainly expect something like that would be caught.
+Hi Michael,
+
+Welcome back!!
+
+Can you please take a look at:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-November/151426.html
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-November/150452.html
+
+Thanks,
+Ravi
+
+
+On Monday 16 January 2017 03:03 PM, Michael Ellerman wrote:
+> Hi folks,
 >
-
-OK.. Lets hope so.
- 
-> > 
-> > Not resisting, but thinking if the churn and what follows might be
-> > OK.
-> 
-> So long as the constants are still in the tree people will still send patches
-> with them (which continues to happen even though there's a checkpatch warning). 
-> Constants have the issue that the same value can be written multiple ways (which
-> is misleading) - some of the files I touched come about the same set of
-> permissions different ways or even mix octal values and macros within the same
-> file.
-
-I don't think anyone prevents 0444 | 0200 from being sent. It's just that
-associativity rules allow for composing things differently.
-
-> 
-> I think using octal values for rwx (and sticking to macros for things like the
-> sticky bit) is on the side of simplicity and consistency.
+> I'm back from paternity leave, and will start processing patches in the
+> next day or two.
 >
-
-Fair enough, maintainer gets to decide :)
-
-Balbir Singh. 
+> If you've sent a fix that should go into 4.10 that hasn't been merged
+> yet, please feel free to reply to this message giving me a pointer to
+> it.
+>
+> cheers
+>
