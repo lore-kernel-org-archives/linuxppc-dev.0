@@ -1,17 +1,21 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v3Qlb05wvzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2017 23:10:19 +1100 (AEDT)
-In-Reply-To: <1483968615-15850-2-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v3Qlc06pWzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2017 23:10:20 +1100 (AEDT)
+In-Reply-To: <20161213140411.20633-1-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org,
+ Chris Smart <csmart@ozlabs.au.ibm.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [2/2] powerpc/perf: fix PM_BR_CMPL event code for power9
-Message-Id: <3v3QlZ6XJ0z9t0q@ozlabs.org>
-Date: Wed, 18 Jan 2017 23:10:18 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm/hugetlb: Don't panic if we don't find the default huge
+ page size
+Message-Id: <3v3Qlb6kHnz9t1Q@ozlabs.org>
+Date: Wed, 18 Jan 2017 23:10:19 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-01-09 at 13:30:15 UTC, Madhavan Srinivasan wrote:
-> Use 0x10012 event code for PM_BR_CMPL event in
-> power9 event list instead of current 0x40060.
+On Tue, 2016-12-13 at 14:04:11 UTC, "Aneesh Kumar K.V" wrote:
+> generic hugetlbfs can handle that condition correctly. With HPAGE_SHIFT = 0
+> we get
+> [0.241333] hugetlbfs: disabling because there are no supported hugepage sizes
 > 
-> Fixes:34922527a2bcb ('powerpc/perf: Add power9 event list macros for generic and cache events')
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> bash-4.2# echo 30 > /proc/sys/vm/nr_hugepages
+> bash: echo: write error: Operation not supported
+> 
+> Fixes: "powerpc: get hugetlbpage handling more generic"
+> Reported-by: Chris Smart <csmart@ozlabs.au.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Acked-By: Michael Neuling <mikey@neuling.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/d89f473ff6f84872e761419f7233d6
+https://git.kernel.org/powerpc/c/ff8b85796dad5de869dc29903c9566
 
 cheers
