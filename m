@@ -1,32 +1,35 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
- [IPv6:2607:f8b0:4001:c06::231])
+Return-Path: <linus971@gmail.com>
+Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
+ [IPv6:2607:f8b0:4003:c0f::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v3WBB1gtfzDqKw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2017 02:30:09 +1100 (AEDT)
-Received: by mail-io0-x231.google.com with SMTP id j18so14394636ioe.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2017 07:30:09 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v3b7M3NSDzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2017 05:27:59 +1100 (AEDT)
+Received: by mail-ot0-x241.google.com with SMTP id f9so1961566otd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2017 10:27:59 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1484681173-11644-3-git-send-email-ard.biesheuvel@linaro.org>
+Sender: linus971@gmail.com
+In-Reply-To: <CAKv+Gu8xPR3axtVEM9f6jX6yAn6bqE-=izNXdEZ7LxP6ZNPnbw@mail.gmail.com>
 References: <1484681173-11644-1-git-send-email-ard.biesheuvel@linaro.org>
- <1484681173-11644-3-git-send-email-ard.biesheuvel@linaro.org>
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Wed, 18 Jan 2017 15:30:07 +0000
-Message-ID: <CAKv+Gu9Q1LCe4Rjxt-veA68p+sXVH82tGrrDFGumrbcMax6ZpQ@mail.gmail.com>
-Subject: Re: [PATCH v4 2/3] powerpc/reloc64: add support for 32-bit CRC
- pseudo-symbols
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jessica Yu <jeyu@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
- "Suzuki K. Poulose" <suzuki.poulose@arm.com>,
- Will Deacon <will.deacon@arm.com>, Andrew Morton <akpm@linux-foundation.org>,
+ <1484681173-11644-4-git-send-email-ard.biesheuvel@linaro.org>
+ <CA+55aFzKZySX1VC3YTcZxafDuhLT_HE3voS3UN1eNVh5+6XmNw@mail.gmail.com>
+ <CAKv+Gu_mBtp9Y341ZZ8hA-Oo_Hf755QWZytptFKJPma05CSheg@mail.gmail.com>
+ <CAKv+Gu8xPR3axtVEM9f6jX6yAn6bqE-=izNXdEZ7LxP6ZNPnbw@mail.gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 18 Jan 2017 10:27:56 -0800
+Message-ID: <CA+55aFx5QHfi3X6cxbmXHcxTWfBfxTG33N+kX4Ro=747rnuxtw@mail.gmail.com>
+Subject: Re: [PATCH v4 3/3] modversions: treat symbol CRCs as 32 bit
+ quantities on 64 bit archs
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Jessica Yu <jeyu@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+ "Suzuki K. Poulose" <suzuki.poulose@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- Arnd Bergmann <arnd@arndb.de>, Linus Torvalds <torvalds@linux-foundation.org>,
- "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>
+ Paul Mackerras <paulus@samba.org>,
+ Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@zeniv.linux.org.uk>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,206 +40,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17 January 2017 at 19:26, Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
-> In preparation of modifying the core modversions code to emit the CRCs
-> as 32-bit quantities, ensure that 64-bit PowerPC will be able to deal
-> with this when CONFIG_RELOCATABLE=y, in which case the CRCs will be
-> emitted into the final ELF binary as R_PPC64_ADDR32 relocations.
+On Wed, Jan 18, 2017 at 5:52 AM, Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
 >
-> Since 32-bit relocations cannot be used to relocate memory addresses on
-> 64-bit architectures, and since the CRC pseudo-symbol references are
-> emitted as anonymous relocations (i.e., against the NULL symbol in the
-> .dynsym section) with the final value recorded in the addend (*), we
-> can disregard any relocations where the symbol index != 0.
+> It turns out that this odd treatment of absolute symbols (i.e.,
+> symbols having section number SHN_ABS) is a known issue in GNU ld
 >
-> * Note that unsatisfied CRC pseudo-symbol references are emitted as
->   R_PPC64_ADDR32 relocations against named symbols that are typed as
->   weak undefined in the .dynsym symbol table. These can simply be
->   ignored (as before), considering that zero CRCs are interpreted as
->   missing, and the module code deals with that accordingly.
->
-> As it turns out, binutils for powerpc does not account for any relocations
-> beyond R_PPC64_RELATIVE ones in the RELACOUNT field of the .dynamic section,
-> which is unfortunate, since we need to do extra work to figure out the size
-> of the relocation array. So with a little help from the linker scripts,
-> grab an end pointer rather than a count, and iterate over the entire section.
->
+> https://sourceware.org/ml/binutils/2012-05/msg00019.html
 
-While this is the case of RELACOUNT, RELASZ appears to behave as
-expected. For instance, on a random vmlinux file (with patch 3/3
-applied), I get
+Ugh. I hate the GNU linker. It's slow, it does nasty crazy fixups, and
+it's apparently buggy too.
 
-Dynamic Section:
-  HASH                 0xc000000000cf5a40
-  STRTAB               0xc000000000cf4d80
-  SYMTAB               0xc000000000cf3e98
-  STRSZ                0x0000000000000bae
-  SYMENT               0x0000000000000018
-  DEBUG                0x0000000000000000
-  RELA                 0xc000000000cf5ee8
-  RELASZ               0x00000000003308b8
-  RELAENT              0x0000000000000018
-  TEXTREL              0x0000000000000000
-  FLAGS_1              0x0000000008000000
-  RELACOUNT            0x0000000000020444
+I wonder what happened to gold, and why it didn't take over. I'm
+assuming it had _other_ bugs.. Oh well.
 
-where RELACOUNT is the number of just the R_PPC64_RELATIVE
-relocations, whereas RELASZ covers all of them (which is why RELASZ /
-RELAENT != RELACOUNT)
-
-So if preferred, I can respin this patch to retrieve RELASZ from the
-dynamic section rather than the end of the .rela section from the
-linker script, which would reduce the delta of this patch somewhat.
-
-
-> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-> ---
->  arch/powerpc/kernel/reloc_64.S    | 60 ++++++++++++--------
->  arch/powerpc/kernel/vmlinux.lds.S |  1 +
->  arch/powerpc/relocs_check.sh      |  5 +-
->  3 files changed, 40 insertions(+), 26 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/reloc_64.S b/arch/powerpc/kernel/reloc_64.S
-> index d88736fbece6..e50f5d778ea2 100644
-> --- a/arch/powerpc/kernel/reloc_64.S
-> +++ b/arch/powerpc/kernel/reloc_64.S
-> @@ -12,8 +12,8 @@
->  #include <asm/ppc_asm.h>
->
->  RELA = 7
-> -RELACOUNT = 0x6ffffff9
->  R_PPC64_RELATIVE = 22
-> +R_PPC64_ADDR32 = 1
->
->  /*
->   * r3 = desired final address of kernel
-> @@ -29,29 +29,27 @@ _GLOBAL(relocate)
->         add     r9,r9,r12       /* r9 has runtime addr of .rela.dyn section */
->         ld      r10,(p_st - 0b)(r12)
->         add     r10,r10,r12     /* r10 has runtime addr of _stext */
-> +       ld      r8,(p_rela_end - 0b)(r12)
-> +       add     r8,r8,r12       /* r8 has addr of end of .rela.dyn section */
->
->         /*
-> -        * Scan the dynamic section for the RELA and RELACOUNT entries.
-> +        * Scan the dynamic section for the RELA entry.
-> +        * NOTE: the RELACOUNT entry only covers R_PPC64_RELATIVE relocations,
-> +        *       so we cannot use it here.
->          */
->         li      r7,0
-> -       li      r8,0
->  1:     ld      r6,0(r11)       /* get tag */
->         cmpdi   r6,0
-> -       beq     4f              /* end of list */
-> +       beq     3f              /* end of list */
->         cmpdi   r6,RELA
-> -       bne     2f
-> -       ld      r7,8(r11)       /* get RELA pointer in r7 */
-> -       b       3f
-> -2:     addis   r6,r6,(-RELACOUNT)@ha
-> -       cmpdi   r6,RELACOUNT@l
-> -       bne     3f
-> -       ld      r8,8(r11)       /* get RELACOUNT value in r8 */
-> -3:     addi    r11,r11,16
-> +       beq     2f
-> +       addi    r11,r11,16
->         b       1b
-> -4:     cmpdi   r7,0            /* check we have both RELA and RELACOUNT */
-> -       cmpdi   cr1,r8,0
-> -       beq     6f
-> -       beq     cr1,6f
-> +2:     ld      r7,8(r11)       /* get RELA pointer in r7 */
-> +3:     cmpdi   r7,0            /* check we have both RELA and a non-empty */
-> +       cmpd    cr1,r8,r9       /* .rela.dyn section                       */
-> +       beq     7f
-> +       beq     cr1,7f
->
->         /*
->          * Work out linktime address of _stext and hence the
-> @@ -63,26 +61,40 @@ _GLOBAL(relocate)
->         subf    r7,r7,r9        /* cur_offset */
->         subf    r10,r7,r10
->         subf    r3,r10,r3       /* final_offset */
-> +       b       4f
->
->         /*
->          * Run through the list of relocations and process the
-> -        * R_PPC64_RELATIVE ones.
-> +        * R_PPC64_RELATIVE and R_PPC64_ADDR32 ones.
->          */
-> -       mtctr   r8
-> -5:     ld      r0,8(9)         /* ELF64_R_TYPE(reloc->r_info) */
-> +3:     addi    r9,r9,24
-> +4:     cmpd    r9,r8
-> +       beq     7f
-> +5:     ld      r0,8(9)         /* reloc->r_info (type *and* symbol index) */
-> +       ld      r6,0(r9)        /* reloc->r_offset */
->         cmpdi   r0,R_PPC64_RELATIVE
->         bne     6f
-> -       ld      r6,0(r9)        /* reloc->r_offset */
->         ld      r0,16(r9)       /* reloc->r_addend */
->         add     r0,r0,r3
->         stdx    r0,r7,r6
-> -       addi    r9,r9,24
-> -       bdnz    5b
-> +       b       3b
-> +
-> +       /*
-> +        * CRCs of exported symbols are emitted as 32-bit relocations against
-> +        * the NULL .dynsym entry, with the CRC value recorded in the addend.
-> +        */
-> +6:     cmpdi   r0,R_PPC64_ADDR32
-> +       bne     3b
-> +       ld      r0,16(r9)       /* reloc->r_addend */
-> +       stwx    r0,r7,r6
-> +       b       3b
-> +
-> +7:     blr
->
-> -6:     blr
->
->  .balign 8
->  p_dyn: .llong  __dynamic_start - 0b
->  p_rela:        .llong  __rela_dyn_start - 0b
-> +p_rela_end:
-> +       .llong  __rela_dyn_end - 0b
->  p_st:  .llong  _stext - 0b
-> -
-> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-> index 7394b770ae1f..654728fc860d 100644
-> --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -241,6 +241,7 @@ SECTIONS
->         {
->                 __rela_dyn_start = .;
->                 *(.rela*)
-> +               __rela_dyn_end = .;
->         }
->  #endif
->         /* .exit.data is discarded at runtime, not link time,
-> diff --git a/arch/powerpc/relocs_check.sh b/arch/powerpc/relocs_check.sh
-> index ec2d5c835170..f9636b4e4548 100755
-> --- a/arch/powerpc/relocs_check.sh
-> +++ b/arch/powerpc/relocs_check.sh
-> @@ -30,7 +30,7 @@ bad_relocs=$(
->         # On PPC64:
->         #       R_PPC64_RELATIVE, R_PPC64_NONE
->         #       R_PPC64_ADDR64 mach_<name>
-> -       #       R_PPC64_ADDR64 __crc_<name>
-> +       #       R_PPC64_ADDR32 __crc_<name>
->         # On PPC:
->         #       R_PPC_RELATIVE, R_PPC_ADDR16_HI,
->         #       R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
-> @@ -43,7 +43,8 @@ R_PPC_ADDR16_HA
->  R_PPC_RELATIVE
->  R_PPC_NONE' |
->         grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_' |
-> -       grep -E -v '\<R_PPC64_ADDR64[[:space:]]+__crc_'
-> +       grep -E -v '\<R_PPC64_ADDR32[[:space:]]+__crc_' |
-> +       grep -E -v '\<R_PPC64_ADDR32[[:space:]]+\*ABS\*'
->  )
->
->  if [ -z "$bad_relocs" ]; then
-> --
-> 2.7.4
->
+                 Linus
