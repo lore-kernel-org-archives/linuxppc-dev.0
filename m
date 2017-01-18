@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v3Qlc6S3BzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2017 23:10:20 +1100 (AEDT)
-In-Reply-To: <1483659589-23208-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v3Qld659SzDqHy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2017 23:10:21 +1100 (AEDT)
+In-Reply-To: <20161214043753.25934-1-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, Scott Wood <oss@buserror.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/eeh: Enable IO path on permanent error
-Message-Id: <3v3Qlc5vMCz9t8j@ozlabs.org>
-Date: Wed, 18 Jan 2017 23:10:20 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm: Fix little-endian 4K hugetlb
+Message-Id: <3v3Qld5HwYz9tJD@ozlabs.org>
+Date: Wed, 18 Jan 2017 23:10:21 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,35 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-01-05 at 23:39:49 UTC, Gavin Shan wrote:
-> We give up recovery on permanent error, simply shutdown the affected
-> devices and remove them. If the devices can't be put into quiet state,
-> they spew more traffic that is likely to cause another unexpected EEH
-> error. This was observed on "p8dtu2u" machine:
+On Wed, 2016-12-14 at 04:37:53 UTC, "Aneesh Kumar K.V" wrote:
+> When we switched to big endian page table, we never updated
+> the hugepd format such that it can work for both big endian and
+> little endian config. This patch series update hugepd format
+> such that it is looked at as __be64 value in big endian page
+> table config.
 > 
->    0002:00:00.0 PCI bridge: IBM Device 03dc
->    0002:01:00.0 Ethernet controller: Intel Corporation \
->                 Ethernet Controller X710/X557-AT 10GBASE-T (rev 02)
->    0002:01:00.1 Ethernet controller: Intel Corporation \
->                 Ethernet Controller X710/X557-AT 10GBASE-T (rev 02)
->    0002:01:00.2 Ethernet controller: Intel Corporation \
->                 Ethernet Controller X710/X557-AT 10GBASE-T (rev 02)
->    0002:01:00.3 Ethernet controller: Intel Corporation \
->                 Ethernet Controller X710/X557-AT 10GBASE-T (rev 02)
+> This patch also switch hugepd_t.pd from signed long to unsigned long.
+> I did update the FSL hugepd_ok check to check for the top bit instead
+> of checking > 0.
 > 
-> On P8 PowerNV platform, the IO path is frozen when shutdowning the
-> devices, meaning the memory registers are inaccessible. It is why
-> the devices can't be put into quiet state before removing them.
-> This fixes the issue by enabling IO path prior to putting the devices
-> into quiet state.
-> 
-> Link: https://github.com/open-power/supermicro-openpower/issues/419
-> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Acked-by: Russell Currey <ruscur@russell.cc>
+> Fixes: 5dc1ef858c12f8 ("powerpc/mm: Use big endian Linux page tables for book3s 64")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/387bbc974f6adf91aa635090f73434
+https://git.kernel.org/powerpc/c/20717e1ff52672e31f9399c45d8893
 
 cheers
