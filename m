@@ -1,11 +1,11 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.14])
+Received: from mout.web.de (mout.web.de [212.227.15.3])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v49CZ6KsRzDqWX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 04:03:38 +1100 (AEDT)
-Subject: [PATCH 4/8] powerpc/nvram: Return directly after a failed parameter
- validation in dev_nvram_read()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v49D62xqkzDqQF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 04:04:05 +1100 (AEDT)
+Subject: [PATCH 3/8] powerpc/nvram: Move an assignment for the variable "ret"
+ in dev_nvram_write()
 To: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Daniel Axtens <dja@axtens.net>, Geliang Tang <geliangtang@163.com>,
@@ -17,8 +17,8 @@ To: linuxppc-dev@lists.ozlabs.org,
 References: <53545d97-6ed5-ff17-384f-82e72b3592f9@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <b5dc24f8-4b74-9dfe-fb18-7dc0699b87ec@users.sourceforge.net>
-Date: Thu, 19 Jan 2017 17:57:37 +0100
+Message-ID: <dcaccc31-99ac-ef90-cbef-79dbf72f0a4d@users.sourceforge.net>
+Date: Thu, 19 Jan 2017 17:56:35 +0100
 MIME-Version: 1.0
 In-Reply-To: <53545d97-6ed5-ff17-384f-82e72b3592f9@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -32,53 +32,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 19 Jan 2017 16:12:48 +0100
+Date: Thu, 19 Jan 2017 15:55:36 +0100
 
-* Return directly after an inappropriate input parameter was detected.
+A local variable was set to an error code before a concrete error situation
+was detected. Thus move the corresponding assignment into an if branch
+to indicate a software failure there.
 
-* Delete an initialisation for the variable "tmp" at the beginning
-  which became unnecessary with this refactoring.
+This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/kernel/nvram_64.c | 20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/nvram_64.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index dc90a0e9ad65..463551589b97 100644
+index cf839adf3aa7..dc90a0e9ad65 100644
 --- a/arch/powerpc/kernel/nvram_64.c
 +++ b/arch/powerpc/kernel/nvram_64.c
-@@ -745,24 +745,18 @@ static ssize_t dev_nvram_read(struct file *file, char __user *buf,
- 			  size_t count, loff_t *ppos)
- {
- 	ssize_t ret;
--	char *tmp = NULL;
-+	char *tmp;
- 	ssize_t size;
+@@ -806,9 +806,10 @@ static ssize_t dev_nvram_write(struct file *file, const char __user *buf,
+ 	if (!tmp)
+ 		return -ENOMEM;
  
--	if (!ppc_md.nvram_size) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	if (!ppc_md.nvram_size)
-+		return -ENODEV;
+-	ret = -EFAULT;
+-	if (copy_from_user(tmp, buf, count))
++	if (copy_from_user(tmp, buf, count)) {
++		ret = -EFAULT;
+ 		goto out;
++	}
  
- 	size = ppc_md.nvram_size();
--	if (size < 0) {
--		ret = size;
--		goto out;
--	}
-+	if (size < 0)
-+		return size;
+ 	ret = ppc_md.nvram_write(tmp, count, ppos);
  
--	if (*ppos >= size) {
--		ret = 0;
--		goto out;
--	}
-+	if (*ppos >= size)
-+		return 0;
- 
- 	count = min_t(size_t, count, size - *ppos);
- 	count = min(count, PAGE_SIZE);
 -- 
 2.11.0
