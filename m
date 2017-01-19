@@ -1,27 +1,29 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-io0-x234.google.com (mail-io0-x234.google.com
+ [IPv6:2607:f8b0:4001:c06::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v47Xd70VpzDq7q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 02:48:17 +1100 (AEDT)
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>
-Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH v4 15/15] livepatch: allow removal of a disabled patch
-Date: Thu, 19 Jan 2017 09:46:23 -0600
-Message-Id: <7b540d5a66243628eae1925e8871dc9678305973.1484839971.git.jpoimboe@redhat.com>
-In-Reply-To: <cover.1484839971.git.jpoimboe@redhat.com>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v492n6tgbzDqQD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 03:56:01 +1100 (AEDT)
+Received: by mail-io0-x234.google.com with SMTP id j18so42319981ioe.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2017 08:56:01 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1484827365-8515-1-git-send-email-ard.biesheuvel@linaro.org>
+References: <1484827365-8515-1-git-send-email-ard.biesheuvel@linaro.org>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Thu, 19 Jan 2017 16:55:58 +0000
+Message-ID: <CAKv+Gu9KnTpEUf14LpNTabv1qaXagWKZ0yRqbOL2JSNw+90oEw@mail.gmail.com>
+Subject: Re: [RFC PATCH v2] modversions: redefine kcrctab entries as relative
+ CRC pointers
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
+ Jessica Yu <jeyu@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,352 +33,429 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Miroslav Benes <mbenes@suse.cz>
+On 19 January 2017 at 12:02, Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+> The modversion symbol CRCs are emitted as ELF symbols, which allows us to
+> easily populate the kcrctab sections by relying on the linker to associate
+> each kcrctab slot with the correct value.
+>
+> This has a couple of downsides:
+> - On architectures that support runtime relocation, a R_<arch>_RELATIVE
+>   relocation entry is emitted for each CRC value, which identifies it as
+>   a quantity that requires fixing up based on the actual runtime load
+>   offset of the kernel. This results in corrupted CRCs unless we
+>   explicitly undo the fixup (and this is currently being handled in the
+>   core module code),
+> - On 64 bit architectures, such runtime relocation entries take up 24
+>   bytes of __init space each, resulting in a x8 overhead in [uncompressed]
+>   kernel size for CRCs,
+> - The use of ELF symbols to represent things other than virtual addresses
+>   is poorly supported (and mostly untested) in GNU binutils.
+>
+> So avoid these issues by redefining the kcrctab entries as signed relative
+> offsets pointing to the actual CRC value stored elsewhere in the kernel
+> image (or in the module). This removes all the ELF hackery involving
+> symbols and relocations, at the expense of 4 additional bytes of space per
+> CRC on 32-bit architectures. (On 64-bit architectures, each 8 byte CRC
+> symbol reference is replaced by a 4 byte relative offset and the 4 byte
+> CRC value elsewhere in the image)
+>
+> Note that this mostly reverts commit d4703aefdbc8 ("module: handle ppc64
+> relocating kcrctabs when CONFIG_RELOCATABLE=y")
+>
+> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+> ---
+> v2: update modpost as well, so that genksyms no longer has to emit symbols
+>     for both the actual CRC value and the reference to where it is stored
+>     in the image
+>
 
-Currently we do not allow patch module to unload since there is no
-method to determine if a task is still running in the patched code.
+Annoyingly, the following is required on top of this patch to ensure
+that we only subtract the section VMA from the symbol value in modpost
+if we are dealing with a fully linked file. This is necessary since,
+as it turns out, partially linked ELF objects may have non-zero
+section VMAs (for whatever reason).
 
-The consistency model gives us the way because when the unpatching
-finishes we know that all tasks were marked as safe to call an original
-function. Thus every new call to the function calls the original code
-and at the same time no task can be somewhere in the patched code,
-because it had to leave that code to be marked as safe.
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index d69f3ceae19e..75b0dac1cc11 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -624,7 +624,8 @@
+                if (sym->st_shndx != SHN_UNDEF)
+                        crcp = (void *)info->hdr + sym->st_value +
+                               info->sechdrs[sym->st_shndx].sh_offset -
+-                              info->sechdrs[sym->st_shndx].sh_addr;
++                              (hdr->e_type != ET_REL ?
++                               info->sechdrs[sym->st_shndx].sh_addr : 0);
 
-We can safely let the patch module go after that.
+                is_crc = true;
+                crc = crcp ? *crcp : 0;
 
-Completion is used for synchronization between module removal and sysfs
-infrastructure in a similar way to commit 942e443127e9 ("module: Fix
-mod->mkobj.kobj potentially freed too early").
 
-Note that we still do not allow the removal for immediate model, that is
-no consistency model. The module refcount may increase in this case if
-somebody disables and enables the patch several times. This should not
-cause any harm.
-
-With this change a call to try_module_get() is moved to
-__klp_enable_patch from klp_register_patch to make module reference
-counting symmetric (module_put() is in a patch disable path) and to
-allow to take a new reference to a disabled module when being enabled.
-
-Finally, we need to be very careful about possible races between
-klp_unregister_patch(), kobject_put() functions and operations
-on the related sysfs files.
-
-kobject_put(&patch->kobj) must be called without klp_mutex. Otherwise,
-it might be blocked by enabled_store() that needs the mutex as well.
-In addition, enabled_store() must check if the patch was not
-unregisted in the meantime.
-
-There is no need to do the same for other kobject_put() callsites
-at the moment. Their sysfs operations neiter take the lock nor
-they access any data that might be freed in the meantime.
-
-There was an attempt to use kobjects the right way and prevent these
-races by design. But it made the patch definition more complicated
-and opened another can of worms. See
-https://lkml.kernel.org/r/1464018848-4303-1-git-send-email-pmladek@suse.com
-
-[Thanks to Petr Mladek for improving the commit message.]
-
-Signed-off-by: Miroslav Benes <mbenes@suse.cz>
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-Reviewed-by: Petr Mladek <pmladek@suse.com>
----
- Documentation/livepatch/livepatch.txt | 28 ++++--------
- include/linux/livepatch.h             |  3 ++
- kernel/livepatch/core.c               | 80 ++++++++++++++++++++++-------------
- kernel/livepatch/transition.c         | 12 +++++-
- samples/livepatch/livepatch-sample.c  |  1 -
- 5 files changed, 72 insertions(+), 52 deletions(-)
-
-diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
-index fb00d66..9816df3 100644
---- a/Documentation/livepatch/livepatch.txt
-+++ b/Documentation/livepatch/livepatch.txt
-@@ -296,8 +296,15 @@ section "Livepatch life-cycle" below for more details about these
- two operations.
- 
- Module removal is only safe when there are no users of the underlying
--functions.  The immediate consistency model is not able to detect this;
--therefore livepatch modules cannot be removed. See "Limitations" below.
-+functions. The immediate consistency model is not able to detect this. The
-+code just redirects the functions at the very beginning and it does not
-+check if the functions are in use. In other words, it knows when the
-+functions get called but it does not know when the functions return.
-+Therefore it cannot be decided when the livepatch module can be safely
-+removed. This is solved by a hybrid consistency model. When the system is
-+transitioned to a new patch state (patched/unpatched) it is guaranteed that
-+no task sleeps or runs in the old code.
-+
- 
- 5. Livepatch life-cycle
- =======================
-@@ -449,23 +456,6 @@ The current Livepatch implementation has several limitations:
-     by "notrace".
- 
- 
--  + Livepatch modules can not be removed.
--
--    The current implementation just redirects the functions at the very
--    beginning. It does not check if the functions are in use. In other
--    words, it knows when the functions get called but it does not
--    know when the functions return. Therefore it can not decide when
--    the livepatch module can be safely removed.
--
--    This will get most likely solved once a more complex consistency model
--    is supported. The idea is that a safe state for patching should also
--    mean a safe state for removing the patch.
--
--    Note that the patch itself might get disabled by writing zero
--    to /sys/kernel/livepatch/<patch>/enabled. It causes that the new
--    code will not longer get called. But it does not guarantee
--    that anyone is not sleeping anywhere in the new code.
--
- 
-   + Livepatch works reliably only when the dynamic ftrace is located at
-     the very beginning of the function.
-diff --git a/include/linux/livepatch.h b/include/linux/livepatch.h
-index ed90ad1..194991e 100644
---- a/include/linux/livepatch.h
-+++ b/include/linux/livepatch.h
-@@ -23,6 +23,7 @@
- 
- #include <linux/module.h>
- #include <linux/ftrace.h>
-+#include <linux/completion.h>
- 
- #if IS_ENABLED(CONFIG_LIVEPATCH)
- 
-@@ -114,6 +115,7 @@ struct klp_object {
-  * @list:	list node for global list of registered patches
-  * @kobj:	kobject for sysfs resources
-  * @enabled:	the patch is enabled (but operation may be incomplete)
-+ * @finish:	for waiting till it is safe to remove the patch module
-  */
- struct klp_patch {
- 	/* external */
-@@ -125,6 +127,7 @@ struct klp_patch {
- 	struct list_head list;
- 	struct kobject kobj;
- 	bool enabled;
-+	struct completion finish;
- };
- 
- #define klp_for_each_object(patch, obj) \
-diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-index 4c5a816..e449fc7 100644
---- a/kernel/livepatch/core.c
-+++ b/kernel/livepatch/core.c
-@@ -29,6 +29,7 @@
- #include <linux/livepatch.h>
- #include <linux/elf.h>
- #include <linux/moduleloader.h>
-+#include <linux/completion.h>
- #include <asm/cacheflush.h>
- #include "patch.h"
- #include "transition.h"
-@@ -352,6 +353,18 @@ static int __klp_enable_patch(struct klp_patch *patch)
- 	    !list_prev_entry(patch, list)->enabled)
- 		return -EBUSY;
- 
-+	/*
-+	 * A reference is taken on the patch module to prevent it from being
-+	 * unloaded.
-+	 *
-+	 * Note: For immediate (no consistency model) patches we don't allow
-+	 * patch modules to unload since there is no safe/sane method to
-+	 * determine if a thread is still running in the patched code contained
-+	 * in the patch module once the ftrace registration is successful.
-+	 */
-+	if (!try_module_get(patch->mod))
-+		return -ENODEV;
-+
- 	pr_notice("enabling patch '%s'\n", patch->mod->name);
- 
- 	klp_init_transition(patch, KLP_PATCHED);
-@@ -441,6 +454,15 @@ static ssize_t enabled_store(struct kobject *kobj, struct kobj_attribute *attr,
- 
- 	mutex_lock(&klp_mutex);
- 
-+	if (!klp_is_patch_registered(patch)) {
-+		/*
-+		 * Module with the patch could either disappear meanwhile or is
-+		 * not properly initialized yet.
-+		 */
-+		ret = -EINVAL;
-+		goto err;
-+	}
-+
- 	if (patch->enabled == enabled) {
- 		/* already in requested state */
- 		ret = -EINVAL;
-@@ -497,10 +519,10 @@ static struct attribute *klp_patch_attrs[] = {
- 
- static void klp_kobj_release_patch(struct kobject *kobj)
- {
--	/*
--	 * Once we have a consistency model we'll need to module_put() the
--	 * patch module here.  See klp_register_patch() for more details.
--	 */
-+	struct klp_patch *patch;
-+
-+	patch = container_of(kobj, struct klp_patch, kobj);
-+	complete(&patch->finish);
- }
- 
- static struct kobj_type klp_ktype_patch = {
-@@ -571,7 +593,6 @@ static void klp_free_patch(struct klp_patch *patch)
- 	klp_free_objects_limited(patch, NULL);
- 	if (!list_empty(&patch->list))
- 		list_del(&patch->list);
--	kobject_put(&patch->kobj);
- }
- 
- static int klp_init_func(struct klp_object *obj, struct klp_func *func)
-@@ -694,11 +715,14 @@ static int klp_init_patch(struct klp_patch *patch)
- 	mutex_lock(&klp_mutex);
- 
- 	patch->enabled = false;
-+	init_completion(&patch->finish);
- 
- 	ret = kobject_init_and_add(&patch->kobj, &klp_ktype_patch,
- 				   klp_root_kobj, "%s", patch->mod->name);
--	if (ret)
--		goto unlock;
-+	if (ret) {
-+		mutex_unlock(&klp_mutex);
-+		return ret;
-+	}
- 
- 	klp_for_each_object(patch, obj) {
- 		ret = klp_init_object(patch, obj);
-@@ -714,9 +738,12 @@ static int klp_init_patch(struct klp_patch *patch)
- 
- free:
- 	klp_free_objects_limited(patch, obj);
--	kobject_put(&patch->kobj);
--unlock:
-+
- 	mutex_unlock(&klp_mutex);
-+
-+	kobject_put(&patch->kobj);
-+	wait_for_completion(&patch->finish);
-+
- 	return ret;
- }
- 
-@@ -730,23 +757,29 @@ static int klp_init_patch(struct klp_patch *patch)
-  */
- int klp_unregister_patch(struct klp_patch *patch)
- {
--	int ret = 0;
-+	int ret;
- 
- 	mutex_lock(&klp_mutex);
- 
- 	if (!klp_is_patch_registered(patch)) {
- 		ret = -EINVAL;
--		goto out;
-+		goto err;
- 	}
- 
- 	if (patch->enabled) {
- 		ret = -EBUSY;
--		goto out;
-+		goto err;
- 	}
- 
- 	klp_free_patch(patch);
- 
--out:
-+	mutex_unlock(&klp_mutex);
-+
-+	kobject_put(&patch->kobj);
-+	wait_for_completion(&patch->finish);
-+
-+	return 0;
-+err:
- 	mutex_unlock(&klp_mutex);
- 	return ret;
- }
-@@ -759,12 +792,13 @@ EXPORT_SYMBOL_GPL(klp_unregister_patch);
-  * Initializes the data structure associated with the patch and
-  * creates the sysfs interface.
-  *
-+ * There is no need to take the reference on the patch module here. It is done
-+ * later when the patch is enabled.
-+ *
-  * Return: 0 on success, otherwise error
-  */
- int klp_register_patch(struct klp_patch *patch)
- {
--	int ret;
--
- 	if (!patch || !patch->mod)
- 		return -EINVAL;
- 
-@@ -787,21 +821,7 @@ int klp_register_patch(struct klp_patch *patch)
- 		return -ENOSYS;
- 	}
- 
--	/*
--	 * A reference is taken on the patch module to prevent it from being
--	 * unloaded.  Right now, we don't allow patch modules to unload since
--	 * there is currently no method to determine if a thread is still
--	 * running in the patched code contained in the patch module once
--	 * the ftrace registration is successful.
--	 */
--	if (!try_module_get(patch->mod))
--		return -ENODEV;
--
--	ret = klp_init_patch(patch);
--	if (ret)
--		module_put(patch->mod);
--
--	return ret;
-+	return klp_init_patch(patch);
- }
- EXPORT_SYMBOL_GPL(klp_register_patch);
- 
-diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
-index 2b87ff9..b5e6f3b 100644
---- a/kernel/livepatch/transition.c
-+++ b/kernel/livepatch/transition.c
-@@ -60,13 +60,21 @@ void klp_complete_transition(void)
- 	struct klp_func *func;
- 	struct task_struct *g, *task;
- 	unsigned int cpu;
-+	bool is_immediate = false;
- 
- 	if (klp_transition_patch->immediate)
- 		goto done;
- 
--	klp_for_each_object(klp_transition_patch, obj)
--		klp_for_each_func(obj, func)
-+	klp_for_each_object(klp_transition_patch, obj) {
-+		klp_for_each_func(obj, func) {
- 			func->transition = false;
-+			if (func->immediate)
-+				is_immediate = true;
-+		}
-+	}
-+
-+	if (klp_target_state == KLP_UNPATCHED && !is_immediate)
-+		module_put(klp_transition_patch->mod);
- 
- 	/* Prevent klp_ftrace_handler() from seeing KLP_UNDEFINED state */
- 	if (klp_target_state == KLP_PATCHED)
-diff --git a/samples/livepatch/livepatch-sample.c b/samples/livepatch/livepatch-sample.c
-index 629e0dc..84795223f 100644
---- a/samples/livepatch/livepatch-sample.c
-+++ b/samples/livepatch/livepatch-sample.c
-@@ -99,7 +99,6 @@ static int livepatch_init(void)
- 
- static void livepatch_exit(void)
- {
--	WARN_ON(klp_disable_patch(&patch));
- 	WARN_ON(klp_unregister_patch(&patch));
- }
- 
--- 
-2.7.4
+>  arch/powerpc/include/asm/module.h |  4 --
+>  arch/powerpc/kernel/module_64.c   |  8 ----
+>  include/asm-generic/export.h      |  7 +--
+>  include/linux/export.h            |  9 ++--
+>  include/linux/module.h            | 14 +++---
+>  kernel/module.c                   | 50 +++++++++-----------
+>  scripts/genksyms/genksyms.c       |  4 +-
+>  scripts/kallsyms.c                | 12 +++++
+>  scripts/mod/modpost.c             |  9 +++-
+>  9 files changed, 58 insertions(+), 59 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+> index cc12c61ef315..53885512b8d3 100644
+> --- a/arch/powerpc/include/asm/module.h
+> +++ b/arch/powerpc/include/asm/module.h
+> @@ -90,9 +90,5 @@ static inline int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sec
+>  }
+>  #endif
+>
+> -#if defined(CONFIG_MODVERSIONS) && defined(CONFIG_PPC64)
+> -#define ARCH_RELOCATES_KCRCTAB
+> -#define reloc_start PHYSICAL_START
+> -#endif
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_MODULE_H */
+> diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+> index bb1807184bad..0b0f89685b67 100644
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@ -286,14 +286,6 @@ static void dedotify_versions(struct modversion_info *vers,
+>         for (end = (void *)vers + size; vers < end; vers++)
+>                 if (vers->name[0] == '.') {
+>                         memmove(vers->name, vers->name+1, strlen(vers->name));
+> -#ifdef ARCH_RELOCATES_KCRCTAB
+> -                       /* The TOC symbol has no CRC computed. To avoid CRC
+> -                        * check failing, we must force it to the expected
+> -                        * value (see CRC check in module.c).
+> -                        */
+> -                       if (!strcmp(vers->name, "TOC."))
+> -                               vers->crc = -(unsigned long)reloc_start;
+> -#endif
+>                 }
+>  }
+>
+> diff --git a/include/asm-generic/export.h b/include/asm-generic/export.h
+> index 63554e9f6e0c..ce63ea1a60c2 100644
+> --- a/include/asm-generic/export.h
+> +++ b/include/asm-generic/export.h
+> @@ -9,18 +9,15 @@
+>  #ifndef KSYM_ALIGN
+>  #define KSYM_ALIGN 8
+>  #endif
+> -#ifndef KCRC_ALIGN
+> -#define KCRC_ALIGN 8
+> -#endif
+>  #else
+>  #define __put .long
+>  #ifndef KSYM_ALIGN
+>  #define KSYM_ALIGN 4
+>  #endif
+> +#endif
+>  #ifndef KCRC_ALIGN
+>  #define KCRC_ALIGN 4
+>  #endif
+> -#endif
+>
+>  #ifdef CONFIG_HAVE_UNDERSCORE_SYMBOL_PREFIX
+>  #define KSYM(name) _##name
+> @@ -52,7 +49,7 @@ KSYM(__kstrtab_\name):
+>         .section ___kcrctab\sec+\name,"a"
+>         .balign KCRC_ALIGN
+>  KSYM(__kcrctab_\name):
+> -       __put KSYM(__crc_\name)
+> +       .long KSYM(__crc_\name) - .
+>         .weak KSYM(__crc_\name)
+>         .previous
+>  #endif
+> diff --git a/include/linux/export.h b/include/linux/export.h
+> index 2a0f61fbc731..efe0ce1c363a 100644
+> --- a/include/linux/export.h
+> +++ b/include/linux/export.h
+> @@ -44,11 +44,10 @@ extern struct module __this_module;
+>  /* Mark the CRC weak since genksyms apparently decides not to
+>   * generate a checksums for some symbols */
+>  #define __CRC_SYMBOL(sym, sec)                                         \
+> -       extern __visible void *__crc_##sym __attribute__((weak));       \
+> -       static const unsigned long __kcrctab_##sym                      \
+> -       __used                                                          \
+> -       __attribute__((section("___kcrctab" sec "+" #sym), used))       \
+> -       = (unsigned long) &__crc_##sym;
+> +       asm("   .section \"___kcrctab" sec "+" #sym "\", \"a\"  \n"     \
+> +           "   .weak   " VMLINUX_SYMBOL_STR(__crc_##sym) "     \n"     \
+> +           "   .long   " VMLINUX_SYMBOL_STR(__crc_##sym) " - . \n"     \
+> +           "   .previous                                       \n");
+>  #else
+>  #define __CRC_SYMBOL(sym, sec)
+>  #endif
+> diff --git a/include/linux/module.h b/include/linux/module.h
+> index 7c84273d60b9..cc7cba219b20 100644
+> --- a/include/linux/module.h
+> +++ b/include/linux/module.h
+> @@ -346,7 +346,7 @@ struct module {
+>
+>         /* Exported symbols */
+>         const struct kernel_symbol *syms;
+> -       const unsigned long *crcs;
+> +       const s32 *crcs;
+>         unsigned int num_syms;
+>
+>         /* Kernel parameters. */
+> @@ -359,18 +359,18 @@ struct module {
+>         /* GPL-only exported symbols. */
+>         unsigned int num_gpl_syms;
+>         const struct kernel_symbol *gpl_syms;
+> -       const unsigned long *gpl_crcs;
+> +       const s32 *gpl_crcs;
+>
+>  #ifdef CONFIG_UNUSED_SYMBOLS
+>         /* unused exported symbols. */
+>         const struct kernel_symbol *unused_syms;
+> -       const unsigned long *unused_crcs;
+> +       const s32 *unused_crcs;
+>         unsigned int num_unused_syms;
+>
+>         /* GPL-only, unused exported symbols. */
+>         unsigned int num_unused_gpl_syms;
+>         const struct kernel_symbol *unused_gpl_syms;
+> -       const unsigned long *unused_gpl_crcs;
+> +       const s32 *unused_gpl_crcs;
+>  #endif
+>
+>  #ifdef CONFIG_MODULE_SIG
+> @@ -382,7 +382,7 @@ struct module {
+>
+>         /* symbols that will be GPL-only in the near future. */
+>         const struct kernel_symbol *gpl_future_syms;
+> -       const unsigned long *gpl_future_crcs;
+> +       const s32 *gpl_future_crcs;
+>         unsigned int num_gpl_future_syms;
+>
+>         /* Exception table */
+> @@ -523,7 +523,7 @@ struct module *find_module(const char *name);
+>
+>  struct symsearch {
+>         const struct kernel_symbol *start, *stop;
+> -       const unsigned long *crcs;
+> +       const s32 *crcs;
+>         enum {
+>                 NOT_GPL_ONLY,
+>                 GPL_ONLY,
+> @@ -539,7 +539,7 @@ struct symsearch {
+>   */
+>  const struct kernel_symbol *find_symbol(const char *name,
+>                                         struct module **owner,
+> -                                       const unsigned long **crc,
+> +                                       const s32 **crc,
+>                                         bool gplok,
+>                                         bool warn);
+>
+> diff --git a/kernel/module.c b/kernel/module.c
+> index 5088784c0cf9..b1ede27fb124 100644
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -389,16 +389,16 @@ extern const struct kernel_symbol __start___ksymtab_gpl[];
+>  extern const struct kernel_symbol __stop___ksymtab_gpl[];
+>  extern const struct kernel_symbol __start___ksymtab_gpl_future[];
+>  extern const struct kernel_symbol __stop___ksymtab_gpl_future[];
+> -extern const unsigned long __start___kcrctab[];
+> -extern const unsigned long __start___kcrctab_gpl[];
+> -extern const unsigned long __start___kcrctab_gpl_future[];
+> +extern const s32 __start___kcrctab[];
+> +extern const s32 __start___kcrctab_gpl[];
+> +extern const s32 __start___kcrctab_gpl_future[];
+>  #ifdef CONFIG_UNUSED_SYMBOLS
+>  extern const struct kernel_symbol __start___ksymtab_unused[];
+>  extern const struct kernel_symbol __stop___ksymtab_unused[];
+>  extern const struct kernel_symbol __start___ksymtab_unused_gpl[];
+>  extern const struct kernel_symbol __stop___ksymtab_unused_gpl[];
+> -extern const unsigned long __start___kcrctab_unused[];
+> -extern const unsigned long __start___kcrctab_unused_gpl[];
+> +extern const s32 __start___kcrctab_unused[];
+> +extern const s32 __start___kcrctab_unused_gpl[];
+>  #endif
+>
+>  #ifndef CONFIG_MODVERSIONS
+> @@ -497,7 +497,7 @@ struct find_symbol_arg {
+>
+>         /* Output */
+>         struct module *owner;
+> -       const unsigned long *crc;
+> +       const s32 *crc;
+>         const struct kernel_symbol *sym;
+>  };
+>
+> @@ -563,7 +563,7 @@ static bool find_symbol_in_section(const struct symsearch *syms,
+>   * (optional) module which owns it.  Needs preempt disabled or module_mutex. */
+>  const struct kernel_symbol *find_symbol(const char *name,
+>                                         struct module **owner,
+> -                                       const unsigned long **crc,
+> +                                       const s32 **crc,
+>                                         bool gplok,
+>                                         bool warn)
+>  {
+> @@ -1249,23 +1249,17 @@ static int try_to_force_load(struct module *mod, const char *reason)
+>  }
+>
+>  #ifdef CONFIG_MODVERSIONS
+> -/* If the arch applies (non-zero) relocations to kernel kcrctab, unapply it. */
+> -static unsigned long maybe_relocated(unsigned long crc,
+> -                                    const struct module *crc_owner)
+> +
+> +static u32 resolve_crc(const s32 *crc)
+>  {
+> -#ifdef ARCH_RELOCATES_KCRCTAB
+> -       if (crc_owner == NULL)
+> -               return crc - (unsigned long)reloc_start;
+> -#endif
+> -       return crc;
+> +       return *(u32 *)((void *)crc + *crc);
+>  }
+>
+>  static int check_version(Elf_Shdr *sechdrs,
+>                          unsigned int versindex,
+>                          const char *symname,
+>                          struct module *mod,
+> -                        const unsigned long *crc,
+> -                        const struct module *crc_owner)
+> +                        const s32 *crc)
+>  {
+>         unsigned int i, num_versions;
+>         struct modversion_info *versions;
+> @@ -1283,13 +1277,16 @@ static int check_version(Elf_Shdr *sechdrs,
+>                 / sizeof(struct modversion_info);
+>
+>         for (i = 0; i < num_versions; i++) {
+> +               u32 crcval;
+> +
+>                 if (strcmp(versions[i].name, symname) != 0)
+>                         continue;
+>
+> -               if (versions[i].crc == maybe_relocated(*crc, crc_owner))
+> +               crcval = resolve_crc(crc);
+> +               if (versions[i].crc == crcval)
+>                         return 1;
+> -               pr_debug("Found checksum %lX vs module %lX\n",
+> -                      maybe_relocated(*crc, crc_owner), versions[i].crc);
+> +               pr_debug("Found checksum %X vs module %lX\n",
+> +                        crcval, versions[i].crc);
+>                 goto bad_version;
+>         }
+>
+> @@ -1307,7 +1304,7 @@ static inline int check_modstruct_version(Elf_Shdr *sechdrs,
+>                                           unsigned int versindex,
+>                                           struct module *mod)
+>  {
+> -       const unsigned long *crc;
+> +       const s32 *crc;
+>
+>         /*
+>          * Since this should be found in kernel (which can't be removed), no
+> @@ -1321,8 +1318,7 @@ static inline int check_modstruct_version(Elf_Shdr *sechdrs,
+>         }
+>         preempt_enable();
+>         return check_version(sechdrs, versindex,
+> -                            VMLINUX_SYMBOL_STR(module_layout), mod, crc,
+> -                            NULL);
+> +                            VMLINUX_SYMBOL_STR(module_layout), mod, crc);
+>  }
+>
+>  /* First part is kernel version, which we ignore if module has crcs. */
+> @@ -1340,8 +1336,7 @@ static inline int check_version(Elf_Shdr *sechdrs,
+>                                 unsigned int versindex,
+>                                 const char *symname,
+>                                 struct module *mod,
+> -                               const unsigned long *crc,
+> -                               const struct module *crc_owner)
+> +                               const s32 *crc)
+>  {
+>         return 1;
+>  }
+> @@ -1368,7 +1363,7 @@ static const struct kernel_symbol *resolve_symbol(struct module *mod,
+>  {
+>         struct module *owner;
+>         const struct kernel_symbol *sym;
+> -       const unsigned long *crc;
+> +       const s32 *crc;
+>         int err;
+>
+>         /*
+> @@ -1383,8 +1378,7 @@ static const struct kernel_symbol *resolve_symbol(struct module *mod,
+>         if (!sym)
+>                 goto unlock;
+>
+> -       if (!check_version(info->sechdrs, info->index.vers, name, mod, crc,
+> -                          owner)) {
+> +       if (!check_version(info->sechdrs, info->index.vers, name, mod, crc)) {
+>                 sym = ERR_PTR(-EINVAL);
+>                 goto getname;
+>         }
+> diff --git a/scripts/genksyms/genksyms.c b/scripts/genksyms/genksyms.c
+> index 06121ce524a7..143a7013f5b8 100644
+> --- a/scripts/genksyms/genksyms.c
+> +++ b/scripts/genksyms/genksyms.c
+> @@ -693,7 +693,9 @@ void export_symbol(const char *name)
+>                         fputs(">\n", debugfile);
+>
+>                 /* Used as a linker script. */
+> -               printf("%s__crc_%s = 0x%08lx ;\n", mod_prefix, name, crc);
+> +               printf("SECTIONS { .rodata.modver : ALIGN(4) { "
+> +                      "%s__crc_%s = .; LONG(0x%08lx); } }\n",
+> +                      mod_prefix, name, crc);
+>         }
+>  }
+>
+> diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+> index 299b92ca1ae0..5d554419170b 100644
+> --- a/scripts/kallsyms.c
+> +++ b/scripts/kallsyms.c
+> @@ -219,6 +219,10 @@ static int symbol_valid(struct sym_entry *s)
+>                 "_SDA2_BASE_",          /* ppc */
+>                 NULL };
+>
+> +       static char *special_prefixes[] = {
+> +               "__crc_",               /* modversions */
+> +               NULL };
+> +
+>         static char *special_suffixes[] = {
+>                 "_veneer",              /* arm */
+>                 "_from_arm",            /* arm */
+> @@ -259,6 +263,14 @@ static int symbol_valid(struct sym_entry *s)
+>                 if (strcmp(sym_name, special_symbols[i]) == 0)
+>                         return 0;
+>
+> +       for (i = 0; special_prefixes[i]; i++) {
+> +               int l = strlen(special_prefixes[i]);
+> +
+> +               if (l <= strlen(sym_name) &&
+> +                   strncmp(sym_name, special_prefixes[i], l) == 0)
+> +                       return 0;
+> +       }
+> +
+>         for (i = 0; special_suffixes[i]; i++) {
+>                 int l = strlen(sym_name) - strlen(special_suffixes[i]);
+>
+> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+> index 29c89a6bad3d..d69f3ceae19e 100644
+> --- a/scripts/mod/modpost.c
+> +++ b/scripts/mod/modpost.c
+> @@ -619,8 +619,15 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
+>
+>         /* CRC'd symbol */
+>         if (strncmp(symname, CRC_PFX, strlen(CRC_PFX)) == 0) {
+> +               unsigned int *crcp = NULL;
+> +
+> +               if (sym->st_shndx != SHN_UNDEF)
+> +                       crcp = (void *)info->hdr + sym->st_value +
+> +                              info->sechdrs[sym->st_shndx].sh_offset -
+> +                              info->sechdrs[sym->st_shndx].sh_addr;
+> +
+>                 is_crc = true;
+> -               crc = (unsigned int) sym->st_value;
+> +               crc = crcp ? *crcp : 0;
+>                 sym_update_crc(symname + strlen(CRC_PFX), mod, crc,
+>                                 export);
+>         }
+> --
+> 2.7.4
+>
