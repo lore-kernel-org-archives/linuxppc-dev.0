@@ -1,39 +1,17 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-qt0-x242.google.com (mail-qt0-x242.google.com
- [IPv6:2607:f8b0:400d:c0d::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v3kr50mqVzDqGx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2017 11:15:17 +1100 (AEDT)
-Received: by mail-qt0-x242.google.com with SMTP id f4so5136339qte.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2017 16:15:16 -0800 (PST)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <CAKv+Gu-wqoQVXvZcEF8xfAnHmrakKU73ToMNO+2Lw158B4teJA@mail.gmail.com>
-References: <1484681173-11644-1-git-send-email-ard.biesheuvel@linaro.org>
- <1484681173-11644-4-git-send-email-ard.biesheuvel@linaro.org>
- <CA+55aFzKZySX1VC3YTcZxafDuhLT_HE3voS3UN1eNVh5+6XmNw@mail.gmail.com>
- <CAKv+Gu_mBtp9Y341ZZ8hA-Oo_Hf755QWZytptFKJPma05CSheg@mail.gmail.com>
- <CAKv+Gu8xPR3axtVEM9f6jX6yAn6bqE-=izNXdEZ7LxP6ZNPnbw@mail.gmail.com>
- <CA+55aFx5QHfi3X6cxbmXHcxTWfBfxTG33N+kX4Ro=747rnuxtw@mail.gmail.com>
- <CA+55aFz2=B1WmVFREpouYJcUb31zH7ijqU6jvTsveQdb_yJ=sg@mail.gmail.com>
- <CAKv+Gu-wqoQVXvZcEF8xfAnHmrakKU73ToMNO+2Lw158B4teJA@mail.gmail.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 18 Jan 2017 16:15:14 -0800
-Message-ID: <CA+55aFzpCdSAP1ef9d+8SWByEa5ekP0V2T6feKPMZq_cOfiOUA@mail.gmail.com>
-Subject: Re: [PATCH v4 3/3] modversions: treat symbol CRCs as 32 bit
- quantities on 64 bit archs
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Jessica Yu <jeyu@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
- "Suzuki K. Poulose" <suzuki.poulose@arm.com>, Will Deacon <will.deacon@arm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@zeniv.linux.org.uk>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v3pwW0vgNzDqJh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2017 14:19:23 +1100 (AEDT)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mikey@neuling.org, maddy@linux.vnet.ibm.com, grimm@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Ignore reserved field in DCSR and PVR reads and
+ writes
+Date: Thu, 19 Jan 2017 14:19:10 +1100
+Message-Id: <20170119031910.2335-1-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 18, 2017 at 2:37 PM, Ard Biesheuvel
-<ard.biesheuvel@linaro.org> wrote:
->
-> For a ballpark number of 10,000 CRCs in the core kernel, this would
-> increase the size of the image by 40 KB for 32-bit architectures (and
-> if saving 40 KB is essential, chances are you won't be using
-> modversions in the first place).
+From: Anton Blanchard <anton@samba.org>
 
-As you say, I don't think the space issue is much of a problem.
+IBM bit 31 (for the rest of us - bit 0) is a reserved field in the
+instruction definition of mtspr and mfspr. Hardware is encouraged to
+(and does) ignore it.
 
-I'm more worried about the replacement of one crazy model that has
-problems due to linker subtlety with _another_ one.
+As a result, if userspace executes an mtspr DSCR with the reserved bit
+set, we get a DSCR facility unavailable exception. The kernel fails to
+match against the expected value/mask, and we silently return to
+userspace to try and re-execute the same mtspr DSCR instruction. We
+loop forever until the process is killed.
 
-Your genksyms.c change is not exactly obvious. I looked at it, and my
-brain just shut down. Why both the
+We should do something here, and it seems mirroring what hardware does
+is the better option vs killing the process. While here, relax the
+matching of mfspr PVR too.
 
-  LONG(0x%08lx);
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/include/asm/ppc-opcode.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-_and_ the
-
-  "%s__crc_%s = 0x%08lx;\n"
-
-in the linker script? I'm sure there's a good reason, but I'd like to
-see a more explicit explanation fo what the generated linker script
-does and what the rules are.
-
-         Linus
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index c56ea8c..c4ced1d 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -157,7 +157,7 @@
+ #define PPC_INST_MCRXR			0x7c000400
+ #define PPC_INST_MCRXR_MASK		0xfc0007fe
+ #define PPC_INST_MFSPR_PVR		0x7c1f42a6
+-#define PPC_INST_MFSPR_PVR_MASK		0xfc1fffff
++#define PPC_INST_MFSPR_PVR_MASK		0xfc1ffffe
+ #define PPC_INST_MFTMR			0x7c0002dc
+ #define PPC_INST_MSGSND			0x7c00019c
+ #define PPC_INST_MSGCLR			0x7c0001dc
+@@ -174,13 +174,13 @@
+ #define PPC_INST_RFDI			0x4c00004e
+ #define PPC_INST_RFMCI			0x4c00004c
+ #define PPC_INST_MFSPR_DSCR		0x7c1102a6
+-#define PPC_INST_MFSPR_DSCR_MASK	0xfc1fffff
++#define PPC_INST_MFSPR_DSCR_MASK	0xfc1ffffe
+ #define PPC_INST_MTSPR_DSCR		0x7c1103a6
+-#define PPC_INST_MTSPR_DSCR_MASK	0xfc1fffff
++#define PPC_INST_MTSPR_DSCR_MASK	0xfc1ffffe
+ #define PPC_INST_MFSPR_DSCR_USER	0x7c0302a6
+-#define PPC_INST_MFSPR_DSCR_USER_MASK	0xfc1fffff
++#define PPC_INST_MFSPR_DSCR_USER_MASK	0xfc1ffffe
+ #define PPC_INST_MTSPR_DSCR_USER	0x7c0303a6
+-#define PPC_INST_MTSPR_DSCR_USER_MASK	0xfc1fffff
++#define PPC_INST_MTSPR_DSCR_USER_MASK	0xfc1ffffe
+ #define PPC_INST_MFVSRD			0x7c000066
+ #define PPC_INST_MTVSRD			0x7c000166
+ #define PPC_INST_SLBFEE			0x7c0007a7
+-- 
+2.9.3
