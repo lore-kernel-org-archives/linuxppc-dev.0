@@ -1,17 +1,23 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [IPv6:2a03:3680:0:3::67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v3pwW0vgNzDqJh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2017 14:19:23 +1100 (AEDT)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mikey@neuling.org, maddy@linux.vnet.ibm.com, grimm@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Ignore reserved field in DCSR and PVR reads and
- writes
-Date: Thu, 19 Jan 2017 14:19:10 +1100
-Message-Id: <20170119031910.2335-1-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v3qJM1RFjzDqJn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2017 14:36:35 +1100 (AEDT)
+Date: Wed, 18 Jan 2017 19:36:29 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH RFC] powerpc/32: fix handling of stack protector with
+ recent GCC
+In-Reply-To: <20170116090031.4843668B50@localhost.localdomain>
+Message-ID: <alpine.DEB.2.20.999.1701181913290.3270@trent.utfs.org>
+References: <20170116090031.4843668B50@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,57 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+On Mon, 16 Jan 2017, Christophe Leroy wrote:
+>  Christian, can you test it ?
 
-IBM bit 31 (for the rest of us - bit 0) is a reserved field in the
-instruction definition of mtspr and mfspr. Hardware is encouraged to
-(and does) ignore it.
+OK, so with that applied to v4.10-rc4, compilation still fails with GCC 
+4.9.2 and CC_STACKPROTECTOR_STRONG=y, see below. But it compiles just fine 
+with CC_STACKPROTECTOR_REGULAR=y and boots to!
 
-As a result, if userspace executes an mtspr DSCR with the reserved bit
-set, we get a DSCR facility unavailable exception. The kernel fails to
-match against the expected value/mask, and we silently return to
-userspace to try and re-execute the same mtspr DSCR instruction. We
-loop forever until the process is killed.
+Cross-compiling the same with GCC 5.2.0 works, even for 
+CC_STACKPROTECTOR_STRONG=y and the system boots just fine.
 
-We should do something here, and it seems mirroring what hardware does
-is the better option vs killing the process. While here, relax the
-matching of mfspr PVR too.
+So, with that limitation, feel free to add:
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/include/asm/ppc-opcode.h | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ Tested-by: Christian Kujau <lists@nerdbynature.de>
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index c56ea8c..c4ced1d 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -157,7 +157,7 @@
- #define PPC_INST_MCRXR			0x7c000400
- #define PPC_INST_MCRXR_MASK		0xfc0007fe
- #define PPC_INST_MFSPR_PVR		0x7c1f42a6
--#define PPC_INST_MFSPR_PVR_MASK		0xfc1fffff
-+#define PPC_INST_MFSPR_PVR_MASK		0xfc1ffffe
- #define PPC_INST_MFTMR			0x7c0002dc
- #define PPC_INST_MSGSND			0x7c00019c
- #define PPC_INST_MSGCLR			0x7c0001dc
-@@ -174,13 +174,13 @@
- #define PPC_INST_RFDI			0x4c00004e
- #define PPC_INST_RFMCI			0x4c00004c
- #define PPC_INST_MFSPR_DSCR		0x7c1102a6
--#define PPC_INST_MFSPR_DSCR_MASK	0xfc1fffff
-+#define PPC_INST_MFSPR_DSCR_MASK	0xfc1ffffe
- #define PPC_INST_MTSPR_DSCR		0x7c1103a6
--#define PPC_INST_MTSPR_DSCR_MASK	0xfc1fffff
-+#define PPC_INST_MTSPR_DSCR_MASK	0xfc1ffffe
- #define PPC_INST_MFSPR_DSCR_USER	0x7c0302a6
--#define PPC_INST_MFSPR_DSCR_USER_MASK	0xfc1fffff
-+#define PPC_INST_MFSPR_DSCR_USER_MASK	0xfc1ffffe
- #define PPC_INST_MTSPR_DSCR_USER	0x7c0303a6
--#define PPC_INST_MTSPR_DSCR_USER_MASK	0xfc1fffff
-+#define PPC_INST_MTSPR_DSCR_USER_MASK	0xfc1ffffe
- #define PPC_INST_MFVSRD			0x7c000066
- #define PPC_INST_MTVSRD			0x7c000166
- #define PPC_INST_SLBFEE			0x7c0007a7
+
+Thanks for the fix!
+Christian.
+
+
+----
+$ gcc --version | head -1
+gcc-4.9.real (Debian 4.9.2-10) 4.9.2
+
+$ grep CC_STACKPROTECTOR_STRONG $DIR/.config
+CONFIG_CC_STACKPROTECTOR_STRONG=y
+
+$ make O=$DIR V=1 bindeb-pkg
+[...]
++ ld -EB -m elf32ppc -Bstatic --build-id -X -o .tmp_vmlinux1 -T 
+./arch/powerpc/kernel/vmlinux.lds arch/powerpc/kernel/head_32.o 
+arch/powerpc/kernel/fpu.o arch/powerpc/kernel/vector.o 
+arch/powerpc/kernel/prom_init.o init/built-in.o --start-group 
+usr/built-in.o arch/powerpc/kernel/built-in.o arch/powerpc/mm/built-in.o 
+arch/powerpc/lib/built-in.o arch/powerpc/sysdev/built-in.o 
+arch/powerpc/platforms/built-in.o arch/powerpc/math-emu/built-in.o 
+arch/powerpc/crypto/built-in.o arch/powerpc/net/built-in.o 
+kernel/built-in.o certs/built-in.o mm/built-in.o fs/built-in.o 
+ipc/built-in.o security/built-in.o crypto/built-in.o block/built-in.o 
+lib/lib.a lib/built-in.o drivers/built-in.o sound/built-in.o 
+firmware/built-in.o net/built-in.o virt/built-in.o --end-group
+arch/powerpc/platforms/built-in.o: In function `bootx_printf':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:88: undefined reference to `__stack_chk_fail_local'
+arch/powerpc/platforms/built-in.o: In function `bootx_add_display_props':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:211: undefined reference to `__stack_chk_fail_local' 
+arch/powerpc/platforms/built-in.o: In function `bootx_scan_dt_build_struct':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:350: undefined reference to `__stack_chk_fail_local'
+arch/powerpc/platforms/built-in.o: In function `bootx_init':
+/usr/local/src/linux-git/arch/powerpc/platforms/powermac/bootx_init.c:596: undefined reference to `__stack_chk_fail_local'
+/usr/bin/ld.bfd.real: .tmp_vmlinux1: hidden symbol `__stack_chk_fail_local' isn't defined
+/usr/bin/ld.bfd.real: final link failed: Bad value
+
 -- 
-2.9.3
+BOFH excuse #66:
+
+bit bucket overflow
