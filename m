@@ -1,11 +1,11 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Received: from mout.web.de (mout.web.de [212.227.15.14])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v499S2ssdzDqSW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 04:01:48 +1100 (AEDT)
-Subject: [PATCH 2/8] powerpc/nvram: Return directly after a failed kmalloc()
- in dev_nvram_write()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v49CZ6KsRzDqWX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 04:03:38 +1100 (AEDT)
+Subject: [PATCH 4/8] powerpc/nvram: Return directly after a failed parameter
+ validation in dev_nvram_read()
 To: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Daniel Axtens <dja@axtens.net>, Geliang Tang <geliangtang@163.com>,
@@ -17,8 +17,8 @@ To: linuxppc-dev@lists.ozlabs.org,
 References: <53545d97-6ed5-ff17-384f-82e72b3592f9@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <b2f7db46-1203-11b5-d749-4482ba697308@users.sourceforge.net>
-Date: Thu, 19 Jan 2017 17:55:32 +0100
+Message-ID: <b5dc24f8-4b74-9dfe-fb18-7dc0699b87ec@users.sourceforge.net>
+Date: Thu, 19 Jan 2017 17:57:37 +0100
 MIME-Version: 1.0
 In-Reply-To: <53545d97-6ed5-ff17-384f-82e72b3592f9@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -32,31 +32,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 19 Jan 2017 15:44:03 +0100
+Date: Thu, 19 Jan 2017 16:12:48 +0100
 
-Return directly after a call of the function "kmalloc" failed here.
+* Return directly after an inappropriate input parameter was detected.
+
+* Delete an initialisation for the variable "tmp" at the beginning
+  which became unnecessary with this refactoring.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/kernel/nvram_64.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/kernel/nvram_64.c | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 37d08b95c3f0..cf839adf3aa7 100644
+index dc90a0e9ad65..463551589b97 100644
 --- a/arch/powerpc/kernel/nvram_64.c
 +++ b/arch/powerpc/kernel/nvram_64.c
-@@ -802,11 +802,9 @@ static ssize_t dev_nvram_write(struct file *file, const char __user *buf,
+@@ -745,24 +745,18 @@ static ssize_t dev_nvram_read(struct file *file, char __user *buf,
+ 			  size_t count, loff_t *ppos)
+ {
+ 	ssize_t ret;
+-	char *tmp = NULL;
++	char *tmp;
+ 	ssize_t size;
+ 
+-	if (!ppc_md.nvram_size) {
+-		ret = -ENODEV;
+-		goto out;
+-	}
++	if (!ppc_md.nvram_size)
++		return -ENODEV;
+ 
+ 	size = ppc_md.nvram_size();
+-	if (size < 0) {
+-		ret = size;
+-		goto out;
+-	}
++	if (size < 0)
++		return size;
+ 
+-	if (*ppos >= size) {
+-		ret = 0;
+-		goto out;
+-	}
++	if (*ppos >= size)
++		return 0;
  
  	count = min_t(size_t, count, size - *ppos);
  	count = min(count, PAGE_SIZE);
--
--	ret = -ENOMEM;
- 	tmp = kmalloc(count, GFP_KERNEL);
- 	if (!tmp)
--		goto out;
-+		return -ENOMEM;
- 
- 	ret = -EFAULT;
- 	if (copy_from_user(tmp, buf, count))
 -- 
 2.11.0
