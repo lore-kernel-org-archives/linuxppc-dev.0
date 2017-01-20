@@ -1,42 +1,27 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Bart.VanAssche@sandisk.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on062c.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe4a::62c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v4tFf2kyDzDqMd
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 07:52:54 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0KKmedf006188
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 15:52:51 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 282ybhd2da-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 15:52:51 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Fri, 20 Jan 2017 13:52:49 -0700
-Subject: Re: powerpc/nvram: Move an assignment for the variable "ret" in
- dev_nvram_write()
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- linuxppc-dev@lists.ozlabs.org
-References: <53545d97-6ed5-ff17-384f-82e72b3592f9@users.sourceforge.net>
- <dcaccc31-99ac-ef90-cbef-79dbf72f0a4d@users.sourceforge.net>
- <52f46c9b-e049-7288-2c53-9c2525cd84c6@linux.vnet.ibm.com>
- <b0958392-8325-4f56-cded-0ff6691893cf@users.sourceforge.net>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- Geliang Tang <geliangtang@163.com>, Paul Mackerras <paulus@samba.org>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Fri, 20 Jan 2017 12:52:44 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v4tWT6kNjzDqQH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 08:04:53 +1100 (AEDT)
+From: Bart Van Assche <bart.vanassche@sandisk.com>
+To: Doug Ledford <dledford@redhat.com>
+CC: <linux-rdma@vger.kernel.org>, Bart Van Assche
+ <bart.vanassche@sandisk.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Chris Metcalf <cmetcalf@mellanox.com>, "David
+ Woodhouse" <dwmw2@infradead.org>, <linux-arch@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>, "Russell
+ King" <linux@armlinux.org.uk>
+Subject: [PATCH v3 03/37] treewide: Consolidate set_dma_ops() implementations
+Date: Fri, 20 Jan 2017 13:04:03 -0800
+Message-ID: <20170120210437.26389-4-bart.vanassche@sandisk.com>
+In-Reply-To: <20170120210437.26389-1-bart.vanassche@sandisk.com>
+References: <20170120210437.26389-1-bart.vanassche@sandisk.com>
 MIME-Version: 1.0
-In-Reply-To: <b0958392-8325-4f56-cded-0ff6691893cf@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <cbd6e372-111e-c73a-713b-62d7abd7ddfd@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,34 +31,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/19/2017 11:08 PM, SF Markus Elfring wrote:
->> I think you really could have squashed patches 1-3 into a single patch
->> that returns directly after any failure.
-> 
-> Thanks for your constructive feedback.
-> 
-> I have got software development concerns around such patch squashing.
-> 
-> 
->> At this point you might as well remove that label and move the kfree(tmp) call up
->> and return directly after the failure and at the nvram_write() call site
->> doing away completely with the "ret" variable.
-> 
-> Your idea might look nice at first glance. But I would interpret the previous
-> implementation of the discussed function in the way that the memory which was
-> dynamically allocated here should always (not only in the failure case) be released
-> before returning here.
+Now that all set_dma_ops() implementations are identical (ignoring
+BUG_ON() statements), remove the architecture specific definitions
+and add a definition in <linux/dma-mapping.h>.
 
-You are correct. I did muck that part up. However, I do still believe it
-is cleaner to squash your three patches together. There is no functional
-change here and it is clearer in a single patch that you are modifying
-the function to return directly in the simple error cases.
+Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Chris Metcalf <cmetcalf@mellanox.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-arch@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Russell King <linux@armlinux.org.uk>
+---
+ arch/arm/include/asm/dma-mapping.h     | 6 ------
+ arch/powerpc/include/asm/dma-mapping.h | 5 -----
+ arch/tile/include/asm/dma-mapping.h    | 5 -----
+ include/linux/dma-mapping.h            | 5 +++++
+ 4 files changed, 5 insertions(+), 16 deletions(-)
 
--Tyrel
-
-> 
-> Would you really like to change the life time for this “temporary” data item?
-> 
-> Regards,
-> Markus
-> 
+diff --git a/arch/arm/include/asm/dma-mapping.h b/arch/arm/include/asm/dma-mapping.h
+index 312f4d0564d6..c7432d647e53 100644
+--- a/arch/arm/include/asm/dma-mapping.h
++++ b/arch/arm/include/asm/dma-mapping.h
+@@ -31,12 +31,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
+ 		return __generic_dma_ops(dev);
+ }
+ 
+-static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
+-{
+-	BUG_ON(!dev);
+-	dev->dma_ops = ops;
+-}
+-
+ #define HAVE_ARCH_DMA_SUPPORTED 1
+ extern int dma_supported(struct device *dev, u64 mask);
+ 
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 59fbd4abcbf8..8275603ba4d5 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -91,11 +91,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
+ 	return dev->dma_ops;
+ }
+ 
+-static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
+-{
+-	dev->dma_ops = ops;
+-}
+-
+ /*
+  * get_dma_offset()
+  *
+diff --git a/arch/tile/include/asm/dma-mapping.h b/arch/tile/include/asm/dma-mapping.h
+index c0620697eaad..2562995a6ac9 100644
+--- a/arch/tile/include/asm/dma-mapping.h
++++ b/arch/tile/include/asm/dma-mapping.h
+@@ -59,11 +59,6 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
+ 
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+ 
+-static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
+-{
+-	dev->dma_ops = ops;
+-}
+-
+ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+ {
+ 	if (!dev->dma_mask)
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index f1da68b82c63..e97f23e8b2d9 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -164,6 +164,11 @@ int dma_mmap_from_coherent(struct device *dev, struct vm_area_struct *vma,
+ 
+ #ifdef CONFIG_HAS_DMA
+ #include <asm/dma-mapping.h>
++static inline void set_dma_ops(struct device *dev,
++			       const struct dma_map_ops *dma_ops)
++{
++	dev->dma_ops = dma_ops;
++}
+ #else
+ /*
+  * Define the dma api to allow compilation but not linking of
+-- 
+2.11.0
