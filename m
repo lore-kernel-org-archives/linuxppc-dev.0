@@ -1,35 +1,42 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-it0-x233.google.com (mail-it0-x233.google.com
+ [IPv6:2607:f8b0:4001:c0b::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v4XjG295XzDqSS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 18:42:10 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0K7cw9o059070
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 02:42:06 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 283cj6bwbk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 02:42:06 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Fri, 20 Jan 2017 00:42:05 -0700
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-To: bhelgaas@google.com
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alex.williamson@redhat.com, gwshan@linux.vnet.ibm.com, aik@ozlabs.ru,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- zhong@linux.vnet.ibm.com
-Subject: [PATCH v8 3/3] PCI: Add a macro to set default alignment for all PCI
- devices
-Date: Fri, 20 Jan 2017 15:41:53 +0800
-In-Reply-To: <1484898113-24939-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1484898113-24939-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Message-Id: <1484898113-24939-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v4fvc6SPpzDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 23:21:32 +1100 (AEDT)
+Received: by mail-it0-x233.google.com with SMTP id d9so10507947itc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 04:21:32 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <CA+55aFze-554PcrE8O4_ZFN5_veQ7s3M3HFOTbpj7rxVKY-KjQ@mail.gmail.com>
+References: <1484681173-11644-1-git-send-email-ard.biesheuvel@linaro.org>
+ <1484681173-11644-4-git-send-email-ard.biesheuvel@linaro.org>
+ <CA+55aFzKZySX1VC3YTcZxafDuhLT_HE3voS3UN1eNVh5+6XmNw@mail.gmail.com>
+ <CAKv+Gu_mBtp9Y341ZZ8hA-Oo_Hf755QWZytptFKJPma05CSheg@mail.gmail.com>
+ <CAKv+Gu8xPR3axtVEM9f6jX6yAn6bqE-=izNXdEZ7LxP6ZNPnbw@mail.gmail.com>
+ <CA+55aFx5QHfi3X6cxbmXHcxTWfBfxTG33N+kX4Ro=747rnuxtw@mail.gmail.com>
+ <CA+55aFz2=B1WmVFREpouYJcUb31zH7ijqU6jvTsveQdb_yJ=sg@mail.gmail.com>
+ <CAKv+Gu-wqoQVXvZcEF8xfAnHmrakKU73ToMNO+2Lw158B4teJA@mail.gmail.com>
+ <CA+55aFzpCdSAP1ef9d+8SWByEa5ekP0V2T6feKPMZq_cOfiOUA@mail.gmail.com>
+ <CAKv+Gu_5hL617uMzT37sn6-1R_9fwoRnmr_jE=zDB1XyHGvDAQ@mail.gmail.com>
+ <CA+55aFze-554PcrE8O4_ZFN5_veQ7s3M3HFOTbpj7rxVKY-KjQ@mail.gmail.com>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Fri, 20 Jan 2017 12:21:29 +0000
+Message-ID: <CAKv+Gu_wVZLkHKWVyMPUgnkTZcDsuzF-8YpTF+Q_x_EfN3yOfg@mail.gmail.com>
+Subject: Re: [PATCH v4 3/3] modversions: treat symbol CRCs as 32 bit
+ quantities on 64 bit archs
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Russell King <linux@armlinux.org.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Jessica Yu <jeyu@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+ "Suzuki K. Poulose" <suzuki.poulose@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnd Bergmann <arnd@arndb.de>, Al Viro <viro@zeniv.linux.org.uk>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,54 +46,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When vfio passthroughs a PCI device of which MMIO BARs are
-smaller than PAGE_SIZE, guest will not handle the mmio
-accesses to the BARs which leads to mmio emulations in host.
+On 19 January 2017 at 17:24, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Thu, Jan 19, 2017 at 1:22 AM, Ard Biesheuvel
+> <ard.biesheuvel@linaro.org> wrote:
+>>>
+>>> Your genksyms.c change is not exactly obvious. I looked at it, and my
+>>> brain just shut down. Why both the
+>>>
+>>>   LONG(0x%08lx);
+>>>
+>>> _and_ the
+>>>
+>>>   "%s__crc_%s = 0x%08lx;\n"
+>>>
+>>> in the linker script? I'm sure there's a good reason, but I'd like to
+>>> see a more explicit explanation fo what the generated linker script
+>>> does and what the rules are.
+>>
+>> This is simply because modpost still uses the value of the symbol
+>> rather than the value it points to to generate the /other/ side of the
+>> comparison (i.e., Module.symvers etc)
+>
+> Ahh, now that you explained it, it was obvious. Thanks.
+>
+> But yes, I don't think we want that "both belt and suspenders"
+> approach, so your updated patch that does things just one way is I
+> think the right way.
+>
+>> I will look into updating modpost to dereference the symbol as well,
+>> and update the RFC patch accordingly.
+>
+> Yes, so your updated patch looks good to me.
+>
+> I think our old "symbol with an absolute value" model was simpler
+> conceptually, but given the existing absolute (sic) braindamage of
+> linkers, I think your latest patch is probably the way to go.
+>
 
-This is because vfio will not allow to passthrough one BAR's
-mmio page which may be shared with other BARs. Otherwise,
-there will be a backdoor that guest can use to access BARs
-of other guest.
+OK.
 
-This patch adds a macro to set default alignment for all
-PCI devices. Then we could solve this issue on some platforms
-which would easily hit this issue because of their 64K page
-such as PowerNV platform by defining this macro as PAGE_SIZE.
+> If for no other reason than the fact that it doesn't depend on
+> something that clearly nobody else uses, and even the linker people
+> were confused about.
+>
+> So I think the slightly more complex model of relative offsets is the
+> simpler one in the end if it means that we don't have to have
+> completely insane workarounds for linker damage.
+>
+> But maybe somebody else wants to pipe up. Preferably somebody who
+> doesn't hate the symversions code as much as I do by now, and actually
+> _uses_ it ;)
+>
 
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pci.h |    4 ++++
- drivers/pci/pci.c              |    3 +++
- 2 files changed, 7 insertions(+)
+I am not crazy about it either: I am simply trying to get rid of the
+~10,000 pointless relocations in the arm64 KASLR kernel rather than
+having to rely on the dodgy code that 'repairs' the CRCs at runtime.
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index e9bd6cf..5e31bc2 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -28,6 +28,10 @@
- #define PCIBIOS_MIN_IO		0x1000
- #define PCIBIOS_MIN_MEM		0x10000000
- 
-+#ifdef CONFIG_PPC_POWERNV
-+#define PCIBIOS_DEFAULT_ALIGNMENT	PAGE_SIZE
-+#endif
-+
- struct pci_dev;
- 
- /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 04f2100..c2da41b 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4965,6 +4965,9 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
- 	resource_size_t align = 0;
- 	char *p;
- 
-+#ifdef PCIBIOS_DEFAULT_ALIGNMENT
-+	align = PCIBIOS_DEFAULT_ALIGNMENT;
-+#endif
- 	spin_lock(&resource_alignment_lock);
- 	p = resource_alignment_param;
- 	if (!*p)
--- 
-1.7.9.5
+I have noticed one slight snag though: the ARM module loader currently
+has no support for the R_ARM_REL32 relocations that are emitted by the
+relative references in the kcrctabs. I looked at other arches, x86,
+ia64, s390, power and arm64, and those all seem to be fully equipped
+in this regard, but it would be good if we could get some coverage for
+this code on other architectures to find out which ones need to have
+this support added as well.
+
+Thanks,
+Ard.
