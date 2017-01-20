@@ -1,24 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v4V994WkBzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 16:47:41 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Cc: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org,
- dyoung@redhat.com, kexec@lists.infradead.org,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, ebiederm@xmission.com,
- linuxppc-dev@lists.ozlabs.org, vgoyal@redhat.com
-Subject: Re: [PATCH v4 2/5] ia64: reuse append_elf_note() and final_note()
- functions
-In-Reply-To: <148363740554.11570.4870634597647436827.stgit@hbathini.in.ibm.com>
-References: <148363729327.11570.6244765717789390817.stgit@hbathini.in.ibm.com>
- <148363740554.11570.4870634597647436827.stgit@hbathini.in.ibm.com>
-Date: Fri, 20 Jan 2017 16:47:38 +1100
-Message-ID: <87tw8umged.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v4Wzq1h8HzDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2017 18:09:42 +1100 (AEDT)
+Subject: Re: powerpc/nvram: Move an assignment for the variable "ret" in
+ dev_nvram_write()
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <53545d97-6ed5-ff17-384f-82e72b3592f9@users.sourceforge.net>
+ <dcaccc31-99ac-ef90-cbef-79dbf72f0a4d@users.sourceforge.net>
+ <52f46c9b-e049-7288-2c53-9c2525cd84c6@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, Geliang Tang <geliangtang@163.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <b0958392-8325-4f56-cded-0ff6691893cf@users.sourceforge.net>
+Date: Fri, 20 Jan 2017 08:08:55 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <52f46c9b-e049-7288-2c53-9c2525cd84c6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+> I think you really could have squashed patches 1-3 into a single patch
+> that returns directly after any failure.
 
-> Get rid of multiple definitions of append_elf_note() & final_note()
-> functions. Reuse these functions compiled under CONFIG_CRASH_CORE
-> Also, define Elf_Word and use it instead of generic u32 or the more
-> specific Elf64_Word.
->
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-> ---
->
-> Changes from v3:
-> * Dropped hard-coded values and used DIV_ROUND_UP().
->
-> Changes from v2:
-> * Added a definition for Elf_Word.
-> * Used IA64 version of append_elf_note() and final_note() functions.
->
->
->  arch/ia64/kernel/crash.c   |   22 ----------------------
->  include/linux/crash_core.h |    4 ++++
->  include/linux/elf.h        |    2 ++
->  kernel/crash_core.c        |   34 ++++++++++++++--------------------
->  kernel/kexec_core.c        |   28 ----------------------------
->  5 files changed, 20 insertions(+), 70 deletions(-)
+Thanks for your constructive feedback.
 
-Do the powerpc patches later in the series actually depend on this one?
-Or is this just an unrelated cleanup?
+I have got software development concerns around such patch squashing.
 
-As it is I can't merge the series until we at least get an ack on this
-from the ia64 folks.
 
-If you can just split this out as a separate patch that would make it a
-lot easier to get the rest merged.
+> At this point you might as well remove that label and move the kfree(tmp) call up
+> and return directly after the failure and at the nvram_write() call site
+> doing away completely with the "ret" variable.
 
-cheers
+Your idea might look nice at first glance. But I would interpret the previous
+implementation of the discussed function in the way that the memory which was
+dynamically allocated here should always (not only in the failure case) be released
+before returning here.
+
+Would you really like to change the life time for this “temporary” data item?
+
+Regards,
+Markus
