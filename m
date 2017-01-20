@@ -1,23 +1,26 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.14])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v4q3P4j4YzDrPj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 05:28:49 +1100 (AEDT)
-Subject: [PATCH 08/11] KVM: PPC: Book3S: Use seq_puts() in xics_debug_show()
-To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
-References: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <10e0dc46-5eec-bafc-e191-98df6a724b98@users.sourceforge.net>
-Date: Fri, 20 Jan 2017 19:26:58 +0100
+Return-Path: <tony@atomide.com>
+Received: from muru.com (muru.com [72.249.23.125])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3v4q3Y3cl0zDrQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 05:28:57 +1100 (AEDT)
+Date: Fri, 20 Jan 2017 10:28:50 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
+Subject: Re: [PATCH 36/37] ARM: DRA7: clockdomain: Change the CLKTRCTRL of
+ CM_PCIE_CLKSTCTRL to SW_WKUP
+Message-ID: <20170120182850.GE7403@atomide.com>
+References: <1484216786-17292-1-git-send-email-kishon@ti.com>
+ <1484216786-17292-37-git-send-email-kishon@ti.com>
+ <20170113171537.GZ2630@atomide.com> <587C628E.7070804@ti.com>
 MIME-Version: 1.0
-In-Reply-To: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <587C628E.7070804@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 20 Jan 2017 16:26:51 +0100
+* Kishon Vijay Abraham I <kishon@ti.com> [170115 22:06]:
+> Hi Tony,
+> 
+> On Friday 13 January 2017 10:45 PM, Tony Lindgren wrote:
+> > * Kishon Vijay Abraham I <kishon@ti.com> [170112 02:35]:
+> >> The PCIe programming sequence in TRM suggests CLKSTCTRL of PCIe should
+> >> be set to SW_WKUP. There are no issues when CLKSTCTRL is set to HW_AUTO
+> >> in RC mode. However in EP mode, the host system is not able to access the
+> >> MEMSPACE and setting the CLKSTCTRL to SW_WKUP fixes it.
+> > 
+> > I guess ideally in the long run we would set this dynamically based on
+> > the selected mode, right?
+> 
+> The programming sequence mentioned in the TRM w.r.t clock programming is same
+> for both host mode or device mode. Though we never faced any issues in host
+> mode when HW_AUTO is set, it's better to follow TRM recommended settings IMHO.
 
-A string which did not contain data format specifications should be put
-into a sequence. Thus use the corresponding function "seq_puts".
+OK best to merge this with the whole series:
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/kvm/book3s_xics.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index 3bdc639157c1..3740f9efcf06 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -934,8 +934,7 @@ static int xics_debug_show(struct seq_file *m, void *private)
- 	t_reject = 0;
- 
- 	xics_debugfs_irqmap(m, kvm->arch.pimap);
--
--	seq_printf(m, "=========\nICP state\n=========\n");
-+	seq_puts(m, "=========\nICP state\n=========\n");
- 
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		struct kvmppc_icp *icp = vcpu->arch.icp;
--- 
-2.11.0
+Acked-by: Tony Lindgren <tony@atomide.com>
