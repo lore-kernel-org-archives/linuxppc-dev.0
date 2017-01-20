@@ -1,11 +1,10 @@
 Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.4])
+Received: from mout.web.de (mout.web.de [212.227.15.14])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v4q0R6BZZzDqgp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 05:26:15 +1100 (AEDT)
-Subject: [PATCH 07/11] KVM: PPC: Book3S HV: Improve size determinations in
- five functions
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v4q3P4j4YzDrPj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 05:28:49 +1100 (AEDT)
+Subject: [PATCH 08/11] KVM: PPC: Book3S: Use seq_puts() in xics_debug_show()
 To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -14,8 +13,8 @@ To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
 References: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <83004740-a092-4460-f211-607c5c711e82@users.sourceforge.net>
-Date: Fri, 20 Jan 2017 19:25:54 +0100
+Message-ID: <10e0dc46-5eec-bafc-e191-98df6a724b98@users.sourceforge.net>
+Date: Fri, 20 Jan 2017 19:26:58 +0100
 MIME-Version: 1.0
 In-Reply-To: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
@@ -29,73 +28,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 20 Jan 2017 16:23:30 +0100
+Date: Fri, 20 Jan 2017 16:26:51 +0100
 
-Replace the specification of data structures by pointer dereferences
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
+A string which did not contain data format specifications should be put
+into a sequence. Thus use the corresponding function "seq_puts".
+
+This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/kvm/book3s_hv.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/kvm/book3s_xics.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 596201b3f22e..9b7a5a8c9e4b 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -655,7 +655,7 @@ static void kvmppc_create_dtl_entry(struct kvm_vcpu *vcpu,
- 	spin_unlock_irq(&vcpu->arch.tbacct_lock);
- 	if (!dt || !vpa)
- 		return;
--	memset(dt, 0, sizeof(struct dtl_entry));
-+	memset(dt, 0, sizeof(*dt));
- 	dt->dispatch_reason = 7;
- 	dt->processor_id = cpu_to_be16(vc->pcpu + vcpu->arch.ptid);
- 	dt->timebase = cpu_to_be64(now + vc->tb_offset);
-@@ -1073,7 +1073,7 @@ static int kvm_arch_vcpu_ioctl_get_sregs_hv(struct kvm_vcpu *vcpu,
- {
- 	int i;
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index 3bdc639157c1..3740f9efcf06 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -934,8 +934,7 @@ static int xics_debug_show(struct seq_file *m, void *private)
+ 	t_reject = 0;
  
--	memset(sregs, 0, sizeof(struct kvm_sregs));
-+	memset(sregs, 0, sizeof(*sregs));
- 	sregs->pvr = vcpu->arch.pvr;
- 	for (i = 0; i < vcpu->arch.slb_max; i++) {
- 		sregs->u.s.ppc64.slb[i].slbe = vcpu->arch.slb[i].orige;
-@@ -1590,7 +1590,7 @@ static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
- {
- 	struct kvmppc_vcore *vcore;
+ 	xics_debugfs_irqmap(m, kvm->arch.pimap);
+-
+-	seq_printf(m, "=========\nICP state\n=========\n");
++	seq_puts(m, "=========\nICP state\n=========\n");
  
--	vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
-+	vcore = kzalloc(sizeof(*vcore), GFP_KERNEL);
- 	if (!vcore)
- 		return NULL;
- 
-@@ -3204,7 +3204,7 @@ void kvmppc_alloc_host_rm_ops(void)
- 	if (kvmppc_host_rm_ops_hv)
- 		return;
- 
--	ops = kzalloc(sizeof(struct kvmppc_host_rm_ops), GFP_KERNEL);
-+	ops = kzalloc(sizeof(*ops), GFP_KERNEL);
- 	if (!ops)
- 		return;
- 
-@@ -3713,13 +3713,13 @@ static int kvm_init_subcore_bitmap(void)
- 			continue;
- 
- 		sibling_subcore_state =
--			kmalloc_node(sizeof(struct sibling_subcore_state),
--							GFP_KERNEL, node);
-+			kmalloc_node(sizeof(*sibling_subcore_state), GFP_KERNEL,
-+				     node);
- 		if (!sibling_subcore_state)
- 			return -ENOMEM;
- 
- 		memset(sibling_subcore_state, 0,
--				sizeof(struct sibling_subcore_state));
-+		       sizeof(*sibling_subcore_state));
- 
- 		for (j = 0; j < threads_per_core; j++) {
- 			int cpu = first_cpu + j;
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+ 		struct kvmppc_icp *icp = vcpu->arch.icp;
 -- 
 2.11.0
