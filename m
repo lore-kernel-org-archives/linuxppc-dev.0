@@ -1,26 +1,24 @@
-Return-Path: <tony@atomide.com>
-Received: from muru.com (muru.com [72.249.23.125])
- by lists.ozlabs.org (Postfix) with ESMTP id 3v4q3Y3cl0zDrQ3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 05:28:57 +1100 (AEDT)
-Date: Fri, 20 Jan 2017 10:28:50 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Kishon Vijay Abraham I <kishon@ti.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
- Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
-Subject: Re: [PATCH 36/37] ARM: DRA7: clockdomain: Change the CLKTRCTRL of
- CM_PCIE_CLKSTCTRL to SW_WKUP
-Message-ID: <20170120182850.GE7403@atomide.com>
-References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-37-git-send-email-kishon@ti.com>
- <20170113171537.GZ2630@atomide.com> <587C628E.7070804@ti.com>
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v4q4G4xnLzDr1H
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 05:29:34 +1100 (AEDT)
+Subject: [PATCH 09/11] KVM: PPC: Book3S: Improve a size determination in two
+ functions
+To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
+References: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <f2b94132-efd8-df81-35b3-a4990dceb05f@users.sourceforge.net>
+Date: Fri, 20 Jan 2017 19:27:54 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <587C628E.7070804@ti.com>
+In-Reply-To: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Kishon Vijay Abraham I <kishon@ti.com> [170115 22:06]:
-> Hi Tony,
-> 
-> On Friday 13 January 2017 10:45 PM, Tony Lindgren wrote:
-> > * Kishon Vijay Abraham I <kishon@ti.com> [170112 02:35]:
-> >> The PCIe programming sequence in TRM suggests CLKSTCTRL of PCIe should
-> >> be set to SW_WKUP. There are no issues when CLKSTCTRL is set to HW_AUTO
-> >> in RC mode. However in EP mode, the host system is not able to access the
-> >> MEMSPACE and setting the CLKSTCTRL to SW_WKUP fixes it.
-> > 
-> > I guess ideally in the long run we would set this dynamically based on
-> > the selected mode, right?
-> 
-> The programming sequence mentioned in the TRM w.r.t clock programming is same
-> for both host mode or device mode. Though we never faced any issues in host
-> mode when HW_AUTO is set, it's better to follow TRM recommended settings IMHO.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 20 Jan 2017 16:28:43 +0100
 
-OK best to merge this with the whole series:
+Replace the specification of data structures by pointer dereferences
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ arch/powerpc/kvm/book3s_xics.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index 3740f9efcf06..d45c1b59b70a 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -1032,7 +1032,7 @@ static struct kvmppc_ics *kvmppc_xics_create_ics(struct kvm *kvm,
+ 		goto out;
+ 
+ 	/* Create the ICS */
+-	ics = kzalloc(sizeof(struct kvmppc_ics), GFP_KERNEL);
++	ics = kzalloc(*ics), GFP_KERNEL);
+ 	if (!ics)
+ 		goto out;
+ 
+@@ -1064,7 +1064,7 @@ int kvmppc_xics_create_icp(struct kvm_vcpu *vcpu, unsigned long server_num)
+ 	if (kvmppc_xics_find_server(vcpu->kvm, server_num))
+ 		return -EEXIST;
+ 
+-	icp = kzalloc(sizeof(struct kvmppc_icp), GFP_KERNEL);
++	icp = kzalloc(sizeof(*icp), GFP_KERNEL);
+ 	if (!icp)
+ 		return -ENOMEM;
+ 
+-- 
+2.11.0
