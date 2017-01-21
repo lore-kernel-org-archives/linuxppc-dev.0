@@ -1,20 +1,34 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.15.4])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v5LxD0w4rzDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jan 2017 02:25:19 +1100 (AEDT)
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] powerpc/mm: Return directly after a failed __copy_from_user()
- in sys_subpage_prot()
-Message-ID: <5f910c33-c811-2197-0adb-c55f7722c5a7@users.sourceforge.net>
-Date: Sat, 21 Jan 2017 16:24:58 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v5RFL6kHfzDqV0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jan 2017 05:39:34 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0LIcfAP137296
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 13:39:32 -0500
+Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2844ktp71s-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2017 13:39:31 -0500
+Received: from localhost
+ by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Sat, 21 Jan 2017 18:39:29 -0000
+Subject: Re: [PATCH] cxl: drop unused header asm/pnv-pci.h
+To: Greg Kurz <groug@kaod.org>, linuxppc-dev@lists.ozlabs.org
+References: <148482301037.30441.14177888563610790803.stgit@bahia>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ Ian Munsie <imunsie@au1.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Sat, 21 Jan 2017 12:39:24 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <148482301037.30441.14177888563610790803.stgit@bahia>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <aee23cd5-f663-3437-dd98-11ea19561cc7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +38,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 21 Jan 2017 16:10:50 +0100
 
-* Return directly after a call of the function "__copy_from_user"
-  failed here.
 
-  This issue was detected by using the Coccinelle software.
+Le 19/01/2017 à 04:50, Greg Kurz a écrit :
+> The kernel API does not use anything from this header file.
+>
+> Signed-off-by: Greg Kurz <groug@kaod.org>
+> ---
 
-* Delete the jump label "out2" which became unnecessary with
-  this refactoring.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- arch/powerpc/mm/subpage-prot.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
-index d5543514c1df..40309edd7cb7 100644
---- a/arch/powerpc/mm/subpage-prot.c
-+++ b/arch/powerpc/mm/subpage-prot.c
-@@ -248,9 +248,8 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
- 			nw = (next - addr) >> PAGE_SHIFT;
- 
- 		up_write(&mm->mmap_sem);
--		err = -EFAULT;
- 		if (__copy_from_user(spp, map, nw * sizeof(u32)))
--			goto out2;
-+			return -EFAULT;
- 		map += nw;
- 		down_write(&mm->mmap_sem);
- 
-@@ -262,6 +261,5 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
- 	err = 0;
-  out:
- 	up_write(&mm->mmap_sem);
-- out2:
- 	return err;
- }
--- 
-2.11.0
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
