@@ -1,26 +1,47 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6YFB5986zDqRP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 01:13:18 +1100 (AEDT)
-Subject: Re: [PATCH 03/11] KVM: PPC: Book3S HV: Move error code assignments in
- two functions
-To: SF Markus Elfring <elfring@users.sourceforge.net>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?=
- <rkrcmar@redhat.com>
-References: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
- <eb77a721-b771-65c0-83e6-a3e7120fa4ce@users.sourceforge.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <04f75012-7453-e1b2-b004-857fde1b253e@redhat.com>
-Date: Mon, 23 Jan 2017 15:13:12 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6dGy14WnzDqJ1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 04:15:05 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0NH3oRu057912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 12:15:03 -0500
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 285cwx8sr7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 12:15:02 -0500
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 23 Jan 2017 22:44:57 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E56B8394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 22:44:55 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v0NHEtM629753548
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 22:44:55 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v0NHEsSa029542
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 22:44:55 +0530
+Date: Mon, 23 Jan 2017 22:44:53 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ ast@fb.com, daniel@iogearbox.net
+Subject: Re: [PATCH 1/3] powerpc: bpf: remove redundant check for non-null
+ image
+References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20170116.133859.1157069434816521683.davem@davemloft.net>
 MIME-Version: 1.0
-In-Reply-To: <eb77a721-b771-65c0-83e6-a3e7120fa4ce@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170116.133859.1157069434816521683.davem@davemloft.net>
+Message-Id: <20170123171453.GD3820@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,91 +51,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi David,
 
-
-On 20/01/2017 19:21, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Fri, 20 Jan 2017 10:30:26 +0100
+On 2017/01/16 01:38PM, David Miller wrote:
 > 
-> A local variable was set to an error code in a few cases before a concrete
-> error situation was detected. Thus move the corresponding assignments into
-> if branches to indicate a software failure there.
+> I'm assuming these patches will go via the powerpc tree.
 > 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 25 +++++++++++++++----------
->  1 file changed, 15 insertions(+), 10 deletions(-)
+> If you want them to go into net-next, I kindly ask that you always
+> explicitly say so, and furthermore always submit a patch series with
+> a proper "[PATCH 0/N] ..." header posting.
 
-NACK, current code uses consistent style.
+Sure. Sorry for the confusion. I will be more explicit next time.
 
-Paolo
-
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 8dcbe37a4dac..a93e1c4445da 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -2967,15 +2967,17 @@ static int kvm_vm_ioctl_get_dirty_log_hv(struct kvm *kvm,
->  
->  	mutex_lock(&kvm->slots_lock);
->  
-> -	r = -EINVAL;
-> -	if (log->slot >= KVM_USER_MEM_SLOTS)
-> +	if (log->slot >= KVM_USER_MEM_SLOTS) {
-> +		r = -EINVAL;
->  		goto out;
-> +	}
->  
->  	slots = kvm_memslots(kvm);
->  	memslot = id_to_memslot(slots, log->slot);
-> -	r = -ENOENT;
-> -	if (!memslot->dirty_bitmap)
-> +	if (!memslot->dirty_bitmap) {
-> +		r = -ENOENT;
->  		goto out;
-> +	}
->  
->  	n = kvm_dirty_bitmap_bytes(memslot);
->  	memset(memslot->dirty_bitmap, 0, n);
-> @@ -2984,9 +2986,10 @@ static int kvm_vm_ioctl_get_dirty_log_hv(struct kvm *kvm,
->  	if (r)
->  		goto out;
->  
-> -	r = -EFAULT;
-> -	if (copy_to_user(log->dirty_bitmap, memslot->dirty_bitmap, n))
-> +	if (copy_to_user(log->dirty_bitmap, memslot->dirty_bitmap, n)) {
-> +		r = -EFAULT;
->  		goto out;
-> +	}
->  
->  	r = 0;
->  out:
-> @@ -3127,9 +3130,10 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
->  	memslot = gfn_to_memslot(kvm, 0);
->  
->  	/* We must have some memory at 0 by now */
-> -	err = -EINVAL;
-> -	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID))
-> +	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID)) {
-> +		err = -EINVAL;
->  		goto out_srcu;
-> +	}
->  
->  	/* Look up the VMA for the start of this memory slot */
->  	hva = memslot->userspace_addr;
-> @@ -3144,10 +3148,11 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
->  	up_read(&current->mm->mmap_sem);
->  
->  	/* We can handle 4k, 64k or 16M pages in the VRMA */
-> -	err = -EINVAL;
->  	if (!(psize == 0x1000 || psize == 0x10000 ||
-> -	      psize == 0x1000000))
-> +	      psize == 0x1000000)) {
-> +		err = -EINVAL;
->  		goto out_srcu;
-> +	}
->  
->  	senc = slb_pgsize_encoding(psize);
->  	kvm->arch.vrma_slb_v = senc | SLB_VSID_B_1T |
-> 
+Thanks,
+Naveen
