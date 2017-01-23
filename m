@@ -1,20 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6QJ51RYyzDqRL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 20:00:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6QTK29gZzDqRN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 20:08:21 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Cc: linux-arch@vger.kernel.org, linux-kbuild@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 7/8] uapi: export all headers under uapi directories
-In-Reply-To: <1484304406-10820-8-git-send-email-nicolas.dichtel@6wind.com>
-References: <3131144.4Ej3KFWRbz@wuerfel>
- <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
- <1484304406-10820-8-git-send-email-nicolas.dichtel@6wind.com>
-Date: Mon, 23 Jan 2017 20:00:19 +1100
-Message-ID: <878tq2b17g.fsf@concordia.ellerman.id.au>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc/kernel: Remove nested if statements in
+ rtas_initialize()
+In-Reply-To: <1485127546-18859-2-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1485127546-18859-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1485127546-18859-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Mon, 23 Jan 2017 20:08:20 +1100
+Message-ID: <8760l6b0u3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,25 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicolas Dichtel <nicolas.dichtel@6wind.com> writes:
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-> Regularly, when a new header is created in include/uapi/, the developer
-> forgets to add it in the corresponding Kbuild file. This error is usually
-> detected after the release is out.
+> This removes the unnecessary nested if statements in function
+> rtas_initialize(), to simplify the code. No functional changes
+> introduced.
 >
-> In fact, all headers under uapi directories should be exported, thus it's
-> useless to have an exhaustive list.
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/rtas.c | 33 ++++++++++++++++-----------------
+>  1 file changed, 16 insertions(+), 17 deletions(-)
 >
-> After this patch, the following files, which were not exported, are now
-> exported (with make headers_install_all):
-...
-> asm-powerpc/perf_regs.h
-...
->  arch/powerpc/include/uapi/asm/Kbuild        |  45 ---
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 112cc3b..9ba0f67 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -1145,31 +1145,30 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>  void __init rtas_initialize(void)
+>  {
+>  	unsigned long rtas_region = RTAS_INSTANTIATE_MAX;
+> +	const __be32 *basep, *entryp, *sizep;
+>  
+>  	/* Get RTAS dev node and fill up our "rtas" structure with infos
+>  	 * about it.
+>  	 */
+>  	rtas.dev = of_find_node_by_name(NULL, "rtas");
+> -	if (rtas.dev) {
+> -		const __be32 *basep, *entryp, *sizep;
+> -
+> -		basep = of_get_property(rtas.dev, "linux,rtas-base", NULL);
+> -		sizep = of_get_property(rtas.dev, "rtas-size", NULL);
+> -		if (basep != NULL && sizep != NULL) {
+			...
+> -		} else
 
-Thanks for cleaning it up.
+Previously we set rtas.dev to NULL if either basep or sizep was NULL.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> -			rtas.dev = NULL;
+> -	}
+>  	if (!rtas.dev)
+>  		return;
+>  
+> +	basep = of_get_property(rtas.dev, "linux,rtas-base", NULL);
+> +	sizep = of_get_property(rtas.dev, "rtas-size", NULL);
+> +	if (basep == NULL && sizep == NULL) {
+
+But now you set it to NULL only if BOTH basep and sizep are NULL.
+
+Was that intentional? If so you need to mention it in the change log.
+
+> +		rtas.dev = NULL;
+> +		return;
+> +	}
+
+The proper negation of:
+
+	if (basep != NULL && sizep != NULL) {
+is:
+	if (basep == NULL || sizep == NULL) {
 
 
 cheers
