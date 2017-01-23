@@ -1,21 +1,26 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6gz7599pzDqJh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:16:35 +1100 (AEDT)
-From: Darren Stevens <darren@stevens-zone.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org, Pat Wall <pjwall@mac.com>, rtd@a-eon.com,
- aperez@alexperez.com, Christian Zigotzky <chzigotzky@xenosoft.de>
-Date: Mon, 23 Jan 2017 19:15:25 +0000 (GMT)
-Message-ID: <497a17344e3.4cea1c9d@auth.smtp.1and1.co.uk>
-In-Reply-To: <87h94qb8u2.fsf@concordia.ellerman.id.au>
-References: <49760dd82b0.759fd78a@auth.smtp.1and1.co.uk>
- <87h94qb8u2.fsf@concordia.ellerman.id.au>
-Subject: Re: powerpc/pasemi/nemo: Fix low memory values for boot.
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6h5k4RFWzDqGd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:22:18 +1100 (AEDT)
+Subject: Re: [PATCH 05/11] KVM: PPC: Book3S HV: Adjust nine checks for null
+ pointers
+To: SF Markus Elfring <elfring@users.sourceforge.net>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
+References: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
+ <161c8660-d204-5190-9bda-c5a801abe0ab@users.sourceforge.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <5d8a5f7f-be7a-265c-855d-7cb4fae9019e@redhat.com>
+Date: Mon, 23 Jan 2017 20:22:12 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <161c8660-d204-5190-9bda-c5a801abe0ab@users.sourceforge.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +30,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Michael
+On 20.01.2017 19:23, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Fri, 20 Jan 2017 11:25:48 +0100
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: 8bit
+> 
+> The script "checkpatch.pl" pointed information out like the following.
+> 
+> Comparison to NULL could be written …
 
-On 23/01/2017, Michael Ellerman wrote:
->> Clearing the long long at addr 8 has been shown to fix this, so
->> add an initalisation to head_64.S so the system will boot.
->
-> I'd really prefer it if someone could tell me why we need to clear it.
-> But I assume no one knows?
+That's maybe ok for new code / if the code has to be touched anyway ...
+but for existing code, this sounds very much like unnecessary code-churn
+to me (e.g. it hides more important information with "git blame").
 
-The problem was found by Christian, and the fix comes courtesy of Olof
-Johansson, I've not looked into it before.
+ Thomas
 
-> I don't want to pollute this code with NEMO workarounds if we can avoid
-> it.
 
-To be honest, so would I.
-
-> You said the hang happens after printing the initial memory map, I'm not
-> quite sure where you mean, but it sounds like that will be late enough
-> that we can do the clear in pasemi platform code?
-
-During prom_init. Where it says 'Memory layout at Init'
-
-I took a long look today and traced the problem the 'prom_find_boot_cpu' and a
-much better patch will follow.
-
-Regards
-Darren
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 19 +++++++++----------
+>  1 file changed, 9 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index cfc7699d05df..3122998f6a32 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -458,7 +458,7 @@ static unsigned long do_h_register_vpa(struct kvm_vcpu *vcpu,
+>  
+>  		/* convert logical addr to kernel addr and read length */
+>  		va = kvmppc_pin_guest_page(kvm, vpa, &nb);
+> -		if (va == NULL)
+> +		if (!va)
+>  			return H_PARAMETER;
+>  		if (subfunc == H_VPA_REG_VPA)
+>  			len = be16_to_cpu(((struct reg_vpa *)va)->length.hword);
+> @@ -1591,8 +1591,7 @@ static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
+>  	struct kvmppc_vcore *vcore;
+>  
+>  	vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
+> -
+> -	if (vcore == NULL)
+> +	if (!vcore)
+>  		return NULL;
+>  
+>  	spin_lock_init(&vcore->lock);
+> @@ -2221,7 +2220,7 @@ static void collect_piggybacks(struct core_info *cip, int target_threads)
+>  		prepare_threads(pvc);
+>  		if (!pvc->n_runnable) {
+>  			list_del_init(&pvc->preempt_list);
+> -			if (pvc->runner == NULL) {
+> +			if (!pvc->runner) {
+>  				pvc->vcore_state = VCORE_INACTIVE;
+>  				kvmppc_core_end_stolen(pvc);
+>  			}
+> @@ -2287,7 +2286,7 @@ static void post_guest_process(struct kvmppc_vcore *vc, bool is_master)
+>  		} else {
+>  			vc->vcore_state = VCORE_INACTIVE;
+>  		}
+> -		if (vc->n_runnable > 0 && vc->runner == NULL) {
+> +		if (vc->n_runnable > 0 && !vc->runner) {
+>  			/* make sure there's a candidate runner awake */
+>  			i = -1;
+>  			vcpu = next_runnable_thread(vc, &i);
+> @@ -2786,7 +2785,7 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+>  
+>  	while (vcpu->arch.state == KVMPPC_VCPU_RUNNABLE &&
+>  	       !signal_pending(current)) {
+> -		if (vc->vcore_state == VCORE_PREEMPT && vc->runner == NULL)
+> +		if (vc->vcore_state == VCORE_PREEMPT && !vc->runner)
+>  			kvmppc_vcore_end_preempt(vc);
+>  
+>  		if (vc->vcore_state != VCORE_INACTIVE) {
+> @@ -2833,7 +2832,7 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+>  		vc->vcore_state == VCORE_PIGGYBACK))
+>  		kvmppc_wait_for_exec(vc, vcpu, TASK_UNINTERRUPTIBLE);
+>  
+> -	if (vc->vcore_state == VCORE_PREEMPT && vc->runner == NULL)
+> +	if (vc->vcore_state == VCORE_PREEMPT && !vc->runner)
+>  		kvmppc_vcore_end_preempt(vc);
+>  
+>  	if (vcpu->arch.state == KVMPPC_VCPU_RUNNABLE) {
+> @@ -3203,7 +3202,7 @@ void kvmppc_alloc_host_rm_ops(void)
+>  	int size;
+>  
+>  	/* Not the first time here ? */
+> -	if (kvmppc_host_rm_ops_hv != NULL)
+> +	if (kvmppc_host_rm_ops_hv)
+>  		return;
+>  
+>  	ops = kzalloc(sizeof(struct kvmppc_host_rm_ops), GFP_KERNEL);
+> @@ -3430,10 +3429,10 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
+>  	mutex_lock(&kvm->lock);
+>  
+>  	pimap = kvm->arch.pimap;
+> -	if (pimap == NULL) {
+> +	if (!pimap) {
+>  		/* First call, allocate structure to hold IRQ map */
+>  		pimap = kvmppc_alloc_pimap();
+> -		if (pimap == NULL) {
+> +		if (!pimap) {
+>  			mutex_unlock(&kvm->lock);
+>  			return -ENOMEM;
+>  		}
+> 
