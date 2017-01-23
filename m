@@ -2,10 +2,10 @@ Return-Path: <pbonzini@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6YDw3fp3zDqQD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 01:13:04 +1100 (AEDT)
-Subject: Re: [PATCH 01/11] KVM: PPC: Book3S HV: Move assignments for the
- variable "err" in kvm_htab_write()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6YFB5986zDqRP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 01:13:18 +1100 (AEDT)
+Subject: Re: [PATCH 03/11] KVM: PPC: Book3S HV: Move error code assignments in
+ two functions
 To: SF Markus Elfring <elfring@users.sourceforge.net>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Alexander Graf <agraf@suse.com>,
@@ -13,13 +13,13 @@ To: SF Markus Elfring <elfring@users.sourceforge.net>, kvm@vger.kernel.org,
  Michael Ellerman <mpe@ellerman.id.au>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?=
  <rkrcmar@redhat.com>
 References: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
- <51bcdd72-467c-8afb-94cb-fd756b3d63a7@users.sourceforge.net>
+ <eb77a721-b771-65c0-83e6-a3e7120fa4ce@users.sourceforge.net>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <7e09721f-2785-4c34-cfe8-593acafc455e@redhat.com>
-Date: Mon, 23 Jan 2017 15:12:55 +0100
+Message-ID: <04f75012-7453-e1b2-b004-857fde1b253e@redhat.com>
+Date: Mon, 23 Jan 2017 15:13:12 +0100
 MIME-Version: 1.0
-In-Reply-To: <51bcdd72-467c-8afb-94cb-fd756b3d63a7@users.sourceforge.net>
+In-Reply-To: <eb77a721-b771-65c0-83e6-a3e7120fa4ce@users.sourceforge.net>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,101 +32,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 20/01/2017 19:19, SF Markus Elfring wrote:
+On 20/01/2017 19:21, SF Markus Elfring wrote:
 > From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Thu, 19 Jan 2017 22:45:56 +0100
+> Date: Fri, 20 Jan 2017 10:30:26 +0100
 > 
-> * A local variable was set to an error code in five cases
->   before a concrete error situation was detected.
->   Thus move the corresponding assignments into
->   if branches to indicate a software failure there.
+> A local variable was set to an error code in a few cases before a concrete
+> error situation was detected. Thus move the corresponding assignments into
+> if branches to indicate a software failure there.
 > 
->   This issue was detected by using the Coccinelle software.
-> 
-> * Delete two zero assignments which became unnecessary with
->   this refactoring.
+> This issue was detected by using the Coccinelle software.
 > 
 > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 25 +++++++++++++++----------
+>  1 file changed, 15 insertions(+), 10 deletions(-)
 
 NACK, current code uses consistent style.
 
-> ---
->  arch/powerpc/kvm/book3s_64_mmu_hv.c | 24 +++++++++++++-----------
->  1 file changed, 13 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index b795dd1ac2ef..dc34729e4ad0 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -1399,22 +1399,23 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+Paolo
+
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 8dcbe37a4dac..a93e1c4445da 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -2967,15 +2967,17 @@ static int kvm_vm_ioctl_get_dirty_log_hv(struct kvm *kvm,
 >  
->  	err = 0;
->  	for (nb = 0; nb + sizeof(hdr) <= count; ) {
-> -		err = -EFAULT;
-> -		if (__copy_from_user(&hdr, buf, sizeof(hdr)))
-> +		if (__copy_from_user(&hdr, buf, sizeof(hdr))) {
-> +			err = -EFAULT;
->  			break;
-> +		}
+>  	mutex_lock(&kvm->slots_lock);
 >  
-> -		err = 0;
->  		if (nb + hdr.n_valid * HPTE_SIZE > count)
->  			break;
+> -	r = -EINVAL;
+> -	if (log->slot >= KVM_USER_MEM_SLOTS)
+> +	if (log->slot >= KVM_USER_MEM_SLOTS) {
+> +		r = -EINVAL;
+>  		goto out;
+> +	}
 >  
->  		nb += sizeof(hdr);
->  		buf += sizeof(hdr);
+>  	slots = kvm_memslots(kvm);
+>  	memslot = id_to_memslot(slots, log->slot);
+> -	r = -ENOENT;
+> -	if (!memslot->dirty_bitmap)
+> +	if (!memslot->dirty_bitmap) {
+> +		r = -ENOENT;
+>  		goto out;
+> +	}
 >  
-> -		err = -EINVAL;
->  		i = hdr.index;
->  		if (i >= kvm->arch.hpt_npte ||
-> -		    i + hdr.n_valid + hdr.n_invalid > kvm->arch.hpt_npte)
-> +		    i + hdr.n_valid + hdr.n_invalid > kvm->arch.hpt_npte) {
-> +			err = -EINVAL;
->  			break;
-> +		}
+>  	n = kvm_dirty_bitmap_bytes(memslot);
+>  	memset(memslot->dirty_bitmap, 0, n);
+> @@ -2984,9 +2986,10 @@ static int kvm_vm_ioctl_get_dirty_log_hv(struct kvm *kvm,
+>  	if (r)
+>  		goto out;
 >  
->  		hptp = (__be64 *)(kvm->arch.hpt_virt + (i * HPTE_SIZE));
->  		lbuf = (unsigned long __user *)buf;
-> @@ -1422,26 +1423,28 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
->  			__be64 hpte_v;
->  			__be64 hpte_r;
+> -	r = -EFAULT;
+> -	if (copy_to_user(log->dirty_bitmap, memslot->dirty_bitmap, n))
+> +	if (copy_to_user(log->dirty_bitmap, memslot->dirty_bitmap, n)) {
+> +		r = -EFAULT;
+>  		goto out;
+> +	}
 >  
-> -			err = -EFAULT;
->  			if (__get_user(hpte_v, lbuf) ||
-> -			    __get_user(hpte_r, lbuf + 1))
-> +			    __get_user(hpte_r, lbuf + 1)) {
-> +				err = -EFAULT;
->  				goto out;
-> +			}
->  			v = be64_to_cpu(hpte_v);
->  			r = be64_to_cpu(hpte_r);
-> -			err = -EINVAL;
-> -			if (!(v & HPTE_V_VALID))
-> +			if (!(v & HPTE_V_VALID)) {
-> +				err = -EINVAL;
->  				goto out;
-> +			}
->  			lbuf += 2;
->  			nb += HPTE_SIZE;
+>  	r = 0;
+>  out:
+> @@ -3127,9 +3130,10 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
+>  	memslot = gfn_to_memslot(kvm, 0);
 >  
->  			if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT))
->  				kvmppc_do_h_remove(kvm, 0, i, 0, tmp);
-> -			err = -EIO;
->  			ret = kvmppc_virtmode_do_h_enter(kvm, H_EXACT, i, v, r,
->  							 tmp);
->  			if (ret != H_SUCCESS) {
->  				pr_err("kvm_htab_write ret %ld i=%ld v=%lx "
->  				       "r=%lx\n", ret, i, v, r);
-> +				err = -EIO;
->  				goto out;
->  			}
->  			if (!hpte_setup && is_vrma_hpte(v)) {
-> @@ -1465,7 +1468,6 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
->  			++i;
->  			hptp += 2;
->  		}
-> -		err = 0;
->  	}
+>  	/* We must have some memory at 0 by now */
+> -	err = -EINVAL;
+> -	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID))
+> +	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID)) {
+> +		err = -EINVAL;
+>  		goto out_srcu;
+> +	}
 >  
->   out:
+>  	/* Look up the VMA for the start of this memory slot */
+>  	hva = memslot->userspace_addr;
+> @@ -3144,10 +3148,11 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
+>  	up_read(&current->mm->mmap_sem);
+>  
+>  	/* We can handle 4k, 64k or 16M pages in the VRMA */
+> -	err = -EINVAL;
+>  	if (!(psize == 0x1000 || psize == 0x10000 ||
+> -	      psize == 0x1000000))
+> +	      psize == 0x1000000)) {
+> +		err = -EINVAL;
+>  		goto out_srcu;
+> +	}
+>  
+>  	senc = slb_pgsize_encoding(psize);
+>  	kvm->arch.vrma_slb_v = senc | SLB_VSID_B_1T |
 > 
