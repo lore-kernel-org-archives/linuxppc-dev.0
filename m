@@ -2,18 +2,17 @@ Return-Path: <sjitindarsingh@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6Gmh0V1gzDqR8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 14:21:08 +1100 (AEDT)
-Message-ID: <1485141660.8172.6.camel@gmail.com>
-Subject: Re: [PATCH 14/18] KVM: PPC: Book3S HV: MMU notifier callbacks for
- radix guests
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6H1301BszDqFb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 14:31:50 +1100 (AEDT)
+Message-ID: <1485142303.8172.8.camel@gmail.com>
+Subject: Re: [PATCH 17/18] KVM: PPC: Book3S HV: Enable radix guest support
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org,
  kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Date: Mon, 23 Jan 2017 14:21:00 +1100
-In-Reply-To: <1484212046-29591-15-git-send-email-paulus@ozlabs.org>
+Date: Mon, 23 Jan 2017 14:31:43 +1100
+In-Reply-To: <1484212046-29591-18-git-send-email-paulus@ozlabs.org>
 References: <1484212046-29591-1-git-send-email-paulus@ozlabs.org>
- <1484212046-29591-15-git-send-email-paulus@ozlabs.org>
+ <1484212046-29591-18-git-send-email-paulus@ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,310 +25,397 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2017-01-12 at 20:07 +1100, Paul Mackerras wrote:
-> This adapts our implementations of the MMU notifier callbacks
-> (unmap_hva, unmap_hva_range, age_hva, test_age_hva, set_spte_hva)
-> to call radix functions when the guest is using radix.  These
-> implementations are much simpler than for HPT guests because we
-> have only one PTE to deal with, so we don't need to traverse
-> rmap chains.
+> This adds a few last pieces of the support for radix guests:
+> 
+> * Implement the backends for the KVM_PPC_CONFIGURE_V3_MMU and
+>   KVM_PPC_GET_RMMU_INFO ioctls for radix guests
+> 
+> * On POWER9, allow secondary threads to be on/off-lined while guests
+>   are running.
+> 
+> * Set up LPCR and the partition table entry for radix guests.
+> 
+> * Don't allocate the rmap array in the kvm_memory_slot structure
+>   on radix.
+> 
+> * Prevent the AIL field in the LPCR being set for radix guests,
+>   since we can't yet handle getting interrupts from the guest with
+>   the MMU on.
+> 
+> * Don't try to initialize the HPT for radix guests, since they don't
+>   have an HPT.
+> 
+> * Take out the code that prevents the HV KVM module from
+>   initializing on radix hosts.
+> 
+> At this stage, we only support radix guests if the host is running
+> in radix mode, and only support HPT guests if the host is running in
+> HPT mode.  Thus a guest cannot switch from one mode to the other,
+> which enables some simplifications.
 > 
 > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 > ---
->  arch/powerpc/include/asm/kvm_book3s.h  |  6 ++++
->  arch/powerpc/kvm/book3s_64_mmu_hv.c    | 64 +++++++++++++++++++++++-
-> ----------
->  arch/powerpc/kvm/book3s_64_mmu_radix.c | 54
-> ++++++++++++++++++++++++++++
->  3 files changed, 103 insertions(+), 21 deletions(-)
+>  arch/powerpc/include/asm/kvm_book3s.h  |  2 +
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c    |  1 -
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c | 45 ++++++++++++++++
+>  arch/powerpc/kvm/book3s_hv.c           | 93
+> ++++++++++++++++++++++++----------
+>  arch/powerpc/kvm/powerpc.c             |  2 +-
+>  5 files changed, 115 insertions(+), 28 deletions(-)
 > 
 > diff --git a/arch/powerpc/include/asm/kvm_book3s.h
 > b/arch/powerpc/include/asm/kvm_book3s.h
-> index ff5cd5c..952cc4b 100644
+> index 57dc407..2bf3501 100644
 > --- a/arch/powerpc/include/asm/kvm_book3s.h
 > +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -192,6 +192,12 @@ extern int kvmppc_mmu_radix_xlate(struct
-> kvm_vcpu *vcpu, gva_t eaddr,
+> @@ -189,6 +189,7 @@ extern int kvmppc_book3s_radix_page_fault(struct
+> kvm_run *run,
+>  			unsigned long ea, unsigned long dsisr);
+>  extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t
+> eaddr,
+>  			struct kvmppc_pte *gpte, bool data, bool
+> iswrite);
+> +extern int kvmppc_init_vm_radix(struct kvm *kvm);
 >  extern void kvmppc_free_radix(struct kvm *kvm);
 >  extern int kvmppc_radix_init(void);
 >  extern void kvmppc_radix_exit(void);
-> +extern int kvm_unmap_radix(struct kvm *kvm, struct kvm_memory_slot
-> *memslot,
-> +			unsigned long gfn);
-> +extern int kvm_age_radix(struct kvm *kvm, struct kvm_memory_slot
-> *memslot,
-> +			unsigned long gfn);
-> +extern int kvm_test_age_radix(struct kvm *kvm, struct
-> kvm_memory_slot *memslot,
-> +			unsigned long gfn);
+> @@ -200,6 +201,7 @@ extern int kvm_test_age_radix(struct kvm *kvm,
+> struct kvm_memory_slot *memslot,
+>  			unsigned long gfn);
+>  extern long kvmppc_hv_get_dirty_log_radix(struct kvm *kvm,
+>  			struct kvm_memory_slot *memslot, unsigned
+> long *map);
+> +extern int kvmhv_get_rmmu_info(struct kvm *kvm, struct
+> kvm_ppc_rmmu_info *info);
 >  
 >  /* XXX remove this export when load_last_inst() is generic */
 >  extern int kvmppc_ld(struct kvm_vcpu *vcpu, ulong *eaddr, int size,
 > void *ptr, bool data);
 > diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 > b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index 57690c2..fbb3de4 100644
+> index 7a9afbe..db8de17 100644
 > --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
 > +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -701,12 +701,13 @@ static void kvmppc_rmap_reset(struct kvm *kvm)
->  	srcu_read_unlock(&kvm->srcu, srcu_idx);
->  }
+> @@ -155,7 +155,6 @@ long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32
+> *htab_orderp)
 >  
-> +typedef int (*hva_handler_fn)(struct kvm *kvm, struct
-> kvm_memory_slot *memslot,
-> +			      unsigned long gfn);
-> +
->  static int kvm_handle_hva_range(struct kvm *kvm,
->  				unsigned long start,
->  				unsigned long end,
-> -				int (*handler)(struct kvm *kvm,
-> -					       unsigned long *rmapp,
-> -					       unsigned long gfn))
-> +				hva_handler_fn handler)
+>  void kvmppc_free_hpt(struct kvm *kvm)
 >  {
->  	int ret;
->  	int retval = 0;
-> @@ -731,9 +732,7 @@ static int kvm_handle_hva_range(struct kvm *kvm,
->  		gfn_end = hva_to_gfn_memslot(hva_end + PAGE_SIZE -
-> 1, memslot);
->  
->  		for (; gfn < gfn_end; ++gfn) {
-> -			gfn_t gfn_offset = gfn - memslot->base_gfn;
-> -
-> -			ret = handler(kvm, &memslot-
-> >arch.rmap[gfn_offset], gfn);
-> +			ret = handler(kvm, memslot, gfn);
->  			retval |= ret;
->  		}
->  	}
-> @@ -742,20 +741,21 @@ static int kvm_handle_hva_range(struct kvm
-> *kvm,
->  }
->  
->  static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
-> -			  int (*handler)(struct kvm *kvm, unsigned
-> long *rmapp,
-> -					 unsigned long gfn))
-> +			  hva_handler_fn handler)
->  {
->  	return kvm_handle_hva_range(kvm, hva, hva + 1, handler);
->  }
->  
-> -static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
-> +static int kvm_unmap_rmapp(struct kvm *kvm, struct kvm_memory_slot
-> *memslot,
->  			   unsigned long gfn)
->  {
->  	struct revmap_entry *rev = kvm->arch.revmap;
->  	unsigned long h, i, j;
->  	__be64 *hptep;
->  	unsigned long ptel, psize, rcbits;
-> +	unsigned long *rmapp;
->  
-> +	rmapp = &memslot->arch.rmap[gfn - memslot->base_gfn];
->  	for (;;) {
->  		lock_rmap(rmapp);
->  		if (!(*rmapp & KVMPPC_RMAP_PRESENT)) {
-> @@ -816,26 +816,36 @@ static int kvm_unmap_rmapp(struct kvm *kvm,
-> unsigned long *rmapp,
->  
->  int kvm_unmap_hva_hv(struct kvm *kvm, unsigned long hva)
->  {
-> -	kvm_handle_hva(kvm, hva, kvm_unmap_rmapp);
-> +	hva_handler_fn handler;
-> +
-> +	handler = kvm->arch.radix ? kvm_unmap_radix : 
-kvm_is_radix() for consistency?
-> kvm_unmap_rmapp;
-> +	kvm_handle_hva(kvm, hva, handler);
->  	return 0;
->  }
->  
->  int kvm_unmap_hva_range_hv(struct kvm *kvm, unsigned long start,
-> unsigned long end)
->  {
-> -	kvm_handle_hva_range(kvm, start, end, kvm_unmap_rmapp);
-> +	hva_handler_fn handler;
-> +
-> +	handler = kvm->arch.radix ? kvm_unmap_radix : 
-ditto
-> kvm_unmap_rmapp;
-> +	kvm_handle_hva_range(kvm, start, end, handler);
->  	return 0;
->  }
->  
->  void kvmppc_core_flush_memslot_hv(struct kvm *kvm,
->  				  struct kvm_memory_slot *memslot)
->  {
-> -	unsigned long *rmapp;
->  	unsigned long gfn;
->  	unsigned long n;
-> +	unsigned long *rmapp;
->  
-> -	rmapp = memslot->arch.rmap;
->  	gfn = memslot->base_gfn;
-> -	for (n = memslot->npages; n; --n) {
-> +	rmapp = memslot->arch.rmap;
-> +	for (n = memslot->npages; n; --n, ++gfn) {
-> +		if (kvm->arch.radix) {
-ditto
-> +			kvm_unmap_radix(kvm, memslot, gfn);
-> +			continue;
-> +		}
->  		/*
->  		 * Testing the present bit without locking is OK
-> because
->  		 * the memslot has been marked invalid already, and
-> hence
-> @@ -843,20 +853,21 @@ void kvmppc_core_flush_memslot_hv(struct kvm
-> *kvm,
->  		 * thus the present bit can't go from 0 to 1.
->  		 */
->  		if (*rmapp & KVMPPC_RMAP_PRESENT)
-> -			kvm_unmap_rmapp(kvm, rmapp, gfn);
-> +			kvm_unmap_rmapp(kvm, memslot, gfn);
->  		++rmapp;
-> -		++gfn;
->  	}
->  }
->  
-> -static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
-> +static int kvm_age_rmapp(struct kvm *kvm, struct kvm_memory_slot
-> *memslot,
->  			 unsigned long gfn)
->  {
->  	struct revmap_entry *rev = kvm->arch.revmap;
->  	unsigned long head, i, j;
->  	__be64 *hptep;
->  	int ret = 0;
-> +	unsigned long *rmapp;
->  
-> +	rmapp = &memslot->arch.rmap[gfn - memslot->base_gfn];
->   retry:
->  	lock_rmap(rmapp);
->  	if (*rmapp & KVMPPC_RMAP_REFERENCED) {
-> @@ -904,17 +915,22 @@ static int kvm_age_rmapp(struct kvm *kvm,
-> unsigned long *rmapp,
->  
->  int kvm_age_hva_hv(struct kvm *kvm, unsigned long start, unsigned
-> long end)
->  {
-> -	return kvm_handle_hva_range(kvm, start, end, kvm_age_rmapp);
-> +	hva_handler_fn handler;
-> +
-> +	handler = kvm->arch.radix ? kvm_age_radix : kvm_age_rmapp;
-ditto
-> +	return kvm_handle_hva_range(kvm, start, end, handler);
->  }
->  
-> -static int kvm_test_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
-> +static int kvm_test_age_rmapp(struct kvm *kvm, struct
-> kvm_memory_slot *memslot,
->  			      unsigned long gfn)
->  {
->  	struct revmap_entry *rev = kvm->arch.revmap;
->  	unsigned long head, i, j;
->  	unsigned long *hp;
->  	int ret = 1;
-> +	unsigned long *rmapp;
->  
-> +	rmapp = &memslot->arch.rmap[gfn - memslot->base_gfn];
->  	if (*rmapp & KVMPPC_RMAP_REFERENCED)
->  		return 1;
->  
-> @@ -940,12 +956,18 @@ static int kvm_test_age_rmapp(struct kvm *kvm,
-> unsigned long *rmapp,
->  
->  int kvm_test_age_hva_hv(struct kvm *kvm, unsigned long hva)
->  {
-> -	return kvm_handle_hva(kvm, hva, kvm_test_age_rmapp);
-> +	hva_handler_fn handler;
-> +
-> +	handler = kvm->arch.radix ? kvm_test_age_radix : 
-ditto
-> kvm_test_age_rmapp;
-> +	return kvm_handle_hva(kvm, hva, handler);
->  }
->  
->  void kvm_set_spte_hva_hv(struct kvm *kvm, unsigned long hva, pte_t
-> pte)
->  {
-> -	kvm_handle_hva(kvm, hva, kvm_unmap_rmapp);
-> +	hva_handler_fn handler;
-> +
-> +	handler = kvm->arch.radix ? kvm_unmap_radix : 
-ditto
-> kvm_unmap_rmapp;
-> +	kvm_handle_hva(kvm, hva, handler);
->  }
->  
->  static int vcpus_running(struct kvm *kvm)
+> -	kvmppc_free_lpid(kvm->arch.lpid);
+>  	vfree(kvm->arch.revmap);
+>  	if (kvm->arch.hpt_cma_alloc)
+>  		kvm_release_hpt(virt_to_page(kvm->arch.hpt_virt),
 > diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c
 > b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> index 865ea9b..69cabad 100644
+> index 125cc7c..4344651 100644
 > --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
 > +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> @@ -463,6 +463,60 @@ int kvmppc_book3s_radix_page_fault(struct
-> kvm_run *run, struct kvm_vcpu *vcpu,
->  	return ret;
+> @@ -610,6 +610,51 @@ long kvmppc_hv_get_dirty_log_radix(struct kvm
+> *kvm,
+>  	return 0;
 >  }
 >  
-> +/* Called with kvm->lock held */
-> +int kvm_unmap_radix(struct kvm *kvm, struct kvm_memory_slot
-> *memslot,
-> +		    unsigned long gfn)
+> +static void add_rmmu_ap_encoding(struct kvm_ppc_rmmu_info *info,
+> +				 int psize, int *indexp)
 > +{
-> +	pte_t *ptep;
-> +	unsigned long gpa = gfn << PAGE_SHIFT;
-> +	unsigned int shift;
-> +
-> +	ptep = __find_linux_pte_or_hugepte(kvm->arch.pgtable, gpa,
-> +					   NULL, &shift);
-> +	if (ptep && pte_present(*ptep)) {
-> +		kvmppc_radix_update_pte(kvm, ptep, _PAGE_PRESENT, 0,
-> +					gpa, shift);
-> +		kvmppc_radix_tlbie_page(kvm, gpa, shift);
-> +	}
-> +	return 0;				
+> +	if (!mmu_psize_defs[psize].shift)
+> +		return;
+> +	info->ap_encodings[*indexp] = mmu_psize_defs[psize].shift |
+> +		(mmu_psize_defs[psize].ap << 29);
+> +	++(*indexp);
 > +}
 > +
-> +/* Called with kvm->lock held */
-> +int kvm_age_radix(struct kvm *kvm, struct kvm_memory_slot *memslot,
-> +		  unsigned long gfn)
+> +int kvmhv_get_rmmu_info(struct kvm *kvm, struct kvm_ppc_rmmu_info
+> *info)
 > +{
-> +	pte_t *ptep;
-> +	unsigned long gpa = gfn << PAGE_SHIFT;
-> +	unsigned int shift;
-> +	int ref = 0;
+> +	int i;
 > +
-> +	ptep = __find_linux_pte_or_hugepte(kvm->arch.pgtable, gpa,
-> +					   NULL, &shift);
-> +	if (ptep && pte_present(*ptep) && pte_young(*ptep)) {
-> +		kvmppc_radix_update_pte(kvm, ptep, _PAGE_ACCESSED,
-> 0,
-> +					gpa, shift);
-> +		/* XXX need to flush tlb here? */
-> +		ref = 1;
-> +	}
-> +	return ref;
+> +	if (!radix_enabled())
+> +		return -EINVAL;
+> +	memset(info, 0, sizeof(*info));
+> +
+> +	/* 4k page size */
+> +	info->geometries[0].page_shift = 12;
+> +	info->geometries[0].level_bits[0] = 9;
+> +	for (i = 1; i < 4; ++i)
+> +		info->geometries[0].level_bits[i] =
+> p9_supported_radix_bits[i];
+> +	/* 64k page size */
+> +	info->geometries[1].page_shift = 16;
+> +	for (i = 0; i < 4; ++i)
+> +		info->geometries[1].level_bits[i] =
+> p9_supported_radix_bits[i];
+> +
+> +	i = 0;
+> +	add_rmmu_ap_encoding(info, MMU_PAGE_4K, &i);
+> +	add_rmmu_ap_encoding(info, MMU_PAGE_64K, &i);
+> +	add_rmmu_ap_encoding(info, MMU_PAGE_2M, &i);
+> +	add_rmmu_ap_encoding(info, MMU_PAGE_1G, &i);
+> +
+> +	return 0;
 > +}
 > +
-> +/* Called with kvm->lock held */
-> +int kvm_test_age_radix(struct kvm *kvm, struct kvm_memory_slot
-> *memslot,
-> +		       unsigned long gfn)
+> +int kvmppc_init_vm_radix(struct kvm *kvm)
 > +{
-> +	pte_t *ptep;
-> +	unsigned long gpa = gfn << PAGE_SHIFT;
-> +	unsigned int shift;
-> +	int ref = 0;
-> +
-> +	ptep = __find_linux_pte_or_hugepte(kvm->arch.pgtable, gpa,
-> +					   NULL, &shift);
-> +	if (ptep && pte_present(*ptep) && pte_young(*ptep))
-> +		ref = 1;
-> +	return ref;
+> +	kvm->arch.pgtable = pgd_alloc(kvm->mm);
+> +	if (!kvm->arch.pgtable)
+> +		return -ENOMEM;
+> +	return 0;
 > +}
 > +
 >  void kvmppc_free_radix(struct kvm *kvm)
 >  {
 >  	unsigned long ig, iu, im;
+> diff --git a/arch/powerpc/kvm/book3s_hv.c
+> b/arch/powerpc/kvm/book3s_hv.c
+> index ab5adcd..14a9efe 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1136,10 +1136,13 @@ static void kvmppc_set_lpcr(struct kvm_vcpu
+> *vcpu, u64 new_lpcr,
+>  	/*
+>  	 * Userspace can only modify DPFD (default prefetch depth),
+>  	 * ILE (interrupt little-endian) and TC (translation
+> control).
+> -	 * On POWER8 userspace can also modify AIL (alt. interrupt
+> loc.)
+> +	 * On POWER8 userspace can also modify AIL (alt. interrupt
+> loc.).
+> +	 * On POWER9 with a radix guest, we can't allow AIL to be
+> set
+> +	 * since we don't yet have KVM handlers in the relocation-on
+> +	 * interrupt vectors.
+>  	 */
+>  	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC;
+> -	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+> +	if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
+> !kvm_is_radix(kvm))
+>  		mask |= LPCR_AIL;
+>  
+>  	/* Broken 32-bit version of LPCR must not clear top bits */
+> @@ -2878,7 +2881,7 @@ static int kvmppc_vcpu_run_hv(struct kvm_run
+> *run, struct kvm_vcpu *vcpu)
+>  	smp_mb();
+>  
+>  	/* On the first time here, set up HTAB and VRMA */
+> -	if (!vcpu->kvm->arch.hpte_setup_done) {
+> +	if (!kvm_is_radix(vcpu->kvm) && !vcpu->kvm-
+> >arch.hpte_setup_done) {
+>  		r = kvmppc_hv_setup_htab_rma(vcpu);
+>  		if (r)
+>  			goto out;
+> @@ -2940,6 +2943,13 @@ static int
+> kvm_vm_ioctl_get_smmu_info_hv(struct kvm *kvm,
+>  {
+>  	struct kvm_ppc_one_seg_page_size *sps;
+>  
+> +	/*
+> +	 * Since we don't yet support HPT guests on a radix host,
+> +	 * return an error if the host uses radix.
+> +	 */
+> +	if (radix_enabled())
+> +		return -EINVAL;
+> +
+>  	info->flags = KVM_PPC_PAGE_SIZES_REAL;
+>  	if (mmu_has_feature(MMU_FTR_1T_SEGMENT))
+>  		info->flags |= KVM_PPC_1T_SEGMENTS;
+> @@ -3025,6 +3035,15 @@ static void kvmppc_core_free_memslot_hv(struct
+> kvm_memory_slot *free,
+>  static int kvmppc_core_create_memslot_hv(struct kvm_memory_slot
+> *slot,
+>  					 unsigned long npages)
+>  {
+> +	/*
+> +	 * For now, if radix_enabled() then we only support radix
+> guests,
+> +	 * and in that case we don't need the rmap array.
+> +	 */
+> +	if (radix_enabled()) {
+> +		slot->arch.rmap = NULL;
+> +		return 0;
+> +	}
+> +
+>  	slot->arch.rmap = vzalloc(npages * sizeof(*slot-
+> >arch.rmap));
+>  	if (!slot->arch.rmap)
+>  		return -ENOMEM;
+> @@ -3105,14 +3124,20 @@ static void
+> kvmppc_setup_partition_table(struct kvm *kvm)
+>  {
+>  	unsigned long dw0, dw1;
+>  
+> -	/* PS field - page size for VRMA */
+> -	dw0 = ((kvm->arch.vrma_slb_v & SLB_VSID_L) >> 1) |
+> -		((kvm->arch.vrma_slb_v & SLB_VSID_LP) << 1);
+> -	/* HTABSIZE and HTABORG fields */
+> -	dw0 |= kvm->arch.sdr1;
+> +	if (!kvm->arch.radix) {
+kvm_is_radix() for consistency?
+> +		/* PS field - page size for VRMA */
+> +		dw0 = ((kvm->arch.vrma_slb_v & SLB_VSID_L) >> 1) |
+> +			((kvm->arch.vrma_slb_v & SLB_VSID_LP) << 1);
+> +		/* HTABSIZE and HTABORG fields */
+> +		dw0 |= kvm->arch.sdr1;
+>  
+> -	/* Second dword as set by userspace */
+> -	dw1 = kvm->arch.process_table;
+> +		/* Second dword as set by userspace */
+> +		dw1 = kvm->arch.process_table;
+> +	} else {
+> +		dw0 = PATB_HR | radix__get_tree_size() |
+> +			__pa(kvm->arch.pgtable) |
+> RADIX_PGD_INDEX_SIZE;
+> +		dw1 = PATB_GR | kvm->arch.process_table;
+> +	}
+>  
+>  	mmu_partition_table_set_entry(kvm->arch.lpid, dw0, dw1);
+>  }
+> @@ -3282,6 +3307,7 @@ static int kvmppc_core_init_vm_hv(struct kvm
+> *kvm)
+>  {
+>  	unsigned long lpcr, lpid;
+>  	char buf[32];
+> +	int ret;
+>  
+>  	/* Allocate the guest's logical partition ID */
+>  
+> @@ -3329,13 +3355,30 @@ static int kvmppc_core_init_vm_hv(struct kvm
+> *kvm)
+>  		lpcr |= LPCR_HVICE;
+>  	}
+>  
+> +	/*
+> +	 * For now, if the host uses radix, the guest must be radix.
+> +	 */
+> +	if (radix_enabled()) {
+> +		kvm->arch.radix = 1;
+> +		lpcr &= ~LPCR_VPM1;
+> +		lpcr |= LPCR_UPRT | LPCR_GTSE | LPCR_HR;
+> +		ret = kvmppc_init_vm_radix(kvm);
+> +		if (ret) {
+> +			kvmppc_free_lpid(kvm->arch.lpid);
+> +			return ret;
+> +		}
+> +		kvmppc_setup_partition_table(kvm);
+> +	}
+> +
+>  	kvm->arch.lpcr = lpcr;
+>  
+>  	/*
+>  	 * Work out how many sets the TLB has, for the use of
+>  	 * the TLB invalidation loop in book3s_hv_rmhandlers.S.
+>  	 */
+> -	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> +	if (kvm_is_radix(kvm))
+> +		kvm->arch.tlb_sets = POWER9_TLB_SETS_RADIX;	/
+> * 128 */
+> +	else if (cpu_has_feature(CPU_FTR_ARCH_300))
+>  		kvm->arch.tlb_sets = POWER9_TLB_SETS_HASH;	/*
+> 256 */
+>  	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
+>  		kvm->arch.tlb_sets = POWER8_TLB_SETS;		
+> /* 512 */
+> @@ -3345,8 +3388,11 @@ static int kvmppc_core_init_vm_hv(struct kvm
+> *kvm)
+>  	/*
+>  	 * Track that we now have a HV mode VM active. This blocks
+> secondary
+>  	 * CPU threads from coming online.
+> +	 * On POWER9, we only need to do this for HPT guests on a
+> radix
+> +	 * host, which is not yet supported.
+>  	 */
+> -	kvm_hv_vm_activated();
+> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+> +		kvm_hv_vm_activated();
+>  
+>  	/*
+>  	 * Create a debugfs directory for the VM
+> @@ -3372,10 +3418,13 @@ static void kvmppc_core_destroy_vm_hv(struct
+> kvm *kvm)
+>  {
+>  	debugfs_remove_recursive(kvm->arch.debugfs_dir);
+>  
+> -	kvm_hv_vm_deactivated();
+> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+> +		kvm_hv_vm_deactivated();
+>  
+>  	kvmppc_free_vcores(kvm);
+>  
+> +	kvmppc_free_lpid(kvm->arch.lpid);
+> +
+>  	if (kvm->arch.radix)
+ditto
+>  		kvmppc_free_radix(kvm);
+>  	else
+> @@ -3408,11 +3457,6 @@ static int
+> kvmppc_core_check_processor_compat_hv(void)
+>  	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
+>  	    !cpu_has_feature(CPU_FTR_ARCH_206))
+>  		return -EIO;
+> -	/*
+> -	 * Disable KVM for Power9 in radix mode.
+> -	 */
+> -	if (cpu_has_feature(CPU_FTR_ARCH_300) && radix_enabled())
+> -		return -EIO;
+>  
+>  	return 0;
+>  }
+> @@ -3683,6 +3727,7 @@ static void init_default_hcalls(void)
+>  static int kvmhv_configure_mmu(struct kvm *kvm, struct
+> kvm_ppc_mmuv3_cfg *cfg)
+>  {
+>  	unsigned long lpcr;
+> +	int radix;
+For clarity, this could be a bool.
+>  
+>  	/* If not on a POWER9, reject it */
+>  	if (!cpu_has_feature(CPU_FTR_ARCH_300))
+> @@ -3692,12 +3737,13 @@ static int kvmhv_configure_mmu(struct kvm
+> *kvm, struct kvm_ppc_mmuv3_cfg *cfg)
+>  	if (cfg->flags & ~(KVM_PPC_MMUV3_RADIX |
+> KVM_PPC_MMUV3_GTSE))
+>  		return -EINVAL;
+>  
+> -	/* We can't do radix yet */
+> -	if (cfg->flags & KVM_PPC_MMUV3_RADIX)
+> +	/* We can't change a guest to/from radix yet */
+> +	radix = !!(cfg->flags & KVM_PPC_MMUV3_RADIX);
+> +	if (radix != kvm_is_radix(kvm))
+>  		return -EINVAL;
+>  
+>  	/* GR (guest radix) bit in process_table field must match */
+> -	if (cfg->process_table & PATB_GR)
+> +	if (!!(cfg->process_table & PATB_GR) != radix)
+>  		return -EINVAL;
+>  
+>  	/* Process table size field must be reasonable, i.e. <= 24
+> */
+> @@ -3713,11 +3759,6 @@ static int kvmhv_configure_mmu(struct kvm
+> *kvm, struct kvm_ppc_mmuv3_cfg *cfg)
+>  	return 0;
+>  }
+>  
+> -static int kvmhv_get_rmmu_info(struct kvm *kvm, struct
+> kvm_ppc_rmmu_info *info)
+> -{
+> -	return -EINVAL;
+> -}
+> -
+>  static struct kvmppc_ops kvm_ops_hv = {
+>  	.get_sregs = kvm_arch_vcpu_ioctl_get_sregs_hv,
+>  	.set_sregs = kvm_arch_vcpu_ioctl_set_sregs_hv,
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 1476a48..40a5b2d 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -566,7 +566,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm,
+> long ext)
+>  		r = kvmppc_hwrng_present();
+>  		break;
+>  	case KVM_CAP_PPC_MMU_RADIX:
+> -		r = !!(0 && hv_enabled && radix_enabled());
+> +		r = !!(hv_enabled && radix_enabled());
+>  		break;
+>  	case KVM_CAP_PPC_MMU_HASH_V3:
+>  		r = !!(hv_enabled && !radix_enabled() &&
