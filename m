@@ -1,18 +1,48 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6hhT57mczDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:48:57 +1100 (AEDT)
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>, rtd@a-eon.com,
- Pat Wall <pjwall@mac.com>, aperez@alexperez.com
-Date: Mon, 23 Jan 2017 19:42:54 +0000 (GMT)
-Message-ID: <497a1d88a93.7082e0e9@auth.smtp.1and1.co.uk>
-Subject: [PATCH] powerpc: Add missing error check to prom_find_boot_cpu()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6mCT2SRLzDqLm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 09:27:33 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0NMNm0v101872
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 17:27:29 -0500
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 285kj4akrk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 17:27:29 -0500
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 24 Jan 2017 08:27:26 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AA8CE2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 09:27:24 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v0NMRGKG20578474
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 09:27:24 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v0NMQqw1027615
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 09:26:52 +1100
+Date: Tue, 24 Jan 2017 09:26:27 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc/kernel: Remove nested if statements in
+ rtas_initialize()
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1485127546-18859-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1485127546-18859-2-git-send-email-gwshan@linux.vnet.ibm.com>
+ <8760l6b0u3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6f03750017b43ca.8c"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8760l6b0u3.fsf@concordia.ellerman.id.au>
+Message-Id: <20170123222627.GA4316@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +52,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Warning: This is a message in MIME format. Your mail reader does
-not support MIME. Some parts of this message will be readable as
-plain text. To see the rest, you will need to upgrade your mail
-reader. Following are some URLs where you can find MIME-capable
-mail programs for common platforms:
+On Mon, Jan 23, 2017 at 08:08:20PM +1100, Michael Ellerman wrote:
+>Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+>
+>> This removes the unnecessary nested if statements in function
+>> rtas_initialize(), to simplify the code. No functional changes
+>> introduced.
+>>
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kernel/rtas.c | 33 ++++++++++++++++-----------------
+>>  1 file changed, 16 insertions(+), 17 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+>> index 112cc3b..9ba0f67 100644
+>> --- a/arch/powerpc/kernel/rtas.c
+>> +++ b/arch/powerpc/kernel/rtas.c
+>> @@ -1145,31 +1145,30 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>>  void __init rtas_initialize(void)
+>>  {
+>>  	unsigned long rtas_region = RTAS_INSTANTIATE_MAX;
+>> +	const __be32 *basep, *entryp, *sizep;
+>>  
+>>  	/* Get RTAS dev node and fill up our "rtas" structure with infos
+>>  	 * about it.
+>>  	 */
+>>  	rtas.dev = of_find_node_by_name(NULL, "rtas");
+>> -	if (rtas.dev) {
+>> -		const __be32 *basep, *entryp, *sizep;
+>> -
+>> -		basep = of_get_property(rtas.dev, "linux,rtas-base", NULL);
+>> -		sizep = of_get_property(rtas.dev, "rtas-size", NULL);
+>> -		if (basep != NULL && sizep != NULL) {
+>			...
+>> -		} else
+>
+>Previously we set rtas.dev to NULL if either basep or sizep was NULL.
+>
+>> -			rtas.dev = NULL;
+>> -	}
+>>  	if (!rtas.dev)
+>>  		return;
+>>  
+>> +	basep = of_get_property(rtas.dev, "linux,rtas-base", NULL);
+>> +	sizep = of_get_property(rtas.dev, "rtas-size", NULL);
+>> +	if (basep == NULL && sizep == NULL) {
+>
+>But now you set it to NULL only if BOTH basep and sizep are NULL.
+>
+>Was that intentional? If so you need to mention it in the change log.
+>
+>> +		rtas.dev = NULL;
+>> +		return;
+>> +	}
+>
+>The proper negation of:
+>
+>	if (basep != NULL && sizep != NULL) {
+>is:
+>	if (basep == NULL || sizep == NULL) {
+>
 
-  AmigaOS...........: http://yam.ch/
-  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
+Thanks, Michael. It's not intentional. I'll update in v2.
 
-General information about MIME can be found at:
-http://en.wikipedia.org/wiki/MIME
-
-----=_BOUNDARY.6f03750017b43ca.8c
-Content-Type: text/plain
-
-prom_init.c calls 'instance-to-package' twice, but the return
-is not checked during prom_find_boot_cpu(). The result is then
-passed to prom_getprop, which could be PROM_ERROR.
-Add a return check to prevent this.
-
-This was found on a pasemi system, where CFE doesn't have a working
-'instance-to package' prom call.
-Before Commit 5c0484e25ec0 ('powerpc: Endian safe trampoline') the
-area around addr 0 as mostly 0's and this doesn't cause a problem.
-Once the macro 'FIXUP_ENDIAN' has been added to head_64.S, the low
-memory area now has non-zero values, which cause the prom_getprop
-call to hang.
-
-Signed-off-by: Darren Stevens <darren@stevens-zone.net>
-
----
-
-----=_BOUNDARY.6f03750017b43ca.8c
-Content-Type: text/plain;
-	name="prom_init.patch"
-Content-Disposition: attachment;
-	filename="prom_init.patch";
-	size=448
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index ec47a93..ac83eb0 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -2834,6 +2834,9 @@ static void __init prom_find_boot_cpu(void)
- 
- 	cpu_pkg = call_prom("instance-to-package", 1, 1, prom_cpu);
- 
-+	if (!PHANDLE_VALID(cpu_pkg))
-+		return;
-+
- 	prom_getprop(cpu_pkg, "reg", &rval, sizeof(rval));
- 	prom.cpu = be32_to_cpu(rval);
- 
-
-----=_BOUNDARY.6f03750017b43ca.8c--
+Thanks,
+Gavin
