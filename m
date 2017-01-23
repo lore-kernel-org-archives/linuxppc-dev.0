@@ -1,26 +1,55 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6h5k4RFWzDqGd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:22:18 +1100 (AEDT)
-Subject: Re: [PATCH 05/11] KVM: PPC: Book3S HV: Adjust nine checks for null
- pointers
-To: SF Markus Elfring <elfring@users.sourceforge.net>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
-References: <fc2c36e6-a453-ae09-89bf-98b3d74113a4@users.sourceforge.net>
- <161c8660-d204-5190-9bda-c5a801abe0ab@users.sourceforge.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <5d8a5f7f-be7a-265c-855d-7cb4fae9019e@redhat.com>
-Date: Mon, 23 Jan 2017 20:22:12 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6h7106XpzDqSK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:23:24 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0NJIVeQ124109
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 14:23:22 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 285cwxdes3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 14:23:22 -0500
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 24 Jan 2017 05:23:20 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 958F92CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:23:18 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v0NJNASD18743376
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:23:18 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v0NJMjW1022236
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:22:46 +1100
+Date: Tue, 24 Jan 2017 00:52:27 +0530
+From: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: David Laight <David.Laight@ACULAB.COM>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "daniel@iogearbox.net" <daniel@iogearbox.net>, "ast@fb.com" <ast@fb.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 3/3] powerpc: bpf: implement in-register swap for 64-bit
+ endian operations
+References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
+ <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
+ <20170113175201.GD3470@naverao1-tp.localdomain>
+ <1484492458.11927.17.camel@au1.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <161c8660-d204-5190-9bda-c5a801abe0ab@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1484492458.11927.17.camel@au1.ibm.com>
+Message-Id: <20170123192227.GE3820@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,109 +59,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20.01.2017 19:23, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Fri, 20 Jan 2017 11:25:48 +0100
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=UTF-8
-> Content-Transfer-Encoding: 8bit
+On 2017/01/15 09:00AM, Benjamin Herrenschmidt wrote:
+> On Fri, 2017-01-13 at 23:22 +0530, 'Naveen N. Rao' wrote:
+> > > That rather depends on whether the processor has a store to load forwarder
+> > > that will satisfy the read from the store buffer.
+> > > I don't know about ppc, but at least some x86 will do that.
+> > 
+> > Interesting - good to know that.
+> > 
+> > However, I don't think powerpc does that and in-register swap is likely 
+> > faster regardless. Note also that gcc prefers this form at higher 
+> > optimization levels.
 > 
-> The script "checkpatch.pl" pointed information out like the following.
-> 
-> Comparison to NULL could be written â€¦
+> Of course powerpc has a load-store forwarder these days, however, I
+> wouldn't be surprised if the in-register form was still faster on some
+> implementations, but this needs to be tested.
 
-That's maybe ok for new code / if the code has to be touched anyway ...
-but for existing code, this sounds very much like unnecessary code-churn
-to me (e.g. it hides more important information with "git blame").
+Thanks for clarifying! To test this, I wrote a simple (perhaps naive) 
+test that just issues a whole lot of endian swaps and in _that_ test, it 
+does look like the load-store forwarder is doing pretty well.
 
- Thomas
+The tests:
 
+bpf-bswap.S:
+-----------
+	.file   "bpf-bswap.S"
+        .abiversion 2
+        .section        ".text"
+        .align 2
+        .globl main
+        .type   main, @function
+main:
+        mflr    0
+        std     0,16(1)
+        stdu    1,-32760(1)
+	addi	3,1,32
+	li	4,0
+	li	5,32720
+	li	11,32720
+	mulli	11,11,8
+	li	10,0
+	li	7,16
+1:	ldx	6,3,4
+	stdx	6,1,7
+	ldbrx	6,1,7
+	stdx	6,3,4
+	addi	4,4,8
+	cmpd	4,5
+	beq	2f
+	b	1b
+2:	addi	10,10,1
+	li	4,0
+	cmpd	10,11
+	beq	3f
+	b	1b
+3:	li	3,0
+        addi	1,1,32760
+        ld      0,16(1)
+	mtlr	0
+	blr
+
+bpf-bswap-reg.S:
+---------------
+	.file   "bpf-bswap-reg.S"
+        .abiversion 2
+        .section        ".text"
+        .align 2
+        .globl main
+        .type   main, @function
+main:
+        mflr    0
+        std     0,16(1)
+        stdu    1,-32760(1)
+	addi	3,1,32
+	li	4,0
+	li	5,32720
+	li	11,32720
+	mulli	11,11,8
+	li	10,0
+1:	ldx	6,3,4
+	rldicl	7,6,32,32
+	rlwinm	8,6,24,0,31
+	rlwimi	8,6,8,8,15
+	rlwinm	9,7,24,0,31
+	rlwimi	8,6,8,24,31
+	rlwimi	9,7,8,8,15
+	rlwimi	9,7,8,24,31
+	rldicr	8,8,32,31
+	or	6,8,9
+	stdx	6,3,4
+	addi	4,4,8
+	cmpd	4,5
+	beq	2f
+	b	1b
+2:	addi	10,10,1
+	li	4,0
+	cmpd	10,11
+	beq	3f
+	b	1b
+3:	li	3,0
+        addi	1,1,32760
+        ld      0,16(1)
+	mtlr	0
+	blr
+
+Profiling the two variants:
+
+# perf stat ./bpf-bswap
+
+ Performance counter stats for './bpf-bswap':
+
+       1395.979224      task-clock (msec)         #    0.999 CPUs utilized          
+                 0      context-switches          #    0.000 K/sec                  
+                 0      cpu-migrations            #    0.000 K/sec                  
+                45      page-faults               #    0.032 K/sec                  
+     4,651,874,673      cycles                    #    3.332 GHz                      (66.87%)
+         3,141,186      stalled-cycles-frontend   #    0.07% frontend cycles idle     (50.57%)
+     1,117,289,485      stalled-cycles-backend    #   24.02% backend cycles idle      (50.57%)
+     8,565,963,861      instructions              #    1.84  insn per cycle         
+                                                  #    0.13  stalled cycles per insn  (67.05%)
+     2,174,029,771      branches                  # 1557.351 M/sec                    (49.69%)
+           262,656      branch-misses             #    0.01% of all branches          (50.05%)
+
+       1.396893189 seconds time elapsed
+
+# perf stat ./bpf-bswap-reg
+
+ Performance counter stats for './bpf-bswap-reg':
+
+       1819.758102      task-clock (msec)         #    0.999 CPUs utilized          
+                 3      context-switches          #    0.002 K/sec                  
+                 0      cpu-migrations            #    0.000 K/sec                  
+                44      page-faults               #    0.024 K/sec                  
+     6,034,777,602      cycles                    #    3.316 GHz                      (66.83%)
+         2,010,983      stalled-cycles-frontend   #    0.03% frontend cycles idle     (50.47%)
+     1,024,975,759      stalled-cycles-backend    #   16.98% backend cycles idle      (50.52%)
+    16,043,732,849      instructions              #    2.66  insn per cycle         
+                                                  #    0.06  stalled cycles per insn  (67.01%)
+     2,148,710,750      branches                  # 1180.767 M/sec                    (49.57%)
+           268,046      branch-misses             #    0.01% of all branches          (49.52%)
+
+       1.821501345 seconds time elapsed
+
+
+This is all in a POWER8 vm. On POWER7, the in-register variant is around 
+4 times faster than the ldbrx variant.
+
+So, yes, unless I've missed something, the ldbrx variant seems to 
+perform better, if not on par with the in-register swap variant on 
+POWER8.
 
 > 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 19 +++++++++----------
->  1 file changed, 9 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index cfc7699d05df..3122998f6a32 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -458,7 +458,7 @@ static unsigned long do_h_register_vpa(struct kvm_vcpu *vcpu,
->  
->  		/* convert logical addr to kernel addr and read length */
->  		va = kvmppc_pin_guest_page(kvm, vpa, &nb);
-> -		if (va == NULL)
-> +		if (!va)
->  			return H_PARAMETER;
->  		if (subfunc == H_VPA_REG_VPA)
->  			len = be16_to_cpu(((struct reg_vpa *)va)->length.hword);
-> @@ -1591,8 +1591,7 @@ static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
->  	struct kvmppc_vcore *vcore;
->  
->  	vcore = kzalloc(sizeof(struct kvmppc_vcore), GFP_KERNEL);
-> -
-> -	if (vcore == NULL)
-> +	if (!vcore)
->  		return NULL;
->  
->  	spin_lock_init(&vcore->lock);
-> @@ -2221,7 +2220,7 @@ static void collect_piggybacks(struct core_info *cip, int target_threads)
->  		prepare_threads(pvc);
->  		if (!pvc->n_runnable) {
->  			list_del_init(&pvc->preempt_list);
-> -			if (pvc->runner == NULL) {
-> +			if (!pvc->runner) {
->  				pvc->vcore_state = VCORE_INACTIVE;
->  				kvmppc_core_end_stolen(pvc);
->  			}
-> @@ -2287,7 +2286,7 @@ static void post_guest_process(struct kvmppc_vcore *vc, bool is_master)
->  		} else {
->  			vc->vcore_state = VCORE_INACTIVE;
->  		}
-> -		if (vc->n_runnable > 0 && vc->runner == NULL) {
-> +		if (vc->n_runnable > 0 && !vc->runner) {
->  			/* make sure there's a candidate runner awake */
->  			i = -1;
->  			vcpu = next_runnable_thread(vc, &i);
-> @@ -2786,7 +2785,7 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
->  
->  	while (vcpu->arch.state == KVMPPC_VCPU_RUNNABLE &&
->  	       !signal_pending(current)) {
-> -		if (vc->vcore_state == VCORE_PREEMPT && vc->runner == NULL)
-> +		if (vc->vcore_state == VCORE_PREEMPT && !vc->runner)
->  			kvmppc_vcore_end_preempt(vc);
->  
->  		if (vc->vcore_state != VCORE_INACTIVE) {
-> @@ -2833,7 +2832,7 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
->  		vc->vcore_state == VCORE_PIGGYBACK))
->  		kvmppc_wait_for_exec(vc, vcpu, TASK_UNINTERRUPTIBLE);
->  
-> -	if (vc->vcore_state == VCORE_PREEMPT && vc->runner == NULL)
-> +	if (vc->vcore_state == VCORE_PREEMPT && !vc->runner)
->  		kvmppc_vcore_end_preempt(vc);
->  
->  	if (vcpu->arch.state == KVMPPC_VCPU_RUNNABLE) {
-> @@ -3203,7 +3202,7 @@ void kvmppc_alloc_host_rm_ops(void)
->  	int size;
->  
->  	/* Not the first time here ? */
-> -	if (kvmppc_host_rm_ops_hv != NULL)
-> +	if (kvmppc_host_rm_ops_hv)
->  		return;
->  
->  	ops = kzalloc(sizeof(struct kvmppc_host_rm_ops), GFP_KERNEL);
-> @@ -3430,10 +3429,10 @@ static int kvmppc_set_passthru_irq(struct kvm *kvm, int host_irq, int guest_gsi)
->  	mutex_lock(&kvm->lock);
->  
->  	pimap = kvm->arch.pimap;
-> -	if (pimap == NULL) {
-> +	if (!pimap) {
->  		/* First call, allocate structure to hold IRQ map */
->  		pimap = kvmppc_alloc_pimap();
-> -		if (pimap == NULL) {
-> +		if (!pimap) {
->  			mutex_unlock(&kvm->lock);
->  			return -ENOMEM;
->  		}
-> 
+> Ideally, you'd want to try to "optimize" load+swap or swap+store
+> though.
+
+Agreed. This is already the case with BPF for packet access - those use 
+skb helpers which issue the appropriate lhbrx/lwbrx/ldbrx. The newer 
+BPF_FROM_LE/BPF_FROM_BE are for endian operations with other BPF 
+programs.
+
+We can probably implement an extra pass to detect use of endian swap and 
+try to match it up with a previous load or a subsequent store though...
+
+Thanks!
+- Naveen
