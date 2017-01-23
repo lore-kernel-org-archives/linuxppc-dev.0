@@ -1,55 +1,18 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6h7106XpzDqSK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:23:24 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0NJIVeQ124109
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 14:23:22 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 285cwxdes3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2017 14:23:22 -0500
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 24 Jan 2017 05:23:20 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 958F92CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:23:18 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0NJNASD18743376
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:23:18 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0NJMjW1022236
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:22:46 +1100
-Date: Tue, 24 Jan 2017 00:52:27 +0530
-From: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: David Laight <David.Laight@ACULAB.COM>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "daniel@iogearbox.net" <daniel@iogearbox.net>, "ast@fb.com" <ast@fb.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 3/3] powerpc: bpf: implement in-register swap for 64-bit
- endian operations
-References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
- <20170113175201.GD3470@naverao1-tp.localdomain>
- <1484492458.11927.17.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6hhT57mczDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 06:48:57 +1100 (AEDT)
+From: Darren Stevens <darren@stevens-zone.net>
+To: linuxppc-dev@lists.ozlabs.org
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>, rtd@a-eon.com,
+ Pat Wall <pjwall@mac.com>, aperez@alexperez.com
+Date: Mon, 23 Jan 2017 19:42:54 +0000 (GMT)
+Message-ID: <497a1d88a93.7082e0e9@auth.smtp.1and1.co.uk>
+Subject: [PATCH] powerpc: Add missing error check to prom_find_boot_cpu()
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1484492458.11927.17.camel@au1.ibm.com>
-Message-Id: <20170123192227.GE3820@naverao1-tp.localdomain>
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6f03750017b43ca.8c"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,167 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/01/15 09:00AM, Benjamin Herrenschmidt wrote:
-> On Fri, 2017-01-13 at 23:22 +0530, 'Naveen N. Rao' wrote:
-> > > That rather depends on whether the processor has a store to load forwarder
-> > > that will satisfy the read from the store buffer.
-> > > I don't know about ppc, but at least some x86 will do that.
-> > 
-> > Interesting - good to know that.
-> > 
-> > However, I don't think powerpc does that and in-register swap is likely 
-> > faster regardless. Note also that gcc prefers this form at higher 
-> > optimization levels.
-> 
-> Of course powerpc has a load-store forwarder these days, however, I
-> wouldn't be surprised if the in-register form was still faster on some
-> implementations, but this needs to be tested.
+Warning: This is a message in MIME format. Your mail reader does
+not support MIME. Some parts of this message will be readable as
+plain text. To see the rest, you will need to upgrade your mail
+reader. Following are some URLs where you can find MIME-capable
+mail programs for common platforms:
 
-Thanks for clarifying! To test this, I wrote a simple (perhaps naive) 
-test that just issues a whole lot of endian swaps and in _that_ test, it 
-does look like the load-store forwarder is doing pretty well.
+  AmigaOS...........: http://yam.ch/
+  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
 
-The tests:
+General information about MIME can be found at:
+http://en.wikipedia.org/wiki/MIME
 
-bpf-bswap.S:
------------
-	.file   "bpf-bswap.S"
-        .abiversion 2
-        .section        ".text"
-        .align 2
-        .globl main
-        .type   main, @function
-main:
-        mflr    0
-        std     0,16(1)
-        stdu    1,-32760(1)
-	addi	3,1,32
-	li	4,0
-	li	5,32720
-	li	11,32720
-	mulli	11,11,8
-	li	10,0
-	li	7,16
-1:	ldx	6,3,4
-	stdx	6,1,7
-	ldbrx	6,1,7
-	stdx	6,3,4
-	addi	4,4,8
-	cmpd	4,5
-	beq	2f
-	b	1b
-2:	addi	10,10,1
-	li	4,0
-	cmpd	10,11
-	beq	3f
-	b	1b
-3:	li	3,0
-        addi	1,1,32760
-        ld      0,16(1)
-	mtlr	0
-	blr
+----=_BOUNDARY.6f03750017b43ca.8c
+Content-Type: text/plain
 
-bpf-bswap-reg.S:
----------------
-	.file   "bpf-bswap-reg.S"
-        .abiversion 2
-        .section        ".text"
-        .align 2
-        .globl main
-        .type   main, @function
-main:
-        mflr    0
-        std     0,16(1)
-        stdu    1,-32760(1)
-	addi	3,1,32
-	li	4,0
-	li	5,32720
-	li	11,32720
-	mulli	11,11,8
-	li	10,0
-1:	ldx	6,3,4
-	rldicl	7,6,32,32
-	rlwinm	8,6,24,0,31
-	rlwimi	8,6,8,8,15
-	rlwinm	9,7,24,0,31
-	rlwimi	8,6,8,24,31
-	rlwimi	9,7,8,8,15
-	rlwimi	9,7,8,24,31
-	rldicr	8,8,32,31
-	or	6,8,9
-	stdx	6,3,4
-	addi	4,4,8
-	cmpd	4,5
-	beq	2f
-	b	1b
-2:	addi	10,10,1
-	li	4,0
-	cmpd	10,11
-	beq	3f
-	b	1b
-3:	li	3,0
-        addi	1,1,32760
-        ld      0,16(1)
-	mtlr	0
-	blr
+prom_init.c calls 'instance-to-package' twice, but the return
+is not checked during prom_find_boot_cpu(). The result is then
+passed to prom_getprop, which could be PROM_ERROR.
+Add a return check to prevent this.
 
-Profiling the two variants:
+This was found on a pasemi system, where CFE doesn't have a working
+'instance-to package' prom call.
+Before Commit 5c0484e25ec0 ('powerpc: Endian safe trampoline') the
+area around addr 0 as mostly 0's and this doesn't cause a problem.
+Once the macro 'FIXUP_ENDIAN' has been added to head_64.S, the low
+memory area now has non-zero values, which cause the prom_getprop
+call to hang.
 
-# perf stat ./bpf-bswap
+Signed-off-by: Darren Stevens <darren@stevens-zone.net>
 
- Performance counter stats for './bpf-bswap':
+---
 
-       1395.979224      task-clock (msec)         #    0.999 CPUs utilized          
-                 0      context-switches          #    0.000 K/sec                  
-                 0      cpu-migrations            #    0.000 K/sec                  
-                45      page-faults               #    0.032 K/sec                  
-     4,651,874,673      cycles                    #    3.332 GHz                      (66.87%)
-         3,141,186      stalled-cycles-frontend   #    0.07% frontend cycles idle     (50.57%)
-     1,117,289,485      stalled-cycles-backend    #   24.02% backend cycles idle      (50.57%)
-     8,565,963,861      instructions              #    1.84  insn per cycle         
-                                                  #    0.13  stalled cycles per insn  (67.05%)
-     2,174,029,771      branches                  # 1557.351 M/sec                    (49.69%)
-           262,656      branch-misses             #    0.01% of all branches          (50.05%)
+----=_BOUNDARY.6f03750017b43ca.8c
+Content-Type: text/plain;
+	name="prom_init.patch"
+Content-Disposition: attachment;
+	filename="prom_init.patch";
+	size=448
 
-       1.396893189 seconds time elapsed
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index ec47a93..ac83eb0 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2834,6 +2834,9 @@ static void __init prom_find_boot_cpu(void)
+ 
+ 	cpu_pkg = call_prom("instance-to-package", 1, 1, prom_cpu);
+ 
++	if (!PHANDLE_VALID(cpu_pkg))
++		return;
++
+ 	prom_getprop(cpu_pkg, "reg", &rval, sizeof(rval));
+ 	prom.cpu = be32_to_cpu(rval);
+ 
 
-# perf stat ./bpf-bswap-reg
-
- Performance counter stats for './bpf-bswap-reg':
-
-       1819.758102      task-clock (msec)         #    0.999 CPUs utilized          
-                 3      context-switches          #    0.002 K/sec                  
-                 0      cpu-migrations            #    0.000 K/sec                  
-                44      page-faults               #    0.024 K/sec                  
-     6,034,777,602      cycles                    #    3.316 GHz                      (66.83%)
-         2,010,983      stalled-cycles-frontend   #    0.03% frontend cycles idle     (50.47%)
-     1,024,975,759      stalled-cycles-backend    #   16.98% backend cycles idle      (50.52%)
-    16,043,732,849      instructions              #    2.66  insn per cycle         
-                                                  #    0.06  stalled cycles per insn  (67.01%)
-     2,148,710,750      branches                  # 1180.767 M/sec                    (49.57%)
-           268,046      branch-misses             #    0.01% of all branches          (49.52%)
-
-       1.821501345 seconds time elapsed
-
-
-This is all in a POWER8 vm. On POWER7, the in-register variant is around 
-4 times faster than the ldbrx variant.
-
-So, yes, unless I've missed something, the ldbrx variant seems to 
-perform better, if not on par with the in-register swap variant on 
-POWER8.
-
-> 
-> Ideally, you'd want to try to "optimize" load+swap or swap+store
-> though.
-
-Agreed. This is already the case with BPF for packet access - those use 
-skb helpers which issue the appropriate lhbrx/lwbrx/ldbrx. The newer 
-BPF_FROM_LE/BPF_FROM_BE are for endian operations with other BPF 
-programs.
-
-We can probably implement an extra pass to detect use of endian swap and 
-try to match it up with a previous load or a subsequent store though...
-
-Thanks!
-- Naveen
+----=_BOUNDARY.6f03750017b43ca.8c--
