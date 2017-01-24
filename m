@@ -2,17 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v73W81RZpzDqRD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 20:57:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v74380m1CzDqRL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 21:21:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg Kurz <groug@kaod.org>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH] cxl: drop unused header asm/pnv-pci.h
-In-Reply-To: <148482301037.30441.14177888563610790803.stgit@bahia>
-References: <148482301037.30441.14177888563610790803.stgit@bahia>
-Date: Tue, 24 Jan 2017 20:57:06 +1100
-Message-ID: <87k29kaih9.fsf@concordia.ellerman.id.au>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Joel Stanley  <joel@jms.id.au>,
+ stewart@linux.vnet.ibm.com  <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Validate memcons descriptor and output
+ buffer
+In-Reply-To: <1484783570-6298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1484783570-6298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Tue, 24 Jan 2017 21:21:22 +1100
+Message-ID: <87d1fcahct.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,28 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg Kurz <groug@kaod.org> writes:
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-> The kernel API does not use anything from this header file.
+> Currently, it's assumed that memcons and its output buffer are included
+> in the linear mapping. It's not true when "mem=384M" is included in
+> bootargs. The system runs into kernel crash eventually.
+>
+>    # od -x /proc/device-tree/ibm,opal/ibm,opal-memcons
+>    0000000 0000 0000 0b30 0010
+>    0000010
+>
+> This validates memcons descriptor and its output buffer to ensure they
+> are valid in linear mapping. Otherwise, the interface won't be populated
+> to avoid kernel crash during system boot.
+>
+> Cc: stable@vger.kernel.org #3.15+
+> Fixes: bfc36894a48 ("powerpc/powernv: Add OPAL message log interface")
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-That's actually hard to prove in general, because pnv-pci.h includes
-linux/pci.h, linux/pci_hotplug.h, linux/irq.h, misc/cxl-base.h and
-asm/opal-api.h. At least four of which aren't included directly by
-api.c.
+Hmm.
 
-But I'll take you word for it :)
+Arguably the memcons shouldn't be in the linear map at all.
+
+AFAICS the kernel only ever reads from it, so really it should be
+explicitly mapped, and mapped read only.
+
+That would also fix this problem :D
 
 cheers
-
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index 1b35e33d2434..bcc030eacab7 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -11,7 +11,6 @@
->  #include <linux/slab.h>
->  #include <linux/file.h>
->  #include <misc/cxl.h>
-> -#include <asm/pnv-pci.h>
->  #include <linux/msi.h>
->  #include <linux/module.h>
->  #include <linux/mount.h>
