@@ -1,21 +1,18 @@
-Return-Path: <boris.brezillon@free-electrons.com>
-Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
- by lists.ozlabs.org (Postfix) with ESMTP id 3v75Dj5J5PzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 22:14:45 +1100 (AEDT)
-Date: Tue, 24 Jan 2017 12:14:28 +0100
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-To: <mark.marshall@omicronenergy.com>
-Cc: <computersforpeace@gmail.com>, <linux-mtd@lists.infradead.org>,
- <markmarshall14@gmail.com>, <raghav.dogra@nxp.com>, <leoyang.li@nxp.com>,
- <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>,
- <linuxppc-dev@lists.ozlabs.org>, <raghav@freescale.com>,
- <b44839@freescale.com>, <stable@vger.kernel.org>
-Subject: Re: [PATCH] mtd/ifc: Fix location of eccstat registers for IFC V1.0
-Message-ID: <20170124121428.46b4e789@bbrezillon>
-In-Reply-To: <1485255682-2373-1-git-send-email-mark.marshall@omicronenergy.com>
-References: <1485255682-2373-1-git-send-email-mark.marshall@omicronenergy.com>
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v77NT0syyzDqHy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 23:51:34 +1100 (AEDT)
+From: Darren Stevens <darren@stevens-zone.net>
+To: wsa@the-dreams.de, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>, R.T.Dickinson <rtd@a-eon.com>,
+ Pat Wall <pjwall@mac.com>, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 24 Jan 2017 12:51:16 +0000 (GMT)
+Message-ID: <497b0eb4324.3a9cb4bf@auth.smtp.1and1.co.uk>
+Subject: [PATCH] i2c/pasemi: Remove hardcoded bus numbers on smbus
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6d4cd53077b1d5af.97"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 24 Jan 2017 12:01:22 +0100
-<mark.marshall@omicronenergy.com> wrote:
+Warning: This is a message in MIME format. Your mail reader does
+not support MIME. Some parts of this message will be readable as
+plain text. To see the rest, you will need to upgrade your mail
+reader. Following are some URLs where you can find MIME-capable
+mail programs for common platforms:
 
-> From: Mark Marshall <mark.marshall@omicronenergy.com>
-> 
-> The commit 7a654172161c ("mtd/ifc: Add support for IFC controller
-> version 2.0") added support for version 2.0 of the IFC controller.
-> The version 2.0 controller has the ECC status registers at a different
-> location to the previous versions.  This broke the code for IFC all
-> versions less than 2.0.
-> 
-> Correct the fsl_ifc_nand structure so that the ECC status can be read
-> from the correct location for both version 1.0 and 2.0 of the controller.
-> 
-> Cc: stable@vger.kernel.org
+  AmigaOS...........: http://yam.ch/
+  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
 
-Fixes: 7a654172161c ("mtd/ifc: Add support for IFC controller version 2.0")
+General information about MIME can be found at:
+http://en.wikipedia.org/wiki/MIME
 
-> Signed-off-by: Mark Marshall <mark.marshall@omicronenergy.com>
-> ---
->  drivers/mtd/nand/fsl_ifc_nand.c | 5 ++++-
->  include/linux/fsl_ifc.h         | 8 ++++++--
->  2 files changed, 10 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
-> index 0a177b1..123c0f8 100644
-> --- a/drivers/mtd/nand/fsl_ifc_nand.c
-> +++ b/drivers/mtd/nand/fsl_ifc_nand.c
-> @@ -260,7 +260,10 @@ static void fsl_ifc_run_command(struct mtd_info *mtd)
->  		int sector_end = sector + chip->ecc.steps - 1;
->  
->  		for (i = sector / 4; i <= sector_end / 4; i++)
-> -			eccstat[i] = ifc_in32(&ifc->ifc_nand.nand_eccstat[i]);
-> +			eccstat[i] = ifc_in32(
-> +				(ctrl->version >= FSL_IFC_VERSION_2_0_0) ?
-> +				&ifc->ifc_nand.v2_nand_eccstat[i] :
-> +				&ifc->ifc_nand.v1_nand_eccstat[i]);
+----=_BOUNDARY.6d4cd53077b1d5af.97
+Content-Type: text/plain
 
-I'm nitpicking, but how about doing the following to improve
-readability:
+The pasemi smbus controller uses PCI_FUNC(dev->devfn) to define which
+number bus to attach to, however this fails when something else is 
+probed first, for example an ATI Radeon graphics card will claim 9 or
+10 busses, including the ones the pasemi wants.
+Patch the driver to call i2c_add_adapter rather than
+i2c_add_numbered_adapter.
 
-		__be32 *eccstat_regs;
+Signed-off-by: Darren Stevens <darren@stevens-zone.net>
 
-		if (ctrl->version >= FSL_IFC_VERSION_2_0_0)
-			eccstat_regs = &ifc->ifc_nand.v2_nand_eccstat;
-		else
-			eccstat_regs = &ifc->ifc_nand.v1_nand_eccstat;
+---
 
-		for (i = sector / 4; i <= sector_end / 4; i++)
-			eccstat[i] = ifc_in32(&eccstat_regs[i]);
+----=_BOUNDARY.6d4cd53077b1d5af.97
+Content-Type: text/plain;
+	name="i2c.patch"
+Content-Disposition: attachment;
+	filename="i2c.patch";
+	size=826
 
->  
->  		for (i = sector; i <= sector_end; i++) {
->  			errors = check_read_ecc(mtd, ctrl, eccstat, i);
-> diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
-> index 3f9778c..c332f0a 100644
-> --- a/include/linux/fsl_ifc.h
-> +++ b/include/linux/fsl_ifc.h
-> @@ -733,8 +733,12 @@ struct fsl_ifc_nand {
->  	__be32 nand_erattr1;
->  	u32 res19[0x10];
->  	__be32 nand_fsr;
-> -	u32 res20[0x3];
-> -	__be32 nand_eccstat[6];
-> +	u32 res20;
-> +	/* The V1 nand_eccstat is actually 4 words that overlaps the
-> +	 * V2 nand_eccstat.
-> +	 */
-> +	__be32 v1_nand_eccstat[2];
-> +	__be32 v2_nand_eccstat[6];
->  	u32 res21[0x1c];
->  	__be32 nanndcr;
->  	u32 res22[0x2];
+diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi.c
+index df1dbc9..05847fd 100644
+--- a/drivers/i2c/busses/i2c-pasemi.c
++++ b/drivers/i2c/busses/i2c-pasemi.c
+@@ -365,7 +365,6 @@ static int pasemi_smb_probe(struct pci_dev *dev,
+ 	smbus->adapter.class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+ 	smbus->adapter.algo = &smbus_algorithm;
+ 	smbus->adapter.algo_data = smbus;
+-	smbus->adapter.nr = PCI_FUNC(dev->devfn);
+ 
+ 	/* set up the sysfs linkage to our parent device */
+ 	smbus->adapter.dev.parent = &dev->dev;
+@@ -373,7 +372,7 @@ static int pasemi_smb_probe(struct pci_dev *dev,
+ 	reg_write(smbus, REG_CTL, (CTL_MTR | CTL_MRR |
+ 		  (CLK_100K_DIV & CTL_CLK_M)));
+ 
+-	error = i2c_add_numbered_adapter(&smbus->adapter);
++	error = i2c_add_adapter(&smbus->adapter);
+ 	if (error)
+ 		goto out_release_region;
+ 
+
+----=_BOUNDARY.6d4cd53077b1d5af.97--
