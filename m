@@ -1,16 +1,28 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
+ [IPv6:2607:f8b0:4003:c0f::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6ytl2xWqzDqH1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 17:28:45 +1100 (AEDT)
-From: Thomas Huth <thuth@redhat.com>
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ibmveth: Add a proper check for the availability of the
- checksum features
-Date: Tue, 24 Jan 2017 07:28:41 +0100
-Message-Id: <1485239321-14947-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v73FX1p2xzDqRN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 20:45:20 +1100 (AEDT)
+Received: by mail-ot0-x241.google.com with SMTP id 65so18839666otq.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 01:45:20 -0800 (PST)
+MIME-Version: 1.0
+Sender: arndbergmann@gmail.com
+In-Reply-To: <87pojd9e5l.fsf@concordia.ellerman.id.au>
+References: <20170121120339.1c774b28@kryten> <20170121204948.742f89bf@kryten>
+ <87pojd9e5l.fsf@concordia.ellerman.id.au>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 24 Jan 2017 10:45:17 +0100
+Message-ID: <CAK8P3a34TqLGybCKMivu6jt38mY9yXD_6bYah8DH1+a86SpRQQ@mail.gmail.com>
+Subject: Re: BUILD_BUG_ON(!__builtin_constant_p(feature)) breaks bcc trace tool
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using the ibmveth driver in a KVM/QEMU based VM, it currently
-always prints out a scary error message like this when it is started:
+On Tue, Jan 24, 2017 at 7:15 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
 
- ibmveth 71000003 (unregistered net_device): unable to change
- checksum offload settings. 1 rc=-2 ret_attr=71000003
+> Hmm, in fact it seems because we don't define
+> CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING and CONFIG_OPTIMIZE_INLINING, we
+> get:
+>
+> #define inline          inline          __attribute__((always_inline)) notrace
+>
+> So in fact every inline function is marked always_inline all the time,
+> which seems dubious.
+>
+> But still, it seems clang is ignoring always_inline.
 
-This happens because the driver always tries to enable the checksum
-offloading without checking for the availability of this feature first.
-QEMU does not support checksum offloading for the spapr-vlan device,
-thus we always get the error message here.
-According to the LoPAPR specification, the "ibm,illan-options" property
-of the corresponding device tree node should be checked first to see
-whether the H_ILLAN_ATTRIUBTES hypercall and thus the checksum offloading
-feature is available. Thus let's do this in the ibmveth driver, too, so
-that the error message is really only limited to cases where something
-goes wrong, and does not occur if the feature is just missing.
+I think the problem is that __builtin_constant_p() is usually false on
+clang, at least for arguments
+that are not constant pointers.
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index a831f94..309f5c6 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1601,8 +1601,11 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- 	netdev->netdev_ops = &ibmveth_netdev_ops;
- 	netdev->ethtool_ops = &netdev_ethtool_ops;
- 	SET_NETDEV_DEV(netdev, &dev->dev);
--	netdev->hw_features = NETIF_F_SG | NETIF_F_RXCSUM |
--		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
-+	netdev->hw_features = NETIF_F_SG;
-+	if (vio_get_attribute(dev, "ibm,illan-options", NULL) != NULL) {
-+		netdev->hw_features |= NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
-+				       NETIF_F_RXCSUM;
-+	}
- 
- 	netdev->features |= netdev->hw_features;
- 
--- 
-1.8.3.1
+    Arnd
