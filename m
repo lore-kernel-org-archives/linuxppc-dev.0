@@ -1,19 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v74380m1CzDqRL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 21:21:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v74N06Km8zDqJh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 21:36:00 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Joel Stanley  <joel@jms.id.au>,
- stewart@linux.vnet.ibm.com  <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Validate memcons descriptor and output
- buffer
-In-Reply-To: <1484783570-6298-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1484783570-6298-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Date: Tue, 24 Jan 2017 21:21:22 +1100
-Message-ID: <87d1fcahct.fsf@concordia.ellerman.id.au>
+To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
+Cc: Pat Wall <pjwall@mac.com>, "R.T.Dickinson" <rtd@a-eon.com>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: [PATCH v2] powerpc/pasemi: Remove hardcoded bus numbers on smbus
+In-Reply-To: <49760dd87cb.596db16f@auth.smtp.1and1.co.uk>
+References: <49760dd87cb.596db16f@auth.smtp.1and1.co.uk>
+Date: Tue, 24 Jan 2017 21:35:59 +1100
+Message-ID: <877f5kagog.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,31 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+Darren Stevens <darren@stevens-zone.net> writes:
+> The pasemi smbus controller uses PCI_FUNC(dev->devfn) to define which
+> number bus to attach to, however this fails when something else is 
+> probed first, for example an ATI Radeon graphics card will claim 9 or
+> 10 busses, including the ones the pasemi wants.
+> Patch the driver to call i2c_add_adapter rather than
+> i2c_add_numbered_adapter.
 
-> Currently, it's assumed that memcons and its output buffer are included
-> in the linear mapping. It's not true when "mem=384M" is included in
-> bootargs. The system runs into kernel crash eventually.
->
->    # od -x /proc/device-tree/ibm,opal/ibm,opal-memcons
->    0000000 0000 0000 0b30 0010
->    0000010
->
-> This validates memcons descriptor and its output buffer to ensure they
-> are valid in linear mapping. Otherwise, the interface won't be populated
-> to avoid kernel crash during system boot.
->
-> Cc: stable@vger.kernel.org #3.15+
-> Fixes: bfc36894a48 ("powerpc/powernv: Add OPAL message log interface")
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+This is an i2c patch so the subject should be something like:
 
-Hmm.
+i2c/pasemi: Remove hardcoded bus numbers on smbus
 
-Arguably the memcons shouldn't be in the linear map at all.
+And it should be sent to:
 
-AFAICS the kernel only ever reads from it, so really it should be
-explicitly mapped, and mapped read only.
-
-That would also fix this problem :D
+wsa@the-dreams.de
+linux-i2c@vger.kernel.org
+linuxppc-dev@lists.ozlabs.org
+linux-kernel@vger.kernel.org
 
 cheers
