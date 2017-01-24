@@ -1,22 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v6ybr5ZTCzDqGr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 17:15:52 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v6ytl2xWqzDqH1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 17:28:45 +1100 (AEDT)
+From: Thomas Huth <thuth@redhat.com>
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, netdev@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: BUILD_BUG_ON(!__builtin_constant_p(feature)) breaks bcc trace tool
-In-Reply-To: <20170121204948.742f89bf@kryten>
-References: <20170121120339.1c774b28@kryten> <20170121204948.742f89bf@kryten>
-Date: Tue, 24 Jan 2017 17:15:50 +1100
-Message-ID: <87pojd9e5l.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Subject: [PATCH] ibmveth: Add a proper check for the availability of the
+ checksum features
+Date: Tue, 24 Jan 2017 07:28:41 +0100
+Message-Id: <1485239321-14947-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> writes:
->> We added:
->> 
->> BUILD_BUG_ON(!__builtin_constant_p(feature)) 
->> 
->> to cpu_has_feature() and mmu_has_feature() in order to catch usage
->> issues (such as cpu_has_feature(cpu_has_feature(X)). Unfortunately
->> LLVM isn't smart enough to resolve this, and it errors out.
->> 
->> I work around it in my clang/LLVM builds of the kernel, but I have
->> just discovered that it causes a lot of issues for the bcc (eBPF)
->> trace tool (which uses LLVM).
->> 
->> How should we work around this? Wrap the checks in !clang perhaps?
->
-> Looks like it's a weakness in LLVM with inlining:
->
-> #include <assert.h>
->
-> #if 1
-> static inline void foo(unsigned long x)
-> {
->         assert(__builtin_constant_p(x));
-> }
-> #else
-> #define foo(X) assert(__builtin_constant_p(X))
-> #endif
->
-> int main(void)
-> {
->         foo(1);
->
->         return 0;
-> }
+When using the ibmveth driver in a KVM/QEMU based VM, it currently
+always prints out a scary error message like this when it is started:
 
-OK. cpu_has_feature() is __always_inline:
+ ibmveth 71000003 (unregistered net_device): unable to change
+ checksum offload settings. 1 rc=-2 ret_attr=71000003
 
-static __always_inline bool cpu_has_feature(unsigned long feature)
-{
-	int i;
+This happens because the driver always tries to enable the checksum
+offloading without checking for the availability of this feature first.
+QEMU does not support checksum offloading for the spapr-vlan device,
+thus we always get the error message here.
+According to the LoPAPR specification, the "ibm,illan-options" property
+of the corresponding device tree node should be checked first to see
+whether the H_ILLAN_ATTRIUBTES hypercall and thus the checksum offloading
+feature is available. Thus let's do this in the ibmveth driver, too, so
+that the error message is really only limited to cases where something
+goes wrong, and does not occur if the feature is just missing.
 
-	BUILD_BUG_ON(!__builtin_constant_p(feature));
+Signed-off-by: Thomas Huth <thuth@redhat.com>
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-
-But I guess even that doesn't work?
-
-Hmm, in fact it seems because we don't define
-CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING and CONFIG_OPTIMIZE_INLINING, we
-get:
-
-#define inline		inline		__attribute__((always_inline)) notrace
-
-So in fact every inline function is marked always_inline all the time,
-which seems dubious.
-
-But still, it seems clang is ignoring always_inline.
-
-cheers
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index a831f94..309f5c6 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1601,8 +1601,11 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 	netdev->netdev_ops = &ibmveth_netdev_ops;
+ 	netdev->ethtool_ops = &netdev_ethtool_ops;
+ 	SET_NETDEV_DEV(netdev, &dev->dev);
+-	netdev->hw_features = NETIF_F_SG | NETIF_F_RXCSUM |
+-		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
++	netdev->hw_features = NETIF_F_SG;
++	if (vio_get_attribute(dev, "ibm,illan-options", NULL) != NULL) {
++		netdev->hw_features |= NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
++				       NETIF_F_RXCSUM;
++	}
+ 
+ 	netdev->features |= netdev->hw_features;
+ 
+-- 
+1.8.3.1
