@@ -1,27 +1,31 @@
-Return-Path: <BATV+aedd8ced9e3963eed800+4902+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7Ccr2VmBzDqLv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 03:02:36 +1100 (AEDT)
-Date: Tue, 24 Jan 2017 17:02:24 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Kishon Vijay Abraham I <kishon@ti.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
- Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
-Subject: Re: [PATCH 31/37] misc: Add host side pci driver for pci test
- function device
-Message-ID: <20170124160224.GA23528@infradead.org>
-References: <1484216786-17292-1-git-send-email-kishon@ti.com>
- <1484216786-17292-32-git-send-email-kishon@ti.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.184])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7Ct14ZNrzDqRV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 03:14:01 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>, "Benjamin
+ Herrenschmidt" <benh@au1.ibm.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>, "daniel@iogearbox.net"
+ <daniel@iogearbox.net>, "ast@fb.com" <ast@fb.com>, Madhavan Srinivasan
+ <maddy@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: RE: [PATCH 3/3] powerpc: bpf: implement in-register swap for 64-bit
+ endian operations
+Date: Tue, 24 Jan 2017 16:13:52 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB026CE48@AcuExch.aculab.com>
+References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
+ <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
+ <20170113175201.GD3470@naverao1-tp.localdomain>
+ <1484492458.11927.17.camel@au1.ibm.com>
+ <20170123192227.GE3820@naverao1-tp.localdomain>
+In-Reply-To: <20170123192227.GE3820@naverao1-tp.localdomain>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1484216786-17292-32-git-send-email-kishon@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 12, 2017 at 03:56:20PM +0530, Kishon Vijay Abraham I wrote:
-> Add PCI endpoint test driver that can verify base address
-> register, legacy interrupt/MSI interrupt and read/write/copy
-> buffers between host and device. The corresponding pci-epf-test
-> function driver should be used on the EP side.
+From: 'Naveen N. Rao'
+> Sent: 23 January 2017 19:22
+> On 2017/01/15 09:00AM, Benjamin Herrenschmidt wrote:
+> > On Fri, 2017-01-13 at 23:22 +0530, 'Naveen N. Rao' wrote:
+> > > > That rather depends on whether the processor has a store to load fo=
+rwarder
+> > > > that will satisfy the read from the store buffer.
+> > > > I don't know about ppc, but at least some x86 will do that.
+> > >
+> > > Interesting - good to know that.
+> > >
+> > > However, I don't think powerpc does that and in-register swap is like=
+ly
+> > > faster regardless. Note also that gcc prefers this form at higher
+> > > optimization levels.
+> >
+> > Of course powerpc has a load-store forwarder these days, however, I
+> > wouldn't be surprised if the in-register form was still faster on some
+> > implementations, but this needs to be tested.
+>=20
+> Thanks for clarifying! To test this, I wrote a simple (perhaps naive)
+> test that just issues a whole lot of endian swaps and in _that_ test, it
+> does look like the load-store forwarder is doing pretty well.
+...
+> This is all in a POWER8 vm. On POWER7, the in-register variant is around
+> 4 times faster than the ldbrx variant.
+...
 
-Just curious:  what would you think of a text based (e.g. debugfs)
-interface to avoid the need for a userspace tool here?
+I wonder which is faster on the little 1GHz embedded ppc we use here.
 
-> +static const struct pci_device_id pci_endpoint_test_tbl[] = {
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_ANY_ID) },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(pci, pci_endpoint_test_tbl);
-
-Also this looks really odd, and dangerous.  Probing for any
-TI device will bind to all kinds of legit devices.  It would
-be good if you could squeeze out a single id for this device
-out of the TI group responsible for allocating it.  Otherwise
-we might try some other venues, e.g. Red Hat through Qumranet
-has PCI IDs available for virtio, which might have some left
-for other Linux uses.
-
-In general I fear the PCI ID allocation will become a worse
-and worse issue once your framework goes in and we'll grow
-more PCI device models in the kernel.
+	David
