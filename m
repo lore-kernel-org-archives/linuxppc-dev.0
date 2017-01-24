@@ -1,51 +1,33 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
+ [IPv6:2607:f8b0:400c:c08::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7GVN4tsqzDqGV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 05:12:12 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0OI3cWZ184177
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 13:12:10 -0500
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28607k6kg8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 13:12:09 -0500
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Tue, 24 Jan 2017 23:42:03 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7FCC61258065
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 23:43:42 +0530 (IST)
-Received: from d28av06.in.ibm.com (d28av06.in.ibm.com [9.184.220.48])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0OIC1Wk34865400
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 23:42:01 +0530
-Received: from d28av06.in.ibm.com (localhost [127.0.0.1])
- by d28av06.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0OIC07w003340
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 23:42:01 +0530
-Subject: Re: [PATCH v4 2/5] ia64: reuse append_elf_note() and final_note()
- functions
-To: fenghua.yu@intel.com, tony.luck@intel.com, linux-ia64@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7Glh4sZLzDqGv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 05:23:44 +1100 (AEDT)
+Received: by mail-ua0-x243.google.com with SMTP id f2so17124610uaf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 10:23:44 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <0748026f-a459-9022-3658-a75cb0633f40@linux.vnet.ibm.com>
 References: <148363729327.11570.6244765717789390817.stgit@hbathini.in.ibm.com>
  <148363740554.11570.4870634597647436827.stgit@hbathini.in.ibm.com>
  <20170106020324.GB2863@dhcp-128-65.nay.redhat.com>
  <38a7807c-cd95-670d-30d3-c45e7921ea11@linux.vnet.ibm.com>
-Cc: Dave Young <dyoung@redhat.com>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+ <0748026f-a459-9022-3658-a75cb0633f40@linux.vnet.ibm.com>
+From: Tony Luck <tony.luck@gmail.com>
+Date: Tue, 24 Jan 2017 10:23:41 -0800
+Message-ID: <CA+8MBb+g604VGLLibB+eOAtF_h1r5mYJRdjaGE8UgWQ+JPGDdg@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] ia64: reuse append_elf_note() and final_note()
+ functions
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: "Yu, Fenghua" <fenghua.yu@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Dave Young <dyoung@redhat.com>, kexec-ml <kexec@lists.infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
  Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- vgoyal@redhat.com
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Date: Tue, 24 Jan 2017 23:41:59 +0530
-MIME-Version: 1.0
-In-Reply-To: <38a7807c-cd95-670d-30d3-c45e7921ea11@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <0748026f-a459-9022-3658-a75cb0633f40@linux.vnet.ibm.com>
+ "vgoyal@redhat.com" <vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,200 +37,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jan 24, 2017 at 10:11 AM, Hari Bathini
+<hbathini@linux.vnet.ibm.com> wrote:
 
-
-On Tuesday 17 January 2017 10:36 PM, Hari Bathini wrote:
+> Hello IA64 folks,
 >
->
-> On Friday 06 January 2017 07:33 AM, Dave Young wrote:
->> On 01/05/17 at 11:01pm, Hari Bathini wrote:
->>> Get rid of multiple definitions of append_elf_note() & final_note()
->>> functions. Reuse these functions compiled under CONFIG_CRASH_CORE
->>> Also, define Elf_Word and use it instead of generic u32 or the more
->>> specific Elf64_Word.
->>>
->>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
->>> ---
->>>
->>> Changes from v3:
->>> * Dropped hard-coded values and used DIV_ROUND_UP().
->>>
->>> Changes from v2:
->>> * Added a definition for Elf_Word.
->>> * Used IA64 version of append_elf_note() and final_note() functions.
->>>
->>>
->>>   arch/ia64/kernel/crash.c   |   22 ----------------------
->>>   include/linux/crash_core.h |    4 ++++
->>>   include/linux/elf.h        |    2 ++
->>>   kernel/crash_core.c        |   34 ++++++++++++++--------------------
->>>   kernel/kexec_core.c        |   28 ----------------------------
->>>   5 files changed, 20 insertions(+), 70 deletions(-)
->>>
->>> diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
->>> index 2955f35..75859a0 100644
->>> --- a/arch/ia64/kernel/crash.c
->>> +++ b/arch/ia64/kernel/crash.c
->>> @@ -27,28 +27,6 @@ static int kdump_freeze_monarch;
->>>   static int kdump_on_init = 1;
->>>   static int kdump_on_fatal_mca = 1;
->>>   -static inline Elf64_Word
->>> -*append_elf_note(Elf64_Word *buf, char *name, unsigned type, void 
->>> *data,
->>> -        size_t data_len)
->>> -{
->>> -    struct elf_note *note = (struct elf_note *)buf;
->>> -    note->n_namesz = strlen(name) + 1;
->>> -    note->n_descsz = data_len;
->>> -    note->n_type   = type;
->>> -    buf += (sizeof(*note) + 3)/4;
->>> -    memcpy(buf, name, note->n_namesz);
->>> -    buf += (note->n_namesz + 3)/4;
->>> -    memcpy(buf, data, data_len);
->>> -    buf += (data_len + 3)/4;
->>> -    return buf;
->>> -}
->>> -
->>> -static void
->>> -final_note(void *buf)
->>> -{
->>> -    memset(buf, 0, sizeof(struct elf_note));
->>> -}
->>> -
->>>   extern void ia64_dump_cpu_regs(void *);
->>>     static DEFINE_PER_CPU(struct elf_prstatus, elf_prstatus);
->>> diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
->>> index 18d0f94..541a197 100644
->>> --- a/include/linux/crash_core.h
->>> +++ b/include/linux/crash_core.h
->>> @@ -55,6 +55,10 @@ extern u32 vmcoreinfo_note[VMCOREINFO_NOTE_SIZE/4];
->>>   extern size_t vmcoreinfo_size;
->>>   extern size_t vmcoreinfo_max_size;
->>>   +Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int 
->>> type,
->>> +              void *data, size_t data_len);
->>> +void final_note(Elf_Word *buf);
->>> +
->>>   int __init parse_crashkernel(char *cmdline, unsigned long long 
->>> system_ram,
->>>           unsigned long long *crash_size, unsigned long long 
->>> *crash_base);
->>>   int parse_crashkernel_high(char *cmdline, unsigned long long 
->>> system_ram,
->>> diff --git a/include/linux/elf.h b/include/linux/elf.h
->>> index 20fa8d8..ba069e8 100644
->>> --- a/include/linux/elf.h
->>> +++ b/include/linux/elf.h
->>> @@ -29,6 +29,7 @@ extern Elf32_Dyn _DYNAMIC [];
->>>   #define elf_note    elf32_note
->>>   #define elf_addr_t    Elf32_Off
->>>   #define Elf_Half    Elf32_Half
->>> +#define Elf_Word    Elf32_Word
->>>     #else
->>>   @@ -39,6 +40,7 @@ extern Elf64_Dyn _DYNAMIC [];
->>>   #define elf_note    elf64_note
->>>   #define elf_addr_t    Elf64_Off
->>>   #define Elf_Half    Elf64_Half
->>> +#define Elf_Word    Elf64_Word
->>>     #endif
->>>   diff --git a/kernel/crash_core.c b/kernel/crash_core.c
->>> index 80b441d..362dace 100644
->>> --- a/kernel/crash_core.c
->>> +++ b/kernel/crash_core.c
->>> @@ -291,32 +291,26 @@ int __init parse_crashkernel_low(char *cmdline,
->>>                   "crashkernel=", suffix_tbl[SUFFIX_LOW]);
->>>   }
->>>   -static u32 *append_elf_note(u32 *buf, char *name, unsigned int type,
->>> -                void *data, size_t data_len)
->>> +Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int 
->>> type,
->>> +              void *data, size_t data_len)
->>>   {
->>> -    struct elf_note note;
->>> -
->>> -    note.n_namesz = strlen(name) + 1;
->>> -    note.n_descsz = data_len;
->>> -    note.n_type   = type;
->>> -    memcpy(buf, &note, sizeof(note));
->>> -    buf += (sizeof(note) + 3)/4;
->>> -    memcpy(buf, name, note.n_namesz);
->>> -    buf += (note.n_namesz + 3)/4;
->>> -    memcpy(buf, data, note.n_descsz);
->>> -    buf += (note.n_descsz + 3)/4;
->>> +    struct elf_note *note = (struct elf_note *)buf;
->>> +
->>> +    note->n_namesz = strlen(name) + 1;
->>> +    note->n_descsz = data_len;
->>> +    note->n_type   = type;
->>> +    buf += DIV_ROUND_UP(sizeof(*note), sizeof(Elf_Word));
->>> +    memcpy(buf, name, note->n_namesz);
->>> +    buf += DIV_ROUND_UP(note->n_namesz, sizeof(Elf_Word));
->>> +    memcpy(buf, data, data_len);
->>> +    buf += DIV_ROUND_UP(data_len, sizeof(Elf_Word));
->>>         return buf;
->>>   }
->>>   -static void final_note(u32 *buf)
->>> +void final_note(Elf_Word *buf)
->>>   {
->>> -    struct elf_note note;
->>> -
->>> -    note.n_namesz = 0;
->>> -    note.n_descsz = 0;
->>> -    note.n_type   = 0;
->>> -    memcpy(buf, &note, sizeof(note));
->>> +    memset(buf, 0, sizeof(struct elf_note));
->>>   }
->>>     static void update_vmcoreinfo_note(void)
->>> diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
->>> index 2179a16..263d764 100644
->>> --- a/kernel/kexec_core.c
->>> +++ b/kernel/kexec_core.c
->>> @@ -990,34 +990,6 @@ int crash_shrink_memory(unsigned long new_size)
->>>       return ret;
->>>   }
->>>   -static u32 *append_elf_note(u32 *buf, char *name, unsigned type, 
->>> void *data,
->>> -                size_t data_len)
->>> -{
->>> -    struct elf_note note;
->>> -
->>> -    note.n_namesz = strlen(name) + 1;
->>> -    note.n_descsz = data_len;
->>> -    note.n_type   = type;
->>> -    memcpy(buf, &note, sizeof(note));
->>> -    buf += (sizeof(note) + 3)/4;
->>> -    memcpy(buf, name, note.n_namesz);
->>> -    buf += (note.n_namesz + 3)/4;
->>> -    memcpy(buf, data, note.n_descsz);
->>> -    buf += (note.n_descsz + 3)/4;
->>> -
->>> -    return buf;
->>> -}
->>> -
->>> -static void final_note(u32 *buf)
->>> -{
->>> -    struct elf_note note;
->>> -
->>> -    note.n_namesz = 0;
->>> -    note.n_descsz = 0;
->>> -    note.n_type   = 0;
->>> -    memcpy(buf, &note, sizeof(note));
->>> -}
->>> -
->>>   void crash_save_cpu(struct pt_regs *regs, int cpu)
->>>   {
->>>       struct elf_prstatus prstatus;
->>>
->> It looks good to me. But better to have words from IA64 people as well.
->>
->>
->
-> Can someone from IA64 arch review this please?
->
+> Could you please review this patch..?
 
-Hello IA64 folks,
+It looks OK in principal.  My lab is in partial disarray at the
+moment (just got back from a sabbatical) so I can't test
+build and boot. Have you cross-compiled it (or gotten a success
+build report from zero-day)?
 
-Could you please review this patch..?
+If you have ... then add an Acked-by: Tony Luck <tony.luck@intel.com>
 
-Thanks
-Hari
+-Tony
