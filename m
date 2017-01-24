@@ -1,49 +1,21 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v74dZ2p8yzDqHh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 21:47:46 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0OAhZ7d122405
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 05:47:44 -0500
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 285ee5e4v8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 05:47:43 -0500
-Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 24 Jan 2017 16:17:39 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 147B3E0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 16:18:50 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0OAkhGW31326420
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 16:16:43 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0OAlY0J027855
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 16:17:36 +0530
-Date: Tue, 24 Jan 2017 16:17:34 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: BUILD_BUG_ON(!__builtin_constant_p(feature)) breaks bcc trace tool
-References: <20170121120339.1c774b28@kryten>
- <87sho99fye.fsf@concordia.ellerman.id.au>
+Return-Path: <boris.brezillon@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3v75Dj5J5PzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 22:14:45 +1100 (AEDT)
+Date: Tue, 24 Jan 2017 12:14:28 +0100
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+To: <mark.marshall@omicronenergy.com>
+Cc: <computersforpeace@gmail.com>, <linux-mtd@lists.infradead.org>,
+ <markmarshall14@gmail.com>, <raghav.dogra@nxp.com>, <leoyang.li@nxp.com>,
+ <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <raghav@freescale.com>,
+ <b44839@freescale.com>, <stable@vger.kernel.org>
+Subject: Re: [PATCH] mtd/ifc: Fix location of eccstat registers for IFC V1.0
+Message-ID: <20170124121428.46b4e789@bbrezillon>
+In-Reply-To: <1485255682-2373-1-git-send-email-mark.marshall@omicronenergy.com>
+References: <1485255682-2373-1-git-send-email-mark.marshall@omicronenergy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87sho99fye.fsf@concordia.ellerman.id.au>
-Message-Id: <20170124104734.GG3820@naverao1-tp.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,65 +25,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2017/01/24 04:36PM, Michael Ellerman wrote:
-> Anton Blanchard <anton@samba.org> writes:
-> > We added:
-> >
-> > BUILD_BUG_ON(!__builtin_constant_p(feature)) 
-> >
-> > to cpu_has_feature() and mmu_has_feature() in order to catch usage
-> > issues (such as cpu_has_feature(cpu_has_feature(X)). Unfortunately LLVM
-> > isn't smart enough to resolve this, and it errors out.
-> >
-> > I work around it in my clang/LLVM builds of the kernel, but I have just
-> > discovered that it causes a lot of issues for the bcc (eBPF) trace tool
-> > (which uses LLVM).
-> 
-> I didn't understand that part, but Aneesh explained to me that it's
-> because bcc pulls in the kernel-internal headers.
-> 
-> I guess as a quick fix we just have to #ifdef it, can you confirm this
-> works?
+On Tue, 24 Jan 2017 12:01:22 +0100
+<mark.marshall@omicronenergy.com> wrote:
 
-This works and solves the issue for me. In the absence of a better 
-approach, can you please push this for v4.10?
+> From: Mark Marshall <mark.marshall@omicronenergy.com>
+> 
+> The commit 7a654172161c ("mtd/ifc: Add support for IFC controller
+> version 2.0") added support for version 2.0 of the IFC controller.
+> The version 2.0 controller has the ECC status registers at a different
+> location to the previous versions.  This broke the code for IFC all
+> versions less than 2.0.
+> 
+> Correct the fsl_ifc_nand structure so that the ECC status can be read
+> from the correct location for both version 1.0 and 2.0 of the controller.
+> 
+> Cc: stable@vger.kernel.org
 
-Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Fixes: 7a654172161c ("mtd/ifc: Add support for IFC controller version 2.0")
 
-Thanks,
-Naveen
+> Signed-off-by: Mark Marshall <mark.marshall@omicronenergy.com>
+> ---
+>  drivers/mtd/nand/fsl_ifc_nand.c | 5 ++++-
+>  include/linux/fsl_ifc.h         | 8 ++++++--
+>  2 files changed, 10 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
+> index 0a177b1..123c0f8 100644
+> --- a/drivers/mtd/nand/fsl_ifc_nand.c
+> +++ b/drivers/mtd/nand/fsl_ifc_nand.c
+> @@ -260,7 +260,10 @@ static void fsl_ifc_run_command(struct mtd_info *mtd)
+>  		int sector_end = sector + chip->ecc.steps - 1;
+>  
+>  		for (i = sector / 4; i <= sector_end / 4; i++)
+> -			eccstat[i] = ifc_in32(&ifc->ifc_nand.nand_eccstat[i]);
+> +			eccstat[i] = ifc_in32(
+> +				(ctrl->version >= FSL_IFC_VERSION_2_0_0) ?
+> +				&ifc->ifc_nand.v2_nand_eccstat[i] :
+> +				&ifc->ifc_nand.v1_nand_eccstat[i]);
 
-> 
-> 
-> diff --git a/arch/powerpc/include/asm/cpu_has_feature.h b/arch/powerpc/include/asm/cpu_has_feature.h
-> index b312b152461b..6e834caa3720 100644
-> --- a/arch/powerpc/include/asm/cpu_has_feature.h
-> +++ b/arch/powerpc/include/asm/cpu_has_feature.h
-> @@ -23,7 +23,9 @@ static __always_inline bool cpu_has_feature(unsigned long feature)
->  {
->  	int i;
-> 
-> +#ifndef __clang__ /* clang can't cope with this */
->  	BUILD_BUG_ON(!__builtin_constant_p(feature));
-> +#endif
-> 
->  #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG
->  	if (!static_key_initialized) {
-> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-> index a34c764ca8dd..233a7e8cc8e3 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -160,7 +160,9 @@ static __always_inline bool mmu_has_feature(unsigned long feature)
->  {
->  	int i;
-> 
-> +#ifndef __clang__ /* clang can't cope with this */
->  	BUILD_BUG_ON(!__builtin_constant_p(feature));
-> +#endif
-> 
->  #ifdef CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG
->  	if (!static_key_initialized) {
-> 
-> 
-> cheers
-> 
+I'm nitpicking, but how about doing the following to improve
+readability:
+
+		__be32 *eccstat_regs;
+
+		if (ctrl->version >= FSL_IFC_VERSION_2_0_0)
+			eccstat_regs = &ifc->ifc_nand.v2_nand_eccstat;
+		else
+			eccstat_regs = &ifc->ifc_nand.v1_nand_eccstat;
+
+		for (i = sector / 4; i <= sector_end / 4; i++)
+			eccstat[i] = ifc_in32(&eccstat_regs[i]);
+
+>  
+>  		for (i = sector; i <= sector_end; i++) {
+>  			errors = check_read_ecc(mtd, ctrl, eccstat, i);
+> diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
+> index 3f9778c..c332f0a 100644
+> --- a/include/linux/fsl_ifc.h
+> +++ b/include/linux/fsl_ifc.h
+> @@ -733,8 +733,12 @@ struct fsl_ifc_nand {
+>  	__be32 nand_erattr1;
+>  	u32 res19[0x10];
+>  	__be32 nand_fsr;
+> -	u32 res20[0x3];
+> -	__be32 nand_eccstat[6];
+> +	u32 res20;
+> +	/* The V1 nand_eccstat is actually 4 words that overlaps the
+> +	 * V2 nand_eccstat.
+> +	 */
+> +	__be32 v1_nand_eccstat[2];
+> +	__be32 v2_nand_eccstat[6];
+>  	u32 res21[0x1c];
+>  	__be32 nanndcr;
+>  	u32 res22[0x2];
