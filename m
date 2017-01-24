@@ -1,28 +1,20 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
- [IPv6:2607:f8b0:4003:c0f::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v73FX1p2xzDqRN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 20:45:20 +1100 (AEDT)
-Received: by mail-ot0-x241.google.com with SMTP id 65so18839666otq.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 01:45:20 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v73W81RZpzDqRD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 20:57:08 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Greg Kurz <groug@kaod.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH] cxl: drop unused header asm/pnv-pci.h
+In-Reply-To: <148482301037.30441.14177888563610790803.stgit@bahia>
+References: <148482301037.30441.14177888563610790803.stgit@bahia>
+Date: Tue, 24 Jan 2017 20:57:06 +1100
+Message-ID: <87k29kaih9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <87pojd9e5l.fsf@concordia.ellerman.id.au>
-References: <20170121120339.1c774b28@kryten> <20170121204948.742f89bf@kryten>
- <87pojd9e5l.fsf@concordia.ellerman.id.au>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 24 Jan 2017 10:45:17 +0100
-Message-ID: <CAK8P3a34TqLGybCKMivu6jt38mY9yXD_6bYah8DH1+a86SpRQQ@mail.gmail.com>
-Subject: Re: BUILD_BUG_ON(!__builtin_constant_p(feature)) breaks bcc trace tool
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 24, 2017 at 7:15 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+Greg Kurz <groug@kaod.org> writes:
 
-> Hmm, in fact it seems because we don't define
-> CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING and CONFIG_OPTIMIZE_INLINING, we
-> get:
->
-> #define inline          inline          __attribute__((always_inline)) notrace
->
-> So in fact every inline function is marked always_inline all the time,
-> which seems dubious.
->
-> But still, it seems clang is ignoring always_inline.
+> The kernel API does not use anything from this header file.
 
-I think the problem is that __builtin_constant_p() is usually false on
-clang, at least for arguments
-that are not constant pointers.
+That's actually hard to prove in general, because pnv-pci.h includes
+linux/pci.h, linux/pci_hotplug.h, linux/irq.h, misc/cxl-base.h and
+asm/opal-api.h. At least four of which aren't included directly by
+api.c.
 
-    Arnd
+But I'll take you word for it :)
+
+cheers
+
+> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+> index 1b35e33d2434..bcc030eacab7 100644
+> --- a/drivers/misc/cxl/api.c
+> +++ b/drivers/misc/cxl/api.c
+> @@ -11,7 +11,6 @@
+>  #include <linux/slab.h>
+>  #include <linux/file.h>
+>  #include <misc/cxl.h>
+> -#include <asm/pnv-pci.h>
+>  #include <linux/msi.h>
+>  #include <linux/module.h>
+>  #include <linux/mount.h>
