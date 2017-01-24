@@ -1,25 +1,27 @@
-Return-Path: <groug@kaod.org>
-Received: from 6.mo69.mail-out.ovh.net (6.mo69.mail-out.ovh.net
- [46.105.50.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v79FG15PkzDqRP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 01:15:29 +1100 (AEDT)
-Received: from player798.ha.ovh.net (b7.ovh.net [213.186.33.57])
- by mo69.mail-out.ovh.net (Postfix) with ESMTP id 38CAF1803D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 12:48:11 +0100 (CET)
-Date: Tue, 24 Jan 2017 12:48:05 +0100
-From: Greg Kurz <groug@kaod.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Frederic
- Barrat <fbarrat@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH] cxl: drop unused header asm/pnv-pci.h
-Message-ID: <20170124124805.6b8e798f@bahia.lan>
-In-Reply-To: <87k29kaih9.fsf@concordia.ellerman.id.au>
-References: <148482301037.30441.14177888563610790803.stgit@bahia>
- <87k29kaih9.fsf@concordia.ellerman.id.au>
+Return-Path: <BATV+aedd8ced9e3963eed800+4902+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7Ccr2VmBzDqLv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 03:02:36 +1100 (AEDT)
+Date: Tue, 24 Jan 2017 17:02:24 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Joao Pinto <Joao.Pinto@synopsys.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@axis.com, linux-arm-msm@vger.kernel.org, nsekhar@ti.com
+Subject: Re: [PATCH 31/37] misc: Add host side pci driver for pci test
+ function device
+Message-ID: <20170124160224.GA23528@infradead.org>
+References: <1484216786-17292-1-git-send-email-kishon@ti.com>
+ <1484216786-17292-32-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1484216786-17292-32-git-send-email-kishon@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 24 Jan 2017 20:57:06 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Thu, Jan 12, 2017 at 03:56:20PM +0530, Kishon Vijay Abraham I wrote:
+> Add PCI endpoint test driver that can verify base address
+> register, legacy interrupt/MSI interrupt and read/write/copy
+> buffers between host and device. The corresponding pci-epf-test
+> function driver should be used on the EP side.
 
-> Greg Kurz <groug@kaod.org> writes:
-> 
-> > The kernel API does not use anything from this header file.  
-> 
-> That's actually hard to prove in general, because pnv-pci.h includes
-> linux/pci.h, linux/pci_hotplug.h, linux/irq.h, misc/cxl-base.h and
-> asm/opal-api.h. At least four of which aren't included directly by
-> api.c.
-> 
-> But I'll take you word for it :)
-> 
+Just curious:  what would you think of a text based (e.g. debugfs)
+interface to avoid the need for a userspace tool here?
 
-Sorry for the lack of details...
+> +static const struct pci_device_id pci_endpoint_test_tbl[] = {
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_ANY_ID) },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(pci, pci_endpoint_test_tbl);
 
-api.c doesn't do anything related to pci hotplug, nor to OPAL. This
-happens in pci.c.
+Also this looks really odd, and dangerous.  Probing for any
+TI device will bind to all kinds of legit devices.  It would
+be good if you could squeeze out a single id for this device
+out of the TI group responsible for allocating it.  Otherwise
+we might try some other venues, e.g. Red Hat through Qumranet
+has PCI IDs available for virtio, which might have some left
+for other Linux uses.
 
-It includes cxl.h which includes misc/cxl-base.h.
-
-The only generic irq bits are irq_hw_number_t, provided by linux/types.h,
-and irq_find_mapping(), provided by linux/irqdomain.h, which is included
-by misc/cxl-base.h -> linux/interrupt.h -> asm/irq.h.
-
-Cheers (and congrats :)
-
---
-Greg
-
-
-> cheers
-> 
-> > diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> > index 1b35e33d2434..bcc030eacab7 100644
-> > --- a/drivers/misc/cxl/api.c
-> > +++ b/drivers/misc/cxl/api.c
-> > @@ -11,7 +11,6 @@
-> >  #include <linux/slab.h>
-> >  #include <linux/file.h>
-> >  #include <misc/cxl.h>
-> > -#include <asm/pnv-pci.h>
-> >  #include <linux/msi.h>
-> >  #include <linux/module.h>
-> >  #include <linux/mount.h>  
+In general I fear the PCI ID allocation will become a worse
+and worse issue once your framework goes in and we'll grow
+more PCI device models in the kernel.
