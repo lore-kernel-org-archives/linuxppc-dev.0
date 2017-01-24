@@ -1,31 +1,22 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.184])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
+ [IPv6:2a00:1450:400c:c09::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7Ct14ZNrzDqRV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 03:14:01 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: "'Naveen N. Rao'" <naveen.n.rao@linux.vnet.ibm.com>, "Benjamin
- Herrenschmidt" <benh@au1.ibm.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>, "daniel@iogearbox.net"
- <daniel@iogearbox.net>, "ast@fb.com" <ast@fb.com>, Madhavan Srinivasan
- <maddy@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: RE: [PATCH 3/3] powerpc: bpf: implement in-register swap for 64-bit
- endian operations
-Date: Tue, 24 Jan 2017 16:13:52 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB026CE48@AcuExch.aculab.com>
-References: <e73efe6facf6c06932b4a87707e5978172ee773e.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <bb264395301754f43b77ddec68a16dd34220abb4.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6DB02635FB@AcuExch.aculab.com>
- <20170113175201.GD3470@naverao1-tp.localdomain>
- <1484492458.11927.17.camel@au1.ibm.com>
- <20170123192227.GE3820@naverao1-tp.localdomain>
-In-Reply-To: <20170123192227.GE3820@naverao1-tp.localdomain>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7CxH3N1tzDqCp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 03:16:51 +1100 (AEDT)
+Received: by mail-wm0-x22f.google.com with SMTP id c206so217470563wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 08:16:51 -0800 (PST)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ torvalds@linux-foundation.org, arnd@arndb.de, rusty@rustcorp.com.au,
+ jeyu@redhat.com, mpe@ellerman.id.au, viro@zeniv.linux.org.uk,
+ linux-arm-kernel@lists.infradead.org, linux@armlinux.org.uk,
+ linux-arch@vger.kernel.org, Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Subject: [PATCH v4 0/2] modversions: redefine kcrctab entries as 32-bit values
+Date: Tue, 24 Jan 2017 16:16:38 +0000
+Message-Id: <1485274600-21976-1-git-send-email-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: 'Naveen N. Rao'
-> Sent: 23 January 2017 19:22
-> On 2017/01/15 09:00AM, Benjamin Herrenschmidt wrote:
-> > On Fri, 2017-01-13 at 23:22 +0530, 'Naveen N. Rao' wrote:
-> > > > That rather depends on whether the processor has a store to load fo=
-rwarder
-> > > > that will satisfy the read from the store buffer.
-> > > > I don't know about ppc, but at least some x86 will do that.
-> > >
-> > > Interesting - good to know that.
-> > >
-> > > However, I don't think powerpc does that and in-register swap is like=
-ly
-> > > faster regardless. Note also that gcc prefers this form at higher
-> > > optimization levels.
-> >
-> > Of course powerpc has a load-store forwarder these days, however, I
-> > wouldn't be surprised if the in-register form was still faster on some
-> > implementations, but this needs to be tested.
->=20
-> Thanks for clarifying! To test this, I wrote a simple (perhaps naive)
-> test that just issues a whole lot of endian swaps and in _that_ test, it
-> does look like the load-store forwarder is doing pretty well.
-...
-> This is all in a POWER8 vm. On POWER7, the in-register variant is around
-> 4 times faster than the ldbrx variant.
-...
+This v4 is a followup to [0] 'modversions: redefine kcrctab entries as
+relative CRC pointers', but since relative CRC pointers do not work in
+modules, and are actually only needed by powerpc with CONFIG_RELOCATABLE=y,
+I have made it a Kconfig selectable feature instead.
 
-I wonder which is faster on the little 1GHz embedded ppc we use here.
+Patch #1 introduces the MODULE_REL_CRCS Kconfig symbol, and adds the kbuild
+handling of it, i.e., modpost, genksyms and kallsyms.
 
-	David
+Patch #2 switches all architectures to 32-bit CRC entries in kcrctab, where
+all architectures except powerpc with CONFIG_RELOCATABLE=y use absolute ELF
+symbol references as before.
+
+v4: make relative CRCs kconfig selectable
+    use absolute CRC symbols in modules regardless of kconfig selection
+    split into two patches
+
+v3: emit CRCs into .rodata rather than .rodata.modver, given that the latter
+    will be emitted with read-write permissions, making the CRCs end up in a
+    writable module segment.
+
+    fold the modpost fix to ensure that the section address is only substracted
+    from the symbol address when the ELF object in question is fully linked
+    (i.e., ET_DYN or ET_EXEC, and not ET_REL)
+
+v2: update modpost as well, so that genksyms no longer has to emit symbols
+    for both the actual CRC value and the reference to where it is stored
+    in the image
+
+[0] http://marc.info/?l=linux-arch&m=148493613415294&w=2
+
+Ard Biesheuvel (2):
+  kbuild: modversions: add infrastructure for emitting relative CRCs
+  modversions: treat symbol CRCs as 32 bit quantities
+
+ arch/powerpc/Kconfig              |  1 +
+ arch/powerpc/include/asm/module.h |  4 --
+ arch/powerpc/kernel/module_64.c   |  8 ----
+ include/asm-generic/export.h      | 11 ++---
+ include/linux/export.h            | 14 ++++++
+ include/linux/module.h            | 14 +++---
+ init/Kconfig                      |  4 ++
+ kernel/module.c                   | 45 ++++++++++----------
+ scripts/Makefile.build            |  2 +
+ scripts/genksyms/genksyms.c       | 19 ++++++---
+ scripts/kallsyms.c                | 12 ++++++
+ scripts/mod/modpost.c             | 10 +++++
+ 12 files changed, 93 insertions(+), 51 deletions(-)
+
+-- 
+2.7.4
