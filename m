@@ -1,18 +1,25 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groug@kaod.org>
+Received: from 6.mo69.mail-out.ovh.net (6.mo69.mail-out.ovh.net
+ [46.105.50.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v77NT0syyzDqHy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 23:51:34 +1100 (AEDT)
-From: Darren Stevens <darren@stevens-zone.net>
-To: wsa@the-dreams.de, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>, R.T.Dickinson <rtd@a-eon.com>,
- Pat Wall <pjwall@mac.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 24 Jan 2017 12:51:16 +0000 (GMT)
-Message-ID: <497b0eb4324.3a9cb4bf@auth.smtp.1and1.co.uk>
-Subject: [PATCH] i2c/pasemi: Remove hardcoded bus numbers on smbus
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v79FG15PkzDqRP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 01:15:29 +1100 (AEDT)
+Received: from player798.ha.ovh.net (b7.ovh.net [213.186.33.57])
+ by mo69.mail-out.ovh.net (Postfix) with ESMTP id 38CAF1803D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 12:48:11 +0100 (CET)
+Date: Tue, 24 Jan 2017 12:48:05 +0100
+From: Greg Kurz <groug@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Frederic
+ Barrat <fbarrat@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH] cxl: drop unused header asm/pnv-pci.h
+Message-ID: <20170124124805.6b8e798f@bahia.lan>
+In-Reply-To: <87k29kaih9.fsf@concordia.ellerman.id.au>
+References: <148482301037.30441.14177888563610790803.stgit@bahia>
+ <87k29kaih9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6d4cd53077b1d5af.97"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,59 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Warning: This is a message in MIME format. Your mail reader does
-not support MIME. Some parts of this message will be readable as
-plain text. To see the rest, you will need to upgrade your mail
-reader. Following are some URLs where you can find MIME-capable
-mail programs for common platforms:
+On Tue, 24 Jan 2017 20:57:06 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-  AmigaOS...........: http://yam.ch/
-  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
+> Greg Kurz <groug@kaod.org> writes:
+> 
+> > The kernel API does not use anything from this header file.  
+> 
+> That's actually hard to prove in general, because pnv-pci.h includes
+> linux/pci.h, linux/pci_hotplug.h, linux/irq.h, misc/cxl-base.h and
+> asm/opal-api.h. At least four of which aren't included directly by
+> api.c.
+> 
+> But I'll take you word for it :)
+> 
 
-General information about MIME can be found at:
-http://en.wikipedia.org/wiki/MIME
+Sorry for the lack of details...
 
-----=_BOUNDARY.6d4cd53077b1d5af.97
-Content-Type: text/plain
+api.c doesn't do anything related to pci hotplug, nor to OPAL. This
+happens in pci.c.
 
-The pasemi smbus controller uses PCI_FUNC(dev->devfn) to define which
-number bus to attach to, however this fails when something else is 
-probed first, for example an ATI Radeon graphics card will claim 9 or
-10 busses, including the ones the pasemi wants.
-Patch the driver to call i2c_add_adapter rather than
-i2c_add_numbered_adapter.
+It includes cxl.h which includes misc/cxl-base.h.
 
-Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+The only generic irq bits are irq_hw_number_t, provided by linux/types.h,
+and irq_find_mapping(), provided by linux/irqdomain.h, which is included
+by misc/cxl-base.h -> linux/interrupt.h -> asm/irq.h.
 
----
+Cheers (and congrats :)
 
-----=_BOUNDARY.6d4cd53077b1d5af.97
-Content-Type: text/plain;
-	name="i2c.patch"
-Content-Disposition: attachment;
-	filename="i2c.patch";
-	size=826
+--
+Greg
 
-diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi.c
-index df1dbc9..05847fd 100644
---- a/drivers/i2c/busses/i2c-pasemi.c
-+++ b/drivers/i2c/busses/i2c-pasemi.c
-@@ -365,7 +365,6 @@ static int pasemi_smb_probe(struct pci_dev *dev,
- 	smbus->adapter.class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
- 	smbus->adapter.algo = &smbus_algorithm;
- 	smbus->adapter.algo_data = smbus;
--	smbus->adapter.nr = PCI_FUNC(dev->devfn);
- 
- 	/* set up the sysfs linkage to our parent device */
- 	smbus->adapter.dev.parent = &dev->dev;
-@@ -373,7 +372,7 @@ static int pasemi_smb_probe(struct pci_dev *dev,
- 	reg_write(smbus, REG_CTL, (CTL_MTR | CTL_MRR |
- 		  (CLK_100K_DIV & CTL_CLK_M)));
- 
--	error = i2c_add_numbered_adapter(&smbus->adapter);
-+	error = i2c_add_adapter(&smbus->adapter);
- 	if (error)
- 		goto out_release_region;
- 
 
-----=_BOUNDARY.6d4cd53077b1d5af.97--
+> cheers
+> 
+> > diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+> > index 1b35e33d2434..bcc030eacab7 100644
+> > --- a/drivers/misc/cxl/api.c
+> > +++ b/drivers/misc/cxl/api.c
+> > @@ -11,7 +11,6 @@
+> >  #include <linux/slab.h>
+> >  #include <linux/file.h>
+> >  #include <misc/cxl.h>
+> > -#include <asm/pnv-pci.h>
+> >  #include <linux/msi.h>
+> >  #include <linux/module.h>
+> >  #include <linux/mount.h>  
