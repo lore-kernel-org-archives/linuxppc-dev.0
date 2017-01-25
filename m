@@ -1,26 +1,24 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7f0f1dRjzDq99
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 19:51:14 +1100 (AEDT)
-Received: by mail-oi0-x244.google.com with SMTP id u143so15074972oif.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 00:51:14 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7hKW0LjMzDqF7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 21:35:58 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Michael Ellerman' <mpe@ellerman.id.au>, Anton Blanchard
+ <anton@samba.org>, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: BUILD_BUG_ON(!__builtin_constant_p(feature)) breaks bcc trace tool
+Date: Wed, 25 Jan 2017 10:35:46 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB026DC3C@AcuExch.aculab.com>
+References: <20170121120339.1c774b28@kryten>
+ <20170121204948.742f89bf@kryten> <87pojd9e5l.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87pojd9e5l.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Sender: joel.stan@gmail.com
-In-Reply-To: <874m0namx5.fsf@concordia.ellerman.id.au>
-References: <20170113035349.15923-1-joel@jms.id.au>
- <87bmuyb2i3.fsf@concordia.ellerman.id.au>
- <874m0namx5.fsf@concordia.ellerman.id.au>
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 25 Jan 2017 19:50:47 +1100
-Message-ID: <CACPK8Xd6ruhe1Fq3ERTDu655wkf0iP4TFych36KSm=8qdZK_bA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: opal-msglog: Report size of memcons log
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2017 at 1:33 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->
->> Joel Stanley <joel@jms.id.au> writes:
->>
->>> The OPAL memory console is reported to be size zero, as we do not
->>> initialise the struct attr with any size information due to the size
->>> being variable. This leads users to think that the console is empty.
->>
->> Hmm OK. That is a general property of /proc and /sys files that are
->> dynamically generated, so users probably need to get used to it :)
->>
->>> Instead report the maximum size.
->>
->> But OK. That sounds sane enough. My only worry is that it might confuse
->> some tools, ie. the file claims to be x bytes but is actually smaller.
->> But I guess that can actually happen anyway with any file.
->>
->> So I'll merge this and stop blabbing :)
->
-> Hmm, but then I get:
->
->   $ ls -la msglog
->   -r--r--r-- 1 root root 4503599627370496 Jan 25 13:09 msglog
->
-> I know firmware likes to spit out lots of messages, but 4PB seems a bit
-> large :P
->
-> I fixed it with the patch below which I'll fold in, resulting in:
->
->   $ ls -la msglog
->   -r--r--r-- 1 root root 1048576 Jan 25 13:30 msglog
->
->
-> Which seems more likely.
+From: Michael Ellerman
+> Sent: 24 January 2017 06:16
+> Anton Blanchard <anton@samba.org> writes:
+> >> We added:
+> >>
+> >> BUILD_BUG_ON(!__builtin_constant_p(feature))
+> >>
+> >> to cpu_has_feature() and mmu_has_feature() in order to catch usage
+> >> issues (such as cpu_has_feature(cpu_has_feature(X)). Unfortunately
+> >> LLVM isn't smart enough to resolve this, and it errors out.
+> >>
+> >> I work around it in my clang/LLVM builds of the kernel, but I have
+> >> just discovered that it causes a lot of issues for the bcc (eBPF)
+> >> trace tool (which uses LLVM).
+> >>
+> >> How should we work around this? Wrap the checks in !clang perhaps?
+> >
+> > Looks like it's a weakness in LLVM with inlining:
+> >
+> > #include <assert.h>
+> >
+> > #if 1
+> > static inline void foo(unsigned long x)
 
-My bad. In my excitement I forgot to mention that this was just an
-idea, and I had not boot tested it.
+Does making this 'const unsigned long x' help?
+ISTR that making a slight difference to the instruction patterns
+gcc would use.
 
-Thanks for testing it and finding the bug.
+> > {
+> >         assert(__builtin_constant_p(x));
+> > }
+> > #else
+> > #define foo(X) assert(__builtin_constant_p(X))
+> > #endif
+...
+> #define inline		inline		__attribute__((always_inline)) notrace
+>=20
+> So in fact every inline function is marked always_inline all the time,
+> which seems dubious.
 
-Cheers,
+I've had to do that in the past to get gcc to inline some small leaf functi=
+ons
+that were only called once.
+(That was for some embedded code where I don't actually want any function c=
+alls
+at all.)
 
-Joel
+To my mind 'inline' should mean 'always_inline' since you need to explicitl=
+y
+stop functions being inlined even when not marked 'inline'.
+
+	David
