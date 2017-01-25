@@ -1,33 +1,19 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7yDZ2grXzDq6x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 08:02:38 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0PKwjrQ019784
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 16:02:36 -0500
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2870k3pr97-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 16:02:35 -0500
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Wed, 25 Jan 2017 16:02:33 -0500
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, wvoigt@us.ibm.com, nfont@linux.vnet.ibm.com,
- jallen@linux.vnet.ibm.com, tlfalcon@linux.vnet.ibm.com
-Subject: [PATCH net 5/5] ibmvnic: init completion struct before requesting
- long term mapped buffers
-Date: Wed, 25 Jan 2017 15:02:23 -0600
-In-Reply-To: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Message-Id: <1485378143-5084-5-git-send-email-tlfalcon@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v80s75P9QzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 10:00:59 +1100 (AEDT)
+Date: Thu, 26 Jan 2017 10:00:44 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ rric@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, oprofile-list@lists.sf.net
+Subject: gcc trunk fails to build kernel on PowerPC64 due to oprofile warnings
+Message-ID: <20170126100044.7e439f72@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,31 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Initialize this completion structure before requesting that
-a buffer be long-term mapped . This fix resolves a bug where firmware
-sends a response before the structure is initialized.
+Hi,
 
-Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
----
- drivers/net/ethernet/ibm/ibmvnic.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+gcc trunk has failed to build PowerPC64 kernels for a month or so. The issue
+is in oprofile, which is common code but ends up being sucked into
+arch/powerpc and therefore subject to the -Werror applied to arch/powerpc:
+=20
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c: In =
+function =E2=80=98oprofile_create_stats_files=E2=80=99:
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c:55:2=
+5: error: =E2=80=98%d=E2=80=99 directive output may be truncated writing be=
+tween 1 and 11 bytes into a region of size 7 [-Werror=3Dformat-truncation=
+=3D]
+   snprintf(buf, 10, "cpu%d", i);
+                         ^~
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c:55:2=
+1: note: using the range [1, -2147483648] for directive argument
+   snprintf(buf, 10, "cpu%d", i);
+                     ^~~~~~~
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c:55:3=
+: note: format output between 5 and 15 bytes into a destination of size 10
+   snprintf(buf, 10, "cpu%d", i);
+   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  LD      crypto/async_tx/built-in.o
+  CC      lib/random32.o
+cc1: all warnings being treated as errors
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index ec6c5fe..d1ffc61 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -189,9 +189,9 @@ static int alloc_long_term_buff(struct ibmvnic_adapter *adapter,
- 	}
- 	ltb->map_id = adapter->map_id;
- 	adapter->map_id++;
-+	init_completion(&adapter->fw_done);
- 	send_request_map(adapter, ltb->addr,
- 			 ltb->size, ltb->map_id);
--	init_completion(&adapter->fw_done);
- 	wait_for_completion(&adapter->fw_done);
- 	return 0;
- }
--- 
-1.8.3.1
+Anton
