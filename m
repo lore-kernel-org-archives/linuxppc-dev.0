@@ -1,22 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7WV90k1WzDqDh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 14:57:53 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id y143so13389533pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2017 19:57:53 -0800 (PST)
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 25 Jan 2017 09:27:44 +0530
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Fix RECLAIM_DISTANCE
-Message-ID: <20170125035744.GB12855@localhost.localdomain>
-References: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7WwW3wx6zDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 15:17:15 +1100 (AEDT)
+Date: Tue, 24 Jan 2017 22:17:02 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jan Stancek <jstancek@redhat.com>,
+ Herton Krzesinski <hkrzesin@redhat.com>,
+ Artem Savkov <asavkov@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [bug] stack protector panics on v4.10-rc1+
+Message-ID: <20170125041702.GM30284@gate.crashing.org>
+References: <627000186.495731.1485210132000.JavaMail.zimbra@redhat.com>
+ <1761847918.511957.1485216600665.JavaMail.zimbra@redhat.com>
+ <20170124010421.GI30284@gate.crashing.org>
+ <8737g9azuj.fsf@concordia.ellerman.id.au>
+ <87ziih9jzv.fsf@concordia.ellerman.id.au>
+ <20170125035453.GA12855@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <20170125035453.GA12855@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 24, 2017 at 10:32:28AM +1100, Gavin Shan wrote:
-> When @node_reclaim_mode ("/proc/sys/vm/zone_reclaim_mode") is enabled,
-> the nodes in the specified distance (< RECLAIM_DISTANCE) to the preferred
-> one will be checked for page direct reclaim in the fast path, as below
-> function call chain indicates. Currently, RECLAIM_DISTANCE is set to 10,
-> equal to LOCAL_DISTANCE. It means no nodes, including the preferred one,
-> don't match the conditions. So no nodes are checked for direct reclaim
-> in the fast path.
+On Wed, Jan 25, 2017 at 09:24:53AM +0530, Balbir Singh wrote:
+> > So my inclination is to revert the powerpc stack protector code for
+> > 4.10, and we can try again for 4.11 or 12.
 > 
->    __alloc_pages_nodemask
->    get_page_from_freelist
->    zone_allows_reclaim
-> 
-> This fixes it by setting RECLAIM_DISTANCE to 30. With it, the preferred
-> node and its directly adjacent nodes will be checked for page direct
-> reclaim. The comments explaining RECLAIM_DISTANCE is out of date. This
-> updates and makes it correct.
-> 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
+> That makes sense. We then wait for the right gcc version? I guess we also
+> push for per-task gaurd value as opposed to a global one?
 
-I spoke about this at length with Anton and the larger kernel team.
-We need performance data before we can commit to the change. Do we
-benchmarks to show that the change does not introduce regression
-w.r.t runtime cost?
+Global value will work (with GCC 7) as-is.  Per-task will require some
+kernel work, but yeah you want it, that is why the options for that exist ;-)
 
-Balbir Singh.
+You don't have to revert the current stack protector code; just condition it
+on the relevant GCC flags (you will need to do that later anyway).
+
+
+Segher
