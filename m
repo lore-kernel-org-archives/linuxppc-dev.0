@@ -1,33 +1,34 @@
 Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7pFV3wjlzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 02:02:54 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0PEwVPt040844
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 10:02:50 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 286swqbdma-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7pFq4JGZzDq7W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 02:03:11 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0PEwcf3060660
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 10:03:07 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 286rd5ptyk-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 10:02:49 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 10:03:06 -0500
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Wed, 25 Jan 2017 08:02:48 -0700
+ Wed, 25 Jan 2017 10:03:05 -0500
 From: abdul <abdhalee@linux.vnet.ibm.com>
 Subject: [PowerPC] [next-20170125] WARNING at kernel/sched/sched.h:804
  set_next_entity+0xb88/0xca0
 To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Date: Wed, 25 Jan 2017 20:29:48 +0530
+Cc: linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.co,
+ aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ Sachin Sant <sachinp@linux.vnet.ibm.com>
+Date: Wed, 25 Jan 2017 20:32:13 +0530
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------3BB25B69C592937D557376DD"
-Message-Id: <7f05b5d9-97aa-18be-4882-b7248c97483e@linux.vnet.ibm.com>
+Content-Type: multipart/mixed; boundary="------------6BDEE82AC8112B711CF7C2BB"
+Message-Id: <bfb2d2dc-fd27-19b8-f83e-aead73ccc0b3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,7 +39,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------3BB25B69C592937D557376DD
+--------------6BDEE82AC8112B711CF7C2BB
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -109,7 +110,7 @@ rcu-torture: Stopping rcu_torture_reader
 
 Config file attached
 
---------------3BB25B69C592937D557376DD
+--------------6BDEE82AC8112B711CF7C2BB
 Content-Type: text/plain; charset=UTF-8;
  name="alp12-le-config"
 Content-Transfer-Encoding: base64
@@ -1721,4 +1722,4 @@ Q09ORklHX0tWTV9CT09LM1NfNjRfUFIgaXMgbm90IHNldAojIENPTkZJR19LVk1fQk9PSzNT
 X0hWX0VYSVRfVElNSU5HIGlzIG5vdCBzZXQKQ09ORklHX0tWTV9YSUNTPXkKQ09ORklHX1ZI
 T1NUX05FVD1tCkNPTkZJR19WSE9TVD1tCiMgQ09ORklHX1ZIT1NUX0NST1NTX0VORElBTl9M
 RUdBQ1kgaXMgbm90IHNldAo=
---------------3BB25B69C592937D557376DD--
+--------------6BDEE82AC8112B711CF7C2BB--
