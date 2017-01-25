@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7dgx4rL9zDq5b
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7dgx6YxQzDq7c
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 19:36:45 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0P8aUJh036287
+ v0P8YSxD145947
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 03:36:43 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 286m1qa2cv-1
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2866cr432s-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 03:36:43 -0500
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 25 Jan 2017 03:36:42 -0500
+ Wed, 25 Jan 2017 01:36:42 -0700
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -33,12 +33,12 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  mark.rutland@arm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v6 3/5] cpuidle:powernv: Add helper function to populate
- powernv idle states.
-Date: Wed, 25 Jan 2017 14:06:27 +0530
+Subject: [PATCH v6 2/5] powernv:stop: Rename pnv_arch300_idle_init to
+ pnv_power9_idle_init
+Date: Wed, 25 Jan 2017 14:06:26 +0530
 In-Reply-To: <1485333389-5752-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1485333389-5752-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1485333389-5752-4-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1485333389-5752-3-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,171 +50,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-In the current code for powernv_add_idle_states, there is a lot of code
-duplication while initializing an idle state in powernv_states table.
+Balbir pointed out that the name of the function pnv_arch300_idle_init
+was inconsistent with the names of the variables and functions
+pertaining to POWER9 features in book3s_idle.S.
 
-Add an inline helper function to populate the powernv_states[] table
-for a given idle state. Invoke this for populating the "Nap",
-"Fastsleep" and the stop states in powernv_add_idle_states.
+This patch renames pnv_arch300_idle_init to pnv_power9_idle_init.
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+This patch does not change any behaviour.
+
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle-powernv.c | 89 +++++++++++++++++++++++----------------
- include/linux/cpuidle.h           |  1 +
- 2 files changed, 54 insertions(+), 36 deletions(-)
+ arch/powerpc/platforms/powernv/idle.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 0835a37..6871b7f 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -20,6 +20,10 @@
- #include <asm/opal.h>
- #include <asm/runlatch.h>
- 
-+/*
-+ * Expose only those Hardware idle states via the cpuidle framework
-+ * that have latency value below POWERNV_THRESHOLD_LATENCY_NS.
-+ */
- #define POWERNV_THRESHOLD_LATENCY_NS 200000
- 
- static struct cpuidle_driver powernv_idle_driver = {
-@@ -167,6 +171,24 @@ static int powernv_cpuidle_driver_init(void)
- 	return 0;
- }
- 
-+static inline void add_powernv_state(int index, const char *name,
-+				     unsigned int flags,
-+				     int (*idle_fn)(struct cpuidle_device *,
-+						    struct cpuidle_driver *,
-+						    int),
-+				     unsigned int target_residency,
-+				     unsigned int exit_latency,
-+				     u64 psscr_val)
-+{
-+	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
-+	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
-+	powernv_states[index].flags = flags;
-+	powernv_states[index].target_residency = target_residency;
-+	powernv_states[index].exit_latency = exit_latency;
-+	powernv_states[index].enter = idle_fn;
-+	stop_psscr_table[index] = psscr_val;
-+}
-+
- static int powernv_add_idle_states(void)
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 479c256..57bec03 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -298,7 +298,7 @@ static void power9_idle(void)
+  * @dt_idle_states: Number of idle state entries
+  * Returns 0 on success
+  */
+-static int __init pnv_arch300_idle_init(struct device_node *np, u32 *flags,
++static int __init pnv_power9_idle_init(struct device_node *np, u32 *flags,
+ 					int dt_idle_states)
  {
- 	struct device_node *power_mgt;
-@@ -236,6 +258,7 @@ static int powernv_add_idle_states(void)
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
- 
- 	for (i = 0; i < dt_idle_states; i++) {
-+		unsigned int exit_latency, target_residency;
- 		/*
- 		 * If an idle state has exit latency beyond
- 		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
-@@ -243,28 +266,33 @@ static int powernv_add_idle_states(void)
- 		 */
- 		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
- 			continue;
-+		/*
-+		 * Firmware passes residency and latency values in ns.
-+		 * cpuidle expects it in us.
-+		 */
-+		exit_latency = latency_ns[i] / 1000;
-+		if (!rc)
-+			target_residency = residency_ns[i] / 1000;
-+		else
-+			target_residency = 0;
- 
- 		/*
--		 * Cpuidle accepts exit_latency and target_residency in us.
--		 * Use default target_residency values if f/w does not expose it.
-+		 * For nap and fastsleep, use default target_residency
-+		 * values if f/w does not expose it.
- 		 */
- 		if (flags[i] & OPAL_PM_NAP_ENABLED) {
-+			if (!rc)
-+				target_residency = 100;
- 			/* Add NAP state */
--			strcpy(powernv_states[nr_idle_states].name, "Nap");
--			strcpy(powernv_states[nr_idle_states].desc, "Nap");
--			powernv_states[nr_idle_states].flags = 0;
--			powernv_states[nr_idle_states].target_residency = 100;
--			powernv_states[nr_idle_states].enter = nap_loop;
-+			add_powernv_state(nr_idle_states, "Nap",
-+					  CPUIDLE_FLAG_NONE, nap_loop,
-+					  target_residency, exit_latency, 0);
- 		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
- 				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
--			strncpy(powernv_states[nr_idle_states].name,
--				names[i], CPUIDLE_NAME_LEN);
--			strncpy(powernv_states[nr_idle_states].desc,
--				names[i], CPUIDLE_NAME_LEN);
--			powernv_states[nr_idle_states].flags = 0;
--
--			powernv_states[nr_idle_states].enter = stop_loop;
--			stop_psscr_table[nr_idle_states] = psscr_val[i];
-+			add_powernv_state(nr_idle_states, names[i],
-+					  CPUIDLE_FLAG_NONE, stop_loop,
-+					  target_residency, exit_latency,
-+					  psscr_val[i]);
- 		}
- 
- 		/*
-@@ -274,32 +302,21 @@ static int powernv_add_idle_states(void)
- #ifdef CONFIG_TICK_ONESHOT
- 		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
- 			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
-+			if (!rc)
-+				target_residency = 300000;
- 			/* Add FASTSLEEP state */
--			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
--			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
--			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].target_residency = 300000;
--			powernv_states[nr_idle_states].enter = fastsleep_loop;
-+			add_powernv_state(nr_idle_states, "FastSleep",
-+					  CPUIDLE_FLAG_TIMER_STOP,
-+					  fastsleep_loop,
-+					  target_residency, exit_latency, 0);
- 		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
- 				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
--			strncpy(powernv_states[nr_idle_states].name,
--				names[i], CPUIDLE_NAME_LEN);
--			strncpy(powernv_states[nr_idle_states].desc,
--				names[i], CPUIDLE_NAME_LEN);
--
--			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].enter = stop_loop;
--			stop_psscr_table[nr_idle_states] = psscr_val[i];
-+			add_powernv_state(nr_idle_states, names[i],
-+					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
-+					  target_residency, exit_latency,
-+					  psscr_val[i]);
- 		}
- #endif
--		powernv_states[nr_idle_states].exit_latency =
--				((unsigned int)latency_ns[i]) / 1000;
--
--		if (!rc) {
--			powernv_states[nr_idle_states].target_residency =
--				((unsigned int)residency_ns[i]) / 1000;
--		}
--
- 		nr_idle_states++;
+ 	u64 *psscr_val = NULL;
+@@ -373,7 +373,7 @@ static void __init pnv_probe_idle_states(void)
  	}
- out:
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index da346f2..fc1e5d7 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -62,6 +62,7 @@ struct cpuidle_state {
- };
  
- /* Idle State Flags */
-+#define CPUIDLE_FLAG_NONE       (0x00)
- #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
- #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
+ 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+-		if (pnv_arch300_idle_init(np, flags, dt_idle_states))
++		if (pnv_power9_idle_init(np, flags, dt_idle_states))
+ 			goto out;
+ 	}
  
 -- 
 1.9.4
