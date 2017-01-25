@@ -3,28 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v7yDS3c4xzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 08:02:32 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v7yDT35DBzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 08:02:33 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0PKwhtA051182
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 16:02:29 -0500
+ v0PKwgls005130
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 16:02:30 -0500
 Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 28722ebbpc-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 286rd646ur-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 16:02:29 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 16:02:30 -0500
 Received: from localhost
  by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Wed, 25 Jan 2017 16:02:27 -0500
+ Wed, 25 Jan 2017 16:02:30 -0500
 From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 To: netdev@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, wvoigt@us.ibm.com, nfont@linux.vnet.ibm.com,
  jallen@linux.vnet.ibm.com, tlfalcon@linux.vnet.ibm.com
-Subject: [PATCH net 1/5] ibmvnic: harden interrupt handler
-Date: Wed, 25 Jan 2017 15:02:19 -0600
-Message-Id: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Subject: [PATCH net 3/5] ibmvnic: Fix endian error when requesting device
+ capabilites
+Date: Wed, 25 Jan 2017 15:02:21 -0600
+In-Reply-To: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Message-Id: <1485378143-5084-3-git-send-email-tlfalcon@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,100 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move most interrupt handler processing into a tasklet, and
-introduce a delay after re-enabling interrupts to fix timing
-issues encountered in hardware testing.
+When a IBM VNIC client driver requests a faulty device setting, the
+server returns an acceptable value for the client to request.
+This 64 bit value was incorrectly being swapped as a 32 bit value,
+resulting in loss of data. This patch corrects that by using
+the 64 bit swap function.
 
+Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
 Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 21 +++++++++++++++++++--
- drivers/net/ethernet/ibm/ibmvnic.h |  1 +
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index c125966..09071bf 100644
+index f95f6a4..ec4eaed 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -3414,6 +3414,18 @@ static void ibmvnic_handle_crq(union ibmvnic_crq *crq,
- static irqreturn_t ibmvnic_interrupt(int irq, void *instance)
- {
- 	struct ibmvnic_adapter *adapter = instance;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&adapter->crq.lock, flags);
-+	vio_disable_interrupts(adapter->vdev);
-+	tasklet_schedule(&adapter->tasklet);
-+	spin_unlock_irqrestore(&adapter->crq.lock, flags);
-+	return IRQ_HANDLED;
-+}
-+
-+static void ibmvnic_tasklet(void *data)
-+{
-+	struct ibmvnic_adapter *adapter = data;
- 	struct ibmvnic_crq_queue *queue = &adapter->crq;
- 	struct vio_dev *vdev = adapter->vdev;
- 	union ibmvnic_crq *crq;
-@@ -3421,7 +3433,6 @@ static irqreturn_t ibmvnic_interrupt(int irq, void *instance)
- 	bool done = false;
- 
- 	spin_lock_irqsave(&queue->lock, flags);
--	vio_disable_interrupts(vdev);
- 	while (!done) {
- 		/* Pull all the valid messages off the CRQ */
- 		while ((crq = ibmvnic_next_crq(adapter)) != NULL) {
-@@ -3429,6 +3440,8 @@ static irqreturn_t ibmvnic_interrupt(int irq, void *instance)
- 			crq->generic.first = 0;
- 		}
- 		vio_enable_interrupts(vdev);
-+		/* delay in case of firmware hiccup */
-+		mdelay(10);
- 		crq = ibmvnic_next_crq(adapter);
- 		if (crq) {
- 			vio_disable_interrupts(vdev);
-@@ -3439,7 +3452,6 @@ static irqreturn_t ibmvnic_interrupt(int irq, void *instance)
- 		}
- 	}
- 	spin_unlock_irqrestore(&queue->lock, flags);
--	return IRQ_HANDLED;
- }
- 
- static int ibmvnic_reenable_crq_queue(struct ibmvnic_adapter *adapter)
-@@ -3494,6 +3506,7 @@ static void ibmvnic_release_crq_queue(struct ibmvnic_adapter *adapter)
- 
- 	netdev_dbg(adapter->netdev, "Releasing CRQ\n");
- 	free_irq(vdev->irq, adapter);
-+	tasklet_kill(&adapter->tasklet);
- 	do {
- 		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
- 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
-@@ -3539,6 +3552,9 @@ static int ibmvnic_init_crq_queue(struct ibmvnic_adapter *adapter)
- 
- 	retrc = 0;
- 
-+	tasklet_init(&adapter->tasklet, (void *)ibmvnic_tasklet,
-+		     (unsigned long)adapter);
-+
- 	netdev_dbg(adapter->netdev, "registering irq 0x%x\n", vdev->irq);
- 	rc = request_irq(vdev->irq, ibmvnic_interrupt, 0, IBMVNIC_NAME,
- 			 adapter);
-@@ -3560,6 +3576,7 @@ static int ibmvnic_init_crq_queue(struct ibmvnic_adapter *adapter)
- 	return retrc;
- 
- req_irq_failed:
-+	tasklet_kill(&adapter->tasklet);
- 	do {
- 		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
- 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
-index dd775d9..0d0edc3 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.h
-+++ b/drivers/net/ethernet/ibm/ibmvnic.h
-@@ -1049,5 +1049,6 @@ struct ibmvnic_adapter {
- 
- 	struct work_struct vnic_crq_init;
- 	struct work_struct ibmvnic_xport;
-+	struct tasklet_struct tasklet;
- 	bool failover;
- };
+@@ -2388,10 +2388,10 @@ static void handle_request_cap_rsp(union ibmvnic_crq *crq,
+ 	case PARTIALSUCCESS:
+ 		dev_info(dev, "req=%lld, rsp=%ld in %s queue, retrying.\n",
+ 			 *req_value,
+-			 (long int)be32_to_cpu(crq->request_capability_rsp.
++			 (long int)be64_to_cpu(crq->request_capability_rsp.
+ 					       number), name);
+ 		release_sub_crqs_no_irqs(adapter);
+-		*req_value = be32_to_cpu(crq->request_capability_rsp.number);
++		*req_value = be64_to_cpu(crq->request_capability_rsp.number);
+ 		init_sub_crqs(adapter, 1);
+ 		return;
+ 	default:
 -- 
-2.7.4
+1.8.3.1
