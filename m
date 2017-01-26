@@ -2,20 +2,20 @@ Return-Path: <sukadev@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MF2dvTzDq74
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MF70BrzDq62
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:38:49 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3v84MD6BK3z9t14
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 12:38:48 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0Q1cV9L037626
+ by ozlabs.org (Postfix) with ESMTPS id 3v84MF1vStz9t1C
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 12:38:49 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0Q1cURh023338
  for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:47 -0500
 Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2872hs1vag-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 287361g9j0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:47 -0500
 Received: from localhost
@@ -29,11 +29,11 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
  apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
  bsingharora@gmail.com, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 09/10] VAS: Define vas_tx_win_open()
-Date: Wed, 25 Jan 2017 17:38:07 -0800
+Subject: [PATCH v2 08/10] VAS: Define vas_win_close() interface
+Date: Wed, 25 Jan 2017 17:38:06 -0800
 In-Reply-To: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1485394688-31129-10-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1485394688-31129-9-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,223 +43,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define an interface to open a VAS send window. This interface is
-intended to be used the Nest Accelerator (NX) driver(s) to open
-a send window and use it to submit compression/encryption requests
-to a VAS receive window.
+Define the vas_win_close() interface which should be used to close a
+send or receive windows.
 
-The receive window, identified by the [node, chip, cop] parameters,
-must already be open in VAS (i.e connected to an NX engine).
+While the hardware configurations required to open send and receive windows
+differ, the configuration to close a window is the same for both. So we use
+a single interface to close the window.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/vas.h |  33 ++++++++++
- drivers/misc/vas/vas-window.c  | 142 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 175 insertions(+)
+ arch/powerpc/include/asm/vas.h |  6 +++++
+ drivers/misc/vas/vas-window.c  | 52 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index bda851a..a841084 100644
+index b6362e9..bda851a 100644
 --- a/arch/powerpc/include/asm/vas.h
 +++ b/arch/powerpc/include/asm/vas.h
-@@ -67,6 +67,26 @@ struct vas_rx_win_attr {
- };
- 
- /*
-+ * Window attributes specified by the in-kernel owner of a send window.
-+ */
-+struct vas_tx_win_attr {
-+	enum vas_cop_type cop;
-+	int wcreds_max;
-+	int lpid;
-+	int pid;
-+	int pswid;
-+	int rsvd_txbuf_count;
-+
-+	bool user_win;
-+	bool pin_win;
-+	bool rej_no_credit;
-+	bool rsvd_txbuf_enable;
-+	bool tx_win_ord_mode;
-+	bool rx_win_ord_mode;
-+	enum vas_thresh_ctl tc_mode;
-+};
-+
-+/*
-  * Open a VAS receive window for the instance of VAS identified by @vasid
-  * Use @attr to initialize the attributes of the window.
-  *
-@@ -76,6 +96,19 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+@@ -75,6 +75,12 @@ struct vas_rx_win_attr {
+ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
  			struct vas_rx_win_attr *attr);
  
- /*
-+ * Open a VAS send window for the instance of VAS identified by @vasid
-+ * and the co-processor type @cop. Use @attr to initialize attributes
-+ * of the window.
-+ *
-+ * Note: The instance of VAS must already have an open receive window for
-+ * the coprocessor type @cop.
-+ *
-+ * Return a handle to the send window or ERR_PTR() on error.
-+ */
-+struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
-+			struct vas_tx_win_attr *attr);
-+
 +/*
-  * Close the send or receive window identified by @win. For receive windows
-  * return -EAGAIN if there are active send windows attached to this receive
-  * window.
++ * Close the send or receive window identified by @win. For receive windows
++ * return -EAGAIN if there are active send windows attached to this receive
++ * window.
++ */
++int vas_win_close(struct vas_window *win);
+ 
+ /*
+  * Get/Set bit fields
 diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.c
-index 4b06780..3b4b801 100644
+index a640d59..4b06780 100644
 --- a/drivers/misc/vas/vas-window.c
 +++ b/drivers/misc/vas/vas-window.c
-@@ -712,6 +712,148 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+@@ -711,3 +711,55 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+ 	vas_release_window_id(&vinst->ida, rxwin->winid);
  	return ERR_PTR(rc);
  }
- 
-+static void init_winctx_for_txwin(struct vas_window *txwin,
-+			struct vas_tx_win_attr *txattr,
-+			struct vas_winctx *winctx)
++
++int vas_win_close(struct vas_window *window)
 +{
++	uint64_t val;
++	int cached;
++
++	if (!window)
++		return 0;
++
++	if (!window->tx_win && atomic_read(&window->num_txwins) != 0) {
++		pr_devel("VAS: Attempting to close an active Rx window!\n");
++		WARN_ON_ONCE(1);
++		return -EAGAIN;
++	}
++
++	/* Unpin window from cache and close it */
++	val = 0ULL;
++	val = SET_FIELD(VAS_WINCTL_PIN, val, 0);
++	val = SET_FIELD(VAS_WINCTL_OPEN, val, 0);
++	write_hvwc_reg(window, VREG(WINCTL), val);
++
 +	/*
-+	 * We first zero all fields and only set non-zero ones. Following
-+	 * are some fields set to 0/false for the stated reason:
-+	 *
-+	 *	->notify_os_intr_reg	In powerNV, send intrs to HV
-+	 *	->rsvd_txbuf_count	Not supported yet.
-+	 *	->notify_disable	False for NX windows
-+	 *	->xtra_write		False for NX windows
-+	 *	->notify_early		NA for NX windows
-+	 *	->lnotify_lpid		NA for Tx windows
-+	 *	->lnotify_pid		NA for Tx windows
-+	 *	->lnotify_tid		NA for Tx windows
-+	 *	->tx_win_cred_mode	Ignore for now for NX windows
-+	 *	->rx_win_cred_mode	Ignore for now for NX windows
++	 * See Section 1.11.1 for details on closing window, including
++	 *	- disable new paste operations
++	 *	- block till pending requests are completed
++	 *	- If Rx window, ensure FIFO is empty.
 +	 */
-+	memset(winctx, 0, sizeof(struct vas_winctx));
 +
-+	winctx->wcreds_max = txattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
++	/* Cast window context out of the cache */
++retry:
++	val = read_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL));
++	cached = GET_FIELD(val, VAS_WIN_CACHE_STATUS);
++	if (cached) {
++		val = 0ULL;
++		val = SET_FIELD(VAS_CASTOUT_REQ, val, 1);
++		val = SET_FIELD(VAS_PUSH_TO_MEM, val, 0);
++		write_hvwc_reg(window, VREG(WIN_CTX_CACHING_CTL), val);
 +
-+	winctx->user_win = txattr->user_win;
-+	winctx->nx_win = txwin->rxwin->nx_win;
-+	winctx->pin_win = txattr->pin_win;
-+
-+	winctx->rx_word_mode = true;
-+	winctx->tx_word_mode = true;
-+
-+	if (winctx->nx_win) {
-+		winctx->data_stamp = true;
-+		winctx->intr_disable = true;
++		schedule_timeout(2000);
++		goto retry;
 +	}
 +
-+	winctx->lpid = txattr->lpid;
-+	winctx->pid = txattr->pid;
-+	winctx->rx_win_id = txwin->rxwin->winid;
-+	winctx->fault_win_id = fault_winid;
++	/* if send window, drop reference to matching receive window */
++	if (window->tx_win)
++		put_rx_win(window->rxwin);
 +
-+	winctx->dma_type = VAS_DMA_TYPE_INJECT;
-+	winctx->tc_mode = txattr->tc_mode;
-+	winctx->min_scope = VAS_SCOPE_LOCAL;
-+	winctx->max_scope = VAS_SCOPE_VECTORED_GROUP;
-+	winctx->irq_port = txwin->irq_port;
++	vas_release_window_id(&window->vinst->ida, window->winid);
++
++	vas_window_free(window);
++
++	return 0;
 +}
-+
-+static bool tx_win_args_valid(enum vas_cop_type cop,
-+			struct vas_tx_win_attr *attr)
-+{
-+	if (attr->tc_mode != VAS_THRESH_DISABLED)
-+		return false;
-+
-+	if (cop > VAS_COP_TYPE_MAX)
-+		return false;
-+
-+	if (attr->user_win) {
-+		if (cop != VAS_COP_TYPE_GZIP && cop != VAS_COP_TYPE_GZIP_HIPRI)
-+			return false;
-+
-+		if (attr->rsvd_txbuf_count != 0)
-+			return false;
-+	}
-+
-+	return true;
-+}
-+
-+struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
-+			struct vas_tx_win_attr *attr)
-+{
-+	int rc, winid;
-+	struct vas_instance *vinst;
-+	struct vas_window *txwin;
-+	struct vas_window *rxwin;
-+	struct vas_winctx winctx;
-+	int size;
-+	char *name;
-+	uint64_t paste_busaddr;
-+
-+	if (!vas_initialized)
-+		return ERR_PTR(-EAGAIN);
-+
-+	if (!tx_win_args_valid(cop, attr))
-+		return ERR_PTR(-EINVAL);
-+
-+	vinst = find_vas_instance(vasid);
-+	if (!vinst) {
-+		pr_devel("VAS: vasid %d not found!\n", vasid);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	rxwin = get_vinstance_rxwin(vinst, cop);
-+	if (!rxwin) {
-+		pr_devel("VAS: No RxWin for vasid %d, cop %d\n", vasid, cop);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	rc = -EAGAIN;
-+	winid = vas_assign_window_id(&vinst->ida);
-+	if (winid < 0)
-+		goto put_rxwin;
-+
-+	rc = -ENOMEM;
-+	txwin = vas_window_alloc(vinst, winid);
-+	if (!txwin)
-+		goto release_winid;
-+
-+	txwin->tx_win = 1;
-+	txwin->rxwin = rxwin;
-+	txwin->nx_win = txwin->rxwin->nx_win;
-+
-+	init_winctx_for_txwin(txwin, attr, &winctx);
-+
-+	init_winctx_regs(txwin, &winctx);
-+
-+	name = kasprintf(GFP_KERNEL, "window-v%d-w%d", vasid, winid);
-+	if (!name)
-+		goto release_winid;
-+
-+	txwin->paste_addr_name = name;
-+	compute_paste_address(txwin, &paste_busaddr, &size);
-+
-+	txwin->paste_kaddr = map_mmio_region(name, paste_busaddr, size);
-+	if (!txwin->paste_kaddr)
-+		goto free_name;
-+
-+	pr_devel("VAS: mapped paste addr 0x%llx to kaddr 0x%p\n",
-+				paste_busaddr, txwin->paste_kaddr);
-+	return txwin;
-+
-+free_name:
-+	kfree(txwin->paste_addr_name);
-+
-+release_winid:
-+	vas_release_window_id(&vinst->ida, txwin->winid);
-+
-+put_rxwin:
-+	put_rx_win(rxwin);
-+	return ERR_PTR(rc);
-+
-+}
-+
- int vas_win_close(struct vas_window *window)
- {
- 	uint64_t val;
 -- 
 2.7.4
