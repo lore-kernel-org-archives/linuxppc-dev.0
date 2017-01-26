@@ -1,26 +1,39 @@
-Return-Path: <keescook@google.com>
-Received: from mail-io0-x234.google.com (mail-io0-x234.google.com
- [IPv6:2607:f8b0:4001:c06::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MD0HFwzDq8W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:38:47 +1100 (AEDT)
-Received: by mail-io0-x234.google.com with SMTP id j13so28311416iod.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 17:38:47 -0800 (PST)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <CACi5LpOkWV2t1MyYLjDckbkoBSx6QxOw7OVayx-GqWjhVHV1tQ@mail.gmail.com>
-References: <CACi5LpOkWV2t1MyYLjDckbkoBSx6QxOw7OVayx-GqWjhVHV1tQ@mail.gmail.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 25 Jan 2017 17:38:44 -0800
-Message-ID: <CAGXu5j+4_XGHAhdmfmpESguEe8iqh8MpWHvtgnSUu149rcxs=w@mail.gmail.com>
-Subject: Re: Query regarding randomization bits for a ASLR elf on PPC64
-To: Bhupesh Sharma <bhsharma@redhat.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Daniel Cashman <dcashman@google.com>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MF2dvTzDq74
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:38:49 +1100 (AEDT)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3v84MD6BK3z9t14
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 12:38:48 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0Q1cV9L037626
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:47 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2872hs1vag-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:47 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 25 Jan 2017 18:38:46 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
+ apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
+ bsingharora@gmail.com, linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 09/10] VAS: Define vas_tx_win_open()
+Date: Wed, 25 Jan 2017 17:38:07 -0800
+In-Reply-To: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1485394688-31129-10-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,130 +43,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 22, 2017 at 9:34 PM, Bhupesh Sharma <bhsharma@redhat.com> wrote:
-> I was recently looking at ways to extend the randomization range for a
-> ASLR elf on a PPC64LE system.
->
-> I basically have been using 28-bits of randomization on x86_64 for an
-> ASLR elf using appropriate ARCH_MMAP_RND_BITS_MIN and
-> ARCH_MMAP_RND_BITS_MAX values:
->
-> http://lxr.free-electrons.com/source/arch/x86/Kconfig#L192
->
-> And I understand from looking at the PPC64 code base that both
-> ARCH_MMAP_RND_BITS_MIN and ARCH_MMAP_RND_BITS_MAX are not used in the
-> current upstream code.
+Define an interface to open a VAS send window. This interface is
+intended to be used the Nest Accelerator (NX) driver(s) to open
+a send window and use it to submit compression/encryption requests
+to a VAS receive window.
 
-Yeah, looks like PPC could use it. If you've got hardware to test
-with, please add it. :)
+The receive window, identified by the [node, chip, cop] parameters,
+must already be open in VAS (i.e connected to an NX engine).
 
-> I am looking at ways to randomize the mmap, stack and brk ranges for a
-> ALSR elf on PPC64LE. Currently I am using a PAGE SIZE of 64K in my
-> config file and hence the randomization usually translates to
-> something like this for me:
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/vas.h |  33 ++++++++++
+ drivers/misc/vas/vas-window.c  | 142 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 175 insertions(+)
 
-Just to be clear: 64K pages will lose you 4 bits of entropy when
-compared to 4K on x86_64. (Assuming I'm doing the math right...)
-
-> mmap:
-> -------
-> http://lxr.free-electrons.com/source/arch/powerpc/mm/mmap.c#L67
->
-> rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
->
-> Since PAGE_SHIFT is 16 for 64K page size, this computation reduces to:
-> rnd = get_random_long() % (1UL<<(14));
->
-> If I compare this to x86_64, I see there:
->
-> http://lxr.free-electrons.com/source/arch/x86/mm/mmap.c#L79
->
-> rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
->
-> So, if mmap_rnd_bits = 28, this equates to:
-> rnd = get_random_long() & ((1UL << 28) - 1);
->
-> Observations and Queries:
-> --------------------------------------
->
-> - So, x86_64 gives approx twice number of random bits for a ASLR elf
-> running on it as compared to PPC64 although both use a 48-bit VA.
->
-> - I also see this comment for PPC at various places, regarding 1GB
-> randomness spread for PPC64. Is this restricted by the hardware or the
-> kernel usage?:
->
-> /* 8MB for 32bit, 1GB for 64bit */
->  64         if (is_32bit_task())
->  65                 rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
->  66         else
->  67                 rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
-
-Yeah, I'm not sure about this. The comments above the MIN_GAP* macros
-seem to talk about making sure there is the 1GB stack gap, but that
-shouldn't limit mmap.
-
-Stack base is randomized in fs/binfmt_elf.c randomize_stack_top()
-which uses STACK_RND_MASK (and PAGE_SHIFT).
-
-x86:
-/* 1GB for 64bit, 8MB for 32bit */
-#define STACK_RND_MASK (test_thread_flag(TIF_ADDR32) ? 0x7ff : 0x3fffff)
-
-powerpc:
-/* 1GB for 64bit, 8MB for 32bit */
-#define STACK_RND_MASK (is_32bit_task() ? \
-        (0x7ff >> (PAGE_SHIFT - 12)) : \
-        (0x3ffff >> (PAGE_SHIFT - 12)))
-
-So, in the 64k page case, stack randomization entropy is reduced, but
-otherwise identical to x86.
-
-x86 and powerpc both use arch_mmap_rnd() for both mmap and ET_DYN
-(with different bases).
-
-x86 uses ELF_ET_DYN_BASE as TASK_SIZE / 3 * 2 (which the ELF loader
-pushes back up the nearest PAGE_SIZE alignment: 0x555555555000),
-though powerpc uses 0x20000000, so it should have significantly more
-space for mmap and ET_DYN ASLR than x86.
-
-> - I tried to increase the randomness to 28 bits for PPC as well by
-> making the PPC mmap, brk code equivalent to x86_64 and it works fine
-> for my use case.
-
-The PPC brk randomization on powerpc doesn't use the more common
-randomize_page() way other archs do it...
-
-        /* 8MB for 32bit, 1GB for 64bit */
-        if (is_32bit_task())
-                rnd = (get_random_long() % (1UL<<(23-PAGE_SHIFT)));
-        else
-                rnd = (get_random_long() % (1UL<<(30-PAGE_SHIFT)));
-
-        return rnd << PAGE_SHIFT;
-
-x86 uses 0x02000000 (via randomize_page()), which, if I'm doing the
-math right is 14 bits, regardless of 32/64-bit. arm64 uses 0x40000000
-(20 bits) on 64-bit processes and the same as x86 (14) for 32-bit
-processes. Looks like powerpc uses either 13 or 20 for 4k pages, which
-is close to the same.
-
-> - But, I am not sure this is the right thing to do and whether the
-> PPC64 also supports the MIN and MAX ranges for randomization.
-
-It can support it once you implement the Kconfigs for it. :)
-
-> - If it does I would like to understand, test and push a patch to
-> implement the same for PPC64 in upstream.
->
-> Sorry for the long mail, but would really appreciate if someone can
-> help me understand the details here.
-
-Hopefully this helped a bit. I would literally draw out the memory
-map, and double-check nothing can collide at your max values.
-
--Kees
-
+diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+index bda851a..a841084 100644
+--- a/arch/powerpc/include/asm/vas.h
++++ b/arch/powerpc/include/asm/vas.h
+@@ -67,6 +67,26 @@ struct vas_rx_win_attr {
+ };
+ 
+ /*
++ * Window attributes specified by the in-kernel owner of a send window.
++ */
++struct vas_tx_win_attr {
++	enum vas_cop_type cop;
++	int wcreds_max;
++	int lpid;
++	int pid;
++	int pswid;
++	int rsvd_txbuf_count;
++
++	bool user_win;
++	bool pin_win;
++	bool rej_no_credit;
++	bool rsvd_txbuf_enable;
++	bool tx_win_ord_mode;
++	bool rx_win_ord_mode;
++	enum vas_thresh_ctl tc_mode;
++};
++
++/*
+  * Open a VAS receive window for the instance of VAS identified by @vasid
+  * Use @attr to initialize the attributes of the window.
+  *
+@@ -76,6 +96,19 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+ 			struct vas_rx_win_attr *attr);
+ 
+ /*
++ * Open a VAS send window for the instance of VAS identified by @vasid
++ * and the co-processor type @cop. Use @attr to initialize attributes
++ * of the window.
++ *
++ * Note: The instance of VAS must already have an open receive window for
++ * the coprocessor type @cop.
++ *
++ * Return a handle to the send window or ERR_PTR() on error.
++ */
++struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
++			struct vas_tx_win_attr *attr);
++
++/*
+  * Close the send or receive window identified by @win. For receive windows
+  * return -EAGAIN if there are active send windows attached to this receive
+  * window.
+diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.c
+index 4b06780..3b4b801 100644
+--- a/drivers/misc/vas/vas-window.c
++++ b/drivers/misc/vas/vas-window.c
+@@ -712,6 +712,148 @@ struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
+ 	return ERR_PTR(rc);
+ }
+ 
++static void init_winctx_for_txwin(struct vas_window *txwin,
++			struct vas_tx_win_attr *txattr,
++			struct vas_winctx *winctx)
++{
++	/*
++	 * We first zero all fields and only set non-zero ones. Following
++	 * are some fields set to 0/false for the stated reason:
++	 *
++	 *	->notify_os_intr_reg	In powerNV, send intrs to HV
++	 *	->rsvd_txbuf_count	Not supported yet.
++	 *	->notify_disable	False for NX windows
++	 *	->xtra_write		False for NX windows
++	 *	->notify_early		NA for NX windows
++	 *	->lnotify_lpid		NA for Tx windows
++	 *	->lnotify_pid		NA for Tx windows
++	 *	->lnotify_tid		NA for Tx windows
++	 *	->tx_win_cred_mode	Ignore for now for NX windows
++	 *	->rx_win_cred_mode	Ignore for now for NX windows
++	 */
++	memset(winctx, 0, sizeof(struct vas_winctx));
++
++	winctx->wcreds_max = txattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
++
++	winctx->user_win = txattr->user_win;
++	winctx->nx_win = txwin->rxwin->nx_win;
++	winctx->pin_win = txattr->pin_win;
++
++	winctx->rx_word_mode = true;
++	winctx->tx_word_mode = true;
++
++	if (winctx->nx_win) {
++		winctx->data_stamp = true;
++		winctx->intr_disable = true;
++	}
++
++	winctx->lpid = txattr->lpid;
++	winctx->pid = txattr->pid;
++	winctx->rx_win_id = txwin->rxwin->winid;
++	winctx->fault_win_id = fault_winid;
++
++	winctx->dma_type = VAS_DMA_TYPE_INJECT;
++	winctx->tc_mode = txattr->tc_mode;
++	winctx->min_scope = VAS_SCOPE_LOCAL;
++	winctx->max_scope = VAS_SCOPE_VECTORED_GROUP;
++	winctx->irq_port = txwin->irq_port;
++}
++
++static bool tx_win_args_valid(enum vas_cop_type cop,
++			struct vas_tx_win_attr *attr)
++{
++	if (attr->tc_mode != VAS_THRESH_DISABLED)
++		return false;
++
++	if (cop > VAS_COP_TYPE_MAX)
++		return false;
++
++	if (attr->user_win) {
++		if (cop != VAS_COP_TYPE_GZIP && cop != VAS_COP_TYPE_GZIP_HIPRI)
++			return false;
++
++		if (attr->rsvd_txbuf_count != 0)
++			return false;
++	}
++
++	return true;
++}
++
++struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
++			struct vas_tx_win_attr *attr)
++{
++	int rc, winid;
++	struct vas_instance *vinst;
++	struct vas_window *txwin;
++	struct vas_window *rxwin;
++	struct vas_winctx winctx;
++	int size;
++	char *name;
++	uint64_t paste_busaddr;
++
++	if (!vas_initialized)
++		return ERR_PTR(-EAGAIN);
++
++	if (!tx_win_args_valid(cop, attr))
++		return ERR_PTR(-EINVAL);
++
++	vinst = find_vas_instance(vasid);
++	if (!vinst) {
++		pr_devel("VAS: vasid %d not found!\n", vasid);
++		return ERR_PTR(-EINVAL);
++	}
++
++	rxwin = get_vinstance_rxwin(vinst, cop);
++	if (!rxwin) {
++		pr_devel("VAS: No RxWin for vasid %d, cop %d\n", vasid, cop);
++		return ERR_PTR(-EINVAL);
++	}
++
++	rc = -EAGAIN;
++	winid = vas_assign_window_id(&vinst->ida);
++	if (winid < 0)
++		goto put_rxwin;
++
++	rc = -ENOMEM;
++	txwin = vas_window_alloc(vinst, winid);
++	if (!txwin)
++		goto release_winid;
++
++	txwin->tx_win = 1;
++	txwin->rxwin = rxwin;
++	txwin->nx_win = txwin->rxwin->nx_win;
++
++	init_winctx_for_txwin(txwin, attr, &winctx);
++
++	init_winctx_regs(txwin, &winctx);
++
++	name = kasprintf(GFP_KERNEL, "window-v%d-w%d", vasid, winid);
++	if (!name)
++		goto release_winid;
++
++	txwin->paste_addr_name = name;
++	compute_paste_address(txwin, &paste_busaddr, &size);
++
++	txwin->paste_kaddr = map_mmio_region(name, paste_busaddr, size);
++	if (!txwin->paste_kaddr)
++		goto free_name;
++
++	pr_devel("VAS: mapped paste addr 0x%llx to kaddr 0x%p\n",
++				paste_busaddr, txwin->paste_kaddr);
++	return txwin;
++
++free_name:
++	kfree(txwin->paste_addr_name);
++
++release_winid:
++	vas_release_window_id(&vinst->ida, txwin->winid);
++
++put_rxwin:
++	put_rx_win(rxwin);
++	return ERR_PTR(rc);
++
++}
++
+ int vas_win_close(struct vas_window *window)
+ {
+ 	uint64_t val;
 -- 
-Kees Cook
-Nexus Security
+2.7.4
