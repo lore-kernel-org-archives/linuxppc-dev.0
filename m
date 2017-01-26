@@ -1,24 +1,24 @@
-Return-Path: <robert.jarzmik@free.fr>
-Received: from smtp.smtpout.orange.fr (smtp04.smtpout.orange.fr
- [80.12.242.126])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8GV74PzhzDq72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 20:15:27 +1100 (AEDT)
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: julia.lawall@lip6.fr, balbi@kernel.org, gregkh@linuxfoundation.org,
- leoli@freescale.com, daniel@zonque.org, haojian.zhuang@gmail.com,
- linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] usb: gadget: udc: constify usb_ep_ops structures
-References: <1485192364-2840-1-git-send-email-bhumirks@gmail.com>
-Date: Thu, 26 Jan 2017 10:15:04 +0100
-In-Reply-To: <1485192364-2840-1-git-send-email-bhumirks@gmail.com> (Bhumika
- Goyal's message of "Mon, 23 Jan 2017 22:56:04 +0530")
-Message-ID: <878tpychd3.fsf@belgarion.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8JqZ0W4NzDq75
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 22:00:40 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Anton Blanchard' <anton@samba.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Paul Mackerras" <paulus@samba.org>, "rric@kernel.org" <rric@kernel.org>
+CC: "oprofile-list@lists.sf.net" <oprofile-list@lists.sf.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: gcc trunk fails to build kernel on PowerPC64 due to oprofile
+ warnings
+Date: Thu, 26 Jan 2017 11:00:33 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB026EBC6@AcuExch.aculab.com>
+References: <20170126100044.7e439f72@kryten>
+In-Reply-To: <20170126100044.7e439f72@kryten>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bhumika Goyal <bhumirks@gmail.com> writes:
-
-> Declare usb_ep_ops structures as const as they are only stored in the
-> ops field of an usb_ep structure. This field is of type const, so
-> usb_ep_ops structures having this property can be made const too.
-> Done using Coccinelle( A smaller version of the script)
-
-For pxa27x_udc.c :
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
-
-Cheers.
-
--- 
-Robert
+RnJvbTogQW50b24gQmxhbmNoYXJkDQo+IFNlbnQ6IDI1IEphbnVhcnkgMjAxNyAyMzowMQ0KPiBn
+Y2MgdHJ1bmsgaGFzIGZhaWxlZCB0byBidWlsZCBQb3dlclBDNjQga2VybmVscyBmb3IgYSBtb250
+aCBvciBzby4gVGhlIGlzc3VlDQo+IGlzIGluIG9wcm9maWxlLCB3aGljaCBpcyBjb21tb24gY29k
+ZSBidXQgZW5kcyB1cCBiZWluZyBzdWNrZWQgaW50bw0KPiBhcmNoL3Bvd2VycGMgYW5kIHRoZXJl
+Zm9yZSBzdWJqZWN0IHRvIHRoZSAtV2Vycm9yIGFwcGxpZWQgdG8gYXJjaC9wb3dlcnBjOg0KLi4u
+DQo+IGxpbnV4L2FyY2gvcG93ZXJwYy9vcHJvZmlsZS8uLi8uLi8uLi9kcml2ZXJzL29wcm9maWxl
+L29wcm9maWxlX3N0YXRzLmM6NTU6MjU6IGVycm9yOiAlZCBkaXJlY3RpdmUNCj4gb3V0cHV0IG1h
+eSBiZSB0cnVuY2F0ZWQgd3JpdGluZyBiZXR3ZWVuIDEgYW5kIDExIGJ5dGVzIGludG8gYSByZWdp
+b24gb2Ygc2l6ZSA3IFstV2Vycm9yPWZvcm1hdC0NCj4gdHJ1bmNhdGlvbj1dDQo+ICAgIHNucHJp
+bnRmKGJ1ZiwgMTAsICJjcHUlZCIsIGkpOw0KDQpGRlMgdGhlc2Ugd2FybmluZ3MgYXJlIGdldHRp
+bmcgT1RULg0KVGhlIGNvbXBpbGVyIG5lZWRzIHRvIGJlIGFibGUgdG8gdHJhY2sgdGhlIGRvbWFp
+biBvZiBpbnRlZ2VycyBiZWZvcmUgYXBwbHlpbmcNCnNvbWUgb2YgdGhlc2Ugd2FybmluZ3MuDQoN
+CglEYXZpZA0KDQo=
