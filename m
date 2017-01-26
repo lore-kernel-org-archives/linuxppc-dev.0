@@ -1,39 +1,18 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MT6McYzDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:39:01 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3v84MT1N1Dz9t14
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 12:39:00 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0Q1cW9e039155
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:59 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28777k0mpe-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:58 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 25 Jan 2017 18:38:58 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
- apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
- bsingharora@gmail.com, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 10/10] VAS: Define copy/paste interfaces
-Date: Wed, 25 Jan 2017 17:38:08 -0800
-In-Reply-To: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1485394688-31129-11-git-send-email-sukadev@linux.vnet.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3v87bJ2vgZzDq6Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 15:04:26 +1100 (AEDT)
+Date: Wed, 25 Jan 2017 23:04:13 -0500 (EST)
+Message-Id: <20170125.230413.830821835017116629.davem@davemloft.net>
+To: tlfalcon@linux.vnet.ibm.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ wvoigt@us.ibm.com, nfont@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com
+Subject: Re: [PATCH net 1/5] ibmvnic: harden interrupt handler
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,215 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define interfaces (wrappers) to the 'copy' and 'paste' instructions
-(which are new in PowerISA 3.0). These are intended to be used to
-by NX driver(s) to submit Coprocessor Request Blocks (CRBs) to the
-NX hardware engines.
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Wed, 25 Jan 2017 15:02:19 -0600
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/vas.h  | 17 +++++++++-
- drivers/misc/vas/copy-paste.h   | 74 +++++++++++++++++++++++++++++++++++++++++
- drivers/misc/vas/vas-internal.h | 14 ++++++++
- drivers/misc/vas/vas-window.c   | 43 ++++++++++++++++++++++++
- 4 files changed, 147 insertions(+), 1 deletion(-)
- create mode 100644 drivers/misc/vas/copy-paste.h
+> Move most interrupt handler processing into a tasklet, and
+> introduce a delay after re-enabling interrupts to fix timing
+> issues encountered in hardware testing.
+> 
+> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index a841084..27710d1 100644
---- a/arch/powerpc/include/asm/vas.h
-+++ b/arch/powerpc/include/asm/vas.h
-@@ -116,11 +116,26 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
- int vas_win_close(struct vas_window *win);
- 
- /*
-+ * Copy the co-processor request block (CRB) @crb into the local L2 cache.
-+ * For now, @offset must be 0 and @first must be true.
-+ */
-+extern int vas_copy_crb(void *crb, int offset, bool first);
-+
-+/*
-+ * Paste a previously copied CRB (see vas_copy_crb()) from the L2 cache to
-+ * the hardware address associated with the window @win. For now, @off must
-+ * 0 and @last must be true. @re is expected/assumed to be true for NX windows.
-+ */
-+extern int vas_paste_crb(struct vas_window *win, int off, bool last, bool re);
-+
-+
-+
-+
-+/*
-  * Get/Set bit fields
-  */
- #define GET_FIELD(m, v)		(((v) & (m)) >> MASK_LSH(m))
- #define MASK_LSH(m)		(__builtin_ffsl(m) - 1)
- #define SET_FIELD(m, v, val)	\
- 		(((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
--
- #endif
-diff --git a/drivers/misc/vas/copy-paste.h b/drivers/misc/vas/copy-paste.h
-new file mode 100644
-index 0000000..7783bb8
---- /dev/null
-+++ b/drivers/misc/vas/copy-paste.h
-@@ -0,0 +1,74 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+/*
-+ * Macros taken from tools/testing/selftests/powerpc/context_switch/cp_abort.c
-+ */
-+#define PASTE(RA, RB, L, RC) \
-+	.long (0x7c00070c | (RA) << (31-15) | (RB) << (31-20) \
-+			  | (L) << (31-10) | (RC) << (31-31))
-+
-+#define COPY(RA, RB, L) \
-+	.long (0x7c00060c | (RA) << (31-15) | (RB) << (31-20) \
-+			  | (L) << (31-10))
-+
-+#define CR0_FXM		"0x80"
-+#define CR0_SHIFT	28
-+#define CR0_MASK	0xF
-+/*
-+ * Copy/paste instructions:
-+ *
-+ *	copy RA,RB,L
-+ *		Copy contents of address (RA) + effective_address(RB)
-+ *		to internal copy-buffer.
-+ *
-+ *		L == 1 indicates this is the first copy.
-+ *
-+ *		L == 0 indicates its a continuation of a prior first copy.
-+ *
-+ *	paste RA,RB,L
-+ *		Paste contents of internal copy-buffer to the address
-+ *		(RA) + effective_address(RB)
-+ *
-+ *		L == 0 indicates its a continuation of a prior paste. i.e.
-+ *		don't wait for the completion or update status.
-+ *
-+ *		L == 1 indicates this is the last paste in the group (i.e.
-+ *		wait for the group to complete and update status in CR0).
-+ *
-+ *	For Power9, the L bit must be 'true' in both copy and paste.
-+ */
-+
-+static inline int vas_copy(void *crb, int offset, int first)
-+{
-+	WARN_ON_ONCE(!first);
-+
-+	__asm__ __volatile(stringify_in_c(COPY(%0, %1, %2))";"
-+		:
-+		: "b" (offset), "b" (crb), "i" (1)
-+		: "memory");
-+
-+	return 0;
-+}
-+
-+static inline int vas_paste(void *paste_address, int offset, int last)
-+{
-+	unsigned long long cr;
-+
-+	WARN_ON_ONCE(!last);
-+
-+	cr = 0;
-+	__asm__ __volatile(stringify_in_c(PASTE(%1, %2, 1, 1))";"
-+		"mfocrf %0," CR0_FXM ";"
-+		: "=r" (cr)
-+		: "b" (paste_address), "b" (offset)
-+		: "memory");
-+
-+	return cr;
-+}
-diff --git a/drivers/misc/vas/vas-internal.h b/drivers/misc/vas/vas-internal.h
-index 139d12a..d1c2b90 100644
---- a/drivers/misc/vas/vas-internal.h
-+++ b/drivers/misc/vas/vas-internal.h
-@@ -450,4 +450,18 @@ static inline uint64_t read_hvwc_reg(struct vas_window *win,
- 	return in_be64(win->hvwc_map+reg);
- }
- 
-+#ifdef vas_debug
-+
-+static void print_fifo_msg_count(struct vas_window *txwin)
-+{
-+	uint64_t read_hvwc_reg(struct vas_window *w, char *n, uint64_t o);
-+	pr_devel("Winid %d, Msg count %llu\n", txwin->winid,
-+			(uint64_t)read_hvwc_reg(txwin, VREG(LRFIFO_PUSH)));
-+}
-+#else	/* vas_debug */
-+
-+#define print_fifo_msg_count(window)
-+
-+#endif	/* vas_debug */
-+
- #endif
-diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.c
-index 3b4b801..f4c8c1b 100644
---- a/drivers/misc/vas/vas-window.c
-+++ b/drivers/misc/vas/vas-window.c
-@@ -13,6 +13,7 @@
- #include <linux/io.h>
- #include <asm/vas.h>
- #include "vas-internal.h"
-+#include "copy-paste.h"
- 
- static int fault_winid;
- 
-@@ -854,6 +855,48 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
- 
- }
- 
-+int vas_copy_crb(void *crb, int offset, bool first)
-+{
-+	if (!vas_initialized)
-+		return -1;
-+
-+	return vas_copy(crb, offset, first);
-+}
-+
-+#define RMA_LSMP_REPORT_ENABLE PPC_BIT(53)
-+int vas_paste_crb(struct vas_window *txwin, int offset, bool last, bool re)
-+{
-+	int rc;
-+	uint64_t val;
-+	void *addr;
-+
-+	if (!vas_initialized)
-+		return -1;
-+	/*
-+	 * Only NX windows are supported for now and hardware assumes
-+	 * report-enable flag is set for NX windows. Ensure software
-+	 * complies too.
-+	 */
-+	WARN_ON_ONCE(!re);
-+
-+	addr = txwin->paste_kaddr;
-+	if (re) {
-+		/*
-+		 * Set the REPORT_ENABLE bit (equivalent to writing
-+		 * to 1K offset of the paste address)
-+		 */
-+		val = SET_FIELD(RMA_LSMP_REPORT_ENABLE, 0ULL, 1);
-+		addr += val;
-+	}
-+
-+	rc = vas_paste(addr, offset, last);
-+
-+	print_fifo_msg_count(txwin);
-+
-+	return rc;
-+}
-+
-+
- int vas_win_close(struct vas_window *window)
- {
- 	uint64_t val;
--- 
-2.7.4
+I don't think you have any idea what the real problem is.  This looks
+like a hack, at best.  Next patch you'll increase the delay to "20",
+right?  And if that doesn't work you'll try "40".
+
+Or if you do know the reason, you need to explain it in detail in this
+commit message so that we can properly evaluate this patch.
+
+Furthermore, if you're going to move all of your packet processing
+into software interrupt context, you might as well use NAPI polling
+which is a purposefully built piece of infrastructure for doing
+exactly this.
