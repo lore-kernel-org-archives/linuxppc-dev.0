@@ -1,22 +1,28 @@
-Return-Path: <prvs=119903ef44=mark.marshall@omicronenergy.com>
-Received: from ns.omicron.at (ns.omicron.at [212.183.10.25])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rric.net@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8QZw47QVzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 02:20:00 +1100 (AEDT)
-From: <mark.marshall@omicronenergy.com>
-To: <computersforpeace@gmail.com>, <linux-mtd@lists.infradead.org>
-CC: <markmarshall14@gmail.com>, <raghav.dogra@nxp.com>,
- <boris.brezillon@free-electrons.com>, <leoyang.li@nxp.com>,
- <oss@buserror.net>, <prabhakar.kushwaha@nxp.com>,
- <linuxppc-dev@lists.ozlabs.org>, <raghav@freescale.com>,
- <b44839@freescale.com>, Mark Marshall <mark.marshall@omicronenergy.com>,
- <stable@vger.kernel.org>
-Subject: [PATCH V2] mtd/ifc: Fix location of eccstat registers for IFC V1.0
-Date: Thu, 26 Jan 2017 16:18:27 +0100
-Message-ID: <1485443907-11630-1-git-send-email-mark.marshall@omicronenergy.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8RcX00qmzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 03:06:35 +1100 (AEDT)
+Received: by mail-wm0-x244.google.com with SMTP id r126so51355081wmr.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 08:06:35 -0800 (PST)
+Sender: Robert Richter <rric.net@gmail.com>
+Date: Thu, 26 Jan 2017 17:06:25 +0100
+From: Robert Richter <rric@kernel.org>
+To: William Cohen <wcohen@redhat.com>
+Cc: Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, oprofile-list@lists.sf.net,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: gcc trunk fails to build kernel on PowerPC64 due to oprofile
+ warnings
+Message-ID: <20170126160512.GE4906@rric.localdomain>
+References: <20170126100044.7e439f72@kryten>
+ <fe2c2fd9-d255-61ca-5328-ca5d45827f47@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fe2c2fd9-d255-61ca-5328-ca5d45827f47@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mark Marshall <mark.marshall@omicronenergy.com>
+On 26.01.17 10:46:43, William Cohen wrote:
+> From 7e46dbd7dc5bc941926a4a63c28ccebf46493e8d Mon Sep 17 00:00:00 2001
+> From: William Cohen <wcohen@redhat.com>
+> Date: Thu, 26 Jan 2017 10:33:59 -0500
+> Subject: [PATCH] Avoid hypthetical string truncation in oprofile stats buffer
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: 8bit
+> 
+> Increased the size of an internal oprofile driver buffer ensuring that
+> the string was never truncated for any possible int value to avoid the
+> following gcc-7 compiler error on ppc when building the kernel:
 
-The commit 7a654172161c ("mtd/ifc: Add support for IFC controller
-version 2.0") added support for version 2.0 of the IFC controller.
-The version 2.0 controller has the ECC status registers at a different
-location to the previous versions.
+Please test gcc7 for other archs first. I don't think this is the only
+change needed to avoid this warning in oprofile code.
 
-Correct the fsl_ifc_nand structure so that the ECC status can be read
-from the correct location for both version 1.0 and 2.0 of the controller.
+Thanks,
 
-Cc: stable@vger.kernel.org
-Fixes: 7a654172161c ("mtd/ifc: Add support for IFC controller version 2.0")
-Signed-off-by: Mark Marshall <mark.marshall@omicronenergy.com>
----
-
-Changes since v1:
-
-- simplified the reading of the registers.
-
- drivers/mtd/nand/fsl_ifc_nand.c | 8 +++++++-
- include/linux/fsl_ifc.h         | 8 ++++++--
- 2 files changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
-index 0a177b1..d1570f5 100644
---- a/drivers/mtd/nand/fsl_ifc_nand.c
-+++ b/drivers/mtd/nand/fsl_ifc_nand.c
-@@ -258,9 +258,15 @@ static void fsl_ifc_run_command(struct mtd_info *mtd)
- 		int bufnum = nctrl->page & priv->bufnum_mask;
- 		int sector = bufnum * chip->ecc.steps;
- 		int sector_end = sector + chip->ecc.steps - 1;
-+		__be32 *eccstat_regs;
-+
-+		if (ctrl->version >= FSL_IFC_VERSION_2_0_0)
-+			eccstat_regs = ifc->ifc_nand.v2_nand_eccstat;
-+		else
-+			eccstat_regs = ifc->ifc_nand.v1_nand_eccstat;
- 
- 		for (i = sector / 4; i <= sector_end / 4; i++)
--			eccstat[i] = ifc_in32(&ifc->ifc_nand.nand_eccstat[i]);
-+			eccstat[i] = ifc_in32(&eccstat_regs[i]);
- 
- 		for (i = sector; i <= sector_end; i++) {
- 			errors = check_read_ecc(mtd, ctrl, eccstat, i);
-diff --git a/include/linux/fsl_ifc.h b/include/linux/fsl_ifc.h
-index 3f9778c..c332f0a 100644
---- a/include/linux/fsl_ifc.h
-+++ b/include/linux/fsl_ifc.h
-@@ -733,8 +733,12 @@ struct fsl_ifc_nand {
- 	__be32 nand_erattr1;
- 	u32 res19[0x10];
- 	__be32 nand_fsr;
--	u32 res20[0x3];
--	__be32 nand_eccstat[6];
-+	u32 res20;
-+	/* The V1 nand_eccstat is actually 4 words that overlaps the
-+	 * V2 nand_eccstat.
-+	 */
-+	__be32 v1_nand_eccstat[2];
-+	__be32 v2_nand_eccstat[6];
- 	u32 res21[0x1c];
- 	__be32 nanndcr;
- 	u32 res22[0x2];
--- 
-2.7.4
+-Robert
