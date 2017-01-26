@@ -1,21 +1,32 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3v8V4001QJzDq78
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 04:57:03 +1100 (AEDT)
-Date: Thu, 26 Jan 2017 12:56:58 -0500 (EST)
-Message-Id: <20170126.125658.909712109140919732.davem@davemloft.net>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: netdev@vger.kernel.org, wvoigt@us.ibm.com, jallen@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
-Subject: Re: [PATCH net 2/5] ibmvnic: Fix MTU settings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <783c7683-1cc2-6128-e19c-fd2c3c16cf4b@linux.vnet.ibm.com>
-References: <1485378143-5084-2-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <20170125.230504.215468934911959234.davem@davemloft.net>
- <783c7683-1cc2-6128-e19c-fd2c3c16cf4b@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8V4s1SwjzDq8W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 04:57:49 +1100 (AEDT)
+Date: Thu, 26 Jan 2017 11:57:44 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+Message-ID: <20170126175744.gv3ttlg52axuq57c@treble>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
+ <20170126135603.GD27517@pathway.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170126135603.GD27517@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +36,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Thu, 26 Jan 2017 10:44:31 -0600
+On Thu, Jan 26, 2017 at 02:56:03PM +0100, Petr Mladek wrote:
+> On Thu 2017-01-19 09:46:09, Josh Poimboeuf wrote:
+> > For live patching and possibly other use cases, a stack trace is only
+> > useful if it can be assured that it's completely reliable.  Add a new
+> > save_stack_trace_tsk_reliable() function to achieve that.
+> 
+> > diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+> > index 0653788..fc36842 100644
+> > --- a/arch/x86/kernel/stacktrace.c
+> > +++ b/arch/x86/kernel/stacktrace.c
+> > @@ -74,6 +74,90 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+> >  }
+> >  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+> >  
+> > +#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
+> > +static int __save_stack_trace_reliable(struct stack_trace *trace,
+> > +				       struct task_struct *task)
+> > +{
+> > +	struct unwind_state state;
+> > +	struct pt_regs *regs;
+> > +	unsigned long addr;
+> > +
+> > +	for (unwind_start(&state, task, NULL, NULL); !unwind_done(&state);
+> > +	     unwind_next_frame(&state)) {
+> > +
+> > +		regs = unwind_get_entry_regs(&state);
+> > +		if (regs) {
+> > +			/*
+> > +			 * Kernel mode registers on the stack indicate an
+> > +			 * in-kernel interrupt or exception (e.g., preemption
+> > +			 * or a page fault), which can make frame pointers
+> > +			 * unreliable.
+> > +			 */
+> > +			if (!user_mode(regs))
+> > +				return -1;
+> > +
+> > +			/*
+> > +			 * The last frame contains the user mode syscall
+> > +			 * pt_regs.  Skip it and finish the unwind.
+> > +			 */
+> > +			unwind_next_frame(&state);
+> > +			if (WARN_ON_ONCE(!unwind_done(&state))) {
+> > +				show_stack(task, NULL);
+> 
+> We should make sure that show_stack() is called only once as well.
+> Otherwise, it would fill logbuffer with random stacktraces without
+> any context. It might easily cause flood of messages and the first
+> useful one might get lost in the ring buffer.
 
-> On 01/25/2017 10:05 PM, David Miller wrote:
->> From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
->> Date: Wed, 25 Jan 2017 15:02:20 -0600
->>
->>> In the current driver, the MTU is set to the maximum value
->>> capable for the backing device. This patch sets the MTU to the
->>> default value for a Linux net device.
->> Why are you doing this?
->>
->> What happens to users who depend upon the current behavior.
->>
->> They will break, and that isn't acceptable.
->>
-> The current behavior was already broken.  We were seeing firmware errors when sending jumbo sized packets .  We plan to add proper support for jumbo sized packets as soon as possible.  
+Agreed.
 
-Need to be explained, with a full detailed history of how things got this way,
-in your commit message.
+> > +				return -1;
+> > +			}
+> > +			break;
+> > +		}
+> > +
+> > +		addr = unwind_get_return_address(&state);
+> > +
+> > +		/*
+> > +		 * A NULL or invalid return address probably means there's some
+> > +		 * generated code which __kernel_text_address() doesn't know
+> > +		 * about.
+> > +		 */
+> > +		if (WARN_ON_ONCE(!addr)) {
+> > +			show_stack(task, NULL);
+> 
+> Same here.
+> 
+> > +			return -1;
+> > +		}
+> > +
+> > +		if (save_stack_address(trace, addr, false))
+> > +			return -1;
+> > +	}
+> > +
+> > +	/* Check for stack corruption */
+> > +	if (WARN_ON_ONCE(unwind_error(&state))) {
+> > +		show_stack(task, NULL);
+> 
+> And here.
+> 
+> > +		return -1;
+> > +	}
+> > +
+> > +	if (trace->nr_entries < trace->max_entries)
+> > +		trace->entries[trace->nr_entries++] = ULONG_MAX;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +/*
+> > + * This function returns an error if it detects any unreliable features of the
+> > + * stack.  Otherwise it guarantees that the stack trace is reliable.
+> > + *
+> > + * If the task is not 'current', the caller *must* ensure the task is inactive.
+> > + */
+> > +int save_stack_trace_tsk_reliable(struct task_struct *tsk,
+> > +				  struct stack_trace *trace)
+> > +{
+> > +	int ret;
+> > +
+> > +	if (!try_get_task_stack(tsk))
+> > +		return -EINVAL;
+> > +
+> > +	ret = __save_stack_trace_reliable(trace, tsk);
+> 
+> __save_stack_trace_reliable() returns -1 in case of problems.
+> But this function returns a meaningful error codes, line -EINVAL,
+> -ENOSYS, otherwise.
+> 
+> We should either transform the error code here to something
+> "meaningful", probably -EINVAL. Or we should update
+> __save_stack_trace_reliable() to return meaningful error codes.
 
- 
+Agreed.
+
+> > +	put_task_stack(tsk);
+> > +
+> > +	return ret;
+> > +}
+> > +#endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
+> > +
+> >  /* Userspace stacktrace - based on kernel/trace/trace_sysprof.c */
+> >  
+> >  struct stack_frame_user {
+> 
+> Otherwise, all the logic looks fine to me. Great work!
+
+Thanks!
+
+-- 
+Josh
