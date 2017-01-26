@@ -1,32 +1,20 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8TWs5C6WzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 04:32:41 +1100 (AEDT)
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3v8TWr5PqYz9tk2
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jan 2017 04:32:40 +1100 (AEDT)
-Received: by mail-lf0-x242.google.com with SMTP id x1so24302548lff.0
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 09:32:40 -0800 (PST)
-MIME-Version: 1.0
-Sender: ddstreet@gmail.com
-In-Reply-To: <1485394688-31129-3-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1485394688-31129-3-git-send-email-sukadev@linux.vnet.ibm.com>
-From: Dan Streetman <ddstreet@ieee.org>
-Date: Thu, 26 Jan 2017 12:31:57 -0500
-Message-ID: <CALZtONABwicMRdArkBqdJQhHnsLtvtzqvQeBGnuD=W00M-ZJbw@mail.gmail.com>
-Subject: Re: [PATCH v2 02/10] Move GET_FIELD/SET_FIELD to vas.h
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org, apopple@au1.ibm.com, oohall@gmail.com,
- michael.neuling@au1.ibm.com
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown [184.105.139.130])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3v8V3V62vgzDq6X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 04:56:37 +1100 (AEDT)
+Date: Thu, 26 Jan 2017 12:56:24 -0500 (EST)
+Message-Id: <20170126.125624.243097121899163842.davem@davemloft.net>
+To: tlfalcon@linux.vnet.ibm.com
+Cc: netdev@vger.kernel.org, wvoigt@us.ibm.com, jallen@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
+Subject: Re: [PATCH net 1/5] ibmvnic: harden interrupt handler
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <0cea7654-6722-5e68-cd05-cc51bbf7a5ae@linux.vnet.ibm.com>
+References: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+ <20170125.230413.830821835017116629.davem@davemloft.net>
+ <0cea7654-6722-5e68-cd05-cc51bbf7a5ae@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,67 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2017 at 8:38 PM, Sukadev Bhattiprolu
-<sukadev@linux.vnet.ibm.com> wrote:
->
-> Move the GET_FIELD and SET_FIELD macros to vas.h as VAS and other
-> users of VAS, including NX-842 can use those macros.
->
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Thu, 26 Jan 2017 10:44:22 -0600
 
-Reviewed-by: Dan Streetman <dan.streetman@canonical.com>
+> On 01/25/2017 10:04 PM, David Miller wrote:
+>> From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+>> Date: Wed, 25 Jan 2017 15:02:19 -0600
+>>
+>>> Move most interrupt handler processing into a tasklet, and
+>>> introduce a delay after re-enabling interrupts to fix timing
+>>> issues encountered in hardware testing.
+>>>
+>>> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+>> I don't think you have any idea what the real problem is.  This looks
+>> like a hack, at best.  Next patch you'll increase the delay to "20",
+>> right?  And if that doesn't work you'll try "40".
+>>
+>> Or if you do know the reason, you need to explain it in detail in this
+>> commit message so that we can properly evaluate this patch.
+> 
+> You're right, I should have given more explanation in the commit message about the bug encountered and our reasons for this sort of fix.  The issue is that there are some scenarios during the device init where multiple messages are sent by firmware in one interrupt request. 
+> 
+> We have observed behavior where messages are delayed, resulting in the interrupt handler completing before the delayed messages can be processed, fouling up the device bring-up in the device probing and elsewhere.  The goal of the delay is to buy some time for the hypervisor to forward all the CRQ messages from the firmware.
 
-> ---
->  arch/powerpc/include/asm/vas.h     | 8 ++++++++
->  drivers/crypto/nx/nx-842-powernv.c | 1 +
->  drivers/crypto/nx/nx-842.h         | 5 -----
->  3 files changed, 9 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-> index 1c10437..fef9e87 100644
-> --- a/arch/powerpc/include/asm/vas.h
-> +++ b/arch/powerpc/include/asm/vas.h
-> @@ -37,4 +37,12 @@ enum vas_thresh_ctl {
->         VAS_THRESH_FIFO_GT_EIGHTH_FULL,
->  };
->
-> +/*
-> + * Get/Set bit fields
-> + */
-> +#define GET_FIELD(m, v)                (((v) & (m)) >> MASK_LSH(m))
-> +#define MASK_LSH(m)            (__builtin_ffsl(m) - 1)
-> +#define SET_FIELD(m, v, val)   \
-> +               (((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
-> +
->  #endif
-> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-> index 1710f80..ea6fb6c 100644
-> --- a/drivers/crypto/nx/nx-842-powernv.c
-> +++ b/drivers/crypto/nx/nx-842-powernv.c
-> @@ -22,6 +22,7 @@
->
->  #include <asm/prom.h>
->  #include <asm/icswx.h>
-> +#include <asm/vas.h>
->
->  MODULE_LICENSE("GPL");
->  MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
-> diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
-> index a4eee3b..30929bd 100644
-> --- a/drivers/crypto/nx/nx-842.h
-> +++ b/drivers/crypto/nx/nx-842.h
-> @@ -100,11 +100,6 @@ static inline unsigned long nx842_get_pa(void *addr)
->         return page_to_phys(vmalloc_to_page(addr)) + offset_in_page(addr);
->  }
->
-> -/* Get/Set bit fields */
-> -#define MASK_LSH(m)            (__builtin_ffsl(m) - 1)
-> -#define GET_FIELD(v, m)                (((v) & (m)) >> MASK_LSH(m))
-> -#define SET_FIELD(v, m, val)   (((v) & ~(m)) | (((val) << MASK_LSH(m)) & (m)))
-> -
->  /**
->   * This provides the driver's constraints.  Different nx842 implementations
->   * may have varying requirements.  The constraints are:
-> --
-> 2.7.4
->
+Then isn't there an event you can sleep and wait for, or a piece of state for
+you to poll and test for in a timeout based loop?
+
+This delay is a bad solution for the problem of waiting for A to happen
+before you do B.
