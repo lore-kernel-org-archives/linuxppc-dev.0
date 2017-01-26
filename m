@@ -1,35 +1,22 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8WbQ070RzDq6q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 06:05:53 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0QIwdmn127813
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 14:05:52 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2870k51np9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 14:05:51 -0500
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Thu, 26 Jan 2017 12:05:50 -0700
-Subject: Re: [PATCH net 1/5] ibmvnic: harden interrupt handler
-To: Stephen Hemminger <stephen@networkplumber.org>
-References: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <20170126102802.4f920418@xeon-e3>
-Cc: netdev@vger.kernel.org, wvoigt@us.ibm.com, jallen@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Thu, 26 Jan 2017 13:05:40 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8YJK2YP5zDq6j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 07:22:56 +1100 (AEDT)
+Date: Thu, 26 Jan 2017 21:22:48 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Ashley Lai <ashleydlai@gmail.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>, Marcel
+ Selhorst <tpmdd@selhorst.net>, Jarkko Sakkinen
+ <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
+ <jgunthorpe@obsidianresearch.com>, tpmdd-devel@lists.sourceforge.net,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: ibmvtpm byteswapping inconsistency
+Message-ID: <20170126212248.3f3e9103@kitsune.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20170126102802.4f920418@xeon-e3>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <b6646479-b370-b19b-48e2-27e20f67a31a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,22 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/26/2017 12:28 PM, Stephen Hemminger wrote:
-> On Wed, 25 Jan 2017 15:02:19 -0600
-> Thomas Falcon <tlfalcon@linux.vnet.ibm.com> wrote:
->
->>  static irqreturn_t ibmvnic_interrupt(int irq, void *instance)
->>  {
->>  	struct ibmvnic_adapter *adapter = instance;
->> +	unsigned long flags;
->> +
->> +	spin_lock_irqsave(&adapter->crq.lock, flags);
->> +	vio_disable_interrupts(adapter->vdev);
->> +	tasklet_schedule(&adapter->tasklet);
->> +	spin_unlock_irqrestore(&adapter->crq.lock, flags);
->> +	return IRQ_HANDLED;
->> +}
->> +
-> Why not use NAPI? rather than a tasklet
->
-This interrupt function doesn't process packets, but message passing between firmware and driver for determining device capabilities and available resources, such as the number TX and RX queues. 
+Hello,
+
+building ibmvtpm I noticed gcc warning complaining that second word of
+struct ibmvtpm_crq in tpm_ibmvtpm_suspend is uninitialized.
+
+The structure is defined as 
+
+struct ibmvtpm_crq {
+        u8 valid;
+        u8 msg;
+        __be16 len;
+        __be32 data;
+        __be64 reserved;
+} __attribute__((packed, aligned(8)));
+
+initialized as
+
+        struct ibmvtpm_crq crq;
+        u64 *buf = (u64 *) &crq;
+...
+        crq.valid = (u8)IBMVTPM_VALID_CMD;
+        crq.msg = (u8)VTPM_PREPARE_TO_SUSPEND;
+
+and submitted with
+
+        rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+                              cpu_to_be64(buf[1]));
+
+which means that the second word indeed contains purely garbage.
+
+This is repeated a few times in the driver so I added memset to quiet
+gcc and make behavior deterministic in case the unused fields get some
+meaning in the future.
+
+However, in tpm_ibmvtpm_send the structure is initialized as
+
+	struct ibmvtpm_crq crq;
+        __be64 *word = (__be64 *)&crq;
+...
+        crq.valid = (u8)IBMVTPM_VALID_CMD;
+        crq.msg = (u8)VTPM_TPM_COMMAND;
+        crq.len = cpu_to_be16(count);
+        crq.data = cpu_to_be32(ibmvtpm->rtce_dma_handle);
+
+and submitted with
+
+	rc = ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
+                              be64_to_cpu(word[1]));
+meaning it is swapped twice.
+
+
+Where is the interface defined? Are the command arguments passed as BE
+subfields (the second case was correct before adding the extra whole
+word swap) or BE words (the first case doing whole word swap is
+correct)?
+
+Thanks
+
+Michal
