@@ -1,39 +1,26 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-io0-x234.google.com (mail-io0-x234.google.com
+ [IPv6:2607:f8b0:4001:c06::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v84M55b6rzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:38:41 +1100 (AEDT)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3v84M526P4z9t0v
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 12:38:41 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0Q1cU6b037580
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:39 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2872hs1v7j-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:39 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 25 Jan 2017 18:38:38 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
- apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
- bsingharora@gmail.com, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 01/10] VAS: Define macros, register fields and structures
-Date: Wed, 25 Jan 2017 17:37:59 -0800
-In-Reply-To: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1485394688-31129-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MD0HFwzDq8W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:38:47 +1100 (AEDT)
+Received: by mail-io0-x234.google.com with SMTP id j13so28311416iod.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2017 17:38:47 -0800 (PST)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <CACi5LpOkWV2t1MyYLjDckbkoBSx6QxOw7OVayx-GqWjhVHV1tQ@mail.gmail.com>
+References: <CACi5LpOkWV2t1MyYLjDckbkoBSx6QxOw7OVayx-GqWjhVHV1tQ@mail.gmail.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 25 Jan 2017 17:38:44 -0800
+Message-ID: <CAGXu5j+4_XGHAhdmfmpESguEe8iqh8MpWHvtgnSUu149rcxs=w@mail.gmail.com>
+Subject: Re: Query regarding randomization bits for a ASLR elf on PPC64
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Daniel Cashman <dcashman@google.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,474 +30,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define macros for the VAS hardware registers and bit-fields as well
-as couple of data structures needed by the VAS driver.
+On Sun, Jan 22, 2017 at 9:34 PM, Bhupesh Sharma <bhsharma@redhat.com> wrote:
+> I was recently looking at ways to extend the randomization range for a
+> ASLR elf on a PPC64LE system.
+>
+> I basically have been using 28-bits of randomization on x86_64 for an
+> ASLR elf using appropriate ARCH_MMAP_RND_BITS_MIN and
+> ARCH_MMAP_RND_BITS_MAX values:
+>
+> http://lxr.free-electrons.com/source/arch/x86/Kconfig#L192
+>
+> And I understand from looking at the PPC64 code base that both
+> ARCH_MMAP_RND_BITS_MIN and ARCH_MMAP_RND_BITS_MAX are not used in the
+> current upstream code.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Changelog[v2]
-	- Add an overview of VAS in vas-internal.h
-	- Get window context parameters from device tree and drop
-	  unnecessary macros.
----
- MAINTAINERS                     |   6 +
- arch/powerpc/include/asm/vas.h  |  40 +++++
- drivers/misc/vas/vas-internal.h | 383 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 429 insertions(+)
- create mode 100644 arch/powerpc/include/asm/vas.h
- create mode 100644 drivers/misc/vas/vas-internal.h
+Yeah, looks like PPC could use it. If you've got hardware to test
+with, please add it. :)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 63cefa6..54f015c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12739,6 +12739,12 @@ S:	Maintained
- F:	Documentation/fb/uvesafb.txt
- F:	drivers/video/fbdev/uvesafb.*
- 
-+VAS (IBM Virtual Accelerator Switchboard) DRIVER
-+M:	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-+L:	linuxppc-dev@lists.ozlabs.org
-+S:	Supported
-+F:	drivers/misc/vas/*
-+
- VF610 NAND DRIVER
- M:	Stefan Agner <stefan@agner.ch>
- L:	linux-mtd@lists.infradead.org
-diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-new file mode 100644
-index 0000000..1c10437
---- /dev/null
-+++ b/arch/powerpc/include/asm/vas.h
-@@ -0,0 +1,40 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef VAS_H
-+#define VAS_H
-+
-+#define VAS_RX_FIFO_SIZE_MAX	(8 << 20)	/* 8MB */
-+/*
-+ * Co-processor Engine type.
-+ */
-+enum vas_cop_type {
-+	VAS_COP_TYPE_FAULT,
-+	VAS_COP_TYPE_842,
-+	VAS_COP_TYPE_842_HIPRI,
-+	VAS_COP_TYPE_GZIP,
-+	VAS_COP_TYPE_GZIP_HIPRI,
-+	VAS_COP_TYPE_MAX,
-+};
-+
-+/*
-+ * Threshold Control Mode: Have paste operation fail if the number of
-+ * requests in receive FIFO exceeds a threshold.
-+ *
-+ * NOTE: No special error code yet if paste is rejected because of these
-+ *	 limits. So users can't distinguish between this and other errors.
-+ */
-+enum vas_thresh_ctl {
-+	VAS_THRESH_DISABLED,
-+	VAS_THRESH_FIFO_GT_HALF_FULL,
-+	VAS_THRESH_FIFO_GT_QTR_FULL,
-+	VAS_THRESH_FIFO_GT_EIGHTH_FULL,
-+};
-+
-+#endif
-diff --git a/drivers/misc/vas/vas-internal.h b/drivers/misc/vas/vas-internal.h
-new file mode 100644
-index 0000000..aa4e781
---- /dev/null
-+++ b/drivers/misc/vas/vas-internal.h
-@@ -0,0 +1,383 @@
-+/*
-+ * Copyright 2016 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef VAS_INTERNAL_H
-+#define VAS_INTERNAL_H
-+#include <linux/atomic.h>
-+#include <linux/idr.h>
-+#include <asm/vas.h>
-+
-+#ifdef CONFIG_PPC_4K_PAGES
-+#	error "TODO: Compute RMA/Paste-address for 4K pages."
-+#else
-+#ifndef CONFIG_PPC_64K_PAGES
-+#	error "Unexpected Page size."
-+#endif
-+#endif
-+
-+/*
-+ * Overview of Virtual Accelerator Switchboard (VAS).
-+ *
-+ * VAS is a hardware "switchboard" that allows senders and receivers to
-+ * exchange messages with _minimal_ kernel involvment. The receivers are
-+ * typically NX coprocessor engines that perform compression or encryption
-+ * in hardware, but receivers can also be other software threads.
-+ *
-+ * Senders are user/kernel threads that submit compression/encryption or
-+ * other requests to the receivers. Senders must format their messages as
-+ * Coprocessor Request Blocks (CRB)s and submit them using the instructions
-+ * "copy" and "paste" which were introduced in Power9.
-+ *
-+ * A Power node can have (upto?) 8 Power chips. There is one instance of
-+ * VAS in each Power9 chip. Each instance of VAS has 64K windows or ports,
-+ * Senders and receivers must each connect to a separate window before they
-+ * can exchange messages through the switchboard.
-+ *
-+ * Each window is described by two types of window contexts:
-+ *
-+ *	Hypervisor Window Context (HVWC) of size VAS_HVWC_SIZE bytes
-+ *	OS/User Window Context (UWC) of size VAS_UWC_SIZE bytes.
-+ *
-+ * A window context can be viewed as a set of 64-bit registers. The settings
-+ * in these registers configure/control/determine the behavior of the VAS
-+ * hardware when messages are sent/received through the window. The registers
-+ * in the HVWC are configured by the kernel while the registers in the UWC can
-+ * be configured by the kernel or by the user space application that is using
-+ * the window.
-+ *
-+ * The HVWCs for all windows on a specific instance of VAS are in a contiguous
-+ * range of hardware addresses or Base address region (BAR) referred to as the
-+ * HVWC BAR for the instance. Similarly the UWCs for all windows on an instance
-+ * are referred to as the UWC BAR for the instance. The two BARs for each
-+ * instance are defined Power9 MMIO Ranges spreadsheet and available to the
-+ * kernel the device tree as follows:
-+ *
-+ *	/proc/device-tree/xscom@.../vas@.../hvwc-bar-start
-+ *	/proc/device-tree/xscom@.../vas@.../hvwc-bar-size
-+ *	/proc/device-tree/xscom@.../vas@.../uwc-bar-start
-+ *	/proc/device-tree/xscom@.../vas@.../uwc-bar-size
-+ *
-+ * The kernel maps these two hardware address regions into the kernel address
-+ * space (hvwc_map and uwc_map) and accesses the window contexts of a specific
-+ * window using:
-+ *
-+ *	 hvwc = hvwc_map + winid * VAS_HVWC_SIZE.
-+ *	 uwc = uwc_map + winid * VAS_UWC_SIZE.
-+ *
-+ * where winid is the window index (0..64K).
-+ *
-+ * Note that the window contexts are used to "configure" the windows. In
-+ * addition to this configuration address, each _send_ window also has a
-+ * unique hardware address, referred to as the "paste-address" to which the
-+ * sender must "paste" the message (CRB) they wish to submit. This hardware
-+ * paste address for window can be computed from the following nodes in the
-+ * device tree:
-+ *
-+ *	/proc/device-tree/xscom@.../vas@.../window-base
-+ *	/proc/device-tree/xscom@.../vas@.../window-shift
-+ *
-+ * Thus if 'base' and 'shift' give the values of the above nodes for a given
-+ * instance of VAS, the paste address for a window can be computed using:
-+ *
-+ *	paste_addr = base + ((winid << shift))
-+ *
-+ * The kernel maps this hardware address into the sender's address space after
-+ * which they can use the 'paste' instruction to send a message (submit a
-+ * request).
-+ *
-+ * NOTE: In the initial version, senders can only in-kernel drivers/threads.
-+ *	 Support for user space threads will be added in follow-on patches.
-+ *
-+ * TODO: Do we need to map the UWC into user address space so they can return
-+ *	 credits? Its NA for NX but may be needed for other receive windows.
-+ *
-+ */
-+
-+/* TODO: Increase to 64K after initial development */
-+#define VAS_MAX_WINDOWS_PER_CHIP       64
-+
-+/*
-+ * Hypervisor and OS/USer Window Context sizes
-+ */
-+#define VAS_HVWC_SIZE			512
-+#define VAS_UWC_SIZE			PAGE_SIZE
-+
-+/* Initial per-process credits. We may need to tweak these later */
-+#define VAS_WCREDS_MIN			16
-+#define VAS_WCREDS_MAX			64
-+#define VAS_WCREDS_DEFAULT		64
-+
-+/*
-+ * VAS Window Context Register Offsets and bitmasks.
-+ * See Section 3.1.4 of VAS Work book
-+ */
-+#define VAS_LPID_OFFSET			0x010
-+#define VAS_LPID			PPC_BITMASK(0, 11)
-+
-+#define VAS_PID_OFFSET			0x018
-+#define VAS_PID_ID			PPC_BITMASK(0, 19)
-+
-+#define VAS_XLATE_MSR_OFFSET		0x020
-+#define VAS_XLATE_MSR_DR		PPC_BIT(0)
-+#define VAS_XLATE_MSR_TA		PPC_BIT(1)
-+#define VAS_XLATE_MSR_PR		PPC_BIT(2)
-+#define VAS_XLATE_MSR_US		PPC_BIT(3)
-+#define VAS_XLATE_MSR_HV		PPC_BIT(4)
-+#define VAS_XLATE_MSR_SF		PPC_BIT(5)
-+#define VAS_XLATE_MSR_UV		PPC_BIT(6)
-+
-+#define VAS_XLATE_LPCR_OFFSET		0x028
-+#define VAS_XLATE_LPCR_PAGE_SIZE	PPC_BITMASK(0, 2)
-+#define VAS_XLATE_LPCR_ISL		PPC_BIT(3)
-+#define VAS_XLATE_LPCR_TC		PPC_BIT(4)
-+#define VAS_XLATE_LPCR_SC		PPC_BIT(5)
-+
-+#define VAS_XLATE_CTL_OFFSET		0x030
-+#define VAS_XLATE_MODE			PPC_BITMASK(0, 1)
-+
-+#define VAS_AMR_OFFSET			0x040
-+#define VAS_AMR				PPC_BITMASK(0, 63)
-+
-+#define VAS_SEIDR_OFFSET		0x048
-+#define VAS_SEIDR			PPC_BITMASK(0, 63)
-+
-+#define VAS_FAULT_TX_WIN_OFFSET		0x050
-+#define VAS_FAULT_TX_WIN		PPC_BITMASK(48, 63)
-+
-+#define VAS_OSU_INTR_SRC_RA_OFFSET	0x060
-+#define VAS_OSU_INTR_SRC_RA		PPC_BITMASK(8, 63)
-+
-+#define VAS_HV_INTR_SRC_RA_OFFSET	0x070
-+#define VAS_HV_INTR_SRC_RA		PPC_BITMASK(8, 63)
-+
-+#define VAS_PSWID_OFFSET		0x078
-+#define VAS_PSWID_EA_HANDLE		PPC_BITMASK(0, 31)
-+
-+#define VAS_SPARE1_OFFSET		0x080
-+#define VAS_SPARE2_OFFSET		0x088
-+#define VAS_SPARE3_OFFSET		0x090
-+#define VAS_SPARE4_OFFSET		0x130
-+#define VAS_SPARE5_OFFSET		0x160
-+#define VAS_SPARE6_OFFSET		0x188
-+
-+#define VAS_LFIFO_BAR_OFFSET		0x0A0
-+#define VAS_LFIFO_BAR			PPC_BITMASK(8, 53)
-+#define VAS_PAGE_MIGRATION_SELECT	PPC_BITMASK(54, 56)
-+
-+#define VAS_LDATA_STAMP_CTL_OFFSET	0x0A8
-+#define VAS_LDATA_STAMP			PPC_BITMASK(0, 1)
-+#define VAS_XTRA_WRITE			PPC_BIT(2)
-+
-+#define VAS_LDMA_CACHE_CTL_OFFSET	0x0B0
-+#define VAS_LDMA_TYPE			PPC_BITMASK(0, 1)
-+
-+#define VAS_LRFIFO_PUSH_OFFSET		0x0B8
-+#define VAS_LRFIFO_PUSH			PPC_BITMASK(0, 15)
-+
-+#define VAS_CURR_MSG_COUNT_OFFSET	0x0C0
-+#define VAS_CURR_MSG_COUNT		PPC_BITMASK(0, 7)
-+
-+#define VAS_LNOTIFY_AFTER_COUNT_OFFSET	0x0C8
-+#define VAS_LNOTIFY_AFTER_COUNT		PPC_BITMASK(0, 7)
-+
-+#define VAS_LRX_WCRED_OFFSET		0x0E0
-+#define VAS_LRX_WCRED			PPC_BITMASK(0, 15)
-+
-+#define VAS_LRX_WCRED_ADDER_OFFSET	0x190
-+#define VAS_LRX_WCRED_ADDER		PPC_BITMASK(0, 15)
-+
-+#define VAS_TX_WCRED_OFFSET		0x0F0
-+#define VAS_TX_WCRED			PPC_BITMASK(4, 15)
-+
-+#define VAS_TX_WCRED_ADDER_OFFSET	0x1A0
-+#define VAS_TX_WCRED_ADDER		PPC_BITMASK(4, 15)
-+
-+#define VAS_LFIFO_SIZE_OFFSET		0x100
-+#define VAS_LFIFO_SIZE			PPC_BITMASK(0, 3)
-+
-+#define VAS_WINCTL_OFFSET		0x108
-+#define VAS_WINCTL_OPEN			PPC_BIT(0)
-+#define VAS_WINCTL_REJ_NO_CREDIT	PPC_BIT(1)
-+#define VAS_WINCTL_PIN			PPC_BIT(2)
-+#define VAS_WINCTL_TX_WCRED_MODE	PPC_BIT(3)
-+#define VAS_WINCTL_RX_WCRED_MODE	PPC_BIT(4)
-+#define VAS_WINCTL_TX_WORD_MODE		PPC_BIT(5)
-+#define VAS_WINCTL_RX_WORD_MODE		PPC_BIT(6)
-+#define VAS_WINCTL_RSVD_TXBUF		PPC_BIT(7)
-+#define VAS_WINCTL_THRESH_CTL		PPC_BITMASK(8, 9)
-+#define VAS_WINCTL_FAULT_WIN		PPC_BIT(10)
-+#define VAS_WINCTL_NX_WIN		PPC_BIT(11)
-+
-+#define VAS_WIN_STATUS_OFFSET		0x110
-+#define VAS_WIN_BUSY			PPC_BIT(1)
-+
-+#define VAS_WIN_CTX_CACHING_CTL_OFFSET	0x118
-+#define VAS_CASTOUT_REQ			PPC_BIT(0)
-+#define VAS_PUSH_TO_MEM			PPC_BIT(1)
-+#define VAS_WIN_CACHE_STATUS		PPC_BIT(4)
-+
-+#define VAS_TX_RSVD_BUF_COUNT_OFFSET	0x120
-+#define VAS_RXVD_BUF_COUNT		PPC_BITMASK(58, 63)
-+
-+#define VAS_LRFIFO_WIN_PTR_OFFSET	0x128
-+#define VAS_LRX_WIN_ID			PPC_BITMASK(0, 15)
-+
-+/*
-+ * Local Notification Control Register controls what happens in _response_
-+ * to a paste command and hence applies only to receive windows.
-+ */
-+#define VAS_LNOTIFY_CTL_OFFSET		0x138
-+#define VAS_NOTIFY_DISABLE		PPC_BIT(0)
-+#define VAS_INTR_DISABLE		PPC_BIT(1)
-+#define VAS_NOTIFY_EARLY		PPC_BIT(2)
-+#define VAS_NOTIFY_OSU_INTR		PPC_BIT(3)
-+
-+#define VAS_LNOTIFY_PID_OFFSET		0x140
-+#define VAS_LNOTIFY_PID			PPC_BITMASK(0, 19)
-+
-+#define VAS_LNOTIFY_LPID_OFFSET		0x148
-+#define VAS_LNOTIFY_LPID		PPC_BITMASK(0, 11)
-+
-+#define VAS_LNOTIFY_TID_OFFSET		0x150
-+#define VAS_LNOTIFY_TID			PPC_BITMASK(0, 15)
-+
-+#define VAS_LNOTIFY_SCOPE_OFFSET	0x158
-+#define VAS_LNOTIFY_MIN_SCOPE		PPC_BITMASK(0, 1)
-+#define VAS_LNOTIFY_MAX_SCOPE		PPC_BITMASK(2, 3)
-+
-+#define VAS_NX_UTIL_OFFSET		0x1B0
-+#define VAS_NX_UTIL			PPC_BITMASK(0, 63)
-+
-+/* SE: Side effects */
-+#define VAS_NX_UTIL_SE_OFFSET		0x1B8
-+#define VAS_NX_UTIL_SE			PPC_BITMASK(0, 63)
-+
-+#define VAS_NX_UTIL_ADDER_OFFSET	0x180
-+#define VAS_NX_UTIL_ADDER		PPC_BITMASK(32, 63)
-+
-+/*
-+ * Local Notify Scope Control Register. (Receive windows only).
-+ */
-+enum vas_notify_scope {
-+	VAS_SCOPE_LOCAL,
-+	VAS_SCOPE_GROUP,
-+	VAS_SCOPE_VECTORED_GROUP,
-+	VAS_SCOPE_UNUSED,
-+};
-+
-+/*
-+ * Local DMA Cache Control Register (Receive windows only).
-+ */
-+enum vas_dma_type {
-+	VAS_DMA_TYPE_INJECT,
-+	VAS_DMA_TYPE_WRITE,
-+};
-+
-+/*
-+ * Local Notify Scope Control Register. (Receive windows only).
-+ * Not applicable to NX receive windows.
-+ */
-+enum vas_notify_after_count {
-+	VAS_NOTIFY_AFTER_256 = 0,
-+	VAS_NOTIFY_NONE,
-+	VAS_NOTIFY_AFTER_2
-+};
-+
-+/*
-+ * One per instance of VAS. Each instance will have a separate set of
-+ * receive windows, one per coprocessor type.
-+ */
-+struct vas_instance {
-+	int vas_id;
-+	struct ida ida;
-+
-+	u64 hvwc_bar_start;
-+	u64 hvwc_bar_len;
-+	u64 uwc_bar_start;
-+	u64 uwc_bar_len;
-+	u64 win_base_addr;
-+	u64 win_id_shift;
-+
-+	struct mutex mutex;
-+	struct vas_window *rxwin[VAS_COP_TYPE_MAX];
-+};
-+
-+/*
-+ * In-kernel data structure for a VAS window. One per window.
-+ */
-+struct vas_window {
-+	/* Fields common to Send and receive windows */
-+	struct vas_instance *vinst;
-+	int winid;
-+	bool tx_win;		/* True if send window */
-+	bool nx_win;		/* True if NX window */
-+	void *hvwc_map;		/* HV window context */
-+	void *uwc_map;		/* OS/User window context */
-+
-+	/* Fields applicable only to send windows */
-+	void *paste_kaddr;
-+	char *paste_addr_name;
-+	struct vas_window *rxwin;
-+
-+	/* Feilds applicable only to receive windows */
-+	enum vas_cop_type cop;
-+	atomic_t num_txwins;
-+
-+	int32_t hwirq;
-+	uint64_t irq_port;
-+};
-+
-+/*
-+ * A VAS Window context is a 512-byte area in the hardware that contains
-+ * a set of 64-bit registers. Individual bit-fields in these registers
-+ * determine the configuration/operation of the hardware. struct vas_winctx
-+ * is a container for the register fields in the window context.
-+ * One per window.
-+ */
-+struct vas_winctx {
-+	void *rx_fifo;
-+	int rx_fifo_size;
-+	int wcreds_max;
-+	int rsvd_txbuf_count;
-+
-+	bool user_win;
-+	bool nx_win;
-+	bool fault_win;
-+	bool rsvd_txbuf_enable;
-+	bool pin_win;
-+	bool rej_no_credit;
-+	bool tx_wcred_mode;
-+	bool rx_wcred_mode;
-+	bool tx_word_mode;
-+	bool rx_word_mode;
-+	bool data_stamp;
-+	bool xtra_write;
-+	bool notify_disable;
-+	bool intr_disable;
-+	bool notify_early;
-+	bool notify_os_intr_reg;
-+
-+	int lpid;
-+	int pid;
-+	int lnotify_lpid;
-+	int lnotify_pid;
-+	int lnotify_tid;
-+	int pswid;
-+	int rx_win_id;
-+	int fault_win_id;
-+	uint64_t irq_port;
-+
-+	enum vas_dma_type dma_type;
-+	enum vas_thresh_ctl tc_mode;
-+	enum vas_notify_scope min_scope;
-+	enum vas_notify_scope max_scope;
-+	enum vas_notify_after_count notify_after_count;
-+};
-+
-+#endif
+> I am looking at ways to randomize the mmap, stack and brk ranges for a
+> ALSR elf on PPC64LE. Currently I am using a PAGE SIZE of 64K in my
+> config file and hence the randomization usually translates to
+> something like this for me:
+
+Just to be clear: 64K pages will lose you 4 bits of entropy when
+compared to 4K on x86_64. (Assuming I'm doing the math right...)
+
+> mmap:
+> -------
+> http://lxr.free-electrons.com/source/arch/powerpc/mm/mmap.c#L67
+>
+> rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
+>
+> Since PAGE_SHIFT is 16 for 64K page size, this computation reduces to:
+> rnd = get_random_long() % (1UL<<(14));
+>
+> If I compare this to x86_64, I see there:
+>
+> http://lxr.free-electrons.com/source/arch/x86/mm/mmap.c#L79
+>
+> rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
+>
+> So, if mmap_rnd_bits = 28, this equates to:
+> rnd = get_random_long() & ((1UL << 28) - 1);
+>
+> Observations and Queries:
+> --------------------------------------
+>
+> - So, x86_64 gives approx twice number of random bits for a ASLR elf
+> running on it as compared to PPC64 although both use a 48-bit VA.
+>
+> - I also see this comment for PPC at various places, regarding 1GB
+> randomness spread for PPC64. Is this restricted by the hardware or the
+> kernel usage?:
+>
+> /* 8MB for 32bit, 1GB for 64bit */
+>  64         if (is_32bit_task())
+>  65                 rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
+>  66         else
+>  67                 rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
+
+Yeah, I'm not sure about this. The comments above the MIN_GAP* macros
+seem to talk about making sure there is the 1GB stack gap, but that
+shouldn't limit mmap.
+
+Stack base is randomized in fs/binfmt_elf.c randomize_stack_top()
+which uses STACK_RND_MASK (and PAGE_SHIFT).
+
+x86:
+/* 1GB for 64bit, 8MB for 32bit */
+#define STACK_RND_MASK (test_thread_flag(TIF_ADDR32) ? 0x7ff : 0x3fffff)
+
+powerpc:
+/* 1GB for 64bit, 8MB for 32bit */
+#define STACK_RND_MASK (is_32bit_task() ? \
+        (0x7ff >> (PAGE_SHIFT - 12)) : \
+        (0x3ffff >> (PAGE_SHIFT - 12)))
+
+So, in the 64k page case, stack randomization entropy is reduced, but
+otherwise identical to x86.
+
+x86 and powerpc both use arch_mmap_rnd() for both mmap and ET_DYN
+(with different bases).
+
+x86 uses ELF_ET_DYN_BASE as TASK_SIZE / 3 * 2 (which the ELF loader
+pushes back up the nearest PAGE_SIZE alignment: 0x555555555000),
+though powerpc uses 0x20000000, so it should have significantly more
+space for mmap and ET_DYN ASLR than x86.
+
+> - I tried to increase the randomness to 28 bits for PPC as well by
+> making the PPC mmap, brk code equivalent to x86_64 and it works fine
+> for my use case.
+
+The PPC brk randomization on powerpc doesn't use the more common
+randomize_page() way other archs do it...
+
+        /* 8MB for 32bit, 1GB for 64bit */
+        if (is_32bit_task())
+                rnd = (get_random_long() % (1UL<<(23-PAGE_SHIFT)));
+        else
+                rnd = (get_random_long() % (1UL<<(30-PAGE_SHIFT)));
+
+        return rnd << PAGE_SHIFT;
+
+x86 uses 0x02000000 (via randomize_page()), which, if I'm doing the
+math right is 14 bits, regardless of 32/64-bit. arm64 uses 0x40000000
+(20 bits) on 64-bit processes and the same as x86 (14) for 32-bit
+processes. Looks like powerpc uses either 13 or 20 for 4k pages, which
+is close to the same.
+
+> - But, I am not sure this is the right thing to do and whether the
+> PPC64 also supports the MIN and MAX ranges for randomization.
+
+It can support it once you implement the Kconfigs for it. :)
+
+> - If it does I would like to understand, test and push a patch to
+> implement the same for PPC64 in upstream.
+>
+> Sorry for the long mail, but would really appreciate if someone can
+> help me understand the details here.
+
+Hopefully this helped a bit. I would literally draw out the memory
+map, and double-check nothing can collide at your max values.
+
+-Kees
+
 -- 
-2.7.4
+Kees Cook
+Nexus Security
