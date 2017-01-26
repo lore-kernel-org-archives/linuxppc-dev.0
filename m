@@ -1,52 +1,22 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jslaby@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8CfV2Gg3zDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 18:07:30 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0Q74D3x055578
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 02:07:27 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28777k94a6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 02:07:27 -0500
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Thu, 26 Jan 2017 17:07:23 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CC1013578056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 18:07:21 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0Q77D1E30474484
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 18:07:21 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0Q76nw3002236
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 18:06:49 +1100
-Subject: Re: [bug] stack protector panics on v4.10-rc1+
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Artem Savkov <asavkov@redhat.com>, Herton
- Krzesinski <hkrzesin@redhat.com>, Jan Stancek <jstancek@redhat.com>
-Date: Thu, 26 Jan 2017 18:06:22 +1100
-In-Reply-To: <1485414326.2980.60.camel@au1.ibm.com>
-References: <627000186.495731.1485210132000.JavaMail.zimbra@redhat.com>
- <1761847918.511957.1485216600665.JavaMail.zimbra@redhat.com>
- <20170124010421.GI30284@gate.crashing.org>
- <8737g9azuj.fsf@concordia.ellerman.id.au>
- <87ziih9jzv.fsf@concordia.ellerman.id.au>
- <20170125035453.GA12855@localhost.localdomain>
- <1485414326.2980.60.camel@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1485414382.2980.61.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8DKT6rTJzDq6x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 18:37:49 +1100 (AEDT)
+From: Jiri Slaby <jslaby@suse.cz>
+To: stable@vger.kernel.org
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
+Subject: [patch added to 3.12-stable] powerpc: Fix build warning on 32-bit PPC
+Date: Thu, 26 Jan 2017 08:36:56 +0100
+Message-Id: <20170126073725.25804-13-jslaby@suse.cz>
+In-Reply-To: <20170126073725.25804-1-jslaby@suse.cz>
+References: <20170126073725.25804-1-jslaby@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,18 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2017-01-26 at 18:05 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2017-01-25 at 09:24 +0530, Balbir Singh wrote:
-> > That makes sense. We then wait for the right gcc version? I guess
-> > we
-> > also
-> > push for per-task gaurd value as opposed to a global one?
-> 
-> I'm thinking per-cpu will be easier as r13 is readily available as
-> PACA.
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-Actually it has to be per-task ... so we'll have to put it in the PACA
-and context switch the value in there.
+This patch has been added to the 3.12 stable tree. If you have any
+objections, please let us know.
 
-Cheers,
-Ben.
+===============
+
+commit 8ae679c4bc2ea2d16d92620da8e3e9332fa4039f upstream.
+
+I am getting the following warning when I build kernel 4.9-git on my
+PowerBook G4 with a 32-bit PPC processor:
+
+    AS      arch/powerpc/kernel/misc_32.o
+  arch/powerpc/kernel/misc_32.S:299:7: warning: "CONFIG_FSL_BOOKE" is not defined [-Wundef]
+
+This problem is evident after commit 989cea5c14be ("kbuild: prevent
+lib-ksyms.o rebuilds"); however, this change in kbuild only exposes an
+error that has been in the code since 2005 when this source file was
+created.  That was with commit 9994a33865f4 ("powerpc: Introduce
+entry_{32,64}.S, misc_{32,64}.S, systbl.S").
+
+The offending line does not make a lot of sense.  This error does not
+seem to cause any errors in the executable, thus I am not recommending
+that it be applied to any stable versions.
+
+Thanks to Nicholas Piggin for suggesting this solution.
+
+Fixes: 9994a33865f4 ("powerpc: Introduce entry_{32,64}.S, misc_{32,64}.S, systbl.S")
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ arch/powerpc/kernel/misc_32.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index ace34137a501..e23298f065df 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -313,7 +313,7 @@ _GLOBAL(flush_instruction_cache)
+ 	lis	r3, KERNELBASE@h
+ 	iccci	0,r3
+ #endif
+-#elif CONFIG_FSL_BOOKE
++#elif defined(CONFIG_FSL_BOOKE)
+ BEGIN_FTR_SECTION
+ 	mfspr   r3,SPRN_L1CSR0
+ 	ori     r3,r3,L1CSR0_CFI|L1CSR0_CLFC
+-- 
+2.11.0
