@@ -2,38 +2,38 @@ Return-Path: <sukadev@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MJ15vzzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:38:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v84MT6McYzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 12:39:01 +1100 (AEDT)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3v84MH33vSz9t1H
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 12:38:51 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0Q1cVUU023382
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:49 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 287361g9jy-1
+ by ozlabs.org (Postfix) with ESMTPS id 3v84MT1N1Dz9t14
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 12:39:00 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0Q1cW9e039155
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:59 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28777k0mpe-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:49 -0500
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jan 2017 20:38:58 -0500
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 25 Jan 2017 18:38:48 -0700
+ Wed, 25 Jan 2017 18:38:58 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  michael.neuling@au1.ibm.com, stewart@linux.vnet.ibm.com,
  apopple@au1.ibm.com, hbabu@us.ibm.com, oohall@gmail.com,
  bsingharora@gmail.com, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 07/10] VAS: Define vas_rx_win_open() interface
-Date: Wed, 25 Jan 2017 17:38:05 -0800
+Subject: [PATCH v2 10/10] VAS: Define copy/paste interfaces
+Date: Wed, 25 Jan 2017 17:38:08 -0800
 In-Reply-To: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Message-Id: <1485394688-31129-8-git-send-email-sukadev@linux.vnet.ibm.com>
+Message-Id: <1485394688-31129-11-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,292 +43,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define the vas_rx_win_open() interface. This interface is intended to be
-used by the Nest Accelerator (NX) driver(s) to setup receive windows for
-one or more NX engines (which implement compression/encryption algorithms
-in the hardware).
-
-Follow-on patches will provide an interface to close the window and to open
-a send window that kenrel subsystems can use to access the NX engines.
-
-The interface to open a receive window is expected to be invoked for each
-instance of VAS in the system.
+Define interfaces (wrappers) to the 'copy' and 'paste' instructions
+(which are new in PowerISA 3.0). These are intended to be used to
+by NX driver(s) to submit Coprocessor Request Blocks (CRBs) to the
+NX hardware engines.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/vas.h  |  39 +++++++++
- drivers/misc/vas/vas-internal.h |  11 +++
- drivers/misc/vas/vas-window.c   | 182 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 232 insertions(+)
+ arch/powerpc/include/asm/vas.h  | 17 +++++++++-
+ drivers/misc/vas/copy-paste.h   | 74 +++++++++++++++++++++++++++++++++++++++++
+ drivers/misc/vas/vas-internal.h | 14 ++++++++
+ drivers/misc/vas/vas-window.c   | 43 ++++++++++++++++++++++++
+ 4 files changed, 147 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/misc/vas/copy-paste.h
 
 diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
-index fef9e87..b6362e9 100644
+index a841084..27710d1 100644
 --- a/arch/powerpc/include/asm/vas.h
 +++ b/arch/powerpc/include/asm/vas.h
-@@ -38,6 +38,45 @@ enum vas_thresh_ctl {
- };
+@@ -116,11 +116,26 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
+ int vas_win_close(struct vas_window *win);
  
  /*
-+ * Receive window attributes specified by the (in-kernel) owner of window.
++ * Copy the co-processor request block (CRB) @crb into the local L2 cache.
++ * For now, @offset must be 0 and @first must be true.
 + */
-+struct vas_rx_win_attr {
-+	void *rx_fifo;
-+	int rx_fifo_size;
-+	int wcreds_max;
-+
-+	bool pin_win;
-+	bool rej_no_credit;
-+	bool tx_wcred_mode;
-+	bool rx_wcred_mode;
-+	bool tx_win_ord_mode;
-+	bool rx_win_ord_mode;
-+	bool data_stamp;
-+	bool nx_win;
-+	bool fault_win;
-+	bool notify_disable;
-+	bool intr_disable;
-+	bool notify_early;
-+
-+	int lnotify_lpid;
-+	int lnotify_pid;
-+	int lnotify_tid;
-+	int pswid;
-+
-+	enum vas_thresh_ctl tc_mode;
-+};
++extern int vas_copy_crb(void *crb, int offset, bool first);
 +
 +/*
-+ * Open a VAS receive window for the instance of VAS identified by @vasid
-+ * Use @attr to initialize the attributes of the window.
-+ *
-+ * Return a handle to the window or ERR_PTR() on error.
++ * Paste a previously copied CRB (see vas_copy_crb()) from the L2 cache to
++ * the hardware address associated with the window @win. For now, @off must
++ * 0 and @last must be true. @re is expected/assumed to be true for NX windows.
 + */
-+struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
-+			struct vas_rx_win_attr *attr);
++extern int vas_paste_crb(struct vas_window *win, int off, bool last, bool re);
++
++
 +
 +
 +/*
   * Get/Set bit fields
   */
  #define GET_FIELD(m, v)		(((v) & (m)) >> MASK_LSH(m))
+ #define MASK_LSH(m)		(__builtin_ffsl(m) - 1)
+ #define SET_FIELD(m, v, val)	\
+ 		(((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
+-
+ #endif
+diff --git a/drivers/misc/vas/copy-paste.h b/drivers/misc/vas/copy-paste.h
+new file mode 100644
+index 0000000..7783bb8
+--- /dev/null
++++ b/drivers/misc/vas/copy-paste.h
+@@ -0,0 +1,74 @@
++/*
++ * Copyright 2016 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++/*
++ * Macros taken from tools/testing/selftests/powerpc/context_switch/cp_abort.c
++ */
++#define PASTE(RA, RB, L, RC) \
++	.long (0x7c00070c | (RA) << (31-15) | (RB) << (31-20) \
++			  | (L) << (31-10) | (RC) << (31-31))
++
++#define COPY(RA, RB, L) \
++	.long (0x7c00060c | (RA) << (31-15) | (RB) << (31-20) \
++			  | (L) << (31-10))
++
++#define CR0_FXM		"0x80"
++#define CR0_SHIFT	28
++#define CR0_MASK	0xF
++/*
++ * Copy/paste instructions:
++ *
++ *	copy RA,RB,L
++ *		Copy contents of address (RA) + effective_address(RB)
++ *		to internal copy-buffer.
++ *
++ *		L == 1 indicates this is the first copy.
++ *
++ *		L == 0 indicates its a continuation of a prior first copy.
++ *
++ *	paste RA,RB,L
++ *		Paste contents of internal copy-buffer to the address
++ *		(RA) + effective_address(RB)
++ *
++ *		L == 0 indicates its a continuation of a prior paste. i.e.
++ *		don't wait for the completion or update status.
++ *
++ *		L == 1 indicates this is the last paste in the group (i.e.
++ *		wait for the group to complete and update status in CR0).
++ *
++ *	For Power9, the L bit must be 'true' in both copy and paste.
++ */
++
++static inline int vas_copy(void *crb, int offset, int first)
++{
++	WARN_ON_ONCE(!first);
++
++	__asm__ __volatile(stringify_in_c(COPY(%0, %1, %2))";"
++		:
++		: "b" (offset), "b" (crb), "i" (1)
++		: "memory");
++
++	return 0;
++}
++
++static inline int vas_paste(void *paste_address, int offset, int last)
++{
++	unsigned long long cr;
++
++	WARN_ON_ONCE(!last);
++
++	cr = 0;
++	__asm__ __volatile(stringify_in_c(PASTE(%1, %2, 1, 1))";"
++		"mfocrf %0," CR0_FXM ";"
++		: "=r" (cr)
++		: "b" (paste_address), "b" (offset)
++		: "memory");
++
++	return cr;
++}
 diff --git a/drivers/misc/vas/vas-internal.h b/drivers/misc/vas/vas-internal.h
-index 0a396ea..139d12a 100644
+index 139d12a..d1c2b90 100644
 --- a/drivers/misc/vas/vas-internal.h
 +++ b/drivers/misc/vas/vas-internal.h
-@@ -396,6 +396,16 @@ extern struct vas_instance *find_vas_instance(int vasid);
- #define VREG(r)		VREG_SFX(r, _OFFSET)
+@@ -450,4 +450,18 @@ static inline uint64_t read_hvwc_reg(struct vas_window *win,
+ 	return in_be64(win->hvwc_map+reg);
+ }
  
- #ifndef vas_debug
-+static inline void dump_rx_win_attr(struct vas_rx_win_attr *attr)
++#ifdef vas_debug
++
++static void print_fifo_msg_count(struct vas_window *txwin)
 +{
-+	pr_err("VAS: fault %d, notify %d, intr %d early %d\n",
-+			attr->fault_win, attr->notify_disable,
-+			attr->intr_disable, attr->notify_early);
-+
-+	pr_err("VAS: rx_fifo_size %d, max value %d\n",
-+				attr->rx_fifo_size, VAS_RX_FIFO_SIZE_MAX);
++	uint64_t read_hvwc_reg(struct vas_window *w, char *n, uint64_t o);
++	pr_devel("Winid %d, Msg count %llu\n", txwin->winid,
++			(uint64_t)read_hvwc_reg(txwin, VREG(LRFIFO_PUSH)));
 +}
++#else	/* vas_debug */
 +
- static inline void vas_log_write(struct vas_window *win, char *name,
- 			void *regptr, uint64_t val)
- {
-@@ -408,6 +418,7 @@ static inline void vas_log_write(struct vas_window *win, char *name,
- #else	/* vas_debug */
- 
- #define vas_log_write(win, name, reg, val)
-+#define dump_rx_win_attr(attr)
- 
- #endif	/* vas_debug */
- 
++#define print_fifo_msg_count(window)
++
++#endif	/* vas_debug */
++
+ #endif
 diff --git a/drivers/misc/vas/vas-window.c b/drivers/misc/vas/vas-window.c
-index 3ea698a..a640d59 100644
+index 3b4b801..f4c8c1b 100644
 --- a/drivers/misc/vas/vas-window.c
 +++ b/drivers/misc/vas/vas-window.c
-@@ -529,3 +529,185 @@ int vas_window_reset(struct vas_instance *vinst, int winid)
+@@ -13,6 +13,7 @@
+ #include <linux/io.h>
+ #include <asm/vas.h>
+ #include "vas-internal.h"
++#include "copy-paste.h"
  
- 	return 0;
+ static int fault_winid;
+ 
+@@ -854,6 +855,48 @@ struct vas_window *vas_tx_win_open(int vasid, enum vas_cop_type cop,
+ 
  }
-+
-+static void put_rx_win(struct vas_window *rxwin)
+ 
++int vas_copy_crb(void *crb, int offset, bool first)
 +{
-+	/* Better not be a send window! */
-+	WARN_ON_ONCE(rxwin->tx_win);
++	if (!vas_initialized)
++		return -1;
 +
-+	atomic_dec(&rxwin->num_txwins);
++	return vas_copy(crb, offset, first);
 +}
 +
-+struct vas_window *get_vinstance_rxwin(struct vas_instance *vinst,
-+			enum vas_cop_type cop)
++#define RMA_LSMP_REPORT_ENABLE PPC_BIT(53)
++int vas_paste_crb(struct vas_window *txwin, int offset, bool last, bool re)
 +{
-+	struct vas_window *rxwin;
-+
-+	mutex_lock(&vinst->mutex);
-+
-+	rxwin = vinst->rxwin[cop];
-+	if (rxwin)
-+		atomic_inc(&rxwin->num_txwins);
-+
-+	mutex_unlock(&vinst->mutex);
-+
-+	return rxwin;
-+}
-+
-+static void set_vinstance_rxwin(struct vas_instance *vinst,
-+			enum vas_cop_type cop, struct vas_window *window)
-+{
-+	mutex_lock(&vinst->mutex);
-+
-+	/*
-+	 * There should only be one receive window for a coprocessor type.
-+	 */
-+	WARN_ON_ONCE(vinst->rxwin[cop]);
-+	vinst->rxwin[cop] = window;
-+
-+	mutex_unlock(&vinst->mutex);
-+}
-+
-+static void init_winctx_for_rxwin(struct vas_window *rxwin,
-+			struct vas_rx_win_attr *rxattr,
-+			struct vas_winctx *winctx)
-+{
-+	/*
-+	 * We first zero (memset()) all fields and only set non-zero fields.
-+	 * Following fields are 0/false but maybe deserve a comment:
-+	 *
-+	 *	->user_win		No support for user Rx windows yet
-+	 *	->notify_os_intr_reg	In powerNV, send intrs to HV
-+	 *	->notify_disable	False for NX windows
-+	 *	->xtra_write		False for NX windows
-+	 *	->notify_early		NA for NX windows
-+	 *	->rsvd_txbuf_count	NA for Rx windows
-+	 *	->lpid, ->pid, ->tid	NA for Rx windows
-+	 */
-+
-+	memset(winctx, 0, sizeof(struct vas_winctx));
-+
-+	winctx->rx_fifo = rxattr->rx_fifo;
-+	winctx->rx_fifo_size = rxattr->rx_fifo_size;
-+	winctx->wcreds_max = rxattr->wcreds_max ?: VAS_WCREDS_DEFAULT;
-+	winctx->pin_win = rxattr->pin_win;
-+
-+	winctx->nx_win = rxattr->nx_win;
-+	winctx->fault_win = rxattr->fault_win;
-+	winctx->rx_word_mode = true;
-+	winctx->tx_word_mode = true;
-+
-+	winctx->fault_win_id = fault_winid;
-+
-+	if (winctx->nx_win) {
-+		winctx->data_stamp = true;
-+		winctx->intr_disable = true;
-+		winctx->pin_win = true;
-+
-+		WARN_ON_ONCE(winctx->fault_win);
-+		WARN_ON_ONCE(!winctx->rx_word_mode);
-+		WARN_ON_ONCE(!winctx->tx_word_mode);
-+		WARN_ON_ONCE(winctx->notify_after_count);
-+	}
-+
-+	/* TODO: Are irq ports required for NX receive windows? */
-+	winctx->irq_port = rxwin->irq_port;
-+
-+	winctx->lnotify_lpid = rxattr->lnotify_lpid;
-+	winctx->lnotify_pid = rxattr->lnotify_pid;
-+	winctx->lnotify_tid = rxattr->lnotify_tid;
-+	winctx->pswid = rxattr->pswid;
-+	winctx->dma_type = VAS_DMA_TYPE_INJECT;
-+	winctx->tc_mode = rxattr->tc_mode;
-+
-+	winctx->min_scope = VAS_SCOPE_LOCAL;
-+	winctx->max_scope = VAS_SCOPE_VECTORED_GROUP;
-+}
-+
-+static bool rx_win_args_valid(enum vas_cop_type cop,
-+			struct vas_rx_win_attr *attr)
-+{
-+	dump_rx_win_attr(attr);
-+
-+	if (cop >= VAS_COP_TYPE_MAX)
-+		return false;
-+
-+	if (attr->rx_fifo_size > VAS_RX_FIFO_SIZE_MAX)
-+		return false;
-+
-+	if (attr->nx_win) {
-+		/* cannot be both fault and nx */
-+		if (attr->fault_win)
-+			return false;
-+		/*
-+		 * Section 3.1.4.32: NX Windows must not disable notification,
-+		 *	and must not enable interrupts or early notification.
-+		 */
-+		if (attr->notify_disable || !attr->intr_disable ||
-+				attr->notify_early)
-+			return false;
-+	} else if (attr->fault_win) {
-+		/*
-+		 * Section 3.1.4.32: Fault windows must disable notification
-+		 *	but not interrupts.
-+		 */
-+		if (!attr->notify_disable || attr->intr_disable)
-+			return false;
-+	} else {
-+		/* Rx window must be either NX or Fault window for now.  */
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
-+struct vas_window *vas_rx_win_open(int vasid, enum vas_cop_type cop,
-+			struct vas_rx_win_attr *rxattr)
-+{
-+	int rc, winid;
-+	struct vas_instance *vinst;
-+	struct vas_window *rxwin;
-+	struct vas_winctx winctx;
++	int rc;
++	uint64_t val;
++	void *addr;
 +
 +	if (!vas_initialized)
-+		return ERR_PTR(-EAGAIN);
++		return -1;
++	/*
++	 * Only NX windows are supported for now and hardware assumes
++	 * report-enable flag is set for NX windows. Ensure software
++	 * complies too.
++	 */
++	WARN_ON_ONCE(!re);
 +
-+	if (!rx_win_args_valid(cop, rxattr))
-+		return ERR_PTR(-EINVAL);
-+
-+	vinst = find_vas_instance(vasid);
-+	if (!vinst) {
-+		pr_devel("VAS: vasid %d not found!\n", vasid);
-+		return ERR_PTR(-EINVAL);
-+	}
-+	pr_devel("VAS: Found instance %d\n", vasid);
-+
-+	winid = vas_assign_window_id(&vinst->ida);
-+	if (winid < 0)
-+		return ERR_PTR(winid);
-+
-+	rc = -ENOMEM;
-+	rxwin = vas_window_alloc(vinst, winid);
-+	if (!rxwin) {
-+		pr_devel("VAS: Unable to allocate memory for Rx window\n");
-+		goto release_winid;
++	addr = txwin->paste_kaddr;
++	if (re) {
++		/*
++		 * Set the REPORT_ENABLE bit (equivalent to writing
++		 * to 1K offset of the paste address)
++		 */
++		val = SET_FIELD(RMA_LSMP_REPORT_ENABLE, 0ULL, 1);
++		addr += val;
 +	}
 +
-+	rxwin->tx_win = false;
-+	rxwin->cop = cop;
++	rc = vas_paste(addr, offset, last);
 +
-+	init_winctx_for_rxwin(rxwin, rxattr, &winctx);
-+	rxwin->nx_win = winctx.nx_win;
-+	init_winctx_regs(rxwin, &winctx);
++	print_fifo_msg_count(txwin);
 +
-+	set_vinstance_rxwin(vinst, cop, rxwin);
-+
-+	if (winctx.fault_win)
-+		fault_winid = winid;
-+
-+	return rxwin;
-+
-+release_winid:
-+	vas_release_window_id(&vinst->ida, rxwin->winid);
-+	return ERR_PTR(rc);
++	return rc;
 +}
++
++
+ int vas_win_close(struct vas_window *window)
+ {
+ 	uint64_t val;
 -- 
 2.7.4
