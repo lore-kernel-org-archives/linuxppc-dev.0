@@ -1,36 +1,32 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ddstreet@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8SSR3X90zDq62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 03:44:39 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0QGiBJ3142315
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 11:44:37 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 287d7xurqe-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 11:44:36 -0500
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Thu, 26 Jan 2017 11:44:36 -0500
-Subject: Re: [PATCH net 2/5] ibmvnic: Fix MTU settings
-To: David Miller <davem@davemloft.net>
-References: <1485378143-5084-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <1485378143-5084-2-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <20170125.230504.215468934911959234.davem@davemloft.net>
-Cc: netdev@vger.kernel.org, wvoigt@us.ibm.com, jallen@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Thu, 26 Jan 2017 10:44:31 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8TWs5C6WzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 04:32:41 +1100 (AEDT)
+Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
+ [IPv6:2a00:1450:4010:c07::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3v8TWr5PqYz9tk2
+ for <linuxppc-dev@ozlabs.org>; Fri, 27 Jan 2017 04:32:40 +1100 (AEDT)
+Received: by mail-lf0-x242.google.com with SMTP id x1so24302548lff.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2017 09:32:40 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20170125.230504.215468934911959234.davem@davemloft.net>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <783c7683-1cc2-6128-e19c-fd2c3c16cf4b@linux.vnet.ibm.com>
+Sender: ddstreet@gmail.com
+In-Reply-To: <1485394688-31129-3-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1485394688-31129-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1485394688-31129-3-git-send-email-sukadev@linux.vnet.ibm.com>
+From: Dan Streetman <ddstreet@ieee.org>
+Date: Thu, 26 Jan 2017 12:31:57 -0500
+Message-ID: <CALZtONABwicMRdArkBqdJQhHnsLtvtzqvQeBGnuD=W00M-ZJbw@mail.gmail.com>
+Subject: Re: [PATCH v2 02/10] Move GET_FIELD/SET_FIELD to vas.h
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, apopple@au1.ibm.com, oohall@gmail.com,
+ michael.neuling@au1.ibm.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,17 +36,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/25/2017 10:05 PM, David Miller wrote:
-> From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> Date: Wed, 25 Jan 2017 15:02:20 -0600
+On Wed, Jan 25, 2017 at 8:38 PM, Sukadev Bhattiprolu
+<sukadev@linux.vnet.ibm.com> wrote:
 >
->> In the current driver, the MTU is set to the maximum value
->> capable for the backing device. This patch sets the MTU to the
->> default value for a Linux net device.
-> Why are you doing this?
+> Move the GET_FIELD and SET_FIELD macros to vas.h as VAS and other
+> users of VAS, including NX-842 can use those macros.
 >
-> What happens to users who depend upon the current behavior.
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+
+Reviewed-by: Dan Streetman <dan.streetman@canonical.com>
+
+> ---
+>  arch/powerpc/include/asm/vas.h     | 8 ++++++++
+>  drivers/crypto/nx/nx-842-powernv.c | 1 +
+>  drivers/crypto/nx/nx-842.h         | 5 -----
+>  3 files changed, 9 insertions(+), 5 deletions(-)
 >
-> They will break, and that isn't acceptable.
+> diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+> index 1c10437..fef9e87 100644
+> --- a/arch/powerpc/include/asm/vas.h
+> +++ b/arch/powerpc/include/asm/vas.h
+> @@ -37,4 +37,12 @@ enum vas_thresh_ctl {
+>         VAS_THRESH_FIFO_GT_EIGHTH_FULL,
+>  };
 >
-The current behavior was already broken.  We were seeing firmware errors when sending jumbo sized packets .  We plan to add proper support for jumbo sized packets as soon as possible.  
+> +/*
+> + * Get/Set bit fields
+> + */
+> +#define GET_FIELD(m, v)                (((v) & (m)) >> MASK_LSH(m))
+> +#define MASK_LSH(m)            (__builtin_ffsl(m) - 1)
+> +#define SET_FIELD(m, v, val)   \
+> +               (((v) & ~(m)) | ((((typeof(v))(val)) << MASK_LSH(m)) & (m)))
+> +
+>  #endif
+> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+> index 1710f80..ea6fb6c 100644
+> --- a/drivers/crypto/nx/nx-842-powernv.c
+> +++ b/drivers/crypto/nx/nx-842-powernv.c
+> @@ -22,6 +22,7 @@
+>
+>  #include <asm/prom.h>
+>  #include <asm/icswx.h>
+> +#include <asm/vas.h>
+>
+>  MODULE_LICENSE("GPL");
+>  MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
+> diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
+> index a4eee3b..30929bd 100644
+> --- a/drivers/crypto/nx/nx-842.h
+> +++ b/drivers/crypto/nx/nx-842.h
+> @@ -100,11 +100,6 @@ static inline unsigned long nx842_get_pa(void *addr)
+>         return page_to_phys(vmalloc_to_page(addr)) + offset_in_page(addr);
+>  }
+>
+> -/* Get/Set bit fields */
+> -#define MASK_LSH(m)            (__builtin_ffsl(m) - 1)
+> -#define GET_FIELD(v, m)                (((v) & (m)) >> MASK_LSH(m))
+> -#define SET_FIELD(v, m, val)   (((v) & ~(m)) | (((val) << MASK_LSH(m)) & (m)))
+> -
+>  /**
+>   * This provides the driver's constraints.  Different nx842 implementations
+>   * may have varying requirements.  The constraints are:
+> --
+> 2.7.4
+>
