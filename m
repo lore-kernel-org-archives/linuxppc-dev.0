@@ -1,30 +1,31 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8MQ91snnzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 23:57:21 +1100 (AEDT)
-Received: by mail-io0-x243.google.com with SMTP id 101so4813244iom.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2017 04:57:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8Nk45Lm3zDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 00:56:12 +1100 (AEDT)
+Date: Thu, 26 Jan 2017 14:56:03 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+Message-ID: <20170126135603.GD27517@pathway.suse.cz>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB026EBC6@AcuExch.aculab.com>
-References: <20170126100044.7e439f72@kryten>
- <063D6719AE5E284EB5DD2968C1650D6DB026EBC6@AcuExch.aculab.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 26 Jan 2017 13:57:18 +0100
-Message-ID: <CAK8P3a2LuOfx-7Ypr4OPEn8r56f4zBdffPLn2wgwEmnM+zWW6g@mail.gmail.com>
-Subject: Re: gcc trunk fails to build kernel on PowerPC64 due to oprofile
- warnings
-To: David Laight <David.Laight@aculab.com>
-Cc: Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, "rric@kernel.org" <rric@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "oprofile-list@lists.sf.net" <oprofile-list@lists.sf.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,39 +35,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 26, 2017 at 12:00 PM, David Laight <David.Laight@aculab.com> wrote:
-> From: Anton Blanchard
->> Sent: 25 January 2017 23:01
->> gcc trunk has failed to build PowerPC64 kernels for a month or so. The issue
->> is in oprofile, which is common code but ends up being sucked into
->> arch/powerpc and therefore subject to the -Werror applied to arch/powerpc:
-> ...
->> linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c:55:25: error: %d directive
->> output may be truncated writing between 1 and 11 bytes into a region of size 7 [-Werror=format-
->> truncation=]
->>    snprintf(buf, 10, "cpu%d", i);
->
-> FFS these warnings are getting OTT.
-> The compiler needs to be able to track the domain of integers before applying
-> some of these warnings.
+On Thu 2017-01-19 09:46:09, Josh Poimboeuf wrote:
+> For live patching and possibly other use cases, a stack trace is only
+> useful if it can be assured that it's completely reliable.  Add a new
+> save_stack_trace_tsk_reliable() function to achieve that.
 
-gcc-7 introduces lots of new warnings, some better than others. I'm
-trying to categorize
-both the new warnings and any others added in the recent years that we
-may have missed
-to see whether we want to turn them on by default or only in
-scripts/Makefile.extrawarn
-when building with W=1, W=2 or W=3.
+> diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+> index 0653788..fc36842 100644
+> --- a/arch/x86/kernel/stacktrace.c
+> +++ b/arch/x86/kernel/stacktrace.c
+> @@ -74,6 +74,90 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+>  }
+>  EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+>  
+> +#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
+> +static int __save_stack_trace_reliable(struct stack_trace *trace,
+> +				       struct task_struct *task)
+> +{
+> +	struct unwind_state state;
+> +	struct pt_regs *regs;
+> +	unsigned long addr;
+> +
+> +	for (unwind_start(&state, task, NULL, NULL); !unwind_done(&state);
+> +	     unwind_next_frame(&state)) {
+> +
+> +		regs = unwind_get_entry_regs(&state);
+> +		if (regs) {
+> +			/*
+> +			 * Kernel mode registers on the stack indicate an
+> +			 * in-kernel interrupt or exception (e.g., preemption
+> +			 * or a page fault), which can make frame pointers
+> +			 * unreliable.
+> +			 */
+> +			if (!user_mode(regs))
+> +				return -1;
+> +
+> +			/*
+> +			 * The last frame contains the user mode syscall
+> +			 * pt_regs.  Skip it and finish the unwind.
+> +			 */
+> +			unwind_next_frame(&state);
+> +			if (WARN_ON_ONCE(!unwind_done(&state))) {
+> +				show_stack(task, NULL);
 
-I made a spreadsheet with the warnings that we have available in each version,
-and also the number of unique output lines for that warning, see
+We should make sure that show_stack() is called only once as well.
+Otherwise, it would fill logbuffer with random stacktraces without
+any context. It might easily cause flood of messages and the first
+useful one might get lost in the ring buffer.
 
-https://docs.google.com/spreadsheets/d/1QemrLyvzrSDfm_MO3-_pwdfsTp2uqwjOdRBxxj6oo5M/edit?usp=sharing
+> +				return -1;
+> +			}
+> +			break;
+> +		}
+> +
+> +		addr = unwind_get_return_address(&state);
+> +
+> +		/*
+> +		 * A NULL or invalid return address probably means there's some
+> +		 * generated code which __kernel_text_address() doesn't know
+> +		 * about.
+> +		 */
+> +		if (WARN_ON_ONCE(!addr)) {
+> +			show_stack(task, NULL);
 
-For this specific warning, an ARM allmodconfig build shows 360
-distinct warnings from a
-total of 243 files. It's probably a good idea to look over them once
-to see if anything sticks
-out, but otherwise I think we change it to the W=2 level.
+Same here.
 
-     Arnd
+> +			return -1;
+> +		}
+> +
+> +		if (save_stack_address(trace, addr, false))
+> +			return -1;
+> +	}
+> +
+> +	/* Check for stack corruption */
+> +	if (WARN_ON_ONCE(unwind_error(&state))) {
+> +		show_stack(task, NULL);
+
+And here.
+
+> +		return -1;
+> +	}
+> +
+> +	if (trace->nr_entries < trace->max_entries)
+> +		trace->entries[trace->nr_entries++] = ULONG_MAX;
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * This function returns an error if it detects any unreliable features of the
+> + * stack.  Otherwise it guarantees that the stack trace is reliable.
+> + *
+> + * If the task is not 'current', the caller *must* ensure the task is inactive.
+> + */
+> +int save_stack_trace_tsk_reliable(struct task_struct *tsk,
+> +				  struct stack_trace *trace)
+> +{
+> +	int ret;
+> +
+> +	if (!try_get_task_stack(tsk))
+> +		return -EINVAL;
+> +
+> +	ret = __save_stack_trace_reliable(trace, tsk);
+
+__save_stack_trace_reliable() returns -1 in case of problems.
+But this function returns a meaningful error codes, line -EINVAL,
+-ENOSYS, otherwise.
+
+We should either transform the error code here to something
+"meaningful", probably -EINVAL. Or we should update
+__save_stack_trace_reliable() to return meaningful error codes.
+
+
+> +	put_task_stack(tsk);
+> +
+> +	return ret;
+> +}
+> +#endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
+> +
+>  /* Userspace stacktrace - based on kernel/trace/trace_sysprof.c */
+>  
+>  struct stack_frame_user {
+
+Otherwise, all the logic looks fine to me. Great work!
+
+Best Regards,
+Petr
