@@ -1,44 +1,17 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v9BW12bsVzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 08:19:24 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0RLJMeK128730
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 16:19:22 -0500
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2884ksdpxp-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 16:19:21 -0500
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Fri, 27 Jan 2017 14:19:20 -0700
-Subject: Re: ibmvtpm byteswapping inconsistency
-To: Michal Suchanek <hramrach@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20170126212248.3f3e9103@kitsune.suse.cz>
- <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
- <1485481819.2980.82.camel@kernel.crashing.org>
- <CAOMqctQtspCTTpfEUyUVyE9GKYOavZNhkXnRPUrPZrDZ6-eG0w@mail.gmail.com>
-Cc: Marcel Selhorst <tpmdd@selhorst.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- tpmdd-devel@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>,
- Ashley Lai <ashleydlai@gmail.com>, Peter Huewe <peterhuewe@gmx.de>,
- =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Fri, 27 Jan 2017 13:19:13 -0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v9Ghx0RwHzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 11:28:16 +1100 (AEDT)
+Date: Fri, 27 Jan 2017 17:53:48 -0600
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
+Message-ID: <20170127235348.GA21260@home.buserror.net>
 MIME-Version: 1.0
-In-Reply-To: <CAOMqctQtspCTTpfEUyUVyE9GKYOavZNhkXnRPUrPZrDZ6-eG0w@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <73c1e5be-0820-8dca-c86a-8cf3ffeb5efe@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Subject: Pull request: scottwood/linux.git next
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,146 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/27/2017 01:03 AM, Michal Suchanek wrote:
-> On 27 January 2017 at 02:50, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->> On Thu, 2017-01-26 at 17:42 -0800, Tyrel Datwyler wrote:
->>> On 01/26/2017 12:22 PM, Michal Suchánek wrote:
->>>> Hello,
->>>>
->>>> building ibmvtpm I noticed gcc warning complaining that second word
->>>> of
->>>> struct ibmvtpm_crq in tpm_ibmvtpm_suspend is uninitialized.
->>>>
->>>> The structure is defined as
->>>>
->>>> struct ibmvtpm_crq {
->>>>         u8 valid;
->>>>         u8 msg;
->>>>         __be16 len;
->>>>         __be32 data;
->>>>         __be64 reserved;
->>>> } __attribute__((packed, aligned(8)));
->>>>
->>>> initialized as
->>>>
->>>>         struct ibmvtpm_crq crq;
->>>>         u64 *buf = (u64 *) &crq;
->>>> ...
->>>>         crq.valid = (u8)IBMVTPM_VALID_CMD;
->>>>         crq.msg = (u8)VTPM_PREPARE_TO_SUSPEND;
->>>>
->>>> and submitted with
->>>>
->>>>         rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
->>>>                               cpu_to_be64(buf[1]));
->>>
->>> These should be be64_to_cpu() here. The underlying hcall made by
->>> ibmvtpm_send_crq() requires parameters to be in cpu endian unlike the
->>> RTAS interface which requires data in BE.
->>
->> Hrm... an hcall takes register arguments. Register arguments don't have
->> an endianness.
->>
->> The problem is that we are packing an in-memory structure into 2
->> registers and it's expected that this structure is laid out in the
->> registers as if it had been loaded by a BE CPU.
->>
->> So we have two things at play here:
->>
->>   - The >8-bit fields should be laid out BE in the memory image
->>   - That whole 128-bit structure should be loaded into 2 64-bit
->> registers MSB first.
->>
->> So the "double" swap is somewhat needed. The uglyness comes from the
->> passing-by-register of the h-call but it should work.
->>
->> That said, be64_to_cpup(buf) and be64_to_cpup(buf+1) might give you
->> better result (though recent gcc's might not make a difference).
-> 
-> If this should work then the below case that swaps the fields separately is
-> broken.
-> 
-> Anyway, structures have no endianess so when they start with a byte they
-> start with that byte no matter the host endian.
-> crq.valid is the first byte always. And then each field is to be swapped
-> separately.
-> 
-> On the other hand, bitfields are part of an integer and the field should be
-> swapped as part of the integer.
-> 
-> That is,
-> #define CRQ_VALID ((buf[0] >> 56) & 0xff)
-> CRQ_VALID is part of an integer in buf and would be laid out differently
-> on start or end depending on the host being BE or LE.
-> 
-> And the question is what the PAPR actually defines because both ways are
-> used in the code. You can describe an in-memory layout either way.
+Highlights include 8xx breakpoints and perf, t1042rdb display support,
+and board updates.
 
-Byte  |   0   |   1   |   2   |   3   |   4   |   5   |   6   |   7
------------------------------------------------------------------------
-Word0 | Valid |	Type  |	    Length    |              Data
------------------------------------------------------------------------
-Word1 |				Reserved
------------------------------------------------------------------------
+The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
 
-The following definition looks to match:
+  Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
 
-struct ibmvtpm_crq {
-        u8 valid;
-        u8 msg;
-        __be16 len;
-        __be32 data;
-        __be64 reserved;
-} __attribute__((packed, aligned(8)));
+are available in the git repository at:
 
-> 
->>>>
->>>> which means that the second word indeed contains purely garbage.
->>>>
->>>> This is repeated a few times in the driver so I added memset to
->>>> quiet
->>>> gcc and make behavior deterministic in case the unused fields get
->>>> some
->>>> meaning in the future.
->>>>
->>>> However, in tpm_ibmvtpm_send the structure is initialized as
->>>>
->>>>     struct ibmvtpm_crq crq;
->>>>         __be64 *word = (__be64 *)&crq;
->>>> ...
->>>>         crq.valid = (u8)IBMVTPM_VALID_CMD;
->>>>         crq.msg = (u8)VTPM_TPM_COMMAND;
->>>>         crq.len = cpu_to_be16(count);
->>>>         crq.data = cpu_to_be32(ibmvtpm->rtce_dma_handle);
->>>>
->>>> and submitted with
->>>>
->>>>     rc = ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
->>>>                               be64_to_cpu(word[1]));
->>>> meaning it is swapped twice.
->>>>
->>>>
->>>> Where is the interface defined? Are the command arguments passed as
->>>> BE
->>>> subfields (the second case was correct before adding the extra
->>>> whole
->>>> word swap) or BE words (the first case doing whole word swap is
->>>> correct)?
->>>
->>> The interface is defined in PAPR. The crq format is defined in BE
->>> terms.
-> 
-> Which exact PAPR? Where can I get it?
-> The PAPR document I found does not say anything about vtpm. 
+  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
 
-Unfortunately, vtpm doesn't appear to be covered in the publicly
-available LoPAPR.
+for you to fetch changes up to 75b824727680a9d12c34d78096a5ac642e53f5d0:
 
--Tyrel
+  powerpc/8xx: Perf events on PPC 8xx (2017-01-26 17:49:34 -0600)
 
-> 
-> Thanks
-> 
-> Michal
-> 
+----------------------------------------------------------------
+Christophe Leroy (4):
+      powerpc/32: Enable HW_BREAKPOINT on BOOK3S
+      powerpc/8xx: Implement hw_breakpoint
+      powerpc/32: Remove FIX_SRR1
+      powerpc/8xx: Perf events on PPC 8xx
+
+Jason Jin (1):
+      powerpc/85xx: Enable display support for t1042rdb
+
+Valentin Longchamp (3):
+      powerpc/corenet: explicitly disable the SDHC controller on kmcoge4
+      powerpc/85xx: remove the kmp204x_defconfig
+      powerpc/corenet: add support for the kmcent2 board
+
+ arch/powerpc/Kconfig                          |   2 +-
+ arch/powerpc/boot/dts/fsl/kmcent2.dts         | 303 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/kmcoge4.dts         |   4 +
+ arch/powerpc/configs/85xx/kmp204x_defconfig   | 220 -------------------
+ arch/powerpc/include/asm/ppc_asm.h            |   1 -
+ arch/powerpc/include/asm/processor.h          |   2 +-
+ arch/powerpc/include/asm/reg.h                |   2 +
+ arch/powerpc/include/asm/reg_8xx.h            |  11 +
+ arch/powerpc/kernel/entry_32.S                |  19 +-
+ arch/powerpc/kernel/head_32.S                 |   3 -
+ arch/powerpc/kernel/head_8xx.S                |  72 +++++-
+ arch/powerpc/kernel/hw_breakpoint.c           |   6 +-
+ arch/powerpc/kernel/process.c                 |  22 ++
+ arch/powerpc/perf/8xx-pmu.c                   | 173 +++++++++++++++
+ arch/powerpc/perf/Makefile                    |   2 +
+ arch/powerpc/platforms/85xx/Makefile          |   1 +
+ arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
+ arch/powerpc/platforms/85xx/t1042rdb_diu.c    | 152 +++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype        |   7 +
+ 19 files changed, 771 insertions(+), 232 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
+ delete mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
+ create mode 100644 arch/powerpc/perf/8xx-pmu.c
+ create mode 100644 arch/powerpc/platforms/85xx/t1042rdb_diu.c
