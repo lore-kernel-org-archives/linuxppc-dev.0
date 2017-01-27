@@ -1,27 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8x9J2SbLzDqDC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 22:18:12 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: =?Windows-1252?Q?=27Michal_Such=E1nek=27?= <msuchanek@suse.de>, Ashley Lai
- <ashleydlai@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Peter Huewe <peterhuewe@gmx.de>, Marcel Selhorst <tpmdd@selhorst.net>,
- "Jarkko Sakkinen" <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
- <jgunthorpe@obsidianresearch.com>, "tpmdd-devel@lists.sourceforge.net"
- <tpmdd-devel@lists.sourceforge.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: ibmvtpm byteswapping inconsistency
-Date: Fri, 27 Jan 2017 11:18:01 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0270A32@AcuExch.aculab.com>
-References: <20170126212248.3f3e9103@kitsune.suse.cz>
-In-Reply-To: <20170126212248.3f3e9103@kitsune.suse.cz>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8zBX1Hf8zDqRv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 23:49:23 +1100 (AEDT)
+Received: by mail-pf0-x243.google.com with SMTP id e4so18507111pfg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 04:49:23 -0800 (PST)
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 27 Jan 2017 18:19:10 +0530
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Fix RECLAIM_DISTANCE
+Message-ID: <20170127124910.GA2668@localhost.localdomain>
+References: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20170125035744.GB12855@localhost.localdomain>
+ <20170125045822.GA10566@gwshan>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170125045822.GA10566@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michal Such=E1nek
-> building ibmvtpm I noticed gcc warning complaining that second word of
-> struct ibmvtpm_crq in tpm_ibmvtpm_suspend is uninitialized.
->=20
-> The structure is defined as
->=20
-> struct ibmvtpm_crq {
->         u8 valid;
->         u8 msg;
->         __be16 len;
->         __be32 data;
->         __be64 reserved;
-> } __attribute__((packed, aligned(8)));
->=20
-> initialized as
->=20
->         struct ibmvtpm_crq crq;
->         u64 *buf =3D (u64 *) &crq;
-...
+On Wed, Jan 25, 2017 at 03:58:22PM +1100, Gavin Shan wrote:
+> On Wed, Jan 25, 2017 at 09:27:44AM +0530, Balbir Singh wrote:
+> >On Tue, Jan 24, 2017 at 10:32:28AM +1100, Gavin Shan wrote:
+> >> When @node_reclaim_mode ("/proc/sys/vm/zone_reclaim_mode") is enabled,
+> >> the nodes in the specified distance (< RECLAIM_DISTANCE) to the preferred
+> >> one will be checked for page direct reclaim in the fast path, as below
+> >> function call chain indicates. Currently, RECLAIM_DISTANCE is set to 10,
+> >> equal to LOCAL_DISTANCE. It means no nodes, including the preferred one,
+> >> don't match the conditions. So no nodes are checked for direct reclaim
+> >> in the fast path.
+> >> 
+> >>    __alloc_pages_nodemask
+> >>    get_page_from_freelist
+> >>    zone_allows_reclaim
+> >> 
+> >> This fixes it by setting RECLAIM_DISTANCE to 30. With it, the preferred
+> >> node and its directly adjacent nodes will be checked for page direct
+> >> reclaim. The comments explaining RECLAIM_DISTANCE is out of date. This
+> >> updates and makes it correct.
+> >> 
+> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> >> ---
+> >
+> >I spoke about this at length with Anton and the larger kernel team.
+> >We need performance data before we can commit to the change. Do we
+> >benchmarks to show that the change does not introduce regression
+> >w.r.t runtime cost?
+> >
+> 
+> Thanks for review. I just found the problem when studying the code
+> last year. It sounds reasonable not to rely on the slow path for page
+> reclaim if the fast path can reclaim enough pages. From this point,
+> I believe the performance should be improved. In the meanwhile, the
+> page cache/buffer could be released, as part of the output of page
+> reclaim. It's going to affect fs's performance for sure. So do you
+> have recommended test examples to measure the improved performance
+> because of this?
+>
 
-Hrummfff....
-What is that attribute for, seems pretty confusing and pointless to me.
+Anton suggested that NUMA distances in powerpc mattered and hurted
+performance without this setting. We need to validate to see if this
+is still true. A simple way to start would be benchmarking
 
-I also suspect that if you want to access it as two 64bit words it
-ought to be a union.
-
-	David
+Balbir Singh.
