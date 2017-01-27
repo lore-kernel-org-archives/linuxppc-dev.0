@@ -1,32 +1,42 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v953m4083zDqk0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 04:13:56 +1100 (AEDT)
-Date: Fri, 27 Jan 2017 11:13:46 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Miroslav Benes <mbenes@suse.cz>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4 01/15] stacktrace/x86: add function for detecting
- reliable stack traces
-Message-ID: <20170127171346.o7wuvycriajdpixc@treble>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
- <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
- <alpine.LSU.2.20.1701270943420.1563@pobox.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v96863R2DzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 05:02:46 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0RHwpYk122209
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 13:02:43 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2888w0wcdn-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 13:02:43 -0500
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Fri, 27 Jan 2017 11:02:42 -0700
+Subject: Re: ibmvtpm byteswapping inconsistency
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+ Ashley Lai <ashleydlai@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>,
+ Marcel Selhorst <tpmdd@selhorst.net>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ tpmdd-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20170126212248.3f3e9103@kitsune.suse.cz>
+ <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
+ <1485481819.2980.82.camel@kernel.crashing.org>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Fri, 27 Jan 2017 10:02:34 -0800
 MIME-Version: 1.0
+In-Reply-To: <1485481819.2980.82.camel@kernel.crashing.org>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <alpine.LSU.2.20.1701270943420.1563@pobox.suse.cz>
+Message-Id: <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,39 +46,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 27, 2017 at 09:47:08AM +0100, Miroslav Benes wrote:
+On 01/26/2017 05:50 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2017-01-26 at 17:42 -0800, Tyrel Datwyler wrote:
+>> On 01/26/2017 12:22 PM, Michal Suchánek wrote:
+>>> Hello,
+>>>
+>>> building ibmvtpm I noticed gcc warning complaining that second word
+>>> of
+>>> struct ibmvtpm_crq in tpm_ibmvtpm_suspend is uninitialized.
+>>>
+>>> The structure is defined as 
+>>>
+>>> struct ibmvtpm_crq {
+>>>         u8 valid;
+>>>         u8 msg;
+>>>         __be16 len;
+>>>         __be32 data;
+>>>         __be64 reserved;
+>>> } __attribute__((packed, aligned(8)));
+>>>
+>>> initialized as
+>>>
+>>>         struct ibmvtpm_crq crq;
+>>>         u64 *buf = (u64 *) &crq;
+>>> ...
+>>>         crq.valid = (u8)IBMVTPM_VALID_CMD;
+>>>         crq.msg = (u8)VTPM_PREPARE_TO_SUSPEND;
+>>>
+>>> and submitted with
+>>>
+>>>         rc = ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+>>>                               cpu_to_be64(buf[1]));
+>>
+>> These should be be64_to_cpu() here. The underlying hcall made by
+>> ibmvtpm_send_crq() requires parameters to be in cpu endian unlike the
+>> RTAS interface which requires data in BE.
 > 
-> > diff --git a/include/linux/stacktrace.h b/include/linux/stacktrace.h
-> > index 0a34489..8e8b67b 100644
-> > --- a/include/linux/stacktrace.h
-> > +++ b/include/linux/stacktrace.h
-> > @@ -18,6 +18,8 @@ extern void save_stack_trace_regs(struct pt_regs *regs,
-> >  				  struct stack_trace *trace);
-> >  extern void save_stack_trace_tsk(struct task_struct *tsk,
-> >  				struct stack_trace *trace);
-> > +extern int save_stack_trace_tsk_reliable(struct task_struct *tsk,
-> > +					 struct stack_trace *trace);
-> >  
-> >  extern void print_stack_trace(struct stack_trace *trace, int spaces);
-> >  extern int snprint_stack_trace(char *buf, size_t size,
-> > @@ -29,12 +31,12 @@ extern void save_stack_trace_user(struct stack_trace *trace);
-> >  # define save_stack_trace_user(trace)              do { } while (0)
-> >  #endif
-> >  
-> > -#else
-> > +#else /* !CONFIG_STACKTRACE */
-> >  # define save_stack_trace(trace)			do { } while (0)
-> >  # define save_stack_trace_tsk(tsk, trace)		do { } while (0)
-> >  # define save_stack_trace_user(trace)			do { } while (0)
-> >  # define print_stack_trace(trace, spaces)		do { } while (0)
-> >  # define snprint_stack_trace(buf, size, trace, spaces)	do { } while (0)
+> Hrm... an hcall takes register arguments. Register arguments don't have
+> an endianness.
+
+I wasn't suggesting that they do. However, I still believe my point is
+valid that the arguments need to be loaded into the registers according
+to the endianness of the cpu. We had several bugs during LE porting
+where assumptions were made that parameters should be loaded BE
+regardless of cpu endian. For example:
+
+commit 3df76a9dcc74d5f012b94ea01ed6e7aaf8362c5a
+Author: Cyril Bur <cyrilbur@gmail.com>
+Date:   Wed Jan 21 13:32:00 2015 +1100
+
+    powerpc/pseries: Fix endian problems with LE migration
+
+    RTAS events require arguments be passed in big endian while
+    hypercalls have their arguments passed in registers and the values
+    should therefore be in CPU endian.
+
 > 
-> Is there a reason you did not define empty save_stack_trace_tsk_reliable() 
-> here? Right, it should not be needed now as livepatching is the only user, 
-> but still.
+> The problem is that we are packing an in-memory structure into 2
+> registers and it's expected that this structure is laid out in the
+> registers as if it had been loaded by a BE CPU.
 
-Agreed, thanks.  I'll make the stub return an error, since an empty
-stack trace isn't very reliable.
+This is only the case if the cpu is BE. If the cpu is LE, regardless of
+the fact that our in memory structure is laid out BE, when we break it
+into 2 words each of those words needs to be loaded LE.
 
--- 
-Josh
+-Tyrel
+
+> 
+> So we have two things at play here:
+> 
+>   - The >8-bit fields should be laid out BE in the memory image
+>   - That whole 128-bit structure should be loaded into 2 64-bit
+> registers MSB first.
+> 
+> So the "double" swap is somewhat needed. The uglyness comes from the
+> passing-by-register of the h-call but it should work.
+> 
+> That said, be64_to_cpup(buf) and be64_to_cpup(buf+1) might give you
+> better result (though recent gcc's might not make a difference).
+>>>
+>>> which means that the second word indeed contains purely garbage.
+>>>
+>>> This is repeated a few times in the driver so I added memset to
+>>> quiet
+>>> gcc and make behavior deterministic in case the unused fields get
+>>> some
+>>> meaning in the future.
+>>>
+>>> However, in tpm_ibmvtpm_send the structure is initialized as
+>>>
+>>> 	struct ibmvtpm_crq crq;
+>>>         __be64 *word = (__be64 *)&crq;
+>>> ...
+>>>         crq.valid = (u8)IBMVTPM_VALID_CMD;
+>>>         crq.msg = (u8)VTPM_TPM_COMMAND;
+>>>         crq.len = cpu_to_be16(count);
+>>>         crq.data = cpu_to_be32(ibmvtpm->rtce_dma_handle);
+>>>
+>>> and submitted with
+>>>
+>>> 	rc = ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
+>>>                               be64_to_cpu(word[1]));
+>>> meaning it is swapped twice.
+>>>
+>>>
+>>> Where is the interface defined? Are the command arguments passed as
+>>> BE
+>>> subfields (the second case was correct before adding the extra
+>>> whole
+>>> word swap) or BE words (the first case doing whole word swap is
+>>> correct)?
+>>
+>> The interface is defined in PAPR. The crq format is defined in BE
+>> terms.
+>> However, when we break the crq apart into high and low words they
+>> need
+>> to be in cpu endian as mentioned above.
+>>
+>> -Tyrel
+>>
+>>>
+>>> Thanks
+>>>
+>>> Michal
+>>>
+> 
