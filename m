@@ -1,31 +1,32 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hramrach@gmail.com>
+Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
+ [IPv6:2607:f8b0:400c:c08::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8sxY6g0dzDq7d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 19:52:49 +1100 (AEDT)
-Date: Fri, 27 Jan 2017 09:52:43 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4 03/15] livepatch: create temporary
- klp_update_patch_state() stub
-In-Reply-To: <e2076a17e3eaa0cafead8208595befbb6e31b0ee.1484839971.git.jpoimboe@redhat.com>
-Message-ID: <alpine.LSU.2.20.1701270952250.1563@pobox.suse.cz>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
- <e2076a17e3eaa0cafead8208595befbb6e31b0ee.1484839971.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8tBX31QyzDqGy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 20:04:04 +1100 (AEDT)
+Received: by mail-ua0-x243.google.com with SMTP id d5so24221355uag.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 01:04:04 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1485481819.2980.82.camel@kernel.crashing.org>
+References: <20170126212248.3f3e9103@kitsune.suse.cz>
+ <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
+ <1485481819.2980.82.camel@kernel.crashing.org>
+From: Michal Suchanek <hramrach@gmail.com>
+Date: Fri, 27 Jan 2017 10:03:20 +0100
+Message-ID: <CAOMqctQtspCTTpfEUyUVyE9GKYOavZNhkXnRPUrPZrDZ6-eG0w@mail.gmail.com>
+Subject: Re: ibmvtpm byteswapping inconsistency
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
+ Ashley Lai <ashleydlai@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>,
+ Marcel Selhorst <tpmdd@selhorst.net>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ tpmdd-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,15 +36,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 19 Jan 2017, Josh Poimboeuf wrote:
+On 27 January 2017 at 02:50, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2017-01-26 at 17:42 -0800, Tyrel Datwyler wrote:
+>> On 01/26/2017 12:22 PM, Michal Such=C3=A1nek wrote:
+>> > Hello,
+>> >
+>> > building ibmvtpm I noticed gcc warning complaining that second word
+>> > of
+>> > struct ibmvtpm_crq in tpm_ibmvtpm_suspend is uninitialized.
+>> >
+>> > The structure is defined as
+>> >
+>> > struct ibmvtpm_crq {
+>> >         u8 valid;
+>> >         u8 msg;
+>> >         __be16 len;
+>> >         __be32 data;
+>> >         __be64 reserved;
+>> > } __attribute__((packed, aligned(8)));
+>> >
+>> > initialized as
+>> >
+>> >         struct ibmvtpm_crq crq;
+>> >         u64 *buf =3D (u64 *) &crq;
+>> > ...
+>> >         crq.valid =3D (u8)IBMVTPM_VALID_CMD;
+>> >         crq.msg =3D (u8)VTPM_PREPARE_TO_SUSPEND;
+>> >
+>> > and submitted with
+>> >
+>> >         rc =3D ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
+>> >                               cpu_to_be64(buf[1]));
+>>
+>> These should be be64_to_cpu() here. The underlying hcall made by
+>> ibmvtpm_send_crq() requires parameters to be in cpu endian unlike the
+>> RTAS interface which requires data in BE.
+>
+> Hrm... an hcall takes register arguments. Register arguments don't have
+> an endianness.
+>
+> The problem is that we are packing an in-memory structure into 2
+> registers and it's expected that this structure is laid out in the
+> registers as if it had been loaded by a BE CPU.
+>
+> So we have two things at play here:
+>
+>   - The >8-bit fields should be laid out BE in the memory image
+>   - That whole 128-bit structure should be loaded into 2 64-bit
+> registers MSB first.
+>
+> So the "double" swap is somewhat needed. The uglyness comes from the
+> passing-by-register of the h-call but it should work.
+>
+> That said, be64_to_cpup(buf) and be64_to_cpup(buf+1) might give you
+> better result (though recent gcc's might not make a difference).
 
-> Create temporary stubs for klp_update_patch_state() so we can add
-> TIF_PATCH_PENDING to different architectures in separate patches without
-> breaking build bisectability.
-> 
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> Reviewed-by: Petr Mladek <pmladek@suse.com>
+If this should work then the below case that swaps the fields separately is
+broken.
 
-Acked-by: Miroslav Benes <mbenes@suse.cz>
+Anyway, structures have no endianess so when they start with a byte they
+start with that byte no matter the host endian.
+crq.valid is the first byte always. And then each field is to be swapped
+separately.
 
-Miroslav
+On the other hand, bitfields are part of an integer and the field should be
+swapped as part of the integer.
+
+That is,
+#define CRQ_VALID ((buf[0] >> 56) & 0xff)
+CRQ_VALID is part of an integer in buf and would be laid out differently
+on start or end depending on the host being BE or LE.
+
+And the question is what the PAPR actually defines because both ways are
+used in the code. You can describe an in-memory layout either way.
+
+>> >
+>> > which means that the second word indeed contains purely garbage.
+>> >
+>> > This is repeated a few times in the driver so I added memset to
+>> > quiet
+>> > gcc and make behavior deterministic in case the unused fields get
+>> > some
+>> > meaning in the future.
+>> >
+>> > However, in tpm_ibmvtpm_send the structure is initialized as
+>> >
+>> >     struct ibmvtpm_crq crq;
+>> >         __be64 *word =3D (__be64 *)&crq;
+>> > ...
+>> >         crq.valid =3D (u8)IBMVTPM_VALID_CMD;
+>> >         crq.msg =3D (u8)VTPM_TPM_COMMAND;
+>> >         crq.len =3D cpu_to_be16(count);
+>> >         crq.data =3D cpu_to_be32(ibmvtpm->rtce_dma_handle);
+>> >
+>> > and submitted with
+>> >
+>> >     rc =3D ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
+>> >                               be64_to_cpu(word[1]));
+>> > meaning it is swapped twice.
+>> >
+>> >
+>> > Where is the interface defined? Are the command arguments passed as
+>> > BE
+>> > subfields (the second case was correct before adding the extra
+>> > whole
+>> > word swap) or BE words (the first case doing whole word swap is
+>> > correct)?
+>>
+>> The interface is defined in PAPR. The crq format is defined in BE
+>> terms.
+
+Which exact PAPR? Where can I get it?
+The PAPR document I found does not say anything about vtpm.
+
+Thanks
+
+Michal
