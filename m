@@ -1,16 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8g1Y3152zDq5s
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8g1Y60PNzDq5s
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 11:40:33 +1100 (AEDT)
-In-Reply-To: <1485211794-11093-2-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20161103051542.GB8368@fergus.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [v2,
- 1/3] powerpc/kernel: Remove nested if statements in rtas_initialize()
-Message-Id: <3v8g1Y2RMsz9t1B@ozlabs.org>
+Subject: Re: [2/2] powerpc/64: Use optimized checksum routines on little-endian
+Message-Id: <3v8g1Y4QQTz9t0t@ozlabs.org>
 Date: Fri, 27 Jan 2017 11:40:33 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,15 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-01-23 at 22:49:52 UTC, Gavin Shan wrote:
-> This removes the unnecessary nested if statements in function
-> rtas_initialize(), to simplify the code. No functional changes
-> introduced.
+On Thu, 2016-11-03 at 05:15:42 UTC, Paul Mackerras wrote:
+> Currently we have optimized hand-coded assembly checksum routines
+> for big-endian 64-bit systems, but for little-endian we use the
+> generic C routines.  This modifies the optimized routines to work
+> for little-endian.  With this, we no longer need to enable
+> CONFIG_GENERIC_CSUM.  This also fixes a couple of comments
+> in checksum_64.S so they accurately reflect what the associated
+> instruction does.
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/dbecd5093043faa9da83c720ed0e08
+https://git.kernel.org/powerpc/c/d4fde568a34a93897dfb9ae64cfe9d
 
 cheers
