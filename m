@@ -1,31 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dsa@cumulusnetworks.com>
+Received: from mail-pg0-x22c.google.com (mail-pg0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v9N2Y60KszDq6j
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 15:28:53 +1100 (AEDT)
-Message-ID: <1485577703.2980.104.camel@kernel.crashing.org>
-Subject: Re: ibmvtpm byteswapping inconsistency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Michal
- =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
- Ashley Lai <ashleydlai@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>,
- Marcel Selhorst <tpmdd@selhorst.net>, Jarkko Sakkinen
- <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
- <jgunthorpe@obsidianresearch.com>,
- tpmdd-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Date: Sat, 28 Jan 2017 15:28:23 +1100
-In-Reply-To: <48dc15a0-eaba-29e4-f39e-500177f98638@linux.vnet.ibm.com>
-References: <20170126212248.3f3e9103@kitsune.suse.cz>
- <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
- <1485481819.2980.82.camel@kernel.crashing.org>
- <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
- <1485547137.2980.94.camel@kernel.crashing.org>
- <48dc15a0-eaba-29e4-f39e-500177f98638@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v92rq6hKdzDqhZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 02:34:19 +1100 (AEDT)
+Received: by mail-pg0-x22c.google.com with SMTP id 3so23457284pgj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 07:34:19 -0800 (PST)
+Subject: Re: [next-20170124] Kernel oops(rt6_fill_node) during reboot of LPAR
+To: Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+ netdev@vger.kernel.org
+References: <9520531C-6458-4442-9ED5-3598E72C7C6A@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ davem@davemloft.net, Michael Ellerman <michael@ellerman.id.au>
+From: David Ahern <dsa@cumulusnetworks.com>
+Message-ID: <84f3cb86-5110-64a0-5575-4024ba758135@cumulusnetworks.com>
+Date: Fri, 27 Jan 2017 08:34:15 -0700
+MIME-Version: 1.0
+In-Reply-To: <9520531C-6458-4442-9ED5-3598E72C7C6A@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +29,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-01-27 at 12:32 -0800, Tyrel Datwyler wrote:
-> Its possible being the end of the week I'm just a little dense, but
-> wouldn't be64_to_cpu() imply that we are byte-swapping something that is
-> already, or supposedly already, in BE format to cpu endianness? Which on
-> a BE cpu I would expect a no-op, and on a LE cpu the 64bit word to have
-> been swapped from BE --> LE?
+On 1/27/17 5:54 AM, Sachin Sant wrote:
+> While rebooting PowerVM LPAR running 4.10.0-rc5-next-20170124
+> on a POWER8 box, following kernel oops is displayed.
+> 
+> This problem was introduced with next-20170123. next-20170120 works.
+> Initial analysis points to following patch included with next-20170123
+> 
+> commit a1a22c12060e4b9c52f45d4b3460f614e00162a2
+> net: ipv6: Keep nexthop of multipath route on admin down
 
-It's in BE format in memory. In LE mode, loading it into a register will
-get it the wrong way around, thus we have to swap it again. Once in a
-register it has no "endianness" per-se, what matters is that the act
-of loading from memory to a register would have loaded it the wrong
-way around in LE.
+Thanks for the report. Fixed by:
 
-> In my eyes the code does seem to support what I've argued. The same
-> thing is done in the scsi VIO drivers. The CRQ structure is laid out and
-> annotated BE. We use cpu_to_be() calls to load any non 8bit field.
-> Finally, each word is swapped to cpu endian when we hand it off for the
-> hcall.
-> 
-> from ibmvfc_send_event():
-> 
->         __be64 *crq_as_u64 = (__be64 *) &evt->crq;
-> 
->         <..snip..>
-> 
->         if ((rc = ibmvfc_send_crq(vhost, be64_to_cpu(crq_as_u64[0]),
->                                   be64_to_cpu(crq_as_u64[1])))) {
-> 
-> Again, maybe I'm missing something.
+https://git.kernel.org/cgit/linux/kernel/git/davem/net-next.git/commit/?id=1f17e2f2c8a8be3430813119fa7b633398f6185b
