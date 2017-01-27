@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8g1Z1kXwzDq5s
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8g1Z2KrTzDq6j
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 11:40:34 +1100 (AEDT)
-In-Reply-To: <897d01cca8cd61a42493a4f6ba6bfca056419686.1484326337.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <148482301037.30441.14177888563610790803.stgit@bahia>
+To: Greg Kurz <groug@kaod.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- daniel@iogearbox.net, ast@fb.com
-Subject: Re: [2/3] powerpc: bpf: flush the entire JIT buffer
-Message-Id: <3v8g1Y720jz9t25@ozlabs.org>
-Date: Fri, 27 Jan 2017 11:40:33 +1100 (AEDT)
+Cc: linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: cxl: drop unused header asm/pnv-pci.h
+Message-Id: <3v8g1Z1FtWz9t0J@ozlabs.org>
+Date: Fri, 27 Jan 2017 11:40:34 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-01-13 at 17:10:01 UTC, "Naveen N. Rao" wrote:
-> With bpf_jit_binary_alloc(), we allocate at a page granularity and fill
-> the rest of the space with illegal instructions to mitigate BPF spraying
-> attacks, while having the actual JIT'ed BPF program at a random location
-> within the allocated space. Under this scenario, it would be better to
-> flush the entire allocated buffer rather than just the part containing
-> the actual program. We already flush the buffer from start to the end of
-> the BPF program. Extend this to include the illegal instructions after
-> the BPF program.
+On Thu, 2017-01-19 at 10:50:10 UTC, Greg Kurz wrote:
+> The kernel API does not use anything from this header file.
 > 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Acked-by: Alexei Starovoitov <ast@kernel.org>
-> Acked-by: Daniel Borkmann <daniel@iogearbox.net>
+> Signed-off-by: Greg Kurz <groug@kaod.org>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/10528b9c45cfb9e8f45217ef2f5ef8
+https://git.kernel.org/powerpc/c/0e17166d377e74164e4067ae162ed1
 
 cheers
