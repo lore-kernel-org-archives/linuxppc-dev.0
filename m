@@ -1,21 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jslaby@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8wtB4BKCzDqKh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 22:05:06 +1100 (AEDT)
-Date: Fri, 27 Jan 2017 20:46:59 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Thomas Huth <thuth@redhat.com>
-Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S PR: Refactor program interrupt related
- code into separate function
-Message-ID: <20170127094659.GB17935@fergus.ozlabs.ibm.com>
-References: <1485347242-4692-1-git-send-email-thuth@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1485347242-4692-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8wvk6gZjzDq9C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 22:06:26 +1100 (AEDT)
+From: Jiri Slaby <jslaby@suse.cz>
+To: stable@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Larry Finger <Larry.Finger@lwfinger.net>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
+Subject: [PATCH 3.12 143/235] powerpc: Fix build warning on 32-bit PPC
+Date: Fri, 27 Jan 2017 11:54:36 +0100
+Message-Id: <5a968cb0fa92a4edabf94478dabed2aeccda1d47.1485514374.git.jslaby@suse.cz>
+In-Reply-To: <5b46dc789ca2be4046e4e40a131858d386cac741.1485514374.git.jslaby@suse.cz>
+References: <5b46dc789ca2be4046e4e40a131858d386cac741.1485514374.git.jslaby@suse.cz>
+In-Reply-To: <cover.1485514374.git.jslaby@suse.cz>
+References: <cover.1485514374.git.jslaby@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2017 at 01:27:22PM +0100, Thomas Huth wrote:
-> The function kvmppc_handle_exit_pr() is quite huge and thus hard to read,
-> and even contains a "spaghetti-code"-like goto between the different case
-> labels of the big switch statement. This can be made much more readable
-> by moving the code related to injecting program interrupts / instruction
-> emulation into a separate function instead.
-> 
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-Thanks, applied to my kvm-ppc-next branch.
+3.12-stable review patch.  If anyone has any objections, please let me know.
 
-Paul.
+===============
+
+commit 8ae679c4bc2ea2d16d92620da8e3e9332fa4039f upstream.
+
+I am getting the following warning when I build kernel 4.9-git on my
+PowerBook G4 with a 32-bit PPC processor:
+
+    AS      arch/powerpc/kernel/misc_32.o
+  arch/powerpc/kernel/misc_32.S:299:7: warning: "CONFIG_FSL_BOOKE" is not defined [-Wundef]
+
+This problem is evident after commit 989cea5c14be ("kbuild: prevent
+lib-ksyms.o rebuilds"); however, this change in kbuild only exposes an
+error that has been in the code since 2005 when this source file was
+created.  That was with commit 9994a33865f4 ("powerpc: Introduce
+entry_{32,64}.S, misc_{32,64}.S, systbl.S").
+
+The offending line does not make a lot of sense.  This error does not
+seem to cause any errors in the executable, thus I am not recommending
+that it be applied to any stable versions.
+
+Thanks to Nicholas Piggin for suggesting this solution.
+
+Fixes: 9994a33865f4 ("powerpc: Introduce entry_{32,64}.S, misc_{32,64}.S, systbl.S")
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ arch/powerpc/kernel/misc_32.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index ace34137a501..e23298f065df 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -313,7 +313,7 @@ _GLOBAL(flush_instruction_cache)
+ 	lis	r3, KERNELBASE@h
+ 	iccci	0,r3
+ #endif
+-#elif CONFIG_FSL_BOOKE
++#elif defined(CONFIG_FSL_BOOKE)
+ BEGIN_FTR_SECTION
+ 	mfspr   r3,SPRN_L1CSR0
+ 	ori     r3,r3,L1CSR0_CFI|L1CSR0_CLFC
+-- 
+2.11.0
