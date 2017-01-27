@@ -1,45 +1,31 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8qCg4ZpTzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 17:49:51 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0R6iKPv018335
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 01:49:49 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 287w54f941-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 01:49:48 -0500
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Fri, 27 Jan 2017 16:49:45 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 886703578052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 17:49:43 +1100 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0R6nZEW29818886
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 17:49:43 +1100
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0R6nBn0022167
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 17:49:11 +1100
-Subject: Re: [PATCH] powernv/opal: Handle OPAL_WRONG_STATE error from OPAL
- fails
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <1482243419-23041-1-git-send-email-vipin@linux.vnet.ibm.com>
- <87sho58ifo.fsf@concordia.ellerman.id.au>
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Date: Fri, 27 Jan 2017 12:18:40 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8sqC0188zDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 19:47:17 +1100 (AEDT)
+Date: Fri, 27 Jan 2017 09:47:08 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+In-Reply-To: <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
+Message-ID: <alpine.LSU.2.20.1701270943420.1563@pobox.suse.cz>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <87sho58ifo.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <3539f32e-4caf-df07-7e8e-f1730da692dc@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,19 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OPAL returns OPAL_WRONG_STATE for XSCOM operations
 
-done to read any core FIR which is sleeping, offline.
+> diff --git a/include/linux/stacktrace.h b/include/linux/stacktrace.h
+> index 0a34489..8e8b67b 100644
+> --- a/include/linux/stacktrace.h
+> +++ b/include/linux/stacktrace.h
+> @@ -18,6 +18,8 @@ extern void save_stack_trace_regs(struct pt_regs *regs,
+>  				  struct stack_trace *trace);
+>  extern void save_stack_trace_tsk(struct task_struct *tsk,
+>  				struct stack_trace *trace);
+> +extern int save_stack_trace_tsk_reliable(struct task_struct *tsk,
+> +					 struct stack_trace *trace);
+>  
+>  extern void print_stack_trace(struct stack_trace *trace, int spaces);
+>  extern int snprint_stack_trace(char *buf, size_t size,
+> @@ -29,12 +31,12 @@ extern void save_stack_trace_user(struct stack_trace *trace);
+>  # define save_stack_trace_user(trace)              do { } while (0)
+>  #endif
+>  
+> -#else
+> +#else /* !CONFIG_STACKTRACE */
+>  # define save_stack_trace(trace)			do { } while (0)
+>  # define save_stack_trace_tsk(tsk, trace)		do { } while (0)
+>  # define save_stack_trace_user(trace)			do { } while (0)
+>  # define print_stack_trace(trace, spaces)		do { } while (0)
+>  # define snprint_stack_trace(buf, size, trace, spaces)	do { } while (0)
 
+Is there a reason you did not define empty save_stack_trace_tsk_reliable() 
+here? Right, it should not be needed now as livepatching is the only user, 
+but still.
 
-On Friday 27 January 2017 05:47 AM, Michael Ellerman wrote:
-> Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
->
->> Added check for OPAL_WRONG_STATE error code returned from OPAL.
->> Currently Linux flashes "unexpected error" over console for this
->> error. This will avoid throwing such message and return I/O error
->> for such OPAL failures.
-> Why do we expect to get OPAL_WRONG_STATE ?
->
-> cheers
->
+Miroslav
