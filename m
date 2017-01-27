@@ -2,16 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8frs1X5JzDq60
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8frs39zDzDq60
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 11:33:01 +1100 (AEDT)
-In-Reply-To: <497a1d88a93.7082e0e9@auth.smtp.1and1.co.uk>
-To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20170119031910.2335-1-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mikey@neuling.org, maddy@linux.vnet.ibm.com,
+ grimm@linux.vnet.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Pat Wall <pjwall@mac.com>, rtd@a-eon.com, aperez@alexperez.com,
- Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: powerpc: Add missing error check to prom_find_boot_cpu()
-Message-Id: <3v8frs0RLyz9t1B@ozlabs.org>
-Date: Fri, 27 Jan 2017 11:33:00 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: Ignore reserved field in DCSR and PVR reads and writes
+Message-Id: <3v8frs23GNz9t1Q@ozlabs.org>
+Date: Fri, 27 Jan 2017 11:33:01 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-01-23 at 19:42:54 UTC, Darren Stevens wrote:
-> prom_init.c calls 'instance-to-package' twice, but the return
-> is not checked during prom_find_boot_cpu(). The result is then
-> passed to prom_getprop, which could be PROM_ERROR.
-> Add a return check to prevent this.
+On Thu, 2017-01-19 at 03:19:10 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> This was found on a pasemi system, where CFE doesn't have a working
-> 'instance-to package' prom call.
-> Before Commit 5c0484e25ec0 ('powerpc: Endian safe trampoline') the
-> area around addr 0 as mostly 0's and this doesn't cause a problem.
-> Once the macro 'FIXUP_ENDIAN' has been added to head_64.S, the low
-> memory area now has non-zero values, which cause the prom_getprop
-> call to hang.
+> IBM bit 31 (for the rest of us - bit 0) is a reserved field in the
+> instruction definition of mtspr and mfspr. Hardware is encouraged to
+> (and does) ignore it.
 > 
-> Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+> As a result, if userspace executes an mtspr DSCR with the reserved bit
+> set, we get a DSCR facility unavailable exception. The kernel fails to
+> match against the expected value/mask, and we silently return to
+> userspace to try and re-execute the same mtspr DSCR instruction. We
+> loop forever until the process is killed.
+> 
+> We should do something here, and it seems mirroring what hardware does
+> is the better option vs killing the process. While here, relax the
+> matching of mfspr PVR too.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/af2b7fa17eb92e52b65f96604448ff
+https://git.kernel.org/powerpc/c/178f358208ceb8b38e5cff3f815e0d
 
 cheers
