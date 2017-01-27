@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v8frr5f6JzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 11:33:00 +1100 (AEDT)
-In-Reply-To: <1484781016-13379-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v8frs1X5JzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2017 11:33:01 +1100 (AEDT)
+In-Reply-To: <497a1d88a93.7082e0e9@auth.smtp.1and1.co.uk>
+To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: #3.18+@gwshan.ozlabs.ibm.com, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- stable@vger.kernel.org
-Subject: Re: [v2] powerpc/eeh: Fix wrong flag passed to eeh_unfreeze_pe()
-Message-Id: <3v8frr4x7Rz9t0t@ozlabs.org>
+Cc: Pat Wall <pjwall@mac.com>, rtd@a-eon.com, aperez@alexperez.com,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: powerpc: Add missing error check to prom_find_boot_cpu()
+Message-Id: <3v8frs0RLyz9t1B@ozlabs.org>
 Date: Fri, 27 Jan 2017 11:33:00 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,22 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-01-18 at 23:10:16 UTC, Gavin Shan wrote:
-> In __eeh_clear_pe_frozen_state(), we should pass the flag's value
-> instead of its address to eeh_unfreeze_pe(). The isolated flag is
-> cleared if no error returned from __eeh_clear_pe_frozen_state().
-> We never observed the error from the function. So the isolated flag
-> should have been always cleared, no real issue is caused because
-> of the misused @flag.
+On Mon, 2017-01-23 at 19:42:54 UTC, Darren Stevens wrote:
+> prom_init.c calls 'instance-to-package' twice, but the return
+> is not checked during prom_find_boot_cpu(). The result is then
+> passed to prom_getprop, which could be PROM_ERROR.
+> Add a return check to prevent this.
 > 
-> This fixes the code by passing the value of @flag to eeh_unfreeze_pe().
+> This was found on a pasemi system, where CFE doesn't have a working
+> 'instance-to package' prom call.
+> Before Commit 5c0484e25ec0 ('powerpc: Endian safe trampoline') the
+> area around addr 0 as mostly 0's and this doesn't cause a problem.
+> Once the macro 'FIXUP_ENDIAN' has been added to head_64.S, the low
+> memory area now has non-zero values, which cause the prom_getprop
+> call to hang.
 > 
-> Cc: stable@vger.kernel.org #3.18+
-> Fixes: 5cfb20b96f6 ("powerpc/eeh: Emulate EEH recovery for VFIO devices")
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Darren Stevens <darren@stevens-zone.net>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/f05fea5b3574a5926c53865eea2713
+https://git.kernel.org/powerpc/c/af2b7fa17eb92e52b65f96604448ff
 
 cheers
