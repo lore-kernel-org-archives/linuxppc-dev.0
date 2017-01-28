@@ -1,17 +1,31 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v9Ghx0RwHzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 11:28:16 +1100 (AEDT)
-Date: Fri, 27 Jan 2017 17:53:48 -0600
-From: Scott Wood <oss@buserror.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
-Message-ID: <20170127235348.GA21260@home.buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v9GsR05PVzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 11:35:38 +1100 (AEDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: Pull request: scottwood/linux.git next
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Sat, 28 Jan 2017 01:35:27 +0100
+From: msuchanek <msuchanek@suse.de>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ashley Lai
+ <ashleydlai@gmail.com>, Paul Mackerras <paulus@samba.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>, Marcel Selhorst
+ <tpmdd@selhorst.net>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ tpmdd-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: ibmvtpm byteswapping inconsistency
+In-Reply-To: <48dc15a0-eaba-29e4-f39e-500177f98638@linux.vnet.ibm.com>
+References: <20170126212248.3f3e9103@kitsune.suse.cz>
+ <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
+ <1485481819.2980.82.camel@kernel.crashing.org>
+ <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
+ <1485547137.2980.94.camel@kernel.crashing.org>
+ <48dc15a0-eaba-29e4-f39e-500177f98638@linux.vnet.ibm.com>
+Message-ID: <5420c93884aee76cbbf5b961d709ba3d@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,57 +35,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Highlights include 8xx breakpoints and perf, t1042rdb display support,
-and board updates.
+Hello,
 
-The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
+On 2017-01-27 21:32, Tyrel Datwyler wrote:
+> On 01/27/2017 11:58 AM, Benjamin Herrenschmidt wrote:
+>> On Fri, 2017-01-27 at 10:02 -0800, Tyrel Datwyler wrote:
+>>>> The problem is that we are packing an in-memory structure into 2
+>>>> registers and it's expected that this structure is laid out in the
+>>>> registers as if it had been loaded by a BE CPU.
+>>> 
+>>> This is only the case if the cpu is BE. If the cpu is LE, regardless 
+>>> of
+>>> the fact that our in memory structure is laid out BE, when we break 
+>>> it
+>>> into 2 words each of those words needs to be loaded LE.
+>> 
+>> That doesn't make sense and doesn't match the code... The structure
+>> needs to always have the same in-register layout regardless of the
+>> endianness of the CPU, especially since the underlying hypervisor
+>> will most likely be BE :-)
+>> 
+>> Thta's why the code does a be64_to_cpu() when loading it, this in
+>> effect performs a "BE" load, which on a BE CPU is just a normal load
+>> and on LE is a swap to compensate for the CPU loading it the "wrong 
+>> way
+>> around".
+> 
+> Its possible being the end of the week I'm just a little dense, but
+> wouldn't be64_to_cpu() imply that we are byte-swapping something that 
+> is
+> already, or supposedly already, in BE format to cpu endianness? Which 
+> on
+> a BE cpu I would expect a no-op, and on a LE cpu the 64bit word to have
+> been swapped from BE --> LE?
+> 
+> In my eyes the code does seem to support what I've argued. The same
+> thing is done in the scsi VIO drivers. The CRQ structure is laid out 
+> and
+> annotated BE. We use cpu_to_be() calls to load any non 8bit field.
+> Finally, each word is swapped to cpu endian when we hand it off for the
+> hcall.
+> 
+> from ibmvfc_send_event():
+> 
+>         __be64 *crq_as_u64 = (__be64 *) &evt->crq;
+> 
+> 	<..snip..>
+> 
+>         if ((rc = ibmvfc_send_crq(vhost, be64_to_cpu(crq_as_u64[0]),
+>                                   be64_to_cpu(crq_as_u64[1])))) {
+> 
+> Again, maybe I'm missing something.
+> 
 
-  Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
+Ok, so you perform really difficult operation for no good reason. You 
+say
+that the ppc dual-endian works like this: there is an internal in-cpu
+representation of numbers which is always the same. What is affected by
+switching endian is how memory loads and stores work.
 
-are available in the git repository at:
+If you pass these two words in registers you never need to swap 
+anything.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+> Byte  |   0   |   1   |   2   |   3   |   4   |   5   |   6   |   7
+> -----------------------------------------------------------------------
+> Word0 | Valid | Type  |     Length    |              Data
+> -----------------------------------------------------------------------
+> Word1 |                Reserved
+> -----------------------------------------------------------------------
+> 
+> The following definition looks to match:
+> 
+> struct ibmvtpm_crq {
+>         u8 valid;
+>         u8 msg;
+>         __be16 len;
+>         __be32 data;
+>         __be64 reserved;
+> } __attribute__((packed, aligned(8)));
 
-for you to fetch changes up to 75b824727680a9d12c34d78096a5ac642e53f5d0:
+If under BE valid is first byte then it is MSB and you would get value
+to pass in word 0 as (valid << 56) | (type << 48) | (length << 32 ) | 
+data.
 
-  powerpc/8xx: Perf events on PPC 8xx (2017-01-26 17:49:34 -0600)
+No swaps involved.
 
-----------------------------------------------------------------
-Christophe Leroy (4):
-      powerpc/32: Enable HW_BREAKPOINT on BOOK3S
-      powerpc/8xx: Implement hw_breakpoint
-      powerpc/32: Remove FIX_SRR1
-      powerpc/8xx: Perf events on PPC 8xx
+To achieve same with structure and swaps you would indeed first swap the
+members and then the whole word. Much harder to read code that way, 
+though.
 
-Jason Jin (1):
-      powerpc/85xx: Enable display support for t1042rdb
+Thanks
 
-Valentin Longchamp (3):
-      powerpc/corenet: explicitly disable the SDHC controller on kmcoge4
-      powerpc/85xx: remove the kmp204x_defconfig
-      powerpc/corenet: add support for the kmcent2 board
-
- arch/powerpc/Kconfig                          |   2 +-
- arch/powerpc/boot/dts/fsl/kmcent2.dts         | 303 ++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/kmcoge4.dts         |   4 +
- arch/powerpc/configs/85xx/kmp204x_defconfig   | 220 -------------------
- arch/powerpc/include/asm/ppc_asm.h            |   1 -
- arch/powerpc/include/asm/processor.h          |   2 +-
- arch/powerpc/include/asm/reg.h                |   2 +
- arch/powerpc/include/asm/reg_8xx.h            |  11 +
- arch/powerpc/kernel/entry_32.S                |  19 +-
- arch/powerpc/kernel/head_32.S                 |   3 -
- arch/powerpc/kernel/head_8xx.S                |  72 +++++-
- arch/powerpc/kernel/hw_breakpoint.c           |   6 +-
- arch/powerpc/kernel/process.c                 |  22 ++
- arch/powerpc/perf/8xx-pmu.c                   | 173 +++++++++++++++
- arch/powerpc/perf/Makefile                    |   2 +
- arch/powerpc/platforms/85xx/Makefile          |   1 +
- arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
- arch/powerpc/platforms/85xx/t1042rdb_diu.c    | 152 +++++++++++++
- arch/powerpc/platforms/Kconfig.cputype        |   7 +
- 19 files changed, 771 insertions(+), 232 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/kmcent2.dts
- delete mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
- create mode 100644 arch/powerpc/perf/8xx-pmu.c
- create mode 100644 arch/powerpc/platforms/85xx/t1042rdb_diu.c
+Michal
