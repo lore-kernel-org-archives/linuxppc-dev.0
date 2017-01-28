@@ -1,31 +1,36 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v9g7Y0qHnzDq6j
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2017 02:48:56 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0SFmngo035633
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 10:48:53 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 288rq0hrq3-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v9gMp6SSJzDq6j
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2017 02:59:50 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0SFrd7q100848
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 10:59:47 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 288nt3e12y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 10:48:53 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 10:59:47 -0500
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 28 Jan 2017 10:48:52 -0500
+ Sat, 28 Jan 2017 08:59:47 -0700
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm/hash: Properly mask the ESID bits when building
- proto-VSID
-Date: Sat, 28 Jan 2017 21:18:40 +0530
-Message-Id: <20170128154840.32468-1-aneesh.kumar@linux.vnet.ibm.com>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] powerpc/mm: use the correct pointer when setting a 2M pte
+In-Reply-To: <1485359673-4474-1-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1485359673-4474-1-git-send-email-arbab@linux.vnet.ibm.com>
+Date: Sat, 28 Jan 2017 21:29:39 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <871svnch04.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,52 +40,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-proto-vsid is built using both mmu context id and ESID. We should not have
-overlapping bits between those. That will result in us having vsid
-collision. With the current code we missed masking the top bits of effective
-address. This implies for kernel address we ended up using the top 4 bits
-as part of proto-vsid, which is wrong. For the kernel we should have the
-below mapping
+Reza Arbab <arbab@linux.vnet.ibm.com> writes:
 
-0xf000000000000000 -> 0x7ffff  (19 bits context + 6 bits ESID ).
+> When setting a 2M pte, radix__map_kernel_page() is using the address
+>
+> 	ptep = (pte_t *)pudp;
+>
+> Fix this conversion to use pmdp instead. Use pmdp_ptep() to do this
+> instead of casting the pointer.
+>
 
-Without the patch we endup with
-0xf000000000000000 ->  0xf7ffff (0x7ffff | 0xf00000)
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-We didn't observe any issues till now possibly because we never end up
-using a context value which could map to the same  VSID as kernel.
-
-Fixes: c60ac5693c4 ("powerpc: Update kernel VSID range")
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 2e6a823fa502..0735d5a8049f 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -525,6 +525,8 @@ extern void slb_set_size(u16 size);
- #define ESID_BITS		18
- #define ESID_BITS_1T		6
- 
-+#define ESID_BITS_MASK		((1 << ESID_BITS) - 1)
-+#define ESID_BITS_1T_MASK	((1 << ESID_BITS_1T) - 1)
- /*
-  * 256MB segment
-  * The proto-VSID space has 2^(CONTEX_BITS + ESID_BITS) - 1 segments
-@@ -660,9 +662,9 @@ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
- 
- 	if (ssize == MMU_SEGSIZE_256M)
- 		return vsid_scramble((context << ESID_BITS)
--				     | (ea >> SID_SHIFT), 256M);
-+				     | ((ea >> SID_SHIFT) & ESID_BITS_MASK), 256M);
- 	return vsid_scramble((context << ESID_BITS_1T)
--			     | (ea >> SID_SHIFT_1T), 1T);
-+			     | ((ea >> SID_SHIFT_1T) & ESID_BITS_1T_MASK), 1T);
- }
- 
- /*
--- 
-2.10.2
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/pgtable-radix.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> index cfa53cc..34f1a0d 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -65,7 +65,7 @@ int radix__map_kernel_page(unsigned long ea, unsigned long pa,
+>  		if (!pmdp)
+>  			return -ENOMEM;
+>  		if (map_page_size == PMD_SIZE) {
+> -			ptep = (pte_t *)pudp;
+> +			ptep = pmdp_ptep(pmdp);
+>  			goto set_the_pte;
+>  		}
+>  		ptep = pte_alloc_kernel(pmdp, ea);
+> @@ -90,7 +90,7 @@ int radix__map_kernel_page(unsigned long ea, unsigned long pa,
+>  		}
+>  		pmdp = pmd_offset(pudp, ea);
+>  		if (map_page_size == PMD_SIZE) {
+> -			ptep = (pte_t *)pudp;
+> +			ptep = pmdp_ptep(pmdp);
+>  			goto set_the_pte;
+>  		}
+>  		if (!pmd_present(*pmdp)) {
+> -- 
+> 1.8.3.1
