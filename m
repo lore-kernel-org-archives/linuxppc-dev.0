@@ -1,23 +1,22 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3v9GsR05PVzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 11:35:38 +1100 (AEDT)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Date: Sat, 28 Jan 2017 01:35:27 +0100
-From: msuchanek <msuchanek@suse.de>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ashley Lai
- <ashleydlai@gmail.com>, Paul Mackerras <paulus@samba.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>, Marcel Selhorst
- <tpmdd@selhorst.net>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3v9N2Y60KszDq6j
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2017 15:28:53 +1100 (AEDT)
+Message-ID: <1485577703.2980.104.camel@kernel.crashing.org>
+Subject: Re: ibmvtpm byteswapping inconsistency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Michal
+ =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+ Ashley Lai <ashleydlai@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>,
+ Marcel Selhorst <tpmdd@selhorst.net>, Jarkko Sakkinen
+ <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
+ <jgunthorpe@obsidianresearch.com>,
  tpmdd-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: Re: ibmvtpm byteswapping inconsistency
+Date: Sat, 28 Jan 2017 15:28:23 +1100
 In-Reply-To: <48dc15a0-eaba-29e4-f39e-500177f98638@linux.vnet.ibm.com>
 References: <20170126212248.3f3e9103@kitsune.suse.cz>
  <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
@@ -25,7 +24,8 @@ References: <20170126212248.3f3e9103@kitsune.suse.cz>
  <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
  <1485547137.2980.94.camel@kernel.crashing.org>
  <48dc15a0-eaba-29e4-f39e-500177f98638@linux.vnet.ibm.com>
-Message-ID: <5420c93884aee76cbbf5b961d709ba3d@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,95 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On 2017-01-27 21:32, Tyrel Datwyler wrote:
-> On 01/27/2017 11:58 AM, Benjamin Herrenschmidt wrote:
->> On Fri, 2017-01-27 at 10:02 -0800, Tyrel Datwyler wrote:
->>>> The problem is that we are packing an in-memory structure into 2
->>>> registers and it's expected that this structure is laid out in the
->>>> registers as if it had been loaded by a BE CPU.
->>> 
->>> This is only the case if the cpu is BE. If the cpu is LE, regardless 
->>> of
->>> the fact that our in memory structure is laid out BE, when we break 
->>> it
->>> into 2 words each of those words needs to be loaded LE.
->> 
->> That doesn't make sense and doesn't match the code... The structure
->> needs to always have the same in-register layout regardless of the
->> endianness of the CPU, especially since the underlying hypervisor
->> will most likely be BE :-)
->> 
->> Thta's why the code does a be64_to_cpu() when loading it, this in
->> effect performs a "BE" load, which on a BE CPU is just a normal load
->> and on LE is a swap to compensate for the CPU loading it the "wrong 
->> way
->> around".
-> 
+On Fri, 2017-01-27 at 12:32 -0800, Tyrel Datwyler wrote:
 > Its possible being the end of the week I'm just a little dense, but
-> wouldn't be64_to_cpu() imply that we are byte-swapping something that 
-> is
-> already, or supposedly already, in BE format to cpu endianness? Which 
-> on
+> wouldn't be64_to_cpu() imply that we are byte-swapping something that is
+> already, or supposedly already, in BE format to cpu endianness? Which on
 > a BE cpu I would expect a no-op, and on a LE cpu the 64bit word to have
 > been swapped from BE --> LE?
-> 
+
+It's in BE format in memory. In LE mode, loading it into a register will
+get it the wrong way around, thus we have to swap it again. Once in a
+register it has no "endianness" per-se, what matters is that the act
+of loading from memory to a register would have loaded it the wrong
+way around in LE.
+
 > In my eyes the code does seem to support what I've argued. The same
-> thing is done in the scsi VIO drivers. The CRQ structure is laid out 
-> and
+> thing is done in the scsi VIO drivers. The CRQ structure is laid out and
 > annotated BE. We use cpu_to_be() calls to load any non 8bit field.
 > Finally, each word is swapped to cpu endian when we hand it off for the
 > hcall.
 > 
 > from ibmvfc_send_event():
 > 
->         __be64 *crq_as_u64 = (__be64 *) &evt->crq;
+>         __be64 *crq_as_u64 = (__be64 *) &evt->crq;
 > 
-> 	<..snip..>
+>         <..snip..>
 > 
->         if ((rc = ibmvfc_send_crq(vhost, be64_to_cpu(crq_as_u64[0]),
->                                   be64_to_cpu(crq_as_u64[1])))) {
+>         if ((rc = ibmvfc_send_crq(vhost, be64_to_cpu(crq_as_u64[0]),
+>                                   be64_to_cpu(crq_as_u64[1])))) {
 > 
 > Again, maybe I'm missing something.
-> 
-
-Ok, so you perform really difficult operation for no good reason. You 
-say
-that the ppc dual-endian works like this: there is an internal in-cpu
-representation of numbers which is always the same. What is affected by
-switching endian is how memory loads and stores work.
-
-If you pass these two words in registers you never need to swap 
-anything.
-
-> Byte  |   0   |   1   |   2   |   3   |   4   |   5   |   6   |   7
-> -----------------------------------------------------------------------
-> Word0 | Valid | Type  |     Length    |              Data
-> -----------------------------------------------------------------------
-> Word1 |                Reserved
-> -----------------------------------------------------------------------
-> 
-> The following definition looks to match:
-> 
-> struct ibmvtpm_crq {
->         u8 valid;
->         u8 msg;
->         __be16 len;
->         __be32 data;
->         __be64 reserved;
-> } __attribute__((packed, aligned(8)));
-
-If under BE valid is first byte then it is MSB and you would get value
-to pass in word 0 as (valid << 56) | (type << 48) | (length << 32 ) | 
-data.
-
-No swaps involved.
-
-To achieve same with structure and swaps you would indeed first swap the
-members and then the whole word. Much harder to read code that way, 
-though.
-
-Thanks
-
-Michal
