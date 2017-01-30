@@ -1,22 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vC23735blzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 08:05:07 +1100 (AEDT)
-Date: Tue, 31 Jan 2017 08:05:03 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v2 13/20] KVM: PPC: Book3S HV: Page table construction
- and page faults for radix guests
-Message-ID: <20170130210503.GB26021@fergus.ozlabs.ibm.com>
-References: <1485771713-24801-1-git-send-email-paulus@ozlabs.org>
- <1485771713-24801-14-git-send-email-paulus@ozlabs.org>
- <8737g0w9gu.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vC2Bh3XLLzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 08:11:40 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mm: Fix RECLAIM_DISTANCE
+In-Reply-To: <20170130043823.GA30920@gwshan>
+References: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20170125035744.GB12855@localhost.localdomain>
+ <20170125045822.GA10566@gwshan> <20170127124910.GA2668@localhost.localdomain>
+ <20170130120240.5018f476@kryten> <20170130043823.GA30920@gwshan>
+Date: Tue, 31 Jan 2017 08:11:39 +1100
+Message-ID: <87zii8uub8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8737g0w9gu.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +26,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 31, 2017 at 07:58:57AM +1100, Michael Ellerman wrote:
-> Paul Mackerras <paulus@ozlabs.org> writes:
-> 
-> > This adds the code to construct the second-level ("partition-scoped" in
-> > architecturese) page tables for guests using the radix MMU.  Apart from
-> > the PGD level, which is allocated when the guest is created, the rest
-> > of the tree is all constructed in response to hypervisor page faults.
-> >
-> > As well as hypervisor page faults for missing pages, we also get faults
-> > for reference/change (RC) bits needing to be set, as well as various
-> > other error conditions.  For now, we only set the R or C bit in the
-> > guest page table if the same bit is set in the host PTE for the
-> > backing page.
-> >
-> > This code can take advantage of the guest being backed with either
-> > transparent or ordinary 2MB huge pages, and insert 2MB page entries
-> > into the guest page tables.  There is no support for 1GB huge pages
-> > yet.
-> > ---
-> >  arch/powerpc/include/asm/kvm_book3s.h  |   8 +
-> >  arch/powerpc/kvm/book3s.c              |   1 +
-> >  arch/powerpc/kvm/book3s_64_mmu_hv.c    |   7 +-
-> >  arch/powerpc/kvm/book3s_64_mmu_radix.c | 385 +++++++++++++++++++++++++++++++++
-> >  arch/powerpc/kvm/book3s_hv.c           |  17 +-
-> >  5 files changed, 415 insertions(+), 3 deletions(-)
-> 
-> You didn't sign-off this patch. I assume that's just an accident and
-> will add it?
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-Oops, yes, just an oversight.  I'll add it.
+> On Mon, Jan 30, 2017 at 12:02:40PM +1100, Anton Blanchard wrote:
+>>> Anton suggested that NUMA distances in powerpc mattered and hurted
+>>> performance without this setting. We need to validate to see if this
+>>> is still true. A simple way to start would be benchmarking
+>>
+>>The original issue was that we never reclaimed local clean pagecache.
+>>
+>>I just tried all settings for /proc/sys/vm/zone_reclaim_mode and none
+>>of them caused me to reclaim local clean pagecache! We are very broken.
+>>
+>>I would think we have test cases for this, but here is a dumb one.
+>>First something to consume memory:
+>>
+>># cat alloc.c
+>>
+>>#include <stdlib.h>
+>>#include <unistd.h>
+>>#include <string.h>
+>>#include <assert.h>
+>>
+>>int main(int argc, char *argv[])
+>>{
+>>	void *p;
+>>
+>>	unsigned long size;
+>>
+>>	size = strtoul(argv[1], NULL, 0);
+>>
+>>	p = malloc(size);
+>>	assert(p);
+>>	memset(p, 0, size);
+>>	printf("%p\n", p);
+>>
+>>	sleep(3600);
+>>
+>>	return 0;
+>>}
+>>
+>>Now create a file to consume pagecache. My nodes have 32GB each, so
+>>I create 16GB, enough to consume half of the node:
+>>
+>>dd if=/dev/zero of=/tmp/file bs=1G count=16
+>>
+>>Clear out our pagecache:
+>>
+>>sync
+>>echo 3 > /proc/sys/vm/drop_caches
+>>
+>>Bring it in on node 0:
+>>
+>>taskset -c 0 cat /tmp/file > /dev/null
+>>
+>>Consume 24GB of memory on node 0:
+>>
+>>taskset -c 0 ./alloc 25769803776
+>>
+>>In all zone reclaim modes, the pagecache never gets reclaimed:
+>>
+>># grep FilePages /sys/devices/system/node/node0/meminfo
+>>
+>>Node 0 FilePages:      16757376 kB
+>>
+>>And our alloc process shows lots of off node memory used:
+>>
+>>3ff9a4630000 default anon=393217 dirty=393217 N0=112474 N1=220490 N16=60253 kernelpagesize_kB=64
+>>
+>>Clearly nothing is working. Gavin, if your patch fixes this we should
+>>get it into stable too.
+>>
+>
+> Anton, thanks for the detailed test case. I tried what you suggested
+> on the box that has only one node. The memory capacity is 16GB. So
+> the parameters I used are different from what you had. First of all,
+> I observed same behaviour that the pagecache can't be reclaimed when
+> allocating memory for heap. With the patch applied, the pagecache
+> can be dropped for page reclaim and more details are showed as below
+> Everything looks good. I'll put your testcase, its result and stable tag
+> to next revision.
 
-Paul.
+Hi Gavin,
+
+I'd like to see some test results from multi-node systems.
+
+I'd also like to understand what has changed since we changed
+RECLAIM_DISTANCE in the first place, ie. why did it used to work and now
+doesn't?
+
+cheers
