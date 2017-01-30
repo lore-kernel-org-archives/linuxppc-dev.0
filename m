@@ -1,22 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBcJ60qYKzDq9P
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 15:44:54 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/mm/hash: Properly mask the ESID bits when
- building proto-VSID
-In-Reply-To: <20170128154840.32468-1-aneesh.kumar@linux.vnet.ibm.com>
-References: <20170128154840.32468-1-aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 30 Jan 2017 15:44:53 +1100
-Message-ID: <87r33lw3zu.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBfvT33CjzDq9s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 17:42:13 +1100 (AEDT)
+Received: by mail-pg0-x241.google.com with SMTP id 204so30755262pge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2017 22:42:13 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Daniel Axtens <dja@axtens.net>
+Subject: [PATCH 0/3] powerpc/sparse: constify addresses in get_user macros
+Date: Mon, 30 Jan 2017 17:41:52 +1100
+Message-Id: <20170130064155.30281-1-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Looking through the sparse warnings, I noticed that we were getting
+warnings about dropping const qualifiers in get_user calls. This took
+a while to figure out: it turns out that if you pass a const pointer
+in, sparse will complain when we drop the const qualifier deep inside
+the __get_user_ macros. This simple series fixes that, squashing over
+60 warnings.
 
-> proto-vsid is built using both mmu context id and ESID. We should not have
-> overlapping bits between those. That will result in us having vsid
-> collision. With the current code we missed masking the top bits of effective
-> address. This implies for kernel address we ended up using the top 4 bits
-> as part of proto-vsid, which is wrong. For the kernel we should have the
-> below mapping
->
-> 0xf000000000000000 -> 0x7ffff  (19 bits context + 6 bits ESID ).
->
-> Without the patch we endup with
-> 0xf000000000000000 ->  0xf7ffff (0x7ffff | 0xf00000)
+Daniel Axtens (3):
+  powerpc/sparse: constify the address pointer in __get_user_check
+  powerpc/sparse: constify the address pointer in __get_user_nocheck
+  powerpc/sparse: constify the address pointer in __get_user_nosleep
 
-As discussed offline, this is missing the << 6.
+ arch/powerpc/include/asm/uaccess.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Which means we end up with:
-
-  ea         = 0xf000000000000000
-  context    = 0x7ffff 
-  proto_vsid = (0x7ffff << 6 | 0xf000000000000000 >> 40)
-             = (0x1ffffc0 | 0xf00000)
-             =  0x1ffffc0
-
-ie. the proto-vsid is not affected by the extra bits. Same is true for
-the 0xc/d/e regions.
-
-So there is no bug here, as long as we use the current mapping from
-kernel EA to context ID.
-
-I'll merge this into next.
-
-cheers
+-- 
+2.9.3
