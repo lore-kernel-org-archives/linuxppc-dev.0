@@ -2,16 +2,16 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBln91RmJzDqC6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBln93HvdzDqF0
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 21:22:05 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org,
 	kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 01/20] powerpc/64: Don't try to use radix MMU under a
- hypervisor
-Date: Mon, 30 Jan 2017 21:21:34 +1100
-Message-Id: <1485771713-24801-2-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v2 02/20] powerpc/pseries: Fixes for the "ibm,
+ architecture-vec-5" options
+Date: Mon, 30 Jan 2017 21:21:35 +1100
+Message-Id: <1485771713-24801-3-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1485771713-24801-1-git-send-email-paulus@ozlabs.org>
 References: <1485771713-24801-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,94 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, if the kernel is running on a POWER9 processor under a
-hypervisor, it will try to use the radix MMU even though it doesn't
-have the necessary code to use radix under a hypervisor (it doesn't
-negotiate use of radix, and it doesn't do the H_REGISTER_PROC_TBL
-hcall).  The result is that the guest kernel will crash when it tries
-to turn on the MMU.
+This fixes the byte index values for some of the option bits in
+the "ibm,architectur-vec-5" property. The "platform facilities options"
+bits are in byte 17 not byte 14, so the upper 8 bits of their
+definitions need to be 0x11 not 0x0E. The "sub processor support" option
+is in byte 21 not byte 15.
 
-This fixes it by looking for the /chosen/ibm,architecture-vec-5
-property, and if it exists, clears the radix MMU feature bit,
-before we decide whether to initialize for radix or HPT.  This
-property is created by the hypervisor as a result of the guest
-calling the ibm,client-architecture-support method to indicate
-its capabilities, so it will indicate whether the hypervisor
-agreed to us using radix.
+Note none of these options are actually looked up in
+"ibm,architecture-vec-5" at this time, so there is no bug.
 
-Systems without a hypervisor may have this property also (for
-example, skiboot creates it), so we check the HV bit in the MSR
-to see whether we are running as a guest or not.  If we are in
-hypervisor mode, then we can do whatever we like including
-using the radix MMU.
+When checking whether option bits are set, we should check that
+the offset of the byte being checked is less than the vector
+length that we got from the hypervisor.
 
-The reason for using this property is that in future, when we
-have support for using radix under a hypervisor, we will need
-to check this property to see whether the hypervisor agreed to
-us using radix.
-
-Cc: stable@vger.kernel.org # v4.8+
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/mm/init_64.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ arch/powerpc/include/asm/prom.h           | 8 ++++----
+ arch/powerpc/platforms/pseries/firmware.c | 2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 93abf8a..4d9481e 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -42,6 +42,8 @@
- #include <linux/memblock.h>
- #include <linux/hugetlb.h>
- #include <linux/slab.h>
-+#include <linux/of_fdt.h>
-+#include <linux/libfdt.h>
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 5e57705..e6d83d0 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -151,10 +151,10 @@ struct of_drconf_cell {
+ #define OV5_XCMO		0x0440	/* Page Coalescing */
+ #define OV5_TYPE1_AFFINITY	0x0580	/* Type 1 NUMA affinity */
+ #define OV5_PRRN		0x0540	/* Platform Resource Reassignment */
+-#define OV5_PFO_HW_RNG		0x0E80	/* PFO Random Number Generator */
+-#define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+-#define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+-#define OV5_SUB_PROCESSORS	0x0F01	/* 1,2,or 4 Sub-Processors supported */
++#define OV5_PFO_HW_RNG		0x1180	/* PFO Random Number Generator */
++#define OV5_PFO_HW_842		0x1140	/* PFO Compression Accelerator */
++#define OV5_PFO_HW_ENCR		0x1120	/* PFO Encryption Accelerator */
++#define OV5_SUB_PROCESSORS	0x1501	/* 1,2,or 4 Sub-Processors supported */
  
- #include <asm/pgalloc.h>
- #include <asm/page.h>
-@@ -344,12 +346,43 @@ static int __init parse_disable_radix(char *p)
- }
- early_param("disable_radix", parse_disable_radix);
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index ea7f09b..7d67623 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -126,7 +126,7 @@ static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
+ 		index = OV5_INDX(vec5_fw_features_table[i].feature);
+ 		feat = OV5_FEAT(vec5_fw_features_table[i].feature);
  
-+/*
-+ * If we're running under a hypervisor, we currently can't do radix
-+ * since we don't have the code to do the H_REGISTER_PROC_TBL hcall.
-+ * We tell that we're running under a hypervisor by looking for the
-+ * /chosen/ibm,architecture-vec-5 property.
-+ */
-+static void early_check_vec5(void)
-+{
-+	unsigned long root, chosen;
-+	int size;
-+	const u8 *vec5;
-+
-+	root = of_get_flat_dt_root();
-+	chosen = of_get_flat_dt_subnode_by_name(root, "chosen");
-+	if (chosen == -FDT_ERR_NOTFOUND)
-+		return;
-+	vec5 = of_get_flat_dt_prop(chosen, "ibm,architecture-vec-5", &size);
-+	if (!vec5)
-+		return;
-+	cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+}
-+
- void __init mmu_early_init_devtree(void)
- {
- 	/* Disable radix mode based on kernel command line. */
- 	if (disable_radix)
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
- 
-+	/*
-+	 * Check /chosen/ibm,architecture-vec-5 if running as a guest.
-+	 * When running bare-metal, we can use radix if we like
-+	 * even though the ibm,architecture-vec-5 property created by
-+	 * skiboot doesn't have the necessary bits set.
-+	 */
-+	if (early_radix_enabled() && !(mfmsr() & MSR_HV))
-+		early_check_vec5();
-+
- 	if (early_radix_enabled())
- 		radix__early_init_devtree();
- 	else
+-		if (vec5[index] & feat)
++		if (index < len && (vec5[index] & feat))
+ 			powerpc_firmware_features |=
+ 				vec5_fw_features_table[i].val;
+ 	}
 -- 
 2.7.4
