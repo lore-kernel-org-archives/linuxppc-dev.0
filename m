@@ -1,31 +1,50 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBc210MghzDq9D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 15:32:41 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Michal Suchanek <hramrach@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Marcel Selhorst <tpmdd@selhorst.net>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Jarkko Sakkinen
- <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
- <jgunthorpe@obsidianresearch.com>, tpmdd-devel@lists.sourceforge.net, Paul
- Mackerras <paulus@samba.org>, Ashley Lai <ashleydlai@gmail.com>, Peter
- Huewe <peterhuewe@gmx.de>, Michal =?utf-8?Q?Such=C3=A1nek?=
- <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: ibmvtpm byteswapping inconsistency
-In-Reply-To: <73c1e5be-0820-8dca-c86a-8cf3ffeb5efe@linux.vnet.ibm.com>
-References: <20170126212248.3f3e9103@kitsune.suse.cz>
- <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
- <1485481819.2980.82.camel@kernel.crashing.org>
- <CAOMqctQtspCTTpfEUyUVyE9GKYOavZNhkXnRPUrPZrDZ6-eG0w@mail.gmail.com>
- <73c1e5be-0820-8dca-c86a-8cf3ffeb5efe@linux.vnet.ibm.com>
-Date: Mon, 30 Jan 2017 15:32:40 +1100
-Message-ID: <87tw8hw4k7.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBc9r1FmzzDq9D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 15:39:27 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0U4cnS8060687
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2017 23:39:25 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 289haac05c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2017 23:39:25 -0500
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 30 Jan 2017 14:39:22 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 14A703578053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 15:39:21 +1100 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v0U4dDFr29229266
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 15:39:21 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v0U4cm3r011991
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 15:38:48 +1100
+Date: Mon, 30 Jan 2017 15:38:23 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: Balbir Singh <bsingharora@gmail.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Fix RECLAIM_DISTANCE
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20170125035744.GB12855@localhost.localdomain>
+ <20170125045822.GA10566@gwshan>
+ <20170127124910.GA2668@localhost.localdomain>
+ <20170130120240.5018f476@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20170130120240.5018f476@kryten>
+Message-Id: <20170130043823.GA30920@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,107 +54,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
-
-> On 01/27/2017 01:03 AM, Michal Suchanek wrote:
->> On 27 January 2017 at 02:50, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->>> On Thu, 2017-01-26 at 17:42 -0800, Tyrel Datwyler wrote:
->>>> On 01/26/2017 12:22 PM, Michal Such=C3=A1nek wrote:
->>>>> Hello,
->>>>>
->>>>> building ibmvtpm I noticed gcc warning complaining that second word
->>>>> of
->>>>> struct ibmvtpm_crq in tpm_ibmvtpm_suspend is uninitialized.
->>>>>
->>>>> The structure is defined as
->>>>>
->>>>> struct ibmvtpm_crq {
->>>>>         u8 valid;
->>>>>         u8 msg;
->>>>>         __be16 len;
->>>>>         __be32 data;
->>>>>         __be64 reserved;
->>>>> } __attribute__((packed, aligned(8)));
->>>>>
->>>>> initialized as
->>>>>
->>>>>         struct ibmvtpm_crq crq;
->>>>>         u64 *buf =3D (u64 *) &crq;
->>>>> ...
->>>>>         crq.valid =3D (u8)IBMVTPM_VALID_CMD;
->>>>>         crq.msg =3D (u8)VTPM_PREPARE_TO_SUSPEND;
->>>>>
->>>>> and submitted with
->>>>>
->>>>>         rc =3D ibmvtpm_send_crq(ibmvtpm->vdev, cpu_to_be64(buf[0]),
->>>>>                               cpu_to_be64(buf[1]));
->>>>
->>>> These should be be64_to_cpu() here. The underlying hcall made by
->>>> ibmvtpm_send_crq() requires parameters to be in cpu endian unlike the
->>>> RTAS interface which requires data in BE.
->>>
->>> Hrm... an hcall takes register arguments. Register arguments don't have
->>> an endianness.
->>>
->>> The problem is that we are packing an in-memory structure into 2
->>> registers and it's expected that this structure is laid out in the
->>> registers as if it had been loaded by a BE CPU.
->>>
->>> So we have two things at play here:
->>>
->>>   - The >8-bit fields should be laid out BE in the memory image
->>>   - That whole 128-bit structure should be loaded into 2 64-bit
->>> registers MSB first.
->>>
->>> So the "double" swap is somewhat needed. The uglyness comes from the
->>> passing-by-register of the h-call but it should work.
->>>
->>> That said, be64_to_cpup(buf) and be64_to_cpup(buf+1) might give you
->>> better result (though recent gcc's might not make a difference).
->>=20
->> If this should work then the below case that swaps the fields separately=
- is
->> broken.
->>=20
->> Anyway, structures have no endianess so when they start with a byte they
->> start with that byte no matter the host endian.
->> crq.valid is the first byte always. And then each field is to be swapped
->> separately.
->>=20
->> On the other hand, bitfields are part of an integer and the field should=
- be
->> swapped as part of the integer.
->>=20
->> That is,
->> #define CRQ_VALID ((buf[0] >> 56) & 0xff)
->> CRQ_VALID is part of an integer in buf and would be laid out differently
->> on start or end depending on the host being BE or LE.
->>=20
->> And the question is what the PAPR actually defines because both ways are
->> used in the code. You can describe an in-memory layout either way.
+On Mon, Jan 30, 2017 at 12:02:40PM +1100, Anton Blanchard wrote:
+>> Anton suggested that NUMA distances in powerpc mattered and hurted
+>> performance without this setting. We need to validate to see if this
+>> is still true. A simple way to start would be benchmarking
 >
-> Byte  |   0   |   1   |   2   |   3   |   4   |   5   |   6   |   7
-> -----------------------------------------------------------------------
-> Word0 | Valid | Type  |     Length    |              Data
-> -----------------------------------------------------------------------
-> Word1 |				Reserved
-> -----------------------------------------------------------------------
+>The original issue was that we never reclaimed local clean pagecache.
 >
-> The following definition looks to match:
+>I just tried all settings for /proc/sys/vm/zone_reclaim_mode and none
+>of them caused me to reclaim local clean pagecache! We are very broken.
 >
-> struct ibmvtpm_crq {
->         u8 valid;
->         u8 msg;
->         __be16 len;
->         __be32 data;
->         __be64 reserved;
-> } __attribute__((packed, aligned(8)));
+>I would think we have test cases for this, but here is a dumb one.
+>First something to consume memory:
+>
+># cat alloc.c
+>
+>#include <stdlib.h>
+>#include <unistd.h>
+>#include <string.h>
+>#include <assert.h>
+>
+>int main(int argc, char *argv[])
+>{
+>	void *p;
+>
+>	unsigned long size;
+>
+>	size = strtoul(argv[1], NULL, 0);
+>
+>	p = malloc(size);
+>	assert(p);
+>	memset(p, 0, size);
+>	printf("%p\n", p);
+>
+>	sleep(3600);
+>
+>	return 0;
+>}
+>
+>Now create a file to consume pagecache. My nodes have 32GB each, so
+>I create 16GB, enough to consume half of the node:
+>
+>dd if=/dev/zero of=/tmp/file bs=1G count=16
+>
+>Clear out our pagecache:
+>
+>sync
+>echo 3 > /proc/sys/vm/drop_caches
+>
+>Bring it in on node 0:
+>
+>taskset -c 0 cat /tmp/file > /dev/null
+>
+>Consume 24GB of memory on node 0:
+>
+>taskset -c 0 ./alloc 25769803776
+>
+>In all zone reclaim modes, the pagecache never gets reclaimed:
+>
+># grep FilePages /sys/devices/system/node/node0/meminfo
+>
+>Node 0 FilePages:      16757376 kB
+>
+>And our alloc process shows lots of off node memory used:
+>
+>3ff9a4630000 default anon=393217 dirty=393217 N0=112474 N1=220490 N16=60253 kernelpagesize_kB=64
+>
+>Clearly nothing is working. Gavin, if your patch fixes this we should
+>get it into stable too.
+>
 
-Well it's a partial match.
+Anton, thanks for the detailed test case. I tried what you suggested
+on the box that has only one node. The memory capacity is 16GB. So
+the parameters I used are different from what you had. First of all,
+I observed same behaviour that the pagecache can't be reclaimed when
+allocating memory for heap. With the patch applied, the pagecache
+can be dropped for page reclaim and more details are showed as below
+Everything looks good. I'll put your testcase, its result and stable tag
+to next revision.
 
-Your layout above doesn't define which byte of Length or Data is the MSB
-or LSB. So going by that we still don't know the endianness of either
-field.
+   root@palm8:/home/gavin# grep FilePages /sys/devices/system/node/node0/meminfo
+   Node 0 FilePages:        142400 kB
 
-cheers
+   root@palm8:/home/gavin# sync
+   root@palm8:/home/gavin# echo 3 > /proc/sys/vm/drop_caches
+
+   root@palm8:/home/gavin# grep FilePages /sys/devices/system/node/node0/meminfo
+   Node 0 FilePages:         62848 kB
+
+   root@palm8:/home/gavin# du -sh file
+   8.1G    file
+   root@palm8:/home/gavin# cat file > /dev/null
+   root@palm8:/home/gavin# grep FilePages /sys/devices/system/node/node0/meminfo
+   Node 0 FilePages:       8448000 kB
+
+   root@palm8:/home/gavin# ./alloc 17179869184
+   root@palm8:/home/gavin# grep FilePages /sys/devices/system/node/node0/meminfo
+   Node 0 FilePages:        387584 kB
+
+Thanks,
+Gavin
