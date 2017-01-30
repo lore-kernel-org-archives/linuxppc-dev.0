@@ -1,20 +1,17 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBWMx5xpczDq61
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 12:02:53 +1100 (AEDT)
-Date: Mon, 30 Jan 2017 12:02:40 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Fix RECLAIM_DISTANCE
-Message-ID: <20170130120240.5018f476@kryten>
-In-Reply-To: <20170127124910.GA2668@localhost.localdomain>
-References: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20170125035744.GB12855@localhost.localdomain>
- <20170125045822.GA10566@gwshan>
- <20170127124910.GA2668@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBYgp041DzDq93
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 13:46:46 +1100 (AEDT)
+Date: Mon, 30 Jan 2017 13:46:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: manual merge of the rcu tree with the powerpc-fixes tree
+Message-ID: <20170130134645.5464272d@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,74 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Paul,
 
-> Anton suggested that NUMA distances in powerpc mattered and hurted
-> performance without this setting. We need to validate to see if this
-> is still true. A simple way to start would be benchmarking
+Today's linux-next merge of the rcu tree got a conflict in:
 
-The original issue was that we never reclaimed local clean pagecache.
+  arch/powerpc/Kconfig
 
-I just tried all settings for /proc/sys/vm/zone_reclaim_mode and none
-of them caused me to reclaim local clean pagecache! We are very broken.
+between commit:
 
-I would think we have test cases for this, but here is a dumb one.
-First something to consume memory:
+  f2574030b0e3 ("powerpc: Revert the initial stack protector support")
 
-# cat alloc.c
+from the powerpc-fixes tree and commit:
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <assert.h>
+  c7327406b3c3 ("rcu: Make arch select smp_mb__after_unlock_lock() strength")
 
-int main(int argc, char *argv[])
-{
-	void *p;
+from the rcu tree.
 
-	unsigned long size;
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
 
-	size = strtoul(argv[1], NULL, 0);
+-- 
+Cheers,
+Stephen Rothwell
 
-	p = malloc(size);
-	assert(p);
-	memset(p, 0, size);
-	printf("%p\n", p);
-
-	sleep(3600);
-
-	return 0;
-}
-
-Now create a file to consume pagecache. My nodes have 32GB each, so
-I create 16GB, enough to consume half of the node:
-
-dd if=/dev/zero of=/tmp/file bs=1G count=16
-
-Clear out our pagecache:
-
-sync
-echo 3 > /proc/sys/vm/drop_caches
-
-Bring it in on node 0:
-
-taskset -c 0 cat /tmp/file > /dev/null
-
-Consume 24GB of memory on node 0:
-
-taskset -c 0 ./alloc 25769803776
-
-In all zone reclaim modes, the pagecache never gets reclaimed:
-
-# grep FilePages /sys/devices/system/node/node0/meminfo
-
-Node 0 FilePages:      16757376 kB
-
-And our alloc process shows lots of off node memory used:
-
-3ff9a4630000 default anon=393217 dirty=393217 N0=112474 N1=220490 N16=60253 kernelpagesize_kB=64
-
-Clearly nothing is working. Gavin, if your patch fixes this we should
-get it into stable too.
-
-Anton
+diff --cc arch/powerpc/Kconfig
+index a0fe262408a5,9fecd004fee8..000000000000
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@@ -164,9 -164,11 +164,10 @@@ config PP
+  	select ARCH_HAS_SCALED_CPUTIME if VIRT_CPU_ACCOUNTING_NATIVE
+  	select HAVE_ARCH_HARDENED_USERCOPY
+  	select HAVE_KERNEL_GZIP
+ -	select HAVE_CC_STACKPROTECTOR
++ 	select ARCH_WEAK_RELEASE_ACQUIRE
+  
+  config GENERIC_CSUM
+ -	def_bool CPU_LITTLE_ENDIAN
+ +	def_bool n
+  
+  config EARLY_PRINTK
+  	bool
