@@ -1,25 +1,30 @@
-Return-Path: <wcohen@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBtkR0X9DzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 02:35:11 +1100 (AEDT)
-Subject: Re: gcc trunk fails to build kernel on PowerPC64 due to oprofile
- warnings
-To: Robert Richter <rric@kernel.org>
-References: <20170126100044.7e439f72@kryten>
- <fe2c2fd9-d255-61ca-5328-ca5d45827f47@redhat.com>
- <20170126160512.GE4906@rric.localdomain>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, oprofile-list@lists.sf.net,
- Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-From: William Cohen <wcohen@redhat.com>
-Message-ID: <541c2cc7-9ea3-9aeb-a12d-c3d46717a7f7@redhat.com>
-Date: Mon, 30 Jan 2017 10:35:09 -0500
-MIME-Version: 1.0
-In-Reply-To: <20170126160512.GE4906@rric.localdomain>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBvZL4yFMzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 03:13:14 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v0UG8xmq123906
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 11:13:12 -0500
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28a6t0ej42-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 11:13:12 -0500
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 30 Jan 2017 09:13:11 -0700
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/mm: Update PROTFAULT handling in the page fault path
+Date: Mon, 30 Jan 2017 21:42:59 +0530
+Message-Id: <20170130161259.25937-1-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +34,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/26/2017 11:06 AM, Robert Richter wrote:
-> On 26.01.17 10:46:43, William Cohen wrote:
->> From 7e46dbd7dc5bc941926a4a63c28ccebf46493e8d Mon Sep 17 00:00:00 2001
->> From: William Cohen <wcohen@redhat.com>
->> Date: Thu, 26 Jan 2017 10:33:59 -0500
->> Subject: [PATCH] Avoid hypthetical string truncation in oprofile stats buffer
->> MIME-Version: 1.0
->> Content-Type: text/plain; charset=UTF-8
->> Content-Transfer-Encoding: 8bit
->>
->> Increased the size of an internal oprofile driver buffer ensuring that
->> the string was never truncated for any possible int value to avoid the
->> following gcc-7 compiler error on ppc when building the kernel:
-> 
-> Please test gcc7 for other archs first. I don't think this is the only
-> change needed to avoid this warning in oprofile code.
-> 
-> Thanks,
-> 
-> -Robert
+With radix, we can get page fault with DSISR_PROTFAULT value set in case of
+PROT_NONE or autonuma mapping. The PROT_NONE case in handled by the vma check
+where we consider the access bad. For autonuma we should fall through and fixup
+the access mask correctly.
 
-Hi Robert,
+Without this patch we trigger the WARN_ON() on radix. This code moves that
+WARN_ON() within a radix_enabled() check. I also moved the WARN_ON() outside
+the if condition making it apply for all type of faults (exec/write/read). It
+is also conditionalized for book3s, because BOOK3E can also get a PROTFAULT to
+handle the D/I cache sync.
 
-It took me a little while to get a gcc-7 environment set up with Fedora Rawhide on x86_64.  I have a kernel building now with gcc-7 and will see what other issues pop up during the compile.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/copro_fault.c | 10 ++++++----
+ arch/powerpc/mm/fault.c       | 43 +++++++++++++++++++++++++++++++++----------
+ 2 files changed, 39 insertions(+), 14 deletions(-)
 
-While watching the output of the build I see the gcc-7 error message about truncating output of snprintf output seems to occur for a number of other places besides the oprofile kernel code during the compile.
-
--Will
+diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+index aaa7ec6788b9..697b70ad1195 100644
+--- a/arch/powerpc/mm/copro_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -67,11 +67,13 @@ int copro_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+ 		if (!(vma->vm_flags & (VM_READ | VM_EXEC)))
+ 			goto out_unlock;
+ 		/*
+-		 * protfault should only happen due to us
+-		 * mapping a region readonly temporarily. PROT_NONE
+-		 * is also covered by the VMA check above.
++		 * PROT_NONE is covered by the VMA check above.
++		 * and hash should get a NOHPTE fault instead of
++		 * a PROTFAULT in case fixup is needed for things
++		 * like autonuma.
+ 		 */
+-		WARN_ON_ONCE(dsisr & DSISR_PROTFAULT);
++		if (!radix_enabled())
++			WARN_ON_ONCE(dsisr & DSISR_PROTFAULT);
+ 	}
+ 
+ 	ret = 0;
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 6fd30ac7d14a..c636137666c1 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -418,15 +418,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		    (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
+ 		     !(vma->vm_flags & (VM_READ | VM_WRITE))))
+ 			goto bad_area;
+-
+-#ifdef CONFIG_PPC_STD_MMU
+-		/*
+-		 * protfault should only happen due to us
+-		 * mapping a region readonly temporarily. PROT_NONE
+-		 * is also covered by the VMA check above.
+-		 */
+-		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
+-#endif /* CONFIG_PPC_STD_MMU */
+ 	/* a write */
+ 	} else if (is_write) {
+ 		if (!(vma->vm_flags & VM_WRITE))
+@@ -436,8 +427,40 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	} else {
+ 		if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))
+ 			goto bad_area;
+-		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
+ 	}
++#ifdef CONFIG_PPC_STD_MMU
++	/*
++	 * For hash translation mode, we should never get a
++	 * PROTFAULT. Any update to pte to reduce access will result in us
++	 * removing the hash page table entry, thus resulting in a DSISR_NOHPTE
++	 * fault instead of DSISR_PROTFAULT.
++	 *
++	 * A pte update to relax the access will not result in a hash page table
++	 * entry invalidate and hence can result in DSISR_PROTFAULT.
++	 * ptep_set_access_flags() doesn't do a hpte flush. This is why we have
++	 * the special !is_write in the below conditional.
++	 *
++	 * For platforms that doesn't supports coherent icache and do support
++	 * per page noexec bit, we do setup things such that we do the
++	 * sync between D/I cache via fault. But that is handled via low level
++	 * hash fault code (hash_page_do_lazy_icache()) and we should not reach
++	 * here in such case.
++	 *
++	 * For wrong access that can result in PROTFAULT, the above vma->vm_flags
++	 * check should handle those and hence we should fall to the bad_area
++	 * handling correctly.
++	 *
++	 * For embedded with per page exec support that doesn't support coherent
++	 * icache we do get PROTFAULT and we handle that D/I cache sync in
++	 * set_pte_at while taking the noexec/prot fault. Hence this is WARN_ON
++	 * is conditional for server MMU.
++	 *
++	 * For radix, we can get prot fault for autonuma case, because radix
++	 * page table will have them marked noaccess for user.
++	 */
++	if (!radix_enabled() && !is_write)
++		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
++#endif /* CONFIG_PPC_STD_MMU */
+ 
+ 	/*
+ 	 * If for any reason at all we couldn't handle the fault,
+-- 
+2.10.2
