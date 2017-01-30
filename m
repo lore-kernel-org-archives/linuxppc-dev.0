@@ -1,28 +1,31 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.184])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBrbj4rWCzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 00:59:11 +1100 (AEDT)
-Date: Mon, 30 Jan 2017 13:58:32 +0000
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-To: Bart Van Assche <bart.vanassche@sandisk.com>
-Cc: Doug Ledford <dledford@redhat.com>, linux-rdma@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Metcalf <cmetcalf@mellanox.com>,
- David Woodhouse <dwmw2@infradead.org>, linux-arch@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v3 03/37] treewide: Consolidate set_dma_ops()
- implementations
-Message-ID: <20170130135832.GT27312@n2100.armlinux.org.uk>
-References: <20170120210437.26389-1-bart.vanassche@sandisk.com>
- <20170120210437.26389-4-bart.vanassche@sandisk.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBsYq1V6gzDq61
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 01:42:38 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Tyrel Datwyler' <tyreld@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, =?utf-8?B?TWljaGFsIFN1Y2jDoW5law==?=
+ <msuchanek@suse.de>, Ashley Lai <ashleydlai@gmail.com>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Peter Huewe
+ <peterhuewe@gmx.de>, Marcel Selhorst <tpmdd@selhorst.net>, Jarkko Sakkinen
+ <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
+ <jgunthorpe@obsidianresearch.com>, "tpmdd-devel@lists.sourceforge.net"
+ <tpmdd-devel@lists.sourceforge.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: RE: ibmvtpm byteswapping inconsistency
+Date: Mon, 30 Jan 2017 14:42:25 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0273BCA@AcuExch.aculab.com>
+References: <20170126212248.3f3e9103@kitsune.suse.cz>
+ <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
+ <1485481819.2980.82.camel@kernel.crashing.org>
+ <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
+In-Reply-To: <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170120210437.26389-4-bart.vanassche@sandisk.com>
-Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,103 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 20, 2017 at 01:04:03PM -0800, Bart Van Assche wrote:
-> Now that all set_dma_ops() implementations are identical (ignoring
-> BUG_ON() statements), remove the architecture specific definitions
-> and add a definition in <linux/dma-mapping.h>.
-> 
-> Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Chris Metcalf <cmetcalf@mellanox.com>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: linux-arch@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-
-Acked-by: Russell King <rmk+kernel@armlinux.org.uk>
-
-Thanks.
-
-> ---
->  arch/arm/include/asm/dma-mapping.h     | 6 ------
->  arch/powerpc/include/asm/dma-mapping.h | 5 -----
->  arch/tile/include/asm/dma-mapping.h    | 5 -----
->  include/linux/dma-mapping.h            | 5 +++++
->  4 files changed, 5 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/arm/include/asm/dma-mapping.h b/arch/arm/include/asm/dma-mapping.h
-> index 312f4d0564d6..c7432d647e53 100644
-> --- a/arch/arm/include/asm/dma-mapping.h
-> +++ b/arch/arm/include/asm/dma-mapping.h
-> @@ -31,12 +31,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
->  		return __generic_dma_ops(dev);
->  }
->  
-> -static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
-> -{
-> -	BUG_ON(!dev);
-> -	dev->dma_ops = ops;
-> -}
-> -
->  #define HAVE_ARCH_DMA_SUPPORTED 1
->  extern int dma_supported(struct device *dev, u64 mask);
->  
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index 59fbd4abcbf8..8275603ba4d5 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -91,11 +91,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
->  	return dev->dma_ops;
->  }
->  
-> -static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
-> -{
-> -	dev->dma_ops = ops;
-> -}
-> -
->  /*
->   * get_dma_offset()
->   *
-> diff --git a/arch/tile/include/asm/dma-mapping.h b/arch/tile/include/asm/dma-mapping.h
-> index c0620697eaad..2562995a6ac9 100644
-> --- a/arch/tile/include/asm/dma-mapping.h
-> +++ b/arch/tile/include/asm/dma-mapping.h
-> @@ -59,11 +59,6 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
->  
->  static inline void dma_mark_clean(void *addr, size_t size) {}
->  
-> -static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
-> -{
-> -	dev->dma_ops = ops;
-> -}
-> -
->  static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
->  {
->  	if (!dev->dma_mask)
-> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> index f1da68b82c63..e97f23e8b2d9 100644
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -164,6 +164,11 @@ int dma_mmap_from_coherent(struct device *dev, struct vm_area_struct *vma,
->  
->  #ifdef CONFIG_HAS_DMA
->  #include <asm/dma-mapping.h>
-> +static inline void set_dma_ops(struct device *dev,
-> +			       const struct dma_map_ops *dma_ops)
-> +{
-> +	dev->dma_ops = dma_ops;
-> +}
->  #else
->  /*
->   * Define the dma api to allow compilation but not linking of
-> -- 
-> 2.11.0
-> 
-
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+RnJvbTogVHlyZWwgRGF0d3lsZXINCj4gU2VudDogMjcgSmFudWFyeSAyMDE3IDE4OjAzDQo+IE9u
+IDAxLzI2LzIwMTcgMDU6NTAgUE0sIEJlbmphbWluIEhlcnJlbnNjaG1pZHQgd3JvdGU6DQo+ID4g
+T24gVGh1LCAyMDE3LTAxLTI2IGF0IDE3OjQyIC0wODAwLCBUeXJlbCBEYXR3eWxlciB3cm90ZToN
+Cj4gPj4gT24gMDEvMjYvMjAxNyAxMjoyMiBQTSwgTWljaGFsIFN1Y2huZWsgd3JvdGU6DQo+ID4+
+PiBIZWxsbywNCj4gPj4+DQo+ID4+PiBidWlsZGluZyBpYm12dHBtIEkgbm90aWNlZCBnY2Mgd2Fy
+bmluZyBjb21wbGFpbmluZyB0aGF0IHNlY29uZCB3b3JkDQo+ID4+PiBvZg0KPiA+Pj4gc3RydWN0
+IGlibXZ0cG1fY3JxIGluIHRwbV9pYm12dHBtX3N1c3BlbmQgaXMgdW5pbml0aWFsaXplZC4NCj4g
+Pj4+DQo+ID4+PiBUaGUgc3RydWN0dXJlIGlzIGRlZmluZWQgYXMNCj4gPj4+DQo+ID4+PiBzdHJ1
+Y3QgaWJtdnRwbV9jcnEgew0KPiA+Pj4gICAgICAgICB1OCB2YWxpZDsNCj4gPj4+ICAgICAgICAg
+dTggbXNnOw0KPiA+Pj4gICAgICAgICBfX2JlMTYgbGVuOw0KPiA+Pj4gICAgICAgICBfX2JlMzIg
+ZGF0YTsNCj4gPj4+ICAgICAgICAgX19iZTY0IHJlc2VydmVkOw0KPiA+Pj4gfSBfX2F0dHJpYnV0
+ZV9fKChwYWNrZWQsIGFsaWduZWQoOCkpKTsNCj4gPj4+DQo+ID4+PiBpbml0aWFsaXplZCBhcw0K
+PiA+Pj4NCj4gPj4+ICAgICAgICAgc3RydWN0IGlibXZ0cG1fY3JxIGNycTsNCj4gPj4+ICAgICAg
+ICAgdTY0ICpidWYgPSAodTY0ICopICZjcnE7DQo+ID4+PiAuLi4NCj4gPj4+ICAgICAgICAgY3Jx
+LnZhbGlkID0gKHU4KUlCTVZUUE1fVkFMSURfQ01EOw0KPiA+Pj4gICAgICAgICBjcnEubXNnID0g
+KHU4KVZUUE1fUFJFUEFSRV9UT19TVVNQRU5EOw0KPiA+Pj4NCj4gPj4+IGFuZCBzdWJtaXR0ZWQg
+d2l0aA0KPiA+Pj4NCj4gPj4+ICAgICAgICAgcmMgPSBpYm12dHBtX3NlbmRfY3JxKGlibXZ0cG0t
+PnZkZXYsIGNwdV90b19iZTY0KGJ1ZlswXSksDQo+ID4+PiAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBjcHVfdG9fYmU2NChidWZbMV0pKTsNCg0KSXNuJ3QgdGhlIHJlYWwgZnViYXIgaGVy
+ZSB0aGUgdXNlIG9mIHRoYXQgbWVtb3J5IGxheW91dCBzdHJ1Y3R1cmUgYXQgYWxsPw0KSXQgd291
+bGQgcHJvYmFibHkgYWxsIGJlIGJldHRlciBpZiB0aGUgY2FsbCBsb29rZWQgbGlrZToNCglyYyA9
+IGlibXZ0cG1fc2VuZF9jcnEoaWJtdnRwbS0+dmRldiwgTUFLRV9SRVEoSUJNVlRQTV9WQUxJRF9D
+TUQsDQoJCVZUUE1fUFJFUEFSRV9UT19TVVNQRU5ELCB4eHhfbGVuLCB4eHhfZGF0YSksIDApOw0K
+YW5kIE1BS0VfUkVRKCkgZGlkIGFsbCB0aGUgcmVxdWlyZWQgZW5kaWFuIGluZGVwZW5kYW50IHNo
+aWZ0cyB0byBnZW5lcmF0ZQ0KdGhlIGNvcnJlY3QgMzJiaXQgdmFsdWUuDQoNCglEYXZpZA0KDQo=
