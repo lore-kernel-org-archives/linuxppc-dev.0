@@ -2,15 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBgZk1NXNzDqC2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 18:12:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBgcW54L8zDqGH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 18:14:19 +1100 (AEDT)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] powerpc: Add support for non-PCI ISA bridges
-Date: Mon, 30 Jan 2017 18:11:56 +1100
-Message-Id: <20170130071157.22677-2-benh@kernel.crashing.org>
-In-Reply-To: <20170130071157.22677-1-benh@kernel.crashing.org>
-References: <20170130071157.22677-1-benh@kernel.crashing.org>
+Subject: [PATCH 1/3] powerpc: Move isa bridge definitions to separate include
+Date: Mon, 30 Jan 2017 18:11:55 +1100
+Message-Id: <20170130071157.22677-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,129 +18,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The POWER9 chip supports an LPC bus that isn't hanging
-off a PCI bus, so let's add support for that, mapping it
-to the reserved space at ISA_IO_BASE
+We'll be adding non-PCI isa bridge support so let's not
+have all the definition in pci-bridge.h
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/isa-bridge.h |  1 +
- arch/powerpc/kernel/isa-bridge.c      | 91 +++++++++++++++++++++++++++++++++++
- 2 files changed, 92 insertions(+)
+ arch/powerpc/include/asm/isa-bridge.h     | 28 ++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/pci-bridge.h     | 18 ------------------
+ arch/powerpc/kernel/iomap.c               |  1 +
+ arch/powerpc/kernel/isa-bridge.c          |  1 +
+ arch/powerpc/platforms/maple/pci.c        |  1 +
+ arch/powerpc/platforms/powernv/opal-lpc.c |  1 +
+ arch/powerpc/platforms/pseries/setup.c    |  1 +
+ 7 files changed, 33 insertions(+), 18 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/isa-bridge.h
 
 diff --git a/arch/powerpc/include/asm/isa-bridge.h b/arch/powerpc/include/asm/isa-bridge.h
-index 94d9c1c..a3a7c1d 100644
---- a/arch/powerpc/include/asm/isa-bridge.h
+new file mode 100644
+index 0000000..94d9c1c
+--- /dev/null
 +++ b/arch/powerpc/include/asm/isa-bridge.h
-@@ -4,6 +4,7 @@
- #ifdef CONFIG_PPC64
- 
- extern void isa_bridge_find_early(struct pci_controller *hose);
-+extern void isa_bridge_init_non_pci(struct device_node *np);
- 
- static inline int isa_vaddr_is_ioport(void __iomem *address)
- {
-diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
-index c898ff0..bb6f899 100644
---- a/arch/powerpc/kernel/isa-bridge.c
-+++ b/arch/powerpc/kernel/isa-bridge.c
-@@ -168,6 +168,97 @@ void __init isa_bridge_find_early(struct pci_controller *hose)
- }
- 
- /**
-+ * isa_bridge_find_early - Find and map the ISA IO space early before
-+ *                         main PCI discovery. This is optionally called by
-+ *                         the arch code when adding PCI PHBs to get early
-+ *                         access to ISA IO ports
-+ */
-+void __init isa_bridge_init_non_pci(struct device_node *np)
+@@ -0,0 +1,28 @@
++#ifndef __ISA_BRIDGE_H
++#define __ISA_BRIDGE_H
++
++#ifdef CONFIG_PPC64
++
++extern void isa_bridge_find_early(struct pci_controller *hose);
++
++static inline int isa_vaddr_is_ioport(void __iomem *address)
 +{
-+	const __be32 *ranges, *pbasep = NULL;
-+	int rlen, i, rs;
-+	u32 na, ns, pna;
-+	u64 cbase, pbase, size = 0;
-+
-+	/* If we already have an ISA bridge, bail off */
-+	if (isa_bridge_devnode != NULL)
-+		return;
-+
-+	pna = of_n_addr_cells(np);
-+	if (of_property_read_u32(np, "#address-cells", &na) ||
-+	    of_property_read_u32(np, "#size-cells", &ns)) {
-+		pr_warn("ISA: Non-PCI bridge %s is missing address format\n",
-+			np->full_name);
-+		return;
-+	}
-+
-+	/* Check it's a supported address format */
-+	if (na != 2 || ns != 1) {
-+		pr_warn("ISA: Non-PCI bridge %s has unsupported address format\n",
-+			np->full_name);
-+		return;
-+	}
-+	rs = na + ns + pna;
-+
-+	/* Grab the ranges property */
-+	ranges = of_get_property(np, "ranges", &rlen);
-+	if (ranges == NULL || rlen < rs) {
-+		pr_warn("ISA: Non-PCI bridge %s has absent or invalid ranges\n",
-+			np->full_name);
-+		return;
-+	}
-+
-+	/* Parse it. We are only looking for IO space */
-+	for (i = 0; (i + rs - 1) < rlen; i += rs) {
-+		if (be32_to_cpup(ranges + i) != 1)
-+			continue;
-+		cbase = be32_to_cpup(ranges + i + 1);
-+		size = of_read_number(ranges + i + na + pna, ns);
-+		pbasep = ranges + i + na;
-+		break;
-+	}
-+
-+	/* Got something ? */
-+	if (!size || !pbasep) {
-+		pr_warn("ISA: Non-PCI bridge %s has no usable IO range\n",
-+			np->full_name);
-+		return;
-+	}
-+
-+	/* Align size and make sure it's cropped to 64K */
-+	size = PAGE_ALIGN(size);
-+	if (size > 0x10000)
-+		size = 0x10000;
-+
-+	/* Map pbase */
-+	pbase = of_translate_address(np, pbasep);
-+	if (pbase == OF_BAD_ADDR) {
-+		pr_warn("ISA: Non-PCI bridge %s failed to translate IO base\n",
-+			np->full_name);
-+		return;
-+	}
-+
-+	/* We need page alignment */
-+	if ((cbase & ~PAGE_MASK) || (pbase & ~PAGE_MASK)) {
-+		pr_warn("ISA: Non-PCI bridge %s has non aligned IO range\n",
-+			np->full_name);
-+		return;
-+	}
-+
-+	/* Got it */
-+	isa_bridge_devnode = np;
-+
-+	/* Set the global ISA io base to indicate we have an ISA bridge
-+	 * and map it
-+	 */
-+	isa_io_base = ISA_IO_BASE;
-+	__ioremap_at(pbase, (void *)ISA_IO_BASE,
-+		     size, pgprot_val(pgprot_noncached(__pgprot(0))));
-+
-+	pr_debug("ISA: Non-PCI bridge is %s\n", np->full_name);
++	/* Check if address hits the reserved legacy IO range */
++	unsigned long ea = (unsigned long)address;
++	return ea >= ISA_IO_BASE && ea < ISA_IO_END;
 +}
 +
-+/**
-  * isa_bridge_find_late - Find and map the ISA IO space upon discovery of
-  *                        a new ISA bridge
-  */
++#else
++
++static inline int isa_vaddr_is_ioport(void __iomem *address)
++{
++	/* No specific ISA handling on ppc32 at this stage, it
++	 * all goes through PCI
++	 */
++	return 0;
++}
++
++#endif
++
++#endif /* __ISA_BRIDGE_H */
++
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index c0309c5..56c67d3 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -174,14 +174,6 @@ extern int pci_device_from_OF_node(struct device_node *node,
+ 				   u8 *bus, u8 *devfn);
+ extern void pci_create_OF_bus_map(void);
+ 
+-static inline int isa_vaddr_is_ioport(void __iomem *address)
+-{
+-	/* No specific ISA handling on ppc32 at this stage, it
+-	 * all goes through PCI
+-	 */
+-	return 0;
+-}
+-
+ #else	/* CONFIG_PPC64 */
+ 
+ /*
+@@ -269,16 +261,6 @@ extern void pci_hp_remove_devices(struct pci_bus *bus);
+ /** Discover new pci devices under this bus, and add them */
+ extern void pci_hp_add_devices(struct pci_bus *bus);
+ 
+-
+-extern void isa_bridge_find_early(struct pci_controller *hose);
+-
+-static inline int isa_vaddr_is_ioport(void __iomem *address)
+-{
+-	/* Check if address hits the reserved legacy IO range */
+-	unsigned long ea = (unsigned long)address;
+-	return ea >= ISA_IO_BASE && ea < ISA_IO_END;
+-}
+-
+ extern int pcibios_unmap_io_space(struct pci_bus *bus);
+ extern int pcibios_map_io_space(struct pci_bus *bus);
+ 
+diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
+index 3963f0b..a1854d1 100644
+--- a/arch/powerpc/kernel/iomap.c
++++ b/arch/powerpc/kernel/iomap.c
+@@ -8,6 +8,7 @@
+ #include <linux/export.h>
+ #include <asm/io.h>
+ #include <asm/pci-bridge.h>
++#include <asm/isa-bridge.h>
+ 
+ /*
+  * Here comes the ppc64 implementation of the IOMAP 
+diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
+index ae13161..c898ff0 100644
+--- a/arch/powerpc/kernel/isa-bridge.c
++++ b/arch/powerpc/kernel/isa-bridge.c
+@@ -29,6 +29,7 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
+ #include <asm/ppc-pci.h>
++#include <asm/isa-bridge.h>
+ 
+ unsigned long isa_io_base;	/* NULL if no ISA bus */
+ EXPORT_SYMBOL(isa_io_base);
+diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
+index a0589aa..69794d9 100644
+--- a/arch/powerpc/platforms/maple/pci.c
++++ b/arch/powerpc/platforms/maple/pci.c
+@@ -24,6 +24,7 @@
+ #include <asm/machdep.h>
+ #include <asm/iommu.h>
+ #include <asm/ppc-pci.h>
++#include <asm/isa-bridge.h>
+ 
+ #include "maple.h"
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
+index 4886eb8..2048ce7 100644
+--- a/arch/powerpc/platforms/powernv/opal-lpc.c
++++ b/arch/powerpc/platforms/powernv/opal-lpc.c
+@@ -23,6 +23,7 @@
+ #include <asm/prom.h>
+ #include <linux/uaccess.h>
+ #include <asm/debug.h>
++#include <asm/isa-bridge.h>
+ 
+ static int opal_lpc_chip_id = -1;
+ 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 7736352..b4d362e 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -66,6 +66,7 @@
+ #include <asm/reg.h>
+ #include <asm/plpar_wrappers.h>
+ #include <asm/kexec.h>
++#include <asm/isa-bridge.h>
+ 
+ #include "pseries.h"
+ 
 -- 
 2.9.3
