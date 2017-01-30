@@ -1,14 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBgcW54L8zDqGH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 18:14:19 +1100 (AEDT)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] powerpc: Move isa bridge definitions to separate include
-Date: Mon, 30 Jan 2017 18:11:55 +1100
-Message-Id: <20170130071157.22677-1-benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBjTY0ZTRzDqCW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 19:38:25 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, Alistair Popple <apopple@au1.ibm.com>
+Subject: Re: [PATCH v5 1/4] powerpc/mm: refactor radix physical page mapping
+In-Reply-To: <1484593666-8001-2-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1484593666-8001-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <1484593666-8001-2-git-send-email-arbab@linux.vnet.ibm.com>
+Date: Mon, 30 Jan 2017 19:38:18 +1100
+Message-ID: <87o9ypvt6t.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,150 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We'll be adding non-PCI isa bridge support so let's not
-have all the definition in pci-bridge.h
+Reza Arbab <arbab@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/isa-bridge.h     | 28 ++++++++++++++++++++++++++++
- arch/powerpc/include/asm/pci-bridge.h     | 18 ------------------
- arch/powerpc/kernel/iomap.c               |  1 +
- arch/powerpc/kernel/isa-bridge.c          |  1 +
- arch/powerpc/platforms/maple/pci.c        |  1 +
- arch/powerpc/platforms/powernv/opal-lpc.c |  1 +
- arch/powerpc/platforms/pseries/setup.c    |  1 +
- 7 files changed, 33 insertions(+), 18 deletions(-)
- create mode 100644 arch/powerpc/include/asm/isa-bridge.h
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-ra=
+dix.c
+> index 623a0dc..2ce1354 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -107,54 +107,66 @@ int radix__map_kernel_page(unsigned long ea, unsign=
+ed long pa,
+>  	return 0;
+>  }
+>=20=20
+> +static inline void __meminit print_mapping(unsigned long start,
+> +					   unsigned long end,
+> +					   unsigned long size)
+> +{
+> +	if (end <=3D start)
+> +		return;
+> +
+> +	pr_info("Mapped range 0x%lx - 0x%lx with 0x%lx\n", start, end, size);
+> +}
+> +
+> +static int __meminit create_physical_mapping(unsigned long start,
+> +					     unsigned long end)
+> +{
+> +	unsigned long addr, mapping_size;
+> +
+> +	start =3D _ALIGN_UP(start, PAGE_SIZE);
+> +	for (addr =3D start; addr < end; addr +=3D mapping_size) {
+> +		unsigned long gap, previous_size;
+> +		int rc;
+> +
+> +		gap =3D end - addr;
+> +		previous_size =3D mapping_size;
+> +
+> +		if (IS_ALIGNED(addr, PUD_SIZE) && gap >=3D PUD_SIZE &&
+> +		    mmu_psize_defs[MMU_PAGE_1G].shift)
+> +			mapping_size =3D PUD_SIZE;
+> +		else if (IS_ALIGNED(addr, PMD_SIZE) && gap >=3D PMD_SIZE &&
+> +			 mmu_psize_defs[MMU_PAGE_2M].shift)
+> +			mapping_size =3D PMD_SIZE;
+> +		else
+> +			mapping_size =3D PAGE_SIZE;
+> +
+> +		if (mapping_size !=3D previous_size) {
+> +			print_mapping(start, addr, previous_size);
+> +			start =3D addr;
+> +		}
+> +
+> +		rc =3D radix__map_kernel_page((unsigned long)__va(addr), addr,
+> +					    PAGE_KERNEL_X, mapping_size);
+> +		if (rc)
+> +			return rc;
+> +	}
+> +
+> +	print_mapping(start, addr, mapping_size);
 
-diff --git a/arch/powerpc/include/asm/isa-bridge.h b/arch/powerpc/include/asm/isa-bridge.h
-new file mode 100644
-index 0000000..94d9c1c
---- /dev/null
-+++ b/arch/powerpc/include/asm/isa-bridge.h
-@@ -0,0 +1,28 @@
-+#ifndef __ISA_BRIDGE_H
-+#define __ISA_BRIDGE_H
-+
-+#ifdef CONFIG_PPC64
-+
-+extern void isa_bridge_find_early(struct pci_controller *hose);
-+
-+static inline int isa_vaddr_is_ioport(void __iomem *address)
-+{
-+	/* Check if address hits the reserved legacy IO range */
-+	unsigned long ea = (unsigned long)address;
-+	return ea >= ISA_IO_BASE && ea < ISA_IO_END;
-+}
-+
-+#else
-+
-+static inline int isa_vaddr_is_ioport(void __iomem *address)
-+{
-+	/* No specific ISA handling on ppc32 at this stage, it
-+	 * all goes through PCI
-+	 */
-+	return 0;
-+}
-+
-+#endif
-+
-+#endif /* __ISA_BRIDGE_H */
-+
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index c0309c5..56c67d3 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -174,14 +174,6 @@ extern int pci_device_from_OF_node(struct device_node *node,
- 				   u8 *bus, u8 *devfn);
- extern void pci_create_OF_bus_map(void);
- 
--static inline int isa_vaddr_is_ioport(void __iomem *address)
--{
--	/* No specific ISA handling on ppc32 at this stage, it
--	 * all goes through PCI
--	 */
--	return 0;
--}
--
- #else	/* CONFIG_PPC64 */
- 
- /*
-@@ -269,16 +261,6 @@ extern void pci_hp_remove_devices(struct pci_bus *bus);
- /** Discover new pci devices under this bus, and add them */
- extern void pci_hp_add_devices(struct pci_bus *bus);
- 
--
--extern void isa_bridge_find_early(struct pci_controller *hose);
--
--static inline int isa_vaddr_is_ioport(void __iomem *address)
--{
--	/* Check if address hits the reserved legacy IO range */
--	unsigned long ea = (unsigned long)address;
--	return ea >= ISA_IO_BASE && ea < ISA_IO_END;
--}
--
- extern int pcibios_unmap_io_space(struct pci_bus *bus);
- extern int pcibios_map_io_space(struct pci_bus *bus);
- 
-diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
-index 3963f0b..a1854d1 100644
---- a/arch/powerpc/kernel/iomap.c
-+++ b/arch/powerpc/kernel/iomap.c
-@@ -8,6 +8,7 @@
- #include <linux/export.h>
- #include <asm/io.h>
- #include <asm/pci-bridge.h>
-+#include <asm/isa-bridge.h>
- 
- /*
-  * Here comes the ppc64 implementation of the IOMAP 
-diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
-index ae13161..c898ff0 100644
---- a/arch/powerpc/kernel/isa-bridge.c
-+++ b/arch/powerpc/kernel/isa-bridge.c
-@@ -29,6 +29,7 @@
- #include <asm/pci-bridge.h>
- #include <asm/machdep.h>
- #include <asm/ppc-pci.h>
-+#include <asm/isa-bridge.h>
- 
- unsigned long isa_io_base;	/* NULL if no ISA bus */
- EXPORT_SYMBOL(isa_io_base);
-diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
-index a0589aa..69794d9 100644
---- a/arch/powerpc/platforms/maple/pci.c
-+++ b/arch/powerpc/platforms/maple/pci.c
-@@ -24,6 +24,7 @@
- #include <asm/machdep.h>
- #include <asm/iommu.h>
- #include <asm/ppc-pci.h>
-+#include <asm/isa-bridge.h>
- 
- #include "maple.h"
- 
-diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
-index 4886eb8..2048ce7 100644
---- a/arch/powerpc/platforms/powernv/opal-lpc.c
-+++ b/arch/powerpc/platforms/powernv/opal-lpc.c
-@@ -23,6 +23,7 @@
- #include <asm/prom.h>
- #include <linux/uaccess.h>
- #include <asm/debug.h>
-+#include <asm/isa-bridge.h>
- 
- static int opal_lpc_chip_id = -1;
- 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 7736352..b4d362e 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -66,6 +66,7 @@
- #include <asm/reg.h>
- #include <asm/plpar_wrappers.h>
- #include <asm/kexec.h>
-+#include <asm/isa-bridge.h>
- 
- #include "pseries.h"
- 
--- 
-2.9.3
+Doesn't build.
+
+
+In file included from ../include/linux/kernel.h:13:0,
+                 from ../include/linux/sched.h:17,
+                 from ../arch/powerpc/mm/pgtable-radix.c:11:
+../arch/powerpc/mm/pgtable-radix.c: In function =E2=80=98create_physical_ma=
+pping=E2=80=99:
+../include/linux/printk.h:299:2: error: =E2=80=98mapping_size=E2=80=99 may =
+be used uninitialized in this function [-Werror=3Dmaybe-uninitialized]
+  printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+  ^~~~~~
+../arch/powerpc/mm/pgtable-radix.c:123:22: note: =E2=80=98mapping_size=E2=
+=80=99 was declared here
+  unsigned long addr, mapping_size;
+                      ^~~~~~~~~~~~
+
+
+cheers
