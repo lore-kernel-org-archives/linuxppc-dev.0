@@ -1,20 +1,22 @@
-Return-Path: <bhumirks@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBKFb07FfzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 04:26:42 +1100 (AEDT)
-Received: by mail-pf0-x242.google.com with SMTP id f144so21804922pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2017 09:26:42 -0800 (PST)
-From: Bhumika Goyal <bhumirks@gmail.com>
-To: julia.lawall@lip6.fr, benh@kernel.crashing.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] macintosh: windfarm_smu_sensors: constify wf_sensor_ops
- structures
-Date: Sun, 29 Jan 2017 22:56:28 +0530
-Message-Id: <1485710788-3662-1-git-send-email-bhumirks@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBWMx5xpczDq61
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 12:02:53 +1100 (AEDT)
+Date: Mon, 30 Jan 2017 12:02:40 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Fix RECLAIM_DISTANCE
+Message-ID: <20170130120240.5018f476@kryten>
+In-Reply-To: <20170127124910.GA2668@localhost.localdomain>
+References: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20170125035744.GB12855@localhost.localdomain>
+ <20170125045822.GA10566@gwshan>
+ <20170127124910.GA2668@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,94 +26,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Declare wf_sensor_ops structures as const as they are only stored in the
-ops field of a wf_sensor structure. This field is of type const, so
-wf_sensor_ops structures having this property can be made const too.
-Done using Coccinelle:
+Hi,
 
-@r disable optional_qualifier@
-identifier x;
-position p;
-@@
-static struct wf_sensor_ops x@p={...};
+> Anton suggested that NUMA distances in powerpc mattered and hurted
+> performance without this setting. We need to validate to see if this
+> is still true. A simple way to start would be benchmarking
 
-@ok@
-struct smu_ad_sensor ads;
-struct smu_cpu_power_sensor pow;
-identifier r.x;
-position p;
-@@
-(
-ads.sens.ops=&x@p;
-|
-pow.sens.ops=&x@p;
-)
+The original issue was that we never reclaimed local clean pagecache.
 
-@bad@
-position p != {r.p,ok.p};
-identifier r.x;
-@@
-x@p
+I just tried all settings for /proc/sys/vm/zone_reclaim_mode and none
+of them caused me to reclaim local clean pagecache! We are very broken.
 
-@depends on !bad disable optional_qualifier@
-identifier r.x;
-@@
-+const
-struct wf_sensor_ops x;
+I would think we have test cases for this, but here is a dumb one.
+First something to consume memory:
 
-Size details after cross compiling the .o file for powerpc architecture.
-File size before:
- text	   data	    bss	    dec	    hex	filename
-   3700	    408	     48	   4156	   103c	macintosh/windfarm_smu_sensors.o
+# cat alloc.c
 
-File size after:
- text	   data	    bss	    dec	    hex	filename
-   3832	    288	     48	   4168	   1048	macintosh/windfarm_smu_sensors.o
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <assert.h>
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- drivers/macintosh/windfarm_smu_sensors.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+int main(int argc, char *argv[])
+{
+	void *p;
 
-diff --git a/drivers/macintosh/windfarm_smu_sensors.c b/drivers/macintosh/windfarm_smu_sensors.c
-index 1cc4e49..172fd26 100644
---- a/drivers/macintosh/windfarm_smu_sensors.c
-+++ b/drivers/macintosh/windfarm_smu_sensors.c
-@@ -172,22 +172,22 @@ static int smu_slotspow_get(struct wf_sensor *sr, s32 *value)
- }
- 
- 
--static struct wf_sensor_ops smu_cputemp_ops = {
-+static const struct wf_sensor_ops smu_cputemp_ops = {
- 	.get_value	= smu_cputemp_get,
- 	.release	= smu_ads_release,
- 	.owner		= THIS_MODULE,
- };
--static struct wf_sensor_ops smu_cpuamp_ops = {
-+static const struct wf_sensor_ops smu_cpuamp_ops = {
- 	.get_value	= smu_cpuamp_get,
- 	.release	= smu_ads_release,
- 	.owner		= THIS_MODULE,
- };
--static struct wf_sensor_ops smu_cpuvolt_ops = {
-+static const struct wf_sensor_ops smu_cpuvolt_ops = {
- 	.get_value	= smu_cpuvolt_get,
- 	.release	= smu_ads_release,
- 	.owner		= THIS_MODULE,
- };
--static struct wf_sensor_ops smu_slotspow_ops = {
-+static const struct wf_sensor_ops smu_slotspow_ops = {
- 	.get_value	= smu_slotspow_get,
- 	.release	= smu_ads_release,
- 	.owner		= THIS_MODULE,
-@@ -327,7 +327,7 @@ static int smu_cpu_power_get(struct wf_sensor *sr, s32 *value)
- 	return 0;
- }
- 
--static struct wf_sensor_ops smu_cpu_power_ops = {
-+static const struct wf_sensor_ops smu_cpu_power_ops = {
- 	.get_value	= smu_cpu_power_get,
- 	.release	= smu_cpu_power_release,
- 	.owner		= THIS_MODULE,
--- 
-2.7.4
+	unsigned long size;
+
+	size = strtoul(argv[1], NULL, 0);
+
+	p = malloc(size);
+	assert(p);
+	memset(p, 0, size);
+	printf("%p\n", p);
+
+	sleep(3600);
+
+	return 0;
+}
+
+Now create a file to consume pagecache. My nodes have 32GB each, so
+I create 16GB, enough to consume half of the node:
+
+dd if=/dev/zero of=/tmp/file bs=1G count=16
+
+Clear out our pagecache:
+
+sync
+echo 3 > /proc/sys/vm/drop_caches
+
+Bring it in on node 0:
+
+taskset -c 0 cat /tmp/file > /dev/null
+
+Consume 24GB of memory on node 0:
+
+taskset -c 0 ./alloc 25769803776
+
+In all zone reclaim modes, the pagecache never gets reclaimed:
+
+# grep FilePages /sys/devices/system/node/node0/meminfo
+
+Node 0 FilePages:      16757376 kB
+
+And our alloc process shows lots of off node memory used:
+
+3ff9a4630000 default anon=393217 dirty=393217 N0=112474 N1=220490 N16=60253 kernelpagesize_kB=64
+
+Clearly nothing is working. Gavin, if your patch fixes this we should
+get it into stable too.
+
+Anton
