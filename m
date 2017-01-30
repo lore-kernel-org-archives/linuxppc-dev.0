@@ -1,31 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.184])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wcohen@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBsYq1V6gzDq61
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 01:42:38 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Tyrel Datwyler' <tyreld@linux.vnet.ibm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, =?utf-8?B?TWljaGFsIFN1Y2jDoW5law==?=
- <msuchanek@suse.de>, Ashley Lai <ashleydlai@gmail.com>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Peter Huewe
- <peterhuewe@gmx.de>, Marcel Selhorst <tpmdd@selhorst.net>, Jarkko Sakkinen
- <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
- <jgunthorpe@obsidianresearch.com>, "tpmdd-devel@lists.sourceforge.net"
- <tpmdd-devel@lists.sourceforge.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: ibmvtpm byteswapping inconsistency
-Date: Mon, 30 Jan 2017 14:42:25 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0273BCA@AcuExch.aculab.com>
-References: <20170126212248.3f3e9103@kitsune.suse.cz>
- <d55b06cc-cb7a-1ef1-05b7-d7d4114d0c48@linux.vnet.ibm.com>
- <1485481819.2980.82.camel@kernel.crashing.org>
- <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
-In-Reply-To: <e518682f-e563-9533-9ffd-f465c662e998@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBtkR0X9DzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 02:35:11 +1100 (AEDT)
+Subject: Re: gcc trunk fails to build kernel on PowerPC64 due to oprofile
+ warnings
+To: Robert Richter <rric@kernel.org>
+References: <20170126100044.7e439f72@kryten>
+ <fe2c2fd9-d255-61ca-5328-ca5d45827f47@redhat.com>
+ <20170126160512.GE4906@rric.localdomain>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, oprofile-list@lists.sf.net,
+ Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+From: William Cohen <wcohen@redhat.com>
+Message-ID: <541c2cc7-9ea3-9aeb-a12d-c3d46717a7f7@redhat.com>
+Date: Mon, 30 Jan 2017 10:35:09 -0500
 MIME-Version: 1.0
+In-Reply-To: <20170126160512.GE4906@rric.localdomain>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogVHlyZWwgRGF0d3lsZXINCj4gU2VudDogMjcgSmFudWFyeSAyMDE3IDE4OjAzDQo+IE9u
-IDAxLzI2LzIwMTcgMDU6NTAgUE0sIEJlbmphbWluIEhlcnJlbnNjaG1pZHQgd3JvdGU6DQo+ID4g
-T24gVGh1LCAyMDE3LTAxLTI2IGF0IDE3OjQyIC0wODAwLCBUeXJlbCBEYXR3eWxlciB3cm90ZToN
-Cj4gPj4gT24gMDEvMjYvMjAxNyAxMjoyMiBQTSwgTWljaGFsIFN1Y2huZWsgd3JvdGU6DQo+ID4+
-PiBIZWxsbywNCj4gPj4+DQo+ID4+PiBidWlsZGluZyBpYm12dHBtIEkgbm90aWNlZCBnY2Mgd2Fy
-bmluZyBjb21wbGFpbmluZyB0aGF0IHNlY29uZCB3b3JkDQo+ID4+PiBvZg0KPiA+Pj4gc3RydWN0
-IGlibXZ0cG1fY3JxIGluIHRwbV9pYm12dHBtX3N1c3BlbmQgaXMgdW5pbml0aWFsaXplZC4NCj4g
-Pj4+DQo+ID4+PiBUaGUgc3RydWN0dXJlIGlzIGRlZmluZWQgYXMNCj4gPj4+DQo+ID4+PiBzdHJ1
-Y3QgaWJtdnRwbV9jcnEgew0KPiA+Pj4gICAgICAgICB1OCB2YWxpZDsNCj4gPj4+ICAgICAgICAg
-dTggbXNnOw0KPiA+Pj4gICAgICAgICBfX2JlMTYgbGVuOw0KPiA+Pj4gICAgICAgICBfX2JlMzIg
-ZGF0YTsNCj4gPj4+ICAgICAgICAgX19iZTY0IHJlc2VydmVkOw0KPiA+Pj4gfSBfX2F0dHJpYnV0
-ZV9fKChwYWNrZWQsIGFsaWduZWQoOCkpKTsNCj4gPj4+DQo+ID4+PiBpbml0aWFsaXplZCBhcw0K
-PiA+Pj4NCj4gPj4+ICAgICAgICAgc3RydWN0IGlibXZ0cG1fY3JxIGNycTsNCj4gPj4+ICAgICAg
-ICAgdTY0ICpidWYgPSAodTY0ICopICZjcnE7DQo+ID4+PiAuLi4NCj4gPj4+ICAgICAgICAgY3Jx
-LnZhbGlkID0gKHU4KUlCTVZUUE1fVkFMSURfQ01EOw0KPiA+Pj4gICAgICAgICBjcnEubXNnID0g
-KHU4KVZUUE1fUFJFUEFSRV9UT19TVVNQRU5EOw0KPiA+Pj4NCj4gPj4+IGFuZCBzdWJtaXR0ZWQg
-d2l0aA0KPiA+Pj4NCj4gPj4+ICAgICAgICAgcmMgPSBpYm12dHBtX3NlbmRfY3JxKGlibXZ0cG0t
-PnZkZXYsIGNwdV90b19iZTY0KGJ1ZlswXSksDQo+ID4+PiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBjcHVfdG9fYmU2NChidWZbMV0pKTsNCg0KSXNuJ3QgdGhlIHJlYWwgZnViYXIgaGVy
-ZSB0aGUgdXNlIG9mIHRoYXQgbWVtb3J5IGxheW91dCBzdHJ1Y3R1cmUgYXQgYWxsPw0KSXQgd291
-bGQgcHJvYmFibHkgYWxsIGJlIGJldHRlciBpZiB0aGUgY2FsbCBsb29rZWQgbGlrZToNCglyYyA9
-IGlibXZ0cG1fc2VuZF9jcnEoaWJtdnRwbS0+dmRldiwgTUFLRV9SRVEoSUJNVlRQTV9WQUxJRF9D
-TUQsDQoJCVZUUE1fUFJFUEFSRV9UT19TVVNQRU5ELCB4eHhfbGVuLCB4eHhfZGF0YSksIDApOw0K
-YW5kIE1BS0VfUkVRKCkgZGlkIGFsbCB0aGUgcmVxdWlyZWQgZW5kaWFuIGluZGVwZW5kYW50IHNo
-aWZ0cyB0byBnZW5lcmF0ZQ0KdGhlIGNvcnJlY3QgMzJiaXQgdmFsdWUuDQoNCglEYXZpZA0KDQo=
+On 01/26/2017 11:06 AM, Robert Richter wrote:
+> On 26.01.17 10:46:43, William Cohen wrote:
+>> From 7e46dbd7dc5bc941926a4a63c28ccebf46493e8d Mon Sep 17 00:00:00 2001
+>> From: William Cohen <wcohen@redhat.com>
+>> Date: Thu, 26 Jan 2017 10:33:59 -0500
+>> Subject: [PATCH] Avoid hypthetical string truncation in oprofile stats buffer
+>> MIME-Version: 1.0
+>> Content-Type: text/plain; charset=UTF-8
+>> Content-Transfer-Encoding: 8bit
+>>
+>> Increased the size of an internal oprofile driver buffer ensuring that
+>> the string was never truncated for any possible int value to avoid the
+>> following gcc-7 compiler error on ppc when building the kernel:
+> 
+> Please test gcc7 for other archs first. I don't think this is the only
+> change needed to avoid this warning in oprofile code.
+> 
+> Thanks,
+> 
+> -Robert
+
+Hi Robert,
+
+It took me a little while to get a gcc-7 environment set up with Fedora Rawhide on x86_64.  I have a kernel building now with gcc-7 and will see what other issues pop up during the compile.
+
+While watching the output of the build I see the gcc-7 error message about truncating output of snprintf output seems to occur for a number of other places besides the oprofile kernel code during the compile.
+
+-Will
