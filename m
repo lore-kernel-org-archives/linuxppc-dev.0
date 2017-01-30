@@ -1,17 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vBlnD4xhYzDq9r
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 21:22:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vBlnF1T92zDqFC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2017 21:22:09 +1100 (AEDT)
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org,
 	kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 11/20] KVM: PPC: Book3S HV: Add basic infrastructure for
- radix guests
-Date: Mon, 30 Jan 2017 21:21:44 +1100
-Message-Id: <1485771713-24801-12-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v2 12/20] KVM: PPC: Book3S HV: Modify guest entry/exit paths
+ to handle radix guests
+Date: Mon, 30 Jan 2017 21:21:45 +1100
+Message-Id: <1485771713-24801-13-git-send-email-paulus@ozlabs.org>
 In-Reply-To: <1485771713-24801-1-git-send-email-paulus@ozlabs.org>
 References: <1485771713-24801-1-git-send-email-paulus@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,260 +23,235 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a field in struct kvm_arch and an inline helper to
-indicate whether a guest is a radix guest or not, plus a new file
-to contain the radix MMU code, which currently contains just a
-translate function which knows how to traverse the guest page
-tables to translate an address.
+This adds code to  branch around the parts that radix guests don't
+need - clearing and loading the SLB with the guest SLB contents,
+saving the guest SLB contents on exit, and restoring the host SLB
+contents.
+
+Since the host is now using radix, we need to save and restore the
+host value for the PID register.
+
+On hypervisor data/instruction storage interrupts, we don't do the
+guest HPT lookup on radix, but just save the guest physical address
+for the fault (from the ASDR register) in the vcpu struct.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_book3s.h    |   3 +
- arch/powerpc/include/asm/kvm_book3s_64.h |   6 ++
- arch/powerpc/include/asm/kvm_host.h      |   2 +
- arch/powerpc/kvm/Makefile                |   3 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c      |  10 ++-
- arch/powerpc/kvm/book3s_64_mmu_radix.c   | 139 +++++++++++++++++++++++++++++++
- 6 files changed, 160 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_64_mmu_radix.c
+ arch/powerpc/include/asm/kvm_host.h     |  1 +
+ arch/powerpc/kernel/asm-offsets.c       |  2 ++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 57 ++++++++++++++++++++++++++-------
+ 3 files changed, 49 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 5cf306a..7adfcc0 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -182,6 +182,9 @@ extern void kvmppc_mmu_hpte_sysexit(void);
- extern int kvmppc_mmu_hv_init(void);
- extern int kvmppc_book3s_hcall_implemented(struct kvm *kvm, unsigned long hc);
- 
-+extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
-+			struct kvmppc_pte *gpte, bool data, bool iswrite);
-+
- /* XXX remove this export when load_last_inst() is generic */
- extern int kvmppc_ld(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr, bool data);
- extern void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec);
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 8482921..0db010c 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -36,6 +36,12 @@ static inline void svcpu_put(struct kvmppc_book3s_shadow_vcpu *svcpu)
- #endif
- 
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+
-+static inline bool kvm_is_radix(struct kvm *kvm)
-+{
-+	return kvm->arch.radix;
-+}
-+
- #define KVM_DEFAULT_HPT_ORDER	24	/* 16MB HPT by default */
- #endif
- 
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 944532d..fb73518 100644
+index fb73518..da1421a 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -264,6 +264,8 @@ struct kvm_arch {
- 	atomic_t hpte_mod_interest;
- 	cpumask_t need_tlb_flush;
- 	int hpt_cma_alloc;
-+	u8 radix;
-+	pgd_t *pgtable;
- 	u64 process_table;
- 	struct dentry *debugfs_dir;
- 	struct dentry *htab_dentry;
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 7dd89b7..b87ccde 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -70,7 +70,8 @@ endif
- kvm-hv-y += \
- 	book3s_hv.o \
- 	book3s_hv_interrupts.o \
--	book3s_64_mmu_hv.o
-+	book3s_64_mmu_hv.o \
-+	book3s_64_mmu_radix.o
+@@ -606,6 +606,7 @@ struct kvm_vcpu_arch {
+ 	ulong fault_dar;
+ 	u32 fault_dsisr;
+ 	unsigned long intr_msr;
++	ulong fault_gpa;	/* guest real address of page fault (POWER9) */
+ #endif
  
- kvm-book3s_64-builtin-xics-objs-$(CONFIG_KVM_XICS) := \
- 	book3s_hv_rm_xics.o
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index b795dd1..c208bf3 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -119,6 +119,9 @@ long kvmppc_alloc_reset_hpt(struct kvm *kvm, u32 *htab_orderp)
- 	long err = -EBUSY;
- 	long order;
+ #ifdef CONFIG_BOOKE
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 0601e6a..3afa0ad 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -498,6 +498,7 @@ int main(void)
+ 	DEFINE(KVM_NEED_FLUSH, offsetof(struct kvm, arch.need_tlb_flush.bits));
+ 	DEFINE(KVM_ENABLED_HCALLS, offsetof(struct kvm, arch.enabled_hcalls));
+ 	DEFINE(KVM_VRMA_SLB_V, offsetof(struct kvm, arch.vrma_slb_v));
++	DEFINE(KVM_RADIX, offsetof(struct kvm, arch.radix));
+ 	DEFINE(VCPU_DSISR, offsetof(struct kvm_vcpu, arch.shregs.dsisr));
+ 	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
+ 	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa.pinned_addr));
+@@ -537,6 +538,7 @@ int main(void)
+ 	DEFINE(VCPU_SLB_NR, offsetof(struct kvm_vcpu, arch.slb_nr));
+ 	DEFINE(VCPU_FAULT_DSISR, offsetof(struct kvm_vcpu, arch.fault_dsisr));
+ 	DEFINE(VCPU_FAULT_DAR, offsetof(struct kvm_vcpu, arch.fault_dar));
++	DEFINE(VCPU_FAULT_GPA, offsetof(struct kvm_vcpu, arch.fault_gpa));
+ 	DEFINE(VCPU_INTR_MSR, offsetof(struct kvm_vcpu, arch.intr_msr));
+ 	DEFINE(VCPU_LAST_INST, offsetof(struct kvm_vcpu, arch.last_inst));
+ 	DEFINE(VCPU_TRAP, offsetof(struct kvm_vcpu, arch.trap));
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 75d4eb3..5a0749b 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -518,6 +518,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ /* Stack frame offsets */
+ #define STACK_SLOT_TID		(112-16)
+ #define STACK_SLOT_PSSCR	(112-24)
++#define STACK_SLOT_PID		(112-32)
  
-+	if (kvm_is_radix(kvm))
-+		return -EINVAL;
+ .global kvmppc_hv_entry
+ kvmppc_hv_entry:
+@@ -530,6 +531,7 @@ kvmppc_hv_entry:
+ 	 * R1 = host R1
+ 	 * R2 = TOC
+ 	 * all other volatile GPRS = free
++	 * Does not preserve non-volatile GPRs or CR fields
+ 	 */
+ 	mflr	r0
+ 	std	r0, PPC_LR_STKOFF(r1)
+@@ -549,32 +551,38 @@ kvmppc_hv_entry:
+ 	bl	kvmhv_start_timing
+ 1:
+ #endif
+-	/* Clear out SLB */
 +
- 	mutex_lock(&kvm->lock);
- 	if (kvm->arch.hpte_setup_done) {
- 		kvm->arch.hpte_setup_done = 0;
-@@ -157,7 +160,7 @@ void kvmppc_free_hpt(struct kvm *kvm)
- 	if (kvm->arch.hpt_cma_alloc)
- 		kvm_release_hpt(virt_to_page(kvm->arch.hpt_virt),
- 				1 << (kvm->arch.hpt_order - PAGE_SHIFT));
--	else
-+	else if (kvm->arch.hpt_virt)
- 		free_pages(kvm->arch.hpt_virt,
- 			   kvm->arch.hpt_order - PAGE_SHIFT);
- }
-@@ -1675,7 +1678,10 @@ void kvmppc_mmu_book3s_hv_init(struct kvm_vcpu *vcpu)
++	/* Use cr7 as an indication of radix mode */
++	ld	r5, HSTATE_KVM_VCORE(r13)
++	ld	r9, VCORE_KVM(r5)	/* pointer to struct kvm */
++	lbz	r0, KVM_RADIX(r9)
++	cmpwi	cr7, r0, 0
++
++	/* Clear out SLB if hash */
++	bne	cr7, 2f
+ 	li	r6,0
+ 	slbmte	r6,r6
+ 	slbia
+ 	ptesync
+-
++2:
+ 	/*
+ 	 * POWER7/POWER8 host -> guest partition switch code.
+ 	 * We don't have to lock against concurrent tlbies,
+ 	 * but we do have to coordinate across hardware threads.
+ 	 */
+ 	/* Set bit in entry map iff exit map is zero. */
+-	ld	r5, HSTATE_KVM_VCORE(r13)
+ 	li	r7, 1
+ 	lbz	r6, HSTATE_PTID(r13)
+ 	sld	r7, r7, r6
+-	addi	r9, r5, VCORE_ENTRY_EXIT
+-21:	lwarx	r3, 0, r9
++	addi	r8, r5, VCORE_ENTRY_EXIT
++21:	lwarx	r3, 0, r8
+ 	cmpwi	r3, 0x100		/* any threads starting to exit? */
+ 	bge	secondary_too_late	/* if so we're too late to the party */
+ 	or	r3, r3, r7
+-	stwcx.	r3, 0, r9
++	stwcx.	r3, 0, r8
+ 	bne	21b
  
- 	vcpu->arch.slb_nr = 32;		/* POWER7/POWER8 */
+ 	/* Primary thread switches to guest partition. */
+-	ld	r9,VCORE_KVM(r5)	/* pointer to struct kvm */
+ 	cmpwi	r6,0
+ 	bne	10f
+ 	lwz	r7,KVM_LPID(r9)
+@@ -658,7 +666,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	beq	kvmppc_primary_no_guest
+ kvmppc_got_guest:
  
--	mmu->xlate = kvmppc_mmu_book3s_64_hv_xlate;
-+	if (kvm_is_radix(vcpu->kvm))
-+		mmu->xlate = kvmppc_mmu_radix_xlate;
-+	else
-+		mmu->xlate = kvmppc_mmu_book3s_64_hv_xlate;
- 	mmu->reset_msr = kvmppc_mmu_book3s_64_hv_reset_msr;
+-	/* Load up guest SLB entries */
++	/* Load up guest SLB entries (N.B. slb_max will be 0 for radix) */
+ 	lwz	r5,VCPU_SLB_MAX(r4)
+ 	cmpwi	r5,0
+ 	beq	9f
+@@ -696,8 +704,10 @@ kvmppc_got_guest:
+ BEGIN_FTR_SECTION
+ 	mfspr	r5, SPRN_TIDR
+ 	mfspr	r6, SPRN_PSSCR
++	mfspr	r7, SPRN_PID
+ 	std	r5, STACK_SLOT_TID(r1)
+ 	std	r6, STACK_SLOT_PSSCR(r1)
++	std	r7, STACK_SLOT_PID(r1)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
  
- 	vcpu->arch.hflags |= BOOK3S_HFLAG_SLB;
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-new file mode 100644
-index 0000000..9091407
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -0,0 +1,139 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * Copyright 2016 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-+ */
+ BEGIN_FTR_SECTION
+@@ -1285,11 +1295,15 @@ mc_cont:
+ 	mtspr	SPRN_CTRLT,r6
+ 4:
+ 	/* Read the guest SLB and save it away */
++	ld	r5, VCPU_KVM(r9)
++	lbz	r0, KVM_RADIX(r5)
++	cmpwi	r0, 0
++	li	r5, 0
++	bne	3f			/* for radix, save 0 entries */
+ 	lwz	r0,VCPU_SLB_NR(r9)	/* number of entries in SLB */
+ 	mtctr	r0
+ 	li	r6,0
+ 	addi	r7,r9,VCPU_SLB
+-	li	r5,0
+ 1:	slbmfee	r8,r6
+ 	andis.	r0,r8,SLB_ESID_V@h
+ 	beq	2f
+@@ -1301,7 +1315,7 @@ mc_cont:
+ 	addi	r5,r5,1
+ 2:	addi	r6,r6,1
+ 	bdnz	1b
+-	stw	r5,VCPU_SLB_MAX(r9)
++3:	stw	r5,VCPU_SLB_MAX(r9)
+ 
+ 	/*
+ 	 * Save the guest PURR/SPURR
+@@ -1550,8 +1564,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ BEGIN_FTR_SECTION
+ 	ld	r5, STACK_SLOT_TID(r1)
+ 	ld	r6, STACK_SLOT_PSSCR(r1)
++	ld	r7, STACK_SLOT_PID(r1)
+ 	mtspr	SPRN_TIDR, r5
+ 	mtspr	SPRN_PSSCR, r6
++	mtspr	SPRN_PID, r7
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 
+ 	/*
+@@ -1663,6 +1679,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	isync
+ 
+ 	/* load host SLB entries */
++BEGIN_MMU_FTR_SECTION
++	b	0f
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
+ 	ld	r8,PACA_SLBSHADOWPTR(r13)
+ 
+ 	.rept	SLB_NUM_BOLTED
+@@ -1675,7 +1694,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	slbmte	r6,r5
+ 1:	addi	r8,r8,16
+ 	.endr
+-
++0:
+ #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
+ 	/* Finish timing, if we have a vcpu */
+ 	ld	r4, HSTATE_KVM_VCPU(r13)
+@@ -1702,8 +1721,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+  * reflect the HDSI to the guest as a DSI.
+  */
+ kvmppc_hdsi:
++	ld	r3, VCPU_KVM(r9)
++	lbz	r0, KVM_RADIX(r3)
++	cmpwi	r0, 0
+ 	mfspr	r4, SPRN_HDAR
+ 	mfspr	r6, SPRN_HDSISR
++	bne	.Lradix_hdsi		/* on radix, just save DAR/DSISR/ASDR */
+ 	/* HPTE not found fault or protection fault? */
+ 	andis.	r0, r6, (DSISR_NOHPTE | DSISR_PROTFAULT)@h
+ 	beq	1f			/* if not, send it to the guest */
+@@ -1780,11 +1803,23 @@ fast_interrupt_c_return:
+ 	stb	r0, HSTATE_IN_GUEST(r13)
+ 	b	guest_exit_cont
+ 
++.Lradix_hdsi:
++	std	r4, VCPU_FAULT_DAR(r9)
++	stw	r6, VCPU_FAULT_DSISR(r9)
++.Lradix_hisi:
++	mfspr	r5, SPRN_ASDR
++	std	r5, VCPU_FAULT_GPA(r9)
++	b	guest_exit_cont
 +
-+#include <linux/types.h>
-+#include <linux/string.h>
-+#include <linux/kvm.h>
-+#include <linux/kvm_host.h>
-+
-+#include <asm/kvm_ppc.h>
-+#include <asm/kvm_book3s.h>
-+#include <asm/page.h>
-+#include <asm/mmu.h>
-+#include <asm/pgtable.h>
-+#include <asm/pgalloc.h>
-+
-+/*
-+ * Supported radix tree geometry.
-+ * Like p9, we support either 5 or 9 bits at the first (lowest) level,
-+ * for a page size of 64k or 4k.
-+ */
-+static int p9_supported_radix_bits[4] = { 5, 9, 9, 13 };
-+
-+int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
-+			   struct kvmppc_pte *gpte, bool data, bool iswrite)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	u32 pid;
-+	int ret, level, ps;
-+	__be64 prte, rpte;
-+	unsigned long root, pte, index;
-+	unsigned long rts, bits, offset;
-+	unsigned long gpa;
-+	unsigned long proc_tbl_size;
-+
-+	/* Work out effective PID */
-+	switch (eaddr >> 62) {
-+	case 0:
-+		pid = vcpu->arch.pid;
-+		break;
-+	case 3:
-+		pid = 0;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	proc_tbl_size = 1 << ((kvm->arch.process_table & PRTS_MASK) + 12);
-+	if (pid * 16 >= proc_tbl_size)
-+		return -EINVAL;
-+
-+	/* Read partition table to find root of tree for effective PID */
-+	ret = kvm_read_guest(kvm, kvm->arch.process_table + pid * 16,
-+			     &prte, sizeof(prte));
-+	if (ret)
-+		return ret;
-+
-+	root = be64_to_cpu(prte);
-+	rts = ((root & RTS1_MASK) >> (RTS1_SHIFT - 3)) |
-+		((root & RTS2_MASK) >> RTS2_SHIFT);
-+	bits = root & RPDS_MASK;
-+	root = root & RPDB_MASK;
-+
-+	/* P9 DD1 interprets RTS (radix tree size) differently */
-+	offset = rts + 31;
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
-+		offset -= 3;
-+
-+	/* current implementations only support 52-bit space */
-+	if (offset != 52)
-+		return -EINVAL;
-+
-+	for (level = 3; level >= 0; --level) {
-+		if (level && bits != p9_supported_radix_bits[level])
-+			return -EINVAL;
-+		if (level == 0 && !(bits == 5 || bits == 9))
-+			return -EINVAL;
-+		offset -= bits;
-+		index = (eaddr >> offset) & ((1UL << bits) - 1);
-+		/* check that low bits of page table base are zero */
-+		if (root & ((1UL << (bits + 3)) - 1))
-+			return -EINVAL;
-+		ret = kvm_read_guest(kvm, root + index * 8,
-+				     &rpte, sizeof(rpte));
-+		if (ret)
-+			return ret;
-+		pte = __be64_to_cpu(rpte);
-+		if (!(pte & _PAGE_PRESENT))
-+			return -ENOENT;
-+		if (pte & _PAGE_PTE)
-+			break;
-+		bits = pte & 0x1f;
-+		root = pte & 0x0fffffffffffff00ul;
-+	}
-+	/* need a leaf at lowest level; 512GB pages not supported */
-+	if (level < 0 || level == 3)
-+		return -EINVAL;
-+
-+	/* offset is now log base 2 of the page size */
-+	gpa = pte & 0x01fffffffffff000ul;
-+	if (gpa & ((1ul << offset) - 1))
-+		return -EINVAL;
-+	gpa += eaddr & ((1ul << offset) - 1);
-+	for (ps = MMU_PAGE_4K; ps < MMU_PAGE_COUNT; ++ps)
-+		if (offset == mmu_psize_defs[ps].shift)
-+			break;
-+	gpte->page_size = ps;
-+
-+	gpte->eaddr = eaddr;
-+	gpte->raddr = gpa;
-+
-+	/* Work out permissions */
-+	gpte->may_read = !!(pte & _PAGE_READ);
-+	gpte->may_write = !!(pte & _PAGE_WRITE);
-+	gpte->may_execute = !!(pte & _PAGE_EXEC);
-+	if (kvmppc_get_msr(vcpu) & MSR_PR) {
-+		if (pte & _PAGE_PRIVILEGED) {
-+			gpte->may_read = 0;
-+			gpte->may_write = 0;
-+			gpte->may_execute = 0;
-+		}
-+	} else {
-+		if (!(pte & _PAGE_PRIVILEGED)) {
-+			/* Check AMR/IAMR to see if strict mode is in force */
-+			if (vcpu->arch.amr & (1ul << 62))
-+				gpte->may_read = 0;
-+			if (vcpu->arch.amr & (1ul << 63))
-+				gpte->may_write = 0;
-+			if (vcpu->arch.iamr & (1ul << 62))
-+				gpte->may_execute = 0;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
+ /*
+  * Similarly for an HISI, reflect it to the guest as an ISI unless
+  * it is an HPTE not found fault for a page that we have paged out.
+  */
+ kvmppc_hisi:
++	ld	r3, VCPU_KVM(r9)
++	lbz	r0, KVM_RADIX(r3)
++	cmpwi	r0, 0
++	bne	.Lradix_hisi		/* for radix, just save ASDR */
+ 	andis.	r0, r11, SRR1_ISI_NOPT@h
+ 	beq	1f
+ BEGIN_FTR_SECTION
 -- 
 2.7.4
