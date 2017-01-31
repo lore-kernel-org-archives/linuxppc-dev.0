@@ -3,50 +3,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCFW31wjJzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:41:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCFYX0DZSzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:43:43 +1100 (AEDT)
 Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v0V5cbYw053780
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 00:41:32 -0500
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28aec3ba91-1
+ v0V5hWgK063559
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 00:43:41 -0500
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28aec3bbs9-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 00:41:32 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 00:43:41 -0500
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 31 Jan 2017 15:41:29 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3DA32357805A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:41:27 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v0V5fJj736896976
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:41:27 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- v0V5etou018439
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:40:55 +1100
-Date: Tue, 31 Jan 2017 16:40:29 +1100
+ Tue, 31 Jan 2017 15:43:38 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id ED2BC2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:43:35 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v0V5hRvp26738936
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:43:35 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v0V5h3rq006189
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 16:43:03 +1100
+Date: Tue, 31 Jan 2017 16:42:38 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, mgorman@suse.de
-Subject: Re: [PATCH] powerpc/mm: Fix RECLAIM_DISTANCE
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, hankmax0000@gmail.com,
+ williel@supermicro.com.tw
+Subject: Re: [PATCH 0/3] powerpc/powernv: PCI hotplug fixes and improvement
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1485214348-19487-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20170125035744.GB12855@localhost.localdomain>
- <20170125045822.GA10566@gwshan>
- <20170127124910.GA2668@localhost.localdomain>
- <20170130120240.5018f476@kryten> <20170130043823.GA30920@gwshan>
- <87zii8uub8.fsf@concordia.ellerman.id.au>
- <20170131050104.GB25724@gwshan>
+References: <1484095808-24777-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170131050104.GB25724@gwshan>
-Message-Id: <20170131054029.GA9937@gwshan>
+In-Reply-To: <1484095808-24777-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Message-Id: <20170131054238.GB9937@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,91 +50,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 31, 2017 at 04:01:05PM +1100, Gavin Shan wrote:
->On Tue, Jan 31, 2017 at 08:11:39AM +1100, Michael Ellerman wrote:
->>Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
->>
->>I'd like to see some test results from multi-node systems.
->>
->>I'd also like to understand what has changed since we changed
->>RECLAIM_DISTANCE in the first place, ie. why did it used to work and now
->>doesn't?
->>
+On Wed, Jan 11, 2017 at 11:50:05AM +1100, Gavin Shan wrote:
+>This series fixes couple issues or improves its reliability:
 >
->[Ccing Mel]
+>   * The PDC event is never detected inside the IRQ handler in surprise
+>     hot-add path.
+>   * The slot's initial state should be REGISTERED state if it's emtpy.
+>     Otherwise, the PCI devices behind the slot won't be populated properly
+>     in hot-add path.
+>   * PDC isn't reliable for hot-add on some machines. Introduce another
+>     device-tree property to disable it if required by (skiboot) firmware.
 >
->Michael, thanks for review. I would like to explain a bit more. The issue
->addressed by the patch is irrelevant to the number of NUMA nodes. There
->is one procfs entry ("/proc/sys/vm/zone_reclaim_mode") which corresponds
->to variable @node_reclaim_mode (their names don't match!). it can have
->belowing bits or any combination of them. Its default value is RECLAIM_OFF (0).
->Note RECLAIM_ZONE was obsoleted and I will send one patch to remove it
->later.
->
->#define RECLAIM_OFF 0
->#define RECLAIM_ZONE (1<<0)     /* Run shrink_inactive_list on the zone */
->#define RECLAIM_WRITE (1<<1)    /* Writeout pages during reclaim */
->#define RECLAIM_UNMAP (1<<2)    /* Unmap pages during reclaim */
->
->When @node_reclaim_mode is set to (RECLAIM_WRITE | RECLAIM_UNMAP), node_reclaim()
->isn't called on the preferred node as the condition is false: zone_allows_reclaim(
->node-A, node-A). As I observed, the distance from node-A to node-A is 10, equal to
->RECLAIM_DISTANCE.
->
->static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
->{
->        return node_distance(zone_to_nid(local_zone), zone_to_nid(zone)) <
->                                RECLAIM_DISTANCE;
->}
->
->
->__alloc_pages_nodemask
->   get_page_from_freelist     <- WATERMARK_LOW
->      zone_watermark_fast     <- Assume the allocation is breaking WATERMARK_LOW
->         node_reclaim         <- @node_reclaim_node isn't 0 and
->                                 zone_allows_reclaim(preferred_zone, current_zone) returns true
->         __node_reclaim       <- SWAP, WRITEPAGE and UNMAP setting from @node_reclaim_node
->         shrink_node
->      buffered_rmqueue
->   __alloc_pages_slowpath
->      get_page_from_freelist        <- WATERMARK_MIN
->      __alloc_pages_direct_compact  <- If it's costly allocation (order > 3)
->      wake_all_kswapds
->      get_page_from_freelist        <- NO_WATERMARK, CPU local node is set to preferred one
->      __alloc_pages_direct_reclaim
->         __perform_reclaim
->         try_to_free_pages          <- WRITEPAGE + UNMAP + SWAP
->         do_try_to_free_pages
->         shrink_zones               <- Stop until priority (12) reaches to 0 or reclaimed enough
->         shrink_node
->      __alloc_pages_direct_compact
->
->
->Also, RECLAIM_DISTANCE is set to 30 in include/linux/topology.h. It's used when arch
->doesn't provide one. It's why I set this macro to 30 in this patch. This issue is 
->introduced by commit 5f7a75acdb2 ("mm: page_alloc: do not cache reclaim distances").
->In the patch, it had wrong replacement. So I would correct the wrong replacement
->alternatively. Or both of them. Which way do you think is the best? Maybe Mel also
->has thoughts.
->
->     39  static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
->     40  {
->     41 -       return node_isset(local_zone->node, zone->zone_pgdat->reclaim_nodes);
->     42 -}
->     43 -
->     44 -static void __paginginit init_zone_allows_reclaim(int nid)
->     45 -{
->     46 -       int i;
->     47 -
->     48 -       for_each_node_state(i, N_MEMORY)
->     49 -               if (node_distance(nid, i) <= RECLAIM_DISTANCE)
->     50 -                       node_set(i, NODE_DATA(nid)->reclaim_nodes);
->     51 +       return node_distance(zone_to_nid(local_zone), zone_to_nid(zone)) <
->     52 +                               RECLAIM_DISTANCE;
->     53  }
+>Gavin Shan (3):
+>  drivers/pci/hotplug: Handle presence detection change properly
+>  drivers/pci/hotplug: Fix initial state for empty slot
+>  drivers/pci/hotplug: Mask PDC interrupt if required
 >
 
-Sorry, to make it clear. The patch replaced "<=" with "<" wrongly :)
+Michael, could you help to take a look when you have available time?
+I hope those 3 patches can be merged in next merge window, which seems
+to come pretty soon.
 
 Thanks,
 Gavin
+
+> arch/powerpc/include/asm/pnv-pci.h |  2 ++
+> drivers/pci/hotplug/pnv_php.c      | 49 +++++++++++++++++++++++++++++++-------
+> 2 files changed, 43 insertions(+), 8 deletions(-)
+>
+>-- 
+>2.7.4
+>
