@@ -1,21 +1,35 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCgd74mFmzDq99
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 09:18:19 +1100 (AEDT)
-Date: Wed, 1 Feb 2017 09:18:13 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: sjitindarsingh@gmail.com, benh@kernel.crashing.org, thuth@redhat.com,
- lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv2 00/11] KVM implementation of PAPR HPT resizing extension
-Message-ID: <20170131221813.GA3305@fergus.ozlabs.ibm.com>
-References: <20161220054907.9204-1-david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCghr1lXwzDq99
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 09:21:32 +1100 (AEDT)
+Received: by mail-wm0-x241.google.com with SMTP id u63so1348994wmu.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 14:21:32 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20161220054907.9204-1-david@gibson.dropbear.id.au>
+In-Reply-To: <04b96f50-f77d-9446-975f-7d44accfe583@linux.vnet.ibm.com>
+References: <148363729327.11570.6244765717789390817.stgit@hbathini.in.ibm.com>
+ <148363740554.11570.4870634597647436827.stgit@hbathini.in.ibm.com>
+ <20170106020324.GB2863@dhcp-128-65.nay.redhat.com>
+ <38a7807c-cd95-670d-30d3-c45e7921ea11@linux.vnet.ibm.com>
+ <0748026f-a459-9022-3658-a75cb0633f40@linux.vnet.ibm.com>
+ <CA+8MBb+g604VGLLibB+eOAtF_h1r5mYJRdjaGE8UgWQ+JPGDdg@mail.gmail.com>
+ <04b96f50-f77d-9446-975f-7d44accfe583@linux.vnet.ibm.com>
+From: Tony Luck <tony.luck@gmail.com>
+Date: Tue, 31 Jan 2017 14:21:27 -0800
+Message-ID: <CA+8MBbLP5TvmbDgbg6cvUCV+0hhXdYi546Rs-fEAoQjcotNXvw@mail.gmail.com>
+Subject: Re: [PATCH v4 2/5] ia64: reuse append_elf_note() and final_note()
+ functions
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: "Yu, Fenghua" <fenghua.yu@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Dave Young <dyoung@redhat.com>, kexec-ml <kexec@lists.infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ "vgoyal@redhat.com" <vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +39,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 20, 2016 at 04:48:56PM +1100, David Gibson wrote:
-> Here is the KVM implementation for the proposed PAPR extension which
-> allows the runtime resizing of a PAPR guest's Hashed Page Table (HPT).
-> 
-> Using this requires a guest kernel with support for the extension.
-> Patches for guest side support in Linux were posted earlier:
->   https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-December/152164.html
-> 
-> It also requires userspace (i.e. qemu) to intercept the HPT resizing
-> hypercalls and invoke the KVM ioctl()s to implement them.  This is
-> done instead of having KVM direclty intercept the hypercalls, so that
-> userspace can, if useful, impose additional restrictions on resizes:
-> for example it could refuse them entirely if policy for the VM
-> precludes resizing, or it could limit the size of HPT the guest can
-> request to meet resource limits.
-> 
-> Patches to implement the userspace part of HPT resizing are proposed
-> for qemu-2.9, and can be found at:
->   https://github.com/dgibson/qemu/tree/hpt-resize
-> 
-> I'm posting these now, in the hopes that both these and the
-> corresponding guest side patches can be staged and merged for the 4.11
-> window.
+On Wed, Jan 25, 2017 at 11:15 AM, Hari Bathini
+<hbathini@linux.vnet.ibm.com> wrote:
+> I haven't gotten a success/failure build report from zero-day. Not sure what
+> to make of it.
 
-Thanks, series applied to my kvm-ppc-next branch.
+zero-day is generally silent unless it sees a problem. So no news is good news.
 
-Next time, please cc kvm-ppc@vger.kernel.org so I shows up in
-patchwork and I don't miss it.
+> But I did try cross-compiling and it was successful. Should that do?
 
-Paul.
+I guess so. What tree do these apply to?  I tried 4.10-rc5 and "git am"
+protested ... but I didn't look closely as at why.
+
+-Tony
