@@ -2,9 +2,9 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCd0q1Cn6zDqCp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 07:20:11 +1100 (AEDT)
-Subject: [PATCH 1 2/4] PCI: iproc: Use of_device_get_match_data() to
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCd0y204czDqGW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 07:20:18 +1100 (AEDT)
+Subject: [PATCH 1 3/4] PCI: layerscape: Use of_device_get_match_data() to
  simplify probe
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: linux-pci@vger.kernel.org
@@ -18,8 +18,8 @@ Cc: Scott Branden <sbranden@broadcom.com>,
  linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com,
  Mingkai Hu <mingkai.hu@freescale.com>, Roy Zang <tie-fei.zang@freescale.com>,
  Shailendra Verma <shailendra.v@samsung.com>
-Date: Tue, 31 Jan 2017 14:20:06 -0600
-Message-ID: <20170131202006.27605.98823.stgit@bhelgaas-glaptop.roam.corp.google.com>
+Date: Tue, 31 Jan 2017 14:20:13 -0600
+Message-ID: <20170131202013.27605.44566.stgit@bhelgaas-glaptop.roam.corp.google.com>
 In-Reply-To: <20170131201400.27605.56002.stgit@bhelgaas-glaptop.roam.corp.google.com>
 References: <20170131201400.27605.56002.stgit@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
@@ -33,45 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The only way to call iproc_pcie_pltfm_probe() is to match an entry in
-iproc_pcie_of_match_table[], so match cannot be NULL.
+The only way to call ls_pcie_probe() is to match an entry in
+ls_pcie_of_match[], so match cannot be NULL.
 
-Use of_device_get_match_data() to retrieve the pcie->type.  No functional
-change intended.
+Use of_device_get_match_data() to retrieve the drvdata pointer.  No
+functional change intended.
 
 Based-on-suggestion-from: Geert Uytterhoeven <geert@linux-m68k.org>
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/host/pcie-iproc-platform.c |    7 +------
+ drivers/pci/host/pci-layerscape.c |    7 +------
  1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/pci/host/pcie-iproc-platform.c b/drivers/pci/host/pcie-iproc-platform.c
-index 22d814a78a78..f4909bb0b2ad 100644
---- a/drivers/pci/host/pcie-iproc-platform.c
-+++ b/drivers/pci/host/pcie-iproc-platform.c
-@@ -47,7 +47,6 @@ MODULE_DEVICE_TABLE(of, iproc_pcie_of_match_table);
- static int iproc_pcie_pltfm_probe(struct platform_device *pdev)
+diff --git a/drivers/pci/host/pci-layerscape.c b/drivers/pci/host/pci-layerscape.c
+index ea789138531b..c1f06f8f05fd 100644
+--- a/drivers/pci/host/pci-layerscape.c
++++ b/drivers/pci/host/pci-layerscape.c
+@@ -239,23 +239,18 @@ static int __init ls_add_pcie_port(struct ls_pcie *pcie)
+ static int __init ls_pcie_probe(struct platform_device *pdev)
  {
  	struct device *dev = &pdev->dev;
--	const struct of_device_id *of_id;
- 	struct iproc_pcie *pcie;
- 	struct device_node *np = dev->of_node;
- 	struct resource reg;
-@@ -55,16 +54,12 @@ static int iproc_pcie_pltfm_probe(struct platform_device *pdev)
- 	LIST_HEAD(res);
+-	const struct of_device_id *match;
+ 	struct ls_pcie *pcie;
+ 	struct pcie_port *pp;
+ 	struct resource *dbi_base;
  	int ret;
  
--	of_id = of_match_device(iproc_pcie_of_match_table, dev);
--	if (!of_id)
--		return -EINVAL;
+-	match = of_match_device(ls_pcie_of_match, dev);
+-	if (!match)
+-		return -ENODEV;
 -
  	pcie = devm_kzalloc(dev, sizeof(*pcie), GFP_KERNEL);
  	if (!pcie)
  		return -ENOMEM;
  
- 	pcie->dev = dev;
--	pcie->type = (enum iproc_pcie_type)of_id->data;
-+	pcie->type = (enum iproc_pcie_type) of_device_get_match_data(dev);
+ 	pp = &pcie->pp;
+ 	pp->dev = dev;
+-	pcie->drvdata = match->data;
++	pcie->drvdata = of_device_get_match_data(dev);
+ 	pp->ops = pcie->drvdata->ops;
  
- 	ret = of_address_to_resource(np, 0, &reg);
- 	if (ret < 0) {
+ 	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
