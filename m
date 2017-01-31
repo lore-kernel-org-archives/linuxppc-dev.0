@@ -2,19 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vC9nT3XWVzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 13:53:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCBlX2gVczDq74
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 14:37:12 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- ltc-virtual-io@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com
-Subject: Re: [PATCH V9 4/8] pseries/hotplug init: Convert new DRC memory
- property for hotplug runtime
-In-Reply-To: <148109488672.193207.10452460636222047460.stgit@powerkvm6.aus.stglabs.ibm.com>
-References: <148109469581.193207.1684012254014049364.stgit@powerkvm6.aus.stglabs.ibm.com>
- <148109488672.193207.10452460636222047460.stgit@powerkvm6.aus.stglabs.ibm.com>
-Date: Tue, 31 Jan 2017 13:53:46 +1100
-Message-ID: <87o9youeh1.fsf@concordia.ellerman.id.au>
+To: Christian Kujau <lists@nerdbynature.de>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH RFC] powerpc/32: fix handling of stack protector with
+ recent GCC
+In-Reply-To: <alpine.DEB.2.20.999.1701301611590.3270@trent.utfs.org>
+References: <20170116090031.4843668B50@localhost.localdomain>
+ <alpine.DEB.2.20.999.1701301611590.3270@trent.utfs.org>
+Date: Tue, 31 Jan 2017 14:37:11 +1100
+Message-ID: <87lgtrvr14.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,23 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+Christian Kujau <lists@nerdbynature.de> writes:
 
-> hotplug_init: Simplify the code needed for runtime memory hotplug and
-> maintenance with a conversion routine that transforms the compressed
-> property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-> within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
-> a single set of routines should be required at runtime to parse, edit,
-> and manipulate the memory representation in the device tree.  Similarly,
-> any userspace applications that need this information will only need
-> to recognize the older format to be able to continue to operate.
+> On Mon, 16 Jan 2017, Christophe Leroy wrote:
+>> Since 2005, powerpc GCC doesn't manage anymore __stack_chk_guard as
+>> a global variable but as some value located at -0x7008(r2)
 >
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> Is this still an "RFC" or is there a chance that this will land in 4.10?
 
-This is breaking the ppc64_defconfig build:
-
-  arch/powerpc/platforms/built-in.o: In function `.__machine_initcall_pseries_pseries_memory_hotplug_init':
-  hotplug-memory.c:(.init.text+0x8cdc): undefined reference to `.pseries_memory_block_size'
-
+No. I've reverted the stack protector support in my fixes branch (which
+is in linux-next), and it will go into 4.10 this week.
 
 cheers
