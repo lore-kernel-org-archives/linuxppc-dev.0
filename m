@@ -1,31 +1,21 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCV0X1rCxzDq9P
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 02:04:28 +1100 (AEDT)
-Date: Tue, 31 Jan 2017 08:56:54 -0600
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Miroslav Benes <mbenes@suse.cz>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4 14/15] livepatch: add /proc/<pid>/patch_state
-Message-ID: <20170131145654.hzbxahqr4rz6r5f2@treble>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
- <2c3b793fc23910f8fe15033b2b35e53b0b5dbaf3.1484839971.git.jpoimboe@redhat.com>
- <alpine.LSU.2.20.1701311518290.3719@pobox.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCYXc04z8zDq9d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 04:44:00 +1100 (AEDT)
+Received: by mail-pf0-x242.google.com with SMTP id f144so28948333pfa.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 09:43:59 -0800 (PST)
+Date: Tue, 31 Jan 2017 09:43:55 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/powermac: fix OF node refcount leak
+Message-ID: <20170131174355.GA25198@dtor-ws>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <alpine.LSU.2.20.1701311518290.3719@pobox.suse.cz>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,69 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 31, 2017 at 03:31:39PM +0100, Miroslav Benes wrote:
-> On Thu, 19 Jan 2017, Josh Poimboeuf wrote:
-> 
-> > Expose the per-task patch state value so users can determine which tasks
-> > are holding up completion of a patching operation.
-> > 
-> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> > Reviewed-by: Petr Mladek <pmladek@suse.com>
-> > Reviewed-by: Miroslav Benes <mbenes@suse.cz>
-> > ---
-> >  Documentation/filesystems/proc.txt | 18 ++++++++++++++++++
-> >  fs/proc/base.c                     | 15 +++++++++++++++
-> >  2 files changed, 33 insertions(+)
-> > 
-> > diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-> > index 72624a1..85c501b 100644
-> > --- a/Documentation/filesystems/proc.txt
-> > +++ b/Documentation/filesystems/proc.txt
-> > @@ -44,6 +44,7 @@ Table of Contents
-> >    3.8   /proc/<pid>/fdinfo/<fd> - Information about opened file
-> >    3.9   /proc/<pid>/map_files - Information about memory mapped files
-> >    3.10  /proc/<pid>/timerslack_ns - Task timerslack value
-> > +  3.11	/proc/<pid>/patch_state - Livepatch patch operation state
-> >  
-> >    4	Configuring procfs
-> >    4.1	Mount options
-> > @@ -1886,6 +1887,23 @@ Valid values are from 0 - ULLONG_MAX
-> >  An application setting the value must have PTRACE_MODE_ATTACH_FSCREDS level
-> >  permissions on the task specified to change its timerslack_ns value.
-> >  
-> > +3.11	/proc/<pid>/patch_state - Livepatch patch operation state
-> > +-----------------------------------------------------------------
-> > +When CONFIG_LIVEPATCH is enabled, this file displays the value of the
-> > +patch state for the task.
-> > +
-> > +A value of '-1' indicates that no patch is in transition.
-> > +
-> > +A value of '0' indicates that a patch is in transition and the task is
-> > +unpatched.  If the patch is being enabled, then the task hasn't been
-> > +patched yet.  If the patch is being disabled, then the task has already
-> > +been unpatched.
-> > +
-> > +A value of '1' indicates that a patch is in transition and the task is
-> > +patched.  If the patch is being enabled, then the task has already been
-> > +patched.  If the patch is being disabled, then the task hasn't been
-> > +unpatched yet.
-> > +
-> 
-> Despite my review I thought about this some more. I think the logic make 
-> sense internally but when exposed it can be confusing. We do not export 
-> klp_target_state value, so users have to know if a patch is being enabled 
-> or disabled. Of course, they should know that, but I guess they'd like to 
-> use an userspace tool for this. Such tool needs to look at 
-> /proc/<pid>/patch_state to find out which tasks are blocking the 
-> completion and that is it. No more information anywhere.
-> 
-> We can either export klp_target_state, or change /proc/<pid>/patch_state 
-> to show only two states - task is in transition (1), task is patched (0).
-> 
-> What do you think?
+We need to call of_node_put() for device nodes obtained with
+of_find_node_by_name().
 
-Isn't this information already available in
-/sys/kernel/livepatch/<patch>/{enabled,transition}?
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+---
+
+Found by visual inspection, not tested...
+
+ arch/powerpc/platforms/powermac/pic.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
+index f5f9ad7c3398..d3a9ab0dbcb1 100644
+--- a/arch/powerpc/platforms/powermac/pic.c
++++ b/arch/powerpc/platforms/powermac/pic.c
+@@ -604,6 +604,7 @@ static int pmacpic_find_viaint(void)
+ 	if (np == NULL)
+ 		goto not_found;
+ 	viaint = irq_of_parse_and_map(np, 0);
++	of_node_put(np);
+ 
+ not_found:
+ #endif /* CONFIG_ADB_PMU */
+-- 
+2.11.0.483.g087da7b7c-goog
+
 
 -- 
-Josh
+Dmitry
