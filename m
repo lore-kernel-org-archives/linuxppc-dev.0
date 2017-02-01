@@ -1,15 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL66Bn0zDqBl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL66BmZzDq5s
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:05:34 +1100 (AEDT)
-In-Reply-To: <1484023304-17244-1-git-send-email-alistair@popple.id.au>
-To: Alistair Popple <alistair@popple.id.au>
+In-Reply-To: <1476384330-22654-1-git-send-email-arbab@linux.vnet.ibm.com>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Alistair Popple <alistair@popple.id.au>
-Subject: Re: powerpc/powernv: Use OPAL call for TCE kill on NVLink2
-Message-Id: <3vClL56kqyz9t17@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/mm: simplify loop control in parse_numa_properties()
+Message-Id: <3vClL51GC1z9tjx@ozlabs.org>
 Date: Wed,  1 Feb 2017 12:05:33 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,17 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-01-10 at 04:41:44 UTC, Alistair Popple wrote:
-> Add detection of NPU2 PHBs. NPU2/NVLink2 has a different register
-> layout for the TCE kill register therefore TCE invalidation should be
-> done via the OPAL call rather than using the register directly as it
-> is for PHB3 and NVLink1. This changes TCE invalidation to use the OPAL
-> call in the case of a NPU2 PHB model.
+On Thu, 2016-10-13 at 18:45:30 UTC, Reza Arbab wrote:
+> The flow of the main loop in parse_numa_properties() is overly
+> complicated. Simplify it to be less confusing and easier to read.
+> No functional change.
 > 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/616badd2fb499320d3ac3b54462f55
+https://git.kernel.org/powerpc/c/7656cd8e8e23ac4b059f4d96939cb7
 
 cheers
