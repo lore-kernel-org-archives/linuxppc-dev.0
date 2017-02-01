@@ -2,18 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL527HpzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:05:33 +1100 (AEDT)
-In-Reply-To: <20170128154840.32468-1-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL66Bn0zDqBl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:05:34 +1100 (AEDT)
+In-Reply-To: <1484023304-17244-1-git-send-email-alistair@popple.id.au>
+To: Alistair Popple <alistair@popple.id.au>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm/hash: Properly mask the ESID bits when building
- proto-VSID
-Message-Id: <3vClL46b5vz9tk1@ozlabs.org>
-Date: Wed,  1 Feb 2017 12:05:32 +1100 (AEDT)
+Cc: linuxppc-dev@ozlabs.org, Alistair Popple <alistair@popple.id.au>
+Subject: Re: powerpc/powernv: Use OPAL call for TCE kill on NVLink2
+Message-Id: <3vClL56kqyz9t17@ozlabs.org>
+Date: Wed,  1 Feb 2017 12:05:33 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2017-01-28 at 15:48:40 UTC, "Aneesh Kumar K.V" wrote:
-> proto-vsid is built using both mmu context id and ESID. We should not have
-> overlapping bits between those. That will result in us having vsid
-> collision. With the current code we missed masking the top bits of effective
-> address. This implies for kernel address we ended up using the top 4 bits
-> as part of proto-vsid, which is wrong. For the kernel we should have the
-> below mapping
+On Tue, 2017-01-10 at 04:41:44 UTC, Alistair Popple wrote:
+> Add detection of NPU2 PHBs. NPU2/NVLink2 has a different register
+> layout for the TCE kill register therefore TCE invalidation should be
+> done via the OPAL call rather than using the register directly as it
+> is for PHB3 and NVLink1. This changes TCE invalidation to use the OPAL
+> call in the case of a NPU2 PHB model.
 > 
-> 0xf000000000000000 -> 0x7ffff  (19 bits context + 6 bits ESID ).
-> 
-> Without the patch we endup with
-> 0xf000000000000000 ->  0xf7ffff (0x7ffff | 0xf00000)
-> 
-> We didn't observe any issues till now possibly because we never end up
-> using a context value which could map to the same  VSID as kernel.
-> 
-> Fixes: c60ac5693c4 ("powerpc: Update kernel VSID range")
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/79270e0a3fd124388a0407f9edbd6a
+https://git.kernel.org/powerpc/c/616badd2fb499320d3ac3b54462f55
 
 cheers
