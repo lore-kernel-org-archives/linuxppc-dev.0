@@ -1,22 +1,21 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vD8dt06k6zDq61
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 04:05:37 +1100 (AEDT)
-Received: by mail-pg0-x241.google.com with SMTP id 75so34671774pgf.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Feb 2017 09:05:37 -0800 (PST)
-Message-ID: <1485968734.6360.154.camel@edumazet-glaptop3.roam.corp.google.com>
-Subject: [RFC] implement QUEUED spinlocks on powerpc
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Kevin Hao <haokexin@gmail.com>, Torsten
- Duwe <duwe@suse.de>, Eric Dumazet <edumazet@google.com>
-Date: Wed, 01 Feb 2017 09:05:34 -0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vD8gB0wcWzDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 04:06:46 +1100 (AEDT)
+Date: Wed, 1 Feb 2017 10:06:42 -0700
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH kernel] vfio/spapr: Fix missing mutex unlock when
+ creating a window
+Message-ID: <20170201100642.02d9c1e6@t450s.home>
+In-Reply-To: <20170201032616.23350-1-aik@ozlabs.ru>
+References: <20170201032616.23350-1-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all
+On Wed,  1 Feb 2017 14:26:16 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-Is anybody working on adding QUEUED spinlocks to powerpc 64bit ?
+> d9c728949ddc: "vfio/spapr: Postpone default window creation" added
+> an additional exit to the VFIO_IOMMU_SPAPR_TCE_CREATE case and made it
+> possible to return from tce_iommu_ioctl() without unlocking
+> container->lock; this fixes the issue.
+> 
+> Fixes: d9c728949ddc
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
 
-I've seen past attempts with ticket spinlocks
-( https://patchwork.ozlabs.org/patch/449381/ and other related links )
+Applies to for-linus branch for v4.10-rc7 w/ David's R-b.  Thanks,
 
-But it looks ticket spinlocks are a thing of the past.
-
-Thanks.
+Alex
+ 
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index 128d10282d16..7690e5bf3cf1 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -1123,12 +1123,11 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		mutex_lock(&container->lock);
+>  
+>  		ret = tce_iommu_create_default_window(container);
+> -		if (ret)
+> -			return ret;
+> -
+> -		ret = tce_iommu_create_window(container, create.page_shift,
+> -				create.window_size, create.levels,
+> -				&create.start_addr);
+> +		if (!ret)
+> +			ret = tce_iommu_create_window(container,
+> +					create.page_shift,
+> +					create.window_size, create.levels,
+> +					&create.start_addr);
+>  
+>  		mutex_unlock(&container->lock);
+>  
