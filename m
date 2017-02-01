@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL42kFYzDqBl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL44mkgzDq5s
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:05:32 +1100 (AEDT)
-In-Reply-To: <147733331174.26684.12646675491489853468.stgit@jupiter.in.ibm.com>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1481683011-12819-1-git-send-email-alistair@popple.id.au>
+To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [v2] powerpc/fadump: Fix the race in crash_fadump().
-Message-Id: <3vClL36DFMz9tJD@ozlabs.org>
-Date: Wed,  1 Feb 2017 12:05:31 +1100 (AEDT)
+Cc: stewart@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ Alistair Popple <alistair@popple.id.au>
+Subject: Re: [v3] powerpc/powernv: Initialise nest mmu
+Message-Id: <3vClL43Sr7z9tk2@ozlabs.org>
+Date: Wed,  1 Feb 2017 12:05:32 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-10-24 at 18:21:51 UTC, Mahesh Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Wed, 2016-12-14 at 02:36:51 UTC, Alistair Popple wrote:
+> POWER9 contains an off core mmu called the nest mmu (NMMU). This is
+> used by other hardware units on the chip to translate virtual
+> addresses into real addresses. The unit attempting an address
+> translation provides the majority of the context required for the
+> translation request except for the base address of the partition table
+> (ie. the PTCR) which needs to be programmed into the NMMU.
 > 
-> There are chances that multiple CPUs can call crash_fadump() simultaneously
-> and would start duplicating same info to vmcoreinfo ELF note section. This
-> causes makedumpfile to fail during kdump capture. One example is,
-> triggering dumprestart from HMC which sends system reset to all the CPUs at
-> once.
+> This patch adds a call to OPAL to set the PTCR for the nest mmu in
+> opal_init().
 > 
-> makedumpfile --dump-dmesg /proc/vmcore
-> read_vmcoreinfo_basic_info: Invalid data in /tmp/vmcoreinfoyjgxlL: CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971
-> makedumpfile Failed.
-> Running makedumpfile --dump-dmesg /proc/vmcore failed (1).
-> 
-> makedumpfile  -d 31 -l /proc/vmcore
-> read_vmcoreinfo_basic_info: Invalid data in /tmp/vmcoreinfo1mmVdO: CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971
-> makedumpfile Failed.
-> Running makedumpfile  -d 31 -l /proc/vmcore failed (1).
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f2a5e8f0023eba847ad2adb145b2f6
+https://git.kernel.org/powerpc/c/1d0761d2557d1540727723e4f05395
 
 cheers
