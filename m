@@ -1,22 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDFLc5gVrzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 07:37:44 +1100 (AEDT)
-Message-ID: <1485981445.4850.8.camel@kernel.crashing.org>
-Subject: Re: [RFC] implement QUEUED spinlocks on powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Kevin Hao <haokexin@gmail.com>, Torsten
- Duwe <duwe@suse.de>, Eric Dumazet <edumazet@google.com>, Pan Xinhui
- <xinhui.pan@linux.vnet.ibm.com>
-Date: Thu, 02 Feb 2017 07:37:25 +1100
-In-Reply-To: <1485968734.6360.154.camel@edumazet-glaptop3.roam.corp.google.com>
-References: <1485968734.6360.154.camel@edumazet-glaptop3.roam.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDFh12NDdzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 07:52:49 +1100 (AEDT)
+Date: Wed, 1 Feb 2017 21:52:44 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 00/15] livepatch: hybrid consistency model
+In-Reply-To: <20170201200243.zqxq6lmbjsr6in52@treble>
+Message-ID: <alpine.LSU.2.20.1702012145180.29670@pobox.suse.cz>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <20170201200243.zqxq6lmbjsr6in52@treble>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-02-01 at 09:05 -0800, Eric Dumazet wrote:
-> Hi all
+On Wed, 1 Feb 2017, Josh Poimboeuf wrote:
+
+> On Thu, Jan 19, 2017 at 09:46:08AM -0600, Josh Poimboeuf wrote:
+> > Here's v4, based on linux-next/master.  Mostly minor changes this time,
+> > primarily due to Petr's v3 comments.
 > 
-> Is anybody working on adding QUEUED spinlocks to powerpc 64bit ?
-> 
-> I've seen past attempts with ticket spinlocks
-> ( https://patchwork.ozlabs.org/patch/449381/ and other related links
-> )
-> 
-> But it looks ticket spinlocks are a thing of the past.
+> So far, the only review comments have been related to the first patch,
+> of which I just posted an updated version.
 
-Yes, we have a tentative implementation of qspinlock and pv variants:
+Yes, I'm really sorry about that. I'm going through the main patch of the 
+series (13/15) and it's slow to explore all details. I know Petr is in the 
+process too (and I think he has found some issues. He'll speak up.).
+ 
+> If there are no more comments, it would be great to get these patches in
+> for the 4.11 merge window.  Any objections to that?
 
-https://patchwork.ozlabs.org/patch/703139/
-https://patchwork.ozlabs.org/patch/703140/
-https://patchwork.ozlabs.org/patch/703141/
-https://patchwork.ozlabs.org/patch/703142/
-https://patchwork.ozlabs.org/patch/703143/
-https://patchwork.ozlabs.org/patch/703144/
+That would be nice but I don't think it's realistic. The merge window is 
+quite close and we still need to finish the review and get some Acks - 
+at least arch maintainers and PeterZ and/or Ingo for rq lock.
 
-Michael, what's the status with getting that merged ?
+It would be great to keep in next- for a while (one cycle) too.
 
-Cheers,
-Ben.
+Miroslav
