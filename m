@@ -2,21 +2,22 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCq0P3X6VzDqD7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 14:50:29 +1100 (AEDT)
-Date: Wed, 1 Feb 2017 14:39:59 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCrSm5qghzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 15:56:40 +1100 (AEDT)
+Date: Wed, 1 Feb 2017 15:56:36 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org
-Subject: Re: [PATCH kernel] vfio/spapr: Fix missing mutex unlock when
- creating a window
-Message-ID: <20170201033959.GL30639@umbus.fritz.box>
-References: <20170201032616.23350-1-aik@ozlabs.ru>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: sjitindarsingh@gmail.com, benh@kernel.crashing.org, thuth@redhat.com,
+ lvivier@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv2 00/11] KVM implementation of PAPR HPT resizing extension
+Message-ID: <20170201045636.GT30639@umbus.fritz.box>
+References: <20161220054907.9204-1-david@gibson.dropbear.id.au>
+ <20170131221813.GA3305@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="V3eawNQxI9TAjvgi"
-In-Reply-To: <20170201032616.23350-1-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="9r3HF47jptiQlX4s"
+In-Reply-To: <20170131221813.GA3305@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +28,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---V3eawNQxI9TAjvgi
+--9r3HF47jptiQlX4s
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 01, 2017 at 02:26:16PM +1100, Alexey Kardashevskiy wrote:
-> d9c728949ddc: "vfio/spapr: Postpone default window creation" added
-> an additional exit to the VFIO_IOMMU_SPAPR_TCE_CREATE case and made it
-> possible to return from tce_iommu_ioctl() without unlocking
-> container->lock; this fixes the issue.
+On Wed, Feb 01, 2017 at 09:18:13AM +1100, Paul Mackerras wrote:
+> On Tue, Dec 20, 2016 at 04:48:56PM +1100, David Gibson wrote:
+> > Here is the KVM implementation for the proposed PAPR extension which
+> > allows the runtime resizing of a PAPR guest's Hashed Page Table (HPT).
+> >=20
+> > Using this requires a guest kernel with support for the extension.
+> > Patches for guest side support in Linux were posted earlier:
+> >   https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-December/152164.=
+html
+> >=20
+> > It also requires userspace (i.e. qemu) to intercept the HPT resizing
+> > hypercalls and invoke the KVM ioctl()s to implement them.  This is
+> > done instead of having KVM direclty intercept the hypercalls, so that
+> > userspace can, if useful, impose additional restrictions on resizes:
+> > for example it could refuse them entirely if policy for the VM
+> > precludes resizing, or it could limit the size of HPT the guest can
+> > request to meet resource limits.
+> >=20
+> > Patches to implement the userspace part of HPT resizing are proposed
+> > for qemu-2.9, and can be found at:
+> >   https://github.com/dgibson/qemu/tree/hpt-resize
+> >=20
+> > I'm posting these now, in the hopes that both these and the
+> > corresponding guest side patches can be staged and merged for the 4.11
+> > window.
 >=20
-> Fixes: d9c728949ddc
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Thanks, series applied to my kvm-ppc-next branch.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Great.  Where can I grab that tree?
 
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index 128d10282d16..7690e5bf3cf1 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -1123,12 +1123,11 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		mutex_lock(&container->lock);
-> =20
->  		ret =3D tce_iommu_create_default_window(container);
-> -		if (ret)
-> -			return ret;
-> -
-> -		ret =3D tce_iommu_create_window(container, create.page_shift,
-> -				create.window_size, create.levels,
-> -				&create.start_addr);
-> +		if (!ret)
-> +			ret =3D tce_iommu_create_window(container,
-> +					create.page_shift,
-> +					create.window_size, create.levels,
-> +					&create.start_addr);
-> =20
->  		mutex_unlock(&container->lock);
-> =20
+> Next time, please cc kvm-ppc@vger.kernel.org so I shows up in
+> patchwork and I don't miss it.
+
+Sorry, I hadn't realized that list existed.  Noted for future
+reference.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -77,25 +75,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---V3eawNQxI9TAjvgi
+--9r3HF47jptiQlX4s
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJYkViNAAoJEGw4ysog2bOS3xUP/26cZ2M4eL6GzhddpoP1gH0E
-u+z3wy8ZXIy6vJtfKxOAvUE8PFYrSuknLLTvaFw58Q30rcxxNRkGCL8QlTi5ocOF
-In7Q4tfoeSQ4kpIp+oGJlePfjdAK5pFEKfGjX/MlTzbmZz8GiFpO4HkIIh9OiZWd
-4DYedWAPnUHjYgWxUoFkd39Jigjqa+2HOUAa5WdAiXz35xdVljoXR+t8SsUP6iXk
-u+HFhFHm4IYvLKuMXoBiUfBz0Em6AaODIZLWm2ZY1bGPZJjQc5fD34a/EW+9n2sY
-4QL0HJc2JnO3pOvtolZHOy5uryDmrtiakV8isB1q7fWZwICZh0rj33SEOzTDWHmW
-+Deu9GOmifgI5VWjSN3EXkBSsm01h2beXmYEoanZZhOtTCQmXVxLjSfcLeVntKoW
-OzATpNLcxEgT2AZ6CMGfeMko8T/LKQCVsu4Rbaaa5L3PV8sISppYuykU2aBskOdm
-yrZWQ0FLpD7dMK/IEmiqJx4uMy4o92Re03S0C7aulwMdpqLgCqC8ksWWZJvUeipa
-EfmZunaFaCvU8fyk2wfUE99qm2XRc2DoM4DuQGwLs+VvIal5DB4nYchn/9VFEnBV
-edqe5KiqAR8BJTJWRPJd836UO0U8aDXFKaCaJhyCyeJYT66bEBduiqsRmyeUVfSA
-8ATbyVs9avtnOSvCK2zk
-=iDgb
+iQIcBAEBCAAGBQJYkWp+AAoJEGw4ysog2bOS9LcP+QHPPJTo6FFkmiY7hp8UnN0u
+dW8xfpsRC81sv7OW2IjpRJ5w9GafMNO/g68n124y7Df68Dg4ql3N27BdfzP5cs8/
+JvU4F4BQGKwTMxzCrNK/OFif+mrYOmTCIEVIx+/QDZXLwI4FzxSHJ+eVT0IzXGyO
+mK2DauA9ujuaCHVYGqDpcqw0MRjqnHX4lRWL4FodYEy08NApHyc8+SdYqS5sS85v
+Y+DNSfbTwLV0KOY7PIBHi0liFqG1C035Mnp6obfgOg6HJwxrujDdmEK/G7FSFj72
+kTOdYSQKUkZA9dBd5Q5996XAkUzwVxS2GrtD2nKdm4fOV3LEBUEYlKqwvzG9UQw+
+ej5Eh7eLB4kjPbUeuQ1dd+IV/Ind0r3vMnpXZDxdkCNiPpQ1bjbf5jO+g0Lk2bQo
+glICTe07wEGRXml3mT58vvt/IOAk3W07VivqD8LUFveinr+p71pNpEE1VmcXW4nW
+W3sEBajb5Zydx6fg+ov4bUG5AyfRyt8XgNam2n6F01HHNmII7f2Q3GxM2Cjr2Gv2
+ESbvPUYdOl/SvfW4W6lhm53NBENyK6UV02FO2EiEiGKolSQh5ooVtSFTfoKIdy/E
+ixGw4XNLiWKUZgc5HXM5C6KgLIhItdkIk/t9+NbZQk0bm3/F8Po1bOcA0tv3VWTv
+qS45usV8RszC6KoU+qpp
+=IAgI
 -----END PGP SIGNATURE-----
 
---V3eawNQxI9TAjvgi--
+--9r3HF47jptiQlX4s--
