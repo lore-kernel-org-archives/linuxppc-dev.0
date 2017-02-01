@@ -1,21 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCsNT5jFwzDqDm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 16:38:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCsYk2yGyzDqCR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 16:46:02 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Paul Clarke <pc@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] powerpc/pseries: Dynamically increase RMA size
-In-Reply-To: <20160809171131.GA2329@us.ibm.com>
-References: <20160805061041.GA31857@us.ibm.com>
- <20160805061426.GB31857@us.ibm.com> <20160805183055.GA842@us.ibm.com>
- <aa4efc0a-1a12-5630-b8e4-752931bd9753@us.ibm.com>
- <20160809171131.GA2329@us.ibm.com>
-Date: Wed, 01 Feb 2017 16:37:58 +1100
-Message-ID: <87wpdatqrt.fsf@concordia.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+ "linux-arch\@vger.kernel.org" <linux-arch@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ dougmill@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [GIT PULL] percpu fix for v4.10-rc6
+In-Reply-To: <CA+55aFyiEO8o=1y_FaWjUr5C1JMCoN2h5aMJuPTG=7AexEZLLQ@mail.gmail.com>
+References: <20170131165537.GC23970@htj.duckdns.org>
+ <CA+55aFyiEO8o=1y_FaWjUr5C1JMCoN2h5aMJuPTG=7AexEZLLQ@mail.gmail.com>
+Date: Wed, 01 Feb 2017 16:46:01 +1100
+Message-ID: <87vasutqee.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,149 +27,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
-> Paul Clarke [pc@us.ibm.com] wrote:
-> ---
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+
+> On Tue, Jan 31, 2017 at 8:55 AM, Tejun Heo <tj@kernel.org> wrote:
+>>
+>> Douglas found and fixed a ref leak bug in percpu_ref_tryget[_live]().
+>> The bug is caused by storing the return value of
+>> atomic_long_inc_not_zero() into an int temp variable before returning
+>> it as a bool.  The interim cast to int loses the upper bits and can
+>> lead to false negatives.  As percpu_ref uses a high bit to mark a
+>> draining counter, this can happen relatively easily.  Fixed by using
+>> bool for the temp variable.
 >
-> From f9e9e8460206bc3fa7eaa741b9a2bde22870b9e0 Mon Sep 17 00:00:00 2001
-
-I know it's been a while but I think it would still be good to get this
-in a shape that we can merge it.
-
-Comments inline ...
-
-> From: root <sukadev@linux.vnet.ibm.com>
-> Date: Thu, 4 Aug 2016 23:13:37 -0400
-> Subject: [PATCH 2/2] powerpc/pseries: Dynamically grow RMA size
+> I think this fix is wrong.
 >
-> When booting a very large system with a large initrd we run out of space
-> for the flattened device tree (FDT). To fix this we must increase the
-> space allocated for the RMA region.
+> The fact is, atomic_long_inc_not_zero() shouldn't be returning
+> anything with high bits.. Casting to "int" should have absolutely no
+> impact. "int" is the traditional C truth value (with zero/nonzero
+> being false/true), and while we're generally moving towards "bool" for
+> true/false return values, I do think that code that assumes that these
+> functions can be cast to "int" are right.
 >
-> The RMA size is hard-coded in the 'ibm_architecture_vec[]' and increasing
-> the size there will apply to all systems, large and small, so we want to
-> increase the RMA region only when necessary.
+> For example, we used to have similar bugs in "test_bit()" returning
+> the actual bit value (which could be high).
 >
-> When we run out of room for the FDT, set a new OF property, 'ibm,new-rma-size'
-> to the new RMA size (512MB) and issue a client-architecture-support (CAS)
-> call to the firmware. This will initiate a system reboot. Upon reboot we
-> notice the new property and update the RMA size accordingly.
+> And when users hit that problem, we fixed "test_bit()", not the users of it.
 >
-> Fix suggested by Michael Ellerman.
+> So I'd rather fix the places that (insanely) return a 64-bit value.
 >
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index f612a99..d1aaeda 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -87,6 +87,9 @@
->  int of_workarounds;
->  #endif
->  
-> +#define IBM_NEW_RMA_SIZE_PROP	"ibm,new-rma-size"
-> +#define IBM_NEW_RMA_SIZE_STR	"512"
+> Is this purely a ppc64 issue, or does it happen somewhere else too?
 
-The property name should really start with "linux,", as it's a Linux
-property, not used by firmware at all.
+Sorry I'm late to this, I wasn't Cc'ed on the original patch.
 
-And does it need to contain a value? Just its existence is a flag that
-we want to increase the RMA size.
+It looks like this is only a powerpc issue, we're the only arch other
+than x86-32 that implements atomic_long_inc_not_zero() by hand (not
+using atomic64_add_unless()).
 
-So it could just be called "linux,increase-rma-size".
+Assuming all other arches have an atomic64_add_unless() which returns
+an int then they should all be safe.
 
-And we don't need a #define for the name, it's not going to change once
-the code is in, and a #define just obscures the actual name.
-
-> @@ -898,6 +910,42 @@ static void fixup_nr_cores(void)
->  		ptcores[1] = (cores >> 16) & 0xff;
->  		ptcores[2] = (cores >> 8) & 0xff;
->  		ptcores[3] = cores & 0xff;
-> +		fixup_nr_cores_done = true;
-
-That code has changed upstream, so that won't apply. But that's OK, I
-don't think we need to do it anyway.
-
-> +static void __init fixup_rma_size(void)
-> +{
-> +	int rc;
-> +	u64 size;
-> +	unsigned char *min_rmap;
-> +	phandle optnode;
-> +	char str[64];
-> +
-> +	optnode = call_prom("finddevice", 1, 1, ADDR("/options"));
-> +	if (!PHANDLE_VALID(optnode))
-> +		prom_panic("Cannot find /options");
-> +
-> +	/*
-> +	 * If a prior boot specified a new RMA size, use that size in
-> +	 * ibm_architecture_vec[]. See also increase_rma_size().
-> +	 */
-> +	size = 0ULL;
-> +	memset(str, 0, sizeof(str));
-> +	rc = prom_getprop(optnode, IBM_NEW_RMA_SIZE_PROP, &str, sizeof(str));
-> +	if (rc <= 0)
-> +		return;
-
-So this can just become something like:
-
-	rc = prom_getprop(optnode, "linux,increase-rma-size", NULL, 0)
-	if (rc == PROM_ERROR)
-        	return;
-                
-	val = be32_to_cpu(ibm_architecture_vec.vec2.min_rma);
-	ibm_architecture_vec.vec2.min_rma = cpu_to_be32(val * 2);
-
-> @@ -946,6 +996,49 @@ static void __init prom_send_capabilities(void)
->  	}
->  #endif /* __BIG_ENDIAN__ */
->  }
-> +
-> +static void __init increase_rma_size(void)
-> +{
-> +	int rc, len;
-> +	char str[64];
-> +	phandle optnode;
-> +
-> +	optnode = call_prom("finddevice", 1, 1, ADDR("/options"));
-> +	if (!PHANDLE_VALID(optnode))
-> +		prom_panic("Cannot find /options");
-> +
-> +	/*
-> +	 * If we already increased the RMA size, return.
-> +	 */
-> +	memset(str, 0, sizeof(str));
-> +	rc = prom_getprop(optnode, IBM_NEW_RMA_SIZE_PROP, &str, sizeof(str));
-> +
-> +	if (!strcmp(str, IBM_NEW_RMA_SIZE_STR)) {
-> +		prom_printf("RMA size already at %.3s.\n", str);
-> +		return;
-> +	}
-> +	/*
-> +	 * Otherwise, set the ibm,new-rma-size property and initiate a CAS
-> +	 * reboot so the RMA size can take effect. See also init_rma_size().
-> +	 */
-> +	len = strlen(IBM_NEW_RMA_SIZE_STR) + 1;
-> +	memcpy(str, IBM_NEW_RMA_SIZE_STR, len);
-> +
-> +	prom_printf("Setting %s property to %s\n", IBM_NEW_RMA_SIZE_PROP, str);
-> +	rc = prom_setprop(optnode, "/options", IBM_NEW_RMA_SIZE_PROP, str, len);
-
-We should check rc there shouldn't we?
-
-Again that code can be simpler if the property is just a flag.
-
-> +	/* Force a reboot. Will work only if ibm,fw-override-cas==false */
-> +	prom_send_capabilities();
-> +
-> +	prom_printf("No CAS initiated reboot? Try setting ibm,fw-override-cas to 'false' in Open Firmware\n");
-
-I'm not sure if we want to be referring to ibm,fw-override-case. I don't
-thing it's a documented property (not in PAPR anyway), and it's
-certainly IBM PFW specific even if it is.
-
-I know for a fact that on KVM you won't get rebooted here, so I think if
-the CAS returns we should just reboot directly.
+Actually we have a test suite for atomic64. The patch below adds a check
+which catches the problem on powerpc at the moment, and passes once I
+change our version to return an int. I'll turn it into a proper patch
+and send it to whoever maintains the tests.
 
 cheers
+
+
+diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
+index 46042901130f..813cd05bec9d 100644
+--- a/lib/atomic64_test.c
++++ b/lib/atomic64_test.c
+@@ -152,8 +152,10 @@ static __init void test_atomic64(void)
+ 	long long v0 = 0xaaa31337c001d00dLL;
+ 	long long v1 = 0xdeadbeefdeafcafeLL;
+ 	long long v2 = 0xfaceabadf00df001LL;
++	long long v3 = 0x8000000000000000LL;
+ 	long long onestwos = 0x1111111122222222LL;
+ 	long long one = 1LL;
++	int r_int;
+ 
+ 	atomic64_t v = ATOMIC64_INIT(v0);
+ 	long long r = v0;
+@@ -239,6 +241,11 @@ static __init void test_atomic64(void)
+ 	BUG_ON(!atomic64_inc_not_zero(&v));
+ 	r += one;
+ 	BUG_ON(v.counter != r);
++
++	/* Confirm the return value fits in an int, even if the value doesn't */
++	INIT(v3);
++	r_int = atomic64_inc_not_zero(&v);
++	BUG_ON(!r_int);
+ }
+ 
+ static __init int test_atomics(void)
