@@ -1,30 +1,20 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDFsx4zR4zDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 08:01:25 +1100 (AEDT)
-Date: Wed, 1 Feb 2017 22:01:20 +0100 (CET)
-From: Jiri Kosina <jikos@kernel.org>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Miroslav Benes <mbenes@suse.cz>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4 00/15] livepatch: hybrid consistency model
-In-Reply-To: <20170201200243.zqxq6lmbjsr6in52@treble>
-Message-ID: <alpine.LSU.2.20.1702012154240.4763@cbobk.fhfr.pm>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
- <20170201200243.zqxq6lmbjsr6in52@treble>
+Return-Path: <shailendras@nvidia.com>
+Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDJSJ4vC1zDq5Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 09:57:52 +1100 (AEDT)
+From: Shailendra Singh <shailendras@nvidia.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <jk@ozlabs.org>,
+ <shailendras@nvidia.com>, <apopple@au1.ibm.com>, <balbirs@au1.ibm.com>,
+ <aritger@nvidia.com>, <jhubbard@nvidia.com>, <scheung@nvidia.com>,
+ <amanjunatha@nvidia.com>, <jmckenna@nvidia.com>
+Subject: [PATCH] powerpc: Fix inconsistent of_node_to_nid EXPORT_SYMBOL
+ handling
+Date: Wed, 1 Feb 2017 14:52:42 -0800
+Message-ID: <1485989562-16741-1-git-send-email-shailendras@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,26 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Feb 2017, Josh Poimboeuf wrote:
+The generic implementation of of_node_to_nid is EXPORT_SYMBOL.
 
-> If there are no more comments, it would be great to get these patches in 
-> for the 4.11 merge window.  Any objections to that?
+The powerpc implementation added by following commit is EXPORT_SYMBOL_GPL.
+commit 953039c8df7b ("[PATCH] powerpc: Allow devices to register with numa
+topology")
 
-That'd mean that the exposure in -next would be really short, which I'd 
-like to avoid. I'd love to tentatively target 4.12 though (I personally am 
-still far from being done with reviewing the patchset myself, thanks a lot 
-to Peter and Miroslav for doing all the heavy lifting on this front so 
-far).
+This creates an inconsistency for of_node_to_nid callers across
+architectures.
 
-More importantly though, we're still missing quite some Acks from 
-subsystem/arch maintainers. Namely, I'd really appreciate Acks for patches 
-touching sched/idle.c and s390/x86/ppc arch specific bits from the 
-respective maintainers.
+Update the powerpc implementation to be exported consistently with the
+generic implementation.
 
-Peter, Ingo, Heiko, Michael, please?
+Signed-off-by: Shailendra Singh <shailendras@nvidia.com>
 
-Thanks,
+Reviewed-by: Andy Ritger <aritger@nvidia.com>
+---
+ arch/powerpc/mm/numa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index b1099cb2f393..8aa4ca3c84c9 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -290,7 +290,7 @@ int of_node_to_nid(struct device_node *device)
+ 
+ 	return nid;
+ }
+-EXPORT_SYMBOL_GPL(of_node_to_nid);
++EXPORT_SYMBOL(of_node_to_nid);
+ 
+ static int __init find_min_common_depth(void)
+ {
 -- 
-Jiri Kosina
-SUSE Labs
+2.4.11
