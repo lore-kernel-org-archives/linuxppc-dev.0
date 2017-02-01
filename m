@@ -2,14 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL24YWDzDq5s
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL274cSzDqBl
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:05:30 +1100 (AEDT)
-In-Reply-To: <20170130071157.22677-1-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1484593666-8001-2-git-send-email-arbab@linux.vnet.ibm.com>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] powerpc: Move isa bridge definitions to separate include
-Message-Id: <3vClL23VbSz9t17@ozlabs.org>
+Cc: Alistair Popple <apopple@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [v5,1/4] powerpc/mm: refactor radix physical page mapping
+Message-Id: <3vClL253XTz9t2G@ozlabs.org>
 Date: Wed,  1 Feb 2017 12:05:30 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,14 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-01-30 at 07:11:55 UTC, Benjamin Herrenschmidt wrote:
-> We'll be adding non-PCI isa bridge support so let's not
-> have all the definition in pci-bridge.h
+On Mon, 2017-01-16 at 19:07:43 UTC, Reza Arbab wrote:
+> Move the page mapping code in radix_init_pgtable() into a separate
+> function that will also be used for memory hotplug.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> The current goto loop progressively decreases its mapping size as it
+> covers the tail of a range whose end is unaligned. Change this to a for
+> loop which can do the same for both ends of the range.
+> 
+> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/38e9d36bc149932964dcd25818c7f7
+https://git.kernel.org/powerpc/c/b5200ec9edf038459619fce9988842
 
 cheers
