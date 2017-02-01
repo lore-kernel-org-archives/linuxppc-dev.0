@@ -1,18 +1,32 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL66BmZzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:05:34 +1100 (AEDT)
-In-Reply-To: <1476384330-22654-1-git-send-email-arbab@linux.vnet.ibm.com>
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/mm: simplify loop control in parse_numa_properties()
-Message-Id: <3vClL51GC1z9tjx@ozlabs.org>
-Date: Wed,  1 Feb 2017 12:05:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vClSz4LnwzDqb7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:11:31 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tony Luck <tony.luck@gmail.com>, Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: "Yu\, Fenghua" <fenghua.yu@intel.com>,
+ "linux-ia64\@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Dave Young <dyoung@redhat.com>, kexec-ml <kexec@lists.infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org,
+ "vgoyal\@redhat.com" <vgoyal@redhat.com>
+Subject: Re: [PATCH v4 2/5] ia64: reuse append_elf_note() and final_note()
+ functions
+In-Reply-To: <CA+8MBbLP5TvmbDgbg6cvUCV+0hhXdYi546Rs-fEAoQjcotNXvw@mail.gmail.com>
+References: <148363729327.11570.6244765717789390817.stgit@hbathini.in.ibm.com>
+ <148363740554.11570.4870634597647436827.stgit@hbathini.in.ibm.com>
+ <20170106020324.GB2863@dhcp-128-65.nay.redhat.com>
+ <38a7807c-cd95-670d-30d3-c45e7921ea11@linux.vnet.ibm.com>
+ <0748026f-a459-9022-3658-a75cb0633f40@linux.vnet.ibm.com>
+ <CA+8MBb+g604VGLLibB+eOAtF_h1r5mYJRdjaGE8UgWQ+JPGDdg@mail.gmail.com>
+ <04b96f50-f77d-9446-975f-7d44accfe583@linux.vnet.ibm.com>
+ <CA+8MBbLP5TvmbDgbg6cvUCV+0hhXdYi546Rs-fEAoQjcotNXvw@mail.gmail.com>
+Date: Wed, 01 Feb 2017 12:11:28 +1100
+Message-ID: <874m0evhof.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +36,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-10-13 at 18:45:30 UTC, Reza Arbab wrote:
-> The flow of the main loop in parse_numa_properties() is overly
-> complicated. Simplify it to be less confusing and easier to read.
-> No functional change.
-> 
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+Tony Luck <tony.luck@gmail.com> writes:
 
-Applied to powerpc next, thanks.
+> On Wed, Jan 25, 2017 at 11:15 AM, Hari Bathini
+> <hbathini@linux.vnet.ibm.com> wrote:
+>> I haven't gotten a success/failure build report from zero-day. Not sure what
+>> to make of it.
+>
+> zero-day is generally silent unless it sees a problem. So no news is good news.
+>
+>> But I did try cross-compiling and it was successful. Should that do?
+>
+> I guess so. What tree do these apply to?  I tried 4.10-rc5 and "git am"
+> protested ... but I didn't look closely as at why.
 
-https://git.kernel.org/powerpc/c/7656cd8e8e23ac4b059f4d96939cb7
+Don't worry about it, I do an ia64_defconfig build as part of my usual
+tests before pushing.
 
 cheers
