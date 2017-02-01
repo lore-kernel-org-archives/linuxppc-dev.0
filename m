@@ -1,37 +1,31 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDB5b5qJzzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 05:11:15 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v11I46SO048585
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Feb 2017 13:11:12 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28bbuqy93m-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Feb 2017 13:11:12 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 1 Feb 2017 11:11:10 -0700
-Date: Wed, 1 Feb 2017 10:11:03 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Clarke <pc@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] powerpc/pseries: Dynamically increase RMA size
-References: <20160805061041.GA31857@us.ibm.com>
- <20160809171131.GA2329@us.ibm.com>
- <87wpdatqrt.fsf@concordia.ellerman.id.au>
- <2499748.LKgOIUjhgo@morokweng>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDDSX1whCzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 06:57:47 +1100 (AEDT)
+Date: Wed, 1 Feb 2017 13:57:40 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>
+Cc: linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v4.1 01/15] stacktrace/x86: add function for detecting
+ reliable stack traces
+Message-ID: <20170201195740.km6kob5w3rmga5zh@treble>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2499748.LKgOIUjhgo@morokweng>
-Message-Id: <20170201181103.GA30729@us.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,12 +35,283 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thiago Jung Bauermann [bauerman@linux.vnet.ibm.com] wrote:
-> Instead of this method of trying a small RMA size and rebooting to try a 
-> bigger size, could the "min RMA percentage of total RAM" field of the 
-> ibm_architecture_vec be used?
+For live patching and possibly other use cases, a stack trace is only
+useful if it can be assured that it's completely reliable.  Add a new
+save_stack_trace_tsk_reliable() function to achieve that.
 
-We tried that and concluded that even 1% could end up reserving a lot of
-memory on systems with lot of memory.
+Note that if the target task isn't the current task, and the target task
+is allowed to run, then it could be writing the stack while the unwinder
+is reading it, resulting in possible corruption.  So the caller of
+save_stack_trace_tsk_reliable() must ensure that the task is either
+'current' or inactive.
 
-Sukadev
+save_stack_trace_tsk_reliable() relies on the x86 unwinder's detection
+of pt_regs on the stack.  If the pt_regs are not user-mode registers
+from a syscall, then they indicate an in-kernel interrupt or exception
+(e.g. preemption or a page fault), in which case the stack is considered
+unreliable due to the nature of frame pointers.
+
+It also relies on the x86 unwinder's detection of other issues, such as:
+
+- corrupted stack data
+- stack grows the wrong way
+- stack walk doesn't reach the bottom
+- user didn't provide a large enough entries array
+
+Such issues are reported by checking unwind_error() and !unwind_done().
+
+Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
+determine at build time whether the function is implemented.
+
+Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+---
+v4.1 changes:
+- return -EINVAL in __save_stack_trace_reliable()
+- only call show_stack() once
+- add save_stack_trace_tsk_reliable() define for !CONFIG_STACKTRACE
+
+ arch/Kconfig                   |  6 +++
+ arch/x86/Kconfig               |  1 +
+ arch/x86/include/asm/unwind.h  |  6 +++
+ arch/x86/kernel/stacktrace.c   | 96 +++++++++++++++++++++++++++++++++++++++++-
+ arch/x86/kernel/unwind_frame.c |  2 +
+ include/linux/stacktrace.h     |  9 ++--
+ kernel/stacktrace.c            | 12 +++++-
+ 7 files changed, 126 insertions(+), 6 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 4c17d9d..dff6ebc 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -748,6 +748,12 @@ config HAVE_STACK_VALIDATION
+ 	  Architecture supports the 'objtool check' host tool command, which
+ 	  performs compile-time stack metadata validation.
+ 
++config HAVE_RELIABLE_STACKTRACE
++	bool
++	help
++	  Architecture has a save_stack_trace_tsk_reliable() function which
++	  only returns a stack trace if it can guarantee the trace is reliable.
++
+ config HAVE_ARCH_HASH
+ 	bool
+ 	default n
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 9e5d3fe..76ca3eb 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -157,6 +157,7 @@ config X86
+ 	select HAVE_PERF_REGS
+ 	select HAVE_PERF_USER_STACK_DUMP
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
++	select HAVE_RELIABLE_STACKTRACE		if X86_64 && FRAME_POINTER && STACK_VALIDATION
+ 	select HAVE_STACK_VALIDATION		if X86_64
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_UNSTABLE_SCHED_CLOCK
+diff --git a/arch/x86/include/asm/unwind.h b/arch/x86/include/asm/unwind.h
+index 6fa75b1..137e9cce 100644
+--- a/arch/x86/include/asm/unwind.h
++++ b/arch/x86/include/asm/unwind.h
+@@ -11,6 +11,7 @@ struct unwind_state {
+ 	unsigned long stack_mask;
+ 	struct task_struct *task;
+ 	int graph_idx;
++	bool error;
+ #ifdef CONFIG_FRAME_POINTER
+ 	unsigned long *bp, *orig_sp;
+ 	struct pt_regs *regs;
+@@ -40,6 +41,11 @@ void unwind_start(struct unwind_state *state, struct task_struct *task,
+ 	__unwind_start(state, task, regs, first_frame);
+ }
+ 
++static inline bool unwind_error(struct unwind_state *state)
++{
++	return state->error;
++}
++
+ #ifdef CONFIG_FRAME_POINTER
+ 
+ static inline
+diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
+index 0653788..c5490d9 100644
+--- a/arch/x86/kernel/stacktrace.c
++++ b/arch/x86/kernel/stacktrace.c
+@@ -74,6 +74,101 @@ void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
+ }
+ EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+ 
++#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
++
++#define STACKTRACE_DUMP_ONCE(task) ({				\
++	static bool __section(.data.unlikely) __dumped;		\
++								\
++	if (!__dumped) {					\
++		__dumped = true;				\
++		WARN_ON(1);					\
++		show_stack(task, NULL);				\
++	}							\
++})
++
++static int __save_stack_trace_reliable(struct stack_trace *trace,
++				       struct task_struct *task)
++{
++	struct unwind_state state;
++	struct pt_regs *regs;
++	unsigned long addr;
++
++	for (unwind_start(&state, task, NULL, NULL); !unwind_done(&state);
++	     unwind_next_frame(&state)) {
++
++		regs = unwind_get_entry_regs(&state);
++		if (regs) {
++			/*
++			 * Kernel mode registers on the stack indicate an
++			 * in-kernel interrupt or exception (e.g., preemption
++			 * or a page fault), which can make frame pointers
++			 * unreliable.
++			 */
++			if (!user_mode(regs))
++				return -EINVAL;
++
++			/*
++			 * The last frame contains the user mode syscall
++			 * pt_regs.  Skip it and finish the unwind.
++			 */
++			unwind_next_frame(&state);
++			if (!unwind_done(&state)) {
++				STACKTRACE_DUMP_ONCE(task);
++				return -EINVAL;
++			}
++			break;
++		}
++
++		addr = unwind_get_return_address(&state);
++
++		/*
++		 * A NULL or invalid return address probably means there's some
++		 * generated code which __kernel_text_address() doesn't know
++		 * about.
++		 */
++		if (!addr) {
++			STACKTRACE_DUMP_ONCE(task);
++			return -EINVAL;
++		}
++
++		if (save_stack_address(trace, addr, false))
++			return -EINVAL;
++	}
++
++	/* Check for stack corruption */
++	if (unwind_error(&state)) {
++		STACKTRACE_DUMP_ONCE(task);
++		return -EINVAL;
++	}
++
++	if (trace->nr_entries < trace->max_entries)
++		trace->entries[trace->nr_entries++] = ULONG_MAX;
++
++	return 0;
++}
++
++/*
++ * This function returns an error if it detects any unreliable features of the
++ * stack.  Otherwise it guarantees that the stack trace is reliable.
++ *
++ * If the task is not 'current', the caller *must* ensure the task is inactive.
++ */
++int save_stack_trace_tsk_reliable(struct task_struct *tsk,
++				  struct stack_trace *trace)
++{
++	int ret;
++
++	if (!try_get_task_stack(tsk))
++		return -EINVAL;
++
++	ret = __save_stack_trace_reliable(trace, tsk);
++
++	put_task_stack(tsk);
++
++	return ret;
++}
++#endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
++
+ /* Userspace stacktrace - based on kernel/trace/trace_sysprof.c */
+ 
+ struct stack_frame_user {
+@@ -136,4 +231,3 @@ void save_stack_trace_user(struct stack_trace *trace)
+ 	if (trace->nr_entries < trace->max_entries)
+ 		trace->entries[trace->nr_entries++] = ULONG_MAX;
+ }
+-
+diff --git a/arch/x86/kernel/unwind_frame.c b/arch/x86/kernel/unwind_frame.c
+index 23d1556..b15563d 100644
+--- a/arch/x86/kernel/unwind_frame.c
++++ b/arch/x86/kernel/unwind_frame.c
+@@ -223,6 +223,8 @@ bool unwind_next_frame(struct unwind_state *state)
+ 	return true;
+ 
+ bad_address:
++	state->error = true;
++
+ 	/*
+ 	 * When unwinding a non-current task, the task might actually be
+ 	 * running on another CPU, in which case it could be modifying its
+diff --git a/include/linux/stacktrace.h b/include/linux/stacktrace.h
+index 0a34489..4205f71 100644
+--- a/include/linux/stacktrace.h
++++ b/include/linux/stacktrace.h
+@@ -18,6 +18,8 @@ extern void save_stack_trace_regs(struct pt_regs *regs,
+ 				  struct stack_trace *trace);
+ extern void save_stack_trace_tsk(struct task_struct *tsk,
+ 				struct stack_trace *trace);
++extern int save_stack_trace_tsk_reliable(struct task_struct *tsk,
++					 struct stack_trace *trace);
+ 
+ extern void print_stack_trace(struct stack_trace *trace, int spaces);
+ extern int snprint_stack_trace(char *buf, size_t size,
+@@ -29,12 +31,13 @@ extern void save_stack_trace_user(struct stack_trace *trace);
+ # define save_stack_trace_user(trace)              do { } while (0)
+ #endif
+ 
+-#else
++#else /* !CONFIG_STACKTRACE */
+ # define save_stack_trace(trace)			do { } while (0)
+ # define save_stack_trace_tsk(tsk, trace)		do { } while (0)
+ # define save_stack_trace_user(trace)			do { } while (0)
+ # define print_stack_trace(trace, spaces)		do { } while (0)
+ # define snprint_stack_trace(buf, size, trace, spaces)	do { } while (0)
+-#endif
++# define save_stack_trace_tsk_reliable(tsk, trace)	({ -ENOSYS; })
++#endif /* CONFIG_STACKTRACE */
+ 
+-#endif
++#endif /* __LINUX_STACKTRACE_H */
+diff --git a/kernel/stacktrace.c b/kernel/stacktrace.c
+index b6e4c16..4ef81dc 100644
+--- a/kernel/stacktrace.c
++++ b/kernel/stacktrace.c
+@@ -58,8 +58,8 @@ int snprint_stack_trace(char *buf, size_t size,
+ EXPORT_SYMBOL_GPL(snprint_stack_trace);
+ 
+ /*
+- * Architectures that do not implement save_stack_trace_tsk or
+- * save_stack_trace_regs get this weak alias and a once-per-bootup warning
++ * Architectures that do not implement save_stack_trace_*()
++ * get these weak aliases and once-per-bootup warnings
+  * (whenever this facility is utilized - for example by procfs):
+  */
+ __weak void
+@@ -73,3 +73,11 @@ save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
+ {
+ 	WARN_ONCE(1, KERN_INFO "save_stack_trace_regs() not implemented yet.\n");
+ }
++
++__weak int
++save_stack_trace_tsk_reliable(struct task_struct *tsk,
++			      struct stack_trace *trace)
++{
++	WARN_ONCE(1, KERN_INFO "save_stack_tsk_reliable() not implemented yet.\n");
++	return -ENOSYS;
++}
+-- 
+2.7.4
