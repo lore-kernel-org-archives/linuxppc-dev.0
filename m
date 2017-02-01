@@ -1,23 +1,32 @@
-Return-Path: <hmurray@megapathdsl.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCwSJ5LL7zDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 18:56:32 +1100 (AEDT)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Hal Murray <hmurray@megapathdsl.net>,
- Hugh Blemings <hugh@blemings.org>, linuxppc-dev@ozlabs.org,
- devel@ntpsec.org, Paul Mackerras <paulus@ozlabs.org>,
- Michael Ellerman <michael@ellerman.id.au>
-From: Hal Murray <hmurray@megapathdsl.net>
-Subject: Re: Timekeeping oddities on MacMini G4s
-In-Reply-To: Message from Benjamin Herrenschmidt <benh@kernel.crashing.org>
- of "Wed,
- 01 Feb 2017 18:13:26 +1100." <1485933206.2953.19.camel@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Tue, 31 Jan 2017 23:56:30 -0800
-Message-Id: <20170201075630.3E8FB406061@ip-64-139-1-69.sjc.megapath.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCxlq097MzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 19:55:02 +1100 (AEDT)
+Date: Wed, 1 Feb 2017 09:54:55 +0100 (CET)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 14/15] livepatch: add /proc/<pid>/patch_state
+In-Reply-To: <20170131145654.hzbxahqr4rz6r5f2@treble>
+Message-ID: <alpine.LSU.2.20.1702010951520.24423@pobox.suse.cz>
+References: <cover.1484839971.git.jpoimboe@redhat.com>
+ <2c3b793fc23910f8fe15033b2b35e53b0b5dbaf3.1484839971.git.jpoimboe@redhat.com>
+ <alpine.LSU.2.20.1701311518290.3719@pobox.suse.cz>
+ <20170131145654.hzbxahqr4rz6r5f2@treble>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +36,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 31 Jan 2017, Josh Poimboeuf wrote:
 
-benh@kernel.crashing.org said:
-> Ok, I do have one though somewhere with OS X on it. If you give me
-> instructions on how to test (I know near to nothing about ntpsec), I should
-> be able to compile and run it.
+> On Tue, Jan 31, 2017 at 03:31:39PM +0100, Miroslav Benes wrote:
+> > On Thu, 19 Jan 2017, Josh Poimboeuf wrote:
+> > 
+> > > Expose the per-task patch state value so users can determine which tasks
+> > > are holding up completion of a patching operation.
+> > > 
+> > > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > > Reviewed-by: Petr Mladek <pmladek@suse.com>
+> > > Reviewed-by: Miroslav Benes <mbenes@suse.cz>
+> > > ---
+> > >  Documentation/filesystems/proc.txt | 18 ++++++++++++++++++
+> > >  fs/proc/base.c                     | 15 +++++++++++++++
+> > >  2 files changed, 33 insertions(+)
+> > > 
+> > > diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+> > > index 72624a1..85c501b 100644
+> > > --- a/Documentation/filesystems/proc.txt
+> > > +++ b/Documentation/filesystems/proc.txt
+> > > @@ -44,6 +44,7 @@ Table of Contents
+> > >    3.8   /proc/<pid>/fdinfo/<fd> - Information about opened file
+> > >    3.9   /proc/<pid>/map_files - Information about memory mapped files
+> > >    3.10  /proc/<pid>/timerslack_ns - Task timerslack value
+> > > +  3.11	/proc/<pid>/patch_state - Livepatch patch operation state
+> > >  
+> > >    4	Configuring procfs
+> > >    4.1	Mount options
+> > > @@ -1886,6 +1887,23 @@ Valid values are from 0 - ULLONG_MAX
+> > >  An application setting the value must have PTRACE_MODE_ATTACH_FSCREDS level
+> > >  permissions on the task specified to change its timerslack_ns value.
+> > >  
+> > > +3.11	/proc/<pid>/patch_state - Livepatch patch operation state
+> > > +-----------------------------------------------------------------
+> > > +When CONFIG_LIVEPATCH is enabled, this file displays the value of the
+> > > +patch state for the task.
+> > > +
+> > > +A value of '-1' indicates that no patch is in transition.
+> > > +
+> > > +A value of '0' indicates that a patch is in transition and the task is
+> > > +unpatched.  If the patch is being enabled, then the task hasn't been
+> > > +patched yet.  If the patch is being disabled, then the task has already
+> > > +been unpatched.
+> > > +
+> > > +A value of '1' indicates that a patch is in transition and the task is
+> > > +patched.  If the patch is being enabled, then the task has already been
+> > > +patched.  If the patch is being disabled, then the task hasn't been
+> > > +unpatched yet.
+> > > +
+> > 
+> > Despite my review I thought about this some more. I think the logic make 
+> > sense internally but when exposed it can be confusing. We do not export 
+> > klp_target_state value, so users have to know if a patch is being enabled 
+> > or disabled. Of course, they should know that, but I guess they'd like to 
+> > use an userspace tool for this. Such tool needs to look at 
+> > /proc/<pid>/patch_state to find out which tasks are blocking the 
+> > completion and that is it. No more information anywhere.
+> > 
+> > We can either export klp_target_state, or change /proc/<pid>/patch_state 
+> > to show only two states - task is in transition (1), task is patched (0).
+> > 
+> > What do you think?
+> 
+> Isn't this information already available in
+> /sys/kernel/livepatch/<patch>/{enabled,transition}?
 
-I'm assuming you are already running the normal ntpd from ntp classic, or 
-Apple's version of it.
+transition no. That only gives the hint that something is happening with 
+the patch. But yes, enabled is the one I wanted. I don't know how I missed 
+that. Combined with /proc/<pid>/task it is exactly what a tool needs.
 
-ntpq -c "rv 0 frequency" <host-name, defaults to localhost>
-will get you the fudge-factor that ntpd passes to the kernel to get
-the clock ticking accurately.  Units are parts-per-million.
-
-There is a source-address filter in ntp.conf (restrict is the keyword), so 
-try from localhost if it doesn't work from the net.
-
-The problem that started this is that it's off by more than 500 ppm.  If all 
-the arithmetic and documentation is correct, it should be the crystal error.  
-A few or few 10s of ppm is reasonable at normal temperature.  Over 50 is a 
-bit strange, but anything under 100 is within normal.  Over 100 is getting 
-suspicious but could easily be due to some round off someplace.
-
-
-
-ntpsec should be the same as ntp classic.  I tried ntp classic on FreeBSD 
-(same trouble) but haven't tried it on Debian.
-
-If you want to try ntpsec...
-
-git clone git@gitlab.com:NTPsec/ntpsec.git xxx
-cd xxx
-./waf configure build check
-
-I think it builds cleanly on OS-X, but I can't verify that.
-
-ps ax | grep ntpd  # to get args
-service ntpd stop
-./build/main/ntpd/ntpd <args-from-above>
-
-Unless you are doing something unusual, it should run with your existing 
-ntp.conf and get the same frequency correction.
-
-
-
--- 
-These are my opinions.  I hate spam.
+Miroslav
