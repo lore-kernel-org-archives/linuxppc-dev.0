@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <hmurray@megapathdsl.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCvW31yvbzDqDm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 18:13:51 +1100 (AEDT)
-Message-ID: <1485933206.2953.19.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCvQ160cTzDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 18:09:29 +1100 (AEDT)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Hugh Blemings <hugh@blemings.org>, linuxppc-dev@ozlabs.org,
+ devel@ntpsec.org, Hal Murray <hmurray@megapathdsl.net>,
+ Paul Mackerras <paulus@ozlabs.org>,
+ Michael Ellerman <michael@ellerman.id.au>
+From: Hal Murray <hmurray@megapathdsl.net>
 Subject: Re: Timekeeping oddities on MacMini G4s
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hal Murray <hmurray@megapathdsl.net>
-Cc: Hugh Blemings <hugh@blemings.org>, linuxppc-dev@ozlabs.org,
- devel@ntpsec.org, Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman
- <michael@ellerman.id.au>
-Date: Wed, 01 Feb 2017 18:13:26 +1100
-In-Reply-To: <20170201065932.92618406061@ip-64-139-1-69.sjc.megapath.net>
-References: <20170201065932.92618406061@ip-64-139-1-69.sjc.megapath.net>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: Message from Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ of "Wed,
+ 01 Feb 2017 14:34:48 +1100." <1485920088.2953.15.camel@kernel.crashing.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 31 Jan 2017 22:59:32 -0800
+Message-Id: <20170201065932.92618406061@ip-64-139-1-69.sjc.megapath.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2017-01-31 at 22:59 -0800, Hal Murray wrote:
-> Thanks.
-> 
-> benh@kernel.crashing.org said:
-> > Right, we just use the value provided by Open Firmware. Any chance you can
-> > try with MacOS X ? 
-> 
-> Not easily.  I'm using boxes from eBay.  They didn't come with CDs and I've 
-> already installed other software.
+Thanks.
 
-Ok, I do have one though somewhere with OS X on it. If you give me instructions
-on how to test (I know near to nothing about ntpsec), I should be able to compile
-and run it.
-> 
-> > From the value in the properties you showed me (and the ones I have in some
-> > DT snapshots) it looks like the value isn't fixed but somewhat calibrated by
-> > Open Firmware during boot. 
-> 
-> I rebooted several times.  It always got the exact same clock speed numbers.
+benh@kernel.crashing.org said:
+> Right, we just use the value provided by Open Firmware. Any chance you can
+> try with MacOS X ? 
 
-Interesting. Though different units get different numbers...
+Not easily.  I'm using boxes from eBay.  They didn't come with CDs and I've 
+already installed other software.
 
-> I don't know anything about the insides of the PowerPC chip.  Can you confirm 
-> that the kernel time keeping works off an always ticking register similar to 
-> the Intel TSC and uses the timebase-frequency as the scale factor?
 
-It should be externally clocked on these CPUs. Either that or a divisor of
-the bus frequency, I don't remember, but I *think* Apple uses an external
-clock.
+> From the value in the properties you showed me (and the ones I have in some
+> DT snapshots) it looks like the value isn't fixed but somewhat calibrated by
+> Open Firmware during boot. 
 
-But yes, the timebase is supposed to be always running at a constant speed
-which is the timebase-frequency (no scaling, the register is always running
-at *that* speed).
+I rebooted several times.  It always got the exact same clock speed numbers.
 
-> If so, I should be able to "fix" it from Open Firmware.  I tried that but 
-> things got worse.  I could easily have fatfingered something but more likely 
-> my reasoning for computing the right value was buggy.  I guess I'll try again.
-> 
-> I see that powerpc/kernel/time.c reads both timebase-frequency and 
-> clock-frequency, but doesn't seem to use clock-frequency.  Was that just a 
-> handy place to read it that got called before anybody else needed it?
+I don't know anything about the insides of the PowerPC chip.  Can you confirm 
+that the kernel time keeping works off an always ticking register similar to 
+the Intel TSC and uses the timebase-frequency as the scale factor?
 
-Right, it's for display in /proc/cpuinfo in absence of a specific frequency
-control driver for the platform (there should be one for the mac mini though).
+If so, I should be able to "fix" it from Open Firmware.  I tried that but 
+things got worse.  I could easily have fatfingered something but more likely 
+my reasoning for computing the right value was buggy.  I guess I'll try again.
 
-Cheers,
-Ben.
+I see that powerpc/kernel/time.c reads both timebase-frequency and 
+clock-frequency, but doesn't seem to use clock-frequency.  Was that just a 
+handy place to read it that got called before anybody else needed it?
+
+
+
+-- 
+These are my opinions.  I hate spam.
