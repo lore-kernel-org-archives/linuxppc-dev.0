@@ -1,20 +1,40 @@
-Return-Path: <hugh@blemings.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vCp692cQ6zDqCm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 14:10:25 +1100 (AEDT)
-From: Hugh Blemings <hugh@blemings.org>
-Subject: Timekeeping oddities on MacMini G4s
-To: linuxppc-dev@ozlabs.org
-Cc: devel@ntpsec.org, Hal Murray <hmurray@megapathdsl.net>,
- Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <michael@ellerman.id.au>
-Message-ID: <fa5edfe0-66fb-6f82-c3b3-67fdf0a09c8c@blemings.org>
-Date: Wed, 1 Feb 2017 14:10:24 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vCpP03c82zDqCp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 14:23:16 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v113IwQT137743
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 22:23:14 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28ab00efka-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2017 22:23:14 -0500
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 1 Feb 2017 13:23:11 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B1ED13578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 14:23:08 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v113N0UR29425908
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Feb 2017 14:23:08 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v113Ma7B002279
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Feb 2017 14:22:36 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: imunsie@au1.ibm.com, fbarrat@linux.vnet.ibm.com
+Subject: [PATCH v2] cxl: fix build when CONFIG_DEBUG_FS=n
+Date: Wed,  1 Feb 2017 14:22:07 +1100
+Message-Id: <20170201032207.14940-1-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,177 +44,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Stub out the debugfs functions so that the build doesn't break when
+CONFIG_DEBUG_FS=n.
 
-I've recently been lurking on the ntpsec project mailing list.
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-One of the developers (Hal Murray, CCd) has been doing some tests of the 
-codebase using FreeBSD and Debian on a G4 based Mac Mini - this largely 
-motivated by checking all is well on a big-endian system.
+---
 
-Hal has identified what appears to be a systemic inaccuracy in kernel 
-timekeeping of around 2500ppm on both Linux and FreeBSD and on several 
-different MacMini G4s (1.42GHz and 1.5GHz variants)
+v1->v2:
+- use inline stubs in cxl.h instead of normal functions
 
-That it appears on both Linux and FreeBSD kernels and some other data 
-points leads us to wonder if the CPU frequency reported by Open Firmware 
-being different to the actual raw clock is the root cause, but I/we 
-speculate at this point.
+---
+ drivers/misc/cxl/Makefile |  3 ++-
+ drivers/misc/cxl/cxl.h    | 59 +++++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 57 insertions(+), 5 deletions(-)
 
-To be clear we're not claiming "kernel bug" but something odd that 
-perhaps the collective wisdom of ya'll might be able shed some light on, 
-other places to dig etc.
-
-Below is I hope sufficient salient information, copied from the various 
-messages in the thread on the ntpsec mailing list.  If you'd like to 
-refer to the original thread it's available in the archive starting here 
-- https://lists.ntpsec.org/pipermail/devel/2017-January/003443.html
-
-Would welcome any feedback/pointers you can provide.
-
-Insights into how the various values from OpenFirmware interact with the 
-derived figures in the kernel would be interesting too :)
-
-Thanks,
-
-Cheers,
-Hugh
-
-
--------------------------
- From Hal's original email;
-
-I'm reasonably confident that the system doesn't keep reasonable time 
-when ntpd isn't running.
-
-Here is my test case:
-   assuming you have a working ntp setup
-   add "disable ntp" to ntp.conf
-   make sure you are logging loopstats:
-     statsdir /var/log/ntp or ntpstats or ...
-     filegen loopstats  type day link
-reboot the system to start clean
-
-You will get things like this in loopstats.
-57783 14135.823 0.684044126 0.000 0.000000954 0.000000 6
-57783 14137.823 0.688713522 0.000 0.000000954 0.000000 6
-57783 14139.823 0.692100011 0.000 0.000000954 0.000000 6
-...
-57783 16640.823 6.663863776 0.000 0.000000954 0.000000 6
-57783 16692.823 6.743695119 0.000 0.000000954 0.000000 6
-57783 16708.823 6.823918338 0.000 0.000000954 0.000000 6
-The second column is the seconds this day.
-The 3rd column is the offset from the servers you are using.
-It should be changing slowly.  If it is slow enough, ntpd will correct 
-it by adjusting the drift.
-
-You can calculate the drift as
-    (offset2-offset1)*1000000/(time2 - time1)
-
-$ dc
-16708.823 14135.823 - p
-2573.000
-6.823918338 0.684044126 - p
-6.139874212
-1000000 * p
-6139874.212000000
-2573.000 / p
-2386
-
-That's 2386 ppm.  "slow enough" is under 500 ppm.  Sane numbers are 
-under 100.  (either sign)
-
-Without the "disable ntp", the 4th column will be the drift.  It should 
-vary with temperature.  Ballpark change is 1 ppm per C.
-
--------------------------
-
-Collated system information;
-
-$ uname -a
-Linux deb-ppc.example.com 3.16.0-4-powerpc #1 Debian 3.16.39-1 
-(2016-12-30) ppc GNU/Linux
-
-$ cat /etc/issue
-Debian GNU/Linux 8
-
---------------
-
-First system - one used in sample case shown above, 1.5GHz CPU.
-
-/pro/cpuinfo says:
-processor       : 0
-cpu             : 7447A, altivec supported
-clock           : 1499.999994MHz
-revision        : 1.2 (pvr 8003 0102)
-bogomips        : 83.20
-timebase        : 41600571
-platform        : PowerMac
-model           : PowerMac10,2
-machine         : PowerMac10,2
-motherboard     : PowerMac10,2 MacRISC3 Power Macintosh
-detected as     : 287 (Mac mini (Late 2005))
-pmac flags      : 00000010
-L2 cache        : 512K unified
-pmac-generation : NewWorld
-Memory          : 512 MB
-
---------------
-
- From a second system (labelled as a 1.42GHz machine by Apple):
-Same install image as first system;
-
-$ more /proc/cpuinfo
-processor       : 0
-cpu             : 7447A, altivec supported
-clock           : 1416.666661MHz
-revision        : 1.2 (pvr 8003 0102)
-bogomips        : 83.24
-timebase        : 41620907
-platform        : PowerMac
-model           : PowerMac10,1
-machine         : PowerMac10,1
-motherboard     : PowerMac10,1 MacRISC3 Power Macintosh
-detected as     : 287 (Mac mini)
-pmac flags      : 00000010
-L2 cache        : 512K unified
-pmac-generation : NewWorld
-Memory          : 512 MB
-
- From syslog;
-
-30 Jan 19:46:40 ntpd[3773]: frequency error 2712 PPM exceeds tolerance 
-500 PPM
-30 Jan 19:46:43 ntpd[3773]: ntpd exiting on signal 15 (Terminated)
-
------------------
-
-Open Firmware provides:
-
-1.42GHz machine
-    41620997 027b1605 timebase-frequency
-  1416666661 54709e25 clock-frequency
-  1415000000 54572fc0 rounded-clock-frequency
-  1415113906 5458ecb2 recalced-clock-frequency
-   166483989 09ec5815 bus-frequency
-   166666666 09ef21aa config-bus-frequency
-          17 00000011 processor-to-bus-ratio*2
-
-1.5GHz machine
-    41600571 027ac63b timebase-frequency
-  1499999994 59682efa clock-frequency
-  1498000000 5949aa80 rounded-clock-frequency
-  1497620583 5943e067 recalced-clock-frequency
-   166402287 09eb18ef bus-frequency
-   166666666 09ef21aa config-bus-frequency
-          18 00000012 processor-to-bus-ratio*2
-
------------------
-
-Reports of possibly similar issues elsewhere
-
-"Clock Drift on Mac Mini (G4-based), ajdtimex, ntp" - undated
-http://i1.dk/misc/mac_mini_clock_drift_adjtimex_ntp.html
-
-"System clock falls behind quickly on Mac mini G4" (2014 on FreeBSD)
-https://lists.freebsd.org/pipermail/freebsd-ppc/2014-April/006931.html
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+index 56e9a4732ef0..c14fd6b65b5a 100644
+--- a/drivers/misc/cxl/Makefile
++++ b/drivers/misc/cxl/Makefile
+@@ -2,9 +2,10 @@ ccflags-y			:= $(call cc-disable-warning, unused-const-variable)
+ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
+ 
+ cxl-y				+= main.o file.o irq.o fault.o native.o
+-cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
++cxl-y				+= context.o sysfs.o pci.o trace.o
+ cxl-y				+= vphb.o phb.o api.o
+ cxl-$(CONFIG_PPC_PSERIES)	+= flash.o guest.o of.o hcalls.o
++cxl-$(CONFIG_DEBUG_FS)		+= debugfs.o
+ obj-$(CONFIG_CXL)		+= cxl.o
+ obj-$(CONFIG_CXL_BASE)		+= base.o
+ 
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index b24d76723fb0..76591138faa5 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -800,12 +800,67 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count);
+ void afu_release_irqs(struct cxl_context *ctx, void *cookie);
+ void afu_irq_name_free(struct cxl_context *ctx);
+ 
++#ifdef CONFIG_DEBUG_FS
++
+ int cxl_debugfs_init(void);
+ void cxl_debugfs_exit(void);
+ int cxl_debugfs_adapter_add(struct cxl *adapter);
+ void cxl_debugfs_adapter_remove(struct cxl *adapter);
+ int cxl_debugfs_afu_add(struct cxl_afu *afu);
+ void cxl_debugfs_afu_remove(struct cxl_afu *afu);
++void cxl_stop_trace(struct cxl *cxl);
++void cxl_debugfs_add_adapter_psl_regs(struct cxl *adapter, struct dentry *dir);
++void cxl_debugfs_add_adapter_xsl_regs(struct cxl *adapter, struct dentry *dir);
++void cxl_debugfs_add_afu_psl_regs(struct cxl_afu *afu, struct dentry *dir);
++
++#else /* CONFIG_DEBUG_FS */
++
++static inline int __init cxl_debugfs_init(void)
++{
++	return 0;
++}
++
++static inline void cxl_debugfs_exit(void)
++{
++}
++
++static inline int cxl_debugfs_adapter_add(struct cxl *adapter)
++{
++	return 0;
++}
++
++static inline void cxl_debugfs_adapter_remove(struct cxl *adapter)
++{
++}
++
++static inline int cxl_debugfs_afu_add(struct cxl_afu *afu)
++{
++	return 0;
++}
++
++static inline void cxl_debugfs_afu_remove(struct cxl_afu *afu)
++{
++}
++
++static inline void cxl_stop_trace(struct cxl *cxl)
++{
++}
++
++static inline void cxl_debugfs_add_adapter_psl_regs(struct cxl *adapter,
++						    struct dentry *dir)
++{
++}
++
++static inline void cxl_debugfs_add_adapter_xsl_regs(struct cxl *adapter,
++						    struct dentry *dir)
++{
++}
++
++static inline void cxl_debugfs_add_afu_psl_regs(struct cxl_afu *afu, struct dentry *dir)
++{
++}
++
++#endif /* CONFIG_DEBUG_FS */
+ 
+ void cxl_handle_fault(struct work_struct *work);
+ void cxl_prefault(struct cxl_context *ctx, u64 wed);
+@@ -870,12 +925,8 @@ int cxl_data_cache_flush(struct cxl *adapter);
+ int cxl_afu_disable(struct cxl_afu *afu);
+ int cxl_psl_purge(struct cxl_afu *afu);
+ 
+-void cxl_debugfs_add_adapter_psl_regs(struct cxl *adapter, struct dentry *dir);
+-void cxl_debugfs_add_adapter_xsl_regs(struct cxl *adapter, struct dentry *dir);
+-void cxl_debugfs_add_afu_psl_regs(struct cxl_afu *afu, struct dentry *dir);
+ void cxl_native_psl_irq_dump_regs(struct cxl_context *ctx);
+ void cxl_native_err_irq_dump_regs(struct cxl *adapter);
+-void cxl_stop_trace(struct cxl *cxl);
+ int cxl_pci_vphb_add(struct cxl_afu *afu);
+ void cxl_pci_vphb_remove(struct cxl_afu *afu);
+ void cxl_release_mapping(struct cxl_context *ctx);
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
