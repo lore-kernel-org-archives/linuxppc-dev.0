@@ -1,11 +1,47 @@
-Return-Path: <npiggin@gmail.com>
-From: Nicholas Piggin <npiggin@gmail.com>
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vD9cf1272zDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 04:49:37 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v11HnQfU098125
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Feb 2017 12:49:36 -0500
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28bjec600n-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Feb 2017 12:49:35 -0500
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Wed, 1 Feb 2017 15:49:31 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id ADD2E3520070
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:48:55 -0500 (EST)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v11HnSFY4427876
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Feb 2017 15:49:28 -0200
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ v11HnS08029921
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Feb 2017 15:49:28 -0200
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	skiboot@lists.ozlabs.org
-Subject: [RFC][PATCH] powerpc: add device tree binding for cpufeatures
-Date: Thu,  2 Feb 2017 03:33:05 +1000
-Message-Id: <20170201173305.7248-1-npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Paul Clarke <pc@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] powerpc/pseries: Dynamically increase RMA size
+Date: Wed, 01 Feb 2017 15:49:23 -0200
+In-Reply-To: <87wpdatqrt.fsf@concordia.ellerman.id.au>
+References: <20160805061041.GA31857@us.ibm.com>
+ <20160809171131.GA2329@us.ibm.com> <87wpdatqrt.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Message-Id: <2499748.LKgOIUjhgo@morokweng>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,233 +51,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cpufeatures binding describes architected CPU features along with
-some compatibility, privilege, and enablement properties that allow
-flexibility with discovering and enabling capabilities.
+Hello,
 
-For example, FSCR or similar simple prescription based enablement can be
-done by an OS that does not understand a new CPU feature. A new
-userspace feature that does not require complex support can be enabled
-for userspace and advertised in HWCAP aux vectors even when the
-hypervisor and OS are not aware of it.
+Am Mittwoch, 1. Februar 2017, 16:37:58 BRST schrieb Michael Ellerman:
+> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> writes:
+> > Paul Clarke [pc@us.ibm.com] wrote:
+> > ---
+> >=20
+> > From f9e9e8460206bc3fa7eaa741b9a2bde22870b9e0 Mon Sep 17 00:00:00 2001
+>=20
+> I know it's been a while but I think it would still be good to get this
+> in a shape that we can merge it.
 
-This is still open for review and suggestions. One open question I had
-was whether to disable/cull features by removing their nodes, or by
-having a status property for each one. The former is simpler to parse,
-the latter could provide some information (e.g., why was the feature
-disabled).
+Sorry if this has been tried and didn't work or if I'm missing something=20
+obvious:
 
-And signifiantly, this does not document the conventions for the
-features, version numbers, base feature set, bit numbers, etc. That
-would go somewhere like PAPR.
+Instead of this method of trying a small RMA size and rebooting to try a=20
+bigger size, could the "min RMA percentage of total RAM" field of the=20
+ibm_architecture_vec be used?
 
-Thanks,
-Nick
----
- .../devicetree/bindings/powerpc/cpufeatures.txt    | 195 +++++++++++++++++++++
- 1 file changed, 195 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/powerpc/cpufeatures.txt
+LoPAPR says that "The Initial size of the RMA is set to the greater of the=
+=20
+values indicated by bytes 24-27 [min RMA] or 32 [min RMA percentage of tota=
+l=20
+RAM] of option vector number 2 =E2=80=9COpen Firmware=E2=80=9D or minimum R=
+MA size supported=20
+by the platform and capped by the maximum memory defined for the partition =
+and=20
+the maximum size of the RMA supported by the platform. The respective selec=
+ted=20
+values are reported in the length of the first memory property."
 
-diff --git a/Documentation/devicetree/bindings/powerpc/cpufeatures.txt b/Documentation/devicetree/bindings/powerpc/cpufeatures.txt
-new file mode 100644
-index 000000000000..c92e1c62b46b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/cpufeatures.txt
-@@ -0,0 +1,195 @@
-+powerpc cpufeatures binding
-+===========================
-+
-+The device tree allows the supported architected CPU features to be
-+described as nodes containing compatibility and enablement information.
-+
-+The cpufeatures binding specifies features supported by all CPUs in a
-+homogeneous system. Heterogeneous CPU features are not supported at
-+present.
-+
-+The cpufeatures binding passes from firmware to hypervisor, which may
-+filter out features based on privilege, compatibility, and other
-+configuration settings. Then device tree with this filtered cpufeatures
-+binding is passed to the operating systems, which in turn filter and
-+expose features to user programs using AT_HWCAP ELF AUX vectors. This is
-+done in such a way that an old OS that is unaware of a new hardware
-+feature may be able to advertise it to user programs.
-+
-+There will be a standardized convention for the base level of
-+architected CPU features available when the cpufeatures binding exists.
-+(XXX TBD)
-+
-+cpufeatures node binding
-+------------------------
-+
-+Node: cpufeatures
-+
-+Description: Container of CPU feature nodes.
-+
-+The node name must be "cpufeatures" and should be a child of the root
-+node "/".
-+
-+The node is optional but should be provided by new firmware.
-+
-+Each child node of cpufeatures represents an architected CPU feature.
-+
-+
-+feature node bindings
-+---------------------
-+
-+Node: A string describing an architected CPU feature, e.g., "vsx".
-+
-+Description: An architected feature supported by the CPUs.
-+
-+The name of the node will follow a convention such that software will
-+match known features by a string comparison with the node name. Presence
-+of the node indicates the feature is available to use (XXX: could
-+advertise all supported by hardware, with disabled/enabled status
-+property).
-+
-+The name of the child node corresponds to the name of the feature.
-+Software will detect known features by string matching.
-+
-+Properties:
-+
-+- isa
-+  Usage: required
-+  Value type: <u32>
-+  Definition:
-+
-+  First level of the Power ISA that the feature appears in.
-+  Software should filter out features when constraining the
-+  environment to a particular ISA version.
-+
-+- usable_mask
-+  Usage: required
-+  Value type: <u32> bit mask
-+  Definition:
-+              bit 0 - PR (problem state / user mode)
-+              bit 1 - OS (privileged state)
-+              bit 2 - HV (hypervisor state)
-+              All other bits reserved and should be zero.
-+
-+  This property describes the privilege levels and/or software components
-+  that can use the feature.
-+
-+  If bit 0 is set, then the hwcap_bit_nr property will exist.
-+
-+- hv_support
-+  Usage: optional
-+  Value type: <u32>
-+  Definition:
-+              1 -  Custom
-+              2 -  HFSCR
-+              Other values reserved.
-+
-+  This property describes the HV privilege state support required to
-+  enable the feature. If the property does not exist then no support is
-+  required.
-+
-+  If the value of this property is 1, then the hypervisor must have
-+  explicit support for this feature.
-+
-+  If the value of this property is 2, then the hfscr_bit_nr property
-+  will exist.
-+
-+- os_support
-+  Usage: optional
-+  Value type: <u32>
-+  Definition:
-+              1 -  Custom
-+              2 -  FSCR
-+              Other values reserved.
-+
-+  This property describes the OS privilege state support required to
-+  enable the feature. If the property does not exist then no support is
-+  required.
-+
-+  If the value of this property is 1, then the operating system must
-+  have explicit support for this feature.
-+
-+  If the value of this property is 2, then the fscr_bit_nr property will
-+  exist.
-+
-+- hfscr_bit_nr
-+  Usage: optional
-+  Value type: <u32>
-+  Definition:
-+
-+  This property exists when the hv_support property value is 2. This
-+  property describes the bit number in the HFSCR register that the
-+  hypervisor must set in order to enable this feature.
-+
-+- fscr_bit_nr
-+  Usage: optional
-+  Value type: <u32>
-+  Definition:
-+
-+  This property exists when the os_support property value is 2. This
-+  property describes the bit number in the FSCR register that the
-+  operating system must set in order to enable this feature.
-+
-+- hwcap_bit_nr
-+  Usage: optional
-+  Value type: <u32>
-+  Definition:
-+
-+  This property exists when the usable_mask property value has bit 0
-+  (PR) set.  This property describes the bit number that must be set in
-+  the AT_HWCAP ELF AUX vectors in order to advertise this feature to
-+  userspace.
-+
-+- dependencies
-+  Usage: optional
-+  Value type: <prop-encoded-array>
-+  Definition:
-+
-+  If this property exists then it is a list of phandles to cpu feature
-+  nodes that must be enabled for this feature to be enabled.
-+
-+
-+Example
-+-------
-+
-+	cpufeatures {
-+
-+		darn {
-+			isa = <3000>;
-+			usable_mask = <1 | 2 | 4>;
-+			hwcap_bit_nr = <xx>;
-+		};
-+
-+		scv {
-+			isa = <3000>;
-+			usable_mask = <1 | 2>;
-+			os_support = <1>;
-+			hwcap_bit_nr = <xx>;
-+		};
-+
-+		stop {
-+			isa = <3000>;
-+			usable_mask = <2 | 4>;
-+			hv_support = <1>;
-+			os_support = <1>;
-+		};
-+
-+		vsx2 (hypothetical) {
-+			isa = <3010>;
-+			usable_mask = <1 | 2 | 4>;
-+			hv_support = <1>;
-+			os_support = <1>;
-+			hwcap_bit_nr = <xx>;
-+		};
-+
-+		vsx2_newinsns {
-+			isa = <3020>;
-+			usable_mask = <1 | 2 | 4>;
-+			os_support = <2>;
-+			fscr_bit_nr = <xx>;
-+			hwcap_bit_nr = <xx>;
-+			dependencies = <&vsx2>;
-+		};
-+
-+	};
-+
--- 
-2.11.0
+My understanding is that these patches are intended for big guests with man=
+y=20
+processors, but the RMA size isn't changed to 512MB outright because of=20
+worries that it could affect smaller guests. Since guests with many process=
+ors=20
+tend to have more RAM as well, specifying a min RMA size of 256MB and a min=
+=20
+RMA percentage of, say, 10% or 20% could make the host automatically alloca=
+te=20
+an adequate RMA size in the first boot.
+
+=2D-=20
+Thiago Jung Bauermann
+IBM Linux Technology Center
