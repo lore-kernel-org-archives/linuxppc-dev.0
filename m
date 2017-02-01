@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL401mNzDq5s
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vClL42kFYzDqBl
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2017 12:05:32 +1100 (AEDT)
-In-Reply-To: <1479314703-18989-1-git-send-email-arbab@linux.vnet.ibm.com>
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <147733331174.26684.12646675491489853468.stgit@jupiter.in.ibm.com>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-mm@kvack.org, John Allen <jallen@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm: allow memory hotplug into an offline node
-Message-Id: <3vClL33fB1z9t9b@ozlabs.org>
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>
+Subject: Re: [v2] powerpc/fadump: Fix the race in crash_fadump().
+Message-Id: <3vClL36DFMz9tJD@ozlabs.org>
 Date: Wed,  1 Feb 2017 12:05:31 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,24 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-11-16 at 16:45:03 UTC, Reza Arbab wrote:
-> Relax the check preventing us from hotplugging into an offline node.
+On Mon, 2016-10-24 at 18:21:51 UTC, Mahesh Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> This limitation was added in commit 482ec7c403d2 ("[PATCH] powerpc numa:
-> Support sparse online node map") to prevent adding resources to an
-> uninitialized node.
+> There are chances that multiple CPUs can call crash_fadump() simultaneously
+> and would start duplicating same info to vmcoreinfo ELF note section. This
+> causes makedumpfile to fail during kdump capture. One example is,
+> triggering dumprestart from HMC which sends system reset to all the CPUs at
+> once.
 > 
-> These days, there is no harm in doing so. The addition will actually
-> cause the node to be initialized and onlined; add_memory_resource()
-> calls hotadd_new_pgdat() (if necessary) and node_set_online().
+> makedumpfile --dump-dmesg /proc/vmcore
+> read_vmcoreinfo_basic_info: Invalid data in /tmp/vmcoreinfoyjgxlL: CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971
+> makedumpfile Failed.
+> Running makedumpfile --dump-dmesg /proc/vmcore failed (1).
 > 
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: John Allen <jallen@linux.vnet.ibm.com>
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> makedumpfile  -d 31 -l /proc/vmcore
+> read_vmcoreinfo_basic_info: Invalid data in /tmp/vmcoreinfo1mmVdO: CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971CRASHTIME=1475605971
+> makedumpfile Failed.
+> Running makedumpfile  -d 31 -l /proc/vmcore failed (1).
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/2a8628d41602dc9f988af051a657ee
+https://git.kernel.org/powerpc/c/f2a5e8f0023eba847ad2adb145b2f6
 
 cheers
