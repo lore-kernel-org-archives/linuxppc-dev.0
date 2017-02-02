@@ -1,45 +1,32 @@
-Return-Path: <dougmill@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDjQN6GJRzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 01:42:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
- v12EcpZt138462
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Feb 2017 09:42:34 -0500
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 28c6981ewh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2017 09:42:33 -0500
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
- Thu, 2 Feb 2017 09:42:33 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E4CD9C90043
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 09:42:12 -0500 (EST)
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- v12EgTKu9961766
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Feb 2017 14:42:31 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EEA25112054
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 09:42:30 -0500 (EST)
-Received: from oc5780617838.ibm.com (unknown [9.80.99.213])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP id C7E1E11205F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 09:42:30 -0500 (EST)
-To: linuxppc-dev@lists.ozlabs.org
-From: Douglas Miller <dougmill@linux.vnet.ibm.com>
-Subject: xmon memory dump does not handle LE
-Date: Thu, 2 Feb 2017 08:42:30 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDkBf1GH0zDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 02:17:29 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: =?utf-8?B?J01pY2hhbCBTdWNow6FuZWsn?= <msuchanek@suse.de>, Vicky
+ <honclo@linux.vnet.ibm.com>
+CC: Nayna Jain <nayna@linux.vnet.ibm.com>, Marcel Selhorst
+ <tpmdd@selhorst.net>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Jarkko Sakkinen
+ <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
+ <jgunthorpe@obsidianresearch.com>, "tpmdd-devel@lists.sourceforge.net"
+ <tpmdd-devel@lists.sourceforge.net>, Paul Mackerras <paulus@samba.org>,
+ Ashley Lai <ashleydlai@gmail.com>, Peter Huewe <peterhuewe@gmx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: ibmvtpm byteswapping inconsistency
+Date: Thu, 2 Feb 2017 15:17:19 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB0278B33@AcuExch.aculab.com>
+References: <20170126212248.3f3e9103@kitsune.suse.cz>
+ <20170126220536.GB31937@obsidianresearch.com>
+ <024dadba-a75c-ab59-9d12-a9bea81f9bda@gmail.com>
+ <F14AC3E9-E04F-4EF0-9C7E-999D481EA577@linux.vnet.ibm.com>
+ <20170202122942.7fd9988d@kitsune.suse.cz>
+In-Reply-To: <20170202122942.7fd9988d@kitsune.suse.cz>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <2a0e256f-4947-e94d-7f79-5451b3c90f9f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,21 +36,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I was hoping this would be any easy fix, but now it looks like it will 
-be more difficult.
-
-
-The basic problem is that xmon memory commands like 'dd' do not properly 
-display the data on LE instances. This means that not only is it 
-difficult to read but one cannot copy-paste addresses from the output. 
-This severely encumbers debugging using xmon on LE systems.
-
-
-It looks like prdump() is highly optimized but only works on BE. Have I 
-missed something, or will it take a significant re-write of this code to 
-fix the LE problem?
-
-
-Thanks,
-
-Doug
+RnJvbTogTWljaGFsIFN1Y2jDoW5law0KPiBTZW50OiAwMiBGZWJydWFyeSAyMDE3IDExOjMwDQou
+Li4NCj4gVGhlIHdvcmQgaXMgbWFya2VkIGNvcnJlY3RseSBhcyBfX2JlNjQgaW4gdGhhdCBwYXRj
+aCBiZWNhdXNlIGNvdW50IGFuZA0KPiBoYW5kbGUgYXJlIHN3YXBwZWQgdG8gQkUgd2hlbiBzYXZl
+ZCB0byBpdCBhbmQgdGhlIHdob2xlIHdvcmQgaXMgdGhlbg0KPiBzd2FwcGVkIGFnYWluIHdoZW4g
+bG9hZGVkLiBJZiB5b3UganVzdCBsb2FkICgodTY0KUlCTVZUUE1fVkFMSURfQ01EIDw8DQo+IDU2
+IHwgKCh1NjQpVlRQTV9UUE1fQ09NTUFORCA8PCA0OCkgfCAoKHU2NCljb3VudCA8PCAzMikgfA0K
+PiBpYm12dHBtLT5ydGNlX2RtYV9oYW5kbGUgaW4gYSByZWdpc3RlciBpdCB3b3JrcyBlcXVhbGx5
+IHdlbGwNCj4gd2l0aG91dCBhbnkgX19iZSBhbmQgc3dhcHMgaW52b2x2ZWQuDQoNCkFuZCB0aGF0
+IHZlcnNpb24gd2lsbCBhbG1vc3QgY2VydGFpbmx5IGdlbmVyYXRlIG11Y2ggYmV0dGVyIGNvZGUu
+DQoNCglEYXZpZA0KDQo=
