@@ -2,27 +2,25 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDxhR75CbzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 10:55:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDxmr0bcnzDq6X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 10:59:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Borislav Petkov <bp@alien8.de>,
- Chris Packham <Chris.Packham@alliedtelesis.co.nz>
-Cc: "linux-edac\@vger.kernel.org" <linux-edac@vger.kernel.org>,
- "morbidrsa\@gmail.com" <morbidrsa@gmail.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- "devicetree\@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] EDAC: mpc85xx: Add T2080 l2-cache support
-In-Reply-To: <20170202173005.gqesvy5owtsbrviu@pd.tnic>
-References: <20170201231624.28843-1-chris.packham@alliedtelesis.co.nz>
- <20170201232735.byk7bnpeoqtcc7mh@pd.tnic>
- <01fe1af463c640a8bd48e45c2752b52c@svr-chch-ex1.atlnz.lc>
- <20170202173005.gqesvy5owtsbrviu@pd.tnic>
-Date: Fri, 03 Feb 2017 10:55:33 +1100
-Message-ID: <87h94cb11m.fsf@concordia.ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Bhupesh Sharma <bhsharma@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ kernel-hardening@lists.openwall.com, Anatolij Gustschin <agust@denx.de>,
+ keescook@chromium.org, Daniel Cashman <dcashman@android.com>,
+ Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>,
+ dcashman@google.com, Alistair Popple <alistair@popple.id.au>,
+ bhupesh.linux@gmail.com, Alexander Graf <agraf@suse.com>
+Subject: Re: [kernel-hardening] Re: [PATCH 1/2] powerpc: mm: support
+ ARCH_MMAP_RND_BITS
+In-Reply-To: <20170202122256.GD5179@localhost.localdomain>
+References: <1486014168-1279-1-git-send-email-bhsharma@redhat.com>
+ <1486014168-1279-2-git-send-email-bhsharma@redhat.com>
+ <87mve4c2my.fsf@concordia.ellerman.id.au>
+ <20170202122256.GD5179@localhost.localdomain>
+Date: Fri, 03 Feb 2017 10:59:23 +1100
+Message-ID: <87efzgb0v8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,54 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Borislav Petkov <bp@alien8.de> writes:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> On Wed, Feb 01, 2017 at 11:46:23PM +0000, Chris Packham wrote:
->> >> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
->> >> index 8f66cbed70b7..67f7bc3fe5b3 100644
->> >> --- a/drivers/edac/mpc85xx_edac.c
->> >> +++ b/drivers/edac/mpc85xx_edac.c
->> >> @@ -629,6 +629,7 @@ static const struct of_device_id mpc85xx_l2_err_of_match[] = {
->> >>  	{ .compatible = "fsl,p1020-l2-cache-controller", },
->> >>  	{ .compatible = "fsl,p1021-l2-cache-controller", },
->> >>  	{ .compatible = "fsl,p2020-l2-cache-controller", },
->> >> +	{ .compatible = "fsl,t2080-l2-cache-controller", },
->> >
->> > WARNING: DT compatible string "fsl,t2080-l2-cache-controller" appears un-documented -- check ./Documentation/devicetree/bindings/
->> > #58: FILE: drivers/edac/mpc85xx_edac.c:632:
->> > +       { .compatible = "fsl,t2080-l2-cache-controller", },
->> >
->> > What is checkpatch.pl trying to tell me here?
->> >
->> 
->> checpkatch.pl is confused by 
->> Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt which says
->> 
->> - compatible    : Should include "fsl,chip-l2-cache-controller" and "cache"
->>                    where chip is the processor (bsc9132, npc8572 etc.)
->> 
->> So none of the fsl cache controllers pass the checkpatch.pl test.
+> On Thu, Feb 02, 2017 at 09:23:33PM +1100, Michael Ellerman wrote:
+>> +config ARCH_MMAP_RND_BITS_MIN
+>> +	# On 64-bit up to 1G of address space (2^30)
+>> +	default 12 if 64BIT && PPC_256K_PAGES 	# 256K (2^18), = 30 - 18 = 12
+>> +	default 14 if 64BIT && PPC_64K_PAGES  	# 64K  (2^16), = 30 - 16 = 14
+>> +	default 16 if 64BIT && PPC_16K_PAGES  	# 16K  (2^14), = 30 - 14 = 16
+>> +	default 18 if 64BIT			# 4K   (2^12), = 30 - 12 = 18
+>> +	default ARCH_MMAP_RND_COMPAT_BITS_MIN
+>> +
+>> +config ARCH_MMAP_RND_BITS_MAX
+>> +	# On 64-bit up to 32T of address space (2^45)
 >
-> Hmm, so others do list those names explicitly. For example:
->
-> Documentation/devicetree/bindings/pinctrl/allwinner,sunxi-pinctrl.txt
->
-> And the patch that added that check to cp:
->
-> bff5da433525 ("checkpatch: add DT compatible string documentation checks")
->
-> is basically to enforce explicit compatible names.
->
-> So I'd like to have an ACK from a PPC maintainer here first before I
-> apply this.
+> I thought it was 64T, TASK_SIZE_USER64 is 2^46?
 
-It's fine with me:
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-
-Chris if you want to send a patch to add the compatible string to the
-l2cache.txt I would merge that, but honestly it doesn't achieve much
-other than possibly catching a typo in the compatible name.
+The virtual address space is 64T. The comment is talking about how much
+can be taking up by the randomisation factor.
 
 cheers
