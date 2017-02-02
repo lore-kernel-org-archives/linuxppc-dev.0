@@ -1,32 +1,45 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dougmill@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDjLK0BzvzDqFx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 01:39:05 +1100 (AEDT)
-Date: Thu, 2 Feb 2017 15:39:00 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4.1 01/15] stacktrace/x86: add function for detecting
- reliable stack traces
-In-Reply-To: <20170201195740.km6kob5w3rmga5zh@treble>
-Message-ID: <alpine.LSU.2.20.1702021538120.22474@pobox.suse.cz>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
- <dfe1419dc06f37e1f4aec5bf81d5b60e505a8d0f.1484839971.git.jpoimboe@redhat.com>
- <20170201195740.km6kob5w3rmga5zh@treble>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDjQN6GJRzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 01:42:36 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id
+ v12EcpZt138462
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Feb 2017 09:42:34 -0500
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 28c6981ewh-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2017 09:42:33 -0500
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <dougmill@linux.vnet.ibm.com>;
+ Thu, 2 Feb 2017 09:42:33 -0500
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E4CD9C90043
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 09:42:12 -0500 (EST)
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ v12EgTKu9961766
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Feb 2017 14:42:31 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EEA25112054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 09:42:30 -0500 (EST)
+Received: from oc5780617838.ibm.com (unknown [9.80.99.213])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP id C7E1E11205F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 09:42:30 -0500 (EST)
+To: linuxppc-dev@lists.ozlabs.org
+From: Douglas Miller <dougmill@linux.vnet.ibm.com>
+Subject: xmon memory dump does not handle LE
+Date: Thu, 2 Feb 2017 08:42:30 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <2a0e256f-4947-e94d-7f79-5451b3c90f9f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +49,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Feb 2017, Josh Poimboeuf wrote:
+I was hoping this would be any easy fix, but now it looks like it will 
+be more difficult.
 
-> For live patching and possibly other use cases, a stack trace is only
-> useful if it can be assured that it's completely reliable.  Add a new
-> save_stack_trace_tsk_reliable() function to achieve that.
-> 
-> Note that if the target task isn't the current task, and the target task
-> is allowed to run, then it could be writing the stack while the unwinder
-> is reading it, resulting in possible corruption.  So the caller of
-> save_stack_trace_tsk_reliable() must ensure that the task is either
-> 'current' or inactive.
-> 
-> save_stack_trace_tsk_reliable() relies on the x86 unwinder's detection
-> of pt_regs on the stack.  If the pt_regs are not user-mode registers
-> from a syscall, then they indicate an in-kernel interrupt or exception
-> (e.g. preemption or a page fault), in which case the stack is considered
-> unreliable due to the nature of frame pointers.
-> 
-> It also relies on the x86 unwinder's detection of other issues, such as:
-> 
-> - corrupted stack data
-> - stack grows the wrong way
-> - stack walk doesn't reach the bottom
-> - user didn't provide a large enough entries array
-> 
-> Such issues are reported by checking unwind_error() and !unwind_done().
-> 
-> Also add CONFIG_HAVE_RELIABLE_STACKTRACE so arch-independent code can
-> determine at build time whether the function is implemented.
-> 
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
-Looks good to me.
+The basic problem is that xmon memory commands like 'dd' do not properly 
+display the data on LE instances. This means that not only is it 
+difficult to read but one cannot copy-paste addresses from the output. 
+This severely encumbers debugging using xmon on LE systems.
 
-Reviewed-by: Miroslav Benes <mbenes@suse.cz>
 
-Miroslav
+It looks like prdump() is highly optimized but only works on BE. Have I 
+missed something, or will it take a significant re-write of this code to 
+fix the LE problem?
+
+
+Thanks,
+
+Doug
