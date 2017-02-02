@@ -1,26 +1,25 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDmfJ6j12zDq5Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 04:08:08 +1100 (AEDT)
+Return-Path: <wcohen@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3vDmfJ2NKpz9ryb
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2017 04:08:08 +1100 (AEDT)
-Date: Thu, 2 Feb 2017 10:08:04 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- kvm@vger.kernel.org, gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
-Message-ID: <20170202100804.78f1faa3@t450s.home>
-In-Reply-To: <87shnwc45j.fsf@concordia.ellerman.id.au>
-References: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
- <87shnwc45j.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDmxM2LPTzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 04:21:11 +1100 (AEDT)
+Subject: Re: gcc trunk fails to build kernel on PowerPC64 due to oprofile
+ warnings
+To: Robert Richter <rric@kernel.org>
+References: <20170126100044.7e439f72@kryten>
+ <fe2c2fd9-d255-61ca-5328-ca5d45827f47@redhat.com>
+ <20170126160512.GE4906@rric.localdomain>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, oprofile-list@lists.sf.net,
+ Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+From: William Cohen <wcohen@redhat.com>
+Message-ID: <d37c39a5-01aa-82dd-4e7a-178227025bfe@redhat.com>
+Date: Thu, 2 Feb 2017 12:21:08 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20170126160512.GE4906@rric.localdomain>
+Content-Type: multipart/mixed; boundary="------------9240D772B256603F117928C1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +29,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 02 Feb 2017 20:50:48 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+This is a multi-part message in MIME format.
+--------------9240D772B256603F117928C1
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+On 01/26/2017 11:06 AM, Robert Richter wrote:
+> On 26.01.17 10:46:43, William Cohen wrote:
+>> From 7e46dbd7dc5bc941926a4a63c28ccebf46493e8d Mon Sep 17 00:00:00 2001
+>> From: William Cohen <wcohen@redhat.com>
+>> Date: Thu, 26 Jan 2017 10:33:59 -0500
+>> Subject: [PATCH] Avoid hypthetical string truncation in oprofile stats buffer
+>> MIME-Version: 1.0
+>> Content-Type: text/plain; charset=UTF-8
+>> Content-Transfer-Encoding: 8bit
+>>
+>> Increased the size of an internal oprofile driver buffer ensuring that
+>> the string was never truncated for any possible int value to avoid the
+>> following gcc-7 compiler error on ppc when building the kernel:
 > 
-> > Currently the kconfig logic for VFIO_IOMMU_SPAPR_TCE and VFIO_SPAPR_EEH
-> > is broken when SPAPR_TCE_IOMMU=n. Leading to:
-> >
-> >     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
-> >     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
-> >     drivers/vfio/vfio_iommu_spapr_tce.c:113:8: error: implicit declaration of function 'mm_iommu_find'
-> >
-> > This stems from the fact that VFIO selects VFIO_IOMMU_SPAPR_TCE, and
-> > although it has an if clause, the condition is not correct.
-> >
-> > We could fix it by doing select VFIO_IOMMU_SPAPR_TCE if SPAPR_TCE_IOMMU,
-> > but the cleaner fix is to drop the selects and tie VFIO_IOMMU_SPAPR_TCE
-> > to the value of VFIO, and express the dependencies in only once place.
-> >
-> > Do the same for VFIO_SPAPR_EEH.
-> >
-> > The end result is that the values of VFIO_IOMMU_SPAPR_TCE and
-> > VFIO_SPAPR_EEH follow the value of VFIO, except when SPAPR_TCE_IOMMU=n
-> > and/or EEH=n. Which is exactly what we want to happen.  
+> Please test gcc7 for other archs first. I don't think this is the only
+> change needed to avoid this warning in oprofile code.
 > 
-> Ping?
+> Thanks,
 > 
-> There was a bit of discussion on this patch but I think we decided it
-> was correct in the end.
+> -Robert
+> 
 
-If there are no other comments or objections, I'll queue this for
-v4.11.  Based on this last comment:
+Hi Robert,
 
-  eg, using def_tristate you get:
+I looked through the oprofile arch specific code for other snprintf uses with small character arrays and added those to the patch.  Attached is current patch to increase the size of the buffers to make sure that they will not be truncated.
 
-  # CONFIG_VFIO_IOMMU_SPAPR_TCE is not set
-  # CONFIG_VFIO is not set
+OProfile since 1.0.0 has used the kernels perf infrastructure rather than the oprofile kernel driver.  OProfile 1.0 was released September 2014, over two years ago.  Would it make sense to deprecate and at some point remove the oprofile driver kernel from the kernel?  Recent Fedora distributions already have CONFIG_OPROFILE unset in the kernel configurations.
 
-  Whereas using depends all you get is:
+-Will
 
-  # CONFIG_VFIO is not set
 
-I prefer prefer the solution here that doesn't leave extra unselected
-config entries when CONFIG_VFIO is also not selected.  Thanks,
+--------------9240D772B256603F117928C1
+Content-Type: text/x-patch;
+ name="0001-Avoid-hypthetical-string-truncation-in-various-oprof.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment;
+ filename*0="0001-Avoid-hypthetical-string-truncation-in-various-oprof.pa";
+ filename*1="tch"
 
-Alex
+>From e5490da918186cbd42b8609da146946fbdadf0e5 Mon Sep 17 00:00:00 2001
+From: William Cohen <wcohen@redhat.com>
+Date: Thu, 2 Feb 2017 12:02:51 -0500
+Subject: [PATCH] Avoid hypthetical string truncation in various oprofile
+ buffers
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Increased the size of internal oprofile driver buffers ensuring that
+the strings were never truncated for any possible values to avoid
+warning/errors like the following GCC 7 compiler error on ppc when
+building the kernel:
+
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c: In function ‘oprofile_create_stats_files’:
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c:55:25: error: ‘%d’ directive output may be truncated writing between 1 and 11 bytes into a region of size 7 [-Werror=format-truncation=]
+   snprintf(buf, 10, "cpu%d", i);
+                         ^~
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c:55:21: note: using the range [1, -2147483648] for directive argument
+   snprintf(buf, 10, "cpu%d", i);
+                     ^~~~~~~
+linux/arch/powerpc/oprofile/../../../drivers/oprofile/oprofile_stats.c:55:3: note: format output between 5 and 15 bytes into a destination of size 10
+   snprintf(buf, 10, "cpu%d", i);
+   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  LD      crypto/async_tx/built-in.o
+  CC      lib/random32.o
+cc1: all warnings being treated as errors
+
+Signed-off-by: William Cohen <wcohen@redhat.com>
+---
+ arch/alpha/oprofile/common.c         | 4 ++--
+ arch/avr32/oprofile/op_model_avr32.c | 2 +-
+ arch/mips/oprofile/common.c          | 4 ++--
+ arch/powerpc/oprofile/common.c       | 4 ++--
+ arch/x86/oprofile/nmi_int.c          | 2 +-
+ drivers/oprofile/oprofile_perf.c     | 4 ++--
+ drivers/oprofile/oprofile_stats.c    | 4 ++--
+ 7 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/arch/alpha/oprofile/common.c b/arch/alpha/oprofile/common.c
+index 310a4ce..a1704ee 100644
+--- a/arch/alpha/oprofile/common.c
++++ b/arch/alpha/oprofile/common.c
+@@ -112,9 +112,9 @@ op_axp_create_files(struct dentry *root)
+ 
+ 	for (i = 0; i < model->num_counters; ++i) {
+ 		struct dentry *dir;
+-		char buf[4];
++		char buf[32];
+ 
+-		snprintf(buf, sizeof buf, "%d", i);
++		snprintf(buf, sizeof(buf), "%d", i);
+ 		dir = oprofilefs_mkdir(root, buf);
+ 
+ 		oprofilefs_create_ulong(dir, "enabled", &ctr[i].enabled);
+diff --git a/arch/avr32/oprofile/op_model_avr32.c b/arch/avr32/oprofile/op_model_avr32.c
+index 08308be..af1249b 100644
+--- a/arch/avr32/oprofile/op_model_avr32.c
++++ b/arch/avr32/oprofile/op_model_avr32.c
+@@ -101,7 +101,7 @@ static int avr32_perf_counter_create_files(struct dentry *root)
+ {
+ 	struct dentry *dir;
+ 	unsigned int i;
+-	char filename[4];
++	char filename[32];
+ 
+ 	for (i = 0; i < NR_counter; i++) {
+ 		snprintf(filename, sizeof(filename), "%u", i);
+diff --git a/arch/mips/oprofile/common.c b/arch/mips/oprofile/common.c
+index 2f33992..20583cd 100644
+--- a/arch/mips/oprofile/common.c
++++ b/arch/mips/oprofile/common.c
+@@ -41,9 +41,9 @@ static int op_mips_create_files(struct dentry *root)
+ 
+ 	for (i = 0; i < model->num_counters; ++i) {
+ 		struct dentry *dir;
+-		char buf[4];
++		char buf[32];
+ 
+-		snprintf(buf, sizeof buf, "%d", i);
++		snprintf(buf, sizeof(buf), "%d", i);
+ 		dir = oprofilefs_mkdir(root, buf);
+ 
+ 		oprofilefs_create_ulong(dir, "enabled", &ctr[i].enabled);
+diff --git a/arch/powerpc/oprofile/common.c b/arch/powerpc/oprofile/common.c
+index bf094c5..5ac7b88 100644
+--- a/arch/powerpc/oprofile/common.c
++++ b/arch/powerpc/oprofile/common.c
+@@ -157,9 +157,9 @@ static int op_powerpc_create_files(struct dentry *root)
+ 
+ 	for (i = 0; i < model->num_counters; ++i) {
+ 		struct dentry *dir;
+-		char buf[4];
++		char buf[32];
+ 
+-		snprintf(buf, sizeof buf, "%d", i);
++		snprintf(buf, sizeof(buf), "%d", i);
+ 		dir = oprofilefs_mkdir(root, buf);
+ 
+ 		oprofilefs_create_ulong(dir, "enabled", &ctr[i].enabled);
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index ffdbc48..dec2fd0 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -416,7 +416,7 @@ static int nmi_create_files(struct dentry *root)
+ 
+ 	for (i = 0; i < model->num_virt_counters; ++i) {
+ 		struct dentry *dir;
+-		char buf[4];
++		char buf[32];
+ 
+ 		/* quick little hack to _not_ expose a counter if it is not
+ 		 * available for use.  This should protect userspace app.
+diff --git a/drivers/oprofile/oprofile_perf.c b/drivers/oprofile/oprofile_perf.c
+index d5b2732..acc74c4 100644
+--- a/drivers/oprofile/oprofile_perf.c
++++ b/drivers/oprofile/oprofile_perf.c
+@@ -144,9 +144,9 @@ static int oprofile_perf_create_files(struct dentry *root)
+ 
+ 	for (i = 0; i < num_counters; i++) {
+ 		struct dentry *dir;
+-		char buf[4];
++		char buf[32];
+ 
+-		snprintf(buf, sizeof buf, "%d", i);
++		snprintf(buf, sizeof(buf), "%d", i);
+ 		dir = oprofilefs_mkdir(root, buf);
+ 		oprofilefs_create_ulong(dir, "enabled", &counter_config[i].enabled);
+ 		oprofilefs_create_ulong(dir, "event", &counter_config[i].event);
+diff --git a/drivers/oprofile/oprofile_stats.c b/drivers/oprofile/oprofile_stats.c
+index 59659ce..14d0585 100644
+--- a/drivers/oprofile/oprofile_stats.c
++++ b/drivers/oprofile/oprofile_stats.c
+@@ -43,7 +43,7 @@ void oprofile_create_stats_files(struct dentry *root)
+ 	struct oprofile_cpu_buffer *cpu_buf;
+ 	struct dentry *cpudir;
+ 	struct dentry *dir;
+-	char buf[10];
++	char buf[32];
+ 	int i;
+ 
+ 	dir = oprofilefs_mkdir(root, "stats");
+@@ -52,7 +52,7 @@ void oprofile_create_stats_files(struct dentry *root)
+ 
+ 	for_each_possible_cpu(i) {
+ 		cpu_buf = &per_cpu(op_cpu_buffer, i);
+-		snprintf(buf, 10, "cpu%d", i);
++		snprintf(buf, sizeof(buf), "cpu%d", i);
+ 		cpudir = oprofilefs_mkdir(dir, buf);
+ 
+ 		/* Strictly speaking access to these ulongs is racy,
+-- 
+2.9.3
+
+
+--------------9240D772B256603F117928C1--
