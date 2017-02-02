@@ -2,14 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDdTn5JsXzDqBP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 22:45:17 +1100 (AEDT)
-In-Reply-To: <20170111170058.10550.91156.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDdTp5mZdzDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 22:45:18 +1100 (AEDT)
+In-Reply-To: <1485928811-9159-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/pseries: Report DLPAR capabilities
-Message-Id: <3vDdTn3spRz9s7S@ozlabs.org>
-Date: Thu,  2 Feb 2017 22:45:17 +1100 (AEDT)
+Subject: Re: powerpc/boot: Update .gitignore
+Message-Id: <3vDdTp3s9vz9s7N@ozlabs.org>
+Date: Thu,  2 Feb 2017 22:45:18 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,16 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2017-01-11 at 17:00:58 UTC, Nathan Fontenot wrote:
-> As we add the ability to do DLPAR of additional devices through
-> the sysfs interface we need to know which devices are supported.
-> This adds the reporting of supported devices with a comma separated
-> list reported in the existing /sys/kernel/dlpar.
+On Wed, 2017-02-01 at 06:00:11 UTC, Michael Ellerman wrote:
+> Add a few things that have been missed from .gitignore over the years.
 > 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/673bc4354d42731018494bb69d63b6
+https://git.kernel.org/powerpc/c/4eb43875a1859b8d4fb6c56a441a18
 
 cheers
