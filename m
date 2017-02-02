@@ -1,28 +1,18 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDdMt0fZbzDq8b
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 22:40:09 +1100 (AEDT)
-Date: Thu, 2 Feb 2017 12:29:42 +0100
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Vicky <honclo@linux.vnet.ibm.com>
-Cc: Ashley Lai <ashleydlai@gmail.com>, Nayna Jain
- <nayna@linux.vnet.ibm.com>, Marcel Selhorst <tpmdd@selhorst.net>,
- linux-kernel@vger.kernel.org, Jarkko Sakkinen
- <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe
- <jgunthorpe@obsidianresearch.com>, tpmdd-devel@lists.sourceforge.net, Paul
- Mackerras <paulus@samba.org>, Peter Huewe <peterhuewe@gmx.de>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: ibmvtpm byteswapping inconsistency
-Message-ID: <20170202122942.7fd9988d@kitsune.suse.cz>
-In-Reply-To: <F14AC3E9-E04F-4EF0-9C7E-999D481EA577@linux.vnet.ibm.com>
-References: <20170126212248.3f3e9103@kitsune.suse.cz>
- <20170126220536.GB31937@obsidianresearch.com>
- <024dadba-a75c-ab59-9d12-a9bea81f9bda@gmail.com>
- <F14AC3E9-E04F-4EF0-9C7E-999D481EA577@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDdTj2XCPzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Feb 2017 22:45:13 +1100 (AEDT)
+In-Reply-To: <20170112101734.5608-1-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/2] powerpc/64: Move HAVE_CONTEXT_TRACKING from pseries to
+ common Kconfig
+Message-Id: <3vDdTj1zvsz9s7L@ozlabs.org>
+Date: Thu,  2 Feb 2017 22:45:13 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,61 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 1 Feb 2017 23:40:33 -0500
-Vicky <honclo@linux.vnet.ibm.com> wrote:
+On Thu, 2017-01-12 at 10:17:33 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
+> 
+> We added support for HAVE_CONTEXT_TRACKING, but placed the option inside
+> PPC_PSERIES.
+> 
+> This has the undesirable effect that NO_HZ_FULL can be enabled on a
+> kernel with both powernv and pseries support, but cannot on a kernel
+> with powernv only support.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-> > On Jan 26, 2017, at 5:58 PM, Ashley Lai <ashleydlai@gmail.com>
-> > wrote:
-> >=20
-> > Adding Vicky from IBM.
-> >=20
-> >=20
-> > On 01/26/2017 04:05 PM, Jason Gunthorpe wrote: =20
-> >> On Thu, Jan 26, 2017 at 09:22:48PM +0100, Michal Such??nek wrote:
-> >>  =20
-> >>> This is repeated a few times in the driver so I added memset to
-> >>> quiet gcc and make behavior deterministic in case the unused
-> >>> fields get some meaning in the future. =20
-> >> Yep, reserved certainly needs to be zeroed.. Can you send a patch?
-> >> memset is overkill...
-> >>  =20
-> >>> However, in tpm_ibmvtpm_send the structure is initialized as
-> >>>=20
-> >>> 	struct ibmvtpm_crq crq;
-> >>>         __be64 *word =3D (__be64 *)&crq;
-> >>> ...
-> >>>         crq.valid =3D (u8)IBMVTPM_VALID_CMD;
-> >>>         crq.msg =3D (u8)VTPM_TPM_COMMAND;
-> >>>         crq.len =3D cpu_to_be16(count);
-> >>>         crq.data =3D cpu_to_be32(ibmvtpm->rtce_dma_handle);
-> >>>=20
-> >>> and submitted with
-> >>>=20
-> >>> 	rc =3D ibmvtpm_send_crq(ibmvtpm->vdev, be64_to_cpu(word[0]),
-> >>>                               be64_to_cpu(word[1]));
-> >>> meaning it is swapped twice. =20
-> >> No idea, Nayna may know.
-> >>=20
-> >> My guess is that '__be64 *word' should be 'u64 *word'...
-> >>=20
-> >> Jason =20
-> >  =20
->=20
-> I don=E2=80=99t think we want =E2=80=98word' to be changed back to be of =
-type
-> =E2=80=98u64=E2=80=99.   Please see commit 62dfd912ab3b5405b6fe72d0135c37=
-e9648071f1
+Series applied to powerpc next, thanks.
 
-The word is marked correctly as __be64 in that patch because count and
-handle are swapped to BE when saved to it and the whole word is then
-swapped again when loaded. If you just load ((u64)IBMVTPM_VALID_CMD <<
-56 | ((u64)VTPM_TPM_COMMAND << 48) | ((u64)count << 32) |
-ibmvtpm->rtce_dma_handle in a register it works equally well
-without any __be and swaps involved.
+https://git.kernel.org/powerpc/c/d6c569b99558b219fcf0ce0d3af8ec
 
-Note however that __be64 and u64 are all the same to the compiler. It's
-just a note for the reader and analysis tools.
-
-Thanks
-
-Michal
+cheers
