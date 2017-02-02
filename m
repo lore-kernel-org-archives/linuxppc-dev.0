@@ -1,35 +1,20 @@
-Return-Path: <matt@console-pimps.org>
-Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
- [IPv6:2a00:1450:400c:c09::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDv8P69KzzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 09:01:04 +1100 (AEDT)
-Received: by mail-wm0-x229.google.com with SMTP id r141so8119012wmg.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2017 14:01:04 -0800 (PST)
-Date: Thu, 2 Feb 2017 22:01:00 +0000
-From: Matt Fleming <matt@codeblueprint.co.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ross Zwisler <zwisler@gmail.com>, Mike Galbraith <efault@gmx.de>,
- Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
- update_rq_clock() calls
-Message-ID: <20170202220100.GA18235@codeblueprint.co.uk>
-References: <20160921133813.31976-8-matt@codeblueprint.co.uk>
- <tip-cb42c9a3ebbbb23448c3f9a25417fae6309b1a92@git.kernel.org>
- <87tw8gutp6.fsf@concordia.ellerman.id.au>
- <20170130213435.GM31613@codeblueprint.co.uk>
- <33118425-8548-475A-8DED-9A2424C0BCCC@linux.vnet.ibm.com>
- <1485863317.4498.2.camel@gmx.de>
- <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
- <20170202155506.GX6515@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDvD3264hzDq6X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 09:04:19 +1100 (AEDT)
+Date: Fri, 3 Feb 2017 09:04:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Anton
+ Blanchard <anton@samba.org>
+Subject: linux-next: manual merge of the powerpc tree with the powerpc-fixes
+ tree
+Message-ID: <20170203090418.64ecc73b@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170202155506.GX6515@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,15 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 02 Feb, at 04:55:06PM, Peter Zijlstra wrote:
-> On Tue, Jan 31, 2017 at 10:22:47AM -0700, Ross Zwisler wrote:
-> > On Tue, Jan 31, 2017 at 4:48 AM, Mike Galbraith <efault@gmx.de> wrote:
-> > > On Tue, 2017-01-31 at 16:30 +0530, Sachin Sant wrote:
-> 
-> 
-> Could some of you test this? It seems to cure things in my (very)
-> limited testing.
+Hi all,
 
-I haven't tested it but this looks like the correct fix to me.
+Today's linux-next merge of the powerpc tree got a conflict in:
 
-Reviewed-by: Matt Fleming <matt@codeblueprint.co.uk>
+  arch/powerpc/Kconfig
+
+between commit:
+
+  f2574030b0e3 ("powerpc: Revert the initial stack protector support")
+
+from the powerpc-fixes tree and commit:
+
+  d6c569b99558 ("powerpc/64: Move HAVE_CONTEXT_TRACKING from pseries to common Kconfig")
+
+from the powerpc tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+-- 
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/Kconfig
+index a46d1c0d14d3,33f5b8380a7d..000000000000
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@@ -164,9 -164,11 +164,10 @@@ config PP
+  	select ARCH_HAS_SCALED_CPUTIME if VIRT_CPU_ACCOUNTING_NATIVE
+  	select HAVE_ARCH_HARDENED_USERCOPY
+  	select HAVE_KERNEL_GZIP
+ -	select HAVE_CC_STACKPROTECTOR
++ 	select HAVE_CONTEXT_TRACKING if PPC64
+  
+  config GENERIC_CSUM
+- 	def_bool CPU_LITTLE_ENDIAN
++ 	def_bool n
+  
+  config EARLY_PRINTK
+  	bool
