@@ -1,31 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [65.50.211.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDl282VY3zDq5Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 02:55:12 +1100 (AEDT)
-Date: Thu, 2 Feb 2017 16:55:06 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ross Zwisler <zwisler@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>, Sachin Sant <sachinp@linux.vnet.ibm.com>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
- update_rq_clock() calls
-Message-ID: <20170202155506.GX6515@twins.programming.kicks-ass.net>
-References: <20160921133813.31976-8-matt@codeblueprint.co.uk>
- <tip-cb42c9a3ebbbb23448c3f9a25417fae6309b1a92@git.kernel.org>
- <87tw8gutp6.fsf@concordia.ellerman.id.au>
- <20170130213435.GM31613@codeblueprint.co.uk>
- <33118425-8548-475A-8DED-9A2424C0BCCC@linux.vnet.ibm.com>
- <1485863317.4498.2.camel@gmx.de>
- <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
+Return-Path: <alex.williamson@redhat.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDmfJ6j12zDq5Y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 04:08:08 +1100 (AEDT)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3vDmfJ2NKpz9ryb
+ for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2017 04:08:08 +1100 (AEDT)
+Date: Thu, 2 Feb 2017 10:08:04 -0700
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm@vger.kernel.org, gwshan@linux.vnet.ibm.com
+Subject: Re: [PATCH] vfio: Fix build break when SPAPR_TCE_IOMMU=n
+Message-ID: <20170202100804.78f1faa3@t450s.home>
+In-Reply-To: <87shnwc45j.fsf@concordia.ellerman.id.au>
+References: <1478238521-32203-1-git-send-email-mpe@ellerman.id.au>
+ <87shnwc45j.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,66 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 31, 2017 at 10:22:47AM -0700, Ross Zwisler wrote:
-> On Tue, Jan 31, 2017 at 4:48 AM, Mike Galbraith <efault@gmx.de> wrote:
-> > On Tue, 2017-01-31 at 16:30 +0530, Sachin Sant wrote:
+On Thu, 02 Feb 2017 20:50:48 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> 
+> > Currently the kconfig logic for VFIO_IOMMU_SPAPR_TCE and VFIO_SPAPR_EEH
+> > is broken when SPAPR_TCE_IOMMU=n. Leading to:
+> >
+> >     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
+> >     warning: (VFIO) selects VFIO_IOMMU_SPAPR_TCE which has unmet direct dependencies (VFIO && SPAPR_TCE_IOMMU)
+> >     drivers/vfio/vfio_iommu_spapr_tce.c:113:8: error: implicit declaration of function 'mm_iommu_find'
+> >
+> > This stems from the fact that VFIO selects VFIO_IOMMU_SPAPR_TCE, and
+> > although it has an if clause, the condition is not correct.
+> >
+> > We could fix it by doing select VFIO_IOMMU_SPAPR_TCE if SPAPR_TCE_IOMMU,
+> > but the cleaner fix is to drop the selects and tie VFIO_IOMMU_SPAPR_TCE
+> > to the value of VFIO, and express the dependencies in only once place.
+> >
+> > Do the same for VFIO_SPAPR_EEH.
+> >
+> > The end result is that the values of VFIO_IOMMU_SPAPR_TCE and
+> > VFIO_SPAPR_EEH follow the value of VFIO, except when SPAPR_TCE_IOMMU=n
+> > and/or EEH=n. Which is exactly what we want to happen.  
+> 
+> Ping?
+> 
+> There was a bit of discussion on this patch but I think we decided it
+> was correct in the end.
 
-Could some of you test this? It seems to cure things in my (very)
-limited testing.
+If there are no other comments or objections, I'll queue this for
+v4.11.  Based on this last comment:
 
----
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 96e4ccc..b773821 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -5609,7 +5609,7 @@ static void migrate_tasks(struct rq *dead_rq)
- {
- 	struct rq *rq = dead_rq;
- 	struct task_struct *next, *stop = rq->stop;
--	struct rq_flags rf, old_rf;
-+	struct rq_flags rf;
- 	int dest_cpu;
- 
- 	/*
-@@ -5628,7 +5628,9 @@ static void migrate_tasks(struct rq *dead_rq)
- 	 * class method both need to have an up-to-date
- 	 * value of rq->clock[_task]
- 	 */
-+	rq_pin_lock(rq, &rf);
- 	update_rq_clock(rq);
-+	rq_unpin_lock(rq, &rf);
- 
- 	for (;;) {
- 		/*
-@@ -5641,7 +5643,7 @@ static void migrate_tasks(struct rq *dead_rq)
- 		/*
- 		 * pick_next_task assumes pinned rq->lock.
- 		 */
--		rq_pin_lock(rq, &rf);
-+		rq_repin_lock(rq, &rf);
- 		next = pick_next_task(rq, &fake_task, &rf);
- 		BUG_ON(!next);
- 		next->sched_class->put_prev_task(rq, next);
-@@ -5670,13 +5672,6 @@ static void migrate_tasks(struct rq *dead_rq)
- 			continue;
- 		}
- 
--		/*
--		 * __migrate_task() may return with a different
--		 * rq->lock held and a new cookie in 'rf', but we need
--		 * to preserve rf::clock_update_flags for 'dead_rq'.
--		 */
--		old_rf = rf;
--
- 		/* Find suitable destination for @next, with force if needed. */
- 		dest_cpu = select_fallback_rq(dead_rq->cpu, next);
- 
-@@ -5685,7 +5680,6 @@ static void migrate_tasks(struct rq *dead_rq)
- 			raw_spin_unlock(&rq->lock);
- 			rq = dead_rq;
- 			raw_spin_lock(&rq->lock);
--			rf = old_rf;
- 		}
- 		raw_spin_unlock(&next->pi_lock);
- 	}
+  eg, using def_tristate you get:
+
+  # CONFIG_VFIO_IOMMU_SPAPR_TCE is not set
+  # CONFIG_VFIO is not set
+
+  Whereas using depends all you get is:
+
+  # CONFIG_VFIO is not set
+
+I prefer prefer the solution here that doesn't leave extra unselected
+config entries when CONFIG_VFIO is also not selected.  Thanks,
+
+Alex
