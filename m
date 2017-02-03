@@ -1,34 +1,30 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vF9cl5djWzDqBX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 19:53:11 +1100 (AEDT)
-Date: Fri, 3 Feb 2017 09:53:01 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Cc: Ross Zwisler <zwisler@gmail.com>, Mike Galbraith <efault@gmx.de>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- Michael Ellerman <mpe@ellerman.id.au>,
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vFBpX2krnzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 20:46:44 +1100 (AEDT)
+Date: Fri, 3 Feb 2017 10:46:18 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Chris Packham <Chris.Packham@alliedtelesis.co.nz>
+Cc: "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "morbidrsa@gmail.com" <morbidrsa@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
- update_rq_clock() calls
-Message-ID: <20170203085301.GA6515@twins.programming.kicks-ass.net>
-References: <20160921133813.31976-8-matt@codeblueprint.co.uk>
- <tip-cb42c9a3ebbbb23448c3f9a25417fae6309b1a92@git.kernel.org>
- <87tw8gutp6.fsf@concordia.ellerman.id.au>
- <20170130213435.GM31613@codeblueprint.co.uk>
- <33118425-8548-475A-8DED-9A2424C0BCCC@linux.vnet.ibm.com>
- <1485863317.4498.2.camel@gmx.de>
- <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
- <20170202155506.GX6515@twins.programming.kicks-ass.net>
- <3BAB5673-2BF8-46E0-8018-6A0F3DEEC9F7@linux.vnet.ibm.com>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] EDAC: mpc85xx: Add T2080 l2-cache support
+Message-ID: <20170203094618.7m4j6uycaefixekf@pd.tnic>
+References: <20170201231624.28843-1-chris.packham@alliedtelesis.co.nz>
+ <20170201232735.byk7bnpeoqtcc7mh@pd.tnic>
+ <01fe1af463c640a8bd48e45c2752b52c@svr-chch-ex1.atlnz.lc>
+ <20170202173005.gqesvy5owtsbrviu@pd.tnic>
+ <87h94cb11m.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BAB5673-2BF8-46E0-8018-6A0F3DEEC9F7@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87h94cb11m.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,28 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 03, 2017 at 10:03:14AM +0530, Sachin Sant wrote:
+On Fri, Feb 03, 2017 at 10:55:33AM +1100, Michael Ellerman wrote:
+> > So I'd like to have an ACK from a PPC maintainer here first before I
+> > apply this.
 > 
-> > On 02-Feb-2017, at 9:25 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > On Tue, Jan 31, 2017 at 10:22:47AM -0700, Ross Zwisler wrote:
-> >> On Tue, Jan 31, 2017 at 4:48 AM, Mike Galbraith <efault@gmx.de> wrote:
-> >>> On Tue, 2017-01-31 at 16:30 +0530, Sachin Sant wrote:
-> > 
-> > 
-> > Could some of you test this? It seems to cure things in my (very)
-> > limited testing.
-> > 
+> It's fine with me:
 > 
-> I ran few cycles of cpu hot(un)plug tests. In most cases it works except one
-> where I ran into rcu stall:
-> 
-> [  173.493453] INFO: rcu_sched detected stalls on CPUs/tasks:
-> [  173.493473] 	8-...: (2 GPs behind) idle=006/140000000000000/0 softirq=0/0 fqs=2996 
-> [  173.493476] 	(detected by 0, t=6002 jiffies, g=885, c=884, q=6350)
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Right, I actually saw that too, but I don't think that would be related
-to my patch. I'll see if I can dig into this though, ought to get fixed
-regardless.
+Applied,
+thanks guys.
 
-Thanks for testing!
+-- 
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
