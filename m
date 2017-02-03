@@ -1,20 +1,18 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
- [150.101.137.145])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vF5nb0x9QzDqBY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 17:00:35 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vF61K6ygdzDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 17:10:45 +1100 (AEDT)
+Message-ID: <1486102228.4850.52.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/mm: Fix spurrious segfaults on radix with Autonuma
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/powernv: implement NMI IPI with
- OPAL_SIGNAL_SYSTEM_RESET
-Date: Fri, 03 Feb 2017 17:00:19 +1100
-Message-ID: <3306162.5sCMYZyWl3@new-mexico>
-In-Reply-To: <20170203152048.2d6bee4a@roar.ozlabs.ibm.com>
-References: <20170202142511.14158-1-npiggin@gmail.com>
- <20170203152048.2d6bee4a@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Michael Neuling
+ <michael.neuling@au1.ibm.com>, Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 03 Feb 2017 17:10:28 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,161 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 3 Feb 2017 03:20:48 PM Nicholas Piggin wrote:
-> On Fri,  3 Feb 2017 00:25:11 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> > This goes with the previous NMI IPI series, and a new version of
-> > Alistair's opal API I posted to the skiboot list.
->
-> And here is the incremental bit that is required for Alistair's
-> hardware implementation to work.
->
-> If the opal broacast call fails with OPAL_PARTIAL, then we designate
-> a bouncer CPU on another core to send NMI IPIs back to our sibling
-> threads.
->
-> Probably needs more discussion and testing about how to detect and
-> handle failure cases and future compatibility for different types of
-> restrictions, but at least it works in mambo.
+When autonuma marks a PTE inaccessible it clears all the protection
+bits but leave the PTE valid.
 
-Looking at the Mambo implementation you recently posted I couldn't see
-where OPAL_PARTIAL was returned. So I guess you have other Skiboot
-patches to test this path using Mambo? I'm wondering because they
-could be useful for testing the skiboot HW side as well...
+With the Radix MMU, an attempt at executing from such a PTE will
+take a fault with bit 35 of SRR1 set "SRR1_ISI_N_OR_G".
 
->
-> Of course the other option rather than doing this in Linux is call
-> into opal in the system reset handler and have it do the bouncing.
-> Something to consider before we finalise the API.
+It is thus incorrect to treat all such faults as errors. We should
+pass them to handle_mm_fault() for autonuma to deal with. The case
+of pages that are really not executable is handled by the existing
+test for VM_EXEC further down.
 
-That might not be such a bad idea. OPAL could queue up the threads it
-couldn't reset and then wait until opal_sreset_complete() is called
-from an eligible thread to reset the ones it couldn't do in the
-original call.
+That leaves us with catching the kernel attempts at executing user
+pages. We can catch that earlier, even before we do find_vma.
 
-I might try prototyping something like this when I get some time. One
-issue would be if there is only a single core in the system, but
-that's unlikely and I think that's probably something we can't support
-in any case as cores can't sreset threads on the same core, at least
-on P8.
+It is never valid on powerpc for the kernel to take an exec fault
+to begin with. So fold that test with the existing test for the
+kernel faulting on kernel addresses to bail out early.
 
-- Alistair
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Fixes: 1d18ad0 ("powerpc/mm: Detect instruction fetch denied and report")
+Fixes: 0ab5171 ("powerpc/mm: Fix no execute fault handling on pre-POWER5")
+---
 
-> Thanks,
-> Nick
->
-> ---
->  arch/powerpc/platforms/powernv/smp.c | 88 +++++++++++++++++++++++++++++++++---
->  1 file changed, 82 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-> index f90555f75723..4241fda9df9e 100644
-> --- a/arch/powerpc/platforms/powernv/smp.c
-> +++ b/arch/powerpc/platforms/powernv/smp.c
-> @@ -241,8 +241,32 @@ static int pnv_cpu_bootable(unsigned int nr)
->  	return smp_generic_cpu_bootable(nr);
->  }
->
-> +static int nmi_ipi_bounce_cpu;
-> +static int nmi_ipi_bounce_cpu_done;
-> +static int nmi_ipi_bounce_target_core;
-> +static int nmi_ipi_bounce_target_exclude;
-> +
->  int pnv_system_reset_exception(struct pt_regs *regs)
->  {
-> +	smp_rmb();
-> +	if (nmi_ipi_bounce_cpu == smp_processor_id()) {
-> +		int64_t rc;
-> +		int c;
-> +
-> +		for_each_online_cpu(c) {
-> +			if (!cpumask_test_cpu(c, cpu_sibling_mask(nmi_ipi_bounce_target_core)))
-> +				continue;
-> +			if (c == nmi_ipi_bounce_target_exclude)
-> +				continue;
-> +			rc = opal_signal_system_reset(c);
-> +			if (rc != OPAL_SUCCESS) {
-> +				nmi_ipi_bounce_cpu_done = -1;
-> +				return 1;
-> +			}
-> +		}
-> +		nmi_ipi_bounce_cpu_done = 1;
-> +	}
-> +
->  	if (smp_handle_nmi_ipi(regs))
->  		return 1;
->  	return 0;
-> @@ -252,13 +276,65 @@ static int pnv_cause_nmi_ipi(int cpu)
->  {
->  	int64_t rc;
->
-> -	rc = opal_signal_system_reset(cpu);
-> -	if (rc == OPAL_SUCCESS)
-> -		return 1;
-> +	if (cpu >= 0) {
-> +		rc = opal_signal_system_reset(cpu);
-> +		if (rc == OPAL_SUCCESS)
-> +			return 1;
-> +	} else {
-> +		/*
-> +		 * Test bounce behavior with broadcast IPI.
-> +		 */
-> +		rc = OPAL_PARTIAL;
-> +	}
-> +	if (rc == OPAL_PARTIAL) {
-> +		int c;
->
-> -	/*
-> -	 * Don't cope with OPAL_PARTIAL yet (just punt to regular IPI)
-> -	 */
-> +		/*
-> +		 * Some platforms can not send NMI to sibling threads in
-> +		 * the same core. We can designate one inter-core target
-> +		 * to bounce NMIs back to our sibling threads.
-> +		 */
-> +
-> +		if (cpu >= 0) {
-> +			/*
-> +			 * Don't support bouncing unicast NMIs yet (because
-> +			 * that would have to raise an NMI on an unrelated
-> +			 * CPU. Revisit this if callers start using unicast.
-> +			 */
-> +			return 0;
-> +		}
-> +
-> +		nmi_ipi_bounce_cpu = -1;
-> +		nmi_ipi_bounce_cpu_done = 0;
-> +		nmi_ipi_bounce_target_core = -1;
-> +		nmi_ipi_bounce_target_exclude = -1;
-> +		smp_wmb();
-> +
-> +		for_each_online_cpu(c) {
-> +			if (cpumask_test_cpu(c, cpu_sibling_mask(smp_processor_id())))
-> +				continue;
-> +
-> +			if (nmi_ipi_bounce_cpu == -1) {
-> +				nmi_ipi_bounce_cpu = c;
-> +				nmi_ipi_bounce_target_core = smp_processor_id();
-> +				if (cpu == NMI_IPI_ALL_OTHERS)
-> +					nmi_ipi_bounce_target_exclude = smp_processor_id();
-> +			}
-> +
-> +			rc = opal_signal_system_reset(c);
-> +			if (rc != OPAL_SUCCESS)
-> +				return 0;
-> +		}
-> +
-> +		if (nmi_ipi_bounce_cpu == -1)
-> +			return 0; /* could not find a bouncer */
-> +
-> +		while (!nmi_ipi_bounce_cpu_done)
-> +			cpu_relax();
-> +
-> +		if (nmi_ipi_bounce_cpu_done == 1)
-> +			return 1; /* bounce worked */
-> +	}
->
->  	return 0;
->  }
->
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 6fd30ac..62a50d6 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -253,8 +253,11 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	if (unlikely(debugger_fault_handler(regs)))
+ 		goto bail;
+ 
+-	/* On a kernel SLB miss we can only check for a valid exception entry */
+-	if (!user_mode(regs) && (address >= TASK_SIZE)) {
++	/*
++	 * The kernel should never take an execute fault nor should it
++	 * take a page fault to a kernel address.
++	 */
++	if (!user_mode(regs) && (is_exec || (address >= TASK_SIZE))) {
+ 		rc = SIGSEGV;
+ 		goto bail;
+ 	}
+@@ -391,20 +394,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ 	if (is_exec) {
+ 		/*
+-		 * An execution fault + no execute ?
+-		 *
+-		 * On CPUs that don't have CPU_FTR_COHERENT_ICACHE we
+-		 * deliberately create NX mappings, and use the fault to do the
+-		 * cache flush. This is usually handled in hash_page_do_lazy_icache()
+-		 * but we could end up here if that races with a concurrent PTE
+-		 * update. In that case we need to fall through here to the VMA
+-		 * check below.
+-		 */
+-		if (cpu_has_feature(CPU_FTR_COHERENT_ICACHE) &&
+-			(regs->msr & SRR1_ISI_N_OR_G))
+-			goto bad_area;
+-
+-		/*
+ 		 * Allow execution from readable areas if the MMU does not
+ 		 * provide separate controls over reading and executing.
+ 		 *
