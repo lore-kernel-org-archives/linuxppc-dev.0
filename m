@@ -1,20 +1,18 @@
-Return-Path: <chrisp@alliedtelesis.co.nz>
-Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
- [IPv6:2001:df5:b000:5::4])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDylt4pHJzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 11:43:38 +1100 (AEDT)
-From: Chris Packham <chris.packham@alliedtelesis.co.nz>
-To: devicetree@vger.kernel.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Cc: Chris Packham <chris.packham@alliedtelesis.co.nz>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation: powerpc/fsl: Update compatible for l2cache
- binding
-Date: Fri,  3 Feb 2017 13:43:16 +1300
-Message-Id: <20170203004316.25291-1-chris.packham@alliedtelesis.co.nz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vF0894ptczDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 12:46:17 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Douglas Miller <dougmill@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: xmon memory dump does not handle LE
+In-Reply-To: <2a0e256f-4947-e94d-7f79-5451b3c90f9f@linux.vnet.ibm.com>
+References: <2a0e256f-4947-e94d-7f79-5451b3c90f9f@linux.vnet.ibm.com>
+Date: Fri, 03 Feb 2017 12:46:16 +1100
+Message-ID: <87a8a4avx3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +22,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-List all the current valid compatible strings for the l2cache binding.
-This should stop checkpatch.pl from complaining and will hopefully save
-someone from having to debug a typo in their dts.
+Douglas Miller <dougmill@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Chris Packham <chris.packham@alliedtelesis.co.nz>
----
- .../devicetree/bindings/powerpc/fsl/l2cache.txt    | 42 ++++++++++++++++++++--
- 1 file changed, 40 insertions(+), 2 deletions(-)
+> I was hoping this would be any easy fix, but now it looks like it will 
+> be more difficult.
+>
+> The basic problem is that xmon memory commands like 'dd' do not properly 
+> display the data on LE instances. This means that not only is it 
+> difficult to read but one cannot copy-paste addresses from the output. 
+> This severely encumbers debugging using xmon on LE systems.
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-index c41b2187eaa8..dc9bb3182525 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-@@ -5,8 +5,46 @@ The cache bindings explained below are ePAPR compliant
+What do you mean by "properly"?
+
+I think what you're saying is that dumping bytes of memory on LE doesn't
+give you nice u64 pointers, but that's not a bug, that's just how memory
+is laid out on LE.
+
+Also memory isn't always filled with u64 pointers, so just byte swapping
+at that size is not correct. Sometimes you'll be looking at ints, in
+which case you need to swap 4 bytes at a time.
+
+What we need is dump commands that do a byte swap of a given size.
+Balbir was working on this but I think he got diverted.
+
+His first attempt was here: https://patchwork.ozlabs.org/patch/696348/
  
- Required Properties:
+But as I said in my reply:
+
+  So as discussed, lets add d1, d2, d4, d8, which dump 1/2/4/8 bytes at a
+  time, in cpu endian, and which each value separated by space.
+
+
+Here's a quick hack to get it going. Let me know if that works for you,
+it's not pretty, but we could probably merge it with a bit of cleanup.
+
+cheers
+
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index a44b049b9cf6..3903af5fe276 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2334,10 +2334,43 @@ static void dump_pacas(void)
+ }
+ #endif
  
--- compatible	: Should include "fsl,chip-l2-cache-controller" and "cache"
--		  where chip is the processor (bsc9132, npc8572 etc.)
-+- compatible	: Should include one of the following:
-+		  "fsl,8540-l2-cache-controller"
-+		  "fsl,8541-l2-cache-controller"
-+		  "fsl,8544-l2-cache-controller"
-+		  "fsl,8548-l2-cache-controller"
-+		  "fsl,8555-l2-cache-controller"
-+		  "fsl,8568-l2-cache-controller"
-+		  "fsl,b4420-l2-cache-controller"
-+		  "fsl,b4860-l2-cache-controller"
-+		  "fsl,bsc9131-l2-cache-controller"
-+		  "fsl,bsc9132-l2-cache-controller"
-+		  "fsl,c293-l2-cache-controller"
-+		  "fsl,mpc8536-l2-cache-controller"
-+		  "fsl,mpc8540-l2-cache-controller"
-+		  "fsl,mpc8541-l2-cache-controller"
-+		  "fsl,mpc8544-l2-cache-controller"
-+		  "fsl,mpc8548-l2-cache-controller"
-+		  "fsl,mpc8555-l2-cache-controller"
-+		  "fsl,mpc8560-l2-cache-controller"
-+		  "fsl,mpc8568-l2-cache-controller"
-+		  "fsl,mpc8569-l2-cache-controller"
-+		  "fsl,mpc8572-l2-cache-controller"
-+		  "fsl,p1010-l2-cache-controller"
-+		  "fsl,p1011-l2-cache-controller"
-+		  "fsl,p1012-l2-cache-controller"
-+		  "fsl,p1013-l2-cache-controller"
-+		  "fsl,p1014-l2-cache-controller"
-+		  "fsl,p1015-l2-cache-controller"
-+		  "fsl,p1016-l2-cache-controller"
-+		  "fsl,p1020-l2-cache-controller"
-+		  "fsl,p1021-l2-cache-controller"
-+		  "fsl,p1022-l2-cache-controller"
-+		  "fsl,p1023-l2-cache-controller"
-+		  "fsl,p1024-l2-cache-controller"
-+		  "fsl,p1025-l2-cache-controller"
-+		  "fsl,p2010-l2-cache-controller"
-+		  "fsl,p2020-l2-cache-controller"
-+		  "fsl,t2080-l2-cache-controller"
-+		  "fsl,t4240-l2-cache-controller"
-+		  and "cache".
- - reg		: Address and size of L2 cache controller registers
- - cache-size	: Size of the entire L2 cache
- - interrupts	: Error interrupt of L2 controller
--- 
-2.11.0.24.ge6920cf
++static void dump_by_size(unsigned long addr, long count, int size)
++{
++	unsigned char temp[16];
++	int i, j;
++	u64 val;
++
++	count = ALIGN(count, 16);
++
++	for (i = 0; i < count; i += 16, addr += 16) {
++		printf(REG, addr);
++
++		if (mread(addr, temp, 16) != 16) {
++			printf("Faulted reading %d bytes from 0x"REG"\n", 16, addr);
++			return;
++		}
++
++		for (j = 0; j < 16; j += size) {
++			putchar(' ');
++			switch (size) {
++			case 1: val = temp[j]; break;
++			case 2: val = *(u16 *)&temp[j]; break;
++			case 4: val = *(u32 *)&temp[j]; break;
++			case 8: val = *(u64 *)&temp[j]; break;
++			default: val = 0;
++			}
++
++			printf("%0*lx", size * 2, val);
++		}
++
++		printf("\n");
++	}
++}
++
+ static void
+ dump(void)
+ {
+-	int c;
++	int size, c;
+ 
+ 	c = inchar();
+ 
+@@ -2350,8 +2383,9 @@ dump(void)
+ 	}
+ #endif
+ 
+-	if ((isxdigit(c) && c != 'f' && c != 'd') || c == '\n')
++	if (c == '\n')
+ 		termch = c;
++
+ 	scanhex((void *)&adrs);
+ 	if (termch != '\n')
+ 		termch = 0;
+@@ -2383,9 +2417,21 @@ dump(void)
+ 			ndump = 64;
+ 		else if (ndump > MAX_DUMP)
+ 			ndump = MAX_DUMP;
+-		prdump(adrs, ndump);
++
++		size = 0;
++		switch (c) {
++		case '8': size += 4;
++		case '4': size += 2;
++		case '2': size += 1;
++		case '1': size += 1;
++			dump_by_size(adrs, ndump, size);
++			break;
++		default:
++			prdump(adrs, ndump);
++			last_cmd = "d\n";
++		}
++
+ 		adrs += ndump;
+-		last_cmd = "d\n";
+ 	}
+ }
+ 
