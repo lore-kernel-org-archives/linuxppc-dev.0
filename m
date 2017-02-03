@@ -1,28 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Chris.Packham@alliedtelesis.co.nz>
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
+ [IPv6:2001:df5:b000:5::4])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vDxmr0bcnzDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 10:59:24 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Bhupesh Sharma <bhsharma@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- kernel-hardening@lists.openwall.com, Anatolij Gustschin <agust@denx.de>,
- keescook@chromium.org, Daniel Cashman <dcashman@android.com>,
- Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>,
- dcashman@google.com, Alistair Popple <alistair@popple.id.au>,
- bhupesh.linux@gmail.com, Alexander Graf <agraf@suse.com>
-Subject: Re: [kernel-hardening] Re: [PATCH 1/2] powerpc: mm: support
- ARCH_MMAP_RND_BITS
-In-Reply-To: <20170202122256.GD5179@localhost.localdomain>
-References: <1486014168-1279-1-git-send-email-bhsharma@redhat.com>
- <1486014168-1279-2-git-send-email-bhsharma@redhat.com>
- <87mve4c2my.fsf@concordia.ellerman.id.au>
- <20170202122256.GD5179@localhost.localdomain>
-Date: Fri, 03 Feb 2017 10:59:23 +1100
-Message-ID: <87efzgb0v8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vDyCY5Yz8zDq6X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 11:19:05 +1100 (AEDT)
+From: Chris Packham <Chris.Packham@alliedtelesis.co.nz>
+To: Michael Ellerman <mpe@ellerman.id.au>, Borislav Petkov <bp@alien8.de>
+CC: "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "morbidrsa@gmail.com" <morbidrsa@gmail.com>, Rob Herring
+ <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Benjamin
+ Herrenschmidt" <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] EDAC: mpc85xx: Add T2080 l2-cache support
+Date: Fri, 3 Feb 2017 00:18:56 +0000
+Message-ID: <de8ec9087f214f2fae67b8ea9be92cdc@svr-chch-ex1.atlnz.lc>
+References: <20170201231624.28843-1-chris.packham@alliedtelesis.co.nz>
+ <20170201232735.byk7bnpeoqtcc7mh@pd.tnic>
+ <01fe1af463c640a8bd48e45c2752b52c@svr-chch-ex1.atlnz.lc>
+ <20170202173005.gqesvy5owtsbrviu@pd.tnic>
+ <87h94cb11m.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,23 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
-
-> On Thu, Feb 02, 2017 at 09:23:33PM +1100, Michael Ellerman wrote:
->> +config ARCH_MMAP_RND_BITS_MIN
->> +	# On 64-bit up to 1G of address space (2^30)
->> +	default 12 if 64BIT && PPC_256K_PAGES 	# 256K (2^18), = 30 - 18 = 12
->> +	default 14 if 64BIT && PPC_64K_PAGES  	# 64K  (2^16), = 30 - 16 = 14
->> +	default 16 if 64BIT && PPC_16K_PAGES  	# 16K  (2^14), = 30 - 14 = 16
->> +	default 18 if 64BIT			# 4K   (2^12), = 30 - 12 = 18
->> +	default ARCH_MMAP_RND_COMPAT_BITS_MIN
->> +
->> +config ARCH_MMAP_RND_BITS_MAX
->> +	# On 64-bit up to 32T of address space (2^45)
->
-> I thought it was 64T, TASK_SIZE_USER64 is 2^46?
-
-The virtual address space is 64T. The comment is talking about how much
-can be taking up by the randomisation factor.
-
-cheers
+On 03/02/17 12:55, Michael Ellerman wrote:=0A=
+> Chris if you want to send a patch to add the compatible string to the=0A=
+> l2cache.txt I would merge that, but honestly it doesn't achieve much=0A=
+> other than possibly catching a typo in the compatible name.=0A=
+=0A=
+I think catching a typo might be worthwhile. It's 5 minutes work for me =0A=
+to grep/sed through the code to find existing compatible strings and =0A=
+update the document. Which might save someone else a lot of time =0A=
+debugging only to find out they've transposed some digits in the dts.=0A=
+=0A=
+I'll whip something up and send it out shortly.=0A=
