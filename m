@@ -1,22 +1,20 @@
-Return-Path: <efault@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFH622y6YzDqBY
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 00:00:26 +1100 (AEDT)
-Message-ID: <1486126774.4277.6.camel@gmx.de>
-Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch
- missing update_rq_clock() calls
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>, Sachin Sant
- <sachinp@linux.vnet.ibm.com>
-Cc: Ross Zwisler <zwisler@gmail.com>, Matt Fleming
- <matt@codeblueprint.co.uk>,  Michael Ellerman <mpe@ellerman.id.au>,
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3vFHCW4zBVzDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 00:05:11 +1100 (AEDT)
+Date: Fri, 3 Feb 2017 14:04:46 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ross Zwisler <zwisler@gmail.com>, Mike Galbraith <efault@gmx.de>,
+ Sachin Sant <sachinp@linux.vnet.ibm.com>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ Michael Ellerman <mpe@ellerman.id.au>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>, LKML
- <linux-kernel@vger.kernel.org>
-Date: Fri, 03 Feb 2017 13:59:34 +0100
-In-Reply-To: <20170203085301.GA6515@twins.programming.kicks-ass.net>
+ "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [tip:sched/core] sched/core: Add debugging code to catch missing
+ update_rq_clock() calls
+Message-ID: <20170203130446.hpq4hb5b5j5vvhwm@pd.tnic>
 References: <20160921133813.31976-8-matt@codeblueprint.co.uk>
  <tip-cb42c9a3ebbbb23448c3f9a25417fae6309b1a92@git.kernel.org>
  <87tw8gutp6.fsf@concordia.ellerman.id.au>
@@ -25,10 +23,9 @@ References: <20160921133813.31976-8-matt@codeblueprint.co.uk>
  <1485863317.4498.2.camel@gmx.de>
  <CAOxpaSW_GnndoxLBPtyTrqPJ9XOWvgXOQNDf8D+6OohWeObn5Q@mail.gmail.com>
  <20170202155506.GX6515@twins.programming.kicks-ass.net>
- <3BAB5673-2BF8-46E0-8018-6A0F3DEEC9F7@linux.vnet.ibm.com>
- <20170203085301.GA6515@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset="us-ascii"
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20170202155506.GX6515@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,21 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2017-02-03 at 09:53 +0100, Peter Zijlstra wrote:
-> On Fri, Feb 03, 2017 at 10:03:14AM +0530, Sachin Sant wrote:
-
-> > I ran few cycles of cpu hot(un)plug tests. In most cases it works except one
-> > where I ran into rcu stall:
-> > 
-> > [  173.493453] INFO: rcu_sched detected stalls on CPUs/tasks:
-> > [  173.493473] > > 	> > 8-...: (2 GPs behind) idle=006/140000000000000/0 softirq=0/0 fqs=2996 
-> > [  173.493476] > > 	> > (detected by 0, t=6002 jiffies, g=885, c=884, q=6350)
+On Thu, Feb 02, 2017 at 04:55:06PM +0100, Peter Zijlstra wrote:
+> On Tue, Jan 31, 2017 at 10:22:47AM -0700, Ross Zwisler wrote:
+> > On Tue, Jan 31, 2017 at 4:48 AM, Mike Galbraith <efault@gmx.de> wrote:
+> > > On Tue, 2017-01-31 at 16:30 +0530, Sachin Sant wrote:
 > 
-> Right, I actually saw that too, but I don't think that would be related
-> to my patch. I'll see if I can dig into this though, ought to get fixed
-> regardless.
+> 
+> Could some of you test this? It seems to cure things in my (very)
+> limited testing.
 
-FWIW, I'm not seeing stalls/hangs while beating hotplug up in tip. (so
-next grew a wart?)
+Tested-by: Borislav Petkov <bp@suse.de>
 
-	-Mike
+-- 
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
