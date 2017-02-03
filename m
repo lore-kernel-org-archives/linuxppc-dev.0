@@ -1,25 +1,20 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
- [IPv6:2a00:1450:400c:c09::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFBzk0vW0zDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 20:54:42 +1100 (AEDT)
-Received: by mail-wm0-x230.google.com with SMTP id r141so19479604wmg.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 01:54:41 -0800 (PST)
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-To: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- jeyu@redhat.com, rusty@rustcorp.com.au, mmarek@suse.com, mpe@ellerman.id.au
-Cc: torvalds@linux-foundation.org, arnd@arndb.de, viro@zeniv.linux.org.uk,
- linux-arm-kernel@lists.infradead.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Subject: [PATCH v5 3/3] module: unify absolute krctab definitions for 32-bit
- and 64-bit
-Date: Fri,  3 Feb 2017 09:54:07 +0000
-Message-Id: <1486115647-27680-4-git-send-email-ard.biesheuvel@linaro.org>
-In-Reply-To: <1486115647-27680-1-git-send-email-ard.biesheuvel@linaro.org>
-References: <1486115647-27680-1-git-send-email-ard.biesheuvel@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFCpD2jmxzDqBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 21:31:32 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Douglas Miller <dougmill@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: xmon memory dump does not handle LE
+In-Reply-To: <d245dc28-5075-8631-4ff1-1039ad88ccd5@linux.vnet.ibm.com>
+References: <2a0e256f-4947-e94d-7f79-5451b3c90f9f@linux.vnet.ibm.com>
+ <87a8a4avx3.fsf@concordia.ellerman.id.au>
+ <d245dc28-5075-8631-4ff1-1039ad88ccd5@linux.vnet.ibm.com>
+Date: Fri, 03 Feb 2017 21:31:30 +1100
+Message-ID: <87vasra7lp.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch introduced a separate inline asm version of the
-krcrctab declaration template for use with 64-bit architectures, which
-cannot refer to ELF symbols using 32-bit quantities. This declaration
-should be equivalent to the C one for 32-bit architectures, but this
-needs to be checked first, so unify them in a separate patch.
+Douglas Miller <dougmill@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
----
+> I'm referring to the three commands listed in the help:
+>
+> d     dump bytes
+>
+> df    dump float values
+>
+> dd    dump double values
+>
+> As it turns out, all three of these commands do exactly the same thing, 
+> and it's certainly not what I'd expect based on experience with other 
+> debuggers. Maybe the original intent was only to simply output bytes of 
+> memory, but to me the help implies otherwise and certainly something 
+> more is needed.
 
-... which can simply be dropped if it turns out to break anything.
+OK. I don't think df/dd actually exist in the code, so I think the help
+is just out of date, by about 20 years.
 
- include/linux/export.h | 7 -------
- 1 file changed, 7 deletions(-)
+'d' definitely works as intended and does what the help says as far as
+I'm concerned. The output is pretty similar to hexdump -C for example.
 
-diff --git a/include/linux/export.h b/include/linux/export.h
-index 7473fba6a60c..1a1dfdb2a5c6 100644
---- a/include/linux/export.h
-+++ b/include/linux/export.h
-@@ -49,13 +49,6 @@ extern struct module __this_module;
- 	    "	.weak	" VMLINUX_SYMBOL_STR(__crc_##sym) "	\n"	\
- 	    "	.long	" VMLINUX_SYMBOL_STR(__crc_##sym) " - .	\n"	\
- 	    "	.previous					\n");
--#elif !defined(CONFIG_64BIT)
--#define __CRC_SYMBOL(sym, sec)						\
--	extern __visible void *__crc_##sym __attribute__((weak));	\
--	static const unsigned long __kcrctab_##sym			\
--	__used								\
--	__attribute__((section("___kcrctab" sec "+" #sym), used))	\
--	= (unsigned long) &__crc_##sym;
- #else
- #define __CRC_SYMBOL(sym, sec)						\
- 	asm("	.section \"___kcrctab" sec "+" #sym "\", \"a\"	\n"	\
--- 
-2.7.4
+Also xmon isn't a debugger it's a crash handler :)
+
+> I'll take a look at Balbir's patch and see if I can help move it along.
+
+Actually take a look at mine instead.
+
+cheers
