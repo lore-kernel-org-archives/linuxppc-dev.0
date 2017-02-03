@@ -1,31 +1,32 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vFMZQ49fPzDqBX
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 03:21:50 +1100 (AEDT)
-Date: Fri, 3 Feb 2017 17:21:41 +0100 (CET)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Petr Mladek <pmladek@suse.com>
-cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, linux-kernel@vger.kernel.org,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v4 13/15] livepatch: change to a per-task consistency model
-In-Reply-To: <20170202115116.GB23754@pathway.suse.cz>
-Message-ID: <alpine.LSU.2.20.1702031711120.28531@pobox.suse.cz>
-References: <cover.1484839971.git.jpoimboe@redhat.com>
- <62e96e43de6f09e16f36d3d51af766c8fcbbb05f.1484839971.git.jpoimboe@redhat.com>
- <20170202115116.GB23754@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFMm421RwzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2017 03:30:12 +1100 (AEDT)
+Received: by mail-oi0-x242.google.com with SMTP id w144so1767026oiw.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 08:30:12 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: linus971@gmail.com
+In-Reply-To: <1486115647-27680-1-git-send-email-ard.biesheuvel@linaro.org>
+References: <1486115647-27680-1-git-send-email-ard.biesheuvel@linaro.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 3 Feb 2017 08:30:09 -0800
+Message-ID: <CA+55aFz8faoGYBqkHuGPy4yp+SU5brCbkOCdZNTgfdDzkN8hOw@mail.gmail.com>
+Subject: Re: [PATCH v5 0/3] modversions: redefine kcrctab entries as 32-bit
+ values
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Jessica Yu <jeyu@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+ Michal Marek <mmarek@suse.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,95 +36,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2 Feb 2017, Petr Mladek wrote:
+On Fri, Feb 3, 2017 at 1:54 AM, Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
+> This v4 is a followup to [0] 'modversions: redefine kcrctab entries as
+> relative CRC pointers' [...]
 
-> > diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
-> > index 7f04e13..fb00d66 100644
-> > --- a/Documentation/livepatch/livepatch.txt
-> > +++ b/Documentation/livepatch/livepatch.txt
-> 
-> > +  In that case, arches without
-> > +   HAVE_RELIABLE_STACKTRACE would still be able to use the
-> > +   non-stack-checking parts of the consistency model:
-> > +
-> > +   a) patching user tasks when they cross the kernel/user space
-> > +      boundary; and
-> > +
-> > +   b) patching kthreads and idle tasks at their designated patch points.
-> > +
-> > +   This option isn't as good as option 1 because it requires signaling
-> > +   most of the tasks to patch them.
-> 
-> Kthreads need to be waken because most of them ignore signals.
-> 
-> And idle tasks might need to be explicitely scheduled if there
-> is too big load. Mirek knows more about this.
-
-Yes, and we've already discussed it with Josh. The plan is not to do 
-anything now, because described situations should be rare and/or 
-theoretical only. It should be on our TODO lists though.
- 
-> Well, I am not sure if you want to get into such details.
-
-I would not bother about it.
- 
-[...]
-
-> > +/*
-> > + * Start the transition to the specified target patch state so tasks can begin
-> > + * switching to it.
-> > + */
-> > +void klp_start_transition(void)
-> > +{
-> > +	struct task_struct *g, *task;
-> > +	unsigned int cpu;
-> > +
-> > +	WARN_ON_ONCE(klp_target_state == KLP_UNDEFINED);
-> > +
-> > +	pr_notice("'%s': %s...\n", klp_transition_patch->mod->name,
-> > +		  klp_target_state == KLP_PATCHED ? "patching" : "unpatching");
-> > +
-> > +	/*
-> > +	 * If the patch can be applied or reverted immediately, skip the
-> > +	 * per-task transitions.
-> > +	 */
-> > +	if (klp_transition_patch->immediate)
-> 
-> We should call klp_try_complete_transition() here. Otherwise, it will
-> never be called and the transition will never get completed.
-> 
-> Alternative solution would be to move klp_try_complete_transition()
-> from klp_start_transition() and explicitely call it from
-> __klp_disable_patch() and klp_enable_patch(). It would actually
-> solve one issue with klp_revert_patch(), see below.
-> 
-> I kind of like the alternative solution. I hope that it was not
-> me who suggested to move klp_try_complete_transition() into
-> klp_start_transtion().
-
-[...]
-
-> Hmm, we should not call klp_try_complete_transition() when
-> klp_start_transition() is called from here. I can't find a safe
-> way to cancel klp_transition_work() when we own klp_mutex.
-> It smells with a possible deadlock.
-> 
-> I suggest to move move klp_try_complete_transition() outside
-> klp_start_transition() and explicitely call it from
->  __klp_disable_patch() and __klp_enabled_patch().
-> This would fix also the problem with immediate patches, see
-> klp_start_transition().
-
-I agree. I think the best would be to move klp_try_complete_transition() 
-out from klp_start_transition() and call it explicitly. This would solve 
-the immediate problem for free.
-
-I agree we should not call klp_try_complete_transition() from 
-klp_reverse_transition() and leave it entirely to our delayed work. We 
-discussed this in the past and the counter argument was that explicit call 
-to klp_try_complete_transition() could make the process a bit faster. 
-Possibly true, but reversion is really slow path and I would not care 
-about speed at all. I think it is cleaner and perhaps safer.
+ok, I have this in a local branch now, assuming it passes my
+(admittedly fairly superficial) testing I'll merge it so that we can
+put this whole sorry saga behind us.
 
 Thanks,
-Miroslav
+
+             Linus
