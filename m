@@ -1,24 +1,28 @@
-Return-Path: <jeyu@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bhsharma@redhat.com>
+Received: from mail-qt0-f170.google.com (mail-qt0-f170.google.com
+ [209.85.216.170])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3vF4gH70DhzDqBY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 16:10:03 +1100 (AEDT)
-Date: Thu, 2 Feb 2017 21:09:54 -0800
-From: Jessica Yu <jeyu@redhat.com>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, torvalds@linux-foundation.org,
- arnd@arndb.de, rusty@rustcorp.com.au, mpe@ellerman.id.au,
- viro@zeniv.linux.org.uk, linux-arm-kernel@lists.infradead.org,
- linux@armlinux.org.uk, linux-arch@vger.kernel.org
-Subject: Re: modversions: redefine kcrctab entries as 32-bit values
-Message-ID: <20170203050954.4qisyy66es6yjhkg@jeyu>
-References: <1485274600-21976-1-git-send-email-ard.biesheuvel@linaro.org>
- <20170203035441.GA2964@packer-debian-8-amd64.digitalocean.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <20170203035441.GA2964@packer-debian-8-amd64.digitalocean.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vF4jF5cSDzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 16:11:45 +1100 (AEDT)
+Received: by mail-qt0-f170.google.com with SMTP id v23so17770237qtb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Feb 2017 21:11:45 -0800 (PST)
+From: Bhupesh Sharma <bhsharma@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	kernel-hardening@lists.openwall.com
+Cc: dcashman@google.com, mpe@ellerman.id.au, bhupesh.linux@gmail.com,
+ keescook@chromium.org, Bhupesh Sharma <bhsharma@redhat.com>,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
+ Alistair Popple <alistair@popple.id.au>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Vitaly Bordug <vitb@kernel.crashing.org>, Scott Wood <oss@buserror.net>,
+ Kumar Gala <galak@kernel.crashing.org>,
+ Daniel Cashman <dcashman@android.com>
+Subject: [PATCH v2 1/1] powerpc: mm: support ARCH_MMAP_RND_BITS
+Date: Fri,  3 Feb 2017 10:41:22 +0530
+Message-Id: <1486098682-30395-1-git-send-email-bhsharma@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +32,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-+++ Jessica Yu [02/02/17 22:54 -0500]:
->+++ Ard Biesheuvel [24/01/17 16:16 +0000]:
->>This v4 is a followup to [0] 'modversions: redefine kcrctab entries as
->>relative CRC pointers', but since relative CRC pointers do not work in
->>modules, and are actually only needed by powerpc with CONFIG_RELOCATABLE=y,
->>I have made it a Kconfig selectable feature instead.
->>
->>Patch #1 introduces the MODULE_REL_CRCS Kconfig symbol, and adds the kbuild
->>handling of it, i.e., modpost, genksyms and kallsyms.
->>
->>Patch #2 switches all architectures to 32-bit CRC entries in kcrctab, where
->>all architectures except powerpc with CONFIG_RELOCATABLE=y use absolute ELF
->>symbol references as before.
->>
->>v4: make relative CRCs kconfig selectable
->>   use absolute CRC symbols in modules regardless of kconfig selection
->>   split into two patches
->
->This asymmetry threw me off a bit, especially the Kconfig naming (only
->vmlinux crcs get the relative offsets, and only on powerpc atm, but all
->modules keep the absolute syms, but it is called MODULE_REL_CRCS...),
->if we keep this asymmetric crc treatment, it would be really nice to
->note this discrepancy this somewhere, perhaps in the Kconfig, to keep
->our heads from spinning :-)
->
->I'm still catching up on the previous discussion threads, but can you
->explain a bit more why you switched away from full blown relative crcs
->from your last patchset [1]? I had lightly tested your v3 on ppc64le
->previously, and relative offsets with modules seemed to worked very
->well. I'm probably missing something very obvious.
+powerpc: arch_mmap_rnd() uses hard-coded values, (23-PAGE_SHIFT) for
+32-bit and (30-PAGE_SHIFT) for 64-bit, to generate the random offset
+for the mmap base address.
 
-Ah, I just saw your other comment about other arches not having support
-for the rel32 offsets :-/
+This value represents a compromise between increased
+ASLR effectiveness and avoiding address-space fragmentation.
+Replace it with a Kconfig option, which is sensibly bounded, so that
+platform developers may choose where to place this compromise.
+Keep default values as new minimums.
 
-The asymmetry still bothers me though. Can't we have something that just
-switches relative crcs on and off, that applies to *both* vmlinux and modules?
-Then we can get rid of the crc_owner check in check_version() and just have
-something like:
+This patch makes sure that now powerpc mmap arch_mmap_rnd() approach
+is similar to other ARCHs like x86, arm64 and arm.
 
-   if (IS_ENABLED(CONFIG_RELATIVE_CRCS))
-       crcval = resolve_crc(crc);
+Cc: Alexander Graf <agraf@suse.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anatolij Gustschin <agust@denx.de>
+Cc: Alistair Popple <alistair@popple.id.au>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: Scott Wood <oss@buserror.net>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Daniel Cashman <dcashman@android.com>
+Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+Reviewed-by: Kees Cook <keescook at chromium.org>
+---
+Changes since v1:
+v1 can be seen here (https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153594.html)
+    - No functional change in this patch.
+    - Added R-B from Kees.
+    - Dropped PATCH 2/2 from v1 as recommended by Kees Cook.
+	
+ arch/powerpc/Kconfig   | 34 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/mmap.c |  7 ++++---
+ 2 files changed, 38 insertions(+), 3 deletions(-)
 
-Also we could get rid of the '&& !defined(MODULE)' checks scattered in
-export.h. Then the arches that want relative crcs and that *do* have rel32
-relocation support can turn relative crcs on, and powerpc can enable it, right?
-
-Would that work or is there another reason this won't work with modules
-(assuming that the arches that select this option support the relative
-offsets)?
-
-Jessica
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a8ee573fe610..b4a843f68705 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -22,6 +22,38 @@ config MMU
+ 	bool
+ 	default y
+ 
++config ARCH_MMAP_RND_BITS_MIN
++       default 5 if PPC_256K_PAGES && 32BIT
++       default 12 if PPC_256K_PAGES && 64BIT
++       default 7 if PPC_64K_PAGES && 32BIT
++       default 14 if PPC_64K_PAGES && 64BIT
++       default 9 if PPC_16K_PAGES && 32BIT
++       default 16 if PPC_16K_PAGES && 64BIT
++       default 11 if PPC_4K_PAGES && 32BIT
++       default 18 if PPC_4K_PAGES && 64BIT
++
++# max bits determined by the following formula:
++#  VA_BITS - PAGE_SHIFT - 4
++#  for e.g for 64K page and 64BIT = 48 - 16 - 4 = 28
++config ARCH_MMAP_RND_BITS_MAX
++       default 10 if PPC_256K_PAGES && 32BIT
++       default 26 if PPC_256K_PAGES && 64BIT
++       default 12 if PPC_64K_PAGES && 32BIT
++       default 28 if PPC_64K_PAGES && 64BIT
++       default 14 if PPC_16K_PAGES && 32BIT
++       default 30 if PPC_16K_PAGES && 64BIT
++       default 16 if PPC_4K_PAGES && 32BIT
++       default 32 if PPC_4K_PAGES && 64BIT
++
++config ARCH_MMAP_RND_COMPAT_BITS_MIN
++       default 5 if PPC_256K_PAGES
++       default 7 if PPC_64K_PAGES
++       default 9 if PPC_16K_PAGES
++       default 11
++
++config ARCH_MMAP_RND_COMPAT_BITS_MAX
++       default 16
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
+ 
+@@ -100,6 +132,8 @@ config PPC
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
+ 	select HAVE_KPROBES
+ 	select HAVE_ARCH_KGDB
++	select HAVE_ARCH_MMAP_RND_BITS
++	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
+ 	select HAVE_KRETPROBES
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_MEMBLOCK
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index 2f1e44362198..babf59faab3b 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -60,11 +60,12 @@ unsigned long arch_mmap_rnd(void)
+ {
+ 	unsigned long rnd;
+ 
+-	/* 8MB for 32bit, 1GB for 64bit */
++#ifdef CONFIG_COMPAT
+ 	if (is_32bit_task())
+-		rnd = get_random_long() % (1<<(23-PAGE_SHIFT));
++		rnd = get_random_long() & ((1UL << mmap_rnd_compat_bits) - 1);
+ 	else
+-		rnd = get_random_long() % (1UL<<(30-PAGE_SHIFT));
++#endif
++		rnd = get_random_long() & ((1UL << mmap_rnd_bits) - 1);
+ 
+ 	return rnd << PAGE_SHIFT;
+ }
+-- 
+2.7.4
