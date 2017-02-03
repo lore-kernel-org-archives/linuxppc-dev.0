@@ -1,30 +1,22 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
- by lists.ozlabs.org (Postfix) with ESMTP id 3vFBpX2krnzDqBX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 20:46:44 +1100 (AEDT)
-Date: Fri, 3 Feb 2017 10:46:18 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Chris Packham <Chris.Packham@alliedtelesis.co.nz>
-Cc: "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
- "morbidrsa@gmail.com" <morbidrsa@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] EDAC: mpc85xx: Add T2080 l2-cache support
-Message-ID: <20170203094618.7m4j6uycaefixekf@pd.tnic>
-References: <20170201231624.28843-1-chris.packham@alliedtelesis.co.nz>
- <20170201232735.byk7bnpeoqtcc7mh@pd.tnic>
- <01fe1af463c640a8bd48e45c2752b52c@svr-chch-ex1.atlnz.lc>
- <20170202173005.gqesvy5owtsbrviu@pd.tnic>
- <87h94cb11m.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <87h94cb11m.fsf@concordia.ellerman.id.au>
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-wm0-x22e.google.com (mail-wm0-x22e.google.com
+ [IPv6:2a00:1450:400c:c09::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3vFBzW1mZxzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2017 20:54:31 +1100 (AEDT)
+Received: by mail-wm0-x22e.google.com with SMTP id b65so20303010wmf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2017 01:54:31 -0800 (PST)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ jeyu@redhat.com, rusty@rustcorp.com.au, mmarek@suse.com, mpe@ellerman.id.au
+Cc: torvalds@linux-foundation.org, arnd@arndb.de, viro@zeniv.linux.org.uk,
+ linux-arm-kernel@lists.infradead.org,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Subject: [PATCH v5 0/3] modversions: redefine kcrctab entries as 32-bit values
+Date: Fri,  3 Feb 2017 09:54:04 +0000
+Message-Id: <1486115647-27680-1-git-send-email-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 03, 2017 at 10:55:33AM +1100, Michael Ellerman wrote:
-> > So I'd like to have an ACK from a PPC maintainer here first before I
-> > apply this.
-> 
-> It's fine with me:
-> 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+This v4 is a followup to [0] 'modversions: redefine kcrctab entries as
+relative CRC pointers', but since relative CRC pointers do not work in
+modules, and are actually only needed by powerpc with CONFIG_RELOCATABLE=y,
+I have made it a Kconfig selectable feature instead.
 
-Applied,
-thanks guys.
+Patch #1 introduces the MODULE_REL_CRCS Kconfig symbol, and adds the kbuild
+handling of it, i.e., modpost, genksyms and kallsyms.
+
+Patch #2 switches all architectures to 32-bit CRC entries in kcrctab, where
+all architectures except powerpc with CONFIG_RELOCATABLE=y use absolute ELF
+symbol references as before.
+
+v5: make MODULE_REL_CRCS apply to both vmlinux and modules when selected
+    reinstate Rusty's ack on #2, given that it is now mostly identical again
+    to the patch he acked 3 months ago
+
+v4: make relative CRCs kconfig selectable
+    use absolute CRC symbols in modules regardless of kconfig selection
+    split into two patches
+
+v3: emit CRCs into .rodata rather than .rodata.modver, given that the latter
+    will be emitted with read-write permissions, making the CRCs end up in a
+    writable module segment.
+
+    fold the modpost fix to ensure that the section address is only substracted
+    from the symbol address when the ELF object in question is fully linked
+    (i.e., ET_DYN or ET_EXEC, and not ET_REL)
+
+v2: update modpost as well, so that genksyms no longer has to emit symbols
+    for both the actual CRC value and the reference to where it is stored
+    in the image
+
+[0] http://marc.info/?l=linux-arch&m=148493613415294&w=2
+
+Ard Biesheuvel (3):
+  kbuild: modversions: add infrastructure for emitting relative CRCs
+  modversions: treat symbol CRCs as 32 bit quantities
+  module: unify absolute krctab definitions for 32-bit and 64-bit
+
+ arch/powerpc/Kconfig              |  1 +
+ arch/powerpc/include/asm/module.h |  4 --
+ arch/powerpc/kernel/module_64.c   |  8 ---
+ include/asm-generic/export.h      | 11 ++--
+ include/linux/export.h            | 17 +++++--
+ include/linux/module.h            | 14 +++---
+ init/Kconfig                      |  4 ++
+ kernel/module.c                   | 53 +++++++++-----------
+ scripts/Makefile.build            |  2 +
+ scripts/genksyms/genksyms.c       | 19 +++++--
+ scripts/kallsyms.c                | 12 +++++
+ scripts/mod/modpost.c             | 10 ++++
+ 12 files changed, 93 insertions(+), 62 deletions(-)
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+2.7.4
